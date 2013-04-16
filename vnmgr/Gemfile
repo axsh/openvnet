@@ -1,6 +1,7 @@
 
 source "http://rubygems.org"
 
+gem "sinatra"
 gem 'rake', '10.0.3'
 gem "celluloid", "0.13.0"
 gem "celluloid-io", "0.13.1"
