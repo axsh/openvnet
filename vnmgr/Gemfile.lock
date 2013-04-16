@@ -1,0 +1,19 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    celluloid (0.13.0)
+      timers (>= 1.0.0)
+    celluloid-io (0.13.1)
+      celluloid (>= 0.13.0)
+      nio4r (>= 0.4.0)
+    nio4r (0.4.3)
+    rake (10.0.3)
+    timers (1.1.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  celluloid (= 0.13.0)
+  celluloid-io (= 0.13.1)
+  rake (= 10.0.3)
