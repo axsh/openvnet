@@ -24,5 +24,8 @@ module Vnmgr::Endpoints
     respond_to :json, :yml
 
     load_namespace('networks')
+    load_namespace('vifs')
+    load_namespace('mac_ranges')
+    load_namespace('dns')
   end
 end

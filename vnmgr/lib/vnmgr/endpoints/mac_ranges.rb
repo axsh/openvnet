@@ -17,9 +17,13 @@ Vnmgr::Endpoints::VNetAPI.namespace '/mac_ranges' do
 
   get '/:uuid' do
     mr_params = define_params(params,{:uuid => [String]})
+
+    # Respond with single mac range
   end
 
   delete '/:uuid' do
     mr_params = define_params(params,{:uuid => [String]})
+
+    # Respond with deleted mac range uuid
   end
 end
