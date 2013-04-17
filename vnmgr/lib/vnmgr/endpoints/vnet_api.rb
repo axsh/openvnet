@@ -30,5 +30,6 @@ module Vnmgr::Endpoints
     load_namespace('dhcp')
     load_namespace('dc_networks')
     load_namespace('datapaths')
+    load_namespace('openflow_controllers')
   end
 end
