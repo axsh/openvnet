@@ -28,5 +28,6 @@ module Vnmgr::Endpoints
     load_namespace('mac_ranges')
     load_namespace('dns')
     load_namespace('dhcp')
+    load_namespace('dc_networks')
   end
 end
