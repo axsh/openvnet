@@ -29,5 +29,6 @@ module Vnmgr::Endpoints
     load_namespace('dns')
     load_namespace('dhcp')
     load_namespace('dc_networks')
+    load_namespace('datapaths')
   end
 end
