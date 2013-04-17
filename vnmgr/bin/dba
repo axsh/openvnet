@@ -3,8 +3,11 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
-require 'celluloid'
+require 'dcell'
 require 'vnmgr'
 
-db_agent = VNMGR::NodeModules::DbAgent.new
+DCell.start :id => 'vnmgr', :addr => 'tcp://127.0.0.1:9000'
+
+VNMGR::NodeModules::DbAgent.supervise_as :db_agent
 sleep
+
