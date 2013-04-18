@@ -5,3 +5,6 @@ gem "sinatra"
 gem 'rake', '10.0.3'
 gem "celluloid", "0.13.0"
 gem "celluloid-io", "0.13.1"
+
+gem 'rant', '0.5.9'
+gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'

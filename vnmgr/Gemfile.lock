@@ -1,3 +1,12 @@
+GIT
+  remote: http://github.com/axsh/trema.git
+  revision: 1c3b4e2e3b2b0c7eb63ca50793994a1251a312be
+  branch: wakame-edge
+  specs:
+    trema (0.1.0)
+      gli (= 2.0.0)
+      rake
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -6,8 +15,18 @@ GEM
     celluloid-io (0.13.1)
       celluloid (>= 0.13.0)
       nio4r (>= 0.4.0)
+    gli (2.0.0)
     nio4r (0.4.3)
+    rack (1.5.2)
+    rack-protection (1.5.0)
+      rack
     rake (10.0.3)
+    rant (0.5.9)
+    sinatra (1.4.2)
+      rack (~> 1.5, >= 1.5.2)
+      rack-protection (~> 1.4)
+      tilt (~> 1.3, >= 1.3.4)
+    tilt (1.3.7)
     timers (1.1.0)
 
 PLATFORMS
@@ -17,3 +36,6 @@ DEPENDENCIES
   celluloid (= 0.13.0)
   celluloid-io (= 0.13.1)
   rake (= 10.0.3)
+  rant (= 0.5.9)
+  sinatra
+  trema!
