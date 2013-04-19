@@ -1,4 +1,4 @@
-module VNMGR
+module Vnmgr 
 	module NodeModules
 		autoload :DbAgent,	'vnmgr/node_modules/db_agent'
 	end
