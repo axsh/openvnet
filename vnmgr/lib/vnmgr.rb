@@ -9,4 +9,9 @@ module Vnmgr
 	module NodeModules
 		autoload :DbAgent,	'vnmgr/node_modules/db_agent'
 	end
+
+  module Models
+    autoload :Base,     'vnmgr/models/base'
+    autoload :Network, 'vnmgr/models/network'
+  end
 end
