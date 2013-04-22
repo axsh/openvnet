@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
-require "sinatra_base"
+require "sinatra"
+require "sinatra/vnmgr_api_setup"
 
 module Vnmgr::Endpoints
   class VNetAPI < Sinatra::Base
+    include Vnmgr::Endpoints::Helpers
+    register Sinatra::VnmgrAPISetup
+
     def parse_params(params,mask)
       final_params = {}
 

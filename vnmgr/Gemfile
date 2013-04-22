@@ -2,3 +2,8 @@
 source "http://rubygems.org"
 
 gem "sinatra"
+gem "sinatra-contrib"
+gem "rack"
+gem "rack-cors"
+gem "unicorn"
+gem "json"
