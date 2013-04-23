@@ -13,4 +13,10 @@ module Vnmgr
     autoload :ServiceOpenflow, 'vnmgr/node_modules/service_openflow'
   end
 
+  module VNet
+    module Openflow
+      autoload :Controller, 'vnmgr/vnet/openflow/controller'
+    end
+  end
+
 end

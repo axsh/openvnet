@@ -1,14 +1,16 @@
 
 source "http://rubygems.org"
 
-gem "sinatra"
-gem "sinatra-contrib"
-gem "rack"
-gem "rack-cors"
-gem "unicorn"
-gem "json"
 gem "celluloid", "0.13.0"
 gem "celluloid-io", "0.13.1"
+gem "json"
+gem "rack"
+gem "rack-cors"
+gem "racket", ">= 1.0.12"
+gem "bit-struct", ">= 0.13.7"
+gem "sinatra"
+gem "sinatra-contrib"
+gem "unicorn"
 
 gem 'rant', '0.5.9'
 gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
