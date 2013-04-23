@@ -6,13 +6,13 @@ require 'rubygems'
 require 'dcell'
 require 'vnmgr'
 
-DCell.start :id => 'vnmgr', :addr => 'tcp://192.168.11.51:9000',
+
+DCell.start :id => 'vnmgr', :addr => 'tcp://192.168.11.54:9000',
   :registry => {
     :adapter => 'redis',
-    :host => '192.168.11.51',
+    :host => '192.168.11.54',
     :port => 6379
   }
 
 Vnmgr::NodeModules::DbAgent.supervise_as :db_agent
 sleep
-

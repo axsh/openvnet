@@ -13,7 +13,9 @@ module Vnmgr
 	end
 
   module Models
+    require 'yaml'
     autoload :Base,     'vnmgr/models/base'
     autoload :Network, 'vnmgr/models/network'
+    autoload :Taggable, 'vnmgr/models/base'
   end
 end
