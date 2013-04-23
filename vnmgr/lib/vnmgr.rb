@@ -3,7 +3,8 @@
 module Vnmgr
 
   module Endpoints
-    autoload :VNetAPI, 'dcmgr/endpoints/vnet_api'
+    autoload :VNetAPI, 'vnmgr/endpoints/vnet_api'
+    autoload :Helpers, 'vnmgr/endpoints/helpers'
   end
 
 end
