@@ -2,7 +2,11 @@
 source "http://rubygems.org"
 
 gem "sinatra"
-gem 'rake', '10.0.3'
+gem "sinatra-contrib"
+gem "rack"
+gem "rack-cors"
+gem "unicorn"
+gem "json"
 gem "celluloid", "0.13.0"
 gem "celluloid-io", "0.13.1"
 
