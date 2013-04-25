@@ -17,6 +17,12 @@ module Vnmgr
     require 'yaml'
     autoload :Base,     'vnmgr/models/base'
     autoload :Network, 'vnmgr/models/network'
+    autoload :Vif,      'vnmgr/models/vif'
     autoload :Taggable, 'vnmgr/models/base'
+  end
+
+  module Configurations
+    require 'fuguta'
+    autoload :Dba,  'vnmgr/configurations/dba'
   end
 end
