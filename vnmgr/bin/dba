@@ -6,13 +6,16 @@ require 'rubygems'
 require 'dcell'
 require 'vnmgr'
 
+path = ['/etc/wakame-vnet/dba.conf',File.expand_path('../deployment/conf_files/etc/wakame-vnet/dba.conf', Vnmgr::VNMGR_ROOT)].find { |i| File.exists?(i) }
 
-DCell.start :id => 'vnmgr', :addr => 'tcp://192.168.11.54:9000',
+conf = Vnmgr::Configurations::Dba.load(path).config
+
+DCell.start :id => conf[:cluster_name], :addr => "tcp://#{conf[:db_agent_ip]}:#{conf[:db_agent_port]}",
   :registry => {
     :adapter => 'redis',
-    :host => '192.168.11.54',
-    :port => 6379
+    :host => conf[:redis_host],
+    :port => conf[:redis_port]
   }
 
-Vnmgr::NodeModules::DbAgent.supervise_as :db_agent
+Vnmgr::NodeModules::DbAgent.supervise_as conf[:node_name]
 sleep
