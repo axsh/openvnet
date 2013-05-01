@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 Sequel.migration do
   up do
     create_table(:networks) do
