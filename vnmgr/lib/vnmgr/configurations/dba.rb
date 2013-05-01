@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 module Vnmgr
   module Configurations
     class Dba < Fuguta::Configuration
