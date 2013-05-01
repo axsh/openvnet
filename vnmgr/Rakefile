@@ -1,0 +1,30 @@
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift 'lib'
+
+require 'rubygems'
+
+namespace :db do
+	task :init => [] do
+		puts "rake db:init"
+		#TODO:
+		# Sequel configurations should be ported into a config file.
+		require 'sequel'
+		Sequel.connect('mysql://localhost/vnmgr?user=root')
+
+		puts "create tables"
+		Sequel.extension :migration
+		Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 9999)
+	end
+
+	task :drop => [] do
+		puts "rake db:drop"
+		#TODO:
+		# Sequel configurations should be ported into a config file.
+		require 'sequel'
+		Sequel.connect('mysql://localhost/vnmgr?user=root')
+
+		Sequel.extension :migration
+		Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../config/db/migrations', __FILE__), 0)
+	end
+end
