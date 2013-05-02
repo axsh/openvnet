@@ -28,5 +28,6 @@ module Vnmgr
   module Configurations
     require 'fuguta'
     autoload :Dba,  'vnmgr/configurations/dba'
+    autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
   end
 end
