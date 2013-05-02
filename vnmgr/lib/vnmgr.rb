@@ -4,6 +4,10 @@ module Vnmgr
 
   VNMGR_ROOT = ENV['VNMGR_ROOT'] || File.expand_path('../../', __FILE__)
 
+  module Initializers
+    autoload :DB, 'vnmgr/initializers/db'
+  end
+
   module Endpoints
     autoload :VNetAPI, 'vnmgr/endpoints/1.0/vnet_api'
     autoload :Helpers, 'vnmgr/endpoints/1.0/helpers'
