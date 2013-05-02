@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/datapaths' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
   post do
     dp_params = define_params(params,{
       :uuid => [String,nil],

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/dhcp' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/dhcp' do
   post do
     dhcp_params = define_params(params,{
       :uuid => [String,nil],

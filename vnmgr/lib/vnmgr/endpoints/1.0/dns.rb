@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/dns' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/dns' do
   post do
     dns_params = define_params(params,{
       :uuid => [String,nil]

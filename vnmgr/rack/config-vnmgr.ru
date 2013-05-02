@@ -24,5 +24,5 @@ map '/api' do
     end
   end
 
-  run Vnmgr::Endpoints::VNetAPI.new
+  run Vnmgr::Endpoints::V10::VNetAPI.new
 end

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/vifs' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/vifs' do
 
   post do
     vif_params = define_params(params,{

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/dc_networks' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/dc_networks' do
   post do
     dcnw_params = define_params(params,{
       :uuid => [String,nil],
