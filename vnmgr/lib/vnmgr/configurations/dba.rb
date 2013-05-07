@@ -9,6 +9,7 @@ module Vnmgr
       param :db_agent_port, :default => '9001'
       param :cluster_name, :default => 'vnmgr'
       param :node_name, :default => 'db_agent'
+      param :db_uri
     end
   end
 end
