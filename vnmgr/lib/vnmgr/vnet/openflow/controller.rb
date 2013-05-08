@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 require 'racket'
+require 'trema/actions'
+require 'trema/instructions'
+require 'trema/messages'
 
 module Vnmgr::VNet::Openflow
 
@@ -11,7 +14,7 @@ module Vnmgr::VNet::Openflow
 
     def initialize service_openflow
       @service_openflow = service_openflow
-      # @default_ofctl = OvsOfctl.new
+      @default_ofctl = OvsOfctl.new
 
       @switches = {}
     end
@@ -60,10 +63,30 @@ module Vnmgr::VNet::Openflow
       # switches[datapath_id] = OpenFlowSwitch.new(OpenFlowDatapath.new(self, datapath_id, ofctl), bridge_name)
       # switches[datapath_id].update_bridge_ipv4
       # switches[datapath_id].switch_ready
+
+      flows = []
+      # flows << Flow.new(0, 2, {:in_port => OFPP_LOCAL}, {:resubmit => 1})
+
+      flows << Flow.new(0, 2, {
+                          :ip => nil,
+                          :eth_src => Trema::Mac.new('08:00:27:5d:84:1c'),
+                          :eth_dst => Trema::Mac.new('08:00:27:5d:84:1b'),
+                        },{
+                          :output => 1
+                        },{
+                          :idle_timeout => 50,
+                          :hard_timeout => 100,
+                        })
+
+      flows.each { |flow| send_flow_mod_add(datapath_id, flow.to_trema_flow) }
+
+      send_message datapath_id, Trema::Messages::FeaturesRequest.new
     end
 
     def features_reply datapath_id, message
       p "features_reply from %#x." % datapath_id
+
+      p message.inspect
 
       # raise "No switch found." unless switches.has_key? datapath_id
       # switches[datapath_id].features_reply message

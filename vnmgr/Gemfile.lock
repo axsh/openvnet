@@ -1,6 +1,6 @@
 GIT
   remote: http://github.com/axsh/trema.git
-  revision: c338d1b6b628df7fa24e10f38ab4842b3db0da3d
+  revision: d49fd73e8660b9df4b4453da3886ad59dacc6cb3
   branch: wakame-edge
   specs:
     trema (0.1.0)
@@ -21,7 +21,7 @@ GEM
     gli (2.0.0)
     json (1.7.7)
     kgio (2.8.0)
-    nio4r (0.4.3)
+    nio4r (0.4.5)
     rack (1.5.2)
     rack-cors (0.2.7)
       rack
@@ -32,7 +32,7 @@ GEM
     racket (1.0.12)
       bit-struct
     raindrops (0.11.0)
-    rake (10.0.3)
+    rake (10.0.4)
     rant (0.5.9)
     sinatra (1.4.2)
       rack (~> 1.5, >= 1.5.2)
@@ -45,7 +45,7 @@ GEM
       rack-test
       sinatra (~> 1.4.2)
       tilt (~> 1.3)
-    tilt (1.3.7)
+    tilt (1.4.0)
     timers (1.1.0)
     unicorn (4.6.2)
       kgio (~> 2.6)

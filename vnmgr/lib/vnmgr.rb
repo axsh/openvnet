@@ -16,6 +16,8 @@ module Vnmgr
   module VNet
     module Openflow
       autoload :Controller, 'vnmgr/vnet/openflow/controller'
+      autoload :Flow, 'vnmgr/vnet/openflow/flow'
+      autoload :OvsOfctl, 'vnmgr/vnet/openflow/ovs_ofctl'
     end
   end
 
