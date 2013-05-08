@@ -1,13 +1,17 @@
 
 source "http://rubygems.org"
 
+gem "bit-struct", ">= 0.13.7"
 gem "celluloid", "0.13.0"
 gem "celluloid-io", "0.13.1"
+gem "dcell"
+gem "fuguta"
 gem "json"
+gem "mysql"
 gem "rack"
 gem "rack-cors"
 gem "racket", ">= 1.0.12"
-gem "bit-struct", ">= 0.13.7"
+gem "sequel"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "unicorn"
