@@ -10,6 +10,13 @@ module Vnmgr
     autoload :DB, 'vnmgr/initializers/db'
   end
 
+  module Constants
+    module StorageBackends
+      autoload :DBA, 'vnmgr/constants/storage_backends/dba'
+    end
+    autoload :VNetAPI, 'vnmgr/constants/vnet_api'
+  end
+
   module Endpoints
     autoload :ResponseGenerator, 'vnmgr/endpoints/response_generator'
     autoload :Errors, 'vnmgr/endpoints/errors'
@@ -39,6 +46,11 @@ module Vnmgr
   module ModelWrappers
     autoload :Base, 'vnmgr/model_wrappers/base'
     autoload :NetworkWrapper, 'vnmgr/model_wrappers/network_wrapper'
+  end
+
+  require 'vnmgr/storage_backend'
+  module StorageBackends
+    autoload :DBA, 'vnmgr/storage_backends/dba'
   end
 
   module Configurations

@@ -16,7 +16,8 @@ module Vnmgr::Endpoints::V10
     include Vnmgr::Endpoints::V10::Helpers
     register Sinatra::VnmgrAPISetup
 
-    SB = Vnmgr::StorageBackend.backend_class(VNetAPI.conf)
+    load_conf(Vnmgr::Constants::VNetAPI::CONF_LOCATION)
+    SB = Vnmgr::StorageBackends.backend_class(VNetAPI.conf)
     E = Vnmgr::Endpoints::Errors
     R = Vnmgr::Endpoints::V10::Responses
 
