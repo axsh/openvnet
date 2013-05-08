@@ -5,10 +5,18 @@ require "sinatra/vnmgr_api_setup"
 
 module Vnmgr::Endpoints::V10
   class VNetAPI < Sinatra::Base
+    class << self
+      attr_reader :conf
+
+      def load_conf(conf_path)
+        @conf = Vnmgr::Configurations::Vnmgr.load(conf_path)
+      end
+    end
+
     include Vnmgr::Endpoints::V10::Helpers
     register Sinatra::VnmgrAPISetup
 
-    # SB = Vnmgr::StorageBackend.backend_class
+    SB = Vnmgr::StorageBackend.backend_class(VNetAPI.conf)
     E = Vnmgr::Endpoints::Errors
     R = Vnmgr::Endpoints::V10::Responses
 
