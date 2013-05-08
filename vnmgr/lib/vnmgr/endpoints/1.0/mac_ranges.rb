@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/mac_ranges' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/mac_ranges' do
   post do
     mr_params = define_params(params,{
       :uuid => [String,nil],

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/openflow_controllers' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/openflow_controllers' do
   post do
     ofc_params = define_params(params,{
       :uuid => [String,nil],

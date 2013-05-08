@@ -3,9 +3,9 @@
 require "sinatra"
 require "sinatra/vnmgr_api_setup"
 
-module Vnmgr::Endpoints
+module Vnmgr::Endpoints::V10
   class VNetAPI < Sinatra::Base
-    include Vnmgr::Endpoints::Helpers
+    include Vnmgr::Endpoints::V10::Helpers
     register Sinatra::VnmgrAPISetup
 
     def parse_params(params,mask)

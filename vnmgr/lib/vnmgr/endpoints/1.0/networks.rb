@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/networks' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
   post do
-    new_nw_params = define_params(params,{
-      :ivp4_network => [Integer],
-      :prefix => [Integer],
-      :uuid => [String,nil],
-      :desciption => [String,nil]
-    })
 
     # Respond with this network
   end

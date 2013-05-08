@@ -9,8 +9,15 @@ module Vnmgr
   end
 
   module Endpoints
-    autoload :VNetAPI, 'vnmgr/endpoints/1.0/vnet_api'
-    autoload :Helpers, 'vnmgr/endpoints/1.0/helpers'
+    autoload :ResponseGenerator, 'vnmgr/endpoints/response_generator'
+    module V10
+      autoload :VNetAPI, 'vnmgr/endpoints/1.0/vnet_api'
+      autoload :Helpers, 'vnmgr/endpoints/1.0/helpers'
+
+      module Responses
+        autoload :Network, 'vnmgr/endpoints/1.0/network'
+      end
+    end
   end
 
 	module NodeModules
@@ -28,5 +35,6 @@ module Vnmgr
   module Configurations
     require 'fuguta'
     autoload :Dba,  'vnmgr/configurations/dba'
+    autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
   end
 end
