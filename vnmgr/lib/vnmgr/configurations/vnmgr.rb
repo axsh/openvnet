@@ -8,6 +8,5 @@ module Vnmgr::Configurations
     param :vnmgr_agent_ip, :default => '127.0.0.1'
     param :vnmgr_agent_port, :default => '9002'
     param :cluster_name, :default => 'webapi'
-    param :db_uri
   end
 end
