@@ -8,6 +8,10 @@ module Vnmgr::Endpoints::V10
     include Vnmgr::Endpoints::V10::Helpers
     register Sinatra::VnmgrAPISetup
 
+    # SB = Vnmgr::StorageBackend.backend_class
+    E = Vnmgr::Endpoints::Errors
+    R = Vnmgr::Endpoints::V10::Responses
+
     def parse_params(params,mask)
       final_params = {}
 

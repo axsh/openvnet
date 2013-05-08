@@ -2,12 +2,15 @@
 
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
   post do
-
     # Respond with this network
   end
 
   get do
-    # Respond with all networks
+    # networks = SB.network.all
+    dba_node = DCell::Node["vnmgr"]
+    networks = dba_node[:db_agent].get_all(:Network)
+
+    respond_with(R::NetworkCollection.generate(networks))
   end
 
   get '/:uuid' do
