@@ -151,8 +151,7 @@ module Vnmgr::VNet::Openflow
       p "ports: %s" % message.ports.collect { |each| each.port_no }.sort.join( ", " )
 
       message.ports.each { |port_msg|
-        port = Port.new(datapath, port_msg)
-        port.is_active = true
+        port = Port.new(datapath, port_msg, true)
         ports[port_msg.port_no] = port
 
         # datapath.controller.insert_port(self, port)

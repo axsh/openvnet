@@ -11,21 +11,21 @@ module Vnmgr::VNet::Openflow
     # attr_reader :lock
     # attr_reader :port_type
 
-    # attr_accessor :has_instance
-    attr_accessor :is_active
-    # attr_accessor :is_inserted
-    # attr_accessor :ip
-    # attr_accessor :mac
-    # attr_accessor :networks
+    # attr_reader :has_instance
+    attr_reader :is_active
+    # attr_reader :is_inserted
+    # attr_reader :ip
+    # attr_reader :mac
+    # attr_reader :networks
 
-    def initialize dp, port_info
+    def initialize dp, port_info, active
       @datapath = dp
       @port_info = port_info
       # @lock = Mutex.new
       # @port_type = PORT_TYPE_NONE
 
       # @has_instance = false
-      @is_active = false
+      @is_active = active
       # @is_inserted = false
       # @networks = []
     end
@@ -35,7 +35,7 @@ module Vnmgr::VNet::Openflow
       str << "@port_info=#{@port_info.inspect}, "
       str << "@port_type=#{@port_type.inspect}, "
       # str << "@has_instance=#{@has_instance.inspect}, "
-      str << "@is_active=#{@is_active.inspect}, "
+      # str << "@is_active=#{@is_active.inspect}, "
       # str << "@is_inserted=#{@is_inserted.inspect}>"
       str
     end

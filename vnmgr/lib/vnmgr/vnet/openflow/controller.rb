@@ -56,7 +56,6 @@ module Vnmgr::VNet::Openflow
       switch.switch_ready
 
       flows = []
-      # flows << Flow.new(0, 2, {:in_port => OFPP_LOCAL}, {:resubmit => 1})
       flows << Flow.new(0, 3, {
                           :ip => nil,
                           :eth_src => Trema::Mac.new('08:00:27:5d:84:1c'),

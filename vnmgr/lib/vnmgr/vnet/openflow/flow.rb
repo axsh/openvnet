@@ -9,7 +9,7 @@ module Vnmgr::VNet::Openflow
     attr_accessor :actions
     attr_accessor :options
 
-    def initialize table, priority, match, actions, options = nil
+    def initialize table, priority, match, actions, options = {}
       super()
       self.table = table
       self.priority = priority
@@ -120,8 +120,11 @@ module Vnmgr::VNet::Openflow
           value[0].each { |arg|
             # str << actions_block_to_s(value[1], arg)
           }
-        #elsif action_tags_trema_instruction(key)
+        elsif action_tags_trema_instruction[key]
           # Make a new instruction, not append to action instruction.
+          trema_instructions << Trema::Instructions::ApplyAction.new(:actions => trema_actions) if trema_actions
+          trema_instructions << action_tags_trema_instruction[key].new(:table_id => value)
+          trema_actions = nil
         else
           tag = action_tags_trema[key]
           raise "No action tag: key:#{key.inspect}" if tag.nil?
@@ -199,32 +202,29 @@ module Vnmgr::VNet::Openflow
       {
         :ip => :ip,
         :ipv4 => :ip,
-        # :ipv6 => 'ipv6',
-        # :arp => 'arp',
-        # :icmp => 'icmp',
-        # :icmp_type => 'icmp_type=%i',
-        # :icmp_code => 'icmp_code=%i',
-        # :tcp => 'tcp',
-        # :udp => 'udp',
-        # :dl_dst => 'dl_dst=%s',
-        # :dl_src => 'dl_src=%s',
-        # :dl_type => 'dl_type=0x%x',
+        # :ipv6 => :ipv6,
+        :arp => :arp,
+        :icmp => :icmp,
+        :icmp_type => :icmp_type,
+        :icmp_code => :icmp_code,
+        :tcp => :tcp,
+        :udp => :udp,
+        :dl_dst => :dl_dst,
+        :dl_src => :dl_src,
+        :dl_type => :dl_type,
         :eth_dst => :eth_dst,
         :eth_src => :eth_src,
         :eth_type => :eth_type,
-        # :nw_dst => 'nw_dst=%s',
-        # :nw_src => 'nw_src=%s',
-        # :nw_proto => 'nw_proto=%i',
-        # :tp_dst => 'tp_dst=%s',
-        # :tp_src => 'tp_src=%s',
-        # :arp_sha => 'arp_sha=%s',
-        # :arp_tha => 'arp_tha=%s',
-        # :in_port => 'in_port=%i',
-        # :reg1 => 'reg1=%i',
-        # :reg2 => 'reg2=%i',
-
-        # Not really match tags, separate.
-        # :idle_timeout => 'idle_timeout=%i',
+        :nw_dst => :nw_dst,
+        :nw_src => :nw_src,
+        :nw_proto => :nw_proto,
+        :tp_dst => :tp_dst,
+        :tp_src => :tp_src,
+        :arp_sha => :arp_sha,
+        :arp_tha => :arp_tha,
+        :in_port => :in_port,
+        # :reg1 => :reg1=%i',
+        # :reg2 => :reg2=%i',
       }
     end
 
@@ -251,6 +251,13 @@ module Vnmgr::VNet::Openflow
         # :resubmit => 'resubmit(,%i)',
       }
     end
+
+    def action_tags_trema_instruction
+      {
+        :resubmit => Trema::Instructions::GotoTable,
+      }
+    end
+
   end
 
 end
