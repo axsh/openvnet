@@ -19,7 +19,7 @@ module Vnmgr::StorageBackends
       if result.is_a?(Array)
         result.map{|r| Vnmgr::ModelWrappers.const_get(r["wrapper_class"]).new(r) }
       else
-        Vnmgr::ModelWrappers.const_get(r["wrapper_class"]).new(result)
+        Vnmgr::ModelWrappers.const_get(result["wrapper_class"]).new(result)
       end
     end
   end
