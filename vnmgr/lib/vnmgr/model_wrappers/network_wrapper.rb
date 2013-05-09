@@ -1,19 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class NetworkWrapper
+  class NetworkWrapper < Base
     backend_namespace = "network"
-
-    attr_accessor :uuid
-    attr_accessor :display_name
-    attr_accessor :ipv4_network
-    attr_accessor :ipv4_prefix
-    attr_accessor :domain_name
-    attr_accessor :dc_network_uuid
-    attr_accessor :network_mode
-    attr_accessor :editable
-    attr_accessor :created_at
-    attr_accessor :updated_at
 
     def to_hash
       {

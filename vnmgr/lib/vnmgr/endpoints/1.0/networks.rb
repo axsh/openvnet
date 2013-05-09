@@ -6,10 +6,7 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
   end
 
   get do
-    # networks = SB.network.all
-    dba_node = DCell::Node["vnmgr"]
-    networks = dba_node[:db_agent].get_all(:Network)
-
+    networks = SB.get_all(:Network)
     respond_with(R::NetworkCollection.generate(networks))
   end
 
