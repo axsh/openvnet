@@ -26,13 +26,16 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
   end
 
   get '/:uuid' do
-    # Respond with a single network
+    #TODO: Make sure that this uuid is a network and not something else
+    nw = SB.get(@params["uuid"])
+    respond_with(R::Network.generate(nw))
   end
 
   delete '/:uuid' do
-    # Delete a single network
-
-    # Respond with network id
+    #TODO: Make sure that this uuid is a network and not something else
+    #TODO: Make sure that this uuid exists
+    SB.delete(@params["uuid"])
+    respond_with(@params["uuid"])
   end
 
   put '/:uuid' do

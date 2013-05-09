@@ -16,8 +16,11 @@ module Vnmgr::StorageBackends
 
     def method_missing(method_name,*args)
       result = JSON.parse(DCell::Node["vnmgr"][:db_agent].send(method_name,*args))
-      if result.is_a?(Array)
+      case result
+      when Array
         result.map{|r| Vnmgr::ModelWrappers.const_get(r["wrapper_class"]).new(r) }
+      when nil
+        nil
       else
         Vnmgr::ModelWrappers.const_get(result["wrapper_class"]).new(result)
       end
