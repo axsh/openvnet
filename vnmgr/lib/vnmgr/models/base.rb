@@ -586,6 +586,7 @@ module Vnmgr::Models
       super
       klass.set_dataset(db[klass.implicit_table_name])
 
+      klass.plugin :json_serializer
       klass.plugin InheritableSchema
       klass.plugin :timestamps, :update_on_create=>true
       klass.class_eval {
