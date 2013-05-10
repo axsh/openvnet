@@ -39,6 +39,7 @@ module Vnmgr
       autoload :Flow, 'vnmgr/vnet/openflow/flow'
       autoload :OvsOfctl, 'vnmgr/vnet/openflow/ovs_ofctl'
       autoload :Port, 'vnmgr/vnet/openflow/port'
+      autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
       autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
     end

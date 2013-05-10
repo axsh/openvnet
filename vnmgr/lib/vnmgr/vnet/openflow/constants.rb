@@ -49,6 +49,12 @@ module Vnmgr::VNet::Openflow
 
     TABLE_MAC_ROUTE = 14
 
+    # Output to port based on the metadata field. OpenFlow 1.3 does
+    # not seem to have any action allowing us to output to a port
+    # using the metadata field directly, so a separate table is
+    # required.
+    TABLE_METADATA_ROUTE = 15
+
     # Used by OpenFlowPort to indicate the type of port.
     PORT_TYPE_NONE = 0
     PORT_TYPE_ETH = 1

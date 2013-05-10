@@ -4,33 +4,32 @@ module Vnmgr::VNet::Openflow
 
   module Flow
 
-    def self.create(table, priority, match, actions, options = {})
+    def self.create(table_id, priority, match, actions, options = {})
       trema_hash = {
-        :match => self.convert_match(table, priority, match),
+        :table_id => table_id,
+        :priority => priority,
+        :match => Trema::Match.new(match),
         :instructions => self.convert_instructions(actions, options),
       }
       trema_hash[:hard_timeout] = options[:hard_timeout] if options[:hard_timeout]
       trema_hash[:idle_timeout] = options[:idle_timeout] if options[:idle_timeout]
+      trema_hash[:cookie] = options[:cookie] if options[:cookie]
+      trema_hash[:cookie_mask] = options[:cookie_mask] if options[:cookie_mask]
       trema_hash
     end
 
     private
 
-    def self.convert_match(table, priority, match)
-      match.merge!({ :table => table,
-                     :priority => priority,
-                   })
-
-      Trema::Match.new(match)
-    end
-
     def self.convert_instructions(actions, options)
       instructions = []
+      instructions << Trema::Instructions::ApplyAction.new(:actions => self.convert_actions(actions)) if actions
 
-      if actions
-        instructions << Trema::Instructions::ApplyAction.new(:actions => self.convert_actions(actions))
+      if options[:metadata]
+        instructions << Trema::Instructions::WriteMetadata.new(:metadata => options[:metadata],
+                                                               :metadata_mask => options[:metadata_mask])
       end
 
+      instructions << Trema::Instructions::GotoTable.new(:table_id => options[:goto_table]) if options[:goto_table]
       instructions
     end
 
