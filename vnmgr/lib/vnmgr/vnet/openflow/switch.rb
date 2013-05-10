@@ -77,28 +77,6 @@ module Vnmgr::VNet::Openflow
       #   end
       # end
 
-      # message.ports.each do |each|
-      #   if each.name =~ /^eth/
-      #     @eth_port = each.number
-
-      #     port = OpenFlowPort.new(datapath, each)
-      #     port.is_active = true
-      #     ports[each.number] = port
-
-      #     datapath.controller.insert_port self, port
-      #   end
-      # end
-
-      # message.ports.each do |each|
-      #   next if each.name =~ /^eth/
-
-      #   port = OpenFlowPort.new(datapath, each)
-      #   port.is_active = true
-      #   ports[each.number] = port
-
-      #   datapath.controller.insert_port self, port
-      # end
-
       # Build the routing flow table and some other flows using
       # ovs-ofctl due to the lack of multiple tables support, which
       # was introduced in of-spec 1.1.
@@ -108,18 +86,6 @@ module Vnmgr::VNet::Openflow
       #
       flows = []
 
-      # flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, {:cookie => 0x9123456789abcdef, :cookie_mask => 0xFFFFFFFFFFFFFFFF})
-      # flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, {:cookie => 0x9123456789abcdef, :cookie_mask => 0xFFFFFFFFFFFFFFFF})
-      #flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, {:cookie => 0x9123456789abcdef, :cookie_mask => 0x0})
-
-      # flows << Flow.create(0, 0, {}, {}, {:cookie => 0x9123456789abcdef})
-      # flows << Flow.create(1, 1, {}, {}, {:cookie => 0x9123456789abcdef, :cookie_mask => 0xFFFFFFFFFFFFFFFF})
-      # flows << Flow.create(2, 3, {}, {}, {:cookie => 0x912345})
-      # flows << Flow.create(3, 2, {}, {}, {:cookie => 0x912345, :cookie_mask => 0xFFFFFF})
-      # flows << Flow.create(4, 2, {}, {}, {:cookie => 0x212345})
-      # flows << Flow.create(5, 2, {}, {}, {:cookie => 0x212346})
-      # flows << Flow.create(6, 2, {}, {}, {:cookie => 0x212347})
-
       # DHCP queries from instances and network should always go to
       # local host, while queries from local host should go to the
       # network.
@@ -128,35 +94,14 @@ module Vnmgr::VNet::Openflow
       # flows << Flow.create(TABLE_CLASSIFIER, 3, {:tcp => nil}, {:resubmit => TABLE_LOAD_DST})
       # flows << Flow.create(TABLE_CLASSIFIER, 3, {:udp => nil}, {:resubmit => TABLE_LOAD_DST})
 
-      # flows << Flow.create(TABLE_CLASSIFIER, 2, {:in_port => Controller::OFPP_LOCAL}, {:resubmit => TABLE_ROUTE_DIRECTLY})
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {:metadata => OFPP_FLOOD, :metadata_mask => 0xffffffff}, [{:output => OFPP_LOCAL}, {:output => 1}], {:cookie => OFPP_FLOOD | 0x100000000})
 
-      #
-      # MAC address routing
-      #
-
-      # flows << Flow.create(TABLE_MAC_ROUTE, 1, {:dl_dst => local_hw.to_s}, {:local => nil})
-      # flows << Flow.create(TABLE_ROUTE_DIRECTLY, 1, {:dl_dst => local_hw.to_s}, {:local => nil})
-      # flows << Flow.create(TABLE_LOAD_DST, 1, {:dl_dst => local_hw.to_s}, [{:load_reg0 => Controller::OFPP_LOCAL}, {:resubmit => TABLE_LOAD_SRC}])
-
-      # Some flows depend on only local being able to send packets
-      # with the local mac and ip address, so drop those.
-      # flows << Flow.create(TABLE_LOAD_SRC, 6, {:in_port => Controller::OFPP_LOCAL}, {:output_reg0 => nil})
-      # flows << Flow.create(TABLE_LOAD_SRC, 5, {:dl_src => local_hw.to_s}, {:drop => nil})
-      # flows << Flow.create(TABLE_LOAD_SRC, 5, {:ip => nil, :nw_src => self.bridge_ipv4}, {:drop =>nil}) if self.bridge_ipv4
-
-      #
-      # ARP routing table
-      #
-
-      # ARP anti-spoofing flows.
-      # flows << Flow.create(TABLE_ARP_ANTISPOOF, 1, {:arp => nil, :in_port => Controller::OFPP_LOCAL}, {:resubmit => TABLE_ARP_ROUTE})
-
-      # Replace drop actions with table default action.
-      # flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {:arp => nil}, {:drop => nil})
-
-      # TODO: How will this handle packets from host or eth0 that
-      # spoof the mac of an instance?
-      # flows << Flow.create(TABLE_ARP_ROUTE, 1, {:arp => nil, :dl_dst => local_hw.to_s}, {:local => nil})
+      # flows << Flow.create(TABLE_LOAD_DST, 1, {:eth_dst => 'ff:ff:ff:ff:ff:ff'}, {}, flow_options_load_port(TABLE_LOAD_SRC))
+      flows << Flow.create(TABLE_LOAD_DST, 1, {:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')}, {},
+                           {:cookie => OFPP_FLOOD | 0x100000000,
+                             :metadata => OFPP_FLOOD,
+                             :metadata_mask => 0xffffffff,
+                             :goto_table => TABLE_LOAD_SRC})
 
       self.datapath.add_flows(flows)
     end
@@ -169,8 +114,8 @@ module Vnmgr::VNet::Openflow
       port = Port.new(datapath, port_desc, true)
       ports[port_desc.port_no] = port
 
-      if port.port_info.port_no >= OFPP_MAX
-        # Do nothing...
+      if port.port_info.port_no >= OFPP_LOCAL
+        port.extend(PortLocal)
       elsif port.port_info.name =~ /^eth/
         port.extend(PortHost)
       elsif port.port_info.name =~ /^vif-/

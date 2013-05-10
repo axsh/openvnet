@@ -21,33 +21,16 @@ module Vnmgr::VNet::Openflow
       str = "<"
       str << "@port_info=#{@port_info.inspect}, "
       str << "@port_type=#{@port_type.inspect}, "
-      str << "@is_active=#{@is_active.inspect}, "
+      str << "@is_active=#{@is_active.inspect}>"
       str
+    end
+
+    def flow_options_load_port(goto_table)
+      flow_options.merge({:metadata => port_info.port_no, :metadata_mask => 0xffffffff, :goto_table => goto_table})
     end
 
     def install
       p "port: No install action implemented for this port."
-
-      # queue_flow Flow.new(TABLE_CLASSIFIER, 6, {:udp => nil, :in_port => OpenFlowController::OFPP_LOCAL,
-      #                       :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_src => '0.0.0.0', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst => 67},
-      #                     {:output => port_info.number})
-      # queue_flow Flow.new(TABLE_CLASSIFIER, 5, {:udp => nil, :in_port => port_info.number,
-      #                       :dl_dst => 'ff:ff:ff:ff:ff:ff', :nw_src => '0.0.0.0', :nw_dst => '255.255.255.255', :tp_src => 68, :tp_dst =>67},
-      #                     {:local => nil})
-    end
-
-    def init_eth
-    #   @port_type = PORT_TYPE_ETH
-    #   queue_flow Flow.new(TABLE_CLASSIFIER,     2, {:in_port => port_info.number},  {:resubmit => TABLE_ROUTE_DIRECTLY})
-    #   queue_flow Flow.new(TABLE_MAC_ROUTE,      0, {}, {:output => port_info.number})
-    #   queue_flow Flow.new(TABLE_ROUTE_DIRECTLY, 0, {}, {:output => port_info.number})
-    #   queue_flow Flow.new(TABLE_LOAD_DST,       0, {}, [{:load_reg0 => port_info.number}, {:resubmit => TABLE_LOAD_SRC}])
-    #   queue_flow Flow.new(TABLE_LOAD_SRC,       4, {:in_port => port_info.number}, {:output_reg0 => nil})
-    #   queue_flow Flow.new(TABLE_ARP_ANTISPOOF,  1, {:arp => nil, :in_port => port_info.number}, {:resubmit => TABLE_ARP_ROUTE})
-    #   queue_flow Flow.new(TABLE_ARP_ROUTE,      0, {:arp => nil}, {:output => port_info.number})
-
-    #   queue_flow Flow.new(TABLE_METADATA_INCOMING, 2, {:in_port => OpenFlowController::OFPP_LOCAL}, {:output => port_info.number})
-    #   queue_flow Flow.new(TABLE_METADATA_OUTGOING, 4, {:in_port => port_info.number}, {:local => nil})
     end
 
     # def init_gre_tunnel(network)
