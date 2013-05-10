@@ -21,21 +21,23 @@ module Vnmgr::VNet::Openflow
 
     def add_flow(flow)
       if Thread.current == self.controller.trema_thread
-        self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow)
+        self.controller.send_flow_mod_add(self.datapath_id, flow)
       else
-        self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow) }
+        self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow) }
       end
     end
 
     def add_flows(flows)
+      p "add_flows: #{flows.inspect}"
+
       if Thread.current == self.controller.trema_thread
         flows.each { |flow|
-          self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow)
+          self.controller.send_flow_mod_add(self.datapath_id, flow)
         }
       else
         self.controller.pass_task {
           flows.each { |flow|
-            self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow)
+            self.controller.send_flow_mod_add(self.datapath_id, flow)
           }
         }
       end

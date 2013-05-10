@@ -2,7 +2,7 @@
 
 module Vnmgr::VNet::Openflow
 
-  module OpenFlowConstants
+  module Constants
     # Default table used by all incoming packets.
     TABLE_CLASSIFIER = 0
 

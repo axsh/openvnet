@@ -33,12 +33,14 @@ module Vnmgr
 
   module VNet
     module Openflow
+      autoload :Constants, 'vnmgr/vnet/openflow/constants'
       autoload :Controller, 'vnmgr/vnet/openflow/controller'
       autoload :Datapath, 'vnmgr/vnet/openflow/datapath'
       autoload :Flow, 'vnmgr/vnet/openflow/flow'
       autoload :OvsOfctl, 'vnmgr/vnet/openflow/ovs_ofctl'
       autoload :Port, 'vnmgr/vnet/openflow/port'
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
+      autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
     end
   end
 

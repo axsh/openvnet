@@ -1,6 +1,6 @@
 GIT
   remote: http://github.com/axsh/trema.git
-  revision: ee8bfe35df605ac8c8251ec04237bb8cfdcb447b
+  revision: 3fb412080e5a98764da45a4ac780761974ec5f55
   branch: wakame-edge
   specs:
     trema (0.1.0)
@@ -38,7 +38,7 @@ GEM
       certified
       http_parser.rb
     http_parser.rb (0.5.3)
-    json (1.7.7)
+    json (1.8.0)
     kgio (2.8.0)
     mysql (2.9.1)
     nio4r (0.4.5)

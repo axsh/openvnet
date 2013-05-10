@@ -5,7 +5,7 @@ require 'celluloid'
 module Vnmgr::VNet::Openflow
 
   class Switch
-    # include OpenFlowConstants
+    include Constants
     include Celluloid
 
     attr_reader :datapath
@@ -108,6 +108,8 @@ module Vnmgr::VNet::Openflow
       #
       flows = []
 
+      # flows << Flow.new(TABLE_CLASSIFIER, 0, {}, {:drop => nil})
+
       # DHCP queries from instances and network should always go to
       # local host, while queries from local host should go to the
       # network.
@@ -146,21 +148,18 @@ module Vnmgr::VNet::Openflow
       # spoof the mac of an instance?
       # flows << Flow.new(TABLE_ARP_ROUTE, 1, {:arp => nil, :dl_dst => local_hw.to_s}, {:local => nil})
 
-      # datapath.add_flows flows
+      self.datapath.add_flows(flows)
     end
 
-    def port_desc_multipart_reply message
-      message.parts.each { |port_descs| 
-        p "port_desc_multipart_reply from %#x." % self.datapath.datapath_id
-        p "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
+    def handle_port_desc port_desc
+      # Add lock thing...
+      p "begin #{port_desc.port_no}"
+      p "#{port_desc.inspect}"
 
-        port_descs.ports.each { |port_msg|
-          port = Port.new(datapath, port_msg, true)
-          ports[port_msg.port_no] = port
+      port = Port.new(datapath, port_desc, true)
+      ports[port_desc.port_no] = port
 
-          # datapath.controller.insert_port(self, port)
-        }
-      }
+      p "end #{port_desc.port_no}"
     end
 
     def port_status message
