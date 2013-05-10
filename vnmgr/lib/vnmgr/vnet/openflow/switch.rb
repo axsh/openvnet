@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+require 'celluloid'
+
 module Vnmgr::VNet::Openflow
 
   class Switch
     # include OpenFlowConstants
+    include Celluloid
 
     attr_reader :datapath
     attr_reader :ports
@@ -147,14 +150,16 @@ module Vnmgr::VNet::Openflow
     end
 
     def port_desc_multipart_reply message
-      p "port_desc_multipart_reply from %#x." % self.datapath.datapath_id
-      p "ports: %s" % message.ports.collect { |each| each.port_no }.sort.join( ", " )
+      message.parts.each { |port_descs| 
+        p "port_desc_multipart_reply from %#x." % self.datapath.datapath_id
+        p "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
-      message.ports.each { |port_msg|
-        port = Port.new(datapath, port_msg, true)
-        ports[port_msg.port_no] = port
+        port_descs.ports.each { |port_msg|
+          port = Port.new(datapath, port_msg, true)
+          ports[port_msg.port_no] = port
 
-        # datapath.controller.insert_port(self, port)
+          # datapath.controller.insert_port(self, port)
+        }
       }
     end
 

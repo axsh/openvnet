@@ -20,15 +20,33 @@ module Vnmgr::VNet::Openflow
     end
 
     def add_flow(flow)
-      self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow)
+      if Thread.current == self.controller.trema_thread
+        self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow)
+      else
+        self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow) }
+      end
     end
 
     def add_flows(flows)
-      flows.each { |flow| self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow) }
+      if Thread.current == self.controller.trema_thread
+        flows.each { |flow|
+          self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow)
+        }
+      else
+        self.controller.pass_task {
+          flows.each { |flow|
+            self.controller.send_flow_mod_add(self.datapath_id, flow.to_trema_flow)
+          }
+        }
+      end
     end
 
     def send_message(message)
-      self.controller.public_send_message(self.datapath_id, message)
+      if Thread.current == self.controller.trema_thread
+        self.controller.public_send_message(self.datapath_id, message)
+      else
+        self.controller.pass_task { self.controller.public_send_message(self.datapath_id, message) }
+      end
     end
 
   end

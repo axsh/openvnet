@@ -11,12 +11,18 @@ module Vnmgr::VNet::Openflow
     # include OpenFlowConstants
 
     attr_reader :switches
+    attr_accessor :trema_tasks
+    attr_accessor :trema_thread
 
     def initialize service_openflow
       @service_openflow = service_openflow
       @default_ofctl = OvsOfctl.new
 
       @switches = {}
+    end
+
+    def pass_task(&blk)
+      @trema_tasks.pass_task(&blk)
     end
 
     def find_network_id(network_id)
@@ -53,7 +59,7 @@ module Vnmgr::VNet::Openflow
       # ability to keep flows between sessions.
       switch = switches[datapath_id] = Switch.new(Datapath.new(self, datapath_id))
       # switch.update_bridge_ipv4
-      switch.switch_ready
+      switch.async.switch_ready
 
       flows = []
       flows << Flow.new(0, 3, {
@@ -76,7 +82,7 @@ module Vnmgr::VNet::Openflow
       p message.inspect
 
       raise "No switch found." unless switches[datapath_id]
-      switches[datapath_id].features_reply(message)
+      switches[datapath_id].async.features_reply(message)
     end
 
     def port_desc_multipart_reply datapath_id, message
@@ -85,21 +91,21 @@ module Vnmgr::VNet::Openflow
       p message.inspect
 
       raise "No switch found." unless switches[datapath_id]
-      message.parts.each { |port_descs| switches[datapath_id].port_desc_multipart_reply(port_descs) }
+      switches[datapath_id].async.port_desc_multipart_reply(message)
     end
 
     def port_status datapath_id, message
       p "port_status from %#x." % datapath_id
 
       raise "No switch found." unless switches[datapath_id]
-      switches[datapath_id].port_status(message)
+      switches[datapath_id].async.port_status(message)
     end
 
     def packet_in datapath_id, message
       p "packet_in from %#x." % datapath_id
 
       raise "No switch found." unless switches[datapath_id]
-      switches[datapath_id].packet_in(message)
+      switches[datapath_id].async.packet_in(message)
     end
 
     def vendor datapath_id, message
@@ -109,6 +115,7 @@ module Vnmgr::VNet::Openflow
     end
 
     def public_send_message datapath_id, message
+      raise "public_send_message must be called from the trema thread" unless Thread.current == @trema_thread
       send_message(datapath_id, message)
     end
 

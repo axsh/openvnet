@@ -19,7 +19,7 @@ service_openflow.start
 (1..10).each {
   p "Main thread loop"
 
-  service_openflow.pass_task {
+  service_openflow.controller.pass_task {
     p "Ping to trema thread."
   }
 
