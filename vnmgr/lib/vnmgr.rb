@@ -114,6 +114,7 @@ module Vnmgr
     require 'fuguta'
     autoload :Dba,  'vnmgr/configurations/dba'
     autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
+  end
 
   module VNet
     module Openflow
