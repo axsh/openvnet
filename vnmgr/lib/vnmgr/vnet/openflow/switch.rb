@@ -10,50 +10,20 @@ module Vnmgr::VNet::Openflow
 
     attr_reader :datapath
     attr_reader :ports
-    attr_reader :networks
-    # attr_reader :switch_name
-    # attr_reader :local_hw
-    # attr_reader :eth_port
-    # attr_reader :bridge_ipv4
-
-    # attr_accessor :packet_handlers
+    attr_reader :network_manager
 
     def initialize dp, name = nil
       @datapath = dp
       @ports = {}
-      @networks = {}
-      # @switch_name = name
-      # @eth_port = nil
-
-      # @packet_handlers = []
+      @network_manager = NetworkManager.new(dp)
     end
-
-    # def update_bridge_ipv4
-    #   @bridge_ipv4 = nil
-
-    #   ip = case `/bin/uname -s`.rstrip
-    #        when 'Linux'
-    #          `/sbin/ip addr show #{self.switch_name} | awk '$1 == "inet" { print $2 }'`.split('/')[0]
-    #        when 'SunOS'
-    #          `/sbin/ifconfig #{self.switch_name} | awk '$1 == "inet" { print $2 }'`
-    #        else
-    #          raise "Unsupported platform to detect bridge IP address: #{`/bin/uname`}"
-    #        end
-    #   logger.info "Failed to run command to get inet address of bridge '#{self.switch_name}'." if $?.exitstatus != 0
-    #   return if ip.nil?
-
-    #   ip = ip.rstrip
-    #   @bridge_ipv4 = ip unless ip.empty?
-    # end
 
     #
     # Event handlers:
     #
 
     def switch_ready
-      # p "switch_ready: datapath_id:%#x ipv4:#{self.bridge_ipv4}." % datapath.datapath_id
       p "switch_ready: datapath_id:%#x." % datapath.datapath_id
-      # p "switch_ready: error:'bridge_ipv4 not set'" unless self.bridge_ipv4
 
       # There's a short period of time between the switch being
       # activated and features_reply installing flow.
@@ -68,46 +38,9 @@ module Vnmgr::VNet::Openflow
       p "n_tables: %u" % message.n_tables
       p "capabilities: %u" % message.capabilities
 
-      # message.ports.each do |each|
-      #   if each.number == OpenFlowController::OFPP_LOCAL
-      #     # 'local_hw' needs to be set before any networks or
-      #     # ports are initialized.
-      #     @local_hw = each.hw_addr
-      #     p "OFPP_LOCAL: hw_addr:#{local_hw.to_s}"
-      #   end
-      # end
-
-      # Build the routing flow table and some other flows using
-      # ovs-ofctl due to the lack of multiple tables support, which
-      # was introduced in of-spec 1.1.
-
-      #
-      # Classification
-      #
-      flows = []
-
-      # DHCP queries from instances and network should always go to
-      # local host, while queries from local host should go to the
-      # network.
-      # flows << Flow.create(TABLE_CLASSIFIER, 3, {:arp => nil}, {:resubmit => TABLE_ARP_ANTISPOOF})
-      # flows << Flow.create(TABLE_CLASSIFIER, 3, {:icmp => nil}, {:resubmit => TABLE_LOAD_DST})
-      # flows << Flow.create(TABLE_CLASSIFIER, 3, {:tcp => nil}, {:resubmit => TABLE_LOAD_DST})
-      # flows << Flow.create(TABLE_CLASSIFIER, 3, {:udp => nil}, {:resubmit => TABLE_LOAD_DST})
-
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {:metadata => OFPP_FLOOD, :metadata_mask => 0xffffffff}, [{:output => OFPP_LOCAL}, {:output => 1}], {:cookie => OFPP_FLOOD | 0x100000000})
-
-      # flows << Flow.create(TABLE_LOAD_DST, 1, {:eth_dst => 'ff:ff:ff:ff:ff:ff'}, {}, flow_options_load_port(TABLE_LOAD_SRC))
-      flows << Flow.create(TABLE_LOAD_DST, 1, {:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')}, {},
-                           {:cookie => OFPP_FLOOD | 0x100000000,
-                             :metadata => OFPP_FLOOD,
-                             :metadata_mask => 0xffffffff,
-                             :goto_table => TABLE_LOAD_SRC})
-
-      self.datapath.add_flows(flows)
     end
 
     def handle_port_desc port_desc
-      # Add lock thing...
       p "begin #{port_desc.port_no}"
       p "#{port_desc.inspect}"
 
@@ -116,8 +49,10 @@ module Vnmgr::VNet::Openflow
 
       if port.port_info.port_no >= OFPP_LOCAL
         port.extend(PortLocal)
+        self.network_manager.network_by_uuid('nw-public').add_port(port)
       elsif port.port_info.name =~ /^eth/
         port.extend(PortHost)
+        self.network_manager.network_by_uuid('nw-public').add_port(port)
       elsif port.port_info.name =~ /^vif-/
       elsif port.port_info.name =~ /^t-/
       else

@@ -28,12 +28,7 @@ module Vnmgr::VNet::Openflow
       #
       # ARP routing table
       #
-
-      # ARP anti-spoofing flows.
       flows << Flow.create(TABLE_ARP_ANTISPOOF, 1, {:in_port => OFPP_LOCAL, :eth_type => 0x0806}, {}, flow_options.merge(:goto_table => TABLE_ARP_ROUTE))
-
-      # TODO: How will this handle packets from host or eth0 that
-      # spoof the mac of an instance?
       flows << Flow.create(TABLE_ARP_ROUTE, 1, {:eth_type => 0x0806, :arp_tpa => IPAddr.new('192.168.60.101')}, {:output => OFPP_LOCAL}, flow_options)
 
       self.datapath.add_flows(flows)

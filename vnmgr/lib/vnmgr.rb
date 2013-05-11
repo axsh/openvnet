@@ -37,6 +37,8 @@ module Vnmgr
       autoload :Controller, 'vnmgr/vnet/openflow/controller'
       autoload :Datapath, 'vnmgr/vnet/openflow/datapath'
       autoload :Flow, 'vnmgr/vnet/openflow/flow'
+      autoload :Network, 'vnmgr/vnet/openflow/network'
+      autoload :NetworkManager, 'vnmgr/vnet/openflow/network_manager'
       autoload :OvsOfctl, 'vnmgr/vnet/openflow/ovs_ofctl'
       autoload :Port, 'vnmgr/vnet/openflow/port'
       autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
