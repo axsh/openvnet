@@ -19,8 +19,8 @@ module Vnmgr::VNet::Openflow
     #
     # The source will then apply filtering rules and output to the
     # port number found in registry 1.
-    TABLE_LOAD_DST = 4
-    TABLE_LOAD_SRC = 5
+    TABLE_PHYSICAL_DST = 4
+    TABLE_PHYSICAL_SRC = 5
 
     # Routing to virtual networks.
     #

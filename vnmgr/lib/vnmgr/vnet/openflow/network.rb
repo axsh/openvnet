@@ -28,8 +28,8 @@ module Vnmgr::VNet::Openflow
 
     def install
       flows = []
-      flows << Flow.create(TABLE_LOAD_DST, 1, {:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')}, {},
-                           {:cookie => OFPP_FLOOD | 0x100000000, :metadata => OFPP_FLOOD, :metadata_mask => 0xffffffff, :goto_table => TABLE_LOAD_SRC})
+      flows << Flow.create(TABLE_PHYSICAL_DST, 1, {:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')}, {},
+                           {:cookie => OFPP_FLOOD | 0x100000000, :metadata => OFPP_FLOOD, :metadata_mask => 0xffffffff, :goto_table => TABLE_PHYSICAL_SRC})
 
       self.datapath.add_flows(flows)
     end

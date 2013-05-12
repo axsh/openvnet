@@ -32,6 +32,9 @@ module Vnmgr::VNet::Openflow
       network = Network.new(self.datapath, network_map[:id], network_map[:uuid])
 
       @networks[network.network_id] = network
+
+      network.install
+      network
     end
 
   end
