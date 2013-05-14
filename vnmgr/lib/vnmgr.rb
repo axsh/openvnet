@@ -11,10 +11,14 @@ module Vnmgr
 
 	module NodeModules
 		autoload :DbAgent,	'vnmgr/node_modules/db_agent'
+    module DBA
+      autoload :Base, 'vnmgr/node_modules/base'
+      autoload :Network, 'vnmgr/node_modules/network'
+    end
 	end
 
   module Models
-    require 'yaml'
+    require 'json'
     autoload :Base,     'vnmgr/models/base'
     autoload :Network, 'vnmgr/models/network'
     autoload :Vif,      'vnmgr/models/vif'
