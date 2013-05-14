@@ -9,13 +9,14 @@ module Vnmgr
     autoload :Helpers, 'vnmgr/endpoints/1.0/helpers'
   end
 
-	module NodeModules
-		autoload :DbAgent,	'vnmgr/node_modules/db_agent'
+  module NodeModules
+    autoload :DbAgent,	'vnmgr/node_modules/db_agent'
     module DBA
       autoload :Base, 'vnmgr/node_modules/dba/base'
       autoload :Network, 'vnmgr/node_modules/dba/network'
+      autoload :Vif, 'vnmgr/node_modules/dba/vif'
     end
-	end
+  end
 
   module Models
     require 'json'
