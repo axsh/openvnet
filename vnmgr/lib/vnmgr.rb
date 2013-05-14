@@ -12,8 +12,8 @@ module Vnmgr
 	module NodeModules
 		autoload :DbAgent,	'vnmgr/node_modules/db_agent'
     module DBA
-      autoload :Base, 'vnmgr/node_modules/base'
-      autoload :Network, 'vnmgr/node_modules/network'
+      autoload :Base, 'vnmgr/node_modules/dba/base'
+      autoload :Network, 'vnmgr/node_modules/dba/network'
     end
 	end
 
