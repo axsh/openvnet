@@ -21,8 +21,10 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
   end
 
   get do
-    networks = SB.get_all(:Network)
-    respond_with(R::NetworkCollection.generate(networks))
+    #networks = SB.get_all(:Network)
+    p SB.network
+    p SB.network.get_all
+    # respond_with(R::NetworkCollection.generate(networks))
   end
 
   get '/:uuid' do
