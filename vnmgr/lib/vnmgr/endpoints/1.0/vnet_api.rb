@@ -38,6 +38,13 @@ module Vnmgr::Endpoints::V10
       final_params
     end
 
+    def filter_params(params)
+      params.delete('splat')
+      params.delete('captures')
+      params.default = nil
+      params
+    end
+
     respond_to :json, :yml
 
     load_namespace('networks')
