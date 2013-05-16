@@ -4,6 +4,7 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
   post do
     possible_params = ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"]
     params = @params.delete_if {|k,v| !possible_params.member?(k)}
+    params.default = nil
 
     if params.has_key?("uuid")
       #TODO: Check UUID format without connecting to DB
@@ -15,55 +16,54 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
     end
     #TODO: Validate all parameters
 
-    nw = SB.create(:Network,params.to_json)
+    nw = SB.network.create(params)
 
     respond_with(R::Network.generate(nw))
   end
 
   get do
-    #networks = SB.get_all(:Network)
-    p SB.network
-    p SB.network.get_all
-    # respond_with(R::NetworkCollection.generate(networks))
+    networks = SB.network.get_all
+    respond_with(R::NetworkCollection.generate(networks))
   end
 
   get '/:uuid' do
     #TODO: Make sure that this uuid is a network and not something else
-    nw = SB.get(@params["uuid"])
+    nw = SB.network.get(@params["uuid"])
     respond_with(R::Network.generate(nw))
   end
 
   delete '/:uuid' do
     #TODO: Make sure that this uuid is a network and not something else
     #TODO: Make sure that this uuid exists
-    SB.delete(@params["uuid"])
-    respond_with(@params["uuid"])
+    SB.network.delete(@params["uuid"])
+    respond_with({:uuid => @params["uuid"]})
   end
 
   put '/:uuid' do
-    # Get network from dba
-    new_nw_params = define_params(params,{:desciption => [String,nil]})
-
-    #use these params to update the network and send it back to dba for storage
-
-    # Respond with the modified network
+    new_params = filter_params(params)
+    nw = SB.network.update(new_params)
+    respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid/attach_vif' do
-    av_params = define_params(params,{
-      :uuid => [String],
-      :vif_uuid => [String],
-      :ipv4 => [Int,nil]
+    tmp_params = filter_params(params)
+    av_params = parse_params(tmp_params, {
+      'uuid' => [String],
+      'vif_uuid' => [String]
     })
 
-    # Respond with network
+    nw = SB.network.attach_vif(av_params)
+    respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid/detach_vif' do
-    av_params = define_params(params,{
-      :vif_uuid => [String],
+    tmp_params = filter_params(params)
+    dv_params = define_params(tmp_params,{
+      'uuid' => [String],
+      'vif_uuid' => [String]
     })
 
-    # Respond with network
+    nw = SB.network.attach_vif(dv_params)
+    respond_with(R::Network.generate(nw))
   end
 end
