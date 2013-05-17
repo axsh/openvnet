@@ -56,7 +56,7 @@ module Vnmgr::Endpoints::V10
     load_namespace('tunnels')
     load_namespace('dc_networks')
     load_namespace('datapaths')
-    load_namespace('openflow_controllers')
+    load_namespace('open_flow_controllers')
     load_namespace('ip_addresses')
     load_namespace('ip_leases')
   end
