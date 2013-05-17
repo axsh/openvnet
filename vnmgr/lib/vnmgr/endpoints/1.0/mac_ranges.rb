@@ -2,28 +2,32 @@
 
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/mac_ranges' do
   post do
-    mr_params = define_params(params,{
-      :uuid => [String,nil],
-      :range_begin => [Integer],
-      :range_end => [Integer]
-    })
+    possible_params = ["uuid","vendor_id","range_begin","range_end","created_at","updated_at"]
+    params = @params.delete_if {|k,v| !possible_params.member?(k)}
+    params.default = nil
 
-    # Respond with new mac range
+    mac_range = SB.mac_range.create(params)
+    respond_with(R::MacRange.generate(mac_range))
   end
 
   get do
-    # Respons with all mac ranges
+    mac_ranges = SB.mac_range.get_all
+    respond_with(R::MacRangeCollection.generate(mac_ranges))
   end
 
   get '/:uuid' do
-    mr_params = define_params(params,{:uuid => [String]})
-
-    # Respond with single mac range
+    mac_range = SB.mac_range.get(@params["uuid"])
+    respond_with(R::MacRange.generate(mac_range))
   end
 
   delete '/:uuid' do
-    mr_params = define_params(params,{:uuid => [String]})
+    SB.mac_range.delete(@params["uuid"])
+    respond_with({:uuid => @params["uuid"]})
+  end
 
-    # Respond with deleted mac range uuid
+  put '/:uuid' do
+    new_params = filter_params(params)
+    mac_range = SB.mac_range.update(new_params)
+    respond_with(R::MacRange.generate(mac_range))
   end
 end

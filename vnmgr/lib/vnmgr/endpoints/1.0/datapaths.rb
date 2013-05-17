@@ -2,41 +2,32 @@
 
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
   post do
-    dp_params = define_params(params,{
-      :uuid => [String,nil],
-      :ssl_settings => [nil], # Settings for the ssl connection between the datapath and the controller. Will probably be broken up into more parameters in the future.
-      :controller_uuid => [String]
-    })
+    possible_params = ["uuid","network_id","mac_addr","state","created_at","updated_at"]
+    params = @params.delete_if {|k,v| !possible_params.member?(k)}
+    params.default = nil
 
-    # Respond with this datapath
+    datapath = SB.datapath.create(params)
+    respond_with(R::Datapath.generate(datapath))
   end
 
   get do
-    # Respond with all datapaths
+    datapaths = SB.datapath.get_all
+    respond_with(R::DatapathCollection.generate(datapaths))
   end
 
   get '/:uuid' do
-    dp_params = define_params(params,{:uuid => [String]})
-    # Respond with a single datapath
+    datapath = SB.datapath.get(@params["uuid"])
+    respond_with(R::Datapath.generate(datapath))
   end
 
   delete '/:uuid' do
-    dp_params = define_params(params,{:uuid => [String]})
-    # Delete a single datapath
-
-    # Respond with datapath id
+    SB.datapath.delete(@params["uuid"])
+    respond_with({:uuid => @params["uuid"]})
   end
 
   put '/:uuid' do
-    # Get datapath from dba
-    dp_params = define_params(params,{
-      :uuid => [String],
-      :ssl_settings => [nil], # Settings for the ssl connection between the datapath and the controller. Will probably be broken up into more parameters in the future.
-      :controller_uuid => [String,nil]
-    })
-
-    # use these params to update the datapath and send it back to dba for storage
-
-    # Respond with the modified datapath
+    new_params = filter_params(params)
+    datapath = SB.datapath.update(new_params)
+    respond_with(R::Datapath.generate(datapath))
   end
 end
