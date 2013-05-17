@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class TunnelsWrapper < Base
+  class TunnelWrapper < Base
     backend_namespace = "tunnels"
 
     def to_hash
