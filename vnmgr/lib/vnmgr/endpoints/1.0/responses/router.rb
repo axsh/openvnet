@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::Endpoints::V10::Responses
-  class Network < Vnmgr::Endpoints::ResponseGenerator
+  class Router < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::NetworkWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::RouterWrapper)
       object.to_hash
     end
   end
 
-  class NetworkCollection < Vnmgr::Endpoints::ResponseGenerator
+  class RouterCollection < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|
-        Network.generate(i)
+        Router.generate(i)
       }
     end
   end

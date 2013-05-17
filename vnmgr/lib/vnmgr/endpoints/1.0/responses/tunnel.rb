@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::Endpoints::V10::Responses
-  class Network < Vnmgr::Endpoints::ResponseGenerator
+  class Tunnel < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::NetworkWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::TunnelWrapper)
       object.to_hash
     end
   end
 
-  class NetworkCollection < Vnmgr::Endpoints::ResponseGenerator
+  class TunnelCollection < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|
-        Network.generate(i)
+        Tunnel.generate(i)
       }
     end
   end
