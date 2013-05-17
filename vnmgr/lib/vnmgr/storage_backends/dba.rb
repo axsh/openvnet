@@ -40,7 +40,8 @@ module Vnmgr::StorageBackends
         :port => conf.redis_port
       })
 
-      [:network, :vif].each do |klass_name|
+      #TODO: port the following array to config file.
+      [:network, :vif, :dhcp_range, :mac_range, :mac_lease, :router, :tunnel, :dc_network, :datapath, :open_flow_controller, :ip_address, :ip_lease].each do |klass_name|
         # instantiation
         c = DCellConnection.new(klass_name)
         instance_variable_set("@#{klass_name}", c)
