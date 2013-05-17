@@ -49,11 +49,15 @@ module Vnmgr::Endpoints::V10
 
     load_namespace('networks')
     load_namespace('vifs')
+    load_namespace('dhcp_ranges')
     load_namespace('mac_ranges')
-    load_namespace('dns')
-    load_namespace('dhcp')
+    load_namespace('mac_leases')
+    load_namespace('routers')
+    load_namespace('tunnels')
     load_namespace('dc_networks')
     load_namespace('datapaths')
     load_namespace('openflow_controllers')
+    load_namespace('ip_addresses')
+    load_namespace('ip_leases')
   end
 end
