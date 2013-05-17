@@ -17,5 +17,7 @@ DCell.start :id => conf[:cluster_name], :addr => "tcp://#{conf[:db_agent_ip]}:#{
     :port => conf[:redis_port]
   }
 
-Vnmgr::NodeModules::DbAgent.supervise_as conf[:node_name]
+# Vnmgr::NodeModules::DbAgent.supervise_as conf[:node_name]
+Vnmgr::NodeModules::DBA::Network.supervise_as :network
+Vnmgr::NodeModules::DBA::Vif.supervise_as :vif
 sleep

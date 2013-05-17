@@ -31,12 +31,17 @@ module Vnmgr
     end
   end
 
-	module NodeModules
-		autoload :DbAgent,	'vnmgr/node_modules/db_agent'
-	end
+  module NodeModules
+    autoload :DbAgent,	'vnmgr/node_modules/db_agent'
+    module DBA
+      autoload :Base, 'vnmgr/node_modules/dba/base'
+      autoload :Network, 'vnmgr/node_modules/dba/network'
+      autoload :Vif, 'vnmgr/node_modules/dba/vif'
+    end
+  end
 
   module Models
-    require 'yaml'
+    require 'json'
     autoload :Base,     'vnmgr/models/base'
     autoload :Network, 'vnmgr/models/network'
     autoload :Vif,      'vnmgr/models/vif'
