@@ -7,9 +7,7 @@ require 'rubygems'
 require 'dcell'
 require 'vnmgr'
 
-path = ['/etc/wakame-vnet/dba.conf'].find { |i| File.exists?(i) }
-
-conf = Vnmgr::Configurations::Dba.load(path).config
+conf = Vnmgr::Configurations::Dba.load('/etc/wakame-vnet/dba.conf').config
 Vnmgr::Initializers::DB.run(conf[:db_uri])
 
 DCell.start :id => conf[:cluster_name], :addr => "tcp://#{conf[:db_agent_ip]}:#{conf[:db_agent_port]}",
