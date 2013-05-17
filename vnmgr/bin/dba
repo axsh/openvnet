@@ -7,9 +7,8 @@ require 'rubygems'
 require 'dcell'
 require 'vnmgr'
 
-path = ['/etc/wakame-vnet/dba.conf'].find { |i| File.exists?(i) }
-
-conf = Vnmgr::Configurations::Dba.load(path).config
+conf = Vnmgr::Configurations::Dba.load('/etc/wakame-vnet/dba.conf').config
+Vnmgr::Initializers::DB.run(conf[:db_uri])
 
 DCell.start :id => conf[:cluster_name], :addr => "tcp://#{conf[:db_agent_ip]}:#{conf[:db_agent_port]}",
   :registry => {
@@ -18,7 +17,9 @@ DCell.start :id => conf[:cluster_name], :addr => "tcp://#{conf[:db_agent_ip]}:#{
     :port => conf[:redis_port]
   }
 
-# Vnmgr::NodeModules::DbAgent.supervise_as conf[:node_name]
-Vnmgr::NodeModules::DBA::Network.supervise_as :network
-Vnmgr::NodeModules::DBA::Vif.supervise_as :vif
+#TODO: port the following array of symbols to config file.
+[:network, :vif, :dhcp_range, :mac_range, :router, :tunnel, :dc_network, :datapath, :open_flow_controller, :ip_address, :ip_lease].each do |s|
+  klass = s.to_s.split('_').map {|w| w.capitalize }.join('')
+  Module.const_get('Vnmgr').const_get('NodeModules').const_get('DBA').const_get(klass).supervise_as s
+end
 sleep
