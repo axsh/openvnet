@@ -11,6 +11,24 @@ RUBY_MIRROR_SITE="http://core.ring.gr.jp/archives/lang/ruby/"
 LIBYAML_MIRROR_SITE="http://pyyaml.org/download/libyaml/"
 RUBYGEMS_MIRROR_SITE="http://production.cf.rubygems.org/rubygems/"
 
+# The devel packages are needed to build certain functionality into ruby that we'll use in certain gems later
+dependencies=(make git gcc zlib-devel openssl-devel zeromq-devel)
+
+function check_dep() {
+  local dep=$1
+  rpm -q $dep &> /dev/null
+  if [ ! "$?" == "0" ]; then
+    echo "Missing dependencies."
+    echo "Make sure all of the following are installed:"
+    echo ${dependencies[@]}
+    exit 1
+  fi
+}
+
+for dep in ${dependencies[*]}; do
+ check_dep $dep
+done
+
 [ -d "$ruby_install_dir" ] || {
   mkdir $ruby_install_dir
 }
