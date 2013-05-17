@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::V10::VNetAPI.namespace '/ip_addresss' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/ip_addresses' do
 
   post do
     possible_params = ["uuid","network_id","ipv4_address","created_at","updated_at"]
