@@ -16,32 +16,32 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
     end
     #TODO: Validate all parameters
 
-    nw = SB.network.create(params)
+    nw = sb.network.create(params)
 
     respond_with(R::Network.generate(nw))
   end
 
   get do
-    networks = SB.network.get_all
+    networks = sb.network.get_all
     respond_with(R::NetworkCollection.generate(networks))
   end
 
   get '/:uuid' do
     #TODO: Make sure that this uuid is a network and not something else
-    nw = SB.network.get(@params["uuid"])
+    nw = sb.network.get(@params["uuid"])
     respond_with(R::Network.generate(nw))
   end
 
   delete '/:uuid' do
     #TODO: Make sure that this uuid is a network and not something else
     #TODO: Make sure that this uuid exists
-    SB.network.delete(@params["uuid"])
+    sb.network.delete(@params["uuid"])
     respond_with({:uuid => @params["uuid"]})
   end
 
   put '/:uuid' do
     new_params = filter_params(params)
-    nw = SB.network.update(new_params)
+    nw = sb.network.update(new_params)
     respond_with(R::Network.generate(nw))
   end
 
@@ -52,7 +52,7 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
       'vif_uuid' => [String]
     })
 
-    nw = SB.network.attach_vif(av_params)
+    nw = sb.network.attach_vif(av_params)
     respond_with(R::Network.generate(nw))
   end
 
@@ -63,7 +63,7 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
       'vif_uuid' => [String]
     })
 
-    nw = SB.network.attach_vif(dv_params)
+    nw = sb.network.attach_vif(dv_params)
     respond_with(R::Network.generate(nw))
   end
 end
