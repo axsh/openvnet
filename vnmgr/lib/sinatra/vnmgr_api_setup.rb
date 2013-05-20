@@ -94,6 +94,11 @@ module Sinatra
         @params.merge!(hash.values.first)
       end
 
+      error(Vnmgr::Endpoints::Errors::APIError) do |boom|
+        logger.error("API Error: #{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+        status(boom.http_status)
+        respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code})
+      end
     }
 
     def self.registered(app)

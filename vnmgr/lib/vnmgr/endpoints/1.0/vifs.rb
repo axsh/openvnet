@@ -1,30 +1,34 @@
 # -*- coding: utf-8 -*-
 
-Vnmgr::Endpoints::VNetAPI.namespace '/vifs' do
+Vnmgr::Endpoints::V10::VNetAPI.namespace '/vifs' do
 
   post do
-    vif_params = define_params(params,{
-      :uuid => [String,nil],
-      :mac_addr => [Int]
-    })
+    possible_params = ["uuid","network_id","mac_addr","state","created_at","updated_at"]
+    params = @params.delete_if {|k,v| !possible_params.member?(k)}
+    params.default = nil
 
-    # Respond with new vif
+    vif = SB.vif.create(params)
+    respond_with(R::Vif.generate(vif))
   end
 
   get do
-    # Respond with all vifs
+    vifs = SB.vif.get_all
+    respond_with(R::VifCollection.generate(vifs))
   end
 
   get '/:uuid' do
-    vif_params = define_params(params,{:uuid => [String]})
-
-    # Respond with one vif
+    vif = SB.vif.get(@params["uuid"])
+    respond_with(R::Vif.generate(vif))
   end
 
   delete '/:uuid' do
-    vif_params = define_params(params,{:uuid => [String]})
-
-    # Respond with deletd vif uuid
+    SB.vif.delete(@params["uuid"])
+    respond_with({:uuid => @params["uuid"]})
   end
 
+  put '/:uuid' do
+    new_params = filter_params(params)
+    vif = SB.vif.update(new_params)
+    respond_with(R::Vif.generate(vif))
+  end
 end
