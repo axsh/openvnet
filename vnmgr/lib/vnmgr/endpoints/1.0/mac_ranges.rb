@@ -6,28 +6,28 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/mac_ranges' do
     params = @params.delete_if {|k,v| !possible_params.member?(k)}
     params.default = nil
 
-    mac_range = SB.mac_range.create(params)
+    mac_range = sb.mac_range.create(params)
     respond_with(R::MacRange.generate(mac_range))
   end
 
   get do
-    mac_ranges = SB.mac_range.get_all
+    mac_ranges = sb.mac_range.get_all
     respond_with(R::MacRangeCollection.generate(mac_ranges))
   end
 
   get '/:uuid' do
-    mac_range = SB.mac_range.get(@params["uuid"])
+    mac_range = sb.mac_range.get(@params["uuid"])
     respond_with(R::MacRange.generate(mac_range))
   end
 
   delete '/:uuid' do
-    SB.mac_range.delete(@params["uuid"])
+    sb.mac_range.delete(@params["uuid"])
     respond_with({:uuid => @params["uuid"]})
   end
 
   put '/:uuid' do
     new_params = filter_params(params)
-    mac_range = SB.mac_range.update(new_params)
+    mac_range = sb.mac_range.update(new_params)
     respond_with(R::MacRange.generate(mac_range))
   end
 end

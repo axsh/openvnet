@@ -7,28 +7,28 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/routers' do
     params = @params.delete_if {|k,v| !possible_params.member?(k)}
     params.default = nil
 
-    router = SB.router.create(params)
+    router = sb.router.create(params)
     respond_with(R::Router.generate(router))
   end
 
   get do
-    routers = SB.router.get_all
+    routers = sb.router.get_all
     respond_with(R::RouterCollection.generate(routers))
   end
 
   get '/:uuid' do
-    router = SB.router.get(@params["uuid"])
+    router = sb.router.get(@params["uuid"])
     respond_with(R::Router.generate(router))
   end
 
   delete '/:uuid' do
-    SB.router.delete(@params["uuid"])
+    sb.router.delete(@params["uuid"])
     respond_with({:uuid => @params["uuid"]})
   end
 
   put '/:uuid' do
     new_params = filter_params(params)
-    router = SB.router.update(new_params)
+    router = sb.router.update(new_params)
     respond_with(R::Router.generate(router))
   end
 end

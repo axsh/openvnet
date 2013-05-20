@@ -11,13 +11,17 @@ module Vnmgr::Endpoints::V10
       def load_conf(conf_path)
         @conf = Vnmgr::Configurations::Vnmgr.load(conf_path)
       end
+
+      def storage_backend
+        @storage_backend ||= Vnmgr::StorageBackends.backend_class(VNetAPI.conf)
+      end
+      alias_method :sb, :storage_backend
     end
 
     include Vnmgr::Endpoints::V10::Helpers
     register Sinatra::VnmgrAPISetup
 
-    load_conf(Vnmgr::Constants::VNetAPI::CONF_LOCATION)
-    SB = Vnmgr::StorageBackends.backend_class(VNetAPI.conf)
+    #load_conf(Vnmgr::Constants::VNetAPI::CONF_LOCATION)
     E = Vnmgr::Endpoints::Errors
     R = Vnmgr::Endpoints::V10::Responses
 
@@ -44,6 +48,11 @@ module Vnmgr::Endpoints::V10
       params.default = nil
       params
     end
+
+    def storage_backend
+      self.class.storage_backend
+    end
+    alias_method :sb, :storage_backend
 
     respond_to :json, :yml
 

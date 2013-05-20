@@ -7,28 +7,28 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/ip_leases' do
     params = @params.delete_if {|k,v| !possible_params.member?(k)}
     params.default = nil
 
-    ip_lease = SB.ip_lease.create(params)
+    ip_lease = sb.ip_lease.create(params)
     respond_with(R::IpLease.generate(ip_lease))
   end
 
   get do
-    ip_leases = SB.ip_lease.get_all
+    ip_leases = sb.ip_lease.get_all
     respond_with(R::IpLeaseCollection.generate(ip_leases))
   end
 
   get '/:uuid' do
-    ip_lease = SB.ip_lease.get(@params["uuid"])
+    ip_lease = sb.ip_lease.get(@params["uuid"])
     respond_with(R::IpLease.generate(ip_lease))
   end
 
   delete '/:uuid' do
-    SB.ip_lease.delete(@params["uuid"])
+    sb.ip_lease.delete(@params["uuid"])
     respond_with({:uuid => @params["uuid"]})
   end
 
   put '/:uuid' do
     new_params = filter_params(params)
-    ip_lease = SB.ip_lease.update(new_params)
+    ip_lease = sb.ip_lease.update(new_params)
     respond_with(R::IpLease.generate(ip_lease))
   end
 end
