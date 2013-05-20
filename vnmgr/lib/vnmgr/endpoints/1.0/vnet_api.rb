@@ -15,7 +15,7 @@ module Vnmgr::Endpoints::V10
       def storage_backend
         @storage_backend ||= Vnmgr::StorageBackends.backend_class(VNetAPI.conf)
       end
-      alias_method :storage_backend :sb
+      alias_method :sb, :storage_backend
     end
 
     include Vnmgr::Endpoints::V10::Helpers
@@ -52,7 +52,7 @@ module Vnmgr::Endpoints::V10
     def storage_backend
       self.class.storage_backend
     end
-    alias_method :storage_backend :sb
+    alias_method :sb, :storage_backend
 
     respond_to :json, :yml
 
