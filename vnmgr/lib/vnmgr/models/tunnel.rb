@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::Models
-  class DhcpRange < Base
-    taggable 'dr'
+  class Tunnel < Base
+    taggable 't'
     many_to_one :Network
   end
 end
