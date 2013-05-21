@@ -22,7 +22,6 @@ install:
 
 uninstall:
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
-	rmdir $(DSTDIR)/opt/axsh
 	rm $(DSTDIR)/etc/default/vnet-dba
 	rm $(DSTDIR)/etc/default/vnet-vna
 	rm $(DSTDIR)/etc/default/vnet-vnmgr
