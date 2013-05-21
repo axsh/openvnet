@@ -22,7 +22,6 @@ install-bundle:
 	(cd $(CURDIR)/vnmgr; $(RUBYDIR)/bin/bundle install)
 
 install:
-	#TODO: Check if DSTDIR is empty
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
 	mkdir -p $(DSTDIR)/etc/wakame-vnet
 	cp -r vnmgr vnctl ruby $(DSTDIR)/opt/axsh/wakame-vnet
