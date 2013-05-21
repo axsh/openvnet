@@ -65,7 +65,10 @@ module Vnmgr::VNet::Openflow
 
       elsif port.port_info.name =~ /^vif-/
         port.extend(PortPhysical)
+        port.hw_addr = Trema::Mac.new('52:54:00:bc:75:0e')
+
         self.network_manager.network_by_uuid('nw-public').add_port(port)
+
       elsif port.port_info.name =~ /^t-/
       else
         p "Unknown interface type: #{port.port_info.name}"
