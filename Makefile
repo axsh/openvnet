@@ -32,3 +32,7 @@ uninstall:
 
 remove-config:
 	rm -rf $(DSTDIR)/etc/wakame-vnet
+
+clean:
+	rm -rf $(RUBYDIR)
+	rm -rf $(CURDIR)/vnmgr/vendor
