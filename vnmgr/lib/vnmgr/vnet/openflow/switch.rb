@@ -9,6 +9,7 @@ module Vnmgr::VNet::Openflow
     include Celluloid
 
     attr_reader :datapath
+    attr_reader :bridge_hw
     attr_reader :ports
     attr_reader :network_manager
 
@@ -47,13 +48,24 @@ module Vnmgr::VNet::Openflow
       port = Port.new(datapath, port_desc, true)
       ports[port_desc.port_no] = port
 
-      if port.port_info.port_no >= OFPP_LOCAL
+      if port.port_number >= OFPP_LOCAL
         port.extend(PortLocal)
         self.network_manager.network_by_uuid('nw-public').add_port(port)
+
+        port.install_with_hw(self.bridge_hw) if self.bridge_hw
+
       elsif port.port_info.name =~ /^eth/
         port.extend(PortHost)
         self.network_manager.network_by_uuid('nw-public').add_port(port)
+
+        if self.bridge_hw.nil?
+          @bridge_hw = port.port_info.hw_addr
+          ports[OFPP_LOCAL].install_with_hw(self.bridge_hw) if ports[OFPP_LOCAL]
+        end
+
       elsif port.port_info.name =~ /^vif-/
+        port.extend(PortPhysical)
+        self.network_manager.network_by_uuid('nw-public').add_port(port)
       elsif port.port_info.name =~ /^t-/
       else
         p "Unknown interface type: #{port.port_info.name}"

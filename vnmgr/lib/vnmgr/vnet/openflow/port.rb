@@ -28,7 +28,7 @@ module Vnmgr::VNet::Openflow
     end
 
     def flow_options_load_port(goto_table)
-      flow_options.merge({:metadata => port_info.port_no, :metadata_mask => 0xffffffff, :goto_table => goto_table})
+      flow_options.merge({:metadata => self.port_number, :metadata_mask => 0xffffffff, :goto_table => goto_table})
     end
 
     def install

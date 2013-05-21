@@ -128,6 +128,7 @@ module Vnmgr
       autoload :Port, 'vnmgr/vnet/openflow/port'
       autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
       autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
+      autoload :PortPhysical, 'vnmgr/vnet/openflow/port_physical'
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
       autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
     end
