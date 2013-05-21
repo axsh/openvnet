@@ -11,10 +11,12 @@ endef
 # We're exporting this as a shell variable because otherwise Make can't echo multiline strings into a file
 export BUNDLE_CFG
 
-all: build-ruby
+all: build-ruby install-bundle
 
 build-ruby:
 	$(CURDIR)/deployment/rubybuild/build_ruby.sh
+
+install-bundle:
 	$(RUBYDIR)/bin/gem install bundler
 	(cd $(CURDIR)/vnmgr; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
 	(cd $(CURDIR)/vnmgr; $(RUBYDIR)/bin/bundle install)
