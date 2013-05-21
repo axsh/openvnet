@@ -33,4 +33,13 @@ install:
 uninstall:
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
 	rmdir $(DSTDIR)/opt/axsh
-	#TODO: Remove all files in deployment except for config files
+	rm $(DSTDIR)/etc/default/vnet-dba
+	rm $(DSTDIR)/etc/default/vnet-vna
+	rm $(DSTDIR)/etc/default/vnet-vnmgr
+	rm $(DSTDIR)/etc/default/wakame-vnet
+	rm $(DSTDIR)/etc/init/vnet-dba.conf
+	rm $(DSTDIR)/etc/init/vnet-vna.conf
+	rm $(DSTDIR)/etc/init/vnet-vnmgr.conf
+
+remove-config:
+	rm -rf $(DSTDIR)/etc/wakame-vnet
