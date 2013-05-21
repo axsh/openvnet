@@ -25,3 +25,12 @@ install:
 	#TODO: Check if DSTDIR is empty
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
 	mkdir -p $(DSTDIR)/etc/wakame-vnet
+	cp -r vnmgr vnctl ruby $(DSTDIR)/opt/axsh/wakame-vnet
+	cp -r deployment/conf_files/etc/default $(DSTDIR)/etc
+	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
+	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc
+
+uninstall:
+	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
+	rmdir $(DSTDIR)/opt/axsh
+	#TODO: Remove all files in deployment except for config files
