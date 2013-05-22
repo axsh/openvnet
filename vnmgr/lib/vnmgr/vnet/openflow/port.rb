@@ -8,6 +8,8 @@ module Vnmgr::VNet::Openflow
     attr_reader :is_active
     attr_accessor :network
 
+    attr_accessor :ipv4_addr
+
     def initialize(dp, port_info, active)
       @datapath = dp
       @port_info = port_info
@@ -17,6 +19,14 @@ module Vnmgr::VNet::Openflow
 
     def port_number
       self.port_info.port_no
+    end
+
+    def network_number
+      if self.network
+        self.network.network_number
+      else
+        0x0
+      end
     end
 
     def inspect
@@ -29,6 +39,13 @@ module Vnmgr::VNet::Openflow
 
     def flow_options_load_port(goto_table)
       flow_options.merge({:metadata => self.port_number, :metadata_mask => 0xffffffff, :goto_table => goto_table})
+    end
+
+    def flow_options_load_network(goto_table)
+      flow_options.merge({ :metadata => self.network_number << Constants::METADATA_NETWORK_SHIFT,
+                           :metadata_mask => Constants::METADATA_NETWORK_MASK,
+                           :goto_table => goto_table
+                         })
     end
 
     def install

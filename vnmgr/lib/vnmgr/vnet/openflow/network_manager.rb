@@ -29,7 +29,14 @@ module Vnmgr::VNet::Openflow
       # Simulate loading from db.
       sleep(0.1)
       
-      network = Network.new(self.datapath, network_map[:id], network_map[:uuid])
+      case network_map[:type]
+      when 'physical'
+        network = NetworkPhysical.new(self.datapath, network_map[:id], network_map[:uuid])
+      when 'virtual'
+        network = NetworkVirtual.new(self.datapath, network_map[:id], network_map[:uuid])
+      else
+        raise("Unknown network type.")
+      end
 
       @networks[network.network_id] = network
 

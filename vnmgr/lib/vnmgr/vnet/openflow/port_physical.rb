@@ -8,7 +8,7 @@ module Vnmgr::VNet::Openflow
     attr_accessor :hw_addr
 
     def flow_options
-      flow_options ||= {:cookie => self.port_number | 0x100000000}
+      @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
     end
 
     def install
@@ -41,7 +41,12 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_ARP_ROUTE, 1, {:eth_type => 0x0806, :arp_tpa => IPAddr.new('192.168.60.200')}, {:output => self.port_number}, flow_options)
 
       flows << Flow.create(TABLE_MAC_ROUTE,      1, {:eth_dst => self.hw_addr}, {:output => self.port_number}, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {:metadata => self.port_number, :metadata_mask => 0xffffffff}, {:output => self.port_number}, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
+                             :metadata => self.port_number,
+                             :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+                           }, {
+                             :output => self.port_number
+                           }, flow_options)
 
       self.datapath.add_flows(flows)
     end
