@@ -35,6 +35,10 @@ module Vnmgr::VNet::Openflow
       p "port: No install action implemented for this port."
     end
 
+    def uninstall
+      p "port: Removing flows..."
+    end
+
   end
 
 end

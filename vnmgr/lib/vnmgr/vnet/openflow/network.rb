@@ -26,6 +26,15 @@ module Vnmgr::VNet::Openflow
       update_flows
     end
 
+    def del_port(port)
+      deleted_port = self.ports.delete(port.port_number)
+      update_flows
+
+      raise("Port not added to this network.") if port.network != self || deleted_port.nil?
+
+      port.network = nil
+    end
+
     def install
       flows = []
       flows << Flow.create(TABLE_PHYSICAL_DST, 1, {:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')}, {},

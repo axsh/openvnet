@@ -28,12 +28,11 @@ module Vnmgr::VNet::Openflow
       p "switch_ready from %#x." % datapath_id
 
       # Sometimes ovs changes the datapath ID and reconnects.
-      old_switch = switches[datapath_id]
+      old_switch = @switches.delete(datapath_id)
       
       if old_switch
-        p "found old bridge: datapath_id:%016x" % old_switch[0]
+        p "found old bridge: datapath_id:%016x" % datapath_id
 
-        switches.delete(old_switch[0])
         #old_switch[1].networks.each { |network_id,network| @service_openflow.destroy_network(network, false) }
       end
 

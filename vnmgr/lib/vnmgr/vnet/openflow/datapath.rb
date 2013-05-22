@@ -28,8 +28,6 @@ module Vnmgr::VNet::Openflow
     end
 
     def add_flows(flows)
-      p "add_flows: #{flows.inspect}"
-
       if Thread.current == self.controller.trema_thread
         flows.each { |flow|
           self.controller.send_flow_mod_add(self.datapath_id, flow)
