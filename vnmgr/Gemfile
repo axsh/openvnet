@@ -12,3 +12,17 @@ gem "fuguta"
 gem "sequel"
 gem "mysql"
 gem "rake"
+
+
+group :development, :test do
+  gem "rspec"
+  gem "rack-test"
+  gem "fabrication"
+  gem "faker"
+  # http://stackoverflow.com/questions/11719183/databasecleaner-errors-in-non-rails-app
+  gem 'database_cleaner', :git => "git://github.com/bmabey/database_cleaner.git", :ref => "e5cb8cea"
+
+  gem "coveralls"
+
+  gem "pry-nav"
+end
