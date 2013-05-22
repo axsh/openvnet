@@ -33,7 +33,7 @@ module Vnmgr::VNet::Openflow
       self.datapath.add_flows(flows)
     end
 
-    def install_with_hw bridge_hw
+    def install_with_hw(bridge_hw)
       @bridge_hw = bridge_hw
 
       flows = []

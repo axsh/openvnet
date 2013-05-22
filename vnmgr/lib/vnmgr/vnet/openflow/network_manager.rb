@@ -8,12 +8,12 @@ module Vnmgr::VNet::Openflow
     attr_reader :datapath
     attr_reader :networks
 
-    def initialize dp
+    def initialize(dp)
       @datapath = dp
       @networks = {}
     end
 
-    def network_by_uuid network_uuid
+    def network_by_uuid(network_uuid)
       network = networks.find { |nw| nw[1].uuid == network_uuid }
       return network[1] if network
 

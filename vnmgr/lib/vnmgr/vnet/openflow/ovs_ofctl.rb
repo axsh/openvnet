@@ -18,18 +18,18 @@ module Vnmgr::VNet::Openflow
       @verbose = true
     end
 
-    def get_bridge_name datapath_id
+    def get_bridge_name(datapath_id)
       command = "#{@ovs_vsctl} --no-heading -- --columns=name find bridge datapath_id=%016x" % datapath_id
       p command if verbose == true
       /^"(.*)"/.match(`#{command}`)[1]
     end
 
-    def add_flow flow
+    def add_flow(flow)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow.match_to_s},actions=#{flow.actions_to_s}"
       p "'#{command}' => #{system(command)}."
     end
 
-    def add_flows flows
+    def add_flows(flows)
       recmds = []
 
       eos = "__EOS_ovs_ofctl___"
@@ -45,7 +45,7 @@ module Vnmgr::VNet::Openflow
       system(recmds.join("\n"))
     end
 
-    def del_flows flows
+    def del_flows(flows)
       recmds = []
 
       eos = "__EOS_ovs_ofctl___"
@@ -61,7 +61,7 @@ module Vnmgr::VNet::Openflow
       system(recmds.join("\n"))
     end
 
-    def add_gre_tunnel tunnel_name, remote_ip, key
+    def add_gre_tunnel(tunnel_name, remote_ip, key)
       system("#{@ovs_vsctl} add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:key=#{key}")
     end
 

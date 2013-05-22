@@ -8,7 +8,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :is_active
     attr_accessor :network
 
-    def initialize dp, port_info, active
+    def initialize(dp, port_info, active)
       @datapath = dp
       @port_info = port_info
 

@@ -13,7 +13,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :ports
     attr_reader :network_manager
 
-    def initialize dp, name = nil
+    def initialize(dp, name = nil)
       @datapath = dp
       @ports = {}
       @network_manager = NetworkManager.new(dp)
@@ -32,7 +32,7 @@ module Vnmgr::VNet::Openflow
       self.datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
     end
 
-    def features_reply message
+    def features_reply(message)
       p "features_reply from %#x." % self.datapath.datapath_id
       p "transaction_id: %#x" % message.transaction_id
       p "n_buffers: %u" % message.n_buffers
@@ -41,7 +41,7 @@ module Vnmgr::VNet::Openflow
 
     end
 
-    def handle_port_desc port_desc
+    def handle_port_desc(port_desc)
       p "begin #{port_desc.port_no}"
       p "#{port_desc.inspect}"
 
@@ -79,7 +79,7 @@ module Vnmgr::VNet::Openflow
       p "end #{port_desc.port_no}"
     end
 
-    def port_status message
+    def port_status(message)
       p "port_status from %#x." % message.datapath_id
       p "datapath_id: %#x" % message.datapath_id
       p "reason: #{message.reason}"
@@ -111,7 +111,7 @@ module Vnmgr::VNet::Openflow
       # end
     end
 
-    def packet_in message
+    def packet_in(message)
       # port = ports[message.in_port]
 
       # if port.nil?

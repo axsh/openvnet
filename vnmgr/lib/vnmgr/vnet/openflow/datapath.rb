@@ -9,7 +9,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :datapath_id
     attr_reader :ovs_ofctl
 
-    def initialize ofc, dp_id, ofctl = nil
+    def initialize(ofc, dp_id, ofctl = nil)
       @controller = ofc
       @datapath_id = dp_id
       @ovs_ofctl = ofctl
