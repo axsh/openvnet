@@ -3,6 +3,10 @@
 $LOAD_PATH.unshift 'lib'
 
 require 'rubygems'
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec)
+task :default => :spec
 
 namespace :db do
 	task :init => [] do
@@ -10,7 +14,7 @@ namespace :db do
 		#TODO:
 		# Sequel configurations should be ported into a config file.
 		require 'sequel'
-		Sequel.connect('mysql://localhost/vnmgr?user=root')
+		Sequel.connect('mysql://localhost/vnmgr_test?user=root')
 
 		puts "create tables"
 		Sequel.extension :migration
