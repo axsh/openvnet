@@ -4,12 +4,12 @@ module Vnmgr::Models
   class Network < Base
     taggable 'nw'
 
-    one_to_many :Router
-    one_to_many :DhcpRange
-    one_to_many :Tunnel
-    one_to_many :Vif
-    one_to_many :IpLease
+    one_to_many :routers
+    one_to_many :dhcp_ranges
+    one_to_many :tunnels
+    one_to_many :vifs
+    one_to_many :ip_leases
 
-    many_to_one :DcNetwork
+    many_to_one :dc_network
   end
 end

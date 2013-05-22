@@ -58,7 +58,7 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
 
   put '/:uuid/detach_vif' do
     tmp_params = filter_params(params)
-    dv_params = define_params(tmp_params,{
+    dv_params = parse_params(tmp_params,{
       'uuid' => [String],
       'vif_uuid' => [String]
     })

@@ -3,6 +3,6 @@
 module Vnmgr::Models
   class DhcpRange < Base
     taggable 'dr'
-    many_to_one :Network
+    many_to_one :network
   end
 end
