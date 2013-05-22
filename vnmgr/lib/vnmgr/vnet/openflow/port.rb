@@ -6,9 +6,10 @@ module Vnmgr::VNet::Openflow
     attr_reader :datapath
     attr_reader :port_info
     attr_reader :is_active
-    attr_accessor :network
 
+    attr_accessor :hw_addr
     attr_accessor :ipv4_addr
+    attr_accessor :network
 
     def initialize(dp, port_info, active)
       @datapath = dp

@@ -5,8 +5,6 @@ module Vnmgr::VNet::Openflow
   module PortVirtual
     include Constants
 
-    attr_accessor :hw_addr
-
     def flow_options
       @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
     end
