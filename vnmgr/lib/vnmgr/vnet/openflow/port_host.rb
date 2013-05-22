@@ -6,8 +6,8 @@ module Vnmgr::VNet::Openflow
     include Constants
 
     def flow_options
-      # @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
-      @flow_options ||= {:cookie => self.port_number | 0x0}
+      @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
+      # @flow_options ||= {:cookie => self.port_number | 0x0}
     end
 
     def install

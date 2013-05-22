@@ -11,11 +11,11 @@ module Vnmgr::VNet::Openflow
     attr_reader :uuid
     attr_reader :ports
 
-    def initialize(dp, nw_id, uuid)
+    def initialize(dp, network_map)
       @datapath = dp
-      @network_id = nw_id
-      @network_number = nw_id
-      @uuid = uuid
+      @uuid = network_map.uuid
+      @network_id = network_map.network_id
+      @network_number = network_map.network_id
       @ports = {}
     end
 

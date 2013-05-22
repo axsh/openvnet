@@ -44,11 +44,11 @@ module Vnmgr::VNet::Openflow
       port = Port.new(datapath, port_desc, true)
       ports[port_desc.port_no] = port
 
-      network = self.network_manager.network_by_uuid('nw-public')
-
       if port.port_number >= OFPP_LOCAL
         port.extend(PortLocal)
         port.install_with_hw(self.bridge_hw) if self.bridge_hw
+
+        network = self.network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^eth/
         port.extend(PortHost)
@@ -58,8 +58,17 @@ module Vnmgr::VNet::Openflow
           ports[OFPP_LOCAL].install_with_hw(self.bridge_hw) if ports[OFPP_LOCAL]
         end
 
+        network = self.network_manager.network_by_uuid('nw-public')
+
       elsif port.port_info.name =~ /^vif-/
-        # network = self.network_manager.network_by_uuid('nw-vnet')
+        port_map = Vnmgr::ModelWrappers::VifWrapper.find(port_desc.name)
+
+        if port_map.nil?
+          p "error: Could not find uuid: #{port_desc.name}"
+          return
+        end
+
+        network = self.network_manager.network_by_uuid(port_map.network.uuid)
 
         if network.class == NetworkPhysical
           port.extend(PortPhysical)
@@ -69,8 +78,8 @@ module Vnmgr::VNet::Openflow
           raise("Unknown network type.")
         end
 
-        port.hw_addr = Trema::Mac.new('52:54:00:bc:75:0e')
-        port.ipv4_addr = IPAddr.new('192.168.60.200')
+        port.hw_addr = Trema::Mac.new(port_map.mac_addr)
+        port.ipv4_addr = port_map.ipv4_addr
 
       elsif port.port_info.name =~ /^t-/
       else
@@ -78,8 +87,8 @@ module Vnmgr::VNet::Openflow
         return
       end
 
+      network.add_port(port) if network
       port.install
-      network.add_port(port)
     end
 
     def port_status(message)
@@ -106,7 +115,7 @@ module Vnmgr::VNet::Openflow
           return
         end
         
-        self.network_manager.network_by_uuid('nw-public').del_port(port)
+        port.network.del_port(port) if port.network
         port.uninstall
       end
     end
