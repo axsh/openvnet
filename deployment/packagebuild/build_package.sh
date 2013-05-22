@@ -2,14 +2,28 @@
 set -e
 whereami="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 vnet_path="$( cd $whereami/../.. && pwd )"
+etc_path=$vnet_path/deployment/conf_files/etc
 pkg_format="rpm"
+pkg_output_dir=$vnet_path/packages/$pkg_format
+pkg_to_build=$1
 
-for pkg_meta_file in `ls ${whereami}/packages.d/`; do
+function build_package() {
+  local pkg_meta_file=$1
+
   . ${whereami}/packages.d/$pkg_meta_file
 
   echo "building $pkg_format package: $pkg_name"
-  fpm -s dir -t $pkg_format -n $pkg_name \
+  #TODO: Add directory owning
+  fpm -s dir -t $pkg_format -n $pkg_name -p $pkg_output_dir \
     --description "$pkg_desc" \
-    --directories $pkg_dirs \
     $pkg_dirs
-done
+}
+
+mkdir -p $pkg_output_dir
+if [ -z "$pkg_to_build" ]; then
+  for pkg_meta_file in `ls ${whereami}/packages.d/`; do
+    build_package $pkg_meta_file
+  done
+else
+  build_package "$pkg_to_build.meta"
+fi
