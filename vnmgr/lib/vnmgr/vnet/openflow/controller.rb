@@ -90,6 +90,11 @@ module Vnmgr::VNet::Openflow
       send_message(datapath_id, message)
     end
 
+    def public_send_flow_mod(datapath_id, message)
+      raise "public_send_flow_mod must be called from the trema thread" unless Thread.current == @trema_thread
+      send_flow_mod(datapath_id, message)
+    end
+
   end
 
 end

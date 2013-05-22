@@ -37,6 +37,9 @@ module Vnmgr::VNet::Openflow
 
     def uninstall
       p "port: Removing flows..."
+
+      # Currently not working.
+      self.datapath.del_flow(flow_options.merge(:cookie_mask => 0xffffffffffffffff))
     end
 
   end

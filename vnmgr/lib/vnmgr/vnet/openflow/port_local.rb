@@ -28,7 +28,7 @@ module Vnmgr::VNet::Openflow
       # ARP routing table
       #
       flows << Flow.create(TABLE_ARP_ANTISPOOF, 1, {:in_port => OFPP_LOCAL, :eth_type => 0x0806}, {}, flow_options.merge(:goto_table => TABLE_ARP_ROUTE))
-      flows << Flow.create(TABLE_ARP_ROUTE, 1, {:eth_type => 0x0806, :arp_tpa => IPAddr.new('192.168.60.104')}, {:output => OFPP_LOCAL}, flow_options)
+      flows << Flow.create(TABLE_ARP_ROUTE,     1, {:eth_type => 0x0806, :arp_tpa => IPAddr.new('192.168.60.104')}, {:output => OFPP_LOCAL}, flow_options)
 
       self.datapath.add_flows(flows)
     end
