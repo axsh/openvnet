@@ -37,6 +37,7 @@ module Vnmgr
         autoload :OpenFlowController, 'vnmgr/endpoints/1.0/responses/open_flow_controller'
         autoload :IpAddress, 'vnmgr/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnmgr/endpoints/1.0/responses/ip_lease'
+        autoload :NetworkService, 'vnmgr/endpoints/1.0/responses/network_service'
 
         autoload :NetworkCollection, 'vnmgr/endpoints/1.0/responses/network'
         autoload :VifCollection, 'vnmgr/endpoints/1.0/responses/vif'
@@ -50,12 +51,13 @@ module Vnmgr
         autoload :OpenFlowControllerCollection, 'vnmgr/endpoints/1.0/responses/open_flow_controller'
         autoload :IpAddressCollection, 'vnmgr/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnmgr/endpoints/1.0/responses/ip_lease'
+        autoload :NetworkServiceCollection, 'vnmgr/endpoints/1.0/responses/network_service'
       end
     end
   end
 
   module NodeModules
-    autoload :DbAgent,	'vnmgr/node_modules/db_agent'
+    autoload :Dba,	'vnmgr/node_modules/dba'
     module DBA
       autoload :Base, 'vnmgr/node_modules/dba/base'
       autoload :Network, 'vnmgr/node_modules/dba/network'
@@ -69,6 +71,7 @@ module Vnmgr
       autoload :OpenFlowController, 'vnmgr/node_modules/dba/open_flow_controller'
       autoload :IpAddress, 'vnmgr/node_modules/dba/ip_address'
       autoload :IpLease, 'vnmgr/node_modules/dba/ip_lease'
+      autoload :NetworkService, 'vnmgr/node_modules/dba/network_service'
     end
     autoload :ServiceOpenflow, 'vnmgr/node_modules/service_openflow'
   end
@@ -87,6 +90,7 @@ module Vnmgr
     autoload :OpenFlowController, 'vnmgr/models/open_flow_controller'
     autoload :IpAddress, 'vnmgr/models/ip_address'
     autoload :IpLease, 'vnmgr/models/ip_lease'
+    autoload :NetworkService, 'vnmgr/models/network_service'
     autoload :Taggable, 'vnmgr/models/base'
   end
 
@@ -103,6 +107,7 @@ module Vnmgr
     autoload :OpenFlowControllerWrapper, 'vnmgr/model_wrappers/open_flow_controller_wrapper'
     autoload :IpAddressWrapper, 'vnmgr/model_wrappers/ip_address_wrapper'
     autoload :IpLeaseWrapper, 'vnmgr/model_wrappers/ip_lease_wrapper'
+    autoload :NetworkServiceWrapper, 'vnmgr/model_wrappers/network_service_wrapper'
   end
 
   require 'vnmgr/storage_backend'
@@ -112,6 +117,7 @@ module Vnmgr
 
   module Configurations
     require 'fuguta'
+    autoload :Common,  'vnmgr/configurations/common'
     autoload :Dba,  'vnmgr/configurations/dba'
     autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
   end

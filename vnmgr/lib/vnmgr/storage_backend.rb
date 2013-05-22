@@ -6,14 +6,14 @@ module Vnmgr
   end
 
   module StorageBackends
-    def self.backend_class(conf)
-      case conf.storage_backend
+    def self.backend_class(vnmgr_conf, dba_conf, common_conf)
+      case vnmgr_conf.storage_backend
       when "dba"
-        DBA.new(conf)
+        DBA.new(vnmgr_conf, dba_conf, common_conf)
       when "direct"
         raise NotImplementedError
       else
-        raise "Unknown storage backend: #{conf.storage_backend}"
+        raise "Unknown storage backend: #{vnmgr_conf.storage_backend}"
       end
     end
   end

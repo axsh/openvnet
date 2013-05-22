@@ -7,8 +7,8 @@ module Vnmgr::ModelWrappers
     def to_hash
       {
         :uuid => self.uuid,
-        :name => self.name,
-        :openflow_controller_id => self.openflow_controller_id,
+        :open_flow_controller_uuid => self.open_flow_controller_uuid,
+        :display_name => self.display_name,
         :ipv4_address => self.ipv4_address,
         :is_connected => self.is_connected,
         :datapath_id => self.datapath_id,

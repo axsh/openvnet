@@ -3,32 +3,34 @@
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/open_flow_controllers' do
 
   post do
-    possible_params = ["uuid","created_at","updated_at"]
-    params = @params.delete_if {|k,v| !possible_params.member?(k)}
-    params.default = nil
+    params = parse_params(@params, ["uuid","created_at","updated_at"])
 
+    if params.has_key?("uuid")
+      raise E::DuplicateUUID, params["uuid"] unless M::OpenFlowController[params["uuid"]].nil?
+      params["uuid"] = M::OpenFlowController.trim_uuid(params["uuid"])
+    end
     open_flow_controller = sb.open_flow_controller.create(params)
     respond_with(R::OpenFlowController.generate(open_flow_controller))
   end
 
   get do
-    open_flow_controllers = sb.open_flow_controller.get_all
+    open_flow_controllers = sb.open_flow_controller.all
     respond_with(R::OpenFlowControllerCollection.generate(open_flow_controllers))
   end
 
   get '/:uuid' do
-    open_flow_controller = sb.open_flow_controller.get(@params["uuid"])
+    open_flow_controller = sb.open_flow_controller[{:uuid => @params["uuid"]}]
     respond_with(R::OpenFlowController.generate(open_flow_controller))
   end
 
   delete '/:uuid' do
-    sb.open_flow_controller.delete(@params["uuid"])
-    respond_with({:uuid => @params["uuid"]})
+    open_flow_controller = sb.open_flow_controller.delete({:uuid => @params["uuid"]})
+    respond_with(R::OpenFlowController.generate(open_flow_controller))
   end
 
   put '/:uuid' do
-    new_params = filter_params(params)
-    open_flow_controller = sb.open_flow_controller.update(new_params)
+    params = parse_params(@params, ["uuid","created_at","updated_at"])
+    open_flow_controller = sb.open_flow_controller.update(params)
     respond_with(R::OpenFlowController.generate(open_flow_controller))
   end
 end
