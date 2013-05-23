@@ -3,7 +3,10 @@ set -e
 whereami="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 vnet_path="$( cd $whereami/../.. && pwd )"
 etc_path=$vnet_path/deployment/conf_files/etc
+
 pkg_format="rpm"
+pkg_epoch=0
+
 pkg_output_dir=$vnet_path/packages/$pkg_format
 pkg_to_build=$1
 
@@ -26,6 +29,7 @@ function build_package() {
   fpm -s $pkg_src -t $pkg_format -n $pkg_name -p $pkg_output_dir \
     ${pkg_deps_string} \
     ${pkg_cfgs_string} \
+    --epoch $pkg_epoch \
     --description "${pkg_desc}" \
     $pkg_dirs
 }
