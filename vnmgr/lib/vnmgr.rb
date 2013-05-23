@@ -55,7 +55,7 @@ module Vnmgr
   end
 
   module NodeModules
-    autoload :DbAgent,	'vnmgr/node_modules/db_agent'
+    autoload :Dba,	'vnmgr/node_modules/dba'
     module DBA
       autoload :Base, 'vnmgr/node_modules/dba/base'
       autoload :Network, 'vnmgr/node_modules/dba/network'
@@ -111,6 +111,7 @@ module Vnmgr
 
   module Configurations
     require 'fuguta'
+    autoload :Common,  'vnmgr/configurations/common'
     autoload :Dba,  'vnmgr/configurations/dba'
     autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
   end
