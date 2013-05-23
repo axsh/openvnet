@@ -6,9 +6,13 @@ require 'vnmgr'
 require 'rack/cors'
 require 'dcell'
 
-conf_path = '/etc/wakame-vnet/vnmgr.conf'
-raise "Unable to find conf file: '#{conf_path}'" unless File.exists?(conf_path)
-Vnmgr::Endpoints::V10::VNetAPI.load_conf(conf_path)
+vnmgr_conf_path = '/etc/wakame-vnet/vnmgr.conf'
+dba_conf_path = '/etc/wakame-vnet/dba.conf'
+common_conf_path = '/etc/wakame-vnet/common.conf'
+[vnmgr_conf_path, dba_conf_path, common_conf_path].each do |path|
+  raise "Unable to find conf file: '#{path}'" unless File.exists?(path)
+end
+Vnmgr::Endpoints::V10::VNetAPI.load_conf(vnmgr_conf_path, dba_conf_path, common_conf_path)
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'
