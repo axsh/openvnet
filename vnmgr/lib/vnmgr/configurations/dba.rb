@@ -8,6 +8,7 @@ module Vnmgr
       param :ip
       param :port
       param :db_uri
+      param :db_tables
     end
   end
 end
