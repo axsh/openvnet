@@ -6,3 +6,7 @@ $vnet_path/vnmgr/bin/dba
 $etc_path/init/vnet-dba.conf
 $etc_path/default/vnet-dba
 _EOF_`
+pkg_cfgs=`cat <<_EOF_
+$etc_path/init/vnet-dba.conf
+$etc_path/default/vnet-dba
+_EOF_`

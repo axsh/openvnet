@@ -10,3 +10,5 @@ $vnet_path/vnmgr/Rakefile
 $vnet_path/vnmgr/README.md
 $vnet_path/deployment
 _EOF_`
+pkg_cfgs=`cat <<_EOF_
+_EOF_`

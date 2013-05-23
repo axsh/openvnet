@@ -3,3 +3,5 @@ pkg_desc="Ruby binary for Wakame-VNet"
 pkg_dirs=`cat <<_EOF_
 $vnet_path/ruby
 _EOF_`
+pkg_cfgs=`cat <<_EOF_
+_EOF_`

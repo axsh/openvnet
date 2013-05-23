@@ -6,3 +6,6 @@ $vnet_path/vnmgr/lib
 $vnet_path/vnmgr/vendor
 $etc_path/default/wakame-vnet
 _EOF_`
+pkg_cfgs=`cat <<_EOF_
+$etc_path/default/wakame-vnet
+_EOF_`

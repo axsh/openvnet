@@ -3,3 +3,5 @@ pkg_desc="Empty package that depends on redis for Wakame-VNet. Only here for con
 pkg_deps="redis"
 pkg_dirs=`cat <<_EOF_
 _EOF_`
+pkg_cfgs=`cat <<_EOF_
+_EOF_`

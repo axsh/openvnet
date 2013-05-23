@@ -6,3 +6,7 @@ $vnet_path/vnmgr/rack
 $etc_path/init/vnet-vnmgr.conf
 $etc_path/default/vnet-vnmgr
 _EOF_`
+pkg_cfgs=`cat <<_EOF_
+$etc_path/init/vnet-vnmgr.conf
+$etc_path/default/vnet-vnmgr
+_EOF_`

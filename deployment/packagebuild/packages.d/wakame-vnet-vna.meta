@@ -6,3 +6,7 @@ $vnet_path/vnmgr/bin/vna
 $etc_path/init/vnet-vna.conf
 $etc_path/default/vnet-vna
 _EOF_`
+pkg_cfgs=`cat <<_EOF_
+$etc_path/init/vnet-vna.conf
+$etc_path/default/vnet-vna
+_EOF_`
