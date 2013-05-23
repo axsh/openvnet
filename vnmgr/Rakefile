@@ -14,7 +14,7 @@ namespace :db do
 		#TODO:
 		# Sequel configurations should be ported into a config file.
 		require 'sequel'
-		Sequel.connect('mysql://localhost/vnmgr_test?user=root')
+		Sequel.connect('mysql://localhost/vnmgr?user=root')
 
 		puts "create tables"
 		Sequel.extension :migration
