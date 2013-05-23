@@ -78,7 +78,7 @@ module Vnmgr::Models
       # model hook
       def after_destroy
         super
-        TagMapping.filter(:uuid=>self.canonical_uuid).delete
+        # TagMapping.filter(:uuid=>self.canonical_uuid).delete
       end
 
       # Returns canonicalized uuid which has the form of
@@ -614,6 +614,7 @@ module Vnmgr::Models
         #   taggable 'm'
         # end
         def self.taggable(uuid_prefix)
+          p "call taggable #{uuid_prefix}"
           return if self == Base
           self.plugin Taggable
           self.uuid_prefix(uuid_prefix)
