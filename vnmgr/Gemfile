@@ -20,7 +20,7 @@ group :development, :test do
   gem "fabrication"
   gem "faker"
   # http://stackoverflow.com/questions/11719183/databasecleaner-errors-in-non-rails-app
-  gem 'database_cleaner', :git => "git://github.com/bmabey/database_cleaner.git", :ref => "e5cb8cea"
+  gem 'database_cleaner', :git => "https://github.com/bmabey/database_cleaner.git", :ref => "e5cb8cea"
 
   gem "coveralls"
 
