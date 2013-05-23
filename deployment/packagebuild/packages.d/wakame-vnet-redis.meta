@@ -1,0 +1,5 @@
+pkg_name="wakame-vnet-redis"
+pkg_desc="Empty package that depends on redis for Wakame-VNet. Only here for convenience sake."
+pkg_deps="redis"
+pkg_dirs=`cat <<_EOF_
+_EOF_`

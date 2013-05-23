@@ -13,9 +13,18 @@ function build_package() {
   . ${whereami}/packages.d/$pkg_meta_file
 
   echo "building $pkg_format package: $pkg_name"
+
+  if [ -z "$pkg_dirs" ]; then
+    pkg_src=empty
+  else
+    pkg_src=dir
+  fi
+  pkg_deps_string="-d ${pkg_deps//\ / -d }"
+
   #TODO: Add directory owning
-  fpm -s dir -t $pkg_format -n $pkg_name -p $pkg_output_dir \
-    --description "$pkg_desc" \
+  fpm -s $pkg_src -t $pkg_format -n $pkg_name -p $pkg_output_dir \
+    ${pkg_deps_string} \
+    --description "${pkg_desc}" \
     $pkg_dirs
 }
 

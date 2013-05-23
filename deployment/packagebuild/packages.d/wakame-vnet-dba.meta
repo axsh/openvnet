@@ -1,5 +1,6 @@
 pkg_name="wakame-vnet-dba"
 pkg_desc="Database agent for Wakame-VNet"
+pkg_deps="wakame-vnet-common"
 pkg_dirs=`cat <<_EOF_
 $vnet_path/vnmgr/bin/dba
 $etc_path/init/vnet-dba.conf
