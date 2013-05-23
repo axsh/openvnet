@@ -10,6 +10,8 @@ pkg_epoch=0
 pkg_output_dir=$vnet_path/packages/$pkg_format
 pkg_to_build=$1
 
+fpm_path=$vnet_path/ruby/bin/fpm
+
 function build_package() {
   local pkg_meta_file=$1
 
@@ -26,7 +28,7 @@ function build_package() {
   if [ -z "$pkg_cfgs" ]; then pkg_cfgs_string=""; else pkg_cfgs_string="--config-files ${pkg_cfgs//$'\n'/ --config-files }"; fi
   if [ -z "$pkg_owned_dirs" ]; then pkg_own_string=""; else pkg_own_string="--directories ${pkg_owned_dirs//$'\n'/ --directories }"; fi
 
-  fpm -s $pkg_src -t $pkg_format -n $pkg_name -p $pkg_output_dir \
+  $fpm_path -s $pkg_src -t $pkg_format -n $pkg_name -p $pkg_output_dir \
     ${pkg_deps_string} \
     ${pkg_cfgs_string} \
     ${pkg_own_string} \
