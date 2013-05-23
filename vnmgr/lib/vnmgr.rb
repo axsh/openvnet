@@ -70,6 +70,7 @@ module Vnmgr
       autoload :IpAddress, 'vnmgr/node_modules/dba/ip_address'
       autoload :IpLease, 'vnmgr/node_modules/dba/ip_lease'
     end
+    autoload :ServiceOpenflow, 'vnmgr/node_modules/service_openflow'
   end
 
   module Models
@@ -114,4 +115,23 @@ module Vnmgr
     autoload :Dba,  'vnmgr/configurations/dba'
     autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
   end
+
+  module VNet
+    module Openflow
+      autoload :Constants, 'vnmgr/vnet/openflow/constants'
+      autoload :Controller, 'vnmgr/vnet/openflow/controller'
+      autoload :Datapath, 'vnmgr/vnet/openflow/datapath'
+      autoload :Flow, 'vnmgr/vnet/openflow/flow'
+      autoload :Network, 'vnmgr/vnet/openflow/network'
+      autoload :NetworkManager, 'vnmgr/vnet/openflow/network_manager'
+      autoload :OvsOfctl, 'vnmgr/vnet/openflow/ovs_ofctl'
+      autoload :Port, 'vnmgr/vnet/openflow/port'
+      autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
+      autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
+      autoload :PortPhysical, 'vnmgr/vnet/openflow/port_physical'
+      autoload :Switch, 'vnmgr/vnet/openflow/switch'
+      autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
+    end
+  end
+
 end
