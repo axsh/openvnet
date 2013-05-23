@@ -23,31 +23,14 @@ module Vnmgr::Endpoints::V10
     include Vnmgr::Endpoints::V10::Helpers
     register Sinatra::VnmgrAPISetup
 
-    #load_conf(Vnmgr::Constants::VNetAPI::CONF_LOCATION)
     E = Vnmgr::Endpoints::Errors
     R = Vnmgr::Endpoints::V10::Responses
 
     def parse_params(params,mask)
       final_params = {}
-
-      # Check if the mask is valid
-      mask.values.each {|v| raise "Invalid parameters mask" unless v.is_a?(Array) }
-
-      params.each {|k,v|
-        if mask[k].member?(v.class)
-          final_params[k] = v
-        else
-          raise "Invalid parameter: '#{v}'. Must be one of [#{v.join(",")}]"
-        end
-      }
+      final_params = params.delete_if {|k,v| !mask.member?(k) }
+      final_params.default = nil
       final_params
-    end
-
-    def filter_params(params)
-      params.delete('splat')
-      params.delete('captures')
-      params.default = nil
-      params
     end
 
     def storage_backend
