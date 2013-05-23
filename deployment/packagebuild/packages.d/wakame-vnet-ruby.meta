@@ -5,3 +5,6 @@ $vnet_path/ruby
 _EOF_`
 pkg_cfgs=`cat <<_EOF_
 _EOF_`
+pkg_owned_dirs=`cat <<_EOF_
+$vnet_path/ruby
+_EOF_`

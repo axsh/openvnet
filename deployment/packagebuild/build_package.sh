@@ -24,11 +24,12 @@ function build_package() {
   fi
   if [ -z "$pkg_deps" ]; then pkg_deps_string=""; else pkg_deps_string="--depends ${pkg_deps//\ / -d }"; fi
   if [ -z "$pkg_cfgs" ]; then pkg_cfgs_string=""; else pkg_cfgs_string="--config-files ${pkg_cfgs//$'\n'/ --config-files }"; fi
+  if [ -z "$pkg_owned_dirs" ]; then pkg_own_string=""; else pkg_own_string="--directories ${pkg_owned_dirs//$'\n'/ --directories }"; fi
 
-  #TODO: Add directory owning
   fpm -s $pkg_src -t $pkg_format -n $pkg_name -p $pkg_output_dir \
     ${pkg_deps_string} \
     ${pkg_cfgs_string} \
+    ${pkg_own_string} \
     --epoch $pkg_epoch \
     --description "${pkg_desc}" \
     $pkg_dirs

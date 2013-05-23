@@ -10,3 +10,6 @@ pkg_cfgs=`cat <<_EOF_
 $etc_path/init/vnet-dba.conf
 $etc_path/default/vnet-dba
 _EOF_`
+pkg_owned_dirs=`cat <<_EOF_
+$vnet_path/vnmgr/bin/dba
+_EOF_`

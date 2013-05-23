@@ -10,3 +10,6 @@ pkg_cfgs=`cat <<_EOF_
 $etc_path/init/vnet-vnmgr.conf
 $etc_path/default/vnet-vnmgr
 _EOF_`
+pkg_owned_dirs=`cat <<_EOF_
+$vnet_path/vnmgr/rack
+_EOF_`

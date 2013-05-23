@@ -1,14 +1,13 @@
 pkg_name="wakame-vnet-devel"
 pkg_desc="Development files for Wakame-VNet"
-pkg_deps="wakame-vnet-vnmgr wakame-vnet-vna wakame-vnet-dba"
+pkg_deps="wakame-vnet-vnmgr wakame-vnet-vna wakame-vnet-dba wakame-vnet-mysql"
 pkg_dirs=`cat <<_EOF_
-$vnet_path/vnmgr/db
 $vnet_path/vnmgr/Gemfile
 $vnet_path/vnmgr/Gemfile.lock
 $vnet_path/vnmgr/LICENSE
-$vnet_path/vnmgr/Rakefile
 $vnet_path/vnmgr/README.md
 $vnet_path/deployment
 _EOF_`
 pkg_cfgs=`cat <<_EOF_
 _EOF_`
+pkg_owned_dirs=$pkg_dirs

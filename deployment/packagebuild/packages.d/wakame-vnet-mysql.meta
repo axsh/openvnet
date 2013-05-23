@@ -7,3 +7,4 @@ $vnet_path/vnmgr/Rakefile
 _EOF_`
 pkg_cfgs=`cat <<_EOF_
 _EOF_`
+pkg_owned_dirs=$pkg_dirs
