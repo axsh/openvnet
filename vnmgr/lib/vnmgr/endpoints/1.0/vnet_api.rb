@@ -6,14 +6,16 @@ require "sinatra/vnmgr_api_setup"
 module Vnmgr::Endpoints::V10
   class VNetAPI < Sinatra::Base
     class << self
-      attr_reader :conf
+      attr_reader :vnmgr_conf, :dba_conf, :common_conf
 
-      def load_conf(conf_path)
-        @conf = Vnmgr::Configurations::Vnmgr.load(conf_path)
+      def load_conf(vnmgr_conf, dba_conf, common_conf)
+        @vnmgr_conf = Vnmgr::Configurations::Vnmgr.load(vnmgr_conf)
+        @dba_conf = Vnmgr::Configurations::Dba.load(dba_conf)
+        @common_conf = Vnmgr::Configurations::Common.load(common_conf)
       end
 
       def storage_backend
-        @storage_backend ||= Vnmgr::StorageBackends.backend_class(VNetAPI.conf)
+        @storage_backend ||= Vnmgr::StorageBackends.backend_class(VNetAPI.vnmgr_conf, VNetAPI.dba_conf, VNetAPI.common_conf)
       end
       alias_method :sb, :storage_backend
     end
@@ -38,7 +40,6 @@ module Vnmgr::Endpoints::V10
           raise "Invalid parameter: '#{v}'. Must be one of [#{v.join(",")}]"
         end
       }
-
       final_params
     end
 
