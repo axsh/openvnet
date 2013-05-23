@@ -1,6 +1,7 @@
 pkg_name="wakame-vnet-devel"
 pkg_desc="Development files for Wakame-VNet"
 pkg_deps="wakame-vnet-vnmgr wakame-vnet-vna wakame-vnet-dba wakame-vnet-mysql"
+pkg_arch="all"
 pkg_dirs=`cat <<_EOF_
 $vnet_path/vnmgr/Gemfile
 $vnet_path/vnmgr/Gemfile.lock

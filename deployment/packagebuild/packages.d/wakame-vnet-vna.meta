@@ -1,6 +1,7 @@
 pkg_name="wakame-vnet-vna"
 pkg_desc="Virtual network agent for Wakame-VNet"
 pkg_deps="wakame-vnet-common"
+pkg_arch="all"
 pkg_dirs=`cat <<_EOF_
 $vnet_path/vnmgr/bin/vna
 $etc_path/init/vnet-vna.conf
