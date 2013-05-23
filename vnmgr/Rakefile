@@ -4,31 +4,42 @@ $LOAD_PATH.unshift 'lib'
 
 require 'rubygems'
 require 'rspec/core/rake_task'
+require 'sequel'
+require 'vnmgr'
+
+def migrate(db_uri, to = nil)
+  Sequel.connect(db_uri)
+  Sequel.extension :migration
+  Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../db/migrations', __FILE__), to)
+end
 
 RSpec::Core::RakeTask.new(:spec)
 task :default => :spec
 
 namespace :db do
-	task :init => [] do
-		puts "rake db:init"
-		#TODO:
-		# Sequel configurations should be ported into a config file.
-		require 'sequel'
-		Sequel.connect('mysql://localhost/vnmgr?user=root')
+  task :init => [] do
+    puts "create tables"
+    #TODO:
+    # Sequel configurations should be ported into a config file.
+    migrate('mysql://localhost/vnmgr?user=root')
+  end
 
-		puts "create tables"
-		Sequel.extension :migration
-		Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../db/migrations', __FILE__), 9999)
-	end
+  task :drop => [] do
+    #TODO:
+    # Sequel configurations should be ported into a config file.
+    migrate('mysql://localhost/vnmgr?user=root', 0)
+  end
+end
 
-	task :drop => [] do
-		puts "rake db:drop"
-		#TODO:
-		# Sequel configurations should be ported into a config file.
-		require 'sequel'
-		Sequel.connect('mysql://localhost/vnmgr?user=root')
+namespace :test do
+  conf = Vnmgr::Configurations::Dba.load(File.expand_path("spec/config/dba.conf", File.dirname(__FILE__)))
+  namespace :db do
+    task :init => [] do
+      migrate(conf.db_uri)
+    end
 
-		Sequel.extension :migration
-		Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../db/migrations', __FILE__), 0)
-	end
+    task :drop => [] do
+      migrate(conf.db_uri, 0)
+    end
+  end
 end
