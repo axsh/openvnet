@@ -7,9 +7,9 @@ module Vnmgr::Models
     one_to_many :Router
     one_to_many :DhcpRange
     one_to_many :Tunnel
-    one_to_many :Vif
+    one_to_many :vifs
     one_to_many :IpLease
 
-    many_to_one :DcNetwork
+    many_to_one :dc_network
   end
 end
