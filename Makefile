@@ -56,6 +56,4 @@ clean:
 
 build-rpm: clean build-ruby install-bundle install
 	$(RUBYDIR)/bin/gem install fpm
-	export fpm_path="$(RUBYDIR)/bin/fpm"
-	cd $(DSTDIR)
-	$(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh
+	(cd $(DSTDIR);	fpm_path="$(RUBYDIR)/bin/fpm" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
