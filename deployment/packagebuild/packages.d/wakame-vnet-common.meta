@@ -5,6 +5,7 @@ pkg_arch="all"
 pkg_dirs=`cat <<_EOF_
 $vnet_path/vnmgr/lib
 $vnet_path/vnmgr/vendor
+$vnet_path/vnmgr/.bundle
 $etc_path/default/wakame-vnet
 _EOF_`
 pkg_cfgs=`cat <<_EOF_
