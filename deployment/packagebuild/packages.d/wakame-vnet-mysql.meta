@@ -1,7 +1,7 @@
 pkg_name="wakame-vnet-mysql"
 pkg_desc="MySQL database for Wakame-VNet"
-pkg_arch="X86_64"
-pkg_deps="mysql wakame-vnet-ruby"
+pkg_arch="x86_64"
+pkg_deps="mysql mysql-server wakame-vnet-ruby"
 pkg_dirs=`cat <<_EOF_
 $vnet_path/vnmgr/db
 $vnet_path/vnmgr/Rakefile
