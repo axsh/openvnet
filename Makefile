@@ -13,10 +13,17 @@ export BUNDLE_CFG
 
 all: build-ruby install-bundle
 
+dev: build-ruby install-bundle-dev
+
 build-ruby:
 	$(CURDIR)/deployment/rubybuild/build_ruby.sh
 
 install-bundle:
+	$(RUBYDIR)/bin/gem install bundler
+	(cd $(CURDIR)/vnmgr; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
+	(cd $(CURDIR)/vnmgr; $(RUBYDIR)/bin/bundle install --without development test)
+
+install-bundle-dev:
 	$(RUBYDIR)/bin/gem install bundler
 	(cd $(CURDIR)/vnmgr; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
 	(cd $(CURDIR)/vnmgr; $(RUBYDIR)/bin/bundle install)
@@ -24,7 +31,7 @@ install-bundle:
 install:
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
 	mkdir -p $(DSTDIR)/etc/wakame-vnet
-	cp -r vnmgr vnctl ruby $(DSTDIR)/opt/axsh/wakame-vnet
+	cp -r vnmgr vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
 	cp -r deployment/conf_files/etc/default $(DSTDIR)/etc
 	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
 	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc
@@ -45,3 +52,10 @@ remove-config:
 clean:
 	rm -rf $(RUBYDIR)
 	rm -rf $(CURDIR)/vnmgr/vendor
+	rm -rf $(CURDIR)/vnmgr/.bundle
+
+build-rpm: clean build-ruby install-bundle install
+	$(RUBYDIR)/bin/gem install fpm
+	export fpm_path="$(RUBYDIR)/bin/fpm"
+	cd $(DSTDIR)
+	$(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh
