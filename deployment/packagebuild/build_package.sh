@@ -1,16 +1,32 @@
 #!/bin/bash
 set -e
 whereami="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-vnet_path="$( cd $whereami/../.. && pwd )"
-etc_path=$vnet_path/deployment/conf_files/etc
+vnet_path=opt/axsh/wakame-vnet
+etc_path=etc
 
 pkg_format="rpm"
 pkg_epoch=0
 
-pkg_output_dir=$vnet_path/packages/$pkg_format
+pkg_output_dir=packages/$pkg_format
 pkg_to_build=$1
 
-fpm_path=$vnet_path/ruby/bin/fpm
+fpm_path=${fpm_path:-"$vnet_path/ruby/bin/fpm"}
+
+function print_usage() {
+  echo "Do not call this script directly. Use make instead with the following commands:"
+  echo ""
+  echo "cd $(cd $whereami/../.. && pwd)"
+  echo "make build-rpm DSTDIR=/tmp/vnet-rpmbuild"
+}
+
+function check_path() {
+  local dir=$1
+  [ -d $dir ] || {
+    echo "Directory '$dir' not found"
+    print_usage
+    exit 1
+  }
+}
 
 # Resets all package metadata to present leftovers from a previously sourced package
 function flush_package_meta() {
@@ -49,6 +65,9 @@ function build_package() {
     --architecture $pkg_arch \
     $pkg_dirs
 }
+
+check_path $vnet_path
+check_path $etc_path
 
 mkdir -p $pkg_output_dir
 if [ -z "$pkg_to_build" ]; then
