@@ -3,6 +3,6 @@
 module Vnmgr::Models
   class Tunnel < Base
     taggable 't'
-    many_to_one :Network
+    many_to_one :network
   end
 end

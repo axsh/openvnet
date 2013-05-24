@@ -3,6 +3,6 @@
 module Vnmgr::Models
   class Datapath < Base
     taggable 'dp'
-    many_to_one :OpenFlowController
+    many_to_one :open_flow_controller
   end
 end

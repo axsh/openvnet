@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'vnmgr'
+require 'celluloid'
+
+path = ['/etc/wakame-vnet/vna.conf', File.expand_path('config/nva.conf', Vnmgr::VNMGR_ROOT)].find { |i| File.exists?(i) }
+abort("ERROR: Failed to load vna.conf") if path.nil?
+
+sleep 10
+
+service_openflow = Vnmgr::NodeModules::ServiceOpenflow.new
+service_openflow.start
+
+(1..10).each {
+  p "Main thread loop"
+
+  service_openflow.controller.pass_task {
+    p "Ping to trema thread."
+  }
+
+  sleep 1
+}
+
+service_openflow.stop
+sleep 1
+
