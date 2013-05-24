@@ -9,6 +9,4 @@ $vnet_path/vnmgr/LICENSE
 $vnet_path/vnmgr/README.md
 $vnet_path/deployment
 _EOF_`
-pkg_cfgs=`cat <<_EOF_
-_EOF_`
 pkg_owned_dirs=$pkg_dirs
