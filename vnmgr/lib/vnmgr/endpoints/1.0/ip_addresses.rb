@@ -3,32 +3,34 @@
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/ip_addresses' do
 
   post do
-    possible_params = ["uuid","network_id","ipv4_address","created_at","updated_at"]
-    params = @params.delete_if {|k,v| !possible_params.member?(k)}
-    params.default = nil
+    params = parse_params(@params, ["uuid","ipv4_address","created_at","updated_at"])
 
+    if params.has_key?("uuid")
+      raise E::DuplicateUUID, params["uuid"] unless M::IpAddress[params["uuid"]].nil?
+      params["uuid"] = M::IpAddress.trim_uuid(params["uuid"])
+    end
     ip_address = sb.ip_address.create(params)
     respond_with(R::IpAddress.generate(ip_address))
   end
 
   get do
-    ip_addresss = sb.ip_address.get_all
-    respond_with(R::IpAddressCollection.generate(ip_addresss))
+    ip_addresses = sb.ip_address.all
+    respond_with(R::IpAddressCollection.generate(ip_addresses))
   end
 
   get '/:uuid' do
-    ip_address = sb.ip_address.get(@params["uuid"])
+    ip_address = sb.ip_address[{:uuid => @params["uuid"]}]
     respond_with(R::IpAddress.generate(ip_address))
   end
 
   delete '/:uuid' do
-    sb.ip_address.delete(@params["uuid"])
-    respond_with({:uuid => @params["uuid"]})
+    ip_address = sb.ip_address.delete({:uuid => @params["uuid"]})
+    respond_with(R::IpAddress.generate(ip_address))
   end
 
   put '/:uuid' do
-    new_params = filter_params(params)
-    ip_address = sb.ip_address.update(new_params)
+    params = parse_params(@params, ["uuid","ipv4_address","created_at","updated_at"])
+    ip_address = sb.ip_address.update(params)
     respond_with(R::IpAddress.generate(ip_address))
   end
 end

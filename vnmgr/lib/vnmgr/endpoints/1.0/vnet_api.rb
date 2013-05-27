@@ -52,5 +52,6 @@ module Vnmgr::Endpoints::V10
     load_namespace('open_flow_controllers')
     load_namespace('ip_addresses')
     load_namespace('ip_leases')
+    load_namespace('network_services')
   end
 end

@@ -3,10 +3,12 @@
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/dhcp_ranges' do
 
   post do
-    possible_params = ["uuid","network_id","range_begin","range_end","created_at","updated_at"]
-    params = @params.delete_if {|k,v| !possible_params.member?(k)}
-    params.default = nil
+    params = parse_params(@params, ["uuid","network_id","range_begin","range_end","created_at","updated_at"])
 
+    if params.has_key?("uuid")
+      raise E::DuplicateUUID, params["uuid"] unless M::DhcpRange[params["uuid"]].nil?
+      params["uuid"] = M::DhcpRange.trim_uuid(params["uuid"])
+    end
     dhcp_range = sb.dhcp_range.create(params)
     respond_with(R::DhcpRange.generate(dhcp_range))
   end
@@ -27,8 +29,8 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/dhcp_ranges' do
   end
 
   put '/:uuid' do
-    new_params = filter_params(params)
-    dhcp_range = sb.dhcp_range.update(new_params)
+    params = parse_params(@params, ["uuid","network_id","range_begin","range_end","created_at","updated_at"])
+    dhcp_range = sb.dhcp_range.update(params)
     respond_with(R::DhcpRange.generate(dhcp_range))
   end
 end

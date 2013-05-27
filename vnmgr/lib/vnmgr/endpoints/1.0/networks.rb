@@ -34,16 +34,14 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
     #TODO: Make sure that this uuid is a network and not something else
     #TODO: Make sure that this uuid exists
 
-    sb.network.delete({:uuid => @params["uuid"]})
-    respond_with(nil)
+    nw = sb.network.delete({:uuid => @params["uuid"]})
+    respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid' do
     params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
-    p @params
-    respond_with(nil)
-    # nw = sb.network.update(new_params)
-    # respond_with(R::Network.generate(nw))
+    nw = sb.network.update(params)
+    respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid/attach_vif' do
