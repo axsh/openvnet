@@ -78,7 +78,7 @@ module Vnmgr::Models
       # model hook
       def after_destroy
         super
-        TagMapping.filter(:uuid=>self.canonical_uuid).delete
+        # TagMapping.filter(:uuid=>self.canonical_uuid).delete
       end
 
       # Returns canonicalized uuid which has the form of
@@ -214,6 +214,8 @@ module Vnmgr::Models
       # @example Will get InvalidUUIDError as the uuid with invalid prefix has been tried.
       #   Account.trim_uuid('u-abcd1234') # 'u-' prefix is for User model.
       def trim_uuid(p_uuid)
+        p "trim_uuid"
+        p p_uuid
         regex = %r/^#{self.uuid_prefix}-/
         if p_uuid and p_uuid =~ regex
           return p_uuid.sub(regex, '')
@@ -614,6 +616,7 @@ module Vnmgr::Models
         #   taggable 'm'
         # end
         def self.taggable(uuid_prefix)
+          p "call taggable #{uuid_prefix}"
           return if self == Base
           self.plugin Taggable
           self.uuid_prefix(uuid_prefix)

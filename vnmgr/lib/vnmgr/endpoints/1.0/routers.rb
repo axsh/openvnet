@@ -3,32 +3,34 @@
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/routers' do
 
   post do
-    possible_params = ["uuid","network_id","ipv4_address","created_at","updated_at"]
-    params = @params.delete_if {|k,v| !possible_params.member?(k)}
-    params.default = nil
+    params = parse_params(@params, ["uuid","network_id","ipv4_address","created_at","updated_at"])
 
+    if params.has_key?("uuid")
+      raise E::DuplicateUUID, params["uuid"] unless M::Router[params["uuid"]].nil?
+      params["uuid"] = M::Router.trim_uuid(params["uuid"])
+    end
     router = sb.router.create(params)
     respond_with(R::Router.generate(router))
   end
 
   get do
-    routers = sb.router.get_all
+    routers = sb.router.all
     respond_with(R::RouterCollection.generate(routers))
   end
 
   get '/:uuid' do
-    router = sb.router.get(@params["uuid"])
+    router = sb.router[{:uuid => @params["uuid"]}]
     respond_with(R::Router.generate(router))
   end
 
   delete '/:uuid' do
-    sb.router.delete(@params["uuid"])
-    respond_with({:uuid => @params["uuid"]})
+    router = sb.router.delete({:uuid => @params["uuid"]})
+    respond_with(R::Router.generate(router))
   end
 
   put '/:uuid' do
-    new_params = filter_params(params)
-    router = sb.router.update(new_params)
+    params = parse_params(@params, ["uuid","network_id","ipv4_address","created_at","updated_at"])
+    router = sb.router.update(params)
     respond_with(R::Router.generate(router))
   end
 end
