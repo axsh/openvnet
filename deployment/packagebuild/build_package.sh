@@ -14,7 +14,7 @@ fpm_path=${fpm_path:-"$vnet_path/ruby/bin/fpm"}
 
 possible_archs="i386 noarch x86_64"
 
-dependencies="rpmbuild createrepo"
+dependencies=(rpm-build createrepo)
 
 function print_usage() {
   echo "Do not call this script directly. Use make instead with the following commands:"
@@ -72,6 +72,23 @@ function build_package() {
     --architecture $pkg_arch \
     $pkg_dirs
 }
+
+function check_dep() {
+  local dep=$1
+  rpm -q $dep &> /dev/null
+  if [ ! "$?" == "0" ]; then
+    echo "Missing dependencies."
+    echo "Make sure all of the following are installed:"
+    echo ${dependencies[@]}
+    exit 1
+  fi
+}
+
+set +e
+for dep in ${dependencies[*]}; do
+  check_dep $dep
+done
+set -e
 
 check_path $vnet_path
 check_path $etc_path
