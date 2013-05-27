@@ -12,6 +12,10 @@ pkg_to_build=$1
 
 fpm_path=${fpm_path:-"$vnet_path/ruby/bin/fpm"}
 
+possible_archs="i386 noarch x86_64"
+
+dependencies="rpmbuild createrepo"
+
 function print_usage() {
   echo "Do not call this script directly. Use make instead with the following commands:"
   echo ""
@@ -72,10 +76,12 @@ function build_package() {
 check_path $vnet_path
 check_path $etc_path
 
-for arch in i386 noarch x86_64; do
+# Create pkg dirs
+for arch in $possible_archs; do
   mkdir -p $pkg_output_dir/$arch
 done
 
+# Build pkgs
 if [ -z "$pkg_to_build" ]; then
   for pkg_meta_file in `ls ${whereami}/packages.d/`; do
     build_package $pkg_meta_file
@@ -83,3 +89,6 @@ if [ -z "$pkg_to_build" ]; then
 else
   build_package "$pkg_to_build.meta"
 fi
+
+# Create yum repository
+(cd $pkg_output_dir; createrepo .)
