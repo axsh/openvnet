@@ -29,10 +29,18 @@ namespace :db do
     # Sequel configurations should be ported into a config file.
     migrate('mysql://localhost/vnmgr?user=root', 0)
   end
+
+  task :dump => [] do
+    Sequel.extension :schema_dumper
+    #TODO:
+    # Sequel configurations should be ported into a config file.
+    db = Sequel.connect('mysql://localhost/vnmgr?user=root')
+    puts db.dump_schema_migration
+  end
 end
 
 namespace :test do
-  conf = Vnmgr::Configurations::Dba.load(File.expand_path("spec/config/dba.conf", File.dirname(__FILE__)))
+  #conf = Vnmgr::Configurations::Dba.load(File.expand_path("spec/config/dba.conf", File.dirname(__FILE__)))
   namespace :db do
     task :init => [] do
       migrate(conf.db_uri)
