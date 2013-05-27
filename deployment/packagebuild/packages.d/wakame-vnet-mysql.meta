@@ -1,0 +1,6 @@
+pkg_name="wakame-vnet-mysql"
+pkg_desc="MySQL database for Wakame-VNet"
+pkg_arch="x86_64"
+pkg_deps="mysql mysql-server"
+pkg_owned_dirs=$pkg_dirs
+#TODO: Make the actual database in a post install script

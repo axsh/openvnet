@@ -1,0 +1,22 @@
+pkg_name="wakame-vnet-common"
+pkg_desc="Common files for Wakame-VNet"
+pkg_deps="wakame-vnet-ruby"
+pkg_arch="all"
+pkg_dirs=`cat <<_EOF_
+$vnet_path/vnmgr/Gemfile
+$vnet_path/vnmgr/Gemfile.lock
+$vnet_path/vnmgr/LICENSE
+$vnet_path/vnmgr/README.md
+$vnet_path/vnmgr/lib
+$vnet_path/vnmgr/vendor
+$vnet_path/vnmgr/db
+$vnet_path/vnmgr/Rakefile
+$vnet_path/vnmgr/.bundle
+$etc_path/default/wakame-vnet
+_EOF_`
+pkg_cfgs=`cat <<_EOF_
+$etc_path/default/wakame-vnet
+_EOF_`
+pkg_owned_dirs=`cat <<_EOF_
+$vnet_path/vnmgr
+_EOF_`
