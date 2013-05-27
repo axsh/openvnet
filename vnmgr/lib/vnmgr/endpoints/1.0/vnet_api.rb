@@ -6,14 +6,16 @@ require "sinatra/vnmgr_api_setup"
 module Vnmgr::Endpoints::V10
   class VNetAPI < Sinatra::Base
     class << self
-      attr_reader :conf
+      attr_reader :vnmgr_conf, :dba_conf, :common_conf
 
-      def load_conf(conf_path)
-        @conf = Vnmgr::Configurations::Vnmgr.load(conf_path)
+      def load_conf(vnmgr_conf, dba_conf, common_conf)
+        @vnmgr_conf = Vnmgr::Configurations::Vnmgr.load(vnmgr_conf)
+        @dba_conf = Vnmgr::Configurations::Dba.load(dba_conf)
+        @common_conf = Vnmgr::Configurations::Common.load(common_conf)
       end
 
       def storage_backend
-        @storage_backend ||= Vnmgr::StorageBackends.backend_class(VNetAPI.conf)
+        @storage_backend ||= Vnmgr::StorageBackends.backend_class(VNetAPI.vnmgr_conf, VNetAPI.dba_conf, VNetAPI.common_conf)
       end
       alias_method :sb, :storage_backend
     end
@@ -21,32 +23,14 @@ module Vnmgr::Endpoints::V10
     include Vnmgr::Endpoints::V10::Helpers
     register Sinatra::VnmgrAPISetup
 
-    #load_conf(Vnmgr::Constants::VNetAPI::CONF_LOCATION)
     E = Vnmgr::Endpoints::Errors
     R = Vnmgr::Endpoints::V10::Responses
 
     def parse_params(params,mask)
       final_params = {}
-
-      # Check if the mask is valid
-      mask.values.each {|v| raise "Invalid parameters mask" unless v.is_a?(Array) }
-
-      params.each {|k,v|
-        if mask[k].member?(v.class)
-          final_params[k] = v
-        else
-          raise "Invalid parameter: '#{v}'. Must be one of [#{v.join(",")}]"
-        end
-      }
-
+      final_params = params.delete_if {|k,v| !mask.member?(k) }
+      final_params.default = nil
       final_params
-    end
-
-    def filter_params(params)
-      params.delete('splat')
-      params.delete('captures')
-      params.default = nil
-      params
     end
 
     def storage_backend
@@ -68,5 +52,6 @@ module Vnmgr::Endpoints::V10
     load_namespace('open_flow_controllers')
     load_namespace('ip_addresses')
     load_namespace('ip_leases')
+    load_namespace('network_services')
   end
 end
