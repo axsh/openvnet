@@ -16,7 +16,7 @@ function print_usage() {
   echo "Do not call this script directly. Use make instead with the following commands:"
   echo ""
   echo "cd $(cd $whereami/../.. && pwd)"
-  echo "make build-rpm DSTDIR=/tmp/vnet-rpmbuild"
+  echo "make build-rpm"
 }
 
 function check_path() {
