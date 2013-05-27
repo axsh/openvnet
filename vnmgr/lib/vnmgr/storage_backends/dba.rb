@@ -20,12 +20,16 @@ module Vnmgr::StorageBackends
     def wrapping(data)
       case data
       when Array
-        data.map{|r| Vnmgr::ModelWrappers.const_get("#{table_name.capitalize}Wrapper").new(r) }
+        data.map{|r| Vnmgr::ModelWrappers.const_get("#{wrapper_name}Wrapper").new(r) }
       when nil
         nil
       else
-        Vnmgr::ModelWrappers.const_get("#{table_name.capitalize}Wrapper").new(data)
+        Vnmgr::ModelWrappers.const_get("#{wrapper_name}Wrapper").new(data)
       end
+    end
+
+    def wrapper_name
+      @table_name.to_s.split('_').map {|m| m.capitalize }.join
     end
 
     def dcell
@@ -44,7 +48,7 @@ module Vnmgr::StorageBackends
         :port => common_conf.redis_port
       })
 
-      [:network, :vif, :dhcp_range, :mac_range, :mac_lease, :router, :tunnel, :dc_network, :datapath, :open_flow_controller, :ip_address, :ip_lease].each do |klass_name|
+      dba_conf.db_tables.each do |klass_name|
         # instantiation
         c = DCellWrapper.new(dba_conf, klass_name)
         instance_variable_set("@#{klass_name}", c)
