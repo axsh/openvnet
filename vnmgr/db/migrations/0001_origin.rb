@@ -9,7 +9,7 @@ Sequel.migration do
       column :ipv4_network, 'int unsigned', :null=>false
       column :ipv4_prefix, 'int(5)', :default=>24, :null=>false
       column :domain_name, 'varchar(255)'
-      column :dc_network_id, 'int(11)'
+      column :dc_network_uuid, 'varchar(255)'
       column :network_mode, 'varchar(255)'
       column :editable, 'tinyint(1)'
       column :created_at, 'datetime', :null=>false
@@ -29,7 +29,6 @@ Sequel.migration do
       column :updated_at, 'datetime', :null=>false
 
       index [:uuid], :unique=>true
-      index [:mac_addr], :unique=>true
     end
 
     create_table(:routers) do
@@ -41,22 +40,20 @@ Sequel.migration do
       column :updated_at, 'datetime', :null=>false
 
       index [:uuid], :unique=>true
-      index [:ipv4_address], :unique=>true
     end
 
-    create_table(:network_connections) do
+    create_table(:tunnels) do
       primary_key :id, :type => 'int(11)'
       column :uuid, 'varchar(255)', :null=>false
-      column :src_network_id, 'int(11)', :null=>false
-      column :dst_network_id, 'int(11)', :null=>false
-      # type = [mac2mac|gre]
-      column :type, 'varchar(255)', :null=>false
+      column :src_network_uuid, 'varchar(255)', :null=>false
+      column :dst_network_uuid, 'varchar(255)', :null=>false
       column :tunnel_id, 'int(11)', :null=>false
+      column :ttl, 'datetime'
       column :created_at, 'datetime', :null=>false
       column :updated_at, 'datetime', :null=>false
 
       index [:uuid], :unique=>true
-      index [:src_network_id, :dst_network_id]
+      index [:src_network_uuid, :dst_network_uuid]
     end
 
     create_table(:dc_networks) do
@@ -72,13 +69,14 @@ Sequel.migration do
 
     create_table(:dhcp_ranges) do
       primary_key :id, :type => 'int(11)'
+      column :uuid, 'varchar(255)', :null=>false
       column :range_begin, 'int(11) unsigned', :null=>false
       column :range_end, 'int(11) unsigned', :null=>false
-      column :network_id, 'int(11)', :null=>false
+      column :network_uuid, 'varchar(255)', :null=>false
       column :created_at, 'datetime', :null=>false
       column :updated_at, 'datetime', :null=>false
 
-      index [:network_id]
+      index [:uuid], :unique=>true
     end
 
     create_table(:mac_ranges) do
@@ -95,6 +93,7 @@ Sequel.migration do
 
     create_table(:mac_leases) do
       primary_key :id, :type => 'int(11)'
+      column :uuid, 'varchar(255)', :null=>false
       column :mac_addr, 'bigint unsigned', :null=>false
       column :created_at, 'datetime', :null=>false
       column :updated_at, 'datetime', :null=>false
@@ -104,44 +103,48 @@ Sequel.migration do
 
     create_table(:ip_leases) do
       primary_key :id, :type => 'int(11)'
-      column :network_id, 'int(11)', :null=>false
-      column :vif_id, 'int(11)', :null=>false
-      column :ip_handle_id, 'int(11)', :null=>false
+      column :uuid, 'varchar(255)', :null=>false
+      column :network_uuid, 'varchar(255)', :null=>false
+      column :vif_uuid, 'varchar(255)', :null=>false
+      column :ip_address_uuid, 'varchar(255)', :null=>false
       column :alloc_type, 'int'
       column :created_at, 'datetime', :null=>false
       column :updated_at, 'datetime', :null=>false
       column :deleted_at, 'datetime', :null=>false
       column :is_deleted, 'tinyint(1)', :null=>false
 
-      index [:network_id]
-      index [:vif_id]
-      index [:ip_handle_id]
+      index [:uuid], :unique => true
+      index [:network_uuid]
+      index [:vif_uuid]
+      index [:ip_address_uuid]
     end
 
     create_table(:ip_addresses) do
       primary_key :id, :type => 'int(11)'
+      column :uuid, 'varchar(255)', :null=>false
       column :ipv4_address, 'int unsigned', :null=>false
-      column :network_id, 'int(11)', :null=>false
       column :created_at, 'datetime', :null=>false
       column :updated_at, 'datetime', :null=>false
 
-      index [:network_id]
+      index [:uuid], :unique => true
     end
 
     create_table(:network_services) do
       primary_key :id, :type => 'int(11)'
-      column :vif_id, 'int(11)'
-      column :name, 'varchar(255)', :null=>false
+      column :uuid, 'varchar(255)', :null=>false
+      column :vif_uuid, 'varchar(255)'
+      column :display_name, 'varchar(255)', :null=>false
       column :incoming_port, 'int(11)'
       column :outgoing_port, 'int(11)'
       column :created_at, 'datetime', :null=>false
       column :updated_at, 'datetime', :null=>false
 
-      index [:name]
-      index [:vif_id, :name]
+      index [:uuid], :unique => true
+      index [:vif_uuid]
+      index [:display_name]
     end
 
-    create_table(:openflow_controllers) do
+    create_table(:open_flow_controllers) do
       primary_key :id, :type => 'int(11)'
       column :uuid, 'varchar(255)', :null=>false
       column :created_at, 'datetime', :null=>false
@@ -152,20 +155,20 @@ Sequel.migration do
 
     create_table(:datapaths) do
       primary_key :id, :type => 'int(11)'
-      column :name, 'varchar(255)', :null=>false
-      column :openflow_controller_id, 'int(11)', :null=>false
+      column :uuid, 'varchar(255)', :null=>false
+      column :open_flow_controller_uuid, 'varchar(255)', :null=>false
+      column :display_name, 'varchar(255)', :null=>false
       column :ipv4_address, 'int unsigned'
-      column :created_at, 'datetime', :null=>false
-      column :updated_at, 'datetime', :null=>false
       column :is_connected, 'tinyint(1)', :null=>false
       column :datapath_id, 'varchar(255)', :null=>false
+      column :created_at, 'datetime', :null=>false
+      column :updated_at, 'datetime', :null=>false
 
-      index [:datapath_id], :unique=>true
-      index [:openflow_controller_id]
+      index [:uuid], :unique=>true
     end
   end
 
   down do
-    drop_table(:networks, :vifs, :routers, :network_connections, :dc_networks, :dhcp_ranges, :mac_ranges, :mac_leases, :ip_leases, :ip_addresses, :network_services, :openflow_controllers, :datapaths)
+    drop_table(:networks, :vifs, :routers, :tunnels, :dc_networks, :dhcp_ranges, :mac_ranges, :mac_leases, :ip_leases, :ip_addresses, :network_services, :open_flow_controllers, :datapaths)
   end
 end
