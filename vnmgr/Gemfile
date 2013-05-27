@@ -1,14 +1,33 @@
 
 source "http://rubygems.org"
 
-gem "sinatra"
-gem "sinatra-contrib"
-gem "rack"
-gem "rack-cors"
-gem "unicorn"
-gem "json"
+gem "bit-struct", ">= 0.13.7"
+gem "celluloid", "0.13.0"
+gem "celluloid-io", "0.13.1"
 gem "dcell"
 gem "fuguta"
-gem "sequel"
+gem "json"
 gem "mysql"
-gem "rake"
+gem "rack"
+gem "rack-cors"
+gem "racket", ">= 1.0.12"
+gem "sequel"
+gem "sinatra"
+gem "sinatra-contrib"
+gem "unicorn"
+
+gem 'rant', '0.5.9'
+gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
+
+group :development, :test do
+  gem "rspec"
+  gem "rack-test"
+  gem "fabrication"
+  gem "faker"
+  # http://stackoverflow.com/questions/11719183/databasecleaner-errors-in-non-rails-app
+  gem 'database_cleaner', :git => "https://github.com/bmabey/database_cleaner.git", :ref => "e5cb8cea"
+
+  gem "coveralls"
+
+  gem "pry-nav"
+end
