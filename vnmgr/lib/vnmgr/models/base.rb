@@ -214,6 +214,8 @@ module Vnmgr::Models
       # @example Will get InvalidUUIDError as the uuid with invalid prefix has been tried.
       #   Account.trim_uuid('u-abcd1234') # 'u-' prefix is for User model.
       def trim_uuid(p_uuid)
+        p "trim_uuid"
+        p p_uuid
         regex = %r/^#{self.uuid_prefix}-/
         if p_uuid and p_uuid =~ regex
           return p_uuid.sub(regex, '')
