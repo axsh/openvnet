@@ -1,7 +1,7 @@
 
 source "http://rubygems.org"
 
-#gem "bit-struct", ">= 0.13.7"
+gem "bit-struct", ">= 0.13.7"
 gem "celluloid"
 gem "celluloid-io"
 gem "dcell"
@@ -10,7 +10,7 @@ gem "json"
 gem "mysql2"
 gem "rack"
 gem "rack-cors"
-#gem "racket", ">= 1.0.12"
+gem "racket", ">= 1.0.12"
 gem "sequel"
 gem "sinatra"
 gem "sinatra-contrib"
