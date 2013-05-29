@@ -12,7 +12,7 @@ LIBYAML_MIRROR_SITE="http://pyyaml.org/download/libyaml/"
 RUBYGEMS_MIRROR_SITE="http://production.cf.rubygems.org/rubygems/"
 
 # The devel packages are needed to build certain functionality into ruby that we'll use in certain gems later
-dependencies=(make git gcc zlib-devel openssl-devel zeromq-devel)
+dependencies=(make git gcc gcc-c++ zlib-devel openssl-devel zeromq-devel mysql-devel sqlite-devel)
 
 function check_dep() {
   local dep=$1
