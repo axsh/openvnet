@@ -16,6 +16,7 @@ gem "sinatra"
 gem "sinatra-contrib"
 gem "unicorn"
 
+gem 'paper-house'
 gem 'rant', '0.5.9'
 gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
