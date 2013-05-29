@@ -7,13 +7,15 @@ module Vnmgr::VNet::Openflow
 
     attr_reader :datapath
     attr_reader :network_id
+    attr_reader :network_number
     attr_reader :uuid
     attr_reader :ports
 
-    def initialize(dp, nw_id, uuid)
+    def initialize(dp, network_map)
       @datapath = dp
-      @network_id = nw_id
-      @uuid = uuid
+      @uuid = network_map.uuid
+      @network_id = network_map.network_id
+      @network_number = network_map.network_id
       @ports = {}
     end
 
@@ -26,22 +28,13 @@ module Vnmgr::VNet::Openflow
       update_flows
     end
 
-    def install
-      flows = []
-      flows << Flow.create(TABLE_PHYSICAL_DST, 1, {:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')}, {},
-                           {:cookie => OFPP_FLOOD | 0x100000000, :metadata => OFPP_FLOOD, :metadata_mask => 0xffffffff, :goto_table => TABLE_PHYSICAL_SRC})
+    def del_port(port)
+      deleted_port = self.ports.delete(port.port_number)
+      update_flows
 
-      self.datapath.add_flows(flows)
-    end
+      raise("Port not added to this network.") if port.network != self || deleted_port.nil?
 
-    def update_flows
-      flood_actions = ports.collect { |key,port| {:output => port.port_number} }
-
-      flows = []
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {:metadata => OFPP_FLOOD, :metadata_mask => 0xffffffff}, flood_actions,
-                           {:cookie => OFPP_FLOOD | 0x100000000})
-
-      self.datapath.add_flows(flows)
+      port.network = nil
     end
 
   end
