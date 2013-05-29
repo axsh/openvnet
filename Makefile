@@ -19,6 +19,7 @@ build-ruby:
 	$(CURDIR)/deployment/rubybuild/build_ruby.sh
 
 install-bundle:
+	(rpm -q gcc-c++ > /dev/null) || yum install -y gcc-c++
 	$(RUBYDIR)/bin/gem install bundler
 	(cd $(CURDIR)/vnmgr; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
 	(cd $(CURDIR)/vnmgr; $(RUBYDIR)/bin/bundle install --without development test)
