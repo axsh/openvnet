@@ -28,12 +28,11 @@ module Vnmgr::VNet::Openflow
       p "switch_ready from %#x." % datapath_id
 
       # Sometimes ovs changes the datapath ID and reconnects.
-      old_switch = switches[datapath_id]
+      old_switch = @switches.delete(datapath_id)
       
       if old_switch
-        p "found old bridge: datapath_id:%016x" % old_switch[0]
+        p "found old bridge: datapath_id:%016x" % datapath_id
 
-        switches.delete(old_switch[0])
         #old_switch[1].networks.each { |network_id,network| @service_openflow.destroy_network(network, false) }
       end
 
@@ -43,7 +42,7 @@ module Vnmgr::VNet::Openflow
       # This might not be optimal in cases where the switch got
       # disconnected for a short period, as Open vSwitch has the
       # ability to keep flows between sessions.
-      switch = switches[datapath_id] = Switch.new(Datapath.new(self, datapath_id))
+      switch = switches[datapath_id] = Switch.new(Datapath.new(self, datapath_id, OvsOfctl.new('br0')))
       switch.async.switch_ready
     end
 
@@ -89,6 +88,11 @@ module Vnmgr::VNet::Openflow
     def public_send_message(datapath_id, message)
       raise "public_send_message must be called from the trema thread" unless Thread.current == @trema_thread
       send_message(datapath_id, message)
+    end
+
+    def public_send_flow_mod(datapath_id, message)
+      raise "public_send_flow_mod must be called from the trema thread" unless Thread.current == @trema_thread
+      send_flow_mod(datapath_id, message)
     end
 
   end
