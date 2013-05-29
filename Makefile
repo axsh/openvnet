@@ -51,7 +51,7 @@ remove-config:
 
 clean:
 	rm -rf $(RUBYDIR)
-	rm -rf $(CURDIR)/vnmgr/vendor
+	(cd $(CURDIR)/vnmgr/vendor/cache; ls --ignore bit-struct-0.13.7.gem --ignore racket-1.0.12.gem --ignore rant-0.5.9.gem | xargs rm -f)
 	rm -rf $(CURDIR)/vnmgr/.bundle
 
 build-rpm: DSTDIR = /tmp/vnet-rpmbuild
