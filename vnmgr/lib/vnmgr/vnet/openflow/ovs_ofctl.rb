@@ -6,13 +6,14 @@ module Vnmgr::VNet::Openflow
     attr_accessor :verbose
     attr_accessor :switch_name
 
-    def initialize
+    def initialize(switch_name = nil)
       # TODO: Make ovs_vsctl use a real config option.
       # @ovs_ofctl = Dcmgr.conf.ovs_ofctl_path
       # @ovs_vsctl = Dcmgr.conf.ovs_ofctl_path.dup
       # @ovs_vsctl[/ovs-ofctl/] = 'ovs-vsctl'
       @ovs_ofctl = 'ovs-ofctl -O OpenFlow13'
       @ovs_vsctl = 'ovs-vsctl'
+      @switch_name = switch_name
 
       # @verbose = Dcmgr.conf.verbose_openflow
       @verbose = true
@@ -59,6 +60,11 @@ module Vnmgr::VNet::Openflow
 
       p("removing flow(s): #{recmds.size - 2}")
       system(recmds.join("\n"))
+    end
+
+    def del_cookie(cookie)
+      command = "#{@ovs_ofctl} del-flows #{switch_name} cookie=0x%x/-1" % cookie
+      p "'#{command}' => #{system(command)}"
     end
 
     def add_gre_tunnel(tunnel_name, remote_ip, key)
