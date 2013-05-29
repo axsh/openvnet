@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class OpenFlowControllerWrapper < Base
-    backend_namespace = "open_flow_controllers"
 
     def to_hash
       {

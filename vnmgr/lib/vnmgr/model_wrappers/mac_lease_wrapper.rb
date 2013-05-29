@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class MacLeaseWrapper < Base
-    backend_namespace = "mac_leases"
 
     def to_hash
       {

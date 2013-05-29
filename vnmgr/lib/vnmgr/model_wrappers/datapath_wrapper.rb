@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class DatapathWrapper < Base
-    backend_namespace = "datapaths"
 
     def to_hash
       {

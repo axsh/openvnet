@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class DhcpRangeWrapper < Base
-    backend_namespace = "dhcp_ranges"
 
     def to_hash
       {
