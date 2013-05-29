@@ -51,6 +51,7 @@ remove-config:
 
 clean:
 	rm -rf $(RUBYDIR)
+	rm -rf $(CURDIR)/vnmgr/vendor/bundle
 	(cd $(CURDIR)/vnmgr/vendor/cache; ls --ignore racket-1.0.12.gem --ignore rant-0.5.9.gem | xargs rm -f)
 	rm -rf $(CURDIR)/vnmgr/.bundle
 
