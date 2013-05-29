@@ -3,18 +3,22 @@
 $LOAD_PATH.unshift 'lib'
 
 require 'rubygems'
-require 'rspec/core/rake_task'
+require 'bundler/setup'
 require 'sequel'
 require 'vnmgr'
+
+begin
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new(:spec)
+  task :default => :spec
+rescue => LoadError
+end
 
 def migrate(db_uri, to = nil)
   Sequel.connect(db_uri)
   Sequel.extension :migration
   Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../db/migrations', __FILE__), to)
 end
-
-RSpec::Core::RakeTask.new(:spec)
-task :default => :spec
 
 namespace :db do
   task :init => [] do
@@ -40,7 +44,7 @@ namespace :db do
 end
 
 namespace :test do
-  #conf = Vnmgr::Configurations::Dba.load(File.expand_path("spec/config/dba.conf", File.dirname(__FILE__)))
+  conf = Vnmgr::Configurations::Dba.load(File.expand_path("spec/config/common.conf", File.dirname(__FILE__)))
   namespace :db do
     task :init => [] do
       migrate(conf.db_uri)

@@ -5,6 +5,7 @@ require 'json'
 require 'sinatra/respond_with'
 require 'sinatra/namespace'
 require 'sinatra/json'
+require 'sinatra/hashfix'
 
 # common setup for Vnmgr API Sinatra App. Based on the same file form Wakame-vdc
 module Sinatra

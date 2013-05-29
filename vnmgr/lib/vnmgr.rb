@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'ext/kernel'
+require 'active_support/core_ext'
 
 module Vnmgr
 

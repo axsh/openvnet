@@ -22,6 +22,7 @@ gem "active_support", :require => 'active_support/core_ext'
 #gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
+  gem "rake"
   gem "rspec"
   gem "rack-test"
   gem "fabrication"

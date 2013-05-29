@@ -14,7 +14,7 @@ describe Vnmgr::DataAccess do
 
     it "return dba proxy" do
       conf.stub(:data_access_proxy).and_return(:dba)
-      expect(Vnmgr::DataAccess.get_proxy(conf)).to be_a Vnmgr::DataAccess::DBAProxy
+      expect(Vnmgr::DataAccess.get_proxy(conf)).to be_a Vnmgr::DataAccess::DbaProxy
     end
 
     it "return direct proxy" do

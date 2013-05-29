@@ -2,7 +2,7 @@
 require 'spec_helper'
 
 describe Vnmgr::DataAccess do
-  describe Vnmgr::DataAccess::DBAProxy do
+  describe Vnmgr::DataAccess::DbaProxy do
     let(:conf) do
       double(:conf).tap do |conf|
         conf.stub(:dba_node_name).and_return("dba")
@@ -24,7 +24,7 @@ describe Vnmgr::DataAccess do
 
     subject do
       actor.should_receive(:execute).with(:network, :all).and_return([{uuid: "test-uuid"}])
-      Vnmgr::DataAccess::DBAProxy.new(conf).network.all
+      Vnmgr::DataAccess::DbaProxy.new(conf).network.all
     end
 
     it { should be_a Array }

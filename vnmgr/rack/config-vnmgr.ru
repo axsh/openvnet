@@ -7,20 +7,23 @@ require 'rack/cors'
 require 'dcell'
 
 config_dir="/etc/wakame-vnet/"
-conf = Vnmgr::Endpoints::V10::VNetAPI.load_conf(File.join(config_dir, 'common.conf'), File.join(config_dir, 'vnmgr.conf')
+conf = Vnmgr::Endpoints::V10::VNetAPI.load_conf(File.join(config_dir, 'common.conf'), File.join(config_dir, 'vnmgr.conf'))
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'
   use Unicorn::OobGC
 end
 
-if conf.data_access_proxy == :dba
+case conf.data_access_proxy
+when :dba
   DCell.start(:id => conf.node_name, :addr => "tcp://#{conf.ip}:#{conf.port}",
   :registry => {
     :adapter => 'redis',
     :host => conf.redis_host,
     :port => conf.redis_port
   })
+when :direct
+  Vnmgr::Initializers::DB.run(conf.db_uri)
 end
 
 map '/api' do
