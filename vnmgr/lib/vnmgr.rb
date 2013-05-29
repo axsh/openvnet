@@ -79,7 +79,7 @@ module Vnmgr
     autoload :IpAddress, 'vnmgr/models/ip_address'
     autoload :IpLease, 'vnmgr/models/ip_lease'
     autoload :NetworkService, 'vnmgr/models/network_service'
-    autoload :Taggable, 'vnmgr/models/base'
+    autoload :Taggable, 'vnmgr/models/taggable'
   end
 
   module ModelWrappers
@@ -116,7 +116,7 @@ module Vnmgr
       autoload :IpAddress, 'vnmgr/data_access/models/ip_address'
       autoload :IpLease, 'vnmgr/data_access/models/ip_lease'
       autoload :NetworkService, 'vnmgr/data_access/models/network_service'
-      autoload :Taggable, 'vnmgr/data_access/models/base'
+      autoload :Taggable, 'vnmgr/data_access/models/taggable'
     end
   end
 
