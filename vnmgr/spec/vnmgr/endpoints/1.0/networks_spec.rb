@@ -48,6 +48,23 @@ describe "/networks" do
     end
   end
 
+  describe "POST /" do
+    it "should create a network" do
+      params = {
+        display_name: "network",
+        ipv4_network: IPAddr.new("192.168.10.1").to_i,
+        ipv4_prefix: 24,
+      }
+      post "/networks", params
+
+      expect(last_response).to be_ok
+      body = JSON.parse(last_response.body)
+      expect(body["display_name"]).to eq "network"
+      expect(body["ipv4_network"]).to eq IPAddr.new("192.168.10.1").to_i
+      expect(body["ipv4_prefix"]).to eq 24
+    end
+  end
+
   describe "DELETE /:uuid" do
     it "should return 404 error" do
       delete "/networks/nw-notfound"
@@ -78,13 +95,12 @@ describe "/networks" do
     it "should update a network" do
       network = Fabricate(:network)
 
-      put "/networks/#{network.canonical_uuid}", :domain_name => "example.com"
+      put "/networks/#{network.canonical_uuid}", :domain_name => "aaa.#{network.domain_name}"
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
       expect(body["uuid"]).to eq network.canonical_uuid
       expect(body["domain_name"]).not_to eq network.domain_name
-      expect(body["domain_name"]).to eq "example.com"
     end
   end
 

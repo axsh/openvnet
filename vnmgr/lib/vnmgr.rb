@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
 require 'ext/kernel'
-require 'active_support/core_ext'
+
+#require 'active_support/all'
+#require 'active_support/core_ext'
+require 'active_support/core_ext/object'
+require 'active_support/inflector'
+require 'active_support/hash_with_indifferent_access'
 
 module Vnmgr
 
@@ -97,6 +102,22 @@ module Vnmgr
   module DataAccess
     autoload :DbaProxy, 'vnmgr/data_access/proxies'
     autoload :DirectProxy, 'vnmgr/data_access/proxies'
+    module Models
+      autoload :Base, 'vnmgr/data_access/models/base'
+      autoload :Network, 'vnmgr/data_access/models/network'
+      autoload :Vif, 'vnmgr/data_access/models/vif'
+      autoload :DhcpRange, 'vnmgr/data_access/models/dhcp_range'
+      autoload :MacRange, 'vnmgr/data_access/models/mac_range'
+      autoload :Router, 'vnmgr/data_access/models/router'
+      autoload :Tunnel, 'vnmgr/data_access/models/tunnel'
+      autoload :DcNetwork, 'vnmgr/data_access/models/dc_network'
+      autoload :Datapath, 'vnmgr/data_access/models/datapath'
+      autoload :OpenFlowController, 'vnmgr/data_access/models/open_flow_controller'
+      autoload :IpAddress, 'vnmgr/data_access/models/ip_address'
+      autoload :IpLease, 'vnmgr/data_access/models/ip_lease'
+      autoload :NetworkService, 'vnmgr/data_access/models/network_service'
+      autoload :Taggable, 'vnmgr/data_access/models/base'
+    end
   end
 
   module Configurations

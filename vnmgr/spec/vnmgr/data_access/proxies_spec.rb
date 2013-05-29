@@ -27,10 +27,10 @@ describe Vnmgr::DataAccess do
       Vnmgr::DataAccess::DbaProxy.new(conf).network.all
     end
 
-    it { should be_a Array }
+    it { expect(subject).to be_a Array }
     it { expect(subject.size).to eq 1 }
-    it { expect(subject.first).to be_a Vnmgr::ModelWrappers::Network }
-    it { expect(subject.first.uuid).to eq "test-uuid" }
+    it { expect(subject.first).to be_a Hash }
+    it { expect(subject.first[:uuid]).to eq "test-uuid" }
   end
 
   describe Vnmgr::DataAccess::DirectProxy do
@@ -48,7 +48,7 @@ describe Vnmgr::DataAccess do
 
     it { should be_a Array }
     it { expect(subject.size).to eq 1 }
-    it { expect(subject.first).to be_a Vnmgr::ModelWrappers::Network }
-    it { expect(subject.first.uuid).to eq "test-uuid" }
+    it { expect(subject.first).to be_a Hash }
+    it { expect(subject.first[:uuid]).to eq "test-uuid" }
   end
 end

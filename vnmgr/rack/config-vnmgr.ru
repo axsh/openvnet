@@ -7,7 +7,9 @@ require 'rack/cors'
 require 'dcell'
 
 config_dir="/etc/wakame-vnet/"
-conf = Vnmgr::Endpoints::V10::VNetAPI.load_conf(File.join(config_dir, 'common.conf'), File.join(config_dir, 'vnmgr.conf'))
+conf = Vnmgr::Configurations::Vnmgr.load("#{config_dir}/common.conf", "#{config_dir}/vnmgr.conf")
+Vnmgr::Endpoints::V10::VNetAPI.conf = conf
+Vnmgr::ModelWrappers::Base.set_proxy(conf)
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'

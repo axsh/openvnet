@@ -16,7 +16,7 @@ gem "sinatra"
 gem "sinatra-contrib"
 gem "sinatra-hashfix"
 gem "unicorn"
-gem "active_support", :require => 'active_support/core_ext'
+gem "active_support"
 
 gem 'paper-house'
 gem 'rant', '0.5.9'
@@ -27,7 +27,6 @@ group :development, :test do
   gem "rspec"
   gem "rack-test"
   gem "fabrication"
-  gem "faker"
   # http://stackoverflow.com/questions/11719183/databasecleaner-errors-in-non-rails-app
   gem 'database_cleaner', :git => "https://github.com/bmabey/database_cleaner.git", :ref => "e5cb8cea"
 

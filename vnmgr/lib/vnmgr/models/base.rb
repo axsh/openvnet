@@ -553,24 +553,6 @@ module Vnmgr::Models
       s
     end
 
-    # destroy model by uuid
-    def self.destroy(*args, &block)
-      if args.size == 1 && args.first.is_a?(String)
-        self[args.first].tap(&:destroy)
-      else
-        super
-      end
-    end
-
-    # update model by uuid
-    def self.update(*args, &block)
-      if args.size == 2 && args.first.is_a?(String)
-        self[args.first].tap{|m| m.update(args.second)}
-      else
-        super
-      end
-    end
-
     # Returns true if this Model has time stamps
     def with_timestamps?
       self.columns.include?(:created_at) && self.columns.include?(:updated_at)
@@ -632,7 +614,6 @@ module Vnmgr::Models
         #   taggable 'm'
         # end
         def self.taggable(uuid_prefix)
-          p "call taggable #{uuid_prefix}"
           return if self == Base
           self.plugin Taggable
           self.uuid_prefix(uuid_prefix)
