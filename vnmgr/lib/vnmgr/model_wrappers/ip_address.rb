@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class IpAddressWrapper < Base
-    backend_namespace = "ip_addresses"
-
+  class IpAddress < Base
     def to_hash
       {
         :uuid => self.uuid,

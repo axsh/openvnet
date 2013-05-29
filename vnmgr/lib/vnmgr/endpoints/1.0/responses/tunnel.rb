@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class Tunnel < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::TunnelWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::Tunnel)
       object.to_hash
     end
   end

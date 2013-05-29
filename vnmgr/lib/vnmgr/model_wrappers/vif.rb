@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class VifWrapper < Base
-    backend_namespace = "vifs"
-
+  class Vif < Base
     def to_hash
       {
         :uuid => self.uuid,

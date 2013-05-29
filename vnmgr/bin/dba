@@ -7,16 +7,20 @@ require 'rubygems'
 require 'dcell'
 require 'vnmgr'
 
-dba = Vnmgr::Configurations::Dba.load('/etc/wakame-vnet/dba.conf')
-common = Vnmgr::Configurations::Common.load('/etc/wakame-vnet/common.conf')
-Vnmgr::Initializers::DB.run(dba.db_uri)
+config_dir="/etc/wakame-vnet/"
+conf = Vnmgr::Configurations::Dba.load(File.join(config_dir, 'common.conf'), File.join(config_dir, '/etc/wakame-vnet/dba.conf'))
 
-DCell.start :id => dba.cluster_name, :addr => "tcp://#{dba.ip}:#{dba.port}",
+Vnmgr::Initializers::DB.run(conf.db_uri)
+
+DCell.start :id => conf.node_name, :addr => "tcp://#{conf.ip}:#{conf.port}",
   :registry => {
     :adapter => 'redis',
-    :host => common.redis_host,
-    :port => common.redis_port
+    :host => conf.redis_host,
+    :port => conf.redis_port
   }
 
-Vnmgr::NodeModules::Dba.supervise_as dba.node_name, dba.db_tables
+conf.actor_names.each do |actor_name|
+  Vnmgr::NodeModules.const_get(actor_name.classify).supervise_as actor_name
+end
+
 sleep

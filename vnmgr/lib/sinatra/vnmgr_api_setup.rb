@@ -30,6 +30,7 @@ module Sinatra
 
       register Sinatra::RespondWith
       register Sinatra::Namespace
+      register Sinatra::Hashfix
 
       # avoid using Sinatra::JSON builtin encoder.
       set :json_encoder, ::JSON

@@ -214,8 +214,6 @@ module Vnmgr::Models
       # @example Will get InvalidUUIDError as the uuid with invalid prefix has been tried.
       #   Account.trim_uuid('u-abcd1234') # 'u-' prefix is for User model.
       def trim_uuid(p_uuid)
-        p "trim_uuid"
-        p p_uuid
         regex = %r/^#{self.uuid_prefix}-/
         if p_uuid and p_uuid =~ regex
           return p_uuid.sub(regex, '')
@@ -553,6 +551,24 @@ module Vnmgr::Models
         end
       end
       s
+    end
+
+    # destroy model by uuid
+    def self.destroy(*args, &block)
+      if args.size == 1 && args.first.is_a?(String)
+        self[args.first].tap(&:destroy)
+      else
+        super
+      end
+    end
+
+    # update model by uuid
+    def self.update(*args, &block)
+      if args.size == 2 && args.first.is_a?(String)
+        self[args.first].tap{|m| m.update(args.second)}
+      else
+        super
+      end
     end
 
     # Returns true if this Model has time stamps

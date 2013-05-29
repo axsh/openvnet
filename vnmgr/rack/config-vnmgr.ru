@@ -6,20 +6,22 @@ require 'vnmgr'
 require 'rack/cors'
 require 'dcell'
 
-vnmgr_conf_path = '/etc/wakame-vnet/vnmgr.conf'
-dba_conf_path = '/etc/wakame-vnet/dba.conf'
-common_conf_path = '/etc/wakame-vnet/common.conf'
-[vnmgr_conf_path, dba_conf_path, common_conf_path].each do |path|
-  raise "Unable to find conf file: '#{path}'" unless File.exists?(path)
-end
-Vnmgr::Endpoints::V10::VNetAPI.load_conf(vnmgr_conf_path, dba_conf_path, common_conf_path)
+config_dir="/etc/wakame-vnet/"
+conf = Vnmgr::Endpoints::V10::VNetAPI.load_conf(File.join(config_dir, 'common.conf'), File.join(config_dir, 'vnmgr.conf')
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'
   use Unicorn::OobGC
 end
 
-
+if conf.data_access_proxy == :dba
+  DCell.start(:id => conf.node_name, :addr => "tcp://#{conf.ip}:#{conf.port}",
+  :registry => {
+    :adapter => 'redis',
+    :host => conf.redis_host,
+    :port => conf.redis_port
+  })
+end
 
 map '/api' do
   use Rack::Cors do

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class IpLeaseWrapper < Base
-    backend_namespace = "ip_leases"
-
+  class IpLease < Base
     def to_hash
       {
         :uuid => self.uuid,

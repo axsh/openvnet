@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class OpenFlowController < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::OpenFlowControllerWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::OpenFlowController)
       object.to_hash
     end
   end

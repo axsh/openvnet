@@ -1,23 +1,25 @@
 
 source "http://rubygems.org"
 
-gem "bit-struct", ">= 0.13.7"
-gem "celluloid", "0.13.0"
-gem "celluloid-io", "0.13.1"
+#gem "bit-struct", ">= 0.13.7"
+gem "celluloid"
+gem "celluloid-io"
 gem "dcell"
 gem "fuguta"
 gem "json"
 gem "mysql"
 gem "rack"
 gem "rack-cors"
-gem "racket", ">= 1.0.12"
+#gem "racket", ">= 1.0.12"
 gem "sequel"
 gem "sinatra"
 gem "sinatra-contrib"
+gem "sinatra-hashfix"
 gem "unicorn"
+gem "active_support", :require => 'active_support/core_ext'
 
-gem 'rant', '0.5.9'
-gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
+#gem 'rant', '0.5.9'
+#gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
   gem "rspec"

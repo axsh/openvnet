@@ -14,19 +14,20 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
     end
     #TODO: Validate all parameters
 
-    nw = sb.network.create(params)
+    nw = data_access.network.create(params)
 
     respond_with(R::Network.generate(nw))
   end
 
   get do
-    networks = sb.network.all
+    networks = data_access.network.all
     respond_with(R::NetworkCollection.generate(networks))
   end
 
   get '/:uuid' do
     #TODO: Make sure that this uuid is a network and not something else
-    nw = sb.network[@params["uuid"]]
+    nw = data_access.network[@params["uuid"]]
+    raise E::UnknownUUIDResource if nw.blank?
     respond_with(R::Network.generate(nw))
   end
 
@@ -34,26 +35,26 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
     #TODO: Make sure that this uuid is a network and not something else
     #TODO: Make sure that this uuid exists
 
-    nw = sb.network.delete({:uuid => @params["uuid"]})
+    nw = data_access.network.destroy(@params["uuid"])
     respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid' do
     params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
-    nw = sb.network.update(params)
+    nw = data_access.network.update(params[:uuid], params)
     respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid/attach_vif' do
     params = parse_params(@params, ["uuid","vif_uuid"])
-    nw = sb.network.attach_vif(params)
+    nw = data_access.network.attach_vif(params[:uuid], params[:vif_uuid])
     respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid/detach_vif' do
     params = parse_params(@params, ["uuid","vif_uuid"])
 
-    nw = sb.network.attach_vif(params)
+    nw = data_access.network.detach_vif(params[:uuid], params[:vif_uuid])
     respond_with(R::Network.generate(nw))
   end
 end

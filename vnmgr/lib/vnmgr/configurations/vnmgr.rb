@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::Configurations
-  class Vnmgr < Fuguta::Configuration
-    param :cluster_name
+  class Vnmgr < Common
+    param :node_name, :default => "vnmgr"
+    param :dba_node_name, :default => "dba"
+    param :dba_actor_name, :default => "dba"
     param :ip
     param :port
-    param :storage_backend, :default => 'dba'
+    param :data_access_proxy, :default => :direct
   end
 end

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class NetworkWrapper < Base
-    backend_namespace = "network"
-
+  class Network < Base
     def to_hash
       {
         :uuid => self.uuid,

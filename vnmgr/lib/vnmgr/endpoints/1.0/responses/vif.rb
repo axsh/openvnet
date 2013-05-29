@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class Vif < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::VifWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::Vif)
       object.to_hash
     end
   end

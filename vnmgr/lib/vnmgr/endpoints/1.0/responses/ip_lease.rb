@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class IpLease < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::IpLeaseWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::IpLease)
       object.to_hash
     end
   end

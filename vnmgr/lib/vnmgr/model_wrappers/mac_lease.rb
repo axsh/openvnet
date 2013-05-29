@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class DhcpRangeWrapper < Base
-    backend_namespace = "dhcp_ranges"
-
+  class MacLease < Base
     def to_hash
       {
         :uuid => self.uuid,
-        :network_uuid => self.network_uuid,
-        :range_begin => self.range_begin,
-        :range_end => self.range_end,
+        :mac_addr => self.mac_addr,
         :created_at => self.created_at,
         :updated_at => self.updated_at
       }

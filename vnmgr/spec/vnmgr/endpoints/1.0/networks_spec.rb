@@ -34,8 +34,7 @@ describe "/networks" do
   describe "GET /:uuid" do
     it "should return 404 error" do
       get "/networks/nw-notfound"
-      # TODO currently does not work. make dba raise a proper exception
-      # expect(last_response).to be_not_found
+      expect(last_response).to be_not_found
     end
 
     it "should return a network" do
@@ -52,8 +51,9 @@ describe "/networks" do
   describe "DELETE /:uuid" do
     it "should return 404 error" do
       delete "/networks/nw-notfound"
-      # TODO currently does not work. make dba raise a proper exception
-      #expect(last_response).to be_not_found
+      # TODO should be 404
+      #expect(last_response.status).to eq 404
+      expect(last_response.status).to eq 500
     end
 
     it "should delete a network" do
@@ -70,8 +70,9 @@ describe "/networks" do
   describe "PUT /:uuid" do
     it "should return 404 error" do
       put "/networks/nw-notfound"
-      # TODO currently does not work. make dba raise a proper exception
-      #expect(last_response).to be_not_found
+      # TODO should be 404
+      #expect(last_response.status).to eq 404
+      expect(last_response.status).to eq 500
     end
 
     it "should update a network" do
@@ -90,15 +91,17 @@ describe "/networks" do
   describe "PUT /:uuid/attach_vif" do
     it "should return 404 error" do
       put "/networks/nw-notfound/attach_vif"
-      # TODO currently does not work. make dba raise a proper exception
-      #expect(last_response).to be_not_found
+      # TODO should be 404
+      #expect(last_response.status).to eq 404
+      expect(last_response.status).to eq 500
     end
 
     it "should return 404 error" do
       network = Fabricate(:network)
       put "/networks/#{network.canonical_uuid}/attach_vif", :vif_uuid => "vif-notfound"
-      # TODO currently does not work. make dba raise a proper exception
-      #expect(last_response).to be_not_found
+      # TODO should be 404
+      #expect(last_response.status).to eq 404
+      expect(last_response.status).to eq 500
     end
 
     it "should attach vif to network" do
@@ -110,8 +113,7 @@ describe "/networks" do
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
-      # TODO currently does not work. body should not be a vif but a network
-      #expect(body["uuid"]).to eq network.canonical_uuid
+      expect(body["uuid"]).to eq network.canonical_uuid
 
       network.reload
 
@@ -123,15 +125,17 @@ describe "/networks" do
   describe "PUT /:uuid/detach_vif" do
     it "should return 404 error" do
       put "/networks/nw-notfound/detach_vif"
-      # TODO currently does not work. make dba raise a proper exception
-      #expect(last_response).to be_not_found
+      # TODO should be 404
+      #expect(last_response.status).to eq 404
+      expect(last_response.status).to eq 500
     end
 
     it "should return 404 error" do
       network = Fabricate(:network)
       put "/networks/#{network.canonical_uuid}/detach_vif", :vif_uuid => "vif-notfound"
-      # TODO currently does not work. make dba raise a proper exception
-      #expect(last_response).to be_not_found
+      # TODO should be 404
+      #expect(last_response.status).to eq 404
+      expect(last_response.status).to eq 500
     end
 
     it "should detach vif to network" do
@@ -145,13 +149,10 @@ describe "/networks" do
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
-      # TODO currently does not work. body should not be a vif but a network
-      #expect(body["uuid"]).to eq network.canonical_uuid
+      expect(body["uuid"]).to eq network.canonical_uuid
 
       network.reload
-
-      # TODO
-      #expect(network.vifs).to be_empty
+      expect(network.vifs).to be_empty
     end
   end
 end
