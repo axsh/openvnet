@@ -11,6 +11,10 @@ require 'celluloid'
 path = ['/etc/wakame-vnet/vna.conf', File.expand_path('config/nva.conf', Vnmgr::VNMGR_ROOT)].find { |i| File.exists?(i) }
 abort("ERROR: Failed to load vna.conf") if path.nil?
 
+conf = Vnmgr::Configurations::Vnmgr.load("#{config_dir}/common.conf", "#{config_dir}/vnmgr.conf")
+Vnmgr::ModelWrappers::Base.set_proxy(conf)
+
+
 sleep 10
 
 service_openflow = Vnmgr::NodeModules::ServiceOpenflow.new
