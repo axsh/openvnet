@@ -36,6 +36,7 @@ module Vnmgr::VNet::Openflow
 
       self.datapath.add_flows(flows)
       self.datapath.switch.network_manager.update_all_flows
+      self.datapath.switch.ports.each { |key,port| port.update_eth_ports }
     end
 
   end

@@ -11,8 +11,7 @@ module Vnmgr::VNet::Openflow
 
     def install
       flows = []
-
-      flows << Flow.create(TABLE_CLASSIFIER,   2, {
+      flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
                            }, {}, flow_options_load_network(TABLE_VIRTUAL_SRC))
 
@@ -66,6 +65,19 @@ module Vnmgr::VNet::Openflow
                            }, flow_options)
 
       self.datapath.add_flows(flows)
+      self.update_eth_ports
+    end
+
+    def update_eth_ports
+      flows = []
+
+      self.datapath.switch.eth_ports.each { |port|
+        flows << Flow.create(TABLE_CLASSIFIER, 6, {
+                               :in_port => port.port_number,
+                               :eth_dst => self.hw_addr,
+                             }, {}, flow_options_load_network(TABLE_VIRTUAL_SRC, port.port_number, METADATA_PORT_MASK))
+      }
+      self.datapath.add_flows(flows) unless flows.empty?
     end
 
   end

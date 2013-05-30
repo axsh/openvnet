@@ -154,12 +154,12 @@ module Vnmgr::VNet::Openflow
           self.datapath.ovs_ofctl.add_ovs_flow(flow_catch)
         end
 
-        flow_learn_arp = "table=6,priority=7,cookie=0x%x,in_port=#{eth_port.port_number},metadata=0x%x/0x%x," %
+        flow_learn_arp = "table=6,priority=7,cookie=0x%x,in_port=#{eth_port.port_number},metadata=0x%x/0x%x,actions=" %
           [(self.network_number << COOKIE_NETWORK_SHIFT),
            ((self.network_number << METADATA_NETWORK_SHIFT) | eth_port.port_number),
            (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
           ]
-        flow_learn_arp << "actions=learn\\(table=7,idle_timeout=36000,priority=1,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7" %
+        flow_learn_arp << "learn\\(table=7,idle_timeout=36000,priority=1,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7" %
           ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0)
         self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp)
       end

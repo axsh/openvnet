@@ -43,12 +43,15 @@ module Vnmgr::VNet::Openflow
     end
 
     def flow_options_load_port(goto_table)
-      flow_options.merge({:metadata => self.port_number, :metadata_mask => 0xffffffff, :goto_table => goto_table})
+      flow_options.merge({ :metadata => self.port_number,
+                           :metadata_mask => Constants::METADATA_PORT_MASK,
+                           :goto_table => goto_table
+                         })
     end
 
-    def flow_options_load_network(goto_table)
-      flow_options.merge({ :metadata => self.network_number << Constants::METADATA_NETWORK_SHIFT,
-                           :metadata_mask => Constants::METADATA_NETWORK_MASK,
+    def flow_options_load_network(goto_table, extra_metadata = 0x0, extra_mask = 0x0)
+      flow_options.merge({ :metadata => (self.network_number << Constants::METADATA_NETWORK_SHIFT) | extra_metadata,
+                           :metadata_mask => Constants::METADATA_NETWORK_MASK | extra_mask,
                            :goto_table => goto_table
                          })
     end
@@ -61,6 +64,9 @@ module Vnmgr::VNet::Openflow
       p "port: Removing flows..."
 
       self.datapath.del_flow(flow_options)
+    end
+
+    def update_eth_ports
     end
 
   end
