@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class DcNetworkWrapper < Base
-    backend_namespace = "dc_networks"
 
     def to_hash
       {

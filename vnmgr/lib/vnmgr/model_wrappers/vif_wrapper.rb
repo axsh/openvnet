@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class VifWrapper < Base
-    backend_namespace = "vifs"
 
     def to_hash
       {

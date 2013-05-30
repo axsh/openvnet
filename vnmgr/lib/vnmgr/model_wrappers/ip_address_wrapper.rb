@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class IpAddressWrapper < Base
-    backend_namespace = "ip_addresses"
 
     def to_hash
       {

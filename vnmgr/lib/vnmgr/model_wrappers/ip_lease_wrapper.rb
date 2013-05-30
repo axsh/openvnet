@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class IpLeaseWrapper < Base
-    backend_namespace = "ip_leases"
 
     def to_hash
       {

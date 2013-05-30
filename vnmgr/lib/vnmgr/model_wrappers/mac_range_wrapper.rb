@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class MacRangeWrapper < Base
-    backend_namespace = "mac_ranges"
 
     def to_hash
       {

@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class NetworkServiceWrapper < Base
-    backend_namespace = "network_services"
 
     def to_hash
       {

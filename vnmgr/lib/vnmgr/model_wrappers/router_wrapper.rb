@@ -2,7 +2,6 @@
 
 module Vnmgr::ModelWrappers
   class RouterWrapper < Base
-    backend_namespace = "routers"
 
     def to_hash
       {
