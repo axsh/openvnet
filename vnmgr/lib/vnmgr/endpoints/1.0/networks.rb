@@ -35,13 +35,15 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
     #TODO: Make sure that this uuid is a network and not something else
     #TODO: Make sure that this uuid exists
 
-    nw = M::Network.destroy(@params["uuid"])
+    nw = M::Network.batch[@params["uuid"]].destroy.commit
     respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid' do
     params = parse_params(@params, ["display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
-    nw = M::Network.update(@params[:uuid], params)
+    nw = M::Network.batch do |n|
+      n[@params[:uuid]].update(params)
+    end
     respond_with(R::Network.generate(nw))
   end
 

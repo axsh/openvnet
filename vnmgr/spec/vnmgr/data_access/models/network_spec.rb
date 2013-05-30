@@ -42,7 +42,11 @@ describe Vnmgr::DataAccess::Models::Network do
 
     it "successfully" do
       network = Fabricate(:network)
-      ret = Vnmgr::DataAccess::Models::Network.new.update(network.canonical_uuid, { :display_name => network.display_name + " updated" })
+      ret = Vnmgr::DataAccess::Models::Network.new.execute_batch(
+        [:[], network.canonical_uuid],
+        [:update, { :display_name => network.display_name + " updated" }]
+      )
+
       expect(ret).to be_a Hash
       expect(ret[:uuid]).to eq network.canonical_uuid
       expect(ret[:display_name]).not_to eq network.display_name
@@ -50,13 +54,12 @@ describe Vnmgr::DataAccess::Models::Network do
   end
 
   describe "destroy" do
-    it "raise execption" do
-      expect{ Vnmgr::DataAccess::Models::Network.new.destroy("nw-test") }.to raise_error
-    end
-
     it "successfully" do
       network = Fabricate(:network)
-      ret = Vnmgr::DataAccess::Models::Network.new.destroy(network.canonical_uuid)
+      ret = Vnmgr::DataAccess::Models::Network.new.execute_batch(
+        [:[], network.canonical_uuid],
+        [:destroy])
+
       expect(ret).to be_a Hash
       expect(ret[:uuid]).to eq network.canonical_uuid
       expect(network).not_to be_exists
