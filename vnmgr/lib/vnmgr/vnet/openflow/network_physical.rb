@@ -24,9 +24,6 @@ module Vnmgr::VNet::Openflow
     def update_flows
       flood_actions = ports.collect { |key,port| {:output => port.port_number} }
 
-      p flood_actions.inspect
-      p self.datapath.switch.eth_ports.inspect
-
       flows = []
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
                              # :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,

@@ -6,7 +6,6 @@ module Vnmgr::VNet::Openflow
 
   class NetworkManager
     attr_reader :datapath
-    attr_reader :networks
 
     def initialize(dp)
       @datapath = dp
@@ -15,20 +14,18 @@ module Vnmgr::VNet::Openflow
     end
 
     def network_by_uuid(network_uuid)
+      old_network = @networks.find { |nw| nw[1].uuid == network_uuid }
+      return old_network[1] if old_network
+
       network = nil
-
-      @semaphore.synchronize {
-        network = networks.find { |nw| nw[1].uuid == network_uuid }
-      }
-
-      return network[1] if network
-
-      # Test data.
       network_map = Vnmgr::ModelWrappers::Network.find(network_uuid)
 
       # Simulate loading from db.
-      sleep(0.1)
+      # sleep(0.01)
       
+      old_network = @networks.find { |nw| nw[1].uuid == network_uuid }
+      return old_network[1] if old_network
+
       case network_map.network_mode
       when 'physical'
         network = NetworkPhysical.new(self.datapath, network_map)
@@ -39,23 +36,20 @@ module Vnmgr::VNet::Openflow
       end
 
       network_map.datapaths_on_subnet.each { |datapath_map|
-        next if datapath_map.datapath_id == false # == self.datapath.foobar_id
-
-        network.add_datapath_on_subnet(datapath_map, false)
-      }
-
-      @semaphore.synchronize {
-        nw = networks.find { |nw| nw[1].uuid == network_uuid }
-
-        if nw
-          network = nw[1]
-          next
+        if datapath_map.datapath_id == true # == self.datapath.foobar_id
+          network.set_datapath_of_bridge(datapath_map, false)
+        else
+          network.add_datapath_on_subnet(datapath_map, false)
         end
-
-        @networks[network.network_id] = network
-        network.install
       }
 
+      old_network = @networks.find { |nw| nw[1].uuid == network_uuid }
+      return old_network[1] if old_network
+
+      @networks[network.network_id] = network
+
+      network.install
+      network.update_flows
       network
     end
 

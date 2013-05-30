@@ -106,6 +106,12 @@ module Vnmgr::VNet::Openflow
       #                        :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
       #                      }, flood_actions, flow_options)
 
+      if self.datapath_of_bridge
+        flows << Flow.create(TABLE_VIRTUAL_SRC, 10, {
+                               :eth_dst => Trema::Mac.new(self.datapath_of_bridge[:broadcast_mac_addr])
+                             }, {}, flow_options)
+      end
+
       self.datapaths_on_subnet.each { |datapath|
         flows << Flow.create(TABLE_VIRTUAL_SRC, 10, {
                                :eth_dst => Trema::Mac.new(datapath[:broadcast_mac_addr])
@@ -136,15 +142,17 @@ module Vnmgr::VNet::Openflow
       if eth_port
         self.datapaths_on_subnet.each { |datapath|
           flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{eth_port.port_number}"
+        }
 
-          flow_catch = "table=0,priority=6,cookie=0x%x,in_port=#{eth_port.port_number},dl_dst=#{datapath[:broadcast_mac_addr]}," % (self.network_number << COOKIE_NETWORK_SHIFT)
+        if self.datapath_of_bridge
+          flow_catch = "table=0,priority=6,cookie=0x%x,in_port=#{eth_port.port_number},dl_dst=#{self.datapath_of_bridge[:broadcast_mac_addr]}," % (self.network_number << COOKIE_NETWORK_SHIFT)
           flow_catch << "actions=mod_dl_dst:ff:ff:ff:ff:ff:ff,write_metadata:0x%x/0x%x,goto_table:6" % 
             [((self.network_number << METADATA_NETWORK_SHIFT) | eth_port.port_number),
              (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
             ]
 
           self.datapath.ovs_ofctl.add_ovs_flow(flow_catch)
-        }
+        end
 
         flow_learn_arp = "table=6,priority=7,cookie=0x%x,in_port=#{eth_port.port_number},metadata=0x%x/0x%x," %
           [(self.network_number << COOKIE_NETWORK_SHIFT),

@@ -10,6 +10,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :network_number
     attr_reader :uuid
     attr_reader :ports
+    attr_reader :datapath_of_bridge
     attr_reader :datapaths_on_subnet
 
     def initialize(dp, network_map)
@@ -18,6 +19,7 @@ module Vnmgr::VNet::Openflow
       @network_id = network_map.network_id
       @network_number = network_map.network_id
       @ports = {}
+      @datapath_of_bridge = nil
       @datapaths_on_subnet = []
     end
 
@@ -39,6 +41,20 @@ module Vnmgr::VNet::Openflow
       port.network = nil
     end
 
+    def set_datapath_of_bridge(datapath_map, should_update)
+      @datapath_of_bridge = {
+        :uuid => datapath_map.uuid,
+        :display_name => datapath_map.display_name,
+        :ipv4_address => datapath_map.ipv4_address,
+        :datapath_id => datapath_map.datapath_id,
+        :broadcast_mac_addr => datapath_map.broadcast_mac_addr,
+      }
+
+      # p "Setting the datapath of network: network:#{self.uuid} datapath:#{datapath.inspect}"
+
+      update_flows if should_update
+    end
+
     def add_datapath_on_subnet(datapath_map, should_update)
       datapath = {
         :uuid => datapath_map.uuid,
@@ -48,7 +64,7 @@ module Vnmgr::VNet::Openflow
         :broadcast_mac_addr => datapath_map.broadcast_mac_addr,
       }
 
-      p "Adding datapath to list of networks on the same subnet: network:#{self.uuid} datapath:#{datapath.inspect}"
+      # p "Adding datapath to list of networks on the same subnet: network:#{self.uuid} datapath:#{datapath.inspect}"
 
       @datapaths_on_subnet << datapath
       update_flows if should_update
