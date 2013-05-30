@@ -58,6 +58,13 @@ module Vnmgr::VNet::Openflow
                              :output => self.port_number,
                            }, flow_options)
 
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
+                             :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | self.port_number,
+                             :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+                           }, {
+                             :output => self.port_number
+                           }, flow_options)
+
       self.datapath.add_flows(flows)
     end
 

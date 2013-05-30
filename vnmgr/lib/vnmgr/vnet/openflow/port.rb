@@ -30,6 +30,10 @@ module Vnmgr::VNet::Openflow
       end
     end
 
+    def is_eth_port
+      false
+    end
+
     def inspect
       str = "<"
       str << "@port_info=#{@port_info.inspect}, "

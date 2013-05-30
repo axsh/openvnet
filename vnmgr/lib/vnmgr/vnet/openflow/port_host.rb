@@ -5,6 +5,10 @@ module Vnmgr::VNet::Openflow
   module PortHost
     include Constants
 
+    def is_eth_port
+      true
+    end
+
     def flow_options
       @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
       # @flow_options ||= {:cookie => self.port_number | 0x0}
@@ -31,6 +35,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_ARP_ROUTE,      0, {:eth_type => 0x0806}, {:output => self.port_number}, flow_options)
 
       self.datapath.add_flows(flows)
+      self.datapath.switch.network_manager.update_all_flows
     end
 
   end

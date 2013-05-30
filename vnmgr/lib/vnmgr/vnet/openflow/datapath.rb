@@ -8,15 +8,12 @@ module Vnmgr::VNet::Openflow
     attr_reader :controller
     attr_reader :datapath_id
     attr_reader :ovs_ofctl
+    attr_accessor :switch
 
     def initialize(ofc, dp_id, ofctl = nil)
       @controller = ofc
       @datapath_id = dp_id
       @ovs_ofctl = ofctl
-    end
-
-    def switch
-      self.controller.switches[self.datapath_id]
     end
 
     def add_flow(flow)

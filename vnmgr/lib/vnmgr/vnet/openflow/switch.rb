@@ -19,6 +19,10 @@ module Vnmgr::VNet::Openflow
       @network_manager = NetworkManager.new(dp)
     end
 
+    def eth_ports
+      self.ports.find_all{ |key,port| port.is_eth_port }.collect{ |key,port| port }
+    end
+
     #
     # Event handlers:
     #
@@ -61,7 +65,7 @@ module Vnmgr::VNet::Openflow
         network = self.network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^vif-/
-        port_map = Vnmgr::ModelWrappers::VifWrapper.find(port_desc.name)
+        port_map = Vnmgr::ModelWrappers::Vif.find(port_desc.name)
 
         if port_map.nil?
           p "error: Could not find uuid: #{port_desc.name}"
@@ -87,7 +91,7 @@ module Vnmgr::VNet::Openflow
         return
       end
 
-      network.add_port(port) if network
+      network.add_port(port, true) if network
       port.install
     end
 
@@ -115,7 +119,7 @@ module Vnmgr::VNet::Openflow
           return
         end
         
-        port.network.del_port(port) if port.network
+        port.network.del_port(port, true) if port.network
         port.uninstall
       end
     end
