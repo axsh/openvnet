@@ -6,7 +6,7 @@ module Vnmgr::DataAccess
     end
 
     def method_missing(class_name, *args, &block)
-      if class_name.present? && args.empty? && Vnmgr::DataAccess::Models.const_defined?(class_name.to_s.classify)
+      if class_name.present? && args.empty? && Vnmgr::DataAccess::Models.const_defined?(class_name.to_s.camelize)
         _call_class.new(class_name, @conf).tap do |call|
           define_singleton_method(class_name){ call }
         end
@@ -51,7 +51,7 @@ module Vnmgr::DataAccess
     class DirectCall < Call
       def initialize(class_name, conf)
         super
-        @method_caller = Vnmgr::DataAccess::Models.const_get(class_name.to_s.classify).new
+        @method_caller = Vnmgr::DataAccess::Models.const_get(class_name.to_s.camelize).new
       end
 
       def method_missing(method_name, *args, &block)
