@@ -15,22 +15,7 @@ config_dir="/etc/wakame-vnet/"
 conf = Vnmgr::Configurations::Vnmgr.load("#{config_dir}/common.conf", "#{config_dir}/vna.conf")
 Vnmgr::ModelWrappers::Base.set_proxy(conf)
 
-
-sleep 10
-
 service_openflow = Vnmgr::NodeModules::ServiceOpenflow.new
 service_openflow.start
 
-(1..10).each {
-  p "Main thread loop"
-
-  service_openflow.controller.pass_task {
-    p "Ping to trema thread."
-  }
-
-  sleep 1
-}
-
-service_openflow.stop
-sleep 1
-
+sleep 3
