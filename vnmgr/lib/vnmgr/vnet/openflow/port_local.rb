@@ -8,15 +8,19 @@ module Vnmgr::VNet::Openflow
     attr_reader :bridge_hw
 
     def flow_options
-      # @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
       @flow_options ||= {:cookie => self.port_number | 0x0}
     end
 
     def install
       flows = []
 
-      flows << Flow.create(TABLE_CLASSIFIER,     3, {:in_port => OFPP_LOCAL, :eth_type => 0x0806}, {}, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
-      flows << Flow.create(TABLE_CLASSIFIER,     2, {:in_port => OFPP_LOCAL}, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+      flows << Flow.create(TABLE_CLASSIFIER, 3, {
+                             :in_port => OFPP_LOCAL,
+                             :eth_type => 0x0806
+                           }, {}, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
+      flows << Flow.create(TABLE_CLASSIFIER, 2, {
+                             :in_port => OFPP_LOCAL
+                           }, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
 
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
                              :metadata => self.port_number,
@@ -27,14 +31,25 @@ module Vnmgr::VNet::Openflow
 
       # Some flows depend on only local being able to send packets
       # with the local mac and ip address, so drop those.
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 6, {:in_port => OFPP_LOCAL}, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 5, {:eth_type => 0x0800, :ipv4_src => IPAddr.new('192.168.60.101')}, {}, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 6, {
+                             :in_port => OFPP_LOCAL
+                           }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 5, {
+                             :eth_type => 0x0800,
+                             :ipv4_src => IPAddr.new('192.168.60.101')
+                           }, {}, flow_options)
 
       #
       # ARP routing table
       #
-      flows << Flow.create(TABLE_ARP_ANTISPOOF, 1, {:in_port => OFPP_LOCAL, :eth_type => 0x0806}, {}, flow_options.merge(:goto_table => TABLE_ARP_ROUTE))
-      flows << Flow.create(TABLE_ARP_ROUTE,     1, {:eth_type => 0x0806, :arp_tpa => IPAddr.new('192.168.60.101')}, {:output => OFPP_LOCAL}, flow_options)
+      flows << Flow.create(TABLE_ARP_ANTISPOOF, 1, {
+                             :in_port => OFPP_LOCAL,
+                             :eth_type => 0x0806
+                           }, {}, flow_options.merge(:goto_table => TABLE_ARP_ROUTE))
+      flows << Flow.create(TABLE_ARP_ROUTE, 1, {
+                             :eth_type => 0x0806,
+                             :arp_tpa => IPAddr.new('192.168.60.101')
+                           }, {:output => OFPP_LOCAL}, flow_options)
 
       self.datapath.add_flows(flows)
     end
