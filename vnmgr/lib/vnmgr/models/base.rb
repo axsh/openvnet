@@ -499,7 +499,7 @@ module Vnmgr::Models
     plugin :validation_helpers
 
     def to_hash()
-      self.values.dup
+      self.values.dup.merge({:class_name => self.class.name.demodulize})
     end
 
     LOCK_TABLES_KEY='__locked_tables'
