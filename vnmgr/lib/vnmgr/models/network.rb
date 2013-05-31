@@ -27,5 +27,7 @@ module Vnmgr::Models
 
     many_to_one :dc_network
 
+    subset(:alives, {})
+
   end
 end
