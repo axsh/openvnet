@@ -18,11 +18,11 @@ module Vnmgr::VNet::Openflow
       return old_network[1] if old_network
 
       network = nil
-      network_map = Vnmgr::ModelWrappers::Network.find(network_uuid)
+      network_map = Vnmgr::ModelWrappers::Network[network_uuid]
 
-      # Simulate loading from db.
-      # sleep(0.01)
-      
+      datapath_map = M::Datapath[:datapath_id => ("%#x" % @datapath.datapath_id)]
+      datapaths_on_subnet_map = datapath_map.batch.datapaths_on_subnet.commit
+
       old_network = @networks.find { |nw| nw[1].uuid == network_uuid }
       return old_network[1] if old_network
 
@@ -35,13 +35,8 @@ module Vnmgr::VNet::Openflow
         raise("Unknown network type.")
       end
 
-      network_map.datapaths_on_subnet.each { |datapath_map|
-        if datapath_map.datapath_id == true # == self.datapath.foobar_id
-          network.set_datapath_of_bridge(datapath_map, false)
-        else
-          network.add_datapath_on_subnet(datapath_map, false)
-        end
-      }
+      network.set_datapath_of_bridge(datapath_map, false)
+      datapaths_on_subnet_map.each { |dp_map| network.add_datapath_on_subnet(dp_map, false) }
 
       old_network = @networks.find { |nw| nw[1].uuid == network_uuid }
       return old_network[1] if old_network

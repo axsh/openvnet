@@ -30,7 +30,7 @@ module Vnmgr::VNet::Openflow
 
       if self.datapath_of_bridge
         flows << Flow.create(TABLE_VIRTUAL_SRC, 90, {
-                               :eth_dst => Trema::Mac.new(self.datapath_of_bridge[:broadcast_mac_addr])
+                               :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
                              }, {}, flow_options)
       end
 
@@ -114,7 +114,7 @@ module Vnmgr::VNet::Openflow
 
       self.datapaths_on_subnet.each { |datapath|
         flows << Flow.create(TABLE_VIRTUAL_SRC, 90, {
-                               :eth_dst => Trema::Mac.new(datapath[:broadcast_mac_addr])
+                               :eth_dst => datapath[:broadcast_mac_addr]
                              }, {}, flow_options)
       }
 

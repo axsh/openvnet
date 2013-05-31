@@ -47,7 +47,7 @@ module Vnmgr::VNet::Openflow
         :display_name => datapath_map.display_name,
         :ipv4_address => datapath_map.ipv4_address,
         :datapath_id => datapath_map.datapath_id,
-        :broadcast_mac_addr => datapath_map.broadcast_mac_addr,
+        :broadcast_mac_addr => Trema::Mac.new(datapath_map.broadcast_mac_addr(self.uuid)),
       }
 
       # p "Setting the datapath of network: network:#{self.uuid} datapath:#{datapath.inspect}"
@@ -61,7 +61,7 @@ module Vnmgr::VNet::Openflow
         :display_name => datapath_map.display_name,
         :ipv4_address => datapath_map.ipv4_address,
         :datapath_id => datapath_map.datapath_id,
-        :broadcast_mac_addr => datapath_map.broadcast_mac_addr,
+        :broadcast_mac_addr => Trema::Mac.new(datapath_map.broadcast_mac_addr(self.uuid)),
       }
 
       # p "Adding datapath to list of networks on the same subnet: network:#{self.uuid} datapath:#{datapath.inspect}"
