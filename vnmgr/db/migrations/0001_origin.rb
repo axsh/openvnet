@@ -2,11 +2,41 @@
 
 Sequel.migration do
   up do
+    create_table(:datapaths) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :open_flow_controller_id, :index => true, :null=>false
+      String :display_name, :null=>false
+      Integer :ipv4_address
+      FalseClass :is_connected, :null=>false
+      String :datapath_id, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
+    create_table(:datapath_networks) do
+      primary_key :id
+      Integer :datapath_id, :index => true, :null=>false
+      Integer :network_id, :index => true, :null=>false
+      Bignum :broadcast_mac_addr, :null=>false
+      FalseClass :is_connected, :null=>false
+    end
+
     create_table(:dc_networks) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Integer :parent_id, :index => true
       String :display_name, :null => false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
+    create_table(:dhcp_ranges) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Bignum :range_begin, :null=>false
+      Bignum :range_end, :null=>false
+      Integer :network_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -57,16 +87,6 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
 
       index [:src_network_id, :dst_network_id]
-    end
-
-    create_table(:dhcp_ranges) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Bignum :range_begin, :null=>false
-      Bignum :range_end, :null=>false
-      Integer :network_id, :index => true, :null => false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
     end
 
     create_table(:mac_ranges) do
@@ -126,20 +146,23 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
-    create_table(:datapaths) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Integer :open_flow_controller_id, :index => true, :null=>false
-      String :display_name, :null=>false
-      Integer :ipv4_address
-      FalseClass :is_connected, :null=>false
-      String :datapath_id, :null=>false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
   end
 
   down do
-    drop_table(:networks, :vifs, :routers, :tunnels, :dc_networks, :dhcp_ranges, :mac_ranges, :mac_leases, :ip_leases, :ip_addresses, :network_services, :open_flow_controllers, :datapaths)
+    drop_table(:datapaths,
+               :datapath_networks,
+               :dc_networks,
+               :dhcp_ranges,
+               :networks,
+               :vifs,
+               :routers,
+               :tunnels,
+               :mac_ranges,
+               :mac_leases,
+               :ip_leases,
+               :ip_addresses,
+               :network_services,
+               :open_flow_controllers,
+               )
   end
 end
