@@ -7,8 +7,8 @@ module Vnmgr::ModelWrappers
 end
 
 describe Vnmgr::ModelWrappers::Base do
-  let(:test) { {uuid: "t-xxx", class_name: "Test"} }
-  let(:test_child) { {uuid: "tc-xxx", class_name: "TestChild"} }
+  let(:test) { {id: 1, uuid: "t-xxx", class_name: "Test"} }
+  let(:test_child) { {id: 1, uuid: "tc-xxx", class_name: "TestChild"} }
 
   describe "class method" do
     describe "single execution" do
@@ -69,7 +69,7 @@ describe Vnmgr::ModelWrappers::Base do
       let(:model) do
         double(:model).tap do |model|
           model.should_receive(:[]).with("t-xxx").and_return(test)
-          model.should_receive(:execute_batch).with([:[], "t-xxx"], [:update, {:name => "test"}]).and_return(test.merge(name: "test"))
+          model.should_receive(:execute_batch).with([:[], 1], [:update, {:name => "test"}]).and_return(test.merge(name: "test"))
         end
       end
 

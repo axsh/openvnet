@@ -56,7 +56,7 @@ module Vnmgr::ModelWrappers
 
     def batch(&block)
       b = Batch.new(self.class)
-      b[self.uuid]
+      b[self.id]
       if block_given?
         yield(b).commit
       else
