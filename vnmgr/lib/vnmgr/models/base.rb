@@ -2,6 +2,8 @@
 
 require 'sequel/model'
 
+Sequel.extension(:core_extensions)
+
 module Vnmgr::Models
   # Sequal::Model plugin to inject the Taggable feature to the model
   # class.

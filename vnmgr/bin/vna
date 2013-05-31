@@ -7,6 +7,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'vnmgr'
 require 'celluloid'
+require 'dcell'
 
 #path = ['/etc/wakame-vnet/vna.conf', File.expand_path('config/vna.conf', Vnmgr::ROOT)].find { |i| File.exists?(i) }
 #abort("ERROR: Failed to load vna.conf") if path.nil?
@@ -15,7 +16,106 @@ config_dir="/etc/wakame-vnet/"
 conf = Vnmgr::Configurations::Vna.load("#{config_dir}/common.conf", "#{config_dir}/vna.conf")
 Vnmgr::ModelWrappers::Base.set_proxy(conf)
 
+case conf.data_access_proxy
+when :dba
+  DCell.start(:id => conf.node_name, :addr => "tcp://#{conf.ip}:#{conf.port}",
+  :registry => {
+    :adapter => 'redis',
+    :host => conf.redis_host,
+    :port => conf.redis_port
+  })
+when :direct
+  Vnmgr::Initializers::DB.run(conf.db_uri)
+end
+
+require 'ipaddr'
+require 'trema'
+
+M = Vnmgr::ModelWrappers
+
+M::Network.batch.dataset.destroy.commit
+M::IpAddress.batch.dataset.destroy.commit
+M::IpLease.batch.dataset.destroy.commit
+M::Vif.batch.dataset.destroy.commit
+M::Datapath.batch.dataset.destroy.commit
+M::DatapathNetwork.batch.dataset.destroy.commit
+
+nw_public = M::Network.create({ :uuid => 'public',
+                                :display_name => 'public',
+                                :ipv4_network => IPAddr.new('192.168.60.0').to_i,
+                                :ipv4_prefix => 24,
+                                :domain_name => 'public.local',
+                                :dc_network_id => 1,
+                                :network_mode => 'physical',
+                                :editable => false
+                              })
+nw_vnet   = M::Network.create({ :uuid => 'vnet',
+                                :display_name => 'vnet',
+                                :ipv4_network => IPAddr.new('10.102.0.0').to_i,
+                                :ipv4_prefix => 24,
+                                :domain_name => 'vnet.local',
+                                :dc_network_id => 1,
+                                :network_mode => 'virtual',
+                                :editable => false
+                              })
+
+M::Vif.create({ :uuid => 'ga40cmta',
+                :network_id => M::Network['nw-public'].id,
+                :mac_addr => Trema::Mac.new('52:54:00:d2:59:4d').value,
+                # :ipv4_addr => IPAddr.new('192.168.60.220').to_i,
+              })
+M::Vif.create({ :uuid => 'nh44un1v',
+                :network_id => M::Network['nw-public'].id,
+                :mac_addr => Trema::Mac.new('52:54:00:4c:1e:8a').value,
+                # :ipv4_addr => IPAddr.new('192.168.60.221').to_i,
+              })
+M::Vif.create({ :uuid => 'zbnm1onh',
+                :network_id => M::Network['nw-vnet'].id,
+                :mac_addr => Trema::Mac.new('52:54:00:aa:0a:7b').value,
+                # :ipv4_addr => IPAddr.new('10.102.0.10').to_i,
+              })
+M::Vif.create({ :uuid => 'rmxtdhyx',
+                :network_id => M::Network['nw-vnet'].id,
+                :mac_addr => Trema::Mac.new('52:54:00:cf:44:41').value,
+                # :ipv4_addr => IPAddr.new('10.102.0.11').to_i,
+              })
+
+M::IpAddress.create({ :uuid => 'ipa1',
+                      :ipv4_address => IPAddr.new('192.168.60.220').to_i,
+                    })
+
+M::IpLease.create({ :uuid => 'ipl1',
+                    :network_id => M::Network['nw-public'].id,
+                    :vif_id => M::Vif['vif-ga40cmta'].id,
+                    :ip_address_id => M::IpAddress['ia-ipa1'].id,
+                    })
+
+
+dp_node1 = M::Datapath.create({ :uuid => 'node1',
+                                :display_name => 'node1',
+                                :ipv4_address => IPAddr.new('192.168.60.102').to_i,
+                                :is_connected => true,
+                                :datapath_id => '0x18512b14b4',
+                              })
+dp_node2 = M::Datapath.create({ :uuid => 'node2',
+                                :display_name => 'node2',
+                                :ipv4_address => IPAddr.new('192.168.60.103').to_i,
+                                :is_connected => true,
+                                :datapath_id => '0x1851274818',
+                              })
+
+M::DatapathNetwork.create({ :datapath_id => dp_node1.id,
+                            :network_id => nw_vnet.id,
+                            #:broadcast_mac_addr => Trema::Mac.new('08:00:27:10:00:01').value,
+                          })
+M::DatapathNetwork.create({ :datapath_id => dp_node2.id,
+                            :network_id => nw_vnet.id,
+                            #:broadcast_mac_addr => Trema::Mac.new('08:00:27:10:00:02').value,
+                          })
+
+p M::Datapath[:datapath_id => ("%#x" % 0x1851274818)].inspect
+
 service_openflow = Vnmgr::NodeModules::ServiceOpenflow.new
 service_openflow.start
 
-sleep 3
+sleep 2
