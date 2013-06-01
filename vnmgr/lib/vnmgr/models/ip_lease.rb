@@ -5,7 +5,7 @@ module Vnmgr::Models
     taggable 'il'
 
     many_to_one :network
-    one_to_one :ip_addresse
+    many_to_one :ip_address
     one_to_one :vif
   end
 end

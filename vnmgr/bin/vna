@@ -113,8 +113,6 @@ M::DatapathNetwork.create({ :datapath_id => dp_node2.id,
                             :broadcast_mac_addr => Trema::Mac.new('08:00:27:10:00:02').value,
                           })
 
-p M::Datapath[:datapath_id => ("%#x" % 0x1851274818)].inspect
-
 service_openflow = Vnmgr::NodeModules::ServiceOpenflow.new
 service_openflow.start
 
