@@ -106,11 +106,11 @@ dp_node2 = M::Datapath.create({ :uuid => 'node2',
 
 M::DatapathNetwork.create({ :datapath_id => dp_node1.id,
                             :network_id => nw_vnet.id,
-                            #:broadcast_mac_addr => Trema::Mac.new('08:00:27:10:00:01').value,
+                            :broadcast_mac_addr => Trema::Mac.new('08:00:27:10:00:01').value,
                           })
 M::DatapathNetwork.create({ :datapath_id => dp_node2.id,
                             :network_id => nw_vnet.id,
-                            #:broadcast_mac_addr => Trema::Mac.new('08:00:27:10:00:02').value,
+                            :broadcast_mac_addr => Trema::Mac.new('08:00:27:10:00:02').value,
                           })
 
 p M::Datapath[:datapath_id => ("%#x" % 0x1851274818)].inspect

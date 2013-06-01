@@ -14,28 +14,5 @@ module Vnmgr::ModelWrappers
         :updated_at => self.updated_at
       }
     end
-
-    # Hack...
-    def broadcast_mac_addr(nw_uuid)
-      case nw_uuid
-      when 'nw-vnet'
-        case self.uuid
-        when 'dp-node1' then Trema::Mac.new('08:00:27:10:00:01').value
-        when 'dp-node2' then Trema::Mac.new('08:00:27:10:00:02').value
-        else
-          raise("FOOOFOO")
-        end
-      when 'nw-public'
-        case self.uuid
-        when 'dp-node1' then Trema::Mac.new('08:00:27:10:00:03').value
-        when 'dp-node2' then Trema::Mac.new('08:00:27:10:00:04').value
-        else
-          raise("FOOOFOO")
-        end
-      else
-        raise("FOOOFOOFOO")
-      end
-    end
-
   end
 end

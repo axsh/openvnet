@@ -41,13 +41,13 @@ module Vnmgr::VNet::Openflow
       port.network = nil
     end
 
-    def set_datapath_of_bridge(datapath_map, should_update)
+    def set_datapath_of_bridge(datapath_map, dpn_map, should_update)
       @datapath_of_bridge = {
         :uuid => datapath_map.uuid,
         :display_name => datapath_map.display_name,
         :ipv4_address => datapath_map.ipv4_address,
         :datapath_id => datapath_map.datapath_id,
-        :broadcast_mac_addr => Trema::Mac.new(datapath_map.broadcast_mac_addr(self.uuid)),
+        :broadcast_mac_addr => dpn_map ? Trema::Mac.new(dpn_map.broadcast_mac_addr) : nil,
       }
 
       # p "Setting the datapath of network: network:#{self.uuid} datapath:#{datapath.inspect}"
@@ -55,13 +55,13 @@ module Vnmgr::VNet::Openflow
       update_flows if should_update
     end
 
-    def add_datapath_on_subnet(datapath_map, should_update)
+    def add_datapath_on_subnet(dpn_map, should_update)
       datapath = {
-        :uuid => datapath_map.uuid,
-        :display_name => datapath_map.display_name,
-        :ipv4_address => datapath_map.ipv4_address,
-        :datapath_id => datapath_map.datapath_id,
-        :broadcast_mac_addr => Trema::Mac.new(datapath_map.broadcast_mac_addr(self.uuid)),
+        :uuid => dpn_map.datapath.uuid,
+        :display_name => dpn_map.datapath.display_name,
+        :ipv4_address => dpn_map.datapath.ipv4_address,
+        :datapath_id => dpn_map.datapath.datapath_id,
+        :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
       }
 
       # p "Adding datapath to list of networks on the same subnet: network:#{self.uuid} datapath:#{datapath.inspect}"

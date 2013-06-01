@@ -16,8 +16,6 @@ module Vnmgr::VNet::Openflow
       @port_info = port_info
 
       @is_active = active
-
-      p "no ipv4_addr defined: #{port_info.name}" unless self.ipv4_addr
     end
 
     def port_number

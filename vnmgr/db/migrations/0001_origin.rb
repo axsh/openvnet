@@ -57,6 +57,17 @@ Sequel.migration do
       index [:ipv4_network, :ipv4_prefix]
     end
 
+    create_table(:network_services) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :vif_id, :index => true
+      String :display_name, :index => true, :null=>false
+      Integer :incoming_port
+      Integer :outgoing_port
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
     create_table(:vifs) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -128,17 +139,6 @@ Sequel.migration do
       FalseClass :is_deleted, :null=>false
     end
 
-    create_table(:network_services) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Integer :vif_id, :index => true
-      String :display_name, :index => true, :null=>false
-      Integer :incoming_port
-      Integer :outgoing_port
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
     create_table(:open_flow_controllers) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -154,6 +154,7 @@ Sequel.migration do
                :dc_networks,
                :dhcp_ranges,
                :networks,
+               :network_services,
                :vifs,
                :routers,
                :tunnels,
@@ -161,7 +162,6 @@ Sequel.migration do
                :mac_leases,
                :ip_leases,
                :ip_addresses,
-               :network_services,
                :open_flow_controllers,
                )
   end
