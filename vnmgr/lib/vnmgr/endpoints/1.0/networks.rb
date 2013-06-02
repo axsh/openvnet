@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'ipaddr'
+
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
   post do
     params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
@@ -13,6 +15,12 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
       params["uuid"] = M::Network.trim_uuid(params["uuid"])
     end
     #TODO: Validate all parameters
+
+    if params.has_key?("ipv4_network")
+      ipv4_network = IPAddr.new(params["ipv4_network"])
+
+      params["ipv4_network"] = ipv4_network.to_i if ipv4_network.ipv4?
+    end
 
     nw = M::Network.create(params)
 
