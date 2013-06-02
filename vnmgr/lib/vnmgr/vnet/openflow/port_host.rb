@@ -39,8 +39,20 @@ module Vnmgr::VNet::Openflow
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 20, {}, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
+                             :in_port => self.port_number,
+                             :eth_type => 0x0800
+                           }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 21, {
                              :in_port => self.port_number
                            }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
+
+      if self.ipv4_addr
+        flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
+                               :in_port => self.port_number,
+                               :eth_type => 0x0800,
+                               :ipv4_src => self.ipv4_addr
+                             }, {}, flow_options)
+      end
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number

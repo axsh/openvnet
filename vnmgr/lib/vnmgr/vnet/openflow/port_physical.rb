@@ -42,14 +42,13 @@ module Vnmgr::VNet::Openflow
                              }, {}, flow_options)
       end
 
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 20, {
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 25, {
                              :in_port => self.port_number,
                              :eth_src => self.hw_addr,
                            }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 10, {
-                             :in_port => self.port_number,
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 24, {
                              :eth_src => self.hw_addr
-                           }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
+                           }, {}, flow_options)
 
       #
       # ARP routing table
