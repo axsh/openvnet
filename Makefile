@@ -28,17 +28,21 @@ install-bundle-dev:
 	(cd $(CURDIR)/vnmgr; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
 	(cd $(CURDIR)/vnmgr; $(RUBYDIR)/bin/bundle install)
 
-install:
+install: update-config
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
-	mkdir -p $(DSTDIR)/etc/wakame-vnet
+	mkdir -p $(DSTDIR)/tmp/log
+	mkdir -p $(DSTDIR)/var/run/wakame-vnet/log
+	mkdir -p $(DSTDIR)/var/run/wakame-vnet/pid
+	mkdir -p $(DSTDIR)/var/run/wakame-vnet/sock
 	cp -r vnmgr vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
 	cp -r deployment/conf_files/etc/default $(DSTDIR)/etc
 	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
-	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc
 
 
 uninstall:
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
+	rm -rf $(DSTDIR)/tmp/log
+	rm -rf $(DSTDIR)/var/run/wakame-vnet
 	rm $(DSTDIR)/etc/default/vnet-dba
 	rm $(DSTDIR)/etc/default/vnet-vna
 	rm $(DSTDIR)/etc/default/vnet-vnmgr
@@ -46,6 +50,10 @@ uninstall:
 	rm $(DSTDIR)/etc/init/vnet-dba.conf
 	rm $(DSTDIR)/etc/init/vnet-vna.conf
 	rm $(DSTDIR)/etc/init/vnet-vnmgr.conf
+
+update-config:
+	mkdir -p $(DSTDIR)/etc/wakame-vnet
+	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc/
 
 remove-config:
 	rm -rf $(DSTDIR)/etc/wakame-vnet

@@ -29,5 +29,7 @@ module Vnmgr::Configurations
     param :dba_node_id, :default => "dba"
     param :dba_actor_name, :default => "dba"
     param :data_access_proxy, :default => :dba
+    param :trema_home
+    param :trema_tmp
   end
 end

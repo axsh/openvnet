@@ -18,7 +18,8 @@ when :dba
     :registry => {
       :adapter => conf.registry.adapter,
       :host => conf.registry.host,
-      :port => conf.registry.port })
+      :port => conf.registry.port
+  })
 when :direct
   Vnmgr::Initializers::DB.run(conf.db_uri)
 end
