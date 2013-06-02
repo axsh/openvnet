@@ -37,7 +37,13 @@ module Vnmgr::VNet::Openflow
                              :output => self.port_number
                            }, flow_options)
 
+      flows << Flow.create(TABLE_PHYSICAL_DST, 25, {
+                             :in_port => self.port_number
+                           }, {}, flow_options.merge({ :metadata => OFPP_LOCAL,
+                                                       :metadata_mask => Constants::METADATA_PORT_MASK,
+                                                       :goto_table => TABLE_PHYSICAL_SRC}))
       flows << Flow.create(TABLE_PHYSICAL_DST, 20, {}, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))
+
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
                              :eth_type => 0x0800
