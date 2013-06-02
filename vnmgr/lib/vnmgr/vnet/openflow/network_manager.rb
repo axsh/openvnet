@@ -26,7 +26,6 @@ module Vnmgr::VNet::Openflow
 
       dp_network_map = dp_map.batch.datapath_networks_dataset.where(:network_id => network_map.id).first.commit
       dpn_subnet_map = dp_map.batch.datapath_networks_on_subnet_dataset.where(:network_id => network_map.id).all.commit
-      dpn_subnet_map.each { |dp_map| dp_map.datapath = dp_map.batch.datapath.commit }
 
       old_network = network_by_uuid_direct(network_uuid)
       return old_network if old_network

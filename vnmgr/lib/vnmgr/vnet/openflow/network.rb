@@ -57,10 +57,10 @@ module Vnmgr::VNet::Openflow
 
     def add_datapath_on_subnet(dpn_map, should_update)
       datapath = {
-        :uuid => dpn_map.datapath.uuid,
-        :display_name => dpn_map.datapath.display_name,
-        :ipv4_address => dpn_map.datapath.ipv4_address,
-        :datapath_id => dpn_map.datapath.datapath_id,
+        :uuid => dpn_map.datapath_map[:uuid],
+        :display_name => dpn_map.datapath_map[:display_name],
+        :ipv4_address => dpn_map.datapath_map[:ipv4_address],
+        :datapath_id => dpn_map.datapath_map[:datapath_id],
         :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
       }
 
