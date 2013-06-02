@@ -21,7 +21,7 @@ describe Vnmgr::Configurations::Vna do
     it { expect(subject.data_access_proxy).to eq :dba }
 
     # trema
-    it { expect(subject.trema_home).to eq "/opt/axsh/wakame-vnet/vnmgr/vendor/bundle/ruby/1.9.1/bundler/gems/trema-bdf38b482354" }
+    it { expect(subject.trema_home).to eq Gem::Specification.find_by_name('trema').gem_dir }
     it { expect(subject.trema_tmp).to eq "/var/run/wakame-vnet" }
   end
 end

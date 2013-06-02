@@ -7,7 +7,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :open_flow_controller_id, :index => true, :null=>false
       String :display_name, :null=>false
-      Integer :ipv4_address
+      Bignum :ipv4_address
       FalseClass :is_connected, :null=>false
       String :datapath_id, :null=>false
       DateTime :created_at, :null=>false
