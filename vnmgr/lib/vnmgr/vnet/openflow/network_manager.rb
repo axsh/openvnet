@@ -59,7 +59,7 @@ module Vnmgr::VNet::Openflow
     end
 
     def update_all_flows
-      @networks.each { |key,network|
+      @networks.dup.each { |key,network|
         p "Updating flows for: #{network.uuid}"
         network.update_flows
       }

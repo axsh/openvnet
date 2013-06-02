@@ -62,9 +62,6 @@ module Vnmgr::VNet::Openflow
                              :eth_type => 0x0806,
                              :in_port => self.port_number
                            }, {}, flow_options.merge(:goto_table => TABLE_ARP_ROUTE))
-      flows << Flow.create(TABLE_ARP_ROUTE, 0, {
-                             :eth_type => 0x0806
-                           }, {:output => self.port_number}, flow_options)
 
       self.datapath.add_flows(flows)
       self.datapath.switch.network_manager.update_all_flows
