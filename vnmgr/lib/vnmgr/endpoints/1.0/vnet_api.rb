@@ -18,10 +18,26 @@ module Vnmgr::Endpoints::V10
       end
     end
 
-    def parse_ipv4(ipv4_param)
-      return nil unless ipv4_param
-      address = IPAddr.new(ipv4_param)
-      address.ipv4? ? address.to_i : nil
+    def parse_ipv4(param)
+      return nil if param.nil? || param.empty?
+
+      begin
+        address = IPAddr.new(param)
+        raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
+        address.to_i
+      rescue ArgumentError
+        raise(E::ArgumentError, 'Could not parse IPv4 address.')
+      end
+    end
+
+    def parse_mac(param)
+      return nil if param.nil? || param.empty?
+
+      begin
+        Trema::Mac.new(param).value
+      rescue ArgumentError
+        raise(E::ArgumentError, 'Could not parse MAC address.')
+      end
     end
 
     respond_to :json, :yml

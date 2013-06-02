@@ -42,11 +42,11 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
     datapath = M::Datapath[params['uuid']] || raise(E::UnknownUUIDResource, params['uuid'])
     network = M::Network[params['network_uuid']] || raise(E::UnknownUUIDResource, params['network_uuid'])
 
-    params['broadcast_mac_address'] || raise(E::UnknownUUIDResource, 'broadcast_mac_address')
+    broadcast_mac_address = parse_mac(params['broadcast_mac_address']) || raise(E::MissingArgument, 'broadcast_mac_address')
 
     M::DatapathNetwork.create({ :datapath_id => datapath.id,
                                 :network_id => network.id,
-                                :broadcast_mac_addr => Trema::Mac.new(params['broadcast_mac_address']).value,
+                                :broadcast_mac_addr => broadcast_mac_address,
                               })
     respond_with({})
   end

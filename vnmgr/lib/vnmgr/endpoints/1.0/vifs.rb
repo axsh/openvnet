@@ -12,12 +12,10 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/vifs' do
       params['uuid'] = M::Vif.trim_uuid(params['uuid'])
     end
 
-    if params.has_key?('mac_addr')
-      params['mac_addr'] = Trema::Mac.new(params['mac_addr']).value || raise(E::InvalidUUID, 'foofoo')
-    end
-
     network = M::Network[params['network_id']] || raise(E::InvalidUUID, params['network_id']) if params.has_key?('network_id')
+
     params['network_id'] = network.id if network
+    params['mac_addr'] = parse_mac(params['mac_addr']) || raise(E::MissingArgument, 'mac_addr')
 
     ipv4_address = parse_ipv4(params.delete('ipv4_address'))
 
