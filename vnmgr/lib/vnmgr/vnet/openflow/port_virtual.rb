@@ -45,24 +45,14 @@ module Vnmgr::VNet::Openflow
       #
       # Destination routing:
       #
-      flows << Flow.create(TABLE_VIRTUAL_DST, 60, {
-                             :metadata => self.network_number << METADATA_NETWORK_SHIFT,
-                             :metadata_mask => METADATA_NETWORK_MASK,
-                             :eth_dst => self.hw_addr,
-                           }, {
-                             :output => self.port_number,
-                           }, flow_options)
-
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
-                             :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | self.port_number,
-                             :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-                           }, {
+      flows << Flow.create(TABLE_VIRTUAL_DST, 60, metadata_n.merge!(:eth_dst => self.hw_addr), {
                              :output => self.port_number
                            }, flow_options)
-      flows << Flow.create(TABLE_METADATA_LOCAL, 0, {
-                             :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | self.port_number,
-                             :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-                           }, {
+
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, metadata_np, {
+                             :output => self.port_number
+                           }, flow_options)
+      flows << Flow.create(TABLE_METADATA_LOCAL, 0, metadata_np, {
                              :output => self.port_number
                            }, flow_options)
 

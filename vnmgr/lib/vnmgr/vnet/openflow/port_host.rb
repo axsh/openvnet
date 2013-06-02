@@ -30,18 +30,13 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {
                              :output => self.port_number
                            }, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
-                             :metadata => self.port_number,
-                             :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-                           }, {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, metadata_np(0x0), {
                              :output => self.port_number
                            }, flow_options)
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 25, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge({ :metadata => OFPP_LOCAL,
-                                                       :metadata_mask => Constants::METADATA_PORT_MASK,
-                                                       :goto_table => TABLE_PHYSICAL_SRC}))
+                           }, {}, flow_options.merge(metadata_p(OFPP_LOCAL)).merge(:goto_table => TABLE_PHYSICAL_SRC))
       flows << Flow.create(TABLE_PHYSICAL_DST, 20, {}, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))
 
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
