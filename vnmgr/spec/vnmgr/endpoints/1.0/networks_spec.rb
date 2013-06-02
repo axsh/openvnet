@@ -52,7 +52,7 @@ describe "/networks" do
     it "should create a network" do
       params = {
         display_name: "network",
-        ipv4_network: IPAddr.new("192.168.10.1").to_i,
+        ipv4_network: "192.168.10.1",
         ipv4_prefix: 24,
       }
       post "/networks", params
