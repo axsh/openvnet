@@ -8,6 +8,12 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
       raise E::DuplicateUUID, params["uuid"] unless M::Datapath[params["uuid"]].nil?
       params["uuid"] = M::Datapath.trim_uuid(params["uuid"])
     end
+
+    if params.has_key?('ipv4_address')
+      ipv4_address = IPAddr.new(params['ipv4_address'])
+      params['ipv4_address'] = ipv4_address.to_i if ipv4_address.ipv4?
+    end
+
     datapath = M::Datapath.create(params)
     respond_with(R::Datapath.generate(datapath))
   end
@@ -32,4 +38,20 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
     datapath = M::Datapath.update(@params["uuid"], params)
     respond_with(R::Datapath.generate(datapath))
   end
+
+  put '/:uuid/networks' do
+    params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_address'])
+
+    datapath = M::Datapath[params['uuid']] || raise(E::UnknownUUIDResource, params['uuid'])
+    network = M::Network[params['network_uuid']] || raise(E::UnknownUUIDResource, params['network_uuid'])
+
+    params['broadcast_mac_address'] || raise(E::UnknownUUIDResource, 'broadcast_mac_address')
+
+    M::DatapathNetwork.create({ :datapath_id => datapath.id,
+                                :network_id => network.id,
+                                :broadcast_mac_addr => Trema::Mac.new(params['broadcast_mac_address']).value,
+                              })
+    respond_with({})
+  end
+
 end
