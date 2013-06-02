@@ -17,19 +17,16 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/vifs' do
     end
 
     network = M::Network[params['network_id']] || raise(E::InvalidUUID, params['network_id']) if params.has_key?('network_id')
-    ipv4_param = params.delete('ipv4_address')
-
     params['network_id'] = network.id if network
+
+    ipv4_address = parse_ipv4(params.delete('ipv4_address'))
+
     vif = M::Vif.create(params)
 
-    if network && ipv4_param
-      IPAddr.new(ipv4_param).ipv4? || raise(E::InvalidUUID, 'foofoo')
-
-      ip_address = M::IpAddress.create({:ipv4_address => IPAddr.new(ipv4_param).to_i})
-
+    if network && ipv4_address
       M::IpLease.create({ :network_id => network.id,
                           :vif_id => vif.id,
-                          :ip_address_id => ip_address.id,
+                          :ip_address_id => M::IpAddress.create({:ipv4_address => ipv4_address}).id,
                         })
     end
 

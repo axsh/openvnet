@@ -9,10 +9,7 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
       params["uuid"] = M::Datapath.trim_uuid(params["uuid"])
     end
 
-    if params.has_key?('ipv4_address')
-      ipv4_address = IPAddr.new(params['ipv4_address'])
-      params['ipv4_address'] = ipv4_address.to_i if ipv4_address.ipv4?
-    end
+    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
 
     datapath = M::Datapath.create(params)
     respond_with(R::Datapath.generate(datapath))

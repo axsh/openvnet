@@ -16,11 +16,7 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/networks' do
     end
     #TODO: Validate all parameters
 
-    if params.has_key?("ipv4_network")
-      ipv4_network = IPAddr.new(params["ipv4_network"])
-
-      params["ipv4_network"] = ipv4_network.to_i if ipv4_network.ipv4?
-    end
+    params["ipv4_network"] = parse_ipv4(params["ipv4_network"]) if params.has_key?("ipv4_network")
 
     nw = M::Network.create(params)
 

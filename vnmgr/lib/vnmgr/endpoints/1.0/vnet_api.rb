@@ -18,6 +18,12 @@ module Vnmgr::Endpoints::V10
       end
     end
 
+    def parse_ipv4(ipv4_param)
+      return nil unless ipv4_param
+      address = IPAddr.new(ipv4_param)
+      address.ipv4? ? address.to_i : nil
+    end
+
     respond_to :json, :yml
 
     load_namespace('networks')
