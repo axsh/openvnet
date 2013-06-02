@@ -34,10 +34,10 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_SRC, 6, {
                              :in_port => OFPP_LOCAL
                            }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 5, {
-                             :eth_type => 0x0800,
-                             :ipv4_src => IPAddr.new('192.168.60.101')
-                           }, {}, flow_options)
+      # flows << Flow.create(TABLE_PHYSICAL_SRC, 5, {
+      #                        :eth_type => 0x0800,
+      #                        :ipv4_src => IPAddr.new('192.168.60.101')
+      #                      }, {}, flow_options)
 
       #
       # ARP routing table
@@ -46,10 +46,10 @@ module Vnmgr::VNet::Openflow
                              :in_port => OFPP_LOCAL,
                              :eth_type => 0x0806
                            }, {}, flow_options.merge(:goto_table => TABLE_ARP_ROUTE))
-      flows << Flow.create(TABLE_ARP_ROUTE, 1, {
-                             :eth_type => 0x0806,
-                             :arp_tpa => IPAddr.new('192.168.60.101')
-                           }, {:output => OFPP_LOCAL}, flow_options)
+      # flows << Flow.create(TABLE_ARP_ROUTE, 1, {
+      #                        :eth_type => 0x0806,
+      #                        :arp_tpa => IPAddr.new('192.168.60.101')
+      #                      }, {:output => OFPP_LOCAL}, flow_options)
 
       self.datapath.add_flows(flows)
     end
