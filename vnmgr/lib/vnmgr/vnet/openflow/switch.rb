@@ -35,16 +35,20 @@ module Vnmgr::VNet::Openflow
 
       flows = []
 
-      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, {})
-      flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, {})
-      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, {})
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, {})
-      flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, {})
-      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, {})
-      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, {})
-      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, {})
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, {})
-      flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, {})
+      flow_options = {:cookie => 0x1}
+
+      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
+
+      flow_options = {:cookie => 0x2}
 
       # Catches all arp packets that are from local ports.
       #
@@ -54,13 +58,13 @@ module Vnmgr::VNet::Openflow
                              :eth_type => 0x0806,
                              :metadata => 0x0,
                              :metadata_mask => (METADATA_PORT_MASK)
-                           }, {}, {})
+                           }, {}, flow_options)
       # Next we catch all arp packets, with learning flows for
       # incoming arp packets having been handled by network/eth_port
       # specific flows.
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
-                           }, {}, {})
+                           }, {}, flow_options)
 
       self.datapath.add_flows(flows)
     end
