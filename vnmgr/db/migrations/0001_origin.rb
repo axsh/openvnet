@@ -15,7 +15,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       String :display_name, :null=>false
-      Integer :ipv4_network, :null=>false
+      Bignum :ipv4_network, :null=>false
       Integer :ipv4_prefix, :default=>24, :null=>false
       String :domain_name
       Integer :dc_network_id, :index => true
@@ -41,7 +41,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true
-      Integer :ipv4_address, :null=>false
+      Bignum :ipv4_address, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -62,8 +62,8 @@ Sequel.migration do
     create_table(:dhcp_ranges) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :range_begin, :null=>false
-      Integer :range_end, :null=>false
+      Bignum :range_begin, :null=>false
+      Bignum :range_end, :null=>false
       Integer :network_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
@@ -72,9 +72,9 @@ Sequel.migration do
     create_table(:mac_ranges) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :vendor_id, :null=>false
-      Integer :range_begin, :null=>false
-      Integer :range_end, :null=>false
+      Bignum :vendor_id, :null=>false
+      Bignum :range_begin, :null=>false
+      Bignum :range_end, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -90,7 +90,7 @@ Sequel.migration do
     create_table(:ip_addresses) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :ipv4_address, :null=>false
+      Bignum :ipv4_address, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end

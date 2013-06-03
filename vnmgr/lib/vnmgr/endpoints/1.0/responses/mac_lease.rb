@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class MacLease < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::MacLeaseWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::MacLease)
       object.to_hash
     end
   end

@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 module Vnmgr::Endpoints::V10::Helpers
   module ClassMethods
     def load_namespace(ns)

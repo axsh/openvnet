@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class MacRange < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::MacRangeWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::MacRange)
       object.to_hash
     end
   end

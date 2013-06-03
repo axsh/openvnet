@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class Network < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::NetworkWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::Network)
       object.to_hash
     end
   end
