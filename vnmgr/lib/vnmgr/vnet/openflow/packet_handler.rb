@@ -56,9 +56,9 @@ module Vnmgr::VNet::Openflow
         p "send udp: layer:#{l.pretty}."
       }
 
-      # message = Trema::Messages::PacketOut.new({ :actions => Trema::Actions::SendOutPort.new(:port_number => params[:out_port]),
-      #                                            :data => raw_out.pack.ljust(64, "\0")})
-      # self.datapath.send_message(message)
+      message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
+
+      self.datapath.send_packet_out(message, params[:out_port])
     end
 
   end

@@ -103,6 +103,14 @@ module Vnmgr::VNet::Openflow
       send_flow_mod(datapath_id, message)
     end
 
+    def public_send_packet_out(datapath_id, message, port_no)
+      raise "public_send_packet_out must be called from the trema thread" unless Thread.current == @trema_thread
+      send_packet_out(datapath_id, {
+                        :packet_in => message,
+                        :actions => [Trema::Actions::SendOutPort.new(:port_number => port_no)]
+                      })
+    end
+
   end
 
 end
