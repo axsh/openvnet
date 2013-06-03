@@ -23,6 +23,10 @@ module Vnmgr::VNet::Openflow
       self.ports.find_all{ |key,port| port.is_eth_port }.collect{ |key,port| port }
     end
 
+    def update_bridge_hw(hw_addr)
+      @bridge_hw = hw_addr
+    end
+
     #
     # Event handlers:
     #
@@ -79,6 +83,8 @@ module Vnmgr::VNet::Openflow
     def handle_port_desc(port_desc)
       p "handle_port_desc: #{port_desc.inspect}"
 
+      self.bridge_hw || raise("No bridge hw address found.")
+
       port = Port.new(datapath, port_desc, true)
       ports[port_desc.port_no] = port
 
@@ -90,11 +96,6 @@ module Vnmgr::VNet::Openflow
 
       elsif port.port_info.name =~ /^eth/
         port.extend(PortHost)
-
-        if self.bridge_hw.nil?
-          @bridge_hw = port.port_info.hw_addr
-          ports[OFPP_LOCAL].install_with_hw(self.bridge_hw) if ports[OFPP_LOCAL]
-        end
 
         network = self.network_manager.network_by_uuid('nw-public')
 
