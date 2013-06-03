@@ -20,7 +20,7 @@ module Vnmgr::VNet::Openflow
       @handlers[cookie] = handler
     end
 
-    def packet_in(message)
+    def packet_in(port, message)
       handler = @handlers[message.cookie]
 
       handler.packet_in(message) if handler

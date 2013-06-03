@@ -13,6 +13,9 @@ module Vnmgr::VNet::Openflow
     attr_reader :datapath_of_bridge
     attr_reader :datapaths_on_subnet
 
+    attr_reader :ipv4_network
+    attr_reader :ipv4_prefix
+
     def initialize(dp, network_map)
       @datapath = dp
       @uuid = network_map.uuid
@@ -21,6 +24,9 @@ module Vnmgr::VNet::Openflow
       @ports = {}
       @datapath_of_bridge = nil
       @datapaths_on_subnet = []
+
+      @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
+      @ipv4_prefix = network_map.ipv4_prefix
     end
 
     def add_port(port, should_update)

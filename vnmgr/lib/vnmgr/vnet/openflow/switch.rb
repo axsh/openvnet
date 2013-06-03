@@ -163,7 +163,9 @@ module Vnmgr::VNet::Openflow
     end
 
     def packet_in(message)
-      @packet_manager.packet_in(message)
+      port = self.ports[message.match.in_port]
+
+      @packet_manager.packet_in(port, message) if port
     end
 
   end
