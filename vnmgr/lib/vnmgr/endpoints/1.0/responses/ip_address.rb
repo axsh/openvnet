@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class IpAddress < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::IpAddressWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::IpAddress)
       object.to_hash
     end
   end

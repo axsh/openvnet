@@ -3,51 +3,57 @@
 $LOAD_PATH.unshift 'lib'
 
 require 'rubygems'
-require 'rspec/core/rake_task'
+require 'bundler/setup'
 require 'sequel'
 require 'vnmgr'
 
-def migrate(db_uri, to = nil)
+begin
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new(:spec)
+  task :default => :spec
+rescue => LoadError
+end
+
+def connect(db_uri)
   Sequel.connect(db_uri)
+end
+
+def load_config(config_dir)
+  Vnmgr::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf"))
+end
+
+def migrate(db_uri, to = nil)
   Sequel.extension :migration
+  connect(db_uri)
   Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../db/migrations', __FILE__), to)
 end
 
-RSpec::Core::RakeTask.new(:spec)
-task :default => :spec
-
 namespace :db do
+  db_uri = load_config("/etc/wakame-vnet/").db_uri
   task :init => [] do
-    puts "create tables"
-    #TODO:
-    # Sequel configurations should be ported into a config file.
-    migrate('mysql://localhost/vnmgr?user=root')
+    migrate(db_uri)
   end
 
   task :drop => [] do
-    #TODO:
-    # Sequel configurations should be ported into a config file.
-    migrate('mysql://localhost/vnmgr?user=root', 0)
+    migrate(db_uri, 0)
   end
 
   task :dump => [] do
     Sequel.extension :schema_dumper
-    #TODO:
-    # Sequel configurations should be ported into a config file.
-    db = Sequel.connect('mysql://localhost/vnmgr?user=root')
+    db = connect(db_uri)
     puts db.dump_schema_migration
   end
 end
 
 namespace :test do
-  #conf = Vnmgr::Configurations::Dba.load(File.expand_path("spec/config/dba.conf", File.dirname(__FILE__)))
+  db_uri = load_config("spec/config/").db_uri
   namespace :db do
     task :init => [] do
-      migrate(conf.db_uri)
+      migrate(db_uri)
     end
 
     task :drop => [] do
-      migrate(conf.db_uri, 0)
+      migrate(db_uri, 0)
     end
   end
 end

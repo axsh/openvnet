@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class Datapath < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::DatapathWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::Datapath)
       object.to_hash
     end
   end

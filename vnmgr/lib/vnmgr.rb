@@ -2,18 +2,21 @@
 
 require 'ext/kernel'
 
+#require 'active_support/all'
+#require 'active_support/core_ext'
+require 'active_support/core_ext/object'
+require 'active_support/inflector'
+require 'active_support/hash_with_indifferent_access'
+
 module Vnmgr
 
-  VNMGR_ROOT = ENV['VNMGR_ROOT'] || File.expand_path('../../', __FILE__)
+  ROOT = ENV['VNMGR_ROOT'] || File.expand_path('../../', __FILE__)
 
   module Initializers
     autoload :DB, 'vnmgr/initializers/db'
   end
 
   module Constants
-    module StorageBackends
-      autoload :DBA, 'vnmgr/constants/storage_backends/dba'
-    end
     autoload :VNetAPI, 'vnmgr/constants/vnet_api'
   end
 
@@ -57,22 +60,7 @@ module Vnmgr
   end
 
   module NodeModules
-    autoload :Dba,	'vnmgr/node_modules/dba'
-    module DBA
-      autoload :Base, 'vnmgr/node_modules/dba/base'
-      autoload :Network, 'vnmgr/node_modules/dba/network'
-      autoload :Vif, 'vnmgr/node_modules/dba/vif'
-      autoload :DhcpRange, 'vnmgr/node_modules/dba/dhcp_range'
-      autoload :MacRange, 'vnmgr/node_modules/dba/mac_range'
-      autoload :Router, 'vnmgr/node_modules/dba/router'
-      autoload :Tunnel, 'vnmgr/node_modules/dba/tunnel'
-      autoload :DcNetwork, 'vnmgr/node_modules/dba/dc_network'
-      autoload :Datapath, 'vnmgr/node_modules/dba/datapath'
-      autoload :OpenFlowController, 'vnmgr/node_modules/dba/open_flow_controller'
-      autoload :IpAddress, 'vnmgr/node_modules/dba/ip_address'
-      autoload :IpLease, 'vnmgr/node_modules/dba/ip_lease'
-      autoload :NetworkService, 'vnmgr/node_modules/dba/network_service'
-    end
+    autoload :Dba, 'vnmgr/node_modules/dba'
     autoload :ServiceOpenflow, 'vnmgr/node_modules/service_openflow'
   end
 
@@ -96,23 +84,39 @@ module Vnmgr
 
   module ModelWrappers
     autoload :Base, 'vnmgr/model_wrappers/base'
-    autoload :NetworkWrapper, 'vnmgr/model_wrappers/network_wrapper'
-    autoload :VifWrapper, 'vnmgr/model_wrappers/vif_wrapper'
-    autoload :DhcpRangeWrapper, 'vnmgr/model_wrappers/dhcp_range_wrapper'
-    autoload :MacRangeWrapper, 'vnmgr/model_wrappers/mac_range_wrapper'
-    autoload :RouterWrapper, 'vnmgr/model_wrappers/router_wrapper'
-    autoload :TunnelWrapper, 'vnmgr/model_wrappers/tunnel_wrapper'
-    autoload :DcNetworkWrapper, 'vnmgr/model_wrappers/dc_network_wrapper'
-    autoload :DatapathWrapper, 'vnmgr/model_wrappers/datapath_wrapper'
-    autoload :OpenFlowControllerWrapper, 'vnmgr/model_wrappers/open_flow_controller_wrapper'
-    autoload :IpAddressWrapper, 'vnmgr/model_wrappers/ip_address_wrapper'
-    autoload :IpLeaseWrapper, 'vnmgr/model_wrappers/ip_lease_wrapper'
-    autoload :NetworkServiceWrapper, 'vnmgr/model_wrappers/network_service_wrapper'
+    autoload :Network, 'vnmgr/model_wrappers/network'
+    autoload :Vif, 'vnmgr/model_wrappers/vif'
+    autoload :DhcpRange, 'vnmgr/model_wrappers/dhcp_range'
+    autoload :MacRange, 'vnmgr/model_wrappers/mac_range'
+    autoload :Router, 'vnmgr/model_wrappers/router'
+    autoload :Tunnel, 'vnmgr/model_wrappers/tunnel'
+    autoload :DcNetwork, 'vnmgr/model_wrappers/dc_network'
+    autoload :Datapath, 'vnmgr/model_wrappers/datapath'
+    autoload :OpenFlowController, 'vnmgr/model_wrappers/open_flow_controller'
+    autoload :IpAddress, 'vnmgr/model_wrappers/ip_address'
+    autoload :IpLease, 'vnmgr/model_wrappers/ip_lease'
+    autoload :NetworkService, 'vnmgr/model_wrappers/network_service'
   end
 
-  require 'vnmgr/storage_backend'
-  module StorageBackends
-    autoload :DBA, 'vnmgr/storage_backends/dba'
+  require 'vnmgr/data_access'
+  module DataAccess
+    autoload :DbaProxy, 'vnmgr/data_access/proxies'
+    autoload :DirectProxy, 'vnmgr/data_access/proxies'
+    module Models
+      autoload :Base, 'vnmgr/data_access/models/base'
+      autoload :Network, 'vnmgr/data_access/models/network'
+      autoload :Vif, 'vnmgr/data_access/models/vif'
+      autoload :DhcpRange, 'vnmgr/data_access/models/dhcp_range'
+      autoload :MacRange, 'vnmgr/data_access/models/mac_range'
+      autoload :Router, 'vnmgr/data_access/models/router'
+      autoload :Tunnel, 'vnmgr/data_access/models/tunnel'
+      autoload :DcNetwork, 'vnmgr/data_access/models/dc_network'
+      autoload :Datapath, 'vnmgr/data_access/models/datapath'
+      autoload :OpenFlowController, 'vnmgr/data_access/models/open_flow_controller'
+      autoload :IpAddress, 'vnmgr/data_access/models/ip_address'
+      autoload :IpLease, 'vnmgr/data_access/models/ip_lease'
+      autoload :NetworkService, 'vnmgr/data_access/models/network_service'
+    end
   end
 
   module Configurations

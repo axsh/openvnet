@@ -3,7 +3,7 @@
 module Vnmgr::Endpoints::V10::Responses
   class DhcpRange < Vnmgr::Endpoints::ResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnmgr::ModelWrappers::DhcpRangeWrapper)
+      argument_type_check(object,Vnmgr::ModelWrappers::DhcpRange)
       object.to_hash
     end
   end

@@ -9,28 +9,28 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/mac_leases' do
       raise E::DuplicateUUID, params["uuid"] unless M::MacLease[params["uuid"]].nil?
       params["uuid"] = M::MacLease.trim_uuid(params["uuid"])
     end
-    mac_lease = sb.mac_lease.create(params)
+    mac_lease = M::MacLease.create(params)
     respond_with(R::MacLease.generate(mac_lease))
   end
 
   get do
-    mac_leases = sb.mac_lease.all
+    mac_leases = M::MacLease.all
     respond_with(R::MacLeaseCollection.generate(mac_leases))
   end
 
   get '/:uuid' do
-    mac_lease = sb.mac_lease[{:uuid => @params["uuid"]}]
+    mac_lease = M::MacLease[@params["uuid"]]
     respond_with(R::MacLease.generate(mac_lease))
   end
 
   delete '/:uuid' do
-    mac_lease = sb.mac_lease.delete({:uuid => @params["uuid"]})
+    mac_lease = M::MacLease.destroy(@params["uuid"])
     respond_with(R::MacLease.generate(mac_lease))
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["uuid","mac_addr","created_at","updated_at"])
-    mac_lease = sb.mac_lease.update(params)
+    params = parse_params(@params, ["mac_addr","created_at","updated_at"])
+    mac_lease = M::MacLease.update(@params["uuid"], params)
     respond_with(R::MacLease.generate(mac_lease))
   end
 end
