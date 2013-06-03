@@ -12,11 +12,13 @@ module Vnmgr::VNet::Openflow
     attr_reader :bridge_hw
     attr_reader :ports
     attr_reader :network_manager
+    attr_reader :packet_manager
 
     def initialize(dp, name = nil)
       @datapath = dp
       @ports = {}
       @network_manager = NetworkManager.new(dp)
+      @packet_manager = PacketManager.new(dp)
     end
 
     def eth_ports
@@ -161,6 +163,7 @@ module Vnmgr::VNet::Openflow
     end
 
     def packet_in(message)
+      @packet_manager.packet_in(message)
     end
 
   end

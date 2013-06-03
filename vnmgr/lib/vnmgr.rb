@@ -144,6 +144,8 @@ module Vnmgr
       autoload :NetworkVirtual, 'vnmgr/vnet/openflow/network_virtual'
       autoload :NetworkManager, 'vnmgr/vnet/openflow/network_manager'
       autoload :OvsOfctl, 'vnmgr/vnet/openflow/ovs_ofctl'
+      autoload :PacketHandler, 'vnmgr/vnet/openflow/packet_handler'
+      autoload :PacketManager, 'vnmgr/vnet/openflow/packet_manager'
       autoload :Port, 'vnmgr/vnet/openflow/port'
       autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
       autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
@@ -152,6 +154,11 @@ module Vnmgr
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
       autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
     end
+
+    module Services
+      autoload :Dhcp, 'vnmgr/vnet/services/dhcp'
+    end
+
   end
 
 end
