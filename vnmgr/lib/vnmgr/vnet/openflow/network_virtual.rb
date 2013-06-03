@@ -25,24 +25,12 @@ module Vnmgr::VNet::Openflow
                              }, {}, flow_options)
       end
 
-      flows << Flow.create(TABLE_VIRTUAL_DST, 40, {
-                             :metadata => (self.network_number << METADATA_NETWORK_SHIFT),
-                             :metadata_mask => METADATA_NETWORK_MASK | METADATA_PORT_MASK,
-                             :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
-                           }, {},
-                           flow_options.merge({ :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
-                                                :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK),
-                                                :goto_table => TABLE_METADATA_ROUTE
-                                              }))
-      flows << Flow.create(TABLE_VIRTUAL_DST, 30, {
-                             :metadata => (self.network_number << METADATA_NETWORK_SHIFT),
-                             :metadata_mask => METADATA_NETWORK_MASK,
-                             :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
-                           }, {},
-                           flow_options.merge({ :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
-                                                :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK),
-                                                :goto_table => TABLE_METADATA_LOCAL
-                                              }))
+      flows << Flow.create(TABLE_VIRTUAL_DST, 40,
+                           metadata_pn.merge!(:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')), {},
+                           flow_options.merge!(metadata_pn(OFPP_FLOOD).merge!(:goto_table => TABLE_METADATA_ROUTE)))
+      flows << Flow.create(TABLE_VIRTUAL_DST, 30,
+                           metadata_n.merge!(:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')), {},
+                           flow_options.merge!(metadata_pn(OFPP_FLOOD).merge!(:goto_table => TABLE_METADATA_LOCAL)))
 
       self.datapath.add_flows(flows)
     end

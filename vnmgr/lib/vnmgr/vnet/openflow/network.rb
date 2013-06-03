@@ -29,6 +29,18 @@ module Vnmgr::VNet::Openflow
       @ipv4_prefix = network_map.ipv4_prefix
     end
 
+    def metadata_n(nw = self.network_number)
+      { :metadata => nw << Constants::METADATA_NETWORK_SHIFT,
+        :metadata_mask => Constants::METADATA_NETWORK_MASK
+      }
+    end
+
+    def metadata_pn(port = 0x0)
+      { :metadata => (self.network_number << Constants::METADATA_NETWORK_SHIFT) | port,
+        :metadata_mask => (Constants::METADATA_PORT_MASK | Constants::METADATA_NETWORK_MASK)
+      }
+    end
+
     def add_port(port, should_update)
       raise("Port already added to a network.") if port.network || self.ports[port.port_number]
 

@@ -46,19 +46,19 @@ module Vnmgr::VNet::Openflow
       raw_out.l3.ttl = 128
 
       raw_out.l4 = Racket::L4::UDP.new
-      raw_out.l4.src_port = params[:src_port].to_s
-      raw_out.l4.dst_port = params[:dst_port].to_s
+      raw_out.l4.src_port = params[:src_port]
+      raw_out.l4.dst_port = params[:dst_port]
       raw_out.l4.payload = params[:payload]
 
       raw_out.l4.fix!(raw_out.l3.src_ip, raw_out.l3.dst_ip)
 
       raw_out.layers.compact.each { |l|
-        logger.debug "send udp: layer:#{l.pretty}."
+        p "send udp: layer:#{l.pretty}."
       }
 
-      # send_packet_out(datapath_id,
-      #                 :data => raw_out.pack.ljust(64, "\0"),
-      #                 :actions => Trema::ActionOutput.new( :port => out_port ) )
+      # message = Trema::Messages::PacketOut.new({ :actions => Trema::Actions::SendOutPort.new(:port_number => params[:out_port]),
+      #                                            :data => raw_out.pack.ljust(64, "\0")})
+      # self.datapath.send_message(message)
     end
 
   end

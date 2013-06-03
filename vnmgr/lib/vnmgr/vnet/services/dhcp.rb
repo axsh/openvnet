@@ -50,15 +50,15 @@ module Vnmgr::VNet::Services
 
       p "DHCP send: output:#{dhcp_out.to_s}."
 
-      send_udp({ :out_port => message.in_port,
-                 :src_hw => self.service_mac,
-                 :src_ip => self.service_ipv4,
-                 :src_port => 67,
-                 :dst_hw => port.hw_addr,
-                 :dst_ip => port.ipv4_addr,
-                 :dst_port => 68,
-                 :payload => dhcp_out.pack
-               })
+      udp_out({ :out_port => message.in_port,
+                :src_hw => self.service_mac,
+                :src_ip => self.service_ipv4,
+                :src_port => 67,
+                :dst_hw => port.hw_addr,
+                :dst_ip => port.ipv4_addr,
+                :dst_port => 68,
+                :payload => dhcp_out.pack
+              })
     end
 
     def parse_dhcp_packet(message)
