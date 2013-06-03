@@ -9,9 +9,11 @@ module Vnmgr::VNet::Openflow
     attr_reader :network_id
     attr_reader :network_number
     attr_reader :uuid
-    attr_reader :ports
     attr_reader :datapath_of_bridge
     attr_reader :datapaths_on_subnet
+
+    attr_reader :ports
+    attr_reader :services
 
     attr_reader :ipv4_network
     attr_reader :ipv4_prefix
@@ -21,9 +23,11 @@ module Vnmgr::VNet::Openflow
       @uuid = network_map.uuid
       @network_id = network_map.network_id
       @network_number = network_map.network_id
-      @ports = {}
       @datapath_of_bridge = nil
       @datapaths_on_subnet = []
+
+      @ports = {}
+      @services = {}
 
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = network_map.ipv4_prefix
@@ -85,6 +89,20 @@ module Vnmgr::VNet::Openflow
       # p "Adding datapath to list of networks on the same subnet: network:#{self.uuid} datapath:#{datapath.inspect}"
 
       @datapaths_on_subnet << datapath
+      update_flows if should_update
+    end
+
+    def add_service(service_map, should_update)
+      raise("Service already added to network.") if @services[service_map.uuid]
+
+      service = nil
+
+      if service.nil?
+        p "Failed to create service: #{service_map.uuid}"
+        return
+      end
+
+      self.services[service_map.uuid] = service
       update_flows if should_update
     end
 
