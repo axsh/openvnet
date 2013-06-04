@@ -7,6 +7,7 @@ module Vnmgr::VNet::Openflow
   class Switch
     include Constants
     include Celluloid
+    include Celluloid::Logger
 
     attr_reader :datapath
     attr_reader :bridge_hw
@@ -84,14 +85,14 @@ module Vnmgr::VNet::Openflow
     end
 
     def features_reply(message)
-      p "transaction_id: %#x" % message.transaction_id
-      p "n_buffers: %u" % message.n_buffers
-      p "n_tables: %u" % message.n_tables
-      p "capabilities: %u" % message.capabilities
+      debug "transaction_id: %#x" % message.transaction_id
+      debug "n_buffers: %u" % message.n_buffers
+      debug "n_tables: %u" % message.n_tables
+      debug "capabilities: %u" % message.capabilities
     end
 
     def handle_port_desc(port_desc)
-      p "handle_port_desc: #{port_desc.inspect}"
+      debug "handle_port_desc: #{port_desc.inspect}"
 
       self.bridge_hw || raise("No bridge hw address found.")
 
@@ -113,7 +114,7 @@ module Vnmgr::VNet::Openflow
         vif_map = Vnmgr::ModelWrappers::Vif[port_desc.name]
 
         if vif_map.nil?
-          p "error: Could not find uuid: #{port_desc.name}"
+          error "error: Could not find uuid: #{port_desc.name}"
           return
         end
 
@@ -133,7 +134,7 @@ module Vnmgr::VNet::Openflow
 
       elsif port.port_info.name =~ /^t-/
       else
-        p "Unknown interface type: #{port.port_info.name}"
+        error "Unknown interface type: #{port.port_info.name}"
         return
       end
 
@@ -142,26 +143,26 @@ module Vnmgr::VNet::Openflow
     end
 
     def port_status(message)
-      p "name: #{message.name}"
-      p "reason: #{message.reason}"
-      p "in_port: #{message.port_no}"
-      p "hw_addr: #{message.hw_addr}"
-      p "state: %#x" % message.state
+      debug "name: #{message.name}"
+      debug "reason: #{message.reason}"
+      debug "in_port: #{message.port_no}"
+      debug "hw_addr: #{message.hw_addr}"
+      debug "state: %#x" % message.state
 
       p message.inspect
 
       case message.reason
       when OFPPR_ADD
-        p "adding port"
+        debug "adding port"
         self.handle_port_desc(message)
 
       when OFPPR_DELETE
-        p "deleting port"
+        debug "deleting port"
 
         port = @ports.delete(message.port_no)
 
         if port.nil?
-          p "port status could not delete uninitialized port: #{message.port_no}"
+          debug "port status could not delete uninitialized port: #{message.port_no}"
           return
         end
         

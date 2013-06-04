@@ -5,6 +5,7 @@ require 'celluloid'
 module Vnmgr::VNet::Openflow
 
   class NetworkManager
+    include Celluloid::Logger
 
     attr_reader :datapath
     attr_reader :networks
@@ -72,7 +73,7 @@ module Vnmgr::VNet::Openflow
 
     def update_all_flows
       @networks.dup.each { |key,network|
-        p "Updating flows for: #{network.uuid}"
+        debug "Updating flows for: #{network.uuid}"
         network.update_flows
       }
     end
