@@ -47,6 +47,7 @@ module Vnmgr::VNet::Openflow
 
     def self.to_action(tag, arg)
       case tag
+      when :eth_dst then Trema::Actions::EthDst.new(arg)
       when :output then Trema::Actions::SendOutPort.new(arg)
       else
         raise("Unknown action type.")

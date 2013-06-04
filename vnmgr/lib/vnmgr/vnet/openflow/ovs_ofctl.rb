@@ -30,6 +30,11 @@ module Vnmgr::VNet::Openflow
       p "'#{command}' => #{system(command)}."
     end
 
+    def add_ovs_flow(flow_str)
+      command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
+      p "'#{command}' => #{system(command)}"
+    end
+
     def add_flows(flows)
       recmds = []
 

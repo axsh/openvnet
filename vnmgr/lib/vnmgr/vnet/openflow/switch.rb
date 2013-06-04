@@ -19,6 +19,10 @@ module Vnmgr::VNet::Openflow
       @network_manager = NetworkManager.new(dp)
     end
 
+    def eth_ports
+      self.ports.find_all{ |key,port| port.is_eth_port }.collect{ |key,port| port }
+    end
+
     #
     # Event handlers:
     #
@@ -28,6 +32,26 @@ module Vnmgr::VNet::Openflow
       # activated and features_reply installing flow.
       self.datapath.send_message(Trema::Messages::FeaturesRequest.new)
       self.datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
+
+      flows = []
+
+      # Catches all arp packets that are from local ports.
+      #
+      # All local ports have the port part of metadata [0,31] zero'ed
+      # at this point.
+      flows << Flow.create(TABLE_VIRTUAL_SRC, 84, {
+                             :eth_type => 0x0806,
+                             :metadata => 0x0,
+                             :metadata_mask => (METADATA_PORT_MASK)
+                           }, {}, {})
+      # Next we catch all arp packets, with learning flows for
+      # incoming arp packets having been handled by network/eth_port
+      # specific flows.
+      flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
+                             :eth_type => 0x0806,
+                           }, {}, {})
+
+      self.datapath.add_flows(flows)
     end
 
     def features_reply(message)
@@ -35,7 +59,6 @@ module Vnmgr::VNet::Openflow
       p "n_buffers: %u" % message.n_buffers
       p "n_tables: %u" % message.n_tables
       p "capabilities: %u" % message.capabilities
-
     end
 
     def handle_port_desc(port_desc)
@@ -61,7 +84,7 @@ module Vnmgr::VNet::Openflow
         network = self.network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^vif-/
-        port_map = Vnmgr::ModelWrappers::VifWrapper.find(port_desc.name)
+        port_map = Vnmgr::ModelWrappers::Vif.find(port_desc.name)
 
         if port_map.nil?
           p "error: Could not find uuid: #{port_desc.name}"
@@ -87,7 +110,7 @@ module Vnmgr::VNet::Openflow
         return
       end
 
-      network.add_port(port) if network
+      network.add_port(port, true) if network
       port.install
     end
 
@@ -115,7 +138,7 @@ module Vnmgr::VNet::Openflow
           return
         end
         
-        port.network.del_port(port) if port.network
+        port.network.del_port(port, true) if port.network
         port.uninstall
       end
     end
