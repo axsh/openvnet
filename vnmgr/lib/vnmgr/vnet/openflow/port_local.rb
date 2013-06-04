@@ -8,7 +8,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :bridge_hw
 
     def flow_options
-      @flow_options ||= {:cookie => self.port_number | 0x0}
+      @flow_options ||= {:cookie => @cookie}
     end
 
     def install

@@ -18,6 +18,8 @@ module Vnmgr::VNet::Openflow
       @port_info = port_info
 
       @is_active = active
+
+      @cookie = self.port_number | (0x3 << 48)
     end
 
     def port_number

@@ -15,6 +15,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :ports
     attr_reader :services
 
+    attr_reader :cookie
     attr_reader :ipv4_network
     attr_reader :ipv4_prefix
 
@@ -28,6 +29,7 @@ module Vnmgr::VNet::Openflow
       @ports = {}
       @services = {}
 
+      @cookie = @network_id | (0x4 << 48)
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = network_map.ipv4_prefix
     end
