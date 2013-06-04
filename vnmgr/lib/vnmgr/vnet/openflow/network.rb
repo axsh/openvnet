@@ -39,6 +39,12 @@ module Vnmgr::VNet::Openflow
       }
     end
 
+    def metadata_p(port = 0x0)
+      { :metadata => port,
+        :metadata_mask => Constants::METADATA_PORT_MASK
+      }
+    end
+
     def metadata_pn(port = 0x0)
       { :metadata => (self.network_number << Constants::METADATA_NETWORK_SHIFT) | port,
         :metadata_mask => (Constants::METADATA_PORT_MASK | Constants::METADATA_NETWORK_MASK)

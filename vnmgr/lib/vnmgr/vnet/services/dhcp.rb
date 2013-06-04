@@ -19,14 +19,22 @@ module Vnmgr::VNet::Services
     end
 
     def install(cookie)
-      catch_flow(:virtual_local, cookie, {
+      type = case
+             when self.network.class == Vnmgr::VNet::Openflow::NetworkPhysical then :physical_local
+             when self.network.class == Vnmgr::VNet::Openflow::NetworkVirtual  then :virtual_local
+             else
+               p "Unknown network mode for dhcp service."
+               return
+             end
+
+      catch_flow(type, cookie, {
                    :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
                    :eth_type => 0x0800,
                    :ip_proto => 0x11,
                    :udp_dst => 67,
                    :udp_src => 68
                  })
-      catch_flow(:virtual_local, cookie, {
+      catch_flow(type, cookie, {
                    :eth_dst => self.service_mac,
                    :eth_type => 0x0800,
                    :ip_proto => 0x11,

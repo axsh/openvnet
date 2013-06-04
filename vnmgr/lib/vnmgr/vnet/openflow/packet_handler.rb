@@ -20,6 +20,10 @@ module Vnmgr::VNet::Openflow
 
     def catch_flow(type, cookie, match)
       case type
+      when :physical_local
+        table = Constants::TABLE_PHYSICAL_DST
+        priority = 70
+        match = match.merge(self.network.metadata_p)
       when :virtual_local
         table = Constants::TABLE_VIRTUAL_DST
         priority = 70
