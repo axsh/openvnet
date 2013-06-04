@@ -1,34 +1,60 @@
 # -*- coding: utf-8 -*-
 
-require 'ext/kernel'
-
 #require 'active_support/all'
 #require 'active_support/core_ext'
-require 'active_support/core_ext/object'
-require 'active_support/inflector'
-require 'active_support/hash_with_indifferent_access'
 require 'active_support/core_ext/class'
+require 'active_support/core_ext/object'
+require 'active_support/hash_with_indifferent_access'
+require 'active_support/inflector'
+require 'ext/kernel'
+require 'fuguta'
+require 'json'
 
 module Vnmgr
 
   ROOT = ENV['VNMGR_ROOT'] || File.expand_path('../../', __FILE__)
   CONFIG_PATH = ENV['VNMGR_CONFIG_PATH'] || "/etc/wakame-vnet"
 
-  module Initializers
-    autoload :DB, 'vnmgr/initializers/db'
+  module Configurations
+    autoload :Base,  'vnmgr/configurations/base'
+    autoload :Common,  'vnmgr/configurations/common'
+    autoload :Dba,  'vnmgr/configurations/dba'
+    autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
+    autoload :Vna,  'vnmgr/configurations/vna'
   end
 
   module Constants
     autoload :VNetAPI, 'vnmgr/constants/vnet_api'
   end
 
-  module Endpoints
-    autoload :ResponseGenerator, 'vnmgr/endpoints/response_generator'
-    autoload :Errors, 'vnmgr/endpoints/errors'
-    module V10
-      autoload :VNetAPI, 'vnmgr/endpoints/1.0/vnet_api'
-      autoload :Helpers, 'vnmgr/endpoints/1.0/helpers'
+  autoload :DataAccess, 'vnmgr/data_access'
+  module DataAccess
+    autoload :DbaProxy, 'vnmgr/data_access/proxies'
+    autoload :DirectProxy, 'vnmgr/data_access/proxies'
+    module Models
+      autoload :Base, 'vnmgr/data_access/models/base'
+      autoload :Datapath, 'vnmgr/data_access/models/datapath'
+      autoload :DatapathNetwork, 'vnmgr/data_access/models/datapath_network'
+      autoload :DcNetwork, 'vnmgr/data_access/models/dc_network'
+      autoload :DhcpRange, 'vnmgr/data_access/models/dhcp_range'
+      autoload :IpAddress, 'vnmgr/data_access/models/ip_address'
+      autoload :IpLease, 'vnmgr/data_access/models/ip_lease'
+      autoload :MacRange, 'vnmgr/data_access/models/mac_range'
+      autoload :Network, 'vnmgr/data_access/models/network'
+      autoload :NetworkService, 'vnmgr/data_access/models/network_service'
+      autoload :OpenFlowController, 'vnmgr/data_access/models/open_flow_controller'
+      autoload :Router, 'vnmgr/data_access/models/router'
+      autoload :Tunnel, 'vnmgr/data_access/models/tunnel'
+      autoload :Vif, 'vnmgr/data_access/models/vif'
+    end
+  end
 
+  module Endpoints
+    autoload :Errors, 'vnmgr/endpoints/errors'
+    autoload :ResponseGenerator, 'vnmgr/endpoints/response_generator'
+    module V10
+      autoload :Helpers, 'vnmgr/endpoints/1.0/helpers'
+      autoload :VNetAPI, 'vnmgr/endpoints/1.0/vnet_api'
       module Responses
         autoload :Datapath, 'vnmgr/endpoints/1.0/responses/datapath'
         autoload :DcNetwork, 'vnmgr/endpoints/1.0/responses/dc_network'
@@ -61,13 +87,11 @@ module Vnmgr
     end
   end
 
-  module NodeModules
-    autoload :Dba, 'vnmgr/node_modules/dba'
-    autoload :ServiceOpenflow, 'vnmgr/node_modules/service_openflow'
+  module Initializers
+    autoload :DB, 'vnmgr/initializers/db'
   end
 
   module Models
-    require 'json'
     autoload :Base, 'vnmgr/models/base'
     autoload :Datapath, 'vnmgr/models/datapath'
     autoload :DatapathNetwork, 'vnmgr/models/datapath_network'
@@ -102,35 +126,9 @@ module Vnmgr
     autoload :Vif, 'vnmgr/model_wrappers/vif'
   end
 
-  require 'vnmgr/data_access'
-  module DataAccess
-    autoload :DbaProxy, 'vnmgr/data_access/proxies'
-    autoload :DirectProxy, 'vnmgr/data_access/proxies'
-    module Models
-      autoload :Base, 'vnmgr/data_access/models/base'
-      autoload :Datapath, 'vnmgr/data_access/models/datapath'
-      autoload :DatapathNetwork, 'vnmgr/data_access/models/datapath_network'
-      autoload :DcNetwork, 'vnmgr/data_access/models/dc_network'
-      autoload :DhcpRange, 'vnmgr/data_access/models/dhcp_range'
-      autoload :IpAddress, 'vnmgr/data_access/models/ip_address'
-      autoload :IpLease, 'vnmgr/data_access/models/ip_lease'
-      autoload :MacRange, 'vnmgr/data_access/models/mac_range'
-      autoload :Network, 'vnmgr/data_access/models/network'
-      autoload :NetworkService, 'vnmgr/data_access/models/network_service'
-      autoload :OpenFlowController, 'vnmgr/data_access/models/open_flow_controller'
-      autoload :Router, 'vnmgr/data_access/models/router'
-      autoload :Tunnel, 'vnmgr/data_access/models/tunnel'
-      autoload :Vif, 'vnmgr/data_access/models/vif'
-    end
-  end
-
-  module Configurations
-    require 'fuguta'
-    autoload :Base,  'vnmgr/configurations/base'
-    autoload :Common,  'vnmgr/configurations/common'
-    autoload :Dba,  'vnmgr/configurations/dba'
-    autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
-    autoload :Vna,  'vnmgr/configurations/vna'
+  module NodeModules
+    autoload :Dba, 'vnmgr/node_modules/dba'
+    autoload :ServiceOpenflow, 'vnmgr/node_modules/service_openflow'
   end
 
   module VNet
