@@ -18,6 +18,24 @@ module Vnmgr::VNet::Services
       @service_ipv4 = params[:service_ipv4]
     end
 
+    def install(cookie)
+      catch_flow(:virtual_local, cookie, {
+                   :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+                   :eth_type => 0x0800,
+                   :ip_proto => 0x11,
+                   :udp_dst => 67,
+                   :udp_src => 68
+                 })
+      catch_flow(:virtual_local, cookie, {
+                   :eth_dst => self.service_mac,
+                   :eth_type => 0x0800,
+                   :ip_proto => 0x11,
+                   :ipv4_dst => self.service_ipv4,
+                   :udp_dst => 67,
+                   :udp_src => 68
+                 })
+    end
+
     def packet_in(port, message)
       p "Dhcp.packet_in called."
 

@@ -18,6 +18,23 @@ module Vnmgr::VNet::Openflow
       p "PacketHandler.packet_out called."
     end
 
+    def catch_flow(type, cookie, match)
+      case type
+      when :virtual_local
+        table = Constants::TABLE_VIRTUAL_DST
+        priority = 70
+        match = match.merge(self.network.metadata_pn)
+      else
+        raise "Wrong type for catch_flow."
+      end
+
+      self.datapath.add_flow(Flow.create(table, priority, match, {
+                                           :output => Controller::OFPP_CONTROLLER
+                                         }, {
+                                           :cookie => cookie
+                                         }))
+    end
+
     def arp_out(data)
     end
 

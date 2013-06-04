@@ -92,18 +92,30 @@ module Vnmgr::VNet::Openflow
       update_flows if should_update
     end
 
-    def add_service(service_map, should_update)
+    def add_service(service_map)
       raise("Service already added to network.") if @services[service_map.uuid]
+
+      p service_map.inspect
 
       service = nil
 
-      if service.nil?
-        p "Failed to create service: #{service_map.uuid}"
-        return
-      end
+      translated_map = {
+        :datapath => self.datapath,
+        :network => self,
+        :service_mac => Trema::Mac.new(service_map.vif_map[:mac_addr]),
+        :service_ipv4 => IPAddr.new(service_map.vif_map[:ipv4_address], Socket::AF_INET)
+      }
+
+      service = case service_map.display_name
+                when 'dhcp'
+                  Vnmgr::VNet::Services::Dhcp.new(translated_map)
+                else
+                  p "Failed to create service: #{service_map.uuid}"
+                  return
+                end
 
       self.services[service_map.uuid] = service
-      update_flows if should_update
+      self.datapath.switch.packet_manager.insert(service)
     end
 
   end

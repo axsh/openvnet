@@ -46,10 +46,6 @@ module Vnmgr::VNet::Openflow
         network.add_datapath_on_subnet(dp, false)
       }
 
-      services_map.each { |service|
-        network.add_service(service, false)
-      }
-
       old_network = network_by_uuid_direct(network_uuid)
       return old_network if old_network
 
@@ -57,6 +53,11 @@ module Vnmgr::VNet::Openflow
 
       network.install
       network.update_flows
+
+      services_map.each { |service|
+        network.add_service(service)
+      }
+
       network
     end
 

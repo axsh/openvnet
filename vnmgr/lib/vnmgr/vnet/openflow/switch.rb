@@ -11,14 +11,19 @@ module Vnmgr::VNet::Openflow
     attr_reader :datapath
     attr_reader :bridge_hw
     attr_reader :ports
+    attr_reader :cookie_manager
     attr_reader :network_manager
     attr_reader :packet_manager
 
     def initialize(dp, name = nil)
       @datapath = dp
       @ports = {}
+      @cookie_manager = CookieManager.new
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
+
+      @cookie_manager.create_category(:packet_handler, 0x11, 4)
+      @cookie_manager.create_category(:foobar, 0x12, 4)
     end
 
     def eth_ports

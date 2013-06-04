@@ -13,11 +13,17 @@ module Vnmgr::VNet::Openflow
       @handlers = {}
     end
 
-    def insert(cookie, handler)
-      # Sanity-check cookie.
-      return nil if @handlers.has_key? cookie
+    def insert(handler)
+      cookie = self.datapath.switch.cookie_manager.acquire(:packet_handler)
+
+      if cookie.nil? || @handlers.has_key?(cookie)
+        p "Invalid cookie received: #{cookie.inspect}"
+        return nil
+      end
       
       @handlers[cookie] = handler
+
+      handler.install(cookie)
     end
 
     def packet_in(port, message)
