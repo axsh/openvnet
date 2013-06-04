@@ -43,21 +43,16 @@ module Vnmgr::VNet::Openflow
     TABLE_ARP_ANTISPOOF = 10
     TABLE_ARP_ROUTE = 11
 
-    # Routing to the metadata server.
-    #
-    # Currently using the OpenFlowController, rather than learning
-    # flows.
-    TABLE_METADATA_OUTGOING = 12
-    TABLE_METADATA_INCOMING = 13
-
     TABLE_MAC_ROUTE = 14
 
     # Output to port based on the metadata field. OpenFlow 1.3 does
     # not seem to have any action allowing us to output to a port
     # using the metadata field directly, so a separate table is
     # required.
-    TABLE_METADATA_ROUTE = 15
-    TABLE_METADATA_LOCAL = 16
+    TABLE_METADATA_LOCAL = 15
+    TABLE_METADATA_ROUTE = 16
+    TABLE_METADATA_SEGMENT = 17
+    TABLE_METADATA_TUNNEL = 18
 
     COOKIE_NETWORK_SHIFT = 32
 

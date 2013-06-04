@@ -55,8 +55,10 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_TUNNEL, 0, {}, {}, flow_options)
 
       flow_options = {:cookie => 0x2}
 
