@@ -28,7 +28,7 @@ module Vnmgr::VNet::Openflow
                                                        :goto_table => TABLE_PHYSICAL_DST
                                                      }))
 
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, metadata_np(0x0), {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1, metadata_np(0x0), {
                              :output => self.port_number
                            }, flow_options)
 

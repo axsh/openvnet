@@ -28,7 +28,7 @@ module Vnmgr::VNet::Openflow
       flood_actions = ports.collect { |key,port| {:output => port.port_number} }
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1, {
                              :metadata => OFPP_FLOOD,
                              :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
                            }, flood_actions, flow_options)

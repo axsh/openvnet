@@ -33,7 +33,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {
                              :output => self.port_number
                            }, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, metadata_np(0x0), {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1, metadata_np(0x0), {
                              :output => self.port_number
                            }, flow_options)
 

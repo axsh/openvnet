@@ -12,6 +12,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :bridge_hw
     attr_reader :ports
     attr_reader :cookie_manager
+    attr_reader :dc_segment_manager
     attr_reader :network_manager
     attr_reader :packet_manager
 
@@ -19,6 +20,7 @@ module Vnmgr::VNet::Openflow
       @datapath = dp
       @ports = {}
       @cookie_manager = CookieManager.new
+      @dc_segment_manager = DcSegmentManager.new(dp)
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
 
