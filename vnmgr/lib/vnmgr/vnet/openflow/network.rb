@@ -33,6 +33,10 @@ module Vnmgr::VNet::Openflow
       @ipv4_prefix = network_map.ipv4_prefix
     end
 
+    def metadata_flags(flags)
+      { :metadata => flags, :metadata_mask => flags }
+    end
+
     def metadata_n(nw = self.network_number)
       { :metadata => nw << Constants::METADATA_NETWORK_SHIFT,
         :metadata_mask => Constants::METADATA_NETWORK_MASK

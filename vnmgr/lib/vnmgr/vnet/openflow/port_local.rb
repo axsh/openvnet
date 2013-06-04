@@ -17,10 +17,16 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 3, {
                              :in_port => OFPP_LOCAL,
                              :eth_type => 0x0806
-                           }, {}, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
+                           }, {}, flow_options.merge({ :metadata => METADATA_FLAG_LOCAL,
+                                                       :metadata_mask => METADATA_FLAG_LOCAL,
+                                                       :goto_table => TABLE_ARP_ANTISPOOF
+                                                     }))
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => OFPP_LOCAL
-                           }, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+                           }, {}, flow_options.merge({ :metadata => METADATA_FLAG_LOCAL,
+                                                       :metadata_mask => METADATA_FLAG_LOCAL,
+                                                       :goto_table => TABLE_PHYSICAL_DST
+                                                     }))
 
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, metadata_np(0x0), {
                              :output => self.port_number
