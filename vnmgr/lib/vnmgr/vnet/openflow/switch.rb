@@ -173,15 +173,21 @@ module Vnmgr::VNet::Openflow
           return
         end
         
-        port.network.del_port(port, true) if port.network
         port.uninstall
+
+        if port.network
+          network = port.network
+          network.del_port(port, true)
+
+          @network_manager.remove(network) if network.ports.empty?
+        end
       end
     end
 
     def packet_in(message)
-      port = self.ports[message.match.in_port]
+      port = @ports[message.match.in_port]
 
-      @packet_manager.packet_in(port, message) if port
+      @packet_manager.async.packet_in(port, message) if port
     end
 
   end

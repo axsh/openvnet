@@ -57,16 +57,16 @@ module Vnmgr::VNet::Openflow
     end
 
     def add_port(port, should_update)
-      raise("Port already added to a network.") if port.network || self.ports[port.port_number]
+      raise("Port already added to a network.") if port.network || @ports[port.port_number]
 
-      self.ports[port.port_number] = port
+      @ports[port.port_number] = port
       port.network = self
 
       update_flows if should_update
     end
 
     def del_port(port, should_update)
-      deleted_port = self.ports.delete(port.port_number)
+      deleted_port = @ports.delete(port.port_number)
       update_flows if should_update
 
       raise("Port not added to this network.") if port.network != self || deleted_port.nil?
@@ -108,8 +108,17 @@ module Vnmgr::VNet::Openflow
                   return
                 end
 
-      self.services[service_map.uuid] = service
-      self.datapath.switch.packet_manager.insert(service)
+      @services[service_map.uuid] = service
+      @datapath.switch.packet_manager.async.insert(service)
+    end
+
+    def uninstall
+      info "network #{self.uuid}: Removing flows."
+      
+      pm = self.datapath.switch.packet_manager
+
+      @datapath.del_cookie(@cookie)
+      @services.each { |service| pm.async.remove(service) }
     end
 
   end
