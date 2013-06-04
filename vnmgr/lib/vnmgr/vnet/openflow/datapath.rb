@@ -24,14 +24,28 @@ module Vnmgr::VNet::Openflow
       end
     end
 
-    def del_flow(flow)
+    # def del_flow(flow)
+    #   if Thread.current == self.controller.trema_thread
+    #     self.controller.public_send_flow_mod(self.datapath_id, flow.merge(:command => Controller::OFPFC_DELETE))
+    #   else
+    #     self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, flow.merge(:command => Controller::OFPFC_DELETE)) }
+    #   end
+    # end
+
+    def del_cookie(cookie)
+      # options = {
+      #   :command => Controller::OFPFC_DELETE,
+      #   :cookie => cookie,
+      #   :cookie_mask => 0xffffffffffffffff
+      # }
+
       # if Thread.current == self.controller.trema_thread
-      #   self.controller.public_send_flow_mod(self.datapath_id, flow.merge(:command => Controller::OFPFC_DELETE))
+      #   self.controller.public_send_flow_mod(self.datapath_id, options)
       # else
-      #   self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, flow.merge(:command => Controller::OFPFC_DELETE)) }
+      #   self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, options) }
       # end
 
-      self.ovs_ofctl.del_cookie(flow[:cookie])
+      self.ovs_ofctl.del_cookie(cookie)
     end
 
     def add_flows(flows)

@@ -85,7 +85,7 @@ module Vnmgr::VNet::Openflow
     def uninstall
       debug "port: Removing flows..."
 
-      self.datapath.del_flow(flow_options)
+      self.datapath.del_cookie(@cookie)
     end
 
     def update_eth_ports

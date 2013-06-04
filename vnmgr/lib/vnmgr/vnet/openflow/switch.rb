@@ -154,11 +154,9 @@ module Vnmgr::VNet::Openflow
     def port_status(message)
       debug "name: #{message.name}"
       debug "reason: #{message.reason}"
-      debug "in_port: #{message.port_no}"
+      debug "port_no: #{message.port_no}"
       debug "hw_addr: #{message.hw_addr}"
       debug "state: %#x" % message.state
-
-      p message.inspect
 
       case message.reason
       when OFPPR_ADD
