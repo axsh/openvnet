@@ -2,7 +2,7 @@
 module Vnmgr::Configurations
   class Common < Fuguta::Configuration
     cattr_accessor :paths
-    paths = [File.join(Vnmgr::ROOT, "config"), "/etc/wakame_vnet"]
+    paths = [File.join(::Vnmgr::ROOT, "config"), "/etc/wakame_vnet"]
     class << self
       def conf
         @conf ||= self.load
