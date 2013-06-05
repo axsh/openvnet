@@ -5,14 +5,6 @@ require "sinatra/vnmgr_api_setup"
 
 module Vnmgr::Endpoints::V10
   class VNetAPI < Sinatra::Base
-    class << self
-      attr_accessor :conf
-
-      def load_conf(*files)
-        @conf = Vnmgr::Configurations::Vnmgr.load(*files)
-      end
-    end
-
     include Vnmgr::Endpoints::V10::Helpers
     register Sinatra::VnmgrAPISetup
 

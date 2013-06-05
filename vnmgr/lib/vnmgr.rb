@@ -7,6 +7,7 @@ require 'ext/kernel'
 require 'active_support/core_ext/object'
 require 'active_support/inflector'
 require 'active_support/hash_with_indifferent_access'
+require 'active_support/core_ext/class'
 
 module Vnmgr
 
@@ -121,6 +122,7 @@ module Vnmgr
 
   module Configurations
     require 'fuguta'
+    autoload :Base,  'vnmgr/configurations/base'
     autoload :Common,  'vnmgr/configurations/common'
     autoload :Dba,  'vnmgr/configurations/dba'
     autoload :Vnmgr,  'vnmgr/configurations/vnmgr'

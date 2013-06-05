@@ -21,7 +21,6 @@ RSpec.configure do |config|
   vnmgr_conf = Vnmgr::Configurations::Vnmgr.load("#{config_dir}/common.conf", "#{config_dir}/vnmgr.conf")
   dba_conf = Vnmgr::Configurations::Dba.load("#{config_dir}/common.conf", "#{config_dir}/dba.conf")
 
-  Vnmgr::Endpoints::V10::VNetAPI.conf = vnmgr_conf
   Vnmgr::ModelWrappers::Base.set_proxy(vnmgr_conf)
   Vnmgr::Initializers::DB.run(vnmgr_conf.db_uri)
 
