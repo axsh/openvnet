@@ -17,9 +17,10 @@ RSpec.configure do |config|
   config.filter_run :focus => true
   config.run_all_when_everything_filtered = true
 
-  config_dir = "#{File.dirname(File.expand_path(__FILE__))}/config"
-  vnmgr_conf = Vnmgr::Configurations::Vnmgr.load("#{config_dir}/common.conf", "#{config_dir}/vnmgr.conf")
-  dba_conf = Vnmgr::Configurations::Dba.load("#{config_dir}/common.conf", "#{config_dir}/dba.conf")
+  Vnmgr::Configurations::Common.paths = ["#{File.dirname(File.expand_path(__FILE__))}/config"]
+
+  vnmgr_conf = Vnmgr::Configurations::Vnmgr.load
+  dba_conf = Vnmgr::Configurations::Dba.load
 
   Vnmgr::ModelWrappers::Base.set_proxy(vnmgr_conf)
   Vnmgr::Initializers::DB.run(vnmgr_conf.db_uri)
