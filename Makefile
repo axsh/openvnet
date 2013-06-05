@@ -31,12 +31,10 @@ install-bundle-dev:
 install:
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
 	mkdir -p $(DSTDIR)/etc/wakame-vnet
-#	cp -r vnmgr vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
+	cp -r vnmgr vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
 	cp -r deployment/conf_files/etc/default $(DSTDIR)/etc
 	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
-	find $(CURDIR)/vnmgr/config/ -name "*.conf.example" | while read file; do \
-		cp $$file $(DSTDIR)/etc/wakame-vnet/$$(basename $$file | sed -e 's/.example$$//'); \
-	done
+	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc
 
 
 uninstall:
