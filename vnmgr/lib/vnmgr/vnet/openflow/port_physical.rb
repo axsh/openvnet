@@ -11,7 +11,6 @@ module Vnmgr::VNet::Openflow
 
     def install
       flows = []
-
       flows << Flow.create(TABLE_CLASSIFIER, 3, {
                              :in_port => self.port_number,
                              :eth_type => 0x0806
@@ -19,7 +18,6 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
                            }, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
-
       flows << Flow.create(TABLE_PHYSICAL_DST, 1, {
                              :eth_dst => self.hw_addr
                            }, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))

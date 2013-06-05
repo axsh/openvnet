@@ -6,6 +6,9 @@ module Vnmgr::VNet::Openflow
     # Default table used by all incoming packets.
     TABLE_CLASSIFIER = 0
 
+    # Handle matching of incoming packets on host ports.
+    TABLE_HOST_PORTS = 2
+
     # Straight-forward routing of packets to the port tied to the
     # destination mac address, which includes all non-virtual
     # networks.
