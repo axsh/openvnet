@@ -16,9 +16,11 @@ module Vnmgr::Configurations
     param :redis_port, :default => 6379
     param :db_uri
 
-    def db(&block)
-      @config[:db] = DB.new.tap {|db| db.parse_dsl(&block) if block }
-      @config[:db_uri] = "#{@config[:db].adapter}://#{@config[:db].host}:#{@config[:db].port}/#{@config[:db].database}?user=#{@config[:db].user}&password=#{@config[:db].password}"
+    DSL do
+      def db(&block)
+        @config[:db] = DB.new.tap {|db| db.parse_dsl(&block) if block }
+        @config[:db_uri] = "#{@config[:db].adapter}://#{@config[:db].host}:#{@config[:db].port}/#{@config[:db].database}?user=#{@config[:db].user}&password=#{@config[:db].password}"
+      end
     end
   end
 end
