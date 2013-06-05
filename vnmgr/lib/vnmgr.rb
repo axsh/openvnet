@@ -124,6 +124,7 @@ module Vnmgr
     autoload :Common,  'vnmgr/configurations/common'
     autoload :Dba,  'vnmgr/configurations/dba'
     autoload :Vnmgr,  'vnmgr/configurations/vnmgr'
+    autoload :Vna,  'vnmgr/configurations/vna'
   end
 
   module VNet
