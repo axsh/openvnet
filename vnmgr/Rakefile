@@ -15,52 +15,102 @@ rescue LoadError => e
   # do nothing
 end
 
-def connect(db_uri)
-  Sequel.connect(db_uri)
-end
-
-def get_db_uri(config_dir)
-  Dir.exists?(config_dir) ? load_config(config_dir).db_uri : nil
+def connect(config)
+  Sequel.connect(config.db_uri)
 end
 
 def load_config(config_dir)
-  Vnmgr::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf"))
+  Dir.exists?(config_dir) ? Vnmgr::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf")) : nil
 end
 
-def migrate(db_uri, to = nil)
+def migrate(config, to = nil)
   Sequel.extension :migration
-  connect(db_uri)
+  connect(config)
   Sequel::Migrator.apply(Sequel::DATABASES.first, File.expand_path('../db/migrations', __FILE__), to)
 end
 
+def create_db(config)
+  system("mysqladmin create #{mysql_opts(config)}")
+end
+
+def drop_db(config)
+  system("mysqladmin drop -f #{mysql_opts(config)}")
+end
+
+def mysql_opts(config)
+  [].tap do |opts|
+    opts << "-h #{config.db.host}"
+    opts << "-P #{config.db.port}"
+    opts << "-u #{config.db.user}"
+    opts << "-p #{config.db.password}" if config.db.password && config.db.password.size > 0
+    opts << "#{config.db.database}"
+  end.join(" ")
+end
+
 namespace :db do
-  config_dir = "/etc/wakame-vnet/"
-  db_uri = get_db_uri(config_dir)
+  config = load_config("/etc/wakame-vnet/")
+  # deprecated
   task :init => [] do
-    migrate(db_uri)
+    migrate(config)
+  end
+  task :migrate => [] do
+    migrate(config)
   end
 
-  task :drop => [] do
-    migrate(db_uri, 0)
+  task :rollback => [] do
+    migrate(config, 0)
+  end
+
+  task :create do
+    create_db(config)
+  end
+
+  task :drop do
+    drop_db(config)
+  end
+
+  task :reset do
+    drop_db(config)
+    create_db(config)
+    migrate(config)
   end
 
   task :dump => [] do
     Sequel.extension :schema_dumper
-    db = connect(db_uri)
+    db = connect(config)
     puts db.dump_schema_migration
   end
 end
 
 namespace :test do
-  config_dir = "spec/config/"
-  db_uri = get_db_uri(config_dir)
+  config = load_config("spec/config/")
+  db_uri = config.db_uri
   namespace :db do
+    # deprecated
     task :init => [] do
-      migrate(db_uri)
+      migrate(config)
     end
 
-    task :drop => [] do
-      migrate(db_uri, 0)
+    task :migrate => [] do
+      migrate(config)
+    end
+
+    task :rollback => [] do
+      migrate(config, 0)
+    end
+
+    task :create do
+      create_db(config)
+    end
+
+    task :drop do
+      drop_db(config)
+    end
+
+    task :reset do
+      drop_db(config)
+      create_db(config)
+      migrate(config)
     end
   end
 end
