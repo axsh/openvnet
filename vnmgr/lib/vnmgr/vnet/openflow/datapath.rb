@@ -45,7 +45,7 @@ module Vnmgr::VNet::Openflow
       #   self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, options) }
       # end
 
-      # self.ovs_ofctl.del_cookie(cookie)
+      self.ovs_ofctl.del_cookie(cookie)
     end
 
     def add_flows(flows)

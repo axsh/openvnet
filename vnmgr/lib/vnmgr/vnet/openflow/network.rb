@@ -118,7 +118,7 @@ module Vnmgr::VNet::Openflow
       pm = self.datapath.switch.packet_manager
 
       @datapath.del_cookie(@cookie)
-      @services.each { |service| pm.async.remove(service) }
+      @services.each { |uuid,service| pm.async.remove(service) }
     end
 
   end

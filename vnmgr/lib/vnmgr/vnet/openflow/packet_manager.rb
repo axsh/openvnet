@@ -7,7 +7,6 @@ module Vnmgr::VNet::Openflow
     include Celluloid::Logger
 
     attr_reader :datapath
-    attr_reader :handlers
 
     def initialize(dp)
       @datapath = dp
@@ -23,25 +22,21 @@ module Vnmgr::VNet::Openflow
       end
       
       @handlers[cookie] = handler
-
-      handler.install(cookie)
+      handler.cookie = cookie
+      handler.install
     end
 
     def remove(handler)
-      key = @handlers.key(handler)
-
-      if key.nil?
+      if @handlers.delete(handler.cookie).nil?
         error "packet_manager: Could not find handler to remove."
         return
       end
-
-      @handlers.delete(key)
-      @datapath.del_cookie(key)
+      
+      @datapath.del_cookie(handler.cookie)
     end
 
     def packet_in(port, message)
       handler = @handlers[message.cookie]
-
       handler.packet_in(port, message) if handler
     end
 
