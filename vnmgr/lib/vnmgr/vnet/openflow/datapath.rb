@@ -17,19 +17,13 @@ module Vnmgr::VNet::Openflow
     end
 
     def add_flow(flow)
-      if Thread.current == self.controller.trema_thread
-        self.controller.send_flow_mod_add(self.datapath_id, flow)
-      else
-        self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow) }
-      end
+      self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow) }
     end
 
     # def del_flow(flow)
-    #   if Thread.current == self.controller.trema_thread
-    #     self.controller.public_send_flow_mod(self.datapath_id, flow.merge(:command => Controller::OFPFC_DELETE))
-    #   else
-    #     self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, flow.merge(:command => Controller::OFPFC_DELETE)) }
-    #   end
+    #   self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id,
+    #                                                                    flow.merge(:command => Controller::OFPFC_DELETE))
+    #   }
     # end
 
     def del_cookie(cookie)
@@ -39,43 +33,25 @@ module Vnmgr::VNet::Openflow
       #   :cookie_mask => 0xffffffffffffffff
       # }
 
-      # if Thread.current == self.controller.trema_thread
-      #   self.controller.public_send_flow_mod(self.datapath_id, options)
-      # else
-      #   self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, options) }
-      # end
+      # self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, options) }
 
       self.ovs_ofctl.del_cookie(cookie)
     end
 
     def add_flows(flows)
-      if Thread.current == self.controller.trema_thread
+      self.controller.pass_task {
         flows.each { |flow|
           self.controller.send_flow_mod_add(self.datapath_id, flow)
         }
-      else
-        self.controller.pass_task {
-          flows.each { |flow|
-            self.controller.send_flow_mod_add(self.datapath_id, flow)
-          }
-        }
-      end
+      }
     end
 
     def send_message(message)
-      if Thread.current == self.controller.trema_thread
-        self.controller.public_send_message(self.datapath_id, message)
-      else
-        self.controller.pass_task { self.controller.public_send_message(self.datapath_id, message) }
-      end
+      self.controller.pass_task { self.controller.public_send_message(self.datapath_id, message) }
     end
 
     def send_packet_out(message, port_no)
-      if Thread.current == self.controller.trema_thread
-        self.controller.public_send_packet_out(self.datapath_id, message, port_no)
-      else
-        self.controller.pass_task { self.controller.public_send_packet_out(self.datapath_id, message, port_no) }
-      end
+      self.controller.pass_task { self.controller.public_send_packet_out(self.datapath_id, message, port_no) }
     end
 
   end
