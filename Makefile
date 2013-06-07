@@ -41,7 +41,6 @@ install: update-config
 
 uninstall:
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
-	rm -rf $(DSTDIR)/etc/wakame-vnet
 	rm -rf $(DSTDIR)/tmp/log
 	rm -rf $(DSTDIR)/var/run/wakame-vnet
 	rm $(DSTDIR)/etc/default/vnet-dba
