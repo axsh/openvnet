@@ -29,7 +29,7 @@ module Vnmgr::Configurations
     param :dba_node_id, :default => "dba"
     param :dba_actor_name, :default => "dba"
     param :data_access_proxy, :default => :dba
-    param :trema_home
+    param :trema_home, :default => Gem::Specification.find_by_name('trema').gem_dir
     param :trema_tmp
   end
 end
