@@ -52,7 +52,6 @@ uninstall:
 	rm $(DSTDIR)/etc/init/vnet-vnmgr.conf
 
 update-config:
-	echo hoge
 	mkdir -p $(DSTDIR)/etc/wakame-vnet
 	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc/
 
