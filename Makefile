@@ -31,6 +31,10 @@ install-bundle-dev:
 install:
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
 	mkdir -p $(DSTDIR)/etc/wakame-vnet
+	mkdir -p $(DSTDIR)/tmp/log
+	mkdir -p $(DSTDIR)/var/run/wakame-vnet/log
+	mkdir -p $(DSTDIR)/var/run/wakame-vnet/pid
+	mkdir -p $(DSTDIR)/var/run/wakame-vnet/sock
 	cp -r vnmgr vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
 	cp -r deployment/conf_files/etc/default $(DSTDIR)/etc
 	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
@@ -39,6 +43,9 @@ install:
 
 uninstall:
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
+	rm -rf $(DSTDIR)/etc/wakame-vnet
+	rm -rf $(DSTDIR)/tmp/log
+	rm -rf $(DSTDIR)/var/run/wakame-vnet
 	rm $(DSTDIR)/etc/default/vnet-dba
 	rm $(DSTDIR)/etc/default/vnet-vna
 	rm $(DSTDIR)/etc/default/vnet-vnmgr
