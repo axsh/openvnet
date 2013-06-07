@@ -45,12 +45,22 @@ module Vnmgr::ModelWrappers
       def wrap(data)
         case data
         when Array
-          data.map{|d| self.new(d) }
+          data.map{|d| ::Vnmgr::ModelWrappers.const_get(d.delete(:class_name)).new(d) }
         when Hash
-          self.new(data)
+          ::Vnmgr::ModelWrappers.const_get(data.delete(:class_name)).new(data)
         else
           data
         end
+      end
+    end
+
+    def batch(&block)
+      b = Batch.new(self.class)
+      b[self.uuid]
+      if block_given?
+        yield(b).commit
+      else
+        b
       end
     end
   end
