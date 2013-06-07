@@ -12,6 +12,7 @@ require 'active_support/core_ext/class'
 module Vnmgr
 
   ROOT = ENV['VNMGR_ROOT'] || File.expand_path('../../', __FILE__)
+  CONFIG_PATH = ENV['VNMGR_CONFIG_PATH'] || "/etc/wakame-vnet"
 
   module Initializers
     autoload :DB, 'vnmgr/initializers/db'
