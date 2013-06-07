@@ -4,8 +4,6 @@ require 'spec_helper'
 describe Vnmgr::DataAccess::Models::Network do
   describe "all" do
     it "return empty array" do
-      Vnmgr::ModelWrappers::IpAddress.batch.all.commit
-      binding.pry
       ret = Vnmgr::DataAccess::Models::Network.new.all
       expect(ret).to be_a Array
       expect(ret).to be_empty
