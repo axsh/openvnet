@@ -8,7 +8,7 @@ require 'bundler/setup'
 require 'vnmgr'
 require 'celluloid'
 
-Vnmgr::Configurations::Vna.conf
+conf = Vnmgr::Configurations::Vna.conf
 Vnmgr::ModelWrappers::Base.set_proxy(conf)
 
 

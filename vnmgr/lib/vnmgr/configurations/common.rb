@@ -2,7 +2,8 @@
 module Vnmgr::Configurations
   class Common < Fuguta::Configuration
     cattr_accessor :paths
-    paths = [File.join(::Vnmgr::ROOT, "config"), "/etc/wakame_vnet"]
+    self.paths = [File.join(::Vnmgr::ROOT, "config"), "/etc/wakame-vnet"]
+
     class << self
       def conf
         @conf ||= self.load
@@ -46,14 +47,24 @@ module Vnmgr::Configurations
       param :password
     end
 
-    param :redis_host, :default => '127.0.0.1'
-    param :redis_port, :default => 6379
     param :db_uri
 
     DSL do
       def db(&block)
         @config[:db] = DB.new.tap {|db| db.parse_dsl(&block) if block }
         @config[:db_uri] = "#{@config[:db].adapter}://#{@config[:db].host}:#{@config[:db].port}/#{@config[:db].database}?user=#{@config[:db].user}&password=#{@config[:db].password}"
+      end
+    end
+
+    class Registry < Fuguta::Configuration
+      param :adapter, :default => "redis"
+      param :host, :default => '127.0.0.1'
+      param :port, :default => 6379
+    end
+
+    DSL do
+      def registry(&block)
+        @config[:registry] = Registry.new.tap {|c| c.parse_dsl(&block) if block }
       end
     end
   end

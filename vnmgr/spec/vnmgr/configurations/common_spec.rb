@@ -7,7 +7,7 @@ module Vnmgr::Configurations
 end
 
 describe Vnmgr::Configurations::Common do
-  let(:config_path) { File.join(File.expand_path(File.dirname(__FILE__)), "config") }
+  let(:config_path) { File.join(Vnmgr::ROOT, "spec/config") }
 
   before do
     Vnmgr::Configurations::Common.stub(:paths).and_return([config_path])
@@ -24,13 +24,12 @@ describe Vnmgr::Configurations::Common do
   end
 
   describe "load" do
-    subject {  }
     it "load without filename" do
-      expect(Vnmgr::Configurations::Common.load.redis_host).to eq "aaa.com"
+      expect(Vnmgr::Configurations::Common.load.db.adapter).to eq "mysql2"
     end
 
     it "load with filename" do
-      expect(Vnmgr::Configurations::Common.load(File.join(config_path, "common2.conf")).redis_host).to eq "bbb.com"
+      expect(Vnmgr::Configurations::Common.load(File.join(config_path, "common2.conf")).db.adapter).to eq "mysql"
     end
 
     it "config file not found" do
@@ -41,6 +40,20 @@ describe Vnmgr::Configurations::Common do
   describe "conf" do
     subject { Vnmgr::Configurations::Common.conf }
     it { expect(subject).to be_a Vnmgr::Configurations::Common }
-    it { expect(subject.redis_host).to eq "aaa.com" }
+    it { expect(subject.db.adapter).to eq "mysql2" }
+  end
+
+  describe "param" do
+    subject { Vnmgr::Configurations::Common.load }
+    it { expect(subject.registry.adapter).to eq "redis" }
+    it { expect(subject.registry.host).to eq "127.0.0.1" }
+    it { expect(subject.registry.port).to eq 6379 }
+    it { expect(subject.db.adapter).to eq "mysql2" }
+    it { expect(subject.db.database).to eq "vnmgr_test" }
+    it { expect(subject.db.host).to eq "localhost" }
+    it { expect(subject.db.port).to eq 3306 }
+    it { expect(subject.db.user).to eq "root" }
+    it { expect(subject.db.password).to eq "" }
+    it { expect(subject.db_uri).to eq "mysql2://localhost:3306/vnmgr_test?user=root&password=" }
   end
 end
