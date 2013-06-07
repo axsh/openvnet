@@ -33,7 +33,7 @@ module Vnmgr::DataAccess
     class DbaCall < Call
       def initialize(class_name, conf)
         super
-        @actor = DCell::Node[conf.dba_node_name][conf.dba_actor_name]
+        @actor = DCell::Node[conf.dba_node_id][conf.dba_actor_name]
       end
 
       def method_missing(method_name, *args, &block)

@@ -5,7 +5,7 @@ describe Vnmgr::DataAccess do
   describe Vnmgr::DataAccess::DbaProxy do
     let(:conf) do
       double(:conf).tap do |conf|
-        conf.stub(:dba_node_name).and_return("dba")
+        conf.stub(:dba_node_id).and_return("dba")
         conf.stub(:dba_actor_name).and_return("dba")
       end
     end
