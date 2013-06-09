@@ -9,6 +9,9 @@ require 'dcell'
 require 'vnmgr'
 
 conf = Vnmgr::Configurations::Dba.conf
+
+Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "#{conf.node.id}.log"))
+
 Vnmgr::Initializers::DB.run(conf.db_uri)
 
 DCell.start :id => conf.node.id, :addr => conf.node.addr_string,
