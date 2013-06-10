@@ -2,6 +2,8 @@
 
 require 'sequel/model'
 
+Sequel.extension(:core_extensions)
+
 module Vnmgr::Models
   # Sequal::Model plugin to inject the Taggable feature to the model
   # class.
@@ -145,7 +147,7 @@ module Vnmgr::Models
       # end
 
       def to_hash()
-        r = self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid})
+        r = self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid, :class_name => self.class.name.demodulize})
         serialize_columns = []
         require 'sequel/plugins/serialization'
         if self.class.plugins.member?(Sequel::Plugins::Serialization)
@@ -499,7 +501,7 @@ module Vnmgr::Models
     plugin :validation_helpers
 
     def to_hash()
-      self.values.dup
+      self.values.dup.merge({:class_name => self.class.name.demodulize})
     end
 
     LOCK_TABLES_KEY='__locked_tables'
@@ -529,9 +531,9 @@ module Vnmgr::Models
       locktbls = Thread.current[LOCK_TABLES_KEY]
       if locktbls && (mode = locktbls[self.db.uri.to_s + @dataset.first_source_alias.to_s])
         # lock mode: :share or :update
-        @dataset.opts = @dataset.opts.merge({:lock=>mode})
+        @dataset.extension(:sequel_3_dataset_methods).opts = @dataset.extension(:sequel_3_dataset_methods).opts.merge({:lock=>mode})
       else
-        @dataset.opts = @dataset.opts.merge({:lock=>nil})
+        @dataset.extension(:sequel_3_dataset_methods).opts = @dataset.extension(:sequel_3_dataset_methods).opts.merge({:lock=>nil})
       end
       @dataset
     end
@@ -615,6 +617,7 @@ module Vnmgr::Models
         # end
         def self.taggable(uuid_prefix)
           return if self == Base
+          self.plugin :after_initialize
           self.plugin Taggable
           self.uuid_prefix(uuid_prefix)
         end

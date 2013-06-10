@@ -2,6 +2,11 @@
 
 module Vnmgr::ModelWrappers
   class Network < Base
+
+    def network_id
+      self.id
+    end
+
     def to_hash
       {
         :uuid => self.uuid,
