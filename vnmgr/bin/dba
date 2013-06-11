@@ -8,16 +8,14 @@ require 'bundler/setup'
 require 'dcell'
 require 'vnmgr'
 
-config_dir="/etc/wakame-vnet/"
-conf = Vnmgr::Configurations::Dba.load(File.join(config_dir, 'common.conf'), File.join(config_dir, 'dba.conf'))
-
+conf = Vnmgr::Configurations::Dba.conf
 Vnmgr::Initializers::DB.run(conf.db_uri)
 
-DCell.start :id => conf.node_name, :addr => "tcp://#{conf.ip}:#{conf.port}",
+DCell.start :id => conf.node.id, :addr => conf.node.addr_string,
   :registry => {
-    :adapter => 'redis',
-    :host => conf.redis_host,
-    :port => conf.redis_port
+    :adapter => conf.registry.adapter,
+    :host => conf.registry.host,
+    :port => conf.registry.port
   }
 
 conf.actor_names.each do |actor_name|

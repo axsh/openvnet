@@ -36,6 +36,7 @@ install:
 	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
 	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc
 
+
 uninstall:
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
 	rm $(DSTDIR)/etc/default/vnet-dba

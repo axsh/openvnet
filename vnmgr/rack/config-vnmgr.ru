@@ -6,9 +6,7 @@ require 'vnmgr'
 require 'rack/cors'
 require 'dcell'
 
-config_dir="/etc/wakame-vnet/"
-conf = Vnmgr::Configurations::Vnmgr.load("#{config_dir}/common.conf", "#{config_dir}/vnmgr.conf")
-Vnmgr::Endpoints::V10::VNetAPI.conf = conf
+conf = Vnmgr::Configurations::Vnmgr.conf
 Vnmgr::ModelWrappers::Base.set_proxy(conf)
 
 if defined?(::Unicorn)
@@ -18,12 +16,11 @@ end
 
 case conf.data_access_proxy
 when :dba
-  DCell.start(:id => conf.node_name, :addr => "tcp://#{conf.ip}:#{conf.port}",
-  :registry => {
-    :adapter => 'redis',
-    :host => conf.redis_host,
-    :port => conf.redis_port
-  })
+  DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
+    :registry => {
+      :adapter => conf.registry.adapter,
+      :host => conf.registry.host,
+      :port => conf.registry.port })
 when :direct
   Vnmgr::Initializers::DB.run(conf.db_uri)
 end
