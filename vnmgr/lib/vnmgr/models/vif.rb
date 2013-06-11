@@ -5,6 +5,6 @@ module Vnmgr::Models
     taggable 'vif'
     many_to_one :network
     many_to_one :network_service
-    one_to_one :ip_lease
+    one_to_many :ip_leases
   end
 end

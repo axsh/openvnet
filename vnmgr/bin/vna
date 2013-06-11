@@ -7,6 +7,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'vnmgr'
 require 'celluloid'
+require 'dcell'
 
 #path = ['/etc/wakame-vnet/vna.conf', File.expand_path('config/vna.conf', Vnmgr::ROOT)].find { |i| File.exists?(i) }
 #abort("ERROR: Failed to load vna.conf") if path.nil?
@@ -15,22 +16,24 @@ config_dir="/etc/wakame-vnet/"
 conf = Vnmgr::Configurations::Vna.load("#{config_dir}/common.conf", "#{config_dir}/vna.conf")
 Vnmgr::ModelWrappers::Base.set_proxy(conf)
 
+case conf.data_access_proxy
+when :dba
+  DCell.start(:id => conf.node_name, :addr => "tcp://#{conf.ip}:#{conf.port}",
+  :registry => {
+    :adapter => 'redis',
+    :host => conf.redis_host,
+    :port => conf.redis_port
+  })
+when :direct
+  Vnmgr::Initializers::DB.run(conf.db_uri)
+end
 
-sleep 10
+M = Vnmgr::ModelWrappers
+
+# Poke the database.
+Vnmgr::ModelWrappers::Network.batch.name.commit
 
 service_openflow = Vnmgr::NodeModules::ServiceOpenflow.new
 service_openflow.start
 
-(1..10).each {
-  p "Main thread loop"
-
-  service_openflow.controller.pass_task {
-    p "Ping to trema thread."
-  }
-
-  sleep 1
-}
-
-service_openflow.stop
-sleep 1
-
+sleep 2

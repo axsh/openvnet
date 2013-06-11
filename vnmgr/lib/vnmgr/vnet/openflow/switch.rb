@@ -84,14 +84,15 @@ module Vnmgr::VNet::Openflow
         network = self.network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^vif-/
-        port_map = Vnmgr::ModelWrappers::Vif.find(port_desc.name)
+        vif_map = Vnmgr::ModelWrappers::Vif[port_desc.name]
 
-        if port_map.nil?
+        if vif_map.nil?
           p "error: Could not find uuid: #{port_desc.name}"
           return
         end
 
-        network = self.network_manager.network_by_uuid(port_map.network.uuid)
+        # network = self.network_manager.network_by_id(vif_map.network_id)
+        network = self.network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
 
         if network.class == NetworkPhysical
           port.extend(PortPhysical)
@@ -101,8 +102,10 @@ module Vnmgr::VNet::Openflow
           raise("Unknown network type.")
         end
 
-        port.hw_addr = Trema::Mac.new(port_map.mac_addr)
-        port.ipv4_addr = port_map.ipv4_addr
+        ip_leases = vif_map.batch.ip_leases.commit
+
+        port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
+        port.ipv4_addr = vif_map.ipv4_addr
 
       elsif port.port_info.name =~ /^t-/
       else

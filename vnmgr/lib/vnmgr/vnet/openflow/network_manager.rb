@@ -14,17 +14,20 @@ module Vnmgr::VNet::Openflow
     end
 
     def network_by_uuid(network_uuid)
-      old_network = @networks.find { |nw| nw[1].uuid == network_uuid }
-      return old_network[1] if old_network
+      old_network = network_by_uuid_direct(network_uuid)
+      return old_network if old_network
 
       network = nil
-      network_map = Vnmgr::ModelWrappers::Network.find(network_uuid)
+      network_map = Vnmgr::ModelWrappers::Network[network_uuid]
 
-      # Simulate loading from db.
-      # sleep(0.01)
-      
-      old_network = @networks.find { |nw| nw[1].uuid == network_uuid }
-      return old_network[1] if old_network
+      dp_map = M::Datapath[:datapath_id => ("%#x" % @datapath.datapath_id)]
+
+      dp_network_map = dp_map.batch.datapath_networks_dataset.where(:network_id => network_map.id).first.commit
+      dpn_subnet_map = dp_map.batch.datapath_networks_on_subnet_dataset.where(:network_id => network_map.id).all.commit
+      dpn_subnet_map.each { |dp_map| dp_map.datapath = dp_map.batch.datapath.commit }
+
+      old_network = network_by_uuid_direct(network_uuid)
+      return old_network if old_network
 
       case network_map.network_mode
       when 'physical'
@@ -35,22 +38,23 @@ module Vnmgr::VNet::Openflow
         raise("Unknown network type.")
       end
 
-      network_map.datapaths_on_subnet.each { |datapath_map|
-        if datapath_map.datapath_id == true # == self.datapath.foobar_id
-          network.set_datapath_of_bridge(datapath_map, false)
-        else
-          network.add_datapath_on_subnet(datapath_map, false)
-        end
-      }
+      network.set_datapath_of_bridge(dp_map, dp_network_map, false)
 
-      old_network = @networks.find { |nw| nw[1].uuid == network_uuid }
-      return old_network[1] if old_network
+      dpn_subnet_map.each { |dp_map| network.add_datapath_on_subnet(dp_map, false) }
+
+      old_network = network_by_uuid_direct(network_uuid)
+      return old_network if old_network
 
       @networks[network.network_id] = network
 
       network.install
       network.update_flows
       network
+    end
+
+    def network_by_uuid_direct(network_uuid)
+      network = @networks.find { |nw| nw[1].uuid == network_uuid }
+      network && network[1]
     end
 
     def update_all_flows
