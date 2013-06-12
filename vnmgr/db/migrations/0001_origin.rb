@@ -16,10 +16,13 @@ Sequel.migration do
 
     create_table(:datapath_networks) do
       primary_key :id
+      String :uuid, :unique => true, :null=>false
       Integer :datapath_id, :index => true, :null=>false
       Integer :network_id, :index => true, :null=>false
       Bignum :broadcast_mac_addr, :null=>false
       FalseClass :is_connected, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
     end
 
     create_table(:dc_networks) do
