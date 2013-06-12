@@ -9,28 +9,28 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/vifs' do
       raise E::DuplicateUUID, params["uuid"] unless M::Vif[params["uuid"]].nil?
       params["uuid"] = M::Vif.trim_uuid(params["uuid"])
     end
-    vif = data_access.vif.create(params)
+    vif = M::Vif.create(params)
     respond_with(R::Vif.generate(vif))
   end
 
   get do
-    vifs = data_access.vif.all
+    vifs = M::Vif.all
     respond_with(R::VifCollection.generate(vifs))
   end
 
   get '/:uuid' do
-    vif = data_access.vif[@params["uuid"]]
+    vif = M::Vif[@params["uuid"]]
     respond_with(R::Vif.generate(vif))
   end
 
   delete '/:uuid' do
-    vif = data_access.vif.delete({:uuid => @params["uuid"]})
+    vif = M::Vif.delete({:uuid => @params["uuid"]})
     respond_with(R::Vif.generate(vif))
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["uuid","network_id","mac_addr","state","created_at","updated_at"])
-    vif = data_access.vif.update(params)
+    params = parse_params(@params, ["network_id","mac_addr","state","created_at","updated_at"])
+    vif = M::Vif.update(params)
     respond_with(R::Vif.generate(vif))
   end
 end
