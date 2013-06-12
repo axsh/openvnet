@@ -21,6 +21,8 @@ module Vnmgr::VNet::Openflow
       network_map = Vnmgr::ModelWrappers::Network[network_uuid]
 
       dp_map = M::Datapath[:datapath_id => ("%#x" % @datapath.datapath_id)]
+      
+      raise("Could not find datapath id: %#x" % @datapath.datapath_id) unless dp_map
 
       dp_network_map = dp_map.batch.datapath_networks_dataset.where(:network_id => network_map.id).first.commit
       dpn_subnet_map = dp_map.batch.datapath_networks_on_subnet_dataset.where(:network_id => network_map.id).all.commit

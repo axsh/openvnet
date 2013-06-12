@@ -102,10 +102,15 @@ module Vnmgr::VNet::Openflow
           raise("Unknown network type.")
         end
 
-        ip_leases = vif_map.batch.ip_leases.commit
+        vif_ipv4_address = vif_map.batch.ipv4_address.commit
+
+        p vif_ipv4_address.inspect
 
         port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
-        port.ipv4_addr = vif_map.ipv4_addr
+        port.ipv4_addr = IPAddr.new(vif_ipv4_address, Socket::AF_INET) if vif_ipv4_address
+
+        p vif_map.inspect
+        p port.ipv4_addr.inspect
 
       elsif port.port_info.name =~ /^t-/
       else

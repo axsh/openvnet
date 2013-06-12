@@ -8,6 +8,9 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
       raise E::DuplicateUUID, params["uuid"] unless M::Datapath[params["uuid"]].nil?
       params["uuid"] = M::Datapath.trim_uuid(params["uuid"])
     end
+
+    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
+
     datapath = M::Datapath.create(params)
     respond_with(R::Datapath.generate(datapath))
   end
@@ -32,4 +35,20 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
     datapath = M::Datapath.update(@params["uuid"], params)
     respond_with(R::Datapath.generate(datapath))
   end
+
+  put '/:uuid/networks' do
+    params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_address'])
+
+    datapath = M::Datapath[params['uuid']] || raise(E::UnknownUUIDResource, params['uuid'])
+    network = M::Network[params['network_uuid']] || raise(E::UnknownUUIDResource, params['network_uuid'])
+
+    broadcast_mac_address = parse_mac(params['broadcast_mac_address']) || raise(E::MissingArgument, 'broadcast_mac_address')
+
+    M::DatapathNetwork.create({ :datapath_id => datapath.id,
+                                :network_id => network.id,
+                                :broadcast_mac_addr => broadcast_mac_address,
+                              })
+    respond_with({})
+  end
+
 end
