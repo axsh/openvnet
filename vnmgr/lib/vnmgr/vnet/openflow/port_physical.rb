@@ -62,12 +62,15 @@ module Vnmgr::VNet::Openflow
                              :eth_type => 0x0806,
                              :arp_spa => self.ipv4_addr
                            }, {}, flow_options)
-      flows << Flow.create(TABLE_ARP_ROUTE, 1, {
-                             :eth_type => 0x0806,
-                             :arp_tpa => self.ipv4_addr
-                           }, {
-                             :output => self.port_number
-                           }, flow_options)
+
+      if self.ipv4_addr
+        flows << Flow.create(TABLE_ARP_ROUTE, 1, {
+                               :eth_type => 0x0806,
+                               :arp_tpa => self.ipv4_addr
+                             }, {
+                               :output => self.port_number
+                             }, flow_options)
+      end
 
       flows << Flow.create(TABLE_MAC_ROUTE, 1, {
                              :eth_dst => self.hw_addr
