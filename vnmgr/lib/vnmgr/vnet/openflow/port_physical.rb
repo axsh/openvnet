@@ -18,7 +18,10 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
                            }, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
-      flows << Flow.create(TABLE_PHYSICAL_DST, 1, {
+      flows << Flow.create(TABLE_HOST_PORTS, 10, {
+                             :eth_src => self.hw_addr
+                           }, {}, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
                              :eth_dst => self.hw_addr
                            }, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))
 
@@ -26,16 +29,26 @@ module Vnmgr::VNet::Openflow
       # flows << Flow.create(TABLE_PHYSICAL_SRC, 5, {:eth_type => 0x0800, :ipv4_src => IPAddr.new('192.168.60.200')}, {}, flow_options)
       # flows << Flow.create(TABLE_PHYSICAL_SRC, 4, {:in_port => self.port_number}, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
 
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 4, {
+      if self.ipv4_addr
+        flows << Flow.create(TABLE_PHYSICAL_SRC, 45, {
+                               :in_port => self.port_number,
+                               :eth_src => self.hw_addr,
+                               :eth_type => 0x0800,
+                               :ipv4_src => self.ipv4_addr
+                             }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
+        flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
+                               :eth_type => 0x0800,
+                               :ipv4_src => self.ipv4_addr
+                             }, {}, flow_options)
+      end
+
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 25, {
                              :in_port => self.port_number,
                              :eth_src => self.hw_addr,
-                             :eth_type => 0x0800,
-                             :ipv4_src => self.ipv4_addr
                            }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 3, {
-                             :in_port => self.port_number,
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 24, {
                              :eth_src => self.hw_addr
-                           }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
+                           }, {}, flow_options)
 
       #
       # ARP routing table
