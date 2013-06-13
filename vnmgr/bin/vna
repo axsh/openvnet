@@ -32,4 +32,4 @@ Vnmgr::ModelWrappers::Network.batch.name.commit
 service_openflow = Vnmgr::NodeModules::ServiceOpenflow.new
 service_openflow.start
 
-sleep 2
+sleep
