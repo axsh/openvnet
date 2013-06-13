@@ -29,7 +29,6 @@ module Vnmgr::VNet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
-                             # :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
                              :metadata => OFPP_FLOOD,
                              :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
                            }, flood_actions, flow_options)
