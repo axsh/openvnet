@@ -57,6 +57,7 @@ module Vnmgr::VNet::Openflow
     # using the metadata field directly, so a separate table is
     # required.
     TABLE_METADATA_ROUTE = 15
+    TABLE_METADATA_LOCAL = 16
 
     # Used by OpenFlowPort to indicate the type of port.
     PORT_TYPE_NONE = 0

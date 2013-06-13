@@ -74,7 +74,8 @@ module Vnmgr::VNet::Openflow
     end
 
     def packet_in(datapath_id, message)
-      p "packet_in from %#x." % datapath_id
+      # p "packet_in from %#x." % datapath_id
+      p "packet_in: datapath_id:%#x message:#{message.inspect}" % datapath_id
 
       switch = switches[datapath_id] || raise("No switch found.")
       switch.async.packet_in(message)

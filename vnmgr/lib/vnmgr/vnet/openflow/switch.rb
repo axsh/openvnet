@@ -35,6 +35,17 @@ module Vnmgr::VNet::Openflow
 
       flows = []
 
+      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, {})
+      flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, {})
+      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, {})
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, {})
+      flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, {})
+      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, {})
+      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, {})
+      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, {})
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, {})
+      flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, {})
+
       # Catches all arp packets that are from local ports.
       #
       # All local ports have the port part of metadata [0,31] zero'ed
