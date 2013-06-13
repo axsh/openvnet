@@ -31,7 +31,7 @@ module Vnmgr::VNet::Openflow
 
       # Some flows depend on only local being able to send packets
       # with the local mac and ip address, so drop those.
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 6, {
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 60, {
                              :in_port => OFPP_LOCAL
                            }, {}, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
       # flows << Flow.create(TABLE_PHYSICAL_SRC, 5, {
@@ -59,9 +59,17 @@ module Vnmgr::VNet::Openflow
 
       flows = []
       
-      flows << Flow.create(TABLE_MAC_ROUTE,      1, {:eth_dst => self.bridge_hw}, {:output => OFPP_LOCAL}, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_DST,   1, {:eth_dst => self.bridge_hw}, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))
-      flows << Flow.create(TABLE_PHYSICAL_SRC,   5, {:eth_src => self.bridge_hw}, {}, flow_options)
+      flows << Flow.create(TABLE_MAC_ROUTE, 1, {
+                             :eth_dst => self.bridge_hw
+                           }, {
+                             :output => OFPP_LOCAL
+                           }, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
+                             :eth_dst => self.bridge_hw
+                           }, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 50, {
+                             :eth_src => self.bridge_hw
+                           }, {}, flow_options)
 
       self.datapath.add_flows(flows)
     end
