@@ -23,5 +23,7 @@ describe Vnmgr::Configurations::Vna do
     # trema
     it { expect(subject.trema_home).to eq Gem::Specification.find_by_name('trema').gem_dir }
     it { expect(subject.trema_tmp).to eq "/var/run/wakame-vnet" }
+
+    it { expect(subject.bridge_name).to eq 'br0' }
   end
 end

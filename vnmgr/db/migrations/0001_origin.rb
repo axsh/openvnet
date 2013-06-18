@@ -10,6 +10,7 @@ Sequel.migration do
       Bignum :ipv4_address
       FalseClass :is_connected, :null=>false
       String :datapath_id, :null=>false
+      String :node_id, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -90,14 +91,13 @@ Sequel.migration do
     create_table(:tunnels) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :src_network_id, :index => true, :null => false
-      Integer :dst_network_id, :index => true, :null => false
+      Integer :src_datapath_id, :index => true, :null => false
+      Integer :dst_datapath_id, :index => true, :null => false
       Integer :tunnel_id, :index => true
-      DateTime :ttl
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
 
-      index [:src_network_id, :dst_network_id]
+      index [:src_datapath_id, :dst_datapath_id]
     end
 
     create_table(:mac_ranges) do
