@@ -60,6 +60,12 @@ module Vnmgr::VNet::Openflow
       switch = switches[datapath_id] || raise("No switch found.")
 
       message.parts.each { |port_descs| 
+        port_descs.ports.each { |port_desc| 
+          switch.async.update_bridge_hw(port_desc.hw_addr.dup) if port_desc.name =~ /^eth/
+        }
+      }
+
+      message.parts.each { |port_descs| 
         p "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
         port_descs.ports.each { |port_desc| switch.async.handle_port_desc(port_desc) }

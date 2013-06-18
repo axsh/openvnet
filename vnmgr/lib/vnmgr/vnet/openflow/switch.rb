@@ -23,6 +23,10 @@ module Vnmgr::VNet::Openflow
       self.ports.find_all{ |key,port| port.is_eth_port }.collect{ |key,port| port }
     end
 
+    def update_bridge_hw(hw_addr)
+      @bridge_hw = hw_addr
+    end
+
     #
     # Event handlers:
     #
@@ -35,16 +39,20 @@ module Vnmgr::VNet::Openflow
 
       flows = []
 
-      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, {})
-      flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, {})
-      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, {})
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, {})
-      flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, {})
-      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, {})
-      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, {})
-      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, {})
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, {})
-      flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, {})
+      flow_options = {:cookie => 0x1}
+
+      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
+
+      flow_options = {:cookie => 0x2}
 
       # Catches all arp packets that are from local ports.
       #
@@ -54,13 +62,13 @@ module Vnmgr::VNet::Openflow
                              :eth_type => 0x0806,
                              :metadata => 0x0,
                              :metadata_mask => (METADATA_PORT_MASK)
-                           }, {}, {})
+                           }, {}, flow_options)
       # Next we catch all arp packets, with learning flows for
       # incoming arp packets having been handled by network/eth_port
       # specific flows.
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
-                           }, {}, {})
+                           }, {}, flow_options)
 
       self.datapath.add_flows(flows)
     end
@@ -75,6 +83,8 @@ module Vnmgr::VNet::Openflow
     def handle_port_desc(port_desc)
       p "handle_port_desc: #{port_desc.inspect}"
 
+      self.bridge_hw || raise("No bridge hw address found.")
+
       port = Port.new(datapath, port_desc, true)
       ports[port_desc.port_no] = port
 
@@ -86,11 +96,6 @@ module Vnmgr::VNet::Openflow
 
       elsif port.port_info.name =~ /^eth/
         port.extend(PortHost)
-
-        if self.bridge_hw.nil?
-          @bridge_hw = port.port_info.hw_addr
-          ports[OFPP_LOCAL].install_with_hw(self.bridge_hw) if ports[OFPP_LOCAL]
-        end
 
         network = self.network_manager.network_by_uuid('nw-public')
 

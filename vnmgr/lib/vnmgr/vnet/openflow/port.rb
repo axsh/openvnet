@@ -42,6 +42,24 @@ module Vnmgr::VNet::Openflow
       str
     end
 
+    def metadata_p(port = self.port_number)
+      { :metadata => port,
+        :metadata_mask => Constants::METADATA_PORT_MASK
+      }
+    end
+
+    def metadata_n(nw = self.network_number)
+      { :metadata => nw << Constants::METADATA_NETWORK_SHIFT,
+        :metadata_mask => Constants::METADATA_NETWORK_MASK
+      }
+    end
+
+    def metadata_np(nw = self.network_number, port = self.port_number)
+      { :metadata => (nw << Constants::METADATA_NETWORK_SHIFT) | port,
+        :metadata_mask => (Constants::METADATA_PORT_MASK | Constants::METADATA_NETWORK_MASK)
+      }
+    end
+
     def flow_options_load_port(goto_table)
       flow_options.merge({ :metadata => self.port_number,
                            :metadata_mask => Constants::METADATA_PORT_MASK,
