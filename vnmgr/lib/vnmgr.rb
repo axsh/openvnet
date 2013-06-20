@@ -79,9 +79,9 @@ module Vnmgr
         autoload :MacRangeCollection, 'vnmgr/endpoints/1.0/responses/mac_range'
         autoload :NetworkCollection, 'vnmgr/endpoints/1.0/responses/network'
         autoload :NetworkServiceCollection, 'vnmgr/endpoints/1.0/responses/network_service'
+        autoload :OpenFlowControllerCollection, 'vnmgr/endpoints/1.0/responses/open_flow_controller'
         autoload :RouterCollection, 'vnmgr/endpoints/1.0/responses/router'
         autoload :TunnelCollection, 'vnmgr/endpoints/1.0/responses/tunnel'
-        autoload :OpenFlowControllerCollection, 'vnmgr/endpoints/1.0/responses/open_flow_controller'
         autoload :VifCollection, 'vnmgr/endpoints/1.0/responses/vif'
       end
     end
@@ -133,6 +133,7 @@ module Vnmgr
 
   module VNet
     module Openflow
+      autoload :CookieManager, 'vnmgr/vnet/openflow/cookie_manager'
       autoload :Constants, 'vnmgr/vnet/openflow/constants'
       autoload :Controller, 'vnmgr/vnet/openflow/controller'
       autoload :Datapath, 'vnmgr/vnet/openflow/datapath'
@@ -142,6 +143,8 @@ module Vnmgr
       autoload :NetworkVirtual, 'vnmgr/vnet/openflow/network_virtual'
       autoload :NetworkManager, 'vnmgr/vnet/openflow/network_manager'
       autoload :OvsOfctl, 'vnmgr/vnet/openflow/ovs_ofctl'
+      autoload :PacketHandler, 'vnmgr/vnet/openflow/packet_handler'
+      autoload :PacketManager, 'vnmgr/vnet/openflow/packet_manager'
       autoload :Port, 'vnmgr/vnet/openflow/port'
       autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
       autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
@@ -150,6 +153,11 @@ module Vnmgr
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
       autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
     end
+
+    module Services
+      autoload :Dhcp, 'vnmgr/vnet/services/dhcp'
+    end
+
   end
 
 end

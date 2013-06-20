@@ -19,6 +19,7 @@ module Vnmgr::VNet::Openflow
 
       network = nil
       network_map = Vnmgr::ModelWrappers::Network[network_uuid]
+      services_map = network_map.batch.network_services.commit
 
       dp_map = M::Datapath[:datapath_id => ("%#x" % @datapath.datapath_id)]
       
@@ -41,7 +42,9 @@ module Vnmgr::VNet::Openflow
 
       network.set_datapath_of_bridge(dp_map, dp_network_map, false)
 
-      dpn_subnet_map.each { |dp_map| network.add_datapath_on_subnet(dp_map, false) }
+      dpn_subnet_map.each { |dp|
+        network.add_datapath_on_subnet(dp, false)
+      }
 
       old_network = network_by_uuid_direct(network_uuid)
       return old_network if old_network
@@ -50,6 +53,11 @@ module Vnmgr::VNet::Openflow
 
       network.install
       network.update_flows
+
+      services_map.each { |service|
+        network.add_service(service)
+      }
+
       network
     end
 

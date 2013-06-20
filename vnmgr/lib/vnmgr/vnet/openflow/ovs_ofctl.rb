@@ -16,23 +16,23 @@ module Vnmgr::VNet::Openflow
       @switch_name = switch_name
 
       # @verbose = Dcmgr.conf.verbose_openflow
-      @verbose = true
+      @verbose = false
     end
 
     def get_bridge_name(datapath_id)
       command = "#{@ovs_vsctl} --no-heading -- --columns=name find bridge datapath_id=%016x" % datapath_id
-      p command if verbose == true
+      p command if verbose
       /^"(.*)"/.match(`#{command}`)[1]
     end
 
     def add_flow(flow)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow.match_to_s},actions=#{flow.actions_to_s}"
-      p "'#{command}' => #{system(command)}."
+      p "'#{command}' => #{system(command)}." if verbose
     end
 
     def add_ovs_flow(flow_str)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
-      p "'#{command}' => #{system(command)}"
+      p "'#{command}' => #{system(command)}" if verbose
     end
 
     def add_flows(flows)
@@ -42,7 +42,7 @@ module Vnmgr::VNet::Openflow
       recmds << "#{@ovs_ofctl} add-flow #{switch_name} - <<'#{eos}'"
       flows.each { |flow|
         full_flow = "#{flow.match_to_s},actions=#{flow.actions_to_s}"
-        p "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose == true
+        p "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose
         recmds << full_flow
       }
       recmds << "#{eos}"
@@ -58,7 +58,7 @@ module Vnmgr::VNet::Openflow
       recmds << "#{@ovs_ofctl} del-flows #{switch_name} - <<'#{eos}'"
       flows.each { |flow|
         full_flow = "#{flow.match_sparse_to_s}"
-        p "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose == true
+        p "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose
         recmds << full_flow
       }
       recmds << "#{eos}"
@@ -69,7 +69,7 @@ module Vnmgr::VNet::Openflow
 
     def del_cookie(cookie)
       command = "#{@ovs_ofctl} del-flows #{switch_name} cookie=0x%x/-1" % cookie
-      p "'#{command}' => #{system(command)}"
+      p "'#{command}' => #{system(command)}" if verbose
     end
 
     def add_gre_tunnel(tunnel_name, remote_ip, key)
