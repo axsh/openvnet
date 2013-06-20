@@ -2,7 +2,9 @@
 
 module Vnmgr::Models
   class DcNetwork < Base
-    taggable 'dn'
-    one_to_many :networks
+    taggable 'dcn'
+
+    one_to_many :dc_network_dc_segments
+    many_to_many :dc_segments, :join_table => :dc_network_dc_segments
   end
 end

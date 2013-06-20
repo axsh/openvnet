@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class DcNetwork < Base
+  class DcSegment < Base
     def to_hash
       {
         :uuid => self.uuid,
