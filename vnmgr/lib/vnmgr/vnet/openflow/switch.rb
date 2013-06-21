@@ -12,6 +12,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :bridge_hw
     attr_reader :ports
     attr_reader :cookie_manager
+    attr_reader :dc_segment_manager
     attr_reader :network_manager
     attr_reader :packet_manager
 
@@ -19,11 +20,11 @@ module Vnmgr::VNet::Openflow
       @datapath = dp
       @ports = {}
       @cookie_manager = CookieManager.new
+      @dc_segment_manager = DcSegmentManager.new(dp)
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
 
-      @cookie_manager.create_category(:packet_handler, 0x11, 4)
-      @cookie_manager.create_category(:foobar, 0x12, 4)
+      @cookie_manager.create_category(:packet_handler, 0x1, 48)
     end
 
     def eth_ports
@@ -56,8 +57,10 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_TUNNEL, 0, {}, {}, flow_options)
 
       flow_options = {:cookie => 0x2}
 
