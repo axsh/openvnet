@@ -9,6 +9,10 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/network_services' do
       raise E::DuplicateUUID, params["uuid"] unless M::NetworkService[params["uuid"]].nil?
       params["uuid"] = M::NetworkService.trim_uuid(params["uuid"])
     end
+
+    vif_uuid = params.delete('vif_uuid')
+    params['vif_id'] = (M::Vif[vif_uuid] || raise(E::InvalidUUID, vif_uuid)).id
+
     network_service = M::NetworkService.create(params)
     respond_with(R::NetworkService.generate(network_service))
   end

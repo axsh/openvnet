@@ -29,5 +29,11 @@ module Vnmgr::Models
 
     subset(:alives, {})
 
+    one_to_many :network_services, :class=>NetworkService do |ds|
+      NetworkService.dataset.join_table(:inner, :vifs,
+                                        {:vifs__network_id => self.id} & {:vifs__id => :network_services__vif_id}
+                                        ).select_all(:network_services).alives
+    end
+
   end
 end
