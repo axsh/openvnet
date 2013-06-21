@@ -10,7 +10,6 @@ module Vnmgr::VNet::Openflow
     def initialize(dp)
       @datapath = dp
       @networks = {}
-      @semaphore = Mutex.new
     end
 
     def network_by_uuid(network_uuid)

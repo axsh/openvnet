@@ -23,7 +23,7 @@ module Vnmgr::VNet::Openflow
       when :physical_local
         table = Constants::TABLE_PHYSICAL_DST
         priority = 70
-        match = match.merge(self.network.metadata_p)
+        match = match.merge(self.network.metadata_flags(Constants::METADATA_FLAG_LOCAL))
       when :virtual_local
         table = Constants::TABLE_VIRTUAL_DST
         priority = 70

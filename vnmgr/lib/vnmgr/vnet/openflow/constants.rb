@@ -59,20 +59,18 @@ module Vnmgr::VNet::Openflow
     TABLE_METADATA_ROUTE = 15
     TABLE_METADATA_LOCAL = 16
 
-    # Used by OpenFlowPort to indicate the type of port.
-    PORT_TYPE_NONE = 0
-    PORT_TYPE_ETH = 1
-    PORT_TYPE_TUNNEL = 2
-    PORT_TYPE_INSTANCE_NET = 3
-    PORT_TYPE_INSTANCE_VNET = 4
-
     COOKIE_NETWORK_SHIFT = 32
+
+    METADATA_FLAGS_MASK = (0xffff << 48)
+    METADATA_FLAGS_SHIFT = 48
+
+    METADATA_FLAG_LOCAL  = (0x1 << 48)
+    METADATA_FLAG_REMOTE = (0x2 << 48)
 
     METADATA_PORT_MASK = 0xffffffff
     METADATA_NETWORK_MASK = (0xffff << 32)
     METADATA_NETWORK_SHIFT = 32
-    METADATA_TUNNEL_MASK = (0xffff << 48)
-    METADATA_TUNNEL_SHIFT = 48
+    
   end
 
 end

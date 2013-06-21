@@ -16,7 +16,7 @@ module Vnmgr::VNet::Openflow
       @switch_name = switch_name
 
       # @verbose = Dcmgr.conf.verbose_openflow
-      @verbose = false
+      @verbose = true
     end
 
     def get_bridge_name(datapath_id)
@@ -27,12 +27,12 @@ module Vnmgr::VNet::Openflow
 
     def add_flow(flow)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow.match_to_s},actions=#{flow.actions_to_s}"
-      p "'#{command}' => #{system(command)}." if verbose
+      p "'#{command}' => #{system(command)}."
     end
 
     def add_ovs_flow(flow_str)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
-      p "'#{command}' => #{system(command)}" if verbose
+      p "'#{command}' => #{system(command)}"
     end
 
     def add_flows(flows)
@@ -69,7 +69,7 @@ module Vnmgr::VNet::Openflow
 
     def del_cookie(cookie)
       command = "#{@ovs_ofctl} del-flows #{switch_name} cookie=0x%x/-1" % cookie
-      p "'#{command}' => #{system(command)}" if verbose
+      p "'#{command}' => #{system(command)}"
     end
 
     def add_gre_tunnel(tunnel_name, remote_ip, key)

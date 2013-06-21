@@ -17,7 +17,10 @@ module Vnmgr::VNet::Openflow
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge(:goto_table => TABLE_HOST_PORTS))
+                           }, {}, flow_options.merge({ :metadata => METADATA_FLAG_REMOTE,
+                                                       :metadata_mask => METADATA_FLAG_REMOTE,
+                                                       :goto_table => TABLE_HOST_PORTS
+                                                     }))
 
       flows << Flow.create(TABLE_HOST_PORTS, 20, {
                              :in_port => self.port_number,

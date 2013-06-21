@@ -22,8 +22,7 @@ module Vnmgr::VNet::Openflow
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
 
-      @cookie_manager.create_category(:packet_handler, 0x11, 4)
-      @cookie_manager.create_category(:foobar, 0x12, 4)
+      @cookie_manager.create_category(:packet_handler, 0x1, 48)
     end
 
     def eth_ports

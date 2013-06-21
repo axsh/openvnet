@@ -13,7 +13,10 @@ module Vnmgr::VNet::Openflow
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
-                           }, {}, flow_options_load_network(TABLE_VIRTUAL_SRC, 0x0, METADATA_PORT_MASK))
+                           }, {},
+                           flow_options_load_network(TABLE_VIRTUAL_SRC,
+                                                     0x0 | METADATA_FLAG_LOCAL,
+                                                     METADATA_PORT_MASK | METADATA_FLAG_LOCAL))
 
       #
       # ARP Anti-Spoof:

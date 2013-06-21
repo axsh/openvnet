@@ -31,6 +31,8 @@ module Vnmgr::VNet::Services
                    :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
                    :eth_type => 0x0800,
                    :ip_proto => 0x11,
+                   :ipv4_dst => IPAddr.new('255.255.255.255'),
+                   :ipv4_src => IPAddr.new('0.0.0.0'),
                    :udp_dst => 67,
                    :udp_src => 68
                  })
