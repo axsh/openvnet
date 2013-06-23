@@ -9,18 +9,48 @@ module Vnmgr::VNet::Openflow
     attr_reader :network_id
     attr_reader :network_number
     attr_reader :uuid
-    attr_reader :ports
     attr_reader :datapath_of_bridge
-    attr_reader :datapaths_on_subnet
+
+    attr_reader :ports
+    attr_reader :services
+
+    attr_reader :ipv4_network
+    attr_reader :ipv4_prefix
 
     def initialize(dp, network_map)
       @datapath = dp
       @uuid = network_map.uuid
       @network_id = network_map.network_id
       @network_number = network_map.network_id
-      @ports = {}
       @datapath_of_bridge = nil
-      @datapaths_on_subnet = []
+
+      @ports = {}
+      @services = {}
+
+      @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
+      @ipv4_prefix = network_map.ipv4_prefix
+    end
+
+    def metadata_flags(flags)
+      { :metadata => flags, :metadata_mask => flags }
+    end
+
+    def metadata_n(nw = self.network_number)
+      { :metadata => nw << Constants::METADATA_NETWORK_SHIFT,
+        :metadata_mask => Constants::METADATA_NETWORK_MASK
+      }
+    end
+
+    def metadata_p(port = 0x0)
+      { :metadata => port,
+        :metadata_mask => Constants::METADATA_PORT_MASK
+      }
+    end
+
+    def metadata_pn(port = 0x0)
+      { :metadata => (self.network_number << Constants::METADATA_NETWORK_SHIFT) | port,
+        :metadata_mask => (Constants::METADATA_PORT_MASK | Constants::METADATA_NETWORK_MASK)
+      }
     end
 
     def add_port(port, should_update)
@@ -55,19 +85,30 @@ module Vnmgr::VNet::Openflow
       update_flows if should_update
     end
 
-    def add_datapath_on_subnet(dpn_map, should_update)
-      datapath = {
-        :uuid => dpn_map.datapath_map[:uuid],
-        :display_name => dpn_map.datapath_map[:display_name],
-        :ipv4_address => dpn_map.datapath_map[:ipv4_address],
-        :datapath_id => dpn_map.datapath_map[:datapath_id],
-        :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
+    def add_service(service_map)
+      raise("Service already added to network.") if @services[service_map.uuid]
+
+      p service_map.inspect
+
+      service = nil
+
+      translated_map = {
+        :datapath => self.datapath,
+        :network => self,
+        :service_mac => Trema::Mac.new(service_map.vif_map[:mac_addr]),
+        :service_ipv4 => IPAddr.new(service_map.vif_map[:ipv4_address], Socket::AF_INET)
       }
 
-      # p "Adding datapath to list of networks on the same subnet: network:#{self.uuid} datapath:#{datapath.inspect}"
+      service = case service_map.display_name
+                when 'dhcp'
+                  Vnmgr::VNet::Services::Dhcp.new(translated_map)
+                else
+                  p "Failed to create service: #{service_map.uuid}"
+                  return
+                end
 
-      @datapaths_on_subnet << datapath
-      update_flows if should_update
+      self.services[service_map.uuid] = service
+      self.datapath.switch.packet_manager.insert(service)
     end
 
   end

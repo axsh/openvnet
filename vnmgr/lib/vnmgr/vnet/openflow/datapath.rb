@@ -56,6 +56,14 @@ module Vnmgr::VNet::Openflow
       end
     end
 
+    def send_packet_out(message, port_no)
+      if Thread.current == self.controller.trema_thread
+        self.controller.public_send_packet_out(self.datapath_id, message, port_no)
+      else
+        self.controller.pass_task { self.controller.public_send_packet_out(self.datapath_id, message, port_no) }
+      end
+    end
+
   end
 
 end

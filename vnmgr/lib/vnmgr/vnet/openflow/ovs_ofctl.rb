@@ -22,7 +22,7 @@ module Vnmgr::VNet::Openflow
 
     def get_bridge_name(datapath_id)
       command = "#{@ovs_vsctl} --no-heading -- --columns=name find bridge datapath_id=%016x" % datapath_id
-      p command if verbose == true
+      p command if verbose
       /^"(.*)"/.match(`#{command}`)[1]
     end
 
@@ -43,7 +43,7 @@ module Vnmgr::VNet::Openflow
       recmds << "#{@ovs_ofctl} add-flow #{switch_name} - <<'#{eos}'"
       flows.each { |flow|
         full_flow = "#{flow.match_to_s},actions=#{flow.actions_to_s}"
-        p "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose == true
+        p "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose
         recmds << full_flow
       }
       recmds << "#{eos}"
@@ -59,7 +59,7 @@ module Vnmgr::VNet::Openflow
       recmds << "#{@ovs_ofctl} del-flows #{switch_name} - <<'#{eos}'"
       flows.each { |flow|
         full_flow = "#{flow.match_sparse_to_s}"
-        p "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose == true
+        p "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose
         recmds << full_flow
       }
       recmds << "#{eos}"

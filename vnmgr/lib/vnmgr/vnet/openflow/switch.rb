@@ -11,12 +11,20 @@ module Vnmgr::VNet::Openflow
     attr_reader :datapath
     attr_reader :bridge_hw
     attr_reader :ports
+    attr_reader :cookie_manager
+    attr_reader :dc_segment_manager
     attr_reader :network_manager
+    attr_reader :packet_manager
 
     def initialize(dp, name = nil)
       @datapath = dp
       @ports = {}
+      @cookie_manager = CookieManager.new
+      @dc_segment_manager = DcSegmentManager.new(dp)
       @network_manager = NetworkManager.new(dp)
+      @packet_manager = PacketManager.new(dp)
+
+      @cookie_manager.create_category(:packet_handler, 0x1, 48)
     end
 
     def eth_ports
@@ -49,8 +57,10 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_TUNNEL, 0, {}, {}, flow_options)
 
       flow_options = {:cookie => 0x2}
 
@@ -161,6 +171,9 @@ module Vnmgr::VNet::Openflow
     end
 
     def packet_in(message)
+      port = self.ports[message.match.in_port]
+
+      @packet_manager.packet_in(port, message) if port
     end
 
   end
