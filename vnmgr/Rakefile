@@ -20,7 +20,7 @@ def connect(config)
 end
 
 def load_config(config_dir)
-  Vnmgr::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf"))
+  Dir.exists?(config_dir) ? Vnmgr::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf")) : nil
 end
 
 def migrate(config, to = nil)
@@ -88,7 +88,7 @@ namespace :test do
   namespace :db do
     # deprecated
     task :init => [] do
-      migrate(db_uri)
+      migrate(config)
     end
 
     task :migrate => [] do
