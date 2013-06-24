@@ -7,6 +7,9 @@ require 'rack/cors'
 require 'dcell'
 
 conf = Vnmgr::Configurations::Vnmgr.conf
+
+Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "#{conf.node.id}.log"))
+
 Vnmgr::ModelWrappers::Base.set_proxy(conf)
 
 if defined?(::Unicorn)
