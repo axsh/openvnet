@@ -27,38 +27,26 @@ module Vnmgr::VNet::Openflow
 
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
                            metadata_pn.merge!(:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')), {},
-                           flow_options.merge!(metadata_pn(OFPP_FLOOD).merge!(:goto_table => TABLE_METADATA_ROUTE)))
+                           flow_options.merge(metadata_pn(OFPP_FLOOD).merge!(:goto_table => TABLE_METADATA_ROUTE)))
       flows << Flow.create(TABLE_VIRTUAL_DST, 30,
                            metadata_n.merge!(:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')), {},
-                           flow_options.merge!(metadata_pn(OFPP_FLOOD).merge!(:goto_table => TABLE_METADATA_LOCAL)))
+                           flow_options.merge(metadata_pn(OFPP_FLOOD).merge!(:goto_table => TABLE_METADATA_LOCAL)))
 
       self.datapath.add_flows(flows)
     end
 
     def update_flows
-      # flood_actions = self.ports.collect { |key,port| {:output => port.port_number} }
-      # output_eth_ports = self.datapath.switch.eth_ports
-
-      # if output_eth_ports.first
-      #   self.datapaths_on_subnet.each { |datapath|
-      #     flood_actions << {
-      #       :eth_dst => { :mac_address => Trema::Mac.new(datapath[:broadcast_mac_addr]) },
-      #       :output => output_eth_ports.first.port_number,
-      #     }
-      #   }
-      # end
-
       flows = []
-      # flows << Flow.create(TABLE_METADATA_ROUTE, 0, {
-      #                        :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
-      #                        :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-      #                      }, flood_actions, flow_options)
+      flood_actions = self.ports.collect { |key,port| {:output => port.port_number} }
 
-      self.datapaths_on_subnet.each { |datapath|
-        flows << Flow.create(TABLE_VIRTUAL_SRC, 90, {
-                               :eth_dst => datapath[:broadcast_mac_addr]
-                             }, {}, flow_options)
-      }
+      flows << Flow.create(TABLE_METADATA_LOCAL, 1, {
+                             :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
+                             :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+                           }, flood_actions, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1, {
+                             :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
+                             :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+                           }, flood_actions, flow_options.dup.merge(:goto_table => TABLE_METADATA_SEGMENT))
 
       self.datapath.add_flows(flows)
 
@@ -66,24 +54,7 @@ module Vnmgr::VNet::Openflow
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
 
-      flow_flood = "priority=0,cookie=0x%x,metadata=0x%x/0x%x,actions=" %
-        [(self.network_number << COOKIE_NETWORK_SHIFT),
-         ((self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD),
-         (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-        ]
-
-      self.ports.collect { |key,port| flow_flood << ",output=#{port.port_number}" }
-      self.datapath.ovs_ofctl.add_ovs_flow("table=#{TABLE_METADATA_LOCAL}," + flow_flood)
-
       eth_port = self.datapath.switch.eth_ports.first
-
-      if eth_port
-        self.datapaths_on_subnet.each { |datapath|
-          flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{eth_port.port_number}"
-        }
-      end
-        
-      self.datapath.ovs_ofctl.add_ovs_flow("table=#{TABLE_METADATA_ROUTE}," + flow_flood)
 
       if eth_port
         if self.datapath_of_bridge
@@ -102,7 +73,7 @@ module Vnmgr::VNet::Openflow
            (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
           ]
         flow_learn_arp << "learn\\(table=7,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7" %
-          ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0)
+          ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0 | METADATA_FLAG_LOCAL)
         self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp)
       end
     end

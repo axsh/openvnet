@@ -137,6 +137,7 @@ module Vnmgr
       autoload :Constants, 'vnmgr/vnet/openflow/constants'
       autoload :Controller, 'vnmgr/vnet/openflow/controller'
       autoload :Datapath, 'vnmgr/vnet/openflow/datapath'
+      autoload :DcSegmentManager, 'vnmgr/vnet/openflow/dc_segment_manager'
       autoload :Flow, 'vnmgr/vnet/openflow/flow'
       autoload :Network, 'vnmgr/vnet/openflow/network'
       autoload :NetworkPhysical, 'vnmgr/vnet/openflow/network_physical'

@@ -5,12 +5,13 @@ require 'celluloid'
 module Vnmgr::VNet::Openflow
 
   class NetworkManager
+
     attr_reader :datapath
+    attr_reader :networks
 
     def initialize(dp)
       @datapath = dp
       @networks = {}
-      @semaphore = Mutex.new
     end
 
     def network_by_uuid(network_uuid)
@@ -42,10 +43,6 @@ module Vnmgr::VNet::Openflow
 
       network.set_datapath_of_bridge(dp_map, dp_network_map, false)
 
-      dpn_subnet_map.each { |dp|
-        network.add_datapath_on_subnet(dp, false)
-      }
-
       old_network = network_by_uuid_direct(network_uuid)
       return old_network if old_network
 
@@ -57,6 +54,13 @@ module Vnmgr::VNet::Openflow
       services_map.each { |service|
         network.add_service(service)
       }
+
+      dpn_subnet_map.each { |dp|
+        # Only add non-existing ones...
+        @datapath.switch.dc_segment_manager.insert(dp, false)
+      }
+
+      @datapath.switch.dc_segment_manager.update_all_networks
 
       network
     end

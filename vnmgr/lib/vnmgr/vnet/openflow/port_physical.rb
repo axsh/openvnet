@@ -14,10 +14,16 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 3, {
                              :in_port => self.port_number,
                              :eth_type => 0x0806
-                           }, {}, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
+                           }, {}, flow_options.merge({ :metadata => METADATA_FLAG_LOCAL,
+                                                       :metadata_mask => METADATA_FLAG_LOCAL,
+                                                       :goto_table => TABLE_ARP_ANTISPOOF
+                                                     }))
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+                           }, {}, flow_options.merge({ :metadata => METADATA_FLAG_LOCAL,
+                                                       :metadata_mask => METADATA_FLAG_LOCAL,
+                                                       :goto_table => TABLE_PHYSICAL_DST
+                                                     }))
       flows << Flow.create(TABLE_HOST_PORTS, 10, {
                              :eth_src => self.hw_addr
                            }, {}, flow_options)
@@ -88,7 +94,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_MAC_ROUTE, 1, {
                              :eth_dst => self.hw_addr
                            }, {:output => self.port_number}, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, metadata_np(0x0), {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1, metadata_np(0x0), {
                              :output => self.port_number
                            }, flow_options)
 
