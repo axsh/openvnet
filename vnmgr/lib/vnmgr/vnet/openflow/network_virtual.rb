@@ -58,26 +58,39 @@ module Vnmgr::VNet::Openflow
 
       if eth_port
         if self.datapath_of_bridge
-          flow_catch = "table=#{TABLE_HOST_PORTS},priority=30,cookie=0x%x,in_port=#{eth_port.port_number},dl_dst=#{self.datapath_of_bridge[:broadcast_mac_addr]}," % (self.network_number << COOKIE_NETWORK_SHIFT)
-          flow_catch << "actions=mod_dl_dst:ff:ff:ff:ff:ff:ff,write_metadata:0x%x/0x%x,goto_table:6" % 
-            [((self.network_number << METADATA_NETWORK_SHIFT) | eth_port.port_number),
-             (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-            ]
-
-          self.datapath.ovs_ofctl.add_ovs_flow(flow_catch)
+          self.datapath.ovs_ofctl.add_ovs_flow(flow_catch(eth_port))
         end
 
-        flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{eth_port.port_number},arp,metadata=0x%x/0x%x,actions=" %
-          [(self.network_number << COOKIE_NETWORK_SHIFT),
-           ((self.network_number << METADATA_NETWORK_SHIFT) | eth_port.port_number),
-           (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-          ]
-        flow_learn_arp << "learn\\(table=7,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7" %
-          ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0 | METADATA_FLAG_LOCAL)
-        self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp)
+        self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp(eth_port))
+      end
+
+      self.datapath.switch.gre_ports.each do |gre_port|
+        # modify the unicast packet to broadcast packet
+        self.datapath.ovs_ofctl.add_ovs_flow(flow_catch(gre_port))
+
+        # learn mac address
+        self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp(gre_port))
       end
     end
 
+    def flow_catch(port)
+      flow_catch = "table=#{TABLE_HOST_PORTS},priority=30,cookie=0x%x,in_port=#{port.port_number},dl_dst=#{self.datapath_of_bridge[:broadcast_mac_addr]}," % (self.network_number << COOKIE_NETWORK_SHIFT)
+      flow_catch << "actions=mod_dl_dst:ff:ff:ff:ff:ff:ff,write_metadata:0x%x/0x%x,goto_table:6" % 
+        [((self.network_number << METADATA_NETWORK_SHIFT) | port.port_number),
+         (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+        ]
+      flow_catch
+    end
+
+    def flow_learn_arp(port)
+      flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{port.port_number},arp,metadata=0x%x/0x%x,actions=" %
+        [(self.network_number << COOKIE_NETWORK_SHIFT),
+         ((self.network_number << METADATA_NETWORK_SHIFT) | port.port_number),
+         (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+        ]
+      flow_learn_arp << "learn\\(table=7,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7" %
+        ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0 | METADATA_FLAG_LOCAL)
+    end
   end
   
 end

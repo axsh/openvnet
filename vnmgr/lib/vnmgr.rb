@@ -151,12 +151,14 @@ module Vnmgr
       autoload :PacketHandler, 'vnmgr/vnet/openflow/packet_handler'
       autoload :PacketManager, 'vnmgr/vnet/openflow/packet_manager'
       autoload :Port, 'vnmgr/vnet/openflow/port'
+      autoload :PortGre, 'vnmgr/vnet/openflow/port_gre'
       autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
       autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
       autoload :PortPhysical, 'vnmgr/vnet/openflow/port_physical'
       autoload :PortVirtual, 'vnmgr/vnet/openflow/port_virtual'
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
       autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
+      autoload :TunnelManager, 'vnmgr/vnet/openflow/tunnel_manager'
     end
 
     module Services

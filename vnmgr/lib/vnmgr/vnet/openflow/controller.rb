@@ -43,7 +43,7 @@ module Vnmgr::VNet::Openflow
       # disconnected for a short period, as Open vSwitch has the
       # ability to keep flows between sessions.
       conf = Vnmgr::Configurations::Vna.conf
-      switch = switches[datapath_id] = Switch.new(Datapath.new(self, datapath_id, OvsOfctl.new(conf.bridge_name)))
+      switch = switches[datapath_id] = Switch.new(Datapath.new(self, datapath_id, OvsOfctl.new))
       switch.datapath.switch = switch
       switch.async.switch_ready
     end
@@ -69,8 +69,11 @@ module Vnmgr::VNet::Openflow
       message.parts.each { |port_descs| 
         p "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
-        port_descs.ports.each { |port_desc| switch.async.handle_port_desc(port_desc) }
+        #port_descs.ports.each { |port_desc| switch.async.handle_port_desc(port_desc) }
+        port_descs.ports.each { |port_desc| switch.handle_port_desc(port_desc) }
+        port_descs.ports.each { |port_desc| switch.async.handle_network_desc(port_desc) }
       }
+      
     end
 
     def port_status(datapath_id, message)

@@ -15,6 +15,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :dc_segment_manager
     attr_reader :network_manager
     attr_reader :packet_manager
+    attr_reader :tunnel_manager
 
     def initialize(dp, name = nil)
       @datapath = dp
@@ -23,12 +24,17 @@ module Vnmgr::VNet::Openflow
       @dc_segment_manager = DcSegmentManager.new(dp)
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
+      @tunnel_manager = TunnelManager.new(dp)
 
       @cookie_manager.create_category(:packet_handler, 0x1, 48)
     end
 
     def eth_ports
-      self.ports.find_all{ |key,port| port.is_eth_port }.collect{ |key,port| port }
+      self.ports.values.find_all{|port| port.eth? }
+    end
+
+    def gre_ports
+      self.ports.values.find_all{|port| port.gre? }
     end
 
     def update_bridge_hw(hw_addr)
@@ -132,6 +138,7 @@ module Vnmgr::VNet::Openflow
         port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
       elsif port.port_info.name =~ /^t-/
+        port.extend(PortGre)
       else
         p "Unknown interface type: #{port.port_info.name}"
         return

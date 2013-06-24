@@ -9,7 +9,7 @@ Sequel.migration do
       String :display_name, :null=>false
       Bignum :ipv4_address
       FalseClass :is_connected, :null=>false
-      String :datapath_id, :null=>false
+      String :dpid, :null=>false
       String :dc_segment_id, :index => true
       String :node_id, :null=>false
       DateTime :created_at, :null=>false
