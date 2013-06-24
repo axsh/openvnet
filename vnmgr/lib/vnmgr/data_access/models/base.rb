@@ -6,12 +6,14 @@ module Vnmgr::DataAccess::Models
       @model_class = Vnmgr::Models.const_get(self.class.name.demodulize)
     end
 
-    def execute_batch(*methods)
+    def execute_batch(*args)
+      methods = args.dup
+      options = methods.last.is_a?(Hash) ? methods.pop : {}
       Sequel::DATABASES.first.transaction do
         to_hash(methods.inject(model_class) do |klass, method|
           name, *args = method
           klass.__send__(name, *args)
-        end)
+        end, options)
       end
     end
 
@@ -29,14 +31,16 @@ module Vnmgr::DataAccess::Models
       end
     end
 
-    def to_hash(data)
+    def to_hash(data, options = {})
       case data
       when Array
         data.map { |d|
-          d.to_hash
+          to_hash(d, options)
         }
       when Vnmgr::Models::Base
-        data.to_hash
+        data.to_hash.tap do |h|
+          h[options[:fill]] = to_hash(data.__send__(options[:fill]), options) if options[:fill]
+        end
       else
         data
       end
