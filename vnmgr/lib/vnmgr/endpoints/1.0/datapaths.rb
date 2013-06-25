@@ -2,7 +2,7 @@
 
 Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
   post do
-    params = parse_params(@params, ["uuid","open_flow_controller_uuid","display_name","ipv4_address","is_connected","dpid","created_at","updated_at"])
+    params = parse_params(@params, ["uuid","open_flow_controller_uuid","display_name","ipv4_address","is_connected","dpid","dc_segment_id","node_id","created_at","updated_at"])
 
     if params.has_key?("uuid")
       raise E::DuplicateUUID, params["uuid"] unless M::Datapath[params["uuid"]].nil?
@@ -31,7 +31,7 @@ Vnmgr::Endpoints::V10::VNetAPI.namespace '/datapaths' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["open_flow_controller_uuid","display_name","ipv4_address","is_connected","dpid","created_at","updated_at"])
+    params = parse_params(@params, ["open_flow_controller_uuid","display_name","ipv4_address","is_connected","dpid","dc_segment_id","node_id","created_at","updated_at"])
     datapath = M::Datapath.update(@params["uuid"], params)
     respond_with(R::Datapath.generate(datapath))
   end
