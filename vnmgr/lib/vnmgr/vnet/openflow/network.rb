@@ -4,6 +4,7 @@ module Vnmgr::VNet::Openflow
 
   class Network
     include Constants
+    include Celluloid::Logger
 
     attr_reader :datapath
     attr_reader :network_id
@@ -88,8 +89,6 @@ module Vnmgr::VNet::Openflow
     def add_service(service_map)
       raise("Service already added to network.") if @services[service_map.uuid]
 
-      p service_map.inspect
-
       service = nil
 
       translated_map = {
@@ -103,7 +102,7 @@ module Vnmgr::VNet::Openflow
                 when 'dhcp'
                   Vnmgr::VNet::Services::Dhcp.new(translated_map)
                 else
-                  p "Failed to create service: #{service_map.uuid}"
+                  error "Failed to create service: #{service_map.uuid}"
                   return
                 end
 

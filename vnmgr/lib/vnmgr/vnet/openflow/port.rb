@@ -3,6 +3,8 @@
 module Vnmgr::VNet::Openflow
 
   class Port
+    include Celluloid::Logger
+
     attr_reader :datapath
     attr_reader :port_info
     attr_reader :is_active
@@ -75,11 +77,11 @@ module Vnmgr::VNet::Openflow
     end
 
     def install
-      p "port: No install action implemented for this port."
+      error "port: No install action implemented for this port."
     end
 
     def uninstall
-      p "port: Removing flows..."
+      debug "port: Removing flows..."
 
       self.datapath.del_flow(flow_options)
     end
