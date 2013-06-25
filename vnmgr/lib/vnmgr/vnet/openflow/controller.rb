@@ -69,9 +69,7 @@ module Vnmgr::VNet::Openflow
       message.parts.each { |port_descs| 
         p "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
-        #port_descs.ports.each { |port_desc| switch.async.handle_port_desc(port_desc) }
-        port_descs.ports.each { |port_desc| switch.handle_port_desc(port_desc) }
-        port_descs.ports.each { |port_desc| switch.async.handle_network_desc(port_desc) }
+        port_descs.ports.each { |port_desc| switch.async.handle_port_desc(port_desc) }
       }
       
     end

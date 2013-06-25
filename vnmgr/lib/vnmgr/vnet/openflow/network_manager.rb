@@ -65,7 +65,7 @@ module Vnmgr::VNet::Openflow
       dpn_other_segment_map = Vnmgr::ModelWrappers::DatapathNetwork.batch.on_other_segment(dp_map).where(:network_id => network_map.id).all.commit
       dpn_other_segment_map.each { |dp|
         # Only add non-existing ones...
-        @datapath.switch.dc_segment_manager.insert(dp, false)
+        @datapath.switch.tunnel_manager.insert(dp, false)
       }
       @datapath.switch.tunnel_manager.update_all_networks
 

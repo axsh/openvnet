@@ -16,6 +16,7 @@ module Vnmgr::VNet::Openflow
     def insert(dpn_map, should_update)
       datapath = {
         :uuid => dpn_map.datapath_map[:uuid],
+        :dpid => dpn_map.datapath_map[:dpid],
         :display_name => dpn_map.datapath_map[:display_name],
         :ipv4_address => dpn_map.datapath_map[:ipv4_address],
         :datapath_id => dpn_map.datapath_map[:datapath_id],
@@ -48,7 +49,9 @@ module Vnmgr::VNet::Openflow
 
     def update_virtual_network(network)
     
+      datapath_id = @datapath.datapath_id
       @datapath.switch.gre_ports.each do |gre_port|
+      
         flow_flood = "table=#{TABLE_METADATA_TUNNEL},priority=1,cookie=0x%x,metadata=0x%x/0x%x,actions=" %
           [(network.network_number << COOKIE_NETWORK_SHIFT),
            ((network.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD),
@@ -56,7 +59,6 @@ module Vnmgr::VNet::Openflow
           ]
 
         @peer_datapaths.each { |datapath|
-          next unless datapath.uuid == gre_port.datapath.uuid
           flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{gre_port.port_number}"
         }
 

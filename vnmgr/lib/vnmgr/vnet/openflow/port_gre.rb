@@ -9,6 +9,10 @@ module Vnmgr::VNet::Openflow
       @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
     end
 
+    def gre?
+      true
+    end
+
     def install
       flows = []
 
