@@ -11,7 +11,7 @@ gem "mysql2"
 gem "net-dhcp", ">= 1.1.1"
 gem "rack"
 gem "rack-cors"
-gem "racket", ">= 1.0.12"
+gem "racket", ">= 1.0.12", :git => 'https://github.com/axsh/racket.git'
 gem "sequel"
 gem "sinatra"
 gem "sinatra-contrib"
@@ -20,7 +20,7 @@ gem "unicorn"
 gem "active_support"
 
 gem 'paper-house'
-gem 'rant', '0.5.9'
+gem 'rant', '>= 0.5.9', :git => 'https://github.com/axsh/rant.git'
 gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
