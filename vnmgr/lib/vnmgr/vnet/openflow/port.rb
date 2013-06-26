@@ -18,6 +18,8 @@ module Vnmgr::VNet::Openflow
       @port_info = port_info
 
       @is_active = active
+
+      @cookie = self.port_number | (0x3 << 48)
     end
 
     def port_number
@@ -83,7 +85,7 @@ module Vnmgr::VNet::Openflow
     def uninstall
       debug "port: Removing flows..."
 
-      self.datapath.del_flow(flow_options)
+      self.datapath.del_cookie(@cookie)
     end
 
     def update_eth_ports

@@ -4,9 +4,9 @@ module Vnmgr::VNet::Openflow
 
   class PacketManager
     include Celluloid
+    include Celluloid::Logger
 
     attr_reader :datapath
-    attr_reader :handlers
 
     def initialize(dp)
       @datapath = dp
@@ -14,21 +14,29 @@ module Vnmgr::VNet::Openflow
     end
 
     def insert(handler)
-      cookie = self.datapath.switch.cookie_manager.acquire(:packet_handler)
+      cookie = @datapath.switch.cookie_manager.acquire(:packet_handler)
 
       if cookie.nil? || @handlers.has_key?(cookie)
-        p "Invalid cookie received: #{cookie.inspect}"
+        error "packet_manager: Invalid cookie received: #{cookie.inspect}"
         return nil
       end
       
       @handlers[cookie] = handler
+      handler.cookie = cookie
+      handler.install
+    end
 
-      handler.install(cookie)
+    def remove(handler)
+      if @handlers.delete(handler.cookie).nil?
+        error "packet_manager: Could not find handler to remove."
+        return
+      end
+      
+      @datapath.del_cookie(handler.cookie)
     end
 
     def packet_in(port, message)
       handler = @handlers[message.cookie]
-
       handler.packet_in(port, message) if handler
     end
 

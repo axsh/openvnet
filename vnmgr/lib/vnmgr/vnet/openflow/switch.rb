@@ -19,13 +19,22 @@ module Vnmgr::VNet::Openflow
 
     def initialize(dp, name = nil)
       @datapath = dp
-      @ports = {}
+      @datapath.switch = self
+
       @cookie_manager = CookieManager.new
+      @cookie_manager.create_category(:switch, 0x1, 48)
+      @cookie_manager.create_category(:packet_handler, 0x2, 48)
+      @cookie_manager.create_category(:port, 0x3, 48)
+      @cookie_manager.create_category(:network, 0x4, 48)
+      @cookie_manager.create_category(:dc_segment, 0x5, 48)
+
+      @ports = {}
       @dc_segment_manager = DcSegmentManager.new(dp)
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
 
-      @cookie_manager.create_category(:packet_handler, 0x1, 48)
+      @default_flow_cookie = @cookie_manager.acquire(:switch)
+      @catch_flow_cookie = @cookie_manager.acquire(:switch)
     end
 
     def eth_ports
@@ -48,7 +57,7 @@ module Vnmgr::VNet::Openflow
 
       flows = []
 
-      flow_options = {:cookie => 0x1}
+      flow_options = {:cookie => @default_flow_cookie}
 
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
@@ -63,7 +72,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_TUNNEL, 0, {}, {}, flow_options)
 
-      flow_options = {:cookie => 0x2}
+      flow_options = {:cookie => @catch_flow_cookie}
 
       # Catches all arp packets that are from local ports.
       #
@@ -145,11 +154,9 @@ module Vnmgr::VNet::Openflow
     def port_status(message)
       debug "name: #{message.name}"
       debug "reason: #{message.reason}"
-      debug "in_port: #{message.port_no}"
+      debug "port_no: #{message.port_no}"
       debug "hw_addr: #{message.hw_addr}"
       debug "state: %#x" % message.state
-
-      p message.inspect
 
       case message.reason
       when OFPPR_ADD
@@ -166,15 +173,21 @@ module Vnmgr::VNet::Openflow
           return
         end
         
-        port.network.del_port(port, true) if port.network
         port.uninstall
+
+        if port.network
+          network = port.network
+          network.del_port(port, true)
+
+          @network_manager.remove(network) if network.ports.empty?
+        end
       end
     end
 
     def packet_in(message)
-      port = self.ports[message.match.in_port]
+      port = @ports[message.match.in_port]
 
-      @packet_manager.packet_in(port, message) if port
+      @packet_manager.async.packet_in(port, message) if port
     end
 
   end
