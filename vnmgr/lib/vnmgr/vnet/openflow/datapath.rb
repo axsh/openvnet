@@ -27,15 +27,16 @@ module Vnmgr::VNet::Openflow
     # end
 
     def del_cookie(cookie)
-      # options = {
-      #   :command => Controller::OFPFC_DELETE,
-      #   :cookie => cookie,
-      #   :cookie_mask => 0xffffffffffffffff
-      # }
+      options = {
+        :command => Controller::OFPFC_DELETE,
+        :table_id => Controller::OFPTT_ALL,
+        :out_port => Controller::OFPP_ANY,
+        :out_group => Controller::OFPG_ANY,
+        :cookie => cookie,
+        :cookie_mask => 0xffffffffffffffff
+      }
 
-      # self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, options) }
-
-      self.ovs_ofctl.del_cookie(cookie)
+      self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, options) }
     end
 
     def add_flows(flows)
