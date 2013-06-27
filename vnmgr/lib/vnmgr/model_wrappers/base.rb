@@ -13,8 +13,8 @@ module Vnmgr::ModelWrappers
       self
     end
 
-    def commit
-      @model.execute_batch(*@methods)
+    def commit(options = {})
+      @model._execute_batch(@methods, options)
     end
   end
 
@@ -37,17 +37,29 @@ module Vnmgr::ModelWrappers
       end
 
       def method_missing(method_name, *args, &block)
+        wrap(_call_proxy_method(method_name, *args, &block))
+      end
+
+      def _execute_batch(methods, options = {})
+        methods = methods.dup
+        methods << options
+        wrap(_call_proxy_method(:execute_batch, *methods), options)
+      end
+
+      def _call_proxy_method(method_name, *args, &block)
         klass = _proxy.send(self.name.demodulize.underscore.to_sym)
-        wrap(klass.send(method_name, *args, &block))
+        klass.send(method_name, *args, &block)
       end
 
       protected
-      def wrap(data)
+      def wrap(data, options = {})
         case data
         when Array
-          data.map{|d| ::Vnmgr::ModelWrappers.const_get(d.delete(:class_name)).new(d) }
+          data.map{|d| wrap(d) }
         when Hash
-          ::Vnmgr::ModelWrappers.const_get(data.delete(:class_name)).new(data)
+          ::Vnmgr::ModelWrappers.const_get(data.delete(:class_name)).new(data).tap do |wrapper|
+            wrapper.__send__("#{options[:fill]}=", wrap(data[options[:fill]], options)) if options[:fill]
+          end
         else
           data
         end
