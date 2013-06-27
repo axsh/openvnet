@@ -73,9 +73,23 @@ module Vnmgr::VNet::Openflow
 
     def update_all_flows
       @networks.dup.each { |key,network|
-        debug "Updating flows for: #{network.uuid}"
+        debug "network_manager: updating flows for: #{network.uuid}"
         network.update_flows
       }
+    end
+
+    def remove(network)
+      if !network.ports.empty?
+        info "network_manager: network still has active ports, and can't be removed."
+        return
+      end
+
+      if @networks.delete(network.network_id).nil?
+        info "network_manager: could not find network to remove: #{network.uuid}"
+        return
+      end
+
+      network.uninstall
     end
 
   end

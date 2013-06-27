@@ -18,7 +18,7 @@ module Vnmgr::VNet::Services
       @service_ipv4 = params[:service_ipv4]
     end
 
-    def install(cookie)
+    def install
       type = case
              when self.network.class == Vnmgr::VNet::Openflow::NetworkPhysical then :physical_local
              when self.network.class == Vnmgr::VNet::Openflow::NetworkVirtual  then :virtual_local
@@ -27,7 +27,7 @@ module Vnmgr::VNet::Services
                return
              end
 
-      catch_flow(type, cookie, {
+      catch_flow(type, {
                    :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
                    :eth_type => 0x0800,
                    :ip_proto => 0x11,
@@ -36,7 +36,7 @@ module Vnmgr::VNet::Services
                    :udp_dst => 67,
                    :udp_src => 68
                  })
-      catch_flow(type, cookie, {
+      catch_flow(type, {
                    :eth_dst => self.service_mac,
                    :eth_type => 0x0800,
                    :ip_proto => 0x11,

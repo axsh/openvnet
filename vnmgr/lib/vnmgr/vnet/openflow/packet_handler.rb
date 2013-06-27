@@ -5,6 +5,7 @@ module Vnmgr::VNet::Openflow
   class PacketHandler
 
     attr_reader :datapath
+    attr_accessor :cookie
 
     def initialize(dp)
       @datapath = dp
@@ -18,7 +19,7 @@ module Vnmgr::VNet::Openflow
       p "PacketHandler.packet_out called."
     end
 
-    def catch_flow(type, cookie, match)
+    def catch_flow(type, match)
       case type
       when :physical_local
         table = Constants::TABLE_PHYSICAL_DST
@@ -35,7 +36,7 @@ module Vnmgr::VNet::Openflow
       self.datapath.add_flow(Flow.create(table, priority, match, {
                                            :output => Controller::OFPP_CONTROLLER
                                          }, {
-                                           :cookie => cookie
+                                           :cookie => @cookie
                                          }))
     end
 

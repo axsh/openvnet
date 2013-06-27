@@ -13,7 +13,7 @@ module Vnmgr::VNet::Openflow
     # metadata[48-64]: Tunnel id; preliminary.
 
     def flow_options
-      @flow_options ||= {:cookie => (self.network_number << COOKIE_NETWORK_SHIFT)}
+      @flow_options ||= {:cookie => @cookie}
     end
 
     def install
@@ -46,7 +46,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_METADATA_ROUTE, 1, {
                              :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
                              :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-                           }, flood_actions, flow_options.dup.merge(:goto_table => TABLE_METADATA_SEGMENT))
+                           }, flood_actions, flow_options.merge(:goto_table => TABLE_METADATA_SEGMENT))
 
       self.datapath.add_flows(flows)
 
@@ -58,7 +58,7 @@ module Vnmgr::VNet::Openflow
 
       if eth_port
         if self.datapath_of_bridge
-          flow_catch = "table=#{TABLE_HOST_PORTS},priority=30,cookie=0x%x,in_port=#{eth_port.port_number},dl_dst=#{self.datapath_of_bridge[:broadcast_mac_addr]}," % (self.network_number << COOKIE_NETWORK_SHIFT)
+          flow_catch = "table=#{TABLE_HOST_PORTS},priority=30,cookie=0x%x,in_port=#{eth_port.port_number},dl_dst=#{self.datapath_of_bridge[:broadcast_mac_addr]}," % @cookie
           flow_catch << "actions=mod_dl_dst:ff:ff:ff:ff:ff:ff,write_metadata:0x%x/0x%x,goto_table:6" % 
             [((self.network_number << METADATA_NETWORK_SHIFT) | eth_port.port_number),
              (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
@@ -68,12 +68,12 @@ module Vnmgr::VNet::Openflow
         end
 
         flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{eth_port.port_number},arp,metadata=0x%x/0x%x,actions=" %
-          [(self.network_number << COOKIE_NETWORK_SHIFT),
+          [@cookie,
            ((self.network_number << METADATA_NETWORK_SHIFT) | eth_port.port_number),
            (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
           ]
-        flow_learn_arp << "learn\\(table=7,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7" %
-          ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0 | METADATA_FLAG_LOCAL)
+        flow_learn_arp << "learn\\(table=7,idle_timeout=36000,priority=35,cookie=0x%x,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7" %
+          [@cookie, ((self.network_number << METADATA_NETWORK_SHIFT) | METADATA_FLAG_LOCAL)]
         self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp)
       end
     end
