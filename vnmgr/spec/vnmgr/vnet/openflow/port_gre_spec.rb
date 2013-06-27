@@ -18,20 +18,20 @@ describe Vnmgr::VNet::Openflow::PortGre do
         Vnmgr::VNet::Openflow::Flow.create(0, 3, {
                       :in_port => port_number,
                       :eth_type => 0x0806
-                    }, {}, port.flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF)),
+                    }, {}, port.flow_options.merge(:goto_table => TABLE_GRE_PORTS)),
 
         Vnmgr::VNet::Openflow::Flow.create(0, 2, {
                             :in_port => port_number
-                          }, {}, port.flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
+                          }, {}, port.flow_options.merge(:goto_table => TABLE_GRE_PORTS))
  
       ]
       Vnmgr::VNet::Openflow::Flow.should_receive(:create).with(0, 3, {
                     :in_port => port_number,
                     :eth_type => 0x0806
-                  }, {}, port.flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF)).and_return({})
+                  }, {}, port.flow_options.merge(:goto_table => TABLE_GRE_PORTS)).and_return({})
       Vnmgr::VNet::Openflow::Flow.should_receive(:create).with(0, 2, {
                     :in_port => port_number,
-                  }, {}, port.flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC)).and_return({})
+                  }, {}, port.flow_options.merge(:goto_table => TABLE_GRE_PORTS)).and_return({})
  
       dp.should_receive(:add_flows).with([{},{}])
       switch = double(:switch)

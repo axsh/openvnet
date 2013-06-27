@@ -58,11 +58,23 @@ module Vnmgr::VNet::Openflow
            (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
           ]
 
+        flow_flood << "set_tunnel:0x%x" % network.network_number
+
         @peer_datapaths.each { |datapath|
           flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{gre_port.port_number}"
         }
 
         @datapath.ovs_ofctl.add_ovs_flow(flow_flood)
+
+        flow_in_port_gre = "table=#{TABLE_GRE_PORTS},priority=20,cookie=0x%x," % (network.network_number << COOKIE_NETWORK_SHIFT)
+        flow_in_port_gre << "tun_id=#{network.network_number},"
+        flow_in_port_gre << "actions=write_metadata:0x%x/0x%x," %
+          [(network.network_number << COOKIE_NETWORK_SHIFT),
+           (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+          ]
+        flow_in_port_gre << "goto_table:#{TABLE_VIRTUAL_DST}"
+
+        @datapath.ovs_ofctl.add_ovs_flow(flow_in_port_gre)
       end
     end
 

@@ -33,7 +33,8 @@ module Vnmgr::VNet::Openflow
 
     def add_ovs_flow(flow_str)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
-      p "'#{command}' => #{system(command)}"
+      #p "'#{command}' => #{system(command)}"
+      `#{command}`
     end
 
     def add_flows(flows)
@@ -49,7 +50,8 @@ module Vnmgr::VNet::Openflow
       recmds << "#{eos}"
 
       p("applying flow(s): #{recmds.size - 2}")
-      system(recmds.join("\n"))
+      #system(recmds.join("\n"))
+      `#{recmds.join("\n")}`
     end
 
     def del_flows(flows)
@@ -75,7 +77,7 @@ module Vnmgr::VNet::Openflow
 
     def add_gre_tunnel(tunnel_name, remote_ip)
       #system("#{@ovs_vsctl} add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:key=#{key}")
-      system("#{@ovs_vsctl} --may-exist add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip}")
+      system("#{@ovs_vsctl} --may-exist add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:in_key=flow options:out_key=flow")
     end
 
   end

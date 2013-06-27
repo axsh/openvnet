@@ -12,7 +12,8 @@ module Vnmgr::VNet::Openflow
     # Straight-forward routing of packets to the port tied to the
     # destination mac address, which includes all non-virtual
     # networks.
-    TABLE_ROUTE_DIRECTLY = 3
+    TABLE_GRE_PORTS = 3
+    #TABLE_ROUTE_DIRECTLY = 3
 
     # Routing to non-virtual networks with filtering applied.
     #
