@@ -7,7 +7,7 @@ end
 
 module Vnmgr::Models
   class TestModel < Base
-    attr_accessor :name
+    attr_accessor :name, :friend
     def self.aaa
       self.new(:name => :aaa)
     end
@@ -35,18 +35,40 @@ describe Vnmgr::DataAccess::Models::Base do
   end
 
   describe "method chain" do
-    let(:dataset) do
-      double(:dataset).tap do |dataset|
-        dataset.should_receive(:delete).and_return(3)
-      end
+    let(:models) do
+      model = Vnmgr::Models::TestModel.new
+      model.name = :aaa
+      model.friend = Vnmgr::Models::TestModel.new
+      model.friend.name = :bbb
+      [ model ]
     end
 
     before do
-      Vnmgr::Models::TestModel.stub(:all).and_return(dataset)
+      Vnmgr::Models::TestModel.stub_chain(:all_with_friend, :active).and_return(models)
     end
 
-    subject { Vnmgr::DataAccess::Models::TestModel.new.execute_batch([:all], [:delete]) }
+    context "without options" do
+      subject { Vnmgr::DataAccess::Models::TestModel.new.execute_batch([:all_with_friend], [:active]) }
 
-    it { expect(subject).to eq 3 }
+      it { expect(subject).to be_a Array }
+      it { expect(subject.size).to eq 1 }
+      it { expect(subject.first).to be_a Hash }
+      it { expect(subject.first[:class_name]).to eq "TestModel" }
+      it { expect(subject.first[:name]).to eq :aaa }
+      it { expect(subject.first[:friend]).to be_nil }
+    end
+
+    context "with options" do
+      subject { Vnmgr::DataAccess::Models::TestModel.new.execute_batch([:all_with_friend], [:active], {:fill => :friend}) }
+
+      it { expect(subject).to be_a Array }
+      it { expect(subject.size).to eq 1 }
+      it { expect(subject.first).to be_a Hash }
+      it { expect(subject.first[:class_name]).to eq "TestModel" }
+      it { expect(subject.first[:name]).to eq :aaa }
+      it { expect(subject.first[:friend]).to be_a Hash }
+      it { expect(subject.first[:friend][:class_name]).to eq "TestModel" }
+      it { expect(subject.first[:friend][:name]).to eq :bbb }
+    end
   end
 end
