@@ -39,21 +39,28 @@ module Vnmgr::VNet::Openflow
     end
 
     def metadata_n(nw = self.network_number)
-      { :metadata => nw << Constants::METADATA_NETWORK_SHIFT,
-        :metadata_mask => Constants::METADATA_NETWORK_MASK
+      { :metadata => nw << METADATA_NETWORK_SHIFT,
+        :metadata_mask => METADATA_NETWORK_MASK
       }
     end
 
     def metadata_p(port = 0x0)
       { :metadata => port,
-        :metadata_mask => Constants::METADATA_PORT_MASK
+        :metadata_mask => METADATA_PORT_MASK
       }
     end
 
     def metadata_pn(port = 0x0)
-      { :metadata => (self.network_number << Constants::METADATA_NETWORK_SHIFT) | port,
-        :metadata_mask => (Constants::METADATA_PORT_MASK | Constants::METADATA_NETWORK_MASK)
+      { :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | port,
+        :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
       }
+    end
+
+    def fo_metadata_pn(port = 0x0, append = nil)
+      result = flow_options.merge({ :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | port,
+                                    :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+                                  })
+      result.merge!(append) if append
     end
 
     def add_port(port, should_update)
