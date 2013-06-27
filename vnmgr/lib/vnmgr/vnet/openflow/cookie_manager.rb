@@ -13,6 +13,10 @@ module Vnmgr::VNet::Openflow
       @next_cookie = prefix << bitshift
     end
 
+    def range
+      ((@prefix << bitshift)...((@prefix + 1) << bitshift))
+    end
+
     def range_above
       return (0...0) if @next_cookie.nil?
       (@next_cookie...((@prefix + 1) << bitshift))
@@ -27,8 +31,8 @@ module Vnmgr::VNet::Openflow
       return (@next_cookie = nil) if cookie.nil?
       return (@next_cookie = cookie) if @next_cookie.nil?
 
-      @next_cookie = @next_cookie + 1
-      @next_cookie = (@prefix << bitshift) if @next_cookie == ((@prefix + 1) << bitshift)
+      @next_cookie = cookie + 1
+      @next_cookie = (@prefix << bitshift) unless self.range.member?(@next_cookie)
     end
   end
 
