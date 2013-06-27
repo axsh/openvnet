@@ -67,6 +67,9 @@ module Vnmgr::VNet::Openflow
     METADATA_NETWORK_MASK = (0xffff << 32)
     METADATA_NETWORK_SHIFT = 32
     
+    TUNNEL_FLAG = (0x1 << 31)
+    TUNNEL_FLAG_MASK = 0x80000000
+    TUNNEL_NETWORK_MASK = 0x7fffffff
   end
 
 end
