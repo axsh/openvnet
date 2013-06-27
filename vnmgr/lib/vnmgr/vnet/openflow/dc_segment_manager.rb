@@ -4,6 +4,7 @@ module Vnmgr::VNet::Openflow
 
   class DcSegmentManager
     include Constants
+    include Celluloid::Logger
     
     attr_reader :datapath
     attr_reader :segment_datapaths
@@ -11,6 +12,8 @@ module Vnmgr::VNet::Openflow
     def initialize(dp)
       @datapath = dp
       @segment_datapaths = []
+
+      @cookie = @datapath.switch.cookie_manager.acquire(:dc_segment)
     end
 
     def insert(dpn_map, should_update)
@@ -20,17 +23,20 @@ module Vnmgr::VNet::Openflow
         :ipv4_address => dpn_map.datapath_map[:ipv4_address],
         :datapath_id => dpn_map.datapath_map[:dpid],
         :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
+        :cookie => @datapath.switch.cookie_manager.acquire(:dc_segment)
       }
 
-      # p "Adding datapath to list of networks on the same subnet: network:#{self.uuid} datapath:#{datapath.inspect}"
+      if datapath[:cookie].nil?
+        error "No more cookies available for DC segment flows."
+        return
+      end
 
       @segment_datapaths << datapath
 
       @datapath.add_flow(Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
                                        :eth_dst => datapath[:broadcast_mac_addr]
                                      }, {}, {
-                                       # Use proper cookie.
-                                       :cookie => 0x1
+                                       :cookie => datapath[:cookie]
                                      }))
 
       update_all_networks if should_update
@@ -49,21 +55,21 @@ module Vnmgr::VNet::Openflow
     def update_virtual_network(network)
       eth_port = @datapath.switch.eth_ports.first
 
-      if eth_port
-        flow_flood = "table=#{TABLE_METADATA_SEGMENT},priority=1,cookie=0x%x,metadata=0x%x/0x%x,actions=" %
-          [(network.network_number << COOKIE_NETWORK_SHIFT),
-           ((network.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD),
-           (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-          ]
+      return if eth_port.nil?
 
-        @segment_datapaths.each { |datapath|
-          flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{eth_port.port_number}"
-        }
+      flow_flood = "table=#{TABLE_METADATA_SEGMENT},priority=1,cookie=0x%x,metadata=0x%x/0x%x,actions=" %
+        [network.cookie,
+         ((network.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD),
+         (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+        ]
 
-        flow_flood << ",goto_table:#{TABLE_METADATA_TUNNEL}"
+      @segment_datapaths.each { |datapath|
+        flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{eth_port.port_number}"
+      }
 
-        @datapath.ovs_ofctl.add_ovs_flow(flow_flood)
-      end
+      flow_flood << ",goto_table:#{TABLE_METADATA_TUNNEL}"
+
+      @datapath.ovs_ofctl.add_ovs_flow(flow_flood)
     end
 
   end

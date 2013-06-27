@@ -13,7 +13,7 @@ module Vnmgr::VNet::Openflow
     # metadata[48-64]: Tunnel id; preliminary.
 
     def flow_options
-      @flow_options ||= {:cookie => (self.network_number << COOKIE_NETWORK_SHIFT)}
+      @flow_options ||= {:cookie => @cookie}
     end
 
     def install
@@ -46,7 +46,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_METADATA_ROUTE, 1, {
                              :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
                              :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-                           }, flood_actions, flow_options.dup.merge(:goto_table => TABLE_METADATA_SEGMENT))
+                           }, flood_actions, flow_options.merge(:goto_table => TABLE_METADATA_SEGMENT))
 
       self.datapath.add_flows(flows)
 

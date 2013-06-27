@@ -14,6 +14,7 @@ module Vnmgr
 
   ROOT = ENV['VNMGR_ROOT'] || File.expand_path('../../', __FILE__)
   CONFIG_PATH = ENV['VNMGR_CONFIG_PATH'] || "/etc/wakame-vnet"
+  LOG_DIR = ENV['VNMGR_LOG_DIR'] || "/var/log/wakame-vnet"
 
   module Configurations
     autoload :Base,  'vnmgr/configurations/base'
