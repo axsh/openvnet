@@ -6,43 +6,42 @@ require 'racket'
 module Vnmgr::VNet::Services
 
   class Dhcp < Vnmgr::VNet::Openflow::PacketHandler
+
     attr_reader :network
+    attr_reader :vif_uuid
     attr_reader :service_mac
     attr_reader :service_ipv4
 
     def initialize(params)
       @datapath = params[:datapath]
       @network = params[:network]
+      @vif_uuid = params[:vif_uuid]
       @service_mac = params[:service_mac]
       @service_ipv4 = params[:service_ipv4]
     end
 
     def install
-      type = case
-             when self.network.class == Vnmgr::VNet::Openflow::NetworkPhysical then :physical_local
-             when self.network.class == Vnmgr::VNet::Openflow::NetworkVirtual  then :virtual_local
-             else
-               info "Unknown network mode for dhcp service."
-               return
-             end
-
-      catch_flow(type, {
-                   :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
-                   :eth_type => 0x0800,
-                   :ip_proto => 0x11,
-                   :ipv4_dst => IPAddr.new('255.255.255.255'),
-                   :ipv4_src => IPAddr.new('0.0.0.0'),
-                   :udp_dst => 67,
-                   :udp_src => 68
-                 })
-      catch_flow(type, {
-                   :eth_dst => self.service_mac,
-                   :eth_type => 0x0800,
-                   :ip_proto => 0x11,
-                   :ipv4_dst => self.service_ipv4,
-                   :udp_dst => 67,
-                   :udp_src => 68
-                 })
+      catch_network_flow(@network, {
+                           :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+                           :eth_type => 0x0800,
+                           :ip_proto => 0x11,
+                           :ipv4_dst => IPAddr.new('255.255.255.255'),
+                           :ipv4_src => IPAddr.new('0.0.0.0'),
+                           :udp_dst => 67,
+                           :udp_src => 68
+                         }, {
+                           :network => @network
+                         })
+      catch_network_flow(@network, {
+                           :eth_dst => self.service_mac,
+                           :eth_type => 0x0800,
+                           :ip_proto => 0x11,
+                           :ipv4_dst => self.service_ipv4,
+                           :udp_dst => 67,
+                           :udp_src => 68
+                         }, {
+                           :network => @network
+                         })
     end
 
     def packet_in(port, message)

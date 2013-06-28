@@ -8,9 +8,5 @@ module Vnmgr::Models
 
     subset(:alives, {})
 
-    def to_hash
-      self.values[:vif_map] = self.vif.to_hash
-      super
-    end
   end
 end

@@ -20,16 +20,17 @@ module Vnmgr::VNet::Openflow
       error "PacketHandler.packet_out called."
     end
 
-    def catch_flow(type, match)
+    def catch_flow(type, match, params = {})
       case type
       when :physical_local
         table = Constants::TABLE_PHYSICAL_DST
         priority = 70
-        match = match.merge(self.network.metadata_flags(Constants::METADATA_FLAG_LOCAL))
+        match = match.merge(params[:network].metadata_flags(Constants::METADATA_FLAG_LOCAL))
       when :virtual_local
         table = Constants::TABLE_VIRTUAL_DST
         priority = 70
-        match = match.merge(self.network.metadata_pn)
+        match = match.merge(params[:network].metadata_pn(Constants::METADATA_FLAG_LOCAL,
+                                                         Constants::METADATA_FLAGS_MASK))
       else
         raise "Wrong type for catch_flow."
       end
@@ -41,7 +42,39 @@ module Vnmgr::VNet::Openflow
                                          }))
     end
 
-    def arp_out(data)
+    def catch_network_flow(network, match, params = {})
+      type = case network
+             when Vnmgr::VNet::Openflow::NetworkPhysical then :physical_local
+             when Vnmgr::VNet::Openflow::NetworkVirtual  then :virtual_local
+             else
+               info "Unknown network mode for packet handler."
+               return
+             end
+      
+      catch_flow(type, match, params)
+    end
+
+    def arp_out(params)
+      raw_out = Racket::Racket.new
+      raw_out.l2 = Racket::L2::Ethernet.new
+      raw_out.l2.ethertype = Racket::L2::Ethernet::ETHERTYPE_ARP
+      raw_out.l2.src_mac = params[:src_hw] ? params[:src_hw].to_s : '00:00:00:00:00:00'
+      raw_out.l2.dst_mac = params[:dst_hw] ? params[:dst_hw].to_s : 'FF:FF:FF:FF:FF:FF'
+
+      raw_out.l3 = Racket::L3::ARP.new
+      raw_out.l3.opcode = params[:op_code]
+      raw_out.l3.sha = params[:sha] ? params[:sha].to_s : '00:00:00:00:00:00'
+      raw_out.l3.spa = params[:spa] ? params[:spa].to_s : '0.0.0.0'
+      raw_out.l3.tha = params[:tha] ? params[:tha].to_s : '00:00:00:00:00:00'
+      raw_out.l3.tpa = params[:tpa] ? params[:tpa].to_s : '0.0.0.0'
+
+      raw_out.layers.compact.each { |l|
+        debug "send arp: layer:#{l.pretty}."
+      }
+
+      message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
+
+      self.datapath.send_packet_out(message, params[:out_port])
     end
 
     def udp_in(message)

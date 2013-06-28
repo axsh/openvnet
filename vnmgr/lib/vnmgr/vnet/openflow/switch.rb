@@ -12,11 +12,15 @@ module Vnmgr::VNet::Openflow
     attr_reader :datapath
     attr_reader :bridge_hw
     attr_reader :ports
+
     attr_reader :cookie_manager
     attr_reader :dc_segment_manager
     attr_reader :network_manager
     attr_reader :packet_manager
     attr_reader :tunnel_manager
+
+    attr_reader :arp_handler
+    attr_reader :icmp_handler
 
     def initialize(dp, name = nil)
       @datapath = dp
@@ -35,8 +39,11 @@ module Vnmgr::VNet::Openflow
       @packet_manager = PacketManager.new(dp)
       @tunnel_manager = TunnelManager.new(dp)
 
-      @default_flow_cookie = @cookie_manager.acquire(:switch)
       @catch_flow_cookie = @cookie_manager.acquire(:switch)
+      @default_flow_cookie = @cookie_manager.acquire(:switch)
+
+      @packet_manager.insert(@arp_handler = Vnmgr::VNet::Services::Arp.new(:datapath => @datapath))
+      @packet_manager.insert(@icmp_handler = Vnmgr::VNet::Services::Icmp.new(:datapath => @datapath))
     end
 
     def eth_ports
