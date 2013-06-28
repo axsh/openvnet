@@ -77,10 +77,10 @@ module Vnmgr::VNet::Services
       debug "DHCP send: output:#{dhcp_out.to_s}."
 
       udp_out({ :out_port => message.in_port,
-                :src_hw => self.service_mac,
+                :eth_src => self.service_mac,
                 :src_ip => self.service_ipv4,
                 :src_port => 67,
-                :dst_hw => port.hw_addr,
+                :eth_dst => port.hw_addr,
                 :dst_ip => port.ipv4_addr,
                 :dst_port => 68,
                 :payload => dhcp_out.pack

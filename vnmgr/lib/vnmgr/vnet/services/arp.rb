@@ -49,8 +49,6 @@ module Vnmgr::VNet::Services
     end
 
     def packet_in(port, message)
-      debug "service::arp.packet_in called"
-
       info "service::arp.packet_in: port.port_info:#{port.port_info.inspect} message:#{message}"
 
       uuid, entry = @entries.find { |uuid,entry|
@@ -63,9 +61,9 @@ module Vnmgr::VNet::Services
       end
 
       arp_out({ :out_port => message.in_port,
+                :eth_src => entry[:mac_addr],
+                :eth_dst => message.eth_src,
                 :op_code => Racket::L3::ARP::ARPOP_REPLY,
-                :src_hw => entry[:mac_addr],
-                :dst_hw => message.eth_src,
                 :sha => entry[:mac_addr],
                 :spa => entry[:ipv4_address],
                 :tha => message.eth_src,
