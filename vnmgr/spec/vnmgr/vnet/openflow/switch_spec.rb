@@ -8,11 +8,11 @@ describe Vnmgr::VNet::Openflow::Switch do
       datapath = MockDatapath.new(double, 1)
       Vnmgr::VNet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
       switch = Vnmgr::VNet::Openflow::Switch.new(datapath)
-      Vnmgr::VNet::Openflow::Switch.new(datapath).switch_ready
+      switch.switch_ready
 
       expect(datapath.sent_messages.size).to eq 2
       expect(datapath.added_flows.size).to eq 16
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(datapath.added_ovs_flows.size).to eq 2
     end
   end
   

@@ -4,6 +4,7 @@ class MockDatapath < Vnmgr::VNet::Openflow::Datapath
   attr_reader :added_flows
   attr_reader :added_ovs_flows
   attr_reader :added_tunnels
+
   def initialize(*args)
     super(*args)
     @sent_messages = []

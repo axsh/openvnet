@@ -20,7 +20,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :tunnel_manager
 
     def initialize(dp, name = nil)
-      @datapath = dp
+      @datapath = dp || raise("cannot create a Switch object without a valid datapath")
       @datapath.switch = self
 
       @cookie_manager = CookieManager.new
@@ -36,7 +36,7 @@ module Vnmgr::VNet::Openflow
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
       @tunnel_manager = TunnelManager.new(dp)
-      # @tunnel_manager.create_all_tunnels
+      @tunnel_manager.create_all_tunnels
 
       @catch_flow_cookie = @cookie_manager.acquire(:switch)
       @default_flow_cookie = @cookie_manager.acquire(:switch)
@@ -111,13 +111,15 @@ module Vnmgr::VNet::Openflow
         :metadata_mask => METADATA_FLAGS_MASK,
         :goto_table => TABLE_TUNNEL_PORTS))
 
+      @datapath.add_flows(flows)
+
       flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x0/0x%x,actions=" % TUNNEL_FLAG
-      self.datapath.ovs_ofctl.add_ovs_flow(flow)
+      @datapath.add_ovs_flow(flow)
       flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x%x/0x%x,actions=goto_table:#{TABLE_TUNNEL_PORTS}" % [
         TUNNEL_FLAG,
         TUNNEL_FLAG
       ]
-      self.datapath.ovs_ofctl.add_ovs_flow(flow)
+      @datapath.add_ovs_flow(flow)
     end
 
     def features_reply(message)
