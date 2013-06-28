@@ -11,5 +11,14 @@ module Vnmgr::Models
       super
     end
 
+    dataset_module do
+      def on_segment(datapath)
+        join(:datapaths, :id => :datapath_id).where(~{:datapath_networks__datapath_id => datapath.id}).where({:datapaths__dc_segment_id => datapath.dc_segment_id})
+      end
+
+      def on_other_segment(datapath)
+        join(:datapaths, :id => :datapath_id).where(~{:datapath_networks__datapath_id => datapath.id}).where(~{:datapaths__dc_segment_id => datapath.dc_segment_id})
+      end
+    end
   end
 end

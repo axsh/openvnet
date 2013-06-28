@@ -16,6 +16,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :dc_segment_manager
     attr_reader :network_manager
     attr_reader :packet_manager
+    attr_reader :tunnel_manager
 
     def initialize(dp, name = nil)
       @datapath = dp
@@ -32,13 +33,18 @@ module Vnmgr::VNet::Openflow
       @dc_segment_manager = DcSegmentManager.new(dp)
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
+      @tunnel_manager = TunnelManager.new(dp)
 
       @default_flow_cookie = @cookie_manager.acquire(:switch)
       @catch_flow_cookie = @cookie_manager.acquire(:switch)
     end
 
     def eth_ports
-      self.ports.find_all{ |key,port| port.is_eth_port }.collect{ |key,port| port }
+      self.ports.values.find_all{|port| port.eth? }
+    end
+
+    def gre_ports
+      self.ports.values.find_all{|port| port.gre? }
     end
 
     def update_bridge_hw(hw_addr)
@@ -91,6 +97,15 @@ module Vnmgr::VNet::Openflow
                            }, {}, flow_options)
 
       self.datapath.add_flows(flows)
+
+      p self.datapath.ovs_ofctl
+      flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x0/0x%x,actions=" % TUNNEL_FLAG
+      self.datapath.ovs_ofctl.add_ovs_flow(flow)
+      flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x%x/0x%x,actions=goto_table:#{TABLE_GRE_PORTS}" % [
+        TUNNEL_FLAG,
+        TUNNEL_FLAG
+      ]
+      self.datapath.ovs_ofctl.add_ovs_flow(flow)
     end
 
     def features_reply(message)
@@ -142,6 +157,7 @@ module Vnmgr::VNet::Openflow
         port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
       elsif port.port_info.name =~ /^t-/
+        port.extend(PortGre)
       else
         error "Unknown interface type: #{port.port_info.name}"
         return

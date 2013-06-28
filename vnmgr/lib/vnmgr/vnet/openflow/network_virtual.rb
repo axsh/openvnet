@@ -48,35 +48,68 @@ module Vnmgr::VNet::Openflow
                              :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
                            }, flood_actions, flow_options.merge(:goto_table => TABLE_METADATA_SEGMENT))
 
-      eth_port = self.datapath.switch.eth_ports.first
-
-      if eth_port && self.datapath_of_bridge
-        flows << Flow.create(TABLE_HOST_PORTS, 30, {
-                               :in_port => eth_port.port_number,
-                               :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
-                             }, {
-                               :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
-                             }, fo_metadata_pn(eth_port.port_number, :goto_table => TABLE_VIRTUAL_SRC))
-      end
-
       self.datapath.add_flows(flows)
 
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
 
+      eth_port = self.datapath.switch.eth_ports.first
+
       if eth_port
-        flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{eth_port.port_number},arp,metadata=0x%x/0x%x,actions=" %
-          [@cookie,
-           ((self.network_number << METADATA_NETWORK_SHIFT) | eth_port.port_number),
-           (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-          ]
-        flow_learn_arp << 'learn\(table=7,idle_timeout=36000,priority=35,cookie=0x%x,metadata:0x%x,NXM_OF_ETH_DST\[\]=NXM_OF_ETH_SRC\[\],output:NXM_OF_IN_PORT\[\]\),goto_table:7' %
-          [@cookie, ((self.network_number << METADATA_NETWORK_SHIFT) | METADATA_FLAG_LOCAL)]
-        self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp)
+        if self.datapath_of_bridge
+          self.datapath.ovs_ofctl.add_ovs_flow(flow_catch(eth_port, TABLE_HOST_PORTS, false))
+        end
+
+        self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp(eth_port, false))
+      end
+
+      self.datapath.switch.gre_ports.each do |gre_port|
+        # modify the unicast packet to broadcast packet
+        self.datapath.ovs_ofctl.add_ovs_flow(flow_catch(gre_port, TABLE_GRE_PORTS, true))
+
+        # learn mac address
+        self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp(gre_port, true))
       end
     end
 
+    def flow_catch(port, table, need_tun_id_filter)
+      flow_catch = "table=#{table},priority=30,cookie=0x%x," % (self.network_number << COOKIE_NETWORK_SHIFT)
+
+      if need_tun_id_filter
+        flow_catch << "tun_id=0x%x/0x%x," % [
+          self.network_number,
+          TUNNEL_NETWORK_MASK
+        ]
+      else
+        flow_catch << "in_port=#{port.port_number},"
+      end
+
+      flow_catch << "dl_dst=#{self.datapath_of_bridge[:broadcast_mac_addr]},actions=mod_dl_dst:ff:ff:ff:ff:ff:ff,write_metadata:0x%x/0x%x,goto_table:6" % 
+        [((self.network_number << METADATA_NETWORK_SHIFT) | port.port_number),
+         (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+        ]
+
+      flow_catch
+    end
+
+    def flow_learn_arp(port, need_set_tunnel)
+      flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{port.port_number},arp,metadata=0x%x/0x%x,actions=" %
+        [(self.network_number << COOKIE_NETWORK_SHIFT),
+         ((self.network_number << METADATA_NETWORK_SHIFT) | port.port_number),
+         (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+        ]
+      flow_learn_arp << "learn\\(table=7,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
+        ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0 | METADATA_FLAG_LOCAL)
+        
+      if need_set_tunnel
+        flow_learn_arp << "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\]," % self.network_number
+      end
+
+      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7"
+
+      flow_learn_arp
+    end
   end
   
 end

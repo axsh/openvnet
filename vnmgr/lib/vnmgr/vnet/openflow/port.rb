@@ -34,7 +34,11 @@ module Vnmgr::VNet::Openflow
       end
     end
 
-    def is_eth_port
+    def eth?
+      false
+    end
+
+    def gre?
       false
     end
 
@@ -91,6 +95,8 @@ module Vnmgr::VNet::Openflow
     def update_eth_ports
     end
 
+    def update_gre_ports
+    end
   end
 
 end

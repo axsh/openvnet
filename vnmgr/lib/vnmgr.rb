@@ -97,6 +97,8 @@ module Vnmgr
     autoload :Datapath, 'vnmgr/models/datapath'
     autoload :DatapathNetwork, 'vnmgr/models/datapath_network'
     autoload :DcNetwork, 'vnmgr/models/dc_network'
+    autoload :DcNetworkDcSegment, 'vnmgr/models/dc_network_dc_segment'
+    autoload :DcSegment, 'vnmgr/models/dc_segment'
     autoload :DhcpRange, 'vnmgr/models/dhcp_range'
     autoload :IpAddress, 'vnmgr/models/ip_address'
     autoload :IpLease, 'vnmgr/models/ip_lease'
@@ -115,6 +117,8 @@ module Vnmgr
     autoload :Datapath, 'vnmgr/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnmgr/model_wrappers/datapath_network'
     autoload :DcNetwork, 'vnmgr/model_wrappers/dc_network'
+    autoload :DcNetworkDcSegment, 'vnmgr/model_wrappers/dc_network_dc_segment'
+    autoload :DcSegment, 'vnmgr/model_wrappers/dc_segment'
     autoload :DhcpRange, 'vnmgr/model_wrappers/dhcp_range'
     autoload :IpAddress, 'vnmgr/model_wrappers/ip_address'
     autoload :IpLease, 'vnmgr/model_wrappers/ip_lease'
@@ -148,12 +152,14 @@ module Vnmgr
       autoload :PacketHandler, 'vnmgr/vnet/openflow/packet_handler'
       autoload :PacketManager, 'vnmgr/vnet/openflow/packet_manager'
       autoload :Port, 'vnmgr/vnet/openflow/port'
+      autoload :PortGre, 'vnmgr/vnet/openflow/port_gre'
       autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
       autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
       autoload :PortPhysical, 'vnmgr/vnet/openflow/port_physical'
       autoload :PortVirtual, 'vnmgr/vnet/openflow/port_virtual'
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
       autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
+      autoload :TunnelManager, 'vnmgr/vnet/openflow/tunnel_manager'
     end
 
     module Services

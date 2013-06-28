@@ -21,7 +21,7 @@ module Vnmgr::VNet::Openflow
         :uuid => dpn_map.datapath_map[:uuid],
         :display_name => dpn_map.datapath_map[:display_name],
         :ipv4_address => dpn_map.datapath_map[:ipv4_address],
-        :datapath_id => dpn_map.datapath_map[:datapath_id],
+        :datapath_id => dpn_map.datapath_map[:dpid],
         :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
         :cookie => @datapath.switch.cookie_manager.acquire(:dc_segment)
       }
