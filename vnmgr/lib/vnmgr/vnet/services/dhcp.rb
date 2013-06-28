@@ -5,7 +5,7 @@ require 'racket'
 
 module Vnmgr::VNet::Services
 
-  class Dhcp < Vnmgr::VNet::Openflow::PacketHandler
+  class Dhcp < Base
 
     attr_reader :network
     attr_reader :vif_uuid

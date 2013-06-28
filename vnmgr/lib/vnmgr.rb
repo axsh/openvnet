@@ -171,6 +171,7 @@ module Vnmgr
 
     module Services
       autoload :Arp, 'vnmgr/vnet/services/arp'
+      autoload :Base, 'vnmgr/vnet/services/base'
       autoload :Dhcp, 'vnmgr/vnet/services/dhcp'
       autoload :Icmp, 'vnmgr/vnet/services/icmp'
       autoload :Router, 'vnmgr/vnet/services/router'

@@ -19,9 +19,6 @@ module Vnmgr::VNet::Openflow
     attr_reader :packet_manager
     attr_reader :tunnel_manager
 
-    attr_reader :arp_handler
-    attr_reader :icmp_handler
-
     def initialize(dp, name = nil)
       @datapath = dp
       @datapath.switch = self
@@ -39,13 +36,13 @@ module Vnmgr::VNet::Openflow
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
       @tunnel_manager = TunnelManager.new(dp)
-      @tunnel_manager.create_all_tunnels
+      # @tunnel_manager.create_all_tunnels
 
       @catch_flow_cookie = @cookie_manager.acquire(:switch)
       @default_flow_cookie = @cookie_manager.acquire(:switch)
 
-      @packet_manager.insert(@arp_handler = Vnmgr::VNet::Services::Arp.new(:datapath => @datapath))
-      @packet_manager.insert(@icmp_handler = Vnmgr::VNet::Services::Icmp.new(:datapath => @datapath))
+      @packet_manager.insert(Vnmgr::VNet::Services::Arp.new(:datapath => @datapath), :arp)
+      @packet_manager.insert(Vnmgr::VNet::Services::Icmp.new(:datapath => @datapath), :icmp)
     end
 
     def eth_ports
@@ -116,7 +113,7 @@ module Vnmgr::VNet::Openflow
 
       flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x0/0x%x,actions=" % TUNNEL_FLAG
       self.datapath.ovs_ofctl.add_ovs_flow(flow)
-      flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x%x/0x%x,actions=goto_table:#{TABLE_GRE_PORTS}" % [
+      flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x%x/0x%x,actions=goto_table:#{TABLE_TUNNEL_PORTS}" % [
         TUNNEL_FLAG,
         TUNNEL_FLAG
       ]

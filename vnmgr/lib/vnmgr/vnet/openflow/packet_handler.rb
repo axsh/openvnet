@@ -7,6 +7,7 @@ module Vnmgr::VNet::Openflow
 
     attr_reader :datapath
     attr_accessor :cookie
+    attr_accessor :tag
 
     def initialize(dp)
       @datapath = dp

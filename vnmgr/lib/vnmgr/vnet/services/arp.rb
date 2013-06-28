@@ -4,15 +4,11 @@ require 'racket'
 
 module Vnmgr::VNet::Services
 
-  class Arp < Vnmgr::VNet::Openflow::PacketHandler
-    include Celluloid
+  class Arp < Base
 
     def initialize(params)
-      @datapath = params[:datapath]
+      super
       @entries = {}
-    end
-
-    def install
     end
 
     def insert_vif(uuid, network, vif_map)

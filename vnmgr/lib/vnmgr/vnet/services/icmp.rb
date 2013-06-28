@@ -4,14 +4,11 @@ require 'racket'
 
 module Vnmgr::VNet::Services
 
-  class Icmp < Vnmgr::VNet::Openflow::PacketHandler
+  class Icmp < Base
 
     def initialize(params)
-      @datapath = params[:datapath]
+      super
       @entries = {}
-    end
-
-    def install
     end
 
     def insert_vif(uuid, network, vif_map)

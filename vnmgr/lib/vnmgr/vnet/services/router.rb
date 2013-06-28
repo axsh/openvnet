@@ -4,14 +4,14 @@ require 'racket'
 
 module Vnmgr::VNet::Services
 
-  class Router < Vnmgr::VNet::Openflow::PacketHandler
+  class Router < Base
     attr_reader :network
     attr_reader :vif_uuid
     attr_reader :service_mac
     attr_reader :service_ipv4
 
     def initialize(params)
-      @datapath = params[:datapath]
+      super
       @network = params[:network]
       @vif_uuid = params[:vif_uuid]
       @service_mac = params[:service_mac]
