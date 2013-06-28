@@ -24,6 +24,7 @@ RSpec.configure do |config|
 
   Vnmgr::ModelWrappers::Base.set_proxy(vnmgr_conf)
   Vnmgr::Initializers::DB.run(vnmgr_conf.db_uri)
+  #Vnmgr::Initializers::DB.run(vnmgr_conf.db_uri, :debug_sql => true)
 
   config.before(:suite) do
     DatabaseCleaner.strategy = :truncation

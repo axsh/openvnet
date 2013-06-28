@@ -16,7 +16,6 @@ module Vnmgr::VNet::Openflow
 
     def initialize(service_openflow)
       @service_openflow = service_openflow
-      @default_ofctl = OvsOfctl.new
 
       @switches = {}
     end
@@ -43,7 +42,7 @@ module Vnmgr::VNet::Openflow
       # This might not be optimal in cases where the switch got
       # disconnected for a short period, as Open vSwitch has the
       # ability to keep flows between sessions.
-      switch = switches[datapath_id] = Switch.new(Datapath.new(self, datapath_id, OvsOfctl.new('br0')))
+      switch = switches[datapath_id] = Switch.new(Datapath.new(self, datapath_id, OvsOfctl.new(datapath_id)))
       switch.async.switch_ready
     end
 
@@ -70,6 +69,7 @@ module Vnmgr::VNet::Openflow
 
         port_descs.ports.each { |port_desc| switch.async.handle_port_desc(port_desc) }
       }
+      
     end
 
     def port_status(datapath_id, message)

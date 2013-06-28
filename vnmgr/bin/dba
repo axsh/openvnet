@@ -10,7 +10,8 @@ require 'vnmgr'
 
 conf = Vnmgr::Configurations::Dba.conf
 
-Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "#{conf.node.id}.log"))
+#Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "#{conf.node.id}.log"))
+Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "dba.log"))
 
 Vnmgr::Initializers::DB.run(conf.db_uri)
 

@@ -6,19 +6,15 @@ module Vnmgr::Models
     many_to_one :open_flow_controller
     
     one_to_many :datapath_networks
-    one_to_many :datapaths_on_subnet, :class => Datapath do |ds|
-      # Currently returns all datapaths, rather than just the ones
-      # that share the same subnet.
-      Datapath.dataset.where(~{:datapaths__id => self.id}).alives
-    end
+    many_to_many :networks, :join_table => :datapath_networks
 
-    one_to_many :datapath_networks_on_subnet, :class => DatapathNetwork do |ds|
-      # Currently returns all datapaths, rather than just the ones
-      # that share the same subnet.
-      DatapathNetwork.dataset.where(~{:datapath_networks__datapath_id => self.id})
-    end
-
+    one_to_many :tunnels, :key => :src_datapath_id
     subset(:alives, {})
 
+    dataset_module do
+      def on_other_segment(datapath)
+        where(~{:id => datapath.id}).where(~{:dc_segment_id => datapath.dc_segment_id})
+      end
+    end
   end
 end

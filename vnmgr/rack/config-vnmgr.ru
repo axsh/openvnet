@@ -8,7 +8,8 @@ require 'dcell'
 
 conf = Vnmgr::Configurations::Vnmgr.conf
 
-Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "#{conf.node.id}.log"))
+#Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "#{conf.node.id}.log"))
+Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "vnmgr.log"))
 
 Vnmgr::ModelWrappers::Base.set_proxy(conf)
 

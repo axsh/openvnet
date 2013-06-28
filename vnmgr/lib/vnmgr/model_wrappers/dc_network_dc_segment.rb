@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::ModelWrappers
-  class DcNetwork < Base
+  class DcNetworkDcSegment < Base
     def to_hash
       {
-        :uuid => self.uuid,
+        :dc_network_id => self.dc_network_id,
+        :dc_segment_id => self.dc_segment_id,
         :created_at => self.created_at,
         :updated_at => self.updated_at
       }

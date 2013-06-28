@@ -5,7 +5,7 @@ module Vnmgr::VNet::Openflow
   module PortHost
     include Constants
 
-    def is_eth_port
+    def eth?
       true
     end
 

@@ -16,6 +16,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :dc_segment_manager
     attr_reader :network_manager
     attr_reader :packet_manager
+    attr_reader :tunnel_manager
 
     def initialize(dp, name = nil)
       @datapath = dp
@@ -27,18 +28,25 @@ module Vnmgr::VNet::Openflow
       @cookie_manager.create_category(:port, 0x3, 48)
       @cookie_manager.create_category(:network, 0x4, 48)
       @cookie_manager.create_category(:dc_segment, 0x5, 48)
+      @cookie_manager.create_category(:tunnel, 0x6, 48)
 
       @ports = {}
       @dc_segment_manager = DcSegmentManager.new(dp)
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
+      @tunnel_manager = TunnelManager.new(dp)
+      @tunnel_manager.create_all_tunnels
 
       @default_flow_cookie = @cookie_manager.acquire(:switch)
       @catch_flow_cookie = @cookie_manager.acquire(:switch)
     end
 
     def eth_ports
-      self.ports.find_all{ |key,port| port.is_eth_port }.collect{ |key,port| port }
+      self.ports.values.find_all{|port| port.eth? }
+    end
+
+    def tunnel_ports
+      self.ports.values.find_all{|port| port.tunnel? }
     end
 
     def update_bridge_hw(hw_addr)
@@ -59,8 +67,10 @@ module Vnmgr::VNet::Openflow
 
       flow_options = {:cookie => @default_flow_cookie}
 
-      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options)
+      # currently not reachable
+      #flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_TUNNEL_PORTS, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, flow_options)
@@ -90,6 +100,13 @@ module Vnmgr::VNet::Openflow
                              :eth_type => 0x0806,
                            }, {}, flow_options)
 
+      # Catches all packets over gre tunnel
+      flows << Flow.create(TABLE_CLASSIFIER, 1, { :tunnel_id => 0 }, {}, flow_options)
+      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options.merge(
+        :metadata => METADATA_FLAG_REMOTE,
+        :metadata_mask => METADATA_FLAGS_MASK,
+        :goto_table => TABLE_TUNNEL_PORTS))
+
       self.datapath.add_flows(flows)
     end
 
@@ -102,8 +119,6 @@ module Vnmgr::VNet::Openflow
 
     def handle_port_desc(port_desc)
       debug "handle_port_desc: #{port_desc.inspect}"
-
-      self.bridge_hw || raise("No bridge hw address found.")
 
       port = Port.new(datapath, port_desc, true)
       ports[port_desc.port_no] = port
@@ -142,6 +157,7 @@ module Vnmgr::VNet::Openflow
         port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
       elsif port.port_info.name =~ /^t-/
+        port.extend(PortTunnel)
       else
         error "Unknown interface type: #{port.port_info.name}"
         return
