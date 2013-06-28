@@ -39,8 +39,6 @@ module Vnmgr::VNet::Openflow
   class CookieManager
     include Celluloid
     
-    attr_reader :categories
-
     def initialize
       @categories = {}
       @cookies = {}
@@ -70,9 +68,9 @@ module Vnmgr::VNet::Openflow
       category = @categories[name]
       return nil if category.nil? || !@cookies.has_key?(cookie)
 
-      @cookies.delete(cookie)
-
       category.update_next_cookie(cookie) if category.next_cookie.nil?      
+
+      @cookies.delete(cookie)
     end
 
     private
