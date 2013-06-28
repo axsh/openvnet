@@ -19,7 +19,7 @@ module Vnmgr::VNet::Openflow
     def install
       flows = []
 
-      if self.datapath_of_bridge
+      if self.datapath_of_bridge && self.datapath_of_bridge[:broadcast_mac_addr]
         flows << Flow.create(TABLE_VIRTUAL_SRC, 90, {
                                :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
                              }, {}, flow_options)
@@ -57,23 +57,22 @@ module Vnmgr::VNet::Openflow
       eth_port = self.datapath.switch.eth_ports.first
 
       if eth_port
-        if self.datapath_of_bridge
-          self.datapath.ovs_ofctl.add_ovs_flow(flow_catch(eth_port, TABLE_HOST_PORTS, false))
-        end
-
-        self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp(eth_port, false))
+        flow_catch(eth_port, TABLE_HOST_PORTS, false)
+        flow_learn_arp(eth_port, false)
       end
 
       self.datapath.switch.gre_ports.each do |gre_port|
         # modify the unicast packet to broadcast packet
-        self.datapath.ovs_ofctl.add_ovs_flow(flow_catch(gre_port, TABLE_GRE_PORTS, true))
+        flow_catch(gre_port, TABLE_GRE_PORTS, true)
 
         # learn mac address
-        self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp(gre_port, true))
+        flow_learn_arp(gre_port, true)
       end
     end
 
     def flow_catch(port, table, need_tun_id_filter)
+      return unless self.datapath_of_bridge && self.datapath_of_bridge[:broadcast_mac_addr]
+
       flow_catch = "table=#{table},priority=30,cookie=0x%x," % (self.network_number << COOKIE_NETWORK_SHIFT)
 
       if need_tun_id_filter
@@ -90,7 +89,7 @@ module Vnmgr::VNet::Openflow
          (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
         ]
 
-      flow_catch
+      self.datapath.ovs_ofctl.add_ovs_flow(flow_catch)
     end
 
     def flow_learn_arp(port, need_set_tunnel)
@@ -107,8 +106,7 @@ module Vnmgr::VNet::Openflow
       end
 
       flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:7"
-
-      flow_learn_arp
+      self.datapath.ovs_ofctl.add_ovs_flow(flow_learn_arp)
     end
   end
   
