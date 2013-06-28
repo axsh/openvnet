@@ -14,6 +14,7 @@ module Vnmgr::VNet::Openflow
     end
 
     def install
+      self.datapath.switch.network_manager.update_all_flows
     end
   end
 end

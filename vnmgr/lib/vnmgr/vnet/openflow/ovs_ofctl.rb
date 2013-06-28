@@ -1,6 +1,8 @@
 module Vnmgr::VNet::Openflow
 
   class OvsOfctl
+    include Celluloid::Logger
+
     attr_accessor :ovs_ofctl
     attr_accessor :ovs_vsctl
     attr_accessor :verbose
@@ -28,12 +30,12 @@ module Vnmgr::VNet::Openflow
 
     def add_flow(flow)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow.match_to_s},actions=#{flow.actions_to_s}"
-      p "'#{command}' => #{system(command)}."
+      debug "'#{command}' => #{system(command)}."
     end
 
     def add_ovs_flow(flow_str)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
-      p "'#{command}' => #{system(command)}"
+      debug "'#{command}' => #{system(command)}"
     end
 
     def add_flows(flows)
@@ -43,7 +45,7 @@ module Vnmgr::VNet::Openflow
       recmds << "#{@ovs_ofctl} add-flow #{switch_name} - <<'#{eos}'"
       flows.each { |flow|
         full_flow = "#{flow.match_to_s},actions=#{flow.actions_to_s}"
-        p "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose
+        debug "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose
         recmds << full_flow
       }
       recmds << "#{eos}"
@@ -60,7 +62,7 @@ module Vnmgr::VNet::Openflow
       recmds << "#{@ovs_ofctl} del-flows #{switch_name} - <<'#{eos}'"
       flows.each { |flow|
         full_flow = "#{flow.match_sparse_to_s}"
-        p "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose
+        debug "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose
         recmds << full_flow
       }
       recmds << "#{eos}"
@@ -71,7 +73,7 @@ module Vnmgr::VNet::Openflow
 
     def del_cookie(cookie)
       command = "#{@ovs_ofctl} del-flows #{switch_name} cookie=0x%x/-1" % cookie
-      p "'#{command}' => #{system(command)}"
+      debug "'#{command}' => #{system(command)}"
     end
 
     def add_gre_tunnel(tunnel_name, remote_ip)

@@ -10,7 +10,7 @@ module Vnmgr::VNet::Openflow
     end
 
     def flow_options
-      @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
+      @flow_options ||= {:cookie => @cookie}
     end
 
     def install
