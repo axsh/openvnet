@@ -112,14 +112,6 @@ module Vnmgr::VNet::Openflow
         :goto_table => TABLE_TUNNEL_PORTS))
 
       @datapath.add_flows(flows)
-
-      flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x0/0x%x,actions=" % TUNNEL_FLAG
-      @datapath.add_ovs_flow(flow)
-      flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x%x/0x%x,actions=goto_table:#{TABLE_TUNNEL_PORTS}" % [
-        TUNNEL_FLAG,
-        TUNNEL_FLAG
-      ]
-      @datapath.add_ovs_flow(flow)
     end
 
     def features_reply(message)
