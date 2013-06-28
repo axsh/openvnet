@@ -86,7 +86,7 @@ module Vnmgr::VNet::Openflow
         :uuid => datapath_map.uuid,
         :display_name => datapath_map.display_name,
         :ipv4_address => datapath_map.ipv4_address,
-        :datapath_id => datapath_map.datapath_id,
+        :datapath_id => datapath_map.dpid,
         :broadcast_mac_addr => dpn_map ? Trema::Mac.new(dpn_map.broadcast_mac_addr) : nil,
       }
 

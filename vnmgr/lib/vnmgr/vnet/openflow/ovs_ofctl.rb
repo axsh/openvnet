@@ -8,14 +8,15 @@ module Vnmgr::VNet::Openflow
     attr_accessor :verbose
     attr_accessor :switch_name
 
-    def initialize(switch_name = nil)
+    def initialize
       # TODO: Make ovs_vsctl use a real config option.
       # @ovs_ofctl = Dcmgr.conf.ovs_ofctl_path
       # @ovs_vsctl = Dcmgr.conf.ovs_ofctl_path.dup
       # @ovs_vsctl[/ovs-ofctl/] = 'ovs-vsctl'
+      conf = Vnmgr::Configurations::Vna.conf
       @ovs_ofctl = 'ovs-ofctl -O OpenFlow13'
       @ovs_vsctl = 'ovs-vsctl'
-      @switch_name = switch_name
+      @switch_name = conf.bridge_name
 
       # @verbose = Dcmgr.conf.verbose_openflow
       @verbose = true
@@ -50,7 +51,8 @@ module Vnmgr::VNet::Openflow
       recmds << "#{eos}"
 
       p("applying flow(s): #{recmds.size - 2}")
-      system(recmds.join("\n"))
+      #system(recmds.join("\n"))
+      `#{recmds.join("\n")}`
     end
 
     def del_flows(flows)
@@ -74,8 +76,9 @@ module Vnmgr::VNet::Openflow
       debug "'#{command}' => #{system(command)}"
     end
 
-    def add_gre_tunnel(tunnel_name, remote_ip, key)
-      system("#{@ovs_vsctl} add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:key=#{key}")
+    def add_gre_tunnel(tunnel_name, remote_ip)
+      #system("#{@ovs_vsctl} add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:key=#{key}")
+      system("#{@ovs_vsctl} --may-exist add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:in_key=flow options:out_key=flow")
     end
 
   end

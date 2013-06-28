@@ -4,7 +4,7 @@ require 'sequel'
 
 module Vnmgr::Initializers
   class DB
-    def self.run(connection_string)
+    def self.run(connection_string, options = {})
       #TODO: Figure out where to get this thing from
       db = Sequel.connect(connection_string)
 
@@ -12,7 +12,7 @@ module Vnmgr::Initializers
       # This mode is supported by both InnoDB and MySQL Cluster backends.
       db.transaction_isolation_level = :committed
 
-      if ENV['DEBUG_SQL']
+      if ENV['DEBUG_SQL'] || options[:debug_sql]
         require 'logger'
         db.loggers << Logger.new(STDERR)
       end
