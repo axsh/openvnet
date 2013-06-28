@@ -3,6 +3,7 @@
 module Vnmgr::VNet::Openflow
 
   class PacketHandler
+    include Celluloid::Logger
 
     attr_reader :datapath
     attr_accessor :cookie
@@ -12,11 +13,11 @@ module Vnmgr::VNet::Openflow
     end
 
     def packet_in(port, message)
-      p "PacketHandler.packet_in called."
+      error "PacketHandler.packet_in called."
     end
 
     def packet_out(data)
-      p "PacketHandler.packet_out called."
+      error "PacketHandler.packet_out called."
     end
 
     def catch_flow(type, match)
@@ -48,9 +49,9 @@ module Vnmgr::VNet::Openflow
       raw_in_l3 = Racket::L3::IPv4.new(raw_in_l2.payload)
       raw_in_l4 = Racket::L4::UDP.new(raw_in_l3.payload)
 
-      p "DHCP: raw_in_l2:#{raw_in_l2.pretty}."
-      p "DHCP: raw_in_l3:#{raw_in_l3.pretty}."
-      p "DHCP: raw_in_l4:#{raw_in_l4.pretty}."
+      # debug "DHCP: raw_in_l2:#{raw_in_l2.pretty}."
+      # debug "DHCP: raw_in_l3:#{raw_in_l3.pretty}."
+      # debug "DHCP: raw_in_l4:#{raw_in_l4.pretty}."
 
       [raw_in_l2, raw_in_l3, raw_in_l4]
     end
@@ -74,9 +75,9 @@ module Vnmgr::VNet::Openflow
 
       raw_out.l4.fix!(raw_out.l3.src_ip, raw_out.l3.dst_ip)
 
-      raw_out.layers.compact.each { |l|
-        p "send udp: layer:#{l.pretty}."
-      }
+      # raw_out.layers.compact.each { |l|
+      #   debug "send udp: layer:#{l.pretty}."
+      # }
 
       message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
 

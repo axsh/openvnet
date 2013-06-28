@@ -6,7 +6,6 @@ require 'racket'
 module Vnmgr::VNet::Services
 
   class Dhcp < Vnmgr::VNet::Openflow::PacketHandler
-
     attr_reader :network
     attr_reader :service_mac
     attr_reader :service_ipv4
@@ -23,7 +22,7 @@ module Vnmgr::VNet::Services
              when self.network.class == Vnmgr::VNet::Openflow::NetworkPhysical then :physical_local
              when self.network.class == Vnmgr::VNet::Openflow::NetworkVirtual  then :virtual_local
              else
-               p "Unknown network mode for dhcp service."
+               info "Unknown network mode for dhcp service."
                return
              end
 
@@ -47,7 +46,7 @@ module Vnmgr::VNet::Services
     end
 
     def packet_in(port, message)
-      p "Dhcp.packet_in called."
+      debug "Dhcp.packet_in called."
 
       dhcp_in, message_type = parse_dhcp_packet(message)
       return if dhcp_in.nil? || message_type.empty? || message_type[0].payload.empty?
@@ -62,21 +61,21 @@ module Vnmgr::VNet::Services
 
       case message_type[0].payload[0]
       when $DHCP_MSG_DISCOVER
-        p "DHCP send: DHCP_MSG_OFFER."
+        debug "DHCP send: DHCP_MSG_OFFER."
         params[:dhcp_class] = DHCP::Offer
         params[:message_type] = $DHCP_MSG_OFFER
       when $DHCP_MSG_REQUEST
-        p "DHCP send: DHCP_MSG_ACK."
+        debug "DHCP send: DHCP_MSG_ACK."
         params[:dhcp_class] = DHCP::ACK
         params[:message_type] = $DHCP_MSG_ACK
       else
-        p "DHCP send: no handler."
+        debug "DHCP send: no handler."
         return
       end
       
       dhcp_out = create_dhcp_packet(params)
 
-      p "DHCP send: output:#{dhcp_out.to_s}."
+      debug "DHCP send: output:#{dhcp_out.to_s}."
 
       udp_out({ :out_port => message.in_port,
                 :src_hw => self.service_mac,
@@ -91,7 +90,7 @@ module Vnmgr::VNet::Services
 
     def parse_dhcp_packet(message)
       if !message.udp?
-        p "DHCP: Message is not UDP."
+        debug "DHCP: Message is not UDP."
         return nil
       end
       
@@ -100,7 +99,7 @@ module Vnmgr::VNet::Services
       dhcp_in = DHCP::Message.from_udp_payload(raw_in_l4.payload)
       message_type = dhcp_in.options.select { |each| each.type == $DHCP_MESSAGETYPE }
 
-      p "DHCP: message:#{dhcp_in.to_s}."
+      debug "DHCP: message:#{dhcp_in.to_s}."
 
       [dhcp_in, message_type]
     end
