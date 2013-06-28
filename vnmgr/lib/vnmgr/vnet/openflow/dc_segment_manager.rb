@@ -33,11 +33,23 @@ module Vnmgr::VNet::Openflow
 
       @segment_datapaths << datapath
 
-      @datapath.add_flow(Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
-                                       :eth_dst => datapath[:broadcast_mac_addr]
-                                     }, {}, {
-                                       :cookie => datapath[:cookie]
-                                     }))
+      actions = {:cookie => datapath[:cookie]}
+
+      flows = []
+      flows << Flow.create(Constants::TABLE_HOST_PORTS, 90, {
+                             :eth_dst => datapath[:broadcast_mac_addr]
+                           }, {}, actions)
+      flows << Flow.create(Constants::TABLE_HOST_PORTS, 90, {
+                             :eth_src => datapath[:broadcast_mac_addr]
+                           }, {}, actions)
+      flows << Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
+                             :eth_dst => datapath[:broadcast_mac_addr]
+                           }, {}, actions)
+      flows << Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
+                             :eth_src => datapath[:broadcast_mac_addr]
+                           }, {}, actions)
+
+      @datapath.add_flows(flows)
 
       update_all_networks if should_update
     end
