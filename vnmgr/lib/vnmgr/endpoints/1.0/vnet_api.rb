@@ -42,18 +42,19 @@ module Vnmgr::Endpoints::V10
 
     respond_to :json, :yml
 
-    load_namespace('networks')
-    load_namespace('vifs')
-    load_namespace('dhcp_ranges')
-    load_namespace('mac_ranges')
-    load_namespace('mac_leases')
-    load_namespace('routers')
-    load_namespace('tunnels')
-    load_namespace('dc_networks')
     load_namespace('datapaths')
-    load_namespace('open_flow_controllers')
+    load_namespace('dc_networks')
+    load_namespace('dhcp_ranges')
     load_namespace('ip_addresses')
     load_namespace('ip_leases')
+    load_namespace('mac_leases')
+    load_namespace('mac_ranges')
+    load_namespace('networks')
     load_namespace('network_services')
+    load_namespace('open_flow_controllers')
+    load_namespace('routes')
+    load_namespace('route_links')
+    load_namespace('tunnels')
+    load_namespace('vifs')
   end
 end
