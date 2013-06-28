@@ -55,10 +55,21 @@ module Vnmgr::ModelWrappers
       def wrap(data, options = {})
         case data
         when Array
-          data.map{|d| wrap(d) }
+          data.map{|d| wrap(d, options) }
         when Hash
           ::Vnmgr::ModelWrappers.const_get(data.delete(:class_name)).new(data).tap do |wrapper|
-            wrapper.__send__("#{options[:fill]}=", wrap(data[options[:fill]], options)) if options[:fill]
+            cleaned_options = options.dup
+            
+            fill = cleaned_options.delete(:fill)
+            fill = case fill
+                   when Array then fill
+                   when Symbol then [fill]
+                   else
+                     []
+                   end
+            fill.each { |field|
+              wrapper.__send__("#{field}=", wrap(data[field], cleaned_options))
+            }
           end
         else
           data
