@@ -25,7 +25,7 @@ gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
   gem "rake"
-  gem "rspec"
+  gem "rspec", '>= 2.14.0.rc1'
   gem "rack-test"
   gem "fabrication"
   # http://stackoverflow.com/questions/11719183/databasecleaner-errors-in-non-rails-app

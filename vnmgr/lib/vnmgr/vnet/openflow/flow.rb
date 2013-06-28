@@ -49,6 +49,7 @@ module Vnmgr::VNet::Openflow
       case tag
       when :eth_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
       when :output then Trema::Actions::SendOutPort.new(arg)
+      when :tunnel_id then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TunnelId.new(:tunnel_id => arg)])
       else
         raise("Unknown action type.")
       end

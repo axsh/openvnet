@@ -24,6 +24,10 @@ module Vnmgr::VNet::Openflow
       self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow) }
     end
 
+    def add_ovs_flow(flow_str)
+      self.ovs_ofctl.add_ovs_flow(flow_str)
+    end
+
     # def del_flow(flow)
     #   self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id,
     #                                                                    flow.merge(:command => Controller::OFPFC_DELETE))
@@ -44,6 +48,7 @@ module Vnmgr::VNet::Openflow
     end
 
     def add_flows(flows)
+      return if flows.blank?
       self.controller.pass_task {
         flows.each { |flow|
           self.controller.send_flow_mod_add(self.datapath_id, flow)
@@ -59,6 +64,9 @@ module Vnmgr::VNet::Openflow
       self.controller.pass_task { self.controller.public_send_packet_out(self.datapath_id, message, port_no) }
     end
 
+    def add_tunnel(tunnel_name, remote_ip)
+      self.ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
+    end
   end
 
 end
