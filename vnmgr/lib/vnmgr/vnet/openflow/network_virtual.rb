@@ -79,13 +79,12 @@ module Vnmgr::VNet::Openflow
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
       flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{port.port_number},arp,metadata=0x%x/0x%x,actions=" %
-        [(self.network_number << COOKIE_NETWORK_SHIFT),
+        [@cookie,
          ((self.network_number << METADATA_NETWORK_SHIFT) | port.port_number),
          (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
         ]
-      flow_learn_arp << "learn\\(table=%d,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
-        [TABLE_VIRTUAL_DST,
-        ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0 | METADATA_FLAG_LOCAL)]
+      flow_learn_arp << "learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
+        [TABLE_VIRTUAL_DST, @cookie, ((self.network_number << METADATA_NETWORK_SHIFT) | 0x0 | METADATA_FLAG_LOCAL)]
         
       flow_learn_arp << learn_options
 
