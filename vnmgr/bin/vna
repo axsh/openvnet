@@ -11,7 +11,8 @@ require 'dcell'
 
 conf = Vnmgr::Configurations::Vna.conf
 
-Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "#{conf.node.id}.log"))
+#Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "#{conf.node.id}.log"))
+Celluloid.logger = ::Logger.new(File.join(Vnmgr::LOG_DIR, "vna.log"))
 
 Vnmgr::ModelWrappers::Base.set_proxy(conf)
 
