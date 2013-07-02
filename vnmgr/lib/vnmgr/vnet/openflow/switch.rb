@@ -98,14 +98,13 @@ module Vnmgr::VNet::Openflow
 
       self.datapath.add_flows(flows)
 
-      p self.datapath.ovs_ofctl
       flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x0/0x%x,actions=" % TUNNEL_FLAG
-      self.datapath.ovs_ofctl.add_ovs_flow(flow)
+      self.datapath.add_ovs_flow(flow)
       flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x%x/0x%x,actions=goto_table:#{TABLE_GRE_PORTS}" % [
         TUNNEL_FLAG,
         TUNNEL_FLAG
       ]
-      self.datapath.ovs_ofctl.add_ovs_flow(flow)
+      self.datapath.add_ovs_flow(flow)
     end
 
     def features_reply(message)

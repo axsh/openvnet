@@ -20,6 +20,10 @@ module Vnmgr::VNet::Openflow
       self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow) }
     end
 
+    def add_ovs_flow(flow_str)
+      self.ovs_ofctl.add_ovs_flow(flow_str)
+    end
+
     # def del_flow(flow)
     #   self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id,
     #                                                                    flow.merge(:command => Controller::OFPFC_DELETE))

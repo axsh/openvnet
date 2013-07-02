@@ -64,7 +64,7 @@ module Vnmgr::VNet::Openflow
           flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{tunnel_port.port_number}"
         }
 
-        @datapath.ovs_ofctl.add_ovs_flow(flow_flood)
+        @datapath.add_ovs_flow(flow_flood)
 
         flow_in_port_tunnel = "table=#{TABLE_TUNNEL_PORTS},priority=20,cookie=0x%x," % (network.network_number << COOKIE_NETWORK_SHIFT)
         flow_in_port_tunnel << "tun_id=0x%x/0x%x," % [
@@ -77,7 +77,7 @@ module Vnmgr::VNet::Openflow
           ]
         flow_in_port_tunnel << "goto_table:#{TABLE_VIRTUAL_DST}"
 
-        @datapath.ovs_ofctl.add_ovs_flow(flow_in_port_tunnel)
+        @datapath.add_ovs_flow(flow_in_port_tunnel)
       end
     end
 

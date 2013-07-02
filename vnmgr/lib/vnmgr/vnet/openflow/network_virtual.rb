@@ -64,7 +64,7 @@ module Vnmgr::VNet::Openflow
       end
 
       self.datapath.add_flows(flows)
-      ovs_flows.each { |flow| self.datapath.ovs_ofctl.add_ovs_flow(flow) }
+      ovs_flows.each { |flow| self.datapath.add_ovs_flow(flow) }
     end
 
     def create_flow_catch(port, table, match, actions = {})
