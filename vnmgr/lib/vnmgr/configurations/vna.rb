@@ -31,6 +31,5 @@ module Vnmgr::Configurations
     param :data_access_proxy, :default => :dba
     param :trema_home, :default => Gem::Specification.find_by_name('trema').gem_dir
     param :trema_tmp, :default => '/var/run/wakame-vnet'
-    param :bridge_name, :default => 'br0'
   end
 end
