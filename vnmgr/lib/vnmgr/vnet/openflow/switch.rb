@@ -65,7 +65,8 @@ module Vnmgr::VNet::Openflow
 
       flow_options = {:cookie => @default_flow_cookie}
 
-      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL))
+      flows << Flow.create(TABLE_CLASSIFIER, 1, { :tunnel_id => 0 }, {}, flow_options)
       flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)
@@ -97,14 +98,6 @@ module Vnmgr::VNet::Openflow
                            }, {}, flow_options)
 
       self.datapath.add_flows(flows)
-
-      flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x0/0x%x,actions=" % TUNNEL_FLAG
-      self.datapath.add_ovs_flow(flow)
-      flow = "table=#{TABLE_CLASSIFIER},priority=1,tun_id=0x%x/0x%x,actions=goto_table:#{TABLE_TUNNEL_PORTS}" % [
-        TUNNEL_FLAG,
-        TUNNEL_FLAG
-      ]
-      self.datapath.add_ovs_flow(flow)
     end
 
     def features_reply(message)
