@@ -38,7 +38,7 @@ module Vnmgr::VNet::Openflow
       false
     end
 
-    def gre?
+    def tunnel?
       false
     end
 
@@ -95,7 +95,7 @@ module Vnmgr::VNet::Openflow
     def update_eth_ports
     end
 
-    def update_gre_ports
+    def update_tunnel_ports
     end
   end
 

@@ -5,7 +5,7 @@ require 'trema'
 describe Vnmgr::VNet::Openflow::Switch do
   
   describe "handle_port_desc" do
-    context "GRE" do
+    context "tunnel" do
       it "should create a port objcect whose datapath_id is 1" do
         ofc = double(:ofc)
         dp = Vnmgr::VNet::Openflow::Datapath.new(ofc, 1)
@@ -18,7 +18,7 @@ describe Vnmgr::VNet::Openflow::Switch do
         port_info = double(:port_info)
         port.should_receive(:port_number).and_return(5)
         port.should_receive(:port_info).exactly(3).times.and_return(port_info)
-        port.should_receive(:extend).and_return(Vnmgr::VNet::Openflow::PortGre)
+        port.should_receive(:extend).and_return(Vnmgr::VNet::Openflow::PortTunnel)
         port.should_receive(:install)
         port_info.should_receive(:name).exactly(3).times.and_return("t-src1dst3")
         

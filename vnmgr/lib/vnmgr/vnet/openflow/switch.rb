@@ -43,8 +43,8 @@ module Vnmgr::VNet::Openflow
       self.ports.values.find_all{|port| port.eth? }
     end
 
-    def gre_ports
-      self.ports.values.find_all{|port| port.gre? }
+    def tunnel_ports
+      self.ports.values.find_all{|port| port.tunnel? }
     end
 
     def update_bridge_hw(hw_addr)
@@ -157,7 +157,7 @@ module Vnmgr::VNet::Openflow
         port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
       elsif port.port_info.name =~ /^t-/
-        port.extend(PortGre)
+        port.extend(PortTunnel)
       else
         error "Unknown interface type: #{port.port_info.name}"
         return

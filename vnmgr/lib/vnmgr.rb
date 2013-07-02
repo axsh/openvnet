@@ -152,7 +152,7 @@ module Vnmgr
       autoload :PacketHandler, 'vnmgr/vnet/openflow/packet_handler'
       autoload :PacketManager, 'vnmgr/vnet/openflow/packet_manager'
       autoload :Port, 'vnmgr/vnet/openflow/port'
-      autoload :PortGre, 'vnmgr/vnet/openflow/port_gre'
+      autoload :PortTunnel, 'vnmgr/vnet/openflow/port_tunnel'
       autoload :PortHost, 'vnmgr/vnet/openflow/port_host'
       autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
       autoload :PortPhysical, 'vnmgr/vnet/openflow/port_physical'

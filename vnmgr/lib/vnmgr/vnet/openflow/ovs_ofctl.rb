@@ -75,8 +75,7 @@ module Vnmgr::VNet::Openflow
       debug "'#{command}' => #{system(command)}"
     end
 
-    def add_gre_tunnel(tunnel_name, remote_ip)
-      #system("#{@ovs_vsctl} add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:key=#{key}")
+    def add_tunnel(tunnel_name, remote_ip)
       system("#{@ovs_vsctl} --may-exist add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:in_key=flow options:out_key=flow")
     end
 

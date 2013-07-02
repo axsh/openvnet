@@ -50,7 +50,7 @@ module Vnmgr::VNet::Openflow
     def update_virtual_network(network)
     
       datapath_id = @datapath.datapath_id
-      @datapath.switch.gre_ports.each do |gre_port|
+      @datapath.switch.tunnel_ports.each do |tunnel_port|
       
         flow_flood = "table=#{TABLE_METADATA_TUNNEL},priority=1,cookie=0x%x,metadata=0x%x/0x%x,actions=" %
           [(network.network_number << COOKIE_NETWORK_SHIFT),
@@ -61,23 +61,23 @@ module Vnmgr::VNet::Openflow
         flow_flood << "set_tunnel:0x%x" % (network.network_number | TUNNEL_FLAG)
 
         @peer_datapaths.each { |datapath|
-          flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{gre_port.port_number}"
+          flow_flood << ",mod_dl_dst=#{datapath[:broadcast_mac_addr]},output=#{tunnel_port.port_number}"
         }
 
         @datapath.ovs_ofctl.add_ovs_flow(flow_flood)
 
-        flow_in_port_gre = "table=#{TABLE_GRE_PORTS},priority=20,cookie=0x%x," % (network.network_number << COOKIE_NETWORK_SHIFT)
-        flow_in_port_gre << "tun_id=0x%x/0x%x," % [
+        flow_in_port_tunnel = "table=#{TABLE_TUNNEL_PORTS},priority=20,cookie=0x%x," % (network.network_number << COOKIE_NETWORK_SHIFT)
+        flow_in_port_tunnel << "tun_id=0x%x/0x%x," % [
           network.network_number,
           TUNNEL_NETWORK_MASK
         ]
-        flow_in_port_gre << "actions=write_metadata:0x%x/0x%x," %
+        flow_in_port_tunnel << "actions=write_metadata:0x%x/0x%x," %
           [(network.network_number << COOKIE_NETWORK_SHIFT),
            (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
           ]
-        flow_in_port_gre << "goto_table:#{TABLE_VIRTUAL_DST}"
+        flow_in_port_tunnel << "goto_table:#{TABLE_VIRTUAL_DST}"
 
-        @datapath.ovs_ofctl.add_ovs_flow(flow_in_port_gre)
+        @datapath.ovs_ofctl.add_ovs_flow(flow_in_port_tunnel)
       end
     end
 

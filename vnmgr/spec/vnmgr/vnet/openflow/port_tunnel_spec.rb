@@ -4,7 +4,7 @@ require 'trema'
 
 include Vnmgr::VNet::Openflow::Constants
 
-describe Vnmgr::VNet::Openflow::PortGre do
+describe Vnmgr::VNet::Openflow::PortTunnel do
   describe "install" do
     it "should create a port objcect whose datapath_id is 1" do
       port_number = 10
@@ -12,7 +12,7 @@ describe Vnmgr::VNet::Openflow::PortGre do
       port_info = double(:port_info)
       port_info.should_receive(:port_no).and_return(port_number)
       port = Vnmgr::VNet::Openflow::Port.new(dp, port_info, true)
-      port.extend(Vnmgr::VNet::Openflow::PortGre)
+      port.extend(Vnmgr::VNet::Openflow::PortTunnel)
       switch = double(:switch)
       dp.should_receive(:switch).and_return(switch)
       nm = double(:nm)
