@@ -3,14 +3,15 @@ require 'spec_helper'
 require 'trema'
 
 describe Vnmgr::VNet::Openflow::Switch do
-  describe "switch_ready", :focus => true do
+  describe "switch_ready" do
     it "create default flows" do
       datapath = MockDatapath.new(double, 1)
+      Vnmgr::VNet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
       switch = Vnmgr::VNet::Openflow::Switch.new(datapath)
       Vnmgr::VNet::Openflow::Switch.new(datapath).switch_ready
 
       expect(datapath.sent_messages.size).to eq 2
-      expect(datapath.added_flows.size).to eq 15
+      expect(datapath.added_flows.size).to eq 16
       expect(datapath.added_ovs_flows.size).to eq 0
     end
   end
@@ -20,6 +21,7 @@ describe Vnmgr::VNet::Openflow::Switch do
       it "should create a port objcect whose datapath_id is 1" do
         ofc = double(:ofc)
         dp = Vnmgr::VNet::Openflow::Datapath.new(ofc, 1)
+        Vnmgr::VNet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
         switch = Vnmgr::VNet::Openflow::Switch.new(dp)
         port_desc = double(:port_desc)
         port_desc.should_receive(:port_no).and_return(5)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-describe Vnmgr::NodeModules::ServiceOpenflow do
+describe Vnmgr::VNet::Openflow::NetworkVirtual do
 end

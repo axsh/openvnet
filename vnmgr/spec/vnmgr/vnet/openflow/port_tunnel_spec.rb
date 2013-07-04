@@ -6,18 +6,16 @@ include Vnmgr::VNet::Openflow::Constants
 
 describe Vnmgr::VNet::Openflow::PortTunnel do
   describe "install" do
-    it "should create a port objcect whose datapath_id is 1" do
-      port_number = 10
-      dp = double(:datapath)
-      port_info = double(:port_info)
-      port_info.should_receive(:port_no).and_return(port_number)
-      port = Vnmgr::VNet::Openflow::Port.new(dp, port_info, true)
+    it "create tunnel specific flows" do
+      datapath = MockDatapath.new(double, 10)
+      port = Vnmgr::VNet::Openflow::Port.new(datapath, double(port_no: 10), true)
       port.extend(Vnmgr::VNet::Openflow::PortTunnel)
+      tunnel_manager = double(:tunnel_manager)
+      tunnel_manager.should_receive(:update_all_networks)
       switch = double(:switch)
-      dp.should_receive(:switch).and_return(switch)
-      nm = double(:nm)
-      switch.should_receive(:network_manager).and_return(nm)
-      nm.should_receive(:update_all_flows)
+      switch.should_receive(:tunnel_manager).and_return(tunnel_manager)
+      datapath.should_receive(:switch).and_return(switch)
+
       port.install
     end
   end

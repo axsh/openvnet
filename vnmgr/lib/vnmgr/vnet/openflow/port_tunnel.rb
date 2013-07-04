@@ -6,7 +6,7 @@ module Vnmgr::VNet::Openflow
     include Constants
 
     def flow_options
-      @flow_options ||= {:cookie => self.port_number | (self.network_number << COOKIE_NETWORK_SHIFT)}
+      @flow_options ||= {:cookie => @cookie}
     end
 
     def tunnel?
@@ -14,7 +14,7 @@ module Vnmgr::VNet::Openflow
     end
 
     def install
-      self.datapath.switch.network_manager.update_all_flows
+      @datapath.switch.tunnel_manager.update_all_networks
     end
   end
 end

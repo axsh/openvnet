@@ -52,27 +52,26 @@ module Vnmgr::VNet::Openflow
       eth_port = self.datapath.switch.eth_ports.first
       if eth_port
         if self.datapath_of_bridge
-          flows << create_flow_catch(eth_port, TABLE_HOST_PORTS, { :in_port => eth_port.port_number })
+          flows << Flow.create(TABLE_HOST_PORTS, 30, {
+            :in_port => eth_port.port_number,
+            :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
+          }, {
+            :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
+          }, fo_metadata_pn(eth_port.port_number, :goto_table => TABLE_VIRTUAL_SRC))
         end
         ovs_flows << create_ovs_flow_learn_arp(eth_port)
       end
 
       self.datapath.switch.tunnel_ports.each do |tunnel_port|
-        flows << create_flow_catch(tunnel_port, TABLE_TUNNEL_PORTS, { :tunnel_id => self.network_number, :tunnel_id_mask => TUNNEL_NETWORK_MASK })
+        flows << Flow.create(TABLE_TUNNEL_PORTS, 30, {
+          :tunnel_id => self.network_number, :tunnel_id_mask => TUNNEL_NETWORK_MASK
+        }, {}, fo_metadata_pn(tunnel_port.port_number, :goto_table => TABLE_VIRTUAL_SRC))
 
         ovs_flows << create_ovs_flow_learn_arp(tunnel_port, "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\]," % self.network_number)
       end
 
       self.datapath.add_flows(flows)
       ovs_flows.each { |flow| self.datapath.add_ovs_flow(flow) }
-    end
-
-    def create_flow_catch(port, table, match, actions = {})
-      Flow.create(table, 30, {
-        :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
-      }.merge(match), {
-        :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
-      }.merge(actions), fo_metadata_pn(port.port_number, :goto_table => TABLE_VIRTUAL_SRC))
     end
 
     def create_ovs_flow_learn_arp(port, learn_options = "")

@@ -26,6 +26,10 @@ module Vnmgr::VNet::Openflow
       self.port_info.port_no
     end
 
+    def port_name
+      self.port_info.name
+    end
+
     def network_number
       if self.network
         self.network.network_number
@@ -80,6 +84,10 @@ module Vnmgr::VNet::Openflow
                            :metadata_mask => Constants::METADATA_NETWORK_MASK | extra_mask,
                            :goto_table => goto_table
                          })
+    end
+
+    def flow_options_load_np(goto_table)
+      flow_options_load_network(goto_table, self.port_number, Constants::METADATA_PORT_MASK)
     end
 
     def install
