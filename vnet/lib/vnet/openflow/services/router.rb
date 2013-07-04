@@ -75,7 +75,7 @@ module Vnet::Openflow::Services
                                                              :ip_addresses__ipv4_address => message.ipv4_dst.to_i
                                                            }).first.commit(:fill => :vif)
 
-      if ip_lease.nil?
+      if ip_lease.nil? || ip_lease.vif.nil?
         debug "service::router.packet_in: no vif found (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
         return
       end
@@ -100,6 +100,7 @@ module Vnet::Openflow::Services
                                                           :eth_src => @service_mac,
                                                           :ipv4_dst => message.ipv4_dst
                                                         }), {
+                                           :eth_dst => Trema::Mac.new(ip_lease.vif.mac_addr),
                                            :output => eth_port.port_number
                                          }, {
                                            :cookie => cookie,
