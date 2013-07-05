@@ -26,6 +26,10 @@ module Vnmgr::VNet::Openflow
       self.port_info.port_no
     end
 
+    def port_name
+      self.port_info.name
+    end
+
     def network_number
       if self.network
         self.network.network_number
@@ -38,7 +42,7 @@ module Vnmgr::VNet::Openflow
       false
     end
 
-    def gre?
+    def tunnel?
       false
     end
 
@@ -82,6 +86,10 @@ module Vnmgr::VNet::Openflow
                          })
     end
 
+    def flow_options_load_np(goto_table)
+      flow_options_load_network(goto_table, self.port_number, Constants::METADATA_PORT_MASK)
+    end
+
     def install
       error "port: No install action implemented for this port."
     end
@@ -95,7 +103,7 @@ module Vnmgr::VNet::Openflow
     def update_eth_ports
     end
 
-    def update_gre_ports
+    def update_tunnel_ports
     end
   end
 

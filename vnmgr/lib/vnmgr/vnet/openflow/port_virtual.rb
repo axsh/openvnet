@@ -75,7 +75,7 @@ module Vnmgr::VNet::Openflow
       self.datapath.add_flows(flows) unless flows.empty?
     end
 
-    def update_gre_ports
+    def update_tunnel_ports
     end
   end
 
