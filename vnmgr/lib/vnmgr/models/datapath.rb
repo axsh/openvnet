@@ -10,5 +10,11 @@ module Vnmgr::Models
 
     one_to_many :tunnels, :key => :src_datapath_id
     subset(:alives, {})
+
+    dataset_module do
+      def on_other_segment(datapath)
+        where(~{:id => datapath.id}).where(~{:dc_segment_id => datapath.dc_segment_id})
+      end
+    end
   end
 end
