@@ -15,7 +15,6 @@ module Vnmgr::VNet::Openflow
     # destination mac address, which includes all non-virtual
     # networks.
     TABLE_TUNNEL_PORTS = 3
-    #TABLE_ROUTE_DIRECTLY = 3
 
     # Routing to non-virtual networks with filtering applied.
     #
@@ -36,26 +35,29 @@ module Vnmgr::VNet::Openflow
     #
     # The current filtering rules are bare-boned and provide just
     # routing.
-    TABLE_VIRTUAL_SRC = 6
-    TABLE_VIRTUAL_DST = 7
+    TABLE_VIRTUAL_SRC = 10
+    TABLE_VIRTUAL_DST = 18
+
+    TABLE_ROUTER_ENTRY = 11
+    TABLE_ROUTER_SRC = 12
+    TABLE_ROUTER_DST = 13
+    TABLE_ROUTER_EXIT = 14
 
     # The ARP antispoof table ensures no ARP packet SHA or SPA field
     # matches the mac address owned by another port.
     #
     # If valid, the next table routes the packet to the right port.
-    TABLE_ARP_ANTISPOOF = 10
-    TABLE_ARP_ROUTE = 11
-
-    TABLE_MAC_ROUTE = 14
+    TABLE_ARP_ANTISPOOF = 20
+    TABLE_ARP_ROUTE = 21
 
     # Output to port based on the metadata field. OpenFlow 1.3 does
     # not seem to have any action allowing us to output to a port
     # using the metadata field directly, so a separate table is
     # required.
-    TABLE_METADATA_LOCAL = 15
-    TABLE_METADATA_ROUTE = 16
-    TABLE_METADATA_SEGMENT = 17
-    TABLE_METADATA_TUNNEL = 18
+    TABLE_METADATA_LOCAL = 30
+    TABLE_METADATA_ROUTE = 31
+    TABLE_METADATA_SEGMENT = 32
+    TABLE_METADATA_TUNNEL = 33
 
     COOKIE_NETWORK_SHIFT = 32
 

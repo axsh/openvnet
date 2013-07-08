@@ -17,6 +17,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :dc_segment_manager
     attr_reader :network_manager
     attr_reader :packet_manager
+    attr_reader :route_manager
     attr_reader :tunnel_manager
 
     def initialize(dp, name = nil)
@@ -30,19 +31,23 @@ module Vnmgr::VNet::Openflow
       @cookie_manager.create_category(:network, 0x4, 48)
       @cookie_manager.create_category(:dc_segment, 0x5, 48)
       @cookie_manager.create_category(:tunnel, 0x6, 48)
+      @cookie_manager.create_category(:route, 0x7, 48)
 
       @ports = {}
+
       @dc_segment_manager = DcSegmentManager.new(dp)
       @network_manager = NetworkManager.new(dp)
       @packet_manager = PacketManager.new(dp)
+      @route_manager = RouteManager.new(dp)
       @tunnel_manager = TunnelManager.new(dp)
-      @tunnel_manager.create_all_tunnels
 
       @catch_flow_cookie = @cookie_manager.acquire(:switch)
       @default_flow_cookie = @cookie_manager.acquire(:switch)
 
       @packet_manager.insert(Vnmgr::VNet::Services::Arp.new(:datapath => @datapath), :arp)
       @packet_manager.insert(Vnmgr::VNet::Services::Icmp.new(:datapath => @datapath), :icmp)
+
+      @tunnel_manager.create_all_tunnels
     end
 
     def eth_ports
@@ -79,6 +84,10 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ROUTER_SRC, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ROUTER_DST, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ROUTER_EXIT, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
