@@ -11,7 +11,7 @@ describe Vnmgr::VNet::Openflow::Switch do
       switch.switch_ready
 
       expect(datapath.sent_messages.size).to eq 2
-      expect(datapath.added_flows.size).to eq 16
+      expect(datapath.added_flows.size).to eq 23
       expect(datapath.added_ovs_flows.size).to eq 0
     end
   end

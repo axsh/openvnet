@@ -102,7 +102,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[1][:instructions][0].metadata).to eq (1 << METADATA_NETWORK_SHIFT) | 9
       expect(datapath.added_flows[1][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
       expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[1][:instructions][1].table_id).to eq TABLE_VIRTUAL_SRC
+      expect(datapath.added_flows[1][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
 
       expect(datapath.added_flows[2][:table_id]).to eq TABLE_VIRTUAL_SRC
       expect(datapath.added_flows[2][:priority]).to eq 30
@@ -123,7 +123,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[3][:instructions][0].metadata).to eq (1 << METADATA_NETWORK_SHIFT) | 10
       expect(datapath.added_flows[3][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
       expect(datapath.added_flows[3][:instructions][1]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[3][:instructions][1].table_id).to eq TABLE_VIRTUAL_SRC
+      expect(datapath.added_flows[3][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
 
       expect(datapath.added_flows[4][:table_id]).to eq TABLE_VIRTUAL_SRC
       expect(datapath.added_flows[4][:priority]).to eq 30
@@ -164,7 +164,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[1][:instructions][0].metadata).to eq (2 << METADATA_NETWORK_SHIFT) | 9
       expect(datapath.added_flows[1][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
       expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[1][:instructions][1].table_id).to eq TABLE_VIRTUAL_SRC
+      expect(datapath.added_flows[1][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
 
       expect(datapath.added_flows[2][:table_id]).to eq TABLE_VIRTUAL_SRC
       expect(datapath.added_flows[2][:priority]).to eq 30
