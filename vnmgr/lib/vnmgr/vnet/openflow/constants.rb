@@ -2,6 +2,8 @@
 
 module Vnmgr::VNet::Openflow
 
+  MW = Vnmgr::ModelWrappers
+
   module Constants
     # Default table used by all incoming packets.
     TABLE_CLASSIFIER = 0

@@ -54,6 +54,19 @@ module Vnmgr::VNet::Openflow
       update_all_networks if should_update
     end
 
+    def prepare_network(network_id, dp_map)
+      update_networks = false
+
+      MW::DatapathNetwork.batch.on_segment(dp_map).where(:network_id => network_id).all.commit.each { |dpn_map|
+        self.insert(dpn_map, false)
+
+        # FIXME: Only add non-existing ones...
+        update_networks = true
+      }
+
+      self.update_all_networks if update_networks
+    end
+
     def update_all_networks
       @datapath.switch.network_manager.networks.each { |nw_id,network|
         self.update_virtual_network(network) if network.class == NetworkVirtual
