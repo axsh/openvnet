@@ -63,10 +63,6 @@ module Vnmgr::VNet::Openflow
       end
 
       self.datapath.switch.tunnel_ports.each do |tunnel_port|
-        flows << Flow.create(TABLE_TUNNEL_PORTS, 30, {
-          :tunnel_id => self.network_number, :tunnel_id_mask => TUNNEL_NETWORK_MASK
-        }, {}, fo_metadata_pn(tunnel_port.port_number, :goto_table => TABLE_VIRTUAL_SRC))
-
         ovs_flows << create_ovs_flow_learn_arp(tunnel_port, "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\]," % self.network_number)
       end
 

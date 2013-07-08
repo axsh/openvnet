@@ -97,13 +97,23 @@ module Vnmgr::VNet::Openflow
         { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
           :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK },
         tunnel_ports.map { |tunnel_port|
-          { :tunnel_id => network.network_number | TUNNEL_FLAG,
+          { :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+            :tunnel_id => network.network_number | TUNNEL_FLAG,
             :output => tunnel_port.port_number}
         },
         { :cookie => self.cookie })
 
       # catch flow
       tunnel_ports.each do |tunnel_port|
+        flows << Flow.create(TABLE_TUNNEL_PORTS, 30,
+          { :in_port => tunnel_port.port_number,
+            :tunnel_id => network.network_number,
+            :tunnel_id_mask => TUNNEL_NETWORK_MASK },
+          nil,
+          { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | tunnel_port.port_number,
+            :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK,
+            :goto_table => TABLE_VIRTUAL_SRC })
+
         flows << Flow.create(TABLE_VIRTUAL_SRC, 30,
           { :in_port => tunnel_port.port_number,
             :tunnel_id => network.network_number,
