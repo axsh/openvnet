@@ -49,7 +49,7 @@ module Vnmgr::VNet::Openflow
       tunnel = self.tunnels.find{ |t| t[:dst_dpid] == datapath_network[:dpid] }
       tunnel[:datapath_networks] << datapath_network
 
-      @datapath.add_flow(Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
+      @datapath.add_flow(Flow.create(TABLE_VIRTUAL_SRC, 90, {
                                        :eth_dst => datapath_network[:broadcast_mac_addr]
                                      }, {}, {
                                        :cookie => self.cookie
@@ -112,7 +112,7 @@ module Vnmgr::VNet::Openflow
           nil,
           { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | tunnel_port.port_number,
             :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK,
-            :goto_table => TABLE_VIRTUAL_SRC })
+            :goto_table => TABLE_NETWORK_CLASSIFIER })
 
         flows << Flow.create(TABLE_VIRTUAL_SRC, 30,
           { :in_port => tunnel_port.port_number,

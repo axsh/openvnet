@@ -3,6 +3,7 @@
 module Vnmgr::VNet::Openflow
 
   class PacketHandler
+    include Constants
     include Celluloid::Logger
 
     attr_reader :datapath
@@ -24,14 +25,14 @@ module Vnmgr::VNet::Openflow
     def catch_flow(type, match, params = {})
       case type
       when :physical_local
-        table = Constants::TABLE_PHYSICAL_DST
+        table = TABLE_PHYSICAL_DST
         priority = 70
-        match = match.merge(params[:network].metadata_flags(Constants::METADATA_FLAG_LOCAL))
+        match = match.merge(params[:network].metadata_flags(METADATA_FLAG_LOCAL))
       when :virtual_local
-        table = Constants::TABLE_VIRTUAL_DST
+        table = TABLE_VIRTUAL_DST
         priority = 70
-        match = match.merge(params[:network].metadata_pn(Constants::METADATA_FLAG_LOCAL,
-                                                         Constants::METADATA_FLAGS_MASK))
+        match = match.merge(params[:network].metadata_pn(METADATA_FLAG_LOCAL,
+                                                         METADATA_FLAGS_MASK))
       else
         raise "Wrong type for catch_flow."
       end

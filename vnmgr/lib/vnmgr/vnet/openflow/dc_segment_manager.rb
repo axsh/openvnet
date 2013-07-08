@@ -34,16 +34,10 @@ module Vnmgr::VNet::Openflow
       actions = {:cookie => datapath[:cookie]}
 
       flows = []
-      flows << Flow.create(Constants::TABLE_HOST_PORTS, 90, {
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_dst => datapath[:broadcast_mac_addr]
                            }, {}, actions)
-      flows << Flow.create(Constants::TABLE_HOST_PORTS, 90, {
-                             :eth_src => datapath[:broadcast_mac_addr]
-                           }, {}, actions)
-      flows << Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
-                             :eth_dst => datapath[:broadcast_mac_addr]
-                           }, {}, actions)
-      flows << Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_src => datapath[:broadcast_mac_addr]
                            }, {}, actions)
 

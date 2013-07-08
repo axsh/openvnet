@@ -76,24 +76,39 @@ module Vnmgr::VNet::Openflow
 
       flow_options = {:cookie => @default_flow_cookie}
 
-      # currently not reachable
-      #flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, {}, flow_options)
+      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {},
+                           flow_options.merge({ :metadata => METADATA_FLAG_REMOTE,
+                                                :metadata_mask => METADATA_FLAG_REMOTE,
+                                                :goto_table => TABLE_TUNNEL_PORTS
+                                              }))
+
       flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)
+
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 10, {
+                             :metadata => 0x0,
+                             :metadata_mask => METADATA_NETWORK_MASK
+                           }, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+
       flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ROUTER_SRC, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ROUTER_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ROUTER_EXIT, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, {}, flow_options)
+
+      flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_TUNNEL, 0, {}, {}, flow_options)
+
+      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, {}, flow_options)
 
       flow_options = {:cookie => @catch_flow_cookie}
 
@@ -112,13 +127,6 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
                            }, {}, flow_options)
-
-      # Catches all packets over gre tunnel
-      flows << Flow.create(TABLE_CLASSIFIER, 1, { :tunnel_id => 0 }, {}, flow_options)
-      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {}, flow_options.merge(
-        :metadata => METADATA_FLAG_REMOTE,
-        :metadata_mask => METADATA_FLAGS_MASK,
-        :goto_table => TABLE_TUNNEL_PORTS))
 
       @datapath.add_flows(flows)
     end

@@ -9,7 +9,7 @@ module Vnmgr::VNet::Openflow
     #                  differentiate between packets that are from
     #                  external sources and those that are from
     #                  internal interfaces.
-    # metadata[32-48]: Network id;
+    # metadata[32-47]: Network id;
     # metadata[48-64]: Tunnel id; preliminary.
 
     def flow_options
@@ -20,10 +20,16 @@ module Vnmgr::VNet::Openflow
       flows = []
 
       if self.datapath_of_bridge && self.datapath_of_bridge[:broadcast_mac_addr]
-        flows << Flow.create(TABLE_VIRTUAL_SRC, 90, {
+        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                                :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
                              }, {}, flow_options)
+        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+                               :eth_src => self.datapath_of_bridge[:broadcast_mac_addr]
+                             }, {}, flow_options)
       end
+
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30, metadata_n, {},
+                           flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
 
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
                            metadata_pn.merge!(:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')), {},
@@ -49,18 +55,18 @@ module Vnmgr::VNet::Openflow
                              :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
                            }, flood_actions, flow_options.merge(:goto_table => TABLE_METADATA_SEGMENT))
 
-      eth_port = self.datapath.switch.eth_ports.first
-      if eth_port
+      self.datapath.switch.eth_ports.each { |eth_port|
         if self.datapath_of_bridge
           flows << Flow.create(TABLE_HOST_PORTS, 30, {
-            :in_port => eth_port.port_number,
-            :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
-          }, {
-            :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
-          }, fo_metadata_pn(eth_port.port_number, :goto_table => TABLE_VIRTUAL_SRC))
+                                 :in_port => eth_port.port_number,
+                                 :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
+                               }, {
+                                 :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
+                               }, fo_metadata_pn(eth_port.port_number,
+                                                 :goto_table => TABLE_NETWORK_CLASSIFIER))
         end
         ovs_flows << create_ovs_flow_learn_arp(eth_port)
-      end
+      }
 
       self.datapath.switch.tunnel_ports.each do |tunnel_port|
         ovs_flows << create_ovs_flow_learn_arp(tunnel_port, "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\]," % self.network_number)

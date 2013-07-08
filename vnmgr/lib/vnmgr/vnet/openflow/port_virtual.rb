@@ -14,9 +14,9 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
                            }, {},
-                           flow_options_load_network(TABLE_VIRTUAL_SRC,
-                                                     0x0 | METADATA_FLAG_LOCAL,
-                                                     METADATA_PORT_MASK | METADATA_FLAG_LOCAL))
+                           fo_load_network(TABLE_NETWORK_CLASSIFIER,
+                                           METADATA_FLAG_LOCAL,
+                                           METADATA_PORT_MASK | METADATA_FLAG_LOCAL))
 
       #
       # ARP Anti-Spoof:
@@ -70,7 +70,9 @@ module Vnmgr::VNet::Openflow
         flows << Flow.create(TABLE_HOST_PORTS, 30, {
                                :in_port => port.port_number,
                                :eth_dst => self.hw_addr,
-                             }, {}, flow_options_load_network(TABLE_VIRTUAL_SRC, port.port_number, METADATA_PORT_MASK))
+                             }, {}, fo_load_network(TABLE_NETWORK_CLASSIFIER,
+                                                    port.port_number,
+                                                    METADATA_PORT_MASK))
       }
       self.datapath.add_flows(flows) unless flows.empty?
     end
