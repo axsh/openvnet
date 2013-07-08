@@ -165,6 +165,7 @@ module Vnmgr
       autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
       autoload :PortPhysical, 'vnmgr/vnet/openflow/port_physical'
       autoload :PortVirtual, 'vnmgr/vnet/openflow/port_virtual'
+      autoload :RouteManager, 'vnmgr/vnet/openflow/route_manager'
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
       autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
       autoload :TunnelManager, 'vnmgr/vnet/openflow/tunnel_manager'

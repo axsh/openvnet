@@ -53,6 +53,7 @@ module Vnmgr::VNet::Openflow
 
       @datapath.switch.dc_segment_manager.async.prepare_network(network_map.id, dp_map)
       @datapath.switch.tunnel_manager.async.prepare_network(network_map.id, dp_map)
+      @datapath.switch.route_manager.async.prepare_network(network_map, dp_map)
 
       network
     end
