@@ -85,7 +85,8 @@ module Vnmgr::VNet::Openflow
         { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
           :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK },
         tunnel_ports.map { |tunnel_port|
-          { :tunnel_id => network.network_number | TUNNEL_FLAG,
+          { :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+            :tunnel_id => network.network_number | TUNNEL_FLAG,
             :output => tunnel_port.port_number}
         },
         { :cookie => self.cookie })
