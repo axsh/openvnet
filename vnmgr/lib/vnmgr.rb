@@ -140,6 +140,7 @@ module Vnmgr
 
   module VNet
     module Openflow
+      autoload :CookieCategory, 'vnmgr/vnet/openflow/cookie_manager'
       autoload :CookieManager, 'vnmgr/vnet/openflow/cookie_manager'
       autoload :Constants, 'vnmgr/vnet/openflow/constants'
       autoload :Controller, 'vnmgr/vnet/openflow/controller'
