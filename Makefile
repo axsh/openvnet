@@ -16,7 +16,7 @@ all: build-ruby install-bundle
 dev: build-ruby install-bundle-dev
 
 build-ruby:
-	$(CURDIR)/deployment/rubybuild/build_ruby.sh
+	ruby_ver=$(RUBY_VERSION) $(CURDIR)/deployment/rubybuild/build_ruby.sh
 
 install-bundle:
 	$(RUBYDIR)/bin/gem install bundler
