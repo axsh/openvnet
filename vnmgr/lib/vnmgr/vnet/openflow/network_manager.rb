@@ -7,7 +7,6 @@ module Vnmgr::VNet::Openflow
   class NetworkManager
     include Celluloid::Logger
 
-    attr_reader :datapath
     attr_reader :networks
 
     def initialize(dp)
@@ -27,9 +26,9 @@ module Vnmgr::VNet::Openflow
 
       case network_map.network_mode
       when 'physical'
-        network = NetworkPhysical.new(self.datapath, network_map)
+        network = NetworkPhysical.new(@datapath, network_map)
       when 'virtual'
-        network = NetworkVirtual.new(self.datapath, network_map)
+        network = NetworkVirtual.new(@datapath, network_map)
       else
         raise("Unknown network type.")
       end
@@ -52,8 +51,8 @@ module Vnmgr::VNet::Openflow
         network.add_service(service)
       }
 
-      @datapath.switch.dc_segment_manager.prepare_network(network_map.id, dp_map)
-      @datapath.switch.tunnel_manager.prepare_network(network_map.id, dp_map)
+      @datapath.switch.dc_segment_manager.async.prepare_network(network_map.id, dp_map)
+      @datapath.switch.tunnel_manager.async.prepare_network(network_map.id, dp_map)
 
       network
     end

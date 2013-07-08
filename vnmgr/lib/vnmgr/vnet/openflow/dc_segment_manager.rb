@@ -4,11 +4,9 @@ module Vnmgr::VNet::Openflow
 
   class DcSegmentManager
     include Constants
+    include Celluloid
     include Celluloid::Logger
     
-    attr_reader :datapath
-    attr_reader :segment_datapaths
-
     def initialize(dp)
       @datapath = dp
       @segment_datapaths = []
@@ -68,13 +66,11 @@ module Vnmgr::VNet::Openflow
     end
 
     def update_all_networks
-      @datapath.switch.network_manager.networks.each { |nw_id,network|
+      # Fix this to be thread safe.
+
+      @datapath.switch.network_manager.networks.dup.each { |nw_id,network|
         self.update_virtual_network(network) if network.class == NetworkVirtual
       }
-    end
-
-    def update_network(network)
-      self.update_virtual_network(network) if network.class == NetworkVirtual
     end
 
     def update_virtual_network(network)
@@ -94,7 +90,7 @@ module Vnmgr::VNet::Openflow
                            flood_actions,
                            network.flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL))
 
-      self.datapath.add_flows(flows)
+      @datapath.add_flows(flows)
     end
 
   end

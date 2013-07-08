@@ -4,6 +4,7 @@ module Vnmgr::VNet::Openflow
 
   class TunnelManager
     include Constants
+    include Celluloid
     include Celluloid::Logger
     
     attr_reader :datapath
@@ -71,13 +72,11 @@ module Vnmgr::VNet::Openflow
     end
 
     def update_all_networks
-      @datapath.switch.network_manager.networks.each { |nw_id,network|
+      # Fix this...
+
+      @datapath.switch.network_manager.networks.dup.each { |nw_id,network|
         self.update_virtual_network(network) if network.class == NetworkVirtual
       }
-    end
-
-    def update_network(network)
-      self.update_virtual_network(network) if network.class == NetworkVirtual
     end
 
     def update_virtual_network(network)
