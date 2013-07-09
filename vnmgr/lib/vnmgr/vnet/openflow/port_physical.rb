@@ -3,7 +3,7 @@
 module Vnmgr::VNet::Openflow
 
   module PortPhysical
-    include Constants
+    include Vnmgr::Constants::Openflow
 
     def flow_options
       @flow_options ||= {:cookie => @cookie}

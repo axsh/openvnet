@@ -32,10 +32,10 @@ module Vnmgr::VNet::Openflow
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
 
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
-                           metadata_pn.merge!(:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')), {},
+                           metadata_pn.merge!(:eth_dst => MAC_BROADCAST), {},
                            flow_options.merge(metadata_pn(OFPP_FLOOD).merge!(:goto_table => TABLE_METADATA_ROUTE)))
       flows << Flow.create(TABLE_VIRTUAL_DST, 30,
-                           metadata_n.merge!(:eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')), {},
+                           metadata_n.merge!(:eth_dst => MAC_BROADCAST), {},
                            flow_options.merge(metadata_pn(OFPP_FLOOD).merge!(:goto_table => TABLE_METADATA_LOCAL)))
 
       self.datapath.add_flows(flows)
@@ -61,7 +61,7 @@ module Vnmgr::VNet::Openflow
                                  :in_port => eth_port.port_number,
                                  :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
                                }, {
-                                 :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
+                                 :eth_dst => MAC_BROADCAST
                                }, fo_metadata_pn(eth_port.port_number,
                                                  :goto_table => TABLE_NETWORK_CLASSIFIER))
         end

@@ -5,9 +5,9 @@ require 'celluloid'
 module Vnmgr::VNet::Openflow
 
   class Switch
-    include Constants
     include Celluloid
     include Celluloid::Logger
+    include Vnmgr::Constants::Openflow
 
     attr_reader :datapath
     attr_reader :bridge_hw

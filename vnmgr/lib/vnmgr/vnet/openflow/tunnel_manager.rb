@@ -3,9 +3,9 @@
 module Vnmgr::VNet::Openflow
 
   class TunnelManager
-    include Constants
     include Celluloid
     include Celluloid::Logger
+    include Vnmgr::Constants::Openflow
     
     attr_reader :datapath
     attr_reader :tunnels
@@ -97,7 +97,7 @@ module Vnmgr::VNet::Openflow
         { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
           :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK },
         tunnel_ports.map { |tunnel_port|
-          { :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+          { :eth_dst => MAC_BROADCAST,
             :tunnel_id => network.network_number | TUNNEL_FLAG,
             :output => tunnel_port.port_number}
         },

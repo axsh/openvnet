@@ -44,7 +44,7 @@ module Vnmgr::VNet::Openflow
       @cookies = {}
     end
 
-    def create_category(name, prefix, bitshift = Constants::COOKIE_PREFIX_SHIFT)
+    def create_category(name, prefix, bitshift = Vnmgr::Constants::Openflow::COOKIE_PREFIX_SHIFT)
       @categories[name] = CookieCategory.new(prefix, bitshift)
     end
 

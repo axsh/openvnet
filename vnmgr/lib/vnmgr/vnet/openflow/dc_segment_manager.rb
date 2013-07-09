@@ -3,9 +3,9 @@
 module Vnmgr::VNet::Openflow
 
   class DcSegmentManager
-    include Constants
     include Celluloid
     include Celluloid::Logger
+    include Vnmgr::Constants::Openflow
     
     def initialize(dp)
       @datapath = dp

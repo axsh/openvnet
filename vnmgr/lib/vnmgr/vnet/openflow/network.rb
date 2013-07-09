@@ -3,8 +3,8 @@
 module Vnmgr::VNet::Openflow
 
   class Network
-    include Constants
     include Celluloid::Logger
+    include Vnmgr::Constants::Openflow
 
     attr_reader :datapath
     attr_reader :network_id

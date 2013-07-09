@@ -11,7 +11,7 @@ module Vnmgr::VNet::Openflow
     def install
       flows = []
       flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
-                             :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff')
+                             :eth_dst => MAC_BROADCAST
                            }, {},
                            flow_options.merge({ :metadata => OFPP_FLOOD,
                                                 :metadata_mask => METADATA_PORT_MASK,

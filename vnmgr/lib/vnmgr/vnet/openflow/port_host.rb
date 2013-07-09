@@ -3,7 +3,7 @@
 module Vnmgr::VNet::Openflow
 
   module PortHost
-    include Constants
+    include Vnmgr::Constants::Openflow
 
     def eth?
       true

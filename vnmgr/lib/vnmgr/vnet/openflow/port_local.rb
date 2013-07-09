@@ -3,7 +3,7 @@
 module Vnmgr::VNet::Openflow
 
   module PortLocal
-    include Constants
+    include Vnmgr::Constants::Openflow
 
     attr_reader :bridge_hw
 
