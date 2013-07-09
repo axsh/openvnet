@@ -73,7 +73,15 @@ module Vnmgr::VNet::Openflow
     # Metadata, tunnel and cookie flags and masks:
     #
 
-    COOKIE_NETWORK_SHIFT = 32
+    COOKIE_PREFIX_SHIFT = 48
+
+    COOKIE_PREFIX_SWITCH = 0x1
+    COOKIE_PREFIX_PACKET_HANDLER = 0x2
+    COOKIE_PREFIX_PORT = 0x3
+    COOKIE_PREFIX_NETWORK = 0x4
+    COOKIE_PREFIX_DC_SEGMENT = 0x5
+    COOKIE_PREFIX_TUNNEL = 0x6
+    COOKIE_PREFIX_ROUTE = 0x7
 
     METADATA_FLAGS_MASK = (0xffff << 48)
     METADATA_FLAGS_SHIFT = 48

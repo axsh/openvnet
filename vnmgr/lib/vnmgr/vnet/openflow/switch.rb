@@ -25,13 +25,13 @@ module Vnmgr::VNet::Openflow
       @datapath.switch = self
 
       @cookie_manager = CookieManager.new
-      @cookie_manager.create_category(:switch, 0x1, 48)
-      @cookie_manager.create_category(:packet_handler, 0x2, 48)
-      @cookie_manager.create_category(:port, 0x3, 48)
-      @cookie_manager.create_category(:network, 0x4, 48)
-      @cookie_manager.create_category(:dc_segment, 0x5, 48)
-      @cookie_manager.create_category(:tunnel, 0x6, 48)
-      @cookie_manager.create_category(:route, 0x7, 48)
+      @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
+      @cookie_manager.create_category(:packet_handler, COOKIE_PREFIX_PACKET_HANDLER)
+      @cookie_manager.create_category(:port,           COOKIE_PREFIX_PORT)
+      @cookie_manager.create_category(:network,        COOKIE_PREFIX_NETWORK)
+      @cookie_manager.create_category(:dc_segment,     COOKIE_PREFIX_DC_SEGMENT)
+      @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
+      @cookie_manager.create_category(:route,          COOKIE_PREFIX_ROUTE)
 
       @ports = {}
 

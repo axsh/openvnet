@@ -29,7 +29,7 @@ module Vnmgr::VNet::Openflow
       @ports = {}
       @service_cookies = {}
 
-      @cookie = @network_id | (0x4 << 48)
+      @cookie = @network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = network_map.ipv4_prefix
     end

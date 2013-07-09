@@ -84,7 +84,7 @@ module Vnmgr::VNet::Openflow
                              :metadata => (network_id << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
                              :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK
                            }, flood_actions, {
-                             :cookie => network_id | (0x4 << 48),
+                             :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
                              :goto_table => TABLE_METADATA_TUNNEL
                            })
                            
