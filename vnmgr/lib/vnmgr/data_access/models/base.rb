@@ -39,7 +39,18 @@ module Vnmgr::DataAccess::Models
         }
       when Vnmgr::Models::Base
         data.to_hash.tap do |h|
-          h[options[:fill]] = to_hash(data.__send__(options[:fill]), options) if options[:fill]
+          cleaned_options = options.dup
+          
+          fill = cleaned_options.delete(:fill)
+          fill = case fill
+                 when Array then fill
+                 when Symbol then [fill]
+                 else
+                   []
+                 end
+          fill.each { |field|
+            h[field] = to_hash(data.__send__(field), cleaned_options)
+          }
         end
       else
         data

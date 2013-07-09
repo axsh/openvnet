@@ -2,6 +2,8 @@
 
 module Vnmgr::VNet::Openflow
 
+  MW = Vnmgr::ModelWrappers
+
   module Constants
     # Default table used by all incoming packets.
     TABLE_CLASSIFIER = 0
@@ -13,7 +15,41 @@ module Vnmgr::VNet::Openflow
     # destination mac address, which includes all non-virtual
     # networks.
     TABLE_TUNNEL_PORTS = 3
-    #TABLE_ROUTE_DIRECTLY = 3
+
+    # Initial verification of network number and application of global
+    # filtering rules.
+    #
+    # The network number stored in bits [32,48> are used to identify
+    # the network, and zero is assumped to be destined for what is
+    # currently known as the 'physical' network.
+    #
+    # Later we will always require a network number to be supplied.
+    TABLE_NETWORK_CLASSIFIER = 10
+
+    TABLE_VIRTUAL_SRC = 11
+
+    TABLE_ROUTER_ENTRY = 14
+    TABLE_ROUTER_SRC = 15
+    TABLE_ROUTER_DST = 16
+    TABLE_ROUTER_EXIT = 17
+
+    TABLE_VIRTUAL_DST = 18
+
+    # Route based on the mac address only.
+    TABLE_MAC_ROUTE = 30
+
+    # Output to port based on the metadata field. OpenFlow 1.3 does
+    # not seem to have any action allowing us to output to a port
+    # using the metadata field directly, so a separate table is
+    # required.
+    TABLE_METADATA_LOCAL = 31
+    TABLE_METADATA_ROUTE = 32
+    TABLE_METADATA_SEGMENT = 33
+    TABLE_METADATA_TUNNEL = 34
+
+    #
+    # Legacy tables yet to be integrated in the new table ordering:
+    #
 
     # Routing to non-virtual networks with filtering applied.
     #
@@ -23,45 +59,29 @@ module Vnmgr::VNet::Openflow
     #
     # The source will then apply filtering rules and output to the
     # port number found in registry 1.
-    TABLE_PHYSICAL_DST = 4
-    TABLE_PHYSICAL_SRC = 5
-
-    # Routing to virtual networks.
-    #
-    # Each port participating in a virtual network will load the
-    # virtual network id to registry 2 in the classifier table for
-    # all types of packets.
-    #
-    # The current filtering rules are bare-boned and provide just
-    # routing.
-    TABLE_VIRTUAL_SRC = 6
-    TABLE_VIRTUAL_DST = 7
+    TABLE_PHYSICAL_DST = 20
+    TABLE_PHYSICAL_SRC = 21
 
     # The ARP antispoof table ensures no ARP packet SHA or SPA field
     # matches the mac address owned by another port.
     #
     # If valid, the next table routes the packet to the right port.
-    TABLE_ARP_ANTISPOOF = 10
-    TABLE_ARP_ROUTE = 11
+    TABLE_ARP_ANTISPOOF = 22
+    TABLE_ARP_ROUTE = 23
 
-    TABLE_MAC_ROUTE = 14
-
-    # Output to port based on the metadata field. OpenFlow 1.3 does
-    # not seem to have any action allowing us to output to a port
-    # using the metadata field directly, so a separate table is
-    # required.
-    TABLE_METADATA_LOCAL = 15
-    TABLE_METADATA_ROUTE = 16
-    TABLE_METADATA_SEGMENT = 17
-    TABLE_METADATA_TUNNEL = 18
+    #
+    # Metadata, tunnel and cookie flags and masks:
+    #
 
     COOKIE_NETWORK_SHIFT = 32
 
     METADATA_FLAGS_MASK = (0xffff << 48)
     METADATA_FLAGS_SHIFT = 48
 
-    METADATA_FLAG_LOCAL  = (0x1 << 48)
-    METADATA_FLAG_REMOTE = (0x2 << 48)
+    METADATA_FLAG_VIRTUAL  = (0x1 << 48)
+    METADATA_FLAG_PHYSICAL = (0x2 << 48)
+    METADATA_FLAG_LOCAL    = (0x4 << 48)
+    METADATA_FLAG_REMOTE   = (0x8 << 48)
 
     METADATA_PORT_MASK = 0xffffffff
     METADATA_NETWORK_MASK = (0xffff << 32)

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 module Vnmgr::Models
-  class NetworkService < Base
-    taggable 'ns'
+  class RouteLink < Base
+    taggable 'rl'
 
-    many_to_one :vif
+    one_to_many :routes
 
     subset(:alives, {})
 

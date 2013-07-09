@@ -21,7 +21,6 @@ module Vnmgr::Models
     one_to_many :datapath_networks
     one_to_many :dhcp_ranges
     one_to_many :ip_leases
-    one_to_many :routers
     one_to_many :tunnels
     one_to_many :vifs
 
@@ -33,6 +32,12 @@ module Vnmgr::Models
       NetworkService.dataset.join_table(:inner, :vifs,
                                         {:vifs__network_id => self.id} & {:vifs__id => :network_services__vif_id}
                                         ).select_all(:network_services).alives
+    end
+
+    one_to_many :routes, :class=>Route do |ds|
+      Route.dataset.join_table(:inner, :vifs,
+                               {:vifs__network_id => self.id} & {:vifs__id => :routes__vif_id}
+                               ).select_all(:routes).alives
     end
 
   end

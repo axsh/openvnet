@@ -5,49 +5,47 @@ require 'racket'
 
 module Vnmgr::VNet::Services
 
-  class Dhcp < Vnmgr::VNet::Openflow::PacketHandler
+  class Dhcp < Base
 
     attr_reader :network
+    attr_reader :vif_uuid
     attr_reader :service_mac
     attr_reader :service_ipv4
 
     def initialize(params)
       @datapath = params[:datapath]
       @network = params[:network]
+      @vif_uuid = params[:vif_uuid]
       @service_mac = params[:service_mac]
       @service_ipv4 = params[:service_ipv4]
     end
 
     def install
-      type = case
-             when self.network.class == Vnmgr::VNet::Openflow::NetworkPhysical then :physical_local
-             when self.network.class == Vnmgr::VNet::Openflow::NetworkVirtual  then :virtual_local
-             else
-               p "Unknown network mode for dhcp service."
-               return
-             end
-
-      catch_flow(type, {
-                   :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
-                   :eth_type => 0x0800,
-                   :ip_proto => 0x11,
-                   :ipv4_dst => IPAddr.new('255.255.255.255'),
-                   :ipv4_src => IPAddr.new('0.0.0.0'),
-                   :udp_dst => 67,
-                   :udp_src => 68
-                 })
-      catch_flow(type, {
-                   :eth_dst => self.service_mac,
-                   :eth_type => 0x0800,
-                   :ip_proto => 0x11,
-                   :ipv4_dst => self.service_ipv4,
-                   :udp_dst => 67,
-                   :udp_src => 68
-                 })
+      catch_network_flow(@network, {
+                           :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+                           :eth_type => 0x0800,
+                           :ip_proto => 0x11,
+                           :ipv4_dst => IPAddr.new('255.255.255.255'),
+                           :ipv4_src => IPAddr.new('0.0.0.0'),
+                           :udp_dst => 67,
+                           :udp_src => 68
+                         }, {
+                           :network => @network
+                         })
+      catch_network_flow(@network, {
+                           :eth_dst => self.service_mac,
+                           :eth_type => 0x0800,
+                           :ip_proto => 0x11,
+                           :ipv4_dst => self.service_ipv4,
+                           :udp_dst => 67,
+                           :udp_src => 68
+                         }, {
+                           :network => @network
+                         })
     end
 
     def packet_in(port, message)
-      p "Dhcp.packet_in called."
+      debug "Dhcp.packet_in called."
 
       dhcp_in, message_type = parse_dhcp_packet(message)
       return if dhcp_in.nil? || message_type.empty? || message_type[0].payload.empty?
@@ -62,27 +60,27 @@ module Vnmgr::VNet::Services
 
       case message_type[0].payload[0]
       when $DHCP_MSG_DISCOVER
-        p "DHCP send: DHCP_MSG_OFFER."
+        debug "DHCP send: DHCP_MSG_OFFER."
         params[:dhcp_class] = DHCP::Offer
         params[:message_type] = $DHCP_MSG_OFFER
       when $DHCP_MSG_REQUEST
-        p "DHCP send: DHCP_MSG_ACK."
+        debug "DHCP send: DHCP_MSG_ACK."
         params[:dhcp_class] = DHCP::ACK
         params[:message_type] = $DHCP_MSG_ACK
       else
-        p "DHCP send: no handler."
+        debug "DHCP send: no handler."
         return
       end
       
       dhcp_out = create_dhcp_packet(params)
 
-      p "DHCP send: output:#{dhcp_out.to_s}."
+      debug "DHCP send: output:#{dhcp_out.to_s}."
 
       udp_out({ :out_port => message.in_port,
-                :src_hw => self.service_mac,
+                :eth_src => self.service_mac,
                 :src_ip => self.service_ipv4,
                 :src_port => 67,
-                :dst_hw => port.hw_addr,
+                :eth_dst => port.hw_addr,
                 :dst_ip => port.ipv4_addr,
                 :dst_port => 68,
                 :payload => dhcp_out.pack
@@ -91,7 +89,7 @@ module Vnmgr::VNet::Services
 
     def parse_dhcp_packet(message)
       if !message.udp?
-        p "DHCP: Message is not UDP."
+        debug "DHCP: Message is not UDP."
         return nil
       end
       
@@ -100,7 +98,7 @@ module Vnmgr::VNet::Services
       dhcp_in = DHCP::Message.from_udp_payload(raw_in_l4.payload)
       message_type = dhcp_in.options.select { |each| each.type == $DHCP_MESSAGETYPE }
 
-      p "DHCP: message:#{dhcp_in.to_s}."
+      debug "DHCP: message:#{dhcp_in.to_s}."
 
       [dhcp_in, message_type]
     end

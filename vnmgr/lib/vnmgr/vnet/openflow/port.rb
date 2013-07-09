@@ -72,22 +72,18 @@ module Vnmgr::VNet::Openflow
       }
     end
 
-    def flow_options_load_port(goto_table)
+    def fo_load_port(goto_table)
       flow_options.merge({ :metadata => self.port_number,
                            :metadata_mask => Constants::METADATA_PORT_MASK,
                            :goto_table => goto_table
                          })
     end
 
-    def flow_options_load_network(goto_table, extra_metadata = 0x0, extra_mask = 0x0)
+    def fo_load_network(goto_table, extra_metadata = 0x0, extra_mask = 0x0)
       flow_options.merge({ :metadata => (self.network_number << Constants::METADATA_NETWORK_SHIFT) | extra_metadata,
                            :metadata_mask => Constants::METADATA_NETWORK_MASK | extra_mask,
                            :goto_table => goto_table
                          })
-    end
-
-    def flow_options_load_np(goto_table)
-      flow_options_load_network(goto_table, self.port_number, Constants::METADATA_PORT_MASK)
     end
 
     def install

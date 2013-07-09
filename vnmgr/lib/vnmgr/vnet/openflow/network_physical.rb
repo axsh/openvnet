@@ -36,7 +36,7 @@ module Vnmgr::VNet::Openflow
       eth_port_actions = self.datapath.switch.eth_ports.collect { |port| {:output => port.port_number} }
       eth_port_actions << {:output => OFPP_LOCAL}
 
-      flows << Flow.create(TABLE_ARP_ROUTE, 0, {
+      flows << Flow.create(TABLE_ARP_ROUTE, 1, {
                              :eth_type => 0x0806
                            }, eth_port_actions, flow_options)
 
