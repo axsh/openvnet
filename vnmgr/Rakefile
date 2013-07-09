@@ -76,8 +76,8 @@ namespace :db do
   end
 
   task :dump => [] do
-    Sequel.extension :schema_dumper
     db = connect(config)
+    db.extension :schema_dumper
     puts db.dump_schema_migration
   end
 end
