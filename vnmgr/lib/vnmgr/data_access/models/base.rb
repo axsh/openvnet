@@ -39,18 +39,18 @@ module Vnmgr::DataAccess::Models
         }
       when Vnmgr::Models::Base
         data.to_hash.tap do |h|
-          cleaned_options = options.dup
-          
-          fill = cleaned_options.delete(:fill)
-          fill = case fill
-                 when Array then fill
-                 when Symbol then [fill]
-                 else
-                   []
-                 end
-          fill.each { |field|
-            h[field] = to_hash(data.__send__(field), cleaned_options)
-          }
+          options_for_recursive_call = options.dup
+          fill = options_for_recursive_call.delete(:fill)
+          [fill].flatten.compact.each do |f|
+            if f.is_a?(Hash)
+              key = f.keys.first
+              value = f.values.first
+              options_for_recursive_call.merge!(:fill => value)
+            else
+              key = f
+            end
+            h[key] = to_hash(data.__send__(key), options_for_recursive_call)
+          end
         end
       else
         data
