@@ -2,7 +2,7 @@
 require 'spec_helper'
 require 'trema'
 
-include Vnmgr::VNet::Openflow::Constants
+include Vnmgr::Constants::Openflow
 
 describe Vnmgr::VNet::Openflow::PortTunnel do
   describe "install" do

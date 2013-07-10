@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+require 'ipaddr'
 require 'trema/mac'
 
 module Vnmgr::Constants::Openflow
@@ -10,8 +11,10 @@ module Vnmgr::Constants::Openflow
   # Trema related constants:
   #
 
-  MAC_BROADCAST = Trema::Mac.new('ff:ff:ff:ff:ff:ff')
-  MAC_ZERO      = Trema::Mac.new('00:00:00:00:00:00')
+  MAC_ZERO       = Trema::Mac.new('00:00:00:00:00:00')
+  MAC_BROADCAST  = Trema::Mac.new('ff:ff:ff:ff:ff:ff')
+  IPV4_ZERO      = IPAddr.new('0.0.0.0')
+  IPV4_BROADCAST = IPAddr.new('255.255.255.255')
 
   #
   # OpenFlow tables:
@@ -102,11 +105,14 @@ module Vnmgr::Constants::Openflow
   METADATA_FLAG_PHYSICAL = (0x2 << 48)
   METADATA_FLAG_LOCAL    = (0x4 << 48)
   METADATA_FLAG_REMOTE   = (0x8 << 48)
+  METADATA_FLAG_ROUTING  = (0x10 << 48)
 
   METADATA_PORT_MASK = 0xffffffff
   METADATA_NETWORK_MASK = (0xffff << 32)
   METADATA_NETWORK_SHIFT = 32
   
+  METADATA_VALUE_MASK = 0xffffffff
+
   TUNNEL_FLAG = (0x1 << 31)
   TUNNEL_FLAG_MASK = 0x80000000
   TUNNEL_NETWORK_MASK = 0x7fffffff

@@ -24,10 +24,19 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 86, {
                              :in_port => self.port_number,
                              :eth_type => 0x0806,
-                             :eth_src => self.hw_addr,
-                             :arp_spa => self.ipv4_addr,
-                             :arp_sha => self.hw_addr
-                           }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                             :eth_src => @hw_addr,
+                             :arp_spa => @ipv4_addr,
+                             :arp_sha => @hw_addr
+                           }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY)
+                           ) if @ipv4_addr
+      
+      flows << Flow.create(TABLE_ROUTER_EXIT, 40,
+                           md_network(:network).merge!({ :eth_type => 0x0800,
+                                                         :ipv4_dst => @ipv4_addr
+                                                       }),
+                           { :eth_dst => @hw_addr },
+                           flow_options.merge(:goto_table => TABLE_VIRTUAL_DST)
+                           ) if @ipv4_addr
 
       #
       # IPv4 source validation:
@@ -35,13 +44,15 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {
                              :in_port => self.port_number,
                              :eth_type => 0x0800,
-                             :eth_src => self.hw_addr,
-                             :ipv4_src => self.ipv4_addr,
-                           }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                             :eth_src => @hw_addr,
+                             :ipv4_src => @ipv4_addr,
+                           }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY)
+                           ) if @ipv4_addr
+
       flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {
                              :in_port => self.port_number,
                              :eth_type => 0x0800,
-                             :eth_src => self.hw_addr,
+                             :eth_src => @hw_addr,
                              :ipv4_src => IPAddr.new('0.0.0.0'),
                            }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
 

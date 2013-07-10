@@ -48,6 +48,7 @@ module Vnmgr::VNet::Openflow
     def self.to_action(tag, arg)
       case tag
       when :eth_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
+      when :eth_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])
       when :output then Trema::Actions::SendOutPort.new(arg)
       when :tunnel_id then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TunnelId.new(:tunnel_id => arg)])
       else
@@ -70,6 +71,11 @@ module Vnmgr::VNet::Openflow
 
       options.each { |key,value|
         case key
+        when :clear_route_link
+          # We do not clear the routing flag as later flows might want
+          # to know the packet has been routed.
+          metadata = metadata | 0
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK
         when :flood
           metadata = metadata | OFPP_FLOOD
           metadata_mask = metadata_mask | METADATA_PORT_MASK
@@ -93,6 +99,9 @@ module Vnmgr::VNet::Openflow
         when :port
           metadata = metadata | value
           metadata_mask = metadata_mask | METADATA_PORT_MASK
+        when :route_link
+          metadata = metadata | value | METADATA_FLAG_ROUTING
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_FLAG_ROUTING
         else
           raise("Unknown metadata type: #{key.inspect}")
         end
