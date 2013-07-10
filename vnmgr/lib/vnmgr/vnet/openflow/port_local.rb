@@ -3,7 +3,7 @@
 module Vnmgr::VNet::Openflow
 
   module PortLocal
-    include Vnmgr::Constants::Openflow
+    include FlowHelpers
 
     attr_reader :bridge_hw
 
@@ -28,7 +28,8 @@ module Vnmgr::VNet::Openflow
                                                        :goto_table => TABLE_NETWORK_CLASSIFIER
                                                      }))
 
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1, metadata_np(0x0), {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1,
+                           md_port(:network => 0), {
                              :output => self.port_number
                            }, flow_options)
 

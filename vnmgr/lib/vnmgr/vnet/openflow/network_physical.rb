@@ -13,10 +13,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
                              :eth_dst => MAC_BROADCAST
                            }, {},
-                           flow_options.merge({ :metadata => OFPP_FLOOD,
-                                                :metadata_mask => METADATA_PORT_MASK,
-                                                :goto_table => TABLE_PHYSICAL_SRC
-                                              }))
+                           flow_options.merge(md_create(:flood => nil)).merge(:goto_table => TABLE_PHYSICAL_SRC))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {
                              :eth_type => 0x0800,
                            }, {}, flow_options)
@@ -28,10 +25,9 @@ module Vnmgr::VNet::Openflow
       flood_actions = ports.collect { |key,port| {:output => port.port_number} }
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1, {
-                             :metadata => OFPP_FLOOD,
-                             :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-                           }, flood_actions, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1,
+                           md_create(:network => 0, :flood => nil),
+                           flood_actions, flow_options)
 
       eth_port_actions = self.datapath.switch.eth_ports.collect { |port| {:output => port.port_number} }
       eth_port_actions << {:output => OFPP_LOCAL}

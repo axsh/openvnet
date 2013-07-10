@@ -119,7 +119,7 @@ module Vnmgr::VNet::Openflow
             :tunnel_id => network.network_number,
             :tunnel_id_mask => TUNNEL_NETWORK_MASK },
           nil,
-          { :goto_table => TABLE_VIRTUAL_DST, :cookie => self.cookie })
+          { :goto_table => TABLE_ROUTER_ENTRY, :cookie => self.cookie })
       end
 
       @datapath.add_flows(flows)

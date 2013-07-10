@@ -4,7 +4,7 @@ module Vnmgr::VNet::Openflow
 
   class Port
     include Celluloid::Logger
-    include Vnmgr::Constants::Openflow
+    include FlowHelpers
 
     attr_reader :datapath
     attr_reader :port_info

@@ -152,6 +152,7 @@ module Vnmgr
       autoload :Datapath, 'vnmgr/vnet/openflow/datapath'
       autoload :DcSegmentManager, 'vnmgr/vnet/openflow/dc_segment_manager'
       autoload :Flow, 'vnmgr/vnet/openflow/flow'
+      autoload :FlowHelpers, 'vnmgr/vnet/openflow/flow'
       autoload :Network, 'vnmgr/vnet/openflow/network'
       autoload :NetworkPhysical, 'vnmgr/vnet/openflow/network_physical'
       autoload :NetworkVirtual, 'vnmgr/vnet/openflow/network_virtual'

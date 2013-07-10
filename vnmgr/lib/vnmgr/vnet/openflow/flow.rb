@@ -57,5 +57,67 @@ module Vnmgr::VNet::Openflow
 
   end
 
+  module FlowHelpers
+    include Vnmgr::Constants::Openflow
+
+    #
+    # Metadata helper methods:
+    #
+    
+    def md_create(options)
+      metadata = 0
+      metadata_mask = 0
+
+      options.each { |key,value|
+        case key
+        when :flood
+          metadata = metadata | OFPP_FLOOD
+          metadata_mask = metadata_mask | METADATA_PORT_MASK
+        when :network
+          metadata = metadata | (value << METADATA_NETWORK_SHIFT)
+          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
+        when :local
+          metadata = metadata | METADATA_FLAG_LOCAL
+          metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :local_network
+          metadata = metadata | (value << METADATA_NETWORK_SHIFT) | METADATA_FLAG_LOCAL
+          metadata_mask = metadata_mask | METADATA_NETWORK_MASK | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :remote
+          metadata = metadata | METADATA_FLAG_REMOTE
+          metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :remote_network
+          metadata = metadata | (value << METADATA_NETWORK_SHIFT) | METADATA_FLAG_REMOTE
+          metadata_mask = metadata_mask | METADATA_NETWORK_MASK | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :physical_network
+          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
+        when :port
+          metadata = metadata | value
+          metadata_mask = metadata_mask | METADATA_PORT_MASK
+        else
+          raise("Unknown metadata type: #{key.inspect}")
+        end
+      }
+
+      { :metadata => metadata, :metadata_mask => metadata_mask }
+    end
+
+    def md_network(type, append = nil)
+      if append
+        md_create(append.merge(type => self.network_number))
+      else
+        md_create(type => self.network_number)
+      end
+    end
+
+    def md_port(append = nil)
+      if append
+        md_create(append.merge(:port => self.port_number))
+      else
+        md_create(:port => self.port_number)
+      end
+    end
+
+  end
+
 end
 

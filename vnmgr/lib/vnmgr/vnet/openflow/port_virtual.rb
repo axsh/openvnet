@@ -16,7 +16,7 @@ module Vnmgr::VNet::Openflow
                            }, {},
                            fo_load_network(TABLE_NETWORK_CLASSIFIER,
                                            METADATA_FLAG_LOCAL,
-                                           METADATA_PORT_MASK | METADATA_FLAG_LOCAL))
+                                           METADATA_FLAG_LOCAL))
 
       #
       # ARP Anti-Spoof:
@@ -27,7 +27,7 @@ module Vnmgr::VNet::Openflow
                              :eth_src => self.hw_addr,
                              :arp_spa => self.ipv4_addr,
                              :arp_sha => self.hw_addr
-                           }, {}, flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+                           }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
 
       #
       # IPv4 source validation:
@@ -37,13 +37,13 @@ module Vnmgr::VNet::Openflow
                              :eth_type => 0x0800,
                              :eth_src => self.hw_addr,
                              :ipv4_src => self.ipv4_addr,
-                           }, {}, flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+                           }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
       flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {
                              :in_port => self.port_number,
                              :eth_type => 0x0800,
                              :eth_src => self.hw_addr,
                              :ipv4_src => IPAddr.new('0.0.0.0'),
-                           }, {}, flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+                           }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
 
       #
       # Destination routing:
