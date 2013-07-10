@@ -1,6 +1,7 @@
 #!/bin/bash
 
-ruby_ver="1.9.3-p385"
+#ruby_ver="1.9.3-p385"
+ruby_ver=${ruby_ver:-2.0.0-p247}
 whereami="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 vnet_path="$( cd $whereami/../.. && pwd )"
 ruby_install_dir=${ruby_install_dir:-$vnet_path/ruby}
@@ -33,7 +34,9 @@ done
   mkdir $ruby_install_dir
 }
 
-(cd $tmp_dir; git clone $RUBY_BUILD_REPO_URI)
+
+[[ -d ${tmp_dir}/ruby-build ]] || (cd $tmp_dir; git clone $RUBY_BUILD_REPO_URI ruby-build)
+(cd $tmp_dir/ruby-build; git pull;)
 (cd $tmp_dir/ruby-build; sed -i s,http://ftp.ruby-lang.org/pub/ruby/,$RUBY_MIRROR_SITE, share/ruby-build/*)
 (cd $tmp_dir/ruby-build; sed -i s,http://pyyaml.org/download/libyaml/,$LIBYAML_MIRROR_SITE, share/ruby-build/*)
 (cd $tmp_dir/ruby-build; sed -i s,http://production.cf.rubygems.org/rubygems/,$RUBYGEMS_MIRROR_SITE, share/ruby-build/*)
