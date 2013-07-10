@@ -58,18 +58,18 @@ module Vnmgr::ModelWrappers
           data.map{|d| wrap(d, options) }
         when Hash
           ::Vnmgr::ModelWrappers.const_get(data.delete(:class_name)).new(data).tap do |wrapper|
-            cleaned_options = options.dup
-            
-            fill = cleaned_options.delete(:fill)
-            fill = case fill
-                   when Array then fill
-                   when Symbol then [fill]
-                   else
-                     []
-                   end
-            fill.each { |field|
-              wrapper.__send__("#{field}=", wrap(data[field], cleaned_options))
-            }
+            options_for_recursive_call = options.dup
+            fill = options_for_recursive_call.delete(:fill)
+            [fill].flatten.compact.each do |f|
+              if f.is_a?(Hash)
+                key = f.keys.first
+                value = f.values.first
+                options_for_recursive_call.merge!(:fill => value)
+              else
+                key = f
+              end
+              wrapper.__send__("#{key}=", wrap(data[key], options_for_recursive_call))
+            end
           end
         else
           data
