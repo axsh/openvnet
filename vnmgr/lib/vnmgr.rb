@@ -46,7 +46,8 @@ module Vnmgr
       autoload :Network, 'vnmgr/data_access/models/models.rb'
       autoload :NetworkService, 'vnmgr/data_access/models/models.rb'
       autoload :OpenFlowController, 'vnmgr/data_access/models/models.rb'
-      autoload :Router, 'vnmgr/data_access/models/models.rb'
+      autoload :Route, 'vnmgr/data_access/models/models.rb'
+      autoload :RouteLink, 'vnmgr/data_access/models/models.rb'
       autoload :Tunnel, 'vnmgr/data_access/models/models.rb'
       autoload :Vif, 'vnmgr/data_access/models/models.rb'
     end
@@ -69,7 +70,8 @@ module Vnmgr
         autoload :Network, 'vnmgr/endpoints/1.0/responses/network'
         autoload :NetworkService, 'vnmgr/endpoints/1.0/responses/network_service'
         autoload :OpenFlowController, 'vnmgr/endpoints/1.0/responses/open_flow_controller'
-        autoload :Router, 'vnmgr/endpoints/1.0/responses/router'
+        autoload :Route, 'vnmgr/endpoints/1.0/responses/route'
+        autoload :RouteLink, 'vnmgr/endpoints/1.0/responses/route_link'
         autoload :Tunnel, 'vnmgr/endpoints/1.0/responses/tunnel'
         autoload :Vif, 'vnmgr/endpoints/1.0/responses/vif'
 
@@ -83,7 +85,8 @@ module Vnmgr
         autoload :NetworkCollection, 'vnmgr/endpoints/1.0/responses/network'
         autoload :NetworkServiceCollection, 'vnmgr/endpoints/1.0/responses/network_service'
         autoload :OpenFlowControllerCollection, 'vnmgr/endpoints/1.0/responses/open_flow_controller'
-        autoload :RouterCollection, 'vnmgr/endpoints/1.0/responses/router'
+        autoload :RouteCollection, 'vnmgr/endpoints/1.0/responses/route'
+        autoload :RouteLinkCollection, 'vnmgr/endpoints/1.0/responses/route_link'
         autoload :TunnelCollection, 'vnmgr/endpoints/1.0/responses/tunnel'
         autoload :VifCollection, 'vnmgr/endpoints/1.0/responses/vif'
       end
@@ -108,7 +111,8 @@ module Vnmgr
     autoload :Network, 'vnmgr/models/network'
     autoload :NetworkService, 'vnmgr/models/network_service'
     autoload :OpenFlowController, 'vnmgr/models/open_flow_controller'
-    autoload :Router, 'vnmgr/models/router'
+    autoload :Route, 'vnmgr/models/route'
+    autoload :RouteLink, 'vnmgr/models/route_link'
     autoload :Taggable, 'vnmgr/models/base'
     autoload :Tunnel, 'vnmgr/models/tunnel'
     autoload :Vif, 'vnmgr/models/vif'
@@ -128,7 +132,8 @@ module Vnmgr
     autoload :Network, 'vnmgr/model_wrappers/network'
     autoload :NetworkService, 'vnmgr/model_wrappers/network_service'
     autoload :OpenFlowController, 'vnmgr/model_wrappers/open_flow_controller'
-    autoload :Router, 'vnmgr/model_wrappers/router'
+    autoload :Route, 'vnmgr/model_wrappers/route'
+    autoload :RouteLink, 'vnmgr/model_wrappers/route_link'
     autoload :Tunnel, 'vnmgr/model_wrappers/tunnel'
     autoload :Vif, 'vnmgr/model_wrappers/vif'
   end
@@ -160,13 +165,18 @@ module Vnmgr
       autoload :PortLocal, 'vnmgr/vnet/openflow/port_local'
       autoload :PortPhysical, 'vnmgr/vnet/openflow/port_physical'
       autoload :PortVirtual, 'vnmgr/vnet/openflow/port_virtual'
+      autoload :RouteManager, 'vnmgr/vnet/openflow/route_manager'
       autoload :Switch, 'vnmgr/vnet/openflow/switch'
       autoload :TremaTasks, 'vnmgr/vnet/openflow/trema_tasks'
       autoload :TunnelManager, 'vnmgr/vnet/openflow/tunnel_manager'
     end
 
     module Services
+      autoload :Arp, 'vnmgr/vnet/services/arp'
+      autoload :Base, 'vnmgr/vnet/services/base'
       autoload :Dhcp, 'vnmgr/vnet/services/dhcp'
+      autoload :Icmp, 'vnmgr/vnet/services/icmp'
+      autoload :Router, 'vnmgr/vnet/services/router'
     end
 
   end

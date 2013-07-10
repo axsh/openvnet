@@ -28,7 +28,7 @@ module Vnmgr::VNet::Openflow
                            {}, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
       flows << Flow.create(TABLE_HOST_PORTS, 10, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+                           }, {}, flow_options.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
 
       flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {
                              :output => self.port_number
@@ -40,7 +40,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_DST, 25, {
                              :in_port => self.port_number
                            }, {}, flow_options.merge(metadata_p(OFPP_LOCAL)).merge(:goto_table => TABLE_PHYSICAL_SRC))
-      flows << Flow.create(TABLE_PHYSICAL_DST, 20, {}, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))
+      flows << Flow.create(TABLE_PHYSICAL_DST, 20, {}, {}, fo_load_port(TABLE_PHYSICAL_SRC))
 
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,

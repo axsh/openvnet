@@ -4,6 +4,7 @@ module Vnmgr::VNet::Openflow
 
   class TunnelManager
     include Constants
+    include Celluloid
     include Celluloid::Logger
     
     attr_reader :datapath
@@ -48,7 +49,7 @@ module Vnmgr::VNet::Openflow
       tunnel = self.tunnels.find{ |t| t[:dst_dpid] == datapath_network[:dpid] }
       tunnel[:datapath_networks] << datapath_network
 
-      @datapath.add_flow(Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
+      @datapath.add_flow(Flow.create(TABLE_VIRTUAL_SRC, 90, {
                                        :eth_dst => datapath_network[:broadcast_mac_addr]
                                      }, {}, {
                                        :cookie => self.cookie
@@ -57,14 +58,25 @@ module Vnmgr::VNet::Openflow
       update_all_networks if should_update
     end
 
-    def update_all_networks
-      @datapath.switch.network_manager.networks.each { |nw_id,network|
-        self.update_virtual_network(network) if network.class == NetworkVirtual
+    def prepare_network(network_id, dp_map)
+      update_networks = false
+
+      MW::DatapathNetwork.batch.on_other_segment(dp_map).where(:network_id => network_id).all.commit.each { |dp|
+        self.insert(dp, false)
+
+        # Only add non-existing ones...
+        update_networks = true
       }
+
+      self.update_all_networks if update_networks
     end
 
-    def update_network(network)
-      self.update_virtual_network(network) if network.class == NetworkVirtual
+    def update_all_networks
+      # Fix this...
+
+      @datapath.switch.network_manager.networks.dup.each { |nw_id,network|
+        self.update_virtual_network(network) if network.class == NetworkVirtual
+      }
     end
 
     def update_virtual_network(network)
@@ -100,7 +112,7 @@ module Vnmgr::VNet::Openflow
           nil,
           { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | tunnel_port.port_number,
             :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK,
-            :goto_table => TABLE_VIRTUAL_SRC })
+            :goto_table => TABLE_NETWORK_CLASSIFIER })
 
         flows << Flow.create(TABLE_VIRTUAL_SRC, 30,
           { :in_port => tunnel_port.port_number,

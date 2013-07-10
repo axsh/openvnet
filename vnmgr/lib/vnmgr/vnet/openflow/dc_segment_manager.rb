@@ -4,11 +4,9 @@ module Vnmgr::VNet::Openflow
 
   class DcSegmentManager
     include Constants
+    include Celluloid
     include Celluloid::Logger
     
-    attr_reader :datapath
-    attr_reader :segment_datapaths
-
     def initialize(dp)
       @datapath = dp
       @segment_datapaths = []
@@ -33,23 +31,40 @@ module Vnmgr::VNet::Openflow
 
       @segment_datapaths << datapath
 
-      @datapath.add_flow(Flow.create(Constants::TABLE_VIRTUAL_SRC, 90, {
-                                       :eth_dst => datapath[:broadcast_mac_addr]
-                                     }, {}, {
-                                       :cookie => datapath[:cookie]
-                                     }))
+      actions = {:cookie => datapath[:cookie]}
+
+      flows = []
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+                             :eth_dst => datapath[:broadcast_mac_addr]
+                           }, {}, actions)
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+                             :eth_src => datapath[:broadcast_mac_addr]
+                           }, {}, actions)
+
+      @datapath.add_flows(flows)
 
       update_all_networks if should_update
     end
 
-    def update_all_networks
-      @datapath.switch.network_manager.networks.each { |nw_id,network|
-        self.update_virtual_network(network) if network.class == NetworkVirtual
+    def prepare_network(network_id, dp_map)
+      update_networks = false
+
+      MW::DatapathNetwork.batch.on_segment(dp_map).where(:network_id => network_id).all.commit.each { |dpn_map|
+        self.insert(dpn_map, false)
+
+        # FIXME: Only add non-existing ones...
+        update_networks = true
       }
+
+      self.update_all_networks if update_networks
     end
 
-    def update_network(network)
-      self.update_virtual_network(network) if network.class == NetworkVirtual
+    def update_all_networks
+      # Fix this to be thread safe.
+
+      @datapath.switch.network_manager.networks.dup.each { |nw_id,network|
+        self.update_virtual_network(network) if network.class == NetworkVirtual
+      }
     end
 
     def update_virtual_network(network)
@@ -69,7 +84,7 @@ module Vnmgr::VNet::Openflow
                            flood_actions,
                            network.flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL))
 
-      self.datapath.add_flows(flows)
+      @datapath.add_flows(flows)
     end
 
   end

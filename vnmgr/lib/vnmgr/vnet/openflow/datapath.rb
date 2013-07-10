@@ -16,6 +16,10 @@ module Vnmgr::VNet::Openflow
       @ovs_ofctl = ofctl
     end
 
+    def inspect
+      "<##{self.class.name} datapath_id:#{@datapath_id}>"
+    end
+
     def add_flow(flow)
       self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow) }
     end

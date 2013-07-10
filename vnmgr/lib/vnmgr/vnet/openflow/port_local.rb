@@ -25,7 +25,7 @@ module Vnmgr::VNet::Openflow
                              :in_port => OFPP_LOCAL
                            }, {}, flow_options.merge({ :metadata => METADATA_FLAG_LOCAL,
                                                        :metadata_mask => METADATA_FLAG_LOCAL,
-                                                       :goto_table => TABLE_PHYSICAL_DST
+                                                       :goto_table => TABLE_NETWORK_CLASSIFIER
                                                      }))
 
       flows << Flow.create(TABLE_METADATA_ROUTE, 1, metadata_np(0x0), {
@@ -69,7 +69,7 @@ module Vnmgr::VNet::Openflow
                            }, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
                              :eth_dst => self.bridge_hw
-                           }, {}, flow_options_load_port(TABLE_PHYSICAL_SRC))
+                           }, {}, fo_load_port(TABLE_PHYSICAL_SRC))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 50, {
                              :eth_src => self.bridge_hw
                            }, {}, flow_options)

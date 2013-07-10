@@ -13,7 +13,7 @@ module Vnmgr::VNet::Openflow
     attr_reader :datapath_of_bridge
 
     attr_reader :ports
-    attr_reader :services
+    attr_reader :service_cookies
 
     attr_reader :cookie
     attr_reader :ipv4_network
@@ -27,7 +27,7 @@ module Vnmgr::VNet::Openflow
       @datapath_of_bridge = nil
 
       @ports = {}
-      @services = {}
+      @service_cookies = {}
 
       @cookie = @network_id | (0x4 << 48)
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
@@ -44,15 +44,15 @@ module Vnmgr::VNet::Openflow
       }
     end
 
-    def metadata_p(port = 0x0)
-      { :metadata => port,
-        :metadata_mask => METADATA_PORT_MASK
+    def metadata_p(metadata = 0x0, metadata_mask = 0x0)
+      { :metadata => metadata,
+        :metadata_mask => METADATA_PORT_MASK | metadata_mask
       }
     end
 
-    def metadata_pn(port = 0x0)
-      { :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | port,
-        :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
+    def metadata_pn(metadata = 0x0, metadata_mask = 0x0)
+      { :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | metadata,
+        :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK | metadata_mask
       }
     end
 
@@ -82,50 +82,75 @@ module Vnmgr::VNet::Openflow
     end
 
     def set_datapath_of_bridge(datapath_map, dpn_map, should_update)
+      # info "network(#{self.uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
+
       @datapath_of_bridge = {
         :uuid => datapath_map.uuid,
         :display_name => datapath_map.display_name,
         :ipv4_address => datapath_map.ipv4_address,
         :datapath_id => datapath_map.dpid,
-        :broadcast_mac_addr => dpn_map ? Trema::Mac.new(dpn_map.broadcast_mac_addr) : nil,
       }
 
-      # p "Setting the datapath of network: network:#{self.uuid} datapath:#{datapath.inspect}"
+      if dpn_map
+        @datapath_of_bridge[:broadcast_mac_addr] = Trema::Mac.new(dpn_map.broadcast_mac_addr)
+      else
+        error "network(#{@uuid}): no datapath associated with network."
+      end
 
       update_flows if should_update
     end
 
     def add_service(service_map)
-      raise("Service already added to network.") if @services[service_map.uuid]
-
-      service = nil
+      if @service_cookies[service_map.uuid]
+        error "network(#{@uuid}): service already exists '#{service_map.uuid}'"
+        return
+      end
 
       translated_map = {
         :datapath => self.datapath,
         :network => self,
-        :service_mac => Trema::Mac.new(service_map.vif_map[:mac_addr]),
-        :service_ipv4 => IPAddr.new(service_map.vif_map[:ipv4_address], Socket::AF_INET)
+        :vif_uuid => service_map.vif.uuid,
+        :service_mac => Trema::Mac.new(service_map.vif.mac_addr),
+        :service_ipv4 => IPAddr.new(service_map.vif.ipv4_address, Socket::AF_INET)
       }
 
+      info "network(#{@uuid}): creating service '#{service_map.display_name}'"
+
       service = case service_map.display_name
-                when 'dhcp'
-                  Vnmgr::VNet::Services::Dhcp.new(translated_map)
+                when 'dhcp' then Vnmgr::VNet::Services::Dhcp.new(translated_map)
+                when 'router' then Vnmgr::VNet::Services::Router.new(translated_map)
                 else
-                  error "Failed to create service: #{service_map.uuid}"
+                  error "network(#{@uuid}): failed to create service '#{service_map.uuid}'"
                   return
                 end
 
-      @services[service_map.uuid] = service
-      @datapath.switch.packet_manager.async.insert(service)
+      pm = @datapath.switch.packet_manager
+
+      cookie = pm.insert(service)
+
+      if cookie.nil?
+        error "network(#{@uuid}): aborting creation of services '#{service_map.uuid}'"
+        return
+      end
+
+      @service_cookies[service_map.uuid] = cookie
+      
+      pm.dispatch(:arp)  { |handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
+      pm.dispatch(:icmp) { |handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
     end
 
     def uninstall
-      info "network #{self.uuid}: Removing flows."
+      info "network(#{@uuid}): removing flows"
       
       pm = self.datapath.switch.packet_manager
 
       @datapath.del_cookie(@cookie)
-      @services.each { |uuid,service| pm.async.remove(service) }
+
+      @service_cookies.each { |uuid,cookie|
+        pm.remove(cookie)
+        pm.dispatch(:arp)  { |handler| handler.remove_vif(service.vif_uuid) }
+        pm.dispatch(:icmp) { |handler| handler.remove_vif(service.vif_uuid) }
+      }
     end
 
   end

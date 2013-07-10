@@ -40,7 +40,10 @@ module Vnmgr::DataAccess::Models
   class OpenFlowController < Base
   end
 
-  class Router < Base
+  class Route < Base
+  end
+  
+  class RouteLink < Base
   end
   
   class Tunnel < Base
