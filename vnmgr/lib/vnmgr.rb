@@ -72,7 +72,6 @@ module Vnmgr
         autoload :OpenFlowController, 'vnmgr/endpoints/1.0/responses/open_flow_controller'
         autoload :Route, 'vnmgr/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnmgr/endpoints/1.0/responses/route_link'
-        autoload :Tunnel, 'vnmgr/endpoints/1.0/responses/tunnel'
         autoload :Vif, 'vnmgr/endpoints/1.0/responses/vif'
 
         autoload :DatapathCollection, 'vnmgr/endpoints/1.0/responses/datapath'
@@ -87,7 +86,6 @@ module Vnmgr
         autoload :OpenFlowControllerCollection, 'vnmgr/endpoints/1.0/responses/open_flow_controller'
         autoload :RouteCollection, 'vnmgr/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnmgr/endpoints/1.0/responses/route_link'
-        autoload :TunnelCollection, 'vnmgr/endpoints/1.0/responses/tunnel'
         autoload :VifCollection, 'vnmgr/endpoints/1.0/responses/vif'
       end
     end
