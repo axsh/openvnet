@@ -90,6 +90,12 @@ module Vnmgr::VNet::Openflow
     TUNNEL_FLAG = (0x1 << 31)
     TUNNEL_FLAG_MASK = 0x80000000
     TUNNEL_NETWORK_MASK = 0x7fffffff
+
+    #
+    # Trema related constants:
+    #
+
+    MAC_BROADCAST = Trema::Mac.new('ff:ff:ff:ff:ff:ff')
   end
 
 end
