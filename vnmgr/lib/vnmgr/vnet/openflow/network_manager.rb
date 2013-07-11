@@ -51,7 +51,7 @@ module Vnmgr::VNet::Openflow
         network.add_service(service)
       }
 
-      @datapath.switch.dc_segment_manager.async.prepare_network(network_map.id, dp_map)
+      @datapath.switch.dc_segment_manager.async.prepare_network(network_map, dp_map)
       @datapath.switch.tunnel_manager.async.prepare_network(network_map.id, dp_map)
       @datapath.switch.route_manager.async.prepare_network(network_map, dp_map)
 
@@ -82,6 +82,8 @@ module Vnmgr::VNet::Openflow
       end
 
       network.uninstall
+
+      @datapath.switch.dc_segment_manager.async.remove_network_id(network.network_id)
     end
 
   end

@@ -102,7 +102,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL))
       flows << Flow.create(TABLE_METADATA_TUNNEL, 0, {}, {}, flow_options)
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
