@@ -24,15 +24,13 @@ module Vnmgr::Models
     one_to_many :tunnels
     one_to_many :vifs
 
+    many_to_many :network_services, :join_table => :vifs, :right_key => :id, :right_primary_key => :vif_id, :eager_graph => { :vif => { :ip_leases => :ip_address }} do |ds|
+      ds.alives
+    end
+
     many_to_one :dc_network
 
     subset(:alives, {})
-
-    one_to_many :network_services, :class=>NetworkService do |ds|
-      NetworkService.dataset.join_table(:inner, :vifs,
-                                        {:vifs__network_id => self.id} & {:vifs__id => :network_services__vif_id}
-                                        ).select_all(:network_services).alives
-    end
 
     one_to_many :routes, :class=>Route do |ds|
       Route.dataset.join_table(:inner, :vifs,
