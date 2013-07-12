@@ -2,7 +2,7 @@
 require 'spec_helper'
 require 'trema'
 
-include Vnmgr::VNet::Openflow::Constants
+include Vnmgr::Constants::Openflow
 
 describe Vnmgr::VNet::Openflow::TunnelManager do
   
@@ -111,7 +111,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[2][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
       expect(datapath.added_flows[2][:instructions].size).to eq 1
       expect(datapath.added_flows[2][:instructions][0]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[2][:instructions][0].table_id).to eq TABLE_VIRTUAL_DST
+      expect(datapath.added_flows[2][:instructions][0].table_id).to eq TABLE_ROUTER_ENTRY
 
       expect(datapath.added_flows[3][:table_id]).to eq TABLE_TUNNEL_PORTS
       expect(datapath.added_flows[3][:priority]).to eq 30
@@ -132,7 +132,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[4][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
       expect(datapath.added_flows[4][:instructions].size).to eq 1
       expect(datapath.added_flows[4][:instructions][0]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[4][:instructions][0].table_id).to eq TABLE_VIRTUAL_DST
+      expect(datapath.added_flows[4][:instructions][0].table_id).to eq TABLE_ROUTER_ENTRY
     end
 
     it "should add flood flow for netwrok 2" do

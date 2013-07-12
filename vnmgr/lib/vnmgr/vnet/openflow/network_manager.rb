@@ -6,6 +6,7 @@ module Vnmgr::VNet::Openflow
 
   class NetworkManager
     include Celluloid::Logger
+    include Vnmgr::Constants::Openflow
 
     attr_reader :networks
 

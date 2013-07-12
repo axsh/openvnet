@@ -3,9 +3,9 @@
 module Vnmgr::VNet::Openflow
 
   class DcSegmentManager
-    include Constants
     include Celluloid
     include Celluloid::Logger
+    include FlowHelpers
     
     def initialize(dp)
       @datapath = dp
@@ -80,11 +80,9 @@ module Vnmgr::VNet::Openflow
       flood_actions << {:eth_dst => MAC_BROADCAST} unless flood_actions.empty?
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 1, {
-                             :metadata => (network_id << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
-                             :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK
-                           }, flood_actions, {
-                             :cookie => network_id | (0x4 << 48),
+      flows << Flow.create(TABLE_METADATA_SEGMENT, 1,
+                           md_create({:network => network_id, :flood => nil}), flood_actions, {
+                             :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
                              :goto_table => TABLE_METADATA_TUNNEL
                            })
                            
