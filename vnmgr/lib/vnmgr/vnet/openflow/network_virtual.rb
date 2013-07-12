@@ -65,23 +65,24 @@ module Vnmgr::VNet::Openflow
                                }, fo_metadata_pn(eth_port.port_number,
                                                  :goto_table => TABLE_NETWORK_CLASSIFIER))
         end
-        ovs_flows << create_ovs_flow_learn_arp(eth_port)
+        ovs_flows << create_ovs_flow_learn_arp(@cookie, eth_port)
       }
 
       self.datapath.switch.tunnel_ports.each do |tunnel_port|
-        ovs_flows << create_ovs_flow_learn_arp(tunnel_port, "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\]," % self.network_number)
+        cookie = self.datapath.switch.tunnel_manager.flow_options(self, tunnel_port)[:cookie]
+        ovs_flows << create_ovs_flow_learn_arp(cookie, tunnel_port, "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\]," % self.network_number)
       end
 
       self.datapath.add_flows(flows)
       ovs_flows.each { |flow| self.datapath.add_ovs_flow(flow) }
     end
 
-    def create_ovs_flow_learn_arp(port, learn_options = "")
+    def create_ovs_flow_learn_arp(cookie, port, learn_options = "")
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
       flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{port.port_number},arp,metadata=0x%x/0x%x,actions=" %
-        [@cookie,
+        [cookie,
          ((self.network_number << METADATA_NETWORK_SHIFT) | port.port_number),
          (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
         ]

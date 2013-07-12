@@ -42,6 +42,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
     let(:datapath) do
       MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |datapath|
         datapath.switch = double(:cookie_manager => Vnmgr::VNet::Openflow::CookieManager.new)
+        datapath.switch.cookie_manager.create_category(:tunnel, 0x6, 48)
       end
     end
 
@@ -67,7 +68,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       end
     end
 
-    it "should add flood flow netwrok 1" do
+    it "should add flood flow network 1" do
       tunnel_manager.update_virtual_network(double(:network_number => 1))
 
       #pp datapath.added_flows
@@ -103,6 +104,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[1][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
       expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::GotoTable
       expect(datapath.added_flows[1][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
+      expect(datapath.added_flows[1][:cookie]).to eq (1 << COOKIE_NETWORK_SHIFT) | 9 | (0x6 << 48)
 
       expect(datapath.added_flows[2][:table_id]).to eq TABLE_VIRTUAL_SRC
       expect(datapath.added_flows[2][:priority]).to eq 30
@@ -112,6 +114,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[2][:instructions].size).to eq 1
       expect(datapath.added_flows[2][:instructions][0]).to be_a Trema::Instructions::GotoTable
       expect(datapath.added_flows[2][:instructions][0].table_id).to eq TABLE_VIRTUAL_DST
+      expect(datapath.added_flows[2][:cookie]).to eq (1 << COOKIE_NETWORK_SHIFT) | 9 | (0x6 << 48)
 
       expect(datapath.added_flows[3][:table_id]).to eq TABLE_TUNNEL_PORTS
       expect(datapath.added_flows[3][:priority]).to eq 30
@@ -124,6 +127,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[3][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
       expect(datapath.added_flows[3][:instructions][1]).to be_a Trema::Instructions::GotoTable
       expect(datapath.added_flows[3][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
+      expect(datapath.added_flows[3][:cookie]).to eq (1 << COOKIE_NETWORK_SHIFT) | 10 | (0x6 << 48)
 
       expect(datapath.added_flows[4][:table_id]).to eq TABLE_VIRTUAL_SRC
       expect(datapath.added_flows[4][:priority]).to eq 30
@@ -133,9 +137,10 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[4][:instructions].size).to eq 1
       expect(datapath.added_flows[4][:instructions][0]).to be_a Trema::Instructions::GotoTable
       expect(datapath.added_flows[4][:instructions][0].table_id).to eq TABLE_VIRTUAL_DST
+      expect(datapath.added_flows[4][:cookie]).to eq (1 << COOKIE_NETWORK_SHIFT) | 10 | (0x6 << 48)
     end
 
-    it "should add flood flow for netwrok 2" do
+    it "should add flood flow for network 2" do
       tunnel_manager.update_virtual_network(double(:network_number => 2))
 
       #pp datapath.added_flows
@@ -165,6 +170,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[1][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
       expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::GotoTable
       expect(datapath.added_flows[1][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
+      expect(datapath.added_flows[1][:cookie]).to eq (2 << COOKIE_NETWORK_SHIFT) | 9 | (0x6 << 48)
 
       expect(datapath.added_flows[2][:table_id]).to eq TABLE_VIRTUAL_SRC
       expect(datapath.added_flows[2][:priority]).to eq 30
@@ -173,6 +179,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       expect(datapath.added_flows[2][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
       expect(datapath.added_flows[2][:instructions].size).to eq 1
       expect(datapath.added_flows[2][:instructions][0]).to be_a Trema::Instructions::GotoTable
+      expect(datapath.added_flows[2][:cookie]).to eq (2 << COOKIE_NETWORK_SHIFT) | 9 | (0x6 << 48)
     end
   end
 end

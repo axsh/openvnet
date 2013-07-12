@@ -19,6 +19,10 @@ module Vnmgr::VNet::Openflow
       @cookie ||= datapath.switch.cookie_manager.acquire(:tunnel)
     end
 
+    def flow_options(network, tunnel_port)
+      { :cookie => (network.network_number << COOKIE_NETWORK_SHIFT) | tunnel_port.port_number | cookie }
+    end
+
     def create_all_tunnels
       debug "creating tunnel ports"
 
@@ -100,8 +104,7 @@ module Vnmgr::VNet::Openflow
           { :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
             :tunnel_id => network.network_number | TUNNEL_FLAG,
             :output => tunnel_port.port_number}
-        },
-        { :cookie => self.cookie })
+        }, {})
 
       # catch flow
       tunnel_ports.each do |tunnel_port|
@@ -110,16 +113,17 @@ module Vnmgr::VNet::Openflow
             :tunnel_id => network.network_number,
             :tunnel_id_mask => TUNNEL_NETWORK_MASK },
           nil,
-          { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | tunnel_port.port_number,
+          flow_options(network,tunnel_port).merge(
+            :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | tunnel_port.port_number,
             :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK,
-            :goto_table => TABLE_NETWORK_CLASSIFIER })
+            :goto_table => TABLE_NETWORK_CLASSIFIER))
 
         flows << Flow.create(TABLE_VIRTUAL_SRC, 30,
           { :in_port => tunnel_port.port_number,
             :tunnel_id => network.network_number,
             :tunnel_id_mask => TUNNEL_NETWORK_MASK },
           nil,
-          { :goto_table => TABLE_VIRTUAL_DST, :cookie => self.cookie })
+          flow_options(network,tunnel_port).merge(:goto_table => TABLE_VIRTUAL_DST))
       end
 
       @datapath.add_flows(flows)
