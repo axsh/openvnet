@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'ipaddr'
 Fabricator(:network, class_name: Vnmgr::Models::Network) do
   display_name "network"

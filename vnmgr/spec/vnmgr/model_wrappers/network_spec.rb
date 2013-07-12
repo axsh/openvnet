@@ -12,6 +12,6 @@ describe Vnmgr::ModelWrappers::Network do
     subject { Vnmgr::ModelWrappers::Network.batch[network.canonical_uuid].vifs.first.commit }
     it { expect(subject).to be_a Vnmgr::ModelWrappers::Vif }
     it { expect(subject.uuid).to eq network.vifs.first.canonical_uuid }
-    it { expect(subject.mac_addr).to eq "08:00:27:a8:9e:6b".delete(":").hex }
+    it { expect(subject.mac_addr).to eq 0 }
   end
 end

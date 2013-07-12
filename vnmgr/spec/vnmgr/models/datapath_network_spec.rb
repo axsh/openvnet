@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
-require 'pp'
 
 describe Vnmgr::Models::DatapathNetwork do
   let(:datapath_1) { Fabricate(:datapath_1) }
