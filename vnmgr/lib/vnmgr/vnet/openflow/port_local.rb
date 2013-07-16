@@ -24,7 +24,7 @@ module Vnmgr::VNet::Openflow
                            }, {}, set_local_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
 
       flows << Flow.create(TABLE_METADATA_ROUTE, 1,
-                           md_port(:network => 0), {
+                           md_port(:physical_network => nil), {
                              :output => self.port_number
                            }, flow_options)
 

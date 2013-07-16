@@ -79,21 +79,12 @@ module Vnmgr::VNet::Openflow
         when :flood
           metadata = metadata | OFPP_FLOOD
           metadata_mask = metadata_mask | METADATA_PORT_MASK
-        when :network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT)
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :local_network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT) | METADATA_FLAG_LOCAL
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :remote_network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT) | METADATA_FLAG_REMOTE
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
         when :physical_network
           metadata_mask = metadata_mask | METADATA_NETWORK_MASK
         when :port

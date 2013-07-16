@@ -45,19 +45,19 @@ module Vnmgr::VNet::Openflow
 
       @routes[route_map.uuid] = route
 
-      network_md = md_create(:network => route[:vif][:network_id])
-      route_link_md = md_create(:route_link => route[:route_link][:id])
-      change_network_md = md_create({ :clear_route_link => nil,
-                                      :network => route[:vif][:network_id]
-                                    })
+      route_link_md    = md_create(:route_link => route[:route_link][:id])
+      entry_network_md = md_create(:virtual_network => route[:vif][:network_id])
+      exit_network_md  = md_create({ :clear_route_link => nil,
+                                     :virtual_network => route[:vif][:network_id]
+                                   })
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_SRC, 40,
-                           network_md.merge!({ :eth_dst => route[:vif][:mac_addr],
-                                               :eth_type => 0x0800,
-                                               :ipv4_src => route[:ipv4_address],
-                                               :ipv4_src_mask => route[:ipv4_mask],
-                                             }),
+                           entry_network_md.merge!({ :eth_dst => route[:vif][:mac_addr],
+                                                     :eth_type => 0x0800,
+                                                     :ipv4_src => route[:ipv4_address],
+                                                     :ipv4_src_mask => route[:ipv4_mask],
+                                                   }),
                            {},
                            route_link_md.merge({ :cookie => route[:cookie],
                                                  :goto_table => TABLE_ROUTER_DST
@@ -68,9 +68,9 @@ module Vnmgr::VNet::Openflow
                                                   :ipv4_dst_mask => route[:ipv4_mask],
                                                 }),
                            { :eth_src => route[:vif][:mac_addr] },
-                           change_network_md.merge({ :cookie => route[:cookie],
-                                                     :goto_table => TABLE_ROUTER_EXIT
-                                                   }))
+                           exit_network_md.merge({ :cookie => route[:cookie],
+                                                   :goto_table => TABLE_ROUTER_EXIT
+                                                 }))
 
       @datapath.add_flows(flows)
     end
@@ -115,7 +115,7 @@ module Vnmgr::VNet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_ENTRY, 40,
-                           md_create(:network => vif[:network_id]).merge!(:eth_dst => vif[:mac_addr]), {
+                           md_create(:virtual_network => vif[:network_id]).merge!(:eth_dst => vif[:mac_addr]), {
                            }, {
                              :cookie => vif[:cookie],
                              :goto_table => TABLE_ROUTER_SRC

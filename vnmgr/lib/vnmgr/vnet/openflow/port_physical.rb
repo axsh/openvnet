@@ -86,7 +86,7 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_MAC_ROUTE, 1, {
                              :eth_dst => self.hw_addr
                            }, {:output => self.port_number}, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1, md_port(:network => 0), {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1, md_port(:physical_network => nil), {
                              :output => self.port_number
                            }, flow_options)
 

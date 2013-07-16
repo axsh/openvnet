@@ -34,10 +34,10 @@ module Vnmgr::VNet::Openflow
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
 
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
-                           md_network(:local_network).merge!(:eth_dst => MAC_BROADCAST), {},
+                           md_network(:virtual_network, :local => nil).merge!(:eth_dst => MAC_BROADCAST), {},
                            flow_options.merge(md_network(:virtual_network, :flood => nil).merge!(:goto_table => TABLE_METADATA_ROUTE)))
       flows << Flow.create(TABLE_VIRTUAL_DST, 30,
-                           md_network(:remote_network).merge!(:eth_dst => MAC_BROADCAST), {},
+                           md_network(:virtual_network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST), {},
                            flow_options.merge(md_network(:virtual_network, :flood => nil).merge!(:goto_table => TABLE_METADATA_LOCAL)))
 
       self.datapath.add_flows(flows)
@@ -81,8 +81,8 @@ module Vnmgr::VNet::Openflow
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_md = md_network(:remote_network)
-      learn_md = md_network(:local_network)
+      match_md = md_network(:virtual_network, :remote => nil)
+      learn_md = md_network(:virtual_network, :local => nil)
 
       flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{port.port_number},arp,metadata=0x%x/0x%x,actions=" %
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]

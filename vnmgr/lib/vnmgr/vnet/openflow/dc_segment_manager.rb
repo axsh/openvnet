@@ -81,7 +81,8 @@ module Vnmgr::VNet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_SEGMENT, 1,
-                           md_create({:network => network_id, :flood => nil}), flood_actions, {
+                           md_create({:virtual_network => network_id, :flood => nil}),
+                           flood_actions, {
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
                              :goto_table => TABLE_METADATA_TUNNEL
                            })
