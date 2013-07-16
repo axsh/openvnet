@@ -3,8 +3,8 @@
 module Vnmgr::VNet::Openflow
 
   class PacketHandler
-    include Constants
     include Celluloid::Logger
+    include Vnmgr::Constants::Openflow
 
     attr_reader :datapath
     attr_accessor :cookie

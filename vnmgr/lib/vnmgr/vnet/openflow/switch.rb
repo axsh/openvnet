@@ -5,9 +5,9 @@ require 'celluloid'
 module Vnmgr::VNet::Openflow
 
   class Switch
-    include Constants
     include Celluloid
     include Celluloid::Logger
+    include FlowHelpers
 
     attr_reader :datapath
     attr_reader :bridge_hw
@@ -25,13 +25,13 @@ module Vnmgr::VNet::Openflow
       @datapath.switch = self
 
       @cookie_manager = CookieManager.new
-      @cookie_manager.create_category(:switch, 0x1, 48)
-      @cookie_manager.create_category(:packet_handler, 0x2, 48)
-      @cookie_manager.create_category(:port, 0x3, 48)
-      @cookie_manager.create_category(:network, 0x4, 48)
-      @cookie_manager.create_category(:dc_segment, 0x5, 48)
-      @cookie_manager.create_category(:tunnel, 0x6, 48)
-      @cookie_manager.create_category(:route, 0x7, 48)
+      @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
+      @cookie_manager.create_category(:packet_handler, COOKIE_PREFIX_PACKET_HANDLER)
+      @cookie_manager.create_category(:port,           COOKIE_PREFIX_PORT)
+      @cookie_manager.create_category(:network,        COOKIE_PREFIX_NETWORK)
+      @cookie_manager.create_category(:dc_segment,     COOKIE_PREFIX_DC_SEGMENT)
+      @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
+      @cookie_manager.create_category(:route,          COOKIE_PREFIX_ROUTE)
 
       @ports = {}
 
@@ -87,13 +87,12 @@ module Vnmgr::VNet::Openflow
       flows << Flow.create(TABLE_TUNNEL_PORTS, 0, {}, {}, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 10, {
-                             :metadata => 0x0,
-                             :metadata_mask => METADATA_NETWORK_MASK
-                           }, {}, flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30,
+                           md_create(:physical_network => nil), {},
+                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, {}, flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
       flows << Flow.create(TABLE_ROUTER_SRC, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ROUTER_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_ROUTER_EXIT, 0, {}, {}, flow_options)
@@ -116,11 +115,9 @@ module Vnmgr::VNet::Openflow
       #
       # All local ports have the port part of metadata [0,31] zero'ed
       # at this point.
-      flows << Flow.create(TABLE_VIRTUAL_SRC, 84, {
-                             :eth_type => 0x0806,
-                             :metadata => 0x0,
-                             :metadata_mask => (METADATA_PORT_MASK)
-                           }, {}, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_SRC, 84,
+                           md_create(:local => nil).merge!(:eth_type => 0x0806), {}, flow_options)
+
       # Next we catch all arp packets, with learning flows for
       # incoming arp packets having been handled by network/eth_port
       # specific flows.

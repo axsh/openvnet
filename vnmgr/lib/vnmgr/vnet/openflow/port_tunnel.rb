@@ -3,7 +3,7 @@
 module Vnmgr::VNet::Openflow
 
   module PortTunnel
-    include Constants
+    include FlowHelpers
 
     def flow_options
       @flow_options ||= {:cookie => @cookie}

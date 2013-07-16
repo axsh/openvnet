@@ -4,6 +4,7 @@ module Vnmgr::VNet::Openflow
 
   class Port
     include Celluloid::Logger
+    include FlowHelpers
 
     attr_reader :datapath
     attr_reader :port_info
@@ -19,7 +20,7 @@ module Vnmgr::VNet::Openflow
 
       @is_active = active
 
-      @cookie = self.port_number | (0x3 << 48)
+      @cookie = self.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
     end
 
     def port_number
@@ -56,32 +57,32 @@ module Vnmgr::VNet::Openflow
 
     def metadata_p(port = self.port_number)
       { :metadata => port,
-        :metadata_mask => Constants::METADATA_PORT_MASK
+        :metadata_mask => METADATA_PORT_MASK
       }
     end
 
     def metadata_n(nw = self.network_number)
-      { :metadata => nw << Constants::METADATA_NETWORK_SHIFT,
-        :metadata_mask => Constants::METADATA_NETWORK_MASK
+      { :metadata => nw << METADATA_NETWORK_SHIFT,
+        :metadata_mask => METADATA_NETWORK_MASK
       }
     end
 
     def metadata_np(nw = self.network_number, port = self.port_number)
-      { :metadata => (nw << Constants::METADATA_NETWORK_SHIFT) | port,
-        :metadata_mask => (Constants::METADATA_PORT_MASK | Constants::METADATA_NETWORK_MASK)
+      { :metadata => (nw << METADATA_NETWORK_SHIFT) | port,
+        :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
       }
     end
 
     def fo_load_port(goto_table)
       flow_options.merge({ :metadata => self.port_number,
-                           :metadata_mask => Constants::METADATA_PORT_MASK,
+                           :metadata_mask => METADATA_PORT_MASK,
                            :goto_table => goto_table
                          })
     end
 
     def fo_load_network(goto_table, extra_metadata = 0x0, extra_mask = 0x0)
-      flow_options.merge({ :metadata => (self.network_number << Constants::METADATA_NETWORK_SHIFT) | extra_metadata,
-                           :metadata_mask => Constants::METADATA_NETWORK_MASK | extra_mask,
+      flow_options.merge({ :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | extra_metadata,
+                           :metadata_mask => METADATA_NETWORK_MASK | extra_mask,
                            :goto_table => goto_table
                          })
     end

@@ -23,9 +23,9 @@ module Vnmgr::VNet::Services
       }
 
       catch_network_flow(network, {
-                           :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+                           :eth_dst => MAC_BROADCAST,
                            :eth_type => 0x0806,
-                           :arp_tha => Trema::Mac.new('00:00:00:00:00:00'),
+                           :arp_tha => MAC_ZERO,
                            :arp_tpa => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
                          }, {
                            :network => network

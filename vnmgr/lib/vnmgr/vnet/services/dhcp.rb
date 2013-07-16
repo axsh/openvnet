@@ -6,7 +6,6 @@ require 'racket'
 module Vnmgr::VNet::Services
 
   class Dhcp < Base
-
     attr_reader :network
     attr_reader :vif_uuid
     attr_reader :service_mac
@@ -22,7 +21,7 @@ module Vnmgr::VNet::Services
 
     def install
       catch_network_flow(@network, {
-                           :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+                           :eth_dst => MAC_BROADCAST,
                            :eth_type => 0x0800,
                            :ip_proto => 0x11,
                            :ipv4_dst => IPAddr.new('255.255.255.255'),

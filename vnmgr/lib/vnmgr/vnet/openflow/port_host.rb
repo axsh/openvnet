@@ -3,7 +3,7 @@
 module Vnmgr::VNet::Openflow
 
   module PortHost
-    include Constants
+    include FlowHelpers
 
     def eth?
       true
@@ -60,7 +60,7 @@ module Vnmgr::VNet::Openflow
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+                           }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
 
       flows << Flow.create(TABLE_ARP_ANTISPOOF, 1, {
                              :eth_type => 0x0806,
