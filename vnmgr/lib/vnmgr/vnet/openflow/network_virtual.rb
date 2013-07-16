@@ -30,15 +30,15 @@ module Vnmgr::VNet::Openflow
                              }, {}, flow_options)
       end
 
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40, md_network(:network), {},
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40, md_network(:virtual_network), {},
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
 
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
                            md_network(:local_network).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flow_options.merge(md_network(:network, :flood => nil).merge!(:goto_table => TABLE_METADATA_ROUTE)))
+                           flow_options.merge(md_network(:virtual_network, :flood => nil).merge!(:goto_table => TABLE_METADATA_ROUTE)))
       flows << Flow.create(TABLE_VIRTUAL_DST, 30,
                            md_network(:remote_network).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flow_options.merge(md_network(:network, :flood => nil).merge!(:goto_table => TABLE_METADATA_LOCAL)))
+                           flow_options.merge(md_network(:virtual_network, :flood => nil).merge!(:goto_table => TABLE_METADATA_LOCAL)))
 
       self.datapath.add_flows(flows)
     end
@@ -49,10 +49,10 @@ module Vnmgr::VNet::Openflow
       flood_actions = self.ports.collect { |key,port| {:output => port.port_number} }
 
       flows << Flow.create(TABLE_METADATA_LOCAL, 1,
-                           md_network(:network, :flood => nil),
+                           md_network(:virtual_network, :flood => nil),
                            flood_actions, flow_options)
       flows << Flow.create(TABLE_METADATA_ROUTE, 1,
-                           md_network(:network, :flood => nil),
+                           md_network(:virtual_network, :flood => nil),
                            flood_actions, flow_options.merge(:goto_table => TABLE_METADATA_SEGMENT))
 
       self.datapath.switch.eth_ports.each { |eth_port|
