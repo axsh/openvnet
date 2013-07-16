@@ -33,7 +33,7 @@ module Vnet::DataAccess
     class DbaCall < Call
       def initialize(class_name, conf)
         super
-        @actor = DCell::Node[conf.dba_node_id][conf.dba_actor_name]
+        @actor = DCell::Node[conf.api_node_id][conf.api_actor_name]
       end
 
       def method_missing(method_name, *args, &block)

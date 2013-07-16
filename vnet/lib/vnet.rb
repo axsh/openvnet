@@ -19,7 +19,7 @@ module Vnet
   module Configurations
     autoload :Base,  'vnet/configurations/base'
     autoload :Common,  'vnet/configurations/common'
-    autoload :Dba,  'vnet/configurations/dba'
+    autoload :Webapi,  'vnet/configurations/webapi'
     autoload :Vnmgr,  'vnet/configurations/vnmgr'
     autoload :Vna,  'vnet/configurations/vna'
   end

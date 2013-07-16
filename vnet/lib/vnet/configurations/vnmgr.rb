@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 module Vnet::Configurations
@@ -9,7 +8,7 @@ module Vnet::Configurations
       class Addr < Fuguta::Configuration
         param :protocol, :default => "tcp"
         param :host, :default => "127.0.0.1"
-        param :port, :default => 9101
+        param :port, :default => 9102
       end
 
       DSL do
@@ -26,8 +25,12 @@ module Vnet::Configurations
       end
     end
 
-    param :dba_node_id, :default => "dba"
-    param :dba_actor_name, :default => "dba"
-    param :data_access_proxy, :default => :direct
+    DSL do
+      def actor_names(*names)
+        @config[:actor_names] ||={}
+        @config[:actor_names] = names
+      end
+    end
+    param :actor_names, :default => %w(dba)
   end
 end

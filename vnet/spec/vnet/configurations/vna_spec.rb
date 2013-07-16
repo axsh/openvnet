@@ -16,8 +16,8 @@ describe Vnet::Configurations::Vna do
     it { expect(subject.node.addr.port).to eq 19103 }
     it { expect(subject.node.addr_string).to eq "tcp://127.0.0.1:19103" }
 
-    it { expect(subject.dba_node_id).to eq "dba" }
-    it { expect(subject.dba_actor_name).to eq "dba" }
+    it { expect(subject.api_node_id).to eq "vnmgr" }
+    it { expect(subject.api_actor_name).to eq "dba" }
     it { expect(subject.data_access_proxy).to eq :dba }
 
     # trema

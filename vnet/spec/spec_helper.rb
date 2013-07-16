@@ -20,10 +20,10 @@ RSpec.configure do |config|
   Vnet::Configurations::Common.paths = ["#{File.dirname(File.expand_path(__FILE__))}/config"]
 
   vnmgr_conf = Vnet::Configurations::Vnmgr.load
-  dba_conf = Vnet::Configurations::Dba.load
+  webapi_conf = Vnet::Configurations::Webapi.load
 
-  Vnet::ModelWrappers::Base.set_proxy(vnmgr_conf)
-  Vnet::Initializers::DB.run(vnmgr_conf.db_uri)
+  Vnet::ModelWrappers::Base.set_proxy(webapi_conf)
+  Vnet::Initializers::DB.run(webapi_conf.db_uri)
   #Vnet::Initializers::DB.run(vnmgr_conf.db_uri, :debug_sql => true)
 
   config.before(:suite) do

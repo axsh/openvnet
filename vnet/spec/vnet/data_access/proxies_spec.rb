@@ -5,8 +5,8 @@ describe Vnet::DataAccess do
   describe Vnet::DataAccess::DbaProxy do
     let(:conf) do
       double(:conf).tap do |conf|
-        conf.stub(:dba_node_id).and_return("dba")
-        conf.stub(:dba_actor_name).and_return("dba")
+        conf.stub(:api_node_id).and_return("vnmgr")
+        conf.stub(:api_actor_name).and_return("dba")
       end
     end
 
@@ -19,7 +19,7 @@ describe Vnet::DataAccess do
     end
 
     before(:each) do
-      DCell::Node.stub(:[]).with("dba").and_return(node)
+      DCell::Node.stub(:[]).with("vnmgr").and_return(node)
     end
 
     subject do

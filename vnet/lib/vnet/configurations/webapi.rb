@@ -1,14 +1,15 @@
+
 # -*- coding: utf-8 -*-
 
 module Vnet::Configurations
-  class Dba < Common
+  class Webapi < Common
     class Node < Fuguta::Configuration
-      param :id, :default => "dba"
+      param :id, :default => "webapi"
 
       class Addr < Fuguta::Configuration
         param :protocol, :default => "tcp"
         param :host, :default => "127.0.0.1"
-        param :port, :default => 9102
+        param :port, :default => 9101
       end
 
       DSL do
@@ -25,12 +26,8 @@ module Vnet::Configurations
       end
     end
 
-    DSL do
-      def actor_names(*names)
-        @config[:actor_names] ||={}
-        @config[:actor_names] = names
-      end
-    end
-    param :actor_names, :default => %w(dba)
+    param :api_node_id, :default => "vnmgr"
+    param :api_actor_name, :default => "dba"
+    param :data_access_proxy, :default => :direct
   end
 end
