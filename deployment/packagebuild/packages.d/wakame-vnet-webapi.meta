@@ -1,0 +1,18 @@
+pkg_name="wakame-vnet-webapi"
+pkg_desc="WebAPI for Wakame-VNet"
+pkg_deps="wakame-vnet-common"
+pkg_arch="all"
+pkg_dirs=`cat <<_EOF_
+$vnet_path/vnet/rack
+$etc_path/init/vnet-webapi.conf
+$etc_path/wakame-vnet/webapi.conf
+$etc_path/default/vnet-webapi
+_EOF_`
+pkg_cfgs=`cat <<_EOF_
+$etc_path/init/vnet-webapi.conf
+$etc_path/wakame-vnet/webapi.conf
+$etc_path/default/vnet-webapi
+_EOF_`
+pkg_owned_dirs=`cat <<_EOF_
+$vnet_path/vnet/rack
+_EOF_`
