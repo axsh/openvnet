@@ -66,7 +66,7 @@ module Vnet::Openflow
       @networks.select { |key,nw|
         nw.class == NetworkVirtual
       }.map { |key,nw|
-        nw.id
+        nw.network_id
       }
     end
 

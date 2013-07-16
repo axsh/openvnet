@@ -118,6 +118,11 @@ module Vnet::Openflow
       # Next we catch all arp packets, with learning flows for
       # incoming arp packets having been handled by network/eth_port
       # specific flows.
+      flows << Flow.create(TABLE_VIRTUAL_SRC, 82, {
+                             :eth_type => 0x0806,
+                             :tunnel_id => 0,
+                           }, {}, flow_options)
+
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
                            }, {}, flow_options)
@@ -142,12 +147,12 @@ module Vnet::Openflow
         port.extend(PortLocal)
         port.install_with_hw(self.bridge_hw) if self.bridge_hw
 
-        network = self.network_manager.network_by_uuid('nw-public')
+        network = @network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^eth/
         port.extend(PortHost)
 
-        network = self.network_manager.network_by_uuid('nw-public')
+        network = @network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^vif-/
         vif_map = Vnet::ModelWrappers::Vif[port_desc.name]
@@ -158,7 +163,7 @@ module Vnet::Openflow
         end
 
         # network = self.network_manager.network_by_id(vif_map.network_id)
-        network = self.network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
+        network = @network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
 
         if network.class == NetworkPhysical
           port.extend(PortPhysical)

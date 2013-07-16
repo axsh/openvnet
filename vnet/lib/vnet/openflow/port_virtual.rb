@@ -10,13 +10,18 @@ module Vnet::Openflow
     end
 
     def install
+      any_network_md = flow_options.merge(md_network(:virtual_network))
       local_network_md = flow_options.merge(md_network(:virtual_network, :local => nil))
-
+      
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
                            }, {},
                            local_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+      flows << Flow.create(TABLE_HOST_PORTS, 30, {
+                             :eth_dst => self.hw_addr,
+                           }, {},
+                           any_network_md.merge!(:goto_table => TABLE_NETWORK_CLASSIFIER))
 
       #
       # ARP Anti-Spoof:
@@ -76,26 +81,8 @@ module Vnet::Openflow
                            }, flow_options)
 
       self.datapath.add_flows(flows)
-      self.update_eth_ports
     end
 
-    def update_eth_ports
-      flows = []
-
-      self.datapath.switch.eth_ports.each { |port|
-        port_md = flow_options.merge(md_network(:virtual_network, :port => port.port_number))
-
-        flows << Flow.create(TABLE_HOST_PORTS, 30, {
-                               :in_port => port.port_number,
-                               :eth_dst => self.hw_addr,
-                             }, {},
-                             port_md.merge!(:goto_table => TABLE_NETWORK_CLASSIFIER))
-      }
-      self.datapath.add_flows(flows) unless flows.empty?
-    end
-
-    def update_tunnel_ports
-    end
   end
 
 end

@@ -19,33 +19,43 @@ module Vnet::Openflow
     def install
       flows = []
 
-      broadcast_mac_addr = self.datapath_of_bridge && self.datapath_of_bridge[:broadcast_mac_addr]
+      if self.broadcast_mac_addr
+        any_network_md = flow_options.merge(md_network(:virtual_network))
 
-      if broadcast_mac_addr
+        flows << Flow.create(TABLE_HOST_PORTS, 30, {
+                               :eth_dst => self.broadcast_mac_addr
+                             }, {
+                               :eth_dst => MAC_BROADCAST
+                             }, any_network_md.merge!(:goto_table => TABLE_NETWORK_CLASSIFIER))
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_dst => broadcast_mac_addr
+                               :eth_dst => self.broadcast_mac_addr
                              }, {}, flow_options)
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_src => broadcast_mac_addr
+                               :eth_src => self.broadcast_mac_addr
                              }, {}, flow_options)
       end
 
+      flood_md = flow_options.merge(md_network(:virtual_network, :flood => nil))
+
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40, md_network(:virtual_network), {},
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
-
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
                            md_network(:virtual_network, :local => nil).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flow_options.merge(md_network(:virtual_network, :flood => nil).merge!(:goto_table => TABLE_METADATA_ROUTE)))
+                           flood_md.merge!(:goto_table => TABLE_METADATA_ROUTE))
       flows << Flow.create(TABLE_VIRTUAL_DST, 30,
                            md_network(:virtual_network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flow_options.merge(md_network(:virtual_network, :flood => nil).merge!(:goto_table => TABLE_METADATA_LOCAL)))
+                           flood_md.merge!(:goto_table => TABLE_METADATA_LOCAL))
 
       self.datapath.add_flows(flows)
+
+      ovs_flows = []
+      ovs_flows << create_ovs_flow_learn_arp(83, "tun_id=0,")
+      ovs_flows << create_ovs_flow_learn_arp(81, "", "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\],")
+      ovs_flows.each { |flow| self.datapath.add_ovs_flow(flow) }
     end
 
     def update_flows
       flows = []
-      ovs_flows = []
       flood_actions = self.ports.collect { |key,port| {:output => port.port_number} }
 
       flows << Flow.create(TABLE_METADATA_LOCAL, 1,
@@ -55,36 +65,17 @@ module Vnet::Openflow
                            md_network(:virtual_network, :flood => nil),
                            flood_actions, flow_options.merge(:goto_table => TABLE_METADATA_SEGMENT))
 
-      self.datapath.switch.eth_ports.each { |eth_port|
-        if self.datapath_of_bridge
-          set_md = flow_options.merge(md_network(:virtual_network, :port => eth_port.port_number))
-
-          flows << Flow.create(TABLE_HOST_PORTS, 30, {
-                                 :in_port => eth_port.port_number,
-                                 :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
-                               }, {
-                                 :eth_dst => MAC_BROADCAST
-                               }, set_md.merge!(:goto_table => TABLE_NETWORK_CLASSIFIER))
-        end
-        ovs_flows << create_ovs_flow_learn_arp(eth_port)
-      }
-
-      self.datapath.switch.tunnel_ports.each do |tunnel_port|
-        ovs_flows << create_ovs_flow_learn_arp(tunnel_port, "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\]," % self.network_number)
-      end
-
       self.datapath.add_flows(flows)
-      ovs_flows.each { |flow| self.datapath.add_ovs_flow(flow) }
     end
 
-    def create_ovs_flow_learn_arp(port, learn_options = "")
+    def create_ovs_flow_learn_arp(priority, match_options = "", learn_options = "")
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
       match_md = md_network(:virtual_network, :remote => nil)
       learn_md = md_network(:virtual_network, :local => nil)
 
-      flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=81,cookie=0x%x,in_port=#{port.port_number},arp,metadata=0x%x/0x%x,actions=" %
+      flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]
       flow_learn_arp << "learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
         [TABLE_VIRTUAL_DST, @cookie, learn_md[:metadata]]

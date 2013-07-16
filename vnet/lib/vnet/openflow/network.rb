@@ -34,6 +34,10 @@ module Vnet::Openflow
       @ipv4_prefix = network_map.ipv4_prefix
     end
 
+    def broadcast_mac_addr
+      self.datapath_of_bridge && self.datapath_of_bridge[:broadcast_mac_addr]
+    end
+
     def add_port(port, should_update)
       raise("Port already added to a network.") if port.network || @ports[port.port_number]
 
@@ -67,8 +71,6 @@ module Vnet::Openflow
       else
         error "network(#{@uuid}): no datapath associated with network."
       end
-
-      update_flows if should_update
     end
 
     def add_service(service_map)

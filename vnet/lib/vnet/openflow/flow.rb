@@ -75,7 +75,7 @@ module Vnet::Openflow
           # We do not clear the routing flag as later flows might want
           # to know the packet has been routed.
           metadata = metadata | 0
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_FLAG_ROUTING
         when :flood
           metadata = metadata | OFPP_FLOOD
           metadata_mask = metadata_mask | METADATA_PORT_MASK

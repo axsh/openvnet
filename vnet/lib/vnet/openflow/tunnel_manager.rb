@@ -97,8 +97,7 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_METADATA_TUNNEL, 1,
                            set_md, tunnel_ports.map { |tunnel_port|
-                             { :eth_dst => MAC_BROADCAST,
-                               :tunnel_id => network_id | TUNNEL_FLAG,
+                             { :tunnel_id => network_id | TUNNEL_FLAG,
                                :output => tunnel_port.port_number
                              }
                            }, {

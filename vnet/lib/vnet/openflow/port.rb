@@ -65,11 +65,6 @@ module Vnet::Openflow
       self.datapath.del_cookie(@cookie)
     end
 
-    def update_eth_ports
-    end
-
-    def update_tunnel_ports
-    end
   end
 
 end
