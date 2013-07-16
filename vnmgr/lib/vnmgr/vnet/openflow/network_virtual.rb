@@ -57,13 +57,14 @@ module Vnmgr::VNet::Openflow
 
       self.datapath.switch.eth_ports.each { |eth_port|
         if self.datapath_of_bridge
+          set_md = flow_options.merge(md_network(:virtual_network, :port => eth_port.port_number))
+
           flows << Flow.create(TABLE_HOST_PORTS, 30, {
                                  :in_port => eth_port.port_number,
                                  :eth_dst => self.datapath_of_bridge[:broadcast_mac_addr]
                                }, {
                                  :eth_dst => MAC_BROADCAST
-                               }, fo_metadata_pn(eth_port.port_number,
-                                                 :goto_table => TABLE_NETWORK_CLASSIFIER))
+                               }, set_md.merge!(:goto_table => TABLE_NETWORK_CLASSIFIER))
         end
         ovs_flows << create_ovs_flow_learn_arp(eth_port)
       }

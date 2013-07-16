@@ -78,10 +78,7 @@ module Vnmgr::VNet::Openflow
 
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, {}, flow_options)
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {},
-                           flow_options.merge({ :metadata => METADATA_FLAG_REMOTE,
-                                                :metadata_mask => METADATA_FLAG_REMOTE,
-                                                :goto_table => TABLE_TUNNEL_PORTS
-                                              }))
+                           flow_options.merge(md_create(:remote => nil)).merge!(:goto_table => TABLE_TUNNEL_PORTS))
 
       flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS, 0, {}, {}, flow_options)

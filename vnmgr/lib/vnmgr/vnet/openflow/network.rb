@@ -34,35 +34,6 @@ module Vnmgr::VNet::Openflow
       @ipv4_prefix = network_map.ipv4_prefix
     end
 
-    def metadata_flags(flags)
-      { :metadata => flags, :metadata_mask => flags }
-    end
-
-    def metadata_n(nw = self.network_number)
-      { :metadata => nw << METADATA_NETWORK_SHIFT,
-        :metadata_mask => METADATA_NETWORK_MASK
-      }
-    end
-
-    def metadata_p(metadata = 0x0, metadata_mask = 0x0)
-      { :metadata => metadata,
-        :metadata_mask => METADATA_PORT_MASK | metadata_mask
-      }
-    end
-
-    def metadata_pn(metadata = 0x0, metadata_mask = 0x0)
-      { :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | metadata,
-        :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK | metadata_mask
-      }
-    end
-
-    def fo_metadata_pn(port = 0x0, append = nil)
-      result = flow_options.merge({ :metadata => (self.network_number << METADATA_NETWORK_SHIFT) | port,
-                                    :metadata_mask => (METADATA_PORT_MASK | METADATA_NETWORK_MASK)
-                                  })
-      result.merge!(append) if append
-    end
-
     def add_port(port, should_update)
       raise("Port already added to a network.") if port.network || @ports[port.port_number]
 

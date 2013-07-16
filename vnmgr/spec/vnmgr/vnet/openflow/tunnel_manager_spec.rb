@@ -67,8 +67,8 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
       end
     end
 
-    it "should add flood flow netwrok 1" do
-      tunnel_manager.update_virtual_network(double(:network_number => 1))
+    it "should add flood flow network 1" do
+      tunnel_manager.update_virtual_network_id(1)
 
       #pp datapath.added_flows
       expect(datapath.added_ovs_flows.size).to eq 0
@@ -136,7 +136,7 @@ describe Vnmgr::VNet::Openflow::TunnelManager do
     end
 
     it "should add flood flow for netwrok 2" do
-      tunnel_manager.update_virtual_network(double(:network_number => 2))
+      tunnel_manager.update_virtual_network_id(2)
 
       #pp datapath.added_flows
       expect(datapath.added_ovs_flows.size).to eq 0

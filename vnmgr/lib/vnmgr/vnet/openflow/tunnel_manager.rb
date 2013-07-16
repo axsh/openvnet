@@ -5,7 +5,7 @@ module Vnmgr::VNet::Openflow
   class TunnelManager
     include Celluloid
     include Celluloid::Logger
-    include Vnmgr::Constants::Openflow
+    include FlowHelpers
     
     attr_reader :datapath
     attr_reader :tunnels
@@ -58,10 +58,10 @@ module Vnmgr::VNet::Openflow
       update_all_networks if should_update
     end
 
-    def prepare_network(network_id, dp_map)
+    def prepare_network(network_map, dp_map)
       update_networks = false
 
-      MW::DatapathNetwork.batch.on_other_segment(dp_map).where(:network_id => network_id).all.commit.each { |dp|
+      MW::DatapathNetwork.batch.on_other_segment(dp_map).where(:network_id => network_map.id).all.commit.each { |dp|
         self.insert(dp, false)
 
         # Only add non-existing ones...
@@ -72,14 +72,12 @@ module Vnmgr::VNet::Openflow
     end
 
     def update_all_networks
-      # Fix this...
-
-      @datapath.switch.network_manager.networks.dup.each { |nw_id,network|
-        self.update_virtual_network(network) if network.class == NetworkVirtual
+      @datapath.switch.network_manager.virtual_network_ids.each { |nw_id|
+        self.update_virtual_network_id(nw_id)
       }
     end
 
-    def update_virtual_network(network)
+    def update_virtual_network_id(network_id)
       flows = []
 
       # tunnels whose peer datapath has the network
@@ -89,37 +87,45 @@ module Vnmgr::VNet::Openflow
           warn "tunnel port: #{tunnel_port.port_name} is not registered in db"
           next
         end
-        tunnel[:datapath_networks].any?{|dpn| dpn[:network_number] == network.network_number}
+        tunnel[:datapath_networks].any?{|dpn| dpn[:network_number] == network_id}
       end
 
       # flood flow
+      set_md = md_create({ :virtual_network => network_id,
+                           :flood => nil
+                         })
+
       flows << Flow.create(TABLE_METADATA_TUNNEL, 1,
-        { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | OFPP_FLOOD,
-          :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK },
-        tunnel_ports.map { |tunnel_port|
-          { :eth_dst => MAC_BROADCAST,
-            :tunnel_id => network.network_number | TUNNEL_FLAG,
-            :output => tunnel_port.port_number}
-        },
-        { :cookie => self.cookie })
+                           set_md, tunnel_ports.map { |tunnel_port|
+                             { :eth_dst => MAC_BROADCAST,
+                               :tunnel_id => network_id | TUNNEL_FLAG,
+                               :output => tunnel_port.port_number
+                             }
+                           }, {
+                             :cookie => self.cookie
+                           })
 
       # catch flow
       tunnel_ports.each do |tunnel_port|
-        flows << Flow.create(TABLE_TUNNEL_PORTS, 30,
-          { :in_port => tunnel_port.port_number,
-            :tunnel_id => network.network_number,
-            :tunnel_id_mask => TUNNEL_NETWORK_MASK },
-          nil,
-          { :metadata => (network.network_number << METADATA_NETWORK_SHIFT) | tunnel_port.port_number,
-            :metadata_mask => METADATA_PORT_MASK | METADATA_NETWORK_MASK,
-            :goto_table => TABLE_NETWORK_CLASSIFIER })
+        set_md = md_create({ :virtual_network => network_id,
+                             :port => tunnel_port.port_number
+                           })
 
-        flows << Flow.create(TABLE_VIRTUAL_SRC, 30,
-          { :in_port => tunnel_port.port_number,
-            :tunnel_id => network.network_number,
-            :tunnel_id_mask => TUNNEL_NETWORK_MASK },
-          nil,
-          { :goto_table => TABLE_ROUTER_ENTRY, :cookie => self.cookie })
+        flows << Flow.create(TABLE_TUNNEL_PORTS, 30, {
+                               :in_port => tunnel_port.port_number,
+                               :tunnel_id => network_id,
+                               :tunnel_id_mask => TUNNEL_NETWORK_MASK
+                             }, nil,
+                             set_md.merge!(:goto_table => TABLE_NETWORK_CLASSIFIER))
+
+        flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
+                               :in_port => tunnel_port.port_number,
+                               :tunnel_id => network_id,
+                               :tunnel_id_mask => TUNNEL_NETWORK_MASK
+                             }, nil, {
+                               :goto_table => TABLE_ROUTER_ENTRY,
+                               :cookie => self.cookie
+                             })
       end
 
       @datapath.add_flows(flows)

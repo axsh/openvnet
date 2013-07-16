@@ -10,26 +10,22 @@ module Vnmgr::VNet::Openflow
     end
 
     def install
+      set_local_md = flow_options.merge(md_create(:local => nil))
+
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 3, {
                              :in_port => self.port_number,
                              :eth_type => 0x0806
-                           }, {}, flow_options.merge({ :metadata => METADATA_FLAG_LOCAL,
-                                                       :metadata_mask => METADATA_FLAG_LOCAL,
-                                                       :goto_table => TABLE_ARP_ANTISPOOF
-                                                     }))
+                           }, {}, set_local_md.merge(:goto_table => TABLE_ARP_ANTISPOOF))
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge({ :metadata => METADATA_FLAG_LOCAL,
-                                                       :metadata_mask => METADATA_FLAG_LOCAL,
-                                                       :goto_table => TABLE_NETWORK_CLASSIFIER
-                                                     }))
+                           }, {}, set_local_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
       flows << Flow.create(TABLE_HOST_PORTS, 10, {
                              :eth_src => self.hw_addr
                            }, {}, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
                              :eth_dst => self.hw_addr
-                           }, {}, fo_load_port(TABLE_PHYSICAL_SRC))
+                           }, {}, flow_options.merge(md_port).merge!(:goto_table => TABLE_PHYSICAL_SRC))
 
       if self.ipv4_addr
         flows << Flow.create(TABLE_PHYSICAL_SRC, 45, {

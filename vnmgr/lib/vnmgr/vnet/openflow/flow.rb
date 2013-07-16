@@ -102,6 +102,9 @@ module Vnmgr::VNet::Openflow
         when :route_link
           metadata = metadata | value | METADATA_FLAG_ROUTING
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_FLAG_ROUTING
+        when :virtual_network
+          metadata = metadata | (value << METADATA_NETWORK_SHIFT)
+          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
         else
           raise("Unknown metadata type: #{key.inspect}")
         end
