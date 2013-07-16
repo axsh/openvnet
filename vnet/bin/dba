@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'dcell'
+require 'vnet'
+
+conf = Vnet::Configurations::Dba.conf
+
+#Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
+Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "dba.log"))
+
+Vnet::Initializers::DB.run(conf.db_uri)
+
+DCell.start :id => conf.node.id, :addr => conf.node.addr_string,
+  :registry => {
+    :adapter => conf.registry.adapter,
+    :host => conf.registry.host,
+    :port => conf.registry.port
+  }
+
+conf.actor_names.each do |actor_name|
+  Vnet::NodeModules.const_get(actor_name.camelize).supervise_as actor_name
+end
+
+sleep

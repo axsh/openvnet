@@ -3,7 +3,7 @@ pkg_desc="Vnmgr WebAPI for Wakame-VNet"
 pkg_deps="wakame-vnet-common"
 pkg_arch="all"
 pkg_dirs=`cat <<_EOF_
-$vnet_path/vnmgr/rack
+$vnet_path/vnet/rack
 $etc_path/init/vnet-vnmgr.conf
 $etc_path/wakame-vnet/vnmgr.conf
 $etc_path/default/vnet-vnmgr
@@ -14,5 +14,5 @@ $etc_path/wakame-vnet/vnmgr.conf
 $etc_path/default/vnet-vnmgr
 _EOF_`
 pkg_owned_dirs=`cat <<_EOF_
-$vnet_path/vnmgr/rack
+$vnet_path/vnet/rack
 _EOF_`

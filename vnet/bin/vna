@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'vnet'
+require 'celluloid'
+require 'dcell'
+
+conf = Vnet::Configurations::Vna.conf
+
+#Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
+Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "vna.log"))
+
+Vnet::ModelWrappers::Base.set_proxy(conf)
+
+case conf.data_access_proxy
+when :dba
+  DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
+    :registry => {
+      :adapter => conf.registry.adapter,
+      :host => conf.registry.host,
+      :port => conf.registry.port
+  })
+when :direct
+  Vnet::Initializers::DB.run(conf.db_uri)
+end
+
+M = Vnet::ModelWrappers
+
+# Poke the database.
+Vnet::ModelWrappers::Network.batch.name.commit
+
+service_openflow = Vnet::NodeModules::ServiceOpenflow.new
+service_openflow.start
+
+sleep

@@ -20,13 +20,13 @@ build-ruby:
 
 install-bundle:
 	$(RUBYDIR)/bin/gem install bundler
-	(cd $(CURDIR)/vnmgr; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
-	(cd $(CURDIR)/vnmgr; $(RUBYDIR)/bin/bundle install --without development test)
+	(cd $(CURDIR)/vnet; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
+	(cd $(CURDIR)/vnet; $(RUBYDIR)/bin/bundle install --without development test)
 
 install-bundle-dev:
 	$(RUBYDIR)/bin/gem install bundler
-	(cd $(CURDIR)/vnmgr; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
-	(cd $(CURDIR)/vnmgr; $(RUBYDIR)/bin/bundle install)
+	(cd $(CURDIR)/vnet; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
+	(cd $(CURDIR)/vnet; $(RUBYDIR)/bin/bundle install)
 
 install: update-config
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
@@ -34,7 +34,7 @@ install: update-config
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/log
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/pid
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/sock
-	cp -r vnmgr vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
+	cp -r vnet vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
 	cp -r deployment/conf_files/etc/default $(DSTDIR)/etc
 	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
 
@@ -60,8 +60,8 @@ remove-config:
 
 clean:
 	rm -rf $(RUBYDIR)
-	rm -rf $(CURDIR)/vnmgr/vendor
-	rm -rf $(CURDIR)/vnmgr/.bundle
+	rm -rf $(CURDIR)/vnet/vendor
+	rm -rf $(CURDIR)/vnet/.bundle
 
 build-rpm: DSTDIR = /tmp/vnet-rpmbuild
 build-rpm: clean build-ruby install-bundle install
