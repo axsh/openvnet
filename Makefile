@@ -43,13 +43,13 @@ uninstall:
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
 	rm -rf $(DSTDIR)/tmp/log
 	rm -rf $(DSTDIR)/var/run/wakame-vnet
-	rm $(DSTDIR)/etc/default/vnet-dba
 	rm $(DSTDIR)/etc/default/vnet-vna
 	rm $(DSTDIR)/etc/default/vnet-vnmgr
+	rm $(DSTDIR)/etc/default/vnet-webapi
 	rm $(DSTDIR)/etc/default/wakame-vnet
-	rm $(DSTDIR)/etc/init/vnet-dba.conf
 	rm $(DSTDIR)/etc/init/vnet-vna.conf
 	rm $(DSTDIR)/etc/init/vnet-vnmgr.conf
+	rm $(DSTDIR)/etc/init/vnet-webapi.conf
 
 update-config:
 	mkdir -p $(DSTDIR)/etc/wakame-vnet

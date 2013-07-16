@@ -6,10 +6,10 @@ require 'vnet'
 require 'rack/cors'
 require 'dcell'
 
-conf = Vnet::Configurations::Vnmgr.conf
+conf = Vnet::Configurations::Webapi.conf
 
 #Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
-Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "vnmgr.log"))
+Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "webapi.log"))
 
 Vnet::ModelWrappers::Base.set_proxy(conf)
 
@@ -19,7 +19,7 @@ if defined?(::Unicorn)
 end
 
 case conf.data_access_proxy
-when :dba
+when :rpc
   DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
     :registry => {
       :adapter => conf.registry.adapter,

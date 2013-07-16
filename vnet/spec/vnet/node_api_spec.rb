@@ -12,7 +12,7 @@ describe Vnet::NodeApi do
       expect { Vnet::NodeApi.get_proxy(conf) }.to raise_error "Unknown proxy: aaa"
     end
 
-    it "return dba proxy" do
+    it "return rpc proxy" do
       conf.stub(:node_api_proxy).and_return(:rpc)
       expect(Vnet::NodeApi.get_proxy(conf)).to be_a Vnet::NodeApi::RpcProxy
     end

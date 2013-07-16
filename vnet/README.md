@@ -84,7 +84,8 @@ Copy the upstart scripts into their proper directories
 Start the Wakame-VNet services
 
     start vnet-vnmgr
-    start vnet-dba
+    start vnet-vna
+    start vnet-webapi
 
 Wakame-VNet writes its logs in the /var/log/wakame-vnet directory. If there's a problem starting any of the services, you can find its log files there.
 

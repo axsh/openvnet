@@ -17,7 +17,7 @@ Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "vna.log"))
 Vnet::ModelWrappers::Base.set_proxy(conf)
 
 case conf.data_access_proxy
-when :dba
+when :rpc
   DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
     :registry => {
       :adapter => conf.registry.adapter,
