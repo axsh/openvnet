@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-describe Vnet::DataAccess do
-  describe Vnet::DataAccess::DbaProxy do
+describe Vnet::NodeApi do
+  describe Vnet::NodeApi::RpcProxy do
     let(:conf) do
       double(:conf).tap do |conf|
-        conf.stub(:api_node_id).and_return("vnmgr")
-        conf.stub(:api_actor_name).and_return("dba")
+        conf.stub(:rpc_node_id).and_return("vnmgr")
+        conf.stub(:rpc_actor_name).and_return("rpc")
       end
     end
 
@@ -14,7 +14,7 @@ describe Vnet::DataAccess do
 
     let(:node) do
       double(:node).tap do |node|
-        node.stub(:[]).with("dba").and_return(actor)
+        node.stub(:[]).with("rpc").and_return(actor)
       end
     end
 
@@ -24,7 +24,7 @@ describe Vnet::DataAccess do
 
     subject do
       actor.should_receive(:execute).with(:network, :all).and_return([{uuid: "test-uuid"}])
-      Vnet::DataAccess::DbaProxy.new(conf).network.all
+      Vnet::NodeApi::RpcProxy.new(conf).network.all
     end
 
     it { expect(subject).to be_a Array }
@@ -33,7 +33,7 @@ describe Vnet::DataAccess do
     it { expect(subject.first[:uuid]).to eq "test-uuid" }
   end
 
-  describe Vnet::DataAccess::DirectProxy do
+  describe Vnet::NodeApi::DirectProxy do
     let(:conf) do
       double(:conf)
     end
@@ -43,7 +43,7 @@ describe Vnet::DataAccess do
     end
 
     subject do
-      Vnet::DataAccess::DirectProxy.new(conf).network.all
+      Vnet::NodeApi::DirectProxy.new(conf).network.all
     end
 
     it { should be_a Array }

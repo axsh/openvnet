@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-module Vnet::DataAccess
+module Vnet::NodeApi
   class Proxy
     def initialize(conf)
       @conf = conf
     end
 
     def method_missing(class_name, *args, &block)
-      if class_name.present? && args.empty? && Vnet::DataAccess::Models.const_defined?(class_name.to_s.camelize)
+      if class_name.present? && args.empty? && Models.const_defined?(class_name.to_s.camelize)
         _call_class.new(class_name, @conf).tap do |call|
           define_singleton_method(class_name){ call }
         end
@@ -28,12 +28,12 @@ module Vnet::DataAccess
     end
   end
 
-  class DbaProxy < Proxy
+  class RpcProxy < Proxy
     protected
-    class DbaCall < Call
+    class RpcCall < Call
       def initialize(class_name, conf)
         super
-        @actor = DCell::Node[conf.api_node_id][conf.api_actor_name]
+        @actor = DCell::Node[conf.rpc_node_id][conf.rpc_actor_name]
       end
 
       def method_missing(method_name, *args, &block)
@@ -42,7 +42,7 @@ module Vnet::DataAccess
     end
 
     def _call_class
-      DbaCall
+      RpcCall
     end
   end
 
@@ -51,7 +51,7 @@ module Vnet::DataAccess
     class DirectCall < Call
       def initialize(class_name, conf)
         super
-        @method_caller = Vnet::DataAccess::Models.const_get(class_name.to_s.camelize).new
+        @method_caller = Models.const_get(class_name.to_s.camelize).new
       end
 
       def method_missing(method_name, *args, &block)

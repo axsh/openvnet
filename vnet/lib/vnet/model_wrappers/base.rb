@@ -21,7 +21,7 @@ module Vnet::ModelWrappers
   class Base < OpenStruct
     class << self
       def set_proxy(conf)
-        @@proxy = Vnet::DataAccess.get_proxy(conf)
+        @@proxy = Vnet::NodeApi.get_proxy(conf)
       end
 
       def _proxy

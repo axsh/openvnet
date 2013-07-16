@@ -31,6 +31,6 @@ module Vnet::Configurations
         @config[:actor_names] = names
       end
     end
-    param :actor_names, :default => %w(dba)
+    param :actor_names, :default => %w(rpc)
   end
 end

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-module Vnet::DataAccess::Models
+module Vnet::NodeApi::Models
   class TestModel < Base; end
 end
 
@@ -21,9 +21,9 @@ module Vnet::Models
   end
 end
 
-describe Vnet::DataAccess::Models::Base do
+describe Vnet::NodeApi::Models::Base do
   describe "single method" do
-    subject { Vnet::DataAccess::Models::TestModel.new.aaa }
+    subject { Vnet::NodeApi::Models::TestModel.new.aaa }
 
     context "model method not found" do
       it { expect(subject).to be_a Hash }
@@ -32,7 +32,7 @@ describe Vnet::DataAccess::Models::Base do
 
     context "model method implemented" do
       before do
-        Vnet::DataAccess::Models::TestModel.any_instance.stub(:aaa).and_return(:bbb)
+        Vnet::NodeApi::Models::TestModel.any_instance.stub(:aaa).and_return(:bbb)
       end
       it { expect(subject).to eq :bbb }
     end
@@ -53,7 +53,7 @@ describe Vnet::DataAccess::Models::Base do
     end
 
     context "without options" do
-      subject { Vnet::DataAccess::Models::TestModel.new.execute_batch([:all], [:active]) }
+      subject { Vnet::NodeApi::Models::TestModel.new.execute_batch([:all], [:active]) }
 
       it { expect(subject).to be_a Array }
       it { expect(subject.size).to eq 1 }
@@ -64,7 +64,7 @@ describe Vnet::DataAccess::Models::Base do
     end
 
     context "fill" do
-      subject { Vnet::DataAccess::Models::TestModel.new.execute_batch([:all], [:active], { :fill => [ :friend, { :rival => [ :friend, :rival ] } ] }) }
+      subject { Vnet::NodeApi::Models::TestModel.new.execute_batch([:all], [:active], { :fill => [ :friend, { :rival => [ :friend, :rival ] } ] }) }
 
       it { expect(subject).to be_a Array }
       it { expect(subject.size).to eq 1 }

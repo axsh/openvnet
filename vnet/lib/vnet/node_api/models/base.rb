@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-module Vnet::DataAccess::Models
+module Vnet::NodeApi::Models
   class Base
     attr_accessor :model_class
     def initialize

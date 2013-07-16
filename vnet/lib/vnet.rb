@@ -29,28 +29,28 @@ module Vnet
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
-  autoload :DataAccess, 'vnet/data_access'
-  module DataAccess
-    autoload :DbaProxy, 'vnet/data_access/proxies'
-    autoload :DirectProxy, 'vnet/data_access/proxies'
+  autoload :NodeApi, 'vnet/node_api'
+  module NodeApi
+    autoload :RpcProxy, 'vnet/node_api/proxies'
+    autoload :DirectProxy, 'vnet/node_api/proxies'
     module Models
-      autoload :Base, 'vnet/data_access/models/base'
-      autoload :Datapath, 'vnet/data_access/models/models.rb'
-      autoload :DatapathNetwork, 'vnet/data_access/models/models.rb'
-      autoload :DcNetwork, 'vnet/data_access/models/models.rb'
-      autoload :DcNetworkDcSegment, 'vnet/data_access/models/models.rb'
-      autoload :DcSegment, 'vnet/data_access/models/models.rb'
-      autoload :DhcpRange, 'vnet/data_access/models/models.rb'
-      autoload :IpAddress, 'vnet/data_access/models/models.rb'
-      autoload :IpLease, 'vnet/data_access/models/models.rb'
-      autoload :MacRange, 'vnet/data_access/models/models.rb'
-      autoload :Network, 'vnet/data_access/models/models.rb'
-      autoload :NetworkService, 'vnet/data_access/models/models.rb'
-      autoload :OpenFlowController, 'vnet/data_access/models/models.rb'
-      autoload :Route, 'vnet/data_access/models/models.rb'
-      autoload :RouteLink, 'vnet/data_access/models/models.rb'
-      autoload :Tunnel, 'vnet/data_access/models/models.rb'
-      autoload :Vif, 'vnet/data_access/models/models.rb'
+      autoload :Base, 'vnet/node_api/models/base'
+      autoload :Datapath, 'vnet/node_api/models/models.rb'
+      autoload :DatapathNetwork, 'vnet/node_api/models/models.rb'
+      autoload :DcNetwork, 'vnet/node_api/models/models.rb'
+      autoload :DcNetworkDcSegment, 'vnet/node_api/models/models.rb'
+      autoload :DcSegment, 'vnet/node_api/models/models.rb'
+      autoload :DhcpRange, 'vnet/node_api/models/models.rb'
+      autoload :IpAddress, 'vnet/node_api/models/models.rb'
+      autoload :IpLease, 'vnet/node_api/models/models.rb'
+      autoload :MacRange, 'vnet/node_api/models/models.rb'
+      autoload :Network, 'vnet/node_api/models/models.rb'
+      autoload :NetworkService, 'vnet/node_api/models/models.rb'
+      autoload :OpenFlowController, 'vnet/node_api/models/models.rb'
+      autoload :Route, 'vnet/node_api/models/models.rb'
+      autoload :RouteLink, 'vnet/node_api/models/models.rb'
+      autoload :Tunnel, 'vnet/node_api/models/models.rb'
+      autoload :Vif, 'vnet/node_api/models/models.rb'
     end
   end
 
@@ -140,7 +140,7 @@ module Vnet
   end
 
   module NodeModules
-    autoload :Dba, 'vnet/node_modules/dba'
+    autoload :Rpc, 'vnet/node_modules/rpc'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
   end
 

@@ -16,6 +16,6 @@ describe Vnet::Configurations::Vnmgr do
     it { expect(subject.node.addr.port).to eq 19102 }
     it { expect(subject.node.addr_string).to eq "tcp://127.0.0.1:19102" }
 
-    it { expect(subject.actor_names).to eq ["dba"] }
+    it { expect(subject.actor_names).to eq ["rpc"] }
   end
 end

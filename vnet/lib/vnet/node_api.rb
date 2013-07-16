@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 module Vnet
-  module DataAccess
+  module NodeApi
     def self.get_proxy(conf)
-      case conf.data_access_proxy
-      when :dba
-        DbaProxy.new(conf)
+      case conf.node_api_proxy
+      when :rpc
+        RpcProxy.new(conf)
       when :direct
         DirectProxy.new(conf)
       else
-        raise "Unknown proxy: #{conf.data_access_proxy}"
+        raise "Unknown proxy: #{conf.node_api_proxy}"
       end
     end
   end

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::DataAccess::Models
+module Vnet::NodeApi::Models
   class Datapath < Base
   end
 
