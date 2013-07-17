@@ -3,6 +3,7 @@
 #require 'active_support/all'
 #require 'active_support/core_ext'
 require 'active_support/core_ext/class'
+require 'active_support/core_ext/module'
 require 'active_support/core_ext/object'
 require 'active_support/hash_with_indifferent_access'
 require 'active_support/inflector'
@@ -33,6 +34,9 @@ module Vnet
   module NodeApi
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
+    module Event
+      autoload :Dispatchable, 'vnet/node_api/event.rb'
+    end
     module Models
       autoload :Base, 'vnet/node_api/models/base'
       autoload :Datapath, 'vnet/node_api/models/models.rb'
