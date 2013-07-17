@@ -17,27 +17,16 @@ module Vnet::Openflow
     end
 
     def install
-      flows = []
-
-      if self.broadcast_mac_addr
-        any_network_md = flow_options.merge(md_network(:virtual_network))
-
-        flows << Flow.create(TABLE_HOST_PORTS, 30, {
-                               :eth_dst => self.broadcast_mac_addr
-                             }, {
-                               :eth_dst => MAC_BROADCAST
-                             }, any_network_md.merge!(:goto_table => TABLE_NETWORK_CLASSIFIER))
-        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_dst => self.broadcast_mac_addr
-                             }, {}, flow_options)
-        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_src => self.broadcast_mac_addr
-                             }, {}, flow_options)
-      end
-
       flood_md = flow_options.merge(md_network(:virtual_network, :flood => nil))
+      any_network_md = flow_options.merge(md_network(:virtual_network))
 
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40, md_network(:virtual_network), {},
+      flows = []
+      flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
+                             :tunnel_id => self.network_id | TUNNEL_FLAG_MASK
+                           }, {},
+                           any_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40,
+                           md_network(:virtual_network), {},
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
                            md_network(:virtual_network, :local => nil).merge!(:eth_dst => MAC_BROADCAST), {},
@@ -45,6 +34,20 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_DST, 30,
                            md_network(:virtual_network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST), {},
                            flood_md.merge!(:goto_table => TABLE_METADATA_LOCAL))
+
+      if self.broadcast_mac_addr
+        flows << Flow.create(TABLE_HOST_PORTS, 30, {
+                               :eth_dst => self.broadcast_mac_addr
+                             }, {
+                               :eth_dst => MAC_BROADCAST
+                             }, any_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+                               :eth_dst => self.broadcast_mac_addr
+                             }, {}, flow_options)
+        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+                               :eth_src => self.broadcast_mac_addr
+                             }, {}, flow_options)
+      end
 
       self.datapath.add_flows(flows)
 

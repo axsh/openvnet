@@ -32,6 +32,7 @@ module Vnet::Openflow
       @cookie_manager.create_category(:dc_segment,     COOKIE_PREFIX_DC_SEGMENT)
       @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
       @cookie_manager.create_category(:route,          COOKIE_PREFIX_ROUTE)
+      @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
 
       @ports = {}
 
@@ -46,8 +47,6 @@ module Vnet::Openflow
 
       @packet_manager.insert(Vnet::Openflow::Services::Arp.new(:datapath => @datapath), :arp)
       @packet_manager.insert(Vnet::Openflow::Services::Icmp.new(:datapath => @datapath), :icmp)
-
-      @tunnel_manager.create_all_tunnels
     end
 
     def eth_ports
@@ -69,6 +68,8 @@ module Vnet::Openflow
     def switch_ready
       # There's a short period of time between the switch being
       # activated and features_reply installing flow.
+      @tunnel_manager.create_all_tunnels
+
       self.datapath.send_message(Trema::Messages::FeaturesRequest.new)
       self.datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
 
@@ -82,6 +83,7 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, {}, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30,
@@ -98,8 +100,9 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL))
-      flows << Flow.create(TABLE_METADATA_TUNNEL, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
+      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, {}, flow_options)
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)

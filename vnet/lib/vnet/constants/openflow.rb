@@ -30,6 +30,7 @@ module Vnet::Constants::Openflow
   # destination mac address, which includes all non-virtual
   # networks.
   TABLE_TUNNEL_PORTS = 3
+  TABLE_TUNNEL_NETWORK_IDS = 4
 
   # Initial verification of network number and application of global
   # filtering rules.
@@ -60,7 +61,8 @@ module Vnet::Constants::Openflow
   TABLE_METADATA_LOCAL = 31
   TABLE_METADATA_ROUTE = 32
   TABLE_METADATA_SEGMENT = 33
-  TABLE_METADATA_TUNNEL = 34
+  TABLE_METADATA_TUNNEL_IDS = 34
+  TABLE_METADATA_TUNNEL_PORTS = 35
 
   #
   # Legacy tables yet to be integrated in the new table ordering:
@@ -90,13 +92,15 @@ module Vnet::Constants::Openflow
 
   COOKIE_PREFIX_SHIFT = 48
 
-  COOKIE_PREFIX_SWITCH = 0x1
+  COOKIE_PREFIX_SWITCH         = 0x1
   COOKIE_PREFIX_PACKET_HANDLER = 0x2
-  COOKIE_PREFIX_PORT = 0x3
-  COOKIE_PREFIX_NETWORK = 0x4
-  COOKIE_PREFIX_DC_SEGMENT = 0x5
-  COOKIE_PREFIX_TUNNEL = 0x6
-  COOKIE_PREFIX_ROUTE = 0x7
+  COOKIE_PREFIX_PORT           = 0x3
+  COOKIE_PREFIX_NETWORK        = 0x4
+  COOKIE_PREFIX_DC_SEGMENT     = 0x5
+  COOKIE_PREFIX_TUNNEL         = 0x6
+  COOKIE_PREFIX_ROUTE          = 0x7
+  COOKIE_PREFIX_COLLECTION     = 0x8
+  COOKIE_PREFIX_DP_NETWORKS    = 0x9
 
   METADATA_FLAGS_MASK = (0xffff << 48)
   METADATA_FLAGS_SHIFT = 48
@@ -105,7 +109,11 @@ module Vnet::Constants::Openflow
   METADATA_FLAG_PHYSICAL = (0x2 << 48)
   METADATA_FLAG_LOCAL    = (0x4 << 48)
   METADATA_FLAG_REMOTE   = (0x8 << 48)
-  METADATA_FLAG_ROUTING  = (0x10 << 48)
+
+  METADATA_TYPE_MASK = (0xff00 << 48)
+
+  METADATA_TYPE_ROUTE_LINK = (0x100 << 48)
+  METADATA_TYPE_COLLECTION = (0x200 << 48)
 
   METADATA_PORT_MASK = 0xffffffff
   METADATA_NETWORK_MASK = (0xffff << 32)

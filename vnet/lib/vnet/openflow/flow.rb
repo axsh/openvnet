@@ -72,10 +72,11 @@ module Vnet::Openflow
       options.each { |key,value|
         case key
         when :clear_route_link
-          # We do not clear the routing flag as later flows might want
-          # to know the packet has been routed.
           metadata = metadata | 0
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_FLAG_ROUTING
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :collection
+          metadata = metadata | value | METADATA_TYPE_COLLECTION
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :flood
           metadata = metadata | OFPP_FLOOD
           metadata_mask = metadata_mask | METADATA_PORT_MASK
@@ -91,8 +92,8 @@ module Vnet::Openflow
           metadata = metadata | value
           metadata_mask = metadata_mask | METADATA_PORT_MASK
         when :route_link
-          metadata = metadata | value | METADATA_FLAG_ROUTING
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_FLAG_ROUTING
+          metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :virtual_network
           metadata = metadata | (value << METADATA_NETWORK_SHIFT)
           metadata_mask = metadata_mask | METADATA_NETWORK_MASK

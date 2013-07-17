@@ -84,7 +84,7 @@ module Vnet::Openflow
                            md_create({:virtual_network => network_id, :flood => nil}),
                            flood_actions, {
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
-                             :goto_table => TABLE_METADATA_TUNNEL
+                             :goto_table => TABLE_METADATA_TUNNEL_IDS
                            })
                            
       @datapath.add_flows(flows)
