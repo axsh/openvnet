@@ -3,14 +3,6 @@ RUBYDIR = $(CURDIR)/ruby
 #An empty string for DSTDIR will install Wakame-VNet under /opt/axsh/wakame-vnet
 DSTDIR ?= ""
 
-define BUNDLE_CFG
----
-BUNDLE_PATH: vendor/bundle
-BUNDLE_DISABLE_SHARED_GEMS: '1'
-endef
-# We're exporting this as a shell variable because otherwise Make can't echo multiline strings into a file
-export BUNDLE_CFG
-
 all: build-ruby install-bundle
 
 dev: build-ruby install-bundle-dev
@@ -20,13 +12,11 @@ build-ruby:
 
 install-bundle:
 	$(RUBYDIR)/bin/gem install bundler
-	(cd $(CURDIR)/vnet; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
-	(cd $(CURDIR)/vnet; $(RUBYDIR)/bin/bundle install --without development test)
+	(cd $(CURDIR)/vnet; $(RUBYDIR)/bin/bundle install --path vendor/bundle --without development test)
 
 install-bundle-dev:
 	$(RUBYDIR)/bin/gem install bundler
-	(cd $(CURDIR)/vnet; mkdir .bundle; echo "$$BUNDLE_CFG" > .bundle/config)
-	(cd $(CURDIR)/vnet; $(RUBYDIR)/bin/bundle install)
+	(cd $(CURDIR)/vnet; $(RUBYDIR)/bin/bundle install --path vendor/bundle)
 
 install: update-config
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
