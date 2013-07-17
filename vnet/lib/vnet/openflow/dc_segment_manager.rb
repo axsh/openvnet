@@ -47,7 +47,7 @@ module Vnet::Openflow
     def prepare_network(network_map, dp_map)
       return unless network_map.network_mode == 'virtual'
 
-      MW::DatapathNetwork.batch.on_segment(dp_map).where(:network_id => network_map.network_id).all.commit(:fill => :datapath).each { |dpn_map|
+      network_map.batch.datapath_networks_dataset.on_segment(dp_map).all.commit(:fill => :datapath).each { |dp|
         self.insert(dpn_map, false)
       }
 

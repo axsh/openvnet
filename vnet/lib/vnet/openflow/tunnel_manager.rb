@@ -15,15 +15,15 @@ module Vnet::Openflow
     def create_all_tunnels
       debug "creating tunnel ports"
 
-      mydp = Vnet::ModelWrappers::Datapath.first(:dpid => "0x%016x" % @datapath.datapath_id)
+      dp_map = Vnet::ModelWrappers::Datapath.first(:dpid => "0x%016x" % @datapath.datapath_id)
 
-      raise "Datapath not found: #{'0x%016x' % @datapath.datapath_id}" unless mydp
+      raise "Datapath not found: #{'0x%016x' % @datapath.datapath_id}" unless dp_map
 
-      @tunnels = Vnet::ModelWrappers::Datapath.batch.on_other_segment(mydp).all.commit.map do |other_dp|
-        tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => mydp.id, :dst_datapath_id => other_dp.id)
-        @datapath.add_tunnel(tunnel.uuid, IPAddr.new(other_dp.ipv4_address, Socket::AF_INET).to_s)
+      @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
+        tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id)
+        @datapath.add_tunnel(tunnel.uuid, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
         tunnel.to_hash.tap do |t|
-          t[:dst_dpid] = other_dp.dpid
+          t[:dst_dpid] = target_dp_map.dpid
           t[:datapath_networks] = []
         end
       end
@@ -61,7 +61,7 @@ module Vnet::Openflow
     def prepare_network(network_map, dp_map)
       update_networks = false
 
-      MW::DatapathNetwork.batch.on_other_segment(dp_map).where(:network_id => network_map.id).all.commit(:fill => :datapath).each { |dp|
+      network_map.batch.datapath_networks_dataset.on_other_segment(dp_map).all.commit(:fill => :datapath).each { |dp|
         self.insert(dp, false)
 
         # Only add non-existing ones...
