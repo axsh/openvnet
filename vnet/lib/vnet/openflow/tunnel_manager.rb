@@ -48,7 +48,7 @@ module Vnet::Openflow
       tunnel = @tunnels.find{ |t| t[:dst_dpid] == datapath_network[:dpid] }
       tunnel[:datapath_networks] << datapath_network
 
-      cookie = datapath_network[:id] | (COOKIE_PREFIX_DP_NETWORKS << COOKIE_PREFIX_SHIFT)
+      cookie = datapath_network[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
 
       flows = []
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {

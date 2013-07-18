@@ -9,34 +9,32 @@ module Vnet::Openflow
     
     def initialize(dp)
       @datapath = dp
-      @segment_datapaths = {}
+      @datapath_networks = {}
     end
 
     def insert(dpn_map, should_update)
-      datapath = {
-        :uuid => dpn_map.datapath.uuid,
-        :display_name => dpn_map.datapath.display_name,
-        :ipv4_address => dpn_map.datapath.ipv4_address,
-        :datapath_id => dpn_map.datapath.dpid,
-        :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
-        :cookie => @datapath.switch.cookie_manager.acquire(:dc_segment)
-      }
+      dpn_list = (@datapath_networks[dpn_map.network_id] ||= {})
 
-      if datapath[:cookie].nil?
-        error "No more cookies available for DC segment flows."
+      if dpn_list.has_key? dpn_map.id
+        warn "dc_segment_manager: datapath network id already exists (network_id:#{dpn_map.network_id}) dpn_id:#{dpn_map.id})"
         return
       end
 
-      (@segment_datapaths[dpn_map.network_id] ||= []) << datapath
+      dpn = {
+        :id => dpn_map.id,
+        :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
+      }
 
-      actions = {:cookie => datapath[:cookie]}
+      dpn_list[dpn_map.id] = dpn
+
+      actions = {:cookie => dpn[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)}
 
       flows = []
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                             :eth_dst => datapath[:broadcast_mac_addr]
+                             :eth_dst => dpn[:broadcast_mac_addr]
                            }, {}, actions)
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                             :eth_src => datapath[:broadcast_mac_addr]
+                             :eth_src => dpn[:broadcast_mac_addr]
                            }, {}, actions)
 
       @datapath.add_flows(flows)
@@ -47,7 +45,7 @@ module Vnet::Openflow
     def prepare_network(network_map, dp_map)
       return unless network_map.network_mode == 'virtual'
 
-      network_map.batch.datapath_networks_dataset.on_segment(dp_map).all.commit(:fill => :datapath).each { |dp|
+      network_map.batch.datapath_networks_dataset.on_segment(dp_map).all.commit(:fill => :datapath).each { |dpn_map|
         self.insert(dpn_map, false)
       }
 
@@ -55,24 +53,23 @@ module Vnet::Openflow
     end
 
     def remove_network_id(network_id)
-      datapaths = @segment_datapaths.delete(network_id)
+      dpn_list = @datapath_networks.delete(network_id)
 
-      return if datapaths.nil?
+      return if dpn_list.nil?
 
-      datapaths.each { |dp|
-        @datapath.del_cookie(dp[:cookie])
-        @datapath.switch.cookie_manager.release(:dc_segment, dp[:cookie])
+      dpn_list.each { |dpn|
+        @datapath.del_cookie(dpn[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT))
       }      
     end
 
     def update_network_id(network_id)
       eth_port = @datapath.switch.eth_ports.first
-      datapaths = @segment_datapaths[network_id]
+      dpn_list = @datapath_networks[network_id]
 
-      return if eth_port.nil? || datapaths.nil?
+      return if eth_port.nil? || dpn_list.nil?
 
-      flood_actions = datapaths.collect { |datapath|
-        { :eth_dst => datapath[:broadcast_mac_addr],
+      flood_actions = dpn_list.collect { |dpn_id,dpn|
+        { :eth_dst => dpn[:broadcast_mac_addr],
           :output => eth_port.port_number
         }
       }
@@ -81,7 +78,9 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_SEGMENT, 1,
-                           md_create({:virtual_network => network_id, :flood => nil}),
+                           md_create({ :virtual_network => network_id,
+                                       :flood => nil
+                                     }),
                            flood_actions, {
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
                              :goto_table => TABLE_METADATA_TUNNEL_IDS
