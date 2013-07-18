@@ -11,7 +11,7 @@ module Vnet::NodeApi
     def execute_batch(*args)
       methods = args.dup
       options = methods.last.is_a?(Hash) ? methods.pop : {}
-      Sequel::DATABASES.first.transaction do
+      transaction do
         to_hash(methods.inject(model_class) do |klass, method|
           name, *args = method
           klass.__send__(name, *args)
@@ -22,14 +22,19 @@ module Vnet::NodeApi
     def method_missing(method_name, *args, &block)
       if model_class.respond_to?(method_name)
         define_singleton_method(method_name) do |*args|
-          # TODO db transaction
-          Sequel::DATABASES.first.transaction do
+          transaction do
             to_hash(model_class.__send__(method_name, *args, &block))
           end
         end
         self.__send__(method_name, *args, &block)
       else
         super
+      end
+    end
+
+    def transaction
+      Sequel::DATABASES.first.transaction do
+        yield
       end
     end
 
