@@ -53,10 +53,6 @@ module Vnet::Openflow
       self.ports.values.find_all{|port| port.eth? }
     end
 
-    def tunnel_ports
-      self.ports.values.find_all{|port| port.tunnel? }
-    end
-
     def update_bridge_hw(hw_addr)
       @bridge_hw = hw_addr
     end

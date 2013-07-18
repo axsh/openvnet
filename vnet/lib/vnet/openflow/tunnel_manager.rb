@@ -10,6 +10,12 @@ module Vnet::Openflow
     def initialize(dp)
       @datapath = dp
       @tunnels = []
+
+      @tunnel_ports = {}
+    end
+
+    def tunnels_dup
+      @tunnels.dup
     end
 
     def create_all_tunnels
@@ -32,9 +38,7 @@ module Vnet::Openflow
     def insert(dpn_map, should_update = false)
       datapath_network = {
         :id => dpn_map.id,
-        :uuid => dpn_map.datapath.uuid,
         :dpid => dpn_map.datapath.dpid,
-        :display_name => dpn_map.datapath.display_name,
         :ipv4_address => dpn_map.datapath.ipv4_address,
         :datapath_id => dpn_map.datapath.datapath_id,
         :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
@@ -49,13 +53,33 @@ module Vnet::Openflow
       flows = []
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_dst => datapath_network[:broadcast_mac_addr]
-                           }, {}, {
+                           }, nil, {
                              :cookie => cookie
                            })
       
       @datapath.add_flows(flows)
 
       update_network_id(datapath_network[:network_id]) if should_update
+    end
+
+    def add_port(port)
+      old_port = @tunnel_ports.delete(port.port_number)
+
+      if old_port
+        error "tunnel_manager: port already added (port:#{port.port_number} old:#{old_port[:port_name]} new:#{port.port_name})"
+      end
+
+      @tunnel_ports[port.port_number] = {
+        :port_name => port.port_name,
+      }
+
+      update_tunnel(port.port_name)
+    end
+
+    def del_port(port)
+      old_port = @tunnel_ports.delete(port.port_number)
+      
+      update_tunnel(old_port[:port_name]) if old_port
     end
 
     def prepare_network(network_map, dp_map)
@@ -70,8 +94,6 @@ module Vnet::Openflow
 
       update_network_id(network_map.id) if update_networks
     end
-
-    private
 
     def update_network_id(network_id)
       collection_id = find_collection_id(network_id)
@@ -92,6 +114,21 @@ module Vnet::Openflow
       @datapath.add_flows(flows)
     end
 
+    private
+
+    def update_tunnel(port_name)
+      tunnel = @tunnels.find{ |t| t[:uuid] == port_name }
+
+      if tunnel.nil?
+        warn "tunnel_manager: port name is not registered in database (#{port_name})"
+        return
+      end
+
+      tunnel[:datapath_networks].each { |dpn|
+        update_network_id(dpn[:network_id])
+      }
+    end
+
     def find_collection_id(network_id)
       # Currently only use the network id as the collection id.
       #
@@ -103,16 +140,16 @@ module Vnet::Openflow
     end
 
     def update_collection_id(collection_id)
-      # Rewrite this to store the tunnel port numbers in TunnelManager.
+      ports = @tunnel_ports.select { |port_number,tunnel_port|
+        tunnel = @tunnels.find{ |t| t[:uuid] == tunnel_port[:port_name] }
 
-      tunnel_ports = @datapath.switch.tunnel_ports.select do |tunnel_port|
-        tunnel = @tunnels.find{ |t| t[:uuid] == tunnel_port.port_name }
         unless tunnel
           warn "tunnel port: #{tunnel_port.port_name} is not registered in db"
           next
         end
-        tunnel[:datapath_networks].any?{|dpn| dpn[:network_id] == collection_id}
-      end
+
+        tunnel[:datapath_networks].any? { |dpn| dpn[:network_id] == collection_id }
+      }
 
       collection_md = md_create(:collection => collection_id)
       cookie = collection_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
@@ -120,8 +157,8 @@ module Vnet::Openflow
       flows = []
       flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 1,
                            collection_md,
-                           tunnel_ports.map { |tunnel_port|
-                             {:output => tunnel_port.port_number}
+                           ports.map { |port_number, port|
+                             {:output => port_number}
                            }, {
                              :cookie => cookie
                            })
