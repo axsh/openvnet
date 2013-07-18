@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
   class Proxy
-    def initialize(conf)
-      @conf = conf
-    end
-
     def method_missing(class_name, *args, &block)
       if class_name.present? && args.empty? && Models.const_defined?(class_name.to_s.camelize)
-        _call_class.new(class_name, @conf).tap do |call|
+        _call_class.new(class_name).tap do |call|
           define_singleton_method(class_name){ call }
         end
       else
@@ -21,9 +17,8 @@ module Vnet::NodeApi
     end
 
     class Call
-      def initialize(class_name, conf)
+      def initialize(class_name)
         @class_name = class_name
-        @conf = conf
       end
     end
   end
@@ -31,7 +26,7 @@ module Vnet::NodeApi
   class RpcProxy < Proxy
     protected
     class RpcCall < Call
-      def initialize(class_name, conf)
+      def initialize(class_name)
         super
         @actor = DCell::Global[:rpc] or raise "rpc not found in DCell::Global"
       end
@@ -49,7 +44,7 @@ module Vnet::NodeApi
   class DirectProxy < Proxy
     protected
     class DirectCall < Call
-      def initialize(class_name, conf)
+      def initialize(class_name)
         super
         @method_caller = Models.const_get(class_name.to_s.camelize).new
       end

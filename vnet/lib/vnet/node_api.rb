@@ -2,14 +2,14 @@
 
 module Vnet
   module NodeApi
-    def self.get_proxy(conf)
-      case conf.node_api_proxy
+    def self.get_proxy(name)
+      case name.to_sym
       when :rpc
-        RpcProxy.new(conf)
+        RpcProxy.new
       when :direct
-        DirectProxy.new(conf)
+        DirectProxy.new
       else
-        raise "Unknown proxy: #{conf.node_api_proxy}"
+        raise "Unknown proxy: #{name}"
       end
     end
   end

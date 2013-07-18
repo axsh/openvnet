@@ -11,7 +11,7 @@ describe Vnet::NodeApi do
 
     subject do
       actor.should_receive(:execute).with(:network, :all).and_return([{uuid: "test-uuid"}])
-      Vnet::NodeApi::RpcProxy.new(double(:conf)).network.all
+      Vnet::NodeApi::RpcProxy.new.network.all
     end
 
     it { expect(subject).to be_a Array }
@@ -21,16 +21,12 @@ describe Vnet::NodeApi do
   end
 
   describe Vnet::NodeApi::DirectProxy do
-    let(:conf) do
-      double(:conf)
-    end
-
     before(:each) do
       Vnet::Models::Network.stub(:all).and_return([{uuid: "test-uuid"}])
     end
 
     subject do
-      Vnet::NodeApi::DirectProxy.new(conf).network.all
+      Vnet::NodeApi::DirectProxy.new.network.all
     end
 
     it { should be_a Array }
