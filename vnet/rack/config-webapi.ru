@@ -18,16 +18,18 @@ if defined?(::Unicorn)
   use Unicorn::OobGC
 end
 
-case conf.data_access_proxy
+case conf.node_api_proxy
 when :rpc
-  DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
-    :registry => {
-      :adapter => conf.registry.adapter,
-      :host => conf.registry.host,
-      :port => conf.registry.port })
+  # do nothing
 when :direct
   Vnet::Initializers::DB.run(conf.db_uri)
 end
+
+DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
+  :registry => {
+    :adapter => conf.registry.adapter,
+    :host => conf.registry.host,
+    :port => conf.registry.port })
 
 map '/api' do
   use Rack::Cors do
