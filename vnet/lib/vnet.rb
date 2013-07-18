@@ -30,13 +30,14 @@ module Vnet
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
+  module Event
+    autoload :Dispatchable, 'vnet/event/dispatchable'
+  end
+
   autoload :NodeApi, 'vnet/node_api'
   module NodeApi
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
-    module Event
-      autoload :Dispatchable, 'vnet/node_api/event.rb'
-    end
     module Models
       autoload :Base, 'vnet/node_api/models/base'
       autoload :Datapath, 'vnet/node_api/models/models.rb'

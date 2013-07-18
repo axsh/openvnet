@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-module Vnet::NodeApi::Event
+module Vnet::Event
   module Dispatchable
     mattr_accessor :event_handler
     def dispatch_event(event, options = {})

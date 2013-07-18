@@ -2,16 +2,15 @@
 require 'spec_helper'
 
 class TestDispatcher
-  include Vnet::NodeApi::Event::Dispatchable
+  include Vnet::Event::Dispatchable
 end
 
-describe Vnet::NodeApi::Event::Dispatchable do
+describe Vnet::Event::Dispatchable do
   let(:dispatcher){ TestDispatcher.new }
   let(:handler){ MockEventHandler.new }
 
   before do
-    Vnet::NodeApi::Event::Dispatchable.event_handler = handler
-    #TestDispatcher.event_handler = handler
+    Vnet::Event::Dispatchable.event_handler = handler
     dispatcher.dispatch_event("vif/created", {id: 3})
   end
 

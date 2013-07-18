@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi::Models
   class Base
-    include Vnet::NodeApi::Event::Dispatchable
+    include Vnet::Event::Dispatchable
     attr_accessor :model_class
 
     def initialize
