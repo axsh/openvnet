@@ -30,6 +30,12 @@ module Vnet::Openflow
       end
 
       instructions << Trema::Instructions::GotoTable.new(:table_id => options[:goto_table]) if options[:goto_table]
+
+      if instructions.empty?
+        # Make sure there's always at least one instruction included.
+        instructions << Trema::Instructions::ApplyAction.new(:actions => [])
+      end
+
       instructions
     end
 

@@ -86,17 +86,20 @@ describe Vnet::Openflow::TunnelManager do
       expect(datapath.added_flows[0][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
       expect(datapath.added_flows[0][:priority]).to eq 90
       expect(datapath.added_flows[0][:match].eth_dst).to eq Trema::Mac.new('bb:bb:bb:11:11:11')
-      expect(datapath.added_flows[0][:instructions].size).to eq 0
+      expect(datapath.added_flows[0][:instructions].size).to eq 1
+      expect(datapath.added_flows[0][:instructions][0].actions.size).to eq 0
 
       expect(datapath.added_flows[1][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
       expect(datapath.added_flows[1][:priority]).to eq 90
       expect(datapath.added_flows[1][:match].eth_dst).to eq Trema::Mac.new('bb:bb:bb:22:22:22')
-      expect(datapath.added_flows[1][:instructions].size).to eq 0
+      expect(datapath.added_flows[1][:instructions].size).to eq 1
+      expect(datapath.added_flows[1][:instructions][0].actions.size).to eq 0
 
       expect(datapath.added_flows[2][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
       expect(datapath.added_flows[2][:priority]).to eq 90
       expect(datapath.added_flows[2][:match].eth_dst).to eq Trema::Mac.new('cc:cc:cc:11:11:11')
-      expect(datapath.added_flows[2][:instructions].size).to eq 0
+      expect(datapath.added_flows[2][:instructions].size).to eq 1
+      expect(datapath.added_flows[2][:instructions][0].actions.size).to eq 0
 
     end
 
