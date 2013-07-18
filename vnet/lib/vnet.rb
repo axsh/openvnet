@@ -34,29 +34,6 @@ module Vnet
     autoload :Dispatchable, 'vnet/event/dispatchable'
   end
 
-  autoload :NodeApi, 'vnet/node_api'
-  module NodeApi
-    autoload :RpcProxy, 'vnet/node_api/proxies'
-    autoload :DirectProxy, 'vnet/node_api/proxies'
-    autoload :Base, 'vnet/node_api/base'
-    autoload :Datapath, 'vnet/node_api/models.rb'
-    autoload :DatapathNetwork, 'vnet/node_api/models.rb'
-    autoload :DcNetwork, 'vnet/node_api/models.rb'
-    autoload :DcNetworkDcSegment, 'vnet/node_api/models.rb'
-    autoload :DcSegment, 'vnet/node_api/models.rb'
-    autoload :DhcpRange, 'vnet/node_api/models.rb'
-    autoload :IpAddress, 'vnet/node_api/models.rb'
-    autoload :IpLease, 'vnet/node_api/models.rb'
-    autoload :MacRange, 'vnet/node_api/models.rb'
-    autoload :Network, 'vnet/node_api/models.rb'
-    autoload :NetworkService, 'vnet/node_api/models.rb'
-    autoload :OpenFlowController, 'vnet/node_api/models.rb'
-    autoload :Route, 'vnet/node_api/models.rb'
-    autoload :RouteLink, 'vnet/node_api/models.rb'
-    autoload :Tunnel, 'vnet/node_api/models.rb'
-    autoload :Vif, 'vnet/node_api/models.rb'
-  end
-
   module Endpoints
     autoload :Errors, 'vnet/endpoints/errors'
     autoload :ResponseGenerator, 'vnet/endpoints/response_generator'
@@ -140,6 +117,29 @@ module Vnet
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
     autoload :Vif, 'vnet/model_wrappers/vif'
+  end
+
+  autoload :NodeApi, 'vnet/node_api'
+  module NodeApi
+    autoload :RpcProxy, 'vnet/node_api/proxies'
+    autoload :DirectProxy, 'vnet/node_api/proxies'
+    autoload :Base, 'vnet/node_api/base'
+    autoload :Datapath, 'vnet/node_api/models.rb'
+    autoload :DatapathNetwork, 'vnet/node_api/models.rb'
+    autoload :DcNetwork, 'vnet/node_api/models.rb'
+    autoload :DcNetworkDcSegment, 'vnet/node_api/models.rb'
+    autoload :DcSegment, 'vnet/node_api/models.rb'
+    autoload :DhcpRange, 'vnet/node_api/models.rb'
+    autoload :IpAddress, 'vnet/node_api/models.rb'
+    autoload :IpLease, 'vnet/node_api/models.rb'
+    autoload :MacRange, 'vnet/node_api/models.rb'
+    autoload :Network, 'vnet/node_api/models.rb'
+    autoload :NetworkService, 'vnet/node_api/models.rb'
+    autoload :OpenFlowController, 'vnet/node_api/models.rb'
+    autoload :Route, 'vnet/node_api/models.rb'
+    autoload :RouteLink, 'vnet/node_api/models.rb'
+    autoload :Tunnel, 'vnet/node_api/models.rb'
+    autoload :Vif, 'vnet/node_api/models.rb'
   end
 
   module NodeModules
