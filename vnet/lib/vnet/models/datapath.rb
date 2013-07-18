@@ -15,6 +15,10 @@ module Vnet::Models
       def on_other_segment(datapath)
         where(~{:id => datapath.id}).where(~{:dc_segment_id => datapath.dc_segment_id})
       end
+
+      def find_all_by_network_id(network_id)
+        left_join(:datapath_networks, :datapath_id => :id).where(:datapath_networks__network_id => network_id).all
+      end
     end
   end
 end

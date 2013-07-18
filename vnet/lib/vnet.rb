@@ -144,6 +144,7 @@ module Vnet
 
   module NodeModules
     autoload :Rpc, 'vnet/node_modules/rpc'
+    autoload :EventHandler, 'vnet/node_modules/event_handler'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
   end
 

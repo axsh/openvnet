@@ -9,7 +9,7 @@ module Vnet::Event
     end
 
     def _find_event_handler
-      DCell::Global[:event_handler] or raise "event_hander not found in DCell::Global"
+      DCell::Global[:event_handler] or raise "event_handler not found in DCell::Global"
     end
   end
 end
