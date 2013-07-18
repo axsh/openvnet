@@ -139,7 +139,7 @@ module Vnet
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
-    autoload :Vif, 'vnet/node_api/models.rb'
+    autoload :Vif, 'vnet/node_api/vif.rb'
   end
 
   module NodeModules

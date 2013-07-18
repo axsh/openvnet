@@ -17,16 +17,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vifs' do
     params['network_id'] = network.id if network
     params['mac_addr'] = parse_mac(params['mac_addr']) || raise(E::MissingArgument, 'mac_addr')
 
-    ipv4_address = parse_ipv4(params.delete('ipv4_address'))
+    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
 
     vif = M::Vif.create(params)
-
-    if network && ipv4_address
-      M::IpLease.create({ :network_id => network.id,
-                          :vif_id => vif.id,
-                          :ip_address_id => M::IpAddress.create({:ipv4_address => ipv4_address}).id,
-                        })
-    end
 
     respond_with(R::Vif.generate(vif))
   end

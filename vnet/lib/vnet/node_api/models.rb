@@ -48,8 +48,4 @@ module Vnet::NodeApi
   
   class Tunnel < Base
   end
-
-  class Vif < Base
-  end
-
 end
