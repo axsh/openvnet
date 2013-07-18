@@ -26,7 +26,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_ROUTE, 1,
-                           md_create(:network => 0, :flood => nil),
+                           md_network(:physical_network, :flood => nil),
                            flood_actions, flow_options)
 
       eth_port_actions = self.datapath.switch.eth_ports.collect { |port| {:output => port.port_number} }
