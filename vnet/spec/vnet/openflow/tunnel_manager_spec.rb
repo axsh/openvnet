@@ -22,9 +22,9 @@ describe Vnet::Openflow::TunnelManager do
       expect(db_tunnels.first.dst_datapath.node_id).to eq "vna3"
       expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq "2"
 
-      expect(tunnel_manager.tunnels.size).to eq 1
-      expect(tunnel_manager.tunnels.first[:uuid]).to eq db_tunnels.first.canonical_uuid
-      expect(tunnel_manager.tunnels.first[:datapath_networks]).to eq []
+      expect(tunnel_manager.tunnels_dup.size).to eq 1
+      expect(tunnel_manager.tunnels_dup.first[:uuid]).to eq db_tunnels.first.canonical_uuid
+      expect(tunnel_manager.tunnels_dup.first[:datapath_networks]).to eq []
 
       expect(datapath.added_tunnels.size).to eq 1
       expect(datapath.added_tunnels.first[:tunnel_name]).to eq db_tunnels.first.canonical_uuid
@@ -49,130 +49,135 @@ describe Vnet::Openflow::TunnelManager do
       Vnet::Openflow::TunnelManager.new(datapath).tap do |tunnel_manager|
         tunnel_manager.create_all_tunnels
         tunnel_manager.insert(
-         double(:broadcast_mac_addr => "bb:bb:bb:11:11:11", 
-                :network_id => 1,
-                :datapath_map => {:dpid => "0x#{'b' * 16}"}))
-        tunnel_manager.insert(
-         double(:broadcast_mac_addr => "bb:bb:bb:22:22:22", 
-                :network_id => 2,
-                :datapath_map => {:dpid => "0x#{'b' * 16}"}))
-        tunnel_manager.insert(
-          double(:broadcast_mac_addr => "cc:cc:cc:11:11:11", 
+          double(:id => 1,
+                 :broadcast_mac_addr => "bb:bb:bb:11:11:11",
                  :network_id => 1,
-                 :datapath_map => {:dpid => "0x#{'c' * 16}"}))
-        datapath.added_flows.clear # This flows are not the subject
-        datapath.switch.stub(:tunnel_ports).and_return(
-          [double(port_name: datapath.added_tunnels[0][:tunnel_name], port_number: 9),
-           double(port_name: datapath.added_tunnels[1][:tunnel_name], port_number: 10)])
+                 :datapath => double(:dpid => "0x#{'b' * 16}",
+                                     :ipv4_address => IPAddr.new('1.1.1.1', Socket::AF_INET).to_i,
+                                     :datapath_id => 1
+                                     )))
+        tunnel_manager.insert(
+          double(:id => 2,
+                 :broadcast_mac_addr => "bb:bb:bb:22:22:22",
+                 :network_id => 2,
+                 :datapath => double(:dpid => "0x#{'b' * 16}",
+                                     :ipv4_address => IPAddr.new('2.2.2.2', Socket::AF_INET).to_i,
+                                     :datapath_id => 2
+                                     )))
+        tunnel_manager.insert(
+          double(:id => 3,
+                 :broadcast_mac_addr => "cc:cc:cc:11:11:11",
+                 :network_id => 1,
+                 :datapath => double(:dpid => "0x#{'c' * 16}",
+                                     :ipv4_address => IPAddr.new('1.1.1.2', Socket::AF_INET).to_i,
+                                     :datapath_id => 3
+                                     )))
       end
     end
 
-    it "should add flood flow network 1" do
-      tunnel_manager.update_virtual_network_id(1)
+    it "should only add broadcast mac address flows at start" do
+      tunnel_manager
 
-      #pp datapath.added_flows
-      expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq 5
+      # pp datapath.added_flows
 
-      expect(datapath.added_flows[0][:table_id]).to eq TABLE_METADATA_TUNNEL
-      expect(datapath.added_flows[0][:priority]).to eq 1
-      expect(datapath.added_flows[0][:match].metadata).to eq 1 << METADATA_NETWORK_SHIFT | OFPP_FLOOD
-      expect(datapath.added_flows[0][:match].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
-      expect(datapath.added_flows[0][:instructions][0].actions.size).to eq 6
-      expect(datapath.added_flows[0][:instructions][0].actions[0].action_set[0]).to be_a Trema::Actions::EthDst
-      expect(datapath.added_flows[0][:instructions][0].actions[0].action_set[0].mac_address.to_s).to eq "ff:ff:ff:ff:ff:ff"
-      expect(datapath.added_flows[0][:instructions][0].actions[1].action_set[0]).to be_a Trema::Actions::TunnelId
-      expect(datapath.added_flows[0][:instructions][0].actions[1].action_set[0].tunnel_id).to eq 1 | TUNNEL_FLAG
-      expect(datapath.added_flows[0][:instructions][0].actions[2]).to be_a Trema::Actions::SendOutPort
-      expect(datapath.added_flows[0][:instructions][0].actions[2].port).to eq 9
-      expect(datapath.added_flows[0][:instructions][0].actions[3].action_set[0]).to be_a Trema::Actions::EthDst
-      expect(datapath.added_flows[0][:instructions][0].actions[3].action_set[0].mac_address.to_s).to eq "ff:ff:ff:ff:ff:ff"
-      expect(datapath.added_flows[0][:instructions][0].actions[4].action_set[0]).to be_a Trema::Actions::TunnelId
-      expect(datapath.added_flows[0][:instructions][0].actions[4].action_set[0].tunnel_id).to eq 1 | TUNNEL_FLAG
-      expect(datapath.added_flows[0][:instructions][0].actions[5]).to be_a Trema::Actions::SendOutPort
-      expect(datapath.added_flows[0][:instructions][0].actions[5].port).to eq 10
-
-      expect(datapath.added_flows[1][:table_id]).to eq TABLE_TUNNEL_PORTS
-      expect(datapath.added_flows[1][:priority]).to eq 30
-      expect(datapath.added_flows[1][:match].in_port).to eq 9
-      expect(datapath.added_flows[1][:match].tunnel_id).to eq 1
-      expect(datapath.added_flows[1][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
-      expect(datapath.added_flows[1][:instructions].size).to eq 2
-      expect(datapath.added_flows[1][:instructions][0]).to be_a Trema::Instructions::WriteMetadata
-      expect(datapath.added_flows[1][:instructions][0].metadata).to eq (1 << METADATA_NETWORK_SHIFT) | 9
-      expect(datapath.added_flows[1][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
-      expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[1][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
-
-      expect(datapath.added_flows[2][:table_id]).to eq TABLE_VIRTUAL_SRC
-      expect(datapath.added_flows[2][:priority]).to eq 30
-      expect(datapath.added_flows[2][:match].in_port).to eq 9
-      expect(datapath.added_flows[2][:match].tunnel_id).to eq 1
-      expect(datapath.added_flows[2][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
-      expect(datapath.added_flows[2][:instructions].size).to eq 1
-      expect(datapath.added_flows[2][:instructions][0]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[2][:instructions][0].table_id).to eq TABLE_ROUTER_ENTRY
-
-      expect(datapath.added_flows[3][:table_id]).to eq TABLE_TUNNEL_PORTS
-      expect(datapath.added_flows[3][:priority]).to eq 30
-      expect(datapath.added_flows[3][:match].in_port).to eq 10
-      expect(datapath.added_flows[3][:match].tunnel_id).to eq 1
-      expect(datapath.added_flows[3][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
-      expect(datapath.added_flows[3][:instructions].size).to eq 2
-      expect(datapath.added_flows[3][:instructions][0]).to be_a Trema::Instructions::WriteMetadata
-      expect(datapath.added_flows[3][:instructions][0].metadata).to eq (1 << METADATA_NETWORK_SHIFT) | 10
-      expect(datapath.added_flows[3][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
-      expect(datapath.added_flows[3][:instructions][1]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[3][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
-
-      expect(datapath.added_flows[4][:table_id]).to eq TABLE_VIRTUAL_SRC
-      expect(datapath.added_flows[4][:priority]).to eq 30
-      expect(datapath.added_flows[4][:match].in_port).to eq 10
-      expect(datapath.added_flows[4][:match].tunnel_id).to eq 1
-      expect(datapath.added_flows[4][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
-      expect(datapath.added_flows[4][:instructions].size).to eq 1
-      expect(datapath.added_flows[4][:instructions][0]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[4][:instructions][0].table_id).to eq TABLE_ROUTER_ENTRY
-    end
-
-    it "should add flood flow for netwrok 2" do
-      tunnel_manager.update_virtual_network_id(2)
-
-      #pp datapath.added_flows
       expect(datapath.added_ovs_flows.size).to eq 0
       expect(datapath.added_flows.size).to eq 3
 
-      expect(datapath.added_flows[0][:table_id]).to eq TABLE_METADATA_TUNNEL
-      expect(datapath.added_flows[0][:priority]).to eq 1
-      expect(datapath.added_flows[0][:match].metadata).to eq 2 << METADATA_NETWORK_SHIFT | OFPP_FLOOD
-      expect(datapath.added_flows[0][:match].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
-      expect(datapath.added_flows[0][:instructions][0].actions.size).to eq 3
-      expect(datapath.added_flows[0][:instructions][0].actions[0].action_set[0]).to be_a Trema::Actions::EthDst
-      expect(datapath.added_flows[0][:instructions][0].actions[0].action_set[0].mac_address.to_s).to eq "ff:ff:ff:ff:ff:ff"
-      expect(datapath.added_flows[0][:instructions][0].actions[1].action_set[0]).to be_a Trema::Actions::TunnelId
-      expect(datapath.added_flows[0][:instructions][0].actions[1].action_set[0].tunnel_id).to eq 2 | TUNNEL_FLAG
-      expect(datapath.added_flows[0][:instructions][0].actions[2]).to be_a Trema::Actions::SendOutPort
-      expect(datapath.added_flows[0][:instructions][0].actions[2].port).to eq 9
+      expect(datapath.added_flows[0][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
+      expect(datapath.added_flows[0][:priority]).to eq 90
+      expect(datapath.added_flows[0][:match].eth_dst).to eq Trema::Mac.new('bb:bb:bb:11:11:11')
+      expect(datapath.added_flows[0][:instructions].size).to eq 0
 
-      expect(datapath.added_flows[1][:table_id]).to eq TABLE_TUNNEL_PORTS
-      expect(datapath.added_flows[1][:priority]).to eq 30
-      expect(datapath.added_flows[1][:match].in_port).to eq 9
-      expect(datapath.added_flows[1][:match].tunnel_id).to eq 2
-      expect(datapath.added_flows[1][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
-      expect(datapath.added_flows[1][:instructions].size).to eq 2
-      expect(datapath.added_flows[1][:instructions][0]).to be_a Trema::Instructions::WriteMetadata
-      expect(datapath.added_flows[1][:instructions][0].metadata).to eq (2 << METADATA_NETWORK_SHIFT) | 9
-      expect(datapath.added_flows[1][:instructions][0].metadata_mask).to eq METADATA_PORT_MASK | METADATA_NETWORK_MASK
-      expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[1][:instructions][1].table_id).to eq TABLE_NETWORK_CLASSIFIER
+      expect(datapath.added_flows[1][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
+      expect(datapath.added_flows[1][:priority]).to eq 90
+      expect(datapath.added_flows[1][:match].eth_dst).to eq Trema::Mac.new('bb:bb:bb:22:22:22')
+      expect(datapath.added_flows[1][:instructions].size).to eq 0
 
-      expect(datapath.added_flows[2][:table_id]).to eq TABLE_VIRTUAL_SRC
-      expect(datapath.added_flows[2][:priority]).to eq 30
-      expect(datapath.added_flows[2][:match].in_port).to eq 9
-      expect(datapath.added_flows[2][:match].tunnel_id).to eq 2
-      expect(datapath.added_flows[2][:match].tunnel_id_mask).to eq TUNNEL_NETWORK_MASK
-      expect(datapath.added_flows[2][:instructions].size).to eq 1
-      expect(datapath.added_flows[2][:instructions][0]).to be_a Trema::Instructions::GotoTable
+      expect(datapath.added_flows[2][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
+      expect(datapath.added_flows[2][:priority]).to eq 90
+      expect(datapath.added_flows[2][:match].eth_dst).to eq Trema::Mac.new('cc:cc:cc:11:11:11')
+      expect(datapath.added_flows[2][:instructions].size).to eq 0
+
     end
+
+    it "should add flood flow network 1" do
+      tunnel_manager.add_port(double(port_name: datapath.added_tunnels[0][:tunnel_name], port_number: 9))
+      tunnel_manager.add_port(double(port_name: datapath.added_tunnels[1][:tunnel_name], port_number: 10))
+
+      datapath.added_flows.clear
+
+      tunnel_manager.update_network_id(1)
+
+      # pp datapath.added_flows
+
+      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(datapath.added_flows.size).to eq 2
+
+      expect(datapath.added_flows[0][:table_id]).to eq TABLE_METADATA_TUNNEL_PORTS
+      expect(datapath.added_flows[0][:priority]).to eq 1
+      expect(datapath.added_flows[0][:match].metadata).to eq 1 | METADATA_TYPE_COLLECTION
+      expect(datapath.added_flows[0][:match].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK
+      expect(datapath.added_flows[0][:instructions].size).to eq 1
+      expect(datapath.added_flows[0][:instructions][0].actions.size).to eq 2
+      expect(datapath.added_flows[0][:instructions][0].actions[0]).to be_a Trema::Actions::SendOutPort
+      expect(datapath.added_flows[0][:instructions][0].actions[0].port).to eq 9
+      expect(datapath.added_flows[0][:instructions][0].actions[1]).to be_a Trema::Actions::SendOutPort
+      expect(datapath.added_flows[0][:instructions][0].actions[1].port).to eq 10
+
+      expect(datapath.added_flows[1][:table_id]).to eq TABLE_METADATA_TUNNEL_IDS
+      expect(datapath.added_flows[1][:priority]).to eq 1
+      expect(datapath.added_flows[1][:match].metadata).to eq 1 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD
+      expect(datapath.added_flows[1][:match].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD
+      expect(datapath.added_flows[1][:instructions].size).to eq 3
+      expect(datapath.added_flows[1][:instructions][0].actions.size).to eq 1
+      expect(datapath.added_flows[1][:instructions][0].actions[0]).to be_a Trema::Actions::SetField
+      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set.size).to eq 1
+      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set[0]).to be_a Trema::Actions::TunnelId
+      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set[0].tunnel_id).to eq 1 | TUNNEL_FLAG
+      expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::WriteMetadata
+      expect(datapath.added_flows[1][:instructions][1].metadata).to eq 1 | METADATA_TYPE_COLLECTION
+      expect(datapath.added_flows[1][:instructions][1].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK
+      expect(datapath.added_flows[1][:instructions][2]).to be_a Trema::Instructions::GotoTable
+      expect(datapath.added_flows[1][:instructions][2].table_id).to eq TABLE_METADATA_TUNNEL_PORTS
+    end
+
+    it "should add flood flow for network 2" do
+      tunnel_manager.add_port(double(port_name: datapath.added_tunnels[0][:tunnel_name], port_number: 9))
+      tunnel_manager.add_port(double(port_name: datapath.added_tunnels[1][:tunnel_name], port_number: 10))
+
+      datapath.added_flows.clear
+
+      tunnel_manager.update_network_id(2)
+
+      #pp datapath.added_flows
+      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(datapath.added_flows.size).to eq 2
+
+      expect(datapath.added_flows[0][:table_id]).to eq TABLE_METADATA_TUNNEL_PORTS
+      expect(datapath.added_flows[0][:priority]).to eq 1
+      expect(datapath.added_flows[0][:match].metadata).to eq 2 | METADATA_TYPE_COLLECTION
+      expect(datapath.added_flows[0][:match].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK
+      expect(datapath.added_flows[0][:instructions][0].actions.size).to eq 1
+      expect(datapath.added_flows[0][:instructions][0].actions[0]).to be_a Trema::Actions::SendOutPort
+      expect(datapath.added_flows[0][:instructions][0].actions[0].port).to eq 9
+
+      expect(datapath.added_flows[1][:table_id]).to eq TABLE_METADATA_TUNNEL_IDS
+      expect(datapath.added_flows[1][:priority]).to eq 1
+      expect(datapath.added_flows[1][:match].metadata).to eq 2 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD
+      expect(datapath.added_flows[1][:match].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD
+      expect(datapath.added_flows[1][:instructions].size).to eq 3
+      expect(datapath.added_flows[1][:instructions][0].actions.size).to eq 1
+      expect(datapath.added_flows[1][:instructions][0].actions[0]).to be_a Trema::Actions::SetField
+      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set.size).to eq 1
+      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set[0]).to be_a Trema::Actions::TunnelId
+      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set[0].tunnel_id).to eq 2 | TUNNEL_FLAG
+      expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::WriteMetadata
+      expect(datapath.added_flows[1][:instructions][1].metadata).to eq 2 | METADATA_TYPE_COLLECTION
+      expect(datapath.added_flows[1][:instructions][1].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK
+      expect(datapath.added_flows[1][:instructions][2]).to be_a Trema::Instructions::GotoTable
+      expect(datapath.added_flows[1][:instructions][2].table_id).to eq TABLE_METADATA_TUNNEL_PORTS
+    end
+
   end
+
 end
