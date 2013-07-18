@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-module Vnet::NodeApi::Models
+module Vnet::NodeApi
   class Base
     include Vnet::Event::Dispatchable
     attr_accessor :model_class

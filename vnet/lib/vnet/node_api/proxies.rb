@@ -2,7 +2,7 @@
 module Vnet::NodeApi
   class Proxy
     def method_missing(class_name, *args, &block)
-      if class_name.present? && args.empty? && Models.const_defined?(class_name.to_s.camelize)
+      if class_name.present? && args.empty? && Vnet::NodeApi.const_defined?(class_name.to_s.camelize)
         _call_class.new(class_name).tap do |call|
           define_singleton_method(class_name){ call }
         end
@@ -46,7 +46,7 @@ module Vnet::NodeApi
     class DirectCall < Call
       def initialize(class_name)
         super
-        @method_caller = Models.const_get(class_name.to_s.camelize).new
+        @method_caller = Vnet::NodeApi.const_get(class_name.to_s.camelize).new
       end
 
       def method_missing(method_name, *args, &block)
