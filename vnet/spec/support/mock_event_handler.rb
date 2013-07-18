@@ -12,6 +12,7 @@ class MockEventHandler
   def initialize
     self.handled_events = []
   end
+
   def handle_event(event, options = {})
     {event: event, :options => options}.tap do |ev|
       self.handled_events << ev
