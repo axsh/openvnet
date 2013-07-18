@@ -46,7 +46,7 @@ module Vnet::NodeApi
     class DirectCall < Call
       def initialize(class_name)
         super
-        @method_caller = Vnet::NodeApi.const_get(class_name.to_s.camelize).new
+        @method_caller = Vnet::NodeApi.const_get(class_name.to_s.camelize)
       end
 
       def method_missing(method_name, *args, &block)
