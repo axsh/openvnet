@@ -71,14 +71,14 @@ module Vnet::Openflow
                              :output => self.port_number
                            }, flow_options)
 
-      route_md = md_network(:virtual_network, :port => self.port_number)
+      # route_md = md_network(:virtual_network, :port => self.port_number)
 
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1, route_md, {
-                             :output => self.port_number
-                           }, flow_options)
-      flows << Flow.create(TABLE_METADATA_LOCAL, 1, route_md, {
-                             :output => self.port_number
-                           }, flow_options)
+      # flows << Flow.create(TABLE_METADATA_ROUTE, 1, route_md, {
+      #                        :output => self.port_number
+      #                      }, flow_options)
+      # flows << Flow.create(TABLE_METADATA_LOCAL, 1, route_md, {
+      #                        :output => self.port_number
+      #                      }, flow_options)
 
       self.datapath.add_flows(flows)
     end

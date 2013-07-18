@@ -45,32 +45,28 @@ module Vnet::Openflow
 
       @routes[route_map.uuid] = route
 
-      route_link_md    = md_create(:route_link => route[:route_link][:id])
-      entry_network_md = md_create(:virtual_network => route[:vif][:network_id])
-      exit_network_md  = md_create({ :clear_route_link => nil,
-                                     :virtual_network => route[:vif][:network_id]
-                                   })
+      route_link_md = md_create(:route_link => route[:route_link][:id])
+      network_md    = md_create(:virtual_network => route[:vif][:network_id])
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_SRC, 40,
-                           entry_network_md.merge!({ :eth_dst => route[:vif][:mac_addr],
-                                                     :eth_type => 0x0800,
-                                                     :ipv4_src => route[:ipv4_address],
-                                                     :ipv4_src_mask => route[:ipv4_mask],
-                                                   }),
-                           {},
-                           route_link_md.merge({ :cookie => route[:cookie],
-                                                 :goto_table => TABLE_ROUTER_DST
-                                               }))
+                           network_md.merge({ :eth_dst => route[:vif][:mac_addr],
+                                              :eth_type => 0x0800,
+                                              :ipv4_src => route[:ipv4_address],
+                                              :ipv4_src_mask => route[:ipv4_mask],
+                                            }), {
+                           }, route_link_md.merge({ :cookie => route[:cookie],
+                                                    :goto_table => TABLE_ROUTER_DST
+                                                  }))
       flows << Flow.create(TABLE_ROUTER_DST, 40,
-                           route_link_md.merge!({ :eth_type => 0x0800,
-                                                  :ipv4_dst => route[:ipv4_address],
-                                                  :ipv4_dst_mask => route[:ipv4_mask],
-                                                }),
-                           { :eth_src => route[:vif][:mac_addr] },
-                           exit_network_md.merge({ :cookie => route[:cookie],
-                                                   :goto_table => TABLE_ROUTER_EXIT
-                                                 }))
+                           route_link_md.merge({ :eth_type => 0x0800,
+                                                 :ipv4_dst => route[:ipv4_address],
+                                                 :ipv4_dst_mask => route[:ipv4_mask],
+                                               }), {
+                             :eth_src => route[:vif][:mac_addr]
+                           }, network_md.merge({ :cookie => route[:cookie],
+                                                 :goto_table => TABLE_ROUTER_EXIT
+                                               }))
 
       @datapath.add_flows(flows)
     end

@@ -114,12 +114,13 @@ module Vnet::Openflow
         tunnel[:datapath_networks].any?{|dpn| dpn[:network_id] == collection_id}
       end
 
-      md = md_create(:collection => collection_id)
+      collection_md = md_create(:collection => collection_id)
       cookie = collection_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
       flows = []
       flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 1,
-                           md, tunnel_ports.map { |tunnel_port|
+                           collection_md,
+                           tunnel_ports.map { |tunnel_port|
                              {:output => tunnel_port.port_number}
                            }, {
                              :cookie => cookie

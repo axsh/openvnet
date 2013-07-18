@@ -71,15 +71,12 @@ module Vnet::Openflow
 
       options.each { |key,value|
         case key
-        when :clear_route_link
-          metadata = metadata | 0
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :collection
           metadata = metadata | value | METADATA_TYPE_COLLECTION
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :flood
-          metadata = metadata | OFPP_FLOOD
-          metadata_mask = metadata_mask | METADATA_PORT_MASK
+          metadata = metadata | METADATA_FLAG_FLOOD
+          metadata_mask = metadata_mask | METADATA_FLAG_FLOOD
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
@@ -87,16 +84,20 @@ module Vnet::Openflow
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
         when :physical_network
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
-        when :port
-          metadata = metadata | value
-          metadata_mask = metadata_mask | METADATA_PORT_MASK
+          # To be refactored.
+          metadata = metadata | METADATA_TYPE_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :physical_port
+          # To be refactored.
+          metadata = metadata | value | METADATA_TYPE_PORT
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :route_link
           metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :virtual_network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT)
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
+          # Add virtual flag...
+          metadata = metadata | value | METADATA_TYPE_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         else
           raise("Unknown metadata type: #{key.inspect}")
         end

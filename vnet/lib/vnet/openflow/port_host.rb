@@ -15,33 +15,37 @@ module Vnet::Openflow
 
     def install
       set_remote_md = flow_options.merge(md_create(:remote => nil))
-      port_local_md = flow_options.merge(md_create(:port => OFPP_LOCAL))
-      port_self_md  = flow_options.merge(md_port)
-      route_self_md = flow_options.merge(md_port(:physical_network => nil))
+      port_local_md = flow_options.merge(md_create(:physical_port => OFPP_LOCAL))
+      port_self_md  = flow_options.merge(md_create(:physical_port => self.port_number))
+      network_md    = flow_options.merge(md_network(:physical_network))
 
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
-                           }, {}, set_remote_md.merge(:goto_table => TABLE_HOST_PORTS))
+                           }, {
+                           }, set_remote_md.merge(:goto_table => TABLE_HOST_PORTS))
 
       flows << Flow.create(TABLE_HOST_PORTS, 20, {
                              :in_port => self.port_number,
-                             :eth_type => 0x0806},
-                           {}, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
+                             :eth_type => 0x0806}, {
+                           }, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
       flows << Flow.create(TABLE_HOST_PORTS, 10, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                           }, {
+                           }, network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
 
       flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {
                              :output => self.port_number
                            }, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1, route_self_md, {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1,
+                           port_self_md, {
                              :output => self.port_number
                            }, flow_options)
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 25, {
                              :in_port => self.port_number
-                           }, {}, port_local_md.merge(:goto_table => TABLE_PHYSICAL_SRC))
+                           }, {},
+                           port_local_md.merge(:goto_table => TABLE_PHYSICAL_SRC))
       flows << Flow.create(TABLE_PHYSICAL_DST, 20, {}, {},
                            port_self_md.merge(:goto_table => TABLE_PHYSICAL_SRC))
 
