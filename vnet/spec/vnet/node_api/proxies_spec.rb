@@ -3,28 +3,15 @@ require 'spec_helper'
 
 describe Vnet::NodeApi do
   describe Vnet::NodeApi::RpcProxy do
-    let(:conf) do
-      double(:conf).tap do |conf|
-        conf.stub(:rpc_node_id).and_return("vnmgr")
-        conf.stub(:rpc_actor_name).and_return("rpc")
-      end
-    end
-
     let(:actor) { double(:actor) }
 
-    let(:node) do
-      double(:node).tap do |node|
-        node.stub(:[]).with("rpc").and_return(actor)
-      end
-    end
-
     before(:each) do
-      DCell::Node.stub(:[]).with("vnmgr").and_return(node)
+      DCell::Global.stub(:[]).with(:rpc).and_return(actor)
     end
 
     subject do
       actor.should_receive(:execute).with(:network, :all).and_return([{uuid: "test-uuid"}])
-      Vnet::NodeApi::RpcProxy.new(conf).network.all
+      Vnet::NodeApi::RpcProxy.new(double(:conf)).network.all
     end
 
     it { expect(subject).to be_a Array }

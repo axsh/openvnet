@@ -33,7 +33,7 @@ module Vnet::NodeApi
     class RpcCall < Call
       def initialize(class_name, conf)
         super
-        @actor = DCell::Node[conf.rpc_node_id][conf.rpc_actor_name]
+        @actor = DCell::Global[:rpc] or raise "rpc not found in DCell::Global"
       end
 
       def method_missing(method_name, *args, &block)

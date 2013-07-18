@@ -22,8 +22,8 @@ DCell.start :id => conf.node.id, :addr => conf.node.addr_string,
     :port => conf.registry.port
   }
 
-conf.actor_names.each do |actor_name|
-  Vnet::NodeModules.const_get(actor_name.camelize).supervise_as actor_name
-end
+Vnet::NodeModules::Rpc.supervise_as :rpc
+
+DCell::Global[:rpc] = Celluloid::Actor[:rpc]
 
 sleep
