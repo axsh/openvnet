@@ -55,16 +55,60 @@ module Vnet::Openflow::Services
                                            :cookie => cookie
                                          })
 
-      @routes[cookie] = route
       self.datapath.add_flow(flow)
+      @routes[cookie] = route
 
       cookie
     end
 
     def packet_in(port, message)
-      debug "service::router.packet_in: called."
+      # debug "service::router.packet_in: #{message.inspect}"
 
-      debug "service::router.packet_in: #{message.inspect}"
+      route = @routes[message.cookie]
+
+      if route.nil?
+        debug "service::router.packet_in: no route found (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+        return
+      end
+
+      ip_lease = MW::IpLease.batch.dataset.with_ipv4.where({ :ip_leases__network_id => @network_id,
+                                                             :ip_addresses__ipv4_address => message.ipv4_dst.to_i
+                                                           }).first.commit(:fill => :vif)
+
+      if ip_lease.nil?
+        debug "service::router.packet_in: no vif found (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+        return
+      end
+
+      debug "service::router.packet_in: found ip lease #{ip_lease.inspect}"
+
+      cookie = message.cookie
+      catch_md = md_create({ :virtual_network => @network_id,
+                             :local => nil
+                           })
+
+      # Replace with a table for routing to remote mac2mac and
+      # tunnels based on destination datapath id, etc.
+      eth_port = @datapath.switch.eth_ports.first
+
+      return if eth_port.nil?
+
+      # mac2mac...
+
+      flow = Vnet::Openflow::Flow.create(TABLE_ROUTER_DST, 35,
+                                         catch_md.merge({ :eth_type => 0x0800,
+                                                          :eth_src => @service_mac,
+                                                          :ipv4_dst => message.ipv4_dst
+                                                        }), {
+                                           :output => eth_port.port_number
+                                         }, {
+                                           :cookie => cookie,
+                                           :idle_timeout => 60 * 60
+                                         })
+
+      self.datapath.add_flow(flow)
+
+      # output...
     end
 
   end

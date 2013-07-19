@@ -52,7 +52,7 @@ module Vnet::Openflow
     end
 
     def eth_ports
-      self.ports.values.find_all{|port| port.eth? }
+      self.ports.values.find_all { |port| port.eth? }
     end
 
     def update_bridge_hw(hw_addr)
