@@ -14,33 +14,40 @@ module Vnet::Openflow
     end
 
     def install
+      set_remote_md = flow_options.merge(md_create(:remote => nil))
+      port_local_md = flow_options.merge(md_create(:physical_port => OFPP_LOCAL))
+      port_self_md  = flow_options.merge(md_create(:physical_port => self.port_number))
+      network_md    = flow_options.merge(md_network(:physical_network))
+
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge({ :metadata => METADATA_FLAG_REMOTE,
-                                                       :metadata_mask => METADATA_FLAG_REMOTE,
-                                                       :goto_table => TABLE_HOST_PORTS
-                                                     }))
+                           }, {
+                           }, set_remote_md.merge(:goto_table => TABLE_HOST_PORTS))
 
       flows << Flow.create(TABLE_HOST_PORTS, 20, {
                              :in_port => self.port_number,
-                             :eth_type => 0x0806},
-                           {}, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
+                             :eth_type => 0x0806}, {
+                           }, flow_options.merge(:goto_table => TABLE_ARP_ANTISPOOF))
       flows << Flow.create(TABLE_HOST_PORTS, 10, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                           }, {
+                           }, network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
 
       flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {
                              :output => self.port_number
                            }, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1, metadata_np(0x0), {
+      flows << Flow.create(TABLE_METADATA_ROUTE, 1,
+                           port_self_md, {
                              :output => self.port_number
                            }, flow_options)
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 25, {
                              :in_port => self.port_number
-                           }, {}, flow_options.merge(metadata_p(OFPP_LOCAL)).merge(:goto_table => TABLE_PHYSICAL_SRC))
-      flows << Flow.create(TABLE_PHYSICAL_DST, 20, {}, {}, fo_load_port(TABLE_PHYSICAL_SRC))
+                           }, {},
+                           port_local_md.merge(:goto_table => TABLE_PHYSICAL_SRC))
+      flows << Flow.create(TABLE_PHYSICAL_DST, 20, {}, {},
+                           port_self_md.merge(:goto_table => TABLE_PHYSICAL_SRC))
 
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
@@ -69,7 +76,6 @@ module Vnet::Openflow
 
       self.datapath.add_flows(flows)
       self.datapath.switch.network_manager.update_all_flows
-      self.datapath.switch.ports.each { |key,port| port.update_eth_ports }
     end
 
   end

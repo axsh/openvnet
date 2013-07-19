@@ -25,13 +25,15 @@ module Vnet::Openflow
       @datapath.switch = self
 
       @cookie_manager = CookieManager.new
-      @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
+      @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
+      @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
+      @cookie_manager.create_category(:network,        COOKIE_PREFIX_NETWORK)
       @cookie_manager.create_category(:packet_handler, COOKIE_PREFIX_PACKET_HANDLER)
       @cookie_manager.create_category(:port,           COOKIE_PREFIX_PORT)
-      @cookie_manager.create_category(:network,        COOKIE_PREFIX_NETWORK)
-      @cookie_manager.create_category(:dc_segment,     COOKIE_PREFIX_DC_SEGMENT)
-      @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
       @cookie_manager.create_category(:route,          COOKIE_PREFIX_ROUTE)
+      @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
+      @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
+      @cookie_manager.create_category(:vif,            COOKIE_PREFIX_VIF)
 
       @ports = {}
 
@@ -46,16 +48,10 @@ module Vnet::Openflow
 
       @packet_manager.insert(Vnet::Openflow::Services::Arp.new(:datapath => @datapath), :arp)
       @packet_manager.insert(Vnet::Openflow::Services::Icmp.new(:datapath => @datapath), :icmp)
-
-      @tunnel_manager.create_all_tunnels
     end
 
     def eth_ports
       self.ports.values.find_all{|port| port.eth? }
-    end
-
-    def tunnel_ports
-      self.ports.values.find_all{|port| port.tunnel? }
     end
 
     def update_bridge_hw(hw_addr)
@@ -69,6 +65,8 @@ module Vnet::Openflow
     def switch_ready
       # There's a short period of time between the switch being
       # activated and features_reply installing flow.
+      @tunnel_manager.create_all_tunnels
+
       self.datapath.send_message(Trema::Messages::FeaturesRequest.new)
       self.datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
 
@@ -78,13 +76,11 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, {}, flow_options)
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {},
-                           flow_options.merge({ :metadata => METADATA_FLAG_REMOTE,
-                                                :metadata_mask => METADATA_FLAG_REMOTE,
-                                                :goto_table => TABLE_TUNNEL_PORTS
-                                              }))
+                           flow_options.merge(md_create(:remote => nil)).merge!(:goto_table => TABLE_TUNNEL_PORTS))
 
       flows << Flow.create(TABLE_HOST_PORTS, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, {}, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30,
@@ -101,8 +97,9 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, {}, flow_options)
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL))
-      flows << Flow.create(TABLE_METADATA_TUNNEL, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, {}, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
+      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 0, {}, {}, flow_options)
+      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, {}, flow_options)
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, {}, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, {}, flow_options)
@@ -121,6 +118,11 @@ module Vnet::Openflow
       # Next we catch all arp packets, with learning flows for
       # incoming arp packets having been handled by network/eth_port
       # specific flows.
+      flows << Flow.create(TABLE_VIRTUAL_SRC, 82, {
+                             :eth_type => 0x0806,
+                             :tunnel_id => 0,
+                           }, {}, flow_options)
+
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
                            }, {}, flow_options)
@@ -145,12 +147,12 @@ module Vnet::Openflow
         port.extend(PortLocal)
         port.install_with_hw(self.bridge_hw) if self.bridge_hw
 
-        network = self.network_manager.network_by_uuid('nw-public')
+        network = @network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^eth/
         port.extend(PortHost)
 
-        network = self.network_manager.network_by_uuid('nw-public')
+        network = @network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^vif-/
         vif_map = Vnet::ModelWrappers::Vif[port_desc.name]
@@ -161,7 +163,7 @@ module Vnet::Openflow
         end
 
         # network = self.network_manager.network_by_id(vif_map.network_id)
-        network = self.network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
+        network = @network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
 
         if network.class == NetworkPhysical
           port.extend(PortPhysical)
