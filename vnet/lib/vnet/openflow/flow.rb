@@ -22,14 +22,19 @@ module Vnet::Openflow
 
     def self.convert_instructions(actions, options)
       instructions = []
-      instructions << Trema::Instructions::ApplyAction.new(:actions => self.convert_actions(actions)) if actions
+
+      if actions
+        instructions << Trema::Instructions::ApplyAction.new(:actions => self.convert_actions(actions))
+      end
 
       if options[:metadata]
         instructions << Trema::Instructions::WriteMetadata.new(:metadata => options[:metadata],
                                                                :metadata_mask => options[:metadata_mask])
       end
 
-      instructions << Trema::Instructions::GotoTable.new(:table_id => options[:goto_table]) if options[:goto_table]
+      if options[:goto_table]
+        instructions << Trema::Instructions::GotoTable.new(:table_id => options[:goto_table])
+      end
 
       if instructions.empty?
         # Make sure there's always at least one instruction included.
@@ -77,6 +82,8 @@ module Vnet::Openflow
 
       options.each { |key,value|
         case key
+        when :clear_all
+          metadata_mask = 0xffffffffffffffff
         when :collection
           metadata = metadata | value | METADATA_TYPE_COLLECTION
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
@@ -97,11 +104,13 @@ module Vnet::Openflow
           # To be refactored.
           metadata = metadata | value | METADATA_TYPE_PORT
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :route
+          metadata = metadata | value | METADATA_TYPE_ROUTE
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :route_link
           metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :virtual_network
-          # Add virtual flag...
           metadata = metadata | value | METADATA_TYPE_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         else
