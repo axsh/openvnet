@@ -4,7 +4,7 @@ module Vnet::Openflow
 
   class PacketHandler
     include Celluloid::Logger
-    include Vnet::Constants::Openflow
+    include FlowHelpers
 
     attr_reader :datapath
     attr_accessor :cookie
@@ -27,12 +27,11 @@ module Vnet::Openflow
       when :physical_local
         table = TABLE_PHYSICAL_DST
         priority = 70
-        match = match.merge(params[:network].metadata_flags(METADATA_FLAG_LOCAL))
+        match = match.merge(params[:network].md_network(:physical_network, :local => nil))
       when :virtual_local
         table = TABLE_VIRTUAL_DST
         priority = 70
-        match = match.merge(params[:network].metadata_pn(METADATA_FLAG_LOCAL,
-                                                         METADATA_FLAGS_MASK))
+        match = match.merge(params[:network].md_network(:virtual_network, :local => nil))
       else
         raise "Wrong type for catch_flow."
       end

@@ -6,11 +6,6 @@ module Vnet::Models
     many_to_one :datapath
     many_to_one :network
     
-    def to_hash
-      self.values[:datapath_map] = self.datapath.to_hash
-      super
-    end
-
     dataset_module do
       def on_segment(datapath)
         ds = self.join(:datapaths, :id => :datapath_id)

@@ -11,10 +11,9 @@ module Vnet::Models
     one_to_many :tunnels, :key => :src_datapath_id
     subset(:alives, {})
 
-    dataset_module do
-      def on_other_segment(datapath)
-        where(~{:id => datapath.id}).where(~{:dc_segment_id => datapath.dc_segment_id})
-      end
+    one_to_many :on_other_segments, :class => Datapath do |ds|
+      Datapath.where(~{:id => self.id} & ~{:dc_segment_id => self.dc_segment_id})
     end
+
   end
 end

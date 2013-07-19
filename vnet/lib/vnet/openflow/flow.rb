@@ -30,6 +30,12 @@ module Vnet::Openflow
       end
 
       instructions << Trema::Instructions::GotoTable.new(:table_id => options[:goto_table]) if options[:goto_table]
+
+      if instructions.empty?
+        # Make sure there's always at least one instruction included.
+        instructions << Trema::Instructions::ApplyAction.new(:actions => [])
+      end
+
       instructions
     end
 
@@ -71,37 +77,33 @@ module Vnet::Openflow
 
       options.each { |key,value|
         case key
-        when :clear_route_link
-          # We do not clear the routing flag as later flows might want
-          # to know the packet has been routed.
-          metadata = metadata | 0
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK
+        when :collection
+          metadata = metadata | value | METADATA_TYPE_COLLECTION
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :flood
-          metadata = metadata | OFPP_FLOOD
-          metadata_mask = metadata_mask | METADATA_PORT_MASK
-        when :network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT)
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
+          metadata = metadata | METADATA_FLAG_FLOOD
+          metadata_mask = metadata_mask | METADATA_FLAG_FLOOD
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :local_network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT) | METADATA_FLAG_LOCAL
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :remote_network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT) | METADATA_FLAG_REMOTE
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
         when :physical_network
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
-        when :port
-          metadata = metadata | value
-          metadata_mask = metadata_mask | METADATA_PORT_MASK
+          # To be refactored.
+          metadata = metadata | METADATA_TYPE_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :physical_port
+          # To be refactored.
+          metadata = metadata | value | METADATA_TYPE_PORT
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :route_link
-          metadata = metadata | value | METADATA_FLAG_ROUTING
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_FLAG_ROUTING
+          metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :virtual_network
+          # Add virtual flag...
+          metadata = metadata | value | METADATA_TYPE_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         else
           raise("Unknown metadata type: #{key.inspect}")
         end

@@ -24,7 +24,7 @@ module Vnet::Openflow
       return if @routes.has_key? route_map.uuid
 
       route = {
-        :cookie => @datapath.switch.cookie_manager.acquire(:route),
+        :id => route_map.id,
         :vif => prepare_vif(route_map.vif),
         :route_link => prepare_link(route_map.route_link),
         :ipv4_address => route_map.ipv4_address,
@@ -32,45 +32,37 @@ module Vnet::Openflow
         :ipv4_mask => IPV4_BROADCAST << (32 - route_map.ipv4_prefix),
       }
 
-      if route[:cookie].nil?
-        error "route_manager: couldn't acquire flow cookie"
-        return
-      end
-
       if route[:vif].nil? || route[:route_link].nil?
-        @datapath.switch.cookie_manager.release(:route, route[:cookie]) if route[:cookie]
         error "route_manager: couldn't prepare vif or route link"
         return
       end
 
       @routes[route_map.uuid] = route
 
-      network_md = md_create(:network => route[:vif][:network_id])
+      cookie = route[:id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+
       route_link_md = md_create(:route_link => route[:route_link][:id])
-      change_network_md = md_create({ :clear_route_link => nil,
-                                      :network => route[:vif][:network_id]
-                                    })
+      network_md    = md_create(:virtual_network => route[:vif][:network_id])
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_SRC, 40,
-                           network_md.merge!({ :eth_dst => route[:vif][:mac_addr],
-                                               :eth_type => 0x0800,
-                                               :ipv4_src => route[:ipv4_address],
-                                               :ipv4_src_mask => route[:ipv4_mask],
-                                             }),
-                           {},
-                           route_link_md.merge({ :cookie => route[:cookie],
-                                                 :goto_table => TABLE_ROUTER_DST
-                                               }))
+                           network_md.merge({ :eth_dst => route[:vif][:mac_addr],
+                                              :eth_type => 0x0800,
+                                              :ipv4_src => route[:ipv4_address],
+                                              :ipv4_src_mask => route[:ipv4_mask],
+                                            }), {
+                           }, route_link_md.merge({ :cookie => cookie,
+                                                    :goto_table => TABLE_ROUTER_DST
+                                                  }))
       flows << Flow.create(TABLE_ROUTER_DST, 40,
-                           route_link_md.merge!({ :eth_type => 0x0800,
-                                                  :ipv4_dst => route[:ipv4_address],
-                                                  :ipv4_dst_mask => route[:ipv4_mask],
-                                                }),
-                           { :eth_src => route[:vif][:mac_addr] },
-                           change_network_md.merge({ :cookie => route[:cookie],
-                                                     :goto_table => TABLE_ROUTER_EXIT
-                                                   }))
+                           route_link_md.merge({ :eth_type => 0x0800,
+                                                 :ipv4_dst => route[:ipv4_address],
+                                                 :ipv4_dst_mask => route[:ipv4_mask],
+                                               }), {
+                             :eth_src => route[:vif][:mac_addr]
+                           }, network_md.merge({ :cookie => cookie,
+                                                 :goto_table => TABLE_ROUTER_EXIT
+                                               }))
 
       @datapath.add_flows(flows)
     end
@@ -93,7 +85,7 @@ module Vnet::Openflow
 
       @route_links[link_map.id] = link
 
-      return link
+      link
     end
 
     def prepare_vif(vif_map)
@@ -101,29 +93,25 @@ module Vnet::Openflow
       return vif if vif
 
       vif = {
-        :cookie => @datapath.switch.cookie_manager.acquire(:route),
+        :id => vif_map.id,
         :network_id => vif_map.network_id,
         :mac_addr => Trema::Mac.new(vif_map.mac_addr),
       }
 
-      if vif[:cookie].nil?
-        error "route_manager: couldn't acquire flow cookie"
-        return nil
-      end
-
       @vifs[vif_map.id] = vif
+
+      cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_ENTRY, 40,
-                           md_create(:network => vif[:network_id]).merge!(:eth_dst => vif[:mac_addr]), {
+                           md_create(:virtual_network => vif[:network_id]).merge!(:eth_dst => vif[:mac_addr]), {
                            }, {
-                             :cookie => vif[:cookie],
+                             :cookie => cookie,
                              :goto_table => TABLE_ROUTER_SRC
                            })
 
       @datapath.add_flows(flows)
-
-      return vif
+      vif
     end
 
   end
