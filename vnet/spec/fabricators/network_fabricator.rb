@@ -10,7 +10,7 @@ Fabricator(:network, class_name: Vnet::Models::Network) do
   #editable true
 end
 
-Fabricator(:vnet_1, class_name: Vnmgr::Models::Network) do
+Fabricator(:vnet_1, class_name: Vnet::Models::Network) do
   uuid "nw-aaaaaaaa"
   display_name "vnet1"
   ipv4_network IPAddr.new("10.102.0.1").to_i

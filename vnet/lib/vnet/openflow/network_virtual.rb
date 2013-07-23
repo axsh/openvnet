@@ -81,12 +81,29 @@ module Vnet::Openflow
       flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]
       flow_learn_arp << "learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
-        [TABLE_VIRTUAL_DST, @cookie, learn_md[:metadata]]
+        [TABLE_VIRTUAL_DST, cookie, learn_md[:metadata]]
         
       flow_learn_arp << learn_options
 
       flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTER_ENTRY
       flow_learn_arp
+    end
+
+    def delete_tunnel_flows
+      self.datapath.switch.tunnel_ports.each do |tunnel_port|
+        cookie = self.datapath.switch.tunnel_manager.flow_options(self, tunnel_port)[:cookie]
+        self.datapath.del_cookie(cookie)
+      end
+    end
+
+    def notify_to_delete_tunnel_port
+      #TODO: notify all vna through vnmgr to delete tunnel port
+    end
+
+    def uninstall
+      super
+      delete_tunnel_flows
+      notify_to_delete_tunnel_port
     end
   end
   

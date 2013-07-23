@@ -5,16 +5,22 @@ require 'trema'
 include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::TunnelManager do
-  
   describe "create_all_tunnels" do
     before(:each) do
       (1..3).each { |i| Fabricate("datapath_#{i}") }
     end
   
+    let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i(16)) }
+
+    subject { Vnet::Openflow::TunnelManager.new(datapath) }
+
+    it "should create tunnels whose name is the same as datapath.uuid" do
+      subject.create_all_tunnels
+      expect(datapath.added_tunnels[0][:tunnel_name]).to eq "t-test3"
+    end
+
     it "should create the entries in the tunnel table" do
-      datapath = MockDatapath.new(double, ("a" * 16).to_i(16))
-      tunnel_manager = Vnet::Openflow::TunnelManager.new(datapath)
-      tunnel_manager.create_all_tunnels
+      subject.create_all_tunnels
 
       conf = Vnet::Configurations::Vna.conf
       db_tunnels = Vnet::Models::Datapath.find({:node_id => conf.node.id}).tunnels
@@ -22,14 +28,14 @@ describe Vnet::Openflow::TunnelManager do
       expect(db_tunnels.first.dst_datapath.node_id).to eq "vna3"
       expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq "2"
 
-      expect(tunnel_manager.tunnels_dup.size).to eq 1
-      expect(tunnel_manager.tunnels_dup.first[:uuid]).to eq db_tunnels.first.canonical_uuid
-      expect(tunnel_manager.tunnels_dup.first[:datapath_networks]).to eq []
+      expect(subject.tunnels_dup.size).to eq 1
+      expect(subject.tunnels_dup.first[:uuid]).to eq db_tunnels.first.canonical_uuid
+      expect(subject.tunnels_dup.first[:datapath_networks]).to eq []
 
       expect(datapath.added_tunnels.size).to eq 1
-      expect(datapath.added_tunnels.first[:tunnel_name]).to eq db_tunnels.first.canonical_uuid
       expect(datapath.added_tunnels.first[:remote_ip]).to eq "192.168.2.2"
     end
+
   end
 
   describe "update_virtual_network" do
@@ -184,4 +190,37 @@ describe Vnet::Openflow::TunnelManager do
 
   end
 
+  describe "delete_tunnel_port" do
+    before do
+      Fabricate("datapath_1")
+      Fabricate("datapath_3")
+    end
+
+    let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i(16)) }
+
+    subject { Vnet::Openflow::TunnelManager.new(datapath) }
+
+    it "should delete port name 't-test3'" do
+      Fabricate("datapath_network_1_1")
+      Fabricate("datapath_network_1_2")
+      # Fabricate("datapath_network_2_1")
+      # Fabricate("datapath_network_2_2")
+      Fabricate("datapath_network_2_3")
+
+      subject.delete_tunnel_port(1, "0x"+"c"*16)
+
+      expect(datapath.deleted_tunnels[0]).to eq "t-test3"
+    end
+
+    # it "should return 'keep'" do
+    #   Fabricate("datapath_network_1_1")
+    #   Fabricate("datapath_network_1_2")
+    #   Fabricate("datapath_network_2_1")
+    #   Fabricate("datapath_network_2_2")
+    #   Fabricate("datapath_network_2_3")
+
+    #   tunnel_manager = Vnet::Openflow::TunnelManager.new(datapath)
+    #   expect(tunnel_manager.delete_tunnel_port(1, "0x"+"c"*16)).to eq 'keep'
+    # end
+  end
 end

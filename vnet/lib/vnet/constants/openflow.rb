@@ -102,6 +102,8 @@ module Vnet::Constants::Openflow
   COOKIE_PREFIX_TUNNEL         = 0x9
   COOKIE_PREFIX_VIF            = 0x10
 
+  COOKIE_NETWORK_SHIFT = 32
+
   METADATA_FLAGS_MASK = (0xffff << 48)
   METADATA_FLAGS_SHIFT = 48
 
