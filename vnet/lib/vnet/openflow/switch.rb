@@ -62,7 +62,7 @@ module Vnet::Openflow
     end
 
     def update_datapath_id
-      @datapath_map = M::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
+      @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
       warn "switch: could not find dpid (0x%016x)" % @datapath.dpid if @datapath_map.nil?
       @datapath_map
     end
