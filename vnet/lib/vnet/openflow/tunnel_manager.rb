@@ -73,7 +73,7 @@ module Vnet::Openflow
         :port_name => port.port_name,
       }
 
-      update_tunnel(port.port_name)
+      update_tunnel(port.port_number)
     end
 
     def del_port(port)
@@ -85,8 +85,8 @@ module Vnet::Openflow
     def prepare_network(network_map, dp_map)
       update_networks = false
 
-      network_map.batch.datapath_networks_dataset.on_other_segment(dp_map).all.commit(:fill => :datapath).each { |dp|
-        self.insert(dp, false)
+      network_map.batch.datapath_networks_dataset.on_other_segment(dp_map).all.commit(:fill => :datapath).each { |dpn|
+        self.insert(dpn, false)
 
         # Only add non-existing ones...
         update_networks = true
@@ -116,13 +116,31 @@ module Vnet::Openflow
 
     private
 
-    def update_tunnel(port_name)
-      tunnel = @tunnels.find{ |t| t[:uuid] == port_name }
+    def update_tunnel(port_number)
+      port = @tunnel_ports[port_number]
 
-      if tunnel.nil?
-        warn "tunnel_manager: port name is not registered in database (#{port_name})"
+      if port.nil?
+        warn "tunnel_manager: port number not found (#{port_number})"
         return
       end
+
+      tunnel = @tunnels.find{ |t| t[:uuid] == port[:port_name] }
+
+      if tunnel.nil?
+        warn "tunnel_manager: port name is not registered in database (#{port[:port_name]})"
+        return
+      end
+
+      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id])
+
+      flow = Flow.create(TABLE_METADATA_DATAPATH_ID, 5,
+                         datapath_md, {
+                           :output => port_number
+                         }, {
+                           :cookie => tunnel[:dst_datapath_id]
+                         })
+      
+      @datapath.add_flow(flow)
 
       tunnel[:datapath_networks].each { |dpn|
         update_network_id(dpn[:network_id])

@@ -94,12 +94,16 @@ module Vnet::Openflow::Services
                    })
     end
 
+    # Create a flow that matches all packets to the same destination
+    # ip address. The metadata datapath id table will figure out for
+    # us if the output port should be a MAC2MAC or tunnel port.
     def route_packets(message, ip_lease)
       datapath_md = md_create(:datapath => ip_lease.vif.datapath_id)
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,
                          match_packet(message), {
                            :eth_dst => Trema::Mac.new(ip_lease.vif.mac_addr),
+                           :tunnel_id => @network_id | TUNNEL_FLAG
                          },
                          datapath_md.merge({ :goto_table => TABLE_METADATA_DATAPATH_ID,
                                              :cookie => message.cookie,
