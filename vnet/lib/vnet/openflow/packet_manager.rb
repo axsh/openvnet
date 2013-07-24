@@ -14,7 +14,7 @@ module Vnet::Openflow
     end
 
     def insert(handler, tag = nil, cookie = nil)
-      cookie = @datapath.switch.cookie_manager.acquire(:packet_handler) if cookie.nil?
+      cookie = @datapath.cookie_manager.acquire(:packet_handler) if cookie.nil?
 
       if cookie.nil? || @handlers.has_key?(cookie)
         error "packet_manager: invalid cookie received '#{cookie.inspect}'"

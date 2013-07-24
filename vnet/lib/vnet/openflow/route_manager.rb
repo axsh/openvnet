@@ -68,7 +68,7 @@ module Vnet::Openflow
 
       @datapath.add_flows(flows)
 
-      pm = @datapath.switch.packet_manager
+      pm = @datapath.packet_manager
 
       pm.dispatch(route[:vif][:service_cookie]) { |key, handler|
         route_cookie = handler.insert_route(route)
