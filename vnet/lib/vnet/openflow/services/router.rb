@@ -71,14 +71,13 @@ module Vnet::Openflow::Services
       ip_lease = MW::IpLease.batch.dataset.with_ipv4.where({ :ip_leases__network_id => @network_id,
                                                              :ip_addresses__ipv4_address => message.ipv4_dst.to_i
                                                            }).first.commit(:fill => :vif)
-      datapath_id = ip_lease.vif.datapath_id
 
       return unreachable_ip(message, "no vif found", :no_vif) if ip_lease.nil? || ip_lease.vif.nil?
-      return unreachable_ip(message, "no active vif found", :inactive_vif) if datapath_id.nil?
+      return unreachable_ip(message, "no active vif found", :inactive_vif) if ip_lease.vif.datapath_id.nil?
 
       debug "service::router.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
       
-      route_packets(message, datapath_id)
+      route_packets(message, ip_lease)
 
       # output...
     end
@@ -95,15 +94,15 @@ module Vnet::Openflow::Services
                    })
     end
 
-    def route_packets(message, datapath_id)
-      datapath_md = md_create(:datapath => datapath_id)
+    def route_packets(message, ip_lease)
+      datapath_md = md_create(:datapath => ip_lease.vif.datapath_id)
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,
                          match_packet(message), {
                            :eth_dst => Trema::Mac.new(ip_lease.vif.mac_addr),
-                           :output => eth_port.port_number
                          },
-                         datapath_md.merge({ :cookie => message.cookie,
+                         datapath_md.merge({ :goto_table => TABLE_METADATA_DATAPATH_ID,
+                                             :cookie => message.cookie,
                                              :idle_timeout => 60 * 60
                                            }))
 
