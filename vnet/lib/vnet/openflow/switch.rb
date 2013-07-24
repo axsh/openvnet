@@ -24,6 +24,8 @@ module Vnet::Openflow
       @datapath = dp || raise("cannot create a Switch object without a valid datapath")
       @datapath.switch = self
 
+      @datapath_map = nil
+
       @cookie_manager = CookieManager.new
       @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
       @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
@@ -59,17 +61,20 @@ module Vnet::Openflow
       @bridge_hw = hw_addr
     end
 
+    def update_datapath_id
+      @datapath_map = M::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
+      warn "switch: could not find dpid (0x%016x)" % @datapath.dpid if @datapath_map.nil?
+      @datapath_map
+    end
+
     #
     # Event handlers:
     #
 
     def switch_ready
-      # There's a short period of time between the switch being
-      # activated and features_reply installing flow.
-      @tunnel_manager.create_all_tunnels
-
-      self.datapath.send_message(Trema::Messages::FeaturesRequest.new)
-      self.datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
+      #
+      # Add default flows:
+      #
 
       flows = []
 
@@ -102,6 +107,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, nil, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
       flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_METADATA_DATAPATH_ID, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
@@ -130,6 +136,19 @@ module Vnet::Openflow
                            }, nil, flow_options)
 
       @datapath.add_flows(flows)
+
+      #
+      # Send messages that will start initializing the switch.
+      #
+
+      update_datapath_id
+
+      # There's a short period of time between the switch being
+      # activated and features_reply installing flow.
+      @tunnel_manager.create_all_tunnels
+
+      self.datapath.send_message(Trema::Messages::FeaturesRequest.new)
+      self.datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
     end
 
     def features_reply(message)
@@ -177,6 +196,8 @@ module Vnet::Openflow
         port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
         port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
+        vif_map.batch.update(:datapath_id => @datapath_map.id).commit if @datapath_map
+
       elsif port.port_info.name =~ /^t-/
         port.extend(PortTunnel)
       else
@@ -218,6 +239,11 @@ module Vnet::Openflow
 
           @network_manager.remove(network) if network.ports.empty?
         end
+
+        if port.port_info.name =~ /^vif-/
+          vif_map.batch.update(:datapath_id => nil).commit
+        end
+
       end
     end
 

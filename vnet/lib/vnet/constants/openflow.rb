@@ -58,15 +58,22 @@ module Vnet::Constants::Openflow
   # non-action instructions such as 'write_metadata'.
   TABLE_OUTPUT_CONTROLLER = 31
 
-  # Output to port based on the metadata field. OpenFlow 1.3 does
-  # not seem to have any action allowing us to output to a port
-  # using the metadata field directly, so a separate table is
-  # required.
+  # Only output to local vif's.
   TABLE_METADATA_LOCAL        = 32
+
+  # Send packet to all ports if marked as a flood flow, starting from
+  # the route table.
   TABLE_METADATA_ROUTE        = 33
   TABLE_METADATA_SEGMENT      = 34
   TABLE_METADATA_TUNNEL_IDS   = 35
   TABLE_METADATA_TUNNEL_PORTS = 36
+
+  # Send packet to a known datapath id, e.g. using an eth port or
+  # tunnel port.
+  #
+  # Note, this table could later be used to automatically create
+  # tunnels independently of installed flows.
+  TABLE_METADATA_DATAPATH_ID  = 37
 
   #
   # Legacy tables yet to be integrated in the new table ordering:
@@ -119,11 +126,12 @@ module Vnet::Constants::Openflow
 
   METADATA_TYPE_MASK       = (0xff00 << 48)
 
-  METADATA_TYPE_NETWORK    = (0x100 << 48)
-  METADATA_TYPE_PORT       = (0x200 << 48)
-  METADATA_TYPE_ROUTE      = (0x300 << 48)
-  METADATA_TYPE_ROUTE_LINK = (0x400 << 48)
-  METADATA_TYPE_COLLECTION = (0x500 << 48)
+  METADATA_TYPE_COLLECTION = (0x100 << 48)
+  METADATA_TYPE_DATAPATH   = (0x200 << 48)
+  METADATA_TYPE_NETWORK    = (0x300 << 48)
+  METADATA_TYPE_PORT       = (0x400 << 48)
+  METADATA_TYPE_ROUTE      = (0x500 << 48)
+  METADATA_TYPE_ROUTE_LINK = (0x600 << 48)
 
   METADATA_PORT_MASK = 0xffffffff
   METADATA_NETWORK_MASK = (0xffff << 32)

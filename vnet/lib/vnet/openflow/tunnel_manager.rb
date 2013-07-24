@@ -21,9 +21,9 @@ module Vnet::Openflow
     def create_all_tunnels
       debug "creating tunnel ports"
 
-      dp_map = Vnet::ModelWrappers::Datapath.first(:dpid => "0x%016x" % @datapath.datapath_id)
+      dp_map = Vnet::ModelWrappers::Datapath.first(:dpid => "0x%016x" % @datapath.dpid)
 
-      raise "Datapath not found: #{'0x%016x' % @datapath.datapath_id}" unless dp_map
+      raise "Datapath not found: #{'0x%016x' % @datapath.dpid}" unless dp_map
 
       @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
         tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id)
@@ -40,7 +40,7 @@ module Vnet::Openflow
         :id => dpn_map.id,
         :dpid => dpn_map.datapath.dpid,
         :ipv4_address => dpn_map.datapath.ipv4_address,
-        :datapath_id => dpn_map.datapath.datapath_id,
+        :datapath_id => dpn_map.datapath.dpid,
         :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
         :network_id => dpn_map.network_id,
       }

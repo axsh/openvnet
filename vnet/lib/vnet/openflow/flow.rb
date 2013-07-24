@@ -72,6 +72,9 @@ module Vnet::Openflow
   module FlowHelpers
     include Vnet::Constants::Openflow
 
+    # Add Flow to the namespace of classes outside of Vnet::Openflow.
+    Flow = Flow
+
     #
     # Metadata helper methods:
     #
@@ -86,6 +89,9 @@ module Vnet::Openflow
           metadata_mask = 0xffffffffffffffff
         when :collection
           metadata = metadata | value | METADATA_TYPE_COLLECTION
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :datapath
+          metadata = metadata | value | METADATA_TYPE_DATAPATH
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :flood
           metadata = metadata | METADATA_FLAG_FLOOD

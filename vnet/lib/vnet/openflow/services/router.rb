@@ -66,50 +66,76 @@ module Vnet::Openflow::Services
 
       route = @routes[message.cookie]
 
-      if route.nil?
-        debug "service::router.packet_in: no route found (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
-        return
-      end
+      return unreachable_ip(message, "no route found", :no_route) if route.nil?
 
       ip_lease = MW::IpLease.batch.dataset.with_ipv4.where({ :ip_leases__network_id => @network_id,
                                                              :ip_addresses__ipv4_address => message.ipv4_dst.to_i
                                                            }).first.commit(:fill => :vif)
+      datapath_id = ip_lease.vif.datapath_id
 
-      if ip_lease.nil? || ip_lease.vif.nil?
-        debug "service::router.packet_in: no vif found (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
-        return
-      end
+      return unreachable_ip(message, "no vif found", :no_vif) if ip_lease.nil? || ip_lease.vif.nil?
+      return unreachable_ip(message, "no active vif found", :inactive_vif) if datapath_id.nil?
 
-      debug "service::router.packet_in: found ip lease #{ip_lease.inspect}"
-
-      cookie = message.cookie
-      catch_md = md_create({ :virtual_network => @network_id,
-                             :local => nil
-                           })
-
-      # Replace with a table for routing to remote mac2mac and
-      # tunnels based on destination datapath id, etc.
-      eth_port = @datapath.switch.eth_ports.first
-
-      return if eth_port.nil?
-
-      # mac2mac...
-
-      flow = Vnet::Openflow::Flow.create(TABLE_ROUTER_DST, 35,
-                                         catch_md.merge({ :eth_type => 0x0800,
-                                                          :eth_src => @service_mac,
-                                                          :ipv4_dst => message.ipv4_dst
-                                                        }), {
-                                           :eth_dst => Trema::Mac.new(ip_lease.vif.mac_addr),
-                                           :output => eth_port.port_number
-                                         }, {
-                                           :cookie => cookie,
-                                           :idle_timeout => 60 * 60
-                                         })
-
-      self.datapath.add_flow(flow)
+      debug "service::router.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+      
+      route_packets(message, datapath_id)
 
       # output...
+    end
+
+    private
+
+    def match_packet(message)
+      match = md_create({ :virtual_network => @network_id,
+                          :local => nil
+                        })
+      match.merge!({ :eth_type => 0x0800,
+                     :eth_src => @service_mac,
+                     :ipv4_dst => message.ipv4_dst
+                   })
+    end
+
+    def route_packets(message, datapath_id)
+      datapath_md = md_create(:datapath => datapath_id)
+
+      flow = Flow.create(TABLE_ROUTER_DST, 35,
+                         match_packet(message), {
+                           :eth_dst => Trema::Mac.new(ip_lease.vif.mac_addr),
+                           :output => eth_port.port_number
+                         },
+                         datapath_md.merge({ :cookie => message.cookie,
+                                             :idle_timeout => 60 * 60
+                                           }))
+
+      self.datapath.add_flow(flow)
+    end
+
+    def suppress_packets(message, reason)
+      # These should set us as listeners to events for the vif
+      # becoming active or IP address being leased.
+      case reason
+      when :no_route
+        hard_timeout = 30
+      when :no_vif
+        hard_timeout = 30
+      when :inactive_vif
+        hard_timeout = 10
+      end
+
+      flow = Flow.create(TABLE_ROUTER_DST, 35,
+                         match_packet(message),
+                         nil, {
+                           :cookie => message.cookie,
+                           :hard_timeout => hard_timeout
+                         })
+
+      self.datapath.add_flow(flow)
+    end
+
+    def unreachable_ip(message, error_msg, suppress_reason)
+      debug "service::router.packet_in: #{error_msg} (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+      suppress_packets(message, suppress_reason)
+      nil
     end
 
   end
