@@ -22,14 +22,25 @@ module Vnet::Openflow
 
     def self.convert_instructions(actions, options)
       instructions = []
-      instructions << Trema::Instructions::ApplyAction.new(:actions => self.convert_actions(actions)) if actions
+
+      if actions
+        instructions << Trema::Instructions::ApplyAction.new(:actions => self.convert_actions(actions))
+      end
 
       if options[:metadata]
         instructions << Trema::Instructions::WriteMetadata.new(:metadata => options[:metadata],
                                                                :metadata_mask => options[:metadata_mask])
       end
 
-      instructions << Trema::Instructions::GotoTable.new(:table_id => options[:goto_table]) if options[:goto_table]
+      if options[:goto_table]
+        instructions << Trema::Instructions::GotoTable.new(:table_id => options[:goto_table])
+      end
+
+      if instructions.empty?
+        # Make sure there's always at least one instruction included.
+        instructions << Trema::Instructions::ApplyAction.new(:actions => [])
+      end
+
       instructions
     end
 
@@ -49,7 +60,7 @@ module Vnet::Openflow
       case tag
       when :eth_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
       when :eth_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])
-      when :output then Trema::Actions::SendOutPort.new(arg)
+      when :output then Trema::Actions::SendOutPort.new(:port_number => arg)
       when :tunnel_id then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TunnelId.new(:tunnel_id => arg)])
       else
         raise("Unknown action type.")
@@ -61,6 +72,9 @@ module Vnet::Openflow
   module FlowHelpers
     include Vnet::Constants::Openflow
 
+    # Add Flow to the namespace of classes outside of Vnet::Openflow.
+    Flow = Flow
+
     #
     # Metadata helper methods:
     #
@@ -71,37 +85,40 @@ module Vnet::Openflow
 
       options.each { |key,value|
         case key
-        when :clear_route_link
-          # We do not clear the routing flag as later flows might want
-          # to know the packet has been routed.
-          metadata = metadata | 0
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK
+        when :clear_all
+          metadata_mask = 0xffffffffffffffff
+        when :collection
+          metadata = metadata | value | METADATA_TYPE_COLLECTION
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :datapath
+          metadata = metadata | value | METADATA_TYPE_DATAPATH
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :flood
-          metadata = metadata | OFPP_FLOOD
-          metadata_mask = metadata_mask | METADATA_PORT_MASK
-        when :network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT)
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
+          metadata = metadata | METADATA_FLAG_FLOOD
+          metadata_mask = metadata_mask | METADATA_FLAG_FLOOD
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :local_network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT) | METADATA_FLAG_LOCAL
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :remote_network
-          metadata = metadata | (value << METADATA_NETWORK_SHIFT) | METADATA_FLAG_REMOTE
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
         when :physical_network
-          metadata_mask = metadata_mask | METADATA_NETWORK_MASK
-        when :port
-          metadata = metadata | value
-          metadata_mask = metadata_mask | METADATA_PORT_MASK
+          # To be refactored.
+          metadata = metadata | METADATA_TYPE_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :physical_port
+          # To be refactored.
+          metadata = metadata | value | METADATA_TYPE_PORT
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :route
+          metadata = metadata | value | METADATA_TYPE_ROUTE
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :route_link
-          metadata = metadata | value | METADATA_FLAG_ROUTING
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_FLAG_ROUTING
+          metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :virtual_network
+          metadata = metadata | value | METADATA_TYPE_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         else
           raise("Unknown metadata type: #{key.inspect}")
         end

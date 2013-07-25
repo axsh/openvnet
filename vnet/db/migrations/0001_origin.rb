@@ -148,6 +148,7 @@ Sequel.migration do
     create_table(:route_links) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
+      Bignum :mac_address, :null=>false
       
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
@@ -170,6 +171,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true
       Bignum :mac_addr, :null=>false
+      Integer :datapath_id, :index => true
       String :state, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
@@ -190,8 +192,8 @@ Sequel.migration do
                :mac_ranges,
                :open_flow_controllers,
                :vifs,
-               :routers,
                :routes,
+               :route_links,
                :tunnels,
                )
   end
