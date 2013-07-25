@@ -11,13 +11,10 @@ module Vnet::Openflow
     include TremaTasks
     include Celluloid::Logger
 
-    attr_reader :switches
     attr_accessor :trema_thread
 
-    def initialize(service_openflow)
-      @service_openflow = service_openflow
-
-      @switches = {}
+    def initialize
+      @datapaths = {}
     end
 
     def start
@@ -28,12 +25,10 @@ module Vnet::Openflow
       info "switch_ready from %#x." % dpid
 
       # Sometimes ovs changes the datapath ID and reconnects.
-      old_switch = @switches.delete(dpid)
+      old_datapath = @datapaths.delete(dpid)
       
-      if old_switch
+      if old_datapath
         info "found old bridge: dpid:%016x" % dpid
-
-        #old_switch[1].networks.each { |network_id,network| @service_openflow.destroy_network(network, false) }
       end
 
       # There is no need to clean up the old switch, as all the
@@ -42,32 +37,32 @@ module Vnet::Openflow
       # This might not be optimal in cases where the switch got
       # disconnected for a short period, as Open vSwitch has the
       # ability to keep flows between sessions.
-      switch = switches[dpid] = Switch.new(Datapath.new(self, dpid, OvsOfctl.new(dpid)))
-      switch.async.switch_ready
+      datapath = @datapaths[dpid] = Datapath.new(self, dpid, OvsOfctl.new(dpid))
+      datapath.switch.async.switch_ready
     end
 
     def features_reply(dpid, message)
       info "features_reply from %#x." % dpid
 
-      switch = switches[dpid] || raise("No switch found.")
-      switch.async.features_reply(message)
+      datapath = @datapaths[dpid] || raise("No datapath found.")
+      datapath.switch.async.features_reply(message)
     end
 
     def port_desc_multipart_reply(dpid, message)
       info "port_desc_multipart_reply from %#x." % dpid
 
-      switch = switches[dpid] || raise("No switch found.")
+      datapath = @datapaths[dpid] || raise("No datapath found.")
 
       message.parts.each { |port_descs| 
         port_descs.ports.each { |port_desc| 
-          switch.async.update_bridge_hw(port_desc.hw_addr.dup) if port_desc.name =~ /^eth/
+          datapath.switch.async.update_bridge_hw(port_desc.hw_addr.dup) if port_desc.name =~ /^eth/
         }
       }
 
       message.parts.each { |port_descs| 
         debug "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
-        port_descs.ports.each { |port_desc| switch.async.handle_port_desc(port_desc) }
+        port_descs.ports.each { |port_desc| datapath.switch.async.handle_port_desc(port_desc) }
       }
       
     end
@@ -75,13 +70,13 @@ module Vnet::Openflow
     def port_status(dpid, message)
       debug "port_status from %#x." % dpid
 
-      switch = switches[dpid] || raise("No switch found.")
-      switch.async.port_status(message)
+      datapath = @datapaths[dpid] || raise("No datapath found.")
+      datapath.switch.async.port_status(message)
     end
 
     def packet_in(dpid, message)
-      switch = switches[dpid] || raise("No switch found.")
-      switch.async.packet_in(message)
+      datapath = @datapaths[dpid] || raise("No datapath found.")
+      datapath.switch.async.packet_in(message)
     end
 
     def vendor(dpid, message)

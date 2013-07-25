@@ -12,7 +12,8 @@ module Vnet::Openflow
     attr_reader :controller
     attr_reader :dpid
     attr_reader :ovs_ofctl
-    attr_accessor :switch
+
+    attr_reader :switch
 
     attr_reader :cookie_manager
     attr_reader :dc_segment_manager
@@ -46,6 +47,8 @@ module Vnet::Openflow
 
       @packet_manager.insert(Vnet::Openflow::Services::Arp.new(:datapath => self), :arp)
       @packet_manager.insert(Vnet::Openflow::Services::Icmp.new(:datapath => self), :icmp)
+
+      @switch = Switch.new(self)
     end
 
     def inspect

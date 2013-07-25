@@ -13,8 +13,6 @@ module Vnet::Openflow
 
     def initialize(dp, name = nil)
       @datapath = dp || raise("cannot create a Switch object without a valid datapath")
-      @datapath.switch = self
-
       @datapath_map = nil
 
       @ports = {}
