@@ -2,7 +2,8 @@
 
 #require 'active_support/all'
 #require 'active_support/core_ext'
-require 'active_support/core_ext/class'
+require 'active_support/core_ext/class/attribute_accessors'
+require 'active_support/core_ext/module/attribute_accessors'
 require 'active_support/core_ext/object'
 require 'active_support/hash_with_indifferent_access'
 require 'active_support/inflector'
@@ -30,29 +31,8 @@ module Vnet
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
-  autoload :NodeApi, 'vnet/node_api'
-  module NodeApi
-    autoload :RpcProxy, 'vnet/node_api/proxies'
-    autoload :DirectProxy, 'vnet/node_api/proxies'
-    module Models
-      autoload :Base, 'vnet/node_api/models/base'
-      autoload :Datapath, 'vnet/node_api/models/models.rb'
-      autoload :DatapathNetwork, 'vnet/node_api/models/models.rb'
-      autoload :DcNetwork, 'vnet/node_api/models/models.rb'
-      autoload :DcNetworkDcSegment, 'vnet/node_api/models/models.rb'
-      autoload :DcSegment, 'vnet/node_api/models/models.rb'
-      autoload :DhcpRange, 'vnet/node_api/models/models.rb'
-      autoload :IpAddress, 'vnet/node_api/models/models.rb'
-      autoload :IpLease, 'vnet/node_api/models/models.rb'
-      autoload :MacRange, 'vnet/node_api/models/models.rb'
-      autoload :Network, 'vnet/node_api/models/models.rb'
-      autoload :NetworkService, 'vnet/node_api/models/models.rb'
-      autoload :OpenFlowController, 'vnet/node_api/models/models.rb'
-      autoload :Route, 'vnet/node_api/models/models.rb'
-      autoload :RouteLink, 'vnet/node_api/models/models.rb'
-      autoload :Tunnel, 'vnet/node_api/models/models.rb'
-      autoload :Vif, 'vnet/node_api/models/models.rb'
-    end
+  module Event
+    autoload :Dispatchable, 'vnet/event/dispatchable'
   end
 
   module Endpoints
@@ -140,8 +120,32 @@ module Vnet
     autoload :Vif, 'vnet/model_wrappers/vif'
   end
 
+  autoload :NodeApi, 'vnet/node_api'
+  module NodeApi
+    autoload :RpcProxy, 'vnet/node_api/proxies'
+    autoload :DirectProxy, 'vnet/node_api/proxies'
+    autoload :Base, 'vnet/node_api/base'
+    autoload :Datapath, 'vnet/node_api/models.rb'
+    autoload :DatapathNetwork, 'vnet/node_api/models.rb'
+    autoload :DcNetwork, 'vnet/node_api/models.rb'
+    autoload :DcNetworkDcSegment, 'vnet/node_api/models.rb'
+    autoload :DcSegment, 'vnet/node_api/models.rb'
+    autoload :DhcpRange, 'vnet/node_api/models.rb'
+    autoload :IpAddress, 'vnet/node_api/models.rb'
+    autoload :IpLease, 'vnet/node_api/models.rb'
+    autoload :MacRange, 'vnet/node_api/models.rb'
+    autoload :Network, 'vnet/node_api/models.rb'
+    autoload :NetworkService, 'vnet/node_api/models.rb'
+    autoload :OpenFlowController, 'vnet/node_api/models.rb'
+    autoload :Route, 'vnet/node_api/models.rb'
+    autoload :RouteLink, 'vnet/node_api/models.rb'
+    autoload :Tunnel, 'vnet/node_api/models.rb'
+    autoload :Vif, 'vnet/node_api/vif.rb'
+  end
+
   module NodeModules
     autoload :Rpc, 'vnet/node_modules/rpc'
+    autoload :EventHandler, 'vnet/node_modules/event_handler'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
   end
 

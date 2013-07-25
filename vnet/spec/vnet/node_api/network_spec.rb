@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-describe Vnet::NodeApi::Models::Network do
+describe Vnet::NodeApi::Network do
   describe "all" do
     it "return empty array" do
-      ret = Vnet::NodeApi::Models::Network.new.all
+      ret = Vnet::NodeApi::Network.all
       expect(ret).to be_a Array
       expect(ret).to be_empty
     end
@@ -15,7 +15,7 @@ describe Vnet::NodeApi::Models::Network do
           ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
         end
       end
-      ret = Vnet::NodeApi::Models::Network.new.all
+      ret = Vnet::NodeApi::Network.all
       expect(ret).to be_a Array
       expect(ret.size).to eq 3
       ret.each {|r| expect(r[:uuid]).to be_start_with "nw-"}
@@ -24,12 +24,12 @@ describe Vnet::NodeApi::Models::Network do
 
   describe "[]" do
     it "not found" do
-      expect(Vnet::NodeApi::Models::Network.new["nw-test"]).to be_nil
+      expect(Vnet::NodeApi::Network["nw-test"]).to be_nil
     end
 
     it "successfully" do
       network = Fabricate(:network)
-      ret = Vnet::NodeApi::Models::Network.new[network.canonical_uuid]
+      ret = Vnet::NodeApi::Network[network.canonical_uuid]
       expect(ret).to be_a Hash
       expect(ret[:uuid]).to eq network.canonical_uuid
     end
@@ -37,12 +37,12 @@ describe Vnet::NodeApi::Models::Network do
 
   describe "update" do
     it "raise execption" do
-      expect{ Vnet::NodeApi::Models::Network.new.update("nw-test") }.to raise_error
+      expect{ Vnet::NodeApi::Network.update("nw-test") }.to raise_error
     end
 
     it "successfully" do
       network = Fabricate(:network)
-      ret = Vnet::NodeApi::Models::Network.new.execute_batch(
+      ret = Vnet::NodeApi::Network.execute_batch(
         [:[], network.canonical_uuid],
         [:update, { :display_name => network.display_name + " updated" }]
       )
@@ -56,7 +56,7 @@ describe Vnet::NodeApi::Models::Network do
   describe "destroy" do
     it "successfully" do
       network = Fabricate(:network)
-      ret = Vnet::NodeApi::Models::Network.new.execute_batch(
+      ret = Vnet::NodeApi::Network.execute_batch(
         [:[], network.canonical_uuid],
         [:destroy])
 

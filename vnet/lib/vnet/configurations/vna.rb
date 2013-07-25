@@ -26,8 +26,6 @@ module Vnet::Configurations
       end
     end
 
-    param :rpc_node_id, :default => "vnmgr"
-    param :rpc_actor_name, :default => "rpc"
     param :node_api_proxy, :default => :rpc
     param :trema_home, :default => Gem::Specification.find_by_name('trema').gem_dir
     param :trema_tmp, :default => '/var/run/wakame-vnet'
