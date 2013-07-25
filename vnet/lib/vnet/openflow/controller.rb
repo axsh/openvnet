@@ -38,6 +38,8 @@ module Vnet::Openflow
       # disconnected for a short period, as Open vSwitch has the
       # ability to keep flows between sessions.
       datapath = @datapaths[dpid] = Datapath.new(self, dpid, OvsOfctl.new(dpid))
+
+      datapath.create_switch
       datapath.switch.async.switch_ready
     end
 

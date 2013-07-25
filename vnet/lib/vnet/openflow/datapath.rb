@@ -47,12 +47,14 @@ module Vnet::Openflow
 
       @packet_manager.insert(Vnet::Openflow::Services::Arp.new(:datapath => self), :arp)
       @packet_manager.insert(Vnet::Openflow::Services::Icmp.new(:datapath => self), :icmp)
-
-      @switch = Switch.new(self)
     end
 
     def inspect
       "<##{self.class.name} dpid:#{@dpid}>"
+    end
+
+    def create_switch
+      @switch = Switch.new(self)
     end
 
     #
