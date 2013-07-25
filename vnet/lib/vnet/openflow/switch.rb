@@ -215,7 +215,11 @@ module Vnet::Openflow
           network = port.network
           network.del_port(port, true)
 
-          @network_manager.remove(network) if network.ports.empty?
+          if network.ports.empty?
+            @network_manager.remove(network)
+            # delete tunnel
+            @tunnel_manager.delete_tunnel(network.id, datapath.datapath_id)
+          end
         end
       end
     end

@@ -8,6 +8,8 @@ module Vnet::Openflow
     include Celluloid::Logger
     include Vnet::Constants::Openflow
 
+    attr_reader :networks
+
     def initialize(dp)
       @datapath = dp
       @networks = {}
@@ -32,7 +34,7 @@ module Vnet::Openflow
         raise("Unknown network type.")
       end
 
-      dp_map = M::Datapath[:dpid => ("0x%016x" % @datapath.datapath_id)]
+      dp_map = MW::Datapath[:dpid => ("0x%016x" % @datapath.datapath_id)]
       raise("Could not find datapath id: 0x%016x" % @datapath.datapath_id) unless dp_map
 
       dp_network_map = dp_map.batch.datapath_networks_dataset.where(:network_id => network_map.id).first.commit

@@ -30,8 +30,9 @@ module Vnet::Openflow
       raise "Datapath not found: #{'0x%016x' % @datapath.datapath_id}" unless dp_map
 
       @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
-        tunnel = Vnet::ModelWrappers::Tunnel.create(:uuid => "#{target_dp_map.uuid.split("-")[1]}", :src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id)
-        @datapath.add_tunnel("t-#{target_dp_map.uuid.split("-")[1]}", IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
+        tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
+        tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
+        @datapath.add_tunnel(tunnel_name, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
         tunnel.to_hash.tap do |t|
           t[:dst_dpid] = target_dp_map.dpid
           t[:datapath_networks] = []
@@ -119,24 +120,24 @@ module Vnet::Openflow
     end
 
     def delete_tunnel_port(network_id, peer_dpid)
-      # self datapath network
-      dp_map = Vnet::ModelWrappers::Datapath.first(:dpid => "0x%016x" % @datapath.datapath_id)
-      self_dp_network_ids = Vnet::ModelWrappers::DatapathNetwork.where(:datapath_id => dp_map.id).map(:network_id)
 
-
-      # peer datapath network
-      peer_dp_map = Vnet::ModelWrappers::Datapath.first(:dpid => peer_dpid) 
-      peer_dp_network_ids = Vnet::ModelWrappers::DatapathNetwork.where(:datapath_id => peer_dp_map.id).map(:network_id)
-
-      tunnel_name = "t-#{peer_dp_map.uuid.split("-")[1]}"
-
-      # check if all the networks on current datapath disappear from the peer datapath.
-      network_id_require_tunnel = self_dp_network_ids.map {|n| n if peer_dp_network_ids.include?(n) }.compact
-
-      if network_id_require_tunnel == []
-        # delete tunnel
-        @datapath.delete_tunnel(tunnel_name)
+      # if #{peer_dpid} is equal to #{@datapath.datapath_id},
+      # it can be regard as the network deletion happens on
+      # the local datapath (not on the remote datapath)
+      
+      if peer_dpid == @datapath.datapath_id
+        @tunnels.each { |t| delete_tunnel_if_datapath_networks_empty(t, network_id) }
+      else
+        @tunnels.each do |t|
+          if t[:dst_dpid] == peer_dpid
+            delete_tunnel_if_datapath_networks_empty(t, network_id)
+          end
+        end
       end
+
+      @tunnels.delete_if { |t| t[:datapath_networks].empty? }
+
+      # notify
     end
 
     private
@@ -166,7 +167,7 @@ module Vnet::Openflow
 
     def update_collection_id(collection_id)
       ports = @tunnel_ports.select { |port_number,tunnel_port|
-        tunnel = @tunnels.find{ |t| t[:uuid] == tunnel_port[:port_name] }
+        tunnel = @tunnels.find{ |t| t[:display_name] == tunnel_port[:port_name] }
 
         unless tunnel
           warn "tunnel port: #{tunnel_port.port_name} is not registered in db"
@@ -191,6 +192,13 @@ module Vnet::Openflow
       @datapath.add_flows(flows)
     end
 
+    def delete_tunnel_if_datapath_networks_empty(tunnel, network_id)
+      tunnel[:datapath_networks].delete_if { |dpn| dpn[:network_id] == network_id }
+      if tunnel[:datapath_networks].empty?
+        @datapath.delete_tunnel(tunnel[:display_name])
+        t = Vnet::ModelWrappers::Tunnel[:display_name => tunnel[:display_name]]
+        t.batch.destroy.commit
+      end
+    end
   end
-
 end

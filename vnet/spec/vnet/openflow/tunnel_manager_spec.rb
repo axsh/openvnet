@@ -192,35 +192,38 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "delete_tunnel_port" do
     before do
+      # id=1, dpid="0x"+"a"*16
       Fabricate("datapath_1")
+      # id=2, dpid="0x"+"c"*16
       Fabricate("datapath_3")
     end
 
-    let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i(16)) }
+    let(:ofctl) { double(:ofctl) }
+    let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i(16), ofctl) }
 
-    subject { Vnet::Openflow::TunnelManager.new(datapath) }
+    subject do
+      Vnet::Openflow::TunnelManager.new(datapath).tap do |tm|
+        tm.create_all_tunnels
+        tm.insert(
+          double(:id => 1,
+                 :broadcast_mac_addr => "bb:bb:bb:11:11:11",
+                 :network_id => 1,
+                 :datapath => double(:dpid => "0x#{'c' * 16}",
+                                     :ipv4_address => IPAddr.new('1.1.1.1', Socket::AF_INET).to_i,
+                                     :datapath_id => 1
+                                     )))
+          
+      end
+    end
 
-    it "should delete port name 't-test3'" do
-      Fabricate("datapath_network_1_1")
-      Fabricate("datapath_network_1_2")
-      # Fabricate("datapath_network_2_1")
-      # Fabricate("datapath_network_2_2")
-      Fabricate("datapath_network_2_3")
-
-      subject.delete_tunnel_port(1, "0x"+"c"*16)
-
+    it "should delete tunnel when the network is deleted on the local datapath" do
+      subject.delete_tunnel_port(1, ("a" * 16).to_i(16))
       expect(datapath.deleted_tunnels[0]).to eq "t-test3"
     end
 
-    # it "should return 'keep'" do
-    #   Fabricate("datapath_network_1_1")
-    #   Fabricate("datapath_network_1_2")
-    #   Fabricate("datapath_network_2_1")
-    #   Fabricate("datapath_network_2_2")
-    #   Fabricate("datapath_network_2_3")
-
-    #   tunnel_manager = Vnet::Openflow::TunnelManager.new(datapath)
-    #   expect(tunnel_manager.delete_tunnel_port(1, "0x"+"c"*16)).to eq 'keep'
-    # end
+    it "should delete tunnel when the network is deleted on the remote datapath" do
+      subject.delete_tunnel_port(1, "0x"+"c"*16)
+      expect(datapath.deleted_tunnels[0]).to eq "t-test3"
+    end
   end
 end

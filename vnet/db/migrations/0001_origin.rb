@@ -156,6 +156,7 @@ Sequel.migration do
     create_table(:tunnels) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
+      String :display_name, :index => true, :null => false
       Integer :src_datapath_id, :index => true, :null => false
       Integer :dst_datapath_id, :index => true, :null => false
 

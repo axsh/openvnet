@@ -88,23 +88,5 @@ module Vnet::Openflow
       flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTER_ENTRY
       flow_learn_arp
     end
-
-    def delete_tunnel_flows
-      self.datapath.switch.tunnel_ports.each do |tunnel_port|
-        cookie = self.datapath.switch.tunnel_manager.flow_options(self, tunnel_port)[:cookie]
-        self.datapath.del_cookie(cookie)
-      end
-    end
-
-    def notify_to_delete_tunnel_port
-      #TODO: notify all vna through vnmgr to delete tunnel port
-    end
-
-    def uninstall
-      super
-      delete_tunnel_flows
-      notify_to_delete_tunnel_port
-    end
   end
-  
 end
