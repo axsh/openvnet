@@ -6,22 +6,22 @@ module Vnet::Openflow
   # commands to a specific bridge/switch.
   class Datapath
     attr_reader :controller
-    attr_reader :datapath_id
+    attr_reader :dpid
     attr_reader :ovs_ofctl
     attr_accessor :switch
 
     def initialize(ofc, dp_id, ofctl = nil)
       @controller = ofc
-      @datapath_id = dp_id
+      @dpid = dp_id
       @ovs_ofctl = ofctl
     end
 
     def inspect
-      "<##{self.class.name} datapath_id:#{@datapath_id}>"
+      "<##{self.class.name} dpid:#{@dpid}>"
     end
 
     def add_flow(flow)
-      self.controller.pass_task { self.controller.send_flow_mod_add(self.datapath_id, flow) }
+      self.controller.pass_task { self.controller.send_flow_mod_add(self.dpid, flow) }
     end
 
     def add_ovs_flow(flow_str)
@@ -29,7 +29,7 @@ module Vnet::Openflow
     end
 
     # def del_flow(flow)
-    #   self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id,
+    #   self.controller.pass_task { self.controller.public_send_flow_mod(self.dpid,
     #                                                                    flow.merge(:command => Controller::OFPFC_DELETE))
     #   }
     # end
@@ -44,24 +44,24 @@ module Vnet::Openflow
         :cookie_mask => 0xffffffffffffffff
       }
 
-      self.controller.pass_task { self.controller.public_send_flow_mod(self.datapath_id, options) }
+      self.controller.pass_task { self.controller.public_send_flow_mod(self.dpid, options) }
     end
 
     def add_flows(flows)
       return if flows.blank?
       self.controller.pass_task {
         flows.each { |flow|
-          self.controller.send_flow_mod_add(self.datapath_id, flow)
+          self.controller.send_flow_mod_add(self.dpid, flow)
         }
       }
     end
 
     def send_message(message)
-      self.controller.pass_task { self.controller.public_send_message(self.datapath_id, message) }
+      self.controller.pass_task { self.controller.public_send_message(self.dpid, message) }
     end
 
     def send_packet_out(message, port_no)
-      self.controller.pass_task { self.controller.public_send_packet_out(self.datapath_id, message, port_no) }
+      self.controller.pass_task { self.controller.public_send_packet_out(self.dpid, message, port_no) }
     end
 
     def add_tunnel(tunnel_name, remote_ip)

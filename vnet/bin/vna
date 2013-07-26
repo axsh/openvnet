@@ -14,7 +14,7 @@ conf = Vnet::Configurations::Vna.conf
 #Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
 Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "vna.log"))
 
-Vnet::ModelWrappers::Base.set_proxy(conf)
+Vnet::ModelWrappers::Base.set_proxy(conf.node_api_proxy)
 
 case conf.node_api_proxy
 when :rpc

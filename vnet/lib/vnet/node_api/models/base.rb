@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi::Models
   class Base
+    include Vnet::NodeApi::Event::Dispatchable
     attr_accessor :model_class
+
     def initialize
       @model_class = Vnet::Models.const_get(self.class.name.demodulize)
     end

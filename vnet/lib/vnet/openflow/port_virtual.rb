@@ -36,7 +36,7 @@ module Vnet::Openflow
                            ) if @ipv4_addr
       
       if @ipv4_addr
-        flows << Flow.create(TABLE_ROUTER_EXIT, 40,
+        flows << Flow.create(TABLE_ROUTER_DST, 40,
                              md_network(:virtual_network).merge!({ :eth_type => 0x0800,
                                                                    :ipv4_dst => @ipv4_addr
                                                                  }),

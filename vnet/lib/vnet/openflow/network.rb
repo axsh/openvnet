@@ -81,7 +81,9 @@ module Vnet::Openflow
 
       translated_map = {
         :datapath => self.datapath,
-        :network => self,
+        :network => self, # Deprecate...
+        :network_id => @network_id,
+        :network_uuid => @network_uuid,
         :vif_uuid => service_map.vif.uuid,
         :service_mac => Trema::Mac.new(service_map.vif.mac_addr),
         :service_ipv4 => IPAddr.new(service_map.vif.ipv4_address, Socket::AF_INET)
@@ -90,7 +92,7 @@ module Vnet::Openflow
       info "network(#{@uuid}): creating service '#{service_map.display_name}'"
 
       service = case service_map.display_name
-                when 'dhcp' then Vnet::Openflow::Services::Dhcp.new(translated_map)
+                when 'dhcp'   then Vnet::Openflow::Services::Dhcp.new(translated_map)
                 when 'router' then Vnet::Openflow::Services::Router.new(translated_map)
                 else
                   error "network(#{@uuid}): failed to create service '#{service_map.uuid}'"
@@ -99,7 +101,9 @@ module Vnet::Openflow
 
       pm = @datapath.switch.packet_manager
 
-      cookie = pm.insert(service)
+      cookie = pm.insert(service,
+                         nil,
+                         service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT))
 
       if cookie.nil?
         error "network(#{@uuid}): aborting creation of services '#{service_map.uuid}'"
@@ -108,8 +112,8 @@ module Vnet::Openflow
 
       @service_cookies[service_map.uuid] = cookie
       
-      pm.dispatch(:arp)  { |handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
-      pm.dispatch(:icmp) { |handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
+      pm.dispatch(:arp)  { |key, handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
+      pm.dispatch(:icmp) { |key, handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
     end
 
     def uninstall
@@ -121,8 +125,8 @@ module Vnet::Openflow
 
       @service_cookies.each { |uuid,cookie|
         pm.remove(cookie)
-        pm.dispatch(:arp)  { |handler| handler.remove_vif(service.vif_uuid) }
-        pm.dispatch(:icmp) { |handler| handler.remove_vif(service.vif_uuid) }
+        pm.dispatch(:arp)  { |key, handler| handler.remove_vif(service.vif_uuid) }
+        pm.dispatch(:icmp) { |key, handler| handler.remove_vif(service.vif_uuid) }
       }
     end
 

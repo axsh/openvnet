@@ -24,13 +24,5 @@ module Vnet::Configurations
         @config[:node] = Node.new.tap {|node| node.parse_dsl(&block) if block }
       end
     end
-
-    DSL do
-      def actor_names(*names)
-        @config[:actor_names] ||={}
-        @config[:actor_names] = names
-      end
-    end
-    param :actor_names, :default => %w(rpc)
   end
 end

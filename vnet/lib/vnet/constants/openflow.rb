@@ -46,23 +46,34 @@ module Vnet::Constants::Openflow
 
   TABLE_ROUTER_ENTRY = 14
   TABLE_ROUTER_SRC = 15
-  TABLE_ROUTER_DST = 16
-  TABLE_ROUTER_EXIT = 17
+  TABLE_ROUTER_LINK = 16
+  TABLE_ROUTER_DST = 17
 
   TABLE_VIRTUAL_DST = 18
 
   # Route based on the mac address only.
   TABLE_MAC_ROUTE = 30
 
-  # Output to port based on the metadata field. OpenFlow 1.3 does
-  # not seem to have any action allowing us to output to a port
-  # using the metadata field directly, so a separate table is
-  # required.
-  TABLE_METADATA_LOCAL = 31
-  TABLE_METADATA_ROUTE = 32
-  TABLE_METADATA_SEGMENT = 33
-  TABLE_METADATA_TUNNEL_IDS = 34
-  TABLE_METADATA_TUNNEL_PORTS = 35
+  # A table for sending packets to the controller after applying
+  # non-action instructions such as 'write_metadata'.
+  TABLE_OUTPUT_CONTROLLER = 31
+
+  # Only output to local vif's.
+  TABLE_METADATA_LOCAL        = 32
+
+  # Send packet to all ports if marked as a flood flow, starting from
+  # the route table.
+  TABLE_METADATA_ROUTE        = 33
+  TABLE_METADATA_SEGMENT      = 34
+  TABLE_METADATA_TUNNEL_IDS   = 35
+  TABLE_METADATA_TUNNEL_PORTS = 36
+
+  # Send packet to a known datapath id, e.g. using an eth port or
+  # tunnel port.
+  #
+  # Note, this table could later be used to automatically create
+  # tunnels independently of installed flows.
+  TABLE_METADATA_DATAPATH_ID  = 37
 
   #
   # Legacy tables yet to be integrated in the new table ordering:
@@ -93,14 +104,16 @@ module Vnet::Constants::Openflow
   COOKIE_PREFIX_SHIFT = 48
 
   COOKIE_PREFIX_COLLECTION     = 0x1
-  COOKIE_PREFIX_DP_NETWORK     = 0x3
-  COOKIE_PREFIX_NETWORK        = 0x4
-  COOKIE_PREFIX_PACKET_HANDLER = 0x5
-  COOKIE_PREFIX_PORT           = 0x6
-  COOKIE_PREFIX_ROUTE          = 0x7
-  COOKIE_PREFIX_SWITCH         = 0x8
-  COOKIE_PREFIX_TUNNEL         = 0x9
-  COOKIE_PREFIX_VIF            = 0x10
+  COOKIE_PREFIX_DP_NETWORK     = 0x2
+  COOKIE_PREFIX_NETWORK        = 0x3
+  COOKIE_PREFIX_PACKET_HANDLER = 0x4
+  COOKIE_PREFIX_PORT           = 0x5
+  COOKIE_PREFIX_ROUTE          = 0x6
+  COOKIE_PREFIX_ROUTE_LINK     = 0x7
+  COOKIE_PREFIX_SERVICE        = 0x8
+  COOKIE_PREFIX_SWITCH         = 0x9
+  COOKIE_PREFIX_TUNNEL         = 0x10
+  COOKIE_PREFIX_VIF            = 0x11
 
   COOKIE_NETWORK_SHIFT = 32
 
@@ -113,12 +126,14 @@ module Vnet::Constants::Openflow
   METADATA_FLAG_REMOTE   = (0x8 << 48)
   METADATA_FLAG_FLOOD    = (0x10 << 48)
 
-  METADATA_TYPE_MASK = (0xff00 << 48)
+  METADATA_TYPE_MASK       = (0xff00 << 48)
 
-  METADATA_TYPE_NETWORK    = (0x100 << 48)
-  METADATA_TYPE_PORT       = (0x200 << 48)
-  METADATA_TYPE_ROUTE_LINK = (0x400 << 48)
-  METADATA_TYPE_COLLECTION = (0x800 << 48)
+  METADATA_TYPE_COLLECTION = (0x100 << 48)
+  METADATA_TYPE_DATAPATH   = (0x200 << 48)
+  METADATA_TYPE_NETWORK    = (0x300 << 48)
+  METADATA_TYPE_PORT       = (0x400 << 48)
+  METADATA_TYPE_ROUTE      = (0x500 << 48)
+  METADATA_TYPE_ROUTE_LINK = (0x600 << 48)
 
   METADATA_PORT_MASK = 0xffffffff
   METADATA_NETWORK_MASK = (0xffff << 32)
