@@ -30,7 +30,7 @@ module Vnet::Openflow
       raise "Datapath not found: #{'0x%016x' % @datapath.dpid}" unless dp_map
 
       @tunnels = Vnet::ModelWrappers::Datapath.batch.dataset.on_other_segment(dp_map).commit.map do |target_dp_map|
-        tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
+        tunnel_name = "t-#{target_dp_map.uuid}"
         tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
         @datapath.add_tunnel(tunnel_name, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
         tunnel.to_hash.tap do |t|
@@ -121,11 +121,11 @@ module Vnet::Openflow
 
     def delete_tunnel_port(network_id, peer_dpid)
 
-      # if #{peer_dpid} is equal to #{@datapath.datapath_id},
+      # if #{peer_dpid} is equal to #{@datapath.dpid},
       # it can be regard as the network deletion happens on
       # the local datapath (not on the remote datapath)
       
-      if peer_dpid == @datapath.datapath_id
+      if peer_dpid == @datapath.dpid
         @tunnels.each { |t| delete_tunnel_if_datapath_networks_empty(t, network_id) }
       else
         @tunnels.each do |t|
