@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::NodeApi::Models
+module Vnet::NodeApi
   class Datapath < Base
   end
 
@@ -48,8 +48,4 @@ module Vnet::NodeApi::Models
   
   class Tunnel < Base
   end
-
-  class Vif < Base
-  end
-
 end

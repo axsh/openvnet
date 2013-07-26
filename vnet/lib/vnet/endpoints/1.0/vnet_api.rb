@@ -13,7 +13,7 @@ module Vnet::Endpoints::V10
     R = Vnet::Endpoints::V10::Responses
 
     def parse_params(params,mask)
-      params.keys.each_with_object({}) do |key, h|
+      params.keys.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |key, h|
         h[key] = params[key] if mask.member?(key)
       end
     end
