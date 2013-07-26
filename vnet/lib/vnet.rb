@@ -175,6 +175,10 @@ module Vnet
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
 
+    module Routers
+      autoload :RouteLink, 'vnet/openflow/routers/route_link'
+    end
+
     module Services
       autoload :Arp, 'vnet/openflow/services/arp'
       autoload :Base, 'vnet/openflow/services/base'

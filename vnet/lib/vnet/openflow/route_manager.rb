@@ -69,9 +69,10 @@ module Vnet::Openflow
 
       @datapath.add_flows(flows)
 
-      pm = @datapath.packet_manager
+      link_cookie = route_link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
 
-      pm.dispatch(route[:vif][:service_cookie]) { |key, handler|
+      pm = @datapath.packet_manager
+      pm.dispatch(link_cookie) { |key, handler|
         route_cookie = handler.insert_route(route)
         pm.link_cookies(key, route_cookie) if route_cookie
       }
@@ -97,15 +98,20 @@ module Vnet::Openflow
       link = @route_links[link_map.id]
       return link if link
 
+      packet_handler = Routers::RouteLink.new(datapath: @datapath,
+                                              route_link_id: link_map.id)
+
       link = {
         :id => link_map.id,
         :mac_addr => Trema::Mac.new(link_map.mac_address),
-        :routes => {}
+        :routes => {},
+        :packet_handler => packet_handler
       }
 
-      @route_links[link_map.id] = link
-
       cookie = link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
+
+      @route_links[link_map.id] = link
+      @datapath.packet_manager.insert(packet_handler, nil, cookie)
 
       route_link_md = md_create(:route_link => link[:id])
 
