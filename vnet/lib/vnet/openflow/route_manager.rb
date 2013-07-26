@@ -7,43 +7,44 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
     
+    ROUTE_COMMIT = {:fill => [:route_link, :vif => :network_services]}
+
     def initialize(dp)
       @datapath = dp
-      @routes = {}
       @route_links = {}
       @vifs = {}
     end
 
-    def insert(network_map, dp_map, route_map)
+    def insert(route_map)
       info "route_manager: route.uuid:#{route_map.uuid.inspect}"
       info "route_manager: route.route_type:#{route_map.route_type.inspect}"
       info "route_manager: route.vif:#{route_map.vif.inspect}"
       info "route_manager: route.route_link:#{route_map.route_link.inspect}"
-      # info "route_manager: dp_map:#{dp_map.inspect}"
 
-      return if @routes.has_key? route_map.uuid
+      route_link = prepare_link(route_map.route_link)
+
+      return if route_link.nil?
+      return if route_link[:routes].has_key? route_map.id
 
       route = {
         :id => route_map.id,
         :uuid => route_map.uuid,
         :vif => prepare_vif(route_map.vif),
-        :route_link => prepare_link(route_map.route_link),
         :ipv4_address => route_map.ipv4_address,
         :ipv4_prefix => route_map.ipv4_prefix,
         :ipv4_mask => IPV4_BROADCAST << (32 - route_map.ipv4_prefix),
       }
 
-      if route[:vif].nil? || route[:route_link].nil?
-        warn "route_manager: couldn't prepare vif or route link"
+      if route[:vif].nil?
+        warn "route_manager: couldn't prepare router vif (#{route_map.uuid})"
         return
       end
 
-      @routes[route_map.uuid] = route
+      route_link[:routes][route[:id]] = route
 
       cookie = route[:id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
-      route_link_md = md_create(:route_link => route[:route_link][:id])
-      # Rewrite to use route link?..
+      route_link_md = md_create(:route_link => route_link[:id])
       network_md    = md_create(:virtual_network => route[:vif][:network_id])
 
       flows = []
@@ -77,8 +78,16 @@ module Vnet::Openflow
     end
 
     def prepare_network(network_map, dp_map)
-      network_map.batch.routes.commit(:fill => [:route_link, :vif => :network_services]).each { |route|
-        self.insert(network_map, dp_map, route)
+      network_map.batch.routes.commit(ROUTE_COMMIT).each { |route_map|
+        if !@route_links.has_key?(route_map.route_link.id)
+          route_map.batch.on_other_networks.commit(ROUTE_COMMIT).each { |other_route_map|
+            # Replace with a lightweight methods.
+            info "FOOOFLO #{other_route_map.inspect}"
+            self.insert(other_route_map)
+          }
+        end
+
+        self.insert(route_map)
       }
     end
 
@@ -91,6 +100,7 @@ module Vnet::Openflow
       link = {
         :id => link_map.id,
         :mac_addr => Trema::Mac.new(link_map.mac_address),
+        :routes => {}
       }
 
       @route_links[link_map.id] = link
