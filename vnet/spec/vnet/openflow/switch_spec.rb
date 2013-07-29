@@ -18,11 +18,11 @@ describe Vnet::Openflow::Switch do
   
   describe "handle_port_desc" do
     context "tunnel" do
-      it "should create a port objcect whose datapath_id is 1" do
+      it "should create a port object whose datapath_id is 1" do
         ofc = double(:ofc)
-        dp = Vnet::Openflow::Datapath.new(ofc, 1)
+        dp = MockDatapath.new(ofc, 1)
         Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
-        switch = Vnet::Openflow::Switch.new(dp)
+        switch = dp.create_mock_switch
         port_desc = double(:port_desc)
         port_desc.should_receive(:port_no).and_return(5)
         

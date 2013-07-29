@@ -82,7 +82,7 @@ module Vnet::Openflow
                            }, {}, flow_options.merge(:goto_table => TABLE_ARP_ROUTE))
 
       self.datapath.add_flows(flows)
-      self.datapath.switch.network_manager.update_all_flows
+      self.datapath.network_manager.update_all_flows
     end
 
   end
