@@ -25,7 +25,7 @@ module Vnet::Openflow
 
       raise "Datapath not found: #{'0x%016x' % @datapath.dpid}" unless dp_map
 
-      @tunnels = Vnet::ModelWrappers::Datapath.batch.dataset.on_other_segment(dp_map).commit.map do |target_dp_map|
+      @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
         tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id)
         @datapath.add_tunnel(tunnel.uuid, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
         tunnel.to_hash.tap do |t|
@@ -132,12 +132,13 @@ module Vnet::Openflow
       end
 
       datapath_md = md_create(:datapath => tunnel[:dst_datapath_id])
+      cookie = tunnel[:dst_datapath_id] | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
       flow = Flow.create(TABLE_METADATA_DATAPATH_ID, 5,
                          datapath_md, {
                            :output => port_number
                          }, {
-                           :cookie => tunnel[:dst_datapath_id]
+                           :cookie => cookie
                          })
       
       @datapath.add_flow(flow)

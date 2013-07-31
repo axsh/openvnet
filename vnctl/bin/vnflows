@@ -1,0 +1,199 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../../vnet/lib', __FILE__)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'vnet/constants/openflow_flows'
+
+class Flow
+  include Vnet::Constants::OpenflowFlows
+
+  attr_reader :cookie
+  attr_reader :duration
+  attr_reader :table
+  attr_reader :priority
+  attr_reader :match
+  attr_reader :actions
+
+  def initialize(flow_match, flow_actions)
+    @cookie       = flow_match.delete(:cookie)
+    @duration     = flow_match.delete(:duration)
+    @table        = dec_to_i(flow_match.delete(:table))
+    @priority     = dec_to_i(flow_match.delete(:priority))
+    @n_packets    = dec_to_i(flow_match.delete(:n_packets))
+    @n_bytes      = dec_to_i(flow_match.delete(:n_bytes))
+    @idle_timeout = dec_to_i(flow_match.delete(:idle_timeout))
+    @hard_timeout = dec_to_i(flow_match.delete(:hard_timeout))
+
+    @match   = flow_match
+    @actions = flow_actions
+  end
+
+  def to_pretty
+    "%3u-%02u  %-7u %-7u => %s actions=%s" %
+      [@table,
+       @priority,
+       @n_packets,
+       @idle_timeout,
+       @match.inject("") { |result, value|
+         if value[1].nil?
+           result << "#{value[0]},"
+         else
+           result << "#{value[0]}=#{field_to_pretty(value)},"
+         end
+       }.chomp(','),
+       @actions.inject("") { |result, value|
+         case
+         when value[1].nil?      then result << "#{value[0]},"
+         when value[0] == :learn then result << "#{value[0]}(#{value[1]}),"
+         else
+           result << "#{value[0]}:#{field_to_pretty(value)},"
+         end
+       }.chomp(',')
+      ]
+  end
+
+  def field_to_pretty(field)
+    case field[0]
+    when :goto_table
+      "#{self.class.table_name(field[1].to_i)}(#{field[1]})"
+    when :metadata, :write_metadata
+      result = field[1].scan(/^0x([[:xdigit:]]*)\/0x([[:xdigit:]]*)$/)
+
+      return field[1] if result.empty? || result[0].empty?
+
+      value = result[0][0].to_i(16)
+      mask = result[0][1] ? result[0][1].to_i(16) : ((1 << 64) - 1)
+
+      "#{self.metadata_to_pretty(value, mask)}(#{field[1]})"
+    else
+      field[1]
+    end
+  end
+
+  def metadata_to_pretty(value, mask)
+    result = ''
+
+    if (mask & METADATA_TYPE_MASK) == METADATA_TYPE_MASK
+      result << self.class.type_name(value & (mask & METADATA_TYPE_MASK)) << '|'
+    end
+
+    case value & (mask & (METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE))
+    when METADATA_FLAG_LOCAL  then result << 'LOCAL|'
+    when METADATA_FLAG_REMOTE then result << 'REMOTE|'
+    end
+
+    result << 'FLOOD|' if (value & (mask & METADATA_FLAG_FLOOD)) == METADATA_FLAG_FLOOD
+    result.chomp('|')
+  end
+
+  def self.parse_ovs(ovs_flow)
+    ovs_match, ovs_actions = ovs_flow.split('actions=')
+
+    learn_field = nil
+
+    action_fields = ovs_actions.split(',').map { |field|
+      if field[-1] == ')'
+        learn_field << field
+        result = learn_field
+        learn_field = nil
+        next result
+      end
+
+      if learn_field
+        learn_field << field << ','
+        next
+      end
+
+      next field if field.scan(/^\s*learn\(([^$]*)$/).empty?
+
+      learn_field = field << ','
+      nil
+    }.select { |field|
+      field
+    }
+
+    parsed_match = parse_ovs_fields(ovs_match.split(','), :match)
+    parsed_actions = parse_ovs_fields(action_fields, :actions)
+
+    Flow.new(parsed_match, parsed_actions)
+  end
+
+  def self.parse_ovs_field(field, type)
+    case type
+    when :match
+      result = field.scan(/^\s*(\w+)(=)([[:graph:]]+)\s*$/)
+      key, sign, value = result.first
+
+    when :actions
+      result = field.scan(/^\s*(\w+)\(([[:graph:]]+)\)\s*$/)
+      return [result.first[0], result.first[1]] if result.size == 1
+
+      result = field.scan(/^\s*(\w+)(:)([[:graph:]]+)\s*$/)
+      key, sign, value = result.first
+    end
+
+    if sign.nil?
+      result = field.scan(/^\s*(\w+)\s*$/)
+      key, sign = result.first
+    end
+
+    if result.size != 1 || key.nil?
+      puts result.inspect
+      throw "flow parse failed on field '#{field}'"
+    end
+
+    [key, value]
+  end
+
+  def self.parse_ovs_fields(fields, type)
+    fields.each.inject({}) { |dst, field|
+      key, value = parse_ovs_field(field, type)
+
+      dst[key.to_sym] = value
+      dst
+    }
+  end
+
+  def self.table_name(number)
+    name = Vnet::Constants::OpenflowFlows.constants.select { |const|
+      const.to_s.start_with?('TABLE_')
+    }.detect { |const|
+      Vnet::Constants::OpenflowFlows.const_get(const) == number
+    }
+    name.to_s if name
+  end
+
+  def self.type_name(number)
+    name = Vnet::Constants::OpenflowFlows.constants.select { |const|
+      const.to_s.start_with?('METADATA_TYPE_')
+    }.detect { |const|
+      Vnet::Constants::OpenflowFlows.const_get(const) == number
+    }
+    name ? name.to_s.sub(/^METADATA_/, '') : 'TYPE_ANY'
+  end
+
+  private
+
+  def dec_to_i(value)
+    value ? value.to_i : 0
+  end
+
+end
+
+info = $stdin.readline
+flows = $stdin.each_line.map { |line| Flow.parse_ovs(line) }
+current_table = nil
+
+flows.sort! { |a,b|
+  [a.table, a.priority] <=> [b.table, b.priority]
+}.each { |flow|
+  if current_table != flow.table
+    current_table = flow.table
+    puts "(#{flow.table}): #{Flow.table_name(flow.table)}"
+  end
+
+  puts flow.to_pretty
+}

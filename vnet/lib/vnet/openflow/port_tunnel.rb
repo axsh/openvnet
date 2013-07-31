@@ -25,11 +25,11 @@ module Vnet::Openflow
                            flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
 
       @datapath.add_flows(flows)
-      @datapath.switch.tunnel_manager.add_port(self)
+      @datapath.tunnel_manager.add_port(self)
     end
 
     def uninstall
-      @datapath.switch.tunnel_manager.del_port(self)
+      @datapath.tunnel_manager.del_port(self)
       super
     end
 

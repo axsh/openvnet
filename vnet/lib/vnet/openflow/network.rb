@@ -99,7 +99,7 @@ module Vnet::Openflow
                   return
                 end
 
-      pm = @datapath.switch.packet_manager
+      pm = @datapath.packet_manager
 
       cookie = pm.insert(service,
                          nil,
@@ -119,7 +119,7 @@ module Vnet::Openflow
     def uninstall
       info "network(#{@uuid}): removing flows"
       
-      pm = self.datapath.switch.packet_manager
+      pm = self.datapath.packet_manager
 
       @datapath.del_cookie(@cookie)
 

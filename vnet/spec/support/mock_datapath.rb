@@ -13,6 +13,10 @@ class MockDatapath < Vnet::Openflow::Datapath
     @added_tunnels = []
   end
 
+  def create_mock_switch
+    @switch = MockSwitch.new(self)
+  end
+
   def send_message(message)
     @sent_messages << message
   end
