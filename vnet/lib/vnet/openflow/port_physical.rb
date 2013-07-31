@@ -26,6 +26,13 @@ module Vnet::Openflow
                            }, nil,
                            flow_options)
 
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 45, {
+                             :in_port => self.port_number,
+                             :eth_src => self.hw_addr,
+                             :eth_type => 0x0800,
+                             :ipv4_src => IPV4_ZERO
+                           }, nil,
+                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
                              :eth_type => 0x0800,
                              :eth_src => self.hw_addr
