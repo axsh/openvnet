@@ -104,7 +104,7 @@ module Vnet::Openflow
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
         when :physical_network
           # To be refactored.
-          metadata = metadata | METADATA_TYPE_NETWORK
+          metadata = metadata | value | METADATA_TYPE_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :physical_port
           # To be refactored.
@@ -119,6 +119,9 @@ module Vnet::Openflow
         when :virtual_network
           metadata = metadata | value | METADATA_TYPE_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :vif
+          metadata = metadata | METADATA_FLAG_VIF
+          metadata_mask = metadata_mask | METADATA_FLAG_VIF
         else
           raise("Unknown metadata type: #{key.inspect}")
         end

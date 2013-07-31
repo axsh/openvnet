@@ -31,6 +31,7 @@ module Vnet
       TABLE_NETWORK_CLASSIFIER = 10
 
       TABLE_VIRTUAL_SRC = 11
+      TABLE_PHYSICAL_SRC = 12
 
       TABLE_ROUTER_ENTRY = 14
       TABLE_ROUTER_SRC = 15
@@ -38,6 +39,7 @@ module Vnet
       TABLE_ROUTER_DST = 17
 
       TABLE_VIRTUAL_DST = 18
+      TABLE_PHYSICAL_DST = 19
 
       # Route based on the mac address only.
       TABLE_MAC_ROUTE = 30
@@ -62,28 +64,6 @@ module Vnet
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
       TABLE_METADATA_DATAPATH_ID  = 37
-
-      #
-      # Legacy tables yet to be integrated in the new table ordering:
-      #
-
-      # Routing to non-virtual networks with filtering applied.
-      #
-      # Due to limitations in the rules we can use the filter rules
-      # for the destination must be applied first, and its port number
-      # loaded into a registry.
-      #
-      # The source will then apply filtering rules and output to the
-      # port number found in registry 1.
-      TABLE_PHYSICAL_DST = 20
-      TABLE_PHYSICAL_SRC = 21
-
-      # The ARP antispoof table ensures no ARP packet SHA or SPA field
-      # matches the mac address owned by another port.
-      #
-      # If valid, the next table routes the packet to the right port.
-      TABLE_ARP_ANTISPOOF = 22
-      TABLE_ARP_ROUTE = 23
 
       #
       # Metadata, tunnel and cookie flags and masks:
@@ -111,6 +91,7 @@ module Vnet
       METADATA_FLAG_LOCAL    = (0x4 << 48)
       METADATA_FLAG_REMOTE   = (0x8 << 48)
       METADATA_FLAG_FLOOD    = (0x10 << 48)
+      METADATA_FLAG_VIF      = (0x20 << 48)
 
       METADATA_TYPE_MASK       = (0xff00 << 48)
 

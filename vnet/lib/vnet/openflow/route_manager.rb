@@ -83,7 +83,6 @@ module Vnet::Openflow
         if !@route_links.has_key?(route_map.route_link.id)
           route_map.batch.on_other_networks.commit(ROUTE_COMMIT).each { |other_route_map|
             # Replace with a lightweight methods.
-            info "FOOOFLO #{other_route_map.inspect}"
             self.insert(other_route_map)
           }
         end

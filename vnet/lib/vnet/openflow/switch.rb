@@ -63,9 +63,6 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30,
-                           md_create(:physical_network => nil), {},
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, nil, flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
@@ -83,10 +80,10 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_METADATA_DATAPATH_ID, 0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
 
       flow_options = {:cookie => @catch_flow_cookie}
 

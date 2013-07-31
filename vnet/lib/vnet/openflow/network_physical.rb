@@ -9,32 +9,46 @@ module Vnet::Openflow
     end
 
     def install
+      flood_md = md_create(:flood => nil)
+
       flows = []
-      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
-                             :eth_dst => MAC_BROADCAST
-                           }, {},
-                           flow_options.merge(md_create(:flood => nil)).merge(:goto_table => TABLE_PHYSICAL_SRC))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {
-                             :eth_type => 0x0800,
-                           }, {}, flow_options)
+
+      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30,
+                           md_network(:physical_network), nil,
+                           flow_options.merge(:goto_table => TABLE_PHYSICAL_SRC))
+
+      flows << Flow.create(TABLE_PHYSICAL_DST, 30,
+                           md_network(:physical_network, :remote => nil).merge(:eth_dst => MAC_BROADCAST),
+                           nil,
+                           flow_options.merge(flood_md).merge(:goto_table => TABLE_METADATA_LOCAL))
+
+      flows << Flow.create(TABLE_PHYSICAL_DST, 30,
+                           md_network(:physical_network, :local => nil).merge(:eth_dst => MAC_BROADCAST),
+                           nil,
+                           flow_options.merge(flood_md).merge(:goto_table => TABLE_METADATA_ROUTE))
 
       self.datapath.add_flows(flows)
     end
 
     def update_flows
-      flood_actions = ports.collect { |key,port| {:output => port.port_number} }
+      remote_actions = @ports.collect { |key,port|
+        {:output => port.port_number}
+      }
+      local_actions = @ports.select { |key, port|
+        !port.eth?
+      }.collect { |key, port|
+        {:output => port.port_number}
+      }
 
       flows = []
       flows << Flow.create(TABLE_METADATA_ROUTE, 1,
                            md_network(:physical_network, :flood => nil),
-                           flood_actions, flow_options)
-
-      eth_port_actions = self.datapath.switch.eth_ports.collect { |port| {:output => port.port_number} }
-      eth_port_actions << {:output => OFPP_LOCAL}
-
-      flows << Flow.create(TABLE_ARP_ROUTE, 1, {
-                             :eth_type => 0x0806
-                           }, eth_port_actions, flow_options)
+                           remote_actions,
+                           flow_options)
+      flows << Flow.create(TABLE_METADATA_LOCAL, 1,
+                           md_network(:physical_network, :flood => nil),
+                           local_actions,
+                           flow_options)
 
       self.datapath.add_flows(flows)
     end

@@ -163,7 +163,7 @@ module Vnet::Openflow
         tunnel = @tunnels.find{ |t| t[:uuid] == tunnel_port[:port_name] }
 
         unless tunnel
-          warn "tunnel port: #{tunnel_port.port_name} is not registered in db"
+          warn "tunnel port: #{tunnel_port[:port_name]} is not registered in db"
           next
         end
 
