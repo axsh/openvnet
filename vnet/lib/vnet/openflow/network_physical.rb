@@ -18,12 +18,12 @@ module Vnet::Openflow
                            flow_options.merge(:goto_table => TABLE_PHYSICAL_SRC))
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 30,
-                           md_network(:physical_network, :remote => nil).merge(:eth_dst => MAC_BROADCAST),
+                           md_network(:network, :remote => nil).merge(:eth_dst => MAC_BROADCAST),
                            nil,
                            flow_options.merge(flood_md).merge(:goto_table => TABLE_METADATA_LOCAL))
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 30,
-                           md_network(:physical_network, :local => nil).merge(:eth_dst => MAC_BROADCAST),
+                           md_network(:network, :local => nil).merge(:eth_dst => MAC_BROADCAST),
                            nil,
                            flow_options.merge(flood_md).merge(:goto_table => TABLE_METADATA_ROUTE))
 
@@ -42,11 +42,11 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_ROUTE, 1,
-                           md_network(:physical_network, :flood => nil),
+                           md_network(:network, :flood => nil),
                            remote_actions,
                            flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 1,
-                           md_network(:physical_network, :flood => nil),
+                           md_network(:network, :flood => nil),
                            local_actions,
                            flow_options)
 

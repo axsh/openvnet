@@ -65,7 +65,12 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, nil, flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:virtual => nil), nil,
+                           flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:physical => nil), nil,
+                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
       flows << Flow.create(TABLE_ROUTER_SRC, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_LINK, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_DST, 0, {}, nil, flow_options)
@@ -75,7 +80,8 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_OUTPUT_CONTROLLER, 0, {}, {:output => OFPP_CONTROLLER}, flow_options)
       flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, nil, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
+      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
       flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_METADATA_DATAPATH_ID, 0, {}, nil, flow_options)

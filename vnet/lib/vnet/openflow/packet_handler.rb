@@ -27,14 +27,14 @@ module Vnet::Openflow
       when :physical_local
         table = TABLE_PHYSICAL_DST
         priority = 70
-        match = match.merge(params[:network].md_network(:physical_network, {
+        match = match.merge(params[:network].md_network(:network, {
                                                           :local => nil,
                                                           :vif => nil
                                                         }))
       when :virtual_local
         table = TABLE_VIRTUAL_DST
         priority = 70
-        match = match.merge(params[:network].md_network(:virtual_network, {
+        match = match.merge(params[:network].md_network(:network, {
                                                           :local => nil,
                                                           :vif => nil
                                                         }))

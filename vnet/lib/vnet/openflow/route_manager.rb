@@ -45,7 +45,7 @@ module Vnet::Openflow
       cookie = route[:id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
       route_link_md = md_create(:route_link => route_link[:id])
-      network_md    = md_create(:virtual_network => route[:vif][:network_id])
+      network_md    = md_create(:network => route[:vif][:network_id])
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_SRC, 40,
@@ -160,7 +160,7 @@ module Vnet::Openflow
       @vifs[vif_map.id] = vif
 
       cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
-      network_md = md_create(:virtual_network => vif[:network_id])
+      network_md = md_create(:network => vif[:network_id])
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_ENTRY, 40,

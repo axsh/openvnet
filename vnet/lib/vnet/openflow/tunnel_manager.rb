@@ -103,7 +103,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 1,
-                           md_create({ :virtual_network => network_id,
+                           md_create({ :network => network_id,
                                        :flood => nil
                                      }), {
                              :tunnel_id => network_id | TUNNEL_FLAG_MASK

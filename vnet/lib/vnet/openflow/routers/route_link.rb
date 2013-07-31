@@ -33,7 +33,7 @@ module Vnet::Openflow::Routers
       }
 
       cookie = route_map[:id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
-      catch_route_md = md_create({ :virtual_network => route[:network_id],
+      catch_route_md = md_create({ :network => route[:network_id],
                                    :local => nil
                                  })
 
@@ -80,7 +80,7 @@ module Vnet::Openflow::Routers
     def match_packet(message)
       # Verify metadata is a network type.
 
-      match = md_create({ :virtual_network => message.match.metadata & METADATA_VALUE_MASK,
+      match = md_create({ :network => message.match.metadata & METADATA_VALUE_MASK,
                           :local => nil
                         })
       match.merge!({ :eth_type => 0x0800,

@@ -99,26 +99,30 @@ module Vnet::Openflow
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :network
+          metadata = metadata | value | METADATA_TYPE_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :physical
+          metadata = metadata | METADATA_FLAG_PHYSICAL
+          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :physical_network
-          # To be refactored.
-          metadata = metadata | value | METADATA_TYPE_NETWORK
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
-        when :physical_port
-          # To be refactored.
-          metadata = metadata | value | METADATA_TYPE_PORT
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_PHYSICAL
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :route
           metadata = metadata | value | METADATA_TYPE_ROUTE
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :route_link
           metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :virtual
+          metadata = metadata | METADATA_FLAG_VIRTUAL
+          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :virtual_network
-          metadata = metadata | value | METADATA_TYPE_NETWORK
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_VIRTUAL
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :vif
           metadata = metadata | METADATA_FLAG_VIF
           metadata_mask = metadata_mask | METADATA_FLAG_VIF

@@ -78,7 +78,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_SEGMENT, 1,
-                           md_create({ :virtual_network => network_id,
+                           md_create({ :network => network_id,
                                        :flood => nil
                                      }),
                            flood_actions, {

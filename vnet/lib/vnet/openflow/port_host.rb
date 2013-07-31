@@ -15,7 +15,7 @@ module Vnet::Openflow
 
     def install
       set_remote_md = flow_options.merge(md_create(:remote => nil))
-      network_md    = flow_options.merge(md_network(:physical_network))
+      classifier_md = flow_options.merge(md_network(:physical_network))
 
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
@@ -25,7 +25,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_HOST_PORTS, 10, {
                              :in_port => self.port_number
                            }, nil,
-                           network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                           classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
@@ -35,16 +35,16 @@ module Vnet::Openflow
                              :in_port => self.port_number,
                              :eth_type => 0x0800
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
                              :eth_type => 0x0806
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 31, {
                              :in_port => self.port_number
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
       flows << Flow.create(TABLE_PHYSICAL_DST, 20, {
                            }, {
                              :output => self.port_number
