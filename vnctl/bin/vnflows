@@ -31,6 +31,12 @@ class Flow
     @actions = flow_actions
   end
 
+  def match_protocol
+    @match.keys.detect { |key|
+      key == :arp || key == :ip || key == :udp
+    }
+  end
+
   def to_pretty
     "%3u-%02u  %-7u %-7u => %s actions=%s" %
       [@table,
@@ -188,7 +194,7 @@ flows = $stdin.each_line.map { |line| Flow.parse_ovs(line) }
 current_table = nil
 
 flows.sort! { |a,b|
-  [a.table, a.priority] <=> [b.table, b.priority]
+  [a.table, a.priority, a.match_protocol.to_s] <=> [b.table, b.priority, b.match_protocol.to_s]
 }.each { |flow|
   if current_table != flow.table
     current_table = flow.table
