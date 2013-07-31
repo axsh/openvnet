@@ -91,6 +91,7 @@ class Flow
     when METADATA_FLAG_REMOTE then result << 'REMOTE|'
     end
 
+    result << 'VIF|'   if (value & (mask & METADATA_FLAG_VIF)) == METADATA_FLAG_VIF
     result << 'FLOOD|' if (value & (mask & METADATA_FLAG_FLOOD)) == METADATA_FLAG_FLOOD
     result.chomp('|')
   end
