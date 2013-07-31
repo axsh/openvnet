@@ -18,6 +18,10 @@ module Vnet::Openflow
       @tunnels.dup
     end
 
+    def flow_options(network, tunnel_port)
+      { :cookie => (network.network_number << COOKIE_NETWORK_SHIFT) | tunnel_port.port_number | cookie }
+    end
+
     def create_all_tunnels
       debug "creating tunnel ports"
 
@@ -25,9 +29,10 @@ module Vnet::Openflow
 
       raise "Datapath not found: #{'0x%016x' % @datapath.dpid}" unless dp_map
 
-      @tunnels = Vnet::ModelWrappers::Datapath.batch.dataset.on_other_segment(dp_map).commit.map do |target_dp_map|
-        tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id)
-        @datapath.add_tunnel(tunnel.uuid, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
+      @tunnels = Vnet::ModelWrappers::Datapath.batch.dataset.on_other_segment(dp_map).all.commit.map do |target_dp_map|
+        tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
+        tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
+        @datapath.add_tunnel(tunnel_name, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
         tunnel.to_hash.tap do |t|
           t[:dst_dpid] = target_dp_map.dpid
           t[:datapath_networks] = []
@@ -114,6 +119,39 @@ module Vnet::Openflow
       @datapath.add_flows(flows)
     end
 
+    # TODO pass peer display name instead of peer_dpid might easier to process...
+    def delete_tunnel_port(network_id, peer_dpid)
+
+      # if #{peer_dpid} is equal to #{@datapath.dpid},
+      # it can be regard as the network deletion happens on
+      # the local datapath (not on the remote datapath)
+      
+      debug "delete_tunnel_port: network_id = #{network_id}, peer_dpid = #{peer_dpid}"
+      debug @tunnels
+
+      if peer_dpid == @datapath.dpid
+        debug "delete tunnel on local datapath"
+        @tunnels.each do |t|
+          debug "try to delete tunnel #{t[:display_name]}"
+          delete_tunnel_if_datapath_networks_empty(t, network_id)
+        end
+      else
+        debug "delete tunnel on remote datapath"
+        @tunnels.each do |t|
+          debug "t => #{t[:dst_dpid]}, p => 0x0000#{peer_dpid.to_s(16)}"
+          # TODO refactor the comparison
+          if t[:dst_dpid] == "0x0000#{peer_dpid.to_s(16)}"
+            debug "try to delete tunnel #{t[:display_name]}"
+            delete_tunnel_if_datapath_networks_empty(t, network_id)
+          end
+        end
+      end
+
+      @tunnels.delete_if { |t| t[:datapath_networks].empty? }
+
+      # notify
+    end
+
     private
 
     def update_tunnel(port_number)
@@ -124,7 +162,7 @@ module Vnet::Openflow
         return
       end
 
-      tunnel = @tunnels.find{ |t| t[:uuid] == port[:port_name] }
+      tunnel = @tunnels.find{ |t| t[:display_name] == port[:port_name] }
 
       if tunnel.nil?
         warn "tunnel_manager: port name is not registered in database (#{port[:port_name]})"
@@ -159,7 +197,7 @@ module Vnet::Openflow
 
     def update_collection_id(collection_id)
       ports = @tunnel_ports.select { |port_number,tunnel_port|
-        tunnel = @tunnels.find{ |t| t[:uuid] == tunnel_port[:port_name] }
+        tunnel = @tunnels.find{ |t| t[:display_name] == tunnel_port[:port_name] }
 
         unless tunnel
           warn "tunnel port: #{tunnel_port.port_name} is not registered in db"
@@ -184,6 +222,18 @@ module Vnet::Openflow
       @datapath.add_flows(flows)
     end
 
+    def delete_tunnel_if_datapath_networks_empty(tunnel, network_id)
+      debug "before delete #{tunnel[:datapath_networks]}"
+      tunnel[:datapath_networks].delete_if { |dpn| dpn[:network_id] == network_id }
+      debug "after delete #{tunnel[:datapath_networks]}"
+      if tunnel[:datapath_networks].empty?
+        debug "delete tunnel #{tunnel[:display_name]}"
+        @datapath.delete_tunnel(tunnel[:display_name])
+        t = Vnet::ModelWrappers::Tunnel[:display_name => tunnel[:display_name]]
+        t.batch.destroy.commit
+      else
+        debug "tunnel datapath is not empty"
+      end
+    end
   end
-
 end

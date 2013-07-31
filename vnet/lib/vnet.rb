@@ -53,7 +53,6 @@ module Vnet
         autoload :OpenFlowController, 'vnet/endpoints/1.0/responses/open_flow_controller'
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
-        autoload :Tunnel, 'vnet/endpoints/1.0/responses/tunnel'
         autoload :Vif, 'vnet/endpoints/1.0/responses/vif'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
@@ -68,7 +67,6 @@ module Vnet
         autoload :OpenFlowControllerCollection, 'vnet/endpoints/1.0/responses/open_flow_controller'
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
-        autoload :TunnelCollection, 'vnet/endpoints/1.0/responses/tunnel'
         autoload :VifCollection, 'vnet/endpoints/1.0/responses/vif'
       end
     end

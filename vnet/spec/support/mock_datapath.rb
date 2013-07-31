@@ -4,6 +4,8 @@ class MockDatapath < Vnet::Openflow::Datapath
   attr_reader :added_flows
   attr_reader :added_ovs_flows
   attr_reader :added_tunnels
+  attr_reader :added_cookie
+  attr_reader :deleted_tunnels
 
   def initialize(*args)
     super(*args)
@@ -11,6 +13,8 @@ class MockDatapath < Vnet::Openflow::Datapath
     @added_flows = []
     @added_ovs_flows = []
     @added_tunnels = []
+    @added_cookie = []
+    @deleted_tunnels = []
   end
 
   def send_message(message)
@@ -31,5 +35,13 @@ class MockDatapath < Vnet::Openflow::Datapath
 
   def add_tunnel(tunnel_name, remote_ip)
     @added_tunnels << {:tunnel_name => tunnel_name, :remote_ip => remote_ip}
+  end
+
+  def delete_tunnel(tunnel_name)
+    @deleted_tunnels << tunnel_name
+  end
+
+  def del_cookie(cookie)
+    @added_cookie << cookie
   end
 end
