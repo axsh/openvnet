@@ -13,14 +13,14 @@ module Vnet::Openflow::Routers
     end
 
     def install
-      # debug "service::router.install: network:#{@network_uuid} vif_uuid:#{@vif_uuid.inspect} mac:#{@service_mac} ipv4:#{@service_ipv4}"
+      debug "router::router_link.install: network:#{@network_uuid} vif_uuid:#{@vif_uuid.inspect} mac:#{@service_mac} ipv4:#{@service_ipv4}"
     end
 
     def insert_route(route_map)
-      debug "service::router.insert_route: network:#{@network_uuid} route:#{route_map.inspect}"
+      debug "router::router_link.insert_route: network:#{@network_uuid} route:#{route_map.inspect}"
 
       if @routes.has_key? route_map[:id]
-        warn "service::router.insert_route: route already exists (#{route_map[:uuid]})"
+        warn "router::router_link.insert_route: route already exists (#{route_map[:uuid]})"
         return nil
       end
 
@@ -55,7 +55,7 @@ module Vnet::Openflow::Routers
     end
 
     def packet_in(port, message)
-      # debug "service::router.packet_in: #{message.inspect}"
+      # debug "router::router_link.packet_in: #{message.inspect}"
 
       route = @routes[message.cookie]
 
@@ -68,7 +68,7 @@ module Vnet::Openflow::Routers
       return unreachable_ip(message, "no vif found", :no_vif) if ip_lease.nil? || ip_lease.vif.nil?
       return unreachable_ip(message, "no active vif found", :inactive_vif) if ip_lease.vif.datapath_id.nil?
 
-      debug "service::router.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+      debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
       
       route_packets(message, ip_lease)
 
@@ -131,7 +131,7 @@ module Vnet::Openflow::Routers
     end
 
     def unreachable_ip(message, error_msg, suppress_reason)
-      debug "service::router.packet_in: #{error_msg} (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+      debug "router::router_link.packet_in: #{error_msg} (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
       suppress_packets(message, suppress_reason)
       nil
     end

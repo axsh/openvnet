@@ -128,7 +128,7 @@ class Flow
     }
 
     parsed_match = parse_ovs_fields(ovs_match.split(','), :match)
-    parsed_actions = parse_ovs_fields(action_fields, :actions)
+    parsed_actions = parse_ovs_actions(action_fields, :actions)
 
     Flow.new(parsed_match, parsed_actions)
   end
@@ -165,6 +165,15 @@ class Flow
       key, value = parse_ovs_field(field, type)
 
       dst[key.to_sym] = value
+      dst
+    }
+  end
+
+  def self.parse_ovs_actions(fields, type)
+    fields.each.inject([]) { |dst, field|
+      key, value = parse_ovs_field(field, type)
+
+      dst << [key.to_sym, value]
       dst
     }
   end

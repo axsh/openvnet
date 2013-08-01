@@ -32,10 +32,10 @@ module Vnet::Openflow
       flows = []
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_dst => dpn[:broadcast_mac_addr]
-                           }, {}, actions)
+                           }, nil, actions)
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_src => dpn[:broadcast_mac_addr]
-                           }, {}, actions)
+                           }, nil, actions)
 
       @datapath.add_flows(flows)
 
@@ -85,7 +85,7 @@ module Vnet::Openflow
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
                              :goto_table => TABLE_METADATA_TUNNEL_IDS
                            })
-                           
+
       @datapath.add_flows(flows)
     end
 

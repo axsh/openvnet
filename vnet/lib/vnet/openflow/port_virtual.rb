@@ -63,7 +63,7 @@ module Vnet::Openflow
                              :in_port => self.port_number,
                              :eth_type => 0x0800,
                              :eth_src => @hw_addr,
-                             :ipv4_src => IPAddr.new('0.0.0.0'),
+                             :ipv4_src => IPV4_ZERO,
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
 

@@ -18,13 +18,13 @@ module Vnet::Openflow
 
     def install
       flood_md = flow_options.merge(md_network(:network, :flood => nil))
-      any_network_md = flow_options.merge(md_network(:network))
+      classifier_md = flow_options.merge(md_network(:network))
 
       flows = []
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
                              :tunnel_id => self.network_id | TUNNEL_FLAG_MASK
                            }, {},
-                           any_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                           classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40,
                            md_network(:virtual_network), {},
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
@@ -36,11 +36,13 @@ module Vnet::Openflow
                            flood_md.merge!(:goto_table => TABLE_METADATA_LOCAL))
 
       if self.broadcast_mac_addr
+        nw_virtual_md = flow_options.merge(md_network(:virtual_network))
+
         flows << Flow.create(TABLE_HOST_PORTS, 30, {
                                :eth_dst => self.broadcast_mac_addr
                              }, {
                                :eth_dst => MAC_BROADCAST
-                             }, any_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                             }, nw_virtual_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                                :eth_dst => self.broadcast_mac_addr
                              }, {}, flow_options)
