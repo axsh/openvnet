@@ -60,9 +60,9 @@ module Vnet::Openflow
                              flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
         flows << Flow.create(TABLE_ARP_LOOKUP, 30,
                              network_md.merge({ :eth_type => 0x0800,
-                                                :ipv4_dst => self.ipv4_addr
+                                                :ipv4_dst => @ipv4_addr
                                               }), {
-                               :eth_dst => self.hw_addr
+                               :eth_dst => @hw_addr
                              },
                              flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
       end

@@ -13,6 +13,10 @@ module Vnet::Openflow
     attr_reader :dpid
     attr_reader :ovs_ofctl
 
+    # Do not update any values of the datapath db for outside of the
+    # Datapath actor.
+    attr_reader :datapath_map
+
     attr_reader :switch
 
     attr_reader :cookie_manager
@@ -53,8 +57,23 @@ module Vnet::Openflow
       "<##{self.class.name} dpid:#{@dpid}>"
     end
 
+    def ipv4_address
+      ipv4_value = @datapath_map.ipv4_address
+      ipv4_value && IPAddr.new(ipv4_value, Socket::AF_INET)
+    end
+
     def create_switch
       @switch = Switch.new(self)
+      @switch.create_default_flows
+
+      @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @dpid)]
+
+      if @datapath_map.nil
+        warn "datapath: could not find dpid (0x%016x)" % @dpid if @datapath_map.nil?
+        return
+      end
+
+      @switch.switch_ready
     end
 
     #

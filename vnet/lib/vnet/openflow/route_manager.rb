@@ -138,29 +138,7 @@ module Vnet::Openflow
 
       @vifs[vif_map.id] = vif
 
-      cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
-      network_md = md_create(:network => vif[:network_id])
-
-      flows = []
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 40,
-                           network_md.merge({ :eth_dst => vif[:mac_addr],
-                                              :eth_type => 0x0800,
-                                              :ipv4_dst => vif[:ipv4_address]
-                                            }),
-                           nil, {
-                             :cookie => cookie,
-                             :goto_table => TABLE_VIRTUAL_DST
-                           })
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 30,
-                           network_md.merge({ :eth_dst => vif[:mac_addr],
-                                              :eth_type => 0x0800
-                                            }),
-                           nil, {
-                             :cookie => cookie,
-                             :goto_table => TABLE_ROUTER_SRC
-                           })
-      
-      @datapath.add_flows(flows)
+      create_vif_flows(vif)
       vif
     end
 
@@ -203,6 +181,37 @@ module Vnet::Openflow
       }
     end
 
+    def create_vif_flows(vif)
+      cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
+      network_md = md_create(:network => vif[:network_id])
+
+      if vif[:network_type] == :physical_network
+        goto_table = TABLE_PHYSICAL_DST
+      else
+        goto_table = TABLE_VIRTUAL_DST
+      end
+
+      flows = []
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 40,
+                           network_md.merge({ :eth_dst => vif[:mac_addr],
+                                              :eth_type => 0x0800,
+                                              :ipv4_dst => vif[:ipv4_address]
+                                            }),
+                           nil, {
+                             :cookie => cookie,
+                             :goto_table => goto_table
+                           })
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 30,
+                           network_md.merge({ :eth_dst => vif[:mac_addr],
+                                              :eth_type => 0x0800
+                                            }),
+                           nil, {
+                             :cookie => cookie,
+                             :goto_table => goto_table
+                           })
+      
+      @datapath.add_flows(flows)
+    end
   end
 
 end

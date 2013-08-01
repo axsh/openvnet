@@ -39,8 +39,7 @@ module Vnet::Openflow
       # ability to keep flows between sessions.
       datapath = @datapaths[dpid] = Datapath.new(self, dpid, OvsOfctl.new(dpid))
 
-      datapath.create_switch
-      datapath.switch.async.switch_ready
+      datapath.async.create_switch
     end
 
     def features_reply(dpid, message)
@@ -57,7 +56,10 @@ module Vnet::Openflow
 
       message.parts.each { |port_descs| 
         port_descs.ports.each { |port_desc| 
-          datapath.switch.async.update_bridge_hw(port_desc.hw_addr.dup) if port_desc.name =~ /^eth/
+          if port_desc.port_no == OFPP_LOCAL
+            debug "controller: found bridge hw address (#{port_desc.hw_addr})"
+            datapath.switch.update_bridge_hw(port_desc.hw_addr.dup)
+          end
         }
       }
 
@@ -73,12 +75,12 @@ module Vnet::Openflow
       debug "port_status from %#x." % dpid
 
       datapath = @datapaths[dpid] || raise("No datapath found.")
-      datapath.switch.async.port_status(message)
+      datapath.switch.async.port_status(message) if datapath.switch
     end
 
     def packet_in(dpid, message)
       datapath = @datapaths[dpid] || raise("No datapath found.")
-      datapath.switch.async.packet_in(message)
+      datapath.switch.async.packet_in(message) if datapath.switch
     end
 
     def vendor(dpid, message)

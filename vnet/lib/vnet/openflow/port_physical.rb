@@ -54,11 +54,18 @@ module Vnet::Openflow
                                :ipv4_src => self.ipv4_addr
                              }, nil,
                              flow_options)
+        flows << Flow.create(TABLE_ROUTER_DST, 40,
+                             network_md.merge({ :eth_type => 0x0800,
+                                                :ipv4_dst => @ipv4_addr
+                                              }), {
+                               :eth_dst => @hw_addr
+                             },
+                             flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
         flows << Flow.create(TABLE_ARP_LOOKUP, 30,
                              network_md.merge({ :eth_type => 0x0800,
-                                                :ipv4_dst => self.ipv4_addr
+                                                :ipv4_dst => @ipv4_addr
                                               }), {
-                               :eth_dst => self.hw_addr
+                               :eth_dst => @hw_addr
                              },
                              flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
       end

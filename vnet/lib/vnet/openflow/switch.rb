@@ -13,8 +13,6 @@ module Vnet::Openflow
 
     def initialize(dp, name = nil)
       @datapath = dp || raise("cannot create a Switch object without a valid datapath")
-      @datapath_map = nil
-
       @ports = {}
 
       cookie_manager = @datapath.cookie_manager
@@ -36,17 +34,11 @@ module Vnet::Openflow
       @bridge_hw = hw_addr
     end
 
-    def update_datapath_id
-      @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
-      warn "switch: could not find dpid (0x%016x)" % @datapath.dpid if @datapath_map.nil?
-      @datapath_map
-    end
-
     #
     # Event handlers:
     #
 
-    def switch_ready
+    def create_default_flows
       #
       # Add default flows:
       #
@@ -121,16 +113,16 @@ module Vnet::Openflow
       # Add any test flows here.
 
       @datapath.add_flows(flows)
+    end
+
+    def switch_ready
+      # There's a short period of time between the switch being
+      # activated and features_reply installing flow.
+      @datapath.tunnel_manager.create_all_tunnels
 
       #
       # Send messages that will start initializing the switch.
       #
-
-      update_datapath_id
-
-      # There's a short period of time between the switch being
-      # activated and features_reply installing flow.
-      @datapath.tunnel_manager.create_all_tunnels
 
       @datapath.send_message(Trema::Messages::FeaturesRequest.new)
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
@@ -146,11 +138,18 @@ module Vnet::Openflow
     def handle_port_desc(port_desc)
       debug "handle_port_desc: #{port_desc.inspect}"
 
+      if @datapath.datapath_map.nil?
+        warn "switch: cannot initialize ports without a valid datapath database entry (0x%016x)" % @datapath.dpid
+        return
+      end
+
       port = Port.new(@datapath, port_desc, true)
       @ports[port_desc.port_no] = port
 
-      if port.port_number >= OFPP_LOCAL
+      if port.port_number == OFPP_LOCAL
         port.extend(PortLocal)
+        port.hw_addr = port_desc.hw_addr
+
         port.install_with_hw(@bridge_hw) if @bridge_hw
 
         network = @datapath.network_manager.network_by_uuid('nw-public')
@@ -181,7 +180,7 @@ module Vnet::Openflow
         port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
         port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
-        vif_map.batch.update(:active_datapath_id => @datapath_map.id).commit if @datapath_map
+        vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
 
       elsif port.port_info.name =~ /^t-/
         port.extend(PortTunnel)
