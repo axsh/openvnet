@@ -27,6 +27,7 @@ module Vnet
 
   module Constants
     autoload :Openflow, 'vnet/constants/openflow'
+    autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 

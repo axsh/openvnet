@@ -47,8 +47,10 @@ describe Vnet::Openflow::TunnelManager do
 
     let(:datapath) do
       MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |datapath|
-        datapath.switch = double(:cookie_manager => Vnet::Openflow::CookieManager.new)
-        datapath.switch.cookie_manager.create_category(:tunnel, 0x6, 48)
+        # datapath.switch = double(:cookie_manager => Vnet::Openflow::CookieManager.new)
+        # datapath.switch.cookie_manager.create_category(:tunnel, 0x6, 48)
+        #
+        # datapath.cookie_manager = Vnet::Openflow::CookieManager.new
       end
     end
 
