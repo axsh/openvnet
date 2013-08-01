@@ -262,7 +262,6 @@ module Vnet::Openflow
       @packet_manager.async.packet_in(port, message) if port
     end
 
-    # TODO method name
     def update_topology(dpid, network_id)
       debug "[switch] update_topology: dpid => #{dpid}, network_id => #{network_id}"
       @tunnel_manager.delete_tunnel_port(network_id, dpid)

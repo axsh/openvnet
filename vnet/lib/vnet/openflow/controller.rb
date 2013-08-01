@@ -108,7 +108,6 @@ module Vnet::Openflow
                       })
     end
 
-    # TODO method name
     def update_topology(dpid, network_id)
       debug "[controller]: update_topology: dpid => #{dpid}, network_id => #{network_id}"
       switch = switches[switches.keys[0]]

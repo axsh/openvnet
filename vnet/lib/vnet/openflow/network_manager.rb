@@ -7,6 +7,7 @@ module Vnet::Openflow
   class NetworkManager
     include Celluloid::Logger
     include Vnet::Constants::Openflow
+    include Vnet::Event::Dispatchable
 
     attr_reader :networks
 
@@ -56,6 +57,8 @@ module Vnet::Openflow
       @datapath.switch.dc_segment_manager.async.prepare_network(network_map, dp_map)
       @datapath.switch.tunnel_manager.async.prepare_network(network_map, dp_map)
       @datapath.switch.route_manager.async.prepare_network(network_map, dp_map)
+
+      dispatch_event("network/added", network_id: network.network_id, dpid: @datapath.dpid)
 
       network
     end
