@@ -38,7 +38,7 @@ class Flow
   end
 
   def to_pretty
-    "%3u-%02u  %-7u %-7u => %s actions=%s" %
+    "%3u-%02u  %7u %7u => %s actions=%s" %
       [@table,
        @priority,
        @n_packets,
