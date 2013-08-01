@@ -222,7 +222,7 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     it "should delete tunnel when the network is deleted on the remote datapath" do
-      subject.delete_tunnel_port(1, "0x"+"c"*16)
+      subject.delete_tunnel_port(1, ("c" * 16).to_i(16))
       expect(datapath.deleted_tunnels[0]).to eq "t-test3"
     end
   end

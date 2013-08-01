@@ -119,37 +119,28 @@ module Vnet::Openflow
       @datapath.add_flows(flows)
     end
 
-    # TODO pass peer display name instead of peer_dpid might easier to process...
-    def delete_tunnel_port(network_id, peer_dpid)
+    def delete_tunnel_port(network_id, remote_dpid)
 
-      # if #{peer_dpid} is equal to #{@datapath.dpid},
+      # if #{remote_dpid} is equal to #{@datapath.dpid},
       # it can be regard as the network deletion happens on
       # the local datapath (not on the remote datapath)
-      
-      debug "delete_tunnel_port: network_id = #{network_id}, peer_dpid = #{peer_dpid}"
-      debug @tunnels
 
-      if peer_dpid == @datapath.dpid
-        debug "delete tunnel on local datapath"
+      if remote_dpid == @datapath.dpid
+        debug "delete tunnel on local datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
         @tunnels.each do |t|
           debug "try to delete tunnel #{t[:display_name]}"
           delete_tunnel_if_datapath_networks_empty(t, network_id)
         end
       else
-        debug "delete tunnel on remote datapath"
+        debug "delete tunnel for remote datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
         @tunnels.each do |t|
-          debug "t => #{t[:dst_dpid]}, p => 0x0000#{peer_dpid.to_s(16)}"
-          # TODO refactor the comparison
-          if t[:dst_dpid] == "0x0000#{peer_dpid.to_s(16)}"
-            debug "try to delete tunnel #{t[:display_name]}"
+          if t[:dst_dpid] == "0x%016x" % remote_dpid
             delete_tunnel_if_datapath_networks_empty(t, network_id)
           end
         end
       end
 
       @tunnels.delete_if { |t| t[:datapath_networks].empty? }
-
-      # notify
     end
 
     private
@@ -223,9 +214,7 @@ module Vnet::Openflow
     end
 
     def delete_tunnel_if_datapath_networks_empty(tunnel, network_id)
-      debug "before delete #{tunnel[:datapath_networks]}"
       tunnel[:datapath_networks].delete_if { |dpn| dpn[:network_id] == network_id }
-      debug "after delete #{tunnel[:datapath_networks]}"
       if tunnel[:datapath_networks].empty?
         debug "delete tunnel #{tunnel[:display_name]}"
         @datapath.delete_tunnel(tunnel[:display_name])

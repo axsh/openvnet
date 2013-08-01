@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 module Vnet::Event
   module Dispatchable
-    attr_accessor :event_handler
+    mattr_accessor :event_handler
 
     def dispatch_event(event, options = {})
       self.event_handler ||= _find_event_handler
