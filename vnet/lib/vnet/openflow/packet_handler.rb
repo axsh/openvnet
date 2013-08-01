@@ -28,8 +28,8 @@ module Vnet::Openflow
         table = TABLE_PHYSICAL_DST
         priority = 70
         match = match.merge(params[:network].md_network(:network, {
-                                                          :local => nil,
-                                                          :vif => nil
+                                                          # :local => nil,
+                                                          # :vif => nil
                                                         }))
       when :virtual_local
         table = TABLE_VIRTUAL_DST

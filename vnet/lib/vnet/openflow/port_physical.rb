@@ -10,17 +10,19 @@ module Vnet::Openflow
     end
 
     def install
-      set_local_md = flow_options.merge(md_create(:local => nil))
-      classifier_md = flow_options.merge(md_network(:physical_network, {
-                                                      :local => nil,
-                                                      :vif => nil
-                                                    }))
+      network_md = md_network(:physical_network)
+      network_local_vif_md = md_network(:physical_network, {
+                                          :local => nil,
+                                          :vif => nil
+                                        })
+      fo_network_md = flow_options.merge(network_md)
+      fo_classifier_md = flow_options.merge(network_local_vif_md)
 
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
                            }, nil,
-                           classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                           fo_classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
       flows << Flow.create(TABLE_HOST_PORTS, 10, {
                              :eth_src => self.hw_addr
                            }, nil,
@@ -52,6 +54,13 @@ module Vnet::Openflow
                                :ipv4_src => self.ipv4_addr
                              }, nil,
                              flow_options)
+        flows << Flow.create(TABLE_ARP_LOOKUP, 30,
+                             network_md.merge({ :eth_type => 0x0800,
+                                                :ipv4_dst => self.ipv4_addr
+                                              }), {
+                               :eth_dst => self.hw_addr
+                             },
+                             flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
       end
 
       flows << Flow.create(TABLE_PHYSICAL_SRC, 35, {

@@ -21,6 +21,7 @@ module Vnet::Openflow
 
       @catch_flow_cookie   = cookie_manager.acquire(:switch)
       @default_flow_cookie = cookie_manager.acquire(:switch)
+      @test_flow_cookie    = cookie_manager.acquire(:switch)
     end
 
     #
@@ -58,38 +59,41 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {},
                            flow_options.merge(md_create(:remote => nil)).merge!(:goto_table => TABLE_TUNNEL_PORTS))
 
-      flows << Flow.create(TABLE_HOST_PORTS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_TUNNEL_PORTS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_SRC,  0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
       flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:virtual => nil), nil,
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
       flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:physical => nil), nil,
                            flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
-      flows << Flow.create(TABLE_ROUTER_SRC, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_LINK, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_DST, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_SRC,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_LINK,  0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_DST,   0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_OUTPUT_CONTROLLER, 0, {}, {:output => OFPP_CONTROLLER}, flow_options)
-      flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, nil,
-                           flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
-      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_DATAPATH_ID, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ARP_LOOKUP,   0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_DST,  0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_MAC_ROUTE,         0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_OUTPUT_CONTROLLER, 0, {}, {:output => OFPP_CONTROLLER}, flow_options)
+
+      flows << Flow.create(TABLE_METADATA_LOCAL,        0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE,        0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_METADATA_SEGMENT,      0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
+      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_METADATA_DATAPATH_ID,  0, {}, nil, flow_options)
 
       flow_options = {:cookie => @catch_flow_cookie}
 
@@ -111,6 +115,10 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
                            }, nil, flow_options)
+
+      flow_options = {:cookie => @test_flow_cookie}
+
+      # Add any test flows here.
 
       @datapath.add_flows(flows)
 
@@ -173,7 +181,7 @@ module Vnet::Openflow
         port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
         port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
-        vif_map.batch.update(:datapath_id => @datapath_map.id).commit if @datapath_map
+        vif_map.batch.update(:active_datapath_id => @datapath_map.id).commit if @datapath_map
 
       elsif port.port_info.name =~ /^t-/
         port.extend(PortTunnel)
@@ -218,7 +226,7 @@ module Vnet::Openflow
         end
 
         if port.port_info.name =~ /^vif-/
-          vif_map.batch.update(:datapath_id => nil).commit
+          vif_map.batch.update(:active_datapath_id => nil).commit
         end
 
       end

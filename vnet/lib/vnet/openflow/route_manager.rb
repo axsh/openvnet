@@ -7,7 +7,7 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
     
-    ROUTE_COMMIT = {:fill => [:route_link, :vif => :network_services]}
+    ROUTE_COMMIT = {:fill => [:route_link, :vif => [:network_services, :network]]}
 
     def initialize(dp)
       @datapath = dp
@@ -42,40 +42,7 @@ module Vnet::Openflow
 
       route_link[:routes][route[:id]] = route
 
-      cookie = route[:id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
-
-      route_link_md = md_create(:route_link => route_link[:id])
-      network_md    = md_create(:network => route[:vif][:network_id])
-
-      flows = []
-      flows << Flow.create(TABLE_ROUTER_SRC, 40,
-                           network_md.merge({ :eth_dst => route[:vif][:mac_addr],
-                                              :eth_type => 0x0800,
-                                              :ipv4_src => route[:ipv4_address],
-                                              :ipv4_src_mask => route[:ipv4_mask],
-                                            }), {
-                           }, route_link_md.merge({ :cookie => cookie,
-                                                    :goto_table => TABLE_ROUTER_LINK
-                                                  }))
-      flows << Flow.create(TABLE_ROUTER_LINK, 40,
-                           route_link_md.merge({ :eth_type => 0x0800,
-                                                 :ipv4_dst => route[:ipv4_address],
-                                                 :ipv4_dst_mask => route[:ipv4_mask],
-                                               }), {
-                             :eth_src => route[:vif][:mac_addr]
-                           }, network_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTER_DST
-                                               }))
-
-      @datapath.add_flows(flows)
-
-      link_cookie = route_link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
-
-      pm = @datapath.packet_manager
-      pm.dispatch(link_cookie) { |key, handler|
-        route_cookie = handler.insert_route(route)
-        pm.link_cookies(key, route_cookie) if route_cookie
-      }
+      create_route_flows(route_link, route)
     end
 
     def prepare_network(network_map, dp_map)
@@ -157,6 +124,18 @@ module Vnet::Openflow
         :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
       }
 
+      case vif_map.network && vif_map.network.network_mode
+      when 'physical'
+        vif[:require_vif] = false
+        vif[:network_type] = :physical_network
+      when 'virtual'
+        vif[:require_vif] = true
+        vif[:network_type] = :virtual_network
+      else
+        warn "route_manager: vif does not have a known network mode (#{vif_map.uuid})"
+        return nil
+      end
+
       @vifs[vif_map.id] = vif
 
       cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
@@ -183,6 +162,45 @@ module Vnet::Openflow
       
       @datapath.add_flows(flows)
       vif
+    end
+
+    def create_route_flows(route_link, route)
+      cookie = route[:id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+
+      network_md    = md_create(route[:vif][:network_type] => route[:vif][:network_id])
+      route_link_md = md_create(:route_link => route_link[:id])
+
+      flows = []
+      flows << Flow.create(TABLE_ROUTER_SRC, 40,
+                           network_md.merge({ :eth_dst => route[:vif][:mac_addr],
+                                              :eth_type => 0x0800,
+                                              :ipv4_src => route[:ipv4_address],
+                                              :ipv4_src_mask => route[:ipv4_mask],
+                                            }),
+                           nil,
+                           route_link_md.merge({ :cookie => cookie,
+                                                 :goto_table => TABLE_ROUTER_LINK
+                                               }))
+      flows << Flow.create(TABLE_ROUTER_LINK, 40,
+                           route_link_md.merge({ :eth_type => 0x0800,
+                                                 :ipv4_dst => route[:ipv4_address],
+                                                 :ipv4_dst_mask => route[:ipv4_mask],
+                                               }), {
+                             :eth_src => route[:vif][:mac_addr]
+                           },
+                           network_md.merge({ :cookie => cookie,
+                                              :goto_table => TABLE_ROUTER_DST
+                                            }))
+
+      @datapath.add_flows(flows)
+
+      link_cookie = route_link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
+
+      pm = @datapath.packet_manager
+      pm.dispatch(link_cookie) { |key, handler|
+        route_cookie = handler.insert_route(route)
+        pm.link_cookies(key, route_cookie) if route_cookie
+      }
     end
 
   end

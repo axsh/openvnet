@@ -12,7 +12,12 @@ module Vnet::Endpoints::V10
     E = Vnet::Endpoints::Errors
     R = Vnet::Endpoints::V10::Responses
 
-    def parse_params(params,mask)
+    def pop_uuid(model, params, key)
+      uuid = params.delete(key)
+      model[uuid] || raise(E::InvalidUUID, uuid)
+    end
+
+    def parse_params(params, mask)
       params.keys.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |key, h|
         h[key] = params[key] if mask.member?(key)
       end

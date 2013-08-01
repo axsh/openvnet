@@ -44,12 +44,6 @@ module Vnet::Openflow
       # IPv4 source validation:
       #
       if @ipv4_addr
-        flows << Flow.create(TABLE_ROUTER_DST, 40,
-                             md_network(:network).merge!({ :eth_type => 0x0800,
-                                                           :ipv4_dst => @ipv4_addr
-                                                         }),
-                             { :eth_dst => @hw_addr },
-                             flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
         flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {
                                :in_port => self.port_number,
                                :eth_type => 0x0800,
@@ -57,6 +51,20 @@ module Vnet::Openflow
                                :ipv4_src => @ipv4_addr,
                              }, nil,
                              flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+        flows << Flow.create(TABLE_ROUTER_DST, 40,
+                             network_md.merge({ :eth_type => 0x0800,
+                                                :ipv4_dst => @ipv4_addr
+                                              }), {
+                               :eth_dst => @hw_addr
+                             },
+                             flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+        flows << Flow.create(TABLE_ARP_LOOKUP, 30,
+                             network_md.merge({ :eth_type => 0x0800,
+                                                :ipv4_dst => self.ipv4_addr
+                                              }), {
+                               :eth_dst => self.hw_addr
+                             },
+                             flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
       end
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {
@@ -71,18 +79,9 @@ module Vnet::Openflow
       # Destination routing:
       #
       flows << Flow.create(TABLE_VIRTUAL_DST, 60,
-                           md_network(:network).merge!(:eth_dst => self.hw_addr), {
+                           network_md.merge(:eth_dst => self.hw_addr), {
                              :output => self.port_number
                            }, flow_options)
-
-      # route_md = md_network(:virtual_network, :port => self.port_number)
-
-      # flows << Flow.create(TABLE_METADATA_ROUTE, 1, route_md, {
-      #                        :output => self.port_number
-      #                      }, flow_options)
-      # flows << Flow.create(TABLE_METADATA_LOCAL, 1, route_md, {
-      #                        :output => self.port_number
-      #                      }, flow_options)
 
       self.datapath.add_flows(flows)
     end

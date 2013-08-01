@@ -171,7 +171,12 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true
       Bignum :mac_addr, :null=>false
-      Integer :datapath_id, :index => true
+
+      # Should be a relation allowing for multiple active/owner
+      # datapath ids.
+      Integer :active_datapath_id, :index => true
+      Integer :owner_datapath_id, :index => true
+
       String :state, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
