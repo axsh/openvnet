@@ -207,7 +207,7 @@ module Vnet::Openflow
                                             }),
                            nil, {
                              :cookie => cookie,
-                             :goto_table => goto_table
+                             :goto_table => TABLE_ROUTER_SRC
                            })
       
       @datapath.add_flows(flows)

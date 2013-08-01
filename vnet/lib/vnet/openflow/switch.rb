@@ -9,8 +9,6 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
-    attr_reader :bridge_hw
-
     def initialize(dp, name = nil)
       @datapath = dp || raise("cannot create a Switch object without a valid datapath")
       @ports = {}
@@ -28,10 +26,6 @@ module Vnet::Openflow
 
     def eth_ports
       @ports.values.find_all { |port| port.eth? }
-    end
-
-    def update_bridge_hw(hw_addr)
-      @bridge_hw = hw_addr
     end
 
     #
@@ -149,8 +143,7 @@ module Vnet::Openflow
       if port.port_number == OFPP_LOCAL
         port.extend(PortLocal)
         port.hw_addr = port_desc.hw_addr
-
-        port.install_with_hw(@bridge_hw) if @bridge_hw
+        port.ipv4_addr = @datapath.ipv4_address
 
         network = @datapath.network_manager.network_by_uuid('nw-public')
 

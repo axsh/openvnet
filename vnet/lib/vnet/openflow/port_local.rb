@@ -5,8 +5,6 @@ module Vnet::Openflow
   module PortLocal
     include FlowHelpers
 
-    attr_reader :bridge_hw
-
     def flow_options
       @flow_options ||= {:cookie => @cookie}
     end
@@ -37,43 +35,33 @@ module Vnet::Openflow
                              :eth_type => 0x0806
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
+                             :eth_dst => @hw_addr
+                           }, {
+                             :output => OFPP_LOCAL
+                           }, flow_options)
+      flows << Flow.create(TABLE_MAC_ROUTE, 1, {
+                             :eth_dst => @hw_addr
+                           }, {
+                             :output => OFPP_LOCAL
+                           }, flow_options)
 
-      datapath_ipv4 = @datapath.ipv4_address
-
-      if datapath_ipv4
+      if @ipv4_addr
         flows << Flow.create(TABLE_ROUTER_DST, 40,
                              network_md.merge({ :eth_type => 0x0800,
-                                                :ipv4_dst => datapath_ipv4
+                                                :ipv4_dst => @ipv4_addr
                                               }), {
                                :eth_dst => @hw_addr
                              },
                              flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
         flows << Flow.create(TABLE_ARP_LOOKUP, 30,
                              network_md.merge({ :eth_type => 0x0800,
-                                                :ipv4_dst => datapath_ipv4
+                                                :ipv4_dst => @ipv4_addr
                                               }), {
                                :eth_dst => @hw_addr
                              },
                              flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
       end
-
-      self.datapath.add_flows(flows)
-    end
-
-    def install_with_hw(bridge_hw)
-      @bridge_hw = bridge_hw
-
-      flows = []
-      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
-                             :eth_dst => self.bridge_hw
-                           }, {
-                             :output => OFPP_LOCAL
-                           }, flow_options)
-      flows << Flow.create(TABLE_MAC_ROUTE, 1, {
-                             :eth_dst => self.bridge_hw
-                           }, {
-                             :output => OFPP_LOCAL
-                           }, flow_options)
 
       self.datapath.add_flows(flows)
     end
