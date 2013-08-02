@@ -98,6 +98,10 @@ class Flow
 
     result << 'VIF|'   if (value & (mask & METADATA_FLAG_VIF)) == METADATA_FLAG_VIF
     result << 'FLOOD|' if (value & (mask & METADATA_FLAG_FLOOD)) == METADATA_FLAG_FLOOD
+
+    result << 'MAC2MAC|' if (value & (mask & METADATA_FLAG_MAC2MAC)) == METADATA_FLAG_MAC2MAC
+    result << 'TUNNEL|'  if (value & (mask & METADATA_FLAG_TUNNEL)) == METADATA_FLAG_TUNNEL
+
     result.chomp('|')
   end
 
