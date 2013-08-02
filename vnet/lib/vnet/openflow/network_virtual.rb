@@ -18,12 +18,12 @@ module Vnet::Openflow
 
     def install
       flood_md = flow_options.merge(md_network(:network, :flood => nil))
-      classifier_md = flow_options.merge(md_network(:network))
+      classifier_md = flow_options.merge(md_network(:network, :virtual => nil))
 
       flows = []
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
                              :tunnel_id => self.network_id | TUNNEL_FLAG_MASK
-                           }, {},
+                           }, nil,
                            classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40,
                            md_network(:virtual_network), {},
