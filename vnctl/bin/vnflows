@@ -208,6 +208,8 @@ info = $stdin.readline
 flows = $stdin.each_line.map { |line| Flow.parse_ovs(line) }
 current_table = nil
 
+Signal.trap("PIPE", "EXIT")
+
 flows.sort! { |a,b|
   [a.table, a.priority, a.match_protocol.to_s] <=> [b.table, b.priority, b.match_protocol.to_s]
 }.each { |flow|
