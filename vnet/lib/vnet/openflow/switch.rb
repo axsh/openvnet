@@ -70,8 +70,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_DST,  0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_MAC_ROUTE,         0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_OUTPUT_CONTROLLER, 0, {}, {:output => OFPP_CONTROLLER}, flow_options)
+      flows << Flow.create(TABLE_MAC_ROUTE,             0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_METADATA_LOCAL,        0, {}, nil, flow_options)
       flows << Flow.create(TABLE_METADATA_ROUTE,        0, {}, nil, flow_options)
@@ -79,7 +78,10 @@ module Vnet::Openflow
                            flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
       flows << Flow.create(TABLE_METADATA_TUNNEL_IDS,   0, {}, nil, flow_options)
       flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_DATAPATH_ID,  0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
+      flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK,  0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_OUTPUT_DATAPATH,       0, {}, nil, flow_options)
 
       flow_options = {:cookie => @catch_flow_cookie}
 

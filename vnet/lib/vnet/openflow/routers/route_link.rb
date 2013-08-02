@@ -8,8 +8,10 @@ module Vnet::Openflow::Routers
 
     def initialize(params)
       super(params[:datapath])
-      @route_link_id = params[:route_link_id]
+
       @routes = {}
+      @route_link_id = params[:route_link_id]
+      @mac_address = params[:mac_address]
     end
 
     def install
@@ -29,7 +31,10 @@ module Vnet::Openflow::Routers
         :route_uuid => route_info[:uuid],
         :network_id => route_info[:vif][:network_id],
         :network_type => route_info[:vif][:network_type],
+
         :require_vif => route_info[:vif][:require_vif],
+        :active_datapath_id => route_info[:vif][:active_datapath_id],
+
         :mac_address => route_info[:vif][:mac_addr],
         :ipv4_address => route_info[:ipv4_address],
         :ipv4_mask => route_info[:ipv4_mask]
@@ -116,17 +121,16 @@ module Vnet::Openflow::Routers
     end
 
     # Create a flow that matches all packets to the same destination
-    # ip address. The metadata datapath id table will figure out for
-    # us if the output port should be a MAC2MAC or tunnel port.
+    # ip address. The output datapath route link table will figure out
+    # for us if the output port should be a MAC2MAC or tunnel port.
     def route_packets(message, ip_lease)
       datapath_md = md_create(:datapath => ip_lease.vif.active_datapath_id)
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,
                          match_packet(message), {
-                           :eth_dst => Trema::Mac.new(ip_lease.vif.mac_addr),
-                           :tunnel_id => ip_lease.network_id | TUNNEL_FLAG
+                           :eth_dst => @mac_address
                          },
-                         datapath_md.merge({ :goto_table => TABLE_METADATA_DATAPATH_ID,
+                         datapath_md.merge({ :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK,
                                              :cookie => message.cookie,
                                              :idle_timeout => 60 * 60
                                            }))

@@ -131,10 +131,11 @@ module Vnet::Openflow
         return
       end
 
-      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id])
+      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id],
+                              :tunnel => nil)
       cookie = tunnel[:dst_datapath_id] | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
-      flow = Flow.create(TABLE_METADATA_DATAPATH_ID, 5,
+      flow = Flow.create(TABLE_OUTPUT_DATAPATH, 5,
                          datapath_md, {
                            :output => port_number
                          }, {

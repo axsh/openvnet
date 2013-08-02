@@ -24,6 +24,14 @@ Sequel.migration do
       FalseClass :is_connected, :null=>false
     end
 
+    create_table(:datapath_route_links) do
+      primary_key :id
+      Integer :datapath_id, :index => true, :null=>false
+      Integer :route_link_id, :index => true, :null=>false
+      Bignum :link_mac_addr, :null=>false
+      FalseClass :is_connected, :null=>false
+    end
+
     create_table(:dc_networks) do
       primary_key :id
       String :uuid, :unique => true, :null=>false

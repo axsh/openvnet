@@ -46,26 +46,27 @@ module Vnet
       # Route based on the mac address only.
       TABLE_MAC_ROUTE = 30
 
-      # A table for sending packets to the controller after applying
-      # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER = 31
-
       # Only output to local vif's.
-      TABLE_METADATA_LOCAL        = 32
+      TABLE_METADATA_LOCAL        = 31
 
       # Send packet to all ports if marked as a flood flow, starting from
       # the route table.
-      TABLE_METADATA_ROUTE        = 33
-      TABLE_METADATA_SEGMENT      = 34
-      TABLE_METADATA_TUNNEL_IDS   = 35
-      TABLE_METADATA_TUNNEL_PORTS = 36
+      TABLE_METADATA_ROUTE        = 32
+      TABLE_METADATA_SEGMENT      = 33
+      TABLE_METADATA_TUNNEL_IDS   = 34
+      TABLE_METADATA_TUNNEL_PORTS = 35
+
+      # A table for sending packets to the controller after applying
+      # non-action instructions such as 'write_metadata'.
+      TABLE_OUTPUT_CONTROLLER     = 36
 
       # Send packet to a known datapath id, e.g. using an eth port or
       # tunnel port.
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_METADATA_DATAPATH_ID  = 37
+      TABLE_OUTPUT_DP_ROUTE_LINK  = 37
+      TABLE_OUTPUT_DATAPATH       = 38
 
       #
       # Metadata, tunnel and cookie flags and masks:
@@ -94,6 +95,8 @@ module Vnet
       METADATA_FLAG_REMOTE   = (0x8 << 48)
       METADATA_FLAG_FLOOD    = (0x10 << 48)
       METADATA_FLAG_VIF      = (0x20 << 48)
+      METADATA_FLAG_MAC2MAC  = (0x40 << 48)
+      METADATA_FLAG_TUNNEL   = (0x80 << 48)
 
       METADATA_TYPE_MASK       = (0xff00 << 48)
 

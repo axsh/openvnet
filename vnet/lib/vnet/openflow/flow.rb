@@ -99,6 +99,9 @@ module Vnet::Openflow
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :mac2mac
+          metadata = metadata | METADATA_FLAG_MAC2MAC
+          metadata_mask = metadata_mask | METADATA_FLAG_MAC2MAC
         when :network
           metadata = metadata | value | METADATA_TYPE_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
@@ -117,6 +120,9 @@ module Vnet::Openflow
         when :route_link
           metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :tunnel
+          metadata = metadata | METADATA_FLAG_TUNNEL
+          metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
         when :virtual
           metadata = metadata | METADATA_FLAG_VIRTUAL
           metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL

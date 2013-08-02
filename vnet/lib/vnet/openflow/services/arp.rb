@@ -45,7 +45,7 @@ module Vnet::Openflow::Services
     end
 
     def packet_in(port, message)
-      info "service::arp.packet_in: port.port_info:#{port.port_info.inspect} message:#{message}"
+      info "service::arp.packet_in: port_no:#{port.port_info.port_no} name:#{port.port_info.name} arp_tpa:#{message.arp_tpa}"
 
       uuid, entry = @entries.find { |uuid,entry|
         port.network_number == entry[:network_number] && message.arp_tpa == entry[:ipv4_address]

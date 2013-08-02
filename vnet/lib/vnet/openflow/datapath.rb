@@ -53,6 +53,10 @@ module Vnet::Openflow
       @packet_manager.insert(Vnet::Openflow::Services::Icmp.new(:datapath => self), :icmp)
     end
 
+    def datapath_batch
+      @datapath_map.batch
+    end
+
     def inspect
       "<##{self.class.name} dpid:#{@dpid}>"
     end

@@ -53,10 +53,11 @@ module Vnet::Openflow
 
       # For now set the latest eth port as the default MAC2MAC output
       # port.
-      flows << Flow.create(TABLE_METADATA_DATAPATH_ID, 1, {
-                           }, {
+      flows << Flow.create(TABLE_OUTPUT_DATAPATH, 1,
+                           md_create(:mac2mac => nil), {
                              :output => self.port_number
-                           }, flow_options)
+                           },
+                           flow_options)
 
       self.datapath.add_flows(flows)
       self.datapath.network_manager.update_all_flows
