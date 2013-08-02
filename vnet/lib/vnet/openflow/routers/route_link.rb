@@ -50,7 +50,7 @@ module Vnet::Openflow::Routers
     end
 
     def packet_in(port, message)
-      # debug "router::router_link.packet_in: #{message.inspect}"
+      debug "router::router_link.packet_in: port_no:#{port.port_info.port_no} name:#{port.port_info.name} ipv4_dst:#{message.ipv4_dst}"
 
       route = @routes[message.cookie]
 

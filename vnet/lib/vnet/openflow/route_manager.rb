@@ -89,18 +89,19 @@ module Vnet::Openflow
       @route_links[rl_map.id] = link
       @datapath.packet_manager.insert(packet_handler, nil, cookie)
 
+      tunnel_md = md_create(:tunnel => nil)
       route_link_md = md_create(:route_link => link[:id])
 
       # TODO: Move flow creation to Routers::RouteLink...
 
       flows = []
-      # TODO: Move to tunnel.
-      # flows << Flow.create(TABLE_HOST_PORTS, 30, {
-      #                        :eth_dst => link[:mac_addr]
-      #                      }, nil,
-      #                      route_link_md.merge({ :cookie => cookie,
-      #                                            :goto_table => TABLE_ROUTER_LINK
-      #                                          }))
+      flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
+                             :tunnel_id => TUNNEL_ROUTE_LINK,
+                             :eth_dst => link[:mac_addr]
+                           }, nil,
+                           route_link_md.merge({ :cookie => cookie,
+                                                 :goto_table => TABLE_ROUTER_LINK
+                                               }))
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_dst => link[:mac_addr]
                            }, nil, {
@@ -111,6 +112,13 @@ module Vnet::Openflow
                            }, nil, {
                              :cookie => cookie
                            })
+      flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK, 4, {
+                             :eth_dst => mac_address
+                           }, {
+                             :tunnel_id => TUNNEL_ROUTE_LINK
+                           }, tunnel_md.merge({ :goto_table => TABLE_OUTPUT_DATAPATH,
+                                                :cookie => cookie
+                                              }))
 
       # Handle MAC2MAC packets for this route link using a unique MAC
       # address for this datapath, route link pair.
