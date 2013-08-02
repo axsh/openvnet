@@ -16,10 +16,10 @@ module Vnet::Openflow
     end
 
     def insert(route_map)
-      info "route_manager: route.uuid:#{route_map.uuid.inspect}"
-      info "route_manager: route.route_type:#{route_map.route_type.inspect}"
-      info "route_manager: route.vif:#{route_map.vif.inspect}"
-      info "route_manager: route.route_link:#{route_map.route_link.inspect}"
+      info "route_manager.insert: id:#{route_map.id} uuid:#{route_map.uuid}"
+      info "route_manager.insert: route.route_type:#{route_map.route_type.inspect}"
+      info "route_manager.insert: route.vif:#{route_map.vif.inspect}"
+      info "route_manager.insert: route.route_link:#{route_map.route_link.inspect}"
 
       route_link = prepare_link(route_map.route_link)
 

@@ -37,6 +37,8 @@ module Vnet::Openflow::Routers
 
       create_destination_flow(route)
 
+      cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+
       @routes[cookie] = route
 
       cookie
