@@ -70,7 +70,7 @@ module Vnet::Openflow::Services
         debug "DHCP send: no handler."
         return
       end
-      
+
       dhcp_out = create_dhcp_packet(params)
 
       debug "DHCP send: output:#{dhcp_out.to_s}."
@@ -91,7 +91,7 @@ module Vnet::Openflow::Services
         debug "DHCP: Message is not UDP."
         return nil
       end
-      
+
       raw_in_l2, raw_in_l3, raw_in_l4 = udp_in(message)
 
       dhcp_in = DHCP::Message.from_udp_payload(raw_in_l4.payload)

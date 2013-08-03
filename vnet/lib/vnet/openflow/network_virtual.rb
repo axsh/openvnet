@@ -3,7 +3,7 @@
 module Vnet::Openflow
 
   class NetworkVirtual < Network
-    
+
     # metadata[ 0-31]: Port number; only set to non-zero when the
     #                  in_port is not a local port. This allows us to
     #                  differentiate between packets that are from
@@ -84,7 +84,7 @@ module Vnet::Openflow
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]
       flow_learn_arp << "learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
         [TABLE_VIRTUAL_DST, cookie, learn_md[:metadata]]
-        
+
       flow_learn_arp << learn_options
 
       flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTER_ENTRY

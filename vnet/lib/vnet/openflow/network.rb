@@ -111,14 +111,14 @@ module Vnet::Openflow
       end
 
       @service_cookies[service_map.uuid] = cookie
-      
+
       pm.dispatch(:arp)  { |key, handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
       pm.dispatch(:icmp) { |key, handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
     end
 
     def uninstall
       info "network(#{@uuid}): removing flows"
-      
+
       pm = self.datapath.packet_manager
 
       @datapath.del_cookie(@cookie)

@@ -26,7 +26,7 @@ describe Vnet::Openflow::Switch do
       expect(datapath.added_ovs_flows.size).to eq 0
     end
   end
-  
+
   describe "handle_port_desc" do
     context "tunnel" do
       it "should create a port object whose datapath_id is 1" do
@@ -44,7 +44,7 @@ describe Vnet::Openflow::Switch do
         port.should_receive(:extend).and_return(Vnet::Openflow::PortTunnel)
         port.should_receive(:install)
         port_info.should_receive(:name).exactly(3).times.and_return("t-src1dst3")
-        
+
         Vnet::Openflow::Port.stub(:new).and_return(port)
 
         switch.handle_port_desc(port_desc)

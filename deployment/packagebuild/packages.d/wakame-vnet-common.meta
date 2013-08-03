@@ -13,9 +13,11 @@ $vnet_path/vnet/db
 $vnet_path/vnet/Rakefile
 $vnet_path/vnet/.bundle
 $etc_path/default/wakame-vnet
+$etc_path/wakame-vnet/common.conf
 _EOF_`
 pkg_cfgs=`cat <<_EOF_
 $etc_path/default/wakame-vnet
+$etc_path/wakame-vnet/common.conf
 _EOF_`
 pkg_owned_dirs=`cat <<_EOF_
 $vnet_path/vnet

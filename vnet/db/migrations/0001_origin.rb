@@ -157,7 +157,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Bignum :mac_address, :null=>false
-      
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end

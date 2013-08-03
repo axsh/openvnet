@@ -57,7 +57,7 @@ module Vnet::Openflow
                info "Unknown network mode for packet handler."
                return
              end
-      
+
       catch_flow(type, match, params)
     end
 
@@ -139,7 +139,7 @@ module Vnet::Openflow
       message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
 
       self.datapath.send_packet_out(message, params[:out_port])
-    end      
+    end
 
     def udp_in(message)
       raw_in_l2 = Racket::L2::Ethernet.new(message.data.pack('C*'))

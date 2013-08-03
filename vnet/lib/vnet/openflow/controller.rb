@@ -26,7 +26,7 @@ module Vnet::Openflow
 
       # Sometimes ovs changes the datapath ID and reconnects.
       old_datapath = @datapaths.delete(dpid)
-      
+
       if old_datapath
         info "found old bridge: dpid:%016x" % dpid
       end
@@ -59,7 +59,6 @@ module Vnet::Openflow
 
         port_descs.ports.each { |port_desc| datapath.switch.async.handle_port_desc(port_desc) }
       }
-      
     end
 
     def port_status(dpid, message)
