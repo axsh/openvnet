@@ -16,31 +16,33 @@ module Vnet::Openflow
     end
 
     def insert(route_map)
-      info "route_manager.insert: id:#{route_map.id} uuid:#{route_map.uuid}"
-      info "route_manager.insert: route.route_type:#{route_map.route_type.inspect}"
-      info "route_manager.insert: route.vif:#{route_map.vif.inspect}"
-      info "route_manager.insert: route.route_link:#{route_map.route_link.inspect}"
-
       route_link = prepare_link(route_map.route_link)
 
       return if route_link.nil?
       return if route_link[:routes].has_key? route_map.id
 
+      info "route_manager.insert: id:#{route_map.id} uuid:#{route_map.uuid}"
+      info "route_manager.insert: route.route_type:#{route_map.route_type}"
+      info "route_manager.insert: route.vif: id:#{route_map.vif.id} uuid:#{route_map.vif.uuid}"
+      info "route_manager.insert: route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}"
+
       route = {
         :id => route_map.id,
         :uuid => route_map.uuid,
-        :vif => prepare_vif(route_map.vif),
+        :vif => nil,
         :ipv4_address => route_map.ipv4_address,
         :ipv4_prefix => route_map.ipv4_prefix,
         :ipv4_mask => IPV4_BROADCAST << (32 - route_map.ipv4_prefix),
       }
 
+      route_link[:routes][route[:id]] = route
+
+      route[:vif] = prepare_vif(route_map.vif)
+
       if route[:vif].nil?
         warn "route_manager: couldn't prepare router vif (#{route_map.uuid})"
         return
       end
-
-      route_link[:routes][route[:id]] = route
 
       create_route_flows(route_link, route)
     end
