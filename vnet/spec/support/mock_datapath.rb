@@ -18,6 +18,8 @@ class MockDatapath < Vnet::Openflow::Datapath
   end
 
   def create_mock_switch
+    @datapath_map = OpenStruct.new(dpid: ("0x%016x" % @dpid),
+                                   id: 1)
     @switch = MockSwitch.new(self)
   end
 
