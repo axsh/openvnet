@@ -51,12 +51,12 @@ module Vnet::Openflow
                              }, {}, flow_options)
       end
 
-      self.datapath.add_flows(flows)
+      @datapath.add_flows(flows)
 
       ovs_flows = []
       ovs_flows << create_ovs_flow_learn_arp(83, "tun_id=0,")
       ovs_flows << create_ovs_flow_learn_arp(81, "", "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\],")
-      ovs_flows.each { |flow| self.datapath.add_ovs_flow(flow) }
+      ovs_flows.each { |flow| @datapath.add_ovs_flow(flow) }
     end
 
     def update_flows
@@ -70,7 +70,7 @@ module Vnet::Openflow
                            md_network(:network, :flood => nil),
                            flood_actions, flow_options.merge(:goto_table => TABLE_METADATA_SEGMENT))
 
-      self.datapath.add_flows(flows)
+      @datapath.add_flows(flows)
     end
 
     def create_ovs_flow_learn_arp(priority, match_options = "", learn_options = "")
