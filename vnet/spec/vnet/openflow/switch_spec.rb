@@ -39,8 +39,8 @@ describe Vnet::Openflow::Switch do
         
         port = double(:port)
         port_info = double(:port_info)
-        port.should_receive(:port_number).and_return(5)
-        port.should_receive(:port_info).exactly(4).times.and_return(port_info)
+        port.should_receive(:port_number).exactly(2).times.and_return(5)
+        port.should_receive(:port_info).exactly(3).times.and_return(port_info)
         port.should_receive(:extend).and_return(Vnet::Openflow::PortTunnel)
         port.should_receive(:install)
         port_info.should_receive(:name).exactly(3).times.and_return("t-src1dst3")

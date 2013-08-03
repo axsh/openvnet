@@ -39,6 +39,9 @@ class MockDatapath < Vnet::Openflow::Datapath
     @added_ovs_flows << ovs_flow
   end
 
+  def mod_port(port_no, action)
+  end
+
   def add_tunnel(tunnel_name, remote_ip)
     @added_tunnels << {:tunnel_name => tunnel_name, :remote_ip => remote_ip}
   end
