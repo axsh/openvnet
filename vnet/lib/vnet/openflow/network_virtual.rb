@@ -83,7 +83,7 @@ module Vnet::Openflow
       flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]
       flow_learn_arp << "learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
-        [TABLE_VIRTUAL_DST, @cookie, learn_md[:metadata]]
+        [TABLE_VIRTUAL_DST, cookie, learn_md[:metadata]]
         
       flow_learn_arp << learn_options
 
@@ -91,5 +91,4 @@ module Vnet::Openflow
       flow_learn_arp
     end
   end
-  
 end

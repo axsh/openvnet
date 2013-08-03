@@ -7,6 +7,9 @@ module Vnet::Openflow
   class NetworkManager
     include Celluloid::Logger
     include Vnet::Constants::Openflow
+    include Vnet::Event::Dispatchable
+
+    attr_reader :networks
 
     def initialize(dp)
       @datapath = dp
@@ -32,10 +35,11 @@ module Vnet::Openflow
         raise("Unknown network type.")
       end
 
-      dp_map = M::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
+      dp_map = MW::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
       raise("Could not find datapath id: 0x%016x" % @datapath.dpid) unless dp_map
 
       dp_network_map = dp_map.batch.datapath_networks_dataset.where(:network_id => network_map.id).first.commit
+
       network.set_datapath_of_bridge(dp_map, dp_network_map, false)
 
       old_network = network_by_uuid_direct(network_uuid)
@@ -53,6 +57,8 @@ module Vnet::Openflow
       @datapath.dc_segment_manager.async.prepare_network(network_map, dp_map)
       @datapath.tunnel_manager.async.prepare_network(network_map, dp_map)
       @datapath.route_manager.async.prepare_network(network_map, dp_map)
+
+      dispatch_event("network/added", network_id: network.network_id, dpid: @datapath.dpid)
 
       network
     end
