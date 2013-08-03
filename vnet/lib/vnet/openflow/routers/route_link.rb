@@ -40,12 +40,11 @@ module Vnet::Openflow::Routers
         :ipv4_mask => route_info[:ipv4_mask]
       }
 
-      create_destination_flow(route)
-
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
       @routes[cookie] = route
 
+      create_destination_flow(route)
       cookie
     end
 
