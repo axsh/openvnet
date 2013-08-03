@@ -150,6 +150,8 @@ module Vnet::Openflow
       @ports[port_desc.port_no] = port
 
       if port.port_number == OFPP_LOCAL
+        @datapath.mod_port(port.port_info.port_no, :no_flood)
+
         port.extend(PortLocal)
         port.hw_addr = port_desc.hw_addr
         port.ipv4_addr = @datapath.ipv4_address
@@ -157,11 +159,15 @@ module Vnet::Openflow
         network = @datapath.network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^eth/
+        @datapath.mod_port(port.port_info.port_no, :flood)
+
         port.extend(PortHost)
 
         network = @datapath.network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^vif-/
+        @datapath.mod_port(port.port_info.port_no, :no_flood)
+
         vif_map = Vnet::ModelWrappers::Vif[port_desc.name]
 
         if vif_map.nil?
@@ -185,8 +191,12 @@ module Vnet::Openflow
         vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
 
       elsif port.port_info.name =~ /^t-/
+        @datapath.mod_port(port.port_info.port_no, :no_flood)
+
         port.extend(PortTunnel)
       else
+        @datapath.mod_port(port.port_info.port_no, :no_flood)
+
         error "Unknown interface type: #{port.port_info.name}"
         return
       end

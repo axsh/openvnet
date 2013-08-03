@@ -92,6 +92,10 @@ module Vnet::Openflow
       @ovs_ofctl.add_ovs_flow(flow_str)
     end
 
+    def add_ovs_10_flow(flow_str)
+      @ovs_ofctl.add_ovs_10_flow(flow_str)
+    end
+
     def del_cookie(cookie)
       options = {
         :command => Controller::OFPFC_DELETE,
@@ -122,22 +126,24 @@ module Vnet::Openflow
       @controller.pass_task { @controller.public_send_packet_out(@dpid, message, port_no) }
     end
 
+    #
+    # Port modification methods:
+    #
+
+    def mod_port(port_no, action)
+      debug "datapath: modifying port_number:#{port_no} action:#{action.to_s}"
+      @ovs_ofctl.mod_port(port_no, action)
+    end
+
     def add_tunnel(tunnel_name, remote_ip)
       @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
     end
 
     def delete_tunnel(tunnel_name)
-      p "delete tunnel #{tunnel_name}"
+      debug "datapath: delete tunnel #{tunnel_name}"
       self.ovs_ofctl.delete_tunnel(tunnel_name)
     end
 
-    def delete_tunnel(tunnel_name)
-      self.ovs_ofctl.delete_tunnel(tunnel_name)
-    end
-
-    def delete_tunnel(tunnel_name)
-      self.ovs_ofctl.delete_tunnel(tunnel_name)
-    end
   end
 
 end
