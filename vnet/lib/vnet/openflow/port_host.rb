@@ -17,6 +17,11 @@ module Vnet::Openflow
       set_remote_md = flow_options.merge(md_create(:remote => nil))
       classifier_md = flow_options.merge(md_network(:physical_network))
 
+      reflection_md = md_create(:reflection => nil)
+      reflection_mac2mac_md = md_create({ :reflection => nil,
+                                          :mac2mac => nil
+                                        })
+
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
@@ -45,6 +50,12 @@ module Vnet::Openflow
                              :in_port => self.port_number
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+
+      flows << Flow.create(TABLE_PHYSICAL_DST, 21,
+                           reflection_md.merge(:in_port => self.port_number), {
+                             :output => OFPP_IN_PORT
+                           },
+                           flow_options)
       flows << Flow.create(TABLE_PHYSICAL_DST, 20, {
                            }, {
                              :output => self.port_number
@@ -53,6 +64,11 @@ module Vnet::Openflow
 
       # For now set the latest eth port as the default MAC2MAC output
       # port.
+      flows << Flow.create(TABLE_OUTPUT_DATAPATH, 2,
+                           reflection_mac2mac_md.merge(:in_port => self.port_number), {
+                             :output => OFPP_IN_PORT
+                           },
+                           flow_options)
       flows << Flow.create(TABLE_OUTPUT_DATAPATH, 1,
                            md_create(:mac2mac => nil), {
                              :output => self.port_number

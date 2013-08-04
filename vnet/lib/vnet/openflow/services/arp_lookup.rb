@@ -48,21 +48,23 @@ module Vnet::Openflow::Services
       if message.eth_type == 0x0806
         debug "service::arp_lookup.packet_in: port_no:#{port.port_info.port_no} name:#{port.port_info.name} arp_spa:#{message.arp_spa}"
 
-        network_md = md_create({ :network => @network_id,
-                                 @network_type => nil
-                               })
+        match_md = md_create({ :network => @network_id,
+                               @network_type => nil
+                             })
+        reflection_md = md_create(:reflection => nil)
+
         cookie = @network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
 
         flow = Flow.create(TABLE_ARP_LOOKUP, 25,
-                           network_md.merge({ :eth_type => 0x0800,
-                                              :ipv4_dst => message.arp_spa
-                                            }), {
+                           match_md.merge({ :eth_type => 0x0800,
+                                            :ipv4_dst => message.arp_spa
+                                          }), {
                              :eth_dst => message.arp_sha
-                           }, {
-                             :cookie => cookie,
-                             :idle_timeout => 3600,
-                             :goto_table => TABLE_PHYSICAL_DST
-                           })
+                           },
+                           reflection_md.merge!({ :cookie => cookie,
+                                                  :idle_timeout => 3600,
+                                                  :goto_table => TABLE_PHYSICAL_DST
+                                                }))
 
         @datapath.add_flow(flow)        
 

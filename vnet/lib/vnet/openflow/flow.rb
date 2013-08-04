@@ -115,6 +115,9 @@ module Vnet::Openflow
         when :physical_network
           metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_PHYSICAL
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
+        when :reflection
+          metadata = metadata | METADATA_FLAG_REFLECTION
+          metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
         when :route
           metadata = metadata | value | METADATA_TYPE_ROUTE
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK

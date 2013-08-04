@@ -105,7 +105,11 @@ module Vnet
       METADATA_FLAG_VIF        = (0x020 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_MAC2MAC    = (0x040 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_TUNNEL     = (0x080 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_ARP_LOOKUP = (0x100 << METADATA_FLAGS_SHIFT)
+
+      # Allow reflection for this packet, such that if the ingress
+      # port is the same as the egress port we will use the
+      # 'output:OFPP_IN_PORT' action.
+      METADATA_FLAG_REFLECTION = (0x100 << METADATA_FLAGS_SHIFT)
 
       METADATA_TYPE_SHIFT      = 56
       METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)

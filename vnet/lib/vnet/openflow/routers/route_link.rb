@@ -110,9 +110,7 @@ module Vnet::Openflow::Routers
     def match_packet(message)
       # Verify metadata is a network type.
 
-      match = md_create({ :network => message.match.metadata & METADATA_VALUE_MASK,
-                          :local => nil
-                        })
+      match = md_create(:network => message.match.metadata & METADATA_VALUE_MASK)
       match.merge!({ :eth_type => 0x0800,
                      :eth_src => message.eth_src,
                      :ipv4_dst => message.ipv4_dst
@@ -123,16 +121,18 @@ module Vnet::Openflow::Routers
     # ip address. The output datapath route link table will figure out
     # for us if the output port should be a MAC2MAC or tunnel port.
     def route_packets(message, ip_lease)
-      datapath_md = md_create(:datapath => ip_lease.vif.active_datapath_id)
+      actions_md = md_create({ :datapath => ip_lease.vif.active_datapath_id,
+                               :reflection => nil
+                             })
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,
                          match_packet(message), {
                            :eth_dst => @mac_address
                          },
-                         datapath_md.merge({ :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK,
-                                             :cookie => message.cookie,
-                                             :idle_timeout => 60 * 60
-                                           }))
+                         actions_md.merge({ :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK,
+                                            :cookie => message.cookie,
+                                            :idle_timeout => 60 * 60
+                                          }))
 
       @datapath.add_flow(flow)
     end
