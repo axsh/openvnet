@@ -32,6 +32,8 @@ module Vnet::Openflow
         :vif => nil,
         :ipv4_address => route_map.ipv4_address,
         :ipv4_prefix => route_map.ipv4_prefix,
+        :ingress => route_map.ingress,
+        :egress => route_map.egress,
       }
 
       route_link[:routes][route[:id]] = route
@@ -235,19 +237,6 @@ module Vnet::Openflow
                                        :reflection => nil
                                      })
 
-        flows << Flow.create(TABLE_ROUTER_INGRESS, priority,
-                             network_md.merge(subnet_src).merge(:eth_dst => route[:vif][:mac_addr]),
-                             nil,
-                             rl_reflection_md.merge({ :cookie => cookie,
-                                                      :goto_table => TABLE_ROUTER_EGRESS
-                                                    }))
-        flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
-                             route_link_md.merge(subnet_dst), {
-                               :eth_src => route[:vif][:mac_addr]
-                             },
-                             network_md.merge({ :cookie => cookie,
-                                                :goto_table => TABLE_ROUTER_DST
-                                              }))
         flows << Flow.create(TABLE_CONTROLLER_PORT, priority,
                              subnet_dst.merge(:eth_src => route[:vif][:mac_addr]),
                              nil,
@@ -255,26 +244,41 @@ module Vnet::Openflow
                                                          :goto_table => TABLE_ROUTER_DST
                                                        }))
 
+        if route[:ingress] == true
+          flows << Flow.create(TABLE_ROUTER_INGRESS, priority,
+                               network_md.merge(subnet_src).merge(:eth_dst => route[:vif][:mac_addr]),
+                               nil,
+                               rl_reflection_md.merge({ :cookie => cookie,
+                                                        :goto_table => TABLE_ROUTER_EGRESS
+                                                      }))
+        end
+
+        if route[:egress] == true
+          flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
+                               route_link_md.merge(subnet_dst), {
+                                 :eth_src => route[:vif][:mac_addr]
+                               },
+                               network_md.merge({ :cookie => cookie,
+                                                  :goto_table => TABLE_ROUTER_DST
+                                                }))
+
+          install_route_handler(route_link, route)
+        end
+
         @datapath.add_flows(flows)
-
-        link_cookie = route_link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
-
-        pm = @datapath.packet_manager
-        pm.dispatch(link_cookie) { |key, handler|
-          route_cookie = handler.insert_route(route)
-          pm.link_cookies(key, route_cookie) if route_cookie
-        }
 
       else
         datapath_md = md_create(:datapath => route[:vif][:use_datapath_id])
 
-        flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
-                             route_link_md.merge(subnet_dst), {
-                               :eth_dst => route_link[:mac_addr]
-                             },
-                             datapath_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK
-                                               }))
+        if route[:egress] == true
+          flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
+                               route_link_md.merge(subnet_dst), {
+                                 :eth_dst => route_link[:mac_addr]
+                               },
+                               datapath_md.merge({ :cookie => cookie,
+                                                   :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK
+                                                 }))
+        end
 
         @datapath.add_flows(flows)
       end
@@ -335,6 +339,16 @@ module Vnet::Openflow
                            })
 
       @datapath.add_flows(flows)
+    end
+
+    def install_route_handler(route_link, route)
+      link_cookie = route_link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
+
+      pm = @datapath.packet_manager
+      pm.dispatch(link_cookie) { |key, handler|
+        route_cookie = handler.insert_route(route)
+        pm.link_cookies(key, route_cookie) if route_cookie
+      }
     end
 
   end

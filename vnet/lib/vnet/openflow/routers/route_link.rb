@@ -37,7 +37,10 @@ module Vnet::Openflow::Routers
 
         :mac_address => route_info[:vif][:mac_addr],
         :ipv4_address => route_info[:ipv4_address],
-        :ipv4_prefix => route_info[:ipv4_prefix]
+        :ipv4_prefix => route_info[:ipv4_prefix],
+
+        :ingress => route_info[:ingress],
+        :egress => route_info[:egress],
       }
 
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
@@ -49,21 +52,30 @@ module Vnet::Openflow::Routers
     end
 
     def packet_in(port, message)
-      debug "router::router_link.packet_in: port_no:#{port.port_info.port_no} name:#{port.port_info.name} ipv4_dst:#{message.ipv4_dst}"
-
+      ipv4_dst = message.ipv4_dst
+      ipv4_src = message.ipv4_src
       route = @routes[message.cookie]
+
+      debug "router::router_link.packet_in: port_no:#{port.port_number} name:#{port.port_name} ipv4_src:#{ipv4_src} ipv4_dst:#{ipv4_dst}"
 
       return unreachable_ip(message, "no route found", :no_route) if route.nil?
 
       if route[:require_vif] == true
-        ip_lease = MW::IpLease.batch.dataset.with_ipv4.where({ :ip_leases__network_id => route[:network_id],
-                                                               :ip_addresses__ipv4_address => message.ipv4_dst.to_i
-                                                             }).first.commit(:fill => :vif)
+        filter_args = {
+          :ip_leases__network_id => route[:network_id],
+          :ip_addresses__ipv4_address => ipv4_dst.to_i
+        }
+        ip_lease = MW::IpLease.batch.dataset.with_ipv4.where(filter_args).first.commit(:fill => :vif)
 
-        return unreachable_ip(message, "no vif found", :no_vif) if ip_lease.nil? || ip_lease.vif.nil?
-        return unreachable_ip(message, "no active datapath for vif found", :inactive_vif) if ip_lease.vif.active_datapath_id.nil?
+        if ip_lease.nil? || ip_lease.vif.nil?
+          return unreachable_ip(message, "no vif found", :no_vif)
+        end
 
-        debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+        if ip_lease.vif.active_datapath_id.nil?
+          return unreachable_ip(message, "no active datapath for vif found", :inactive_vif)
+        end
+
+        debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{ipv4_dst})" % message.cookie
         
         route_packets(message, ip_lease)
         send_packet(message)
@@ -101,10 +113,11 @@ module Vnet::Openflow::Routers
 
       subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
 
-      flow = Vnet::Openflow::Flow.create(TABLE_ROUTER_DST, priority,
-                                         catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
-                                         actions,
-                                         instructions)
+      flow = Flow.create(TABLE_ROUTER_DST, priority,
+                         catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
+                         actions,
+                         instructions)
+
       @datapath.add_flow(flow)
     end
 
