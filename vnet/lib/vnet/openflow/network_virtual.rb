@@ -83,7 +83,7 @@ module Vnet::Openflow
 
       flow_learn_arp << learn_options
 
-      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTER_ENTRY
+      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTER_CLASSIFIER
       flow_learn_arp
     end
   end

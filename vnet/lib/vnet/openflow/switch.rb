@@ -68,14 +68,14 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:virtual => nil), nil,
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:virtual => nil), nil,
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:physical => nil), nil,
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:physical => nil), nil,
                            flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
-      flows << Flow.create(TABLE_ROUTER_SRC,   0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_LINK,  0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_DST,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_INGRESS,    0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_EGRESS,     0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_DST,        0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_ARP_LOOKUP,   0, {}, nil, flow_options)
 

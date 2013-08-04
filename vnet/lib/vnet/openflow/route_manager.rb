@@ -102,7 +102,7 @@ module Vnet::Openflow
                              :eth_dst => link[:mac_addr]
                            }, nil,
                            route_link_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTER_LINK
+                                                 :goto_table => TABLE_ROUTER_EGRESS
                                                }))
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_dst => link[:mac_addr]
@@ -129,7 +129,7 @@ module Vnet::Openflow
                                :eth_dst => Trema::Mac.new(dp_rl_map.link_mac_addr)
                              }, nil,
                              route_link_md.merge({ :cookie => cookie,
-                                                   :goto_table => TABLE_ROUTER_LINK
+                                                   :goto_table => TABLE_ROUTER_EGRESS
                                                  }))
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                                :eth_dst => Trema::Mac.new(dp_rl_map.link_mac_addr)
@@ -227,7 +227,7 @@ module Vnet::Openflow
                                        :reflection => nil
                                      })
 
-        flows << Flow.create(TABLE_ROUTER_SRC, 40,
+        flows << Flow.create(TABLE_ROUTER_INGRESS, 40,
                              network_md.merge({ :eth_dst => route[:vif][:mac_addr],
                                                 :eth_type => 0x0800,
                                                 :ipv4_src => route[:ipv4_address],
@@ -235,9 +235,9 @@ module Vnet::Openflow
                                               }),
                              nil,
                              rl_reflection_md.merge({ :cookie => cookie,
-                                                      :goto_table => TABLE_ROUTER_LINK
+                                                      :goto_table => TABLE_ROUTER_EGRESS
                                                     }))
-        flows << Flow.create(TABLE_ROUTER_LINK, 40,
+        flows << Flow.create(TABLE_ROUTER_EGRESS, 40,
                              route_link_md.merge({ :eth_type => 0x0800,
                                                    :ipv4_dst => route[:ipv4_address],
                                                    :ipv4_dst_mask => route[:ipv4_mask],
@@ -270,7 +270,7 @@ module Vnet::Openflow
       else
         datapath_md = md_create(:datapath => route[:vif][:use_datapath_id])
 
-        flows << Flow.create(TABLE_ROUTER_LINK, 40,
+        flows << Flow.create(TABLE_ROUTER_EGRESS, 40,
                              route_link_md.merge({ :eth_type => 0x0800,
                                                    :ipv4_dst => route[:ipv4_address],
                                                    :ipv4_dst_mask => route[:ipv4_mask],
@@ -304,7 +304,7 @@ module Vnet::Openflow
       end
 
       flows = []
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 40,
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 40,
                            network_md.merge({ :eth_dst => vif[:mac_addr],
                                               :eth_type => 0x0800,
                                               :ipv4_dst => vif[:ipv4_address]
@@ -320,7 +320,7 @@ module Vnet::Openflow
                            },
                            nil,
                            controller_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTER_ENTRY
+                                                 :goto_table => TABLE_ROUTER_CLASSIFIER
                                                }))
       flows << Flow.create(TABLE_CONTROLLER_PORT, 2, {
                              :eth_dst => vif[:mac_addr],
@@ -328,15 +328,15 @@ module Vnet::Openflow
                            },
                            nil,
                            controller_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTER_ENTRY
+                                                 :goto_table => TABLE_ROUTER_CLASSIFIER
                                                }))
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 30,
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 30,
                            network_md.merge({ :eth_dst => vif[:mac_addr],
                                               :eth_type => 0x0800
                                             }),
                            nil, {
                              :cookie => cookie,
-                             :goto_table => TABLE_ROUTER_SRC
+                             :goto_table => TABLE_ROUTER_INGRESS
                            })
 
       @datapath.add_flows(flows)

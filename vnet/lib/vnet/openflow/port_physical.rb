@@ -34,7 +34,7 @@ module Vnet::Openflow
                              :eth_type => 0x0800,
                              :ipv4_src => IPV4_ZERO
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
                              :eth_type => 0x0800,
                              :eth_src => self.hw_addr
@@ -48,7 +48,7 @@ module Vnet::Openflow
                                :eth_type => 0x0800,
                                :ipv4_src => self.ipv4_addr
                              }, nil,
-                             flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                             flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
         flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
                                :eth_type => 0x0800,
                                :ipv4_src => self.ipv4_addr
@@ -67,7 +67,7 @@ module Vnet::Openflow
                              :in_port => self.port_number,
                              :eth_src => self.hw_addr,
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 34, {
                              :eth_src => self.hw_addr
                            }, nil,
@@ -90,7 +90,7 @@ module Vnet::Openflow
                                :arp_sha => self.hw_addr,
                                :arp_spa => self.ipv4_addr
                              }, nil,
-                             flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                             flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
         flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
                                :eth_type => 0x0806,
                                :arp_spa => self.ipv4_addr

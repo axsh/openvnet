@@ -35,21 +35,21 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
                              :eth_type => 0x0800
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
                              :eth_type => 0x0806
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 31, {
                              :in_port => self.port_number
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 21,
                            reflection_md.merge(:in_port => self.port_number), {

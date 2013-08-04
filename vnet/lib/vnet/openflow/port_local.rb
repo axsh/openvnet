@@ -24,17 +24,17 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_SRC, 31, {
                              :in_port => OFPP_LOCAL
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => OFPP_LOCAL,
                              :eth_type => 0x0800
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => OFPP_LOCAL,
                              :eth_type => 0x0806
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
                              :eth_dst => @hw_addr
                            }, {

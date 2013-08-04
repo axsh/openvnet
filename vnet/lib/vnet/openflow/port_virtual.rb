@@ -37,7 +37,7 @@ module Vnet::Openflow
                                :arp_spa => @ipv4_addr,
                                :arp_sha => @hw_addr
                              }, nil,
-                             flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                             flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       end
 
       #
@@ -50,7 +50,7 @@ module Vnet::Openflow
                                :eth_src => @hw_addr,
                                :ipv4_src => @ipv4_addr,
                              }, nil,
-                             flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                             flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
         flows << Flow.create(TABLE_ROUTER_DST, 40,
                              network_md.merge({ :eth_type => 0x0800,
                                                 :ipv4_dst => @ipv4_addr
@@ -66,7 +66,7 @@ module Vnet::Openflow
                              :eth_src => @hw_addr,
                              :ipv4_src => IPV4_ZERO,
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
 
       #
       # Destination routing:
