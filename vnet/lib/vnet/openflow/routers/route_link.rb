@@ -37,7 +37,7 @@ module Vnet::Openflow::Routers
 
         :mac_address => route_info[:vif][:mac_addr],
         :ipv4_address => route_info[:ipv4_address],
-        :ipv4_mask => route_info[:ipv4_mask]
+        :ipv4_prefix => route_info[:ipv4_prefix]
       }
 
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
@@ -82,12 +82,8 @@ module Vnet::Openflow::Routers
         catch_route_md = md_create({ route[:network_type] => route[:network_id],
                                      :not_no_controller => nil
                                    })
-        actions = {
-          :output => OFPP_CONTROLLER
-        }
-        instructions = {
-          :cookie => cookie
-        }
+        actions = { :output => OFPP_CONTROLLER }
+        instructions = { :cookie => cookie }
       else
         catch_route_md = md_create(route[:network_type] => route[:network_id])
         actions = nil
@@ -97,13 +93,18 @@ module Vnet::Openflow::Routers
         }
       end                  
 
-      flow = Vnet::Openflow::Flow.create(TABLE_ROUTER_DST, 30,
-                                         catch_route_md.merge({ :eth_type => 0x0800,
-                                                                :eth_src => route[:mac_address],
-                                                                :ipv4_dst => route[:ipv4_address],
-                                                                :ipv4_dst_mask => route[:ipv4_mask],
-                                                              }),
-                                         actions, instructions)
+      if is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix])
+        priority = 30
+      else
+        priority = 31
+      end
+
+      subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
+
+      flow = Vnet::Openflow::Flow.create(TABLE_ROUTER_DST, priority,
+                                         catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
+                                         actions,
+                                         instructions)
       @datapath.add_flow(flow)
     end
 

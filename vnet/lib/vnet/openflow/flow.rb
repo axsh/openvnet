@@ -170,6 +170,32 @@ module Vnet::Openflow
       mask = value if mask.nil?
       (value & (mask & flag)) == flag
     end
+    
+    def is_ipv4_broadcast(address, prefix)
+      address == IPV4_ZERO && prefix == 0
+    end
+
+    def match_ipv4_subnet_dst(address, prefix)
+      if is_ipv4_broadcast(address, prefix)
+        { :eth_type => 0x0800 }
+      else
+        { :eth_type => 0x0800,
+          :ipv4_dst => address,
+          :ipv4_dst_mask => IPV4_BROADCAST << (32 - prefix)
+        }
+      end
+    end
+
+    def match_ipv4_subnet_src(address, prefix)
+      if is_ipv4_broadcast(address, prefix)
+        { :eth_type => 0x0800 }
+      else
+        { :eth_type => 0x0800,
+          :ipv4_src => address,
+          :ipv4_src_mask => IPV4_BROADCAST << (32 - prefix)
+        }
+      end
+    end
 
   end
 

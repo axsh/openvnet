@@ -17,6 +17,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     params['route_link_id'] = (M::RouteLink[route_link_uuid] || raise(E::InvalidUUID, route_link_uuid)).id
 
     params['ipv4_address'] = parse_ipv4(params['ipv4_address'] || raise(E::MissingArgument, 'ipv4_address'))
+    params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
 
     route = M::Route.create(params)
     respond_with(R::Route.generate(route))
