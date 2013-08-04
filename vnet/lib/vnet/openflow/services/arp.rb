@@ -14,7 +14,7 @@ module Vnet::Openflow::Services
     def insert_vif(uuid, network, vif_map)
       return if @entries[uuid]
 
-      debug "service::arp.insert: uuid:#{uuid} vif_map:#{vif_map.inspect}"
+      debug "service::arp.insert: network:#{network.uuid}/#{network.network_id} vif_uuid:#{uuid}"
 
       @entries[uuid] = {
         :network_number => vif_map.network_id,
@@ -25,6 +25,7 @@ module Vnet::Openflow::Services
       catch_network_flow(network, {
                            :eth_dst => MAC_BROADCAST,
                            :eth_type => 0x0806,
+                           :arp_op => 1,
                            :arp_tha => MAC_ZERO,
                            :arp_tpa => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
                          }, {
@@ -33,6 +34,7 @@ module Vnet::Openflow::Services
       catch_network_flow(network, {
                            :eth_dst => Trema::Mac.new(vif_map.mac_addr),
                            :eth_type => 0x0806,
+                           :arp_op => 1,
                            :arp_tha => Trema::Mac.new(vif_map.mac_addr),
                            :arp_tpa => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
                          }, {

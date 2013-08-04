@@ -4,13 +4,9 @@ module Vnet::Openflow
 
   class NetworkVirtual < Network
 
-    # metadata[ 0-31]: Port number; only set to non-zero when the
-    #                  in_port is not a local port. This allows us to
-    #                  differentiate between packets that are from
-    #                  external sources and those that are from
-    #                  internal interfaces.
-    # metadata[32-47]: Network id;
-    # metadata[48-64]: Tunnel id; preliminary.
+    def network_type
+      :virtual
+    end
 
     def flow_options
       @flow_options ||= {:cookie => @cookie}

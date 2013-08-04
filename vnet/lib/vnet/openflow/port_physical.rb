@@ -125,7 +125,7 @@ module Vnet::Openflow
       #                        }, flow_options)
       # end
 
-      self.datapath.add_flows(flows)
+      @datapath.add_flows(flows)
     end
 
   end
