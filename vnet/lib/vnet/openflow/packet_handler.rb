@@ -28,6 +28,7 @@ module Vnet::Openflow
         table = TABLE_ARP_LOOKUP
         priority = 20
         match = match.merge(md_create({ :network => params[:network_id],
+                                        :not_no_controller => nil,
                                         params[:network_type] => nil
                                       }))
       when :network

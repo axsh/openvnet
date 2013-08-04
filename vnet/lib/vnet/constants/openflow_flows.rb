@@ -111,6 +111,10 @@ module Vnet
       # 'output:OFPP_IN_PORT' action.
       METADATA_FLAG_REFLECTION = (0x100 << METADATA_FLAGS_SHIFT)
 
+      # Don't pass this packet to the controller, e.g. to look up
+      # routing information.
+      METADATA_FLAG_NO_CONTROLLER = (0x200 << METADATA_FLAGS_SHIFT)
+
       METADATA_TYPE_SHIFT      = 56
       METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)
 

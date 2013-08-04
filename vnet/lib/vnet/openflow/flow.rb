@@ -106,6 +106,12 @@ module Vnet::Openflow
         when :network
           metadata = metadata | value | METADATA_TYPE_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :no_controller
+          metadata = metadata | METADATA_FLAG_NO_CONTROLLER
+          metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
+        when :not_no_controller
+          metadata = metadata
+          metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
@@ -158,6 +164,11 @@ module Vnet::Openflow
       else
         md_create(:port => self.port_number)
       end
+    end
+
+    def md_has_flag(flag, value, mask = nil)
+      mask = value if mask.nil?
+      (value & (mask & flag)) == flag
     end
 
   end

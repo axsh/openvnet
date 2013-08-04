@@ -66,11 +66,11 @@ module Vnet::Openflow::Routers
         debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
         
         route_packets(message, ip_lease)
+        send_packet(message)
+
       else
         debug "router::router_link.packet_in: no destination vif needed for route (#{route[:uuid]})"
       end
-
-      # output...
     end
 
     private
@@ -78,10 +78,10 @@ module Vnet::Openflow::Routers
     def create_destination_flow(route)
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
-      # Don't restrict to local for all routes.
-      catch_route_md = md_create(route[:network_type] => route[:network_id])
-
       if route[:require_vif] == true
+        catch_route_md = md_create({ route[:network_type] => route[:network_id],
+                                     :not_no_controller => nil
+                                   })
         actions = {
           :output => OFPP_CONTROLLER
         }
@@ -89,13 +89,13 @@ module Vnet::Openflow::Routers
           :cookie => cookie
         }
       else
+        catch_route_md = md_create(route[:network_type] => route[:network_id])
         actions = nil
         instructions = {
           :goto_table => TABLE_ARP_LOOKUP,
           :cookie => cookie
         }
       end                  
-
 
       flow = Vnet::Openflow::Flow.create(TABLE_ROUTER_DST, 30,
                                          catch_route_md.merge({ :eth_type => 0x0800,
@@ -157,6 +157,23 @@ module Vnet::Openflow::Routers
                          })
 
       @datapath.add_flow(flow)
+    end
+
+    def send_packet(message)
+      # We're modifying the in_port field, so duplicate the message to
+      # avoid race conditions with the flow add message.
+      message = message.dup
+
+      # Set the in_port to OFPP_CONTROLLER since the packets stored
+      # have already been processed by TABLE_CLASSIFIER to
+      # TABLE_ROUTER_DST, and as such no longer match the fields
+      # required by the old in_port. 
+      #
+      # The route link is identified by eth_dst, which was set in
+      # TABLE_ROUTER_LINK prior to be sent to the controller.
+      message.match.in_port = OFPP_CONTROLLER
+      
+      @datapath.send_packet_out(message, OFPP_TABLE)
     end
 
     def unreachable_ip(message, error_msg, suppress_reason)
