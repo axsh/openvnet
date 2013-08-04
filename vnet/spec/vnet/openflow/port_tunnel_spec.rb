@@ -33,7 +33,7 @@ describe Vnet::Openflow::PortTunnel do
       expect(datapath.added_flows[1][:match].in_port).to eq 10
       expect(datapath.added_flows[1][:instructions].size).to eq 1
       expect(datapath.added_flows[1][:instructions][0]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[1][:instructions][0].table_id).to eq TABLE_ROUTER_ENTRY
+      expect(datapath.added_flows[1][:instructions][0].table_id).to eq TABLE_ROUTER_CLASSIFIER
     end
 
   end
