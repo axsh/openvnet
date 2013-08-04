@@ -241,6 +241,15 @@ module Vnet::Openflow
                              network_md.merge({ :cookie => cookie,
                                                 :goto_table => TABLE_ROUTER_DST
                                               }))
+        flows << Flow.create(TABLE_CONTROLLER_PORT, 1, {
+                               :eth_type => 0x0800,
+                               :eth_src => route[:vif][:mac_addr],
+                               :ipv4_dst => route[:ipv4_address],
+                               :ipv4_dst_mask => route[:ipv4_mask]
+                             }, nil,
+                             network_md.merge({ :cookie => cookie,
+                                                :goto_table => TABLE_ARP_LOOKUP
+                                              }))
 
         @datapath.add_flows(flows)
 

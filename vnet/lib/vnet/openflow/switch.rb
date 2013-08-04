@@ -47,14 +47,19 @@ module Vnet::Openflow
       flows = []
 
       flow_options = {:cookie => @default_flow_cookie}
+      fo_local_md  = flow_options.merge(md_create(:local => nil))
+      fo_remote_md = flow_options.merge(md_create(:remote => nil))
 
+      flows << Flow.create(TABLE_CLASSIFIER, 2, {:in_port => OFPP_CONTROLLER}, nil,
+                           fo_local_md.merge(:goto_table => TABLE_CONTROLLER_PORT))
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, nil, flow_options)
-      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {},
-                           flow_options.merge(md_create(:remote => nil)).merge!(:goto_table => TABLE_TUNNEL_PORTS))
+      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
+                           fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
 
       flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_CONTROLLER_PORT,    0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, nil, flow_options)
 

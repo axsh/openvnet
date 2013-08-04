@@ -46,19 +46,16 @@ module Vnet::Openflow
       when :virtual_local
         table = TABLE_VIRTUAL_DST
         priority = 70
-        match = match.merge(params[:network].md_network(:network, {
-                                                          :local => nil,
-                                                          :vif => nil
-                                                        }))
+        match = match.merge(params[:network].md_network(:network))
       else
         raise "Wrong type for catch_flow."
       end
 
       @datapath.add_flow(Flow.create(table, priority, match, {
-                                           :output => Controller::OFPP_CONTROLLER
-                                         }, {
-                                           :cookie => @cookie
-                                         }))
+                                       :output => Controller::OFPP_CONTROLLER
+                                     }, {
+                                       :cookie => @cookie
+                                     }))
     end
 
     def catch_network_flow(network, match, params = {})
