@@ -4,12 +4,12 @@ require 'trema'
 
 include Vnet::Constants::Openflow
 
-describe Vnet::Openflow::PortTunnel do
+describe Vnet::Openflow::Ports::Tunnel do
   describe "install" do
     it "creates tunnel specific flows" do
       datapath = MockDatapath.new(double, 10)
-      port = Vnet::Openflow::Port.new(datapath, double(port_no: 10, name: 't-a'), true)
-      port.extend(Vnet::Openflow::PortTunnel)
+      port = Vnet::Openflow::Ports::Base.new(datapath, double(port_no: 10, name: 't-a'), true)
+      port.extend(Vnet::Openflow::Ports::Tunnel)
       tunnel_manager = double(:tunnel_manager)
       tunnel_manager.should_receive(:add_port)
       datapath.should_receive(:tunnel_manager).and_return(tunnel_manager)

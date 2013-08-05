@@ -20,12 +20,6 @@ module Vnet::Openflow
       @ports.values.find_all { |port| port.eth? }
     end
 
-    # Temporary method to get access to ports until we make a proper
-    # port manager that handles threading.
-    def get_port(port_number)
-      @ports[port_number]
-    end
-
     #
     #
     #
