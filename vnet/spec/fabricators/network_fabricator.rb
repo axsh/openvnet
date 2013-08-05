@@ -20,3 +20,14 @@ Fabricator(:vnet_1, class_name: Vnet::Models::Network) do
   network_mode 'virtual'
   #editable true
 end
+
+Fabricator(:vnet_2, class_name: Vnet::Models::Network) do
+  uuid "nw-bbbbbbbb"
+  display_name "vnet2"
+  ipv4_network IPAddr.new("10.102.1.1").to_i
+  ipv4_prefix 24
+  domain_name "example.vnet2.com"
+  dc_network
+  network_mode 'virtual'
+  #editable true
+end

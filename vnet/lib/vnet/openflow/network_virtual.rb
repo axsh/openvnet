@@ -26,10 +26,10 @@ module Vnet::Openflow
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
                            md_network(:network, :local => nil).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flood_md.merge!(:goto_table => TABLE_METADATA_ROUTE))
+                           flood_md.merge(:goto_table => TABLE_METADATA_ROUTE))
       flows << Flow.create(TABLE_VIRTUAL_DST, 30,
                            md_network(:network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flood_md.merge!(:goto_table => TABLE_METADATA_LOCAL))
+                           flood_md.merge(:goto_table => TABLE_METADATA_LOCAL))
 
       if self.broadcast_mac_addr
         nw_virtual_md = flow_options.merge(md_network(:virtual_network))

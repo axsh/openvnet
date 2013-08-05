@@ -87,7 +87,7 @@ module Vnet::Openflow
     #
 
     def add_flow(flow)
-      @controller.pass_task { @controller.send_flow_mod_add(@dpid, flow) }
+      @controller.pass_task { @controller.send_flow_mod_add(@dpid, flow.to_trema_hash) }
     end
 
     def add_ovs_flow(flow_str)
@@ -115,7 +115,7 @@ module Vnet::Openflow
       return if flows.blank?
       @controller.pass_task {
         flows.each { |flow|
-          @controller.send_flow_mod_add(@dpid, flow)
+          @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
         }
       }
     end
