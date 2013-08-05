@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Ports
 
-  module PortPhysical
-    include FlowHelpers
+  module Physical
+    include Vnet::Openflow::FlowHelpers
 
     def flow_options
       @flow_options ||= {:cookie => @cookie}

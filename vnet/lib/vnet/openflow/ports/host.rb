@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Ports
 
-  module PortHost
-    include FlowHelpers
+  module Host
+    include Vnet::Openflow::FlowHelpers
 
     def eth?
       true
