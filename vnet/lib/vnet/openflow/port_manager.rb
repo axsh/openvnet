@@ -35,60 +35,20 @@ module Vnet::Openflow
       port = Ports::Base.new(@datapath, port_desc, true)
       @ports[port_desc.port_no] = port
 
-      if port.port_number == OFPP_LOCAL
-        @datapath.mod_port(port.port_number, :no_flood)
-
-        port.extend(Ports::Local)
-        port.hw_addr = port_desc.hw_addr
-        port.ipv4_addr = @datapath.ipv4_address
-
-        network = @datapath.network_manager.network_by_uuid('nw-public')
-
-      elsif port.port_info.name =~ /^eth/
-        @datapath.mod_port(port.port_number, :flood)
-
-        port.extend(Ports::Host)
-
-        network = @datapath.network_manager.network_by_uuid('nw-public')
-
-      elsif port.port_info.name =~ /^vif-/
-        @datapath.mod_port(port.port_number, :no_flood)
-
-        vif_map = MW::Vif[port_desc.name]
-
-        if vif_map.nil?
-          error "error: Could not find uuid: #{port_desc.name}"
-          return
-        end
-
-        network = @datapath.network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
-
-        if network.class == NetworkPhysical
-          port.extend(Ports::Physical)
-        elsif network.class == NetworkVirtual
-          port.extend(Ports::Virtual)
-        else
-          raise("Unknown network type.")
-        end
-
-        port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
-        port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
-
-        vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
-
-      elsif port.port_info.name =~ /^t-/
-        @datapath.mod_port(port.port_number, :no_flood)
-
-        port.extend(Ports::Tunnel)
+      case
+      when port.port_number == OFPP_LOCAL
+        prepare_port_local(port, port_desc)
+      when port.port_info.name =~ /^eth/
+        prepare_port_eth(port, port_desc)
+      when port.port_info.name =~ /^vif-/
+        prepare_port_vif(port, port_desc)
+      when port.port_info.name =~ /^t-/
+        prepare_port_tunnel(port, port_desc)
       else
         @datapath.mod_port(port.port_number, :no_flood)
 
         error "Unknown interface type: #{port.port_info.name}"
-        return
       end
-
-      network.add_port(port, true) if network
-      port.install
     end
 
     def remove(port_desc)
@@ -122,6 +82,79 @@ module Vnet::Openflow
       port = @ports[message.match.in_port]
 
       @datapath.packet_manager.async.packet_in(port, message) if port
+    end
+
+    private
+
+    #
+    # Ports:
+    #
+
+    def prepare_port_local(port, port_desc)
+      @datapath.mod_port(port.port_number, :no_flood)
+
+      port.extend(Ports::Local)
+      port.hw_addr = port_desc.hw_addr
+      port.ipv4_addr = @datapath.ipv4_address
+
+      network = @datapath.network_manager.network_by_uuid('nw-public')
+
+      network.add_port(port, true) if network
+      port.install
+    end
+
+    def prepare_port_eth(port, port_desc)
+      @datapath.mod_port(port.port_number, :flood)
+
+      port.extend(Ports::Host)
+
+      network = @datapath.network_manager.network_by_uuid('nw-public')
+
+      network.add_port(port, true) if network
+      port.install
+    end
+
+    def prepare_port_vif(port, port_desc)
+      @datapath.mod_port(port.port_number, :no_flood)
+
+      vif_map = MW::Vif[port_desc.name]
+
+      if vif_map.nil?
+        error "route_manager: could not find uuid (#{port_desc.name})"
+        return
+      end
+
+      if vif_map.mode != 'vif'
+        info "route_manager: vif mode not set to 'vif' (#{vif_map.mode})"
+        return
+      end
+
+      network = @datapath.network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
+
+      if network.class == NetworkPhysical
+        port.extend(Ports::Physical)
+      elsif network.class == NetworkVirtual
+        port.extend(Ports::Virtual)
+      else
+        raise("Unknown network type.")
+      end
+
+      port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
+      port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
+
+      vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
+      
+      network.add_port(port, true) if network
+      port.install
+    end
+
+    def prepare_port_tunnel(port, port_desc)
+      @datapath.mod_port(port.port_number, :no_flood)
+
+      port.extend(Ports::Tunnel)
+
+      network.add_port(port, true) if network
+      port.install
     end
 
   end

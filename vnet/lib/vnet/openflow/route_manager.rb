@@ -167,6 +167,11 @@ module Vnet::Openflow
       vif = @vifs[vif_map.id]
       return vif if vif
 
+      if vif_map.mode != 'simulated'
+        info "router_manager: only vifs with mode 'simulated' are supported (uuid:#{vif_map.uuid} mode:#{vif_map.mode})"
+        return
+      end
+
       service_map = vif_map.network_services.detect { |service| service.display_name == 'router' }
 
       if service_map.nil?
@@ -183,16 +188,6 @@ module Vnet::Openflow
         :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
       }
 
-      datapath_id = @datapath.datapath_map.id
-
-      if vif_map.owner_datapath_id
-        if vif_map.owner_datapath_id == datapath_id
-          vif_map.batch.update(:active_datapath_id => datapath_id).commit
-        else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id
-        end
-      end
-
       case vif_map.network && vif_map.network.network_mode
       when 'physical'
         vif[:require_vif] = false
@@ -206,6 +201,16 @@ module Vnet::Openflow
       end
 
       @vifs[vif_map.id] = vif
+
+      datapath_id = @datapath.datapath_map.id
+
+      if vif_map.owner_datapath_id
+        if vif_map.owner_datapath_id == datapath_id
+          vif_map.batch.update(:active_datapath_id => datapath_id).commit
+        else
+          vif[:use_datapath_id] = vif_map.owner_datapath_id
+        end
+      end
 
       create_vif_flows(vif) if vif[:use_datapath_id].nil?
 
