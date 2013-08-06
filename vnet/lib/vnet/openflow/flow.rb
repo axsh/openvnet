@@ -2,20 +2,40 @@
 
 module Vnet::Openflow
 
-  module Flow
+  class Flow
 
-    def self.create(table_id, priority, match, actions, options = {})
-      trema_hash = {
+    attr_reader :params
+
+    def initialize(table_id, priority, match, actions, options = {})
+      @params = {
         :table_id => table_id,
         :priority => priority,
-        :match => Trema::Match.new(match),
-        :instructions => self.convert_instructions(actions, options),
+        :match => match,
+        :actions => actions,
+        :options => options
       }
-      trema_hash[:hard_timeout] = options[:hard_timeout] if options[:hard_timeout]
-      trema_hash[:idle_timeout] = options[:idle_timeout] if options[:idle_timeout]
-      trema_hash[:cookie] = options[:cookie] if options[:cookie]
-      trema_hash[:cookie_mask] = options[:cookie_mask] if options[:cookie_mask]
+    end
+
+    def to_trema_hash
+      trema_hash = {
+        :table_id => @params[:table_id],
+        :priority => @params[:priority],
+        :match => Trema::Match.new(@params[:match]),
+        :instructions => self.convert_instructions(@params[:actions], @params[:options]),
+      }
+      trema_hash[:hard_timeout] = @params[:options][:hard_timeout] if @params[:options][:hard_timeout]
+      trema_hash[:idle_timeout] = @params[:options][:idle_timeout] if @params[:options][:idle_timeout]
+      trema_hash[:cookie] = @params[:options][:cookie] if @params[:options][:cookie]
+      trema_hash[:cookie_mask] = @params[:options][:cookie_mask] if @params[:options][:cookie_mask]
       trema_hash
+    end 
+    
+    def ==(flow)
+      flow == params
+    end
+
+    def self.create(table_id, priority, match, actions, options = {})
+      self.new(table_id, priority, match, actions, options)
     end
 
     private
