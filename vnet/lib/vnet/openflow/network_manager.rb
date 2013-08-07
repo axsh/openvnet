@@ -32,7 +32,7 @@ module Vnet::Openflow
         raise("Unknown network type.")
       end
 
-      dp_map = M::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
+      dp_map = MW::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
       raise("Could not find datapath id: 0x%016x" % @datapath.dpid) unless dp_map
 
       dp_network_map = dp_map.batch.datapath_networks_dataset.where(:network_id => network_map.id).first.commit

@@ -21,7 +21,7 @@ module Vnet::Openflow
         :table_id => @params[:table_id],
         :priority => @params[:priority],
         :match => Trema::Match.new(@params[:match]),
-        :instructions => self.convert_instructions(@params[:actions], @params[:options]),
+        :instructions => convert_instructions(@params[:actions], @params[:options]),
       }
       trema_hash[:hard_timeout] = @params[:options][:hard_timeout] if @params[:options][:hard_timeout]
       trema_hash[:idle_timeout] = @params[:options][:idle_timeout] if @params[:options][:idle_timeout]
@@ -38,9 +38,7 @@ module Vnet::Openflow
       self.new(table_id, priority, match, actions, options)
     end
 
-    private
-
-    def self.convert_instructions(actions, options)
+    def convert_instructions(actions, options)
       instructions = []
 
       if actions
@@ -64,7 +62,7 @@ module Vnet::Openflow
       instructions
     end
 
-    def self.convert_actions(actions, result = [])
+    def convert_actions(actions, result = [])
       if actions.class == Hash
         actions.each { |key,arg| result << to_action(key, arg) }
       elsif actions.class == Array
@@ -76,7 +74,7 @@ module Vnet::Openflow
       result
     end
 
-    def self.to_action(tag, arg)
+    def to_action(tag, arg)
       case tag
       when :eth_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
       when :eth_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])

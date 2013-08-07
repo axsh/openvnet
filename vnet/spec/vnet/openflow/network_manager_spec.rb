@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+require 'spec_helper'
+require 'trema'
+
+describe Vnet::Openflow::NetworkManager do
+
+  before do
+    Fabricate(:vnet_1)
+    Fabricate(:datapath_1)
+    Fabricate(:datapath_network_1_1)
+  end
+
+  let(:network_manager) { Vnet::Openflow::NetworkManager.new(datapath) }
+
+  describe "network_by_uuid" do
+    let(:datapath) do
+      MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |dp|
+        actor = double(:actor)
+        actor.should_receive(:prepare_network).exactly(3).and_return(true)
+
+        dc_segment_manager = double(:dc_segment_manager)
+        tunnel_manager = double(:tunnel_manager)
+        route_manager = double(:route_manager)
+
+        dc_segment_manager.should_receive(:async).and_return(actor)
+        tunnel_manager.should_receive(:async).and_return(actor)
+        route_manager.should_receive(:async).and_return(actor)
+
+
+        dp.should_receive(:dc_segment_manager).and_return(dc_segment_manager)
+        dp.should_receive(:tunnel_manager).and_return(tunnel_manager)
+        dp.should_receive(:route_manager).and_return(route_manager)
+      end
+    end
+
+    subject { network_manager.network_by_uuid('nw-aaaaaaaa') }
+
+    it { should be_a Vnet::Openflow::NetworkVirtual }
+    it { expect(subject.uuid).to eq 'nw-aaaaaaaa' }
+  end
+
+  describe "remove" do
+    let(:datapath) do
+      MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |dp|
+        actor = double(:actor)
+        actor.should_receive(:prepare_network).exactly(3).and_return(true)
+        actor.should_receive(:remove_network_id).and_return(true)
+
+        dc_segment_manager = double(:dc_segment_manager)
+        tunnel_manager = double(:tunnel_manager)
+        route_manager = double(:route_manager)
+
+        dc_segment_manager.should_receive(:async).twice.and_return(actor)
+        tunnel_manager.should_receive(:async).and_return(actor)
+        route_manager.should_receive(:async).and_return(actor)
+
+
+        dp.should_receive(:dc_segment_manager).twice.and_return(dc_segment_manager)
+        dp.should_receive(:tunnel_manager).and_return(tunnel_manager)
+        dp.should_receive(:route_manager).and_return(route_manager)
+      end
+    end
+
+    it "has no flow after delete the last network on itself" do
+      network = network_manager.network_by_uuid('nw-aaaaaaaa')
+      network_manager.remove(network)
+      expect(datapath.added_flows).to eq []
+    end
+  end
+end

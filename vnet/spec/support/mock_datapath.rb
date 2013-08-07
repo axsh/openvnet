@@ -29,12 +29,8 @@ class MockDatapath < Vnet::Openflow::Datapath
     @added_flows += flows
   end
 
-  def delete_flow(flow)
-    @added_flows.delete_if {|f| f == flow }
-  end
-
-  def delete_flows(flows)
-    flows.each {|f| delete_flow(f) }
+  def del_cookie(cookie)
+    @added_flows.delete_if {|f| f.to_trema_hash[:cookie] == cookie }
   end
 
   def add_ovs_flow(ovs_flow)
