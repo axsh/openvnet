@@ -5,8 +5,8 @@ module Vnet::Openflow::Ports
   module Host
     include Vnet::Openflow::FlowHelpers
 
-    def eth?
-      true
+    def port_type
+      :host
     end
 
     def flow_options

@@ -5,6 +5,10 @@ module Vnet::Openflow::Ports
   module Tunnel
     include Vnet::Openflow::FlowHelpers
 
+    def port_type
+      :tunnel
+    end
+
     def flow_options
       @flow_options ||= {:cookie => @cookie}
     end

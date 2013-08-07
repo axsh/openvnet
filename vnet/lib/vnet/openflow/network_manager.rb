@@ -11,9 +11,10 @@ module Vnet::Openflow
 
     def initialize(dp)
       @datapath = dp
+      @networks = {}
+
       @dpid = @datapath.dpid
       @dpid_s = "0x%016x" % @datapath.dpid
-      @networks = {}
     end
 
     def network_by_id(network_id, dynamic_load = true)
@@ -45,6 +46,7 @@ module Vnet::Openflow
       nil
     end
 
+    # Handle this internally.
     def remove(network_id)
       network = @networks.delete(network_id)
 

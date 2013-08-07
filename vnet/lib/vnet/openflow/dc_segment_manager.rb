@@ -63,14 +63,14 @@ module Vnet::Openflow
     end
 
     def update_network_id(network_id)
-      eth_port = @datapath.port_manager.eth_ports.first
+      eth_port = @datapath.port_manager.ports(:port_type => :host).first
       dpn_list = @datapath_networks[network_id]
 
       return if eth_port.nil? || dpn_list.nil?
 
       flood_actions = dpn_list.collect { |dpn_id,dpn|
         { :eth_dst => dpn[:broadcast_mac_addr],
-          :output => eth_port.port_number
+          :output => eth_port[:port_number]
         }
       }
 

@@ -10,26 +10,34 @@ module Vnet::Openflow
     def initialize(dp)
       @datapath = dp
       @ports = {}
+
+      @dpid = @datapath.dpid
+      @dpid_s = "0x%016x" % @datapath.dpid
     end
 
-    #
-    # Deprecated:
-    #
-
-    def eth_ports
-      @ports.values.find_all { |port| port.eth? }
+    def ports(params = {})
+      @ports.select { |key, port|
+        result = true
+        result = result && (port.port_type == params[:port_type]) if params[:port_type]
+      }.map { |key, port|
+        port_to_hash(port)
+      }
     end
-
-    #
-    #
-    #
 
     def insert(port_desc)
-      debug "port_manager.insert: #{port_desc.inspect}"
+      debug log_format('insert port',
+                       "port_no:#{port_desc.port_no} name:#{port_desc.name} " +
+                       "hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
+                       [port_desc.advertised, port_desc.supported])
 
       if @datapath.datapath_map.nil?
-        warn "port_manager.insert: cannot initialize ports without a valid datapath database entry (0x%016x)" % @datapath.dpid
-        return
+        warn log_format('cannot initialize ports without a valid datapath database entry')
+        return nil
+      end
+
+      if @ports[port_desc.port_no]
+        info log_format('port already initialized', "port_number:#{port_desc.port_no}")
+        return port_to_hash(@ports[port_desc.port_no])
       end
 
       port = Ports::Base.new(@datapath, port_desc, true)
@@ -47,16 +55,24 @@ module Vnet::Openflow
       else
         @datapath.mod_port(port.port_number, :no_flood)
 
-        error "Unknown interface type: #{port.port_info.name}"
+        error log_format('unknown interface type', 'name:#{port.port_info.name}')
       end
+
+      port_to_hash(port)
     end
 
     def remove(port_desc)
+      debug log_format('remove port',
+                       "port_no:#{port_desc.port_no} name:#{port_desc.name} " +
+                       "hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
+                       [port_desc.advertised, port_desc.supported])
+
       port = @ports.delete(message.port_no)
 
       if port.nil?
-        debug "port status could not delete uninitialized port: #{message.port_no}"
-        return
+        debug log_format('port status could not delete uninitialized port',
+                         "port_number:#{message.port_no}")
+        return nil
       end
 
       port.uninstall
@@ -69,15 +85,36 @@ module Vnet::Openflow
         vif_map = MW::Vif[message.name]
         vif_map.batch.update(:active_datapath_id => nil).commit
       end
+
+      nil
     end
 
+    # Deprecate, pass port number not port.
     def packet_in(message)
       port = @ports[message.match.in_port]
 
       @datapath.packet_manager.async.packet_in(port, message) if port
+      nil
     end
 
+    #
+    # Internal methods:
+    #
+
     private
+
+    def log_format(message, values = nil)
+      "port_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
+    end
+
+    def port_to_hash(port)
+      return nil if port.nil?
+
+      { :network_id => port.network_id,
+        :port_number => port.port_number,
+        :type => port.port_type,
+      }
+    end
 
     #
     # Ports:
@@ -121,12 +158,12 @@ module Vnet::Openflow
       vif_map = MW::Vif[port_desc.name]
 
       if vif_map.nil?
-        error "route_manager: could not find uuid (#{port_desc.name})"
+        error log_format('could not find uuid', "name:#{port_desc.name})")
         return
       end
 
       if vif_map.mode != 'vif'
-        info "route_manager: vif mode not set to 'vif' (#{vif_map.mode})"
+        info log_format('vif mode not set to \'vif\'', "mode:#{vif_map.mode}")
         return
       end
 

@@ -31,10 +31,6 @@ module Vnet::Openflow::Ports
       @port_info.name
     end
 
-    def eth?
-      false
-    end
-
     def tunnel?
       false
     end

@@ -5,6 +5,10 @@ module Vnet::Openflow::Ports
   module Virtual
     include Vnet::Openflow::FlowHelpers
 
+    def port_type
+      :virtual
+    end
+
     def flow_options
       @flow_options ||= {:cookie => @cookie}
     end
