@@ -6,8 +6,10 @@ describe Vnet::Openflow::NetworkManager do
 
   before do
     Fabricate(:vnet_1)
+    Fabricate(:vnet_2)
     Fabricate(:datapath_1)
     Fabricate(:datapath_network_1_1)
+    Fabricate(:datapath_network_1_2)
   end
 
   let(:network_manager) { Vnet::Openflow::NetworkManager.new(datapath) }
@@ -66,5 +68,35 @@ describe Vnet::Openflow::NetworkManager do
       network_manager.remove(network)
       expect(datapath.added_flows).to eq []
     end
+  end
+
+  describe "network_by_uuid_direct" do
+    let(:datapath) do
+      MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |dp|
+        actor = double(:actor)
+        actor.should_receive(:prepare_network).exactly(6).and_return(true)
+
+        dc_segment_manager = double(:dc_segment_manager)
+        tunnel_manager = double(:tunnel_manager)
+        route_manager = double(:route_manager)
+
+        dc_segment_manager.should_receive(:async).twice.and_return(actor)
+        tunnel_manager.should_receive(:async).twice.and_return(actor)
+        route_manager.should_receive(:async).twice.and_return(actor)
+
+
+        dp.should_receive(:dc_segment_manager).twice.and_return(dc_segment_manager)
+        dp.should_receive(:tunnel_manager).twice.and_return(tunnel_manager)
+        dp.should_receive(:route_manager).twice.and_return(route_manager)
+      end
+    end
+    
+    subject do
+      network_manager.network_by_uuid('nw-aaaaaaaa')
+      network_manager.network_by_uuid('nw-bbbbbbbb')
+      network_manager.network_by_uuid_direct('nw-aaaaaaaa') 
+    end
+
+     it { expect(subject.uuid).to eq 'nw-aaaaaaaa' }
   end
 end
