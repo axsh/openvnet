@@ -54,12 +54,15 @@ module Vnet::Openflow::Routers
       cookie
     end
 
-    def packet_in(port, message)
+    def packet_in(message)
       ipv4_dst = message.ipv4_dst
       ipv4_src = message.ipv4_src
+      port_number = message.match.in_port
+
       route = @routes[message.cookie]
 
-      debug log_format('packet_in', "port_no:#{port.port_number} name:#{port.port_name} ipv4_src:#{ipv4_src.to_s} ipv4_dst:#{ipv4_dst.to_s}")
+      debug log_format('packet_in',
+                       "port_number:#{port_number} ipv4_src:#{ipv4_src.to_s} ipv4_dst:#{ipv4_dst.to_s}")
 
       return unreachable_ip(message, "no route found", :no_route) if route.nil?
 
@@ -88,7 +91,15 @@ module Vnet::Openflow::Routers
       end
     end
 
+    #
+    # Internal methods:
+    #
+
     private
+
+    def log_format(message, values)
+      "router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
+    end
 
     def create_destination_flow(route)
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
@@ -194,12 +205,6 @@ module Vnet::Openflow::Routers
       debug log_format("packet_in, error '#{error_msg}'", "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
       suppress_packets(message, suppress_reason)
       nil
-    end
-
-    private
-
-    def log_format(message, values)
-      "router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
     end
 
   end

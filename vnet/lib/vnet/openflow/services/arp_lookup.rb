@@ -44,9 +44,11 @@ module Vnet::Openflow::Services
                  })
     end
 
-    def packet_in(port, message)
+    def packet_in(message)
+      port_number = message.match.in_port
+
       if message.eth_type == 0x0806
-        debug "service::arp_lookup.packet_in: port_no:#{port.port_info.port_no} name:#{port.port_info.name} arp_spa:#{message.arp_spa}"
+        debug "service::arp_lookup.packet_in: port_number:#{port_number} arp_spa:#{message.arp_spa}"
 
         match_md = md_create({ :network => @network_id,
                                @network_type => nil
@@ -71,7 +73,7 @@ module Vnet::Openflow::Services
         send_packets(@requests.delete(message.arp_spa))
 
       else
-        debug "service::arp_lookup.packet_in: port_no:#{port.port_info.port_no} name:#{port.port_info.name} ipv4_dst:#{message.ipv4_dst}"
+        debug "service::arp_lookup.packet_in: port_number:#{port_number} ipv4_dst:#{message.ipv4_dst}"
 
         # Check if the address is in the same network, or if we need
         # to look up a gateway mac address.

@@ -24,6 +24,10 @@ module Vnet::Openflow
       }
     end
 
+    def port_by_port_number(port_number)
+      port_to_hash(@ports[port_number])
+    end
+
     def insert(port_desc)
       debug log_format('insert port',
                        "port_no:#{port_desc.port_no} name:#{port_desc.name} " +
@@ -89,14 +93,6 @@ module Vnet::Openflow
       nil
     end
 
-    # Deprecate, pass port number not port.
-    def packet_in(message)
-      port = @ports[message.match.in_port]
-
-      @datapath.packet_manager.async.packet_in(port, message) if port
-      nil
-    end
-
     #
     # Internal methods:
     #
@@ -110,9 +106,12 @@ module Vnet::Openflow
     def port_to_hash(port)
       return nil if port.nil?
 
-      { :network_id => port.network_id,
-        :port_number => port.port_number,
+      { :port_number => port.port_number,
+        :name => port.port_name,
         :type => port.port_type,
+        :mac_address => port.hw_addr,
+        :ipv4_address => port.ipv4_addr,
+        :network_id => port.network_id,
       }
     end
 

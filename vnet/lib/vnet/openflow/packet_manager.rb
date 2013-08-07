@@ -73,11 +73,11 @@ module Vnet::Openflow
       handler.cookie = nil if key == handler.cookie
     end
 
-    def packet_in(port, message)
+    def packet_in(message)
       handler = @handlers[message.cookie]
 
       if handler
-        handler.packet_in(port, message)
+        handler.packet_in(message)
       else
         debug "packet_manager: missing packet handler (0x%x)" % message.cookie
       end
