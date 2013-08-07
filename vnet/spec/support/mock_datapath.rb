@@ -29,6 +29,14 @@ class MockDatapath < Vnet::Openflow::Datapath
     @added_flows += flows
   end
 
+  def delete_flow(flow)
+    @added_flows.delete_if {|f| f == flow }
+  end
+
+  def delete_flows(flows)
+    flows.each {|f| delete_flow(f) }
+  end
+
   def add_ovs_flow(ovs_flow)
     @added_ovs_flows << ovs_flow
   end
