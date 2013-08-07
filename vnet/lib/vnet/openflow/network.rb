@@ -11,6 +11,7 @@ module Vnet::Openflow
     attr_reader :uuid
     attr_reader :datapath_of_bridge
 
+    attr_reader :ports
     attr_reader :service_cookies
 
     attr_reader :cookie
@@ -42,7 +43,7 @@ module Vnet::Openflow
 
       port = {
         # List of ip/mac addresses on this network, etc.
-        :mode => params[:mode],
+        :mode => params[:port_mode],
       }
 
       @ports[params[:port_number]] = port

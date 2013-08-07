@@ -15,10 +15,6 @@ module Vnet::Openflow::Routers
       @mac_address = params[:mac_address]
     end
 
-    def log_format(message, values)
-      "router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
-    end
-
     def install
       debug log_format('install', "mac:#{@mac_address}")
     end
@@ -198,6 +194,12 @@ module Vnet::Openflow::Routers
       debug log_format("packet_in, error '#{error_msg}'", "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
       suppress_packets(message, suppress_reason)
       nil
+    end
+
+    private
+
+    def log_format(message, values)
+      "router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
     end
 
   end

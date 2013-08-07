@@ -14,7 +14,7 @@ describe Vnet::Openflow::NetworkManager do
 
   let(:network_manager) { Vnet::Openflow::NetworkManager.new(datapath) }
 
-  describe "network_by_uuid" do
+  describe "network_by_id" do
     let(:datapath) do
       MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |dp|
         actor = double(:actor)
@@ -37,8 +37,9 @@ describe Vnet::Openflow::NetworkManager do
 
     subject { use_mock_event_handler; network_manager.network_by_uuid('nw-aaaaaaaa') }
 
-    it { should be_a Vnet::Openflow::NetworkVirtual }
-    it { expect(subject.uuid).to eq 'nw-aaaaaaaa' }
+    it { should be_a Hash }
+    it { expect(subject[:uuid]).to eq 'nw-aaaaaaaa' }
+    it { expect(subject[:type]).to eq :virtual }
   end
 
   describe "remove" do
@@ -65,7 +66,7 @@ describe Vnet::Openflow::NetworkManager do
 
     it "has no flow after delete the last network on itself" do
       network = network_manager.network_by_uuid('nw-aaaaaaaa')
-      network_manager.remove(network)
+      network_manager.remove(network[:id])
       expect(datapath.added_flows).to eq []
     end
   end
@@ -94,9 +95,9 @@ describe Vnet::Openflow::NetworkManager do
     subject do
       network_manager.network_by_uuid('nw-aaaaaaaa')
       network_manager.network_by_uuid('nw-bbbbbbbb')
-      network_manager.network_by_uuid_direct('nw-aaaaaaaa') 
+      network_manager.network_by_uuid('nw-aaaaaaaa', false)
     end
 
-     it { expect(subject.uuid).to eq 'nw-aaaaaaaa' }
+     it { expect(subject[:uuid]).to eq 'nw-aaaaaaaa' }
   end
 end

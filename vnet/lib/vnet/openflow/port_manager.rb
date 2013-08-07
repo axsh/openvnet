@@ -62,17 +62,10 @@ module Vnet::Openflow
       port.uninstall
 
       if port.network_id
-        # network = port.network_id
-        # network.del_port(port, true)
-
-        # if network.ports.empty?
-        #   @datapath.network_manager.remove(network)
-        #   @datapath.tunnel_manager.delete_tunnel_port(network.network_id, @datapath.dpid)
-        #   dispatch_event("network/deleted", network_id: network.network_id, dpid: @datapath.dpid)
-        # end
+        @datapath.network_manager.del_port_number(port.network_id, port.port_number)
       end
 
-      if port.port_info.name =~ /^vif-/
+      if port.port_name =~ /^vif-/
         vif_map = MW::Vif[message.name]
         vif_map.batch.update(:active_datapath_id => nil).commit
       end
@@ -97,12 +90,11 @@ module Vnet::Openflow
       port.hw_addr = port_desc.hw_addr
       port.ipv4_addr = @datapath.ipv4_address
 
-      network = @datapath.network_manager.network_by_uuid('nw-public')
-
+      network = @datapath.network_manager.add_port(network_uuid: 'nw-public',
+                                                   port_number: port.port_number,
+                                                   port_mode: :local)
       if network
-        network.add_port(port_number: port.port_number,
-                         mode: :local)
-        port.network_id = network.network_id
+        port.network_id = network[:id]
       end
 
       port.install
@@ -113,12 +105,11 @@ module Vnet::Openflow
 
       port.extend(Ports::Host)
 
-      network = @datapath.network_manager.network_by_uuid('nw-public')
-
+      network = @datapath.network_manager.add_port(network_uuid: 'nw-public',
+                                                   port_number: port.port_number,
+                                                   port_mode: :eth)
       if network
-        network.add_port(port_number: port.port_number,
-                         mode: :eth)
-        port.network_id = network.network_id
+        port.network_id = network[:id]
       end
 
       port.install
@@ -139,26 +130,24 @@ module Vnet::Openflow
         return
       end
 
-      # TODO: Use network_id...
-      network = @datapath.network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
-
-      if network.class == NetworkPhysical
-        port.extend(Ports::Physical)
-      elsif network.class == NetworkVirtual
-        port.extend(Ports::Virtual)
-      else
-        raise("Unknown network type.")
-      end
-
       port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
       port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
       vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
       
+      network = @datapath.network_manager.add_port(network_id: vif_map.network_id,
+                                                   port_number: port.port_number,
+                                                   port_mode: :vif)
+
       if network
-        network.add_port(port_number: port.port_number,
-                         mode: :vif)
-        port.network_id = network.network_id
+        case network[:type]
+        when :physical then port.extend(Ports::Physical)
+        when :virtual  then port.extend(Ports::Virtual)
+        else
+          raise("Unknown network type.")
+        end
+
+        port.network_id = network[:id]
       end
 
       port.install
