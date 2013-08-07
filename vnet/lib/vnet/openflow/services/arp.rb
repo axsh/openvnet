@@ -17,7 +17,7 @@ module Vnet::Openflow::Services
       debug "service::arp.insert: network:#{network.uuid}/#{network.network_id} vif_uuid:#{uuid}"
 
       @entries[uuid] = {
-        :network_number => vif_map.network_id,
+        :network_id => vif_map.network_id,
         :mac_addr => Trema::Mac.new(vif_map.mac_addr),
         :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
       }
@@ -52,7 +52,7 @@ module Vnet::Openflow::Services
       debug "service::arp.packet_in: port_no:#{port.port_number} name:#{port.port_name} arp_spa:#{arp_spa} arp_tpa:#{arp_tpa}"
 
       uuid, entry = @entries.find { |uuid,entry|
-        port.network_number == entry[:network_number] && arp_tpa == entry[:ipv4_address]
+        port.network_id == entry[:network_id] && arp_tpa == entry[:ipv4_address]
       }
 
       if entry.nil?

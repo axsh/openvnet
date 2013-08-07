@@ -8,11 +8,9 @@ module Vnet::Openflow
 
     attr_reader :datapath
     attr_reader :network_id
-    attr_reader :network_number
     attr_reader :uuid
     attr_reader :datapath_of_bridge
 
-    attr_reader :ports
     attr_reader :service_cookies
 
     attr_reader :cookie
@@ -23,7 +21,6 @@ module Vnet::Openflow
       @datapath = dp
       @uuid = network_map.uuid
       @network_id = network_map.network_id
-      @network_number = network_map.network_id
       @datapath_of_bridge = nil
 
       @ports = {}
@@ -35,29 +32,36 @@ module Vnet::Openflow
     end
 
     def broadcast_mac_addr
-      self.datapath_of_bridge && self.datapath_of_bridge[:broadcast_mac_addr]
+      @datapath_of_bridge && @datapath_of_bridge[:broadcast_mac_addr]
     end
 
-    def add_port(port, should_update)
-      raise("Port already added to a network.") if port.network || @ports[port.port_number]
+    def add_port(params)
+      if @ports[params[:port_number]]
+        raise("Port already added to a network.")
+      end
 
-      @ports[port.port_number] = port
-      port.network = self
+      port = {
+        # List of ip/mac addresses on this network, etc.
+        :mode => params[:mode],
+      }
 
-      update_flows if should_update
+      @ports[params[:port_number]] = port
+
+      update_flows
     end
 
-    def del_port(port, should_update)
-      deleted_port = @ports.delete(port.port_number)
-      update_flows if should_update
+    def del_port_number(port_number)
+      port = @ports.delete(port_number)
 
-      raise("Port not added to this network.") if port.network != self || deleted_port.nil?
+      if port.nil?
+        raise("Port was not added to this network.")
+      end
 
-      port.network = nil
+      update_flows
     end
 
     def set_datapath_of_bridge(datapath_map, dpn_map, should_update)
-      # info "network(#{self.uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
+      # info "network(#{@uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
 
       @datapath_of_bridge = {
         :uuid => datapath_map.uuid,
@@ -127,7 +131,7 @@ module Vnet::Openflow
     def uninstall
       info "network(#{@uuid}): removing flows"
 
-      pm = self.datapath.packet_manager
+      pm = @datapath.packet_manager
 
       @datapath.del_cookie(@cookie)
 

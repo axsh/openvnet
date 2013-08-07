@@ -11,18 +11,25 @@ module Vnet::Openflow::Routers
 
       @routes = {}
       @route_link_id = params[:route_link_id]
+      @route_link_uuid = params[:route_link_uuid]
       @mac_address = params[:mac_address]
     end
 
+    def log_format(message, values)
+      "router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
+    end
+
     def install
-      debug "router::router_link.install: network:#{@network_uuid} vif_uuid:#{@vif_uuid.inspect} mac:#{@service_mac} ipv4:#{@service_ipv4}"
+      debug log_format('install', "mac:#{@mac_address}")
     end
 
     def insert_route(route_info)
-      debug "router::router_link.insert_route: network:#{@network_uuid} route:#{route_info.inspect}"
+      ipv4_s = "#{route_info[:ipv4_address].to_s}/#{route_info[:ipv4_prefix]}"
+
+      debug log_format('insert route', "route:#{route_info[:uuid]}/#{route_info[:id]} ipv4:#{ipv4_s}")
 
       if @routes.has_key? route_info[:id]
-        warn "router::router_link.insert_route: route already exists (#{route_info[:uuid]})"
+        warn log_format('route already exists', "#{route_info[:uuid]}")
         return nil
       end
 
@@ -35,7 +42,7 @@ module Vnet::Openflow::Routers
         :require_vif => route_info[:vif][:require_vif],
         :active_datapath_id => route_info[:vif][:active_datapath_id],
 
-        :mac_address => route_info[:vif][:mac_addr],
+        :mac_address => route_info[:vif][:mac_address],
         :ipv4_address => route_info[:ipv4_address],
         :ipv4_prefix => route_info[:ipv4_prefix],
 
@@ -56,7 +63,7 @@ module Vnet::Openflow::Routers
       ipv4_src = message.ipv4_src
       route = @routes[message.cookie]
 
-      debug "router::router_link.packet_in: port_no:#{port.port_number} name:#{port.port_name} ipv4_src:#{ipv4_src} ipv4_dst:#{ipv4_dst}"
+      debug log_format('packet_in', "port_no:#{port.port_number} name:#{port.port_name} ipv4_src:#{ipv4_src.to_s} ipv4_dst:#{ipv4_dst.to_s}")
 
       return unreachable_ip(message, "no route found", :no_route) if route.nil?
 
@@ -75,13 +82,13 @@ module Vnet::Openflow::Routers
           return unreachable_ip(message, "no active datapath for vif found", :inactive_vif)
         end
 
-        debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{ipv4_dst})" % message.cookie
+        debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{ipv4_dst}" % message.cookie)
         
         route_packets(message, ip_lease)
         send_packet(message)
 
       else
-        debug "router::router_link.packet_in: no destination vif needed for route (#{route[:uuid]})"
+        debug log_format('packet_in, no destination vif needed for route', "#{route[:uuid]}")
       end
     end
 
@@ -155,12 +162,9 @@ module Vnet::Openflow::Routers
       # These should set us as listeners to events for the vif
       # becoming active or IP address being leased.
       case reason
-      when :no_route
-        hard_timeout = 30
-      when :no_vif
-        hard_timeout = 30
-      when :inactive_vif
-        hard_timeout = 10
+      when :no_route     then hard_timeout = 30
+      when :no_vif       then hard_timeout = 30
+      when :inactive_vif then hard_timeout = 10
       end
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,
@@ -191,7 +195,7 @@ module Vnet::Openflow::Routers
     end
 
     def unreachable_ip(message, error_msg, suppress_reason)
-      debug "router::router_link.packet_in: #{error_msg} (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+      debug log_format("packet_in, error '#{error_msg}'", "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
       suppress_packets(message, suppress_reason)
       nil
     end

@@ -17,7 +17,7 @@ module Vnet::Openflow::Services
       debug "service::icmp.insert: network:#{network.uuid}/#{network.network_id} vif_uuid:#{uuid}"
 
       @entries[uuid] = {
-        :network_number => vif_map.network_id,
+        :network_id => vif_map.network_id,
         :mac_addr => Trema::Mac.new(vif_map.mac_addr),
         :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
       }
@@ -40,7 +40,7 @@ module Vnet::Openflow::Services
       info "service::icmp.packet_in: port.port_info:#{port.port_info.inspect} message:#{message}"
 
       uuid, entry = @entries.find { |uuid,entry|
-        port.network_number == entry[:network_number] && message.ipv4_dst == entry[:ipv4_address]
+        port.network_id == entry[:network_id] && message.ipv4_dst == entry[:ipv4_address]
       }
 
       if entry.nil?

@@ -12,7 +12,7 @@ module Vnet::Openflow::Ports
 
     attr_accessor :hw_addr
     attr_accessor :ipv4_addr
-    attr_accessor :network
+    attr_accessor :network_id
 
     def initialize(dp, port_info, active)
       @datapath = dp
@@ -24,19 +24,11 @@ module Vnet::Openflow::Ports
     end
 
     def port_number
-      self.port_info.port_no
+      @port_info.port_no
     end
 
     def port_name
-      self.port_info.name
-    end
-
-    def network_number
-      if self.network
-        self.network.network_number
-      else
-        0x0
-      end
+      @port_info.name
     end
 
     def eth?
@@ -62,7 +54,7 @@ module Vnet::Openflow::Ports
     def uninstall
       debug "port: Removing flows..."
 
-      self.datapath.del_cookie(@cookie)
+      @datapath.del_cookie(@cookie)
     end
 
   end

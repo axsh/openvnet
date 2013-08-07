@@ -61,15 +61,15 @@ module Vnet::Openflow
 
       port.uninstall
 
-      if port.network
-        network = port.network
-        network.del_port(port, true)
+      if port.network_id
+        # network = port.network_id
+        # network.del_port(port, true)
 
-        if network.ports.empty?
-          @datapath.network_manager.remove(network)
-          @datapath.tunnel_manager.delete_tunnel_port(network.network_id, @datapath.dpid)
-          dispatch_event("network/deleted", network_id: network.network_id, dpid: @datapath.dpid)
-        end
+        # if network.ports.empty?
+        #   @datapath.network_manager.remove(network)
+        #   @datapath.tunnel_manager.delete_tunnel_port(network.network_id, @datapath.dpid)
+        #   dispatch_event("network/deleted", network_id: network.network_id, dpid: @datapath.dpid)
+        # end
       end
 
       if port.port_info.name =~ /^vif-/
@@ -99,7 +99,12 @@ module Vnet::Openflow
 
       network = @datapath.network_manager.network_by_uuid('nw-public')
 
-      network.add_port(port, true) if network
+      if network
+        network.add_port(port_number: port.port_number,
+                         mode: :local)
+        port.network_id = network.network_id
+      end
+
       port.install
     end
 
@@ -110,7 +115,12 @@ module Vnet::Openflow
 
       network = @datapath.network_manager.network_by_uuid('nw-public')
 
-      network.add_port(port, true) if network
+      if network
+        network.add_port(port_number: port.port_number,
+                         mode: :eth)
+        port.network_id = network.network_id
+      end
+
       port.install
     end
 
@@ -129,6 +139,7 @@ module Vnet::Openflow
         return
       end
 
+      # TODO: Use network_id...
       network = @datapath.network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
 
       if network.class == NetworkPhysical
@@ -144,7 +155,12 @@ module Vnet::Openflow
 
       vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
       
-      network.add_port(port, true) if network
+      if network
+        network.add_port(port_number: port.port_number,
+                         mode: :vif)
+        port.network_id = network.network_id
+      end
+
       port.install
     end
 
@@ -152,8 +168,6 @@ module Vnet::Openflow
       @datapath.mod_port(port.port_number, :no_flood)
 
       port.extend(Ports::Tunnel)
-
-      network.add_port(port, true) if network
       port.install
     end
 

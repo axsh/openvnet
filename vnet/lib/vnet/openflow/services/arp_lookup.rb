@@ -106,6 +106,8 @@ module Vnet::Openflow::Services
 
       after([attempts, 10].min) { process_timeout(request_ipv4, attempts + 1) }
 
+      debug "service::arp_lookup: process timeout (ipv4_dst:#{request_ipv4} attempts:#{attempts})"
+
       arp_out({ :out_port => OFPP_TABLE,
                 :in_port => OFPP_LOCAL,
                 :eth_src => @service_mac,
