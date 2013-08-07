@@ -13,10 +13,6 @@ module Vnet::Openflow::Ports
       @flow_options ||= {:cookie => @cookie}
     end
 
-    def tunnel?
-      true
-    end
-
     def install
       flows = []
       flows << Flow.create(TABLE_TUNNEL_PORTS, 30, {

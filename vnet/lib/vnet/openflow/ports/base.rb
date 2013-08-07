@@ -31,8 +31,14 @@ module Vnet::Openflow::Ports
       @port_info.name
     end
 
-    def tunnel?
-      false
+    def to_hash
+      { :port_number => self.port_number,
+        :name => self.port_name,
+        :type => self.port_type,
+        :mac_address => @hw_addr,
+        :ipv4_address => @ipv4_addr,
+        :network_id => @network_id,
+      }
     end
 
     def inspect

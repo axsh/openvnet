@@ -104,15 +104,7 @@ module Vnet::Openflow
     end
 
     def port_to_hash(port)
-      return nil if port.nil?
-
-      { :port_number => port.port_number,
-        :name => port.port_name,
-        :type => port.port_type,
-        :mac_address => port.hw_addr,
-        :ipv4_address => port.ipv4_addr,
-        :network_id => port.network_id,
-      }
+      port && port.to_hash
     end
 
     #

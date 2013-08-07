@@ -104,12 +104,7 @@ module Vnet::Openflow
     end
 
     def nw_to_hash(network)
-      return nil if network.nil?
-
-      { :id => network.network_id,
-        :uuid => network.uuid,
-        :type => network.network_type,
-      }
+      network && network.to_hash
     end
 
     def nw_by_id(network_id, dynamic_load)

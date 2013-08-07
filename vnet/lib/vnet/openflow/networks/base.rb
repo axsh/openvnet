@@ -36,6 +36,13 @@ module Vnet::Openflow::Networks
       @datapath_of_bridge && @datapath_of_bridge[:broadcast_mac_addr]
     end
 
+    def to_hash
+      { :id => @network_id,
+        :uuid => @uuid,
+        :type => self.network_type,
+      }
+    end
+
     def add_port(params)
       if @ports[params[:port_number]]
         raise("Port already added to a network.")
