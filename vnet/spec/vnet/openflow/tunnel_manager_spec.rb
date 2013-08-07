@@ -78,29 +78,31 @@ describe Vnet::Openflow::TunnelManager do
     it "should only add broadcast mac address flows at start" do
       tunnel_manager
 
-      # pp datapath.added_flows
+      flows = datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq 3
+      expect(flows.size).to eq 3
 
-      expect(datapath.added_flows[0][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
-      expect(datapath.added_flows[0][:priority]).to eq 90
-      expect(datapath.added_flows[0][:match].eth_dst).to eq Trema::Mac.new('bb:bb:bb:11:11:11')
-      expect(datapath.added_flows[0][:instructions].size).to eq 1
-      expect(datapath.added_flows[0][:instructions][0].actions.size).to eq 0
+      expect(flows[0]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_CLASSIFIER,
+        90,
+        {:eth_dst => Trema::Mac.new('bb:bb:bb:11:11:11')},
+        nil,
+        {:cookie => 1 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
 
-      expect(datapath.added_flows[1][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
-      expect(datapath.added_flows[1][:priority]).to eq 90
-      expect(datapath.added_flows[1][:match].eth_dst).to eq Trema::Mac.new('bb:bb:bb:22:22:22')
-      expect(datapath.added_flows[1][:instructions].size).to eq 1
-      expect(datapath.added_flows[1][:instructions][0].actions.size).to eq 0
+      expect(flows[1]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_CLASSIFIER,
+        90,
+        {:eth_dst => Trema::Mac.new('bb:bb:bb:22:22:22')},
+        nil,
+        {:cookie => 2 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
 
-      expect(datapath.added_flows[2][:table_id]).to eq TABLE_NETWORK_CLASSIFIER
-      expect(datapath.added_flows[2][:priority]).to eq 90
-      expect(datapath.added_flows[2][:match].eth_dst).to eq Trema::Mac.new('cc:cc:cc:11:11:11')
-      expect(datapath.added_flows[2][:instructions].size).to eq 1
-      expect(datapath.added_flows[2][:instructions][0].actions.size).to eq 0
-
+      expect(flows[2]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_CLASSIFIER,
+        90,
+        {:eth_dst => Trema::Mac.new('cc:cc:cc:11:11:11')},
+        nil,
+        {:cookie => 3 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
     end
 
     it "should add flood flow network 1" do
@@ -116,32 +118,24 @@ describe Vnet::Openflow::TunnelManager do
       expect(datapath.added_ovs_flows.size).to eq 0
       expect(datapath.added_flows.size).to eq 2
 
-      expect(datapath.added_flows[0][:table_id]).to eq TABLE_METADATA_TUNNEL_PORTS
-      expect(datapath.added_flows[0][:priority]).to eq 1
-      expect(datapath.added_flows[0][:match].metadata).to eq 1 | METADATA_TYPE_COLLECTION
-      expect(datapath.added_flows[0][:match].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK
-      expect(datapath.added_flows[0][:instructions].size).to eq 1
-      expect(datapath.added_flows[0][:instructions][0].actions.size).to eq 2
-      expect(datapath.added_flows[0][:instructions][0].actions[0]).to be_a Trema::Actions::SendOutPort
-      expect(datapath.added_flows[0][:instructions][0].actions[0].port).to eq 9
-      expect(datapath.added_flows[0][:instructions][0].actions[1]).to be_a Trema::Actions::SendOutPort
-      expect(datapath.added_flows[0][:instructions][0].actions[1].port).to eq 10
-
-      expect(datapath.added_flows[1][:table_id]).to eq TABLE_METADATA_TUNNEL_IDS
-      expect(datapath.added_flows[1][:priority]).to eq 1
-      expect(datapath.added_flows[1][:match].metadata).to eq 1 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD
-      expect(datapath.added_flows[1][:match].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD
-      expect(datapath.added_flows[1][:instructions].size).to eq 3
-      expect(datapath.added_flows[1][:instructions][0].actions.size).to eq 1
-      expect(datapath.added_flows[1][:instructions][0].actions[0]).to be_a Trema::Actions::SetField
-      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set.size).to eq 1
-      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set[0]).to be_a Trema::Actions::TunnelId
-      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set[0].tunnel_id).to eq 1 | TUNNEL_FLAG
-      expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::WriteMetadata
-      expect(datapath.added_flows[1][:instructions][1].metadata).to eq 1 | METADATA_TYPE_COLLECTION
-      expect(datapath.added_flows[1][:instructions][1].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK
-      expect(datapath.added_flows[1][:instructions][2]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[1][:instructions][2].table_id).to eq TABLE_METADATA_TUNNEL_PORTS
+      expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
+        TABLE_METADATA_TUNNEL_PORTS,
+        1,
+        {:metadata => 1 | METADATA_TYPE_COLLECTION,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
+        [{:output => 9}, {:output => 10}],
+        {:cookie => 1 | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)})
+                                                          
+      expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
+        TABLE_METADATA_TUNNEL_IDS,
+        1,
+        {:metadata => 1 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD},
+        {:tunnel_id => 1 | TUNNEL_FLAG_MASK},
+        {:metadata => 1 | METADATA_TYPE_COLLECTION,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
+         :cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
+         :goto_table => TABLE_METADATA_TUNNEL_PORTS})
     end
 
     it "should add flood flow for network 2" do
@@ -156,29 +150,24 @@ describe Vnet::Openflow::TunnelManager do
       expect(datapath.added_ovs_flows.size).to eq 0
       expect(datapath.added_flows.size).to eq 2
 
-      expect(datapath.added_flows[0][:table_id]).to eq TABLE_METADATA_TUNNEL_PORTS
-      expect(datapath.added_flows[0][:priority]).to eq 1
-      expect(datapath.added_flows[0][:match].metadata).to eq 2 | METADATA_TYPE_COLLECTION
-      expect(datapath.added_flows[0][:match].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK
-      expect(datapath.added_flows[0][:instructions][0].actions.size).to eq 1
-      expect(datapath.added_flows[0][:instructions][0].actions[0]).to be_a Trema::Actions::SendOutPort
-      expect(datapath.added_flows[0][:instructions][0].actions[0].port).to eq 9
+      expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
+        TABLE_METADATA_TUNNEL_PORTS,
+        1,
+        {:metadata => 2 | METADATA_TYPE_COLLECTION,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
+        [{:output => 9}],
+        {:cookie => 2 | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)})
 
-      expect(datapath.added_flows[1][:table_id]).to eq TABLE_METADATA_TUNNEL_IDS
-      expect(datapath.added_flows[1][:priority]).to eq 1
-      expect(datapath.added_flows[1][:match].metadata).to eq 2 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD
-      expect(datapath.added_flows[1][:match].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD
-      expect(datapath.added_flows[1][:instructions].size).to eq 3
-      expect(datapath.added_flows[1][:instructions][0].actions.size).to eq 1
-      expect(datapath.added_flows[1][:instructions][0].actions[0]).to be_a Trema::Actions::SetField
-      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set.size).to eq 1
-      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set[0]).to be_a Trema::Actions::TunnelId
-      expect(datapath.added_flows[1][:instructions][0].actions[0].action_set[0].tunnel_id).to eq 2 | TUNNEL_FLAG
-      expect(datapath.added_flows[1][:instructions][1]).to be_a Trema::Instructions::WriteMetadata
-      expect(datapath.added_flows[1][:instructions][1].metadata).to eq 2 | METADATA_TYPE_COLLECTION
-      expect(datapath.added_flows[1][:instructions][1].metadata_mask).to eq METADATA_VALUE_MASK | METADATA_TYPE_MASK
-      expect(datapath.added_flows[1][:instructions][2]).to be_a Trema::Instructions::GotoTable
-      expect(datapath.added_flows[1][:instructions][2].table_id).to eq TABLE_METADATA_TUNNEL_PORTS
+      expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
+        TABLE_METADATA_TUNNEL_IDS,
+        1,
+        {:metadata => 2 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD},
+        {:tunnel_id => 2 | TUNNEL_FLAG_MASK},
+        {:metadata => 2 | METADATA_TYPE_COLLECTION,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
+         :cookie => 2 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
+         :goto_table => TABLE_METADATA_TUNNEL_PORTS})
     end
 
   end
