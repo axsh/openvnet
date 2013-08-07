@@ -28,11 +28,12 @@ module Vnet::Openflow
       nw_to_hash(nw_by_params(params, dynamic_load))
     end
 
-    def virtual_network_ids
+    def networks(params = {})
       @networks.select { |key,nw|
-        nw.class == NetworkVirtual
+        result = true
+        result = result && (nw.network_type == params[:network_type]) if params[:network_type]
       }.map { |key,nw|
-        nw.network_id
+        nw_to_hash(nw)
       }
     end
 
@@ -53,7 +54,8 @@ module Vnet::Openflow
       end
 
       if !network.ports.empty?
-        info log_format('network still has active ports, and can\'t be removed', "network:#{network.uuid}/#{network.id}")
+        info log_format('network still has active ports, and can\'t be removed',
+                        "network:#{network.uuid}/#{network.id}")
         return
       end
 
@@ -141,8 +143,10 @@ module Vnet::Openflow
 
     def nw_by_params(params, dynamic_load)
       case
-      when params[:network_id]   then return nw_by_id(params[:network_id], dynamic_load)
-      when params[:network_uuid] then return nw_by_uuid(params[:network_uuid], dynamic_load)
+      when params[:network_id]
+        return nw_by_id(params[:network_id], dynamic_load)
+      when params[:network_uuid]
+        return nw_by_uuid(params[:network_uuid], dynamic_load)
       else
         raise("Missing network id/uuid parameter.")
       end
@@ -151,11 +155,12 @@ module Vnet::Openflow
     def create_network(network_map)
       case network_map.network_mode
       when 'physical'
-        network = NetworkPhysical.new(@datapath, network_map)
+        network = Networks::Physical.new(@datapath, network_map)
       when 'virtual'
-        network = NetworkVirtual.new(@datapath, network_map)
+        network = Networks::Virtual.new(@datapath, network_map)
       else
-        error log_format('unknown network type', "network_type:#{network_map.network_mode}")
+        error log_format('unknown network type',
+                         "network_type:#{network_map.network_mode}")
         return nil
       end
       

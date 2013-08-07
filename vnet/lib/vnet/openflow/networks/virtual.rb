@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Networks
 
-  class NetworkVirtual < Network
+  class Virtual < Base
 
     def network_type
       :virtual

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Networks
 
-  class Network
+  class Base
     include Celluloid::Logger
-    include FlowHelpers
+    include Vnet::Openflow::FlowHelpers
 
     attr_reader :datapath
     attr_reader :network_id

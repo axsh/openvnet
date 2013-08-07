@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Networks
 
-  class NetworkPhysical < Network
+  class Physical < Base
 
     def network_type
       :physical
