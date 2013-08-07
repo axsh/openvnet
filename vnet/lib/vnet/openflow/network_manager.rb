@@ -9,8 +9,6 @@ module Vnet::Openflow
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable
 
-    attr_reader :networks
-
     def initialize(dp)
       @datapath = dp
       @dpid = @datapath.dpid
