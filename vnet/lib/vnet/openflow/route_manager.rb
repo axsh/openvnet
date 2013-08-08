@@ -166,15 +166,20 @@ module Vnet::Openflow
     end
 
     def prepare_vif(vif_map)
-      vif = @vifs[vif_map.id]
+      interface = @datapath.interface_manager.interface(id: vif_map.id)
+      info "router_manager: from interface_manager: #{interface.inspect}"
+
+      vif = interface && @vifs[interface[:id]]
       return vif if vif
 
-      if vif_map.mode != 'simulated'
+      if interface[:mode] != :simulated
         info "router_manager: only vifs with mode 'simulated' are supported (uuid:#{vif_map.uuid} mode:#{vif_map.mode})"
         return
       end
 
-      service_map = vif_map.network_services.detect { |service| service.display_name == 'router' }
+      service_map = vif_map.network_services.detect { |service|
+        service.display_name == 'router'
+      }
 
       if service_map.nil?
         warn "route_manager: could not find 'router' service for vif (#{vif_map.uuid})"
@@ -182,7 +187,7 @@ module Vnet::Openflow
       end
 
       vif = {
-        :id => vif_map.id,
+        :id => interface[:id],
         :network_id => vif_map.network_id,
         :use_datapath_id => nil,
         :service_cookie => service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT),
@@ -202,15 +207,16 @@ module Vnet::Openflow
         return nil
       end
 
-      @vifs[vif_map.id] = vif
+      @vifs[interface[:id]] = vif
 
       datapath_id = @datapath.datapath_map.id
 
-      if vif_map.owner_datapath_id
-        if vif_map.owner_datapath_id == datapath_id
+      # Fix this...
+      if interface[:owner_datapath_ids]
+        if interface[:owner_datapath_ids].include? datapath_id
           vif_map.batch.update(:active_datapath_id => datapath_id).commit
         else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id
+          vif[:use_datapath_id] = vif_map.owner_datapath_id.first
         end
       end
 
