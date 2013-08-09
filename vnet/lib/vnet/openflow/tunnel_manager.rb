@@ -124,7 +124,7 @@ module Vnet::Openflow
       # if #{remote_dpid} is equal to #{@datapath.dpid},
       # it can be regard as the network deletion happens on
       # the local datapath (not on the remote datapath)
-
+      
       if remote_dpid == @datapath.dpid
         debug "delete tunnel on local datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
         @tunnels.each do |t|
@@ -135,6 +135,7 @@ module Vnet::Openflow
         debug "delete tunnel for remote datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
         @tunnels.each do |t|
           if t[:dst_dpid] == "0x%016x" % remote_dpid
+            debug "found a tunnel to delete: display_name => #{t[:display_name]}"
             delete_tunnel_if_datapath_networks_empty(t, network_id)
           end
         end

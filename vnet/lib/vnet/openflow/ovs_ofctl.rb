@@ -80,7 +80,6 @@ module Vnet::Openflow
     end
 
     def delete_tunnel(tunnel_name)
-      p "[ovs_ofctl]: delete tunnel #{tunnel_name}"
       system("#{@ovs_vsctl} del-port #{switch_name} #{tunnel_name}")
     end
 

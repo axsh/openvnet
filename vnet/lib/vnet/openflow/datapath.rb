@@ -107,6 +107,10 @@ module Vnet::Openflow
       p "delete tunnel #{tunnel_name}"
       self.ovs_ofctl.delete_tunnel(tunnel_name)
     end
+
+    def delete_tunnel(tunnel_name)
+      self.ovs_ofctl.delete_tunnel(tunnel_name)
+    end
   end
 
 end
