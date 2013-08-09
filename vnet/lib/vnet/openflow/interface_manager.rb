@@ -13,10 +13,20 @@ module Vnet::Openflow
 
       @dpid = @datapath.dpid
       @dpid_s = "0x%016x" % @datapath.dpid
+      
     end
 
     def interface(params)
       if_to_hash(if_by_params(params))
+    end
+
+    def update_active_datapaths(params)
+      interface = if_by_params_direct(params)
+
+      return if interface.nil?
+
+      interface.active_datapath_ids = interface.active_datapath_ids.dup.push(@datapath_id).uniq!
+      MW::Vif.batch[:id => interface.id].update(:active_datapath_id => params[:datapath_id]).commit
     end
 
     #
@@ -74,7 +84,29 @@ module Vnet::Openflow
 
       @interfaces[interface_map.id] = interface
 
+      load_addresses(interface, interface_map)
+
       interface
+    end
+
+    def load_addresses(interface, interface_map)
+      return if interface_map.mac_addr.nil?
+
+      mac_address = Trema::Mac.new(interface_map.mac_addr)
+      interface.add_mac_address(mac_address)
+
+      network_id = interface_map.network_id
+      return if network_id.nil?
+
+      network_info = @datapath.network_manager.network_by_id(network_id)
+
+      ipv4_address = interface_map.ipv4_address
+      return if ipv4_address.nil?
+
+      interface.add_ipv4_address(mac_address: mac_address,
+                                 network_id: network_id,
+                                 network_type: network_info[:type],
+                                 ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
     end
 
   end
