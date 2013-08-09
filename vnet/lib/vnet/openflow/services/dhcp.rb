@@ -13,34 +13,37 @@ module Vnet::Openflow::Services
 
     def initialize(params)
       @datapath = params[:datapath]
-      @network = params[:network]
+      @network_id = params[:network_id]
+      @network_type = params[:network_type]
       @vif_uuid = params[:vif_uuid]
       @service_mac = params[:service_mac]
       @service_ipv4 = params[:service_ipv4]
     end
 
     def install
-      catch_network_flow(@network, {
-                           :eth_dst => MAC_BROADCAST,
-                           :eth_type => 0x0800,
-                           :ip_proto => 0x11,
-                           :ipv4_dst => IPAddr.new('255.255.255.255'),
-                           :ipv4_src => IPAddr.new('0.0.0.0'),
-                           :udp_dst => 67,
-                           :udp_src => 68
-                         }, {
-                           :network => @network
-                         })
-      catch_network_flow(@network, {
-                           :eth_dst => self.service_mac,
-                           :eth_type => 0x0800,
-                           :ip_proto => 0x11,
-                           :ipv4_dst => self.service_ipv4,
-                           :udp_dst => 67,
-                           :udp_src => 68
-                         }, {
-                           :network => @network
-                         })
+      catch_flow(:network, {
+                   :eth_dst => MAC_BROADCAST,
+                   :eth_type => 0x0800,
+                   :ip_proto => 0x11,
+                   :ipv4_dst => IPAddr.new('255.255.255.255'),
+                   :ipv4_src => IPAddr.new('0.0.0.0'),
+                   :udp_dst => 67,
+                   :udp_src => 68
+                 }, {
+                   :network_id => @network_id,
+                   :network_type => @network_type,
+                 })
+      catch_flow(:network, {
+                   :eth_dst => self.service_mac,
+                   :eth_type => 0x0800,
+                   :ip_proto => 0x11,
+                   :ipv4_dst => self.service_ipv4,
+                   :udp_dst => 67,
+                   :udp_src => 68
+                 }, {
+                   :network_id => @network_id,
+                   :network_type => @network_type,
+                 })
     end
 
     def packet_in(message)

@@ -14,6 +14,10 @@ module Vnet::Openflow::Services
     def packet_in(message)
     end
 
+    def to_hash
+      {}
+    end
+
   end
 
 end

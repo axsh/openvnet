@@ -26,6 +26,7 @@ module Vnet::Openflow
     attr_reader :packet_manager
     attr_reader :port_manager
     attr_reader :route_manager
+    attr_reader :service_manager
     attr_reader :tunnel_manager
 
     def initialize(ofc, dp_id, ofctl = nil)
@@ -40,6 +41,7 @@ module Vnet::Openflow
       @packet_manager = PacketManager.new(self)
       @port_manager = PortManager.new(self)
       @route_manager = RouteManager.new(self)
+      @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(self)
 
       @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
@@ -59,6 +61,10 @@ module Vnet::Openflow
 
     def datapath_batch
       @datapath_map.batch
+    end
+
+    def datapath_id
+      @datapath_map && @datapath_map.id
     end
 
     def inspect

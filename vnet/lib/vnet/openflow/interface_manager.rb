@@ -13,7 +13,6 @@ module Vnet::Openflow
 
       @dpid = @datapath.dpid
       @dpid_s = "0x%016x" % @datapath.dpid
-      
     end
 
     def interface(params)

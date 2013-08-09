@@ -114,6 +114,7 @@ module Vnet::Openflow
       # TODO: Don't load the same network id/uuid for multiple
       # simultaneous callers.
       network_map = MW::Network[:id => network_id]
+      return nil if network_map.nil?
 
       old_network = @networks[network_id]
       return old_network if old_network
@@ -180,8 +181,8 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
-      network_map.batch.network_services.commit(:fill => :vif).each { |service_map|
-        network.add_service(service_map) if service_map.vif.mode == 'simulated'
+      network_map.batch.network_services.commit.each { |service_map|
+        @datapath.service_manager.item(:id => service_map.id)
       }
 
       @datapath.dc_segment_manager.async.prepare_network(network_map, dp_map)

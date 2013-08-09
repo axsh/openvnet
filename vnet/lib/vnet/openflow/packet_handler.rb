@@ -59,18 +59,6 @@ module Vnet::Openflow
                                      }))
     end
 
-    def catch_network_flow(network, match, params = {})
-      type = case network.network_type
-             when :physical then :physical_local
-             when :virtual  then :virtual_local
-             else
-               info "Unknown network mode for packet handler."
-               return
-             end
-
-      catch_flow(type, match, params)
-    end
-
     def arp_out(params)
       raw_out = Racket::Racket.new
       raw_out.l2 = Racket::L2::Ethernet.new

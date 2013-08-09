@@ -18,11 +18,11 @@ module Vnet
   LOG_DIR = ENV['VNET_LOG_DIR'] || "/var/log/wakame-vnet"
 
   module Configurations
-    autoload :Base,  'vnet/configurations/base'
-    autoload :Common,  'vnet/configurations/common'
-    autoload :Webapi,  'vnet/configurations/webapi'
+    autoload :Base,   'vnet/configurations/base'
+    autoload :Common, 'vnet/configurations/common'
+    autoload :Webapi, 'vnet/configurations/webapi'
     autoload :Vnmgr,  'vnet/configurations/vnmgr'
-    autoload :Vna,  'vnet/configurations/vna'
+    autoload :Vna,    'vnet/configurations/vna'
   end
 
   module Constants
@@ -160,12 +160,14 @@ module Vnet
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
+    autoload :Manager, 'vnet/openflow/manager'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHandler, 'vnet/openflow/packet_handler'
     autoload :PacketManager, 'vnet/openflow/packet_manager'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
+    autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
