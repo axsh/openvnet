@@ -56,6 +56,7 @@ build-rpm-vnet: install-bundle clean-bundle
 	$(CURDIR)/deployment/packagebuild/build_packages_vnet.sh
 
 build-rpm-third-party:
+	(cd $(CURDIR)/deployment/packagebuild; bundle install --path vendor/bundle --binstubs)
 	$(CURDIR)/deployment/packagebuild/build_packages_third_party.sh
 
 test-rpm-install:
