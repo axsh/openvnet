@@ -11,6 +11,10 @@ module Vnet::Openflow
 
     def initialize(dp)
       @datapath = dp
+
+      @dpid = @datapath.dpid
+      @dpid_s = "0x%016x" % @datapath.dpid
+
       @route_links = {}
       @vifs = {}
     end
@@ -21,10 +25,10 @@ module Vnet::Openflow
       return if route_link.nil?
       return if route_link[:routes].has_key? route_map.id
 
-      info "route_manager.insert: id:#{route_map.id} uuid:#{route_map.uuid}"
-      info "route_manager.insert: route.route_type:#{route_map.route_type}"
-      info "route_manager.insert: route.vif: id:#{route_map.vif.id} uuid:#{route_map.vif.uuid}"
-      info "route_manager.insert: route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}"
+      info log_format('insert', "id:#{route_map.id} uuid:#{route_map.uuid}")
+      info log_format('insert', "route.route_type:#{route_map.route_type}")
+      info log_format('insert', "route.vif: id:#{route_map.vif.id} uuid:#{route_map.vif.uuid}")
+      info log_format('insert', "route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}")
 
       route = {
         :id => route_map.id,
@@ -41,7 +45,7 @@ module Vnet::Openflow
       route[:vif] = prepare_vif(route_map.vif)
 
       if route[:vif].nil?
-        warn "route_manager: couldn't prepare router vif (#{route_map.uuid})"
+        warn log_format('couldn\'t prepare router vif', "#{route_map.uuid}")
         return
       end
 
@@ -61,7 +65,15 @@ module Vnet::Openflow
       }
     end
 
+    #
+    # Internal methods:
+    #
+
     private
+
+    def log_format(message, values = nil)
+      "#{@dpid_s} route_manager: #{message}" + (values ? " (#{values})" : '')
+    end
 
     def datapath_route_link(rl_map)
       @datapath.datapath_batch.datapath_route_links_dataset.where(:route_link_id => rl_map.id).all.commit
@@ -167,13 +179,13 @@ module Vnet::Openflow
 
     def prepare_vif(vif_map)
       interface = @datapath.interface_manager.item(id: vif_map.id)
-      info "router_manager: from interface_manager: #{interface.inspect}"
+      info log_format('from interface_manager' , "#{interface.inspect}")
 
       vif = interface && @vifs[interface.id]
       return vif if vif
 
       if interface.mode != :simulated
-        info "router_manager: only vifs with mode 'simulated' are supported (uuid:#{interface.uuid} mode:#{interface.mode})"
+        info log_format('only vifs with mode \'simulated\' are supported', "uuid:#{interface.uuid} mode:#{interface.mode}")
         return
       end
 
@@ -182,7 +194,7 @@ module Vnet::Openflow
       }
 
       if service_map.nil?
-        warn "route_manager: could not find 'router' service for vif (#{interface.uuid})"
+        warn log_format('could not find \'router\' service for vif', "#{interface.uuid}")
         return nil
       end
 
@@ -190,7 +202,7 @@ module Vnet::Openflow
 
       if mac_info.nil? ||
           mac_info[1][:ipv4_addresses].first.nil?
-        warn "route_manager: could not find ipv4 address"
+        warn log_format('could not find ipv4 address')
         return nil
       end
 
@@ -215,7 +227,7 @@ module Vnet::Openflow
         vif[:require_vif] = true
         vif[:network_type] = :virtual_network
       else
-        warn "route_manager: vif does not have a known network type (#{interface.uuid})"
+        warn log_format('vif does not have a known network type', "#{interface.uuid}")
         return nil
       end
 

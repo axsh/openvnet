@@ -28,7 +28,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "interface_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
+      "#{@dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def interface_initialize(mode, params)

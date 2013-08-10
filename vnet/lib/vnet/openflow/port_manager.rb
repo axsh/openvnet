@@ -100,7 +100,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "port_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
+      "#{@dpid_s} port_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def port_to_hash(port)

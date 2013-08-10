@@ -11,7 +11,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "service_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
+      "#{@dpid_s} service_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def service_initialize(mode, params)

@@ -16,6 +16,9 @@ module Vnet::Openflow::Interfaces
       @datapath = params[:datapath]
       @manager = params[:manager]
 
+      @dpid = @datapath.dpid
+      @dpid_s = "0x%016x" % @datapath.dpid
+
       map = params[:map]
 
       @id = map.id
@@ -31,6 +34,10 @@ module Vnet::Openflow::Interfaces
     def cookie(tag = nil)
       value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
       tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
+    end
+
+    def log_format(message, values = nil)
+      "#{@dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
     end
 
     # Update variables by first duplicating to avoid memory

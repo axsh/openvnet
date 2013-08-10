@@ -19,6 +19,10 @@ module Vnet::Openflow::Interfaces
                             reply_cookie: self.cookie(TAG_ARP_REPLY))
     end
 
+    def log_format(message, values = nil)
+      "#{@dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
+    end
+
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
@@ -53,7 +57,7 @@ module Vnet::Openflow::Interfaces
 
       case (message.cookie & COOKIE_TAG_MASK) >> COOKIE_TAG_SHIFT
       when TAG_ARP_REQUEST_FLOOD, TAG_ARP_REQUEST_INTERFACE
-        info "simulated arp reply: #{message.arp_tpa}"
+        info log_format('simulated arp reply', "arp_tpa:#{message.arp_tpa}")
 
         mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
                                                ipv4_address: message.arp_tpa)

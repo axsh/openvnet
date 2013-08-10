@@ -100,7 +100,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "network_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
+      "#{@dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def nw_to_hash(network)
