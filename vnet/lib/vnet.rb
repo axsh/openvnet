@@ -160,6 +160,7 @@ module Vnet
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow'
+    autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
     autoload :Manager, 'vnet/openflow/manager'
     autoload :NetworkManager, 'vnet/openflow/network_manager'

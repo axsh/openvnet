@@ -10,9 +10,6 @@ module Vnet::Openflow::Services
     def initialize(params)
       @datapath = params[:datapath]
       @interface_id = params[:interface_id]
-
-      @network_id = params[:network_id]
-      @network_type = params[:network_type]
     end
 
     def install
@@ -26,18 +23,27 @@ module Vnet::Openflow::Services
                            },
                            interface_id: @interface_id,
                            cookie: self.cookie)
-      flows << flow_create(:catch_flood_simulated,
-                           match: {
-                             :eth_type => 0x0800,
-                             :ip_proto => 0x11,
-                             :ipv4_dst => IPV4_BROADCAST,
-                             :ipv4_src => IPV4_ZERO,
-                             :udp_dst => 67,
-                             :udp_src => 68
-                           },
-                           network_id: @network_id,
-                           network_type: @network_type,
-                           cookie: self.cookie)
+
+      # This should handled by events.
+      interface = @datapath.interface_manager.item(id: @interface_id,
+                                                   dynamic_load: false)
+      return if interface.nil?
+
+      interface.mac_addresses.each { |mac_address, mac_info|
+        mac_info[:ipv4_addresses].each { |ipv4_info|
+          flows << flow_create(:catch_flood_simulated,
+                               match: {
+                                 :eth_type => 0x0800,
+                                 :ip_proto => 0x11,
+                                 :ipv4_dst => IPV4_BROADCAST,
+                                 :ipv4_src => IPV4_ZERO,
+                                 :udp_dst => 67,
+                                 :udp_src => 68
+                               },
+                               network_id: ipv4_info[:network_id],
+                               cookie: self.cookie)
+        }
+      }
 
       @datapath.add_flows(flows)
     end
@@ -93,6 +99,12 @@ module Vnet::Openflow::Services
                 :payload => dhcp_out.pack
               })
     end
+
+    #
+    # Internal methods:
+    #
+
+    private
 
     def parse_dhcp_packet(message)
       if !message.udp?

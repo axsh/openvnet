@@ -169,11 +169,11 @@ module Vnet::Openflow
       interface = @datapath.interface_manager.item(id: vif_map.id)
       info "router_manager: from interface_manager: #{interface.inspect}"
 
-      vif = interface && @vifs[interface[:id]]
+      vif = interface && @vifs[interface.id]
       return vif if vif
 
-      if interface[:mode] != :simulated
-        info "router_manager: only vifs with mode 'simulated' are supported (uuid:#{interface[:uuid]} mode:#{interface[:mode]})"
+      if interface.mode != :simulated
+        info "router_manager: only vifs with mode 'simulated' are supported (uuid:#{interface.uuid} mode:#{interface.mode})"
         return
       end
 
@@ -182,11 +182,11 @@ module Vnet::Openflow
       }
 
       if service_map.nil?
-        warn "route_manager: could not find 'router' service for vif (#{interface[:uuid]})"
+        warn "route_manager: could not find 'router' service for vif (#{interface.uuid})"
         return nil
       end
 
-      mac_info = interface[:mac_addresses].first
+      mac_info = interface.mac_addresses.first
 
       if mac_info.nil? ||
           mac_info[1][:ipv4_addresses].first.nil?
@@ -197,7 +197,7 @@ module Vnet::Openflow
       ipv4_info = mac_info[1][:ipv4_addresses].first
 
       vif = {
-        :id => interface[:id],
+        :id => interface.id,
         :use_datapath_id => nil,
         :service_cookie => service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT),
 
@@ -215,18 +215,18 @@ module Vnet::Openflow
         vif[:require_vif] = true
         vif[:network_type] = :virtual_network
       else
-        warn "route_manager: vif does not have a known network type (#{interface[:uuid]})"
+        warn "route_manager: vif does not have a known network type (#{interface.uuid})"
         return nil
       end
 
-      @vifs[interface[:id]] = vif
+      @vifs[interface.id] = vif
 
       datapath_id = @datapath.datapath_map.id
 
       # Fix this...
-      if interface[:owner_datapath_ids]
-        if interface[:owner_datapath_ids].include? datapath_id
-          @datapath.interface_manager.update_active_datapaths(id: interface[:id],
+      if interface.owner_datapath_ids
+        if interface.owner_datapath_ids.include? datapath_id
+          @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                               datapath_id: datapath_id)
         else
           vif[:use_datapath_id] = vif_map.owner_datapath_id.first

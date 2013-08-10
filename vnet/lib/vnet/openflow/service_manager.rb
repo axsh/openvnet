@@ -34,19 +34,12 @@ module Vnet::Openflow
       interface = @datapath.interface_manager.item(:id => item_map.vif_id)
       
       # Refactor... (Create Interface class with base OpenStruct)
-      mac_address = interface[:mac_addresses].first
+      mac_address = interface.mac_addresses.first
       ipv4_address = mac_address[1][:ipv4_addresses].first
 
-      # Refactor...
       translated_map = {
-        :service_mac => mac_address[0],
-        :service_ipv4 => ipv4_address[:ipv4_address],
-        :network_id => ipv4_address[:network_id],
-        :network_type => ipv4_address[:network_type],
-
-        # Refactored:
         :datapath => @datapath,
-        :interface_id => interface[:id],
+        :interface_id => interface.id,
       }
 
       item = @items[item_map.id]
@@ -61,10 +54,10 @@ module Vnet::Openflow
 
       # if service_map.vif.mode == 'simulated'
 
-      if interface[:active_datapath_id] &&
-          interface[:active_datapath_id] != @datapath.datapath_id
-        return
-      end
+      # if interface.active_datapath_id &&
+      #     interface.active_datapath_id != @datapath.datapath_id
+      #   return
+      # end
 
       cookie = item_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT)
 

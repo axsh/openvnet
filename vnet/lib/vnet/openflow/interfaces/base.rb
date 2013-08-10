@@ -36,14 +36,13 @@ module Vnet::Openflow::Interfaces
     # Update variables by first duplicating to avoid memory
     # consistency issues with values passed to other actors.
     def to_hash
-      { :id => @id,
-        :uuid => @uuid,
-        :mode => @mode,
-        :mac_addresses => @mac_addresses,
+      Vnet::Openflow::Interface.new(id: @id,
+                                    uuid: @uuid,
+                                    mode: @mode,
+                                    mac_addresses: @mac_addresses,
 
-        :active_datapath_ids => @active_datapath_ids,
-        :owner_datapath_ids => @owner_datapath_ids,
-      }
+                                    active_datapath_ids: @active_datapath_ids,
+                                    owner_datapath_ids: @owner_datapath_ids)
     end
 
     def install

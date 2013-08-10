@@ -155,15 +155,15 @@ module Vnet::Openflow
         return
       end
 
-      if interface[:mode] != :vif
-        info log_format('vif mode not set to \'vif\'', "mode:#{interface[:mode]}")
+      if interface.mode != :vif
+        info log_format('vif mode not set to \'vif\'', "mode:#{interface.mode}")
         return
       end
 
       port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
       port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
-      @datapath.interface_manager.update_active_datapaths(id: interface[:id],
+      @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                           datapath_id: @datapath.datapath_map.id)
 
       network = @datapath.network_manager.add_port(network_id: vif_map.network_id,
