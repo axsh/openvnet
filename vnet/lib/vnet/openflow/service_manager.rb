@@ -77,13 +77,7 @@ module Vnet::Openflow
         return
       end
 
-      pm = @datapath.packet_manager
-
-      cookie = pm.insert(item, nil, cookie)
-
-      # Move to interface manager...
-      # pm.dispatch(:arp)  { |key, handler| handler.insert_vif(service_map.vif.id, self, service_map.vif) }
-      # pm.dispatch(:icmp) { |key, handler| handler.insert_vif(service_map.vif.id, self, service_map.vif) }
+      @datapath.packet_manager.insert(item, nil, cookie)
 
       item
     end    

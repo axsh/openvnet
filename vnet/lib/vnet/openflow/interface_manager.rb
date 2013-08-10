@@ -2,17 +2,12 @@
 
 module Vnet::Openflow
 
-  class InterfaceManager
-    include Celluloid
-    include Celluloid::Logger
-    include FlowHelpers
+  class InterfaceManager < Manager
 
     def initialize(dp)
-      @datapath = dp
-      @interfaces = {}
+      super
 
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
+      @interfaces = @items
     end
 
     def interface(params)
@@ -70,6 +65,14 @@ module Vnet::Openflow
       end
     end
 
+    def interface_initialize(mode, params)
+      case mode
+      when :simulated then Interfaces::Simulated.new(params)
+      else
+        Interfaces::Base.new(params)
+      end
+    end
+
     def create_interface(interface_map)
       return nil if interface_map.nil?
 
@@ -78,7 +81,8 @@ module Vnet::Openflow
 
       debug log_format('insert', "interface:#{interface_map.uuid}/#{interface_map.id}")
 
-      interface = Interfaces::Base.new(datapath: @datapath,
+      interface = interface_initialize(interface_map.mode.to_sym,
+                                       datapath: @datapath,
                                        map: interface_map)
 
       @interfaces[interface_map.id] = interface

@@ -189,6 +189,20 @@ module Vnet::Openflow
       (value & (mask & flag)) == flag
     end
     
+    def md_to_id(type, metadata)
+      type_value = case type
+                   when :network then METADATA_TYPE_NETWORK
+                   else
+                     return nil
+                   end
+      
+      if metadata.nil? || (metadata & METADATA_TYPE_MASK) != type_value
+        return nil
+      end
+      
+      metadata & METADATA_VALUE_MASK
+    end
+
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
     end
@@ -213,6 +227,41 @@ module Vnet::Openflow
           :ipv4_src_mask => IPV4_BROADCAST << (32 - prefix)
         }
       end
+    end
+
+    def table_network_dst(network_type)
+      case network_type
+      when :physical then TABLE_PHYSICAL_DST
+      when :virtual  then TABLE_VIRTUAL_DST
+      else
+        raise "Invalid network type value."
+      end
+    end
+
+    def flow_create(type, params)
+      match = {}
+      metadata = nil
+
+      case type
+      when :catch_network_dst
+        table = table_network_dst(params[:network_type])
+        priority = 70
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :network => params[:network_id] }
+      else
+        return nil
+      end
+
+      match = params[:match] if params[:match]
+      match = match.merge(md_create(match_metadata)) if match_metadata
+
+      cookie = params[:cookie]
+
+      raise "Missing cookie." if cookie.nil?
+
+      Flow.create(table, priority, match, actions, {
+                    :cookie => cookie
+                  })
     end
 
   end

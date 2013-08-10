@@ -164,6 +164,7 @@ module Vnet
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHandler, 'vnet/openflow/packet_handler'
+    autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :PacketManager, 'vnet/openflow/packet_manager'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
@@ -174,6 +175,7 @@ module Vnet
 
     module Interfaces
       autoload :Base, 'vnet/openflow/interfaces/base'
+      autoload :Simulated, 'vnet/openflow/interfaces/simulated'
     end
 
     module Networks

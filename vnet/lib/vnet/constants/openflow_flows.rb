@@ -80,7 +80,13 @@ module Vnet
       # Metadata, tunnel and cookie flags and masks:
       #
 
+      COOKIE_ID_MASK = (0xffffffff)
+
+      COOKIE_TAG_SHIFT = 32
+      COOKIE_TAG_MASK = (0xffff << COOKIE_TAG_SHIFT)
+
       COOKIE_PREFIX_SHIFT = 48
+      COOKIE_PREFIX_MASK = (0xffff << COOKIE_PREFIX_SHIFT)
 
       COOKIE_PREFIX_COLLECTION     = 0x1
       COOKIE_PREFIX_DP_NETWORK     = 0x2
@@ -93,6 +99,7 @@ module Vnet
       COOKIE_PREFIX_SWITCH         = 0x9
       COOKIE_PREFIX_TUNNEL         = 0x10
       COOKIE_PREFIX_VIF            = 0x11
+      COOKIE_PREFIX_INTERFACE      = 0x12
 
       METADATA_FLAGS_SHIFT = 40
       METADATA_FLAGS_MASK = (0xffff << METADATA_FLAGS_SHIFT)

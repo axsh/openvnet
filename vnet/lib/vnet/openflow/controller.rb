@@ -10,6 +10,7 @@ module Vnet::Openflow
   class Controller < Trema::Controller
     include TremaTasks
     include Celluloid::Logger
+    include Vnet::Constants::Openflow
 
     attr_accessor :trema_thread
 
@@ -71,7 +72,14 @@ module Vnet::Openflow
 
     def packet_in(dpid, message)
       datapath = @datapaths[dpid]
-      datapath.packet_manager.async.packet_in(message) if datapath
+      return if datapath.nil?
+
+      case message.cookie >> COOKIE_PREFIX_SHIFT
+      when COOKIE_PREFIX_INTERFACE
+        datapath.interface_manager.async.packet_in(message)
+      else
+        datapath.packet_manager.async.packet_in(message)
+      end
     end
 
     def vendor(dpid, message)

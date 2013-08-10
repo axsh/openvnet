@@ -5,6 +5,7 @@ module Vnet::Openflow::Interfaces
   class Base
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
+    include Vnet::Openflow::PacketHelpers
 
     attr_accessor :id
     attr_accessor :uuid
@@ -26,6 +27,11 @@ module Vnet::Openflow::Interfaces
       @owner_datapath_ids = map.owner_datapath_id ? [map.owner_datapath_id] : nil
     end
     
+    def cookie(tag = nil)
+      value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
+      value = value | (tag << COOKIE_TAG_SHIFT) if tag
+    end
+
     # Update variables by first duplicating to avoid memory
     # consistency issues with values passed to other actors.
     def to_hash
@@ -45,6 +51,7 @@ module Vnet::Openflow::Interfaces
       mac_addresses = @mac_addresses.dup
       mac_addresses[mac_address] = {
         :ipv4_addresses => [],
+        :mac_address => mac_address,
       }
 
       @mac_addresses = mac_addresses
@@ -54,22 +61,46 @@ module Vnet::Openflow::Interfaces
     end
 
     def add_ipv4_address(params)
-      info = @mac_addresses[params[:mac_address]]
+      mac_info = @mac_addresses[params[:mac_address]]
 
-      return nil if info.nil?
+      return nil if mac_info.nil?
 
       # Check if the address already exists.
 
-      ipv4_addresses = info[:ipv4_addresses].dup
-      ipv4_addresses << {
+      ipv4_info = {
         :network_id => params[:network_id],
         :network_type => params[:network_type],
         :ipv4_address => params[:ipv4_address],
       }
 
-      info[:ipv4_addresses] = ipv4_addresses
+      ipv4_addresses = mac_info[:ipv4_addresses].dup
+      ipv4_addresses << ipv4_info
 
-      nil
+      mac_info[:ipv4_addresses] = ipv4_addresses
+
+      [mac_info, ipv4_info]
+    end
+
+    def get_ipv4_address(params)
+      network_id = case
+                   when params[:network_md]
+                     md_to_id(:network, params[:network_md])
+                   else
+                     nil
+                   end
+
+      return if network_id.nil?
+
+      ipv4_info = nil
+
+      mac_info = @mac_addresses.detect { |mac_address, mac_info|
+        ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
+          ipv4_info[:network_id] == network_id &&
+          ipv4_info[:ipv4_address] == params[:ipv4_address]
+        }
+      }
+
+      mac_info && [mac_info[1], ipv4_info]
     end
 
   end
