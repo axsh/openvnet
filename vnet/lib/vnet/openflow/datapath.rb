@@ -54,9 +54,6 @@ module Vnet::Openflow
       @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
       @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
       @cookie_manager.create_category(:vif,            COOKIE_PREFIX_VIF)
-
-      @packet_manager.insert(Vnet::Openflow::Services::Arp.new(:datapath => self), :arp)
-      @packet_manager.insert(Vnet::Openflow::Services::Icmp.new(:datapath => self), :icmp)
     end
 
     def datapath_batch

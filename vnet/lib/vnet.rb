@@ -198,11 +198,9 @@ module Vnet
     end
 
     module Services
-      autoload :Arp, 'vnet/openflow/services/arp'
       autoload :ArpLookup, 'vnet/openflow/services/arp_lookup'
       autoload :Base, 'vnet/openflow/services/base'
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
-      autoload :Icmp, 'vnet/openflow/services/icmp'
       autoload :Router, 'vnet/openflow/services/router'
     end
   end
