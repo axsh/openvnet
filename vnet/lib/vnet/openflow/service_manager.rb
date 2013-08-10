@@ -39,7 +39,7 @@ module Vnet::Openflow
     def create_item(item_map)
       return nil if item_map.nil?
 
-      interface = @datapath.interface_manager.interface(:id => item_map.vif_id)
+      interface = @datapath.interface_manager.item(:id => item_map.vif_id)
       
       # Refactor...
       mac_address = interface[:mac_addresses].first

@@ -166,7 +166,7 @@ module Vnet::Openflow
     end
 
     def prepare_vif(vif_map)
-      interface = @datapath.interface_manager.interface(id: vif_map.id)
+      interface = @datapath.interface_manager.item(id: vif_map.id)
       info "router_manager: from interface_manager: #{interface.inspect}"
 
       vif = interface && @vifs[interface[:id]]

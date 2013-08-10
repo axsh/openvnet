@@ -146,7 +146,7 @@ module Vnet::Openflow
     def prepare_port_vif(port, port_desc)
       @datapath.mod_port(port.port_number, :no_flood)
 
-      interface = @datapath.interface_manager.interface(uuid: port_desc.name)
+      interface = @datapath.interface_manager.item(uuid: port_desc.name)
 
       vif_map = MW::Vif[port_desc.name]
 
