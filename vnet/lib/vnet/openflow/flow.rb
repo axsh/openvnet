@@ -248,6 +248,14 @@ module Vnet::Openflow
       write_metadata = nil
 
       case type
+      when :catch_arp_lookup
+        table = TABLE_ARP_LOOKUP
+        priority = 20
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = {
+          :network => params[:network_id],
+          :not_no_controller => nil
+        }
       when :catch_flood_simulated
         table = TABLE_FLOOD_SIMULATED
         priority = 30

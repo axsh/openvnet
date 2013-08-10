@@ -53,6 +53,7 @@ module Vnet::Openflow
 
       interface = interface_initialize(item_map.mode.to_sym,
                                        datapath: @datapath,
+                                       manager: self,
                                        map: item_map)
 
       @items[item_map.id] = interface

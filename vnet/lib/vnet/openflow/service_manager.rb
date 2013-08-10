@@ -16,7 +16,6 @@ module Vnet::Openflow
 
     def service_initialize(mode, params)
       case mode
-      when :arp_lookup then Vnet::Openflow::Services::ArpLookup.new(params)
       when :dhcp       then Vnet::Openflow::Services::Dhcp.new(params)
       when :router     then Vnet::Openflow::Services::Router.new(params)
       else
@@ -40,17 +39,14 @@ module Vnet::Openflow
 
       # Refactor...
       translated_map = {
-        :vif_uuid => interface[:uuid],
-        :active_datapath_id => interface[:active_datapath_ids] && interface[:active_datapath_ids].first,
         :service_mac => mac_address[0],
         :service_ipv4 => ipv4_address[:ipv4_address],
         :network_id => ipv4_address[:network_id],
-        :network_uuid => 'fff', #network[:uuid],
         :network_type => ipv4_address[:network_type],
 
         # Refactored:
         :datapath => @datapath,
-        :interface => interface,
+        :interface_id => interface[:id],
       }
 
       item = @items[item_map.id]
@@ -65,8 +61,8 @@ module Vnet::Openflow
 
       # if service_map.vif.mode == 'simulated'
 
-      if translated_map[:active_datapath_id] &&
-          translated_map[:active_datapath_id] != @datapath.datapath_id
+      if interface[:active_datapath_id] &&
+          interface[:active_datapath_id] != @datapath.datapath_id
         return
       end
 

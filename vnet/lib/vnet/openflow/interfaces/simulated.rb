@@ -3,21 +3,33 @@
 module Vnet::Openflow::Interfaces
 
   class Simulated < Base
+    include Vnet::Openflow::ArpLookup
 
     TAG_ARP_REQUEST_INTERFACE = 0x1
     TAG_ARP_REQUEST_FLOOD     = 0x2
-    TAG_ICMP_REQUEST          = 0x3
+    TAG_ARP_LOOKUP            = 0x4
+    TAG_ARP_REPLY             = 0x5
+    TAG_ICMP_REQUEST          = 0x6
+
+    def initialize(params)
+      super
+      
+      arp_lookup_initialize(interface_id: @id,
+                            lookup_cookie: self.cookie(TAG_ARP_LOOKUP),
+                            reply_cookie: self.cookie(TAG_ARP_REPLY))
+    end
 
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
-      install_output_interface(mac_info, ipv4_info)
-
-      install_arp_request(mac_info, ipv4_info)
+      install_ipv4(mac_info, ipv4_info)
     end
 
     def install
       flows = []
+
+      arp_lookup_base_flows(flows)
+
       flows << flow_create(:catch_interface_simulated,
                            match: {
                              :eth_type => 0x0806,
@@ -37,10 +49,12 @@ module Vnet::Openflow::Interfaces
     end
 
     def packet_in(message)
-      info "simulated packet in: #{message.inspect}"
+      # info "simulated packet in: #{message.inspect}"
 
       case (message.cookie & COOKIE_TAG_MASK) >> COOKIE_TAG_SHIFT
       when TAG_ARP_REQUEST_FLOOD, TAG_ARP_REQUEST_INTERFACE
+        info "simulated arp reply: #{message.arp_tpa}"
+
         mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
                                                ipv4_address: message.arp_tpa)
         return if mac_info.nil? || ipv4_info.nil?
@@ -55,6 +69,17 @@ module Vnet::Openflow::Interfaces
                          :tha => message.eth_src,
                          :tpa => message.arp_spa,
                        })
+
+      when TAG_ARP_LOOKUP
+        # info "simulated arp lookup: #{message.ipv4_dst}"
+
+        arp_lookup_lookup_packet_in(message)
+
+      when TAG_ARP_REPLY
+        # info "simulated arp reply: #{message.ipv4_dst}"
+
+        arp_lookup_reply_packet_in(message)
+
       when TAG_ICMP_REQUEST
         mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
                                                ipv4_address: message.ipv4_dst)
@@ -89,8 +114,13 @@ module Vnet::Openflow::Interfaces
 
     private
 
-    def install_output_interface(mac_info, ipv4_info)
+    # TODO: Separate the mac-only flows and add those when
+    # add_mac_address is called.
+    def install_ipv4(mac_info, ipv4_info)
       flows = []
+
+      arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
+
       flows << flow_create(:network_dst,
                            priority: 80,
                            match: {
@@ -119,12 +149,6 @@ module Vnet::Openflow::Interfaces
                            },
                            goto_table: TABLE_INTERFACE_SIMULATED,
                            cookie: self.cookie)
-
-      @datapath.add_flows(flows)
-    end
-
-    def install_arp_request(mac_info, ipv4_info)
-      flows = []
       flows << flow_create(:catch_flood_simulated,
                            match: {
                              :eth_type => 0x0806,

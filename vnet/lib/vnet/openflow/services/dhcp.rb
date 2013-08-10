@@ -6,19 +6,13 @@ require 'racket'
 module Vnet::Openflow::Services
 
   class Dhcp < Base
-    attr_reader :vif_uuid
-    attr_reader :service_mac
-    attr_reader :service_ipv4
 
     def initialize(params)
       @datapath = params[:datapath]
+      @interface_id = params[:interface_id]
+
       @network_id = params[:network_id]
       @network_type = params[:network_type]
-      @vif_uuid = params[:vif_uuid]
-      @service_mac = params[:service_mac]
-      @service_ipv4 = params[:service_ipv4]
-
-      @interface_id = params[:interface][:id]
     end
 
     def install
@@ -59,15 +53,14 @@ module Vnet::Openflow::Services
 
       # Verify dhcp_in values...
 
-      network = find_network(message)
+      mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
       return if network.nil?
-
-      info "asdfasf: #{network.inspect}"
 
       params = {
         :xid => dhcp_in.xid,
         :yiaddr => port[:ipv4_address],
         :chaddr => port[:mac_address],
+        :ipv4_address => ipv4_info[:ipv4_address],
         :ipv4_network => network[:ipv4_network],
         :ipv4_prefix => network[:ipv4_prefix],
       }
@@ -91,8 +84,8 @@ module Vnet::Openflow::Services
       debug "DHCP send: output:#{dhcp_out.to_s}."
 
       udp_out({ :out_port => message.in_port,
-                :eth_src => self.service_mac,
-                :src_ip => self.service_ipv4,
+                :eth_src => mac_info[:mac_address],
+                :src_ip => ipv4_info[:ipv4_address],
                 :src_port => 67,
                 :eth_dst => port[:mac_address],
                 :dst_ip => port[:ipv4_address],
@@ -117,17 +110,6 @@ module Vnet::Openflow::Services
       [dhcp_in, message_type]
     end
 
-    def find_network(message)
-      ipv4_dst = message.ipv4_dst != IPV4_BROADCAST ? message.ipv4_dst : nil
-
-      mac_info, ipv4_info = @datapath.interface_manager.get_ipv4_address(id: @interface_id,
-                                                                         any_md: message.match.metadata,
-                                                                         ipv4_address: ipv4_dst)
-      return nil if ipv4_info.nil?
-
-      @datapath.network_manager.network_by_id(ipv4_info[:network_id])
-    end
-
     def create_dhcp_packet(params)
       dhcp_out = params[:dhcp_class].new(:options => [DHCP::MessageTypeOption.new(:payload => [params[:message_type]])])
 
@@ -135,11 +117,11 @@ module Vnet::Openflow::Services
       dhcp_out.xid = params[:xid]
       dhcp_out.yiaddr = params[:yiaddr].to_i # port.ip
       dhcp_out.chaddr = params[:chaddr].to_a # port.mac
-      dhcp_out.siaddr = self.service_ipv4.to_i
+      dhcp_out.siaddr = params[:ipv4_address].to_i
 
       subnet_mask = IPAddr.new(IPAddr::IN4MASK, Socket::AF_INET).mask(params[:ipv4_prefix])
 
-      dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => self.service_ipv4.hton.unpack('C*'))
+      dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => params[:ipv4_address].hton.unpack('C*'))
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (params[:ipv4_network] | ~subnet_mask).hton.unpack('C*'))
 

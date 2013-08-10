@@ -152,6 +152,7 @@ module Vnet
   end
 
   module Openflow
+    autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :CookieCategory, 'vnet/openflow/cookie_manager'
     autoload :CookieManager, 'vnet/openflow/cookie_manager'
     autoload :Controller, 'vnet/openflow/controller'
@@ -198,7 +199,6 @@ module Vnet
     end
 
     module Services
-      autoload :ArpLookup, 'vnet/openflow/services/arp_lookup'
       autoload :Base, 'vnet/openflow/services/base'
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
       autoload :Router, 'vnet/openflow/services/router'
