@@ -29,7 +29,7 @@ module Vnet::Openflow::Interfaces
     
     def cookie(tag = nil)
       value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
-      value = value | (tag << COOKIE_TAG_SHIFT) if tag
+      tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
     end
 
     # Update variables by first duplicating to avoid memory
@@ -43,6 +43,9 @@ module Vnet::Openflow::Interfaces
         :active_datapath_ids => @active_datapath_ids,
         :owner_datapath_ids => @owner_datapath_ids,
       }
+    end
+
+    def install
     end
 
     def add_mac_address(mac_address)
@@ -82,21 +85,27 @@ module Vnet::Openflow::Interfaces
     end
 
     def get_ipv4_address(params)
-      network_id = case
-                   when params[:network_md]
-                     md_to_id(:network, params[:network_md])
-                   else
-                     nil
-                   end
-
-      return if network_id.nil?
+      case
+      when params[:any_md]
+        network_id = md_to_id(:network, params[:any_md])
+        interface_id = md_to_id(:interface, params[:any_md])
+        return nil if network_id.nil? && interface_id.nil?
+      when params[:network_md]
+        network_id = md_to_id(:network, params[:network_md])
+        return nil if network_id.nil?
+      else
+        network_id = nil
+      end
 
       ipv4_info = nil
+      ipv4_address = params[:ipv4_address]
 
       mac_info = @mac_addresses.detect { |mac_address, mac_info|
         ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
-          ipv4_info[:network_id] == network_id &&
-          ipv4_info[:ipv4_address] == params[:ipv4_address]
+          next false if network_id && ipv4_info[:network_id] != network_id
+          next true if ipv4_address.nil?
+
+          ipv4_info[:ipv4_address] == ipv4_address
         }
       }
 

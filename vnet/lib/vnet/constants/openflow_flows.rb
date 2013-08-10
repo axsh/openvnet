@@ -51,14 +51,22 @@ module Vnet
       TABLE_VIRTUAL_DST = 18
       TABLE_PHYSICAL_DST = 19
 
+      TABLE_INTERFACE_SIMULATED = 20
+
       # Route based on the mac address only.
-      TABLE_MAC_ROUTE = 30
+      TABLE_MAC_ROUTE = 25
+
+      TABLE_FLOOD_SIMULATED = 30
 
       # Only output to local vif's.
+      #
+      # TODO: Rename to TABLE_FLOOD_*.
       TABLE_METADATA_LOCAL        = 31
 
       # Send packet to all ports if marked as a flood flow, starting from
       # the route table.
+      #
+      # TODO: Rename to TABLE_FLOOD_*.
       TABLE_METADATA_ROUTE        = 32
       TABLE_METADATA_SEGMENT      = 33
       TABLE_METADATA_TUNNEL_IDS   = 34
@@ -131,6 +139,7 @@ module Vnet
       METADATA_TYPE_PORT       = (0x4 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_ROUTE      = (0x5 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_ROUTE_LINK = (0x6 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_INTERFACE  = (0x7 << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0xffffffff
 

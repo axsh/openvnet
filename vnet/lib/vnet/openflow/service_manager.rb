@@ -4,12 +4,6 @@ module Vnet::Openflow
 
   class ServiceManager < Manager
 
-    def initialize(dp)
-      super
-
-      @service_cookies = {}
-    end
-
     #
     # Internal methods:
     #
@@ -20,14 +14,13 @@ module Vnet::Openflow
       "service_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
     end
 
-    # Refactor...
-    def service_initialize(service_name, translated_map)
-      case service_name
-      when 'arp_lookup' then Vnet::Openflow::Services::ArpLookup.new(translated_map)
-      when 'dhcp'       then Vnet::Openflow::Services::Dhcp.new(translated_map)
-      when 'router'     then Vnet::Openflow::Services::Router.new(translated_map)
+    def service_initialize(mode, params)
+      case mode
+      when :arp_lookup then Vnet::Openflow::Services::ArpLookup.new(params)
+      when :dhcp       then Vnet::Openflow::Services::Dhcp.new(params)
+      when :router     then Vnet::Openflow::Services::Router.new(params)
       else
-        error log_format('failed to create service',  "#{}")
+        error log_format('failed to create service',  "name:#{mode}")
         nil
       end
     end
@@ -41,13 +34,12 @@ module Vnet::Openflow
 
       interface = @datapath.interface_manager.item(:id => item_map.vif_id)
       
-      # Refactor...
+      # Refactor... (Create Interface class with base OpenStruct)
       mac_address = interface[:mac_addresses].first
       ipv4_address = mac_address[1][:ipv4_addresses].first
 
       # Refactor...
       translated_map = {
-        :datapath => @datapath,
         :vif_uuid => interface[:uuid],
         :active_datapath_id => interface[:active_datapath_ids] && interface[:active_datapath_ids].first,
         :service_mac => mac_address[0],
@@ -55,6 +47,10 @@ module Vnet::Openflow
         :network_id => ipv4_address[:network_id],
         :network_uuid => 'fff', #network[:uuid],
         :network_type => ipv4_address[:network_type],
+
+        # Refactored:
+        :datapath => @datapath,
+        :interface => interface,
       }
 
       item = @items[item_map.id]
@@ -62,20 +58,19 @@ module Vnet::Openflow
 
       debug log_format('insert', "service:#{item_map.uuid}/#{item_map.id}")
 
-      # if service_map.vif.mode == 'simulated'
-
-      item = service_initialize(item_map.display_name, translated_map)
+      item = service_initialize(item_map.display_name.to_sym, translated_map)
       return nil if item.nil?
 
       @items[item_map.id] = item
 
-      cookie = item_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT)
-      @service_cookies[item_map.id] = cookie
+      # if service_map.vif.mode == 'simulated'
 
       if translated_map[:active_datapath_id] &&
           translated_map[:active_datapath_id] != @datapath.datapath_id
         return
       end
+
+      cookie = item_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT)
 
       @datapath.packet_manager.insert(item, nil, cookie)
 

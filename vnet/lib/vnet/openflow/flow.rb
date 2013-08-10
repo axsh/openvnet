@@ -115,6 +115,9 @@ module Vnet::Openflow
         when :flood
           metadata = metadata | METADATA_FLAG_FLOOD
           metadata_mask = metadata_mask | METADATA_FLAG_FLOOD
+        when :interface
+          metadata = metadata | value | METADATA_TYPE_INTERFACE
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
@@ -192,6 +195,7 @@ module Vnet::Openflow
     def md_to_id(type, metadata)
       type_value = case type
                    when :network then METADATA_TYPE_NETWORK
+                   when :interface then METADATA_TYPE_INTERFACE
                    else
                      return nil
                    end
@@ -240,13 +244,27 @@ module Vnet::Openflow
 
     def flow_create(type, params)
       match = {}
-      metadata = nil
+      match_metadata = nil
+      write_metadata = nil
 
       case type
+      when :catch_flood_simulated
+        table = TABLE_FLOOD_SIMULATED
+        priority = 30
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :network => params[:network_id] }
+      when :catch_interface_simulated
+        table = TABLE_INTERFACE_SIMULATED
+        priority = 30
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :interface => params[:interface_id] }
       when :catch_network_dst
         table = table_network_dst(params[:network_type])
         priority = 70
         actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :network => params[:network_id] }
+      when :network_dst
+        table = table_network_dst(params[:network_type])
         match_metadata = { :network => params[:network_id] }
       else
         return nil
@@ -255,13 +273,19 @@ module Vnet::Openflow
       match = params[:match] if params[:match]
       match = match.merge(md_create(match_metadata)) if match_metadata
 
-      cookie = params[:cookie]
+      priority = params[:priority] if params[:priority]
+
+      write_metadata = params[:write_metadata] if params[:write_metadata]
+
+      instructions = {
+        :cookie => params[:cookie]
+      }
+      instructions[:goto_table] = params[:goto_table] if params[:goto_table]
+      instructions.merge!(md_create(write_metadata)) if write_metadata
 
       raise "Missing cookie." if cookie.nil?
 
-      Flow.create(table, priority, match, actions, {
-                    :cookie => cookie
-                  })
+      Flow.create(table, priority, match, actions, instructions)
     end
 
   end

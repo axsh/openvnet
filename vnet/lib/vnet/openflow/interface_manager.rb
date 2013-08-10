@@ -6,11 +6,19 @@ module Vnet::Openflow
 
     def update_active_datapaths(params)
       interface = item_by_params_direct(params)
-
-      return if interface.nil?
+      return nil if interface.nil?
 
       interface.active_datapath_ids = interface.active_datapath_ids.dup.push(@datapath_id).uniq!
       MW::Vif.batch[:id => interface.id].update(:active_datapath_id => params[:datapath_id]).commit
+
+      nil
+    end
+
+    def get_ipv4_address(params)
+      interface = item_by_params_direct(params)
+      return nil if interface.nil?
+
+      interface.get_ipv4_address(params)
     end
 
     #
@@ -48,6 +56,8 @@ module Vnet::Openflow
                                        map: item_map)
 
       @items[item_map.id] = interface
+
+      interface.install
 
       load_addresses(interface, item_map)
 

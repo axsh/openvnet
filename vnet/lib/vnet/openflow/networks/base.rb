@@ -40,6 +40,9 @@ module Vnet::Openflow::Networks
       { :id => @network_id,
         :uuid => @uuid,
         :type => self.network_type,
+
+        :ipv4_network => @ipv4_network,
+        :ipv4_prefix => @ipv4_prefix,
       }
     end
 
