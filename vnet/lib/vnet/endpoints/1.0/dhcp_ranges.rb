@@ -1,36 +1,35 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/dhcp_ranges' do
+  put_post_shared_params = ["network_uuid","range_begin","range_end"]
 
   post do
-    params = parse_params(@params, ["uuid","network_id","range_begin","range_end","created_at","updated_at"])
+    accepted_params = put_post_shared_params + ["uuid"]
 
-    if params.has_key?("uuid")
-      raise E::DuplicateUUID, params["uuid"] unless M::DhcpRange[params["uuid"]].nil?
-      params["uuid"] = M::DhcpRange.trim_uuid(params["uuid"])
-    end
-    dhcp_range = M::DhcpRange.create(params)
-    respond_with(R::DhcpRange.generate(dhcp_range))
+    post_new(:DhcpRange, accepted_params, put_post_shared_params) { |params|
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id")
+      params['range_begin'] = parse_ipv4(params['range_begin'])
+      params['range_end'] = parse_ipv4(params['range_end'])
+    }
   end
 
   get do
-    dhcp_ranges = M::DhcpRange.all
-    respond_with(R::DhcpRangeCollection.generate(dhcp_ranges))
+    get_all(:DhcpRange)
   end
 
   get '/:uuid' do
-    dhcp_range = M::DhcpRange[@params["uuid"]]
-    respond_with(R::DhcpRange.generate(dhcp_range))
+    get_by_uuid(:DhcpRange)
   end
 
   delete '/:uuid' do
-    M::DhcpRange.destroy(@params["uuid"])
-    respond_with({:uuid => @params["uuid"]})
+    delete_by_uuid(:DhcpRange)
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["network_id","range_begin","range_end","created_at","updated_at"])
-    dhcp_range = M::DhcpRange.update(@params["uuid"], params)
-    respond_with(R::DhcpRange.generate(dhcp_range))
+    update_by_uuid(:DhcpRange, put_post_shared_params) { |params|
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
+      params['range_begin'] = parse_ipv4(params['range_begin']) if params["range_begin"]
+      params['range_end'] = parse_ipv4(params['range_end']) if params["range_end"]
+    }
   end
 end

@@ -3,11 +3,14 @@
 module Vnet::Models
   class Datapath < Base
     taggable 'dp'
-    many_to_one :open_flow_controller
+    many_to_one :dc_segment
 
     one_to_many :datapath_networks
     one_to_many :datapath_route_links
     many_to_many :networks, :join_table => :datapath_networks
+
+    one_to_many :vifs_owned, :class => Vif, :key => :owner_datapath_id
+    one_to_many :vifs_active, :class => Vif, :key => :active_datapath_id
 
     one_to_many :tunnels, :key => :src_datapath_id
     subset(:alives, {})
