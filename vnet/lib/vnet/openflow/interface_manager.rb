@@ -66,9 +66,9 @@ module Vnet::Openflow
     end
 
     def load_addresses(interface, item_map)
-      return if item_map.mac_addr.nil?
+      return if item_map.mac_address.nil?
 
-      mac_address = Trema::Mac.new(item_map.mac_addr)
+      mac_address = Trema::Mac.new(item_map.mac_address)
       interface.add_mac_address(mac_address)
 
       network_id = item_map.network_id

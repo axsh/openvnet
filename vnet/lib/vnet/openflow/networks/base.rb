@@ -32,8 +32,8 @@ module Vnet::Openflow::Networks
       @ipv4_prefix = network_map.ipv4_prefix
     end
 
-    def broadcast_mac_addr
-      @datapath_of_bridge && @datapath_of_bridge[:broadcast_mac_addr]
+    def broadcast_mac_address
+      @datapath_of_bridge && @datapath_of_bridge[:broadcast_mac_address]
     end
 
     def to_hash
@@ -82,7 +82,7 @@ module Vnet::Openflow::Networks
       }
 
       if dpn_map
-        @datapath_of_bridge[:broadcast_mac_addr] = Trema::Mac.new(dpn_map.broadcast_mac_addr)
+        @datapath_of_bridge[:broadcast_mac_address] = Trema::Mac.new(dpn_map.broadcast_mac_address)
       else
         error "network(#{@uuid}): no datapath associated with network."
       end

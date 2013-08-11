@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
 Fabricator(:mac_lease, class_name: Vnet::Models::MacLease) do
-  mac_addr { sequence(:mac_addr, 0) }
+  mac_address { sequence(:mac_address, 0) }
 end

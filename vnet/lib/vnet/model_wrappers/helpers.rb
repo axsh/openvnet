@@ -8,9 +8,9 @@ module Vnet::ModelWrappers::Helpers
   end
 
   module MacAddr
-    def mac_addr_s(delim = ":")
-      mac_addr && (
-        mac = mac_addr.to_s(16)
+    def mac_address_s(delim = ":")
+      mac_address && (
+        mac = mac_address.to_s(16)
         while mac.length < 12
           mac.insert(0,'0')
         end

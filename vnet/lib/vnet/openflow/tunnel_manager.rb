@@ -46,7 +46,7 @@ module Vnet::Openflow
         :dpid => dpn_map.datapath.dpid,
         :ipv4_address => dpn_map.datapath.ipv4_address,
         :datapath_id => dpn_map.datapath.dpid,
-        :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
+        :broadcast_mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
         :network_id => dpn_map.network_id,
       }
 
@@ -57,7 +57,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                             :eth_dst => datapath_network[:broadcast_mac_addr]
+                             :eth_dst => datapath_network[:broadcast_mac_address]
                            }, nil, {
                              :cookie => cookie
                            })
