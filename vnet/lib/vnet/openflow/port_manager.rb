@@ -86,8 +86,8 @@ module Vnet::Openflow
       end
 
       if port.port_name =~ /^vif-/
-        vif_map = MW::Vif[port_desc.name]
-        vif_map.batch.update(:active_datapath_id => nil).commit
+        @datapath.interface_manager.update_active_datapaths(uuid: port.port_name,
+                                                            datapath_id: nil)
       end
 
       nil
@@ -148,9 +148,6 @@ module Vnet::Openflow
 
       interface = @datapath.interface_manager.item(uuid: port_desc.name)
 
-      vif_map = MW::Vif[port_desc.name]
-      return nil if vif_map.nil?
-
       if interface.nil?
         error log_format('could not find uuid', "name:#{port_desc.name})")
         return
@@ -161,27 +158,37 @@ module Vnet::Openflow
         return
       end
 
-      debug "prepare_port_vif: #{vif_map.uuid}, hw_addr: #{vif_map.mac_address}"
-      port.hw_addr = Trema::Mac.new(vif_map.mac_address)
-      port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
+      debug "prepare_port_vif: #{interface.uuid}"
 
       @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                           datapath_id: @datapath.datapath_map.id)
 
-      network = @datapath.network_manager.add_port(network_id: vif_map.network_id,
-                                                   port_number: port.port_number,
-                                                   port_mode: :vif)
+      interface.mac_addresses.each { |mac_address, mac_info|
+        port.hw_addr = Trema::Mac.new(mac_info[:mac_address])
 
-      if network
-        case network[:type]
-        when :physical then port.extend(Ports::Physical)
-        when :virtual  then port.extend(Ports::Virtual)
-        else
-          raise("Unknown network type.")
-        end
+        mac_info[:ipv4_addresses].each { |ip_info|
+          port.ipv4_addr = IPAddr.new(ip_info[:ipv4_address], Socket::AF_INET)
 
-        port.network_id = network[:id]
-      end
+          network = @datapath.network_manager.add_port(network_id: ip_info[:network_id],
+                                                       port_number: port.port_number,
+                                                       port_mode: :vif)
+
+          if network
+            case network[:type]
+            when :physical then port.extend(Ports::Physical)
+            when :virtual  then port.extend(Ports::Virtual)
+            else
+              raise("Unknown network type.")
+            end
+
+            port.network_id = network[:id]
+          end
+
+          # Only support one ip address for now.
+          break
+        }
+        break
+      }
 
       port.install
     end

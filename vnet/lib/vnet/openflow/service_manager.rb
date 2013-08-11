@@ -32,24 +32,22 @@ module Vnet::Openflow
       return nil if item_map.nil?
 
       interface = @datapath.interface_manager.item(:id => item_map.vif_id)
+      return nil if interface.nil?
       
-      mac_address = interface.mac_addresses.first
-      ipv4_address = mac_address[1][:ipv4_addresses].first
-
-      translated_map = {
-        :datapath => @datapath,
-        :manager => self,
-        :id => item_map.id,
-        :uuid => item_map.uuid,
-        :interface_id => interface.id,
-      }
-
       item = @items[item_map.id]
       return item if item
 
       debug log_format('insert', "service:#{item_map.uuid}/#{item_map.id}")
 
-      item = service_initialize(item_map.display_name.to_sym, translated_map)
+      mac_address = interface.mac_addresses.first
+      ipv4_address = mac_address[1][:ipv4_addresses].first
+
+      item = service_initialize(item_map.display_name.to_sym,
+                                datapath: @datapath,
+                                manager: self,
+                                id: item_map.id,
+                                uuid: item_map.uuid,
+                                interface_id: interface.id)
       return nil if item.nil?
 
       @items[item_map.id] = item
@@ -62,7 +60,6 @@ module Vnet::Openflow
       # end
 
       item.install
-
       item
     end    
 
