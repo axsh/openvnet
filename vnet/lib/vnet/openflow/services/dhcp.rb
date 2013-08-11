@@ -7,11 +7,6 @@ module Vnet::Openflow::Services
 
   class Dhcp < Base
 
-    def initialize(params)
-      @datapath = params[:datapath]
-      @interface_id = params[:interface_id]
-    end
-
     def install
       flows = []
       flows << flow_create(:catch_interface_simulated,
@@ -52,7 +47,7 @@ module Vnet::Openflow::Services
       port_number = message.match.in_port
       port = @datapath.port_manager.port_by_port_number(port_number)
 
-      debug "Dhcp.packet_in called."
+      debug log_format('packet_in received')
 
       dhcp_in, message_type = parse_dhcp_packet(message)
       return if dhcp_in.nil? || message_type.empty? || message_type[0].payload.empty?
@@ -73,31 +68,31 @@ module Vnet::Openflow::Services
 
       case message_type[0].payload[0]
       when $DHCP_MSG_DISCOVER
-        debug "DHCP send: DHCP_MSG_OFFER."
+        debug log_format('DHCP send: DHCP_MSG_OFFER')
         params[:dhcp_class] = DHCP::Offer
         params[:message_type] = $DHCP_MSG_OFFER
       when $DHCP_MSG_REQUEST
-        debug "DHCP send: DHCP_MSG_ACK."
+        debug log_format('DHCP send: DHCP_MSG_ACK')
         params[:dhcp_class] = DHCP::ACK
         params[:message_type] = $DHCP_MSG_ACK
       else
-        debug "DHCP send: no handler."
+        debug log_format('DHCP send: no handler')
         return
       end
 
       dhcp_out = create_dhcp_packet(params)
 
-      debug "DHCP send: output:#{dhcp_out.to_s}."
+      debug log_format("DHCP send", "output:#{dhcp_out.to_s}")
 
-      udp_out({ :out_port => message.in_port,
-                :eth_src => mac_info[:mac_address],
-                :src_ip => ipv4_info[:ipv4_address],
-                :src_port => 67,
-                :eth_dst => port[:mac_address],
-                :dst_ip => port[:ipv4_address],
-                :dst_port => 68,
-                :payload => dhcp_out.pack
-              })
+      packet_udp_out({ :out_port => message.in_port,
+                       :eth_src => mac_info[:mac_address],
+                       :src_ip => ipv4_info[:ipv4_address],
+                       :src_port => 67,
+                       :eth_dst => port[:mac_address],
+                       :dst_ip => port[:ipv4_address],
+                       :dst_port => 68,
+                       :payload => dhcp_out.pack
+                     })
     end
 
     #
@@ -106,18 +101,22 @@ module Vnet::Openflow::Services
 
     private
 
+    def log_format(message, values = nil)
+      "#{@dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
+    end
+
     def parse_dhcp_packet(message)
       if !message.udp?
-        debug "DHCP: Message is not UDP."
+        debug log_format('DHCP: Message is not UDP')
         return nil
       end
 
-      raw_in_l2, raw_in_l3, raw_in_l4 = udp_in(message)
+      raw_in_l2, raw_in_l3, raw_in_l4 = packet_udp_in(message)
 
       dhcp_in = DHCP::Message.from_udp_payload(raw_in_l4.payload)
       message_type = dhcp_in.options.select { |each| each.type == $DHCP_MESSAGETYPE }
 
-      debug "DHCP: message:#{dhcp_in.to_s}."
+      debug log_format("message", "#{dhcp_in.to_s}")
 
       [dhcp_in, message_type]
     end

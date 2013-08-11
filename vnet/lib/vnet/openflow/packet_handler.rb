@@ -226,6 +226,46 @@ module Vnet::Openflow
       @datapath.send_packet_out(message, params[:out_port])
     end
 
+    def packet_udp_in(message)
+      raw_in_l2 = Racket::L2::Ethernet.new(message.data.pack('C*'))
+      raw_in_l3 = Racket::L3::IPv4.new(raw_in_l2.payload)
+      raw_in_l4 = Racket::L4::UDP.new(raw_in_l3.payload)
+
+      # debug "DHCP: raw_in_l2:#{raw_in_l2.pretty}."
+      # debug "DHCP: raw_in_l3:#{raw_in_l3.pretty}."
+      # debug "DHCP: raw_in_l4:#{raw_in_l4.pretty}."
+
+      [raw_in_l2, raw_in_l3, raw_in_l4]
+    end
+
+    def packet_udp_out(params)
+      raw_out = Racket::Racket.new
+      raw_out.l2 = Racket::L2::Ethernet.new
+      raw_out.l2.src_mac = params[:eth_src].to_s
+      raw_out.l2.dst_mac = params[:eth_dst].to_s
+
+      raw_out.l3 = Racket::L3::IPv4.new
+      raw_out.l3.src_ip = params[:src_ip].to_s
+      raw_out.l3.dst_ip = params[:dst_ip].to_s
+      raw_out.l3.protocol = 0x11
+      raw_out.l3.ttl = 128
+
+      raw_out.l4 = Racket::L4::UDP.new
+      raw_out.l4.src_port = params[:src_port]
+      raw_out.l4.dst_port = params[:dst_port]
+      raw_out.l4.payload = params[:payload]
+
+      raw_out.l4.fix!(raw_out.l3.src_ip, raw_out.l3.dst_ip)
+
+      # raw_out.layers.compact.each { |l|
+      #   debug "send udp: layer:#{l.pretty}."
+      # }
+
+      message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
+
+      @datapath.send_packet_out(message, params[:out_port])
+    end
+
     def icmpv4_in(message)
       raw_in = Racket::Racket.new
       raw_in.l2 = Racket::L2::Ethernet.new(message.data.pack('C*'))

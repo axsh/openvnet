@@ -33,12 +33,14 @@ module Vnet::Openflow
 
       interface = @datapath.interface_manager.item(:id => item_map.vif_id)
       
-      # Refactor... (Create Interface class with base OpenStruct)
       mac_address = interface.mac_addresses.first
       ipv4_address = mac_address[1][:ipv4_addresses].first
 
       translated_map = {
         :datapath => @datapath,
+        :manager => self,
+        :id => item_map.id,
+        :uuid => item_map.uuid,
         :interface_id => interface.id,
       }
 
@@ -59,9 +61,7 @@ module Vnet::Openflow
       #   return
       # end
 
-      cookie = item_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT)
-
-      @datapath.packet_manager.insert(item, nil, cookie)
+      item.install
 
       item
     end    
