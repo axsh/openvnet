@@ -149,10 +149,7 @@ module Vnet::Openflow
       interface = @datapath.interface_manager.item(uuid: port_desc.name)
 
       vif_map = MW::Vif[port_desc.name]
-
-      vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
-
-      interface = @datapath.interface_manager.interface(uuid: port_desc.name)
+      return nil if vif_map.nil?
 
       if interface.nil?
         error log_format('could not find uuid', "name:#{port_desc.name})")

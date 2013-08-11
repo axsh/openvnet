@@ -46,6 +46,11 @@ module Vnet::Openflow::Networks
       }
     end
 
+    def uninstall
+      @datapath.del_cookie(@cookie)
+    end
+
+
     def add_port(params)
       if @ports[params[:port_number]]
         raise("Port already added to a network.")

@@ -9,6 +9,7 @@ module Vnet::Openflow::Interfaces
 
     attr_accessor :id
     attr_accessor :uuid
+    attr_accessor :mode
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
 

@@ -8,7 +8,15 @@ module Vnet::Openflow
       interface = item_by_params_direct(params)
       return nil if interface.nil?
 
-      interface.active_datapath_ids = interface.active_datapath_ids.dup.push(@datapath_id).uniq!
+      # Refactor this.
+      if interface.owner_datapath_ids.nil?
+        return if interface.mode != :vif
+      end
+
+      # Currently only supports one active datapath id.
+      active_datapath_ids = [params[:datapath_id]]
+
+      interface.active_datapath_ids = active_datapath_ids
       MW::Vif.batch[:id => interface.id].update(:active_datapath_id => params[:datapath_id]).commit
 
       nil
@@ -40,7 +48,7 @@ module Vnet::Openflow
     end
 
     def select_item(filter)
-      MW::Vif[filter]
+      MW::Vif.batch[filter].commit(:fill => [:ip_leases => :ip_address])
     end
 
     def create_item(item_map)
@@ -71,18 +79,21 @@ module Vnet::Openflow
       mac_address = Trema::Mac.new(item_map.mac_address)
       interface.add_mac_address(mac_address)
 
-      network_id = item_map.network_id
-      return if network_id.nil?
+      item_map.ip_leases.each { |ip_lease|
+        ipv4_address = ip_lease.ip_address.ipv4_address
+        next if ipv4_address.nil?
 
-      network_info = @datapath.network_manager.network_by_id(network_id)
+        network_id = ip_lease.network_id
+        next if network_id.nil?
 
-      ipv4_address = item_map.ipv4_address
-      return if ipv4_address.nil?
+        network_info = @datapath.network_manager.network_by_id(network_id)
+        next if network_info.nil?
 
-      interface.add_ipv4_address(mac_address: mac_address,
-                                 network_id: network_id,
-                                 network_type: network_info[:type],
-                                 ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
+        interface.add_ipv4_address(mac_address: mac_address,
+                                   network_id: network_id,
+                                   network_type: network_info[:type],
+                                   ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
+      }
     end
 
   end
