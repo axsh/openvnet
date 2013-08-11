@@ -12,7 +12,6 @@ module Vnet::Openflow::Networks
     attr_reader :datapath_of_bridge
 
     attr_reader :ports
-    attr_reader :service_cookies
 
     attr_reader :cookie
     attr_reader :ipv4_network
@@ -25,7 +24,6 @@ module Vnet::Openflow::Networks
       @datapath_of_bridge = nil
 
       @ports = {}
-      @service_cookies = {}
 
       @cookie = @network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
