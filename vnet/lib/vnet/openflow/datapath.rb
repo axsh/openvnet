@@ -81,7 +81,7 @@ module Vnet::Openflow
 
       @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @dpid)]
 
-      if @datapath_map.nil
+      if @datapath_map.nil?
         warn log_format('could not find dpid in database')
         return
       end
