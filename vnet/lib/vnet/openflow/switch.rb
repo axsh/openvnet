@@ -54,10 +54,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:virtual => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:physical => nil), nil,
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       flows << Flow.create(TABLE_ROUTER_INGRESS,    0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_EGRESS,     0, {}, nil, flow_options)
