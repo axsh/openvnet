@@ -28,6 +28,13 @@ module Vnet::Openflow
       port_to_hash(@ports[port_number])
     end
 
+    def port_by_port_name(port_name)
+      port_number, port = @ports.detect { |port_number, port|
+        port_name == port.port_name
+      }
+      port_to_hash(port)
+    end
+
     def insert(port_desc)
       debug log_format('insert port',
                        "port_no:#{port_desc.port_no} name:#{port_desc.name} " +
@@ -146,7 +153,12 @@ module Vnet::Openflow
     def prepare_port_vif(port, port_desc)
       @datapath.mod_port(port.port_number, :no_flood)
 
-      interface = @datapath.interface_manager.item(uuid: port_desc.name)
+      # TODO: Fix this so that when interface manager creates a new
+      # interface, it checks if the port is present and get the
+      # port number from port manager.
+      interface = @datapath.interface_manager.item(uuid: port_desc.name,
+                                                   port_number: port.port_number,
+                                                   reinitialize: true)
 
       if interface.nil?
         error log_format('could not find uuid', "name:#{port_desc.name})")

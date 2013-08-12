@@ -178,7 +178,9 @@ module Vnet::Openflow
 
     def prepare_interface(interface_id)
       interface = @datapath.interface_manager.item(id: interface_id)
-      info log_format('from interface_manager' , "#{interface.inspect}")
+      return nil if interface.nil?
+
+      info log_format('from interface_manager' , "#{interface.uuid}/#{interface_id}")
 
       vif = interface && @vifs[interface.id]
       return vif if vif

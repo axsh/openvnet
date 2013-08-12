@@ -83,45 +83,6 @@ module Vnet::Openflow::Ports
                              :output => self.port_number
                            }, flow_options)
 
-      #
-      # ARP routing table
-      #
-      if self.ipv4_addr
-        flows << Flow.create(TABLE_PHYSICAL_SRC, 45, {
-                               :in_port => self.port_number,
-                               :eth_type => 0x0806,
-                               :eth_src => self.hw_addr,
-                               :arp_sha => self.hw_addr,
-                               :arp_spa => self.ipv4_addr
-                             }, nil,
-                             flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
-        flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
-                               :eth_type => 0x0806,
-                               :arp_spa => self.ipv4_addr
-                             }, nil,
-                             flow_options)
-      end
-
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
-                             :eth_type => 0x0806,
-                             :eth_src => self.hw_addr,
-                           }, nil,
-                           flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 44, {
-                             :eth_type => 0x0806,
-                             :arp_sha => self.hw_addr,
-                           }, nil,
-                           flow_options)
-
-      # if self.ipv4_addr
-      #   flows << Flow.create(TABLE_ARP_ROUTE, 2, {
-      #                          :eth_type => 0x0806,
-      #                          :arp_tpa => self.ipv4_addr
-      #                        }, {
-      #                          :output => self.port_number
-      #                        }, flow_options)
-      # end
-
       @datapath.add_flows(flows)
     end
 

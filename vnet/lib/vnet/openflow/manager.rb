@@ -38,7 +38,7 @@ module Vnet::Openflow
     def item_by_params(params)
       item = item_by_params_direct(params)
 
-      if item || params[:dynamic_load] == false
+      if (item && params[:reinitialize] == false) || params[:dynamic_load] == false
         return item
       end
 
@@ -49,7 +49,37 @@ module Vnet::Openflow
                  raise("Missing item id/uuid parameter.")
                end
 
-      create_item(select_item(select))
+      # After the db query, avoid yielding method calls until the item
+      # is added to the items list and 'install' method is
+      # called. Yielding method calls are any non-async actor method
+      # calls or any other blocking methods.
+      #
+      # This is in particular important to avoid losing parameters
+      # passed duing reinitialization of interfaces that e.g. pass
+      # port number.
+      #
+      # Note that when adding events we need to ensure we subscribe to
+      # db events for the item, if the events are for changes to data
+      # we use from 'item_map'.
+      #
+      # We should try to use only static data from this query, and
+      # rely on the 'install' method call as an event barrier for
+      # dynamic data.
+
+      item_map = select_item(select)
+      return nil if item_map.nil?
+
+      if params[:reinitialize] == true
+        @items.delete(item_map.id)
+      else
+        # Currently we're not keeping tabs on what interfaces are
+        # being queried by interface manager, so check if it has been
+        # created already.
+        item = @items[item_map.id]
+        return item if item
+      end
+
+      create_item(item_map, params)
     end
 
     def item_by_params_direct(params)

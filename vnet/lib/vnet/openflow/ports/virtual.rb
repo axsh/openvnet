@@ -40,18 +40,6 @@ module Vnet::Openflow::Ports
 
       if @network_id && @ipv4_addr
         #
-        # ARP Anti-Spoof:
-        #
-        flows << Flow.create(TABLE_VIRTUAL_SRC, 86, {
-                               :in_port => self.port_number,
-                               :eth_type => 0x0806,
-                               :eth_src => @hw_addr,
-                               :arp_spa => @ipv4_addr,
-                               :arp_sha => @hw_addr
-                             }, nil,
-                             flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
-
-        #
         # IPv4 source validation:
         #
         flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {

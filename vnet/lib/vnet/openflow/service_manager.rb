@@ -28,7 +28,7 @@ module Vnet::Openflow
       MW::NetworkService[filter]
     end
 
-    def create_item(item_map)
+    def create_item(item_map, params)
       return nil if item_map.nil?
 
       interface = @datapath.interface_manager.item(:id => item_map.vif_id)
