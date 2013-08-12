@@ -105,13 +105,12 @@ module Vnet::Openflow::Routers
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
       if route[:require_vif] == true
-        catch_route_md = md_create({ route[:network_type] => route[:network_id],
-                                     :not_no_controller => nil
-                                   })
+        catch_route_md = md_create(network: route[:network_id],
+                                   not_no_controller: nil)
         actions = { :output => OFPP_CONTROLLER }
         instructions = { :cookie => cookie }
       else
-        catch_route_md = md_create(route[:network_type] => route[:network_id])
+        catch_route_md = md_create(network: route[:network_id])
         actions = nil
         instructions = {
           :goto_table => TABLE_ARP_LOOKUP,

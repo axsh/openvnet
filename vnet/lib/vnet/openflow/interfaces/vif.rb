@@ -151,8 +151,40 @@ module Vnet::Openflow::Interfaces
                            cookie: self.cookie)
 
       #
-      # IPv4 anti-spoof
+      # IPv4 
       #
+      flows << flow_create(:network_src,
+                           priority: 45,
+                           match: {
+                             :in_port => @port_number,
+                             :eth_type => 0x0800,
+                             :eth_src => mac_info[:mac_address],
+                             :ipv4_src => ipv4_info[:ipv4_address],
+                           },
+                           network_id: ipv4_info[:network_id],
+                           network_type: ipv4_info[:network_type],
+                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           cookie: self.cookie)
+      flows << flow_create(:network_src,
+                           priority: 44,
+                           match: {
+                             :eth_type => 0x0800,
+                             :ipv4_src => ipv4_info[:ipv4_address],
+                           },
+                           network_id: ipv4_info[:network_id],
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie)
+      flows << flow_create(:router_dst_match,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0800,
+                             :ipv4_dst => ipv4_info[:ipv4_address],
+                           },
+                           actions: {
+                             :eth_dst => mac_info[:mac_address],
+                           },
+                           network_id: ipv4_info[:network_id],
+                           cookie: self.cookie)
     end
 
   end

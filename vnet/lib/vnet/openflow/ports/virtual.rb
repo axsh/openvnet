@@ -16,10 +16,10 @@ module Vnet::Openflow::Ports
     def install
       flows = []
 
-      network_md = flow_options.merge(md_network(:virtual_network))
+      network_md = flow_options.merge(md_network(:network))
 
       if @network_id
-        classifier_md = flow_options.merge(md_network(:virtual_network, {
+        classifier_md = flow_options.merge(md_network(:network, {
                                                         :local => nil,
                                                         :vif => nil
                                                       }))
@@ -36,26 +36,6 @@ module Vnet::Openflow::Ports
                              network_md.merge(:eth_dst => self.hw_addr), {
                                :output => self.port_number
                              }, flow_options)
-      end
-
-      if @network_id && @ipv4_addr
-        #
-        # IPv4 source validation:
-        #
-        flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {
-                               :in_port => self.port_number,
-                               :eth_type => 0x0800,
-                               :eth_src => @hw_addr,
-                               :ipv4_src => @ipv4_addr,
-                             }, nil,
-                             flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
-        flows << Flow.create(TABLE_ROUTER_DST, 40,
-                             network_md.merge({ :eth_type => 0x0800,
-                                                :ipv4_dst => @ipv4_addr
-                                              }), {
-                               :eth_dst => @hw_addr
-                             },
-                             flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       end
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {
