@@ -27,11 +27,11 @@ module Vnet::Openflow::Ports
         flows << Flow.create(TABLE_CLASSIFIER, 2, {
                                :in_port => self.port_number
                              }, nil,
-                             classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                             classifier_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
         flows << Flow.create(TABLE_HOST_PORTS, 30, {
                                :eth_dst => self.hw_addr,
                              }, nil,
-                             network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                             network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
         flows << Flow.create(TABLE_VIRTUAL_DST, 60,
                              network_md.merge(:eth_dst => self.hw_addr), {
                                :output => self.port_number
@@ -55,7 +55,7 @@ module Vnet::Openflow::Ports
                                               }), {
                                :eth_dst => @hw_addr
                              },
-                             flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+                             flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       end
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 40, {

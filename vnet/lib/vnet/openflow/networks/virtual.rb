@@ -20,16 +20,25 @@ module Vnet::Openflow::Networks
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
                              :tunnel_id => @network_id | TUNNEL_FLAG_MASK
                            }, nil,
-                           classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40,
+                           classifier_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 40,
                            md_network(:virtual_network), {},
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 40,
+                           md_network(:virtual_network), {},
+                           flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
 
       if @broadcast_mac_address
-        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
                                :eth_dst => @broadcast_mac_address
                              }, {}, flow_options)
-        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                               :eth_src => @broadcast_mac_address
+                             }, {}, flow_options)
+        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                               :eth_dst => @broadcast_mac_address
+                             }, {}, flow_options)
+        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
                                :eth_src => @broadcast_mac_address
                              }, {}, flow_options)
       end

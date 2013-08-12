@@ -32,7 +32,7 @@ module Vnet::Openflow::Ports
         flows << Flow.create(TABLE_HOST_PORTS, 10, {
                                :in_port => self.port_number
                              }, nil,
-                             fo_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                             fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
       end
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {

@@ -118,12 +118,22 @@ module Vnet::Openflow
                            route_link_md.merge({ :cookie => cookie,
                                                  :goto_table => TABLE_ROUTER_EGRESS
                                                }))
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
                              :eth_dst => link[:mac_address]
                            }, nil, {
                              :cookie => cookie
                            })
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                             :eth_src => link[:mac_address]
+                           }, nil, {
+                             :cookie => cookie
+                           })
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                             :eth_dst => link[:mac_address]
+                           }, nil, {
+                             :cookie => cookie
+                           })
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
                              :eth_src => link[:mac_address]
                            }, nil, {
                              :cookie => cookie
@@ -145,7 +155,12 @@ module Vnet::Openflow
                              route_link_md.merge({ :cookie => cookie,
                                                    :goto_table => TABLE_ROUTER_EGRESS
                                                  }))
-        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
+                             }, nil, {
+                               :cookie => cookie
+                             })
+        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
                                :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
                              }, nil, {
                                :cookie => cookie
@@ -317,19 +332,10 @@ module Vnet::Openflow
       cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
       network_md = md_create(:network => vif[:network_id])
 
-      if vif[:network_type] == :physical_network
-        goto_table = TABLE_PHYSICAL_DST
-        controller_md = md_create({ :network => vif[:network_id],
-                                    :physical => nil,
-                                    :no_controller => nil
-                                  })
-      else
-        goto_table = TABLE_VIRTUAL_DST
-        controller_md = md_create({ :network => vif[:network_id],
-                                    :virtual => nil,
-                                    :no_controller => nil
-                                  })
-      end
+      goto_table = TABLE_NETWORK_DST_CLASSIFIER
+      controller_md = md_create({ :network => vif[:network_id],
+                                  :no_controller => nil
+                                })
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 40,

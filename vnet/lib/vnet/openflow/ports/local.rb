@@ -22,7 +22,7 @@ module Vnet::Openflow::Ports
         flows << Flow.create(TABLE_CLASSIFIER, 2, {
                                :in_port => OFPP_LOCAL
                              }, nil,
-                             fo_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                             fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
       end
 
       # Some flows depend on only local being able to send packets
@@ -61,7 +61,7 @@ module Vnet::Openflow::Ports
                                               }), {
                                :eth_dst => @hw_addr
                              },
-                             flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+                             flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       end
 
       self.datapath.add_flows(flows)
