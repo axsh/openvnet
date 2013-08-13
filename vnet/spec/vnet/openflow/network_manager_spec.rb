@@ -35,7 +35,7 @@ describe Vnet::Openflow::NetworkManager do
       end
     end
 
-    subject { network_manager.network_by_uuid('nw-aaaaaaaa') }
+    subject { use_mock_event_handler; network_manager.network_by_uuid('nw-aaaaaaaa') }
 
     it { should be_a Vnet::Openflow::NetworkVirtual }
     it { expect(subject.uuid).to eq 'nw-aaaaaaaa' }

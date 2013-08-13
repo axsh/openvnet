@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
+require 'ipaddr'
+require 'trema'
+
+include Vnet::Constants::Openflow
 
 include Vnet::Constants::Openflow
 include Vnet::Constants::OpenflowFlows

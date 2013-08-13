@@ -8,6 +8,7 @@ module Vnet::Openflow
     include Celluloid
     include Celluloid::Logger
     include FlowHelpers
+    include Vnet::Event::Dispatchable
 
     attr_reader :bridge_hw
 
@@ -211,10 +212,15 @@ module Vnet::Openflow
           network = port.network
           network.del_port(port, true)
 
-          @datapath.network_manager.remove(network) if network.ports.empty?
+          if network.ports.empty?
+            @datapath.network_manager.remove(network)
+            @datapath.tunnel_manager.delete_tunnel_port(network.network_id, @datapath.dpid)
+            dispatch_event("network/deleted", network_id: network.network_id, dpid: @datapath.dpid)
+          end
         end
 
         if port.port_info.name =~ /^vif-/
+          vif_map = Vnet::ModelWrappers::Vif[message.name]
           vif_map.batch.update(:datapath_id => nil).commit
         end
 
@@ -225,6 +231,11 @@ module Vnet::Openflow
       port = @ports[message.match.in_port]
 
       @datapath.packet_manager.async.packet_in(port, message) if port
+    end
+
+    def update_topology(dpid, network_id)
+      debug "[switch] update_topology: dpid => #{dpid}, network_id => #{network_id}"
+      @datapath.tunnel_manager.delete_tunnel_port(network_id, dpid)
     end
 
   end
