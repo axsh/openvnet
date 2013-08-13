@@ -54,7 +54,6 @@ module Vnet::Endpoints::V10
     load_namespace('open_flow_controllers')
     load_namespace('routes')
     load_namespace('route_links')
-    load_namespace('tunnels')
     load_namespace('vifs')
   end
 end

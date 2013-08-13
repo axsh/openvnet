@@ -102,6 +102,19 @@ module Vnet::Openflow
     def add_tunnel(tunnel_name, remote_ip)
       @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
     end
+
+    def delete_tunnel(tunnel_name)
+      p "delete tunnel #{tunnel_name}"
+      self.ovs_ofctl.delete_tunnel(tunnel_name)
+    end
+
+    def delete_tunnel(tunnel_name)
+      self.ovs_ofctl.delete_tunnel(tunnel_name)
+    end
+
+    def delete_tunnel(tunnel_name)
+      self.ovs_ofctl.delete_tunnel(tunnel_name)
+    end
   end
 
 end
