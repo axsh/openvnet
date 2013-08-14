@@ -58,4 +58,4 @@ clean:
 build-rpm: DSTDIR = /tmp/vnet-rpmbuild
 build-rpm: build-ruby install-bundle reinstall
 	(cd $(CURDIR)/deployment/packagebuild; $(RUBYDIR)/bin/bundle install --path vendor/bundle --binstubs)
-	(cd $(DSTDIR);	fpm_path="$(CURDIR)/deployment/packagebuild/bin/fpm" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
+	(cd $(DSTDIR);	fpm_path="$(RUBYDIR)/bin/ruby $(CURDIR)/deployment/packagebuild/bin/fpm" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
