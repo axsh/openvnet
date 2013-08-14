@@ -1,11 +1,11 @@
 CURDIR ?= $(PWD)
-RUBYDIR = $(CURDIR)/ruby
+RUBYDIR = $(CURDIR)/ruby/current
 #An empty string for DSTDIR will install Wakame-VNet under /opt/axsh/wakame-vnet
 DSTDIR ?= ""
 
 all: build-ruby install-bundle
 
-dev: build-ruby install-bundle-dev
+dev: build-ruby install-bundle-dev update-config
 
 build-ruby:
 	ruby_ver=$(RUBY_VERSION) $(CURDIR)/deployment/rubybuild/build_ruby.sh
@@ -25,14 +25,23 @@ install: update-config
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/pid
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/sock
 	cp -r vnet vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
-	cp -r deployment/conf_files/etc/default $(DSTDIR)/etc
-	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
 
 
-uninstall:
+uninstall: remove-config
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
 	rm -rf $(DSTDIR)/tmp/log
 	rm -rf $(DSTDIR)/var/run/wakame-vnet
+
+reinstall: uninstall install
+
+update-config:
+	mkdir -p $(DSTDIR)/etc/wakame-vnet
+	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc/
+	cp -r deployment/conf_files/etc/default $(DSTDIR)/etc
+	cp -r deployment/conf_files/etc/init $(DSTDIR)/etc
+
+remove-config:
+	rm -rf $(DSTDIR)/etc/wakame-vnet
 	rm $(DSTDIR)/etc/default/vnet-vna
 	rm $(DSTDIR)/etc/default/vnet-vnmgr
 	rm $(DSTDIR)/etc/default/vnet-webapi
@@ -41,19 +50,12 @@ uninstall:
 	rm $(DSTDIR)/etc/init/vnet-vnmgr.conf
 	rm $(DSTDIR)/etc/init/vnet-webapi.conf
 
-update-config:
-	mkdir -p $(DSTDIR)/etc/wakame-vnet
-	cp -r deployment/conf_files/etc/wakame-vnet $(DSTDIR)/etc/
-
-remove-config:
-	rm -rf $(DSTDIR)/etc/wakame-vnet
-
 clean:
 	rm -rf $(RUBYDIR)
 	rm -rf $(CURDIR)/vnet/vendor
 	rm -rf $(CURDIR)/vnet/.bundle
 
 build-rpm: DSTDIR = /tmp/vnet-rpmbuild
-build-rpm: clean build-ruby install-bundle install
-	$(RUBYDIR)/bin/gem install fpm
-	(cd $(DSTDIR);	fpm_path="$(RUBYDIR)/bin/fpm" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
+build-rpm: build-ruby install-bundle reinstall
+	(cd $(CURDIR)/deployment/packagebuild; $(RUBYDIR)/bin/bundle install --path vendor/bundle --binstubs)
+	(cd $(DSTDIR);	fpm_path="$(CURDIR)/deployment/packagebuild/bin/fpm" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
