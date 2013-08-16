@@ -76,7 +76,7 @@ module Vnet::Openflow::Services
       return unreachable_ip(message, "no active vif found", :inactive_vif) if ip_lease.vif.datapath_id.nil?
 
       debug "service::router.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
-      
+
       route_packets(message, ip_lease)
 
       # output...
