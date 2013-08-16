@@ -18,6 +18,6 @@ module Vnet::Models
         ds = ds.select_all(:ip_addresses, :ip_leases)
       end
     end
-    
+
   end
 end

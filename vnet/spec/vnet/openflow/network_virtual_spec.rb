@@ -8,7 +8,7 @@ include Vnet::Constants::Openflow
 describe Vnet::Openflow::NetworkVirtual do
 
   describe "update_flows" do
-    before { Fabricate(:vnet_1) }   
+    before { Fabricate(:vnet_1) }
     let(:vnet) { Vnet::Openflow::NetworkVirtual.new(datapath, Vnet::ModelWrappers::Network["nw-aaaaaaaa"]) }
 
     let(:datapath) do

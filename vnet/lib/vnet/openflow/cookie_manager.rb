@@ -21,7 +21,7 @@ module Vnet::Openflow
       return (0...0) if @next_cookie.nil?
       (@next_cookie...((@prefix + 1) << bitshift))
     end
-    
+
     def range_below
       return (0...0) if @next_cookie.nil?
       ((@prefix << bitshift)...@next_cookie)
@@ -38,7 +38,7 @@ module Vnet::Openflow
 
   class CookieManager
     include Celluloid
-    
+
     def initialize
       @categories = {}
       @cookies = {}
@@ -68,7 +68,7 @@ module Vnet::Openflow
       category = @categories[name]
       return nil if category.nil? || !@cookies.has_key?(cookie)
 
-      category.update_next_cookie(cookie) if category.next_cookie.nil?      
+      category.update_next_cookie(cookie) if category.next_cookie.nil?
 
       @cookies.delete(cookie)
     end

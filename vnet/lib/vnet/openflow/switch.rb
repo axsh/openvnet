@@ -205,7 +205,7 @@ module Vnet::Openflow
           debug "port status could not delete uninitialized port: #{message.port_no}"
           return
         end
-        
+
         port.uninstall
 
         if port.network
