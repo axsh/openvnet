@@ -9,7 +9,7 @@ describe Vnet::Openflow::TunnelManager do
     before(:each) do
       (1..3).each { |i| Fabricate("datapath_#{i}") }
     end
-  
+
     let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i(16)) }
 
     subject { Vnet::Openflow::TunnelManager.new(datapath) }
@@ -214,7 +214,7 @@ describe Vnet::Openflow::TunnelManager do
                                      :ipv4_address => IPAddr.new('1.1.1.1', Socket::AF_INET).to_i,
                                      :datapath_id => 1
                                      )))
-          
+
       end
     end
 

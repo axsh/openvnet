@@ -6,7 +6,7 @@ module Vnet::Openflow
     include Celluloid
     include Celluloid::Logger
     include FlowHelpers
-    
+
     def initialize(dp)
       @datapath = dp
       @routes = {}
@@ -165,7 +165,7 @@ module Vnet::Openflow
                              :cookie => cookie,
                              :goto_table => TABLE_ROUTER_SRC
                            })
-      
+
       @datapath.add_flows(flows)
       vif
     end

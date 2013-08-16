@@ -78,7 +78,7 @@ module Vnet::Openflow
     #
     # Metadata helper methods:
     #
-    
+
     def md_create(options)
       metadata = 0
       metadata_mask = 0

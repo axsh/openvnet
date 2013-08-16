@@ -6,7 +6,7 @@ module Vnet::Openflow
     include Celluloid
     include Celluloid::Logger
     include FlowHelpers
-    
+
     def initialize(dp)
       @datapath = dp
       @datapath_networks = {}
@@ -59,7 +59,7 @@ module Vnet::Openflow
 
       dpn_list.each { |dpn|
         @datapath.del_cookie(dpn[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT))
-      }      
+      }
     end
 
     def update_network_id(network_id)
@@ -85,10 +85,10 @@ module Vnet::Openflow
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
                              :goto_table => TABLE_METADATA_TUNNEL_IDS
                            })
-                           
+
       @datapath.add_flows(flows)
     end
 
   end
 
-end    
+end

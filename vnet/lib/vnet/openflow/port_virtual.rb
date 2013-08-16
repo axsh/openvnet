@@ -12,7 +12,7 @@ module Vnet::Openflow
     def install
       any_network_md = flow_options.merge(md_network(:virtual_network))
       local_network_md = flow_options.merge(md_network(:virtual_network, :local => nil))
-      
+
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
@@ -34,7 +34,7 @@ module Vnet::Openflow
                              :arp_sha => @hw_addr
                            }, {}, flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY)
                            ) if @ipv4_addr
-      
+
       if @ipv4_addr
         flows << Flow.create(TABLE_ROUTER_DST, 40,
                              md_network(:virtual_network).merge!({ :eth_type => 0x0800,

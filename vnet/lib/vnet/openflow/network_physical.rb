@@ -40,5 +40,5 @@ module Vnet::Openflow
     end
 
   end
-  
+
 end

@@ -20,7 +20,7 @@ module Vnet::Openflow
         error "packet_manager: invalid cookie received '#{cookie.inspect}'"
         return nil
       end
-      
+
       if tag
         @tags[tag] = handler
         handler.tag = tag
@@ -45,7 +45,7 @@ module Vnet::Openflow
         error "packet_manager.link_cookies: invalid sub-cookie received (0x%x)" % sub_cookie
         return nil
       end
-      
+
       @handlers[sub_cookie] = handler
       sub_cookie
     end
@@ -62,7 +62,7 @@ module Vnet::Openflow
         error "packet_manager: could not find handler to remove"
         return
       end
-      
+
       @datapath.del_cookie(handler.cookie)
       @tags.delete(handler.tags) if handler.tag
 
@@ -98,4 +98,4 @@ module Vnet::Openflow
   end
 
 end
-    
+
