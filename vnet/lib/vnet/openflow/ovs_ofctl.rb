@@ -14,6 +14,7 @@ module Vnet::Openflow
       # @ovs_ofctl = conf.ovs_ofctl_path
       # @ovs_vsctl = conf.ovs_vsctl_path
       @ovs_ofctl = 'ovs-ofctl -O OpenFlow13'
+      @ovs_ofctl_10 = 'ovs-ofctl -O OpenFlow10'
       @ovs_vsctl = 'ovs-vsctl'
       @switch_name = get_bridge_name(datapath_id)
 
@@ -34,6 +35,11 @@ module Vnet::Openflow
 
     def add_ovs_flow(flow_str)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
+      debug "'#{command}' => #{system(command)}"
+    end
+
+    def add_ovs_10_flow(flow_str)
+      command = "#{@ovs_ofctl_10} add-flow #{switch_name} #{flow_str}"
       debug "'#{command}' => #{system(command)}"
     end
 
@@ -73,6 +79,20 @@ module Vnet::Openflow
     def del_cookie(cookie)
       command = "#{@ovs_ofctl} del-flows #{switch_name} cookie=0x%x/-1" % cookie
       debug "'#{command}' => #{system(command)}"
+    end
+
+    def mod_port(port_no, action)
+      arg = case action
+            when :forward, :down, :flood, :stp, :receive, :up
+              action.to_s
+            when :no_flood then 'no-flood'
+            when :no_stp then 'no-stp'
+            when :no_receive then 'no-receive'
+            end
+
+      port_no = switch_name if port_no == Controller::OFPP_LOCAL
+
+      system("#{@ovs_ofctl_10} mod-port #{switch_name} #{port_no} #{arg}")
     end
 
     def add_tunnel(tunnel_name, remote_ip)

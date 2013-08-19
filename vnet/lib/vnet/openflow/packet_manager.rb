@@ -41,8 +41,12 @@ module Vnet::Openflow
         return nil
       end
 
-      if sub_cookie.nil? || @handlers.has_key?(sub_cookie)
-        error "packet_manager.link_cookies: invalid sub-cookie received (0x%x)" % sub_cookie
+      if sub_cookie.nil?
+        throw "packet_manager.link_cookies: invalid sub-cookie received (#{sub_cookie.inspect})"
+      end
+      
+      if @handlers.has_key?(sub_cookie)
+        error "packet_manager.link_cookies: sub-cookie already registered (0x%x)" % sub_cookie
         return nil
       end
 

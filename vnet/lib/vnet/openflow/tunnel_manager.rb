@@ -108,7 +108,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 1,
-                           md_create({ :virtual_network => network_id,
+                           md_create({ :network => network_id,
                                        :flood => nil
                                      }), {
                              :tunnel_id => network_id | TUNNEL_FLAG_MASK
@@ -161,10 +161,11 @@ module Vnet::Openflow
         return
       end
 
-      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id])
+      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id],
+                              :tunnel => nil)
       cookie = tunnel[:dst_datapath_id] | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
-      flow = Flow.create(TABLE_METADATA_DATAPATH_ID, 5,
+      flow = Flow.create(TABLE_OUTPUT_DATAPATH, 5,
                          datapath_md, {
                            :output => port_number
                          }, {
@@ -193,7 +194,7 @@ module Vnet::Openflow
         tunnel = @tunnels.find{ |t| t[:display_name] == tunnel_port[:port_name] }
 
         unless tunnel
-          warn "tunnel port: #{tunnel_port.port_name} is not registered in db"
+          warn "tunnel port: #{tunnel_port[:port_name]} is not registered in db"
           next
         end
 

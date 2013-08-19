@@ -5,68 +5,63 @@ module Vnet::Openflow
   module PortLocal
     include FlowHelpers
 
-    attr_reader :bridge_hw
-
     def flow_options
       @flow_options ||= {:cookie => @cookie}
     end
 
     def install
-      set_local_md = flow_options.merge(md_create(:local => nil))
-      network_md   = flow_options.merge(md_network(:physical_network, :local => nil))
+      classifier_md = flow_options.merge(md_network(:physical_network, :local => nil))
+      network_md = md_network(:physical_network)
 
       flows = []
-      flows << Flow.create(TABLE_CLASSIFIER, 3, {
-                             :in_port => OFPP_LOCAL,
-                             :eth_type => 0x0806
-                           }, {
-                           }, set_local_md.merge(:goto_table => TABLE_ARP_ANTISPOOF))
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => OFPP_LOCAL
-                           }, {
-                           }, network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1,
-                           md_create(:physical_port => self.port_number), {
-                             :output => self.port_number
-                           }, flow_options)
+                           }, nil,
+                           classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
 
       # Some flows depend on only local being able to send packets
       # with the local mac and ip address, so drop those.
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 60, {
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 31, {
                              :in_port => OFPP_LOCAL
-                           }, {
-                           }, flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
-
-      #
-      # ARP routing table
-      #
-      flows << Flow.create(TABLE_ARP_ANTISPOOF, 1, {
+                           }, nil,
+                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
+                             :in_port => OFPP_LOCAL,
+                             :eth_type => 0x0800
+                           }, nil,
+                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => OFPP_LOCAL,
                              :eth_type => 0x0806
-                           }, {
-                           }, flow_options.merge(:goto_table => TABLE_ARP_ROUTE))
-
-      self.datapath.add_flows(flows)
-    end
-
-    def install_with_hw(bridge_hw)
-      @bridge_hw = bridge_hw
-
-      port_self_md = flow_options.merge(md_create(:physical_port => self.port_number))
-
-      flows = []
-      flows << Flow.create(TABLE_MAC_ROUTE, 1, {
-                             :eth_dst => self.bridge_hw
+                           }, nil,
+                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
+                             :eth_dst => @hw_addr
                            }, {
                              :output => OFPP_LOCAL
                            }, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
-                             :eth_dst => self.bridge_hw
+      flows << Flow.create(TABLE_MAC_ROUTE, 1, {
+                             :eth_dst => @hw_addr
                            }, {
-                           }, port_self_md.merge!(:goto_table => TABLE_PHYSICAL_SRC))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 50, {
-                             :eth_src => self.bridge_hw
-                           }, {}, flow_options)
+                             :output => OFPP_LOCAL
+                           }, flow_options)
+
+      if @ipv4_addr
+        flows << Flow.create(TABLE_ROUTER_DST, 40,
+                             network_md.merge({ :eth_type => 0x0800,
+                                                :ipv4_dst => @ipv4_addr
+                                              }), {
+                               :eth_dst => @hw_addr
+                             },
+                             flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+        flows << Flow.create(TABLE_ARP_LOOKUP, 30,
+                             network_md.merge({ :eth_type => 0x0800,
+                                                :ipv4_dst => @ipv4_addr
+                                              }), {
+                               :eth_dst => @hw_addr
+                             },
+                             flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+      end
 
       self.datapath.add_flows(flows)
     end

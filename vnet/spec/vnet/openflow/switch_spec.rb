@@ -8,10 +8,21 @@ describe Vnet::Openflow::Switch do
       datapath = MockDatapath.new(double, 1)
       Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
       switch = Vnet::Openflow::Switch.new(datapath)
+      switch.create_default_flows
+
+      expect(datapath.sent_messages.size).to eq 0
+      expect(datapath.added_flows.size).to eq 31
+      expect(datapath.added_ovs_flows.size).to eq 0
+    end
+
+    it "sends messages" do
+      datapath = MockDatapath.new(double, 1)
+      Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
+      switch = Vnet::Openflow::Switch.new(datapath)
       switch.switch_ready
 
       expect(datapath.sent_messages.size).to eq 2
-      expect(datapath.added_flows.size).to eq 28
+      expect(datapath.added_flows.size).to eq 0
       expect(datapath.added_ovs_flows.size).to eq 0
     end
   end
@@ -25,11 +36,10 @@ describe Vnet::Openflow::Switch do
         switch = dp.create_mock_switch
         port_desc = double(:port_desc)
         port_desc.should_receive(:port_no).and_return(5)
-
-        switch.update_bridge_hw('aaaa')
+        
         port = double(:port)
         port_info = double(:port_info)
-        port.should_receive(:port_number).and_return(5)
+        port.should_receive(:port_number).exactly(2).times.and_return(5)
         port.should_receive(:port_info).exactly(3).times.and_return(port_info)
         port.should_receive(:extend).and_return(Vnet::Openflow::PortTunnel)
         port.should_receive(:install)
@@ -39,7 +49,7 @@ describe Vnet::Openflow::Switch do
 
         switch.handle_port_desc(port_desc)
 
-        expect(switch.ports[5]).to eq port
+        expect(switch.get_port(5)).to eq port
       end
     end
 

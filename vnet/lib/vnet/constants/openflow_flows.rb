@@ -31,59 +31,42 @@ module Vnet
       TABLE_NETWORK_CLASSIFIER = 10
 
       TABLE_VIRTUAL_SRC = 11
+      TABLE_PHYSICAL_SRC = 12
 
-      TABLE_ROUTER_ENTRY = 14
-      TABLE_ROUTER_SRC = 15
-      TABLE_ROUTER_LINK = 16
-      TABLE_ROUTER_DST = 17
+      TABLE_ROUTER_ENTRY = 13
+      TABLE_ROUTER_SRC = 14
+      TABLE_ROUTER_LINK = 15
+      TABLE_ROUTER_DST = 16
+
+      TABLE_ARP_LOOKUP = 17
 
       TABLE_VIRTUAL_DST = 18
+      TABLE_PHYSICAL_DST = 19
 
       # Route based on the mac address only.
       TABLE_MAC_ROUTE = 30
 
-      # A table for sending packets to the controller after applying
-      # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER = 31
-
       # Only output to local vif's.
-      TABLE_METADATA_LOCAL        = 32
+      TABLE_METADATA_LOCAL        = 31
 
       # Send packet to all ports if marked as a flood flow, starting from
       # the route table.
-      TABLE_METADATA_ROUTE        = 33
-      TABLE_METADATA_SEGMENT      = 34
-      TABLE_METADATA_TUNNEL_IDS   = 35
-      TABLE_METADATA_TUNNEL_PORTS = 36
+      TABLE_METADATA_ROUTE        = 32
+      TABLE_METADATA_SEGMENT      = 33
+      TABLE_METADATA_TUNNEL_IDS   = 34
+      TABLE_METADATA_TUNNEL_PORTS = 35
+
+      # A table for sending packets to the controller after applying
+      # non-action instructions such as 'write_metadata'.
+      TABLE_OUTPUT_CONTROLLER     = 36
 
       # Send packet to a known datapath id, e.g. using an eth port or
       # tunnel port.
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_METADATA_DATAPATH_ID  = 37
-
-      #
-      # Legacy tables yet to be integrated in the new table ordering:
-      #
-
-      # Routing to non-virtual networks with filtering applied.
-      #
-      # Due to limitations in the rules we can use the filter rules
-      # for the destination must be applied first, and its port number
-      # loaded into a registry.
-      #
-      # The source will then apply filtering rules and output to the
-      # port number found in registry 1.
-      TABLE_PHYSICAL_DST = 20
-      TABLE_PHYSICAL_SRC = 21
-
-      # The ARP antispoof table ensures no ARP packet SHA or SPA field
-      # matches the mac address owned by another port.
-      #
-      # If valid, the next table routes the packet to the right port.
-      TABLE_ARP_ANTISPOOF = 22
-      TABLE_ARP_ROUTE = 23
+      TABLE_OUTPUT_DP_ROUTE_LINK  = 37
+      TABLE_OUTPUT_DATAPATH       = 38
 
       #
       # Metadata, tunnel and cookie flags and masks:
@@ -103,29 +86,36 @@ module Vnet
       COOKIE_PREFIX_TUNNEL         = 0x10
       COOKIE_PREFIX_VIF            = 0x11
 
-      METADATA_FLAGS_MASK = (0xffff << 48)
-      METADATA_FLAGS_SHIFT = 48
+      METADATA_FLAGS_SHIFT = 40
+      METADATA_FLAGS_MASK = (0xffff << METADATA_FLAGS_SHIFT)
 
-      METADATA_FLAG_VIRTUAL  = (0x1 << 48)
-      METADATA_FLAG_PHYSICAL = (0x2 << 48)
-      METADATA_FLAG_LOCAL    = (0x4 << 48)
-      METADATA_FLAG_REMOTE   = (0x8 << 48)
-      METADATA_FLAG_FLOOD    = (0x10 << 48)
+      METADATA_FLAG_VIRTUAL    = (0x001 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_PHYSICAL   = (0x002 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_LOCAL      = (0x004 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_REMOTE     = (0x008 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_FLOOD      = (0x010 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_VIF        = (0x020 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_MAC2MAC    = (0x040 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_TUNNEL     = (0x080 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_ARP_LOOKUP = (0x100 << METADATA_FLAGS_SHIFT)
 
-      METADATA_TYPE_MASK       = (0xff00 << 48)
+      METADATA_TYPE_SHIFT      = 56
+      METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)
 
-      METADATA_TYPE_COLLECTION = (0x100 << 48)
-      METADATA_TYPE_DATAPATH   = (0x200 << 48)
-      METADATA_TYPE_NETWORK    = (0x300 << 48)
-      METADATA_TYPE_PORT       = (0x400 << 48)
-      METADATA_TYPE_ROUTE      = (0x500 << 48)
-      METADATA_TYPE_ROUTE_LINK = (0x600 << 48)
+      METADATA_TYPE_COLLECTION = (0x1 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_DATAPATH   = (0x2 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_NETWORK    = (0x3 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_PORT       = (0x4 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_ROUTE      = (0x5 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_ROUTE_LINK = (0x6 << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0xffffffff
 
       TUNNEL_FLAG = (0x1 << 31)
       TUNNEL_FLAG_MASK = 0x80000000
       TUNNEL_NETWORK_MASK = 0x7fffffff
+
+      TUNNEL_ROUTE_LINK = 0x1
 
     end
   end

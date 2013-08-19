@@ -60,6 +60,7 @@ module Vnet::Openflow
       case tag
       when :eth_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
       when :eth_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])
+      when :normal then Trema::Actions::SendOutPort.new(:port_number => OFPP_NORMAL)
       when :output then Trema::Actions::SendOutPort.new(:port_number => arg)
       when :tunnel_id then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TunnelId.new(:tunnel_id => arg)])
       else
@@ -99,26 +100,39 @@ module Vnet::Openflow
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :mac2mac
+          metadata = metadata | METADATA_FLAG_MAC2MAC
+          metadata_mask = metadata_mask | METADATA_FLAG_MAC2MAC
+        when :network
+          metadata = metadata | value | METADATA_TYPE_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
+        when :physical
+          metadata = metadata | METADATA_FLAG_PHYSICAL
+          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :physical_network
-          # To be refactored.
-          metadata = metadata | METADATA_TYPE_NETWORK
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
-        when :physical_port
-          # To be refactored.
-          metadata = metadata | value | METADATA_TYPE_PORT
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_PHYSICAL
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :route
           metadata = metadata | value | METADATA_TYPE_ROUTE
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :route_link
           metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :tunnel
+          metadata = metadata | METADATA_FLAG_TUNNEL
+          metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
+        when :virtual
+          metadata = metadata | METADATA_FLAG_VIRTUAL
+          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :virtual_network
-          metadata = metadata | value | METADATA_TYPE_NETWORK
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_VIRTUAL
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
+        when :vif
+          metadata = metadata | METADATA_FLAG_VIF
+          metadata_mask = metadata_mask | METADATA_FLAG_VIF
         else
           raise("Unknown metadata type: #{key.inspect}")
         end
