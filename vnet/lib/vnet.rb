@@ -81,6 +81,7 @@ module Vnet
     autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
+    autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'
     autoload :DcNetwork, 'vnet/models/dc_network'
     autoload :DcNetworkDcSegment, 'vnet/models/dc_network_dc_segment'
     autoload :DcSegment, 'vnet/models/dc_segment'
@@ -102,6 +103,7 @@ module Vnet
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
+    autoload :DatapathRouteLink, 'vnet/model_wrappers/datapath_route_link'
     autoload :DcNetwork, 'vnet/model_wrappers/dc_network'
     autoload :DcNetworkDcSegment, 'vnet/model_wrappers/dc_network_dc_segment'
     autoload :DcSegment, 'vnet/model_wrappers/dc_segment'
@@ -172,6 +174,10 @@ module Vnet
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
+
+    module Routers
+      autoload :RouteLink, 'vnet/openflow/routers/route_link'
+    end
 
     module Services
       autoload :Arp, 'vnet/openflow/services/arp'

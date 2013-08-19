@@ -31,8 +31,14 @@ class Flow
     @actions = flow_actions
   end
 
+  def match_protocol
+    @match.keys.detect { |key|
+      key == :arp || key == :ip || key == :udp
+    }
+  end
+
   def to_pretty
-    "%3u-%02u  %-7u %-7u => %s actions=%s" %
+    "%3u-%02u  %7u %7u => %s actions=%s" %
       [@table,
        @priority,
        @n_packets,
@@ -85,7 +91,17 @@ class Flow
     when METADATA_FLAG_REMOTE then result << 'REMOTE|'
     end
 
+    case value & (mask & (METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL))
+    when METADATA_FLAG_VIRTUAL  then result << 'VIRTUAL|'
+    when METADATA_FLAG_PHYSICAL then result << 'PHYSICAL|'
+    end
+
+    result << 'VIF|'   if (value & (mask & METADATA_FLAG_VIF)) == METADATA_FLAG_VIF
     result << 'FLOOD|' if (value & (mask & METADATA_FLAG_FLOOD)) == METADATA_FLAG_FLOOD
+
+    result << 'MAC2MAC|' if (value & (mask & METADATA_FLAG_MAC2MAC)) == METADATA_FLAG_MAC2MAC
+    result << 'TUNNEL|'  if (value & (mask & METADATA_FLAG_TUNNEL)) == METADATA_FLAG_TUNNEL
+
     result.chomp('|')
   end
 
@@ -116,7 +132,7 @@ class Flow
     }
 
     parsed_match = parse_ovs_fields(ovs_match.split(','), :match)
-    parsed_actions = parse_ovs_fields(action_fields, :actions)
+    parsed_actions = parse_ovs_actions(action_fields, :actions)
 
     Flow.new(parsed_match, parsed_actions)
   end
@@ -157,6 +173,15 @@ class Flow
     }
   end
 
+  def self.parse_ovs_actions(fields, type)
+    fields.each.inject([]) { |dst, field|
+      key, value = parse_ovs_field(field, type)
+
+      dst << [key.to_sym, value]
+      dst
+    }
+  end
+
   def self.table_name(number)
     name = Vnet::Constants::OpenflowFlows.constants.select { |const|
       const.to_s.start_with?('TABLE_')
@@ -187,8 +212,10 @@ info = $stdin.readline
 flows = $stdin.each_line.map { |line| Flow.parse_ovs(line) }
 current_table = nil
 
+Signal.trap("PIPE", "EXIT")
+
 flows.sort! { |a,b|
-  [a.table, a.priority] <=> [b.table, b.priority]
+  [a.table, a.priority, a.match_protocol.to_s] <=> [b.table, b.priority, b.match_protocol.to_s]
 }.each { |flow|
   if current_table != flow.table
     current_table = flow.table
