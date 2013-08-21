@@ -29,14 +29,14 @@ module Vnet::Openflow
         priority = 70
         match = match.merge(params[:network].md_network(:network, {
                                                           # :local => nil,
-                                                          # :vif => nil
+                                                          # :iface => nil
                                                         }))
       when :virtual_local
         table = TABLE_VIRTUAL_DST
         priority = 70
         match = match.merge(params[:network].md_network(:network, {
                                                           :local => nil,
-                                                          :vif => nil
+                                                          :iface => nil
                                                         }))
       else
         raise "Wrong type for catch_flow."

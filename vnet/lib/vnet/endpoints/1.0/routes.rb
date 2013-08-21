@@ -3,17 +3,17 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
 
   post do
-    params = parse_params(@params, ["uuid", "vif_uuid", "route_link_uuid", "ipv4_address", "ipv4_prefix"])
+    params = parse_params(@params, ["uuid", "iface_uuid", "route_link_uuid", "ipv4_address", "ipv4_prefix"])
 
     if params.has_key?("uuid")
       raise E::DuplicateUUID, params["uuid"] unless M::Route[params["uuid"]].nil?
       params["uuid"] = M::Route.trim_uuid(params["uuid"])
     end
 
-    vif_uuid = params.delete('vif_uuid') || raise(E::MissingArgument, 'vif_uuid')
+    iface_uuid = params.delete('iface_uuid') || raise(E::MissingArgument, 'iface_uuid')
     route_link_uuid = params.delete('route_link_uuid') || raise(E::MissingArgument, 'route_link_uuid')
 
-    params['vif_id'] = (M::Vif[vif_uuid] || raise(E::InvalidUUID, vif_uuid)).id
+    params['iface_id'] = (M::Iface[iface_uuid] || raise(E::InvalidUUID, iface_uuid)).id
     params['route_link_id'] = (M::RouteLink[route_link_uuid] || raise(E::InvalidUUID, route_link_uuid)).id
 
     params['ipv4_address'] = parse_ipv4(params['ipv4_address'] || raise(E::MissingArgument, 'ipv4_address'))

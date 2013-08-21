@@ -5,7 +5,7 @@ module Vnet::ModelWrappers
     def to_hash
       {
         :uuid => self.uuid,
-        :vif_uuid => self.vif_uuid,
+        :iface_uuid => self.iface_uuid,
         :display_name => self.display_name,
         :incoming_port => self.incoming_port,
         :outgoing_port => self.outgoing_port,

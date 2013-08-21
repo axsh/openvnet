@@ -6,9 +6,9 @@ def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
-describe "/vifs" do
+describe "/ifaces" do
   describe "POST /" do
-    it "create vif with ipv4_address" do
+    it "create iface with ipv4_address" do
       use_mock_event_handler
 
       ipv4_address = random_ipv4
@@ -21,7 +21,7 @@ describe "/vifs" do
         ipv4_address: ipv4_address.to_s,
       }
 
-      post "/vifs", params
+      post "/ifaces", params
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)

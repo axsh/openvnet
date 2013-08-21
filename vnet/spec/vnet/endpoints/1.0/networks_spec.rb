@@ -104,9 +104,9 @@ describe "/networks" do
     end
   end
 
-  describe "PUT /:uuid/attach_vif" do
+  describe "PUT /:uuid/attach_iface" do
     it "should return 404 error" do
-      put "/networks/nw-notfound/attach_vif"
+      put "/networks/nw-notfound/attach_iface"
       # TODO should be 404
       #expect(last_response.status).to eq 404
       expect(last_response.status).to eq 500
@@ -114,18 +114,18 @@ describe "/networks" do
 
     it "should return 404 error" do
       network = Fabricate(:network)
-      put "/networks/#{network.canonical_uuid}/attach_vif", :vif_uuid => "vif-notfound"
+      put "/networks/#{network.canonical_uuid}/attach_iface", :iface_uuid => "iface-notfound"
       # TODO should be 404
       #expect(last_response.status).to eq 404
       expect(last_response.status).to eq 500
     end
 
-    it "should attach vif to network" do
+    it "should attach iface to network" do
       network = Fabricate(:network)
-      vif = Fabricate(:vif)
-      expect(network.vifs).to be_empty
+      iface = Fabricate(:iface)
+      expect(network.ifaces).to be_empty
 
-      put "/networks/#{network.canonical_uuid}/attach_vif", :vif_uuid => vif.canonical_uuid
+      put "/networks/#{network.canonical_uuid}/attach_iface", :iface_uuid => iface.canonical_uuid
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
@@ -133,14 +133,14 @@ describe "/networks" do
 
       network.reload
 
-      expect(network.vifs.size).to eq 1
-      expect(network.vifs.first.uuid).to eq vif.uuid
+      expect(network.ifaces.size).to eq 1
+      expect(network.ifaces.first.uuid).to eq iface.uuid
     end
   end
 
-  describe "PUT /:uuid/detach_vif" do
+  describe "PUT /:uuid/detach_iface" do
     it "should return 404 error" do
-      put "/networks/nw-notfound/detach_vif"
+      put "/networks/nw-notfound/detach_iface"
       # TODO should be 404
       #expect(last_response.status).to eq 404
       expect(last_response.status).to eq 500
@@ -148,27 +148,27 @@ describe "/networks" do
 
     it "should return 404 error" do
       network = Fabricate(:network)
-      put "/networks/#{network.canonical_uuid}/detach_vif", :vif_uuid => "vif-notfound"
+      put "/networks/#{network.canonical_uuid}/detach_iface", :iface_uuid => "iface-notfound"
       # TODO should be 404
       #expect(last_response.status).to eq 404
       expect(last_response.status).to eq 500
     end
 
-    it "should detach vif to network" do
-      vif = Fabricate(:vif) do
+    it "should detach iface to network" do
+      iface = Fabricate(:iface) do
         network
       end
-      network = vif.network
-      expect(network.vifs.size).to eq 1
+      network = iface.network
+      expect(network.ifaces.size).to eq 1
 
-      put "/networks/#{network.canonical_uuid}/detach_vif", :vif_uuid => vif.canonical_uuid
+      put "/networks/#{network.canonical_uuid}/detach_iface", :iface_uuid => iface.canonical_uuid
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
       expect(body["uuid"]).to eq network.canonical_uuid
 
       network.reload
-      expect(network.vifs).to be_empty
+      expect(network.ifaces).to be_empty
     end
   end
 end

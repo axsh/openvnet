@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::ModelWrappers
-  class Vif < Base
+  class Iface < Base
   end
 end

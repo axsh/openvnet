@@ -13,7 +13,7 @@ module Vnet::Openflow
       network_md = flow_options.merge(md_network(:virtual_network))
       classifier_md = flow_options.merge(md_network(:virtual_network, {
                                                       :local => nil,
-                                                      :vif => nil
+                                                      :iface => nil
                                                     }))
       
       flows = []

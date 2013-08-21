@@ -66,6 +66,24 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
+    create_table(:ifaces) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :network_id, :index => true
+      Bignum :mac_addr, :null=>false
+      String :name, :null => false
+      String :mode, :null => false
+
+      # Should be a relation allowing for multiple active/owner
+      # datapath ids.
+      Integer :active_datapath_id, :index => true
+      Integer :owner_datapath_id, :index => true
+
+      String :state, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
     create_table(:ip_addresses) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -78,7 +96,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true, :null => false
-      Integer :vif_id, :index => true, :null => false
+      Integer :iface_id, :index => true, :null => false
       Integer :ip_address_id, :index => true, :null=>false
       Integer :alloc_type
       DateTime :created_at, :null=>false
@@ -106,7 +124,7 @@ Sequel.migration do
     create_table(:network_services) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :vif_id, :index => true
+      Integer :iface_id, :index => true
       String :display_name, :index => true, :null=>false
       Integer :incoming_port
       Integer :outgoing_port
@@ -142,7 +160,7 @@ Sequel.migration do
     create_table(:routes) do
       primary_key :id
       String :uuid, :unique => true, :null => false
-      Integer :vif_id, :index => true, :null => false
+      Integer :iface_id, :index => true, :null => false
       Integer :route_link_id, :index => true, :null => false
 
       String :route_type, :default => 'gateway', :null => false
@@ -171,23 +189,6 @@ Sequel.migration do
 
       index [:src_datapath_id, :dst_datapath_id]
     end
-
-    create_table(:vifs) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Integer :network_id, :index => true
-      Bignum :mac_addr, :null=>false
-
-      # Should be a relation allowing for multiple active/owner
-      # datapath ids.
-      Integer :active_datapath_id, :index => true
-      Integer :owner_datapath_id, :index => true
-
-      String :state, :null=>false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
   end
 
   down do
@@ -195,6 +196,7 @@ Sequel.migration do
                :datapath_networks,
                :dc_networks,
                :dhcp_ranges,
+               :ifs,
                :ip_leases,
                :ip_addresses,
                :networks,
@@ -202,7 +204,6 @@ Sequel.migration do
                :mac_leases,
                :mac_ranges,
                :open_flow_controllers,
-               :vifs,
                :routes,
                :route_links,
                :tunnels,

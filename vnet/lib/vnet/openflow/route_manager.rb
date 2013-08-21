@@ -7,12 +7,12 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
     
-    ROUTE_COMMIT = {:fill => [:route_link, :vif => [:network_services, :network]]}
+    ROUTE_COMMIT = {:fill => [:route_link, :iface => [:network_services, :network]]}
 
     def initialize(dp)
       @datapath = dp
       @route_links = {}
-      @vifs = {}
+      @ifaces = {}
     end
 
     def insert(route_map)
@@ -23,13 +23,13 @@ module Vnet::Openflow
 
       info "route_manager.insert: id:#{route_map.id} uuid:#{route_map.uuid}"
       info "route_manager.insert: route.route_type:#{route_map.route_type}"
-      info "route_manager.insert: route.vif: id:#{route_map.vif.id} uuid:#{route_map.vif.uuid}"
+      info "route_manager.insert: route.iface: id:#{route_map.iface.id} uuid:#{route_map.iface.uuid}"
       info "route_manager.insert: route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}"
 
       route = {
         :id => route_map.id,
         :uuid => route_map.uuid,
-        :vif => nil,
+        :iface => nil,
         :ipv4_address => route_map.ipv4_address,
         :ipv4_prefix => route_map.ipv4_prefix,
         :ipv4_mask => IPV4_BROADCAST << (32 - route_map.ipv4_prefix),
@@ -37,10 +37,10 @@ module Vnet::Openflow
 
       route_link[:routes][route[:id]] = route
 
-      route[:vif] = prepare_vif(route_map.vif)
+      route[:iface] = prepare_iface(route_map.iface)
 
-      if route[:vif].nil?
-        warn "route_manager: couldn't prepare router vif (#{route_map.uuid})"
+      if route[:iface].nil?
+        warn "route_manager: couldn't prepare router iface (#{route_map.uuid})"
         return
       end
 
@@ -162,53 +162,53 @@ module Vnet::Openflow
       link
     end
 
-    def prepare_vif(vif_map)
-      vif = @vifs[vif_map.id]
-      return vif if vif
+    def prepare_iface(iface_map)
+      iface = @ifaces[iface_map.id]
+      return iface if iface
 
-      service_map = vif_map.network_services.detect { |service| service.display_name == 'router' }
+      service_map = iface_map.network_services.detect { |service| service.display_name == 'router' }
 
       if service_map.nil?
-        warn "route_manager: could not find 'router' service for vif (#{vif_map.uuid})"
+        warn "route_manager: could not find 'router' service for iface (#{iface_map.uuid})"
         return nil
       end
 
-      vif = {
-        :id => vif_map.id,
-        :network_id => vif_map.network_id,
+      iface = {
+        :id => iface_map.id,
+        :network_id => iface_map.network_id,
         :use_datapath_id => nil,
         :service_cookie => service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT),
-        :mac_addr => Trema::Mac.new(vif_map.mac_addr),
-        :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
+        :mac_addr => Trema::Mac.new(iface_map.mac_addr),
+        :ipv4_address => IPAddr.new(iface_map.ipv4_address, Socket::AF_INET),
       }
 
       datapath_id = @datapath.datapath_map.id
 
-      if vif_map.owner_datapath_id
-        if vif_map.owner_datapath_id == datapath_id
-          vif_map.batch.update(:active_datapath_id => datapath_id).commit
+      if iface_map.owner_datapath_id
+        if iface_map.owner_datapath_id == datapath_id
+          iface_map.batch.update(:active_datapath_id => datapath_id).commit
         else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id
+          iface[:use_datapath_id] = iface_map.owner_datapath_id
         end
       end
 
-      case vif_map.network && vif_map.network.network_mode
+      case iface_map.network && iface_map.network.network_mode
       when 'physical'
-        vif[:require_vif] = false
-        vif[:network_type] = :physical_network
+        iface[:require_iface] = false
+        iface[:network_type] = :physical_network
       when 'virtual'
-        vif[:require_vif] = true
-        vif[:network_type] = :virtual_network
+        iface[:require_iface] = true
+        iface[:network_type] = :virtual_network
       else
-        warn "route_manager: vif does not have a known network mode (#{vif_map.uuid})"
+        warn "route_manager: iface does not have a known network mode (#{iface_map.uuid})"
         return nil
       end
 
-      @vifs[vif_map.id] = vif
+      @ifaces[iface_map.id] = iface
 
-      create_vif_flows(vif) if vif[:use_datapath_id].nil?
+      create_iface_flows(iface) if iface[:use_datapath_id].nil?
 
-      vif
+      iface
     end
 
     def create_route_flows(route_link, route)
@@ -218,11 +218,11 @@ module Vnet::Openflow
 
       flows = []
 
-      if route[:vif][:use_datapath_id].nil?
-        network_md = md_create(route[:vif][:network_type] => route[:vif][:network_id])
+      if route[:iface][:use_datapath_id].nil?
+        network_md = md_create(route[:iface][:network_type] => route[:iface][:network_id])
 
         flows << Flow.create(TABLE_ROUTER_SRC, 40,
-                             network_md.merge({ :eth_dst => route[:vif][:mac_addr],
+                             network_md.merge({ :eth_dst => route[:iface][:mac_addr],
                                                 :eth_type => 0x0800,
                                                 :ipv4_src => route[:ipv4_address],
                                                 :ipv4_src_mask => route[:ipv4_mask],
@@ -236,7 +236,7 @@ module Vnet::Openflow
                                                    :ipv4_dst => route[:ipv4_address],
                                                    :ipv4_dst_mask => route[:ipv4_mask],
                                                  }), {
-                               :eth_src => route[:vif][:mac_addr]
+                               :eth_src => route[:iface][:mac_addr]
                              },
                              network_md.merge({ :cookie => cookie,
                                                 :goto_table => TABLE_ROUTER_DST
@@ -253,7 +253,7 @@ module Vnet::Openflow
         }
 
       else
-        datapath_md = md_create(:datapath => route[:vif][:use_datapath_id])
+        datapath_md = md_create(:datapath => route[:iface][:use_datapath_id])
 
         flows << Flow.create(TABLE_ROUTER_LINK, 40,
                              route_link_md.merge({ :eth_type => 0x0800,
@@ -270,11 +270,11 @@ module Vnet::Openflow
       end
     end
 
-    def create_vif_flows(vif)
-      cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
-      network_md = md_create(:network => vif[:network_id])
+    def create_iface_flows(iface)
+      cookie = iface[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
+      network_md = md_create(:network => iface[:network_id])
 
-      if vif[:network_type] == :physical_network
+      if iface[:network_type] == :physical_network
         goto_table = TABLE_PHYSICAL_DST
       else
         goto_table = TABLE_VIRTUAL_DST
@@ -282,16 +282,16 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_ENTRY, 40,
-                           network_md.merge({ :eth_dst => vif[:mac_addr],
+                           network_md.merge({ :eth_dst => iface[:mac_addr],
                                               :eth_type => 0x0800,
-                                              :ipv4_dst => vif[:ipv4_address]
+                                              :ipv4_dst => iface[:ipv4_address]
                                             }),
                            nil, {
                              :cookie => cookie,
                              :goto_table => goto_table
                            })
       flows << Flow.create(TABLE_ROUTER_ENTRY, 30,
-                           network_md.merge({ :eth_dst => vif[:mac_addr],
+                           network_md.merge({ :eth_dst => iface[:mac_addr],
                                               :eth_type => 0x0800
                                             }),
                            nil, {

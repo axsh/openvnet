@@ -84,9 +84,9 @@ module Vnet::Openflow
         :network => self, # Deprecate...
         :network_id => @network_id,
         :network_uuid => @network_uuid,
-        :vif_uuid => service_map.vif.uuid,
-        :service_mac => Trema::Mac.new(service_map.vif.mac_addr),
-        :service_ipv4 => IPAddr.new(service_map.vif.ipv4_address, Socket::AF_INET)
+        :iface_uuid => service_map.iface.uuid,
+        :service_mac => Trema::Mac.new(service_map.iface.mac_addr),
+        :service_ipv4 => IPAddr.new(service_map.iface.ipv4_address, Socket::AF_INET)
       }
 
       info "network(#{@uuid}): creating service '#{service_map.display_name}'"
@@ -112,8 +112,8 @@ module Vnet::Openflow
 
       @service_cookies[service_map.uuid] = cookie
 
-      pm.dispatch(:arp)  { |key, handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
-      pm.dispatch(:icmp) { |key, handler| handler.insert_vif(service_map.vif.uuid, self, service_map.vif) }
+      pm.dispatch(:arp)  { |key, handler| handler.insert_iface(service_map.iface.uuid, self, service_map.iface) }
+      pm.dispatch(:icmp) { |key, handler| handler.insert_iface(service_map.iface.uuid, self, service_map.iface) }
     end
 
     def uninstall
@@ -125,8 +125,8 @@ module Vnet::Openflow
 
       @service_cookies.each { |uuid,cookie|
         pm.remove(cookie)
-        pm.dispatch(:arp)  { |key, handler| handler.remove_vif(service.vif_uuid) }
-        pm.dispatch(:icmp) { |key, handler| handler.remove_vif(service.vif_uuid) }
+        pm.dispatch(:arp)  { |key, handler| handler.remove_iface(service.iface_uuid) }
+        pm.dispatch(:icmp) { |key, handler| handler.remove_iface(service.iface_uuid) }
       }
     end
 

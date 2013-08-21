@@ -15,7 +15,7 @@ module Vnet::Openflow::Routers
     end
 
     def install
-      debug "router::router_link.install: network:#{@network_uuid} vif_uuid:#{@vif_uuid.inspect} mac:#{@service_mac} ipv4:#{@service_ipv4}"
+      debug "router::router_link.install: network:#{@network_uuid} iface_uuid:#{@iface_uuid.inspect} mac:#{@service_mac} ipv4:#{@service_ipv4}"
     end
 
     def insert_route(route_info)
@@ -29,13 +29,13 @@ module Vnet::Openflow::Routers
       route = {
         :route_id => route_info[:id],
         :route_uuid => route_info[:uuid],
-        :network_id => route_info[:vif][:network_id],
-        :network_type => route_info[:vif][:network_type],
+        :network_id => route_info[:iface][:network_id],
+        :network_type => route_info[:iface][:network_type],
 
-        :require_vif => route_info[:vif][:require_vif],
-        :active_datapath_id => route_info[:vif][:active_datapath_id],
+        :require_iface => route_info[:iface][:require_iface],
+        :active_datapath_id => route_info[:iface][:active_datapath_id],
 
-        :mac_address => route_info[:vif][:mac_addr],
+        :mac_address => route_info[:iface][:mac_addr],
         :ipv4_address => route_info[:ipv4_address],
         :ipv4_mask => route_info[:ipv4_mask]
       }
@@ -55,19 +55,19 @@ module Vnet::Openflow::Routers
 
       return unreachable_ip(message, "no route found", :no_route) if route.nil?
 
-      if route[:require_vif] == true
+      if route[:require_iface] == true
         ip_lease = MW::IpLease.batch.dataset.with_ipv4.where({ :ip_leases__network_id => route[:network_id],
                                                                :ip_addresses__ipv4_address => message.ipv4_dst.to_i
-                                                             }).first.commit(:fill => :vif)
+                                                             }).first.commit(:fill => :iface)
 
-        return unreachable_ip(message, "no vif found", :no_vif) if ip_lease.nil? || ip_lease.vif.nil?
-        return unreachable_ip(message, "no active datapath for vif found", :inactive_vif) if ip_lease.vif.active_datapath_id.nil?
+        return unreachable_ip(message, "no iface found", :no_iface) if ip_lease.nil? || ip_lease.iface.nil?
+        return unreachable_ip(message, "no active datapath for iface found", :inactive_iface) if ip_lease.iface.active_datapath_id.nil?
 
         debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
         
         route_packets(message, ip_lease)
       else
-        debug "router::router_link.packet_in: no destination vif needed for route (#{route[:uuid]})"
+        debug "router::router_link.packet_in: no destination iface needed for route (#{route[:uuid]})"
       end
 
       # output...
@@ -81,7 +81,7 @@ module Vnet::Openflow::Routers
       # Don't restrict to local for all routes.
       catch_route_md = md_create(route[:network_type] => route[:network_id])
 
-      if route[:require_vif] == true
+      if route[:require_iface] == true
         actions = {
           :output => OFPP_CONTROLLER
         }
@@ -123,7 +123,7 @@ module Vnet::Openflow::Routers
     # ip address. The output datapath route link table will figure out
     # for us if the output port should be a MAC2MAC or tunnel port.
     def route_packets(message, ip_lease)
-      datapath_md = md_create(:datapath => ip_lease.vif.active_datapath_id)
+      datapath_md = md_create(:datapath => ip_lease.iface.active_datapath_id)
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,
                          match_packet(message), {
@@ -138,14 +138,14 @@ module Vnet::Openflow::Routers
     end
 
     def suppress_packets(message, reason)
-      # These should set us as listeners to events for the vif
+      # These should set us as listeners to events for the iface
       # becoming active or IP address being leased.
       case reason
       when :no_route
         hard_timeout = 30
-      when :no_vif
+      when :no_iface
         hard_timeout = 30
-      when :inactive_vif
+      when :inactive_iface
         hard_timeout = 10
       end
 

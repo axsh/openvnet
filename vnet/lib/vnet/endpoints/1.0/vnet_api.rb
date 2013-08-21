@@ -50,6 +50,7 @@ module Vnet::Endpoints::V10
     load_namespace('datapaths')
     load_namespace('dc_networks')
     load_namespace('dhcp_ranges')
+    load_namespace('ifaces')
     load_namespace('ip_addresses')
     load_namespace('ip_leases')
     load_namespace('mac_leases')
@@ -59,6 +60,5 @@ module Vnet::Endpoints::V10
     load_namespace('open_flow_controllers')
     load_namespace('routes')
     load_namespace('route_links')
-    load_namespace('vifs')
   end
 end

@@ -165,17 +165,17 @@ module Vnet::Openflow
 
         network = @datapath.network_manager.network_by_uuid('nw-public')
 
-      elsif port.port_info.name =~ /^vif-/
+      elsif port.port_info.name =~ /^iface-/
         @datapath.mod_port(port.port_number, :no_flood)
 
-        vif_map = Vnet::ModelWrappers::Vif[port_desc.name]
+        iface_map = Vnet::ModelWrappers::Iface[port_desc.name]
 
-        if vif_map.nil?
+        if iface_map.nil?
           error "error: Could not find uuid: #{port_desc.name}"
           return
         end
 
-        network = @datapath.network_manager.network_by_uuid(vif_map.batch.network.commit.uuid)
+        network = @datapath.network_manager.network_by_uuid(iface_map.batch.network.commit.uuid)
 
         if network.class == NetworkPhysical
           port.extend(PortPhysical)
@@ -185,10 +185,10 @@ module Vnet::Openflow
           raise("Unknown network type.")
         end
 
-        port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
-        port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
+        port.hw_addr = Trema::Mac.new(iface_map.mac_addr)
+        port.ipv4_addr = IPAddr.new(iface_map.ipv4_address, Socket::AF_INET) if iface_map.ipv4_address
 
-        vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
+        iface_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
 
       elsif port.port_info.name =~ /^t-/
         @datapath.mod_port(port.port_number, :no_flood)
@@ -240,9 +240,9 @@ module Vnet::Openflow
           end
         end
 
-        if port.port_info.name =~ /^vif-/
-          vif_map = Vnet::ModelWrappers::Vif[message.name]
-          vif_map.batch.update(:active_datapath_id => nil).commit
+        if port.port_info.name =~ /^iface-/
+          iface_map = Vnet::ModelWrappers::Iface[message.name]
+          iface_map.batch.update(:active_datapath_id => nil).commit
         end
 
       end

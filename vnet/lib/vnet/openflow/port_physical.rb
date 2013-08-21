@@ -11,12 +11,12 @@ module Vnet::Openflow
 
     def install
       network_md = md_network(:physical_network)
-      network_local_vif_md = md_network(:physical_network, {
+      network_local_iface_md = md_network(:physical_network, {
                                           :local => nil,
-                                          :vif => nil
+                                          :iface => nil
                                         })
       fo_network_md = flow_options.merge(network_md)
-      fo_classifier_md = flow_options.merge(network_local_vif_md)
+      fo_classifier_md = flow_options.merge(network_local_iface_md)
 
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
