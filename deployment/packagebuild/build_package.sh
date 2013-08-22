@@ -1,4 +1,5 @@
-#!/bin/bash #
+#!/bin/bash
+#
 # dependencies: make git gcc gcc-c++ yum-utils
 #
 set -e
