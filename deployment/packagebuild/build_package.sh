@@ -70,7 +70,10 @@ function umount_for_chroot(){
 }
 
 function install_test(){
+  #trap "umount_for_chroot" ERR
+  prepare_chroot_env
   chroot ${chroot_dir}/ yum install -y wakame-vnet
+  umount_for_chroot
 }
 
 rm -rf ${work_dir}/recipes
@@ -86,8 +89,5 @@ fi
 (cd ${repo_dir}; createrepo .)
 
 if [[ -z ${package} ]]; then
-  #trap "umount_for_chroot" ERR
-  prepare_chroot_env
-  install_test
-  umount_for_chroot
+  sudo install_test
 fi
