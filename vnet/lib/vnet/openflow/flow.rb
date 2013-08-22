@@ -106,6 +106,12 @@ module Vnet::Openflow
         when :network
           metadata = metadata | value | METADATA_TYPE_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :no_controller
+          metadata = metadata | METADATA_FLAG_NO_CONTROLLER
+          metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
+        when :not_no_controller
+          metadata = metadata
+          metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
@@ -115,6 +121,9 @@ module Vnet::Openflow
         when :physical_network
           metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_PHYSICAL
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
+        when :reflection
+          metadata = metadata | METADATA_FLAG_REFLECTION
+          metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
         when :route
           metadata = metadata | value | METADATA_TYPE_ROUTE
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
@@ -154,6 +163,37 @@ module Vnet::Openflow
         md_create(append.merge(:port => self.port_number))
       else
         md_create(:port => self.port_number)
+      end
+    end
+
+    def md_has_flag(flag, value, mask = nil)
+      mask = value if mask.nil?
+      (value & (mask & flag)) == flag
+    end
+    
+    def is_ipv4_broadcast(address, prefix)
+      address == IPV4_ZERO && prefix == 0
+    end
+
+    def match_ipv4_subnet_dst(address, prefix)
+      if is_ipv4_broadcast(address, prefix)
+        { :eth_type => 0x0800 }
+      else
+        { :eth_type => 0x0800,
+          :ipv4_dst => address,
+          :ipv4_dst_mask => IPV4_BROADCAST << (32 - prefix)
+        }
+      end
+    end
+
+    def match_ipv4_subnet_src(address, prefix)
+      if is_ipv4_broadcast(address, prefix)
+        { :eth_type => 0x0800 }
+      else
+        { :eth_type => 0x0800,
+          :ipv4_src => address,
+          :ipv4_src_mask => IPV4_BROADCAST << (32 - prefix)
+        }
       end
     end
 
