@@ -9,21 +9,22 @@ dev: install-bundle-dev update-config
 install-bundle:
 	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle --without development test)
 
+clean-bundle:
+	(cd $(CURDIR)/vnet; bundle clean)
+
 install-bundle-dev:
 	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle)
 
 install: update-config
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
-	mkdir -p $(DSTDIR)/tmp/log
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/log
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/pid
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/sock
-	cp -r vnet vnctl deployment ruby $(DSTDIR)/opt/axsh/wakame-vnet
+	cp -r vnet vnctl deployment $(DSTDIR)/opt/axsh/wakame-vnet
 
 
 uninstall: remove-config
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
-	rm -rf $(DSTDIR)/tmp/log
 	rm -rf $(DSTDIR)/var/run/wakame-vnet
 
 reinstall: uninstall install
@@ -49,6 +50,6 @@ clean:
 	rm -rf $(CURDIR)/vnet/.bundle
 
 build-rpm: DSTDIR = /tmp/vnet-rpmbuild
-build-rpm: install-bundle reinstall
+build-rpm: reinstall clean-bundle install-bundle
 	(cd $(CURDIR)/deployment/packagebuild; bundle install --path vendor/bundle --binstubs)
 	(cd $(DSTDIR);	fpm_path="$(CURDIR)/deployment/packagebuild/bin/fpm" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)

@@ -1,3 +1,15 @@
+GIT
+  remote: https://github.com/axsh/fpm-cookery
+  revision: d43cea38cebec22665b63f36834d37e88d2a9cda
+  branch: wakame-vnet
+  specs:
+    fpm-cookery (0.15.0)
+      addressable
+      facter
+      fpm (~> 0.4)
+      puppet
+      systemu
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -9,6 +21,7 @@ GEM
     childprocess (0.3.9)
       ffi (~> 1.0, >= 1.0.11)
     clamp (0.6.1)
+    facter (1.7.2)
     ffi (1.9.0)
     fpm (0.4.42)
       arr-pm (~> 0.0.8)
@@ -23,11 +36,21 @@ GEM
       backports (>= 2.6.2)
       cabin (> 0)
       http_parser.rb (= 0.5.3)
+    hiera (1.2.1)
+      json_pure
     http_parser.rb (0.5.3)
     json (1.8.0)
+    json_pure (1.8.0)
+    puppet (3.2.4)
+      facter (~> 1.6)
+      hiera (~> 1.0)
+      rgen (~> 0.6.5)
+    rgen (0.6.5)
+    systemu (2.5.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   fpm
+  fpm-cookery!
