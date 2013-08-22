@@ -52,4 +52,4 @@ clean:
 build-rpm: DSTDIR = /tmp/vnet-rpmbuild
 build-rpm: reinstall clean-bundle install-bundle
 	(cd $(CURDIR)/deployment/packagebuild; bundle install --path vendor/bundle --binstubs)
-	(cd $(DSTDIR);	fpm_path="$(CURDIR)/deployment/packagebuild/bin/fpm" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
+	(cd $(DSTDIR);	fpm_cook_cmd="$(CURDIR)/deployment/packagebuild/bin/fpm-cook" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
