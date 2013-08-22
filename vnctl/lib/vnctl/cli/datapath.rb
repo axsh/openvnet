@@ -26,5 +26,12 @@ module Vnctl::Cli
 
       puts res.parsed_response
     end
+
+    desc "show [uuid]", "Show one or all datapaths."
+    def show(uuid = nil)
+      uri = "/api/#{self.class.api_suffix}#{"/" + uuid unless uuid.nil?}"
+
+      puts Vnctl::WebApi.get(uri).parsed_response
+    end
   end
 end
