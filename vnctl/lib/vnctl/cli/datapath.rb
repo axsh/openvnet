@@ -20,7 +20,7 @@ module Vnctl::Cli
     }
     api_suffix "/api/datapaths"
 
-    desc "create [options]", "Creates a new datapath."
+    desc "add [options]", "Creates a new datapath."
     option :uuid, :type => :string, :desc => "UUID for the new datapath."
     option :open_flow_controller_uuid, :type => :string, :desc => "Openflow controller uuid for the new datapath."
     option :display_name, :type => :string, :desc => "Display name for the new datapath."
@@ -29,7 +29,7 @@ module Vnctl::Cli
     option :node_id, :type => :string, :desc => "The node id for the new datapath."
     option :ipv4_address, :type => :string, :desc => "Ipv4 address for the new datapath."
     option :datapath_id, :type => :string, :desc => "Hexadecimal id for the new datapath."
-    def create
+    def add
       puts post(suffix, :query => options)
     end
 
