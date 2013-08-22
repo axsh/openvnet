@@ -9,8 +9,16 @@ module Vnctl::Cli
         @api_suffix = suffix unless suffix.nil?
         @api_suffix
       end
+
+      def suffix
+        self.class.api_suffix
+      end
+
+      [:post, :get, :delete].each { |req_type|
+        define_method(req_type) { |*args| Vnctl::WebApi.send(req_type, *args).parsed_response }
+      }
     }
-    api_suffix :datapaths
+    api_suffix "/api/datapaths"
 
     desc "create [options]", "Creates a new datapath."
     option :uuid, :type => :string, :desc => "UUID for the new datapath."
@@ -22,22 +30,18 @@ module Vnctl::Cli
     option :ipv4_address, :type => :string, :desc => "Ipv4 address for the new datapath."
     option :datapath_id, :type => :string, :desc => "Hexadecimal id for the new datapath."
     def create
-      res = Vnctl::WebApi.post("/api/#{self.class.api_suffix}", :query => options)
-
-      puts res.parsed_response
+      puts post(suffix, :query => options)
     end
 
     desc "show [UUID]", "Show one or all datapaths."
     def show(uuid = nil)
-      uri = "/api/#{self.class.api_suffix}#{"/" + uuid unless uuid.nil?}"
-
-      puts Vnctl::WebApi.get(uri).parsed_response
+      puts get(suffix + (uuid.nil? ? "" : "/#{uuid}"))
     end
 
     desc "del UUIDS", "Delete one or more datapaths separated by a space."
     def del(*uuids)
       uuids.each { |uuid|
-        puts Vnctl::WebApi.delete("/api/#{self.class.api_suffix}/#{uuid}")
+        puts delete("suffix/#{uuid}")
       }
     end
   end
