@@ -86,8 +86,8 @@ fi
 (cd ${repo_dir}; createrepo .)
 
 if [[ -z ${package} ]]; then
-  #trap "umount_for_chrootm" ERR
+  #trap "umount_for_chroot" ERR
   prepare_chroot_env
   install_test
-  umount_for_chrootm
+  umount_for_chroot
 fi
