@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# dependencies: make git gcc gcc-c++ yum-utils
+# dependencies: make git gcc gcc-c++ yum-utils fakeroot fakechroot
 #
 set -e
 
@@ -70,7 +70,7 @@ function umount_for_chroot(){
 }
 
 function install_test(){
-  chroot ${chroot_dir}/ yum install -y wakame-vnet
+  fakeroot fakechroot /usr/sbin/chroot ${chroot_dir}/ yum install -y wakame-vnet
 }
 
 rm -rf ${work_dir}/recipes
