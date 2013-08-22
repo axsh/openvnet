@@ -33,12 +33,16 @@ module Vnctl::Cli
       puts post(suffix, :query => options)
     end
 
-    desc "show [UUID]", "Show one or all datapaths."
-    def show(uuid = nil)
-      puts get(suffix + (uuid.nil? ? "" : "/#{uuid}"))
+    desc "show [UUIDS]", "Shows all or a specific set of datapaths."
+    def show(*uuids)
+      if uuids.empty?
+        puts get(suffix)
+      else
+        uuids.each { |uuid| puts get("#{suffix}/#{uuid}") }
+      end
     end
 
-    desc "del UUIDS", "Delete one or more datapaths separated by a space."
+    desc "del UUIDS", "Deletes one or more datapaths separated by a space."
     def del(*uuids)
       uuids.each { |uuid|
         puts delete("suffix/#{uuid}")
