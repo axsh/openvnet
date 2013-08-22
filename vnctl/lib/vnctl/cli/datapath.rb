@@ -27,11 +27,18 @@ module Vnctl::Cli
       puts res.parsed_response
     end
 
-    desc "show [uuid]", "Show one or all datapaths."
+    desc "show [UUID]", "Show one or all datapaths."
     def show(uuid = nil)
       uri = "/api/#{self.class.api_suffix}#{"/" + uuid unless uuid.nil?}"
 
       puts Vnctl::WebApi.get(uri).parsed_response
+    end
+
+    desc "del UUIDS", "Delete one or more datapaths separated by a space."
+    def del(*uuids)
+      uuids.each { |uuid|
+        puts Vnctl::WebApi.delete("/api/#{self.class.api_suffix}/#{uuid}")
+      }
     end
   end
 end
