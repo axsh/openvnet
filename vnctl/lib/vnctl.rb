@@ -10,6 +10,7 @@ module Vnctl
   end
 
   module Cli
+    autoload :Base, 'vnctl/cli/base'
     autoload :Root, 'vnctl/cli/root'
     autoload :Datapath, 'vnctl/cli/datapath'
   end

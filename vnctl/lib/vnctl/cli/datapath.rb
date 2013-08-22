@@ -1,23 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnctl::Cli
-  class Datapath < Thor
+  class Datapath < Base
     namespace :datapath
-
-    no_tasks {
-      def self.api_suffix(suffix = nil)
-        @api_suffix = suffix unless suffix.nil?
-        @api_suffix
-      end
-
-      def suffix
-        self.class.api_suffix
-      end
-
-      [:post, :get, :delete, :put].each { |req_type|
-        define_method(req_type) { |*args| Vnctl::WebApi.send(req_type, *args).parsed_response }
-      }
-    }
     api_suffix "/api/datapaths"
 
     desc "add [options]", "Creates a new datapath."
@@ -57,7 +42,7 @@ module Vnctl::Cli
     desc "del UUIDS", "Deletes one or more datapaths separated by a space."
     def del(*uuids)
       uuids.each { |uuid|
-        puts delete("suffix/#{uuid}")
+        puts delete("#{suffix}/#{uuid}")
       }
     end
   end
