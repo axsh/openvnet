@@ -5,8 +5,8 @@ module Vnctl::Cli
     namespace :network
     api_suffix "/api/networks"
 
-    option :uuid, :type => :string, :desc => "Unique uuid."
-    option :display_name, :type => :string, :desc => "Human readable display name."
+    option_uuid
+    option_display_name
     option :ipv4_network, :type => :string, :desc => "IPv4 network address."
     option :ipv4_prefix, :type => :numeric, :desc => "IPv4 mask size (1 < prefix < 32)."
     option :domain_name, :type => :string, :desc => "DNS domain name."

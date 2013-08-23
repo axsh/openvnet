@@ -4,6 +4,14 @@ module Vnctl::Cli
   class Base < Thor
 
     no_tasks {
+      def self.option_uuid
+        option :uuid, :type => :string, :desc => "Unique UUID for the #{namespace}."
+      end
+
+      def self.option_display_name
+        option :display_name, :type => :string, :desc => "Human readable display name."
+      end
+
       def self.define_add
         desc "add [OPTIONS]", "Creates a new #{namespace}."
         define_method(:add) do
