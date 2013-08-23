@@ -6,7 +6,7 @@ module Vnet::Openflow
     include Celluloid
     include Celluloid::Logger
     include FlowHelpers
-    
+
     def initialize(dp)
       @datapath = dp
       @tunnels = []
@@ -61,7 +61,7 @@ module Vnet::Openflow
                            }, nil, {
                              :cookie => cookie
                            })
-      
+
       @datapath.add_flows(flows)
 
       update_network_id(datapath_network[:network_id]) if should_update
@@ -83,7 +83,7 @@ module Vnet::Openflow
 
     def del_port(port)
       old_port = @tunnel_ports.delete(port.port_number)
-      
+
       update_tunnel(old_port[:port_name]) if old_port
     end
 
@@ -108,14 +108,14 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 1,
-                           md_create({ :virtual_network => network_id,
+                           md_create({ :network => network_id,
                                        :flood => nil
                                      }), {
                              :tunnel_id => network_id | TUNNEL_FLAG_MASK
                            }, md.merge({ :cookie => cookie,
                                          :goto_table => TABLE_METADATA_TUNNEL_PORTS
                                        }))
-      
+
       @datapath.add_flows(flows)
     end
 
@@ -124,7 +124,7 @@ module Vnet::Openflow
       # if #{remote_dpid} is equal to #{@datapath.dpid},
       # it can be regard as the network deletion happens on
       # the local datapath (not on the remote datapath)
-      
+
       if remote_dpid == @datapath.dpid
         debug "delete tunnel on local datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
         @tunnels.each do |t|
@@ -161,16 +161,17 @@ module Vnet::Openflow
         return
       end
 
-      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id])
+      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id],
+                              :tunnel => nil)
       cookie = tunnel[:dst_datapath_id] | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
-      flow = Flow.create(TABLE_METADATA_DATAPATH_ID, 5,
+      flow = Flow.create(TABLE_OUTPUT_DATAPATH, 5,
                          datapath_md, {
                            :output => port_number
                          }, {
                            :cookie => cookie
                          })
-      
+
       @datapath.add_flow(flow)
 
       tunnel[:datapath_networks].each { |dpn|
@@ -193,7 +194,7 @@ module Vnet::Openflow
         tunnel = @tunnels.find{ |t| t[:display_name] == tunnel_port[:port_name] }
 
         unless tunnel
-          warn "tunnel port: #{tunnel_port.port_name} is not registered in db"
+          warn "tunnel port: #{tunnel_port[:port_name]} is not registered in db"
           next
         end
 

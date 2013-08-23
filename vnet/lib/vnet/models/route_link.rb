@@ -5,6 +5,7 @@ module Vnet::Models
     taggable 'rl'
 
     one_to_many :routes
+    one_to_many :datapath_route_links
 
     subset(:alives, {})
 

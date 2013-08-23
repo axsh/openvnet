@@ -6,7 +6,7 @@ module Vnet::Openflow
     include Celluloid
     include Celluloid::Logger
     include FlowHelpers
-    
+
     def initialize(dp)
       @datapath = dp
       @datapath_networks = {}
@@ -32,10 +32,10 @@ module Vnet::Openflow
       flows = []
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_dst => dpn[:broadcast_mac_addr]
-                           }, {}, actions)
+                           }, nil, actions)
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_src => dpn[:broadcast_mac_addr]
-                           }, {}, actions)
+                           }, nil, actions)
 
       @datapath.add_flows(flows)
 
@@ -59,7 +59,7 @@ module Vnet::Openflow
 
       dpn_list.each { |dpn|
         @datapath.del_cookie(dpn[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT))
-      }      
+      }
     end
 
     def update_network_id(network_id)
@@ -78,17 +78,17 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_METADATA_SEGMENT, 1,
-                           md_create({ :virtual_network => network_id,
+                           md_create({ :network => network_id,
                                        :flood => nil
                                      }),
                            flood_actions, {
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
                              :goto_table => TABLE_METADATA_TUNNEL_IDS
                            })
-                           
+
       @datapath.add_flows(flows)
     end
 
   end
 
-end    
+end

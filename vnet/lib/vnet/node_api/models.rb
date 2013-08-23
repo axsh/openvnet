@@ -7,9 +7,12 @@ module Vnet::NodeApi
   class DatapathNetwork < Base
   end
 
+  class DatapathRouteLink < Base
+  end
+
   class DcNetwork < Base
   end
-  
+
   class DcNetworkDcSegment < Base
   end
 
@@ -42,10 +45,10 @@ module Vnet::NodeApi
 
   class Route < Base
   end
-  
+
   class RouteLink < Base
   end
-  
+
   class Tunnel < Base
   end
 end

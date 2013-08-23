@@ -10,18 +10,15 @@ module Vnet::Openflow
     include FlowHelpers
     include Vnet::Event::Dispatchable
 
-    attr_reader :bridge_hw
-
     def initialize(dp, name = nil)
       @datapath = dp || raise("cannot create a Switch object without a valid datapath")
-      @datapath_map = nil
-
       @ports = {}
 
       cookie_manager = @datapath.cookie_manager
 
       @catch_flow_cookie   = cookie_manager.acquire(:switch)
       @default_flow_cookie = cookie_manager.acquire(:switch)
+      @test_flow_cookie    = cookie_manager.acquire(:switch)
     end
 
     #
@@ -32,21 +29,17 @@ module Vnet::Openflow
       @ports.values.find_all { |port| port.eth? }
     end
 
-    def update_bridge_hw(hw_addr)
-      @bridge_hw = hw_addr
-    end
-
-    def update_datapath_id
-      @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @datapath.dpid)]
-      warn "switch: could not find dpid (0x%016x)" % @datapath.dpid if @datapath_map.nil?
-      @datapath_map
+    # Temporary method to get access to ports until we make a proper
+    # port manager that handles threading.
+    def get_port(port_number)
+      @ports[port_number]
     end
 
     #
     # Event handlers:
     #
 
-    def switch_ready
+    def create_default_flows
       #
       # Add default flows:
       #
@@ -59,35 +52,43 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {},
                            flow_options.merge(md_create(:remote => nil)).merge!(:goto_table => TABLE_TUNNEL_PORTS))
 
-      flows << Flow.create(TABLE_HOST_PORTS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_TUNNEL_PORTS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30,
-                           md_create(:physical_network => nil), {},
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
 
-      flows << Flow.create(TABLE_VIRTUAL_SRC, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, nil, flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
-      flows << Flow.create(TABLE_ROUTER_SRC, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_LINK, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_DST, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_VIRTUAL_DST, 0, {}, nil, flow_options)
-
-      flows << Flow.create(TABLE_MAC_ROUTE, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_OUTPUT_CONTROLLER, 0, {}, {:output => OFPP_CONTROLLER}, flow_options)
-      flows << Flow.create(TABLE_METADATA_LOCAL, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 0, {}, nil, flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
-      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_DATAPATH_ID, 0, {}, nil, flow_options)
-
-      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_SRC,  0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ARP_ANTISPOOF, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ARP_ROUTE, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
+
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:virtual => nil), nil,
+                           flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+      flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:physical => nil), nil,
+                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+      flows << Flow.create(TABLE_ROUTER_SRC,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_LINK,  0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_DST,   0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_ARP_LOOKUP,   0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_VIRTUAL_DST,  0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_MAC_ROUTE,             0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_METADATA_LOCAL,        0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_METADATA_ROUTE,        0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_METADATA_SEGMENT,      0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
+      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
+      flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK,  0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_OUTPUT_DATAPATH,       0, {}, nil, flow_options)
 
       flow_options = {:cookie => @catch_flow_cookie}
 
@@ -110,17 +111,21 @@ module Vnet::Openflow
                              :eth_type => 0x0806,
                            }, nil, flow_options)
 
+      flow_options = {:cookie => @test_flow_cookie}
+
+      # Add any test flows here.
+
       @datapath.add_flows(flows)
+    end
+
+    def switch_ready
+      # There's a short period of time between the switch being
+      # activated and features_reply installing flow.
+      @datapath.tunnel_manager.create_all_tunnels
 
       #
       # Send messages that will start initializing the switch.
       #
-
-      update_datapath_id
-
-      # There's a short period of time between the switch being
-      # activated and features_reply installing flow.
-      @datapath.tunnel_manager.create_all_tunnels
 
       @datapath.send_message(Trema::Messages::FeaturesRequest.new)
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
@@ -136,21 +141,33 @@ module Vnet::Openflow
     def handle_port_desc(port_desc)
       debug "handle_port_desc: #{port_desc.inspect}"
 
+      if @datapath.datapath_map.nil?
+        warn "switch: cannot initialize ports without a valid datapath database entry (0x%016x)" % @datapath.dpid
+        return
+      end
+
       port = Port.new(@datapath, port_desc, true)
       @ports[port_desc.port_no] = port
 
-      if port.port_number >= OFPP_LOCAL
+      if port.port_number == OFPP_LOCAL
+        @datapath.mod_port(port.port_number, :no_flood)
+
         port.extend(PortLocal)
-        port.install_with_hw(@bridge_hw) if @bridge_hw
+        port.hw_addr = port_desc.hw_addr
+        port.ipv4_addr = @datapath.ipv4_address
 
         network = @datapath.network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^eth/
+        @datapath.mod_port(port.port_number, :flood)
+
         port.extend(PortHost)
 
         network = @datapath.network_manager.network_by_uuid('nw-public')
 
       elsif port.port_info.name =~ /^vif-/
+        @datapath.mod_port(port.port_number, :no_flood)
+
         vif_map = Vnet::ModelWrappers::Vif[port_desc.name]
 
         if vif_map.nil?
@@ -171,11 +188,15 @@ module Vnet::Openflow
         port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
         port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
-        vif_map.batch.update(:datapath_id => @datapath_map.id).commit if @datapath_map
+        vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
 
       elsif port.port_info.name =~ /^t-/
+        @datapath.mod_port(port.port_number, :no_flood)
+
         port.extend(PortTunnel)
       else
+        @datapath.mod_port(port.port_number, :no_flood)
+
         error "Unknown interface type: #{port.port_info.name}"
         return
       end
@@ -205,7 +226,7 @@ module Vnet::Openflow
           debug "port status could not delete uninitialized port: #{message.port_no}"
           return
         end
-        
+
         port.uninstall
 
         if port.network
@@ -221,7 +242,7 @@ module Vnet::Openflow
 
         if port.port_info.name =~ /^vif-/
           vif_map = Vnet::ModelWrappers::Vif[message.name]
-          vif_map.batch.update(:datapath_id => nil).commit
+          vif_map.batch.update(:active_datapath_id => nil).commit
         end
 
       end

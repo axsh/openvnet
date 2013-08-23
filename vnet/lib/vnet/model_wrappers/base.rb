@@ -87,6 +87,6 @@ module Vnet::ModelWrappers
       end
     end
 
-    alias_method :to_hash, :to_h
+    alias_method :to_hash, :marshal_dump
   end
 end

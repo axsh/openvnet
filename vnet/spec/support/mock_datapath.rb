@@ -18,6 +18,8 @@ class MockDatapath < Vnet::Openflow::Datapath
   end
 
   def create_mock_switch
+    @datapath_map = OpenStruct.new(dpid: ("0x%016x" % @dpid),
+                                   id: 1)
     @switch = MockSwitch.new(self)
   end
 
@@ -39,6 +41,9 @@ class MockDatapath < Vnet::Openflow::Datapath
 
   def add_ovs_flow(ovs_flow)
     @added_ovs_flows << ovs_flow
+  end
+
+  def mod_port(port_no, action)
   end
 
   def add_tunnel(tunnel_name, remote_ip)
