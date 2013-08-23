@@ -18,7 +18,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
 
     params["ipv4_network"] = parse_ipv4(params["ipv4_network"]) if params.has_key?("ipv4_network")
 
+    dc_network = if params["dc_network_uuid"]
+      dc_network_uuid = params.delete("dc_network_uuid")
+      M::DcNetwork[dc_network_uuid] || raise(E::UnknownUUIDResource, dc_network_uuid)
+    end
+
     nw = M::Network.create(params)
+    nw.dc_network = dc_network unless dc_network.nil?
+    nw.save
 
     respond_with(R::Network.generate(nw))
   end
@@ -57,7 +64,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   put '/:uuid/detach_vif' do
-        nw = M::Network.detach_vif(@params[:uuid], @params[:vif_uuid])
+    nw = M::Network.detach_vif(@params[:uuid], @params[:vif_uuid])
     respond_with(R::Network.generate(nw))
   end
 end
