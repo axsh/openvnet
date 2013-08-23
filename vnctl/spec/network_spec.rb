@@ -64,16 +64,19 @@ describe "vnctl network" do
     end
   end
 
-  describe "show" do
-    it "shows multiple networks" do
-    end
+  # describe "show" do
+  #   it "shows multiple networks" do
+  #     raise NotImplementedError
+  #   end
 
-    it "shows a single network" do
-    end
+  #   it "shows a single network" do
+  #     raise NotImplementedError
+  #   end
 
-    it "raises an error when trying to show a nonexistant network" do
-    end
-  end
+  #   it "raises an error when trying to show a nonexistant network" do
+  #     raise NotImplementedError
+  #   end
+  # end
 
   describe "del" do
     it "deletes an existing network" do
@@ -103,9 +106,9 @@ describe "vnctl network" do
     end
 
     it "raises an error when trying to delete a uuid with invalid syntax" do
-      vnctl "del i_am_not_quite_right".should eq({
+      vnctl("network del i_am_not_quite_right").should eq({
         "error" => "Vnet::Endpoints::Errors::InvalidUUID",
-        "message" => "testnw",
+        "message" => "i_am_not_quite_right",
         "code" => "101"
       })
     end
