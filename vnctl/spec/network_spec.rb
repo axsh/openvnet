@@ -5,9 +5,9 @@ require 'spec_helper'
 describe "vnctl network" do
   describe "add" do
     it "adds a new network and sets its uuid" do
-      vnctl("network add --uuid nw-testnw")["uuid"].should eq("testnw")
+      vnctl("network add --uuid nw-testnw")["uuid"].should eq("nw-testnw")
       # Delete it so we can run this test again
-      vnctl("network del testnw")
+      vnctl("network del nw-testnw")
     end
 
     it "raises an error when trying to set an invalid uuid" do
@@ -99,6 +99,14 @@ describe "vnctl network" do
         "error" => "Vnet::Endpoints::Errors::UnknownUUIDResource",
         "message" => "nw-nothere",
         "code" => "100"
+      })
+    end
+
+    it "raises an error when trying to delete a uuid with invalid syntax" do
+      vnctl "del i_am_not_quite_right".should eq({
+        "error" => "Vnet::Endpoints::Errors::InvalidUUID",
+        "message" => "testnw",
+        "code" => "101"
       })
     end
   end
