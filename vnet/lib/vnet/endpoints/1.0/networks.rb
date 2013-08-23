@@ -34,8 +34,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   get '/:uuid' do
+    check_uuid_syntax(M::Network, @params["uuid"])
     nw = M::Network[@params["uuid"]]
-    raise E::UnknownUUIDResource if nw.blank?
+    raise E::UnknownUUIDResource, @params["uuid"] if nw.blank?
     respond_with(R::Network.generate(nw))
   end
 

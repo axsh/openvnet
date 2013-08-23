@@ -65,19 +65,40 @@ describe "vnctl network" do
     # end
   end
 
-  # describe "show" do
-  #   it "shows multiple networks" do
-  #     raise NotImplementedError
-  #   end
+  describe "show" do
+    it "shows multiple networks" do
+      nw1 = vnctl("network add")["uuid"]
+      nw2 = vnctl("network add")["uuid"]
+      nw3 = vnctl("network add")["uuid"]
 
-  #   it "shows a single network" do
-  #     raise NotImplementedError
-  #   end
+      res = vnctl("network show #{nw1} #{nw2} #{nw3}")
 
-  #   it "raises an error when trying to show a nonexistant network" do
-  #     raise NotImplementedError
-  #   end
-  # end
+      res[0]["uuid"].should eq(nw1)
+      res[1]["uuid"].should eq(nw2)
+      res[2]["uuid"].should eq(nw3)
+    end
+
+    it "shows a single network" do
+      nw1 = vnctl("network add")["uuid"]
+      vnctl("network show #{nw1}")["uuid"].should eq(nw1)
+    end
+
+    it "raises an error when trying to show a nonexistant network" do
+        vnctl("network show nw-nothere").should eq({
+        "error" => "Vnet::Endpoints::Errors::UnknownUUIDResource",
+        "message" => "nw-nothere",
+        "code" => "100"
+      })
+    end
+
+    it "raises an error when trying to delete a uuid with invalid syntax" do
+      vnctl("network show i_am_not_quite_right").should eq({
+        "error" => "Vnet::Endpoints::Errors::InvalidUUID",
+        "message" => "i_am_not_quite_right",
+        "code" => "101"
+      })
+    end
+  end
 
   describe "del" do
     it "deletes an existing network" do
@@ -113,5 +134,6 @@ describe "vnctl network" do
         "code" => "101"
       })
     end
+
   end
 end
