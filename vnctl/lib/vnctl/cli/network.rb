@@ -18,14 +18,7 @@ module Vnctl::Cli
       puts post(suffix, :query => options)
     end
 
-    desc "show [UUIDS]", "Shows all or a specific set of networks."
-    def show(*uuids)
-      if uuids.empty?
-        puts get(suffix)
-      else
-        uuids.each { |uuid| puts get("#{suffix}/#{uuid}") }
-      end
-    end
+    define_show("networks")
 
     desc "del UUIDS", "Deletes one or more networks separated by a space."
     def del(*uuids)

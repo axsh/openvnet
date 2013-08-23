@@ -18,14 +18,7 @@ module Vnctl::Cli
       puts post(suffix, :query => options)
     end
 
-    desc "show [UUIDS]", "Shows all or a specific set of datapaths."
-    def show(*uuids)
-      if uuids.empty?
-        puts get(suffix)
-      else
-        uuids.each { |uuid| puts get("#{suffix}/#{uuid}") }
-      end
-    end
+    define_show("datapaths")
 
     desc "modify UUID [OPTIONS]", "Modify a datapath."
     option :open_flow_controller_uuid, :type => :string, :desc => "Openflow controller uuid for the datapath."
