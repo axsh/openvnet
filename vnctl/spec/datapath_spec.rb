@@ -6,7 +6,7 @@ describe "vnctl datapath" do
   describe "add" do
     it "adds a new datapath" do
       args = "datapath add --uuid dp-test --open_flow_controller_uuid ofc-test " +
-        "--display_name test_datapath --is-connected true --dc_segment_id ds-test " +
+        "--display_name test_datapath --is-connected --dc_segment_id ds-test " +
         "--node-id some_node --ipv4_address 10.0.0.1 --dpid 0x4e6d2b508f4c"
 
       res = vnctl(args)
