@@ -2,7 +2,8 @@
 
 module Vnctl::Cli
   class Root < Thor
-    register(Vnctl::Cli::Datapath, Vnctl::Cli::Datapath.namespace,
-      "datapath", "Operations for datapaths.")
+    C = Vnctl::Cli
+    register(C::Datapath, C::Datapath.namespace, "datapath", "Operations for datapaths.")
+    register(C::Network, C::Network.namespace, "network", "Operations for networks.")
   end
 end
