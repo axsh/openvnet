@@ -14,7 +14,7 @@ module Vnet::Openflow::Services
     def insert_vif(uuid, network, vif_map)
       return if @entries[uuid]
 
-      debug "service::arp.insert: uuid:#{uuid} vif_map:#{vif_map.inspect}"
+      debug "service::arp.insert: network:#{network.uuid}/#{network.network_id} vif_uuid:#{uuid}"
 
       @entries[uuid] = {
         :network_number => vif_map.network_id,
@@ -25,6 +25,7 @@ module Vnet::Openflow::Services
       catch_network_flow(network, {
                            :eth_dst => MAC_BROADCAST,
                            :eth_type => 0x0806,
+                           :arp_op => 1,
                            :arp_tha => MAC_ZERO,
                            :arp_tpa => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
                          }, {
@@ -33,7 +34,7 @@ module Vnet::Openflow::Services
       catch_network_flow(network, {
                            :eth_dst => Trema::Mac.new(vif_map.mac_addr),
                            :eth_type => 0x0806,
-                           :arp_tha => Trema::Mac.new(vif_map.mac_addr),
+                           :arp_op => 1,
                            :arp_tpa => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
                          }, {
                            :network => network
@@ -45,10 +46,13 @@ module Vnet::Openflow::Services
     end
 
     def packet_in(port, message)
-      debug "service::arp.packet_in: port_no:#{port.port_info.port_no} name:#{port.port_info.name} arp_tpa:#{message.arp_tpa}"
+      arp_tpa = message.arp_tpa
+      arp_spa = message.arp_spa
+
+      debug "service::arp.packet_in: port_no:#{port.port_number} name:#{port.port_name} arp_spa:#{arp_spa} arp_tpa:#{arp_tpa}"
 
       uuid, entry = @entries.find { |uuid,entry|
-        port.network_number == entry[:network_number] && message.arp_tpa == entry[:ipv4_address]
+        port.network_number == entry[:network_number] && arp_tpa == entry[:ipv4_address]
       }
 
       if entry.nil?
@@ -57,13 +61,14 @@ module Vnet::Openflow::Services
       end
 
       arp_out({ :out_port => message.in_port,
+                :in_port => OFPP_CONTROLLER,
                 :eth_src => entry[:mac_addr],
                 :eth_dst => message.eth_src,
                 :op_code => Racket::L3::ARP::ARPOP_REPLY,
                 :sha => entry[:mac_addr],
                 :spa => entry[:ipv4_address],
                 :tha => message.eth_src,
-                :tpa => message.arp_spa,
+                :tpa => arp_spa,
               })
     end
 

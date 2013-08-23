@@ -47,14 +47,19 @@ module Vnet::Openflow
       flows = []
 
       flow_options = {:cookie => @default_flow_cookie}
+      fo_local_md  = flow_options.merge(md_create(:local => nil))
+      fo_remote_md = flow_options.merge(md_create(:remote => nil))
 
+      flows << Flow.create(TABLE_CLASSIFIER, 2, {:in_port => OFPP_CONTROLLER}, nil,
+                           fo_local_md.merge(:goto_table => TABLE_CONTROLLER_PORT))
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, nil, flow_options)
-      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, {},
-                           flow_options.merge(md_create(:remote => nil)).merge!(:goto_table => TABLE_TUNNEL_PORTS))
+      flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
+                           fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
 
       flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_CONTROLLER_PORT,    0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, nil, flow_options)
 
@@ -63,14 +68,14 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:virtual => nil), nil,
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:virtual => nil), nil,
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 10, md_create(:physical => nil), nil,
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:physical => nil), nil,
                            flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
-      flows << Flow.create(TABLE_ROUTER_SRC,   0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_LINK,  0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_DST,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_INGRESS,    0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_EGRESS,     0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTER_DST,        0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_ARP_LOOKUP,   0, {}, nil, flow_options)
 

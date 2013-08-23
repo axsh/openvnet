@@ -11,7 +11,7 @@ describe Vnet::Openflow::Switch do
       switch.create_default_flows
 
       expect(datapath.sent_messages.size).to eq 0
-      expect(datapath.added_flows.size).to eq 31
+      expect(datapath.added_flows.size).to eq 33
       expect(datapath.added_ovs_flows.size).to eq 0
     end
 

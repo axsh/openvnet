@@ -4,6 +4,10 @@ module Vnet::Openflow
 
   class NetworkPhysical < Network
 
+    def network_type
+      :physical
+    end
+
     def flow_options
       @flow_options ||= {:cookie => @cookie}
     end
