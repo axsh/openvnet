@@ -23,6 +23,7 @@ module Vnet::Openflow
     attr_reader :dc_segment_manager
     attr_reader :network_manager
     attr_reader :packet_manager
+    attr_reader :port_manager
     attr_reader :route_manager
     attr_reader :tunnel_manager
 
@@ -35,6 +36,7 @@ module Vnet::Openflow
       @dc_segment_manager = DcSegmentManager.new(self)
       @network_manager = NetworkManager.new(self)
       @packet_manager = PacketManager.new(self)
+      @port_manager = PortManager.new(self)
       @route_manager = RouteManager.new(self)
       @tunnel_manager = TunnelManager.new(self)
 

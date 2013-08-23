@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Ports
 
-  module PortTunnel
-    include FlowHelpers
+  module Tunnel
+    include Vnet::Openflow::FlowHelpers
 
     def flow_options
       @flow_options ||= {:cookie => @cookie}
