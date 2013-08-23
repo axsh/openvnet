@@ -56,7 +56,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
 
     datapath = M::Datapath[params['uuid']] || raise(E::UnknownUUIDResource, params['uuid'])
     route_link = M::RouteLink[params['route_link_uuid']] || raise(E::UnknownUUIDResource, params['route_link_uuid'])
-    
+
     link_mac_address = parse_mac(params['link_mac_address']) || raise(E::MissingArgument, 'link_mac_address')
 
     M::DatapathRouteLink.create({ :datapath_id => datapath.id,
