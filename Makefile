@@ -49,11 +49,9 @@ clean:
 	rm -rf $(CURDIR)/vnet/vendor
 	rm -rf $(CURDIR)/vnet/.bundle
 
-build-rpm: DSTDIR = /tmp/vnet-rpmbuild
-build-rpm: reinstall install-bundle clean-bundle
+build-rpm: install-bundle clean-bundle
 	(cd $(CURDIR)/deployment/packagebuild; bundle install --path vendor/bundle --binstubs)
-	(cd $(DSTDIR); $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
+	$(CURDIR)/deployment/packagebuild/build_package.sh
 
-test-rpm-install: DSTDIR = /tmp/vnet-rpmbuild
-test-rpm-install: reinstall
-	(cd $(DSTDIR); $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/test-rpm-install.sh)
+test-rpm-install:
+	$(CURDIR)/deployment/packagebuild/test-rpm-install.sh

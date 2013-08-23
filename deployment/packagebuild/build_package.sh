@@ -45,7 +45,7 @@ function check_repo(){
 }
 
 rm -rf ${work_dir}/recipes
-mkdir ${work_dir}/recipes
+mkdir -p ${work_dir}/recipes
 
 check_repo
 
