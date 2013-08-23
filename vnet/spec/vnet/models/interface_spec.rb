@@ -5,9 +5,12 @@ describe Vnet::Models::Interface do
   before do
     Fabricate(:datapath_1)
     Fabricate(:datapath_2)
+    ip_address_1 = Fabricate(:ip_address_1)
+    ip_address_2 = Fabricate(:ip_address_2)
     network = Fabricate(:network)
     iface = Fabricate(:iface, network: network)
-    Fabricate(:ip_lease, interface: iface)
+    Fabricate(:ip_lease_1, interface: iface, ip_address: ip_address_1)
+    Fabricate(:ip_lease_2, interface: iface, ip_address: ip_address_2)
     Fabricate(:mac_lease, interface: iface)
   end
 
@@ -27,5 +30,11 @@ describe Vnet::Models::Interface do
 
   it "should find an entry by name" do
     expect(Vnet::Models::Interface.find(:name => 'vif-test')).to eq subject
+  end
+
+  it "has multiple ip lease entries" do
+    expect(subject.ipv4_address.size).to eq 2
+    expect(subject.ipv4_address[0]).to eq 1
+    expect(subject.ipv4_address[1]).to eq 2
   end
 end

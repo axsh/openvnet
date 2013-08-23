@@ -26,8 +26,7 @@ module Vnet::Models
     end
 
     def ipv4_address
-      ip_lease = self.ip_leases.first
-      ip_lease.nil? || ip_lease.ip_address.ipv4_address
+      self.ip_leases.map {|i| i.ip_address.ipv4_address}
     end
 
     def to_hash
