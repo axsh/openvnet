@@ -11,7 +11,7 @@ chroot_dir=${work_dir}/chroot
 function prepare_chroot_env(){
   umount_for_chroot
   rm -rf ${chroot_dir}
-  mkdir ${chroot_dir}
+  mkdir -p ${chroot_dir}
   mkdir ${chroot_dir}/repo
   mkdir -p ${chroot_dir}/var/lib/rpm
   rpm --root ${chroot_dir} --initdb
