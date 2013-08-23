@@ -13,10 +13,10 @@ module Vnctl::Cli
     option :dc_network_uuid, :type => :string, :desc => "Physical network uuid."
     option :network_mode, :type => :string, :desc => "Can be either physical or virtual."
     option :editable, :type => :boolean, :desc => "Flag that decides whether or not we can edit this network."
-    define_add("network")
+    define_add
 
-    define_show("networks")
-    define_del("networks")
+    define_show
+    define_del
 
   end
 end

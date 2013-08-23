@@ -4,15 +4,15 @@ module Vnctl::Cli
   class Base < Thor
 
     no_tasks {
-      def self.define_add(name)
-        desc "add [OPTIONS]", "Creates a new #{name}."
+      def self.define_add
+        desc "add [OPTIONS]", "Creates a new #{namespace}."
         define_method(:add) do
           puts post(suffix, :query => options)
         end
       end
 
-      def self.define_show(name)
-        desc "show [UUIDS]", "Shows all or a specific set of #{name}."
+      def self.define_show
+        desc "show [UUIDS]", "Shows all or a specific set of #{namespace}(s)."
         define_method(:show) do |*uuids|
           if uuids.empty?
             puts get(suffix)
@@ -22,8 +22,8 @@ module Vnctl::Cli
         end
       end
 
-      def self.define_del(name)
-        desc "del UUIDS", "Deletes one or more networks separated by a space."
+      def self.define_del
+        desc "del UUIDS", "Deletes one or more #{namespace}(s) separated by a space."
         define_method(:del) do |*uuids|
           puts uuids.map { |uuid|
             delete("#{suffix}/#{uuid}")

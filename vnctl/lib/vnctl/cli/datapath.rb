@@ -13,10 +13,10 @@ module Vnctl::Cli
     option :node_id, :type => :string, :desc => "The node id for the new datapath."
     option :ipv4_address, :type => :string, :desc => "Ipv4 address for the new datapath."
     option :dpid, :type => :string, :desc => "Hexadecimal id for the new datapath."
-    define_add("datapath")
+    define_add
 
-    define_show("datapaths")
-    define_del("datapath")
+    define_show
+    define_del
 
     desc "modify UUID [OPTIONS]", "Modify a datapath."
     option :open_flow_controller_uuid, :type => :string, :desc => "Openflow controller uuid for the datapath."
