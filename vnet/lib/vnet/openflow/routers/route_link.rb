@@ -37,7 +37,10 @@ module Vnet::Openflow::Routers
 
         :mac_address => route_info[:vif][:mac_addr],
         :ipv4_address => route_info[:ipv4_address],
-        :ipv4_mask => route_info[:ipv4_mask]
+        :ipv4_prefix => route_info[:ipv4_prefix],
+
+        :ingress => route_info[:ingress],
+        :egress => route_info[:egress],
       }
 
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
@@ -49,28 +52,37 @@ module Vnet::Openflow::Routers
     end
 
     def packet_in(port, message)
-      debug "router::router_link.packet_in: port_no:#{port.port_info.port_no} name:#{port.port_info.name} ipv4_dst:#{message.ipv4_dst}"
-
+      ipv4_dst = message.ipv4_dst
+      ipv4_src = message.ipv4_src
       route = @routes[message.cookie]
+
+      debug "router::router_link.packet_in: port_no:#{port.port_number} name:#{port.port_name} ipv4_src:#{ipv4_src} ipv4_dst:#{ipv4_dst}"
 
       return unreachable_ip(message, "no route found", :no_route) if route.nil?
 
       if route[:require_vif] == true
-        ip_lease = MW::IpLease.batch.dataset.with_ipv4.where({ :ip_leases__network_id => route[:network_id],
-                                                               :ip_addresses__ipv4_address => message.ipv4_dst.to_i
-                                                             }).first.commit(:fill => :vif)
+        filter_args = {
+          :ip_leases__network_id => route[:network_id],
+          :ip_addresses__ipv4_address => ipv4_dst.to_i
+        }
+        ip_lease = MW::IpLease.batch.dataset.with_ipv4.where(filter_args).first.commit(:fill => :vif)
 
-        return unreachable_ip(message, "no vif found", :no_vif) if ip_lease.nil? || ip_lease.vif.nil?
-        return unreachable_ip(message, "no active datapath for vif found", :inactive_vif) if ip_lease.vif.active_datapath_id.nil?
+        if ip_lease.nil? || ip_lease.vif.nil?
+          return unreachable_ip(message, "no vif found", :no_vif)
+        end
 
-        debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
+        if ip_lease.vif.active_datapath_id.nil?
+          return unreachable_ip(message, "no active datapath for vif found", :inactive_vif)
+        end
+
+        debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{ipv4_dst})" % message.cookie
         
         route_packets(message, ip_lease)
+        send_packet(message)
+
       else
         debug "router::router_link.packet_in: no destination vif needed for route (#{route[:uuid]})"
       end
-
-      # output...
     end
 
     private
@@ -78,17 +90,14 @@ module Vnet::Openflow::Routers
     def create_destination_flow(route)
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
-      # Don't restrict to local for all routes.
-      catch_route_md = md_create(route[:network_type] => route[:network_id])
-
       if route[:require_vif] == true
-        actions = {
-          :output => OFPP_CONTROLLER
-        }
-        instructions = {
-          :cookie => cookie
-        }
+        catch_route_md = md_create({ route[:network_type] => route[:network_id],
+                                     :not_no_controller => nil
+                                   })
+        actions = { :output => OFPP_CONTROLLER }
+        instructions = { :cookie => cookie }
       else
+        catch_route_md = md_create(route[:network_type] => route[:network_id])
         actions = nil
         instructions = {
           :goto_table => TABLE_ARP_LOOKUP,
@@ -96,23 +105,26 @@ module Vnet::Openflow::Routers
         }
       end                  
 
+      if is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix])
+        priority = 30
+      else
+        priority = 31
+      end
 
-      flow = Vnet::Openflow::Flow.create(TABLE_ROUTER_DST, 30,
-                                         catch_route_md.merge({ :eth_type => 0x0800,
-                                                                :eth_src => route[:mac_address],
-                                                                :ipv4_dst => route[:ipv4_address],
-                                                                :ipv4_dst_mask => route[:ipv4_mask],
-                                                              }),
-                                         actions, instructions)
+      subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
+
+      flow = Flow.create(TABLE_ROUTER_DST, priority,
+                         catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
+                         actions,
+                         instructions)
+
       @datapath.add_flow(flow)
     end
 
     def match_packet(message)
       # Verify metadata is a network type.
 
-      match = md_create({ :network => message.match.metadata & METADATA_VALUE_MASK,
-                          :local => nil
-                        })
+      match = md_create(:network => message.match.metadata & METADATA_VALUE_MASK)
       match.merge!({ :eth_type => 0x0800,
                      :eth_src => message.eth_src,
                      :ipv4_dst => message.ipv4_dst
@@ -123,16 +135,18 @@ module Vnet::Openflow::Routers
     # ip address. The output datapath route link table will figure out
     # for us if the output port should be a MAC2MAC or tunnel port.
     def route_packets(message, ip_lease)
-      datapath_md = md_create(:datapath => ip_lease.vif.active_datapath_id)
+      actions_md = md_create({ :datapath => ip_lease.vif.active_datapath_id,
+                               :reflection => nil
+                             })
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,
                          match_packet(message), {
                            :eth_dst => @mac_address
                          },
-                         datapath_md.merge({ :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK,
-                                             :cookie => message.cookie,
-                                             :idle_timeout => 60 * 60
-                                           }))
+                         actions_md.merge({ :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK,
+                                            :cookie => message.cookie,
+                                            :idle_timeout => 60 * 60
+                                          }))
 
       @datapath.add_flow(flow)
     end
@@ -157,6 +171,23 @@ module Vnet::Openflow::Routers
                          })
 
       @datapath.add_flow(flow)
+    end
+
+    def send_packet(message)
+      # We're modifying the in_port field, so duplicate the message to
+      # avoid race conditions with the flow add message.
+      message = message.dup
+
+      # Set the in_port to OFPP_CONTROLLER since the packets stored
+      # have already been processed by TABLE_CLASSIFIER to
+      # TABLE_ROUTER_DST, and as such no longer match the fields
+      # required by the old in_port. 
+      #
+      # The route link is identified by eth_dst, which was set in
+      # TABLE_ROUTER_EGRESS prior to be sent to the controller.
+      message.match.in_port = OFPP_CONTROLLER
+      
+      @datapath.send_packet_out(message, OFPP_TABLE)
     end
 
     def unreachable_ip(message, error_msg, suppress_reason)

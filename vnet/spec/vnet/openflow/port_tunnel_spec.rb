@@ -34,7 +34,7 @@ describe Vnet::Openflow::PortTunnel do
                                               {:in_port => 10},
                                               nil,
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
-                                               :goto_table => TABLE_ROUTER_ENTRY})
+                                               :goto_table => TABLE_ROUTER_CLASSIFIER})
     end
 
   end
