@@ -18,7 +18,6 @@ module Vnctl::Cli
     define_show
     define_del
 
-    desc "modify UUID [OPTIONS]", "Modify a datapath."
     option :open_flow_controller_uuid, :type => :string, :desc => "Openflow controller uuid for the datapath."
     option :display_name, :type => :string, :desc => "Display name for the datapath."
     option :is_connected, :type => :boolean, :desc => "Flag that detemines if the datapath is connected or not."
@@ -26,8 +25,6 @@ module Vnctl::Cli
     option :node_id, :type => :string, :desc => "The node id for the datapath."
     option :ipv4_address, :type => :string, :desc => "Ipv4 address for the datapath."
     option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
-    def modify(uuid)
-      puts put("#{suffix}/#{uuid}", :query => options)
-    end
+    define_modify
   end
 end

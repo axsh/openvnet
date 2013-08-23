@@ -31,6 +31,13 @@ module Vnctl::Cli
         end
       end
 
+      def self.define_modify
+        desc "modify UUID [OPTIONS]", "Modify a #{namespace}."
+        define_method(:modify) do |uuid|
+          puts put("#{suffix}/#{uuid}", :query => options)
+        end
+      end
+
       def self.api_suffix(suffix = nil)
         @api_suffix = suffix unless suffix.nil?
         @api_suffix
