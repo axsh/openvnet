@@ -34,7 +34,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   get '/:uuid' do
-    #TODO: Make sure that this uuid is a network and not something else
     nw = M::Network[@params["uuid"]]
     raise E::UnknownUUIDResource if nw.blank?
     respond_with(R::Network.generate(nw))
