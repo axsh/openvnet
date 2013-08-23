@@ -5,7 +5,6 @@ module Vnctl::Cli
     namespace :datapath
     api_suffix "/api/datapaths"
 
-    desc "add [options]", "Creates a new datapath."
     option :uuid, :type => :string, :desc => "UUID for the new datapath."
     option :open_flow_controller_uuid, :type => :string, :desc => "Openflow controller uuid for the new datapath."
     option :display_name, :type => :string, :desc => "Display name for the new datapath."
@@ -14,11 +13,10 @@ module Vnctl::Cli
     option :node_id, :type => :string, :desc => "The node id for the new datapath."
     option :ipv4_address, :type => :string, :desc => "Ipv4 address for the new datapath."
     option :dpid, :type => :string, :desc => "Hexadecimal id for the new datapath."
-    def add
-      puts post(suffix, :query => options)
-    end
+    define_add("datapath")
 
     define_show("datapaths")
+    define_del("datapath")
 
     desc "modify UUID [OPTIONS]", "Modify a datapath."
     option :open_flow_controller_uuid, :type => :string, :desc => "Openflow controller uuid for the datapath."
@@ -30,13 +28,6 @@ module Vnctl::Cli
     option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
     def modify(uuid)
       puts put("#{suffix}/#{uuid}", :query => options)
-    end
-
-    desc "del UUIDS", "Deletes one or more datapaths separated by a space."
-    def del(*uuids)
-      uuids.each { |uuid|
-        puts delete("#{suffix}/#{uuid}")
-      }
     end
   end
 end
