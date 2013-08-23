@@ -17,6 +17,5 @@ module Vnctl::Cli
 
     define_show
     define_del
-
   end
 end
