@@ -5,8 +5,9 @@
 set -e
 
 package=$1
-work_dir=${work_dir:-/tmp/vnet-rpmbuild}
-repo_dir=${repo_dir:-${work_dir}/packages/rhel/6/current}
+work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
+repo_base_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6
+repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
 possible_archs="i386 noarch x86_64"
@@ -30,9 +31,23 @@ function build_package(){
   done
 }
 
+function check_repo(){
+  [[ -n ${GIT_COMMIT} ]] && [[ -d ${repo_base_dir}/${GIT_COMMIT} ]] && {
+    echo "${GIT_COMMIT} had already been built."
+    exit 0
+  }
+  repo_dir=${repo_base_dir}/${GIT_COMMIT:-spot}
+  rm -rf ${repo_dir}
+  mkdir -p ${repo_dir}
+  for i in ${possible_archs}; do
+    mkdir ${repo_dir}/${i}
+  done
+}
+
 rm -rf ${work_dir}/recipes
 mkdir ${work_dir}/recipes
-mkdir -p ${repo_dir}
+
+check_repo
 
 if [[ -n ${package} ]]; then
   build_package ${package}
@@ -41,3 +56,5 @@ else
 fi
 
 (cd ${repo_dir}; createrepo .)
+
+ln -sfn ${repo_dir} ${repo_base_dir}/current

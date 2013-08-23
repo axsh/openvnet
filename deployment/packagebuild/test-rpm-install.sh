@@ -4,8 +4,8 @@
 #
 set -e
 
-work_dir=${work_dir:-/tmp/vnet-rpmbuild}
-repo_dir=${repo_dir:-${work_dir}/packages/rhel/6/current}
+work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
+repo_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/current
 chroot_dir=${work_dir}/chroot
 
 function prepare_chroot_env(){
