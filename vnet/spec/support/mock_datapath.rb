@@ -35,6 +35,10 @@ class MockDatapath < Vnet::Openflow::Datapath
     @added_flows += flows
   end
 
+  def del_cookie(cookie)
+    @added_flows.delete_if {|f| f.to_trema_hash[:cookie] == cookie }
+  end
+
   def add_ovs_flow(ovs_flow)
     @added_ovs_flows << ovs_flow
   end
@@ -48,9 +52,5 @@ class MockDatapath < Vnet::Openflow::Datapath
 
   def delete_tunnel(tunnel_name)
     @deleted_tunnels << tunnel_name
-  end
-
-  def del_cookie(cookie)
-    @added_cookie << cookie
   end
 end
