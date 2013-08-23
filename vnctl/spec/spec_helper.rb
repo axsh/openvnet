@@ -9,5 +9,5 @@ def vnctl(args)
   Dir.chdir(File.dirname(__FILE__) + "/..")
   res = `bin/vnctl #{args}`
   res.should_not eq("<h1>Internal Server Error</h1>\n")
-  res
+  eval(res)
 end
