@@ -4,14 +4,27 @@ require 'spec_helper'
 
 describe "vnctl network" do
   describe "add" do
-    it "adds a new network without setting a dc network for it" do
-      args = "network add --uuid nw-test --display_name test_network " +
+    it "adds a new network and sets its uuid" do
+      vnctl("network add --uuid nw-testnw")["uuid"].should eq("testnw")
+      # Delete it so we can run this test again
+      vnctl("network del testnw")
+    end
+
+    it "raises an error when trying to set an invalid uuid" do
+      vnctl("network add --uuid testnw").should eq({
+        "error" => "Vnet::Endpoints::Errors::InvalidUUID",
+        "message" => "testnw",
+        "code" => "101"
+      })
+    end
+
+    it "adds a new network without setting a dc network nor uuid for it" do
+      args = "network add --display_name test_network " +
         "--ipv4_network 10.0.0.0 --ipv4_prefix 8 --domain_name test_dns " +
         "--network-mode virtual --editable"
 
       res = vnctl(args)
 
-      res["uuid"].should eq("nw-test")
       res["display_name"].should eq("test_network")
       res["ipv4_network"].should eq(167772160)
       res["ipv4_prefix"].should eq(8)
@@ -35,13 +48,12 @@ describe "vnctl network" do
     end
 
     it "adds a new network and sets a dc network for it" do
-      args = "network add --uuid nw-dctest --display_name test_network_for_dc " +
+      args = "network add --display_name test_network_for_dc " +
         "--ipv4_network 10.0.0.0 --ipv4_prefix 8 --domain_name test_dns " +
         "--dc_network_uuid dcn-dummy --network-mode virtual --editable"
 
       res = vnctl(args)
 
-      res["uuid"].should eq("nw-dctest")
       res["display_name"].should eq("test_network_for_dc")
       res["ipv4_network"].should eq(167772160)
       res["ipv4_prefix"].should eq(8)
@@ -52,12 +64,34 @@ describe "vnctl network" do
     end
   end
 
+  describe "show" do
+    it "shows multiple networks" do
+    end
+
+    it "shows a single network" do
+    end
+
+    it "raises an error when trying to show a nonexistant network" do
+    end
+  end
+
   describe "del" do
     it "deletes an existing network" do
-      res = vnctl("network del nw-test")
-      res["uuid"].should eq("nw-test")
+      nw = vnctl("network add")["uuid"]
+      res = vnctl("network del #{nw}")
+      res["uuid"].should eq(nw)
+    end
 
-      #TODO: Test if it's really deleted from the database
+    it "deletes multiple existing networks" do
+      nw1 = vnctl("network add")["uuid"]
+      nw2 = vnctl("network add")["uuid"]
+      nw3 = vnctl("network add")["uuid"]
+
+      res = vnctl("network del #{nw1} #{nw2} #{nw3}")
+
+      res[0]["uuid"].should eq(nw1)
+      res[1]["uuid"].should eq(nw2)
+      res[2]["uuid"].should eq(nw3)
     end
 
     it "raises an error when trying to delete an unexisting network" do
