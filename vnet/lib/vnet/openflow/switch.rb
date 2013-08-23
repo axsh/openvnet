@@ -161,15 +161,15 @@ module Vnet::Openflow
       elsif port.port_info.name =~ /^eth/
         @datapath.mod_port(port.port_number, :flood)
 
-        eth_map = Vnet::ModelWrappers::Interface.find_by_name(port_desc.name)
+        eth_map = Vnet::ModelWrappers::Interface.find({:name => port.port_info.name})
         port.extend(PortHost)
 
         network = @datapath.network_manager.network_by_uuid('nw-public')
 
-      elsif port.port_info.name =~ /^vif-/
+      elsif port.port_info.name =~ /^if-/
         @datapath.mod_port(port.port_number, :no_flood)
 
-        interface_map = Vnet::ModelWrappers::Interface.find_by_name(port_desc.name)
+        interface_map = Vnet::ModelWrappers::Interface[port_desc.name]
 
         if interface_map.nil?
           error "error: Could not find uuid: #{port_desc.name}"
