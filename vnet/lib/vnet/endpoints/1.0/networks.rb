@@ -43,8 +43,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   delete '/:uuid' do
-    #TODO: Make sure that this uuid is a network and not something else
-    #TODO: Make sure that this uuid exists
+    raise E::UnknownUUIDResource, @params["uuid"] if M::Network[@params["uuid"]].nil?
 
     nw = M::Network.batch[@params["uuid"]].destroy.commit
     respond_with(R::Network.generate(nw))
