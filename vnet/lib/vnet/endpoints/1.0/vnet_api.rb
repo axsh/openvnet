@@ -14,7 +14,11 @@ module Vnet::Endpoints::V10
 
     def pop_uuid(model, params, key)
       uuid = params.delete(key)
-      model[uuid] || raise(E::InvalidUUID, uuid)
+      model[uuid] || raise(E::UnknownUUIDResource, uuid)
+    end
+
+    def check_uuid_syntax(model, uuid)
+      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, uuid)
     end
 
     def parse_params(params, mask)
