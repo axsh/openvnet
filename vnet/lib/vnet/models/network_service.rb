@@ -4,7 +4,7 @@ module Vnet::Models
   class NetworkService < Base
     taggable 'ns'
 
-    many_to_one :iface
+    many_to_one :interface
 
     subset(:alives, {})
 

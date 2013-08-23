@@ -7,14 +7,14 @@ module Vnet::Openflow::Services
 
   class Dhcp < Base
     attr_reader :network
-    attr_reader :iface_uuid
+    attr_reader :interface_uuid
     attr_reader :service_mac
     attr_reader :service_ipv4
 
     def initialize(params)
       @datapath = params[:datapath]
       @network = params[:network]
-      @iface_uuid = params[:iface_uuid]
+      @interface_uuid = params[:interface_uuid]
       @service_mac = params[:service_mac]
       @service_ipv4 = params[:service_ipv4]
     end

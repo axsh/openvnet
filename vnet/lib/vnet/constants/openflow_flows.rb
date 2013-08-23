@@ -46,7 +46,7 @@ module Vnet
       # Route based on the mac address only.
       TABLE_MAC_ROUTE = 30
 
-      # Only output to local iface's.
+      # Only output to local interface's.
       TABLE_METADATA_LOCAL        = 31
 
       # Send packet to all ports if marked as a flood flow, starting from

@@ -51,13 +51,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     respond_with(R::Network.generate(nw))
   end
 
-  put '/:uuid/attach_iface' do
-    nw = M::Network.attach_iface(@params[:uuid], @params[:iface_uuid])
+  put '/:uuid/attach_interface' do
+    nw = M::Network.attach_interface(@params[:uuid], @params[:interface_uuid])
     respond_with(R::Network.generate(nw))
   end
 
-  put '/:uuid/detach_iface' do
-        nw = M::Network.detach_iface(@params[:uuid], @params[:iface_uuid])
+  put '/:uuid/detach_interface' do
+        nw = M::Network.detach_interface(@params[:uuid], @params[:interface_uuid])
     respond_with(R::Network.generate(nw))
   end
 end

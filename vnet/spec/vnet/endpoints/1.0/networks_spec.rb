@@ -104,9 +104,9 @@ describe "/networks" do
     end
   end
 
-  describe "PUT /:uuid/attach_iface" do
+  describe "PUT /:uuid/attach_interface" do
     it "should return 404 error" do
-      put "/networks/nw-notfound/attach_iface"
+      put "/networks/nw-notfound/attach_interface"
       # TODO should be 404
       #expect(last_response.status).to eq 404
       expect(last_response.status).to eq 500
@@ -114,18 +114,18 @@ describe "/networks" do
 
     it "should return 404 error" do
       network = Fabricate(:network)
-      put "/networks/#{network.canonical_uuid}/attach_iface", :iface_uuid => "iface-notfound"
+      put "/networks/#{network.canonical_uuid}/attach_interface", :interface_uuid => "interface-notfound"
       # TODO should be 404
       #expect(last_response.status).to eq 404
       expect(last_response.status).to eq 500
     end
 
-    it "should attach iface to network" do
+    it "should attach interface to network" do
       network = Fabricate(:network)
-      iface = Fabricate(:iface)
-      expect(network.ifaces).to be_empty
+      interface = Fabricate(:iface)
+      expect(network.interfaces).to be_empty
 
-      put "/networks/#{network.canonical_uuid}/attach_iface", :iface_uuid => iface.canonical_uuid
+      put "/networks/#{network.canonical_uuid}/attach_interface", :interface_uuid => interface.canonical_uuid
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
@@ -133,14 +133,14 @@ describe "/networks" do
 
       network.reload
 
-      expect(network.ifaces.size).to eq 1
-      expect(network.ifaces.first.uuid).to eq iface.uuid
+      expect(network.interfaces.size).to eq 1
+      expect(network.interfaces.first.uuid).to eq interface.uuid
     end
   end
 
-  describe "PUT /:uuid/detach_iface" do
+  describe "PUT /:uuid/detach_interface" do
     it "should return 404 error" do
-      put "/networks/nw-notfound/detach_iface"
+      put "/networks/nw-notfound/detach_interface"
       # TODO should be 404
       #expect(last_response.status).to eq 404
       expect(last_response.status).to eq 500
@@ -148,27 +148,27 @@ describe "/networks" do
 
     it "should return 404 error" do
       network = Fabricate(:network)
-      put "/networks/#{network.canonical_uuid}/detach_iface", :iface_uuid => "iface-notfound"
+      put "/networks/#{network.canonical_uuid}/detach_interface", :interface_uuid => "interface-notfound"
       # TODO should be 404
       #expect(last_response.status).to eq 404
       expect(last_response.status).to eq 500
     end
 
-    it "should detach iface to network" do
-      iface = Fabricate(:iface) do
+    it "should detach interface to network" do
+      interface = Fabricate(:iface) do
         network
       end
-      network = iface.network
-      expect(network.ifaces.size).to eq 1
+      network = interface.network
+      expect(network.interfaces.size).to eq 1
 
-      put "/networks/#{network.canonical_uuid}/detach_iface", :iface_uuid => iface.canonical_uuid
+      put "/networks/#{network.canonical_uuid}/detach_interface", :interface_uuid => interface.canonical_uuid
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
       expect(body["uuid"]).to eq network.canonical_uuid
 
       network.reload
-      expect(network.ifaces).to be_empty
+      expect(network.interfaces).to be_empty
     end
   end
 end

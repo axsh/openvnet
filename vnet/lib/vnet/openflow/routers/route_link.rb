@@ -15,7 +15,7 @@ module Vnet::Openflow::Routers
     end
 
     def install
-      debug "router::router_link.install: network:#{@network_uuid} iface_uuid:#{@iface_uuid.inspect} mac:#{@service_mac} ipv4:#{@service_ipv4}"
+      debug "router::router_link.install: network:#{@network_uuid} interface_uuid:#{@interface_uuid.inspect} mac:#{@service_mac} ipv4:#{@service_ipv4}"
     end
 
     def insert_route(route_info)
@@ -29,13 +29,13 @@ module Vnet::Openflow::Routers
       route = {
         :route_id => route_info[:id],
         :route_uuid => route_info[:uuid],
-        :network_id => route_info[:iface][:network_id],
-        :network_type => route_info[:iface][:network_type],
+        :network_id => route_info[:interface][:network_id],
+        :network_type => route_info[:interface][:network_type],
 
-        :require_iface => route_info[:iface][:require_iface],
-        :active_datapath_id => route_info[:iface][:active_datapath_id],
+        :require_interface => route_info[:interface][:require_interface],
+        :active_datapath_id => route_info[:interface][:active_datapath_id],
 
-        :mac_address => route_info[:iface][:mac_addr],
+        :mac_address => route_info[:interface][:mac_addr],
         :ipv4_address => route_info[:ipv4_address],
         :ipv4_mask => route_info[:ipv4_mask]
       }
@@ -55,19 +55,19 @@ module Vnet::Openflow::Routers
 
       return unreachable_ip(message, "no route found", :no_route) if route.nil?
 
-      if route[:require_iface] == true
+      if route[:require_interface] == true
         ip_lease = MW::IpLease.batch.dataset.with_ipv4.where({ :ip_leases__network_id => route[:network_id],
                                                                :ip_addresses__ipv4_address => message.ipv4_dst.to_i
-                                                             }).first.commit(:fill => :iface)
+                                                             }).first.commit(:fill => :interface)
 
-        return unreachable_ip(message, "no iface found", :no_iface) if ip_lease.nil? || ip_lease.iface.nil?
-        return unreachable_ip(message, "no active datapath for iface found", :inactive_iface) if ip_lease.iface.active_datapath_id.nil?
+        return unreachable_ip(message, "no interface found", :no_interface) if ip_lease.nil? || ip_lease.interface.nil?
+        return unreachable_ip(message, "no active datapath for interface found", :inactive_interface) if ip_lease.interface.active_datapath_id.nil?
 
         debug "router::router_link.packet_in: found ip lease (cookie:0x%x ipv4:#{message.ipv4_dst})" % message.cookie
         
         route_packets(message, ip_lease)
       else
-        debug "router::router_link.packet_in: no destination iface needed for route (#{route[:uuid]})"
+        debug "router::router_link.packet_in: no destination interface needed for route (#{route[:uuid]})"
       end
 
       # output...
@@ -81,7 +81,7 @@ module Vnet::Openflow::Routers
       # Don't restrict to local for all routes.
       catch_route_md = md_create(route[:network_type] => route[:network_id])
 
-      if route[:require_iface] == true
+      if route[:require_interface] == true
         actions = {
           :output => OFPP_CONTROLLER
         }
@@ -123,7 +123,7 @@ module Vnet::Openflow::Routers
     # ip address. The output datapath route link table will figure out
     # for us if the output port should be a MAC2MAC or tunnel port.
     def route_packets(message, ip_lease)
-      datapath_md = md_create(:datapath => ip_lease.iface.active_datapath_id)
+      datapath_md = md_create(:datapath => ip_lease.interface.active_datapath_id)
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,
                          match_packet(message), {
@@ -138,14 +138,14 @@ module Vnet::Openflow::Routers
     end
 
     def suppress_packets(message, reason)
-      # These should set us as listeners to events for the iface
+      # These should set us as listeners to events for the interface
       # becoming active or IP address being leased.
       case reason
       when :no_route
         hard_timeout = 30
-      when :no_iface
+      when :no_interface
         hard_timeout = 30
-      when :inactive_iface
+      when :inactive_interface
         hard_timeout = 10
       end
 

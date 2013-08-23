@@ -130,7 +130,7 @@ module Vnet::Openflow
         when :virtual_network
           metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_VIRTUAL
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
-        when :iface
+        when :interface
           metadata = metadata | METADATA_FLAG_VIF
           metadata_mask = metadata_mask | METADATA_FLAG_VIF
         else

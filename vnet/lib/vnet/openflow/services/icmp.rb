@@ -11,28 +11,28 @@ module Vnet::Openflow::Services
       @entries = {}
     end
 
-    def insert_iface(uuid, network, iface_map)
+    def insert_interface(uuid, network, interface_map)
       return if @entries[uuid]
 
-      debug "service::icmp.insert: uuid:#{uuid} iface_map:#{iface_map.inspect}"
+      debug "service::icmp.insert: uuid:#{uuid} interface_map:#{interface_map.inspect}"
 
       @entries[uuid] = {
-        :network_number => iface_map.network_id,
-        :mac_addr => Trema::Mac.new(iface_map.mac_addr),
-        :ipv4_address => IPAddr.new(iface_map.ipv4_address, Socket::AF_INET),
+        :network_number => interface_map.network_id,
+        :mac_addr => Trema::Mac.new(interface_map.mac_addr),
+        :ipv4_address => IPAddr.new(interface_map.ipv4_address, Socket::AF_INET),
       }
 
       catch_network_flow(network, {
                            :eth_type => 0x0800,
-                           :eth_dst => Trema::Mac.new(iface_map.mac_addr),
+                           :eth_dst => Trema::Mac.new(interface_map.mac_addr),
                            :ip_proto => 0x01,
-                           :ipv4_dst => IPAddr.new(iface_map.ipv4_address, Socket::AF_INET),
+                           :ipv4_dst => IPAddr.new(interface_map.ipv4_address, Socket::AF_INET),
                          }, {
                            :network => network
                          })
     end
 
-    def remove_iface(uuid)
+    def remove_interface(uuid)
       debug "service::icmp.remove: uuid:#{uuid}"
     end
 

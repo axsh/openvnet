@@ -3,15 +3,15 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
 
   post do
-    params = parse_params(@params, ["uuid","iface_uuid","display_name","incoming_port","outgoing_port","created_at","updated_at"])
+    params = parse_params(@params, ["uuid","interface_uuid","display_name","incoming_port","outgoing_port","created_at","updated_at"])
 
     if params.has_key?("uuid")
       raise E::DuplicateUUID, params["uuid"] unless M::NetworkService[params["uuid"]].nil?
       params["uuid"] = M::NetworkService.trim_uuid(params["uuid"])
     end
 
-    iface_uuid = params.delete('iface_uuid')
-    params['iface_id'] = (M::Iface[iface_uuid] || raise(E::InvalidUUID, iface_uuid)).id
+    interface_uuid = params.delete('interface_uuid')
+    params['interface_id'] = (M::Interface[interface_uuid] || raise(E::InvalidUUID, interface_uuid)).id
 
     network_service = M::NetworkService.create(params)
     respond_with(R::NetworkService.generate(network_service))
@@ -33,7 +33,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["iface_uuid","display_name","incoming_port","outgoing_port","created_at","updated_at"])
+    params = parse_params(@params, ["interface_uuid","display_name","incoming_port","outgoing_port","created_at","updated_at"])
     network_service = M::NetworkService.update(@params["uuid"], params)
     respond_with(R::NetworkService.generate(network_service))
   end

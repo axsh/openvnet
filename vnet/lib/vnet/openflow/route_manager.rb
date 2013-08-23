@@ -7,12 +7,12 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
     
-    ROUTE_COMMIT = {:fill => [:route_link, :iface => [:network_services, :network]]}
+    ROUTE_COMMIT = {:fill => [:route_link, :interface => [:network_services, :network]]}
 
     def initialize(dp)
       @datapath = dp
       @route_links = {}
-      @ifaces = {}
+      @interfaces = {}
     end
 
     def insert(route_map)
@@ -23,13 +23,13 @@ module Vnet::Openflow
 
       info "route_manager.insert: id:#{route_map.id} uuid:#{route_map.uuid}"
       info "route_manager.insert: route.route_type:#{route_map.route_type}"
-      info "route_manager.insert: route.iface: id:#{route_map.iface.id} uuid:#{route_map.iface.uuid}"
+      info "route_manager.insert: route.interface: id:#{route_map.interface.id} uuid:#{route_map.interface.uuid}"
       info "route_manager.insert: route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}"
 
       route = {
         :id => route_map.id,
         :uuid => route_map.uuid,
-        :iface => nil,
+        :interface => nil,
         :ipv4_address => route_map.ipv4_address,
         :ipv4_prefix => route_map.ipv4_prefix,
         :ipv4_mask => IPV4_BROADCAST << (32 - route_map.ipv4_prefix),
@@ -37,10 +37,10 @@ module Vnet::Openflow
 
       route_link[:routes][route[:id]] = route
 
-      route[:iface] = prepare_iface(route_map.iface)
+      route[:interface] = prepare_interface(route_map.interface)
 
-      if route[:iface].nil?
-        warn "route_manager: couldn't prepare router iface (#{route_map.uuid})"
+      if route[:interface].nil?
+        warn "route_manager: couldn't prepare router interface (#{route_map.uuid})"
         return
       end
 
@@ -162,53 +162,53 @@ module Vnet::Openflow
       link
     end
 
-    def prepare_iface(iface_map)
-      iface = @ifaces[iface_map.id]
-      return iface if iface
+    def prepare_interface(interface_map)
+      interface = @interfaces[interface_map.id]
+      return interface if interface
 
-      service_map = iface_map.network_services.detect { |service| service.display_name == 'router' }
+      service_map = interface_map.network_services.detect { |service| service.display_name == 'router' }
 
       if service_map.nil?
-        warn "route_manager: could not find 'router' service for iface (#{iface_map.uuid})"
+        warn "route_manager: could not find 'router' service for interface (#{interface_map.uuid})"
         return nil
       end
 
-      iface = {
-        :id => iface_map.id,
-        :network_id => iface_map.network_id,
+      interface = {
+        :id => interface_map.id,
+        :network_id => interface_map.network_id,
         :use_datapath_id => nil,
         :service_cookie => service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT),
-        :mac_addr => Trema::Mac.new(iface_map.mac_addr),
-        :ipv4_address => IPAddr.new(iface_map.ipv4_address, Socket::AF_INET),
+        :mac_addr => Trema::Mac.new(interface_map.mac_addr),
+        :ipv4_address => IPAddr.new(interface_map.ipv4_address, Socket::AF_INET),
       }
 
       datapath_id = @datapath.datapath_map.id
 
-      if iface_map.owner_datapath_id
-        if iface_map.owner_datapath_id == datapath_id
-          iface_map.batch.update(:active_datapath_id => datapath_id).commit
+      if interface_map.owner_datapath_id
+        if interface_map.owner_datapath_id == datapath_id
+          interface_map.batch.update(:active_datapath_id => datapath_id).commit
         else
-          iface[:use_datapath_id] = iface_map.owner_datapath_id
+          interface[:use_datapath_id] = interface_map.owner_datapath_id
         end
       end
 
-      case iface_map.network && iface_map.network.network_mode
+      case interface_map.network && interface_map.network.network_mode
       when 'physical'
-        iface[:require_iface] = false
-        iface[:network_type] = :physical_network
+        interface[:require_interface] = false
+        interface[:network_type] = :physical_network
       when 'virtual'
-        iface[:require_iface] = true
-        iface[:network_type] = :virtual_network
+        interface[:require_interface] = true
+        interface[:network_type] = :virtual_network
       else
-        warn "route_manager: iface does not have a known network mode (#{iface_map.uuid})"
+        warn "route_manager: interface does not have a known network mode (#{interface_map.uuid})"
         return nil
       end
 
-      @ifaces[iface_map.id] = iface
+      @interfaces[interface_map.id] = interface
 
-      create_iface_flows(iface) if iface[:use_datapath_id].nil?
+      create_interface_flows(interface) if interface[:use_datapath_id].nil?
 
-      iface
+      interface
     end
 
     def create_route_flows(route_link, route)
@@ -218,11 +218,11 @@ module Vnet::Openflow
 
       flows = []
 
-      if route[:iface][:use_datapath_id].nil?
-        network_md = md_create(route[:iface][:network_type] => route[:iface][:network_id])
+      if route[:interface][:use_datapath_id].nil?
+        network_md = md_create(route[:interface][:network_type] => route[:interface][:network_id])
 
         flows << Flow.create(TABLE_ROUTER_SRC, 40,
-                             network_md.merge({ :eth_dst => route[:iface][:mac_addr],
+                             network_md.merge({ :eth_dst => route[:interface][:mac_addr],
                                                 :eth_type => 0x0800,
                                                 :ipv4_src => route[:ipv4_address],
                                                 :ipv4_src_mask => route[:ipv4_mask],
@@ -236,7 +236,7 @@ module Vnet::Openflow
                                                    :ipv4_dst => route[:ipv4_address],
                                                    :ipv4_dst_mask => route[:ipv4_mask],
                                                  }), {
-                               :eth_src => route[:iface][:mac_addr]
+                               :eth_src => route[:interface][:mac_addr]
                              },
                              network_md.merge({ :cookie => cookie,
                                                 :goto_table => TABLE_ROUTER_DST
@@ -253,7 +253,7 @@ module Vnet::Openflow
         }
 
       else
-        datapath_md = md_create(:datapath => route[:iface][:use_datapath_id])
+        datapath_md = md_create(:datapath => route[:interface][:use_datapath_id])
 
         flows << Flow.create(TABLE_ROUTER_LINK, 40,
                              route_link_md.merge({ :eth_type => 0x0800,
@@ -270,11 +270,11 @@ module Vnet::Openflow
       end
     end
 
-    def create_iface_flows(iface)
-      cookie = iface[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
-      network_md = md_create(:network => iface[:network_id])
+    def create_interface_flows(interface)
+      cookie = interface[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
+      network_md = md_create(:network => interface[:network_id])
 
-      if iface[:network_type] == :physical_network
+      if interface[:network_type] == :physical_network
         goto_table = TABLE_PHYSICAL_DST
       else
         goto_table = TABLE_VIRTUAL_DST
@@ -282,16 +282,16 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_ENTRY, 40,
-                           network_md.merge({ :eth_dst => iface[:mac_addr],
+                           network_md.merge({ :eth_dst => interface[:mac_addr],
                                               :eth_type => 0x0800,
-                                              :ipv4_dst => iface[:ipv4_address]
+                                              :ipv4_dst => interface[:ipv4_address]
                                             }),
                            nil, {
                              :cookie => cookie,
                              :goto_table => goto_table
                            })
       flows << Flow.create(TABLE_ROUTER_ENTRY, 30,
-                           network_md.merge({ :eth_dst => iface[:mac_addr],
+                           network_md.merge({ :eth_dst => interface[:mac_addr],
                                               :eth_type => 0x0800
                                             }),
                            nil, {

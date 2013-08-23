@@ -50,7 +50,7 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
-      network_map.batch.network_services.commit(:fill => :iface).each { |service|
+      network_map.batch.network_services.commit(:fill => :interface).each { |service|
         network.add_service(service)
       }
 

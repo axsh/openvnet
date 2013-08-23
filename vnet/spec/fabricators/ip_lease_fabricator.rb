@@ -2,7 +2,7 @@
 Fabricator(:ip_lease, class_name: Vnet::Models::IpLease) do
   #uuid
   #network_id
-  #iface_id
+  #interface_id
   #ip_address_id
   #alloc_type
   #created_at
