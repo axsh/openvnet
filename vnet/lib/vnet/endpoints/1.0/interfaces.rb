@@ -2,17 +2,17 @@
 
 require 'trema/mac'
 
-Vnet::Endpoints::V10::VnetAPI.namespace '/ifaces' do
+Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
 
   post do
-    params = parse_params(@params, ['uuid','name','mode','active_datapath_uuid','owner_datapath_uuid','state'])
+    params = parse_params(@params, ['uuid','network_uuid','name','mode','active_datapath_uuid','owner_datapath_uuid','state'])
 
     if params.has_key?('uuid')
       raise E::DuplicateUUID, params['uuid'] unless M::Interface[params['uuid']].nil?
       params['uuid'] = M::Interface.trim_uuid(params['uuid'])
     end
 
-    #params['network_id'] = pop_uuid(M::Network, params, 'network_id').id if params.has_key?('network_id')
+    params['network_id'] = pop_uuid(M::Network, params, 'network_uuid').id if params.has_key?('network_uuid')
     params['active_datapath_id'] = pop_uuid(M::Datapath, params, 'active_datapath_uuid').id if params.has_key?('active_datapath_uuid')
     params['owner_datapath_id'] = pop_uuid(M::Datapath, params, 'owner_datapath_uuid').id if params.has_key?('owner_datapath_uuid')
 
@@ -37,7 +37,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ifaces' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ['uuid','mode','owner_datapath_id','active_datapath_id','state'])
+    params = parse_params(@params, ['uuid','network_uuid','name','mode','owner_datapath_uuid','active_datapath_uuid','state'])
+
+    params['network_id'] = pop_uuid(M::Network, params, 'network_uuid').id if params.has_key?('network_uuid')
+    params['active_datapath_id'] = pop_uuid(M::Datapath, params, 'active_datapath_uuid').id if params.has_key?('active_datapath_uuid')
+    params['owner_datapath_id'] = pop_uuid(M::Datapath, params, 'owner_datapath_uuid').id if params.has_key?('owner_datapath_uuid')
+
     iface = data_access.iface.update(params)
     respond_with(R::Interface.generate(iface))
   end

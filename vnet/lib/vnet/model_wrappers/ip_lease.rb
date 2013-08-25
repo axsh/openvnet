@@ -5,9 +5,9 @@ module Vnet::ModelWrappers
     def to_hash
       {
         :uuid => self.uuid,
-        :network_uuid => self.network_uuid,
-        :interface_uuid => self.interface_uuid,
-        :ip_handle_uuid => self.ip_address_uuid,
+        :network_id => self.network_id,
+        :interface_id => self.interface_id,
+        :ip_address_id => self.ip_address_id,
         :alloc_type => self.alloc_type,
         :created_at => self.created_at,
         :updated_at => self.updated_at,

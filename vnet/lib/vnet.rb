@@ -112,6 +112,7 @@ module Vnet
     autoload :Interface, 'vnet/model_wrappers/interface'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
+    autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :MacRange, 'vnet/model_wrappers/mac_range'
     autoload :Network, 'vnet/model_wrappers/network'
     autoload :NetworkService, 'vnet/model_wrappers/network_service'

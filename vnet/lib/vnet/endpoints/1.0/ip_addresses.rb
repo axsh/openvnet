@@ -9,6 +9,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_addresses' do
       raise E::DuplicateUUID, params["uuid"] unless M::IpAddress[params["uuid"]].nil?
       params["uuid"] = M::IpAddress.trim_uuid(params["uuid"])
     end
+
+    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
+
     ip_address = M::IpAddress.create(params)
     respond_with(R::IpAddress.generate(ip_address))
   end
@@ -30,6 +33,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_addresses' do
 
   put '/:uuid' do
     params = parse_params(@params, ["ipv4_address","created_at","updated_at"])
+
+    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
+
     ip_address = M::IpAddress.update(@params["uuid"], params)
     respond_with(R::IpAddress.generate(ip_address))
   end
