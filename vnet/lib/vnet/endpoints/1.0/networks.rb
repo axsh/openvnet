@@ -35,27 +35,22 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   get '/:uuid' do
-    check_uuid_syntax(M::Network, @params["uuid"])
-    nw = M::Network[@params["uuid"]]
-    raise E::UnknownUUIDResource, @params["uuid"] if nw.blank?
+    nw = check_syntax_and_pop_uuid(M::Network, @params)
     respond_with(R::Network.generate(nw))
   end
 
   delete '/:uuid' do
-    check_uuid_syntax(M::Network, @params["uuid"])
-    raise E::UnknownUUIDResource, @params["uuid"] if M::Network[@params["uuid"]].nil?
-
-    nw = M::Network.batch[@params["uuid"]].destroy.commit
+    nw = check_syntax_and_pop_uuid(M::Network, @params)
+    nw.batch.destroy.commit
     respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid' do
     params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
-    check_syntax_and_pop_uuid(M::Network, params)
+    nw = check_syntax_and_pop_uuid(M::Network, params)
+    nw.batch.update(params).commit
 
-    nw = M::Network.batch do |n|
-      n[@params[:uuid]].update(params)
-    end
-    respond_with(R::Network.generate(nw))
+    updated_nw = M::Network[@params["uuid"]]
+    respond_with(R::Network.generate(updated_nw))
   end
 end

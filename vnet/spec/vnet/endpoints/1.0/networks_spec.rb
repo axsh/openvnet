@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
-require 'vnet/endpoints/1.0/vnet_api'
+require 'vnet'
 
 def app
   Vnet::Endpoints::V10::VnetAPI
@@ -131,6 +131,8 @@ describe "/networks" do
         expect(last_response).to be_ok
         body = JSON.parse(last_response.body)
         expect(body["uuid"]).to eq network.canonical_uuid
+
+        Vnet::Models::Network[network.canonical_uuid].should eq(nil)
       end
     end
   end
