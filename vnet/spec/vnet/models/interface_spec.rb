@@ -11,7 +11,8 @@ describe Vnet::Models::Interface do
     iface = Fabricate(:iface, network: network)
     Fabricate(:ip_lease_1, interface: iface, ip_address: ip_address_1)
     Fabricate(:ip_lease_2, interface: iface, ip_address: ip_address_2)
-    Fabricate(:mac_lease, interface: iface)
+    mac = Fabricate(:mac_address)
+    Fabricate(:mac_lease, interface: iface, mac_address: mac)
   end
 
   subject { Vnet::Models::Interface.first }

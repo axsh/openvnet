@@ -6,5 +6,9 @@ module Vnet::Models
 
     many_to_one :mac_address
     many_to_one :interface
+
+    def mac_addr
+      self.mac_address.mac_address
+    end
   end
 end

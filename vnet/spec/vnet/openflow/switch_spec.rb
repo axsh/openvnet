@@ -91,7 +91,8 @@ describe Vnet::Openflow::Switch do
         Fabricate(:datapath_1)
         iface = Fabricate(:iface_2, network: vnet)
         ip_addr = Fabricate(:ip_address_1)
-        Fabricate(:mac_lease, interface: iface)
+        mac = Fabricate(:mac_address)
+        Fabricate(:mac_lease, interface: iface, mac_address: mac)
         Fabricate(:ip_lease_1, ip_address: ip_addr, interface: iface)
       end
 
