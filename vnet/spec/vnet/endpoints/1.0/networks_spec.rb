@@ -8,165 +8,201 @@ end
 
 describe "/networks" do
   describe "GET /" do
-    it "should return empty json" do
-      get "/networks"
+    context "with no networks in the database" do
+      it "should return empty json" do
+        get "/networks"
 
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body).to be_empty
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body).to be_empty
+      end
     end
 
-    it "should return 3 networks" do
-      3.times.inject([]) do |array|
-        array << Fabricate(:network) do
-          ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
-        end
+    context "with 3 networks in the database" do
+      (1..3).each do |i|
+        let!("nw#{i}".to_sym) {
+          Fabricate(:network) do
+            ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
+          end
+        }
       end
 
-      get "/networks"
+      it "should return 3 networks" do
+        get "/networks"
 
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body.size).to eq 3
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body.size).to eq 3
+      end
     end
   end
 
   describe "GET /:uuid" do
-    it "should return 404 error" do
-      get "/networks/nw-notfound"
-      expect(last_response).to be_not_found
+    context "with a non existing uuid" do
+      it "should return 404 error" do
+        get "/networks/nw-notfound"
+        expect(last_response).to be_not_found
+      end
     end
 
-    it "should return a network" do
-      network = Fabricate(:network)
+    context "with an existing uuid" do
+      let!(:network) { Fabricate(:network) }
 
-      get "/networks/#{network.canonical_uuid}"
+      it "should return a network" do
+        get "/networks/#{network.canonical_uuid}"
 
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body["uuid"]).to eq network.canonical_uuid
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body["uuid"]).to eq network.canonical_uuid
+      end
     end
   end
 
   describe "POST /" do
-    it "should create a network" do
-      params = {
-        display_name: "network",
-        ipv4_network: "192.168.10.1",
-        ipv4_prefix: 24,
-      }
-      post "/networks", params
+    context "without the uuid parameter" do
+      it "should create a network" do
+        params = {
+          display_name: "network",
+          ipv4_network: "192.168.10.1",
+          ipv4_prefix: 24,
+        }
+        post "/networks", params
 
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body["display_name"]).to eq "network"
-      expect(body["ipv4_network"]).to eq IPAddr.new("192.168.10.1").to_i
-      expect(body["ipv4_prefix"]).to eq 24
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body["display_name"]).to eq "network"
+        expect(body["ipv4_network"]).to eq IPAddr.new("192.168.10.1").to_i
+        expect(body["ipv4_prefix"]).to eq 24
+      end
+    end
+
+    context "with the uuid parameter" do
+      it "should create a network with the given uuid" do
+        post "/networks", { :uuid => "nw-testnw" }
+
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body["uuid"]).to eq "nw-testnw"
+      end
+    end
+
+    context "with a uuid parameter with a faulty syntax" do
+      it "should return a 400 error" do
+        post "/networks", { :uuid => "this_aint_no_uuid" }
+        expect(last_response.status).to eq 400
+      end
     end
   end
 
   describe "DELETE /:uuid" do
-    it "should return 404 error" do
-      delete "/networks/nw-notfound"
-      expect(last_response.status).to eq 404
+    context "with a nonexistant uuid" do
+      it "should return 404 error" do
+        delete "/networks/nw-notfound"
+        expect(last_response.status).to eq 404
+      end
     end
 
-    it "should delete a network" do
-      network = Fabricate(:network)
+    context "with an existing uuid" do
+      let!(:network) { Fabricate(:network) }
+      it "should delete the network" do
+        delete "/networks/#{network.canonical_uuid}"
 
-      delete "/networks/#{network.canonical_uuid}"
-
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body["uuid"]).to eq network.canonical_uuid
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body["uuid"]).to eq network.canonical_uuid
+      end
     end
   end
 
   describe "PUT /:uuid" do
-    it "should return 404 error" do
-      put "/networks/nw-notfound"
-      # TODO should be 404
-      #expect(last_response.status).to eq 404
-      expect(last_response.status).to eq 500
+    context "with a nonexistant uuid" do
+      it "should return 404 error" do
+        put "/networks/nw-notfound"
+        expect(last_response.status).to eq 404
+      end
     end
 
-    it "should update a network" do
-      network = Fabricate(:network)
+    context "with an existing uuid" do
+      let!(:network) { Fabricate(:network) }
+      it "should update the network" do
+        put "/networks/#{network.canonical_uuid}", :domain_name => "aaa.#{network.domain_name}"
 
-      put "/networks/#{network.canonical_uuid}", :domain_name => "aaa.#{network.domain_name}"
-
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body["uuid"]).to eq network.canonical_uuid
-      expect(body["domain_name"]).not_to eq network.domain_name
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body["uuid"]).to eq network.canonical_uuid
+        expect(body["domain_name"]).not_to eq network.domain_name
+      end
     end
   end
 
   describe "PUT /:uuid/attach_vif" do
-    it "should return 404 error" do
-      put "/networks/nw-notfound/attach_vif"
-      # TODO should be 404
-      #expect(last_response.status).to eq 404
-      expect(last_response.status).to eq 500
+    context "with a nonexistant network uuid" do
+      it "should return 404 error" do
+        put "/networks/nw-notfound/attach_vif"
+        expect(last_response.status).to eq 404
+      end
     end
 
-    it "should return 404 error" do
-      network = Fabricate(:network)
-      put "/networks/#{network.canonical_uuid}/attach_vif", :vif_uuid => "vif-notfound"
-      # TODO should be 404
-      #expect(last_response.status).to eq 404
-      expect(last_response.status).to eq 500
+    context "with a nonexistant vif uuid" do
+      let!(:network) { Fabricate(:network) }
+      it "should return 404 error" do
+        put "/networks/#{network.canonical_uuid}/attach_vif", :vif_uuid => "vif-notfound"
+        expect(last_response.status).to eq 404
+      end
     end
 
-    it "should attach vif to network" do
-      network = Fabricate(:network)
-      vif = Fabricate(:vif)
-      expect(network.vifs).to be_empty
+    context "with an existing network uuid and an existing vif uuid" do
+      let!(:network) { Fabricate(:network) }
+      let!(:vif) { Fabricate(:vif) }
+      it "should attach vif to network" do
+        expect(network.vifs).to be_empty
 
-      put "/networks/#{network.canonical_uuid}/attach_vif", :vif_uuid => vif.canonical_uuid
+        put "/networks/#{network.canonical_uuid}/attach_vif", :vif_uuid => vif.canonical_uuid
 
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body["uuid"]).to eq network.canonical_uuid
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body["uuid"]).to eq network.canonical_uuid
 
-      network.reload
+        network.reload
 
-      expect(network.vifs.size).to eq 1
-      expect(network.vifs.first.uuid).to eq vif.uuid
+        expect(network.vifs.size).to eq 1
+        expect(network.vifs.first.uuid).to eq vif.uuid
+      end
     end
   end
 
   describe "PUT /:uuid/detach_vif" do
-    it "should return 404 error" do
-      put "/networks/nw-notfound/detach_vif"
-      # TODO should be 404
-      #expect(last_response.status).to eq 404
-      expect(last_response.status).to eq 500
-    end
-
-    it "should return 404 error" do
-      network = Fabricate(:network)
-      put "/networks/#{network.canonical_uuid}/detach_vif", :vif_uuid => "vif-notfound"
-      # TODO should be 404
-      #expect(last_response.status).to eq 404
-      expect(last_response.status).to eq 500
-    end
-
-    it "should detach vif to network" do
-      vif = Fabricate(:vif) do
-        network
+    context "with a nonexistant network uuid" do
+      it "should return 404 error" do
+        put "/networks/nw-notfound/detach_vif"
+        expect(last_response.status).to eq 404
       end
-      network = vif.network
-      expect(network.vifs.size).to eq 1
+    end
 
-      put "/networks/#{network.canonical_uuid}/detach_vif", :vif_uuid => vif.canonical_uuid
+    context "with a nonexistant vif uuid" do
+      let!(:network) { Fabricate(:network) }
+      it "should return 404 error" do
+        put "/networks/#{network.canonical_uuid}/detach_vif", :vif_uuid => "vif-notfound"
+        expect(last_response.status).to eq 404
+      end
+    end
 
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body["uuid"]).to eq network.canonical_uuid
+    context "with an existing network uuid and an existing vif uuid" do
+      let!(:vif) { Fabricate(:vif) {network} }
+      let(:network) { vif.network }
 
-      network.reload
-      expect(network.vifs).to be_empty
+      it "should detach vif from network" do
+        expect(network.vifs.size).to eq 1
+
+        put "/networks/#{network.canonical_uuid}/detach_vif", :vif_uuid => vif.canonical_uuid
+
+        expect(last_response).to be_ok
+        body = JSON.parse(last_response.body)
+        expect(body["uuid"]).to eq network.canonical_uuid
+
+        network.reload
+        expect(network.vifs).to be_empty
+      end
     end
   end
 end
