@@ -78,7 +78,11 @@ describe "/networks" do
 
     context "with the uuid parameter" do
       it "should create a network with the given uuid" do
-        post "/networks", { :uuid => "nw-testnw" }
+        post "/networks", {
+          display_name: "network",
+          ipv4_network: "192.168.10.1",
+          uuid: "nw-testnw"
+        }
 
         expect(last_response).to be_ok
         body = JSON.parse(last_response.body)
@@ -92,11 +96,28 @@ describe "/networks" do
         expect(last_response.status).to eq 400
       end
     end
+
+    context "without the 'display_name' parameter" do
+      it "should return a 400 error" do
+        post "/networks", {
+          :ipv4_network => "192.168.10.1"
+        }
+        expect(last_response.status).to eq 400
+      end
+    end
+
+    context "without the 'ipv4_network' parameter" do
+      it "should return a 500 error" do
+        post "/networks", {
+          display_name: "network"
+        }
+      end
+    end
   end
 
   describe "DELETE /:uuid" do
     context "with a nonexistant uuid" do
-      it "should return 404 error" do
+      it "should return a 404 error" do
         delete "/networks/nw-notfound"
         expect(last_response.status).to eq 404
       end
@@ -116,7 +137,7 @@ describe "/networks" do
 
   describe "PUT /:uuid" do
     context "with a nonexistant uuid" do
-      it "should return 404 error" do
+      it "should return a 404 error" do
         put "/networks/nw-notfound"
         expect(last_response.status).to eq 404
       end

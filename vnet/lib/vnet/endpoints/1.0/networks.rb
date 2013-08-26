@@ -5,6 +5,7 @@ require 'ipaddr'
 Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   post do
     params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
+    required_params(params, ["display_name", "ipv4_network"])
 
     if params.has_key?("uuid")
       check_uuid_syntax(M::Network, params["uuid"])
@@ -50,8 +51,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
 
   put '/:uuid' do
     params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
-    check_uuid_syntax(M::Network, params["uuid"])
-    M::Network[params["uuid"]] || raise(E::UnknownUUIDResource, params["uuid"])
+    check_syntax_and_pop_uuid(M::Network, params)
 
     nw = M::Network.batch do |n|
       n[@params[:uuid]].update(params)

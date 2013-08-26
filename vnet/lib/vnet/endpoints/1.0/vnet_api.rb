@@ -12,7 +12,7 @@ module Vnet::Endpoints::V10
     E = Vnet::Endpoints::Errors
     R = Vnet::Endpoints::V10::Responses
 
-    def pop_uuid(model, params, key)
+    def pop_uuid(model, params, key = "uuid")
       uuid = params.delete(key)
       model[uuid] || raise(E::UnknownUUIDResource, uuid)
     end
@@ -21,9 +21,20 @@ module Vnet::Endpoints::V10
       model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, uuid)
     end
 
+    def check_syntax_and_pop_uuid(model, params, key = "uuid")
+      check_uuid_syntax(model, params[key])
+      pop_uuid(model, params, key)
+    end
+
     def parse_params(params, mask)
       params.keys.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |key, h|
         h[key] = params[key] if mask.member?(key)
+      end
+    end
+
+    def required_params(params, mask)
+      mask.each do |key|
+        raise E::MissingArgument, key if params[key].nil? || params[key].empty?
       end
     end
 
