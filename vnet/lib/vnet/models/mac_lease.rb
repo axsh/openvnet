@@ -4,6 +4,7 @@ module Vnet::Models
   class MacLease < Base
     taggable 'ml'
 
+    many_to_one :mac_address
     many_to_one :interface
   end
 end

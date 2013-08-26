@@ -102,6 +102,33 @@ Sequel.migration do
       FalseClass :is_deleted, :null=>false
     end
 
+    create_table(:mac_addresses) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Bignum :mac_address, :unique => true, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
+    create_table(:mac_leases) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :interface_id, :index => true
+      Integer :mac_address_id, :index => true
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
+    create_table(:mac_ranges) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Bignum :vendor_id, :null=>false
+      Bignum :range_begin, :null=>false
+      Bignum :range_end, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
     create_table(:networks) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -125,25 +152,6 @@ Sequel.migration do
       String :display_name, :index => true, :null=>false
       Integer :incoming_port
       Integer :outgoing_port
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
-    create_table(:mac_leases) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Bignum :mac_addr, :unique => true, :null=>false
-      Integer :interface_id, :index => true
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
-    create_table(:mac_ranges) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Bignum :vendor_id, :null=>false
-      Bignum :range_begin, :null=>false
-      Bignum :range_end, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -197,10 +205,11 @@ Sequel.migration do
                :interfaces,
                :ip_leases,
                :ip_addresses,
-               :networks,
-               :network_services,
+               :mac_addresses,
                :mac_leases,
                :mac_ranges,
+               :networks,
+               :network_services,
                :open_flow_controllers,
                :routes,
                :route_links,
