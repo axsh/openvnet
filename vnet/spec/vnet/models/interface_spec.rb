@@ -25,11 +25,11 @@ describe Vnet::Models::Interface do
   end
 
   it "has owner_datapath_id 2" do
-    expect(subject.owner_datapath.id).to eq 2
+    expect(subject.owner_datapath.id).to eq 1
   end
 
   it "should find an entry by name" do
-    expect(Vnet::Models::Interface.find(:name => 'vif-test')).to eq subject
+    expect(Vnet::Models::Interface.find(:name => 'if-test')).to eq subject
   end
 
   it "has multiple ip lease entries" do

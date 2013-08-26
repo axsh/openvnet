@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 Fabricator(:ip_address_1, class_name: Vnet::Models::IpAddress) do
+  uuid 'ip-address1'
   ipv4_address 1
 end
 

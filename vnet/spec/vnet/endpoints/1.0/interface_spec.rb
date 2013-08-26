@@ -18,10 +18,10 @@ describe "/ifaces" do
       params = {
         name: 'vif-test',
         mode: 'virtual',
-        #network_id: network.canonical_uuid,
+        network_uuid: network.canonical_uuid,
       }
 
-      post "/ifaces", params
+      post "/interfaces", params
 
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)

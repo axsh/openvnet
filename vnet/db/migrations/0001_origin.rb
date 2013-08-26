@@ -96,7 +96,6 @@ Sequel.migration do
       Integer :network_id, :index => true, :null => false
       Integer :interface_id, :index => true, :null => false
       Integer :ip_address_id, :index => true, :null=>false
-      Integer :alloc_type
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :null=>false

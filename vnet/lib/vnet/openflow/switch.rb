@@ -186,8 +186,8 @@ module Vnet::Openflow
           raise("Unknown network type.")
         end
 
-        port.hw_addr = Trema::Mac.new(interface_map.mac_addr)
-        port.ipv4_addr = IPAddr.new(interface_map.ipv4_address, Socket::AF_INET) if interface_map.ipv4_address
+        port.hw_addr = Trema::Mac.new(interface_map.batch.mac_addr.commit)
+        port.ipv4_addr = IPAddr.new(interface_map.batch.ipv4_address.commit.first, Socket::AF_INET)
 
         interface_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
 

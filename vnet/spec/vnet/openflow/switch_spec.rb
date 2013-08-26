@@ -53,7 +53,6 @@ describe Vnet::Openflow::Switch do
       end
     end
 
-    #TODO
     context "eth" do
       before do
         Fabricate(:eth0)
@@ -83,6 +82,35 @@ describe Vnet::Openflow::Switch do
         switch.handle_port_desc(port_desc)
 
         expect(switch.get_port(1)).to eq port
+      end
+    end
+
+    context "vif" do
+      before do
+        vnet = Fabricate(:vnet_1)
+        Fabricate(:datapath_1)
+        iface = Fabricate(:iface_2, network: vnet)
+        ip_addr = Fabricate(:ip_address_1)
+        Fabricate(:mac_lease, interface: iface)
+        Fabricate(:ip_lease_1, ip_address: ip_addr, interface: iface)
+      end
+
+      it "creates an instance of interface when the switch receives port_status" do
+        network = double(:network)
+        network.should_receive(:add_port)
+        network.should_receive(:class).twice.and_return(Vnet::Openflow::NetworkVirtual)
+        nm = double(:network_manager)
+        nm.should_receive(:network_by_uuid).and_return(network)
+        Vnet::Openflow::NetworkManager.stub(:new).and_return(nm)
+
+        dp = MockDatapath.new(double, 1)
+        switch = dp.create_mock_switch
+
+        port_desc = double(:port_desc)
+        port_desc.should_receive(:port_no).exactly(9).times.and_return(2)
+        port_desc.should_receive(:name).exactly(3).times.and_return('if-testuuid')
+
+        switch.handle_port_desc(port_desc)
       end
     end
   end
