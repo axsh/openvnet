@@ -49,20 +49,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
+    params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
+    check_uuid_syntax(M::Network, params["uuid"])
+    M::Network[params["uuid"]] || raise(E::UnknownUUIDResource, params["uuid"])
+
     nw = M::Network.batch do |n|
       n[@params[:uuid]].update(params)
     end
-    respond_with(R::Network.generate(nw))
-  end
-
-  put '/:uuid/attach_vif' do
-    nw = M::Network.attach_vif(@params[:uuid], @params[:vif_uuid])
-    respond_with(R::Network.generate(nw))
-  end
-
-  put '/:uuid/detach_vif' do
-    nw = M::Network.detach_vif(@params[:uuid], @params[:vif_uuid])
     respond_with(R::Network.generate(nw))
   end
 end
