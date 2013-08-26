@@ -68,9 +68,7 @@ describe "/networks" do
   describe "DELETE /:uuid" do
     it "should return 404 error" do
       delete "/networks/nw-notfound"
-      # TODO should be 404
-      #expect(last_response.status).to eq 404
-      expect(last_response.status).to eq 500
+      expect(last_response.status).to eq 404
     end
 
     it "should delete a network" do
