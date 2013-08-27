@@ -19,13 +19,13 @@ describe "/networks" do
     end
 
     context "with 3 networks in the database" do
-      (1..3).each do |i|
-        let!("nw#{i}".to_sym) {
+      before(:each) {
+        3.times do
           Fabricate(:network) do
             ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
           end
-        }
-      end
+        end
+      }
 
       it "should return 3 networks" do
         get "/networks"
