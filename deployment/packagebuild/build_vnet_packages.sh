@@ -6,7 +6,7 @@ set -e
 
 package=$1
 work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
-repo_base_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6
+repo_base_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/vnet
 repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
