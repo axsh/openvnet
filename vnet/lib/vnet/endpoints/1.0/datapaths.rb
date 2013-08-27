@@ -59,7 +59,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     required_params(@params, ['link_mac_address'])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
-    route_link = pop_uuid(M::RouteLink, params, 'route_link_uuid')
+    route_link = check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid')
 
     link_mac_address = parse_mac(params['link_mac_address'])
     if link_mac_address.nil?
