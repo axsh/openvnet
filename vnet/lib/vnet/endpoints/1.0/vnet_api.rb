@@ -21,6 +21,15 @@ module Vnet::Endpoints::V10
       model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, uuid)
     end
 
+    def check_and_trim_uuid(model, params)
+      if params.has_key?("uuid")
+        check_uuid_syntax(model, params["uuid"])
+        raise E::DuplicateUUID, params["uuid"] unless model[params["uuid"]].nil?
+
+        params["uuid"] = model.trim_uuid(params["uuid"])
+      end
+    end
+
     def check_syntax_and_pop_uuid(model, params, key = "uuid")
       check_uuid_syntax(model, params[key])
       pop_uuid(model, params, key)
