@@ -66,11 +66,10 @@ describe "/datapaths" do
         }
         post "/datapaths", params
 
-        expect(last_response).to be_ok
         body = JSON.parse(last_response.body)
         expect(body["display_name"]).to eq "datapath"
-        expect(body["ipv4_datapath"]).to eq IPAddr.new("192.168.10.1").to_i
-        expect(body["ipv4_prefix"]).to eq 24
+        expect(body["dpid"]).to eq "0x0000aaaaaaaaaaaa"
+        expect(body["node_id"]).to eq "vna1"
       end
     end
 
