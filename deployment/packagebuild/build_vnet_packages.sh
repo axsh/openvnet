@@ -3,6 +3,7 @@
 # dependencies: make git gcc gcc-c++ yum-utils
 #
 set -e
+set -x
 
 package=$1
 work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
@@ -13,21 +14,22 @@ fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
 possible_archs="i386 noarch x86_64"
 
 function build_all_packages(){
-  find ${current_dir}/recipes -mindepth 1 -maxdepth 1 -type d | while read line; do
+  find ${current_dir}/packages.d/vnet -mindepth 1 -maxdepth 1 -type d | while read line; do
     build_package $(basename ${line})
   done
 }
 
 function build_package(){
   local name=$1
-  local recipe_dir=${current_dir}/recipes/${name}
+  local recipe_dir=${current_dir}/packages.d/vnet/${name}
+  local package_work_dir=${work_dir}/packages.d/vnet/${name}
   [[ -f ${recipe_dir}/recipe.rb ]] || {
     echo "recipe for ${name} not found"; exit 1;
   }
-  mkdir ${work_dir}/recipes/${name}
-  (cd ${recipe_dir}; ${fpm_cook_cmd} --workdir ${work_dir}/recipes/${name} --no-deps)
+  mkdir ${package_work_dir}
+  (cd ${recipe_dir}; ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
   for arch in ${possible_archs}; do
-    cp ${work_dir}/recipes/${name}/pkg/*${arch}.rpm ${repo_dir}/${arch} | :
+    cp ${package_work_dir}/pkg/*${arch}.rpm ${repo_dir}/${arch} | :
   done
 }
 
@@ -44,8 +46,8 @@ function check_repo(){
   done
 }
 
-rm -rf ${work_dir}/recipes
-mkdir -p ${work_dir}/recipes
+rm -rf ${work_dir}/packages.d/vnet
+mkdir -p ${work_dir}/packages.d/vnet
 
 check_repo
 
