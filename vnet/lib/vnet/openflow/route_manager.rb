@@ -75,7 +75,7 @@ module Vnet::Openflow
       link = @route_links[rl_map.id]
       return link if link
 
-      mac_address = Trema::Mac.new(rl_map.mac_address)
+      mac_address = Trema::Mac.new(rl_map.mac_addr)
       packet_handler = Routers::RouteLink.new(datapath: @datapath,
                                               route_link_id: rl_map.id,
                                               mac_address: mac_address)

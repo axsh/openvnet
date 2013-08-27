@@ -183,7 +183,7 @@ Sequel.migration do
     create_table(:route_links) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Bignum :mac_address, :null=>false
+      Integer :mac_address_id, :index => true, :null=>false
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
