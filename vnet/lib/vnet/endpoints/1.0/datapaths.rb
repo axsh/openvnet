@@ -29,7 +29,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["uuid", "display_name", "ipv4_address", "is_connected", "dpid", "dc_segment_id", "node_id"])
+    params = parse_params(@params, ["uuid", "display_name", "ipv4_address",
+      "is_connected", "dpid", "dc_segment_id", "node_id"])
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
 
     datapath.batch.update(params).commit
@@ -37,15 +38,19 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     respond_with(R::Datapath.generate(updated_dp))
   end
 
-  #TODO: rename to add_network
   #TODO: Add equivalent delete_network method
-  put '/:uuid/networks' do
+  post '/:uuid/network/:network_uuid' do
     params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_address'])
+    required_params(params, ["broadcast_mac_address", "network_uuid]")
 
-    datapath = M::Datapath[params['uuid']] || raise(E::UnknownUUIDResource, params['uuid'])
-    network = M::Network[params['network_uuid']] || raise(E::UnknownUUIDResource, params['network_uuid'])
+    datapath = check_syntax_and_pop_uuid(M::Datapath, params)
+    network = check_syntax_and_pop_uuid(M::Network, params, 'network_uuid')
 
-    broadcast_mac_address = parse_mac(params['broadcast_mac_address']) || raise(E::MissingArgument, 'broadcast_mac_address')
+    broadcast_mac_address = parse_mac(params['broadcast_mac_address'])
+    if broadcast_mac_address.nil?
+      error_msg = "invalid broadcast_mac_address: '#{params[broadcast_mac_address]}'"
+      raise(E::ArgumentError, error_msg)
+    end
 
     M::DatapathNetwork.create({ :datapath_id => datapath.id,
                                 :network_id => network.id,
@@ -56,7 +61,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
 
   put '/:uuid/route_links' do
     params = parse_params(@params, ['uuid', 'route_link_uuid', 'link_mac_address'])
-    required_params(@params, ['link_mac_address'])
+    required_params(params, ['link_mac_address'])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
     route_link = check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid')
