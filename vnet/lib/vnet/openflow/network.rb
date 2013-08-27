@@ -63,7 +63,7 @@ module Vnet::Openflow
         :uuid => datapath_map.uuid,
         :display_name => datapath_map.display_name,
         :ipv4_address => datapath_map.ipv4_address,
-        :datapath_id => datapath_map.dpid,
+        :datapath_id => datapath_map.id,
       }
 
       if dpn_map
@@ -80,24 +80,34 @@ module Vnet::Openflow
       end
 
       translated_map = {
-        :datapath => self.datapath,
+        :datapath => @datapath,
         :network => self, # Deprecate...
         :network_id => @network_id,
-        :network_uuid => @network_uuid,
+        :network_uuid => @uuid,
+        :network_type => self.network_type,
         :interface_uuid => service_map.interface.uuid,
-        :service_mac => Trema::Mac.new(service_map.interface.mac_addr),
-        :service_ipv4 => IPAddr.new(service_map.interface.ipv4_address, Socket::AF_INET)
+        :active_datapath_id => service_map.vif.active_datapath_id,
+        :service_mac => Trema::Mac.new(service_map.vif.mac_addr),
+        :service_ipv4 => IPAddr.new(service_map.vif.ipv4_address, Socket::AF_INET)
       }
 
       info "network(#{@uuid}): creating service '#{service_map.display_name}'"
 
       service = case service_map.display_name
-                when 'dhcp'   then Vnet::Openflow::Services::Dhcp.new(translated_map)
-                when 'router' then Vnet::Openflow::Services::Router.new(translated_map)
+                when 'arp_lookup' then Vnet::Openflow::Services::ArpLookup.new(translated_map)
+                when 'dhcp'       then Vnet::Openflow::Services::Dhcp.new(translated_map)
+                when 'router'     then Vnet::Openflow::Services::Router.new(translated_map)
                 else
                   error "network(#{@uuid}): failed to create service '#{service_map.uuid}'"
                   return
                 end
+
+      @service_cookies[service_map.uuid] = cookie
+
+      if translated_map[:active_datapath_id] &&
+          translated_map[:active_datapath_id] != @datapath_of_bridge[:datapath_id]
+        return
+      end
 
       pm = @datapath.packet_manager
 

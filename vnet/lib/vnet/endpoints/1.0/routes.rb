@@ -3,7 +3,14 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
 
   post do
-    params = parse_params(@params, ["uuid", "interface_uuid", "route_link_uuid", "ipv4_address", "ipv4_prefix"])
+    params = parse_params(@params, ["uuid",
+                                    "interface_uuid",
+                                    "route_link_uuid",
+                                    "ipv4_address",
+                                    "ipv4_prefix",
+                                    "ingress",
+                                    "egress"
+                                    ])
 
     if params.has_key?("uuid")
       raise E::DuplicateUUID, params["uuid"] unless M::Route[params["uuid"]].nil?
@@ -17,6 +24,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     params['route_link_id'] = (M::RouteLink[route_link_uuid] || raise(E::InvalidUUID, route_link_uuid)).id
 
     params['ipv4_address'] = parse_ipv4(params['ipv4_address'] || raise(E::MissingArgument, 'ipv4_address'))
+    params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
+
+    params['ingress'] = params['ingress'].to_i if params['ingress']
+    params['egress'] = params['egress'].to_i if params['egress']
 
     route = M::Route.create(params)
     respond_with(R::Route.generate(route))

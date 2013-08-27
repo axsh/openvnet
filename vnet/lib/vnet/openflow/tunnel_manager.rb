@@ -25,13 +25,13 @@ module Vnet::Openflow
     def create_all_tunnels
       debug "creating tunnel ports"
 
-      dp_map = Vnet::ModelWrappers::Datapath.first(:dpid => "0x%016x" % @datapath.dpid)
+      dp_map = MW::Datapath.first(:dpid => "0x%016x" % @datapath.dpid)
 
       raise "Datapath not found: #{'0x%016x' % @datapath.dpid}" unless dp_map
 
       @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
-        tunnel = Vnet::ModelWrappers::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
+        tunnel = MW::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
         @datapath.add_tunnel(tunnel_name, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
         tunnel.to_hash.tap do |t|
           t[:dst_dpid] = target_dp_map.dpid
@@ -221,7 +221,7 @@ module Vnet::Openflow
       if tunnel[:datapath_networks].empty?
         debug "delete tunnel #{tunnel[:display_name]}"
         @datapath.delete_tunnel(tunnel[:display_name])
-        t = Vnet::ModelWrappers::Tunnel[:display_name => tunnel[:display_name]]
+        t = MW::Tunnel[:display_name => tunnel[:display_name]]
         t.batch.destroy.commit
       else
         debug "tunnel datapath is not empty"

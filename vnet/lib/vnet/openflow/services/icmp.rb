@@ -14,7 +14,7 @@ module Vnet::Openflow::Services
     def insert_interface(uuid, network, interface_map)
       return if @entries[uuid]
 
-      debug "service::icmp.insert: uuid:#{uuid} interface_map:#{interface_map.inspect}"
+      debug "service::icmp.insert: network:#{network.uuid}/#{network.network_id} vif_uuid:#{uuid}"
 
       @entries[uuid] = {
         :network_number => interface_map.network_id,

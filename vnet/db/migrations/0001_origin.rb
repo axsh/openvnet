@@ -173,6 +173,9 @@ Sequel.migration do
       Bignum :ipv4_address, :null => false
       Integer :ipv4_prefix, :default => 24, :null => false
 
+      Boolean :ingress, :default => true, :null => false
+      Boolean :egress,  :default => true, :null => false
+
       DateTime :created_at, :null => false
       DateTime :updated_at, :null => false
     end

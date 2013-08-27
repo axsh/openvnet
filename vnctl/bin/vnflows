@@ -79,6 +79,15 @@ class Flow
     end
   end
 
+  def md_has_flag(flag, value, mask = nil)
+    mask = value if mask.nil?
+    (value & (mask & flag)) == flag
+  end
+
+  def md_has_not_flag(flag, value, mask)
+    (~value & (mask & flag)) == flag
+  end
+
   def metadata_to_pretty(value, mask)
     result = ''
 
@@ -89,18 +98,23 @@ class Flow
     case value & (mask & (METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE))
     when METADATA_FLAG_LOCAL  then result << 'LOCAL|'
     when METADATA_FLAG_REMOTE then result << 'REMOTE|'
+    when (METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE) then result << 'REMOTE+LOCAL|'
     end
 
     case value & (mask & (METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL))
     when METADATA_FLAG_VIRTUAL  then result << 'VIRTUAL|'
     when METADATA_FLAG_PHYSICAL then result << 'PHYSICAL|'
+    when (METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL) then result << 'PHYSICAL+VIRTUAL|'
     end
 
-    result << 'VIF|'   if (value & (mask & METADATA_FLAG_VIF)) == METADATA_FLAG_VIF
-    result << 'FLOOD|' if (value & (mask & METADATA_FLAG_FLOOD)) == METADATA_FLAG_FLOOD
+    result << 'VIF|'        if md_has_flag(METADATA_FLAG_VIF, value, mask)
+    result << 'FLOOD|'      if md_has_flag(METADATA_FLAG_FLOOD, value, mask)
+    result << 'MAC2MAC|'    if md_has_flag(METADATA_FLAG_MAC2MAC, value, mask)
+    result << 'TUNNEL|'     if md_has_flag(METADATA_FLAG_TUNNEL, value, mask)
+    result << 'REFLECTION|' if md_has_flag(METADATA_FLAG_REFLECTION, value, mask)
 
-    result << 'MAC2MAC|' if (value & (mask & METADATA_FLAG_MAC2MAC)) == METADATA_FLAG_MAC2MAC
-    result << 'TUNNEL|'  if (value & (mask & METADATA_FLAG_TUNNEL)) == METADATA_FLAG_TUNNEL
+    result << 'NO_CONTROLLER|'  if md_has_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
+    result << '!NO_CONTROLLER|' if md_has_not_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
 
     result.chomp('|')
   end

@@ -7,28 +7,48 @@ include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::NetworkVirtual do
 
-  describe "update_flows" do
-    before { Fabricate(:vnet_1) }
-    let(:vnet) { Vnet::Openflow::NetworkVirtual.new(datapath, Vnet::ModelWrappers::Network["nw-aaaaaaaa"]) }
+  before(:all) do
+    Fabricate('vnet_1')
+    Fabricate('datapath_1')
+  end
 
-    let(:datapath) do
-      MockDatapath.new(double(:ofc), ("a" * 16).to_i(16)).tap do |datapath|
-        tunnel_manager = Vnet::Openflow::TunnelManager.new(datapath)
+  describe "install vnet_1 without broadcast_mac_addr" do
 
-        cookie_manager = Vnet::Openflow::CookieManager.new
-        cookie_manager.create_category(:tunnel, 0x6, 48)
+    let(:vnet_map) { Vnet::ModelWrappers::Network['nw-aaaaaaaa'] }
+    let(:datapath) { MockDatapath.new(double(:ofc), ("a" * 16).to_i) }
+    let(:flow_options) { {:cookie => vnet_map.network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)} }
+    let(:flood_md) { flow_options.merge(subject.md_network(:network, :flood => nil)) }
+    let(:any_network_md) { flow_options.merge(subject.md_network(:network, :virtual =>nil)) }
+    let(:flows) { datapath.added_flows }
 
-        tunnel_port = double(:tunnel_port)
-        tunnel_port.should_receive(:port_number).exactly(2).and_return(10)
+    subject { Vnet::Openflow::NetworkVirtual.new(datapath, vnet_map) }
 
-        switch = double(:switch)
-        switch.should_receive(:cookie_manager).and_return(cookie_manager)
-        switch.should_receive(:eth_ports).and_return([])
-        switch.should_receive(:tunnel_ports).and_return([tunnel_port])
-        switch.should_receive(:tunnel_manager).and_return(tunnel_manager)
-
-        datapath.switch = switch
-      end
+    it "has flows for destination filtering" do
+      subject.install
+      expect(flows[0]).to eq Vnet::Openflow::Flow.create(
+        TABLE_TUNNEL_NETWORK_IDS,
+        30,
+        {:tunnel_id => 1 | TUNNEL_FLAG_MASK},
+        nil,
+        any_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+      expect(flows[1]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_CLASSIFIER,
+        40,
+        subject.md_network(:virtual_network),
+        {},
+        flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
+      expect(flows[2]).to eq Vnet::Openflow::Flow.create(
+        TABLE_VIRTUAL_DST,
+        40,
+        subject.md_network(:network, :local => nil).merge!(:eth_dst => MAC_BROADCAST),
+        {},
+        flood_md.merge(:goto_table => TABLE_METADATA_ROUTE))
+      expect(flows[3]).to eq Vnet::Openflow::Flow.create(
+        TABLE_VIRTUAL_DST,
+        30,
+        subject.md_network(:network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST),
+        {},
+        flood_md.merge(:goto_table => TABLE_METADATA_LOCAL))
     end
   end
 end

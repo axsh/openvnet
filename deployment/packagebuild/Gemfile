@@ -1,2 +1,3 @@
 source "http://rubygems.org"
 gem 'fpm'
+gem 'fpm-cookery', :git => "https://github.com/axsh/fpm-cookery", :branch => "wakame-vnet"

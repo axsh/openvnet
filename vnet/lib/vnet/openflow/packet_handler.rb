@@ -24,29 +24,39 @@ module Vnet::Openflow
 
     def catch_flow(type, match, params = {})
       case type
+      when :arp_lookup
+        table = TABLE_ARP_LOOKUP
+        priority = 20
+        match = match.merge(md_create({ :network => params[:network_id],
+                                        :not_no_controller => nil,
+                                        params[:network_type] => nil
+                                      }))
+      when :network
+        table = case params[:network_type]
+                when :physical then TABLE_PHYSICAL_DST
+                when :virtual  then TABLE_VIRTUAL_DST
+                else
+                  raise "Invalid network type value."
+                end
+        priority = 70
+        match = match.merge(md_create(:network => params[:network_id]))
       when :physical_local
         table = TABLE_PHYSICAL_DST
         priority = 70
-        match = match.merge(params[:network].md_network(:network, {
-                                                          # :local => nil,
-                                                          # :interface => nil
-                                                        }))
+        match = match.merge(params[:network].md_network(:network))
       when :virtual_local
         table = TABLE_VIRTUAL_DST
         priority = 70
-        match = match.merge(params[:network].md_network(:network, {
-                                                          :local => nil,
-                                                          :interface => nil
-                                                        }))
+        match = match.merge(params[:network].md_network(:network))
       else
         raise "Wrong type for catch_flow."
       end
 
-      self.datapath.add_flow(Flow.create(table, priority, match, {
-                                           :output => Controller::OFPP_CONTROLLER
-                                         }, {
-                                           :cookie => @cookie
-                                         }))
+      @datapath.add_flow(Flow.create(table, priority, match, {
+                                       :output => Controller::OFPP_CONTROLLER
+                                     }, {
+                                       :cookie => @cookie
+                                     }))
     end
 
     def catch_network_flow(network, match, params = {})
@@ -79,9 +89,19 @@ module Vnet::Openflow
       #   debug "send arp: layer:#{l.pretty}."
       # }
 
-      message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
+      packet_params = {
+        :data => raw_out.pack.ljust(64, '\0').unpack('C*')
+      }
 
-      self.datapath.send_packet_out(message, params[:out_port])
+      if params[:in_port]
+        packet_params[:datapath_id] = @datapath.dpid
+        packet_params[:buffer_id] = OFP_NO_BUFFER
+        packet_params[:match] = Trema::Match.new(:in_port => params[:in_port])
+      end
+
+      message = Trema::Messages::PacketIn.new(packet_params)
+
+      @datapath.send_packet_out(message, params[:out_port])
     end
 
     def icmpv4_in(message)
@@ -138,7 +158,7 @@ module Vnet::Openflow
 
       message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
 
-      self.datapath.send_packet_out(message, params[:out_port])
+      @datapath.send_packet_out(message, params[:out_port])
     end
 
     def udp_in(message)
@@ -178,7 +198,7 @@ module Vnet::Openflow
 
       message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
 
-      self.datapath.send_packet_out(message, params[:out_port])
+      @datapath.send_packet_out(message, params[:out_port])
     end
 
   end

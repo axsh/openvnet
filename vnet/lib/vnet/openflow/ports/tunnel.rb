@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Ports
 
-  module PortTunnel
-    include FlowHelpers
+  module Tunnel
+    include Vnet::Openflow::FlowHelpers
 
     def flow_options
       @flow_options ||= {:cookie => @cookie}
@@ -22,7 +22,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_ENTRY))
+                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
 
       @datapath.add_flows(flows)
       @datapath.tunnel_manager.add_port(self)

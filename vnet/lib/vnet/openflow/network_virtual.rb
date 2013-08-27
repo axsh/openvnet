@@ -4,13 +4,9 @@ module Vnet::Openflow
 
   class NetworkVirtual < Network
 
-    # metadata[ 0-31]: Port number; only set to non-zero when the
-    #                  in_port is not a local port. This allows us to
-    #                  differentiate between packets that are from
-    #                  external sources and those that are from
-    #                  internal interfaces.
-    # metadata[32-47]: Network id;
-    # metadata[48-64]: Tunnel id; preliminary.
+    def network_type
+      :virtual
+    end
 
     def flow_options
       @flow_options ||= {:cookie => @cookie}
@@ -30,10 +26,10 @@ module Vnet::Openflow
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
       flows << Flow.create(TABLE_VIRTUAL_DST, 40,
                            md_network(:network, :local => nil).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flood_md.merge!(:goto_table => TABLE_METADATA_ROUTE))
+                           flood_md.merge(:goto_table => TABLE_METADATA_ROUTE))
       flows << Flow.create(TABLE_VIRTUAL_DST, 30,
                            md_network(:network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flood_md.merge!(:goto_table => TABLE_METADATA_LOCAL))
+                           flood_md.merge(:goto_table => TABLE_METADATA_LOCAL))
 
       if self.broadcast_mac_addr
         nw_virtual_md = flow_options.merge(md_network(:virtual_network))
@@ -87,7 +83,7 @@ module Vnet::Openflow
 
       flow_learn_arp << learn_options
 
-      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTER_ENTRY
+      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTER_CLASSIFIER
       flow_learn_arp
     end
   end
