@@ -49,9 +49,14 @@ clean:
 	rm -rf $(CURDIR)/vnet/vendor
 	rm -rf $(CURDIR)/vnet/.bundle
 
-build-rpm: install-bundle clean-bundle
+build-rpm: build-vnet-rpm build-third-party-rpm
+
+build-vnet-rpm: install-bundle clean-bundle
 	(cd $(CURDIR)/deployment/packagebuild; bundle install --path vendor/bundle --binstubs)
-	$(CURDIR)/deployment/packagebuild/build_package.sh
+	$(CURDIR)/deployment/packagebuild/build_vnet_packages.sh
+
+build-third-party-rpm:
+	$(CURDIR)/deployment/packagebuild/build_third_party_packages.sh
 
 test-rpm-install:
 	$(CURDIR)/deployment/packagebuild/test-rpm-install.sh
