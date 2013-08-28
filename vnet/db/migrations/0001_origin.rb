@@ -142,7 +142,7 @@ Sequel.migration do
     create_table(:routes) do
       primary_key :id
       String :uuid, :unique => true, :null => false
-      Integer :vif_id, :index => true, :null => false
+      Integer :vif_id, :index => true
       Integer :route_link_id, :index => true, :null => false
 
       String :route_type, :default => 'gateway', :null => false
@@ -180,6 +180,8 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true
       Bignum :mac_addr, :null=>false
+
+      String :mode, :default => 'vif',:null => false
 
       # Should be a relation allowing for multiple active/owner
       # datapath ids.

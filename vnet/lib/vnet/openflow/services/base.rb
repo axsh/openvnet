@@ -11,7 +11,7 @@ module Vnet::Openflow::Services
     def install
     end
 
-    def packet_in(port, message)
+    def packet_in(message)
     end
 
   end

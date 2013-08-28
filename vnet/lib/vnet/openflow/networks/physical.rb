@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Networks
 
-  class NetworkPhysical < Network
+  class Physical < Base
 
     def network_type
       :physical
@@ -29,17 +29,17 @@ module Vnet::Openflow
                            nil,
                            flow_options.merge(flood_md).merge(:goto_table => TABLE_METADATA_ROUTE))
 
-      self.datapath.add_flows(flows)
+      @datapath.add_flows(flows)
     end
 
     def update_flows
-      remote_actions = @ports.collect { |key,port|
-        {:output => port.port_number}
+      remote_actions = @ports.collect { |port_number, port|
+        {:output => port_number}
       }
-      local_actions = @ports.select { |key, port|
-        !port.eth?
-      }.collect { |key, port|
-        {:output => port.port_number}
+      local_actions = @ports.select { |port_number, port|
+        port[:mode] == :vif || port[:mode] == :local
+      }.collect { |port_number, port|
+        {:output => port_number}
       }
 
       flows = []
@@ -52,7 +52,7 @@ module Vnet::Openflow
                            local_actions,
                            flow_options)
 
-      self.datapath.add_flows(flows)
+      @datapath.add_flows(flows)
     end
 
   end
