@@ -4,11 +4,11 @@ class WakameVnetVna < FPM::Cookery::Recipe
   homepage 'https://github.com/axsh/wakame-vnet/'
   version  '0.0.1'
   #source   'https://github.com/axsh/wakame-vnet/', :with => :git
-  source   File.expand_path("../../../../", File.dirname(__FILE__)), :with => :local_path
+  source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
   arch 'all'
   depends *%w(
     libpcap-devel
-    wakame-vnet-openvswitch
+    openvswitch
     wakame-vnet-common
   )
 
