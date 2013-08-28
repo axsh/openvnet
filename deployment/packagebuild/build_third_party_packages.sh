@@ -12,6 +12,7 @@ repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
 possible_archs="i386 noarch x86_64"
+keep_fpm_workdirs=5
 
 function build_all_packages(){
   find ${current_dir}/packages.d/third_party -mindepth 1 -maxdepth 1 -type d | while read line; do
@@ -47,9 +48,9 @@ function check_repo(){
 }
 
 function cleanup(){
-  rm -rf package-dir-build*
-  rm -rf package-dir-staging*
-  rm -rf package-rpm-build*
+  for s in package-dir-build package-dir-staging package-rpm-build; do
+    find /tmp -mindepth 1 -maxdepth 1 -type d -mtime +1 -name "${s}*" -exec rm -rf {} \;
+  done
 }
 
 rm -rf ${work_dir}/packages.d/third_party
