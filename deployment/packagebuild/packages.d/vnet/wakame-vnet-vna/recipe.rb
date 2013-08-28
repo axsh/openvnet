@@ -8,7 +8,7 @@ class WakameVnetVna < FPM::Cookery::Recipe
   arch 'all'
   depends *%w(
     libpcap-devel
-    wakame-vnet-openvswitch
+    openvswitch
     wakame-vnet-common
   )
 
