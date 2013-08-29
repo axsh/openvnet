@@ -3,22 +3,13 @@
 module Vnctl::Cli
   class RouteLink < Base
     namespace :route_link
-    api_suffic "/api/route_links"
+    api_suffix "/api/route_links"
+
+    option_uuid
+    option :mac_address, :type => :string, :desc => "The mac address for this route link."
+    define_add
+
+    define_show
+    define_del
   end
-
-  no_tasks {
-    def self.add_modify_shared_options
-      option :mac_address, :type => :string, :desc => "The mac address for this route link."
-    end
-  }
-
-  option_uuid
-  add_modify_shared_options
-  define_add
-
-  add_modify_shared_options
-  define_modify
-
-  define_show
-  define_del
 end
