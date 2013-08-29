@@ -46,6 +46,26 @@ module Vnctl::Cli
         end
       end
 
+      def self.add_modify_shared_options(&blk)
+        if block_given?
+          @shared_options = blk
+        else
+          @shared_options.call
+        end
+      end
+
+      def self.define_standard_crud_commands
+        option_uuid
+        add_modify_shared_options
+        define_add
+
+        add_modify_shared_options
+        define_modify
+
+        define_show
+        define_del
+      end
+
       def self.api_suffix(suffix = nil)
         @api_suffix = suffix unless suffix.nil?
         @api_suffix

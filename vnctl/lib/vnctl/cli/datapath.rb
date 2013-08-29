@@ -5,26 +5,16 @@ module Vnctl::Cli
     namespace :datapath
     api_suffix "/api/datapaths"
 
-    no_tasks {
-      def self.add_modify_shared_options
-        option_display_name
-        option :is_connected, :type => :boolean, :desc => "Flag that detemines if the datapath is connected or not."
-        option :dc_segment_id, :type => :string, :desc => "The datapath's dc segment id."
-        option :node_id, :type => :string, :desc => "The node id for the datapath."
-        option :ipv4_address, :type => :string, :desc => "Ipv4 address for the datapath."
-        option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
-      end
+    add_modify_shared_options {
+      option_display_name
+      option :is_connected, :type => :boolean, :desc => "Flag that detemines if the datapath is connected or not."
+      option :dc_segment_id, :type => :string, :desc => "The datapath's dc segment id."
+      option :node_id, :type => :string, :desc => "The node id for the datapath."
+      option :ipv4_address, :type => :string, :desc => "Ipv4 address for the datapath."
+      option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
     }
 
-    option_uuid
-    add_modify_shared_options
-    define_add
-
-    add_modify_shared_options
-    define_modify
-
-    define_show
-    define_del
+    define_standard_crud_commands
 
     class Networks < Base
       namespace "datapath networks"
