@@ -37,19 +37,19 @@ module Vnctl::Cli
         puts post("#{suffix}/#{datapath_uuid}/networks/#{network_uuid}", :query => options)
       end
 
-      desc "show DATAPATH_UUID", "Shows all networks in this datapath."
-      def show(datapath_uuid)
-        puts get("#{suffix}/#{datapath_uuid}/networks")
-      end
-
-      desc "show DATAPATH_UUID NETWORK_UUID", "Shows a specific network in this datapath."
-      def show(datapath_uuid, network_uuid)
-        puts get("#{suffix}/#{datapath_uuid}/networks/#{network_uuid}")
-      end
+      #TODO: Uncomment once this is implemented in the api
+      # desc "show DATAPATH_UUID [NETWORK_UUID]", "Shows all networks in this datapath."
+      # def show(datapath_uuid, network_uuid = nil)
+      #   if network_uuid.nil?
+      #     puts get("#{suffix}/#{datapath_uuid}/networks")
+      #   else
+      #     puts get("#{suffix}/#{datapath_uuid}/networks/#{network_uuid}")
+      #   end
+      # end
 
       desc "del DATAPATH_UUID", "Removes a network from a datapath."
       def del(datapath_uuid, network_uuid)
-        puts post("#{suffix}/#{uuid}/networks/#{network_uuid}")
+        puts delete("#{suffix}/#{datapath_uuid}/networks/#{network_uuid}")
       end
     end
     register(Networks, "networks", "networks OPTION",
