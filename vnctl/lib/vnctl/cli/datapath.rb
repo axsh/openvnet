@@ -4,6 +4,8 @@ module Vnctl::Cli
   class Datapath < Base
     namespace :datapath
     api_suffix "/api/datapaths"
+    register(C::Datapath::Network, "networks", "networks OPTION",
+      "subcommand to manage networks in this datapath.")
 
     no_tasks {
       def self.add_modify_shared_options
@@ -25,5 +27,32 @@ module Vnctl::Cli
 
     define_show
     define_del
+
+    class Network < Base
+      namespace :networks
+      api_suffix "/api/datapaths"
+
+      desc "add DATAPATH_UUID NETWORK_UUID OPTIONS", "Adds a network to a datapath."
+      option :broadcast_mac_addr, :type => :string, :required => true,
+        :desc => "The broadcast mac address for mac2mac to use in this network."
+      def add(datapath_uuid, network_uuid)
+        puts post("#{suffix}/#{datapath_uuid}/networks/#{network_uuid}", :query => options)
+      end
+
+      desc "show DATAPATH_UUID", "Shows all networks in this datapath."
+      def show(datapath_uuid)
+        puts get("#{suffix}/#{datapath_uuid}/networks")
+      end
+
+      desc "show DATAPATH_UUID NETWORK_UUID", "Shows a specific network in this datapath."
+      def show(datapath_uuid, network_uuid)
+        puts get("#{suffix}/#{datapath_uuid}/networks/#{network_uuid}")
+      end
+
+      desc "del DATAPATH_UUID", "Removes a network from a datapath."
+      def del(datapath_uuid, network_uuid)
+        puts post("#{suffix}/#{uuid}/networks/#{network_uuid}")
+      end
+    end
   end
 end
