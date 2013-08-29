@@ -3,15 +3,12 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
 
   post do
-    params = parse_params(@params, ["uuid","vif_uuid","display_name","incoming_port","outgoing_port","created_at","updated_at"])
+    params = parse_params(@params, ["uuid","vif_uuid","display_name","incoming_port","outgoing_port"])
+    required_params(params, ["display_name"])
+    check_and_trim_uuid(M::NetworkService, params) if params.has_key("uuid")
 
-    if params.has_key?("uuid")
-      raise E::DuplicateUUID, params["uuid"] unless M::NetworkService[params["uuid"]].nil?
-      params["uuid"] = M::NetworkService.trim_uuid(params["uuid"])
-    end
-
-    vif_uuid = params.delete('vif_uuid')
-    params['vif_id'] = (M::Vif[vif_uuid] || raise(E::InvalidUUID, vif_uuid)).id
+    vif = check_syntax_and_pop_uuid(M::NetworkService, params, "vif_uuid")
+    params['vif_id'] = vif.id
 
     network_service = M::NetworkService.create(params)
     respond_with(R::NetworkService.generate(network_service))
@@ -23,18 +20,21 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   end
 
   get '/:uuid' do
-    network_service = M::NetworkService[@params["uuid"]]
+    network_service = check_syntax_and_pop_uuid(M::NetworkService, @params)
     respond_with(R::NetworkService.generate(network_service))
   end
 
   delete '/:uuid' do
-    network_service = M::NetworkService.destroy(@params["uuid"])
+    network_service = check_syntax_and_pop_uuid(M::NetworkService, @params)
+    network_service.batch.destroy.commit
     respond_with(R::NetworkService.generate(network_service))
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["vif_uuid","display_name","incoming_port","outgoing_port","created_at","updated_at"])
-    network_service = M::NetworkService.update(@params["uuid"], params)
-    respond_with(R::NetworkService.generate(network_service))
+    params = parse_params(@params, ["uuid", "vif_uuid","display_name","incoming_port","outgoing_port"])
+    network_service = check_syntax_and_pop_uuid(M::NetworkService, @params)
+    network_service.batch.update(params).commit
+    updated_nws = M::NetworkService[@params["uuid"]]
+    respond_with(R::NetworkService.generate(updated_nws))
   end
 end
