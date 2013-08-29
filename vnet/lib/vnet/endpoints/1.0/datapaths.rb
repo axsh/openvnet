@@ -38,25 +38,37 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     respond_with(R::Datapath.generate(updated_dp))
   end
 
-  #TODO: Add equivalent delete_network method
-  post '/:uuid/network/:network_uuid' do
-    params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_address'])
-    required_params(params, ["broadcast_mac_address", "network_uuid]")
+  post '/:uuid/networks/:network_uuid' do
+    params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_addr'])
+    required_params(params, ["broadcast_mac_addr", "network_uuid"])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
     network = check_syntax_and_pop_uuid(M::Network, params, 'network_uuid')
 
-    broadcast_mac_address = parse_mac(params['broadcast_mac_address'])
-    if broadcast_mac_address.nil?
-      error_msg = "invalid broadcast_mac_address: '#{params[broadcast_mac_address]}'"
+    broadcast_mac_addr = parse_mac(params['broadcast_mac_addr'])
+    if broadcast_mac_addr.nil?
+      error_msg = "invalid broadcast_mac_addr: '#{params[broadcast_mac_addr]}'"
       raise(E::ArgumentError, error_msg)
     end
 
     M::DatapathNetwork.create({ :datapath_id => datapath.id,
                                 :network_id => network.id,
-                                :broadcast_mac_addr => broadcast_mac_address,
+                                :broadcast_mac_addr => broadcast_mac_addr,
                               })
-    respond_with({})
+
+    respond_with(R::Datapath.networks(datapath))
+  end
+
+  delete '/:uuid/networks/:network_uuid' do
+    datapath = check_syntax_and_pop_uuid(M::Datapath, @params)
+    network = check_syntax_and_pop_uuid(M::Network, @params, 'network_uuid')
+    relations = M::DatapathNetwork.filter({ :datapath_id => datapath.id,
+                                :network_id => network.id
+                              })
+
+    relations.each { |r| r.destroy }
+
+    respond_with(R::Datapath.networks(datapath))
   end
 
   put '/:uuid/route_links' do
