@@ -14,5 +14,6 @@ module Vnctl
     autoload :Root, 'vnctl/cli/root'
     autoload :Datapath, 'vnctl/cli/datapath'
     autoload :Network, 'vnctl/cli/network'
+    autoload :NetworkService, 'vnctl/cli/network_service'
   end
 end
