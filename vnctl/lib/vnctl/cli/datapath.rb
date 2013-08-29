@@ -4,8 +4,6 @@ module Vnctl::Cli
   class Datapath < Base
     namespace :datapath
     api_suffix "/api/datapaths"
-    register(C::Datapath::Network, "networks", "networks OPTION",
-      "subcommand to manage networks in this datapath.")
 
     no_tasks {
       def self.add_modify_shared_options
@@ -28,8 +26,8 @@ module Vnctl::Cli
     define_show
     define_del
 
-    class Network < Base
-      namespace :networks
+    class Networks < Base
+      namespace "datapath networks"
       api_suffix "/api/datapaths"
 
       desc "add DATAPATH_UUID NETWORK_UUID OPTIONS", "Adds a network to a datapath."
@@ -54,5 +52,7 @@ module Vnctl::Cli
         puts post("#{suffix}/#{uuid}/networks/#{network_uuid}")
       end
     end
+    register(Networks, "networks", "networks OPTION",
+      "subcommand to manage networks in this datapath.")
   end
 end
