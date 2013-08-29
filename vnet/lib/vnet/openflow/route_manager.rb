@@ -30,7 +30,7 @@ module Vnet::Openflow
         :id => route_map.id,
         :uuid => route_map.uuid,
         :vif => nil,
-        :ipv4_address => route_map.ipv4_address,
+        :ipv4_address => IPAddr.new(route_map.ipv4_address, Socket::AF_INET),
         :ipv4_prefix => route_map.ipv4_prefix,
         :ingress => route_map.ingress,
         :egress => route_map.egress,
@@ -78,11 +78,13 @@ module Vnet::Openflow
       mac_address = Trema::Mac.new(rl_map.mac_address)
       packet_handler = Routers::RouteLink.new(datapath: @datapath,
                                               route_link_id: rl_map.id,
+                                              route_link_uuid: rl_map.uuid,
                                               mac_address: mac_address)
 
       link = {
         :id => rl_map.id,
-        :mac_addr => mac_address,
+        :uuid => rl_map.uuid,
+        :mac_address => mac_address,
         :routes => {},
         :packet_handler => packet_handler
       }
@@ -100,18 +102,18 @@ module Vnet::Openflow
       flows = []
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
                              :tunnel_id => TUNNEL_ROUTE_LINK,
-                             :eth_dst => link[:mac_addr]
+                             :eth_dst => link[:mac_address]
                            }, nil,
                            route_link_md.merge({ :cookie => cookie,
                                                  :goto_table => TABLE_ROUTER_EGRESS
                                                }))
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                             :eth_dst => link[:mac_addr]
+                             :eth_dst => link[:mac_address]
                            }, nil, {
                              :cookie => cookie
                            })
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                             :eth_src => link[:mac_addr]
+                             :eth_src => link[:mac_address]
                            }, nil, {
                              :cookie => cookie
                            })
@@ -167,6 +169,11 @@ module Vnet::Openflow
       vif = @vifs[vif_map.id]
       return vif if vif
 
+      if vif_map.mode != 'simulated'
+        info "router_manager: only vifs with mode 'simulated' are supported (uuid:#{vif_map.uuid} mode:#{vif_map.mode})"
+        return
+      end
+
       service_map = vif_map.network_services.detect { |service| service.display_name == 'router' }
 
       if service_map.nil?
@@ -179,19 +186,9 @@ module Vnet::Openflow
         :network_id => vif_map.network_id,
         :use_datapath_id => nil,
         :service_cookie => service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT),
-        :mac_addr => Trema::Mac.new(vif_map.mac_addr),
+        :mac_address => Trema::Mac.new(vif_map.mac_addr),
         :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
       }
-
-      datapath_id = @datapath.datapath_map.id
-
-      if vif_map.owner_datapath_id
-        if vif_map.owner_datapath_id == datapath_id
-          vif_map.batch.update(:active_datapath_id => datapath_id).commit
-        else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id
-        end
-      end
 
       case vif_map.network && vif_map.network.network_mode
       when 'physical'
@@ -206,6 +203,16 @@ module Vnet::Openflow
       end
 
       @vifs[vif_map.id] = vif
+
+      datapath_id = @datapath.datapath_map.id
+
+      if vif_map.owner_datapath_id
+        if vif_map.owner_datapath_id == datapath_id
+          vif_map.batch.update(:active_datapath_id => datapath_id).commit
+        else
+          vif[:use_datapath_id] = vif_map.owner_datapath_id
+        end
+      end
 
       create_vif_flows(vif) if vif[:use_datapath_id].nil?
 
@@ -238,7 +245,7 @@ module Vnet::Openflow
                                      })
 
         flows << Flow.create(TABLE_CONTROLLER_PORT, priority,
-                             subnet_dst.merge(:eth_src => route[:vif][:mac_addr]),
+                             subnet_dst.merge(:eth_src => route[:vif][:mac_address]),
                              nil,
                              nw_no_controller_md.merge({ :cookie => cookie,
                                                          :goto_table => TABLE_ROUTER_DST
@@ -246,7 +253,7 @@ module Vnet::Openflow
 
         if route[:ingress] == true
           flows << Flow.create(TABLE_ROUTER_INGRESS, priority,
-                               network_md.merge(subnet_src).merge(:eth_dst => route[:vif][:mac_addr]),
+                               network_md.merge(subnet_src).merge(:eth_dst => route[:vif][:mac_address]),
                                nil,
                                rl_reflection_md.merge({ :cookie => cookie,
                                                         :goto_table => TABLE_ROUTER_EGRESS
@@ -256,7 +263,7 @@ module Vnet::Openflow
         if route[:egress] == true
           flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
                                route_link_md.merge(subnet_dst), {
-                                 :eth_src => route[:vif][:mac_addr]
+                                 :eth_src => route[:vif][:mac_address]
                                },
                                network_md.merge({ :cookie => cookie,
                                                   :goto_table => TABLE_ROUTER_DST
@@ -273,7 +280,7 @@ module Vnet::Openflow
         if route[:egress] == true
           flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
                                route_link_md.merge(subnet_dst), {
-                                 :eth_dst => route_link[:mac_addr]
+                                 :eth_dst => route_link[:mac_address]
                                },
                                datapath_md.merge({ :cookie => cookie,
                                                    :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK
@@ -304,7 +311,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 40,
-                           network_md.merge({ :eth_dst => vif[:mac_addr],
+                           network_md.merge({ :eth_dst => vif[:mac_address],
                                               :eth_type => 0x0800,
                                               :ipv4_dst => vif[:ipv4_address]
                                             }),
@@ -313,7 +320,7 @@ module Vnet::Openflow
                              :goto_table => goto_table
                            })
       flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
-                             :eth_dst => vif[:mac_addr],
+                             :eth_dst => vif[:mac_address],
                              :eth_type => 0x0800,
                              :ipv4_dst => vif[:ipv4_address]
                            },
@@ -322,7 +329,7 @@ module Vnet::Openflow
                                                  :goto_table => TABLE_ROUTER_CLASSIFIER
                                                }))
       flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
-                             :eth_dst => vif[:mac_addr],
+                             :eth_dst => vif[:mac_address],
                              :eth_type => 0x0806
                            },
                            nil,
@@ -330,7 +337,7 @@ module Vnet::Openflow
                                                  :goto_table => TABLE_ROUTER_CLASSIFIER
                                                }))
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 30,
-                           network_md.merge({ :eth_dst => vif[:mac_addr],
+                           network_md.merge({ :eth_dst => vif[:mac_address],
                                               :eth_type => 0x0800
                                             }),
                            nil, {

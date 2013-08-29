@@ -5,7 +5,7 @@ require 'trema'
 
 include Vnet::Constants::Openflow
 
-describe Vnet::Openflow::NetworkVirtual do
+describe Vnet::Openflow::Networks::Virtual do
 
   before(:all) do
     Fabricate('vnet_1')
@@ -21,7 +21,7 @@ describe Vnet::Openflow::NetworkVirtual do
     let(:any_network_md) { flow_options.merge(subject.md_network(:network, :virtual =>nil)) }
     let(:flows) { datapath.added_flows }
 
-    subject { Vnet::Openflow::NetworkVirtual.new(datapath, vnet_map) }
+    subject { Vnet::Openflow::Networks::Virtual.new(datapath, vnet_map) }
 
     it "has flows for destination filtering" do
       subject.install

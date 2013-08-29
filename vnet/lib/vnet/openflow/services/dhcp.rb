@@ -43,7 +43,10 @@ module Vnet::Openflow::Services
                          })
     end
 
-    def packet_in(port, message)
+    def packet_in(message)
+      port_number = message.match.in_port
+      port = @datapath.port_manager.port_by_port_number(port_number)
+
       debug "Dhcp.packet_in called."
 
       dhcp_in, message_type = parse_dhcp_packet(message)
@@ -53,8 +56,8 @@ module Vnet::Openflow::Services
 
       params = {
         :xid => dhcp_in.xid,
-        :yiaddr => port.ipv4_addr,
-        :chaddr => port.hw_addr,
+        :yiaddr => port[:ipv4_address],
+        :chaddr => port[:mac_address]
       }
 
       case message_type[0].payload[0]
@@ -79,8 +82,8 @@ module Vnet::Openflow::Services
                 :eth_src => self.service_mac,
                 :src_ip => self.service_ipv4,
                 :src_port => 67,
-                :eth_dst => port.hw_addr,
-                :dst_ip => port.ipv4_addr,
+                :eth_dst => port[:mac_address],
+                :dst_ip => port[:ipv4_address],
                 :dst_port => 68,
                 :payload => dhcp_out.pack
               })

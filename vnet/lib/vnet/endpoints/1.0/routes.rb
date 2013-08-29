@@ -17,10 +17,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
       params["uuid"] = M::Route.trim_uuid(params["uuid"])
     end
 
-    vif_uuid = params.delete('vif_uuid') || raise(E::MissingArgument, 'vif_uuid')
+    vif_uuid = params.delete('vif_uuid')
     route_link_uuid = params.delete('route_link_uuid') || raise(E::MissingArgument, 'route_link_uuid')
 
-    params['vif_id'] = (M::Vif[vif_uuid] || raise(E::InvalidUUID, vif_uuid)).id
+    if vif_uuid
+      params['vif_id'] = (M::Vif[vif_uuid] || raise(E::InvalidUUID, vif_uuid)).id
+    end
+
     params['route_link_id'] = (M::RouteLink[route_link_uuid] || raise(E::InvalidUUID, route_link_uuid)).id
 
     params['ipv4_address'] = parse_ipv4(params['ipv4_address'] || raise(E::MissingArgument, 'ipv4_address'))

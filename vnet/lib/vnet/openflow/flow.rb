@@ -170,9 +170,9 @@ module Vnet::Openflow
 
     def md_network(type, append = nil)
       if append
-        md_create(append.merge(type => self.network_number))
+        md_create(append.merge(type => self.network_id))
       else
-        md_create(type => self.network_number)
+        md_create(type => self.network_id)
       end
     end
 

@@ -157,9 +157,6 @@ module Vnet
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow'
-    autoload :Network, 'vnet/openflow/network'
-    autoload :NetworkPhysical, 'vnet/openflow/network_physical'
-    autoload :NetworkVirtual, 'vnet/openflow/network_virtual'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHandler, 'vnet/openflow/packet_handler'
@@ -169,6 +166,12 @@ module Vnet
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
+
+    module Networks
+      autoload :Base, 'vnet/openflow/networks/base'
+      autoload :Physical, 'vnet/openflow/networks/physical'
+      autoload :Virtual, 'vnet/openflow/networks/virtual'
+    end
 
     module Ports
       autoload :Base, 'vnet/openflow/ports/base'
