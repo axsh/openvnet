@@ -1,4 +1,0 @@
-pkg_name="wakame-vnet"
-pkg_desc="Empty package that depends on all Wakame-VNet packages. Only here for convenience sake."
-pkg_deps="wakame-vnet-mysql wakame-vnet-redis wakame-vnet-ruby wakame-vnet-common wakame-vnet-vna wakame-vnet-vnmgr wakame-vnet-webapi"
-pkg_arch="x86_64"

@@ -1,35 +1,30 @@
 CURDIR ?= $(PWD)
-RUBYDIR = $(CURDIR)/ruby/current
 #An empty string for DSTDIR will install Wakame-VNet under /opt/axsh/wakame-vnet
 DSTDIR ?= ""
 
-all: build-ruby install-bundle
+all: install-bundle
 
-dev: build-ruby install-bundle-dev update-config
-
-build-ruby:
-	ruby_ver=$(RUBY_VERSION) $(CURDIR)/deployment/rubybuild/build_ruby.sh
+dev: install-bundle-dev update-config
 
 install-bundle:
-	$(RUBYDIR)/bin/gem install bundler
-	(cd $(CURDIR)/vnet; $(RUBYDIR)/bin/bundle install --path vendor/bundle --without development test)
+	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle --without development test)
+
+clean-bundle:
+	(cd $(CURDIR)/vnet; bundle clean)
 
 install-bundle-dev:
-	$(RUBYDIR)/bin/gem install bundler
-	(cd $(CURDIR)/vnet; $(RUBYDIR)/bin/bundle install --path vendor/bundle)
+	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle)
 
 install: update-config
 	mkdir -p $(DSTDIR)/opt/axsh/wakame-vnet
-	mkdir -p $(DSTDIR)/tmp/log
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/log
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/pid
 	mkdir -p $(DSTDIR)/var/run/wakame-vnet/sock
-	cp -r vnet vnctl ruby deployment $(DSTDIR)/opt/axsh/wakame-vnet
+	cp -r vnet vnctl deployment $(DSTDIR)/opt/axsh/wakame-vnet
 
 
 uninstall: remove-config
 	rm -rf $(DSTDIR)/opt/axsh/wakame-vnet
-	rm -rf $(DSTDIR)/tmp/log
 	rm -rf $(DSTDIR)/var/run/wakame-vnet
 
 reinstall: uninstall install
@@ -51,11 +46,17 @@ remove-config:
 	rm $(DSTDIR)/etc/init/vnet-webapi.conf
 
 clean:
-	rm -rf $(RUBYDIR)
 	rm -rf $(CURDIR)/vnet/vendor
 	rm -rf $(CURDIR)/vnet/.bundle
 
-build-rpm: DSTDIR = /tmp/vnet-rpmbuild
-build-rpm: build-ruby install-bundle reinstall
-	(cd $(CURDIR)/deployment/packagebuild; $(RUBYDIR)/bin/bundle install --path vendor/bundle --binstubs)
-	(cd $(DSTDIR);	fpm_path="$(RUBYDIR)/bin/ruby $(CURDIR)/deployment/packagebuild/bin/fpm" $(DSTDIR)/opt/axsh/wakame-vnet/deployment/packagebuild/build_package.sh)
+build-rpm: build-rpm-vnet build-rpm-third-party
+
+build-rpm-vnet: install-bundle clean-bundle
+	(cd $(CURDIR)/deployment/packagebuild; bundle install --path vendor/bundle --binstubs)
+	$(CURDIR)/deployment/packagebuild/build_packages_vnet.sh
+
+build-rpm-third-party:
+	$(CURDIR)/deployment/packagebuild/build_packages_third_party.sh
+
+test-rpm-install:
+	$(CURDIR)/deployment/packagebuild/test-rpm-install.sh

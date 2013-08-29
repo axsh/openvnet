@@ -23,6 +23,12 @@ class MockDatapath < Vnet::Openflow::Datapath
     @switch = MockSwitch.new(self)
   end
 
+  def create_mock_port_manager
+    @datapath_map = OpenStruct.new(dpid: ("0x%016x" % @dpid),
+                                   id: 1)
+    @port_manager = MockPortManager.new(self)
+  end
+
   def send_message(message)
     @sent_messages << message
   end
@@ -33,6 +39,10 @@ class MockDatapath < Vnet::Openflow::Datapath
 
   def add_flows(flows)
     @added_flows += flows
+  end
+
+  def del_cookie(cookie)
+    @added_flows.delete_if {|f| f.to_trema_hash[:cookie] == cookie }
   end
 
   def add_ovs_flow(ovs_flow)
@@ -48,9 +58,5 @@ class MockDatapath < Vnet::Openflow::Datapath
 
   def delete_tunnel(tunnel_name)
     @deleted_tunnels << tunnel_name
-  end
-
-  def del_cookie(cookie)
-    @added_cookie << cookie
   end
 end

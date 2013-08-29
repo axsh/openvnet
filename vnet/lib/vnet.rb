@@ -166,16 +166,20 @@ module Vnet
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHandler, 'vnet/openflow/packet_handler'
     autoload :PacketManager, 'vnet/openflow/packet_manager'
-    autoload :Port, 'vnet/openflow/port'
-    autoload :PortTunnel, 'vnet/openflow/port_tunnel'
-    autoload :PortHost, 'vnet/openflow/port_host'
-    autoload :PortLocal, 'vnet/openflow/port_local'
-    autoload :PortPhysical, 'vnet/openflow/port_physical'
-    autoload :PortVirtual, 'vnet/openflow/port_virtual'
+    autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
+
+    module Ports
+      autoload :Base, 'vnet/openflow/ports/base'
+      autoload :Host, 'vnet/openflow/ports/host'
+      autoload :Local, 'vnet/openflow/ports/local'
+      autoload :Physical, 'vnet/openflow/ports/physical'
+      autoload :Tunnel, 'vnet/openflow/ports/tunnel'
+      autoload :Virtual, 'vnet/openflow/ports/virtual'
+    end
 
     module Routers
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
@@ -183,6 +187,7 @@ module Vnet
 
     module Services
       autoload :Arp, 'vnet/openflow/services/arp'
+      autoload :ArpLookup, 'vnet/openflow/services/arp_lookup'
       autoload :Base, 'vnet/openflow/services/base'
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
       autoload :Icmp, 'vnet/openflow/services/icmp'

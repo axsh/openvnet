@@ -2,25 +2,43 @@
 
 module Vnet::Openflow
 
-  module Flow
+  class Flow
 
-    def self.create(table_id, priority, match, actions, options = {})
-      trema_hash = {
+    attr_reader :params
+
+    def initialize(table_id, priority, match, actions, options = {})
+      @params = {
         :table_id => table_id,
         :priority => priority,
-        :match => Trema::Match.new(match),
-        :instructions => self.convert_instructions(actions, options),
+        :match => match,
+        :actions => actions,
+        :options => options
       }
-      trema_hash[:hard_timeout] = options[:hard_timeout] if options[:hard_timeout]
-      trema_hash[:idle_timeout] = options[:idle_timeout] if options[:idle_timeout]
-      trema_hash[:cookie] = options[:cookie] if options[:cookie]
-      trema_hash[:cookie_mask] = options[:cookie_mask] if options[:cookie_mask]
-      trema_hash
     end
 
-    private
+    def to_trema_hash
+      trema_hash = {
+        :table_id => @params[:table_id],
+        :priority => @params[:priority],
+        :match => Trema::Match.new(@params[:match]),
+        :instructions => convert_instructions(@params[:actions], @params[:options]),
+      }
+      trema_hash[:hard_timeout] = @params[:options][:hard_timeout] if @params[:options][:hard_timeout]
+      trema_hash[:idle_timeout] = @params[:options][:idle_timeout] if @params[:options][:idle_timeout]
+      trema_hash[:cookie] = @params[:options][:cookie] if @params[:options][:cookie]
+      trema_hash[:cookie_mask] = @params[:options][:cookie_mask] if @params[:options][:cookie_mask]
+      trema_hash
+    end 
+    
+    def ==(flow)
+      flow == params
+    end
 
-    def self.convert_instructions(actions, options)
+    def self.create(table_id, priority, match, actions, options = {})
+      self.new(table_id, priority, match, actions, options)
+    end
+
+    def convert_instructions(actions, options)
       instructions = []
 
       if actions
@@ -44,7 +62,7 @@ module Vnet::Openflow
       instructions
     end
 
-    def self.convert_actions(actions, result = [])
+    def convert_actions(actions, result = [])
       if actions.class == Hash
         actions.each { |key,arg| result << to_action(key, arg) }
       elsif actions.class == Array
@@ -56,7 +74,7 @@ module Vnet::Openflow
       result
     end
 
-    def self.to_action(tag, arg)
+    def to_action(tag, arg)
       case tag
       when :eth_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
       when :eth_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])
@@ -106,6 +124,12 @@ module Vnet::Openflow
         when :network
           metadata = metadata | value | METADATA_TYPE_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :no_controller
+          metadata = metadata | METADATA_FLAG_NO_CONTROLLER
+          metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
+        when :not_no_controller
+          metadata = metadata
+          metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
@@ -115,6 +139,9 @@ module Vnet::Openflow
         when :physical_network
           metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_PHYSICAL
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
+        when :reflection
+          metadata = metadata | METADATA_FLAG_REFLECTION
+          metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
         when :route
           metadata = metadata | value | METADATA_TYPE_ROUTE
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
@@ -154,6 +181,37 @@ module Vnet::Openflow
         md_create(append.merge(:port => self.port_number))
       else
         md_create(:port => self.port_number)
+      end
+    end
+
+    def md_has_flag(flag, value, mask = nil)
+      mask = value if mask.nil?
+      (value & (mask & flag)) == flag
+    end
+    
+    def is_ipv4_broadcast(address, prefix)
+      address == IPV4_ZERO && prefix == 0
+    end
+
+    def match_ipv4_subnet_dst(address, prefix)
+      if is_ipv4_broadcast(address, prefix)
+        { :eth_type => 0x0800 }
+      else
+        { :eth_type => 0x0800,
+          :ipv4_dst => address,
+          :ipv4_dst_mask => IPV4_BROADCAST << (32 - prefix)
+        }
+      end
+    end
+
+    def match_ipv4_subnet_src(address, prefix)
+      if is_ipv4_broadcast(address, prefix)
+        { :eth_type => 0x0800 }
+      else
+        { :eth_type => 0x0800,
+          :ipv4_src => address,
+          :ipv4_src_mask => IPV4_BROADCAST << (32 - prefix)
+        }
       end
     end
 

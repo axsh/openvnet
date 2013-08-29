@@ -32,7 +32,8 @@ module Vnet::Openflow
         :vif => nil,
         :ipv4_address => route_map.ipv4_address,
         :ipv4_prefix => route_map.ipv4_prefix,
-        :ipv4_mask => IPV4_BROADCAST << (32 - route_map.ipv4_prefix),
+        :ingress => route_map.ingress,
+        :egress => route_map.egress,
       }
 
       route_link[:routes][route[:id]] = route
@@ -102,7 +103,7 @@ module Vnet::Openflow
                              :eth_dst => link[:mac_addr]
                            }, nil,
                            route_link_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTER_LINK
+                                                 :goto_table => TABLE_ROUTER_EGRESS
                                                }))
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                              :eth_dst => link[:mac_addr]
@@ -129,7 +130,7 @@ module Vnet::Openflow
                                :eth_dst => Trema::Mac.new(dp_rl_map.link_mac_addr)
                              }, nil,
                              route_link_md.merge({ :cookie => cookie,
-                                                   :goto_table => TABLE_ROUTER_LINK
+                                                   :goto_table => TABLE_ROUTER_EGRESS
                                                  }))
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                                :eth_dst => Trema::Mac.new(dp_rl_map.link_mac_addr)
@@ -214,57 +215,70 @@ module Vnet::Openflow
     def create_route_flows(route_link, route)
       cookie = route[:id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
+      flows = []
       route_link_md = md_create(:route_link => route_link[:id])
 
-      flows = []
+      if is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix])
+        priority = 30
+      else
+        priority = 31
+      end
+
+      subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
+      subnet_src = match_ipv4_subnet_src(route[:ipv4_address], route[:ipv4_prefix])
 
       if route[:vif][:use_datapath_id].nil?
-        network_md = md_create(route[:vif][:network_type] => route[:vif][:network_id])
+        nw_hash = {route[:vif][:network_type] => route[:vif][:network_id]}
 
-        flows << Flow.create(TABLE_ROUTER_SRC, 40,
-                             network_md.merge({ :eth_dst => route[:vif][:mac_addr],
-                                                :eth_type => 0x0800,
-                                                :ipv4_src => route[:ipv4_address],
-                                                :ipv4_src_mask => route[:ipv4_mask],
-                                              }),
+        network_md = md_create(nw_hash)
+        nw_no_controller_md = md_create(nw_hash.merge(:no_controller => nil))
+
+        rl_reflection_md = md_create({ :route_link => route_link[:id],
+                                       :reflection => nil
+                                     })
+
+        flows << Flow.create(TABLE_CONTROLLER_PORT, priority,
+                             subnet_dst.merge(:eth_src => route[:vif][:mac_addr]),
                              nil,
-                             route_link_md.merge({ :cookie => cookie,
-                                                   :goto_table => TABLE_ROUTER_LINK
-                                                 }))
-        flows << Flow.create(TABLE_ROUTER_LINK, 40,
-                             route_link_md.merge({ :eth_type => 0x0800,
-                                                   :ipv4_dst => route[:ipv4_address],
-                                                   :ipv4_dst_mask => route[:ipv4_mask],
-                                                 }), {
-                               :eth_src => route[:vif][:mac_addr]
-                             },
-                             network_md.merge({ :cookie => cookie,
-                                                :goto_table => TABLE_ROUTER_DST
-                                              }))
+                             nw_no_controller_md.merge({ :cookie => cookie,
+                                                         :goto_table => TABLE_ROUTER_DST
+                                                       }))
+
+        if route[:ingress] == true
+          flows << Flow.create(TABLE_ROUTER_INGRESS, priority,
+                               network_md.merge(subnet_src).merge(:eth_dst => route[:vif][:mac_addr]),
+                               nil,
+                               rl_reflection_md.merge({ :cookie => cookie,
+                                                        :goto_table => TABLE_ROUTER_EGRESS
+                                                      }))
+        end
+
+        if route[:egress] == true
+          flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
+                               route_link_md.merge(subnet_dst), {
+                                 :eth_src => route[:vif][:mac_addr]
+                               },
+                               network_md.merge({ :cookie => cookie,
+                                                  :goto_table => TABLE_ROUTER_DST
+                                                }))
+
+          install_route_handler(route_link, route)
+        end
 
         @datapath.add_flows(flows)
-
-        link_cookie = route_link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
-
-        pm = @datapath.packet_manager
-        pm.dispatch(link_cookie) { |key, handler|
-          route_cookie = handler.insert_route(route)
-          pm.link_cookies(key, route_cookie) if route_cookie
-        }
 
       else
         datapath_md = md_create(:datapath => route[:vif][:use_datapath_id])
 
-        flows << Flow.create(TABLE_ROUTER_LINK, 40,
-                             route_link_md.merge({ :eth_type => 0x0800,
-                                                   :ipv4_dst => route[:ipv4_address],
-                                                   :ipv4_dst_mask => route[:ipv4_mask],
-                                                 }), {
-                               :eth_dst => route_link[:mac_addr]
-                             },
-                             datapath_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK
-                                               }))
+        if route[:egress] == true
+          flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
+                               route_link_md.merge(subnet_dst), {
+                                 :eth_dst => route_link[:mac_addr]
+                               },
+                               datapath_md.merge({ :cookie => cookie,
+                                                   :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK
+                                                 }))
+        end
 
         @datapath.add_flows(flows)
       end
@@ -276,12 +290,20 @@ module Vnet::Openflow
 
       if vif[:network_type] == :physical_network
         goto_table = TABLE_PHYSICAL_DST
+        controller_md = md_create({ :network => vif[:network_id],
+                                    :physical => nil,
+                                    :no_controller => nil
+                                  })
       else
         goto_table = TABLE_VIRTUAL_DST
+        controller_md = md_create({ :network => vif[:network_id],
+                                    :virtual => nil,
+                                    :no_controller => nil
+                                  })
       end
 
       flows = []
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 40,
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 40,
                            network_md.merge({ :eth_dst => vif[:mac_addr],
                                               :eth_type => 0x0800,
                                               :ipv4_dst => vif[:ipv4_address]
@@ -290,16 +312,43 @@ module Vnet::Openflow
                              :cookie => cookie,
                              :goto_table => goto_table
                            })
-      flows << Flow.create(TABLE_ROUTER_ENTRY, 30,
+      flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
+                             :eth_dst => vif[:mac_addr],
+                             :eth_type => 0x0800,
+                             :ipv4_dst => vif[:ipv4_address]
+                           },
+                           nil,
+                           controller_md.merge({ :cookie => cookie,
+                                                 :goto_table => TABLE_ROUTER_CLASSIFIER
+                                               }))
+      flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
+                             :eth_dst => vif[:mac_addr],
+                             :eth_type => 0x0806
+                           },
+                           nil,
+                           controller_md.merge({ :cookie => cookie,
+                                                 :goto_table => TABLE_ROUTER_CLASSIFIER
+                                               }))
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 30,
                            network_md.merge({ :eth_dst => vif[:mac_addr],
                                               :eth_type => 0x0800
                                             }),
                            nil, {
                              :cookie => cookie,
-                             :goto_table => TABLE_ROUTER_SRC
+                             :goto_table => TABLE_ROUTER_INGRESS
                            })
 
       @datapath.add_flows(flows)
+    end
+
+    def install_route_handler(route_link, route)
+      link_cookie = route_link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
+
+      pm = @datapath.packet_manager
+      pm.dispatch(link_cookie) { |key, handler|
+        route_cookie = handler.insert_route(route)
+        pm.link_cookies(key, route_cookie) if route_cookie
+      }
     end
 
   end
