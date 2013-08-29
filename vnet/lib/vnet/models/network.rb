@@ -2,20 +2,6 @@
 
 module Vnet::Models
   class Network < Base
-    class << self
-      def attach_vif(uuid, vif_uuid)
-        self[uuid].tap do |network|
-          network.add_vif(Vif[vif_uuid])
-        end
-      end
-
-      def detach_vif(uuid, vif_uuid)
-        self[uuid].tap do |network|
-          network.remove_vif(Vif[vif_uuid])
-        end
-      end
-    end
-
     taggable 'nw'
 
     one_to_many :datapath_networks

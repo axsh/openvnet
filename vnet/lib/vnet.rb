@@ -43,6 +43,7 @@ module Vnet
       autoload :VnetAPI, 'vnet/endpoints/1.0/vnet_api'
       module Responses
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
+        autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DcNetwork, 'vnet/endpoints/1.0/responses/dc_network'
         autoload :DhcpRange, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
@@ -57,6 +58,7 @@ module Vnet
         autoload :Vif, 'vnet/endpoints/1.0/responses/vif'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
+        autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DcNetworkCollection, 'vnet/endpoints/1.0/responses/dc_network'
         autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
