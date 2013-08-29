@@ -30,10 +30,4 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
     route_link = M::RouteLink.destroy(@params['uuid'])
     respond_with(R::RouteLink.generate(route_link))
   end
-
-  put '/:uuid' do
-    params = parse_params(@params, [])
-    route_link = M::RouteLink.update(@params['uuid'], params)
-    respond_with(R::RouteLink.generate(route_link))
-  end
 end

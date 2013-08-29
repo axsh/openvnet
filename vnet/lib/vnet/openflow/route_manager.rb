@@ -6,7 +6,7 @@ module Vnet::Openflow
     include Celluloid
     include Celluloid::Logger
     include FlowHelpers
-    
+
     ROUTE_COMMIT = {:fill => [:route_link, :vif => [:network_services, :network]]}
 
     def initialize(dp)
