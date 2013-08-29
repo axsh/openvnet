@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnctrl::Cli
+module Vnctl::Cli
   class NetworkService < Base
     namespace :network_service
     api_suffix "/api/network_services"
