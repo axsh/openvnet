@@ -3,12 +3,15 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
 
   post do
-    params = parse_params(@params, ["uuid","vif_uuid","display_name","incoming_port","outgoing_port"])
+    params = parse_params(@params, ["uuid", "vif_uuid", "display_name",
+      "incoming_port", "outgoing_port"])
     required_params(params, ["display_name"])
-    check_and_trim_uuid(M::NetworkService, params) if params.has_key("uuid")
+    check_and_trim_uuid(M::NetworkService, params) if params.has_key?("uuid")
 
-    vif = check_syntax_and_pop_uuid(M::NetworkService, params, "vif_uuid")
-    params['vif_id'] = vif.id
+    if params.has_key?("vif_uuid")
+      vif = check_syntax_and_pop_uuid(M::Vif, params, "vif_uuid")
+      params['vif_id'] = vif.id
+    end
 
     network_service = M::NetworkService.create(params)
     respond_with(R::NetworkService.generate(network_service))
@@ -31,8 +34,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["uuid", "vif_uuid","display_name","incoming_port","outgoing_port"])
-    network_service = check_syntax_and_pop_uuid(M::NetworkService, @params)
+    params = parse_params(@params, ["uuid", "vif_uuid", "display_name",
+      "incoming_port", "outgoing_port"])
+    network_service = check_syntax_and_pop_uuid(M::NetworkService, params)
     network_service.batch.update(params).commit
     updated_nws = M::NetworkService[@params["uuid"]]
     respond_with(R::NetworkService.generate(updated_nws))
