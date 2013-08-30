@@ -38,7 +38,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   delete '/:uuid' do
-    delete_by_uuid(M::Network)
+    delete_by_uuid(:Network)
   end
 
   put '/:uuid' do

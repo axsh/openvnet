@@ -30,7 +30,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   end
 
   delete '/:uuid' do
-    delete_by_uuid(M::Route)
+    delete_by_uuid(:Route)
   end
 
   put '/:uuid' do

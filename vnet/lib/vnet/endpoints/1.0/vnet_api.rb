@@ -73,7 +73,8 @@ module Vnet::Endpoints::V10
       end
     end
 
-    def delete_by_uuid(model_wrapper)
+    def delete_by_uuid(class_name)
+      model_wrapper = M.const_get(class_name)
       mw = check_syntax_and_pop_uuid(model_wrapper, @params)
       mw.batch.destroy.commit
       respond_with([mw.uuid])

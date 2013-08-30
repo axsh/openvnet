@@ -21,7 +21,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   delete '/:uuid' do
-    delete_by_uuid(M::Datapath)
+    delete_by_uuid(:Datapath)
   end
 
   put '/:uuid' do
