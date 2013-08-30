@@ -105,10 +105,11 @@ describe "/datapaths" do
     end
 
     context "without the 'ipv4_datapath' parameter" do
-      it "should return a 500 error" do
+      it "should return a 400 error" do
         post "/datapaths", {
           display_name: "datapath"
         }
+        expect(last_response.status).to eq 400
       end
     end
   end
