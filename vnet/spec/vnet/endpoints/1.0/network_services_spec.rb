@@ -112,7 +112,7 @@ describe "/network_services" do
 
         expect(last_response).to be_ok
         body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq network_service.canonical_uuid
+        expect(body.first).to eq network_service.canonical_uuid
 
         Vnet::Models::NetworkService[network_service.canonical_uuid].should eq(nil)
       end

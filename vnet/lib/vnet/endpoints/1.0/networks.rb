@@ -40,9 +40,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   delete '/:uuid' do
-    nw = check_syntax_and_pop_uuid(M::Network, @params)
-    nw.batch.destroy.commit
-    respond_with(R::Network.generate(nw))
+    delete_by_uuid(M::Network)
   end
 
   put '/:uuid' do

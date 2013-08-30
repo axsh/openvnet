@@ -24,9 +24,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   end
 
   delete '/:uuid' do
-    network_service = check_syntax_and_pop_uuid(M::NetworkService, @params)
-    network_service.batch.destroy.commit
-    respond_with(R::NetworkService.generate(network_service))
+    delete_by_uuid(M::NetworkService)
   end
 
   put '/:uuid' do

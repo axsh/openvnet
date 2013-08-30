@@ -129,7 +129,7 @@ describe "/datapaths" do
 
         expect(last_response).to be_ok
         body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq datapath.canonical_uuid
+        expect(body.first).to eq datapath.canonical_uuid
 
         Vnet::Models::Datapath[datapath.canonical_uuid].should eq(nil)
       end

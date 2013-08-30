@@ -23,9 +23,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   delete '/:uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath, @params)
-    datapath.batch.destroy.commit
-    respond_with(R::Datapath.generate(datapath))
+    delete_by_uuid(M::Datapath)
   end
 
   put '/:uuid' do

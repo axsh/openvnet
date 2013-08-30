@@ -73,6 +73,12 @@ module Vnet::Endpoints::V10
       end
     end
 
+    def delete_by_uuid(model_wrapper)
+      mw = check_syntax_and_pop_uuid(model_wrapper, @params)
+      mw.batch.destroy.commit
+      respond_with([mw.uuid])
+    end
+
     respond_to :json, :yml
 
     load_namespace('datapaths')

@@ -32,9 +32,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   end
 
   delete '/:uuid' do
-    route = check_syntax_and_pop_uuid(M::Route, @params)
-    route.batch.destroy.commit
-    respond_with([route.uuid])
+    delete_by_uuid(M::Route)
   end
 
   put '/:uuid' do
