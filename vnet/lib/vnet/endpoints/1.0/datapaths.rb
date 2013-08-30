@@ -13,8 +13,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   get do
-    datapaths = M::Datapath.all
-    respond_with(R::DatapathCollection.generate(datapaths))
+    get_all(:Datapath)
   end
 
   get '/:uuid' do

@@ -14,8 +14,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   end
 
   get do
-    network_services = M::NetworkService.all
-    respond_with(R::NetworkServiceCollection.generate(network_services))
+    get_all(:NetworkService)
   end
 
   get '/:uuid' do

@@ -22,8 +22,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   end
 
   get do
-    routes = M::Route.all
-    respond_with(R::RouteCollection.generate(routes))
+    get_all(:Route)
   end
 
   get '/:uuid' do

@@ -30,8 +30,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   get do
-    networks = M::Network.all
-    respond_with(R::NetworkCollection.generate(networks))
+    get_all(:Network)
   end
 
   get '/:uuid' do
