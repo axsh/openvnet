@@ -22,27 +22,21 @@ module Vnet::Endpoints::V10
     end
 
     def check_and_trim_uuid(model, params)
-      if params.has_key?("uuid")
-        check_uuid_syntax(model, params["uuid"])
-        raise E::DuplicateUUID, params["uuid"] unless model[params["uuid"]].nil?
+      check_uuid_syntax(model, params["uuid"])
+      raise E::DuplicateUUID, params["uuid"] unless model[params["uuid"]].nil?
 
-        params["uuid"] = model.trim_uuid(params["uuid"])
-      end
+      params["uuid"] = model.trim_uuid(params["uuid"])
     end
 
     def check_syntax_and_pop_uuid(model, params, key = "uuid")
-      if params.has_key?(key)
-        check_uuid_syntax(model, params[key])
-        pop_uuid(model, params, key)
-      end
+      check_uuid_syntax(model, params[key])
+      pop_uuid(model, params, key)
     end
 
     def check_syntax_and_get_id(model, params, uuid_key = "uuid", id_key = "id")
-      if params.has_key?(uuid_key)
-        check_uuid_syntax(model, params[uuid_key])
-        model = pop_uuid(model, params, uuid_key)
-        params[id_key] = model.id
-      end
+      check_uuid_syntax(model, params[uuid_key])
+      model = pop_uuid(model, params, uuid_key)
+      params[id_key] = model.id
     end
 
     def parse_params(params, mask)
