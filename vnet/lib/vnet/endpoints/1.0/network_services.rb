@@ -26,11 +26,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["uuid", "vif_uuid", "display_name",
-      "incoming_port", "outgoing_port"])
-    network_service = check_syntax_and_pop_uuid(M::NetworkService, params)
-    network_service.batch.update(params).commit
-    updated_nws = M::NetworkService[@params["uuid"]]
-    respond_with(R::NetworkService.generate(updated_nws))
+    update_by_uuid(:NetworkService, [
+      "vif_uuid",
+      "display_name",
+      "incoming_port",
+      "outgoing_port"
+    ])
   end
 end

@@ -25,13 +25,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["uuid", "display_name", "ipv4_address",
-      "is_connected", "dpid", "dc_segment_id", "node_id"])
-    datapath = check_syntax_and_pop_uuid(M::Datapath, params)
-
-    datapath.batch.update(params).commit
-    updated_dp = M::Datapath[@params["uuid"]]
-    respond_with(R::Datapath.generate(updated_dp))
+    update_by_uuid(:Datapath, [
+      "display_name",
+      "ipv4_address",
+      "is_connected",
+      "dpid",
+      "dc_segment_id",
+      "node_id"
+    ])
   end
 
   post '/:uuid/networks/:network_uuid' do

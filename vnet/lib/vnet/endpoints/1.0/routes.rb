@@ -34,15 +34,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["ipv4_address", "ipv4_prefix", "vif_uuid",
-      "route_link_uuid", "uuid"])
-    route = check_syntax_and_pop_uuid(M::Route, params)
-
-    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
-    params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
-
-    route.batch.update(params).commit
-    updated_route = M::Route[@params["uuid"]]
-    respond_with(R::Route.generate(updated_route))
+    update_by_uuid(:Route, [
+      "ipv4_address",
+      "ipv4_prefix",
+      "vif_uuid",
+      "route_link_uuid"
+    ]) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
+      params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
+    }
   end
 end

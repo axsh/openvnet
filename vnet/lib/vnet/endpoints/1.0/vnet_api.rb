@@ -94,6 +94,20 @@ module Vnet::Endpoints::V10
       respond_with(response.generate(object))
     end
 
+    def update_by_uuid(class_name, accepted_params)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+
+      params = parse_params(@params, accepted_params + ["uuid"])
+      object = check_syntax_and_pop_uuid(model_wrapper, params)
+      # This yield is for extra argument validation
+      yield(params) if block_given?
+      object.batch.update(params).commit
+
+      updated_object = model_wrapper[@params["uuid"]]
+      respond_with(response.generate(updated_object))
+    end
+
     respond_to :json, :yml
 
     load_namespace('datapaths')

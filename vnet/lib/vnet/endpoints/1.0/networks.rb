@@ -42,11 +42,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
-    nw = check_syntax_and_pop_uuid(M::Network, params)
-    nw.batch.update(params).commit
-
-    updated_nw = M::Network[@params["uuid"]]
-    respond_with(R::Network.generate(updated_nw))
+    update_by_uuid(:Network, [
+      "display_name",
+      "ipv4_network",
+      "ipv4_prefix",
+      "domain_name",
+      "dc_network_uuid",
+      "network_mode",
+      "editable"
+    ])
   end
 end
