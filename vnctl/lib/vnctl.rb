@@ -16,6 +16,6 @@ module Vnctl
     autoload :Network, 'vnctl/cli/network'
     autoload :NetworkService, 'vnctl/cli/network_service'
     autoload :RouteLink, 'vnctl/cli/route_link'
-    autoload :Routes, 'vnctl/cli/routes'
+    autoload :Route, 'vnctl/cli/route'
   end
 end
