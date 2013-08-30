@@ -2,7 +2,7 @@ class WakameVnet < FPM::Cookery::Recipe
   name     'wakame-vnet'
   description "Virtual network agent for Wakame-VNet"
   homepage 'https://github.com/axsh/wakame-vnet/'
-  version (ENV['BUILD_TIME'] || Time.now.strftime('%Y%m%d%H%M%S')) + (ENV['GIT_COMMIT'] ? "git#{ENV['GIT_COMMIT']}" : "spot")
+  version (ENV['BUILD_TIME'] || Time.now.strftime('%Y%m%d%H%M%S')) + (ENV['GIT_COMMIT'] ? "git#{ENV['GIT_COMMIT'].slice(0, 7)}" : "spot")
   source '', :with => :noop
   arch 'all'
   depends *%w(
