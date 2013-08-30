@@ -119,8 +119,8 @@ module Vnet::Endpoints::V10
 
       # This yield is for extra argument validation
       yield(params) if block_given?
-      network_service = model_wrapper.create(params)
-      respond_with(response.generate(network_service))
+      object = model_wrapper.create(params)
+      respond_with(response.generate(object))
     end
 
     respond_to :json, :yml
