@@ -8,6 +8,7 @@ class WakameVnetVnmgr < FPM::Cookery::Recipe
   arch 'all'
   depends *%w(
     redis
+    mysql-server
     wakame-vnet-common
   )
 
