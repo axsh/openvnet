@@ -45,7 +45,7 @@ module Vnet::Endpoints::V10
       end
     end
 
-    def required_params(params, mask)
+    def check_required_params(params, mask)
       mask.each do |key|
         raise E::MissingArgument, key if params[key].nil? || params[key].empty?
       end
@@ -107,6 +107,20 @@ module Vnet::Endpoints::V10
 
       updated_object = model_wrapper[@params["uuid"]]
       respond_with(response.generate(updated_object))
+    end
+
+    def post_new(class_name, accepted_params, required_params)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+
+      params = parse_params(@params, accepted_params)
+      check_required_params(params, required_params)
+      check_and_trim_uuid(model_wrapper, params) if params["uuid"]
+
+      # This yield is for extra argument validation
+      yield(params) if block_given?
+      network_service = model_wrapper.create(params)
+      respond_with(response.generate(network_service))
     end
 
     respond_to :json, :yml

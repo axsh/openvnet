@@ -3,14 +3,18 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
 
   post do
-    params = parse_params(@params, ["uuid", "vif_uuid", "display_name",
-      "incoming_port", "outgoing_port"])
-    required_params(params, ["display_name"])
-    check_and_trim_uuid(M::NetworkService, params) if params["uuid"]
-    check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+    accepted_params = [
+      "uuid",
+      "vif_uuid",
+      "display_name",
+      "incoming_port",
+      "outgoing_port"
+    ]
+    required_params = ["display_name"]
 
-    network_service = M::NetworkService.create(params)
-    respond_with(R::NetworkService.generate(network_service))
+    post_new(:NetworkService, accepted_params, required_params) { |params|
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+    }
   end
 
   get do

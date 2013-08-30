@@ -2,14 +2,19 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   post do
-    params = parse_params(@params, ["uuid","display_name","ipv4_address","is_connected","dpid","dc_segment_id","node_id"])
-    required_params(params, ["display_name", "dpid", "node_id"])
-    check_and_trim_uuid(M::Datapath, params) if params.has_key?("uuid")
-
-    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
-
-    datapath = M::Datapath.batch { |n| n.create(params) }
-    respond_with(R::Datapath.generate(datapath))
+    accepted_params = [
+      "uuid",
+      "display_name",
+      "ipv4_address",
+      "is_connected",
+      "dpid",
+      "dc_segment_id",
+      "node_id"
+    ]
+    required_params = ["display_name", "dpid", "node_id"]
+    post_new(:Datapath, accepted_params, required_params) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
+    }
   end
 
   get do
@@ -32,12 +37,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
       "dpid",
       "dc_segment_id",
       "node_id"
-    ])
+    ]) {
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
+    }
   end
 
   post '/:uuid/networks/:network_uuid' do
     params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_addr'])
-    required_params(params, ["broadcast_mac_addr", "network_uuid"])
+    check_required_params(params, ["broadcast_mac_addr", "network_uuid"])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
     network = check_syntax_and_pop_uuid(M::Network, params, 'network_uuid')
