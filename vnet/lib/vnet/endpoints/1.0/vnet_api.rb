@@ -79,6 +79,21 @@ module Vnet::Endpoints::V10
       respond_with([mw.uuid])
     end
 
+    def get_all(class_name)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get("#{class_name}Collection")
+      respond_with(
+        response.generate(model_wrapper.all)
+      )
+    end
+
+    def get_by_uuid(class_name)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+      object = check_syntax_and_pop_uuid(model_wrapper, @params)
+      respond_with(response.generate(object))
+    end
+
     respond_to :json, :yml
 
     load_namespace('datapaths')

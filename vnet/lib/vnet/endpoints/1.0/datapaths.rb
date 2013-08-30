@@ -17,8 +17,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   get '/:uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath, @params)
-    respond_with(R::Datapath.generate(datapath))
+    get_by_uuid(:Datapath)
   end
 
   delete '/:uuid' do

@@ -34,8 +34,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   get '/:uuid' do
-    nw = check_syntax_and_pop_uuid(M::Network, @params)
-    respond_with(R::Network.generate(nw))
+    get_by_uuid(:Network)
   end
 
   delete '/:uuid' do

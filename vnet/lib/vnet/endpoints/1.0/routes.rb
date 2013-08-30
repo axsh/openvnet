@@ -26,8 +26,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   end
 
   get '/:uuid' do
-    route = check_syntax_and_pop_uuid(M::Route, @params)
-    respond_with(R::Route.generate(route))
+    get_by_uuid(:Route)
   end
 
   delete '/:uuid' do
