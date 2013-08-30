@@ -107,10 +107,11 @@ describe "/networks" do
     end
 
     context "without the 'ipv4_network' parameter" do
-      it "should return a 500 error" do
+      it "should return a 400 error" do
         post "/networks", {
           display_name: "network"
         }
+        expect(last_response.status).to eq 400
       end
     end
   end
