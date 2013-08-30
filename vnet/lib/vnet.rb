@@ -80,6 +80,7 @@ module Vnet
   end
 
   module Models
+    class InvalidUUIDError < StandardError; end
     autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
