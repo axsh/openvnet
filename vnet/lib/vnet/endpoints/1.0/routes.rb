@@ -3,30 +3,15 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
 
   post do
-    params = parse_params(@params, ["uuid",
-                                    "vif_uuid",
-                                    "route_link_uuid",
-                                    "ipv4_address",
-                                    "ipv4_prefix",
-                                    "ingress",
-                                    "egress"
-                                   ])
+    params = parse_params(@params, ["uuid", "vif_uuid", "route_link_uuid",
+      "ipv4_address", "ipv4_prefix", "ingress", "egress"])
+    required_params(params, ["ipv4_address", "route_link_uuid"])
+    check_and_trim_uuid(M::Route, params) if params.has_key?("uuid")
 
-    if params.has_key?("uuid")
-      raise E::DuplicateUUID, params["uuid"] unless M::Route[params["uuid"]].nil?
-      params["uuid"] = M::Route.trim_uuid(params["uuid"])
-    end
+    check_syntax_and_get_id(M::Route, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+    check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid", "route_link_id")
 
-    vif_uuid = params.delete('vif_uuid')
-    route_link_uuid = params.delete('route_link_uuid') || raise(E::MissingArgument, 'route_link_uuid')
-
-    if vif_uuid
-      params['vif_id'] = (M::Vif[vif_uuid] || raise(E::InvalidUUID, vif_uuid)).id
-    end
-
-    params['route_link_id'] = (M::RouteLink[route_link_uuid] || raise(E::InvalidUUID, route_link_uuid)).id
-
-    params['ipv4_address'] = parse_ipv4(params['ipv4_address'] || raise(E::MissingArgument, 'ipv4_address'))
+    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
     params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
 
     params['ingress'] = params['ingress'].to_i if params['ingress']
@@ -42,18 +27,22 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   end
 
   get '/:uuid' do
-    route = M::Route[@params["uuid"]]
+    route = check_syntax_and_pop_uuid(M::Route, @params)
     respond_with(R::Route.generate(route))
   end
 
   delete '/:uuid' do
-    route = M::Route.destroy(@params["uuid"])
+    route = check_syntax_and_pop_uuid(M::Route, @params)
+    route.batch.destroy.commit
     respond_with(R::Route.generate(route))
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["ipv4_address","created_at","updated_at"])
-    route = M::Route.update(@params["uuid"], params)
-    respond_with(R::Route.generate(route))
+    params = parse_params(@params, ["ipv4_address", "prefix", "vif_uuid",
+      "route_link_uuid", "uuid"])
+    route = check_syntax_and_pop_uuid(M::Route, params)
+    route.batch.update(params).commit
+    updated_route ~ M::NetworkService[@params["uuid"]]
+    respond_with(R::Route.generate(updated_route))
   end
 end
