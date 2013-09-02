@@ -36,11 +36,16 @@ describe "/network_services" do
   end
 
   describe "PUT /:uuid" do
-    request_params = {:display_name => "new display name"}
-    expected_response = {"display_name" => "new display name"}
+    let!(:new_vif) { Fabricate(:vif) { uuid "vif-other"}  }
+    accepted_params = {
+      :vif_uuid => "vif-other",
+      :display_name => "our new and improved test network service",
+      :incoming_port => 40,
+      :outgoing_port => 100
+    }
 
     it_behaves_like "a put call", "network_services", "ns", :network_service,
-      request_params, expected_response
+      accepted_params
   end
 
 end

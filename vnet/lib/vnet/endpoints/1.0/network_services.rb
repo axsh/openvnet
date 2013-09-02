@@ -30,11 +30,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   end
 
   put '/:uuid' do
-    update_by_uuid(:NetworkService, [
+    accepted_params = [
       "vif_uuid",
       "display_name",
       "incoming_port",
       "outgoing_port"
-    ])
+    ]
+
+    update_by_uuid(:NetworkService, accepted_params) { |params|
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+    }
   end
 end
