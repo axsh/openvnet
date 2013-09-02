@@ -36,11 +36,17 @@ describe "/networks" do
   end
 
   describe "PUT /:uuid" do
-    request_params = {:domain_name => "the.new.domain.name"}
-    expected_response = {"domain_name" => "the.new.domain.name"}
+    accepted_params = {
+      :display_name => "our new name for the test network",
+      :ipv4_network => "10.0.0.2",
+      :ipv4_prefix => 8,
+      :domain_name => "new.vdc.test.domain",
+      :network_mode => "physical",
+      :editable => true
+    }
 
     it_behaves_like "a put call", "networks", "nw", :network,
-      request_params, expected_response
+      accepted_params
   end
 
 end

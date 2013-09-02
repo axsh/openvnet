@@ -43,6 +43,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
       "dc_network_uuid",
       "network_mode",
       "editable"
-    ])
+    ]) { |params|
+      params["ipv4_network"] = parse_ipv4(params["ipv4_network"]) if params.has_key?("ipv4_network")
+      check_syntax_and_get_id(M::DcNetwork, params, "dc_network", "dc_network_id") if params["dc_network_uuid"]
+    }
   end
 end
