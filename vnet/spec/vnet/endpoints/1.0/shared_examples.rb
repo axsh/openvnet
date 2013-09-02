@@ -130,11 +130,15 @@ shared_examples "a post call" do |suffix, accepted_params, required_params|
 
   required_params.each { |req_p|
     context "without the '#{req_p}' parameter" do
-      it "should return a 400 error" do
+      it "should return a 400 error with a MissingArgument message" do
         params = accepted_params.dup
         params.delete(req_p)
         post "/#{suffix}", params
+
         expect(last_response.status).to eq 400
+        body = JSON.parse(last_response.body)
+        expect(body["error"]).to eq "Vnet::Endpoints::Errors::MissingArgument"
+        expect(body["message"]).to eq(req_p.to_s)
       end
     end
   }
