@@ -17,13 +17,15 @@ describe "/datapaths" do
   end
 
   describe "POST /" do
+    let!(:dc_segment) { Fabricate(:dc_segment) { uuid "ds-segment" } }
     accepted_params = {
       :uuid => "dp-test",
       :display_name => "our test datapath",
       :ipv4_address => "192.168.50.100",
       :is_connected => false,
       :dpid => "0x0000aaaaaaaaaaaa",
-      :node_id => "vna45"
+      :node_id => "vna45",
+      :dc_segment_uuid => "ds-segment"
     }
     required_params = [:display_name, :dpid, :node_id]
 
@@ -35,19 +37,16 @@ describe "/datapaths" do
   end
 
   describe "PUT /:uuid" do
-    request_params = {
+    let!(:new_dc_segment) { Fabricate(:dc_segment) { uuid "ds-newseg" } }
+    accepted_params = {
       :display_name => "we changed this name",
-      :node_id => 'vna45',
-      :ipv4_address => "192.168.2.50"
-    }
-    expected_response = {
-      "display_name" => "we changed this name",
-      "node_id" => "vna45",
-      "ipv4_address" => "192.168.2.50"
+      :ipv4_address => "192.168.2.50",
+      :dpid => "0x0000abcdefabcdef",
+      :dc_segment_uuid => "ds-newseg",
+      :node_id => 'vna45'
     }
 
-    it_behaves_like "a put call", "datapaths", "dp", :datapath_1,
-      request_params, expected_response
+    it_behaves_like "a put call", "datapaths", "dp", :datapath_1, accepted_params
   end
 
   describe "POST /:uuid/networks/:network_uuid" do
