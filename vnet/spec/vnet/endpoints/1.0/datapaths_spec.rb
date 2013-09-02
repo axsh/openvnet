@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
+require_relative 'shared_examples'
 
 def app
   Vnet::Endpoints::V10::VnetAPI
@@ -115,25 +116,7 @@ describe "/datapaths" do
   end
 
   describe "DELETE /:uuid" do
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        delete "/datapaths/dp-notfound"
-        expect(last_response.status).to eq 404
-      end
-    end
-
-    context "with an existing uuid" do
-      let!(:datapath) { Fabricate(:datapath_1) }
-      it "should delete the datapath" do
-        delete "/datapaths/#{datapath.canonical_uuid}"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body.first).to eq datapath.canonical_uuid
-
-        Vnet::Models::Datapath[datapath.canonical_uuid].should eq(nil)
-      end
-    end
+    it_behaves_like "a delete call", "datapaths", "dp", :datapath_1, :Datapath
   end
 
   describe "PUT /:uuid" do

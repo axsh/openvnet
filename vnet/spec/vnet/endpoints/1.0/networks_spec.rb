@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
+require_relative 'shared_examples'
 
 def app
   Vnet::Endpoints::V10::VnetAPI
@@ -117,25 +118,7 @@ describe "/networks" do
   end
 
   describe "DELETE /:uuid" do
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        delete "/networks/nw-notfound"
-        expect(last_response.status).to eq 404
-      end
-    end
-
-    context "with an existing uuid" do
-      let!(:network) { Fabricate(:network) }
-      it "should delete the network" do
-        delete "/networks/#{network.canonical_uuid}"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body.first).to eq network.canonical_uuid
-
-        Vnet::Models::Network[network.canonical_uuid].should eq(nil)
-      end
-    end
+    it_behaves_like "a delete call", "networks", "nw", :network, :Network
   end
 
   describe "PUT /:uuid" do

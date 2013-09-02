@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
+require_relative 'shared_examples'
 
 def app
   Vnet::Endpoints::V10::VnetAPI
@@ -102,25 +103,7 @@ describe "/routes" do
   end
 
   describe "DELETE /:uuid" do
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        delete "/routes/r-notfound"
-        expect(last_response.status).to eq 404
-      end
-    end
-
-    context "with an existing uuid" do
-      let!(:route) { Fabricate(:route) }
-      it "should delete the route" do
-        delete "/routes/#{route.canonical_uuid}"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body.first).to eq route.canonical_uuid
-
-        Vnet::Models::Route[route.canonical_uuid].should eq(nil)
-      end
-    end
+    it_behaves_like "a delete call", "routes", "r", :route, :Route
   end
 
   describe "PUT /:uuid" do
