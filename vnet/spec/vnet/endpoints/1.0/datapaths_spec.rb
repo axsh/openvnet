@@ -149,7 +149,8 @@ describe "/datapaths" do
       it "should update the datapath" do
         put "/datapaths/#{datapath.canonical_uuid}", {
           :display_name => "we changed this name",
-          :node_id => 'vna45'
+          :node_id => 'vna45',
+          :ipv4_address => "192.168.2.50"
         }
 
         expect(last_response).to be_ok
@@ -157,6 +158,7 @@ describe "/datapaths" do
         expect(body["uuid"]).to eq datapath.canonical_uuid
         expect(body["display_name"]).to eq "we changed this name"
         expect(body["node_id"]).to eq "vna45"
+        expect(body["ipv4_address"]).to eq 3232236082
       end
     end
   end

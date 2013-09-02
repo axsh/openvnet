@@ -30,15 +30,17 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   put '/:uuid' do
-    update_by_uuid(:Datapath, [
+    accepted_params = [
       "display_name",
       "ipv4_address",
       "is_connected",
       "dpid",
       "dc_segment_id",
       "node_id"
-    ]) {
-      params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
+    ]
+
+    update_by_uuid(:Datapath, accepted_params) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params['ipv4_address']
     }
   end
 
