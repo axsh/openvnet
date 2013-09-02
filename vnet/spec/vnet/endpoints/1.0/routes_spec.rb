@@ -17,49 +17,21 @@ describe "/routes" do
   end
 
   describe "POST /" do
-    let (:route_link) { Fabricate(:route_link) }
-    context "without the uuid parameter" do
-      it "should create a route" do
-        params = {
-          :ipv4_address => "10.0.0.1",
-          :route_link_uuid => route_link.canonical_uuid
-        }
-        post "/routes", params
+    let!(:vif) { Fabricate(:vif) { uuid "vif-test"}  }
+    let!(:route_link) { Fabricate(:route_link) { uuid "rl-test" } }
+    accepted_params = {
+      :uuid => "r-testrout",
+      :display_name => "our test route",
+      :vif_uuid => "vif-test",
+      :route_link_uuid => "rl-test",
+      :ipv4_address => "192.168.10.10",
+      :ipv4_prefix => 16,
+      :ingress => true,
+      :egress => false
+    }
+    required_params = [:ipv4_address, :route_link_uuid]
 
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["ipv4_address"]).to eq 167772161
-      end
-    end
-
-    context "with the uuid parameter" do
-      it "should create a route with the given uuid" do
-        post "/routes", {
-          ipv4_address: "10.0.0.1",
-          uuid: "r-testrout",
-          route_link_uuid: route_link.canonical_uuid
-        }
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq "r-testrout"
-        expect(body["ipv4_address"]).to eq 167772161
-      end
-    end
-
-    context "with a uuid parameter with a faulty syntax" do
-      it "should return a 400 error" do
-        post "/routes", { :uuid => "this_aint_no_uuid" }
-        expect(last_response.status).to eq 400
-      end
-    end
-
-    context "without the 'ipv4_address' parameter" do
-      it "should return a 400 error" do
-        post "/routes"
-        expect(last_response.status).to eq 400
-      end
-    end
+    it_behaves_like "a post call", "routes", accepted_params, required_params
   end
 
   describe "DELETE /:uuid" do

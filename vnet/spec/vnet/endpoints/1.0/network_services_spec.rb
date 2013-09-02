@@ -17,46 +17,17 @@ describe "/network_services" do
   end
 
   describe "POST /" do
-    context "without the uuid parameter" do
-      it "should create a network_service" do
-        params = {
-          display_name: "network_service",
-        }
-        post "/network_services", params
+    let!(:vif) { Fabricate(:vif) { uuid "vif-test"}  }
+    accepted_params = {
+      :uuid => "ns-test",
+      :vif_uuid => "vif-test",
+      :display_name => "our test network service",
+      :incoming_port => 40,
+      :outgoing_port => 100
+    }
+    required_params = [:display_name]
 
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["display_name"]).to eq "network_service"
-      end
-    end
-
-    context "with the uuid parameter" do
-      it "should create a network_service with the given uuid" do
-        post "/network_services", {
-          display_name: "network_service",
-          uuid: "ns-testns"
-        }
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq "ns-testns"
-        expect(body["display_name"]).to eq "network_service"
-      end
-    end
-
-    context "with a uuid parameter with a faulty syntax" do
-      it "should return a 400 error" do
-        post "/network_services", { :uuid => "this_aint_no_uuid" }
-        expect(last_response.status).to eq 400
-      end
-    end
-
-    context "without the 'display_name' parameter" do
-      it "should return a 400 error" do
-        post "/network_services"
-        expect(last_response.status).to eq 400
-      end
-    end
+    it_behaves_like "a post call", "network_services", accepted_params, required_params
   end
 
   describe "DELETE /:uuid" do

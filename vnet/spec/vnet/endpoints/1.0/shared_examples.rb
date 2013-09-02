@@ -92,3 +92,50 @@ shared_examples "a get call with uuid" do |suffix, uuid_prefix, fabricator|
     end
   end
 end
+
+shared_examples "a post call" do |suffix, accepted_params, required_params|
+  context "without the uuid parameter" do
+    it "should create a #{suffix.chomp("s")}" do
+      params = accepted_params.dup
+      params.delete(:uuid)
+      post "/#{suffix}", params
+
+      p Vnet::Models::Vif.all
+      puts last_response.errors
+      expect(last_response).to be_ok
+      body = JSON.parse(last_response.body)
+      params.each { |k,v|
+        expect(body[k.to_s]).to eq v
+      }
+    end
+  end
+
+  context "with the uuid parameter" do
+    it "should create a #{suffix.chomp("s")} with the given uuid" do
+      post "/#{suffix}", accepted_params
+      expect(last_response).to be_ok
+      body = JSON.parse(last_response.body)
+      accepted_params.each { |k,v|
+        expect(body[k.to_s]).to eq v
+      }
+    end
+  end
+
+  context "with a uuid parameter with a faulty syntax" do
+    it "should return a 400 error" do
+      post "/#{suffix}", { :uuid => "this_aint_no_uuid" }
+      expect(last_response.status).to eq 400
+    end
+  end
+
+  required_params.each { |req_p|
+    context "without the '#{req_p}' parameter" do
+      it "should return a 400 error" do
+        params = accepted_params.dup
+        params.delete(req_p)
+        post "/#{suffix}", params
+        expect(last_response.status).to eq 400
+      end
+    end
+  }
+end

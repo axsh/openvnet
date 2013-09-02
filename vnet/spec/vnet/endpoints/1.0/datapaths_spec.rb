@@ -17,61 +17,17 @@ describe "/datapaths" do
   end
 
   describe "POST /" do
-    context "without the uuid parameter" do
-      it "should create a datapath" do
-        params = {
-          display_name: "datapath",
-          dpid: "0x0000aaaaaaaaaaaa",
-          node_id: "vna1"
-        }
-        post "/datapaths", params
+    accepted_params = {
+      :uuid => "dp-test",
+      :display_name => "our test datapath",
+      :ipv4_address => "192.168.50.100",
+      :is_connected => false,
+      :dpid => "0x0000aaaaaaaaaaaa",
+      :node_id => "vna45"
+    }
+    required_params = [:display_name, :dpid, :node_id]
 
-        body = JSON.parse(last_response.body)
-        expect(body["display_name"]).to eq "datapath"
-        expect(body["dpid"]).to eq "0x0000aaaaaaaaaaaa"
-        expect(body["node_id"]).to eq "vna1"
-      end
-    end
-
-    context "with the uuid parameter" do
-      it "should create a datapath with the given uuid" do
-        post "/datapaths", {
-          display_name: "datapath",
-          dpid: "0x0000aaaaaaaaaaaa",
-          node_id: "vna1",
-          uuid: "dp-testdp"
-        }
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq "dp-testdp"
-      end
-    end
-
-    context "with a uuid parameter with a faulty syntax" do
-      it "should return a 400 error" do
-        post "/datapaths", { :uuid => "this_aint_no_uuid" }
-        expect(last_response.status).to eq 400
-      end
-    end
-
-    context "without the 'display_name' parameter" do
-      it "should return a 400 error" do
-        post "/datapaths", {
-          :ipv4_datapath => "192.168.10.1"
-        }
-        expect(last_response.status).to eq 400
-      end
-    end
-
-    context "without the 'ipv4_datapath' parameter" do
-      it "should return a 400 error" do
-        post "/datapaths", {
-          display_name: "datapath"
-        }
-        expect(last_response.status).to eq 400
-      end
-    end
+    it_behaves_like "a post call", "datapaths", accepted_params, required_params
   end
 
   describe "DELETE /:uuid" do
