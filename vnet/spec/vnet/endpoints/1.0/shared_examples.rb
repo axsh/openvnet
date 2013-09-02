@@ -1,12 +1,22 @@
 # -*- coding: utf-8 -*-
 
-shared_examples "a delete call" do |suffix, uuid_prefix, fabricator, model_class|
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        delete "/#{suffix}/#{uuid_prefix}-notfound"
-        expect(last_response.status).to eq 404
-      end
+def non_existant_uuid_404(suffix, uuid_prefix)
+  context "with a nonexistant uuid" do
+    it "should return a 404 error" do
+      delete "/#{suffix}/#{uuid_prefix}-notfound"
+      expect(last_response.status).to eq 404
     end
+  end
+end
+
+def check_error(body, type, message)
+  body = JSON.parse(last_response.body)
+  expect(body["error"]).to eq "Vnet::Endpoints::Errors::#{type}"
+  expect(body["message"]).to eq(message)
+end
+
+shared_examples "a delete call" do |suffix, uuid_prefix, fabricator, model_class|
+    non_existant_uuid_404(suffix, uuid_prefix)
 
     context "with an existing uuid" do
       let!(:object) { Fabricate(fabricator) }
@@ -23,12 +33,7 @@ shared_examples "a delete call" do |suffix, uuid_prefix, fabricator, model_class
 end
 
 shared_examples "a put call" do |suffix, uuid_prefix, fabricator, accepted_params|
-  context "with a nonexistant uuid" do
-    it "should return a 404 error" do
-      put "/#{suffix}/#{uuid_prefix}-notfound"
-      expect(last_response.status).to eq 404
-    end
-  end
+  non_existant_uuid_404(suffix, uuid_prefix)
 
   context "with an existing uuid" do
     let!(:object) { Fabricate(fabricator) }
@@ -75,12 +80,7 @@ shared_examples "a get call without uuid" do |suffix, fabricator|
 end
 
 shared_examples "a get call with uuid" do |suffix, uuid_prefix, fabricator|
-  context "with a non existing uuid" do
-    it "should return 404 error" do
-      get "/#{suffix}/#{uuid_prefix}-notfound"
-      expect(last_response).to be_not_found
-    end
-  end
+  non_existant_uuid_404(suffix, uuid_prefix)
 
   context "with an existing uuid" do
     let!(:object) { Fabricate(fabricator) }
@@ -93,12 +93,6 @@ shared_examples "a get call with uuid" do |suffix, uuid_prefix, fabricator|
       expect(body["uuid"]).to eq object.canonical_uuid
     end
   end
-end
-
-def check_error(body, type, message)
-  body = JSON.parse(last_response.body)
-  expect(body["error"]).to eq "Vnet::Endpoints::Errors::#{type}"
-  expect(body["message"]).to eq(message)
 end
 
 shared_examples "a post call" do |suffix, accepted_params, required_params|
