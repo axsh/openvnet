@@ -2,9 +2,14 @@
 
 def non_existant_uuid_404(suffix, uuid_prefix)
   context "with a nonexistant uuid" do
-    it "should return a 404 error" do
-      delete "/#{suffix}/#{uuid_prefix}-notfound"
+    expected_error = "UnknownUUIDResource"
+
+    it "should return a 404 error (#{expected_error})" do
+      faulty_uuid = "#{uuid_prefix}-notfound"
+
+      delete "/#{suffix}/#{faulty_uuid}"
       expect(last_response.status).to eq 404
+      check_error(last_response.body, "#{expected_error}", faulty_uuid)
     end
   end
 end
