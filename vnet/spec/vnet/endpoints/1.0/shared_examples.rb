@@ -95,6 +95,12 @@ shared_examples "a get call with uuid" do |suffix, uuid_prefix, fabricator|
   end
 end
 
+def check_error(body, type, message)
+  body = JSON.parse(last_response.body)
+  expect(body["error"]).to eq "Vnet::Endpoints::Errors::#{type}"
+  expect(body["message"]).to eq(message)
+end
+
 shared_examples "a post call" do |suffix, accepted_params, required_params|
   context "without the uuid parameter" do
     it "should create a #{suffix.chomp("s")}" do
@@ -122,23 +128,25 @@ shared_examples "a post call" do |suffix, accepted_params, required_params|
   end
 
   context "with a uuid parameter with a faulty syntax" do
-    it "should return a 400 error" do
-      post "/#{suffix}", { :uuid => "this_aint_no_uuid" }
+    it "should return a 400 error (InvalidUUID)" do
+      params = accepted_params.dup
+      params[:uuid] = "this_aint_no_uuid"
+      post "/#{suffix}", params
+
       expect(last_response.status).to eq 400
+      check_error(last_response.body, "InvalidUUID", "this_aint_no_uuid")
     end
   end
 
   required_params.each { |req_p|
     context "without the '#{req_p}' parameter" do
-      it "should return a 400 error with a MissingArgument message" do
+      it "should return a 400 error (MissingArgument)" do
         params = accepted_params.dup
         params.delete(req_p)
         post "/#{suffix}", params
 
         expect(last_response.status).to eq 400
-        body = JSON.parse(last_response.body)
-        expect(body["error"]).to eq "Vnet::Endpoints::Errors::MissingArgument"
-        expect(body["message"]).to eq(req_p.to_s)
+        check_error(last_response.body, "MissingArgument", req_p.to_s)
       end
     end
   }
