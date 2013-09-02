@@ -9,30 +9,7 @@ end
 
 describe "/routes" do
   describe "GET /" do
-    context "with no routes in the database" do
-      it "should return empty json" do
-        get "/routes"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body).to be_empty
-      end
-    end
-
-    context "with 3 routes in the database" do
-      before(:each) do
-        3.times { Fabricate(:route) }
-      end
-
-      it "should return 3 routes" do
-        get "/routes"
-
-        puts last_response.errors
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body.size).to eq 3
-      end
-    end
+    it_behaves_like "a get call without uuid", "routes", :route
   end
 
   describe "GET /:uuid" do

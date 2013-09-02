@@ -45,3 +45,29 @@ shared_examples "a put call" do |suffix, uuid_prefix, fabricator, request_params
     end
   end
 end
+
+shared_examples "a get call without uuid" do |suffix, fabricator|
+  context "with no #{suffix} in the database" do
+    it "should return empty json" do
+      get "/#{suffix}"
+
+      expect(last_response).to be_ok
+      body = JSON.parse(last_response.body)
+      expect(body).to be_empty
+    end
+  end
+
+  context "with 3 #{suffix} in the database" do
+    before(:each) do
+      3.times { Fabricate(fabricator) }
+    end
+
+    it "should return 3 #{suffix}" do
+      get "/#{suffix}"
+
+      expect(last_response).to be_ok
+      body = JSON.parse(last_response.body)
+      expect(body.size).to eq 3
+    end
+  end
+end

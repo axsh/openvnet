@@ -9,29 +9,7 @@ end
 
 describe "/network_services" do
   describe "GET /" do
-    context "with no network_services in the database" do
-      it "should return empty json" do
-        get "/network_services"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body).to be_empty
-      end
-    end
-
-    context "with 3 network_services in the database" do
-      before(:each) do
-        3.times { Fabricate(:network_service) }
-      end
-
-      it "should return 3 network_services" do
-        get "/network_services"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body.size).to eq 3
-      end
-    end
+    it_behaves_like "a get call without uuid", "network_services", :network_service
   end
 
   describe "GET /:uuid" do

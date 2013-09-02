@@ -9,33 +9,7 @@ end
 
 describe "/networks" do
   describe "GET /" do
-    context "with no networks in the database" do
-      it "should return empty json" do
-        get "/networks"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body).to be_empty
-      end
-    end
-
-    context "with 3 networks in the database" do
-      before(:each) {
-        3.times do
-          Fabricate(:network) do
-            ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
-          end
-        end
-      }
-
-      it "should return 3 networks" do
-        get "/networks"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body.size).to eq 3
-      end
-    end
+    it_behaves_like "a get call without uuid", "networks", :network
   end
 
   describe "GET /:uuid" do

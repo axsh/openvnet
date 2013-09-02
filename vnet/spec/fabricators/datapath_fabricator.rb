@@ -1,4 +1,13 @@
 require 'ipaddr'
+
+Fabricator(:datapath, class_name: Vnet::Models::Datapath) do
+  display_name "test-datapath"
+  ipv4_address { sequence(:ipv4_address, IPAddr.new("192.168.1.1").to_i) }
+  # dpid { sequence(:dpid, "0x#{'a' * 16}") }
+  dc_segment { Fabricate(:dc_segment) }
+  # node_id { sequence(:node_id, "vna1") }
+end
+
 Fabricator(:datapath_1, class_name: Vnet::Models::Datapath) do
   uuid 'dp-test1'
   open_flow_controller_id 1 #TODO: create fabrication
