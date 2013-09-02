@@ -4,10 +4,11 @@ module Vnet::ModelWrappers
   class Route < Base
 
     def to_hash
+      vif = self.batch.vif.commit
       {
         :uuid => self.uuid,
         :route_link_uuid => self.batch.route_link.commit.uuid,
-        :vif_uuid => self.batch.vif.commit && self.batch.vif.commit.uuid,
+        :vif_uuid => vif && vif.uuid,
         :route_type => self.route_type,
         :ipv4_address => self.ipv4_address,
         :ipv4_prefix => self.ipv4_prefix,
