@@ -43,7 +43,7 @@ describe "/datapaths" do
     expected_response = {
       "display_name" => "we changed this name",
       "node_id" => "vna45",
-      "ipv4_address" => 3232236082
+      "ipv4_address" => "192.168.2.50"
     }
 
     it_behaves_like "a put call", "datapaths", "dp", :datapath_1,
