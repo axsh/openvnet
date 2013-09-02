@@ -122,24 +122,11 @@ describe "/networks" do
   end
 
   describe "PUT /:uuid" do
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        put "/networks/nw-notfound"
-        expect(last_response.status).to eq 404
-      end
-    end
+    request_params = {:domain_name => "the.new.domain.name"}
+    expected_response = {"domain_name" => "the.new.domain.name"}
 
-    context "with an existing uuid" do
-      let!(:network) { Fabricate(:network) }
-      it "should update the network" do
-        put "/networks/#{network.canonical_uuid}", :domain_name => "aaa.#{network.domain_name}"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq network.canonical_uuid
-        expect(body["domain_name"]).not_to eq network.domain_name
-      end
-    end
+    it_behaves_like "a put call", "networks", "nw", :network,
+      request_params, expected_response
   end
 
 end

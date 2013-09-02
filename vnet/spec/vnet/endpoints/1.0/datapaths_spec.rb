@@ -120,30 +120,19 @@ describe "/datapaths" do
   end
 
   describe "PUT /:uuid" do
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        put "/datapaths/dp-notfound"
-        expect(last_response.status).to eq 404
-      end
-    end
+    request_params = {
+      :display_name => "we changed this name",
+      :node_id => 'vna45',
+      :ipv4_address => "192.168.2.50"
+    }
+    expected_response = {
+      "display_name" => "we changed this name",
+      "node_id" => "vna45",
+      "ipv4_address" => 3232236082
+    }
 
-    context "with an existing uuid" do
-      let!(:datapath) { Fabricate(:datapath_1) }
-      it "should update the datapath" do
-        put "/datapaths/#{datapath.canonical_uuid}", {
-          :display_name => "we changed this name",
-          :node_id => 'vna45',
-          :ipv4_address => "192.168.2.50"
-        }
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq datapath.canonical_uuid
-        expect(body["display_name"]).to eq "we changed this name"
-        expect(body["node_id"]).to eq "vna45"
-        expect(body["ipv4_address"]).to eq 3232236082
-      end
-    end
+    it_behaves_like "a put call", "datapaths", "dp", :datapath_1,
+      request_params, expected_response
   end
 
   describe "POST /:uuid/networks/:network_uuid" do

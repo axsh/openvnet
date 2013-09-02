@@ -107,28 +107,12 @@ describe "/routes" do
   end
 
   describe "PUT /:uuid" do
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        put "/routes/r-notfound"
-        expect(last_response.status).to eq 404
-      end
-    end
-
-    context "with an existing uuid" do
-      let!(:route) { Fabricate(:route) }
-      it "should update the route" do
-        put "/routes/#{route.canonical_uuid}", {
-          :ipv4_address => "192.168.3.50",
-          :ipv4_prefix => 16
-        }
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq route.canonical_uuid
-        expect(body["ipv4_address"]).to eq 3232236338
-        expect(body["ipv4_prefix"]).to eq 16
-      end
-    end
+    request_params = { :ipv4_address => "192.168.3.50", :ipv4_prefix => 16 }
+    expected_response = {
+      "ipv4_address" => 3232236338,
+      "ipv4_prefix" => 16
+    }
+    it_behaves_like "a put call", "routes", "r", :route, request_params, expected_response
   end
 
 end
