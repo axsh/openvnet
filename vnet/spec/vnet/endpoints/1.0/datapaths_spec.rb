@@ -13,24 +13,7 @@ describe "/datapaths" do
   end
 
   describe "GET /:uuid" do
-    context "with a non existing uuid" do
-      it "should return 404 error" do
-        get "/datapaths/dp-notfound"
-        expect(last_response).to be_not_found
-      end
-    end
-
-    context "with an existing uuid" do
-      let!(:datapath) { Fabricate(:datapath_1) }
-
-      it "should return a datapath" do
-        get "/datapaths/#{datapath.canonical_uuid}"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq datapath.canonical_uuid
-      end
-    end
+    it_behaves_like "a get call with uuid", "datapaths", "dp", :datapath
   end
 
   describe "POST /" do

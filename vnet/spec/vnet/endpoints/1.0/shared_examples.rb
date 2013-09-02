@@ -71,3 +71,24 @@ shared_examples "a get call without uuid" do |suffix, fabricator|
     end
   end
 end
+
+shared_examples "a get call with uuid" do |suffix, uuid_prefix, fabricator|
+  context "with a non existing uuid" do
+    it "should return 404 error" do
+      get "/#{suffix}/#{uuid_prefix}-notfound"
+      expect(last_response).to be_not_found
+    end
+  end
+
+  context "with an existing uuid" do
+    let!(:object) { Fabricate(fabricator) }
+
+    it "should return a #{suffix.chomp("s")}" do
+      get "/#{suffix}/#{object.canonical_uuid}"
+
+      expect(last_response).to be_ok
+      body = JSON.parse(last_response.body)
+      expect(body["uuid"]).to eq object.canonical_uuid
+    end
+  end
+end

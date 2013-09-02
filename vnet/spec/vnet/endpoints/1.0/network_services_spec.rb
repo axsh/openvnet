@@ -13,24 +13,7 @@ describe "/network_services" do
   end
 
   describe "GET /:uuid" do
-    context "with a non existing uuid" do
-      it "should return 404 error" do
-        get "/network_services/ns-notfound"
-        expect(last_response).to be_not_found
-      end
-    end
-
-    context "with an existing uuid" do
-      let!(:network_service) { Fabricate(:network_service) }
-
-      it "should return a network_service" do
-        get "/network_services/#{network_service.canonical_uuid}"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq network_service.canonical_uuid
-      end
-    end
+    it_behaves_like "a get call with uuid", "network_services", "ns", :network_service
   end
 
   describe "POST /" do

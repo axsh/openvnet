@@ -13,24 +13,7 @@ describe "/routes" do
   end
 
   describe "GET /:uuid" do
-    context "with a non existing uuid" do
-      it "should return 404 error" do
-        get "/routes/r-notfound"
-        expect(last_response).to be_not_found
-      end
-    end
-
-    context "with an existing uuid" do
-      let!(:route) { Fabricate(:route) }
-
-      it "should return a route" do
-        get "/routes/#{route.canonical_uuid}"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq route.canonical_uuid
-      end
-    end
+    it_behaves_like "a get call with uuid", "routes", "r", :route
   end
 
   describe "POST /" do
