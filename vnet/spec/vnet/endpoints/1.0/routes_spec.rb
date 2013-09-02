@@ -38,12 +38,19 @@ describe "/routes" do
   end
 
   describe "PUT /:uuid" do
-    request_params = { :ipv4_address => "192.168.3.50", :ipv4_prefix => 16 }
-    expected_response = {
-      "ipv4_address" => "192.168.3.50",
-      "ipv4_prefix" => 16
+    let!(:new_vif) { Fabricate(:vif) { uuid 'vif-newvif' } }
+    let!(:route_link) { Fabricate(:route_link) { uuid "rl-newroute" } }
+
+    accepted_params = {
+      :vif_uuid => "vif-newvif",
+      :route_link_uuid => "rl-newroute",
+      :ipv4_address => "192.168.3.50",
+      :ipv4_prefix => 16,
     }
-    it_behaves_like "a put call", "routes", "r", :route, request_params, expected_response
+
+    it_behaves_like "a put call", "routes", "r", :route, accepted_params
+
+    #TODO: Check faulty syntax errors for vif_uuid and route_link_uuid
   end
 
 end
