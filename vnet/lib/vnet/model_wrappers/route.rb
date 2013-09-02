@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+require 'ipaddress'
 
 module Vnet::ModelWrappers
   class Route < Base
+    def ipv4_address_s
+      IPAddress::IPv4::parse_u32(self.ipv4_address).to_s
+    end
 
     def to_hash
       vif = self.batch.vif.commit

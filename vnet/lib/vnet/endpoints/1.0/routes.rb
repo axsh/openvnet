@@ -17,7 +17,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     post_new(:Route, accepted_params, required_params) { |params|
       params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
       params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
-      check_syntax_and_get_id(M::Route, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
       check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid", "route_link_id")
     }
   end

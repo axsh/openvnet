@@ -21,7 +21,6 @@ describe "/routes" do
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-test" } }
     accepted_params = {
       :uuid => "r-testrout",
-      :display_name => "our test route",
       :vif_uuid => "vif-test",
       :route_link_uuid => "rl-test",
       :ipv4_address => "192.168.10.10",
@@ -41,7 +40,7 @@ describe "/routes" do
   describe "PUT /:uuid" do
     request_params = { :ipv4_address => "192.168.3.50", :ipv4_prefix => 16 }
     expected_response = {
-      "ipv4_address" => 3232236338,
+      "ipv4_address" => "192.168.3.50",
       "ipv4_prefix" => 16
     }
     it_behaves_like "a put call", "routes", "r", :route, request_params, expected_response
