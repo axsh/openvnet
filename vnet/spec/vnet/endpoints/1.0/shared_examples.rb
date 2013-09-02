@@ -100,8 +100,6 @@ shared_examples "a post call" do |suffix, accepted_params, required_params|
       params.delete(:uuid)
       post "/#{suffix}", params
 
-      p Vnet::Models::Vif.all
-      puts last_response.errors
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
       params.each { |k,v|
