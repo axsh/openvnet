@@ -13,8 +13,9 @@ describe "/networks" do
   let(:fabricator)  { :network }
   let(:model_class) { Vnet::Models::Network }
 
-  describe_standard_get
-  describe_standard_delete
+  include_examples "GET /"
+  include_examples "GET /:uuid"
+  include_examples "DELETE /:uuid"
 
   describe "POST /" do
     accepted_params = {
