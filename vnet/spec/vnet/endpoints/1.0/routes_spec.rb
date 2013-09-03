@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
-require_relative 'shared_examples'
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+Dir["#{File.dirname(__FILE__)}/matchers/*.rb"].map {|f| require f }
 
 def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
 describe "/routes" do
-  describe "GET /" do
-    it_behaves_like "a get call without uuid", "routes", :route
-  end
+  let(:api_suffix) { "routes" }
+  let(:fabricator) { :route }
+  let(:model_class) { Vnet::Models::Route }
 
-  describe "GET /:uuid" do
-    it_behaves_like "a get call with uuid", "routes", "r", :route
-  end
+  include_examples "GET /"
+  include_examples "GET /:uuid"
+  include_examples "DELETE /:uuid"
 
   describe "POST /" do
     let!(:vif) { Fabricate(:vif) { uuid "vif-test"}  }
@@ -30,11 +31,7 @@ describe "/routes" do
     }
     required_params = [:ipv4_address, :route_link_uuid]
 
-    it_behaves_like "a post call", "routes", accepted_params, required_params
-  end
-
-  describe "DELETE /:uuid" do
-    it_behaves_like "a delete call", "routes", "r", :route, :Route
+    include_examples "POST /", accepted_params, required_params
   end
 
   describe "PUT /:uuid" do
@@ -48,7 +45,7 @@ describe "/routes" do
       :ipv4_prefix => 16,
     }
 
-    it_behaves_like "a put call", "routes", "r", :route, accepted_params
+    include_examples "PUT /", accepted_params
 
     #TODO: Check faulty syntax errors for vif_uuid and route_link_uuid
   end
