@@ -2,13 +2,14 @@
 require 'spec_helper'
 require 'vnet'
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+Dir["#{File.dirname(__FILE__)}/matchers/*.rb"].map {|f| require f }
 
 def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
 describe "/networks" do
-  let(:suffix)  { "networks" }
+  let(:api_suffix)  { "networks" }
   let(:fabricator)  { :network }
   let(:model_class) { Vnet::Models::Network }
 

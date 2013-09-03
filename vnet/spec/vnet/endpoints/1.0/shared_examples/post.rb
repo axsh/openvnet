@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 
-shared_examples "a post call" do | accepted_params, required_params|
-  before(:each) { post "#{suffix}", request_params }
+def it_should_return_error(code, name, message)
+  it "should return a #{code} error (#{name})" do
+    code = 500
+    last_response.should fail.with_code(code).with_error(name, message)
+  end
+end
 
-  context "without the uuid parameter" do
+shared_examples "a post call" do | accepted_params, required_params|
+  before(:each) { post "#{api_suffix}", request_params }
+
+  context "with only the required parameters" do
     let(:request_params) do
       accepted_params.dup.tap { |n|
-        n.delete(:uuid)
+        n.delete_if { |k,v| !required_params.member?(k) }
       }
     end
 
-    it "should create a database entry with a random uuid" do
+    it "should create a database entry the required parameters set" do
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
       request_params.each { |k,v|
@@ -19,10 +26,10 @@ shared_examples "a post call" do | accepted_params, required_params|
     end
   end
 
-  context "with the uuid parameter" do
+  context "with all accepted parameters" do
     let(:request_params) { accepted_params }
 
-    it "should create a database entry with the given uuid" do
+    it "should create a database entry with all parameters set" do
       expect(last_response).to be_ok
       body = JSON.parse(last_response.body)
       accepted_params.each { |k,v|
@@ -33,29 +40,19 @@ shared_examples "a post call" do | accepted_params, required_params|
 
   context "with a uuid parameter with a faulty syntax" do
     let(:request_params) do
-      accepted_params.dup.tap { |n|
-        n[:uuid] = "this_aint_no_uuid"
-      }
+      accepted_params.dup.tap { |n| n[:uuid] = "this_aint_no_uuid" }
     end
 
-    it "should return a 400 error (InvalidUUID)" do
-      expect(last_response.status).to eq 400
-      check_error(last_response.body, "InvalidUUID", "this_aint_no_uuid")
-    end
+    it_should_return_error(400, "InvalidUUID", "this_aint_no_uuid")
   end
 
-  required_params.each { |req_p|
+  required_params.each do |req_p|
     context "without the '#{req_p}' parameter" do
       let(:request_params) do
-        accepted_params.dup.tap { |n|
-          n.delete(req_p)
-        }
+        accepted_params.dup.tap { |n| n.delete(req_p) }
       end
 
-      it "should return a 400 error (MissingArgument)" do
-        expect(last_response.status).to eq 400
-        check_error(last_response.body, "MissingArgument", req_p.to_s)
-      end
+      it_should_return_error(400, "MissingArgument", req_p.to_s)
     end
-  }
+  end
 end
