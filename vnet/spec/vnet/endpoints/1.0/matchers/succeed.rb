@@ -55,10 +55,10 @@ RSpec::Matchers.define :succeed do
   end
 
   failure_message_for_should do |response|
-    "We expected the last api call to succeed" + print_result(response)
+    "We expected the last api call to succeed " + print_result(response)
   end
 
   failure_message_for_should_not do |response|
-    "We expected the last api call not to succeed" + print_result(response)
+    "We expected the last api call not to succeed " + print_result(response)
   end
 end

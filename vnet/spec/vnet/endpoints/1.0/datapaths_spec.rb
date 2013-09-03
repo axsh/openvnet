@@ -19,18 +19,22 @@ describe "/datapaths" do
 
   describe "POST /" do
     let!(:dc_segment) { Fabricate(:dc_segment) { uuid "ds-segment" } }
-    accepted_params = {
-      :uuid => "dp-test",
-      :display_name => "our test datapath",
-      :ipv4_address => "192.168.50.100",
-      :is_connected => false,
-      :dpid => "0x0000aaaaaaaaaaaa",
-      :node_id => "vna45",
-      :dc_segment_uuid => "ds-segment"
-    }
-    required_params = [:display_name, :dpid, :node_id]
+    let(:accepted_params) do
+      {
+        :uuid => "dp-test",
+        :display_name => "our test datapath",
+        :ipv4_address => "192.168.50.100",
+        :is_connected => false,
+        :dpid => "0x0000aaaaaaaaaaaa",
+        :node_id => "vna45",
+        :dc_segment_uuid => "ds-segment"
+      }
+    end
 
-    include_examples "POST /", accepted_params, required_params
+    required_params = [:display_name, :dpid, :node_id]
+    uuid_params = [:uuid, :dc_segment_uuid]
+
+    include_examples "POST /", required_params, uuid_params
   end
 
   describe "PUT /:uuid" do

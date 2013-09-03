@@ -20,18 +20,21 @@ describe "/routes" do
   describe "POST /" do
     let!(:vif) { Fabricate(:vif) { uuid "vif-test"}  }
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-test" } }
-    accepted_params = {
-      :uuid => "r-testrout",
-      :vif_uuid => "vif-test",
-      :route_link_uuid => "rl-test",
-      :ipv4_address => "192.168.10.10",
-      :ipv4_prefix => 16,
-      :ingress => true,
-      :egress => false
-    }
+    let(:accepted_params) do
+      {
+        :uuid => "r-testrout",
+        :vif_uuid => "vif-test",
+        :route_link_uuid => "rl-test",
+        :ipv4_address => "192.168.10.10",
+        :ipv4_prefix => 16,
+        :ingress => true,
+        :egress => false
+      }
+    end
     required_params = [:ipv4_address, :route_link_uuid]
+    uuid_params = [:vif_uuid, :route_link_uuid]
 
-    include_examples "POST /", accepted_params, required_params
+    include_examples "POST /", required_params, uuid_params
   end
 
   describe "PUT /:uuid" do

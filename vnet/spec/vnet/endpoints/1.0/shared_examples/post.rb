@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples "POST /" do | accepted_params, required_params|
+shared_examples "POST /" do | required_params, uuid_params |
   before(:each) { post api_suffix, request_params }
 
   context "with only the required parameters" do
@@ -24,13 +24,7 @@ shared_examples "POST /" do | accepted_params, required_params|
     end
   end
 
-  context "with a uuid parameter with a faulty syntax" do
-    let(:request_params) do
-      accepted_params.dup.tap { |n| n[:uuid] = "this_aint_no_uuid" }
-    end
-
-    it_should_return_error(400, "InvalidUUID", "this_aint_no_uuid")
-  end
+  uuid_params.each { |up| include_examples "uuid_in_param", up }
 
   required_params.each do |req_p|
     context "without the '#{req_p}' parameter" do
