@@ -5,14 +5,7 @@ shared_examples "a delete call" do
     delete api_suffix_with_uuid
   end
 
-  context "with a nonexistant uuid" do
-    let(:api_suffix_with_uuid) { "#{api_suffix}/#{model_class.uuid_prefix}-notfound" }
-
-    it "should return a 404 error (UnknownUUIDResource)" do
-      last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
-        "#{model_class.uuid_prefix}-notfound")
-    end
-  end
+  include_examples "api_with_uuid_in_suffix"
 
   context "with an existing uuid" do
     let!(:object) { Fabricate(fabricator) }
