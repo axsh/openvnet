@@ -36,16 +36,17 @@ RSpec::Matchers.define :fail do
     "Message: " + (@error_details[:message] ? @error_details[:message] : "any")
   end
 
-  failure_message_for_should { |response|
+  failure_message_for_should do |response|
     "We expected:\n" +
     print_expectation +
     "\n\n" +
     "Instead we got:\n" +
     "Http status: #{response.status}\n" +
-    "Body: '#{response.body}'"
-  }
+    "Body: #{response.body}" +
+    (response.errors.empty? ? "" : "Stacktrace:\n #{response.errors}")
+  end
 
-  failure_message_for_should_not { |response|
+  failure_message_for_should_not do |response|
     "We got exactly what we didn't expect.\n" + print_expectation
-  }
+  end
 end

@@ -2,7 +2,6 @@
 
 def it_should_return_error(code, name, message)
   it "should return a #{code} error (#{name})" do
-    code = 500
     last_response.should fail.with_code(code).with_error(name, message)
   end
 end
@@ -18,11 +17,8 @@ shared_examples "a post call" do | accepted_params, required_params|
     end
 
     it "should create a database entry the required parameters set" do
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      request_params.each { |k,v|
-        expect(body[k.to_s]).to eq v
-      }
+      last_response.should succeed.with_body_containing(request_params)
+      #TODO: Check actual database records
     end
   end
 
@@ -30,11 +26,7 @@ shared_examples "a post call" do | accepted_params, required_params|
     let(:request_params) { accepted_params }
 
     it "should create a database entry with all parameters set" do
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      accepted_params.each { |k,v|
-        expect(body[k.to_s]).to eq v
-      }
+      last_response.should succeed.with_body_containing(accepted_params)
     end
   end
 
