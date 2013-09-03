@@ -43,7 +43,7 @@ describe "/datapaths" do
       :node_id => 'vna45'
     }
 
-    include_examples "PUT /", accepted_params
+    include_examples "PUT /:uuid", accepted_params
   end
 
   describe "POST /:uuid/networks/:network_uuid" do

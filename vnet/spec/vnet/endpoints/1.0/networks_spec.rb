@@ -42,7 +42,7 @@ describe "/networks" do
       :editable => true
     }
 
-    include_examples "PUT /", accepted_params
+    include_examples "PUT /:uuid", accepted_params
   end
 
 end

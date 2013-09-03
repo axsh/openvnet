@@ -45,7 +45,7 @@ describe "/routes" do
       :ipv4_prefix => 16,
     }
 
-    include_examples "PUT /", accepted_params
+    include_examples "PUT /:uuid", accepted_params
 
     #TODO: Check faulty syntax errors for vif_uuid and route_link_uuid
   end

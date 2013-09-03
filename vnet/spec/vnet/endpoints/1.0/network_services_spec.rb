@@ -40,7 +40,7 @@ describe "/network_services" do
       :outgoing_port => 100
     }
 
-    include_examples "PUT /", accepted_params
+    include_examples "PUT /:uuid", accepted_params
   end
 
 end
