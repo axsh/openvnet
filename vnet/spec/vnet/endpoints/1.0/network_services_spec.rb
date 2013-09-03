@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
-require_relative 'shared_examples'
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+Dir["#{File.dirname(__FILE__)}/matchers/*.rb"].map {|f| require f }
 
 def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
 describe "/network_services" do
-  describe "GET /" do
-    it_behaves_like "a get call without uuid", "network_services", :network_service
-  end
+  let(:api_suffix)  { "network_services" }
+  let(:fabricator)  { :network_service }
+  let(:model_class) { Vnet::Models::NetworkService }
 
-  describe "GET /:uuid" do
-    it_behaves_like "a get call with uuid", "network_services", "ns", :network_service
-  end
+  include_examples "GET /"
+  include_examples "GET /:uuid"
+  include_examples "DELETE /:uuid"
 
   describe "POST /" do
     let!(:vif) { Fabricate(:vif) { uuid "vif-test"}  }
@@ -27,12 +28,7 @@ describe "/network_services" do
     }
     required_params = [:display_name]
 
-    it_behaves_like "a post call", "network_services", accepted_params, required_params
-  end
-
-  describe "DELETE /:uuid" do
-    it_behaves_like "a delete call", "network_services", "ns",
-      :network_service, :NetworkService
+    include_examples "POST /", accepted_params, required_params
   end
 
   describe "PUT /:uuid" do
@@ -44,8 +40,7 @@ describe "/network_services" do
       :outgoing_port => 100
     }
 
-    it_behaves_like "a put call", "network_services", "ns", :network_service,
-      accepted_params
+    include_examples "PUT /", accepted_params
   end
 
 end
