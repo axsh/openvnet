@@ -35,15 +35,18 @@ describe "/datapaths" do
 
   describe "PUT /:uuid" do
     let!(:new_dc_segment) { Fabricate(:dc_segment) { uuid "ds-newseg" } }
-    accepted_params = {
-      :display_name => "we changed this name",
-      :ipv4_address => "192.168.2.50",
-      :dpid => "0x0000abcdefabcdef",
-      :dc_segment_uuid => "ds-newseg",
-      :node_id => 'vna45'
-    }
+    let(:accepted_params) do
+      {
+        :display_name => "we changed this name",
+        :ipv4_address => "192.168.2.50",
+        :dpid => "0x0000abcdefabcdef",
+        :dc_segment_uuid => "ds-newseg",
+        :node_id => 'vna45'
+      }
+    end
+    uuid_params = [:dc_segment_uuid]
 
-    include_examples "PUT /:uuid", accepted_params
+    include_examples "PUT /:uuid", uuid_params
   end
 
   describe "POST /:uuid/networks/:network_uuid" do

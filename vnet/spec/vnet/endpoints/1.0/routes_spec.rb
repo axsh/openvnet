@@ -38,16 +38,17 @@ describe "/routes" do
     let!(:new_vif) { Fabricate(:vif) { uuid 'vif-newvif' } }
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-newroute" } }
 
-    accepted_params = {
-      :vif_uuid => "vif-newvif",
-      :route_link_uuid => "rl-newroute",
-      :ipv4_address => "192.168.3.50",
-      :ipv4_prefix => 16,
-    }
+    let(:accepted_params) do
+      {
+        :vif_uuid => "vif-newvif",
+        :route_link_uuid => "rl-newroute",
+        :ipv4_address => "192.168.3.50",
+        :ipv4_prefix => 16,
+      }
+    end
+    uuid_params = [:vif_uuid, :route_link_uuid]
 
-    include_examples "PUT /:uuid", accepted_params
-
-    #TODO: Check faulty syntax errors for vif_uuid and route_link_uuid
+    include_examples "PUT /:uuid", uuid_params
   end
 
 end

@@ -33,14 +33,17 @@ describe "/network_services" do
 
   describe "PUT /:uuid" do
     let!(:new_vif) { Fabricate(:vif) { uuid "vif-other"}  }
-    accepted_params = {
-      :vif_uuid => "vif-other",
-      :display_name => "our new and improved test network service",
-      :incoming_port => 40,
-      :outgoing_port => 100
-    }
+    let(:accepted_params) do
+      {
+        :vif_uuid => "vif-other",
+        :display_name => "our new and improved test network service",
+        :incoming_port => 40,
+        :outgoing_port => 100
+      }
+    end
+    uuid_params = [:vif_uuid]
 
-    include_examples "PUT /:uuid", accepted_params
+    include_examples "PUT /:uuid", uuid_params
   end
 
 end
