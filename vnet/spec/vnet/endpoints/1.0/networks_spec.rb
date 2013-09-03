@@ -13,13 +13,8 @@ describe "/networks" do
   let(:fabricator)  { :network }
   let(:model_class) { Vnet::Models::Network }
 
-  describe "GET /" do
-    it_behaves_like "a get call without uuid"
-  end
-
-  describe "GET /:uuid" do
-    it_behaves_like "a get call with uuid"
-  end
+  describe_standard_get
+  describe_standard_delete
 
   describe "POST /" do
     accepted_params = {
@@ -33,11 +28,7 @@ describe "/networks" do
     }
     required_params = [:display_name, :ipv4_network]
 
-    it_behaves_like "a post call", accepted_params, required_params
-  end
-
-  describe "DELETE /:uuid" do
-    it_behaves_like "a delete call"
+    include_examples "a post call", accepted_params, required_params
   end
 
   describe "PUT /:uuid" do
@@ -50,7 +41,7 @@ describe "/networks" do
       :editable => true
     }
 
-    it_behaves_like "a put call", accepted_params
+    include_examples "a put call", accepted_params
   end
 
 end
