@@ -17,9 +17,9 @@ describe "/networks" do
     it_behaves_like "a get call without uuid"
   end
 
-  # describe "GET /:uuid" do
-  #   it_behaves_like "a get call with uuid", "networks", "nw", :network
-  # end
+  describe "GET /:uuid" do
+    it_behaves_like "a get call with uuid"
+  end
 
   describe "POST /" do
     accepted_params = {

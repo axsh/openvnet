@@ -37,19 +37,3 @@ shared_examples "a put call" do |suffix, uuid_prefix, fabricator, accepted_param
     end
   end
 end
-
-shared_examples "a get call with uuid" do |suffix, uuid_prefix, fabricator|
-  non_existant_uuid_404(suffix, uuid_prefix)
-
-  context "with an existing uuid" do
-    let!(:object) { Fabricate(fabricator) }
-
-    it "should return a #{suffix.chomp("s")}" do
-      get "/#{suffix}/#{object.canonical_uuid}"
-
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body["uuid"]).to eq object.canonical_uuid
-    end
-  end
-end
