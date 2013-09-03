@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
-require_relative 'shared_examples'
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+Dir["#{File.dirname(__FILE__)}/matchers/*.rb"].map {|f| require f }
 
 def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
 describe "/datapaths" do
-  describe "GET /" do
-    it_behaves_like "a get call without uuid", "datapaths", :datapath
-  end
+  let(:api_suffix)  { "datapaths" }
+  let(:fabricator)  { :datapath }
+  let(:model_class) { Vnet::Models::Datapath }
 
-  describe "GET /:uuid" do
-    it_behaves_like "a get call with uuid", "datapaths", "dp", :datapath
-  end
+  include_examples "GET /"
+  include_examples "GET /:uuid"
+  include_examples "DELETE /:uuid"
 
   describe "POST /" do
     let!(:dc_segment) { Fabricate(:dc_segment) { uuid "ds-segment" } }
@@ -29,11 +30,7 @@ describe "/datapaths" do
     }
     required_params = [:display_name, :dpid, :node_id]
 
-    it_behaves_like "a post call", "datapaths", accepted_params, required_params
-  end
-
-  describe "DELETE /:uuid" do
-    it_behaves_like "a delete call", "datapaths", "dp", :datapath_1, :Datapath
+    include_examples "a post call", accepted_params, required_params
   end
 
   describe "PUT /:uuid" do
@@ -46,7 +43,7 @@ describe "/datapaths" do
       :node_id => 'vna45'
     }
 
-    it_behaves_like "a put call", "datapaths", "dp", :datapath_1, accepted_params
+    include_examples "a put call", accepted_params
   end
 
   describe "POST /:uuid/networks/:network_uuid" do
