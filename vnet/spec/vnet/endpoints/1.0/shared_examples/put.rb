@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples "a put call" do |accepted_params|
+shared_examples "PUT /" do |accepted_params|
   before(:each) do
     put api_suffix_with_uuid, request_parameters
   end

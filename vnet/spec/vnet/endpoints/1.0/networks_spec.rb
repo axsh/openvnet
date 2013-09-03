@@ -29,7 +29,7 @@ describe "/networks" do
     }
     required_params = [:display_name, :ipv4_network]
 
-    include_examples "a post call", accepted_params, required_params
+    include_examples "POST /", accepted_params, required_params
   end
 
   describe "PUT /:uuid" do
@@ -42,7 +42,7 @@ describe "/networks" do
       :editable => true
     }
 
-    include_examples "a put call", accepted_params
+    include_examples "PUT /", accepted_params
   end
 
 end

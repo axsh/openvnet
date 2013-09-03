@@ -30,7 +30,7 @@ describe "/datapaths" do
     }
     required_params = [:display_name, :dpid, :node_id]
 
-    include_examples "a post call", accepted_params, required_params
+    include_examples "POST /", accepted_params, required_params
   end
 
   describe "PUT /:uuid" do
@@ -43,7 +43,7 @@ describe "/datapaths" do
       :node_id => 'vna45'
     }
 
-    include_examples "a put call", accepted_params
+    include_examples "PUT /", accepted_params
   end
 
   describe "POST /:uuid/networks/:network_uuid" do

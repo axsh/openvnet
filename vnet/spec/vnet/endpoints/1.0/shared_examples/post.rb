@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples "a post call" do | accepted_params, required_params|
+shared_examples "POST /" do | accepted_params, required_params|
   before(:each) { post api_suffix, request_params }
 
   context "with only the required parameters" do
