@@ -25,7 +25,15 @@ RSpec::Matchers.define :succeed do
   end
 
   match do |response|
-    @body = JSON.parse(last_response.body)
+    begin
+      @body = JSON.parse(last_response.body)
+    rescue JSON::ParserError
+      raise "Response didn't parse as JSON.\n" +
+      "Response we got:\n" +
+      "Http status: #{response.status}\n" +
+      "Body: #{response.body}" +
+      "Errors:\n #{response.errors}"
+    end
 
     response.ok? &&
     (@contains.nil? || expect_body_to_contain) &&
