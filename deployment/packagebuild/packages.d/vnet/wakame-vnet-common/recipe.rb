@@ -7,6 +7,7 @@ class WakameVnetCommon < FPM::Cookery::Recipe
   source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
   arch 'all'
   depends *%w(
+    zeromq-devel
     wakame-vnet-ruby
   )
 
