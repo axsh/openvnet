@@ -13,9 +13,9 @@ describe "/networks" do
   let(:fabricator)  { :network }
   let(:model_class) { Vnet::Models::Network }
 
-  # describe "GET /" do
-  #   it_behaves_like "a get call without uuid"
-  # end
+  describe "GET /" do
+    it_behaves_like "a get call without uuid"
+  end
 
   # describe "GET /:uuid" do
   #   it_behaves_like "a get call with uuid", "networks", "nw", :network

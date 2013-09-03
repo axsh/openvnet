@@ -2,14 +2,8 @@
 
 RSpec::Matchers.define :succeed do
   def expect_body_to_contain
-    body = JSON.parse(last_response.body)
-    body.merge(@contains) == body &&
-    @contains.dup.delete_if { |k,v| body.has_key?(k) }.empty?
-  end
-
-  def expect_body
-    body = JSON.parse(last_response.body)
-    body == @expected_body
+    @body.merge(@contains) == @body &&
+    @contains.dup.delete_if { |k,v| @body.has_key?(k) }.empty?
   end
 
   chain :with_body_containing do |contains|
@@ -22,15 +16,29 @@ RSpec::Matchers.define :succeed do
     @expected_body = expected_body
   end
 
+  chain :with_empty_body do
+    @check_body_empty = true
+  end
+
+  chain :with_body_size do |size|
+    @body_size = size
+  end
+
   match do |response|
+    @body = JSON.parse(last_response.body)
+
     response.ok? &&
     (@contains.nil? || expect_body_to_contain) &&
-    (@expected_body.nil? || expect_body)
+    (@check_body_empty.nil? || @body.empty?) &&
+    (@body_size.nil? || @body.size == @body_size) &&
+    (@expected_body.nil? || @body == @expected_body)
   end
 
   def print_result(response)
     (@contains.nil? ? "" : "with this contained in the body:\n#{@contains.to_json}") +
     (@expected_body.nil? ? "" : "with the body:\n#{@expected_body.to_json}") +
+    (@check_body_empty.nil? ? "" : "with an empty body") +
+    (@body_size.nil? ? "" : "with body size: #{@body_size}") +
     "\n\n" +
     "Instead we got:\n" +
     "Http status: #{response.status}\n" +

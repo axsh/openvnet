@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 
-def it_should_return_error(code, name, message)
-  it "should return a #{code} error (#{name})" do
-    last_response.should fail.with_code(code).with_error(name, message)
-  end
-end
-
 shared_examples "a post call" do | accepted_params, required_params|
-  before(:each) { post "#{api_suffix}", request_params }
+  before(:each) { post api_suffix, request_params }
 
   context "with only the required parameters" do
     let(:request_params) do
