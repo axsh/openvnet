@@ -40,18 +40,17 @@ describe "/networks" do
     it_behaves_like "a delete call"
   end
 
-  # describe "PUT /:uuid" do
-  #   accepted_params = {
-  #     :display_name => "our new name for the test network",
-  #     :ipv4_network => "10.0.0.2",
-  #     :ipv4_prefix => 8,
-  #     :domain_name => "new.vdc.test.domain",
-  #     :network_mode => "physical",
-  #     :editable => true
-  #   }
+  describe "PUT /:uuid" do
+    accepted_params = {
+      :display_name => "our new name for the test network",
+      :ipv4_network => "10.0.0.2",
+      :ipv4_prefix => 8,
+      :domain_name => "new.vdc.test.domain",
+      :network_mode => "physical",
+      :editable => true
+    }
 
-  #   it_behaves_like "a put call", "networks", "nw", :network,
-  #     accepted_params
-  # end
+    it_behaves_like "a put call", accepted_params
+  end
 
 end
