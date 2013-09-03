@@ -9,4 +9,10 @@ shared_examples "api_with_uuid_in_suffix" do
         "#{model_class.uuid_prefix}-notfound")
     end
   end
+
+  context "with a uuid parameter with a faulty syntax" do
+    let(:api_suffix_with_uuid) { "#{api_suffix}/this_aint_no_uuid" }
+
+    it_should_return_error(400, "InvalidUUID", "this_aint_no_uuid")
+  end
 end
