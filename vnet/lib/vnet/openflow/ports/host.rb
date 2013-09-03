@@ -5,8 +5,8 @@ module Vnet::Openflow::Ports
   module Host
     include Vnet::Openflow::FlowHelpers
 
-    def eth?
-      true
+    def port_type
+      :host
     end
 
     def flow_options
@@ -15,7 +15,6 @@ module Vnet::Openflow::Ports
 
     def install
       set_remote_md = flow_options.merge(md_create(:remote => nil))
-      classifier_md = flow_options.merge(md_network(:physical_network))
 
       reflection_md = md_create(:reflection => nil)
       reflection_mac2mac_md = md_create({ :reflection => nil,
@@ -27,10 +26,14 @@ module Vnet::Openflow::Ports
                              :in_port => self.port_number
                            }, nil,
                            set_remote_md.merge(:goto_table => TABLE_HOST_PORTS))
-      flows << Flow.create(TABLE_HOST_PORTS, 10, {
-                             :in_port => self.port_number
-                           }, nil,
-                           classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+
+      if @network_id
+        fo_network_md = flow_options.merge(md_network(:physical_network))
+        flows << Flow.create(TABLE_HOST_PORTS, 10, {
+                               :in_port => self.port_number
+                             }, nil,
+                             fo_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+      end
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number

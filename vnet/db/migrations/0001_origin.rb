@@ -166,7 +166,7 @@ Sequel.migration do
     create_table(:routes) do
       primary_key :id
       String :uuid, :unique => true, :null => false
-      Integer :interface_id, :index => true, :null => false
+      Integer :interface_id, :index => true
       Integer :route_link_id, :index => true, :null => false
 
       String :route_type, :default => 'gateway', :null => false

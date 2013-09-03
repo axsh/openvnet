@@ -5,6 +5,10 @@ module Vnet::Openflow::Ports
   module Physical
     include Vnet::Openflow::FlowHelpers
 
+    def port_type
+      :physical
+    end
+
     def flow_options
       @flow_options ||= {:cookie => @cookie}
     end

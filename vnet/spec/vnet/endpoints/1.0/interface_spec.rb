@@ -16,7 +16,7 @@ describe "/ifaces" do
       network = Fabricate(:network)
 
       params = {
-        name: 'vif-test',
+        name: 'if-test',
         mode: 'virtual',
         network_uuid: network.canonical_uuid,
       }

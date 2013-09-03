@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Networks
 
-  class NetworkVirtual < Network
+  class Virtual < Base
 
     def network_type
       :virtual
@@ -18,7 +18,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
-                             :tunnel_id => self.network_id | TUNNEL_FLAG_MASK
+                             :tunnel_id => @network_id | TUNNEL_FLAG_MASK
                            }, nil,
                            classifier_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40,
@@ -31,19 +31,19 @@ module Vnet::Openflow
                            md_network(:network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST), {},
                            flood_md.merge(:goto_table => TABLE_METADATA_LOCAL))
 
-      if self.broadcast_mac_addr
+      if @broadcast_mac_addr
         nw_virtual_md = flow_options.merge(md_network(:virtual_network))
 
         flows << Flow.create(TABLE_HOST_PORTS, 30, {
-                               :eth_dst => self.broadcast_mac_addr
+                               :eth_dst => @broadcast_mac_addr
                              }, {
                                :eth_dst => MAC_BROADCAST
                              }, nw_virtual_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_dst => self.broadcast_mac_addr
+                               :eth_dst => @broadcast_mac_addr
                              }, {}, flow_options)
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_src => self.broadcast_mac_addr
+                               :eth_src => @broadcast_mac_addr
                              }, {}, flow_options)
       end
 
@@ -56,9 +56,9 @@ module Vnet::Openflow
     end
 
     def update_flows
-      flows = []
-      flood_actions = self.ports.collect { |key,port| {:output => port.port_number} }
+      flood_actions = @ports.collect { |port_number, port| {:output => port_number} }
 
+      flows = []
       flows << Flow.create(TABLE_METADATA_LOCAL, 1,
                            md_network(:network, :flood => nil),
                            flood_actions, flow_options)
@@ -74,7 +74,7 @@ module Vnet::Openflow
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
       match_md = md_network(:virtual_network, :remote => nil)
-      learn_md = md_network(:virtual_network, {:local => nil, :interface => nil})
+      learn_md = md_network(:virtual_network, {:local => nil, :vif => nil})
 
       flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]

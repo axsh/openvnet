@@ -20,7 +20,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     interface_uuid = params.delete('interface_uuid') || raise(E::MissingArgument, 'interface_uuid')
     route_link_uuid = params.delete('route_link_uuid') || raise(E::MissingArgument, 'route_link_uuid')
 
-    params['interface_id'] = (M::Interface[interface_uuid] || raise(E::InvalidUUID, interface_uuid)).id
+    if interface_uuid
+      params['interface_id'] = (M::Interface[interface_uuid] || raise(E::InvalidUUID, interface_uuid)).id
+    end
+
     params['route_link_id'] = (M::RouteLink[route_link_uuid] || raise(E::InvalidUUID, route_link_uuid)).id
 
     params['ipv4_address'] = parse_ipv4(params['ipv4_address'] || raise(E::MissingArgument, 'ipv4_address'))

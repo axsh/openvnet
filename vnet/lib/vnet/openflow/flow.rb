@@ -157,7 +157,7 @@ module Vnet::Openflow
         when :virtual_network
           metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_VIRTUAL
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
-        when :interface
+        when :vif
           metadata = metadata | METADATA_FLAG_VIF
           metadata_mask = metadata_mask | METADATA_FLAG_VIF
         else
@@ -170,9 +170,9 @@ module Vnet::Openflow
 
     def md_network(type, append = nil)
       if append
-        md_create(append.merge(type => self.network_number))
+        md_create(append.merge(type => self.network_id))
       else
-        md_create(type => self.network_number)
+        md_create(type => self.network_id)
       end
     end
 

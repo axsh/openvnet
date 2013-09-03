@@ -14,7 +14,7 @@ module Vnet::Openflow::Services
     def insert_interface(uuid, network, interface_map)
       return if @entries[uuid]
 
-      debug "service::icmp.insert: network:#{network.uuid}/#{network.network_id} vif_uuid:#{uuid}"
+      debug "service::icmp.insert: network:#{network.uuid}/#{network.network_id} interface_uuid:#{uuid}"
 
       @entries[uuid] = {
         :network_number => interface_map.network_id,
@@ -36,11 +36,14 @@ module Vnet::Openflow::Services
       debug "service::icmp.remove: uuid:#{uuid}"
     end
 
-    def packet_in(port, message)
-      info "service::icmp.packet_in: port.port_info:#{port.port_info.inspect} message:#{message}"
+    def packet_in(message)
+      port_number = message.match.in_port
+      port = @datapath.port_manager.port_by_port_number(port_number)
+
+      info "service::icmp.packet_in: port_number:#{port_number} message:#{message}"
 
       uuid, entry = @entries.find { |uuid,entry|
-        port.network_number == entry[:network_number] && message.ipv4_dst == entry[:ipv4_address]
+        port[:network_id] == entry[:network_id] && message.ipv4_dst == entry[:ipv4_address]
       }
 
       if entry.nil?

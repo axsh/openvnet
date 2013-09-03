@@ -52,7 +52,8 @@ module Vnet::Openflow
     def port_desc_multipart_reply(dpid, message)
       info "port_desc_multipart_reply from %#x." % dpid
 
-      datapath = @datapaths[dpid] || raise("No datapath found.")
+      datapath = @datapaths[dpid]
+      return if datapath.nil?
 
       message.parts.each { |port_descs| 
         debug "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
@@ -64,13 +65,13 @@ module Vnet::Openflow
     def port_status(dpid, message)
       debug "port_status from %#x." % dpid
 
-      datapath = @datapaths[dpid] || raise("No datapath found.")
-      datapath.switch.async.port_status(message) if datapath.switch
+      datapath = @datapaths[dpid]
+      datapath.switch.async.port_status(message) if datapath && datapath.switch
     end
 
     def packet_in(dpid, message)
-      datapath = @datapaths[dpid] || raise("No datapath found.")
-      datapath.port_manager.async.packet_in(message)
+      datapath = @datapaths[dpid]
+      datapath.packet_manager.async.packet_in(message) if datapath
     end
 
     def vendor(dpid, message)

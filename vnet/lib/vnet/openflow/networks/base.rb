@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Openflow::Networks
 
-  class Network
+  class Base
     include Celluloid::Logger
-    include FlowHelpers
+    include Vnet::Openflow::FlowHelpers
 
     attr_reader :datapath
     attr_reader :network_id
-    attr_reader :network_number
     attr_reader :uuid
     attr_reader :datapath_of_bridge
 
@@ -23,7 +22,6 @@ module Vnet::Openflow
       @datapath = dp
       @uuid = network_map.uuid
       @network_id = network_map.network_id
-      @network_number = network_map.network_id
       @datapath_of_bridge = nil
 
       @ports = {}
@@ -35,29 +33,43 @@ module Vnet::Openflow
     end
 
     def broadcast_mac_addr
-      self.datapath_of_bridge && self.datapath_of_bridge[:broadcast_mac_addr]
+      @datapath_of_bridge && @datapath_of_bridge[:broadcast_mac_addr]
     end
 
-    def add_port(port, should_update)
-      raise("Port already added to a network.") if port.network || @ports[port.port_number]
-
-      @ports[port.port_number] = port
-      port.network = self
-
-      update_flows if should_update
+    def to_hash
+      { :id => @network_id,
+        :uuid => @uuid,
+        :type => self.network_type,
+      }
     end
 
-    def del_port(port, should_update)
-      deleted_port = @ports.delete(port.port_number)
-      update_flows if should_update
+    def add_port(params)
+      if @ports[params[:port_number]]
+        raise("Port already added to a network.")
+      end
 
-      raise("Port not added to this network.") if port.network != self || deleted_port.nil?
+      port = {
+        # List of ip/mac addresses on this network, etc.
+        :mode => params[:port_mode],
+      }
 
-      port.network = nil
+      @ports[params[:port_number]] = port
+
+      update_flows
+    end
+
+    def del_port_number(port_number)
+      port = @ports.delete(port_number)
+
+      if port.nil?
+        raise("Port was not added to this network.")
+      end
+
+      update_flows
     end
 
     def set_datapath_of_bridge(datapath_map, dpn_map, should_update)
-      # info "network(#{self.uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
+      # info "network(#{@uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
 
       @datapath_of_bridge = {
         :uuid => datapath_map.uuid,
@@ -86,9 +98,9 @@ module Vnet::Openflow
         :network_uuid => @uuid,
         :network_type => self.network_type,
         :interface_uuid => service_map.interface.uuid,
-        :active_datapath_id => service_map.vif.active_datapath_id,
-        :service_mac => Trema::Mac.new(service_map.vif.mac_addr),
-        :service_ipv4 => IPAddr.new(service_map.vif.ipv4_address, Socket::AF_INET)
+        :active_datapath_id => service_map.interface.active_datapath_id,
+        :service_mac => Trema::Mac.new(service_map.interface.mac_addr),
+        :service_ipv4 => IPAddr.new(service_map.interface.ipv4_address, Socket::AF_INET)
       }
 
       info "network(#{@uuid}): creating service '#{service_map.display_name}'"
@@ -129,7 +141,7 @@ module Vnet::Openflow
     def uninstall
       info "network(#{@uuid}): removing flows"
 
-      pm = self.datapath.packet_manager
+      pm = @datapath.packet_manager
 
       @datapath.del_cookie(@cookie)
 

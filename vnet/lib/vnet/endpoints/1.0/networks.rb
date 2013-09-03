@@ -5,11 +5,10 @@ require 'ipaddr'
 Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   post do
     params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
+    required_params(params, ["display_name", "ipv4_network"])
 
     if params.has_key?("uuid")
-      #TODO: Check UUID format without connecting to DB
-
-      #TODO: Only allow admin accounts to set UUID. We can't have people keep trying to get these errors to learn what's in the database
+      check_uuid_syntax(M::Network, params["uuid"])
       raise E::DuplicateUUID, params["uuid"] unless M::Network[params["uuid"]].nil?
 
       params["uuid"] = M::Network.trim_uuid(params["uuid"])
@@ -18,7 +17,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
 
     params["ipv4_network"] = parse_ipv4(params["ipv4_network"]) if params.has_key?("ipv4_network")
 
+    dc_network = if params["dc_network_uuid"]
+      dc_network_uuid = params.delete("dc_network_uuid")
+      M::DcNetwork[dc_network_uuid] || raise(E::UnknownUUIDResource, dc_network_uuid)
+    end
+
     nw = M::Network.create(params)
+    nw.dc_network = dc_network unless dc_network.nil?
+    nw.save
 
     respond_with(R::Network.generate(nw))
   end
@@ -29,35 +35,22 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   get '/:uuid' do
-    #TODO: Make sure that this uuid is a network and not something else
-    nw = M::Network[@params["uuid"]]
-    raise E::UnknownUUIDResource if nw.blank?
+    nw = check_syntax_and_pop_uuid(M::Network, @params)
     respond_with(R::Network.generate(nw))
   end
 
   delete '/:uuid' do
-    #TODO: Make sure that this uuid is a network and not something else
-    #TODO: Make sure that this uuid exists
-
-    nw = M::Network.batch[@params["uuid"]].destroy.commit
+    nw = check_syntax_and_pop_uuid(M::Network, @params)
+    nw.batch.destroy.commit
     respond_with(R::Network.generate(nw))
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
-    nw = M::Network.batch do |n|
-      n[@params[:uuid]].update(params)
-    end
-    respond_with(R::Network.generate(nw))
-  end
+    params = parse_params(@params, ["uuid","display_name","ipv4_network","ipv4_prefix","domain_name","dc_network_uuid","network_mode","editable"])
+    nw = check_syntax_and_pop_uuid(M::Network, params)
+    nw.batch.update(params).commit
 
-  put '/:uuid/attach_interface' do
-    nw = M::Network.attach_interface(@params[:uuid], @params[:interface_uuid])
-    respond_with(R::Network.generate(nw))
-  end
-
-  put '/:uuid/detach_interface' do
-        nw = M::Network.detach_interface(@params[:uuid], @params[:interface_uuid])
-    respond_with(R::Network.generate(nw))
+    updated_nw = M::Network[@params["uuid"]]
+    respond_with(R::Network.generate(updated_nw))
   end
 end

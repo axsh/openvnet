@@ -2,20 +2,6 @@
 
 module Vnet::Models
   class Network < Base
-    class << self
-      def attach_interface(uuid, interface_uuid)
-        self[uuid].tap do |network|
-          network.add_interface(Interface[interface_uuid])
-        end
-      end
-
-      def detach_interface(uuid, interface_uuid)
-        self[uuid].tap do |network|
-          network.remove_interface(Interface[interface_uuid])
-        end
-      end
-    end
-
     taggable 'nw'
 
     one_to_many :datapath_networks

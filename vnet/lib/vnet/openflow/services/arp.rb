@@ -14,7 +14,7 @@ module Vnet::Openflow::Services
     def insert_interface(uuid, network, interface_map)
       return if @entries[uuid]
 
-      debug "service::arp.insert: network:#{network.uuid}/#{network.network_id} vif_uuid:#{uuid}"
+      debug "service::arp.insert: network:#{network.uuid}/#{network.network_id} interface_uuid:#{uuid}"
 
       @entries[uuid] = {
         :network_number => interface_map.network_id,
@@ -35,7 +35,7 @@ module Vnet::Openflow::Services
                            :eth_dst => Trema::Mac.new(interface_map.mac_addr),
                            :eth_type => 0x0806,
                            :arp_op => 1,
-                           :arp_tpa => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
+                           :arp_tpa => IPAddr.new(interface_map.ipv4_address, Socket::AF_INET),
                          }, {
                            :network => network
                          })
@@ -45,14 +45,17 @@ module Vnet::Openflow::Services
       debug "service::arp.remove: uuid:#{uuid}"
     end
 
-    def packet_in(port, message)
+    def packet_in(message)
+      port_number = message.match.in_port
+      port = @datapath.port_manager.port_by_port_number(port_number)
+
       arp_tpa = message.arp_tpa
       arp_spa = message.arp_spa
 
-      debug "service::arp.packet_in: port_no:#{port.port_number} name:#{port.port_name} arp_spa:#{arp_spa} arp_tpa:#{arp_tpa}"
+      debug "service::arp.packet_in: port_number:#{port_number} name:#{port[:name]} arp_spa:#{arp_spa} arp_tpa:#{arp_tpa}"
 
       uuid, entry = @entries.find { |uuid,entry|
-        port.network_number == entry[:network_number] && arp_tpa == entry[:ipv4_address]
+        port[:network_id] == entry[:network_id] && arp_tpa == entry[:ipv4_address]
       }
 
       if entry.nil?

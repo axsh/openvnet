@@ -60,9 +60,9 @@ module Vnet::Openflow
     end
 
     def catch_network_flow(network, match, params = {})
-      type = case network
-             when Vnet::Openflow::NetworkPhysical then :physical_local
-             when Vnet::Openflow::NetworkVirtual  then :virtual_local
+      type = case network.network_type
+             when :physical then :physical_local
+             when :virtual  then :virtual_local
              else
                info "Unknown network mode for packet handler."
                return
