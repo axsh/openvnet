@@ -36,9 +36,9 @@ describe "/networks" do
     it_behaves_like "a post call", accepted_params, required_params
   end
 
-  # describe "DELETE /:uuid" do
-    # it_behaves_like "a delete call", "networks", "nw", :network, :Network
-  # end
+  describe "DELETE /:uuid" do
+    it_behaves_like "a delete call"
+  end
 
   # describe "PUT /:uuid" do
   #   accepted_params = {
