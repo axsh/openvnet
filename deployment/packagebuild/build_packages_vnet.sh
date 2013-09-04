@@ -12,6 +12,7 @@ repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
 possible_archs="i386 noarch x86_64"
+build_time=$(date +%Y%m%d%H%M%S)
 
 function build_all_packages(){
   find ${current_dir}/packages.d/vnet -mindepth 1 -maxdepth 1 -type d | while read line; do
@@ -27,7 +28,7 @@ function build_package(){
     echo "recipe for ${name} not found"; exit 1;
   }
   mkdir ${package_work_dir}
-  (cd ${recipe_dir}; ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
+  (cd ${recipe_dir}; BUILD_TIME=${build_time} ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
   for arch in ${possible_archs}; do
     cp ${package_work_dir}/pkg/*${arch}.rpm ${repo_dir}/${arch} | :
   done
