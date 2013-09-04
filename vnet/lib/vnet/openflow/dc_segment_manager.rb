@@ -12,7 +12,7 @@ module Vnet::Openflow
       @datapath_networks = {}
     end
 
-    def insert(dpn_map, should_update)
+    def insert(dpn_map)
       dpn_list = (@datapath_networks[dpn_map.network_id] ||= {})
 
       if dpn_list.has_key? dpn_map.id
@@ -46,7 +46,7 @@ module Vnet::Openflow
       return unless network_map.network_mode == 'virtual'
 
       network_map.batch.datapath_networks_dataset.on_segment(dp_map).all.commit(:fill => :datapath).each { |dpn_map|
-        self.insert(dpn_map, false)
+        self.insert(dpn_map)
       }
 
       self.update_network_id(network_map.network_id)
