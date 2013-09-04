@@ -19,34 +19,30 @@ describe "/network_services" do
 
   describe "POST /" do
     let!(:vif) { Fabricate(:vif) { uuid "vif-test"}  }
-    let(:accepted_params) do
-      {
-        :uuid => "ns-test",
-        :vif_uuid => "vif-test",
-        :display_name => "our test network service",
-        :incoming_port => 40,
-        :outgoing_port => 100
-      }
-    end
+    accepted_params = {
+      :uuid => "ns-test",
+      :vif_uuid => "vif-test",
+      :display_name => "our test network service",
+      :incoming_port => 40,
+      :outgoing_port => 100
+    }
     required_params = [:display_name]
     uuid_params = [:uuid, :vif_uuid]
 
-    include_examples "POST /", required_params, uuid_params
+    include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
   describe "PUT /:uuid" do
     let!(:new_vif) { Fabricate(:vif) { uuid "vif-other"}  }
-    let(:accepted_params) do
-      {
-        :vif_uuid => "vif-other",
-        :display_name => "our new and improved test network service",
-        :incoming_port => 40,
-        :outgoing_port => 100
-      }
-    end
+    accepted_params = {
+      :vif_uuid => "vif-other",
+      :display_name => "our new and improved test network service",
+      :incoming_port => 40,
+      :outgoing_port => 100
+    }
     uuid_params = [:vif_uuid]
 
-    include_examples "PUT /:uuid", uuid_params
+    include_examples "PUT /:uuid", accepted_params, uuid_params
   end
 
 end

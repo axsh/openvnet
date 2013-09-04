@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples "POST /" do | required_params, uuid_params |
+shared_examples "POST /" do | accepted_params, required_params, uuid_params |
   before(:each) { post api_suffix, request_params }
 
   context "with only the required parameters" do
@@ -24,7 +24,7 @@ shared_examples "POST /" do | required_params, uuid_params |
     end
   end
 
-  uuid_params.each { |up| include_examples "uuid_in_param", up }
+  uuid_params.each { |up| include_examples "uuid_in_param", accepted_params, up }
 
   required_params.each do |req_p|
     context "without the '#{req_p}' parameter" do

@@ -18,36 +18,32 @@ describe "/networks" do
   include_examples "DELETE /:uuid"
 
   describe "POST /" do
-    let (:accepted_params) do
-      {
-        :uuid => "nw-test",
-        :display_name => "our test network",
-        :ipv4_network => "192.168.2.0",
-        :ipv4_prefix => 24,
-        :domain_name => "vdc.test.domain",
-        :network_mode => "virtual",
-        :editable => false
-      }
-    end
+    accepted_params = {
+      :uuid => "nw-test",
+      :display_name => "our test network",
+      :ipv4_network => "192.168.2.0",
+      :ipv4_prefix => 24,
+      :domain_name => "vdc.test.domain",
+      :network_mode => "virtual",
+      :editable => false
+    }
     required_params = [:display_name, :ipv4_network]
     uuid_params = [:uuid]
 
-    include_examples "POST /", required_params, uuid_params
+    include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
   describe "PUT /:uuid" do
-    let(:accepted_params) do
-      {
-        :display_name => "our new name for the test network",
-        :ipv4_network => "10.0.0.2",
-        :ipv4_prefix => 8,
-        :domain_name => "new.vdc.test.domain",
-        :network_mode => "physical",
-        :editable => true
-      }
-    end
+    accepted_params = {
+      :display_name => "our new name for the test network",
+      :ipv4_network => "10.0.0.2",
+      :ipv4_prefix => 8,
+      :domain_name => "new.vdc.test.domain",
+      :network_mode => "physical",
+      :editable => true
+    }
 
-    include_examples "PUT /:uuid"
+    include_examples "PUT /:uuid", accepted_params
   end
 
 end
