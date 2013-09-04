@@ -6,7 +6,7 @@ module Vnet::Openflow
     include Celluloid
     include Celluloid::Logger
     include FlowHelpers
-    
+
     ROUTE_COMMIT = {:fill => [:route_link, :vif => [:network_services, :network]]}
 
     def initialize(dp)
@@ -166,51 +166,70 @@ module Vnet::Openflow
     end
 
     def prepare_vif(vif_map)
-      vif = @vifs[vif_map.id]
+      interface = @datapath.interface_manager.interface(id: vif_map.id)
+      info "router_manager: from interface_manager: #{interface.inspect}"
+
+      vif = interface && @vifs[interface[:id]]
       return vif if vif
 
-      if vif_map.mode != 'simulated'
-        info "router_manager: only vifs with mode 'simulated' are supported (uuid:#{vif_map.uuid} mode:#{vif_map.mode})"
+      if interface[:mode] != :simulated
+        info "router_manager: only vifs with mode 'simulated' are supported (uuid:#{interface[:uuid]} mode:#{interface[:mode]})"
         return
       end
 
-      service_map = vif_map.network_services.detect { |service| service.display_name == 'router' }
+      service_map = vif_map.network_services.detect { |service|
+        service.display_name == 'router'
+      }
 
       if service_map.nil?
-        warn "route_manager: could not find 'router' service for vif (#{vif_map.uuid})"
+        warn "route_manager: could not find 'router' service for vif (#{interface[:uuid]})"
         return nil
       end
 
+      mac_info = interface[:mac_addresses].first
+
+      if mac_info.nil? ||
+          mac_info[1][:ipv4_addresses].first.nil?
+        warn "route_manager: could not find ipv4 address"
+        return nil
+      end
+
+      ipv4_info = mac_info[1][:ipv4_addresses].first
+
       vif = {
-        :id => vif_map.id,
-        :network_id => vif_map.network_id,
+        :id => interface[:id],
         :use_datapath_id => nil,
         :service_cookie => service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT),
-        :mac_address => Trema::Mac.new(vif_map.mac_addr),
-        :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
+
+        :mac_address => mac_info[0],
+
+        :network_id => ipv4_info[:network_id],
+        :ipv4_address => ipv4_info[:ipv4_address],
       }
 
-      case vif_map.network && vif_map.network.network_mode
-      when 'physical'
+      case ipv4_info[:network_type]
+      when :physical
         vif[:require_vif] = false
         vif[:network_type] = :physical_network
-      when 'virtual'
+      when :virtual
         vif[:require_vif] = true
         vif[:network_type] = :virtual_network
       else
-        warn "route_manager: vif does not have a known network mode (#{vif_map.uuid})"
+        warn "route_manager: vif does not have a known network type (#{interface[:uuid]})"
         return nil
       end
 
-      @vifs[vif_map.id] = vif
+      @vifs[interface[:id]] = vif
 
       datapath_id = @datapath.datapath_map.id
 
-      if vif_map.owner_datapath_id
-        if vif_map.owner_datapath_id == datapath_id
-          vif_map.batch.update(:active_datapath_id => datapath_id).commit
+      # Fix this...
+      if interface[:owner_datapath_ids]
+        if interface[:owner_datapath_ids].include? datapath_id
+          @datapath.interface_manager.update_active_datapaths(id: interface[:id],
+                                                              datapath_id: datapath_id)
         else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id
+          vif[:use_datapath_id] = vif_map.owner_datapath_id.first
         end
       end
 

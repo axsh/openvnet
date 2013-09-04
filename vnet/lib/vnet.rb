@@ -43,6 +43,7 @@ module Vnet
       autoload :VnetAPI, 'vnet/endpoints/1.0/vnet_api'
       module Responses
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
+        autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DcNetwork, 'vnet/endpoints/1.0/responses/dc_network'
         autoload :DhcpRange, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
@@ -57,6 +58,7 @@ module Vnet
         autoload :Vif, 'vnet/endpoints/1.0/responses/vif'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
+        autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DcNetworkCollection, 'vnet/endpoints/1.0/responses/dc_network'
         autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
@@ -157,6 +159,7 @@ module Vnet
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow'
+    autoload :InterfaceManager, 'vnet/openflow/interface_manager'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHandler, 'vnet/openflow/packet_handler'
@@ -166,6 +169,10 @@ module Vnet
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
+
+    module Interfaces
+      autoload :Base, 'vnet/openflow/interfaces/base'
+    end
 
     module Networks
       autoload :Base, 'vnet/openflow/networks/base'
