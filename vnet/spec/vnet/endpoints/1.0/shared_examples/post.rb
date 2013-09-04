@@ -12,7 +12,6 @@ shared_examples "POST /" do | accepted_params, required_params, uuid_params |
 
     it "should create a database entry the required parameters set" do
       last_response.should succeed.with_body_containing(request_params)
-      #TODO: Check actual database records
     end
   end
 
