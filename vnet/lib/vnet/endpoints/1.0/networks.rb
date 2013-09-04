@@ -3,17 +3,18 @@
 require 'ipaddr'
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
+  put_post_shared_params = [
+    "display_name",
+    "ipv4_network",
+    "ipv4_prefix",
+    "domain_name",
+    "dc_network_uuid",
+    "network_mode",
+    "editable"
+  ]
+
   post do
-    accepted_params = [
-      "uuid",
-      "display_name",
-      "ipv4_network",
-      "ipv4_prefix",
-      "domain_name",
-      "dc_network_uuid",
-      "network_mode",
-      "editable"
-    ]
+    accepted_params = put_post_shared_params + ["uuid"]
     required_params = ["display_name", "ipv4_network"]
 
     post_new(:Network, accepted_params, required_params) { |params|
@@ -35,15 +36,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   put '/:uuid' do
-    update_by_uuid(:Network, [
-      "display_name",
-      "ipv4_network",
-      "ipv4_prefix",
-      "domain_name",
-      "dc_network_uuid",
-      "network_mode",
-      "editable"
-    ]) { |params|
+    update_by_uuid(:Network, put_post_shared_params) { |params|
       params["ipv4_network"] = parse_ipv4(params["ipv4_network"]) if params.has_key?("ipv4_network")
       check_syntax_and_get_id(M::DcNetwork, params, "dc_network", "dc_network_id") if params["dc_network_uuid"]
     }

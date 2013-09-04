@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
+  put_post_shared_params = [
+    "vif_uuid",
+    "display_name",
+    "incoming_port",
+    "outgoing_port"
+  ]
 
   post do
-    accepted_params = [
-      "uuid",
-      "vif_uuid",
-      "display_name",
-      "incoming_port",
-      "outgoing_port"
-    ]
+    accepted_params = put_post_shared_params + ["uuid"]
     required_params = ["display_name"]
 
     post_new(:NetworkService, accepted_params, required_params) { |params|
@@ -30,14 +30,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   end
 
   put '/:uuid' do
-    accepted_params = [
-      "vif_uuid",
-      "display_name",
-      "incoming_port",
-      "outgoing_port"
-    ]
-
-    update_by_uuid(:NetworkService, accepted_params) { |params|
+    update_by_uuid(:NetworkService, put_post_shared_params) { |params|
       check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
     }
   end

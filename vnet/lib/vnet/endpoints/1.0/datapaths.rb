@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
+  put_post_shared_params = [
+    "display_name",
+    "ipv4_address",
+    "is_connected",
+    "dpid",
+    "dc_segment_uuid",
+    "node_id"
+  ]
+
   post do
-    accepted_params = [
-      "uuid",
-      "display_name",
-      "ipv4_address",
-      "is_connected",
-      "dpid",
-      "dc_segment_uuid",
-      "node_id"
-    ]
+    accepted_params = put_post_shared_params + ["uuid"]
     required_params = ["display_name", "dpid", "node_id"]
 
     post_new(:Datapath, accepted_params, required_params) { |params|
@@ -32,16 +33,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   put '/:uuid' do
-    accepted_params = [
-      "display_name",
-      "ipv4_address",
-      "is_connected",
-      "dpid",
-      "dc_segment_uuid",
-      "node_id"
-    ]
-
-    update_by_uuid(:Datapath, accepted_params) { |params|
+    update_by_uuid(:Datapath, put_post_shared_params) { |params|
       params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params['ipv4_address']
       check_syntax_and_get_id(M::DcSegment, params, "dc_segment_uuid", "dc_segment_id") if params["dc_segment_uuid"]
     }
