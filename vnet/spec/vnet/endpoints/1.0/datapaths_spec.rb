@@ -50,47 +50,43 @@ describe "/datapaths" do
   end
 
   describe "POST /:uuid/networks/:network_uuid" do
-    let!(:network) do
-      Fabricate(:network) {
-        ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
-      }
-    end
-    let!(:datapath) { Fabricate(:datapath_1) }
+    let!(:related_object) { Fabricate(:network) }
+    let!(:base_object) { Fabricate(fabricator) }
 
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        put "/datapaths/dp-notfound/networks/#{network.canonical_uuid}"
-        expect(last_response.status).to eq 404
+    before(:each) do
+      post api_relation_suffix, request_params
+    end
+
+    let(:request_params) { {:broadcast_mac_addr => "02:00:00:cc:00:02"} }
+
+    context "with a nonexistant uuid for the base class" do
+      let(:api_relation_suffix) {
+        "#{api_suffix}/#{model_class.uuid_prefix}-notfound/networks/#{related_object.canonical_uuid}"
+      }
+
+      it "should return a 404 error (UnknownUUIDResource)" do
+        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+          "#{model_class.uuid_prefix}-notfound")
       end
     end
 
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        put "/datapaths/#{datapath.canonical_uuid}/networks/nw-notfound"
-        expect(last_response.status).to eq 404
+    context "with a nonexistant uuid for the relation" do
+      let(:api_relation_suffix) {
+        "#{api_suffix}/#{base_object.canonical_uuid}/networks/#{related_object.uuid_prefix}-notfound"
+      }
+      it "should return a 404 error (UnknownUUIDResource)" do
+        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+          "#{related_object.uuid_prefix}-notfound")
       end
     end
 
     context "with a network_uuid that isn't added to this datapath yet" do
-      it "should create a new relation in the join table" do
-        post "/datapaths/#{datapath.canonical_uuid}/networks/#{network.canonical_uuid}", {
-          :broadcast_mac_addr => "02:00:00:cc:00:02"
-        }
+      let(:api_relation_suffix) {
+        "#{api_suffix}/#{base_object.canonical_uuid}/networks/#{related_object.canonical_uuid}"
+      }
 
-        expect(last_response).to be_ok
-        # p last_response.body.first
-        # expect(last_response.body).to eq([
-        #   {
-        #     "network_uuid" => network.canonical_uuid,
-        #     "broadcast_mac_addr" => 2199036624898
-        #   }
-        # ])
-
-        Vnet::Models::DatapathNetwork.find(
-          :datapath_id => datapath.id,
-          :network_id => network.id,
-          :broadcast_mac_addr => 2199036624898
-        ).should_not eq(nil)
+      it "should succeed" do
+        last_response.should succeed
       end
     end
   end
