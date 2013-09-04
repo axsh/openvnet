@@ -4,7 +4,7 @@ require 'ipaddress'
 module Vnet::ModelWrappers
   class Datapath < Base
     def ipv4_address_s
-      IPAddress::IPv4::parse_u32(self.ipv4_address).to_s
+      self.ipv4_address && IPAddress::IPv4::parse_u32(self.ipv4_address).to_s
     end
 
     def to_hash
