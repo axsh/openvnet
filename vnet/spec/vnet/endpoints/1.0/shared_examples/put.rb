@@ -15,8 +15,19 @@ shared_examples "PUT /:uuid" do |accepted_params, uuid_params = []|
 
     uuid_params.each { |up| include_examples "uuid_in_param", accepted_params, up }
 
-    context "with the correct parameters" do
-      it "should update the database entry" do
+    accepted_params.each { |k,v|
+      context "with only the '#{k}' parameter" do
+        let(:request_params) { { k => v } }
+
+        it "only that parameter should be updated" do
+          last_response.should succeed.with_body_containing(request_params)
+          last_response.should_not succeed.with_body_containing(accepted_params)
+        end
+      end
+    }
+
+    context "with all correct parameters" do
+      it "should update all parameters" do
         last_response.should succeed.with_body_containing(
           accepted_params.merge({:uuid => object.canonical_uuid})
         )
