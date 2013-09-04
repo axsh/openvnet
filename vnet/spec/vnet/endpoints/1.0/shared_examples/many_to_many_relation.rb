@@ -40,6 +40,7 @@ shared_examples "relation_uuid_checks" do |relation_suffix|
     end
 end
 
+## WARNING: This isn't finished and not usable yet as a real shared example
 shared_examples "many_to_many_relation" do |relation_suffix|
   describe "Many to many relation calls for #{relation_suffix}" do
     let!(:base_object) { Fabricate(fabricator) }
