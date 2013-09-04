@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+require_relative "helper_methods"
+
 RSpec::Matchers.define :succeed do
+  include EndpointMatcherHelper
+
   def expect_body_to_contain
     @body.merge(@contains) == @body &&
     @contains.dup.delete_if { |k,v| @body.has_key?(k) }.empty?
@@ -30,9 +34,7 @@ RSpec::Matchers.define :succeed do
     rescue JSON::ParserError
       raise "Response didn't parse as JSON.\n" +
       "Response we got:\n" +
-      "Http status: #{response.status}\n" +
-      "Body: #{response.body}" +
-      "Errors:\n #{response.errors}"
+      print_response(response)
     end
 
     response.ok? &&
@@ -49,9 +51,7 @@ RSpec::Matchers.define :succeed do
     (@body_size.nil? ? "" : "with body size: #{@body_size}") +
     "\n\n" +
     "Instead we got:\n" +
-    "Http status: #{response.status}\n" +
-    "Body: #{response.body}" +
-    (response.errors.empty? ? "" : "Stacktrace:\n #{response.errors}")
+    print_response(response)
   end
 
   failure_message_for_should do |response|

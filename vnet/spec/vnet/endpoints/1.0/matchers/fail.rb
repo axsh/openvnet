@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+require_relative "helper_methods"
+
 RSpec::Matchers.define :fail do
+  include EndpointMatcherHelper
+
   def expect_call_to_fail
     !@response.ok?
   end
@@ -41,12 +45,11 @@ RSpec::Matchers.define :fail do
     print_expectation +
     "\n\n" +
     "Instead we got:\n" +
-    "Http status: #{response.status}\n" +
-    "Body: #{response.body}" +
-    (response.errors.empty? ? "" : "Stacktrace:\n #{response.errors}")
+    print_response(response)
   end
 
   failure_message_for_should_not do |response|
-    "We got exactly what we didn't expect.\n" + print_expectation
+    "We got exactly what we didn't expect.\n" + print_expectation +
+    "\nComplete response:\n" + print_response(response)
   end
 end
