@@ -33,6 +33,7 @@ class WakameVnetCommon < FPM::Cookery::Recipe
     ).each do |f|
       opt('axsh/wakame-vnet/vnet').install Dir["vnet/#{f}"]
     end
+    opt('axsh/wakame-vnet/vnctl').install Dir["vnctl/*"]
 
     etc('/default').install Dir['deployment/conf_files/etc/default/wakame-vnet']
     etc('/wakame-vnet').install Dir['deployment/conf_files/etc/wakame-vnet/common.conf']
