@@ -59,7 +59,7 @@ describe "/datapaths" do
 
     let(:request_params) { {:broadcast_mac_addr => "02:00:00:cc:00:02"} }
 
-    context "with a nonexistant uuid for the base class" do
+    context "with a nonexistant uuid for the base object" do
       let(:api_relation_suffix) {
         "#{api_suffix}/#{model_class.uuid_prefix}-notfound/networks/#{related_object.canonical_uuid}"
       }
@@ -74,10 +74,27 @@ describe "/datapaths" do
       let(:api_relation_suffix) {
         "#{api_suffix}/#{base_object.canonical_uuid}/networks/#{related_object.uuid_prefix}-notfound"
       }
+
       it "should return a 404 error (UnknownUUIDResource)" do
         last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
           "#{related_object.uuid_prefix}-notfound")
       end
+    end
+
+    context "with faulty uuid syntax for the base object" do
+      let(:api_relation_suffix) {
+        "#{api_suffix}/this_is_not_an_uuid/networks/#{related_object.canonical_uuid}"
+      }
+
+      it_should_return_error(400, "InvalidUUID", "this_is_not_an_uuid")
+    end
+
+    context "with faulty uuid syntax for the related object" do
+      let(:api_relation_suffix) {
+        "#{api_suffix}/#{base_object.canonical_uuid}/networks/this_is_not_an_uuid"
+      }
+
+      it_should_return_error(400, "InvalidUUID", "this_is_not_an_uuid")
     end
 
     context "with a network_uuid that isn't added to this datapath yet" do
