@@ -37,7 +37,9 @@ RSpec::Matchers.define :fail do
   def print_expectation
     "Http status: " + (@code ? @code.to_s : "any") + "\n" +
     "Error: " + (@error_details ? @error_details[:name] : "any") + "\n" +
-    "Message: " + (@error_details[:message] ? @error_details[:message] : "any")
+    "message: " + (
+      (@error_details && @error_details[:message]) ? @error_details[:message] : "any"
+    )
   end
 
   failure_message_for_should do |response|
