@@ -21,7 +21,9 @@ shared_examples "PUT /:uuid" do |accepted_params, uuid_params = []|
 
         it "only that parameter should be updated" do
           last_response.should succeed.with_body_containing(request_params)
-          last_response.should_not succeed.with_body_containing(accepted_params)
+          unless accepted_params == request_params
+            last_response.should_not succeed.with_body_containing(accepted_params)
+          end
         end
       end
     }
