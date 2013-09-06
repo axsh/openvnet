@@ -3,7 +3,6 @@
 module Vnet::Models
   class Datapath < Base
     taggable 'dp'
-    many_to_one :open_flow_controller
     many_to_one :dc_segment
 
     one_to_many :datapath_networks

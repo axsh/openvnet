@@ -5,7 +5,6 @@ Sequel.migration do
     create_table(:datapaths) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :open_flow_controller_id, :index => true, :null=>false
       String :display_name, :null=>false
       Bignum :ipv4_address
       FalseClass :is_connected, :null=>false, :default => false
@@ -114,13 +113,6 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
-    create_table(:open_flow_controllers) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
     create_table(:routes) do
       primary_key :id
       String :uuid, :unique => true, :null => false
@@ -186,7 +178,6 @@ Sequel.migration do
                :network_services,
                :mac_leases,
                :mac_ranges,
-               :open_flow_controllers,
                :vifs,
                :routes,
                :route_links,

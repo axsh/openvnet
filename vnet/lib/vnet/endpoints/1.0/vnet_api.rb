@@ -133,7 +133,6 @@ module Vnet::Endpoints::V10
     load_namespace('mac_ranges')
     load_namespace('networks')
     load_namespace('network_services')
-    load_namespace('open_flow_controllers')
     load_namespace('routes')
     load_namespace('route_links')
     load_namespace('vifs')

@@ -11,7 +11,6 @@ module Vnet::ModelWrappers
       dc_segment = self.batch.dc_segment.commit
       {
         :uuid => self.uuid,
-        :open_flow_controller_uuid => self.open_flow_controller_uuid,
         :display_name => self.display_name,
         :ipv4_address => self.ipv4_address_s,
         :is_connected => self.is_connected,

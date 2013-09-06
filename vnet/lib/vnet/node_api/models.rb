@@ -40,9 +40,6 @@ module Vnet::NodeApi
   class NetworkService < Base
   end
 
-  class OpenFlowController < Base
-  end
-
   class Route < Base
   end
 
