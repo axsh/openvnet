@@ -11,6 +11,15 @@ Fabricator(:network, class_name: Vnet::Models::Network) do
   #editable true
 end
 
+Fabricator(:network_for_range, class_name: Vnet::Models::Network) do
+  # I'm stressed for time here. ;_;
+  display_name "temporary thing for the dc networks fabricator..."
+  ipv4_network IPAddr.new("10.102.0.1").to_i
+  ipv4_prefix 24
+  domain_name "example.com"
+  network_mode 'virtual'
+end
+
 Fabricator(:vnet_1, class_name: Vnet::Models::Network) do
   uuid "nw-aaaaaaaa"
   display_name "vnet1"
