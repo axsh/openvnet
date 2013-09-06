@@ -8,7 +8,7 @@ Sequel.migration do
       Integer :open_flow_controller_id, :index => true, :null=>false
       String :display_name, :null=>false
       Bignum :ipv4_address
-      FalseClass :is_connected, :null=>false
+      FalseClass :is_connected, :null=>false, :default => false
       String :dpid, :null=>false
       String :dc_segment_id, :index => true
       String :node_id, :null=>false
