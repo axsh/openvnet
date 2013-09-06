@@ -13,7 +13,7 @@ module Vnet::ModelWrappers
         :uuid => self.uuid,
         :open_flow_controller_uuid => self.open_flow_controller_uuid,
         :display_name => self.display_name,
-        :ipv4_address => self.ipv4_address,
+        :ipv4_address => self.ipv4_address_s,
         :is_connected => self.is_connected,
         :dpid => self.dpid,
         :dc_segment_uuid => dc_segment && dc_segment.uuid,

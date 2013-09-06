@@ -4,9 +4,7 @@ module Vnet::Endpoints::V10::Responses
   class Datapath < Vnet::Endpoints::ResponseGenerator
     def self.generate(datapath)
       argument_type_check(datapath, Vnet::ModelWrappers::Datapath)
-      res = datapath.to_hash
-      res[:ipv4_address] = datapath.ipv4_address_s
-      res
+      datapath.to_hash
     end
 
     def self.networks(object)
