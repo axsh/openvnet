@@ -25,9 +25,6 @@ module Vnet::NodeApi
   class MacLease < Base
   end
 
-  class MacRange < Base
-  end
-
   class Network < Base
   end
 

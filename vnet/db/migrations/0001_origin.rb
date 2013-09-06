@@ -103,16 +103,6 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
-    create_table(:mac_ranges) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Bignum :vendor_id, :null=>false
-      Bignum :range_begin, :null=>false
-      Bignum :range_end, :null=>false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
     create_table(:routes) do
       primary_key :id
       String :uuid, :unique => true, :null => false
@@ -177,7 +167,6 @@ Sequel.migration do
                :networks,
                :network_services,
                :mac_leases,
-               :mac_ranges,
                :vifs,
                :routes,
                :route_links,
