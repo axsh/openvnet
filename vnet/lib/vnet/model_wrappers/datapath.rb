@@ -3,9 +3,7 @@ require 'ipaddress'
 
 module Vnet::ModelWrappers
   class Datapath < Base
-    def ipv4_address_s
-      self.ipv4_address && IPAddress::IPv4::parse_u32(self.ipv4_address).to_s
-    end
+    include Helpers::IPv4
 
     def to_hash
       dc_segment = self.batch.dc_segment.commit

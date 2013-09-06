@@ -2,9 +2,7 @@
 
 module Vnet::ModelWrappers
   class IpAddress < Base
-    def ipv4_address_s
-      self.ipv4_address && IPAddress::IPv4::parse_u32(self.ipv4_address).to_s
-    end
+    include Helpers::IPv4
 
     def to_hash
       {

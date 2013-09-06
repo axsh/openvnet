@@ -2,6 +2,9 @@
 
 module Vnet::ModelWrappers
   class Vif < Base
+    include Helpers::IPv4
+    include Helpers::MacAddr
+
     def to_hash
       network = self.batch.network.commit
       owner_datapath = self.batch.owner_datapath.commit
@@ -14,19 +17,6 @@ module Vnet::ModelWrappers
         :active_datapath_uuid => active_datapath && active_datapath.uuid,
         :ipv4_address => ipv4_address_s,
         :mode => mode
-      }
-    end
-
-    def ipv4_address_s
-      self.ipv4_address && IPAddress::IPv4::parse_u32(self.ipv4_address).to_s
-    end
-
-    def mac_addr_s(delim = ":")
-      mac_addr.to_s(16).tap { |mac|
-        while mac.length < 12
-          mac.insert(0,'0')
-        end
-        mac.scan(/.{2}|.+/).join(delim)
       }
     end
   end
