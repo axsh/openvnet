@@ -188,7 +188,6 @@ Sequel.migration do
       Integer :active_datapath_id, :index => true
       Integer :owner_datapath_id, :index => true
 
-      String :state, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
