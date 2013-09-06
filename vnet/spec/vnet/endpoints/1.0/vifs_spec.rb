@@ -21,12 +21,14 @@ describe "/vifs" do
     before(:all) { use_mock_event_handler }
     let!(:network) { Fabricate(:network) { uuid "nw-testnet" }  }
     let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
+    let!(:active) { Fabricate(:datapath) { uuid "dp-active" } }
 
     accepted_params = {
       :uuid => "vif-test",
       :network_uuid => "nw-testnet",
       :mac_addr => "52:54:00:12:34:70",
       :owner_datapath_uuid => "dp-owner",
+      :active_datapath_uuid => "dp-active",
       :ipv4_address => "192.168.3.40",
       :mode => "virtual"
     }
