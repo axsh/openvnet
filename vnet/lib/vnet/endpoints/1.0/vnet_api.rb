@@ -126,7 +126,6 @@ module Vnet::Endpoints::V10
     respond_to :json, :yml
 
     load_namespace('datapaths')
-    load_namespace('dc_networks')
     load_namespace('dhcp_ranges')
     load_namespace('ip_addresses')
     load_namespace('ip_leases')

@@ -32,23 +32,6 @@ Sequel.migration do
       FalseClass :is_connected, :null=>false
     end
 
-    create_table(:dc_networks) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Integer :parent_id, :index => true
-      String :display_name, :null => false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
-    create_table(:dc_network_dc_segments) do
-      primary_key :id
-      Integer :dc_network_id, :index => true, :null => false
-      Integer :dc_segment_id, :index => true, :null => false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
     create_table(:dc_segments) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -94,7 +77,6 @@ Sequel.migration do
       Bignum :ipv4_network, :null=>false
       Integer :ipv4_prefix, :default=>24, :null=>false
       String :domain_name
-      Integer :dc_network_id, :index => true
       String :network_mode
       FalseClass :editable
       DateTime :created_at, :null=>false
@@ -197,7 +179,6 @@ Sequel.migration do
   down do
     drop_table(:datapaths,
                :datapath_networks,
-               :dc_networks,
                :dhcp_ranges,
                :ip_leases,
                :ip_addresses,

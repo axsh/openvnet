@@ -44,7 +44,6 @@ module Vnet
       module Responses
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
-        autoload :DcNetwork, 'vnet/endpoints/1.0/responses/dc_network'
         autoload :DhcpRange, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
@@ -59,7 +58,6 @@ module Vnet
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
-        autoload :DcNetworkCollection, 'vnet/endpoints/1.0/responses/dc_network'
         autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
@@ -85,8 +83,6 @@ module Vnet
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
     autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'
-    autoload :DcNetwork, 'vnet/models/dc_network'
-    autoload :DcNetworkDcSegment, 'vnet/models/dc_network_dc_segment'
     autoload :DcSegment, 'vnet/models/dc_segment'
     autoload :DhcpRange, 'vnet/models/dhcp_range'
     autoload :IpAddress, 'vnet/models/ip_address'
@@ -107,8 +103,6 @@ module Vnet
     autoload :Datapath, 'vnet/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
     autoload :DatapathRouteLink, 'vnet/model_wrappers/datapath_route_link'
-    autoload :DcNetwork, 'vnet/model_wrappers/dc_network'
-    autoload :DcNetworkDcSegment, 'vnet/model_wrappers/dc_network_dc_segment'
     autoload :DcSegment, 'vnet/model_wrappers/dc_segment'
     autoload :DhcpRange, 'vnet/model_wrappers/dhcp_range'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
