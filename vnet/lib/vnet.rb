@@ -120,8 +120,6 @@ module Vnet
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/models.rb'
     autoload :DatapathNetwork, 'vnet/node_api/models.rb'
-    autoload :DcNetwork, 'vnet/node_api/models.rb'
-    autoload :DcNetworkDcSegment, 'vnet/node_api/models.rb'
     autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DhcpRange, 'vnet/node_api/models.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
