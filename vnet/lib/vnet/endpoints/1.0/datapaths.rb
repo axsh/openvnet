@@ -72,24 +72,32 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     respond_with(R::Datapath.networks(datapath))
   end
 
-  put '/:uuid/route_links' do
+  post '/:uuid/route_links/:route_link_uuid' do
     params = parse_params(@params, ['uuid', 'route_link_uuid', 'link_mac_address'])
-    required_params(params, ['link_mac_address'])
+    check_required_params(params, ['link_mac_address'])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
     route_link = check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid')
 
     link_mac_address = parse_mac(params['link_mac_address'])
-    if link_mac_address.nil?
-      error_msg = "invalid link_mac_address: '#{params['link_mac_address']}'"
-      raise(E::ArgumentError, error_msg)
-    end
 
     M::DatapathRouteLink.create({ :datapath_id => datapath.id,
                                   :route_link_id => route_link.id,
                                   :link_mac_addr => link_mac_address,
                                 })
-    respond_with({})
+    respond_with(R::Datapath.route_links(datapath))
+  end
+
+  delete '/:uuid/route_links/:route_link_uuid' do
+    datapath = check_syntax_and_pop_uuid(M::Datapath, @params)
+    route_link = check_syntax_and_pop_uuid(M::RouteLink, @params, 'route_link_uuid')
+    relations = M::DatapathRouteLink.filter({ :datapath_id => datapath.id,
+                                :route_link_id => route_link.id
+                              })
+
+    relations.each { |r| r.destroy }
+
+    respond_with(R::Datapath.networks(datapath))
   end
 
 end

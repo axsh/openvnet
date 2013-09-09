@@ -44,6 +44,7 @@ module Vnet
       module Responses
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
+        autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
         autoload :DhcpRange, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
@@ -56,6 +57,7 @@ module Vnet
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
+        autoload :DatapathRouteLinkCollection, 'vnet/endpoints/1.0/responses/datapath_route_link'
         autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
