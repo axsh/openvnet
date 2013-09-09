@@ -7,6 +7,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vifs' do
     "network_uuid",
     "mac_addr",
     "owner_datapath_uuid",
+    "active_datapath_uuid",
     "ipv4_address",
     "mode",
   ]
@@ -20,6 +21,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vifs' do
       params['mac_addr'] = parse_mac(params['mac_addr'])
       check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+      check_syntax_and_get_id(M::Datapath, params, "active_datapath_uuid", "active_datapath_id") if params["active_datapath_uuid"]
     }
   end
 
@@ -41,6 +43,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vifs' do
       params['mac_addr'] = parse_mac(params['mac_addr']) if params["ipv4_address"]
       check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+      check_syntax_and_get_id(M::Datapath, params, "active_datapath_uuid", "active_datapath_id") if params["active_datapath_uuid"]
     }
   end
 end
