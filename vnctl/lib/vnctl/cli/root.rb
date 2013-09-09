@@ -14,5 +14,6 @@ module Vnctl::Cli
     vnctl_register(C::NetworkService, "network services")
     vnctl_register(C::RouteLink, "route links")
     vnctl_register(C::Route, "routes")
+    vnctl_register(C::Vif, "vifs")
   end
 end
