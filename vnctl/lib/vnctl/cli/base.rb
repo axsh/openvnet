@@ -9,7 +9,8 @@ module Vnctl::Cli
       end
 
       def self.option_display_name
-        option :display_name, :type => :string, :desc => "Human readable display name."
+        option :display_name, :type => :string, :required => true,
+          :desc => "Human readable display name."
       end
 
       def self.define_add
