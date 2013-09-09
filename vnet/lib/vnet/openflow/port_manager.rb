@@ -71,11 +71,11 @@ module Vnet::Openflow
                        "hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
-      port = @ports.delete(message.port_no)
+      port = @ports.delete(port_desc.port_no)
 
       if port.nil?
         debug log_format('port status could not delete uninitialized port',
-                         "port_number:#{message.port_no}")
+                         "port_number:#{port_desc.port_no}")
         return nil
       end
 
@@ -86,7 +86,7 @@ module Vnet::Openflow
       end
 
       if port.port_name =~ /^vif-/
-        vif_map = MW::Vif[message.name]
+        vif_map = MW::Vif[port_desc.name]
         vif_map.batch.update(:active_datapath_id => nil).commit
       end
 

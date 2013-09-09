@@ -32,13 +32,6 @@ module Vnet::Openflow::Networks
                            flood_md.merge(:goto_table => TABLE_METADATA_LOCAL))
 
       if @broadcast_mac_addr
-        nw_virtual_md = flow_options.merge(md_network(:virtual_network))
-
-        flows << Flow.create(TABLE_HOST_PORTS, 30, {
-                               :eth_dst => @broadcast_mac_addr
-                             }, {
-                               :eth_dst => MAC_BROADCAST
-                             }, nw_virtual_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
                                :eth_dst => @broadcast_mac_addr
                              }, {}, flow_options)

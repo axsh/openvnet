@@ -49,6 +49,21 @@ module Vnet::Openflow
         self.insert(dpn_map)
       }
 
+      cookie = network_map.network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      flow_options = {:cookie => cookie}
+      nw_virtual_md = flow_options.merge(md_create(:virtual_network => network_map.network_id))
+
+      dpn = network_map.batch.datapath_networks_dataset.on_specific_datapath(dp_map).first.commit
+
+      flows = []
+      flows << Flow.create(TABLE_HOST_PORTS, 30, {
+                             :eth_dst => Trema::Mac.new(dpn.broadcast_mac_addr)
+                           }, {
+                             :eth_dst => MAC_BROADCAST
+                           }, nw_virtual_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+
+      @datapath.add_flows(flows)
+
       self.update_network_id(network_map.network_id)
     end
 

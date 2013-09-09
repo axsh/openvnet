@@ -7,6 +7,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vifs' do
   post do
     params = parse_params(@params, ['uuid',
                                     'network_id',
+                                    'active_datapath_uuid',
                                     'owner_datapath_uuid',
                                     'ipv4_address',
                                     'mac_addr',
@@ -22,6 +23,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vifs' do
     end
 
     params['network_id'] = pop_uuid(M::Network, params, 'network_id').id if params.has_key?('network_id')
+    params['active_datapath_id'] = pop_uuid(M::Datapath, params, 'active_datapath_uuid').id if params.has_key?('active_datapath_uuid')
     params['owner_datapath_id'] = pop_uuid(M::Datapath, params, 'owner_datapath_uuid').id if params.has_key?('owner_datapath_uuid')
 
     params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
