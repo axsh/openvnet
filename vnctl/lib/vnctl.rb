@@ -11,12 +11,12 @@ module Vnctl
 
   module Cli
     autoload :Base, 'vnctl/cli/base'
-    autoload :Root, 'vnctl/cli/root'
     autoload :Datapath, 'vnctl/cli/datapath'
     autoload :Network, 'vnctl/cli/network'
     autoload :NetworkService, 'vnctl/cli/network_service'
-    autoload :RouteLink, 'vnctl/cli/route_link'
+    autoload :Root, 'vnctl/cli/root'
     autoload :Route, 'vnctl/cli/route'
+    autoload :RouteLink, 'vnctl/cli/route_link'
     autoload :Vif, 'vnctl/cli/vif'
   end
 end
