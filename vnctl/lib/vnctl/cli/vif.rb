@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class Vif < Base
     namespace :vif
-    api_suffix "/api/vif"
+    api_suffix "/api/vifs"
 
     add_modify_shared_options {
       option :network_uuid, :type => :string, :desc => "The uuid of the network this vif is in."
