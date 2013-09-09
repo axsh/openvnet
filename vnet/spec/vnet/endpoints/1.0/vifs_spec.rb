@@ -38,28 +38,13 @@ describe "/vifs" do
 
     include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
 
-  #   it "create vif with ipv4_address" do
+    describe "event handler" do
+      let(:request_params) { { mac_addr: random_mac.to_s } }
 
-  #     ipv4_address = random_ipv43gt
-  #     mac_addr = random_mac
-  #     network = Fabricate(:network)
-
-  #     params = {
-  #       mac_addr: mac_addr.to_s,
-  #       network_uuid: network.canonical_uuid,
-  #       ipv4_address: ipv4_address.to_s,
-  #     }
-
-  #     post "/vifs", params
-
-  #     expect(last_response).to succeed
-  #     body = JSON.parse(last_response.body)
-  #     expect(body["mac_addr"]).to eq mac_addr.to_i
-  #     expect(body["network_id"]).to eq network.id
-  #     expect(body["ipv4_address"]).to eq ipv4_address.to_i
-
-  #     events = MockEventHandler.handled_events
-  #     expect(events.size).to eq 1
-  #   end
+      it "handles a single event" do
+        expect(last_response).to succeed
+        MockEventHandler.handled_events.size.should eq 1
+      end
+    end
   end
 end
