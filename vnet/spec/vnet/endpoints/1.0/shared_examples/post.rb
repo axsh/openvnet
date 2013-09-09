@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-shared_examples "POST /" do | accepted_params, required_params, uuid_params |
+shared_examples "POST /" do | accepted_params, required_params, uuid_params = [], expected_response = nil |
+  expected_response ||= accepted_params
   before(:each) { post api_suffix, request_params }
 
   context "with only the required parameters" do
@@ -19,7 +20,7 @@ shared_examples "POST /" do | accepted_params, required_params, uuid_params |
     let(:request_params) { accepted_params }
 
     it "should create a database entry with all parameters set" do
-      last_response.should succeed.with_body_containing(accepted_params)
+      last_response.should succeed.with_body_containing(expected_response)
     end
   end
 

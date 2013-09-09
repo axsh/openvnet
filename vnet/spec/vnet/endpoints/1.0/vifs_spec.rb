@@ -30,12 +30,13 @@ describe "/vifs" do
       :owner_datapath_uuid => "dp-owner",
       :active_datapath_uuid => "dp-active",
       :ipv4_address => "192.168.3.40",
-      :mode => "virtual"
+      :mode => "simulated"
     }
     required_params = [:mac_addr]
     uuid_params = [:network_uuid, :owner_datapath_uuid]
+    expected_response = accepted_params.dup.tap { |n| n.delete(:ipv4_address) }
 
-    include_examples "POST /", accepted_params, required_params, uuid_params
+    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
 
   #   it "create vif with ipv4_address" do
 
