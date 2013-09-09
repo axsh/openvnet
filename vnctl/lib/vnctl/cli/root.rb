@@ -10,10 +10,11 @@ module Vnctl::Cli
     }
 
     vnctl_register(C::Datapath, "datapaths")
+    vnctl_register(C::DhcpRange, "dhcp_range")
     vnctl_register(C::Network, "networks")
     vnctl_register(C::NetworkService, "network services")
-    vnctl_register(C::RouteLink, "route links")
     vnctl_register(C::Route, "routes")
+    vnctl_register(C::RouteLink, "route links")
     vnctl_register(C::Vif, "vifs")
   end
 end
