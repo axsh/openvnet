@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
-  put_post_shared_params = [
-    "mac_addr"
-  ]
+  put_post_shared_params = ["mac_addr"]
 
   post do
     accepted_params = put_post_shared_params + ["uuid"]
