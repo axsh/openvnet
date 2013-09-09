@@ -14,6 +14,8 @@ module Vnctl::Cli
       option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
     }
 
+    add_required_options [:display_name, :dpid, :node_id]
+
     define_standard_crud_commands
 
     class Networks < Base
@@ -44,5 +46,34 @@ module Vnctl::Cli
     end
     register(Networks, "networks", "networks OPTION",
       "subcommand to manage networks in this datapath.")
+
+    class RouteLinks < Base
+      namespace "datapath route links"
+      api_suffix "/api/datapaths"
+
+      desc "add DATAPATH_UUID NETWORK_UUID OPTIONS", "Adds a route_link to a datapath."
+      option :link_mac_address, :type => :string, :required => true,
+        :desc => "The mac address to use for this link"
+      def add(datapath_uuid, route_link_uuid)
+        puts post("#{suffix}/#{datapath_uuid}/route_links/#{route_link_uuid}", :query => options)
+      end
+
+      #TODO: Uncomment once this is implemented in the api
+      # desc "show DATAPATH_UUID [NETWORK_UUID]", "Shows all route_links in this datapath."
+      # def show(datapath_uuid, route_link_uuid = nil)
+      #   if route_link_uuid.nil?
+      #     puts get("#{suffix}/#{datapath_uuid}/route_links")
+      #   else
+      #     puts get("#{suffix}/#{datapath_uuid}/route_links/#{route_link_uuid}")
+      #   end
+      # end
+
+      desc "del DATAPATH_UUID", "Removes a route link from a datapath."
+      def del(datapath_uuid, route_link_uuid)
+        puts delete("#{suffix}/#{datapath_uuid}/route_links/#{route_link_uuid}")
+      end
+    end
+    register(RouteLinks, "route_links", "route_links OPTION",
+      "subcommand to manage route_links in this datapath.")
   end
 end

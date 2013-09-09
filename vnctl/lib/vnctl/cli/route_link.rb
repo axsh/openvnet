@@ -6,7 +6,8 @@ module Vnctl::Cli
     api_suffix "/api/route_links"
 
     option_uuid
-    option :mac_address, :type => :string, :desc => "The mac address for this route link."
+    option :mac_address, :type => :string, :required => true,
+     :desc => "The mac address for this route link."
     define_add
 
     define_show

@@ -1,59 +1,48 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
+  put_post_shared_params = [
+    "ipv4_address",
+    "ipv4_prefix",
+    "vif_uuid",
+    "route_link_uuid"
+  ]
 
   post do
-    params = parse_params(@params, ["uuid",
-                                    "vif_uuid",
-                                    "route_link_uuid",
-                                    "ipv4_address",
-                                    "ipv4_prefix",
-                                    "ingress",
-                                    "egress"
-                                   ])
+    accepted_params = put_post_shared_params + [
+      "uuid",
+      "ingress",
+      "egress"
+    ]
+    required_params = ["ipv4_address", "route_link_uuid"]
 
-    if params.has_key?("uuid")
-      raise E::DuplicateUUID, params["uuid"] unless M::Route[params["uuid"]].nil?
-      params["uuid"] = M::Route.trim_uuid(params["uuid"])
-    end
-
-    vif_uuid = params.delete('vif_uuid')
-    route_link_uuid = params.delete('route_link_uuid') || raise(E::MissingArgument, 'route_link_uuid')
-
-    if vif_uuid
-      params['vif_id'] = (M::Vif[vif_uuid] || raise(E::InvalidUUID, vif_uuid)).id
-    end
-
-    params['route_link_id'] = (M::RouteLink[route_link_uuid] || raise(E::InvalidUUID, route_link_uuid)).id
-
-    params['ipv4_address'] = parse_ipv4(params['ipv4_address'] || raise(E::MissingArgument, 'ipv4_address'))
-    params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
-
-    params['ingress'] = params['ingress'].to_i if params['ingress']
-    params['egress'] = params['egress'].to_i if params['egress']
-
-    route = M::Route.create(params)
-    respond_with(R::Route.generate(route))
+    post_new(:Route, accepted_params, required_params) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
+      params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+      check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid", "route_link_id")
+    }
   end
 
   get do
-    routes = M::Route.all
-    respond_with(R::RouteCollection.generate(routes))
+    get_all(:Route)
   end
 
   get '/:uuid' do
-    route = M::Route[@params["uuid"]]
-    respond_with(R::Route.generate(route))
+    get_by_uuid(:Route)
   end
 
   delete '/:uuid' do
-    route = M::Route.destroy(@params["uuid"])
-    respond_with(R::Route.generate(route))
+    delete_by_uuid(:Route)
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["ipv4_address","created_at","updated_at"])
-    route = M::Route.update(@params["uuid"], params)
-    respond_with(R::Route.generate(route))
+    update_by_uuid(:Route, put_post_shared_params) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
+      params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+      check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid",
+        "route_link_id") if params["route_link_uuid"]
+    }
   end
 end

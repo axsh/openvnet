@@ -1,40 +1,37 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
+  put_post_shared_params = [
+    "vif_uuid",
+    "display_name",
+    "incoming_port",
+    "outgoing_port"
+  ]
 
   post do
-    params = parse_params(@params, ["uuid","vif_uuid","display_name","incoming_port","outgoing_port","created_at","updated_at"])
+    accepted_params = put_post_shared_params + ["uuid"]
+    required_params = ["display_name"]
 
-    if params.has_key?("uuid")
-      raise E::DuplicateUUID, params["uuid"] unless M::NetworkService[params["uuid"]].nil?
-      params["uuid"] = M::NetworkService.trim_uuid(params["uuid"])
-    end
-
-    vif_uuid = params.delete('vif_uuid')
-    params['vif_id'] = (M::Vif[vif_uuid] || raise(E::InvalidUUID, vif_uuid)).id
-
-    network_service = M::NetworkService.create(params)
-    respond_with(R::NetworkService.generate(network_service))
+    post_new(:NetworkService, accepted_params, required_params) { |params|
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+    }
   end
 
   get do
-    network_services = M::NetworkService.all
-    respond_with(R::NetworkServiceCollection.generate(network_services))
+    get_all(:NetworkService)
   end
 
   get '/:uuid' do
-    network_service = M::NetworkService[@params["uuid"]]
-    respond_with(R::NetworkService.generate(network_service))
+    get_by_uuid(:NetworkService)
   end
 
   delete '/:uuid' do
-    network_service = M::NetworkService.destroy(@params["uuid"])
-    respond_with(R::NetworkService.generate(network_service))
+    delete_by_uuid(:NetworkService)
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["vif_uuid","display_name","incoming_port","outgoing_port","created_at","updated_at"])
-    network_service = M::NetworkService.update(@params["uuid"], params)
-    respond_with(R::NetworkService.generate(network_service))
+    update_by_uuid(:NetworkService, put_post_shared_params) { |params|
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+    }
   end
 end

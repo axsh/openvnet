@@ -3,9 +3,10 @@
 module Vnet::ModelWrappers
   class NetworkService < Base
     def to_hash
+      vif = self.batch.vif.commit
       {
         :uuid => self.uuid,
-        :vif_uuid => self.vif_uuid,
+        :vif_uuid => vif && vif.uuid,
         :display_name => self.display_name,
         :incoming_port => self.incoming_port,
         :outgoing_port => self.outgoing_port,
