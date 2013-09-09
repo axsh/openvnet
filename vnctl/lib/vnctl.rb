@@ -15,6 +15,7 @@ module Vnctl
     autoload :DhcpRange, 'vnctl/cli/dhcp_range'
     autoload :IpAddress, 'vnctl/cli/ip_address'
     autoload :IpLease, 'vnctl/cli/ip_lease'
+    autoload :MacLease, 'vnctl/cli/mac_lease'
     autoload :Network, 'vnctl/cli/network'
     autoload :NetworkService, 'vnctl/cli/network_service'
     autoload :Root, 'vnctl/cli/root'
