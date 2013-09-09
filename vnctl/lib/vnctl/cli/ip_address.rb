@@ -6,7 +6,7 @@ module Vnctl::Cli
     api_suffix "/api/ip_addresses"
 
     add_modify_shared_options {
-      option :network_uuid, :type => :string, :desc => "The network to define this dhcp range in."
+      option :network_uuid, :type => :string, :desc => "The network to define this ip address in."
       option :ipv4_address, :type => :string, :desc => "The actual ipv4 address."
     }
     add_required_options [:network_uuid, :ipv4_address]
