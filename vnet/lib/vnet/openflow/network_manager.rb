@@ -181,7 +181,10 @@ module Vnet::Openflow
       network.update_flows
 
       network_map.batch.network_services.commit(:fill => :vif).each { |service_map|
-        network.add_service(service_map) if service_map.vif.mode == 'simulated'
+        if service_map.vif.mode == 'simulated'
+          service_map.vif.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
+          network.add_service(service_map)
+        end
       }
 
       @datapath.dc_segment_manager.async.prepare_network(network_map, dp_map)

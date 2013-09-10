@@ -25,7 +25,7 @@ module Vnet::Openflow::Interfaces
       @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
       @owner_datapath_ids = map.owner_datapath_id ? [map.owner_datapath_id] : nil
     end
-    
+
     # Update variables by first duplicating to avoid memory
     # consistency issues with values passed to other actors.
     def to_hash

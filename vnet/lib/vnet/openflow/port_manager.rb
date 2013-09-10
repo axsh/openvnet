@@ -146,11 +146,12 @@ module Vnet::Openflow
     def prepare_port_vif(port, port_desc)
       @datapath.mod_port(port.port_number, :no_flood)
 
-      interface = @datapath.interface_manager.interface(uuid: port_desc.name)
 
       vif_map = MW::Vif[port_desc.name]
 
       vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
+
+      interface = @datapath.interface_manager.interface(uuid: port_desc.name)
 
       if interface.nil?
         error log_format('could not find uuid', "name:#{port_desc.name})")
@@ -162,7 +163,8 @@ module Vnet::Openflow
         return
       end
 
-      port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
+      debug "prepare_port_vif: #{vif_map.uuid}, hw_addr: #{vif_map.mac_address}"
+      port.hw_addr = Trema::Mac.new(vif_map.mac_address)
       port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
       @datapath.interface_manager.update_active_datapaths(id: interface[:id],

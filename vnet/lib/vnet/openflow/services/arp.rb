@@ -18,7 +18,7 @@ module Vnet::Openflow::Services
 
       @entries[uuid] = {
         :network_id => vif_map.network_id,
-        :mac_addr => Trema::Mac.new(vif_map.mac_addr),
+        :mac_address => Trema::Mac.new(vif_map.mac_address),
         :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
       }
 
@@ -32,7 +32,7 @@ module Vnet::Openflow::Services
                            :network => network
                          })
       catch_network_flow(network, {
-                           :eth_dst => Trema::Mac.new(vif_map.mac_addr),
+                           :eth_dst => Trema::Mac.new(vif_map.mac_address),
                            :eth_type => 0x0806,
                            :arp_op => 1,
                            :arp_tpa => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
@@ -65,10 +65,10 @@ module Vnet::Openflow::Services
 
       arp_out({ :out_port => message.in_port,
                 :in_port => OFPP_CONTROLLER,
-                :eth_src => entry[:mac_addr],
+                :eth_src => entry[:mac_address],
                 :eth_dst => message.eth_src,
                 :op_code => Racket::L3::ARP::ARPOP_REPLY,
-                :sha => entry[:mac_addr],
+                :sha => entry[:mac_address],
                 :spa => entry[:ipv4_address],
                 :tha => message.eth_src,
                 :tpa => arp_spa,

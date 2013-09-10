@@ -31,12 +31,12 @@ module Vnet::Openflow::Networks
                            md_network(:network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST), {},
                            flood_md.merge(:goto_table => TABLE_METADATA_LOCAL))
 
-      if @broadcast_mac_addr
+      if @broadcast_mac_address
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_dst => @broadcast_mac_addr
+                               :eth_dst => @broadcast_mac_address
                              }, {}, flow_options)
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_src => @broadcast_mac_addr
+                               :eth_src => @broadcast_mac_address
                              }, {}, flow_options)
       end
 
