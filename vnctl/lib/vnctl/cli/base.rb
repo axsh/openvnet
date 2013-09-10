@@ -87,8 +87,10 @@ module Vnctl::Cli
 
           desc "del #{base_uuid_label} #{relation_uuid_label}",
             "Removes #{desc_label} from a #{parent.namespace}."
-          def del(base_uuid, rel_uuid)
-            puts delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
+          def del(base_uuid, *rel_uuids)
+            puts rel_uuids.map { |rel_uuid|
+              delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
+            }.join("\n")
           end
         end
 
