@@ -19,7 +19,7 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :network_id, :index => true, :null=>false
-      Bignum :broadcast_mac_addr, :null=>false
+      Bignum :broadcast_mac_address, :null=>false
       FalseClass :is_connected, :null=>false
     end
 
@@ -27,7 +27,7 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :route_link_id, :index => true, :null=>false
-      Bignum :link_mac_addr, :null=>false
+      Bignum :mac_address, :null=>false
       FalseClass :is_connected, :null=>false
     end
 
@@ -98,7 +98,7 @@ Sequel.migration do
     create_table(:mac_leases) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Bignum :mac_addr, :unique => true, :null=>false
+      Bignum :mac_address, :unique => true, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -143,7 +143,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true
-      Bignum :mac_addr, :null=>false
+      Bignum :mac_address, :null=>false
 
       String :mode, :default => 'vif',:null => false
 
