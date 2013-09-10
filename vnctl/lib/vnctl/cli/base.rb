@@ -49,6 +49,53 @@ module Vnctl::Cli
         end
       end
 
+      def self.define_relation(relation_name, add_options = [])
+        parent = self
+        rel_opts = @relation_options
+
+        c = Class.new(Base) do
+          no_tasks {
+            def self.rel_name(name = nil)
+              @rel_name = name unless name.nil?
+              @rel_name
+            end
+
+            def rel_name
+              self.class.rel_name
+            end
+          }
+
+          rel_name relation_name
+
+          desc "add #{parent.namespace.upcase}_UUID #{relation_name.upcase}_UUID OPTIONS",
+            "Adds #{@relation_name} to a #{parent.namespace}."
+          rel_opts.each { |o| option(o[:name], o[:desc]) }
+          def add(base_uuid, rel_uuid)
+            puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
+          end
+
+          desc "show #{parent.namespace.upcase}_UUID",
+            "Shows all #{@relation_name} in this #{parent.namespace}."
+          def show(base_uuid)
+            puts get("#{suffix}/#{base_uuid}/#{rel_name}")
+          end
+
+          desc "del #{parent.namespace.upcase}_UUID",
+            "Removes #{@relation_name} from a #{parent.namespace}."
+          def del(base_uuid, rel_uuid)
+            puts delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
+          end
+        end
+
+        c.namespace "#{self.namespace} #{relation_name}"
+        c.api_suffix self.api_suffix
+
+        register(c, "#{relation_name}", "#{relation_name} OPTIONS",
+          "subcommand to manage #{relation_name} in this #{self.namespace}.")
+
+        @relation_options = []
+      end
+
       def self.add_required_options(opts = nil)
         @add_required_options = opts unless opts.nil?
         @add_required_options || []
@@ -60,6 +107,11 @@ module Vnctl::Cli
         else
           @shared_options.call
         end
+      end
+
+      def self.rel_option(name, desc)
+        @relation_options ||= []
+        @relation_options << {:name => name, :desc => desc}
       end
 
       def self.define_standard_crud_commands
