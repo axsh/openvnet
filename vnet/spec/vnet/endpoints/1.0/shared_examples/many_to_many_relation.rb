@@ -60,8 +60,48 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
         "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}/#{related_object.canonical_uuid}"
       }
 
-      it "should succeed" do
+      it "should create a new entry in the join table" do
         last_response.should succeed
+        base_object.send(relation_suffix).should eq [related_object]
+      end
+    end
+  end
+
+  describe "GET /:uuid/#{relation_suffix}" do
+    before(:each) do
+      add_relation = "add_#{relation_suffix.chomp("s")}"
+      entries.times {
+        base_object.send(add_relation, Fabricate(relation_fabricator))
+      }
+
+      get api_relation_suffix
+    end
+
+    let(:api_relation_suffix) {
+      "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}"
+    }
+
+    context "With no relations in the database" do
+      let(:entries) { 0 }
+
+      it "should return a json with empty relations" do
+        last_response.should succeed.with_body_containing({
+          "uuid" => base_object.canonical_uuid
+        })
+
+        JSON.parse(last_response.body)[relation_suffix].size.should eq 0
+      end
+    end
+
+    context "With 3 relations in the database" do
+      let(:entries) { 3 }
+
+      it "should return a json with 3 relations in it" do
+        last_response.should succeed.with_body_containing({
+          "uuid" => base_object.canonical_uuid
+        })
+
+        JSON.parse(last_response.body)[relation_suffix].size.should eq 3
       end
     end
   end

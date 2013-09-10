@@ -8,6 +8,7 @@ module Vnet::Models
     one_to_many :datapath_networks
     one_to_many :datapath_route_links
     many_to_many :networks, :join_table => :datapath_networks
+    many_to_many :route_links, :join_table => :datapath_route_links
 
     one_to_many :vifs_owned, :class => Vif, :key => :owner_datapath_id
     one_to_many :vifs_active, :class => Vif, :key => :active_datapath_id
