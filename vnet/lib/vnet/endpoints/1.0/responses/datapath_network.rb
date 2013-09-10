@@ -7,7 +7,7 @@ module Vnet::Endpoints::V10::Responses
       network_uuid = Vnet::ModelWrappers::Network.find(:id => object.network_id).uuid
       {
         :network_uuid => network_uuid,
-        :broadcast_mac_addr => object.broadcast_mac_addr
+        :broadcast_mac_address => object.broadcast_mac_address
       }
     end
   end

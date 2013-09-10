@@ -129,13 +129,13 @@ module Vnet::Openflow
       # address for this datapath, route link pair.
       datapath_route_link(rl_map).each { |dp_rl_map|
         flows << Flow.create(TABLE_HOST_PORTS, 30, {
-                               :eth_dst => Trema::Mac.new(dp_rl_map.link_mac_addr)
+                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
                              }, nil,
                              route_link_md.merge({ :cookie => cookie,
                                                    :goto_table => TABLE_ROUTER_EGRESS
                                                  }))
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                               :eth_dst => Trema::Mac.new(dp_rl_map.link_mac_addr)
+                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
                              }, nil, {
                                :cookie => cookie
                              })
@@ -153,7 +153,7 @@ module Vnet::Openflow
 
         flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK, 5,
                              datapath_md.merge(:eth_dst => mac_address), {
-                               :eth_dst => Trema::Mac.new(dp_rl_map.link_mac_addr)
+                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
                              }, mac2mac_md.merge({ :goto_table => TABLE_OUTPUT_DATAPATH,
                                                    :cookie => cookie
                                                  }))
@@ -229,7 +229,7 @@ module Vnet::Openflow
           @datapath.interface_manager.update_active_datapaths(id: interface[:id],
                                                               datapath_id: datapath_id)
         else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id.first
+          vif[:use_datapath_id] = vif_map.owner_datapath_id
         end
       end
 

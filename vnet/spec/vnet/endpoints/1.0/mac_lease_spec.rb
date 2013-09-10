@@ -20,16 +20,16 @@ describe "/mac_leases" do
   describe "POST /" do
     accepted_params = {
       :uuid => "ml-test",
-      :mac_addr => "00:21:cc:da:e9:cc"
+      :mac_address => "00:21:cc:da:e9:cc"
     }
-    required_params = [:mac_addr]
+    required_params = [:mac_address]
     uuid_params = [:uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
   describe "PUT /:uuid" do
-    accepted_params = { :mac_addr => "00:21:cc:da:e9:ff" }
+    accepted_params = { :mac_address => "00:21:cc:da:e9:ff" }
 
     include_examples "PUT /:uuid", accepted_params
   end
