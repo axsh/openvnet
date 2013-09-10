@@ -1,36 +1,50 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet/endpoints/1.0/vnet_api'
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+Dir["#{File.dirname(__FILE__)}/matchers/*.rb"].map {|f| require f }
 
 def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
 describe "/vifs" do
+  let(:api_suffix)  { "vifs" }
+  let(:fabricator)  { :vif }
+  let(:model_class) { Vnet::Models::Vif }
+
+  include_examples "GET /"
+  include_examples "GET /:uuid"
+  include_examples "DELETE /:uuid"
+
   describe "POST /" do
-    it "create vif with ipv4_address" do
-      use_mock_event_handler
+    before(:all) { use_mock_event_handler }
+    let!(:network) { Fabricate(:network) { uuid "nw-testnet" }  }
+    let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
+    let!(:active) { Fabricate(:datapath) { uuid "dp-active" } }
 
-      ipv4_address = random_ipv4
-      mac_addr = random_mac
-      network = Fabricate(:network)
+    accepted_params = {
+      :uuid => "vif-test",
+      :network_uuid => "nw-testnet",
+      :mac_addr => "52:54:00:12:34:70",
+      :owner_datapath_uuid => "dp-owner",
+      :active_datapath_uuid => "dp-active",
+      :ipv4_address => "192.168.3.40",
+      :mode => "simulated"
+    }
+    required_params = [:mac_addr]
+    uuid_params = [:network_uuid, :owner_datapath_uuid]
+    expected_response = accepted_params.dup.tap { |n| n.delete(:ipv4_address) }
 
-      params = {
-        mac_addr: mac_addr.to_s,
-        network_id: network.canonical_uuid,
-        ipv4_address: ipv4_address.to_s,
-      }
+    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
 
-      post "/vifs", params
+    describe "event handler" do
+      let(:request_params) { { mac_addr: random_mac.to_s } }
 
-      expect(last_response).to be_ok
-      body = JSON.parse(last_response.body)
-      expect(body["mac_addr"]).to eq mac_addr.to_i
-      expect(body["network_id"]).to eq network.id
-      expect(body["ipv4_address"]).to eq ipv4_address.to_i
-
-      events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
+      it "handles a single event" do
+        expect(last_response).to succeed
+        MockEventHandler.handled_events.size.should eq 1
+      end
     end
   end
 end

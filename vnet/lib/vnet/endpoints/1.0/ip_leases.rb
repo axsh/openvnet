@@ -1,36 +1,41 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
+  put_post_shared_params = [
+    "network_uuid",
+    "vif_uuid",
+    "ip_address_uuid",
+    "alloc_type"
+  ]
 
   post do
-    params = parse_params(@params, ["uuid","network_uuid","vif_uuid","ip_address_uuid","alloc_type","is_deleted","created_at","updated_at","deleted_at"])
+    accepted_params = put_post_shared_params + ["uuid"]
+    required_params = ["network_uuid", "vif_uuid", "ip_address_uuid"]
 
-    if params.has_key?("uuid")
-      raise E::DuplicateUUID, params["uuid"] unless M::IpLease[params["uuid"]].nil?
-      params["uuid"] = M::IpLease.trim_uuid(params["uuid"])
-    end
-    ip_lease = M::IpLease.create(params)
-    respond_with(R::IpLease.generate(ip_lease))
+    post_new(:IpLease, accepted_params, required_params) { |params|
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id")
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id")
+      check_syntax_and_get_id(M::IpAddress, params, "ip_address_uuid", "ip_address_id")
+    }
   end
 
   get do
-    ip_leases = M::IpLease.all
-    respond_with(R::IpLeaseCollection.generate(ip_leases))
+    get_all(:IpLease)
   end
 
   get '/:uuid' do
-    ip_lease = M::IpLease[@params["uuid"]]
-    respond_with(R::IpLease.generate(ip_lease))
+    get_by_uuid(:IpLease)
   end
 
   delete '/:uuid' do
-    ip_lease = M::IpLease.destroy(@params["uuid"])
-    respond_with(R::IpLease.generate(ip_lease))
+    delete_by_uuid(:IpLease)
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ["network_uuid","vif_uuid","ip_address_uuid","alloc_type","is_deleted","created_at","updated_at","deleted_at"])
-    ip_lease = M::IpLease.update(@params["uuid"], params)
-    respond_with(R::IpLease.generate(ip_lease))
+    update_by_uuid(:IpLease, put_post_shared_params) { |params|
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
+      check_syntax_and_get_id(M::Vif, params, "vif_uuid", "vif_id") if params["vif_uuid"]
+      check_syntax_and_get_id(M::IpAddress, params, "ip_address_uuid", "ip_address_id") if params["ip_address_uuid"]
+    }
   end
 end
