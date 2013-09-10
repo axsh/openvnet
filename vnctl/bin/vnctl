@@ -12,15 +12,24 @@ require 'vnctl'
 
 Vnctl.class_eval do
   paths = [
+    File.expand_path("~/.vnctlrc"),
+    File.expand_path("~/.vnctl.conf"),
     "/etc/wakame-vnet/vnctl.conf"
   ]
 
   path = paths.find { |p| File.exists?(p) }
 
-  @conf = if path.nil?
-    Vnctl::Configuration::Vnctl.new
-  else
+  @conf = case
+  when ENV["VNET_WEBAPI"]
+    uri, port = ENV["VNET_WEBAPI"].split(":")
+    Vnctl::Configuration::Vnctl.new.tap { |c|
+      c.config[:webapi_uri] = uri
+      c.config[:webapi_port] = port
+    }
+  when path
     Vnctl::Configuration::Vnctl.load(path)
+  else
+    Vnctl::Configuration::Vnctl.new
   end
 end
 
