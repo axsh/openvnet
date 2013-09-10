@@ -18,13 +18,13 @@ module Vnet::Openflow::Services
 
       @entries[uuid] = {
         :network_id => vif_map.network_id,
-        :mac_addr => Trema::Mac.new(vif_map.mac_addr),
+        :mac_address => Trema::Mac.new(vif_map.mac_address),
         :ipv4_address => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
       }
 
       catch_network_flow(network, {
                            :eth_type => 0x0800,
-                           :eth_dst => Trema::Mac.new(vif_map.mac_addr),
+                           :eth_dst => Trema::Mac.new(vif_map.mac_address),
                            :ip_proto => 0x01,
                            :ipv4_dst => IPAddr.new(vif_map.ipv4_address, Socket::AF_INET),
                          }, {
@@ -57,7 +57,7 @@ module Vnet::Openflow::Services
       when Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST
         icmpv4_out({ :out_port => message.in_port,
 
-                     :eth_src => entry[:mac_addr],
+                     :eth_src => entry[:mac_address],
                      :eth_dst => message.eth_src,
                      :ipv4_src => entry[:ipv4_address],
                      :ipv4_dst => message.ipv4_src,

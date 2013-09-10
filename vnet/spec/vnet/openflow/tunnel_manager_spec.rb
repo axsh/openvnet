@@ -59,7 +59,7 @@ describe Vnet::Openflow::TunnelManager do
         tunnel_manager.create_all_tunnels
         tunnel_manager.insert(
           double(:id => 1,
-                 :broadcast_mac_addr => "bb:bb:bb:11:11:11",
+                 :broadcast_mac_address => "bb:bb:bb:11:11:11",
                  :network_id => 1,
                  :datapath => double(:dpid => "0x#{'b' * 16}",
                                      :ipv4_address => IPAddr.new('1.1.1.1', Socket::AF_INET).to_i,
@@ -67,7 +67,7 @@ describe Vnet::Openflow::TunnelManager do
                                      )))
         tunnel_manager.insert(
           double(:id => 2,
-                 :broadcast_mac_addr => "bb:bb:bb:22:22:22",
+                 :broadcast_mac_address => "bb:bb:bb:22:22:22",
                  :network_id => 2,
                  :datapath => double(:dpid => "0x#{'b' * 16}",
                                      :ipv4_address => IPAddr.new('2.2.2.2', Socket::AF_INET).to_i,
@@ -75,7 +75,7 @@ describe Vnet::Openflow::TunnelManager do
                                      )))
         tunnel_manager.insert(
           double(:id => 3,
-                 :broadcast_mac_addr => "cc:cc:cc:11:11:11",
+                 :broadcast_mac_address => "cc:cc:cc:11:11:11",
                  :network_id => 1,
                  :datapath => double(:dpid => "0x#{'c' * 16}",
                                      :ipv4_address => IPAddr.new('1.1.1.2', Socket::AF_INET).to_i,
@@ -84,7 +84,7 @@ describe Vnet::Openflow::TunnelManager do
       end
     end
 
-    it "should only add broadcast mac address flows at start" do
+    it "should only add broadcast mac addressess flows at start" do
       tunnel_manager
 
       flows = datapath.added_flows
@@ -197,7 +197,7 @@ describe Vnet::Openflow::TunnelManager do
         tm.create_all_tunnels
         tm.insert(
           double(:id => 1,
-                 :broadcast_mac_addr => "bb:bb:bb:11:11:11",
+                 :broadcast_mac_address => "bb:bb:bb:11:11:11",
                  :network_id => 1,
                  :datapath => double(:dpid => "0x#{'c' * 16}",
                                      :ipv4_address => IPAddr.new('1.1.1.1', Socket::AF_INET).to_i,

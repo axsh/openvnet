@@ -51,7 +51,7 @@ shared_examples "many_to_many_relation" do |relation_suffix|
         post api_relation_suffix, request_params
       end
 
-      let(:request_params) { {:broadcast_mac_addr => "02:00:00:cc:00:02"} }
+      let(:request_params) { {:broadcast_mac_address => "02:00:00:cc:00:02"} }
 
       include_examples "relation_uuid_checks", relation_suffix
 
