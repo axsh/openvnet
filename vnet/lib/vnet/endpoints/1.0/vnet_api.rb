@@ -123,6 +123,11 @@ module Vnet::Endpoints::V10
       respond_with(response.generate(object))
     end
 
+    def show_relations(class_name, response_method)
+      object = check_syntax_and_pop_uuid(M.const_get(class_name), @params)
+      respond_with(R.const_get(class_name).send(response_method, object))
+    end
+
     respond_to :json, :yml
 
     load_namespace('datapaths')
