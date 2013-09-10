@@ -3,7 +3,34 @@
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
+require 'rubygems'
+require 'bundler/setup'
+Bundler.setup
+Bundler.require
+
 require 'vnctl'
-require 'thor'
+
+Vnctl.class_eval do
+  paths = [
+    File.expand_path("~/.vnctlrc"),
+    File.expand_path("~/.vnctl.conf"),
+    "/etc/wakame-vnet/vnctl.conf"
+  ]
+
+  path = paths.find { |p| File.exists?(p) }
+
+  @conf = case
+  when ENV["VNET_WEBAPI"]
+    uri, port = ENV["VNET_WEBAPI"].split(":")
+    Vnctl::Configuration::Vnctl.new.tap { |c|
+      c.config[:webapi_uri] = uri
+      c.config[:webapi_port] = port
+    }
+  when path
+    Vnctl::Configuration::Vnctl.load(path)
+  else
+    Vnctl::Configuration::Vnctl.new
+  end
+end
 
 Vnctl::Cli::Root.start

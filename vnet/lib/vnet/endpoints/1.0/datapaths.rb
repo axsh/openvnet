@@ -47,10 +47,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     network = check_syntax_and_pop_uuid(M::Network, params, 'network_uuid')
 
     broadcast_mac_addr = parse_mac(params['broadcast_mac_addr'])
-    if broadcast_mac_addr.nil?
-      error_msg = "invalid broadcast_mac_addr: '#{params[broadcast_mac_addr]}'"
-      raise(E::ArgumentError, error_msg)
-    end
 
     M::DatapathNetwork.create({ :datapath_id => datapath.id,
                                 :network_id => network.id,
@@ -58,6 +54,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
                               })
 
     respond_with(R::Datapath.networks(datapath))
+  end
+
+  get '/:uuid/networks' do
+    show_relations(:Datapath, :networks)
   end
 
   delete '/:uuid/networks/:network_uuid' do
@@ -88,6 +88,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     respond_with(R::Datapath.route_links(datapath))
   end
 
+  get '/:uuid/route_links' do
+    show_relations(:Datapath, :route_links)
+  end
+
   delete '/:uuid/route_links/:route_link_uuid' do
     datapath = check_syntax_and_pop_uuid(M::Datapath, @params)
     route_link = check_syntax_and_pop_uuid(M::RouteLink, @params, 'route_link_uuid')
@@ -97,7 +101,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
 
     relations.each { |r| r.destroy }
 
-    respond_with(R::Datapath.networks(datapath))
+    respond_with(R::Datapath.route_links(datapath))
   end
 
 end
