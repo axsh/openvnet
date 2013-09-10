@@ -22,17 +22,21 @@ module Vnet::Endpoints::V10
     end
 
     def check_and_trim_uuid(model, params)
-      if params.has_key?("uuid")
-        check_uuid_syntax(model, params["uuid"])
-        raise E::DuplicateUUID, params["uuid"] unless model[params["uuid"]].nil?
+      check_uuid_syntax(model, params["uuid"])
+      raise E::DuplicateUUID, params["uuid"] unless model[params["uuid"]].nil?
 
-        params["uuid"] = model.trim_uuid(params["uuid"])
-      end
+      params["uuid"] = model.trim_uuid(params["uuid"])
     end
 
     def check_syntax_and_pop_uuid(model, params, key = "uuid")
       check_uuid_syntax(model, params[key])
       pop_uuid(model, params, key)
+    end
+
+    def check_syntax_and_get_id(model, params, uuid_key = "uuid", id_key = "id")
+      check_uuid_syntax(model, params[uuid_key])
+      model = pop_uuid(model, params, uuid_key)
+      params[id_key] = model.id
     end
 
     def parse_params(params, mask)
@@ -41,7 +45,7 @@ module Vnet::Endpoints::V10
       end
     end
 
-    def required_params(params, mask)
+    def check_required_params(params, mask)
       mask.each do |key|
         raise E::MissingArgument, key if params[key].nil? || params[key].empty?
       end
@@ -69,18 +73,65 @@ module Vnet::Endpoints::V10
       end
     end
 
+    def delete_by_uuid(class_name)
+      model_wrapper = M.const_get(class_name)
+      mw = check_syntax_and_pop_uuid(model_wrapper, @params)
+      mw.batch.destroy.commit
+      respond_with([mw.uuid])
+    end
+
+    def get_all(class_name)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get("#{class_name}Collection")
+      respond_with(
+        response.generate(model_wrapper.all)
+      )
+    end
+
+    def get_by_uuid(class_name)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+      object = check_syntax_and_pop_uuid(model_wrapper, @params)
+      respond_with(response.generate(object))
+    end
+
+    def update_by_uuid(class_name, accepted_params)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+
+      params = parse_params(@params, accepted_params + ["uuid"])
+      object = check_syntax_and_pop_uuid(model_wrapper, params)
+      # This yield is for extra argument validation
+      yield(params) if block_given?
+      object.batch.update(params).commit
+
+      updated_object = model_wrapper[@params["uuid"]]
+      respond_with(response.generate(updated_object))
+    end
+
+    def post_new(class_name, accepted_params, required_params)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+
+      params = parse_params(@params, accepted_params)
+      check_required_params(params, required_params)
+      check_and_trim_uuid(model_wrapper, params) if params["uuid"]
+
+      # This yield is for extra argument validation
+      yield(params) if block_given?
+      object = model_wrapper.create(params)
+      respond_with(response.generate(object))
+    end
+
     respond_to :json, :yml
 
     load_namespace('datapaths')
-    load_namespace('dc_networks')
     load_namespace('dhcp_ranges')
     load_namespace('ip_addresses')
     load_namespace('ip_leases')
     load_namespace('mac_leases')
-    load_namespace('mac_ranges')
     load_namespace('networks')
     load_namespace('network_services')
-    load_namespace('open_flow_controllers')
     load_namespace('routes')
     load_namespace('route_links')
     load_namespace('vifs')

@@ -3,57 +3,47 @@
 require 'trema/mac'
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/vifs' do
+  put_post_shared_params = [
+    "network_uuid",
+    "mac_addr",
+    "owner_datapath_uuid",
+    "active_datapath_uuid",
+    "ipv4_address",
+    "mode",
+  ]
 
   post do
-    params = parse_params(@params, ['uuid',
-                                    'network_id',
-                                    'active_datapath_uuid',
-                                    'owner_datapath_uuid',
-                                    'ipv4_address',
-                                    'mac_addr',
-                                    'mode',
-                                    'state',
-                                    'created_at',
-                                    'updated_at',
-                                   ])
+    accepted_params = put_post_shared_params + ["uuid"]
+    required_params = ["mac_addr"]
 
-    if params.has_key?('uuid')
-      raise E::DuplicateUUID, params['uuid'] unless M::Vif[params['uuid']].nil?
-      params['uuid'] = M::Vif.trim_uuid(params['uuid'])
-    end
-
-    params['network_id'] = pop_uuid(M::Network, params, 'network_id').id if params.has_key?('network_id')
-    params['active_datapath_id'] = pop_uuid(M::Datapath, params, 'active_datapath_uuid').id if params.has_key?('active_datapath_uuid')
-    params['owner_datapath_id'] = pop_uuid(M::Datapath, params, 'owner_datapath_uuid').id if params.has_key?('owner_datapath_uuid')
-
-    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
-    params['mac_addr'] = parse_mac(params['mac_addr']) || raise(E::MissingArgument, 'mac_addr')
-
-    params['mode'] = params['mode'] if params['mode']
-
-    vif = M::Vif.create(params)
-
-    respond_with(R::Vif.generate(vif))
+    post_new(:Vif, accepted_params, required_params) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
+      params['mac_addr'] = parse_mac(params['mac_addr'])
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
+      check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+      check_syntax_and_get_id(M::Datapath, params, "active_datapath_uuid", "active_datapath_id") if params["active_datapath_uuid"]
+    }
   end
 
   get do
-    vifs = data_access.vif.all
-    respond_with(R::VifCollection.generate(vifs))
+    get_all(:Vif)
   end
 
   get '/:uuid' do
-    vif = data_access.vif[@params['uuid']]
-    respond_with(R::Vif.generate(vif))
+    get_by_uuid(:Vif)
   end
 
   delete '/:uuid' do
-    vif = data_access.vif.delete({:uuid => @params['uuid']})
-    respond_with(R::Vif.generate(vif))
+    delete_by_uuid(:Vif)
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ['uuid','network_id','mac_addr','state','created_at','updated_at'])
-    vif = data_access.vif.update(params)
-    respond_with(R::Vif.generate(vif))
+    update_by_uuid(:Vif, put_post_shared_params) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
+      params['mac_addr'] = parse_mac(params['mac_addr']) if params["ipv4_address"]
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
+      check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+      check_syntax_and_get_id(M::Datapath, params, "active_datapath_uuid", "active_datapath_id") if params["active_datapath_uuid"]
+    }
   end
 end

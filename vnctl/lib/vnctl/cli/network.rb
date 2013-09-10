@@ -15,6 +15,8 @@ module Vnctl::Cli
       option :editable, :type => :boolean, :desc => "Flag that decides whether or not we can edit this network."
     }
 
+    add_required_options [:display_name, :ipv4_network]
+
     define_standard_crud_commands
   end
 end

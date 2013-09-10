@@ -2,7 +2,3 @@ source 'http://rubygems.org'
 
 gem 'thor'
 gem 'httparty'
-
-group :test do
-  gem 'rspec'
-end
