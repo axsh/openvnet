@@ -67,21 +67,26 @@ module Vnctl::Cli
 
           rel_name relation_name
 
-          desc "add #{parent.namespace.upcase}_UUID #{relation_name.upcase}_UUID OPTIONS",
-            "Adds #{@relation_name} to a #{parent.namespace}."
+          relation_singular = relation_name.to_s.chomp("s")
+          base_uuid_label = "#{parent.namespace.upcase}_UUID"
+          relation_uuid_label = "#{relation_singular.upcase}_UUID"
+          desc_label = relation_name.to_s.gsub('_', ' ')
+
+          desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
+            "Adds #{desc_label} to a #{parent.namespace}."
           rel_opts.each { |o| option(o[:name], o[:desc]) }
           def add(base_uuid, rel_uuid)
             puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
           end
 
-          desc "show #{parent.namespace.upcase}_UUID",
-            "Shows all #{@relation_name} in this #{parent.namespace}."
+          desc "show #{base_uuid_label}",
+            "Shows all #{desc_label} in this #{parent.namespace}."
           def show(base_uuid)
             puts get("#{suffix}/#{base_uuid}/#{rel_name}")
           end
 
-          desc "del #{parent.namespace.upcase}_UUID",
-            "Removes #{@relation_name} from a #{parent.namespace}."
+          desc "del #{base_uuid_label} #{relation_uuid_label}",
+            "Removes #{desc_label} from a #{parent.namespace}."
           def del(base_uuid, rel_uuid)
             puts delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
           end
