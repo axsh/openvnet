@@ -16,7 +16,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
 
     post_new(:Datapath, accepted_params, required_params) { |params|
       params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
-      check_syntax_and_get_id(M::DcSegment, params, "dc_segment_uuid", "dc_segment_id") if params["dc_segment_uuid"]
+      # TODO Currently there isn't api for DcSegment. Write the api if we really need Sequel model just to judge whether datapaths belong to same segment or not
+      #check_syntax_and_get_id(M::DcSegment, params, "dc_segment_uuid", "dc_segment_id") if params["dc_segment_uuid"]
+      if params["dc_segment_uuid"]
+        dc_segment_uuid = params.delete("dc_segment_uuid")
+        check_uuid_syntax(M::DcSegment, dc_segment_uuid)
+        params["dc_segment_id"] = (M::DcSegment[dc_segment_uuid] || M::DcSegment.create(uuid: dc_segment_uuid)).uuid
+      end
     }
   end
 
