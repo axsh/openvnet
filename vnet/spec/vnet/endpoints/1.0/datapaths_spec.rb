@@ -53,14 +53,14 @@ describe "/datapaths" do
     let(:relation_fabricator) { :network }
 
     include_examples "many_to_many_relation", "networks",
-      {:broadcast_mac_addr => "02:00:00:cc:00:02"}
+      {:broadcast_mac_address => "02:00:00:cc:00:02"}
   end
 
   describe "Many to many relation calls for route links" do
     let(:relation_fabricator) { :route_link }
 
     include_examples "many_to_many_relation", "route_links",
-      {:link_mac_address => "52:54:00:12:34:30" }
+      {:mac_address => "52:54:00:12:34:30" }
   end
 
 end
