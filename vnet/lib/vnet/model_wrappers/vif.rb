@@ -15,7 +15,7 @@ module Vnet::ModelWrappers
         :network_uuid => network && network.uuid,
         :owner_datapath_uuid => owner_datapath && owner_datapath.uuid,
         :active_datapath_uuid => active_datapath && active_datapath.uuid,
-        :mac_addr => mac_addr_s,
+        :mac_address => mac_address_s,
         :ipv4_address => ipv4_address_s,
         :mode => mode
       }

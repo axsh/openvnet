@@ -71,11 +71,11 @@ module Vnet::Openflow
                        "hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
-      port = @ports.delete(message.port_no)
+      port = @ports.delete(port_desc.port_no)
 
       if port.nil?
         debug log_format('port status could not delete uninitialized port',
-                         "port_number:#{message.port_no}")
+                         "port_number:#{port_desc.port_no}")
         return nil
       end
 
@@ -86,7 +86,7 @@ module Vnet::Openflow
       end
 
       if port.port_name =~ /^vif-/
-        vif_map = MW::Vif[message.name]
+        vif_map = MW::Vif[port_desc.name]
         vif_map.batch.update(:active_datapath_id => nil).commit
       end
 
@@ -146,23 +146,30 @@ module Vnet::Openflow
     def prepare_port_vif(port, port_desc)
       @datapath.mod_port(port.port_number, :no_flood)
 
+
       vif_map = MW::Vif[port_desc.name]
 
-      if vif_map.nil?
+      vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
+
+      interface = @datapath.interface_manager.interface(uuid: port_desc.name)
+
+      if interface.nil?
         error log_format('could not find uuid', "name:#{port_desc.name})")
         return
       end
 
-      if vif_map.mode != 'vif'
-        info log_format('vif mode not set to \'vif\'', "mode:#{vif_map.mode}")
+      if interface[:mode] != :vif
+        info log_format('vif mode not set to \'vif\'', "mode:#{interface[:mode]}")
         return
       end
 
-      port.hw_addr = Trema::Mac.new(vif_map.mac_addr)
+      debug "prepare_port_vif: #{vif_map.uuid}, hw_addr: #{vif_map.mac_address}"
+      port.hw_addr = Trema::Mac.new(vif_map.mac_address)
       port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
-      vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
-      
+      @datapath.interface_manager.update_active_datapaths(id: interface[:id],
+                                                          datapath_id: @datapath.datapath_map.id)
+
       network = @datapath.network_manager.add_port(network_id: vif_map.network_id,
                                                    port_number: port.port_number,
                                                    port_mode: :vif)

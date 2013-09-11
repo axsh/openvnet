@@ -21,6 +21,7 @@ module Vnet::Openflow
 
     attr_reader :cookie_manager
     attr_reader :dc_segment_manager
+    attr_reader :interface_manager
     attr_reader :network_manager
     attr_reader :packet_manager
     attr_reader :port_manager
@@ -34,6 +35,7 @@ module Vnet::Openflow
 
       @cookie_manager = CookieManager.new
       @dc_segment_manager = DcSegmentManager.new(self)
+      @interface_manager = InterfaceManager.new(self)
       @network_manager = NetworkManager.new(self)
       @packet_manager = PacketManager.new(self)
       @port_manager = PortManager.new(self)

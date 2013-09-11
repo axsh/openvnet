@@ -8,7 +8,7 @@ module Vnet::Endpoints::V10::Responses
       route_link_uuid = relation.uuid
       {
         :route_link_uuid => route_link_uuid,
-        :link_mac_addr => relation.link_mac_addr,
+        :mac_address => relation.mac_address,
         :is_connected => relation.is_connected
       }
     end

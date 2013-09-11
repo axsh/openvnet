@@ -84,7 +84,6 @@ end
 
 namespace :test do
   config = load_config("spec/config/")
-  db_uri = config.db_uri
   namespace :db do
     # deprecated
     task :init => [] do

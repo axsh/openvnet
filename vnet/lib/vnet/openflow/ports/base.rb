@@ -21,6 +21,8 @@ module Vnet::Openflow::Ports
       @is_active = active
 
       @cookie = self.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
+
+      @mac_addresses = []
     end
 
     def port_number
@@ -29,6 +31,10 @@ module Vnet::Openflow::Ports
 
     def port_name
       @port_info.name
+    end
+
+    def port_type
+      :unknown
     end
 
     def to_hash

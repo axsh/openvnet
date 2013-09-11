@@ -40,17 +40,17 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   post '/:uuid/networks/:network_uuid' do
-    params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_addr'])
-    check_required_params(params, ["broadcast_mac_addr", "network_uuid"])
+    params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_address'])
+    check_required_params(params, ["broadcast_mac_address", "network_uuid"])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
     network = check_syntax_and_pop_uuid(M::Network, params, 'network_uuid')
 
-    broadcast_mac_addr = parse_mac(params['broadcast_mac_addr'])
+    broadcast_mac_address = parse_mac(params['broadcast_mac_address'])
 
     M::DatapathNetwork.create({ :datapath_id => datapath.id,
                                 :network_id => network.id,
-                                :broadcast_mac_addr => broadcast_mac_addr,
+                                :broadcast_mac_address => broadcast_mac_address,
                               })
 
     respond_with(R::Datapath.networks(datapath))
@@ -73,17 +73,17 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   post '/:uuid/route_links/:route_link_uuid' do
-    params = parse_params(@params, ['uuid', 'route_link_uuid', 'link_mac_address'])
-    check_required_params(params, ['link_mac_address'])
+    params = parse_params(@params, ['uuid', 'route_link_uuid', 'mac_address'])
+    check_required_params(params, ['mac_address'])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
     route_link = check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid')
 
-    link_mac_address = parse_mac(params['link_mac_address'])
+    mac_address = parse_mac(params['mac_address'])
 
     M::DatapathRouteLink.create({ :datapath_id => datapath.id,
                                   :route_link_id => route_link.id,
-                                  :link_mac_addr => link_mac_address,
+                                  :mac_address => mac_address,
                                 })
     respond_with(R::Datapath.route_links(datapath))
   end

@@ -12,7 +12,7 @@ describe Vnet::Openflow::Networks::Virtual do
     Fabricate('datapath_1')
   end
 
-  describe "install vnet_1 without broadcast_mac_addr" do
+  describe "install vnet_1 without broadcast_mac_address" do
 
     let(:vnet_map) { Vnet::ModelWrappers::Network['nw-aaaaaaaa'] }
     let(:datapath) { MockDatapath.new(double(:ofc), ("a" * 16).to_i) }

@@ -2,11 +2,12 @@ class WakameVnetCommon < FPM::Cookery::Recipe
   name     'wakame-vnet-common'
   description 'Common files for Wakame-VNet'
   homepage 'https://github.com/axsh/wakame-vnet/'
-  version  '0.0.1'
+  version (ENV['BUILD_TIME'] || Time.now.strftime('%Y%m%d%H%M%S')) + (ENV['GIT_COMMIT'] ? "git#{ENV['GIT_COMMIT'].slice(0, 7)}" : "spot")
   #source   'https://github.com/axsh/wakame-vnet/', :with => :git
   source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
   arch 'all'
   depends *%w(
+    zeromq-devel
     wakame-vnet-ruby
   )
 
@@ -32,6 +33,7 @@ class WakameVnetCommon < FPM::Cookery::Recipe
     ).each do |f|
       opt('axsh/wakame-vnet/vnet').install Dir["vnet/#{f}"]
     end
+    opt('axsh/wakame-vnet/vnctl').install Dir["vnctl/*"]
 
     etc('/default').install Dir['deployment/conf_files/etc/default/wakame-vnet']
     etc('/wakame-vnet').install Dir['deployment/conf_files/etc/wakame-vnet/common.conf']
