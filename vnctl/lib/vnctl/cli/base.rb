@@ -23,7 +23,7 @@ module Vnctl::Cli
       end
 
       def self.define_show
-        desc "show [UUIDS]", "Shows all or a specific set of #{namespace}(s)."
+        desc "show [UUID(S)]", "Shows all or a specific set of #{namespace}(s)."
         define_method(:show) do |*uuids|
           if uuids.empty?
             puts get(suffix)
@@ -34,7 +34,7 @@ module Vnctl::Cli
       end
 
       def self.define_del
-        desc "del UUIDS", "Deletes one or more #{namespace}(s) separated by a space."
+        desc "del UUID(S)", "Deletes one or more #{namespace}(s) separated by a space."
         define_method(:del) do |*uuids|
           puts uuids.map { |uuid|
             delete("#{suffix}/#{uuid}")
@@ -85,7 +85,7 @@ module Vnctl::Cli
             puts get("#{suffix}/#{base_uuid}/#{rel_name}")
           end
 
-          desc "del #{base_uuid_label} #{relation_uuid_label}",
+          desc "del #{base_uuid_label} #{relation_uuid_label}(S)",
             "Removes #{desc_label} from a #{parent.namespace}."
           def del(base_uuid, *rel_uuids)
             puts rel_uuids.map { |rel_uuid|
