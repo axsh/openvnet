@@ -115,6 +115,9 @@ module Vnet::Openflow
         when :flood
           metadata = metadata | METADATA_FLAG_FLOOD
           metadata_mask = metadata_mask | METADATA_FLAG_FLOOD
+        when :interface
+          metadata = metadata | value | METADATA_TYPE_INTERFACE
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
@@ -189,6 +192,21 @@ module Vnet::Openflow
       (value & (mask & flag)) == flag
     end
     
+    def md_to_id(type, metadata)
+      type_value = case type
+                   when :network then METADATA_TYPE_NETWORK
+                   when :interface then METADATA_TYPE_INTERFACE
+                   else
+                     return nil
+                   end
+      
+      if metadata.nil? || (metadata & METADATA_TYPE_MASK) != type_value
+        return nil
+      end
+      
+      metadata & METADATA_VALUE_MASK
+    end
+
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
     end
@@ -213,6 +231,69 @@ module Vnet::Openflow
           :ipv4_src_mask => IPV4_BROADCAST << (32 - prefix)
         }
       end
+    end
+
+    def table_network_dst(network_type)
+      case network_type
+      when :physical then TABLE_PHYSICAL_DST
+      when :virtual  then TABLE_VIRTUAL_DST
+      else
+        raise "Invalid network type value."
+      end
+    end
+
+    def flow_create(type, params)
+      match = {}
+      match_metadata = nil
+      write_metadata = nil
+
+      case type
+      when :catch_arp_lookup
+        table = TABLE_ARP_LOOKUP
+        priority = 20
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = {
+          :network => params[:network_id],
+          :not_no_controller => nil
+        }
+      when :catch_flood_simulated
+        table = TABLE_FLOOD_SIMULATED
+        priority = 30
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :network => params[:network_id] }
+      when :catch_interface_simulated
+        table = TABLE_INTERFACE_SIMULATED
+        priority = 30
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :interface => params[:interface_id] }
+      when :catch_network_dst
+        table = table_network_dst(params[:network_type])
+        priority = 70
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :network => params[:network_id] }
+      when :network_dst
+        table = table_network_dst(params[:network_type])
+        match_metadata = { :network => params[:network_id] }
+      else
+        return nil
+      end
+
+      match = params[:match] if params[:match]
+      match = match.merge(md_create(match_metadata)) if match_metadata
+
+      priority = params[:priority] if params[:priority]
+
+      write_metadata = params[:write_metadata] if params[:write_metadata]
+
+      instructions = {
+        :cookie => params[:cookie]
+      }
+      instructions[:goto_table] = params[:goto_table] if params[:goto_table]
+      instructions.merge!(md_create(write_metadata)) if write_metadata
+
+      raise "Missing cookie." if cookie.nil?
+
+      Flow.create(table, priority, match, actions, instructions)
     end
 
   end

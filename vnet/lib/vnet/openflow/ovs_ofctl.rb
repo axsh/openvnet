@@ -9,6 +9,9 @@ module Vnet::Openflow
     attr_accessor :switch_name
 
     def initialize(datapath_id)
+      @dpid = datapath_id
+      @dpid_s = "0x%016x" % @dpid
+
       # TODO: Make ovs_vsctl use a real config option.
       conf = Vnet::Configurations::Vna.conf
       # @ovs_ofctl = conf.ovs_ofctl_path
@@ -19,28 +22,34 @@ module Vnet::Openflow
       @switch_name = get_bridge_name(datapath_id)
 
       # @verbose = Dcmgr.conf.verbose_openflow
-      @verbose = true
+      @verbose = false
     end
 
     def get_bridge_name(datapath_id)
       command = "#{@ovs_vsctl} --no-heading -- --columns=name find bridge datapath_id=%016x" % datapath_id
-      p command if verbose
+      debug log_format('get bridge name', command) if verbose
       /^"(.*)"/.match(`#{command}`)[1]
     end
 
     def add_flow(flow)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow.match_to_s},actions=#{flow.actions_to_s}"
-      debug "'#{command}' => #{system(command)}."
+      result = system(command)
+
+      debug log_format("'#{command}' => #{result}") if verbose
     end
 
     def add_ovs_flow(flow_str)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
-      debug "'#{command}' => #{system(command)}"
+      result = system(command)
+
+      debug log_format("'#{command}' => #{result}") if verbose
     end
 
     def add_ovs_10_flow(flow_str)
       command = "#{@ovs_ofctl_10} add-flow #{switch_name} #{flow_str}"
-      debug "'#{command}' => #{system(command)}"
+      result = system(command)
+
+      debug log_format("'#{command}' => #{result}") if verbose
     end
 
     def add_flows(flows)
@@ -50,14 +59,13 @@ module Vnet::Openflow
       recmds << "#{@ovs_ofctl} add-flow #{switch_name} - <<'#{eos}'"
       flows.each { |flow|
         full_flow = "#{flow.match_to_s},actions=#{flow.actions_to_s}"
-        debug "ovs-ofctl add-flow #{switch_name} #{full_flow}" if verbose
+        debug log_format("ovs-ofctl add-flow #{switch_name} #{full_flow}") if verbose
         recmds << full_flow
       }
       recmds << "#{eos}"
 
-      p("applying flow(s): #{recmds.size - 2}")
-      #system(recmds.join("\n"))
-      `#{recmds.join("\n")}`
+      debug log_format('applying flow(s)', "#{recmds.size - 2}") if verbose
+      system(recmds.join("\n"))
     end
 
     def del_flows(flows)
@@ -67,18 +75,20 @@ module Vnet::Openflow
       recmds << "#{@ovs_ofctl} del-flows #{switch_name} - <<'#{eos}'"
       flows.each { |flow|
         full_flow = "#{flow.match_sparse_to_s}"
-        debug "ovs-ofctl del-flow #{switch_name} #{full_flow}" if verbose
+        debug log_format("ovs-ofctl del-flow #{switch_name} #{full_flow}") if verbose
         recmds << full_flow
       }
       recmds << "#{eos}"
 
-      p("removing flow(s): #{recmds.size - 2}")
+      debug log_format('removing flow(s)', "#{recmds.size - 2}") if verbose
       system(recmds.join("\n"))
     end
 
     def del_cookie(cookie)
       command = "#{@ovs_ofctl} del-flows #{switch_name} cookie=0x%x/-1" % cookie
-      debug "'#{command}' => #{system(command)}"
+      result = system(command)
+
+      debug log_format("'#{command}' => #{result}") if verbose
     end
 
     def mod_port(port_no, action)
@@ -101,6 +111,16 @@ module Vnet::Openflow
 
     def delete_tunnel(tunnel_name)
       system("#{@ovs_vsctl} del-port #{switch_name} #{tunnel_name}")
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def log_format(message, values = nil)
+      "#{@dpid_s} ovs-ofctl: #{message}" + (values ? " (#{values})" : '')
     end
 
   end

@@ -37,18 +37,6 @@ describe Vnet::Openflow::Networks::Virtual do
         subject.md_network(:virtual_network),
         {},
         flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
-      expect(flows[2]).to eq Vnet::Openflow::Flow.create(
-        TABLE_VIRTUAL_DST,
-        40,
-        subject.md_network(:network, :local => nil).merge!(:eth_dst => MAC_BROADCAST),
-        {},
-        flood_md.merge(:goto_table => TABLE_METADATA_ROUTE))
-      expect(flows[3]).to eq Vnet::Openflow::Flow.create(
-        TABLE_VIRTUAL_DST,
-        30,
-        subject.md_network(:network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST),
-        {},
-        flood_md.merge(:goto_table => TABLE_METADATA_LOCAL))
     end
   end
 end

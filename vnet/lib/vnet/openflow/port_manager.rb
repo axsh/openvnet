@@ -100,7 +100,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "port_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
+      "#{@dpid_s} port_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def port_to_hash(port)
@@ -146,20 +146,18 @@ module Vnet::Openflow
     def prepare_port_vif(port, port_desc)
       @datapath.mod_port(port.port_number, :no_flood)
 
+      interface = @datapath.interface_manager.item(uuid: port_desc.name)
 
       vif_map = MW::Vif[port_desc.name]
-
-      vif_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
-
-      interface = @datapath.interface_manager.interface(uuid: port_desc.name)
+      return nil if vif_map.nil?
 
       if interface.nil?
         error log_format('could not find uuid', "name:#{port_desc.name})")
         return
       end
 
-      if interface[:mode] != :vif
-        info log_format('vif mode not set to \'vif\'', "mode:#{interface[:mode]}")
+      if interface.mode != :vif
+        info log_format('vif mode not set to \'vif\'', "mode:#{interface.mode}")
         return
       end
 
@@ -167,7 +165,7 @@ module Vnet::Openflow
       port.hw_addr = Trema::Mac.new(vif_map.mac_address)
       port.ipv4_addr = IPAddr.new(vif_map.ipv4_address, Socket::AF_INET) if vif_map.ipv4_address
 
-      @datapath.interface_manager.update_active_datapaths(id: interface[:id],
+      @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                           datapath_id: @datapath.datapath_map.id)
 
       network = @datapath.network_manager.add_port(network_id: vif_map.network_id,
