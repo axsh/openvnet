@@ -27,7 +27,7 @@ module Sinatra
 
     DO= proc {
       disable :sessions
-      disable :show_exceptions
+      enable :logging
 
       register Sinatra::RespondWith
       register Sinatra::Namespace
