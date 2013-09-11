@@ -45,7 +45,6 @@ module Vnet
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
-        autoload :DhcpRange, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :MacLease, 'vnet/endpoints/1.0/responses/mac_lease'
