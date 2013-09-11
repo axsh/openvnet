@@ -18,11 +18,11 @@ module Vnet
   LOG_DIR = ENV['VNET_LOG_DIR'] || "/var/log/wakame-vnet"
 
   module Configurations
-    autoload :Base,  'vnet/configurations/base'
-    autoload :Common,  'vnet/configurations/common'
-    autoload :Webapi,  'vnet/configurations/webapi'
+    autoload :Base,   'vnet/configurations/base'
+    autoload :Common, 'vnet/configurations/common'
+    autoload :Webapi, 'vnet/configurations/webapi'
     autoload :Vnmgr,  'vnet/configurations/vnmgr'
-    autoload :Vna,  'vnet/configurations/vna'
+    autoload :Vna,    'vnet/configurations/vna'
   end
 
   module Constants
@@ -141,6 +141,7 @@ module Vnet
   end
 
   module Openflow
+    autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :CookieCategory, 'vnet/openflow/cookie_manager'
     autoload :CookieManager, 'vnet/openflow/cookie_manager'
     autoload :Controller, 'vnet/openflow/controller'
@@ -148,19 +149,25 @@ module Vnet
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow'
+    autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
+    autoload :Manager, 'vnet/openflow/manager'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHandler, 'vnet/openflow/packet_handler'
+    autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :PacketManager, 'vnet/openflow/packet_manager'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
+    autoload :Service, 'vnet/openflow/service'
+    autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
 
     module Interfaces
       autoload :Base, 'vnet/openflow/interfaces/base'
+      autoload :Simulated, 'vnet/openflow/interfaces/simulated'
     end
 
     module Networks
@@ -183,11 +190,8 @@ module Vnet
     end
 
     module Services
-      autoload :Arp, 'vnet/openflow/services/arp'
-      autoload :ArpLookup, 'vnet/openflow/services/arp_lookup'
       autoload :Base, 'vnet/openflow/services/base'
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
-      autoload :Icmp, 'vnet/openflow/services/icmp'
       autoload :Router, 'vnet/openflow/services/router'
     end
   end

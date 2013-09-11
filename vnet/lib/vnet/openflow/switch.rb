@@ -62,12 +62,29 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_ROUTER_EGRESS,     0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_DST,        0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_ARP_LOOKUP,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ARP_LOOKUP,            0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_VIRTUAL_DST,  0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_DST,           0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_DST,          0, {}, nil, flow_options)
+
+      fo_flood_md = flow_options.merge(md_create(:flood => nil))
+
+      flows << Flow.create(TABLE_VIRTUAL_DST,  30, {:eth_dst => MAC_BROADCAST}, nil,
+                           fo_flood_md.merge(:goto_table => TABLE_FLOOD_SIMULATED))
+      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {:eth_dst => MAC_BROADCAST}, nil,
+                           fo_flood_md.merge(:goto_table => TABLE_FLOOD_SIMULATED))
+
+      flows << Flow.create(TABLE_INTERFACE_SIMULATED,   0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_MAC_ROUTE,             0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_FLOOD_SIMULATED, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_SIMULATED, 1,
+                           md_create(:remote => nil), nil,
+                           flow_options.merge(:goto_table => TABLE_METADATA_LOCAL))
+      flows << Flow.create(TABLE_FLOOD_SIMULATED, 1,
+                           md_create(:local => nil), nil,
+                           flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
 
       flows << Flow.create(TABLE_METADATA_LOCAL,        0, {}, nil, flow_options)
       flows << Flow.create(TABLE_METADATA_ROUTE,        0, {}, nil, flow_options)

@@ -2,31 +2,31 @@
 
 module Vnet::Openflow
 
-  class InterfaceManager
-    include Celluloid
-    include Celluloid::Logger
-    include FlowHelpers
-
-    def initialize(dp)
-      @datapath = dp
-      @interfaces = {}
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
-    end
-
-    def interface(params)
-      if_to_hash(if_by_params(params))
-    end
+  class InterfaceManager < Manager
 
     def update_active_datapaths(params)
-      interface = if_by_params_direct(params)
+      interface = item_by_params_direct(params)
+      return nil if interface.nil?
 
-      return if interface.nil?
+      # Refactor this.
+      if interface.owner_datapath_ids.nil?
+        return if interface.mode != :vif
+      end
 
-      debug "interface_manager.update_active_datapaths: #{interface.inspect}"
-      interface.active_datapath_ids = interface.active_datapath_ids.dup.push(@datapath_id).uniq!
+      # Currently only supports one active datapath id.
+      active_datapath_ids = [params[:datapath_id]]
+
+      interface.active_datapath_ids = active_datapath_ids
       MW::Vif.batch[:id => interface.id].update(:active_datapath_id => params[:datapath_id]).commit
+
+      nil
+    end
+
+    def get_ipv4_address(params)
+      interface = item_by_params_direct(params)
+      return nil if interface.nil?
+
+      interface.get_ipv4_address(params)
     end
 
     #
@@ -36,77 +36,64 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "interface_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
+      "#{@dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def if_to_hash(interface)
-      interface && interface.to_hash
-    end
-
-    def if_by_params(params)
-      interface = if_by_params_direct(params)
-
-      if interface || params[:dynamic_load] == false
-        return interface
-      end
-
-      select = case
-               when params[:id]   then {:id => params[:id]}
-               when params[:uuid] then params[:uuid]
-               else
-                 raise("Missing interface id/uuid parameter.")
-               end
-
-      create_interface(MW::Vif[select])
-    end
-
-    def if_by_params_direct(params)
-      case
-      when params[:id] then return @interfaces[params[:id]]
-      when params[:uuid]
-        interface = @interfaces.detect { |id, interface| interface.uuid == params[:uuid] }
-        return interface && interface[1]
+    def interface_initialize(mode, params)
+      case mode
+      when :simulated then Interfaces::Simulated.new(params)
       else
-        raise("Missing interface id/uuid parameter.")
+        Interfaces::Base.new(params)
       end
     end
 
-    def create_interface(interface_map)
-      return nil if interface_map.nil?
+    def select_item(filter)
+      MW::Vif.batch[filter].commit(:fill => [:ip_leases => :ip_address])
+    end
 
-      interface = @interfaces[interface_map.id]
+    def create_item(item_map)
+      return nil if item_map.nil?
+
+      interface = @items[item_map.id]
       return interface if interface
 
-      debug log_format('insert', "interface:#{interface_map.uuid}/#{interface_map.id}")
+      debug log_format('insert', "interface:#{item_map.uuid}/#{item_map.id}")
 
-      interface = Interfaces::Base.new(datapath: @datapath,
-                                       map: interface_map)
+      interface = interface_initialize(item_map.mode.to_sym,
+                                       datapath: @datapath,
+                                       manager: self,
+                                       map: item_map)
 
-      @interfaces[interface_map.id] = interface
+      @items[item_map.id] = interface
 
-      load_addresses(interface, interface_map)
+      interface.install
+
+      load_addresses(interface, item_map)
 
       interface
     end
 
-    def load_addresses(interface, interface_map)
-      return if interface_map.mac_address.nil?
+    def load_addresses(interface, item_map)
+      return if item_map.mac_address.nil?
 
-      mac_address = Trema::Mac.new(interface_map.mac_address)
+      mac_address = Trema::Mac.new(item_map.mac_address)
       interface.add_mac_address(mac_address)
 
-      network_id = interface_map.network_id
-      return if network_id.nil?
+      item_map.ip_leases.each { |ip_lease|
+        ipv4_address = ip_lease.ip_address.ipv4_address
+        next if ipv4_address.nil?
 
-      network_info = @datapath.network_manager.network_by_id(network_id)
+        network_id = ip_lease.network_id
+        next if network_id.nil?
 
-      ipv4_address = interface_map.ipv4_address
-      return if ipv4_address.nil?
+        network_info = @datapath.network_manager.network_by_id(network_id)
+        next if network_info.nil?
 
-      interface.add_ipv4_address(mac_address: mac_address,
-                                 network_id: network_id,
-                                 network_type: network_info[:type],
-                                 ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
+        interface.add_ipv4_address(mac_address: mac_address,
+                                   network_id: network_id,
+                                   network_type: network_info[:type],
+                                   ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
+      }
     end
 
   end
