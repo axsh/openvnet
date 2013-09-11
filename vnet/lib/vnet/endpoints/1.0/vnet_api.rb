@@ -37,6 +37,8 @@ module Vnet::Endpoints::V10
       check_uuid_syntax(model, params[uuid_key])
       model = pop_uuid(model, params, uuid_key)
       params[id_key] = model.id
+
+      model
     end
 
     def parse_params(params, mask)
