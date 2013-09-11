@@ -13,7 +13,7 @@ module Vnet::Openflow::Networks
     end
 
     def install
-      flood_md = flow_options.merge(md_network(:network, :flood => nil))
+      flood_md = flow_options.merge(md_create(:flood => nil))
       classifier_md = flow_options.merge(md_network(:network, :virtual => nil))
 
       flows = []
@@ -24,12 +24,6 @@ module Vnet::Openflow::Networks
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 40,
                            md_network(:virtual_network), {},
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
-      flows << Flow.create(TABLE_VIRTUAL_DST, 40,
-                           md_network(:network, :local => nil).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flood_md.merge(:goto_table => TABLE_METADATA_ROUTE))
-      flows << Flow.create(TABLE_VIRTUAL_DST, 30,
-                           md_network(:network, :remote => nil).merge!(:eth_dst => MAC_BROADCAST), {},
-                           flood_md.merge(:goto_table => TABLE_METADATA_LOCAL))
 
       if @broadcast_mac_address
         flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {

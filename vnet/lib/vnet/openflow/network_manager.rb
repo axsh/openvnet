@@ -100,7 +100,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "network_manager: #{message} (dpid:#{@dpid_s}#{values ? ' ' : ''}#{values})"
+      "#{@dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def nw_to_hash(network)
@@ -114,6 +114,7 @@ module Vnet::Openflow
       # TODO: Don't load the same network id/uuid for multiple
       # simultaneous callers.
       network_map = MW::Network[:id => network_id]
+      return nil if network_map.nil?
 
       old_network = @networks[network_id]
       return old_network if old_network
@@ -180,11 +181,8 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
-      network_map.batch.network_services.commit(:fill => :vif).each { |service_map|
-        if service_map.vif.mode == 'simulated'
-          service_map.vif.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
-          network.add_service(service_map)
-        end
+      network_map.batch.network_services.commit.each { |service_map|
+        @datapath.service_manager.item(:id => service_map.id)
       }
 
       @datapath.dc_segment_manager.async.prepare_network(network_map, dp_map)

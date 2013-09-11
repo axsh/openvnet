@@ -26,11 +26,14 @@ module Vnet::Openflow
     attr_reader :packet_manager
     attr_reader :port_manager
     attr_reader :route_manager
+    attr_reader :service_manager
     attr_reader :tunnel_manager
 
     def initialize(ofc, dp_id, ofctl = nil)
-      @controller = ofc
       @dpid = dp_id
+      @dpid_s = "0x%016x" % @dpid
+
+      @controller = ofc
       @ovs_ofctl = ofctl
 
       @cookie_manager = CookieManager.new
@@ -40,6 +43,7 @@ module Vnet::Openflow
       @packet_manager = PacketManager.new(self)
       @port_manager = PortManager.new(self)
       @route_manager = RouteManager.new(self)
+      @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(self)
 
       @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
@@ -52,13 +56,14 @@ module Vnet::Openflow
       @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
       @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
       @cookie_manager.create_category(:vif,            COOKIE_PREFIX_VIF)
-
-      @packet_manager.insert(Vnet::Openflow::Services::Arp.new(:datapath => self), :arp)
-      @packet_manager.insert(Vnet::Openflow::Services::Icmp.new(:datapath => self), :icmp)
     end
 
     def datapath_batch
       @datapath_map.batch
+    end
+
+    def datapath_id
+      @datapath_map && @datapath_map.id
     end
 
     def inspect
@@ -76,8 +81,8 @@ module Vnet::Openflow
 
       @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @dpid)]
 
-      if @datapath_map.nil
-        warn "datapath: could not find dpid (0x%016x)" % @dpid if @datapath_map.nil?
+      if @datapath_map.nil?
+        warn log_format('could not find dpid in database')
         return
       end
 
@@ -135,7 +140,7 @@ module Vnet::Openflow
     #
 
     def mod_port(port_no, action)
-      debug "datapath: modifying port_number:#{port_no} action:#{action.to_s}"
+      debug log_format('modifying', "port_number:#{port_no} action:#{action.to_s}")
       @ovs_ofctl.mod_port(port_no, action)
     end
 
@@ -144,8 +149,18 @@ module Vnet::Openflow
     end
 
     def delete_tunnel(tunnel_name)
-      debug "datapath: delete tunnel #{tunnel_name}"
+      debug log_format('delete tunnel', "#{tunnel_name}")
       self.ovs_ofctl.delete_tunnel(tunnel_name)
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def log_format(message, values = nil)
+      "#{@dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
     end
 
   end

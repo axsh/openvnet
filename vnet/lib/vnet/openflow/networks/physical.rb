@@ -16,18 +16,9 @@ module Vnet::Openflow::Networks
       flood_md = md_create(:flood => nil)
 
       flows = []
-
       flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30,
                            md_network(:physical_network), nil,
                            flow_options.merge(:goto_table => TABLE_PHYSICAL_SRC))
-      flows << Flow.create(TABLE_PHYSICAL_DST, 30,
-                           md_network(:network, :remote => nil).merge(:eth_dst => MAC_BROADCAST),
-                           nil,
-                           flow_options.merge(flood_md).merge(:goto_table => TABLE_METADATA_LOCAL))
-      flows << Flow.create(TABLE_PHYSICAL_DST, 30,
-                           md_network(:network, :local => nil).merge(:eth_dst => MAC_BROADCAST),
-                           nil,
-                           flow_options.merge(flood_md).merge(:goto_table => TABLE_METADATA_ROUTE))
 
       @datapath.add_flows(flows)
     end
