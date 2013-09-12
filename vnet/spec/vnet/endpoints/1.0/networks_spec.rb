@@ -65,14 +65,14 @@ describe "/networks" do
 
       it "should return a 404 error (UnknownUUIDResource)" do
         last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
-          "nw-notfound")
+          /nw-notfound$/)
       end
     end
 
     context "with a uuid parameter with a faulty syntax" do
       let(:api_suffix_with_uuid) { "#{api_suffix}/this_aint_no_uuid/dhcp_ranges" }
 
-      it_should_return_error(400, "InvalidUUID", "this_aint_no_uuid")
+      it_should_return_error(400, "InvalidUUID", /this_aint_no_uuid$/)
     end
 
     context "with an existing network_uuid" do
@@ -90,7 +90,7 @@ describe "/networks" do
         # A second call to bring forth the error
         before(:each) { post api_suffix_with_uuid, request_params }
 
-        it_should_return_error(400, "DuplicateUUID", "dr-newrange")
+        it_should_return_error(400, "DuplicateUUID", /dr-newrange$/)
       end
 
       include_examples "required parameters", accepted_params,
