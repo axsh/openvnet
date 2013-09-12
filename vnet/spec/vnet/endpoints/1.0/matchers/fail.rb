@@ -17,7 +17,7 @@ RSpec::Matchers.define :fail do
     @error_details.nil? || (
       body = JSON.parse(last_response.body)
       body["error"] == "Vnet::Endpoints::Errors::#{@error_details[:name]}" &&
-      ( @error_details[:message].nil? || body["message"] == @error_details[:message])
+      verify_message(@error_details[:message], body["message"])
     )
   end
 
@@ -39,7 +39,7 @@ RSpec::Matchers.define :fail do
     "Error: " + (@error_details ? @error_details[:name] : "any") + "\n" +
     "message: " + (
       (@error_details && @error_details[:message]) ? @error_details[:message] : "any"
-    )
+    ).to_s
   end
 
   failure_message_for_should do |response|
