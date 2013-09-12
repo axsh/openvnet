@@ -21,7 +21,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
       if params["dc_segment_uuid"]
         dc_segment_uuid = params.delete("dc_segment_uuid")
         check_uuid_syntax(M::DcSegment, dc_segment_uuid)
-        params["dc_segment_id"] = (M::DcSegment[dc_segment_uuid] || M::DcSegment.create(uuid: dc_segment_uuid)).uuid
+        params["dc_segment_id"] = (M::DcSegment[dc_segment_uuid] || M::DcSegment.create(uuid: dc_segment_uuid)).id
       end
     }
   end
