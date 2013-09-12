@@ -6,6 +6,7 @@ module Vnet::Models
 
     one_to_many :routes
     one_to_many :datapath_route_links
+    many_to_many :datapaths, :join_table => :datapath_route_links
 
     subset(:alives, {})
 
