@@ -13,7 +13,6 @@ module Vnctl
   module Cli
     autoload :Base, 'vnctl/cli/base'
     autoload :Datapath, 'vnctl/cli/datapath'
-    autoload :DhcpRange, 'vnctl/cli/dhcp_range'
     autoload :IpAddress, 'vnctl/cli/ip_address'
     autoload :IpLease, 'vnctl/cli/ip_lease'
     autoload :MacLease, 'vnctl/cli/mac_lease'
