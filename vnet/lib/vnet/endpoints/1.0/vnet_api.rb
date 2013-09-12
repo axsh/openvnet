@@ -14,11 +14,11 @@ module Vnet::Endpoints::V10
 
     def pop_uuid(model, params, key = "uuid")
       uuid = params.delete(key)
-      model[uuid] || raise(E::UnknownUUIDResource, uuid)
+      model[uuid] || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
     end
 
     def check_uuid_syntax(model, uuid)
-      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, uuid)
+      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, "#{model.name.split("::").last}#uuid: #{uuid}")
     end
 
     def check_and_trim_uuid(model, params)
