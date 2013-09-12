@@ -1,5 +1,17 @@
 # -*- coding: utf-8 -*-
 
+shared_examples "required parameters" do |accepted_params, required_params|
+  required_params.each do |req_p|
+    context "without the '#{req_p}' parameter" do
+      let(:request_params) do
+        accepted_params.dup.tap { |n| n.delete(req_p) }
+      end
+
+      it_should_return_error(400, "MissingArgument", req_p.to_s)
+    end
+  end
+end
+
 shared_examples "POST /" do | accepted_params, required_params, uuid_params = [], expected_response = nil |
   expected_response ||= accepted_params
   before(:each) { post api_suffix, request_params }
@@ -26,13 +38,5 @@ shared_examples "POST /" do | accepted_params, required_params, uuid_params = []
 
   uuid_params.each { |up| include_examples "uuid_in_param", accepted_params, up }
 
-  required_params.each do |req_p|
-    context "without the '#{req_p}' parameter" do
-      let(:request_params) do
-        accepted_params.dup.tap { |n| n.delete(req_p) }
-      end
-
-      it_should_return_error(400, "MissingArgument", req_p.to_s)
-    end
-  end
+  include_examples "required parameters", accepted_params, required_params
 end
