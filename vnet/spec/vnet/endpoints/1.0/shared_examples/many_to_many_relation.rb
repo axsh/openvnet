@@ -8,7 +8,7 @@ shared_examples "relation_uuid_checks" do |relation_suffix, relation_uuid_label|
 
       it "should return a 404 error (UnknownUUIDResource)" do
         last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
-          "#{model_class.uuid_prefix}-notfound")
+          /#{model_class.uuid_prefix}-notfound$/)
       end
     end
 
@@ -19,7 +19,7 @@ shared_examples "relation_uuid_checks" do |relation_suffix, relation_uuid_label|
 
       it "should return a 404 error (UnknownUUIDResource)" do
         last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
-          "#{related_object.uuid_prefix}-notfound")
+          /#{related_object.uuid_prefix}-notfound$/)
       end
     end
 
@@ -28,7 +28,7 @@ shared_examples "relation_uuid_checks" do |relation_suffix, relation_uuid_label|
         "#{api_suffix}/this_is_not_an_uuid/#{relation_suffix}/#{related_object.canonical_uuid}"
       }
 
-      it_should_return_error(400, "InvalidUUID", "this_is_not_an_uuid")
+      it_should_return_error(400, "InvalidUUID", /this_is_not_an_uuid$/)
     end
 
     context "with faulty uuid syntax for the related object" do
@@ -36,7 +36,7 @@ shared_examples "relation_uuid_checks" do |relation_suffix, relation_uuid_label|
         "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}/this_is_not_an_uuid"
       }
 
-      it_should_return_error(400, "InvalidUUID", "this_is_not_an_uuid")
+      it_should_return_error(400, "InvalidUUID", /this_is_not_an_uuid$/)
     end
 end
 
