@@ -20,7 +20,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
+      "#{@dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
     end
 
     def add_ipv4_address(params)
@@ -170,4 +170,3 @@ module Vnet::Openflow::Interfaces
   end
 
 end
-

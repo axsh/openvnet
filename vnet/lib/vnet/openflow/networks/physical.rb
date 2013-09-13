@@ -14,11 +14,15 @@ module Vnet::Openflow::Networks
 
     def install
       flood_md = md_create(:flood => nil)
+      fo_type_md = flow_options.merge(md_create(:physical => nil))
 
       flows = []
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 30,
-                           md_network(:physical_network), nil,
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_SRC))
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 30,
+                           md_network(:network), nil,
+                           fo_type_md.merge(:goto_table => TABLE_PHYSICAL_SRC))
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 30,
+                           md_network(:network), nil,
+                           fo_type_md.merge(:goto_table => TABLE_PHYSICAL_DST))
 
       @datapath.add_flows(flows)
     end

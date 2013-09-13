@@ -36,7 +36,8 @@ module Vnet
       # currently known as the 'physical' network.
       #
       # Later we will always require a network number to be supplied.
-      TABLE_NETWORK_CLASSIFIER = 10
+      TABLE_NETWORK_SRC_CLASSIFIER = 10
+      TABLE_NETWORK_DST_CLASSIFIER = 20
 
       TABLE_VIRTUAL_SRC = 11
       TABLE_PHYSICAL_SRC = 12
@@ -48,10 +49,10 @@ module Vnet
 
       TABLE_ARP_LOOKUP = 17
 
-      TABLE_VIRTUAL_DST = 18
-      TABLE_PHYSICAL_DST = 19
+      TABLE_VIRTUAL_DST = 21
+      TABLE_PHYSICAL_DST = 22
 
-      TABLE_INTERFACE_SIMULATED = 20
+      TABLE_INTERFACE_SIMULATED = 23
 
       # Route based on the mac address only.
       TABLE_MAC_ROUTE = 25

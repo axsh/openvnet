@@ -46,18 +46,16 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_CONTROLLER_PORT,    0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_VIRTUAL_SRC,  0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:virtual => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:physical => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       flows << Flow.create(TABLE_ROUTER_INGRESS,    0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_EGRESS,     0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_DST,        0, {}, nil, flow_options)

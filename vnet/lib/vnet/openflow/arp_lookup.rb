@@ -93,7 +93,7 @@ module Vnet::Openflow
                          },
                          reflection_md.merge!({ :cookie => cookie,
                                                 :idle_timeout => 3600,
-                                                :goto_table => TABLE_PHYSICAL_DST
+                                                :goto_table => TABLE_NETWORK_DST_CLASSIFIER
                                               }))
 
       @datapath.add_flow(flow)        

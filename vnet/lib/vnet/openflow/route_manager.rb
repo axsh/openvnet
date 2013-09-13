@@ -7,7 +7,7 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
-    ROUTE_COMMIT = {:fill => [:route_link, :vif => [:network_services, :network]]}
+    ROUTE_COMMIT = {:fill => [:route_link]}
 
     def initialize(dp)
       @datapath = dp
@@ -25,9 +25,8 @@ module Vnet::Openflow
       return if route_link.nil?
       return if route_link[:routes].has_key? route_map.id
 
-      info log_format('insert', "id:#{route_map.id} uuid:#{route_map.uuid}")
+      info log_format('insert', "id:#{route_map.id} uuid:#{route_map.uuid} vif_id:#{route_map.vif_id}")
       info log_format('insert', "route.route_type:#{route_map.route_type}")
-      info log_format('insert', "route.vif: id:#{route_map.vif.id} uuid:#{route_map.vif.uuid}")
       info log_format('insert', "route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}")
 
       route = {
@@ -42,7 +41,7 @@ module Vnet::Openflow
 
       route_link[:routes][route[:id]] = route
 
-      route[:vif] = prepare_vif(route_map.vif)
+      route[:vif] = prepare_interface(route_map.vif_id)
 
       if route[:vif].nil?
         warn log_format('couldn\'t prepare router vif', "#{route_map.uuid}")
@@ -119,12 +118,22 @@ module Vnet::Openflow
                            route_link_md.merge({ :cookie => cookie,
                                                  :goto_table => TABLE_ROUTER_EGRESS
                                                }))
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
                              :eth_dst => link[:mac_address]
                            }, nil, {
                              :cookie => cookie
                            })
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                             :eth_src => link[:mac_address]
+                           }, nil, {
+                             :cookie => cookie
+                           })
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                             :eth_dst => link[:mac_address]
+                           }, nil, {
+                             :cookie => cookie
+                           })
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
                              :eth_src => link[:mac_address]
                            }, nil, {
                              :cookie => cookie
@@ -146,7 +155,12 @@ module Vnet::Openflow
                              route_link_md.merge({ :cookie => cookie,
                                                    :goto_table => TABLE_ROUTER_EGRESS
                                                  }))
-        flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
+                             }, nil, {
+                               :cookie => cookie
+                             })
+        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
                                :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
                              }, nil, {
                                :cookie => cookie
@@ -177,9 +191,11 @@ module Vnet::Openflow
       link
     end
 
-    def prepare_vif(vif_map)
-      interface = @datapath.interface_manager.item(id: vif_map.id)
-      info log_format('from interface_manager' , "#{interface.inspect}")
+    def prepare_interface(interface_id)
+      interface = @datapath.interface_manager.item(id: interface_id)
+      return nil if interface.nil?
+
+      info log_format('from interface_manager' , "#{interface.uuid}/#{interface_id}")
 
       vif = interface && @vifs[interface.id]
       return vif if vif
@@ -187,15 +203,6 @@ module Vnet::Openflow
       if interface.mode != :simulated
         info log_format('only vifs with mode \'simulated\' are supported', "uuid:#{interface.uuid} mode:#{interface.mode}")
         return
-      end
-
-      service_map = vif_map.network_services.detect { |service|
-        service.display_name == 'router'
-      }
-
-      if service_map.nil?
-        warn log_format('could not find \'router\' service for vif', "#{interface.uuid}")
-        return nil
       end
 
       mac_info = interface.mac_addresses.first
@@ -211,7 +218,6 @@ module Vnet::Openflow
       vif = {
         :id => interface.id,
         :use_datapath_id => nil,
-        :service_cookie => service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT),
 
         :mac_address => mac_info[0],
 
@@ -326,19 +332,10 @@ module Vnet::Openflow
       cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
       network_md = md_create(:network => vif[:network_id])
 
-      if vif[:network_type] == :physical_network
-        goto_table = TABLE_PHYSICAL_DST
-        controller_md = md_create({ :network => vif[:network_id],
-                                    :physical => nil,
-                                    :no_controller => nil
-                                  })
-      else
-        goto_table = TABLE_VIRTUAL_DST
-        controller_md = md_create({ :network => vif[:network_id],
-                                    :virtual => nil,
-                                    :no_controller => nil
-                                  })
-      end
+      goto_table = TABLE_NETWORK_DST_CLASSIFIER
+      controller_md = md_create({ :network => vif[:network_id],
+                                  :no_controller => nil
+                                })
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 40,
