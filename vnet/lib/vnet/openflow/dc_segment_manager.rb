@@ -30,10 +30,16 @@ module Vnet::Openflow
       actions = {:cookie => dpn[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)}
 
       flows = []
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
                              :eth_dst => dpn[:broadcast_mac_address]
                            }, nil, actions)
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                             :eth_src => dpn[:broadcast_mac_address]
+                           }, nil, actions)
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                             :eth_dst => dpn[:broadcast_mac_address]
+                           }, nil, actions)
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
                              :eth_src => dpn[:broadcast_mac_address]
                            }, nil, actions)
 
@@ -60,7 +66,7 @@ module Vnet::Openflow
                              :eth_dst => Trema::Mac.new(dpn.broadcast_mac_address)
                            }, {
                              :eth_dst => MAC_BROADCAST
-                           }, nw_virtual_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
+                           }, nw_virtual_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
 
       @datapath.add_flows(flows)
 

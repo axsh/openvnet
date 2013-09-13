@@ -42,23 +42,19 @@ module Vnet::Openflow
     def interface_initialize(mode, params)
       case mode
       when :simulated then Interfaces::Simulated.new(params)
+      when :vif then Interfaces::Vif.new(params)
       else
         Interfaces::Base.new(params)
       end
     end
 
     def select_item(filter)
+      # Using fill for ip_leases/ip_addresses isn't going to give us a
+      # proper event barrier.
       MW::Vif.batch[filter].commit(:fill => [:ip_leases => :ip_address])
     end
 
-    def create_item(item_map)
-      return nil if item_map.nil?
-
-      interface = @items[item_map.id]
-      return interface if interface
-
-      debug log_format('insert', "interface:#{item_map.uuid}/#{item_map.id}")
-
+    def create_item(item_map, params)
       interface = interface_initialize(item_map.mode.to_sym,
                                        datapath: @datapath,
                                        manager: self,
@@ -66,11 +62,21 @@ module Vnet::Openflow
 
       @items[item_map.id] = interface
 
+      debug log_format('insert', "interface:#{item_map.uuid}/#{item_map.id}")
+
+      # TODO: Make install/uninstall a barrier that enables/disable
+      # the creation of flows and ensure that no events gets lost.
+
       interface.install
+
+      if interface.mode == :vif
+        port = @datapath.port_manager.port_by_port_name(interface.uuid)
+        interface.update_port_number(port[:port_number])
+      end
 
       load_addresses(interface, item_map)
 
-      interface
+      interface # Return nil if interface has been uninstalled.
     end
 
     def load_addresses(interface, item_map)

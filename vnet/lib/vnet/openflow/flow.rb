@@ -242,6 +242,15 @@ module Vnet::Openflow
       end
     end
 
+    def table_network_src(network_type)
+      case network_type
+      when :physical then TABLE_PHYSICAL_SRC
+      when :virtual  then TABLE_VIRTUAL_SRC
+      else
+        raise "Invalid network type value."
+      end
+    end
+
     def flow_create(type, params)
       match = {}
       match_metadata = nil
@@ -274,6 +283,14 @@ module Vnet::Openflow
       when :network_dst
         table = table_network_dst(params[:network_type])
         match_metadata = { :network => params[:network_id] }
+      when :network_src
+        table = table_network_src(params[:network_type])
+        match_metadata = { :network => params[:network_id] }
+      when :router_dst_match
+        table = TABLE_ROUTER_DST
+        priority = 40
+        match_metadata = { :network => params[:network_id] }
+        goto_table = TABLE_NETWORK_DST_CLASSIFIER
       else
         return nil
       end
@@ -281,14 +298,16 @@ module Vnet::Openflow
       match = params[:match] if params[:match]
       match = match.merge(md_create(match_metadata)) if match_metadata
 
+      actions = params[:actions] if params[:actions]
       priority = params[:priority] if params[:priority]
+      goto_table = params[:goto_table] if params[:goto_table]
 
       write_metadata = params[:write_metadata] if params[:write_metadata]
 
       instructions = {
         :cookie => params[:cookie]
       }
-      instructions[:goto_table] = params[:goto_table] if params[:goto_table]
+      instructions[:goto_table] = goto_table if goto_table
       instructions.merge!(md_create(write_metadata)) if write_metadata
 
       raise "Missing cookie." if cookie.nil?

@@ -37,16 +37,13 @@ module Vnet::Openflow::Interfaces
       tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
     end
 
-    def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
-    end
-
     # Update variables by first duplicating to avoid memory
     # consistency issues with values passed to other actors.
     def to_hash
       Vnet::Openflow::Interface.new(id: @id,
                                     uuid: @uuid,
                                     mode: @mode,
+                                    port_number: @port_number,
                                     mac_addresses: @mac_addresses,
 
                                     active_datapath_ids: @active_datapath_ids,
@@ -129,6 +126,16 @@ module Vnet::Openflow::Interfaces
       return nil if ipv4_info.nil?
 
       [mac_info, ipv4_info, @datapath.network_manager.network_by_id(ipv4_info[:network_id])]
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def log_format(message, values = nil)
+      "#{@dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
     end
 
   end

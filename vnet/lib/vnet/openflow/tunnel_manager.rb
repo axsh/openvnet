@@ -56,7 +56,12 @@ module Vnet::Openflow
       cookie = datapath_network[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
 
       flows = []
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                             :eth_dst => datapath_network[:broadcast_mac_address]
+                           }, nil, {
+                             :cookie => cookie
+                           })
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
                              :eth_dst => datapath_network[:broadcast_mac_address]
                            }, nil, {
                              :cookie => cookie
