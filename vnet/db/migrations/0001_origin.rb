@@ -162,6 +162,7 @@ Sequel.migration do
     drop_table(:datapaths,
                :datapath_networks,
                :dhcp_ranges,
+               :interfaces,
                :ip_leases,
                :ip_addresses,
                :networks,
