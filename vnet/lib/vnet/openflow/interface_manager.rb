@@ -17,7 +17,7 @@ module Vnet::Openflow
       active_datapath_ids = [params[:datapath_id]]
 
       interface.active_datapath_ids = active_datapath_ids
-      MW::Vif.batch[:id => interface.id].update(:active_datapath_id => params[:datapath_id]).commit
+      MW::Interface.batch[:id => interface.id].update(:active_datapath_id => params[:datapath_id]).commit
 
       nil
     end
@@ -51,7 +51,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Vif.batch[filter].commit(:fill => [:ip_leases => :ip_address])
+      MW::Interface.batch[filter].commit(:fill => [:ip_leases => :ip_address])
     end
 
     def create_item(item_map, params)
