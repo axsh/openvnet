@@ -14,14 +14,14 @@ module Vnet::Openflow::Networks
 
     def install
       flood_md = flow_options.merge(md_create(:flood => nil))
-      classifier_md = flow_options.merge(md_network(:network, :virtual => nil))
+      fo_network_md = flow_options.merge(md_network(:network))
       fo_type_md = flow_options.merge(md_create(:virtual => nil))
 
       flows = []
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
                              :tunnel_id => @network_id | TUNNEL_FLAG_MASK
                            }, nil,
-                           classifier_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
+                           fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 40,
                            md_network(:network),
                            nil,

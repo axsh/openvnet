@@ -17,7 +17,7 @@ module Vnet::Openflow::Ports
       flows = []
 
       if @network_id
-        fo_network_md = flow_options.merge(md_network(:physical_network, :local => nil))
+        fo_network_md = flow_options.merge(md_network(:network, :local => nil))
 
         flows << Flow.create(TABLE_CLASSIFIER, 2, {
                                :in_port => OFPP_LOCAL
