@@ -35,8 +35,15 @@ module Vnet::Openflow
       fo_local_md  = flow_options.merge(md_create(:local => nil))
       fo_remote_md = flow_options.merge(md_create(:remote => nil))
 
-      flows << Flow.create(TABLE_CLASSIFIER, 2, {:in_port => OFPP_CONTROLLER}, nil,
-                           fo_local_md.merge(:goto_table => TABLE_CONTROLLER_PORT))
+      fo_controller_md = flow_options.merge(md_create(local: nil,
+                                                      no_controller: nil))
+
+      flows << Flow.create(TABLE_CLASSIFIER, 2, {
+                             :in_port => OFPP_CONTROLLER
+                           },
+                           nil,
+                           fo_controller_md.merge(:goto_table => TABLE_CONTROLLER_PORT))
+
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, nil, flow_options)
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
