@@ -45,6 +45,7 @@ module Vnet
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
+        autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :MacLease, 'vnet/endpoints/1.0/responses/mac_lease'
@@ -52,12 +53,12 @@ module Vnet
         autoload :NetworkService, 'vnet/endpoints/1.0/responses/network_service'
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
-        autoload :Vif, 'vnet/endpoints/1.0/responses/vif'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLinkCollection, 'vnet/endpoints/1.0/responses/datapath_route_link'
         autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
+        autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
@@ -65,7 +66,6 @@ module Vnet
         autoload :NetworkServiceCollection, 'vnet/endpoints/1.0/responses/network_service'
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
-        autoload :VifCollection, 'vnet/endpoints/1.0/responses/vif'
       end
     end
   end
@@ -82,6 +82,7 @@ module Vnet
     autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'
     autoload :DcSegment, 'vnet/models/dc_segment'
     autoload :DhcpRange, 'vnet/models/dhcp_range'
+    autoload :Interface, 'vnet/models/interface'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
     autoload :MacLease, 'vnet/models/mac_lease'
@@ -91,7 +92,6 @@ module Vnet
     autoload :RouteLink, 'vnet/models/route_link'
     autoload :Taggable, 'vnet/models/base'
     autoload :Tunnel, 'vnet/models/tunnel'
-    autoload :Vif, 'vnet/models/vif'
   end
 
   module ModelWrappers
@@ -101,6 +101,7 @@ module Vnet
     autoload :DatapathRouteLink, 'vnet/model_wrappers/datapath_route_link'
     autoload :DcSegment, 'vnet/model_wrappers/dc_segment'
     autoload :DhcpRange, 'vnet/model_wrappers/dhcp_range'
+    autoload :Interface, 'vnet/model_wrappers/interface'
     autoload :Helpers, 'vnet/model_wrappers/helpers'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
@@ -110,7 +111,6 @@ module Vnet
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
-    autoload :Vif, 'vnet/model_wrappers/vif'
   end
 
   autoload :NodeApi, 'vnet/node_api'
@@ -122,6 +122,7 @@ module Vnet
     autoload :DatapathNetwork, 'vnet/node_api/models.rb'
     autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DhcpRange, 'vnet/node_api/models.rb'
+    autoload :Interface, 'vnet/node_api/interface.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/models.rb'
     autoload :MacLease, 'vnet/node_api/models.rb'
@@ -130,7 +131,6 @@ module Vnet
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
-    autoload :Vif, 'vnet/node_api/vif.rb'
   end
 
   module NodeModules
