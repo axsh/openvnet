@@ -2,7 +2,7 @@
 
 require 'trema/mac'
 
-Vnet::Endpoints::V10::VnetAPI.namespace '/vifs' do
+Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   put_post_shared_params = [
     "network_uuid",
     "mac_address",
