@@ -181,9 +181,8 @@ module Vnet
       autoload :Base, 'vnet/openflow/ports/base'
       autoload :Host, 'vnet/openflow/ports/host'
       autoload :Local, 'vnet/openflow/ports/local'
-      autoload :Physical, 'vnet/openflow/ports/physical'
       autoload :Tunnel, 'vnet/openflow/ports/tunnel'
-      autoload :Virtual, 'vnet/openflow/ports/virtual'
+      autoload :Vif, 'vnet/openflow/ports/vif'
     end
 
     module Routers

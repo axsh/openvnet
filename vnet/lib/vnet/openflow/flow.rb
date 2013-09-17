@@ -280,6 +280,8 @@ module Vnet::Openflow
         priority = 70
         actions = { :output => Controller::OFPP_CONTROLLER }
         match_metadata = { :network => params[:network_id] }
+      when :controller_port
+        table = TABLE_CONTROLLER_PORT
       when :classifier
         table = TABLE_CLASSIFIER
       when :host_ports

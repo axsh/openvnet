@@ -2,11 +2,10 @@
 
 module Vnet::Openflow::Ports
 
-  module Physical
-    include Vnet::Openflow::FlowHelpers
+  module Vif
 
     def port_type
-      :physical
+      :vif
     end
 
     def install
