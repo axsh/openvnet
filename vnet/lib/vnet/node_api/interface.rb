@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
-  class Vif < Base
+  class Interface < Base
     class << self
       def create(options)
         ipv4_address = options.delete(:ipv4_address)
