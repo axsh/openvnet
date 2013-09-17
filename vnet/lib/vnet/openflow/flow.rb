@@ -280,12 +280,25 @@ module Vnet::Openflow
         priority = 70
         actions = { :output => Controller::OFPP_CONTROLLER }
         match_metadata = { :network => params[:network_id] }
+      when :classifier
+        table = TABLE_CLASSIFIER
+      when :host_ports
+        table = TABLE_HOST_PORTS
       when :network_dst
         table = table_network_dst(params[:network_type])
         match_metadata = { :network => params[:network_id] }
       when :network_src
         table = table_network_src(params[:network_type])
         match_metadata = { :network => params[:network_id] }
+      when :network_src_arp_drop
+        table = table_network_src(params[:network_type])
+        priority = 85
+        match_metadata = { :network => params[:network_id] }
+      when :network_src_arp_match
+        table = table_network_src(params[:network_type])
+        priority = 86
+        match_metadata = { :network => params[:network_id] }
+        goto_table = TABLE_ROUTER_CLASSIFIER
       when :router_dst_match
         table = TABLE_ROUTER_DST
         priority = 40
@@ -304,9 +317,8 @@ module Vnet::Openflow
 
       write_metadata = params[:write_metadata] if params[:write_metadata]
 
-      instructions = {
-        :cookie => params[:cookie]
-      }
+      instructions = {}
+      instructions[:cookie] = params[:cookie] || self.cookie
       instructions[:goto_table] = goto_table if goto_table
       instructions.merge!(md_create(write_metadata)) if write_metadata
 
