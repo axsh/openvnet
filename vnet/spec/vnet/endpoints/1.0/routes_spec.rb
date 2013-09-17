@@ -18,7 +18,7 @@ describe "/routes" do
   include_examples "DELETE /:uuid"
 
   describe "POST /" do
-    let!(:vif) { Fabricate(:vif) { uuid "vif-test"}  }
+    let!(:vif) { Fabricate(:interface) { uuid "vif-test"}  }
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-test" } }
     accepted_params = {
       :uuid => "r-testrout",
@@ -36,7 +36,7 @@ describe "/routes" do
   end
 
   describe "PUT /:uuid" do
-    let!(:new_vif) { Fabricate(:vif) { uuid 'vif-newvif' } }
+    let!(:new_vif) { Fabricate(:interface) { uuid 'vif-newvif' } }
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-newroute" } }
 
     accepted_params = {

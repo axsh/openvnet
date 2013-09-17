@@ -5,8 +5,8 @@ describe Vnet::Models::Network do
   describe "network_services" do
     before do
       network = Fabricate(:network)
-      vif1 = Fabricate(:vif, network: network)
-      vif2 = Fabricate(:vif, network: network)
+      vif1 = Fabricate(:interface, network: network)
+      vif2 = Fabricate(:interface, network: network)
       network_service1 = Fabricate(:network_service, vif: vif1)
       network_service2 = Fabricate(:network_service, vif: vif1)
       network_service3 = Fabricate(:network_service, vif: vif2)

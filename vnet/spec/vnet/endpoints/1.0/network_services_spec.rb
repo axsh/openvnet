@@ -18,7 +18,7 @@ describe "/network_services" do
   include_examples "DELETE /:uuid"
 
   describe "POST /" do
-    let!(:vif) { Fabricate(:vif) { uuid "vif-test"}  }
+    let!(:vif) { Fabricate(:interface) { uuid "vif-test"}  }
     accepted_params = {
       :uuid => "ns-test",
       :vif_uuid => "vif-test",
@@ -33,7 +33,7 @@ describe "/network_services" do
   end
 
   describe "PUT /:uuid" do
-    let!(:new_vif) { Fabricate(:vif) { uuid "vif-other"}  }
+    let!(:new_vif) { Fabricate(:interface) { uuid "vif-other"}  }
     accepted_params = {
       :vif_uuid => "vif-other",
       :display_name => "our new and improved test network service",
