@@ -60,7 +60,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true, :null => false
-      Integer :interface_id, :index => true, :null => false
+      Integer :vif_id, :index => true, :null => false
       Integer :ip_address_id, :index => true, :null=>false
       Integer :alloc_type
       DateTime :created_at, :null=>false
@@ -87,7 +87,7 @@ Sequel.migration do
     create_table(:network_services) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :interface_id, :index => true
+      Integer :vif_id, :index => true
       String :display_name, :index => true, :null=>false
       Integer :incoming_port
       Integer :outgoing_port
@@ -106,7 +106,7 @@ Sequel.migration do
     create_table(:routes) do
       primary_key :id
       String :uuid, :unique => true, :null => false
-      Integer :interface_id, :index => true
+      Integer :vif_id, :index => true
       Integer :route_link_id, :index => true, :null => false
 
       String :route_type, :default => 'gateway', :null => false
@@ -168,7 +168,6 @@ Sequel.migration do
                :networks,
                :network_services,
                :mac_leases,
-               :interfaces,
                :routes,
                :route_links,
                :tunnels,
