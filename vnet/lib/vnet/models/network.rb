@@ -8,17 +8,17 @@ module Vnet::Models
     one_to_many :dhcp_ranges
     one_to_many :ip_leases
     one_to_many :tunnels
-    one_to_many :vifs
+    one_to_many :interfaces
 
-    many_to_many :network_services, :join_table => :vifs, :right_key => :id, :right_primary_key => :vif_id, :eager_graph => { :vif => { :ip_leases => :ip_address }} do |ds|
+    many_to_many :network_services, :join_table => :interfaces, :right_key => :id, :right_primary_key => :interface_id, :eager_graph => { :interface => { :ip_leases => :ip_address }} do |ds|
       ds.alives
     end
 
     subset(:alives, {})
 
     one_to_many :routes, :class=>Route do |ds|
-      Route.dataset.join_table(:inner, :vifs,
-                               {:vifs__network_id => self.id} & {:vifs__id => :routes__vif_id}
+      Route.dataset.join_table(:inner, :interfaces,
+                               {:interfaces__network_id => self.id} & {:interfaces__id => :routes__vif_id}
                                ).select_all(:routes).alives
     end
 
