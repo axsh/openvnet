@@ -86,17 +86,17 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_FLOOD_SIMULATED, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_FLOOD_SIMULATED, 1,
                            md_create(:remote => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_METADATA_LOCAL))
+                           flow_options.merge(:goto_table => TABLE_FLOOD_LOCAL))
       flows << Flow.create(TABLE_FLOOD_SIMULATED, 1,
                            md_create(:local => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_METADATA_ROUTE))
+                           flow_options.merge(:goto_table => TABLE_FLOOD_ROUTE))
 
-      flows << Flow.create(TABLE_METADATA_LOCAL,        0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE,        0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_SEGMENT,      0, {}, nil,
-                           flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
-      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS,   0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_LOCAL,        0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_ROUTE,        0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_SEGMENT,      0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_FLOOD_TUNNEL_IDS))
+      flows << Flow.create(TABLE_FLOOD_TUNNEL_IDS,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_TUNNEL_PORTS, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
       flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK,  0, {}, nil, flow_options)

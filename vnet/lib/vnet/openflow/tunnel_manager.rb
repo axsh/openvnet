@@ -112,13 +112,13 @@ module Vnet::Openflow
       md = md_create(:collection => collection_id)
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 1,
+      flows << Flow.create(TABLE_FLOOD_TUNNEL_IDS, 1,
                            md_create({ :network => network_id,
                                        :flood => nil
                                      }), {
                              :tunnel_id => network_id | TUNNEL_FLAG_MASK
                            }, md.merge({ :cookie => cookie,
-                                         :goto_table => TABLE_METADATA_TUNNEL_PORTS
+                                         :goto_table => TABLE_FLOOD_TUNNEL_PORTS
                                        }))
 
       @datapath.add_flows(flows)
@@ -210,7 +210,7 @@ module Vnet::Openflow
       cookie = collection_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 1,
+      flows << Flow.create(TABLE_FLOOD_TUNNEL_PORTS, 1,
                            collection_md,
                            ports.map { |port_number, port|
                              {:output => port_number}

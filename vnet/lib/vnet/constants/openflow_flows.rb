@@ -57,21 +57,12 @@ module Vnet
       # Route based on the mac address only.
       TABLE_MAC_ROUTE = 25
 
-      TABLE_FLOOD_SIMULATED = 30
-
-      # Only output to local vif's.
-      #
-      # TODO: Rename to TABLE_FLOOD_*.
-      TABLE_METADATA_LOCAL        = 31
-
-      # Send packet to all ports if marked as a flood flow, starting from
-      # the route table.
-      #
-      # TODO: Rename to TABLE_FLOOD_*.
-      TABLE_METADATA_ROUTE        = 32
-      TABLE_METADATA_SEGMENT      = 33
-      TABLE_METADATA_TUNNEL_IDS   = 34
-      TABLE_METADATA_TUNNEL_PORTS = 35
+      TABLE_FLOOD_SIMULATED    = 30
+      TABLE_FLOOD_LOCAL        = 31
+      TABLE_FLOOD_ROUTE        = 32
+      TABLE_FLOOD_SEGMENT      = 33
+      TABLE_FLOOD_TUNNEL_IDS   = 34
+      TABLE_FLOOD_TUNNEL_PORTS = 35
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.

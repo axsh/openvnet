@@ -57,12 +57,12 @@ module Vnet::Openflow::Networks
       flood_actions = @ports.collect { |port_number, port| {:output => port_number} }
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_LOCAL, 1,
+      flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
                            md_network(:network, :flood => nil),
                            flood_actions, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1,
+      flows << Flow.create(TABLE_FLOOD_ROUTE, 1,
                            md_network(:network, :flood => nil),
-                           flood_actions, flow_options.merge(:goto_table => TABLE_METADATA_SEGMENT))
+                           flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_SEGMENT))
 
       @datapath.add_flows(flows)
     end

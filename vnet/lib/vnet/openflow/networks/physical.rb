@@ -37,11 +37,11 @@ module Vnet::Openflow::Networks
       }
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_ROUTE, 1,
+      flows << Flow.create(TABLE_FLOOD_ROUTE, 1,
                            md_network(:network, :flood => nil),
                            remote_actions,
                            flow_options)
-      flows << Flow.create(TABLE_METADATA_LOCAL, 1,
+      flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
                            md_network(:network, :flood => nil),
                            local_actions,
                            flow_options)

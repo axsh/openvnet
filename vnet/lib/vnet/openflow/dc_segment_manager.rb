@@ -98,13 +98,13 @@ module Vnet::Openflow
       flood_actions << {:eth_dst => MAC_BROADCAST} unless flood_actions.empty?
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 1,
+      flows << Flow.create(TABLE_FLOOD_SEGMENT, 1,
                            md_create({ :network => network_id,
                                        :flood => nil
                                      }),
                            flood_actions, {
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
-                             :goto_table => TABLE_METADATA_TUNNEL_IDS
+                             :goto_table => TABLE_FLOOD_TUNNEL_IDS
                            })
 
       @datapath.add_flows(flows)
