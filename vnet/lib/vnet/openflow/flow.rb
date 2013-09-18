@@ -136,12 +136,6 @@ module Vnet::Openflow
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :physical
-          metadata = metadata | METADATA_FLAG_PHYSICAL
-          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
-        when :physical_network
-          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_PHYSICAL
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :reflection
           metadata = metadata | METADATA_FLAG_REFLECTION
           metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
@@ -154,12 +148,6 @@ module Vnet::Openflow
         when :tunnel
           metadata = metadata | METADATA_FLAG_TUNNEL
           metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
-        when :virtual
-          metadata = metadata | METADATA_FLAG_VIRTUAL
-          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
-        when :virtual_network
-          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_VIRTUAL
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :vif
           metadata = metadata | METADATA_FLAG_VIF
           metadata_mask = metadata_mask | METADATA_FLAG_VIF
