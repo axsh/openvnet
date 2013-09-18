@@ -247,7 +247,7 @@ module Vnet::Openflow
           @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                               datapath_id: datapath_id)
         else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id
+          vif[:use_datapath_id] = interface.owner_datapath_id
         end
       end
 

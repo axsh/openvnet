@@ -98,6 +98,7 @@ describe Vnet::Openflow::TunnelManager do
         {:eth_dst => Trema::Mac.new('bb:bb:bb:11:11:11')},
         nil,
         {:cookie => 1 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
+
       expect(flows[1]).to eq Vnet::Openflow::Flow.create(
         TABLE_NETWORK_DST_CLASSIFIER,
         90,
@@ -111,6 +112,7 @@ describe Vnet::Openflow::TunnelManager do
         {:eth_dst => Trema::Mac.new('bb:bb:bb:22:22:22')},
         nil,
         {:cookie => 2 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
+
       expect(flows[3]).to eq Vnet::Openflow::Flow.create(
         TABLE_NETWORK_DST_CLASSIFIER,
         90,
@@ -124,6 +126,7 @@ describe Vnet::Openflow::TunnelManager do
         {:eth_dst => Trema::Mac.new('cc:cc:cc:11:11:11')},
         nil,
         {:cookie => 3 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
+
       expect(flows[5]).to eq Vnet::Openflow::Flow.create(
         TABLE_NETWORK_DST_CLASSIFIER,
         90,
