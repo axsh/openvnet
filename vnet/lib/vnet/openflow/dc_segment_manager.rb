@@ -57,7 +57,7 @@ module Vnet::Openflow
 
       cookie = network_map.network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       flow_options = {:cookie => cookie}
-      nw_virtual_md = flow_options.merge(md_create(:virtual_network => network_map.network_id))
+      nw_virtual_md = flow_options.merge(md_create(:network => network_map.network_id))
 
       dpn = network_map.batch.datapath_networks_dataset.on_specific_datapath(dp_map).first.commit
 

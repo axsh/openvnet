@@ -104,16 +104,16 @@ module Vnet::Openflow
       network = network_initialize(item_map.network_mode.to_sym, item_map)
       @items[network.network_id] = network
 
-      dp_map = MW::Datapath[:dpid => @dpid_s]
+      dp_map = @datapath.datapath_map
 
       if dp_map.nil?
-        error log_format('could not find datapath id in database')
+        error log_format('datapath information not found in database')
         return nil
       end
 
-      dp_item_map = dp_map.batch.datapath_networks_dataset.where(:network_id => item_map.id).first.commit
+      dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:network_id => item_map.id).first.commit
 
-      network.set_datapath_of_bridge(dp_map, dp_item_map, false)
+      network.set_datapath_of_bridge(dp_map, dpn_item_map, false)
 
       network.install
       network.update_flows

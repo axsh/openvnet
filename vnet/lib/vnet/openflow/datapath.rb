@@ -150,7 +150,7 @@ module Vnet::Openflow
 
     def delete_tunnel(tunnel_name)
       debug log_format('delete tunnel', "#{tunnel_name}")
-      self.ovs_ofctl.delete_tunnel(tunnel_name)
+      @ovs_ofctl.delete_tunnel(tunnel_name)
     end
 
     #
