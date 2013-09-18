@@ -14,11 +14,11 @@ module Vnet::Endpoints::V10
 
     def pop_uuid(model, params, key = "uuid")
       uuid = params.delete(key)
-      model[uuid] || raise(E::UnknownUUIDResource, uuid)
+      model[uuid] || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
     end
 
     def check_uuid_syntax(model, uuid)
-      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, uuid)
+      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, "#{model.name.split("::").last}#uuid: #{uuid}")
     end
 
     def check_and_trim_uuid(model, params)
@@ -37,6 +37,8 @@ module Vnet::Endpoints::V10
       check_uuid_syntax(model, params[uuid_key])
       model = pop_uuid(model, params, uuid_key)
       params[id_key] = model.id
+
+      model
     end
 
     def parse_params(params, mask)
@@ -131,7 +133,6 @@ module Vnet::Endpoints::V10
     respond_to :json, :yml
 
     load_namespace('datapaths')
-    load_namespace('dhcp_ranges')
     load_namespace('ip_addresses')
     load_namespace('ip_leases')
     load_namespace('mac_leases')

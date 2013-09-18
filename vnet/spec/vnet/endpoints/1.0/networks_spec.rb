@@ -46,4 +46,57 @@ describe "/networks" do
     include_examples "PUT /:uuid", accepted_params
   end
 
+  describe "POST /:network_uuid/dhcp_ranges" do
+    before(:each) do
+      post api_suffix_with_uuid, request_params
+    end
+
+    # let(:accepted_params) do
+    accepted_params = {
+        :uuid => "dr-newrange",
+        :range_begin => "192.168.2.2",
+        :range_end => "192.168.2.100"
+      }
+    # end
+    let(:request_params) { accepted_params }
+
+    context "with a nonexistant network_uuid" do
+      let(:api_suffix_with_uuid) { "#{api_suffix}/nw-notfound/dhcp_ranges" }
+
+      it "should return a 404 error (UnknownUUIDResource)" do
+        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+          /nw-notfound$/)
+      end
+    end
+
+    context "with a uuid parameter with a faulty syntax" do
+      let(:api_suffix_with_uuid) { "#{api_suffix}/this_aint_no_uuid/dhcp_ranges" }
+
+      it_should_return_error(400, "InvalidUUID", /this_aint_no_uuid$/)
+    end
+
+    context "with an existing network_uuid" do
+      let!(:network) { Fabricate(:network) }
+      let(:api_suffix_with_uuid) { "#{api_suffix}/#{network.canonical_uuid}/dhcp_ranges" }
+
+      context "with all accepted parameters" do
+        it "should create a new dhcp range" do
+          last_response.should succeed
+          JSON.parse(last_response.body)["dhcp_ranges"].size.should eq 1
+        end
+      end
+
+      context "with a dhcp range uuid that already exists" do
+        # A second call to bring forth the error
+        before(:each) { post api_suffix_with_uuid, request_params }
+
+        it_should_return_error(400, "DuplicateUUID", /dr-newrange$/)
+      end
+
+      include_examples "required parameters", accepted_params,
+        [:range_begin, :range_end]
+
+    end
+  end
+
 end

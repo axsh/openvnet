@@ -10,7 +10,6 @@ module Vnctl::Cli
     }
 
     vnctl_register(C::Datapath, "datapaths")
-    vnctl_register(C::DhcpRange, "dhcp ranges")
     vnctl_register(C::IpAddress, "ip addresses")
     vnctl_register(C::IpLease, "ip leases")
     vnctl_register(C::MacLease, "mac leases")

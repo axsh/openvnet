@@ -48,7 +48,6 @@ module Vnet::Models
           column(:uuid, String, :size=>8, :null=>false, :fixed=>true, :unique=>true)
         end
       }
-      model.many_to_many :tags, :dataset=>lambda { Tag.join(TagMapping.table_name, :tag_id=>:id, :uuid=>self.canonical_uuid); }
     end
 
     module InstanceMethods
