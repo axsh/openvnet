@@ -22,6 +22,7 @@ module Vnet::Openflow
       nil
     end
 
+    # Deprecate this...
     def get_ipv4_address(params)
       interface = item_by_params_direct(params)
       return nil if interface.nil?
