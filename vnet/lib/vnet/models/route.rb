@@ -10,8 +10,8 @@ module Vnet::Models
     subset(:alives, {})
 
     one_to_many :on_other_networks, :class => Route do |ds|
-      ds = Route.join(:interfaces, :routes__vif_id => :interfaces__id)
-      ds = ds.where(~{:interfaces__network_id => self.vif.network_id})
+      ds = Route.join(:interfaces, :routes__interface_id => :interfaces__id)
+      ds = ds.where(~{:interfaces__network_id => self.interface.network_id})
       ds.select_all(:routes)
     end
 

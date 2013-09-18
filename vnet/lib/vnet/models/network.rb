@@ -18,7 +18,7 @@ module Vnet::Models
 
     one_to_many :routes, :class=>Route do |ds|
       Route.dataset.join_table(:inner, :interfaces,
-                               {:interfaces__network_id => self.id} & {:interfaces__id => :routes__vif_id}
+                               {:interfaces__network_id => self.id} & {:interfaces__id => :routes__interface_id}
                                ).select_all(:routes).alives
     end
 
