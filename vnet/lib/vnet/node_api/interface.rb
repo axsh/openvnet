@@ -5,22 +5,22 @@ module Vnet::NodeApi
       def create(options)
         ipv4_address = options.delete(:ipv4_address)
 
-        vif = transaction do
-          model_class.create(options).tap do |vif|
-            if vif.network && ipv4_address
-              vif.add_ip_lease(
-                { :network_id => vif.network.id,
-                  :vif_id => vif.id,
+        interface = transaction do
+          model_class.create(options).tap do |interface|
+            if interface.network && ipv4_address
+              interface.add_ip_lease(
+                { :network_id => interface.network.id,
+                  :interface_id => interface.id,
                   :ip_address_id => IpAddress.create({:ipv4_address => ipv4_address})[:id]})
             end
           end
         end
 
-        if vif.network_id
-          dispatch_event("network/vif_added", network_id: vif.network_id, vif_id: vif.id)
+        if interface.network_id
+          dispatch_event("network/vif_added", network_id: interface.network_id, vif_id: interface.id)
         end
 
-        to_hash(vif)
+        to_hash(interface)
       end
 
       def destroy(uuid)

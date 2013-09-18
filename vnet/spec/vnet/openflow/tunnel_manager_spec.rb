@@ -26,7 +26,7 @@ describe Vnet::Openflow::TunnelManager do
       db_tunnels = Vnet::Models::Datapath.find({:node_id => conf.node.id}).tunnels
       expect(db_tunnels.size).to eq 1
       expect(db_tunnels.first.dst_datapath.node_id).to eq "vna3"
-      expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq "2"
+      expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq 2
 
       expect(subject.tunnels_dup.size).to eq 1
       expect(subject.tunnels_dup.first[:uuid]).to eq db_tunnels.first.canonical_uuid
@@ -90,24 +90,45 @@ describe Vnet::Openflow::TunnelManager do
       flows = datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq 3
+      expect(flows.size).to eq 6
 
       expect(flows[0]).to eq Vnet::Openflow::Flow.create(
-        TABLE_NETWORK_CLASSIFIER,
+        TABLE_NETWORK_SRC_CLASSIFIER,
         90,
         {:eth_dst => Trema::Mac.new('bb:bb:bb:11:11:11')},
         nil,
         {:cookie => 1 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
 
       expect(flows[1]).to eq Vnet::Openflow::Flow.create(
-        TABLE_NETWORK_CLASSIFIER,
+        TABLE_NETWORK_DST_CLASSIFIER,
+        90,
+        {:eth_dst => Trema::Mac.new('bb:bb:bb:11:11:11')},
+        nil,
+        {:cookie => 1 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
+
+      expect(flows[2]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_SRC_CLASSIFIER,
         90,
         {:eth_dst => Trema::Mac.new('bb:bb:bb:22:22:22')},
         nil,
         {:cookie => 2 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
 
-      expect(flows[2]).to eq Vnet::Openflow::Flow.create(
-        TABLE_NETWORK_CLASSIFIER,
+      expect(flows[3]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_DST_CLASSIFIER,
+        90,
+        {:eth_dst => Trema::Mac.new('bb:bb:bb:22:22:22')},
+        nil,
+        {:cookie => 2 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
+
+      expect(flows[4]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_SRC_CLASSIFIER,
+        90,
+        {:eth_dst => Trema::Mac.new('cc:cc:cc:11:11:11')},
+        nil,
+        {:cookie => 3 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
+
+      expect(flows[5]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_DST_CLASSIFIER,
         90,
         {:eth_dst => Trema::Mac.new('cc:cc:cc:11:11:11')},
         nil,
@@ -134,7 +155,7 @@ describe Vnet::Openflow::TunnelManager do
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
         [{:output => 9}, {:output => 10}],
         {:cookie => 1 | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)})
-                                                          
+
       expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
         TABLE_METADATA_TUNNEL_IDS,
         1,
