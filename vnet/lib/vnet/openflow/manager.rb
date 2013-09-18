@@ -9,6 +9,7 @@ module Vnet::Openflow
 
     def initialize(dp)
       @datapath = dp
+      @datapath_id = nil
       @items = {}
 
       @dpid = @datapath.dpid
@@ -23,6 +24,17 @@ module Vnet::Openflow
       item = @items[message.cookie & COOKIE_ID_MASK]
       item.packet_in(message) if item
       nil
+    end
+
+    def set_datapath_id(datapath_id)
+      if @datapath_id
+        raise("Manager.set_datapath_id called twice.")
+      end
+
+      @datapath_id = datapath_id
+      
+      # We need to update remote interfaces in case they are now in
+      # our datapath.
     end
 
     #

@@ -86,6 +86,10 @@ module Vnet::Openflow
         return
       end
 
+      @interface_manager.set_datapath_id(@datapath_map.id)
+      @network_manager.set_datapath_id(@datapath_map.id)
+      @service_manager.set_datapath_id(@datapath_map.id)
+
       @switch.switch_ready
     end
 

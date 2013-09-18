@@ -168,6 +168,7 @@ module Vnet
     module Interfaces
       autoload :Base, 'vnet/openflow/interfaces/base'
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
+      autoload :Remote, 'vnet/openflow/interfaces/remote'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
     end
 
