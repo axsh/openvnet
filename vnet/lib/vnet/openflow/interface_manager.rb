@@ -54,6 +54,17 @@ module Vnet::Openflow
       MW::Vif.batch[filter].commit(:fill => [:ip_leases => :ip_address])
     end
 
+    def item_by_params_direct(params)
+      case
+      when params[:port_number]
+        port_number = params[:port_number]
+        item = @items.detect { |id, item| item.port_number == port_number }
+        return item && item[1]
+      end
+
+      super
+    end
+
     def create_item(item_map, params)
       interface = interface_initialize(item_map.mode.to_sym,
                                        datapath: @datapath,

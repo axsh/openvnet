@@ -13,6 +13,8 @@ module Vnet::Openflow::Interfaces
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
 
+    attr_reader :port_number
+
     def initialize(params)
       @datapath = params[:datapath]
       @manager = params[:manager]

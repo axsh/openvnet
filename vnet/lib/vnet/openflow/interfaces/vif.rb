@@ -4,8 +4,6 @@ module Vnet::Openflow::Interfaces
 
   class Vif < Base
 
-    attr_reader :port_number
-
     def initialize(params)
       super
     end
