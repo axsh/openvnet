@@ -13,7 +13,6 @@ module Vnet::Openflow::Networks
     end
 
     def install
-      flood_md = flow_options.merge(md_create(:flood => nil))
       fo_network_md = flow_options.merge(md_network(:network))
 
       flows = []
@@ -58,10 +57,7 @@ module Vnet::Openflow::Networks
 
       flows = []
       flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
-                           md_network(:network, :flood => nil),
-                           flood_actions, flow_options)
-      flows << Flow.create(TABLE_FLOOD_ROUTE, 1,
-                           md_network(:network, :flood => nil),
+                           md_network(:network),
                            flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_SEGMENT))
 
       @datapath.add_flows(flows)

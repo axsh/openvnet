@@ -113,9 +113,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_FLOOD_TUNNEL_IDS, 1,
-                           md_create({ :network => network_id,
-                                       :flood => nil
-                                     }), {
+                           md_create(:network => network_id), {
                              :tunnel_id => network_id | TUNNEL_FLAG_MASK
                            }, md.merge({ :cookie => cookie,
                                          :goto_table => TABLE_FLOOD_TUNNEL_PORTS

@@ -112,9 +112,6 @@ module Vnet::Openflow
         when :datapath
           metadata = metadata | value | METADATA_TYPE_DATAPATH
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
-        when :flood
-          metadata = metadata | METADATA_FLAG_FLOOD
-          metadata_mask = metadata_mask | METADATA_FLAG_FLOOD
         when :interface
           metadata = metadata | value | METADATA_TYPE_INTERFACE
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK

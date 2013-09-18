@@ -99,9 +99,7 @@ module Vnet::Openflow
 
       flows = []
       flows << Flow.create(TABLE_FLOOD_SEGMENT, 1,
-                           md_create({ :network => network_id,
-                                       :flood => nil
-                                     }),
+                           md_create(network: network_id),
                            flood_actions, {
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
                              :goto_table => TABLE_FLOOD_TUNNEL_IDS
