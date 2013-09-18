@@ -15,7 +15,7 @@ module Vnet::Openflow::Interfaces
 
       return if @port_number.nil?
 
-      @datapath.network_manager.add_port(network_id: ipv4_info[:network_id],
+      @datapath.network_manager.add_port(id: ipv4_info[:network_id],
                                          port_number: @port_number,
                                          port_mode: :vif)
 

@@ -4,42 +4,22 @@ require 'celluloid'
 
 module Vnet::Openflow
 
-  class NetworkManager
+  class NetworkManager < Manager
     include Celluloid::Logger
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable
 
-    def initialize(dp)
-      @datapath = dp
-      @networks = {}
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
-    end
-
-    def network_by_id(network_id, dynamic_load = true)
-      nw_to_hash(nw_by_id(network_id, dynamic_load))
-    end
-
-    def network_by_uuid(network_uuid, dynamic_load = true)
-      nw_to_hash(nw_by_uuid(network_uuid, dynamic_load))
-    end
-
-    def network_by_params(params, dynamic_load = true)
-      nw_to_hash(nw_by_params(params, dynamic_load))
-    end
-
     def networks(params = {})
-      @networks.select { |key,nw|
+      @items.select { |key,nw|
         result = true
         result = result && (nw.network_type == params[:network_type]) if params[:network_type]
       }.map { |key,nw|
-        nw_to_hash(nw)
+        item_to_hash(nw)
       }
     end
 
     def update_all_flows
-      @networks.dup.each { |key,network|
+      @items.dup.each { |key,network|
         debug log_format('updating flows for', "uuid:#{network.uuid}")
         network.update_flows
       }
@@ -48,7 +28,7 @@ module Vnet::Openflow
 
     # Handle this internally.
     def remove(network_id)
-      network = @networks.delete(network_id)
+      network = @items.delete(network_id)
 
       if network.nil?
         info log_format('could not find network to remove', "id:#{network_id}")
@@ -67,16 +47,16 @@ module Vnet::Openflow
     end
 
     def add_port(params)
-      network = nw_by_params(params, true)
+      network = item_by_params(params)
       return nil if network.nil?
 
       network.add_port(port_number: params[:port_number],
                        port_mode: params[:port_mode])
-      nw_to_hash(network)
+      item_to_hash(network)
     end
 
     def del_port_number(network_id, port_number)
-      network = @networks[network_id]
+      network = @items[network_id]
       return nil if network.nil?
 
       network.del_port_number(port_number)
@@ -103,65 +83,27 @@ module Vnet::Openflow
       "#{@dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def nw_to_hash(network)
-      network && network.to_hash
-    end
-
-    def nw_by_id(network_id, dynamic_load)
-      old_network = @networks[network_id]
-      return old_network if old_network || !dynamic_load
-
-      # TODO: Don't load the same network id/uuid for multiple
-      # simultaneous callers.
-      network_map = MW::Network[:id => network_id]
-      return nil if network_map.nil?
-
-      old_network = @networks[network_id]
-      return old_network if old_network
-
-      create_network(network_map)
-    end
-
-    def nw_by_uuid(network_uuid, dynamic_load)
-      old_network = nw_by_uuid_direct(network_uuid)
-      return old_network if old_network || !dynamic_load
-
-      network_map = MW::Network[network_uuid]
-
-      old_network = nw_by_uuid_direct(network_uuid)
-      return old_network if old_network
-
-      create_network(network_map)
-    end
-
-    def nw_by_uuid_direct(network_uuid)
-      network = @networks.find { |nw| nw[1].uuid == network_uuid }
-      network && network[1]
-    end
-
-    def nw_by_params(params, dynamic_load)
-      case
-      when params[:network_id]
-        return nw_by_id(params[:network_id], dynamic_load)
-      when params[:network_uuid]
-        return nw_by_uuid(params[:network_uuid], dynamic_load)
-      else
-        raise("Missing network id/uuid parameter.")
-      end
-    end
-
-    def create_network(network_map)
-      case network_map.network_mode
-      when 'physical'
-        network = Networks::Physical.new(@datapath, network_map)
-      when 'virtual'
-        network = Networks::Virtual.new(@datapath, network_map)
+    def network_initialize(mode, item_map)
+      case mode
+      when :physical then Networks::Physical.new(@datapath, item_map)
+      when :virtual then Networks::Virtual.new(@datapath, item_map)
       else
         error log_format('unknown network type',
-                         "network_type:#{network_map.network_mode}")
+                         "network_type:#{item_map.network_mode}")
         return nil
       end
-      
+    end
+
+    def select_item(filter)
+      # Using fill for ip_leases/ip_addresses isn't going to give us a
+      # proper event barrier.
+      MW::Network.batch[filter].commit
+    end
+
+    def create_item(item_map, params)
+      network = network_initialize(item_map.network_mode.to_sym, item_map)
+      @items[network.network_id] = network
+
       dp_map = MW::Datapath[:dpid => @dpid_s]
 
       if dp_map.nil?
@@ -169,25 +111,20 @@ module Vnet::Openflow
         return nil
       end
 
-      dp_network_map = dp_map.batch.datapath_networks_dataset.where(:network_id => network_map.id).first.commit
+      dp_item_map = dp_map.batch.datapath_networks_dataset.where(:network_id => item_map.id).first.commit
 
-      network.set_datapath_of_bridge(dp_map, dp_network_map, false)
-
-      old_network = @networks[network_map.id]
-      return old_network if old_network
-
-      @networks[network.network_id] = network
+      network.set_datapath_of_bridge(dp_map, dp_item_map, false)
 
       network.install
       network.update_flows
 
-      network_map.batch.network_services.commit.each { |service_map|
+      item_map.batch.network_services.commit.each { |service_map|
         @datapath.service_manager.item(:id => service_map.id)
       }
 
-      @datapath.dc_segment_manager.async.prepare_network(network_map, dp_map)
-      @datapath.tunnel_manager.async.prepare_network(network_map, dp_map)
-      @datapath.route_manager.async.prepare_network(network_map, dp_map)
+      @datapath.dc_segment_manager.async.prepare_network(item_map, dp_map)
+      @datapath.tunnel_manager.async.prepare_network(item_map, dp_map)
+      @datapath.route_manager.async.prepare_network(item_map, dp_map)
 
       dispatch_event("network/added",
                      network_id: network.network_id,

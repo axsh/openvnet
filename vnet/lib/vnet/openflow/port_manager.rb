@@ -125,7 +125,7 @@ module Vnet::Openflow
       port.hw_addr = port_desc.hw_addr
       port.ipv4_addr = @datapath.ipv4_address
 
-      network = @datapath.network_manager.add_port(network_uuid: 'nw-public',
+      network = @datapath.network_manager.add_port(uuid: 'nw-public',
                                                    port_number: port.port_number,
                                                    port_mode: :local)
       if network
@@ -140,7 +140,7 @@ module Vnet::Openflow
 
       port.extend(Ports::Host)
 
-      network = @datapath.network_manager.add_port(network_uuid: 'nw-public',
+      network = @datapath.network_manager.add_port(uuid: 'nw-public',
                                                    port_number: port.port_number,
                                                    port_mode: :eth)
       if network
