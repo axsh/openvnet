@@ -9,7 +9,7 @@ Sequel.migration do
       Bignum :ipv4_address
       FalseClass :is_connected, :null=>false, :default => false
       String :dpid, :null=>false
-      String :dc_segment_id, :index => true
+      Integer :dc_segment_id, :index => true
       String :node_id, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
