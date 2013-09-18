@@ -54,7 +54,6 @@ module Vnet::Openflow::Interfaces
 
         install_base(flows)
 
-        # install_base
         # @mac_addresses.each...
 
         if !@mac_addresses.empty?

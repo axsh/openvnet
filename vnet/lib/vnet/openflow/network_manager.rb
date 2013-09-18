@@ -108,7 +108,7 @@ module Vnet::Openflow
 
       if dp_map.nil?
         error log_format('datapath information not found in database')
-        return nil
+        return network
       end
 
       dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:network_id => item_map.id).first.commit

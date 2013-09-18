@@ -156,8 +156,8 @@ describe Vnet::Openflow::TunnelManager do
       expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
         TABLE_FLOOD_TUNNEL_IDS,
         1,
-        {:metadata => 1 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD,
-         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD},
+        {:metadata => 1 | METADATA_TYPE_NETWORK,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
         {:tunnel_id => 1 | TUNNEL_FLAG_MASK},
         {:metadata => 1 | METADATA_TYPE_COLLECTION,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
@@ -188,8 +188,8 @@ describe Vnet::Openflow::TunnelManager do
       expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
         TABLE_FLOOD_TUNNEL_IDS,
         1,
-        {:metadata => 2 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD,
-         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD},
+        {:metadata => 2 | METADATA_TYPE_NETWORK,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
         {:tunnel_id => 2 | TUNNEL_FLAG_MASK},
         {:metadata => 2 | METADATA_TYPE_COLLECTION,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
