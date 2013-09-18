@@ -27,6 +27,13 @@ module Vnet::Openflow::Interfaces
     end
 
     def install
+      return if @port_number.nil?
+
+      flows = []
+
+      install_base(flows)
+
+      @datapath.add_flows(flows)
     end
 
     def update_port_number(new_number)
@@ -43,7 +50,9 @@ module Vnet::Openflow::Interfaces
       @port_number = new_number
 
       if new_number
-        # flows = []
+        flows = []
+
+        install_base(flows)
 
         # install_base
         # @mac_addresses.each...
@@ -52,7 +61,7 @@ module Vnet::Openflow::Interfaces
           info log_format("MAC/IP addresses loaded before port number is set is not yet supported, no flows created.")
         end
 
-        # @datapath.add_flows(flows)
+        @datapath.add_flows(flows)
       end
     end
 
@@ -64,6 +73,19 @@ module Vnet::Openflow::Interfaces
 
     def log_format(message, values = nil)
       "#{@dpid_s} interfaces/vif: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def install_base(flows)
+      flows << flow_create(:classifier,
+                           priority: 2,
+                           match: {
+                             :in_port => @port_number,
+                           },
+                           write_metadata: {
+                             :vif => nil,
+                             :local => nil,
+                           },
+                           goto_table: TABLE_VIF_PORTS)
     end
 
     def install_mac(flows, mac_info)
@@ -91,17 +113,14 @@ module Vnet::Openflow::Interfaces
       #
       # Classifier
       #
-      flows << flow_create(:classifier,
-                           priority: 2,
+      flows << flow_create(:vif_ports_match,
                            match: {
                              :in_port => @port_number,
+                             :eth_src => mac_info[:mac_address],
                            },
                            write_metadata: {
                              :network => ipv4_info[:network_id],
-                             :vif => nil,
-                             :local => nil,
-                           },
-                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+                           })
       flows << flow_create(:host_ports,
                            priority: 30,
                            match: {

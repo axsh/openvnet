@@ -291,6 +291,11 @@ module Vnet::Openflow
         priority = 40
         match_metadata = { :network => params[:network_id] }
         goto_table = TABLE_NETWORK_DST_CLASSIFIER
+      when :vif_ports_match
+        table = TABLE_VIF_PORTS
+        priority = 1
+        write_metadata = { :network => params[:network_id] }
+        goto_table = TABLE_NETWORK_SRC_CLASSIFIER
       else
         return nil
       end
