@@ -32,11 +32,15 @@ module Vnet::Openflow
       @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
         tunnel = MW::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
-        @datapath.add_tunnel(tunnel_name, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
         tunnel.to_hash.tap do |t|
           t[:dst_dpid] = target_dp_map.dpid
           t[:datapath_networks] = []
+          t[:dst_ipv4_address] = target_dp_map.ipv4_address
         end
+      end
+
+      @tunnels.each do |tunnel|
+        @datapath.add_tunnel(tunnel[:display_name], IPAddr.new(tunnel[:dst_ipv4_address], Socket::AF_INET).to_s)
       end
     end
 
