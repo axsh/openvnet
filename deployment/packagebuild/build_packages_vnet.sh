@@ -12,7 +12,7 @@ repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
 possible_archs="i386 noarch x86_64"
-build_time=$(date +%Y%m%d%H%M%S)
+build_time=$(echo ${BUILD_ID:-$(date +%Y%m%d%H%M%S)} | sed -e 's/[^0-9]//g')
 
 function build_all_packages(){
   find ${current_dir}/packages.d/vnet -mindepth 1 -maxdepth 1 -type d | while read line; do
@@ -25,7 +25,8 @@ function build_package(){
   local recipe_dir=${current_dir}/packages.d/vnet/${name}
   local package_work_dir=${work_dir}/packages.d/vnet/${name}
   [[ -f ${recipe_dir}/recipe.rb ]] || {
-    echo "recipe for ${name} not found"; exit 1;
+    echo "error: recipe not found: ${name}"
+    exit 1
   }
   mkdir ${package_work_dir}
   (cd ${recipe_dir}; BUILD_TIME=${build_time} ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
@@ -35,15 +36,16 @@ function build_package(){
 }
 
 function check_repo(){
-  [[ -n ${GIT_COMMIT} ]] && [[ -d ${repo_base_dir}/${GIT_COMMIT} ]] && {
-    echo "${GIT_COMMIT} had already been built."
-    exit 0
-  }
-  repo_dir=${repo_base_dir}/${GIT_COMMIT:-spot}
-  rm -rf ${repo_dir}
+  repo_dir=${repo_base_dir}/${build_time}git$(echo ${GIT_COMMIT:-spot} | cut -c-7)
   mkdir -p ${repo_dir}
   for i in ${possible_archs}; do
     mkdir ${repo_dir}/${i}
+  done
+}
+
+function cleanup(){
+  for s in package-dir-build* package-dir-staging* package-rpm-build*; do
+    find /tmp -mindepth 1 -maxdepth 1 -type d -mtime +1 -name "${s}" -print0 | xargs -0 rm -rf
   done
 }
 
@@ -61,3 +63,5 @@ fi
 (cd ${repo_dir}; createrepo .)
 
 ln -sfn ${repo_dir} ${repo_base_dir}/current
+
+cleanup

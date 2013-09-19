@@ -26,7 +26,7 @@ describe Vnet::Openflow::TunnelManager do
       db_tunnels = Vnet::Models::Datapath.find({:node_id => conf.node.id}).tunnels
       expect(db_tunnels.size).to eq 1
       expect(db_tunnels.first.dst_datapath.node_id).to eq "vna3"
-      expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq "2"
+      expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq 2
 
       expect(subject.tunnels_dup.size).to eq 1
       expect(subject.tunnels_dup.first[:uuid]).to eq db_tunnels.first.canonical_uuid
@@ -155,7 +155,7 @@ describe Vnet::Openflow::TunnelManager do
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
         [{:output => 9}, {:output => 10}],
         {:cookie => 1 | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)})
-                                                          
+
       expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
         TABLE_FLOOD_TUNNEL_IDS,
         1,

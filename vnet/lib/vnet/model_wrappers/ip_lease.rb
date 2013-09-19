@@ -4,7 +4,7 @@ module Vnet::ModelWrappers
   class IpLease < Base
     def to_hash
       network = self.batch.network.commit
-      vif = self.batch.vif.commit
+      vif = self.batch.interface.commit
       ip_address = self.batch.ip_address.commit
       {
         :uuid => self.uuid,

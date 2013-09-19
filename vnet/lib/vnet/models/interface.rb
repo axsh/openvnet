@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-  class Vif < Base
+  class Interface < Base
     taggable 'vif'
     many_to_one :network
 

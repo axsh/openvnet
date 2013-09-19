@@ -19,7 +19,7 @@ describe "/ip_leases" do
 
   describe "POST /" do
     let!(:network) { Fabricate(:network) { uuid "nw-test" } }
-    let!(:vif) { Fabricate(:vif) { uuid "vif-test"} }
+    let!(:vif) { Fabricate(:interface) { uuid "vif-test"} }
     let!(:ip_address) { Fabricate(:ip_address) { uuid "ia-test" } }
 
     accepted_params = {
@@ -37,7 +37,7 @@ describe "/ip_leases" do
 
   describe "PUT /:uuid" do
     let!(:network) { Fabricate(:network) { uuid "nw-test2" } }
-    let!(:vif) { Fabricate(:vif) { uuid "vif-test2"} }
+    let!(:vif) { Fabricate(:interface) { uuid "vif-test2"} }
     let!(:ip_address) { Fabricate(:ip_address) { uuid "ia-test2" } }
 
     accepted_params = {

@@ -6,11 +6,11 @@ module Vnet::Models
 
     many_to_one :network
     many_to_one :ip_address
-    many_to_one :vif
+    many_to_one :interface
 
     dataset_module do
       def join_vifs
-        self.join_table(:inner, :vifs, :vifs__id => :ip_leases__vif_id)
+        self.join_table(:inner, :interfaces, :interfaces__id => :ip_leases__interface_id)
       end
 
       def with_ipv4
