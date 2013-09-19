@@ -26,18 +26,24 @@ describe Vnet::Openflow::Networks::Virtual do
 
     it "has flows for destination filtering" do
       subject.install
-      expect(flows[0]).to eq Vnet::Openflow::Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
-                             :tunnel_id => 1 | TUNNEL_FLAG_MASK
-                           }, nil,
-                           classifier_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
-      expect(flows[1]).to eq Vnet::Openflow::Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 40,
-                           subject.md_network(:network),
-                           nil,
-                           fo_type_md.merge(:goto_table => TABLE_VIRTUAL_SRC))
-      expect(flows[2]).to eq Vnet::Openflow::Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 40,
-                           subject.md_network(:network),
-                           nil,
-                           fo_type_md.merge(:goto_table => TABLE_VIRTUAL_DST))
+      expect(flows[0]).to eq Vnet::Openflow::Flow.create(
+        TABLE_TUNNEL_NETWORK_IDS,
+        30,
+        {:tunnel_id => 1 | TUNNEL_FLAG_MASK},
+        nil,
+        classifier_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
+      expect(flows[1]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_SRC_CLASSIFIER,
+        40,
+        subject.md_network(:network),
+        nil,
+        fo_type_md.merge(:goto_table => TABLE_VIRTUAL_SRC))
+      expect(flows[2]).to eq Vnet::Openflow::Flow.create(
+        TABLE_NETWORK_DST_CLASSIFIER,
+        40,
+        subject.md_network(:network),
+        nil,
+        fo_type_md.merge(:goto_table => TABLE_VIRTUAL_DST))
     end
   end
 end
