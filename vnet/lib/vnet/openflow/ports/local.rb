@@ -17,7 +17,7 @@ module Vnet::Openflow::Ports
       flows = []
 
       if @network_id
-        fo_network_md = flow_options.merge(md_network(:physical_network, :local => nil))
+        fo_network_md = flow_options.merge(md_network(:network, :local => nil))
 
         flows << Flow.create(TABLE_CLASSIFIER, 2, {
                                :in_port => OFPP_LOCAL
@@ -53,7 +53,7 @@ module Vnet::Openflow::Ports
                            }, flow_options)
 
       if @network_id && @ipv4_addr
-        network_md = md_network(:physical_network)
+        network_md = md_network(:network)
 
         flows << Flow.create(TABLE_ROUTER_DST, 40,
                              network_md.merge({ :eth_type => 0x0800,

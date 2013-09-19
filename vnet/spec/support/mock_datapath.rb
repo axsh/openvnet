@@ -17,15 +17,22 @@ class MockDatapath < Vnet::Openflow::Datapath
     @deleted_tunnels = []
   end
 
-  def create_mock_switch
+  def create_datapath_map
+    @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @dpid)]
+  end
+
+  def create_mock_datapath_map
     @datapath_map = OpenStruct.new(dpid: ("0x%016x" % @dpid),
                                    id: 1)
+  end
+
+  def create_mock_switch
+    create_mock_datapath_map
     @switch = MockSwitch.new(self)
   end
 
   def create_mock_port_manager
-    @datapath_map = OpenStruct.new(dpid: ("0x%016x" % @dpid),
-                                   id: 1)
+    create_mock_datapath_map
     @port_manager = MockPortManager.new(self)
   end
 
