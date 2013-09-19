@@ -28,7 +28,7 @@ module Vnet::Openflow::Ports
                            set_remote_md.merge(:goto_table => TABLE_HOST_PORTS))
 
       if @network_id
-        fo_network_md = flow_options.merge(md_network(:physical_network))
+        fo_network_md = flow_options.merge(md_network(:network))
         flows << Flow.create(TABLE_HOST_PORTS, 10, {
                                :in_port => self.port_number
                              }, nil,

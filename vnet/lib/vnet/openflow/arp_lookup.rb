@@ -27,6 +27,18 @@ module Vnet::Openflow
     end
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
+      flows << flow_create(:controller_port,
+                           priority: 40,
+                           match: {
+                             :eth_src => mac_info[:mac_address],
+                             :eth_type => 0x0806,
+                             :arp_spa => ipv4_info[:ipv4_address],
+                           },
+                           write_metadata: {
+                             :network => ipv4_info[:network_id],
+                           },
+                           goto_table: TABLE_NETWORK_DST_CLASSIFIER,
+                           cookie: @arp_lookup[:lookup_cookie])
       flows << flow_create(:catch_arp_lookup,
                            match: {
                              :eth_src => mac_info[:mac_address],
@@ -39,7 +51,8 @@ module Vnet::Openflow
     def arp_lookup_lookup_packet_in(message)
       port_number = message.match.in_port
 
-      debug "arp_lookup_lookup_packet_in: port_number:#{port_number} ipv4_dst:#{message.ipv4_dst}"
+      debug log_format('arp_lookup_lookup_packet_in',
+                       "port_number:#{port_number} ipv4_dst:#{message.ipv4_dst}")
 
       # Check if the address is in the same network, or if we need
       # to look up a gateway mac address.
@@ -72,7 +85,8 @@ module Vnet::Openflow
     def arp_lookup_reply_packet_in(message)
       port_number = message.match.in_port
 
-      debug "arp_lookup_reply_packet_in: port_number:#{port_number} arp_spa:#{message.arp_spa}"
+      debug log_format('arp_lookup_reply_packet_in',
+                       "port_number:#{port_number} arp_spa:#{message.arp_spa}")
 
       mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
                                              ipv4_address: message.arp_tpa)
@@ -121,10 +135,11 @@ module Vnet::Openflow
         arp_lookup_process_timeout(params)
       }
 
-      debug "arp_lookup: process timeout (ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]})"
+      debug log_format('arp_lookup: process timeout',
+                       "ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]}")
 
       packet_arp_out({ :out_port => OFPP_TABLE,
-                       :in_port => OFPP_LOCAL,
+                       :in_port => OFPP_CONTROLLER,
                        :eth_src => params[:interface_mac],
                        :op_code => Racket::L3::ARP::ARPOP_REQUEST,
                        :sha => params[:interface_mac],

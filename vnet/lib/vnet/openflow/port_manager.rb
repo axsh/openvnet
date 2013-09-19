@@ -125,7 +125,7 @@ module Vnet::Openflow
       port.hw_addr = port_desc.hw_addr
       port.ipv4_addr = @datapath.ipv4_address
 
-      network = @datapath.network_manager.add_port(network_uuid: 'nw-public',
+      network = @datapath.network_manager.add_port(uuid: 'nw-public',
                                                    port_number: port.port_number,
                                                    port_mode: :local)
       if network
@@ -140,7 +140,7 @@ module Vnet::Openflow
 
       port.extend(Ports::Host)
 
-      network = @datapath.network_manager.add_port(network_uuid: 'nw-public',
+      network = @datapath.network_manager.add_port(uuid: 'nw-public',
                                                    port_number: port.port_number,
                                                    port_mode: :eth)
       if network
@@ -175,33 +175,7 @@ module Vnet::Openflow
       @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                           datapath_id: @datapath.datapath_map.id)
 
-      interface.mac_addresses.each { |mac_address, mac_info|
-        port.hw_addr = Trema::Mac.new(mac_info[:mac_address])
-
-        mac_info[:ipv4_addresses].each { |ip_info|
-          port.ipv4_addr = IPAddr.new(ip_info[:ipv4_address], Socket::AF_INET)
-
-          network = @datapath.network_manager.add_port(network_id: ip_info[:network_id],
-                                                       port_number: port.port_number,
-                                                       port_mode: :vif)
-
-          if network
-            case network[:type]
-            when :physical then port.extend(Ports::Physical)
-            when :virtual  then port.extend(Ports::Virtual)
-            else
-              raise("Unknown network type.")
-            end
-
-            port.network_id = network[:id]
-          end
-
-          # Only support one ip address for now.
-          break
-        }
-        break
-      }
-
+      port.extend(Ports::Vif)
       port.install
     end
 

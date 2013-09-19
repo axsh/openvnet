@@ -137,8 +137,7 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :interface => @id
                            },
-                           goto_table: TABLE_INTERFACE_SIMULATED,
-                           cookie: self.cookie)
+                           goto_table: TABLE_INTERFACE_SIMULATED)
       flows << flow_create(:network_dst,
                            priority: 80,
                            match: {
@@ -151,8 +150,7 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :interface => @id
                            },
-                           goto_table: TABLE_INTERFACE_SIMULATED,
-                           cookie: self.cookie)
+                           goto_table: TABLE_INTERFACE_SIMULATED)
       flows << flow_create(:catch_flood_simulated,
                            match: {
                              :eth_type => 0x0806,

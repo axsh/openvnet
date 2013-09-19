@@ -48,7 +48,7 @@ module Vnet::Openflow::Services
                                                                          ipv4_address: ipv4_address)
       return nil if ipv4_info.nil?
 
-      [mac_info, ipv4_info, @datapath.network_manager.network_by_id(ipv4_info[:network_id])]
+      [mac_info, ipv4_info, @datapath.network_manager.item(id: ipv4_info[:network_id])]
     end
 
   end

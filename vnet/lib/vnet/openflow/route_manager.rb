@@ -247,7 +247,7 @@ module Vnet::Openflow
           @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                               datapath_id: datapath_id)
         else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id
+          vif[:use_datapath_id] = interface.owner_datapath_id
         end
       end
 
@@ -272,10 +272,7 @@ module Vnet::Openflow
       subnet_src = match_ipv4_subnet_src(route[:ipv4_address], route[:ipv4_prefix])
 
       if route[:vif][:use_datapath_id].nil?
-        nw_hash = {route[:vif][:network_type] => route[:vif][:network_id]}
-
-        network_md = md_create(nw_hash)
-        nw_no_controller_md = md_create(nw_hash.merge(:no_controller => nil))
+        network_md = md_create(network: route[:vif][:network_id])
 
         rl_reflection_md = md_create({ :route_link => route_link[:id],
                                        :reflection => nil
@@ -284,9 +281,8 @@ module Vnet::Openflow
         flows << Flow.create(TABLE_CONTROLLER_PORT, priority,
                              subnet_dst.merge(:eth_src => route[:vif][:mac_address]),
                              nil,
-                             nw_no_controller_md.merge({ :cookie => cookie,
-                                                         :goto_table => TABLE_ROUTER_DST
-                                                       }))
+                             network_md.merge(cookie: cookie,
+                                              goto_table: TABLE_ROUTER_DST))
 
         if route[:ingress] == true
           flows << Flow.create(TABLE_ROUTER_INGRESS, priority,
@@ -353,17 +349,15 @@ module Vnet::Openflow
                              :ipv4_dst => vif[:ipv4_address]
                            },
                            nil,
-                           controller_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTER_CLASSIFIER
-                                               }))
+                           network_md.merge(cookie: cookie,
+                                            goto_table: TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
                              :eth_dst => vif[:mac_address],
                              :eth_type => 0x0806
                            },
                            nil,
-                           controller_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTER_CLASSIFIER
-                                               }))
+                           network_md.merge(cookie: cookie,
+                                            goto_table: TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 30,
                            network_md.merge({ :eth_dst => vif[:mac_address],
                                               :eth_type => 0x0800

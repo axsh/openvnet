@@ -92,7 +92,7 @@ module Vnet::Openflow
         network_id = ip_lease.network_id
         next if network_id.nil?
 
-        network_info = @datapath.network_manager.network_by_id(network_id)
+        network_info = @datapath.network_manager.item(id: network_id)
         next if network_info.nil?
 
         interface.add_ipv4_address(mac_address: mac_address,
