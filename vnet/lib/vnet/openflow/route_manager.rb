@@ -25,7 +25,7 @@ module Vnet::Openflow
       return if route_link.nil?
       return if route_link[:routes].has_key? route_map.id
 
-      info log_format('insert', "id:#{route_map.id} uuid:#{route_map.uuid} vif_id:#{route_map.vif_id}")
+      info log_format('insert', "id:#{route_map.id} uuid:#{route_map.uuid} vif_id:#{route_map.interface_id}")
       info log_format('insert', "route.route_type:#{route_map.route_type}")
       info log_format('insert', "route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}")
 
@@ -41,7 +41,7 @@ module Vnet::Openflow
 
       route_link[:routes][route[:id]] = route
 
-      route[:vif] = prepare_interface(route_map.vif_id)
+      route[:vif] = prepare_interface(route_map.interface_id)
 
       if route[:vif].nil?
         warn log_format('couldn\'t prepare router vif', "#{route_map.uuid}")
@@ -247,7 +247,7 @@ module Vnet::Openflow
           @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                               datapath_id: datapath_id)
         else
-          vif[:use_datapath_id] = vif_map.owner_datapath_id
+          vif[:use_datapath_id] = interface.owner_datapath_id
         end
       end
 
