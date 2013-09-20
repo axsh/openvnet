@@ -2,6 +2,9 @@
 
 module Vnet::Openflow::Interfaces
 
+  # Simulated interfaces does all packet handling using the OpenFlow
+  # controller.
+
   class Simulated < Base
     include Vnet::Openflow::ArpLookup
 
@@ -19,10 +22,7 @@ module Vnet::Openflow::Interfaces
                             reply_cookie: self.cookie(TAG_ARP_REPLY))
     end
 
-    def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
-    end
-
+    # TODO: Refactor this for all classes...
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
@@ -118,6 +118,10 @@ module Vnet::Openflow::Interfaces
 
     private
 
+    def log_format(message, values = nil)
+      "#{@dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
+    end
+
     # TODO: Separate the mac-only flows and add those when
     # add_mac_address is called.
     def install_ipv4(mac_info, ipv4_info)
@@ -137,8 +141,7 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :interface => @id
                            },
-                           goto_table: TABLE_INTERFACE_SIMULATED,
-                           cookie: self.cookie)
+                           goto_table: TABLE_INTERFACE_SIMULATED)
       flows << flow_create(:network_dst,
                            priority: 80,
                            match: {
@@ -151,8 +154,7 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :interface => @id
                            },
-                           goto_table: TABLE_INTERFACE_SIMULATED,
-                           cookie: self.cookie)
+                           goto_table: TABLE_INTERFACE_SIMULATED)
       flows << flow_create(:catch_flood_simulated,
                            match: {
                              :eth_type => 0x0806,

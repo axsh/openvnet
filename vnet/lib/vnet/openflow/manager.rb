@@ -9,6 +9,7 @@ module Vnet::Openflow
 
     def initialize(dp)
       @datapath = dp
+      @datapath_id = nil
       @items = {}
 
       @dpid = @datapath.dpid
@@ -25,6 +26,17 @@ module Vnet::Openflow
       nil
     end
 
+    def set_datapath_id(datapath_id)
+      if @datapath_id
+        raise("Manager.set_datapath_id called twice.")
+      end
+
+      @datapath_id = datapath_id
+      
+      # We need to update remote interfaces in case they are now in
+      # our datapath.
+    end
+
     #
     # Internal methods:
     #
@@ -36,18 +48,16 @@ module Vnet::Openflow
     end
 
     def item_by_params(params)
-      item = item_by_params_direct(params)
+      if params[:reinitialize] != true
+        item = item_by_params_direct(params)
 
-      if (item && params[:reinitialize] == false) || params[:dynamic_load] == false
-        return item
+        if item || params[:dynamic_load] == false
+          return item
+        end
       end
 
-      select = case
-               when params[:id]   then {:id => params[:id]}
-               when params[:uuid] then params[:uuid]
-               else
-                 raise("Missing item id/uuid parameter.")
-               end
+      select = select_filter_from_params(params)
+      return nil if select.nil?
 
       # After the db query, avoid yielding method calls until the item
       # is added to the items list and 'install' method is
@@ -86,10 +96,22 @@ module Vnet::Openflow
       case
       when params[:id] then return @items[params[:id]]
       when params[:uuid]
-        item = @items.detect { |id, item| item.uuid == params[:uuid] }
+        uuid = params[:uuid]
+        item = @items.detect { |id, item| item.uuid == uuid }
         return item && item[1]
       else
         raise("Missing item id/uuid parameter.")
+      end
+    end
+
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
       end
     end
 

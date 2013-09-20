@@ -88,15 +88,8 @@ module Vnet::Openflow
 
   end
 
-  module FlowHelpers
+  module MetadataHelpers
     include Vnet::Constants::Openflow
-
-    # Add Flow to the namespace of classes outside of Vnet::Openflow.
-    Flow = Flow
-
-    #
-    # Metadata helper methods:
-    #
 
     def md_create(options)
       metadata = 0
@@ -112,9 +105,6 @@ module Vnet::Openflow
         when :datapath
           metadata = metadata | value | METADATA_TYPE_DATAPATH
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
-        when :flood
-          metadata = metadata | METADATA_FLAG_FLOOD
-          metadata_mask = metadata_mask | METADATA_FLAG_FLOOD
         when :interface
           metadata = metadata | value | METADATA_TYPE_INTERFACE
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
@@ -136,12 +126,6 @@ module Vnet::Openflow
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :physical
-          metadata = metadata | METADATA_FLAG_PHYSICAL
-          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
-        when :physical_network
-          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_PHYSICAL
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :reflection
           metadata = metadata | METADATA_FLAG_REFLECTION
           metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
@@ -154,12 +138,6 @@ module Vnet::Openflow
         when :tunnel
           metadata = metadata | METADATA_FLAG_TUNNEL
           metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
-        when :virtual
-          metadata = metadata | METADATA_FLAG_VIRTUAL
-          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
-        when :virtual_network
-          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_VIRTUAL
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :vif
           metadata = metadata | METADATA_FLAG_VIF
           metadata_mask = metadata_mask | METADATA_FLAG_VIF
@@ -206,6 +184,14 @@ module Vnet::Openflow
       
       metadata & METADATA_VALUE_MASK
     end
+
+  end
+
+  module FlowHelpers
+    include MetadataHelpers
+
+    # Add Flow to the namespace of classes outside of Vnet::Openflow.
+    Flow = Flow
 
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
@@ -280,17 +266,37 @@ module Vnet::Openflow
         priority = 70
         actions = { :output => Controller::OFPP_CONTROLLER }
         match_metadata = { :network => params[:network_id] }
+      when :controller_port
+        table = TABLE_CONTROLLER_PORT
+      when :classifier
+        table = TABLE_CLASSIFIER
+      when :host_ports
+        table = TABLE_HOST_PORTS
       when :network_dst
         table = table_network_dst(params[:network_type])
         match_metadata = { :network => params[:network_id] }
       when :network_src
         table = table_network_src(params[:network_type])
         match_metadata = { :network => params[:network_id] }
+      when :network_src_arp_drop
+        table = table_network_src(params[:network_type])
+        priority = 85
+        match_metadata = { :network => params[:network_id] }
+      when :network_src_arp_match
+        table = table_network_src(params[:network_type])
+        priority = 86
+        match_metadata = { :network => params[:network_id] }
+        goto_table = TABLE_ROUTER_CLASSIFIER
       when :router_dst_match
         table = TABLE_ROUTER_DST
         priority = 40
         match_metadata = { :network => params[:network_id] }
         goto_table = TABLE_NETWORK_DST_CLASSIFIER
+      when :vif_ports_match
+        table = TABLE_VIF_PORTS
+        priority = 1
+        write_metadata = { :network => params[:network_id] }
+        goto_table = TABLE_NETWORK_SRC_CLASSIFIER
       else
         return nil
       end
@@ -304,9 +310,8 @@ module Vnet::Openflow
 
       write_metadata = params[:write_metadata] if params[:write_metadata]
 
-      instructions = {
-        :cookie => params[:cookie]
-      }
+      instructions = {}
+      instructions[:cookie] = params[:cookie] || self.cookie
       instructions[:goto_table] = goto_table if goto_table
       instructions.merge!(md_create(write_metadata)) if write_metadata
 

@@ -147,10 +147,11 @@ module Vnet
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :Flow, 'vnet/openflow/flow'
-    autoload :FlowHelpers, 'vnet/openflow/flow'
+    autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
     autoload :Manager, 'vnet/openflow/manager'
+    autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHandler, 'vnet/openflow/packet_handler'
@@ -167,6 +168,7 @@ module Vnet
     module Interfaces
       autoload :Base, 'vnet/openflow/interfaces/base'
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
+      autoload :Remote, 'vnet/openflow/interfaces/remote'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
     end
 
@@ -180,9 +182,8 @@ module Vnet
       autoload :Base, 'vnet/openflow/ports/base'
       autoload :Host, 'vnet/openflow/ports/host'
       autoload :Local, 'vnet/openflow/ports/local'
-      autoload :Physical, 'vnet/openflow/ports/physical'
       autoload :Tunnel, 'vnet/openflow/ports/tunnel'
-      autoload :Virtual, 'vnet/openflow/ports/virtual'
+      autoload :Vif, 'vnet/openflow/ports/vif'
     end
 
     module Routers

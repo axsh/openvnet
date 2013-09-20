@@ -57,7 +57,7 @@ module Vnet::Openflow
 
       cookie = network_map.network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       flow_options = {:cookie => cookie}
-      nw_virtual_md = flow_options.merge(md_create(:virtual_network => network_map.network_id))
+      nw_virtual_md = flow_options.merge(md_create(:network => network_map.network_id))
 
       dpn = network_map.batch.datapath_networks_dataset.on_specific_datapath(dp_map).first.commit
 
@@ -98,13 +98,11 @@ module Vnet::Openflow
       flood_actions << {:eth_dst => MAC_BROADCAST} unless flood_actions.empty?
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_SEGMENT, 1,
-                           md_create({ :network => network_id,
-                                       :flood => nil
-                                     }),
+      flows << Flow.create(TABLE_FLOOD_SEGMENT, 1,
+                           md_create(network: network_id),
                            flood_actions, {
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
-                             :goto_table => TABLE_METADATA_TUNNEL_IDS
+                             :goto_table => TABLE_FLOOD_TUNNEL_IDS
                            })
 
       @datapath.add_flows(flows)

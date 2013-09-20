@@ -149,7 +149,7 @@ describe Vnet::Openflow::TunnelManager do
       expect(datapath.added_flows.size).to eq 2
 
       expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
-        TABLE_METADATA_TUNNEL_PORTS,
+        TABLE_FLOOD_TUNNEL_PORTS,
         1,
         {:metadata => 1 | METADATA_TYPE_COLLECTION,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
@@ -157,15 +157,15 @@ describe Vnet::Openflow::TunnelManager do
         {:cookie => 1 | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)})
 
       expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
-        TABLE_METADATA_TUNNEL_IDS,
+        TABLE_FLOOD_TUNNEL_IDS,
         1,
-        {:metadata => 1 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD,
-         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD},
+        {:metadata => 1 | METADATA_TYPE_NETWORK,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
         {:tunnel_id => 1 | TUNNEL_FLAG_MASK},
         {:metadata => 1 | METADATA_TYPE_COLLECTION,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
          :cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
-         :goto_table => TABLE_METADATA_TUNNEL_PORTS})
+         :goto_table => TABLE_FLOOD_TUNNEL_PORTS})
     end
 
     it "should add flood flow for network 2" do
@@ -181,7 +181,7 @@ describe Vnet::Openflow::TunnelManager do
       expect(datapath.added_flows.size).to eq 2
 
       expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
-        TABLE_METADATA_TUNNEL_PORTS,
+        TABLE_FLOOD_TUNNEL_PORTS,
         1,
         {:metadata => 2 | METADATA_TYPE_COLLECTION,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
@@ -189,15 +189,15 @@ describe Vnet::Openflow::TunnelManager do
         {:cookie => 2 | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)})
 
       expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
-        TABLE_METADATA_TUNNEL_IDS,
+        TABLE_FLOOD_TUNNEL_IDS,
         1,
-        {:metadata => 2 | METADATA_TYPE_NETWORK | METADATA_FLAG_FLOOD,
-         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_FLOOD},
+        {:metadata => 2 | METADATA_TYPE_NETWORK,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
         {:tunnel_id => 2 | TUNNEL_FLAG_MASK},
         {:metadata => 2 | METADATA_TYPE_COLLECTION,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
          :cookie => 2 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
-         :goto_table => TABLE_METADATA_TUNNEL_PORTS})
+         :goto_table => TABLE_FLOOD_TUNNEL_PORTS})
     end
 
   end

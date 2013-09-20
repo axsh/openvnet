@@ -6,6 +6,8 @@ module Vnet::Openflow::Networks
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
+    Flow = Vnet::Openflow::Flow
+
     attr_reader :datapath
     attr_reader :network_id
     attr_reader :uuid
