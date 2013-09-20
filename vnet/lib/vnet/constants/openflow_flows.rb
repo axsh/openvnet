@@ -23,13 +23,15 @@ module Vnet
       # Match MAC and IPv4 address of vifs to the proper network.
       TABLE_VIF_PORTS = 5
 
+      TABLE_LOCAL_PORT = 6
+
       # For packets explicitly marked as being from the controller.
       #
       # Some packets are handed to the controller after modifications,
       # and as such can't be handled again by the classifier in the
       # normal fashion. The in_port is explicitly set to
       # OFPP_CONTROLLER.
-      TABLE_CONTROLLER_PORT = 6
+      TABLE_CONTROLLER_PORT = 7
 
       # Initial verification of network number and application of global
       # filtering rules.

@@ -44,9 +44,6 @@ module Vnet::Openflow::Services
     end
 
     def packet_in(message)
-      port_number = message.match.in_port
-      port = @datapath.port_manager.port_by_port_number(port_number)
-
       debug log_format('packet_in received')
 
       dhcp_in, message_type = parse_dhcp_packet(message)
@@ -57,10 +54,13 @@ module Vnet::Openflow::Services
       mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
       return if network.nil?
 
+      client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
+      return if client_info.nil?
+
       params = {
         :xid => dhcp_in.xid,
-        :yiaddr => port[:ipv4_address],
-        :chaddr => port[:mac_address],
+        :yiaddr => client_info[1][:ipv4_address],
+        :chaddr => client_info[0][:mac_address],
         :ipv4_address => ipv4_info[:ipv4_address],
         :ipv4_network => network[:ipv4_network],
         :ipv4_prefix => network[:ipv4_prefix],
@@ -88,8 +88,8 @@ module Vnet::Openflow::Services
                        :eth_src => mac_info[:mac_address],
                        :src_ip => ipv4_info[:ipv4_address],
                        :src_port => 67,
-                       :eth_dst => port[:mac_address],
-                       :dst_ip => port[:ipv4_address],
+                       :eth_dst => client_info[0][:mac_address],
+                       :dst_ip => client_info[1][:ipv4_address],
                        :dst_port => 68,
                        :payload => dhcp_out.pack
                      })
@@ -103,6 +103,20 @@ module Vnet::Openflow::Services
 
     def log_format(message, values = nil)
       "#{@dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def find_client_infos(port_number, server_mac_info, server_ipv4_info)
+      interface = @datapath.interface_manager.item(port_number: port_number)
+      return [] if interface.nil?
+
+      client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
+      
+      # info log_format("find_client_info", "#{interface.inspect}")
+      # info log_format("find_client_info", "server_mac_info:#{server_mac_info.inspect}")
+      # info log_format("find_client_info", "server_ipv4_info:#{server_ipv4_info.inspect}")
+      # info log_format("find_client_info", "client_infos:#{client_infos.inspect}")
+
+      client_infos
     end
 
     def parse_dhcp_packet(message)
