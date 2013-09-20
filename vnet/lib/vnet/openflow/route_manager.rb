@@ -200,7 +200,7 @@ module Vnet::Openflow
       vif = interface && @vifs[interface.id]
       return vif if vif
 
-      if interface.mode != :simulated
+      if interface.mode != :simulated && interface.mode != :remote
         info log_format('only vifs with mode \'simulated\' are supported', "uuid:#{interface.uuid} mode:#{interface.mode}")
         return
       end
@@ -220,6 +220,7 @@ module Vnet::Openflow
         :use_datapath_id => nil,
 
         :mac_address => mac_info[0],
+        :mode => interface.mode,
 
         :network_id => ipv4_info[:network_id],
         :ipv4_address => ipv4_info[:ipv4_address],
@@ -239,6 +240,12 @@ module Vnet::Openflow
 
       @vifs[interface.id] = vif
 
+      if interface.mode == :remote
+        vif[:use_datapath_id] = interface.owner_datapath_ids && interface.owner_datapath_ids.first
+
+        return vif
+      end
+
       datapath_id = @datapath.datapath_map.id
 
       # Fix this...
@@ -247,7 +254,7 @@ module Vnet::Openflow
           @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                               datapath_id: datapath_id)
         else
-          vif[:use_datapath_id] = interface.owner_datapath_id
+          vif[:use_datapath_id] = interface.owner_datapath_ids.first
         end
       end
 

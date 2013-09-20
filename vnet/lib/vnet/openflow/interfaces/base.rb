@@ -13,6 +13,8 @@ module Vnet::Openflow::Interfaces
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
 
+    attr_reader :port_number
+
     def initialize(params)
       @datapath = params[:datapath]
       @manager = params[:manager]
@@ -28,8 +30,26 @@ module Vnet::Openflow::Interfaces
 
       @mac_addresses = {}
 
-      @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
-      @owner_datapath_ids = map.owner_datapath_id ? [map.owner_datapath_id] : nil
+      # The 'owner_datapath_ids' set has two possible states; the set
+      # can contain zero or more datapaths that can activate this
+      # interface, or if nil it can either be activated by any
+      # datapath or should be active on all relevant datapaths.
+      #
+      # The 'active_datapath_ids' set has several possible states,
+      # some depending on the interface type; the set can contain zero
+      # or more datapaths on which the interface is active, or if nil
+      # it is interface dependent.
+      #
+      # Note, currently we're using a single value in the db and as
+      # such the implementation below is subject to change.
+
+      if map.owner_datapath_id
+        @owner_datapath_ids = [map.owner_datapath_id]
+        @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : []
+      else
+        @owner_datapath_ids = nil
+        @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
+      end
     end
     
     def cookie(tag = nil)

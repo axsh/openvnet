@@ -88,15 +88,8 @@ module Vnet::Openflow
 
   end
 
-  module FlowHelpers
+  module MetadataHelpers
     include Vnet::Constants::Openflow
-
-    # Add Flow to the namespace of classes outside of Vnet::Openflow.
-    Flow = Flow
-
-    #
-    # Metadata helper methods:
-    #
 
     def md_create(options)
       metadata = 0
@@ -191,6 +184,14 @@ module Vnet::Openflow
       
       metadata & METADATA_VALUE_MASK
     end
+
+  end
+
+  module FlowHelpers
+    include MetadataHelpers
+
+    # Add Flow to the namespace of classes outside of Vnet::Openflow.
+    Flow = Flow
 
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
