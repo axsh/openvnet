@@ -12,7 +12,7 @@ repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
 possible_archs="i386 noarch x86_64"
-build_time=$(echo ${BUILD_TIME:-$(date +%Y%m%d%H%M%S)} | sed -e 's/[^0-9]//g')
+build_time=$(echo ${BUILD_ID:-$(date +%Y%m%d%H%M%S)} | sed -e 's/[^0-9]//g')
 
 function build_all_packages(){
   find ${current_dir}/packages.d/vnet -mindepth 1 -maxdepth 1 -type d | while read line; do
