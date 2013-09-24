@@ -71,18 +71,18 @@ module Vnet::Openflow::Routers
           :ip_leases__network_id => route[:network_id],
           :ip_addresses__ipv4_address => ipv4_dst.to_i
         }
-        ip_lease = MW::IpLease.batch.dataset.with_ipv4.where(filter_args).first.commit(:fill => :vif)
+        ip_lease = MW::IpLease.batch.dataset.with_ipv4.where(filter_args).first.commit(:fill => :interface)
 
-        if ip_lease.nil? || ip_lease.vif.nil?
+        if ip_lease.nil? || ip_lease.interface.nil?
           return unreachable_ip(message, "no vif found", :no_vif)
         end
 
-        if ip_lease.vif.active_datapath_id.nil?
+        if ip_lease.interface.active_datapath_id.nil?
           return unreachable_ip(message, "no active datapath for vif found", :inactive_vif)
         end
 
         debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{ipv4_dst}" % message.cookie)
-        
+
         route_packets(message, ip_lease)
         send_packet(message)
 
@@ -116,7 +116,7 @@ module Vnet::Openflow::Routers
           :goto_table => TABLE_ARP_LOOKUP,
           :cookie => cookie
         }
-      end                  
+      end
 
       if is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix])
         priority = 30
@@ -148,7 +148,7 @@ module Vnet::Openflow::Routers
     # ip address. The output datapath route link table will figure out
     # for us if the output port should be a MAC2MAC or tunnel port.
     def route_packets(message, ip_lease)
-      actions_md = md_create({ :datapath => ip_lease.vif.active_datapath_id,
+      actions_md = md_create({ :datapath => ip_lease.interface.active_datapath_id,
                                :reflection => nil
                              })
 
@@ -191,12 +191,12 @@ module Vnet::Openflow::Routers
       # Set the in_port to OFPP_CONTROLLER since the packets stored
       # have already been processed by TABLE_CLASSIFIER to
       # TABLE_ROUTER_DST, and as such no longer match the fields
-      # required by the old in_port. 
+      # required by the old in_port.
       #
       # The route link is identified by eth_dst, which was set in
       # TABLE_ROUTER_EGRESS prior to be sent to the controller.
       message.match.in_port = OFPP_CONTROLLER
-      
+
       @datapath.send_packet_out(message, OFPP_TABLE)
     end
 

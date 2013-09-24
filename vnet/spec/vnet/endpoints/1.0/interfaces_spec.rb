@@ -8,10 +8,10 @@ def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
-describe "/vifs" do
-  let(:api_suffix)  { "vifs" }
-  let(:fabricator)  { :vif }
-  let(:model_class) { Vnet::Models::Vif }
+describe "/interfaces" do
+  let(:api_suffix)  { "interfaces" }
+  let(:fabricator)  { :interface }
+  let(:model_class) { Vnet::Models::Interface }
 
   include_examples "GET /"
   include_examples "GET /:uuid"
