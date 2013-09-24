@@ -45,7 +45,7 @@ function check_repo(){
 
 function cleanup(){
   for s in package-dir-build* package-dir-staging* package-rpm-build*; do
-    find /tmp -mindepth 1 -maxdepth 1 -mtime +1 -name "${s}" -print0 | xargs -0 rm -rf
+    find /tmp -mindepth 1 -maxdepth 1 -type d -mtime +1 -name "${s}" -print0 | xargs -0 rm -rf
   done
 }
 
