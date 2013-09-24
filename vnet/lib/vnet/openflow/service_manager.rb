@@ -31,7 +31,7 @@ module Vnet::Openflow
     def create_item(item_map, params)
       return nil if item_map.nil?
 
-      interface = @datapath.interface_manager.item(:id => item_map.vif_id)
+      interface = @datapath.interface_manager.item(:id => item_map.interface_id)
       return nil if interface.nil?
       
       item = @items[item_map.id]

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::ModelWrappers
-  class Vif < Base
+  class Interface < Base
     include Helpers::IPv4
     include Helpers::MacAddr
 

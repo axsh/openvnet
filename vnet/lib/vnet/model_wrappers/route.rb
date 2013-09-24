@@ -6,7 +6,7 @@ module Vnet::ModelWrappers
     include Helpers::IPv4
 
     def to_hash
-      vif = self.batch.vif.commit
+      vif = self.batch.interface.commit
       {
         :uuid => self.uuid,
         :route_link_uuid => self.batch.route_link.commit.uuid,
