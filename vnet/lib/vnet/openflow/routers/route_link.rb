@@ -74,14 +74,15 @@ module Vnet::Openflow::Routers
         ip_lease = MW::IpLease.batch.dataset.with_ipv4.where(filter_args).first.commit(:fill => :interface)
 
         if ip_lease.nil? || ip_lease.interface.nil?
-          return unreachable_ip(message, "no interface found", :no_interface)
+          return unreachable_ip(message, "no vif found", :no_vif)
         end
 
         if ip_lease.interface.active_datapath_id.nil?
-          return unreachable_ip(message, "no active datapath for interface found", :inactive_interface)
+          return unreachable_ip(message, "no active datapath for vif found", :inactive_vif)
         end
 
         debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{ipv4_dst}" % message.cookie)
+
         route_packets(message, ip_lease)
         send_packet(message)
 
@@ -103,14 +104,13 @@ module Vnet::Openflow::Routers
     def create_destination_flow(route)
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
-      if route[:require_interface] == true
-        catch_route_md = md_create({ route[:network_type] => route[:network_id],
-                                     :not_no_controller => nil
-                                   })
+      if route[:require_vif] == true
+        catch_route_md = md_create(network: route[:network_id],
+                                   not_no_controller: nil)
         actions = { :output => OFPP_CONTROLLER }
         instructions = { :cookie => cookie }
       else
-        catch_route_md = md_create(route[:network_type] => route[:network_id])
+        catch_route_md = md_create(network: route[:network_id])
         actions = nil
         instructions = {
           :goto_table => TABLE_ARP_LOOKUP,

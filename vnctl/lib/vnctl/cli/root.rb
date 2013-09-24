@@ -10,9 +10,13 @@ module Vnctl::Cli
     }
 
     vnctl_register(C::Datapath, "datapaths")
+    vnctl_register(C::IpAddress, "ip addresses")
+    vnctl_register(C::IpLease, "ip leases")
+    vnctl_register(C::MacLease, "mac leases")
     vnctl_register(C::Network, "networks")
     vnctl_register(C::NetworkService, "network services")
+    vnctl_register(C::Route, "routes")
     vnctl_register(C::RouteLink, "route links")
-    vnctl_register(C::Routes, "routes")
+    vnctl_register(C::Vif, "vifs")
   end
 end

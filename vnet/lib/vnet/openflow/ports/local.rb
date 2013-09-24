@@ -16,14 +16,11 @@ module Vnet::Openflow::Ports
     def install
       flows = []
 
-      if @network_id
-        fo_network_md = flow_options.merge(md_network(:physical_network, :local => nil))
-
-        flows << Flow.create(TABLE_CLASSIFIER, 2, {
-                               :in_port => OFPP_LOCAL
-                             }, nil,
-                             fo_network_md.merge(:goto_table => TABLE_NETWORK_CLASSIFIER))
-      end
+      fo_local_md = flow_options.merge(md_create(local: nil))
+      flows << Flow.create(TABLE_CLASSIFIER, 2, {
+                             :in_port => OFPP_LOCAL
+                           }, nil,
+                           fo_local_md.merge(:goto_table => TABLE_LOCAL_PORT))
 
       # Some flows depend on only local being able to send packets
       # with the local mac and ip address, so drop those.
@@ -53,7 +50,7 @@ module Vnet::Openflow::Ports
                            }, flow_options)
 
       if @network_id && @ipv4_addr
-        network_md = md_network(:physical_network)
+        network_md = md_network(:network)
 
         flows << Flow.create(TABLE_ROUTER_DST, 40,
                              network_md.merge({ :eth_type => 0x0800,
@@ -61,7 +58,7 @@ module Vnet::Openflow::Ports
                                               }), {
                                :eth_dst => @hw_addr
                              },
-                             flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+                             flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       end
 
       self.datapath.add_flows(flows)

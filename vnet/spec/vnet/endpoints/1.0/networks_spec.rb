@@ -1,160 +1,101 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+Dir["#{File.dirname(__FILE__)}/matchers/*.rb"].map {|f| require f }
 
 def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
 describe "/networks" do
-  describe "GET /" do
-    context "with no networks in the database" do
-      it "should return empty json" do
-        get "/networks"
+  let(:api_suffix)  { "networks" }
+  let(:fabricator)  { :network }
+  let(:model_class) { Vnet::Models::Network }
 
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body).to be_empty
-      end
-    end
-
-    context "with 3 networks in the database" do
-      before(:each) {
-        3.times do
-          Fabricate(:network) do
-            ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
-          end
-        end
-      }
-
-      it "should return 3 networks" do
-        get "/networks"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body.size).to eq 3
-      end
-    end
-  end
-
-  describe "GET /:uuid" do
-    context "with a non existing uuid" do
-      it "should return 404 error" do
-        get "/networks/nw-notfound"
-        expect(last_response).to be_not_found
-      end
-    end
-
-    context "with an existing uuid" do
-      let!(:network) { Fabricate(:network) }
-
-      it "should return a network" do
-        get "/networks/#{network.canonical_uuid}"
-
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq network.canonical_uuid
-      end
-    end
-  end
+  include_examples "GET /"
+  include_examples "GET /:uuid"
+  include_examples "DELETE /:uuid"
 
   describe "POST /" do
-    context "without the uuid parameter" do
-      it "should create a network" do
-        params = {
-          display_name: "network",
-          ipv4_network: "192.168.10.1",
-          ipv4_prefix: 24,
-        }
-        post "/networks", params
+    accepted_params = {
+      :uuid => "nw-test",
+      :display_name => "our test network",
+      :ipv4_network => "192.168.2.0",
+      :ipv4_prefix => 24,
+      :domain_name => "vdc.test.domain",
+      :network_mode => "virtual",
+      :editable => false
+    }
+    required_params = [:display_name, :ipv4_network]
+    uuid_params = [:uuid]
 
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["display_name"]).to eq "network"
-        expect(body["ipv4_network"]).to eq IPAddr.new("192.168.10.1").to_i
-        expect(body["ipv4_prefix"]).to eq 24
-      end
+    include_examples "POST /", accepted_params, required_params, uuid_params
+  end
+
+  describe "PUT /:uuid" do
+    accepted_params = {
+      :display_name => "our new name for the test network",
+      :ipv4_network => "10.0.0.2",
+      :ipv4_prefix => 8,
+      :domain_name => "new.vdc.test.domain",
+      :network_mode => "physical",
+      :editable => true
+    }
+
+    include_examples "PUT /:uuid", accepted_params
+  end
+
+  describe "POST /:network_uuid/dhcp_ranges" do
+    before(:each) do
+      post api_suffix_with_uuid, request_params
     end
 
-    context "with the uuid parameter" do
-      it "should create a network with the given uuid" do
-        post "/networks", {
-          display_name: "network",
-          ipv4_network: "192.168.10.1",
-          uuid: "nw-testnw"
-        }
+    # let(:accepted_params) do
+    accepted_params = {
+        :uuid => "dr-newrange",
+        :range_begin => "192.168.2.2",
+        :range_end => "192.168.2.100"
+      }
+    # end
+    let(:request_params) { accepted_params }
 
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq "nw-testnw"
+    context "with a nonexistant network_uuid" do
+      let(:api_suffix_with_uuid) { "#{api_suffix}/nw-notfound/dhcp_ranges" }
+
+      it "should return a 404 error (UnknownUUIDResource)" do
+        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+          /nw-notfound$/)
       end
     end
 
     context "with a uuid parameter with a faulty syntax" do
-      it "should return a 400 error" do
-        post "/networks", { :uuid => "this_aint_no_uuid" }
-        expect(last_response.status).to eq 400
-      end
+      let(:api_suffix_with_uuid) { "#{api_suffix}/this_aint_no_uuid/dhcp_ranges" }
+
+      it_should_return_error(400, "InvalidUUID", /this_aint_no_uuid$/)
     end
 
-    context "without the 'display_name' parameter" do
-      it "should return a 400 error" do
-        post "/networks", {
-          :ipv4_network => "192.168.10.1"
-        }
-        expect(last_response.status).to eq 400
-      end
-    end
-
-    context "without the 'ipv4_network' parameter" do
-      it "should return a 500 error" do
-        post "/networks", {
-          display_name: "network"
-        }
-      end
-    end
-  end
-
-  describe "DELETE /:uuid" do
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        delete "/networks/nw-notfound"
-        expect(last_response.status).to eq 404
-      end
-    end
-
-    context "with an existing uuid" do
+    context "with an existing network_uuid" do
       let!(:network) { Fabricate(:network) }
-      it "should delete the network" do
-        delete "/networks/#{network.canonical_uuid}"
+      let(:api_suffix_with_uuid) { "#{api_suffix}/#{network.canonical_uuid}/dhcp_ranges" }
 
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq network.canonical_uuid
-
-        Vnet::Models::Network[network.canonical_uuid].should eq(nil)
+      context "with all accepted parameters" do
+        it "should create a new dhcp range" do
+          last_response.should succeed
+          JSON.parse(last_response.body)["dhcp_ranges"].size.should eq 1
+        end
       end
-    end
-  end
 
-  describe "PUT /:uuid" do
-    context "with a nonexistant uuid" do
-      it "should return a 404 error" do
-        put "/networks/nw-notfound"
-        expect(last_response.status).to eq 404
+      context "with a dhcp range uuid that already exists" do
+        # A second call to bring forth the error
+        before(:each) { post api_suffix_with_uuid, request_params }
+
+        it_should_return_error(400, "DuplicateUUID", /dr-newrange$/)
       end
-    end
 
-    context "with an existing uuid" do
-      let!(:network) { Fabricate(:network) }
-      it "should update the network" do
-        put "/networks/#{network.canonical_uuid}", :domain_name => "aaa.#{network.domain_name}"
+      include_examples "required parameters", accepted_params,
+        [:range_begin, :range_end]
 
-        expect(last_response).to be_ok
-        body = JSON.parse(last_response.body)
-        expect(body["uuid"]).to eq network.canonical_uuid
-        expect(body["domain_name"]).not_to eq network.domain_name
-      end
     end
   end
 

@@ -32,11 +32,15 @@ module Vnet::Openflow
       @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
         tunnel = MW::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
-        @datapath.add_tunnel(tunnel_name, IPAddr.new(target_dp_map.ipv4_address, Socket::AF_INET).to_s)
         tunnel.to_hash.tap do |t|
           t[:dst_dpid] = target_dp_map.dpid
           t[:datapath_networks] = []
+          t[:dst_ipv4_address] = target_dp_map.ipv4_address
         end
+      end
+
+      @tunnels.each do |tunnel|
+        @datapath.add_tunnel(tunnel[:display_name], IPAddr.new(tunnel[:dst_ipv4_address], Socket::AF_INET).to_s)
       end
     end
 
@@ -46,7 +50,7 @@ module Vnet::Openflow
         :dpid => dpn_map.datapath.dpid,
         :ipv4_address => dpn_map.datapath.ipv4_address,
         :datapath_id => dpn_map.datapath.dpid,
-        :broadcast_mac_addr => Trema::Mac.new(dpn_map.broadcast_mac_addr),
+        :broadcast_mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
         :network_id => dpn_map.network_id,
       }
 
@@ -56,8 +60,13 @@ module Vnet::Openflow
       cookie = datapath_network[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
 
       flows = []
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 90, {
-                             :eth_dst => datapath_network[:broadcast_mac_addr]
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                             :eth_dst => datapath_network[:broadcast_mac_address]
+                           }, nil, {
+                             :cookie => cookie
+                           })
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                             :eth_dst => datapath_network[:broadcast_mac_address]
                            }, nil, {
                              :cookie => cookie
                            })
@@ -107,13 +116,11 @@ module Vnet::Openflow
       md = md_create(:collection => collection_id)
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS, 1,
-                           md_create({ :network => network_id,
-                                       :flood => nil
-                                     }), {
+      flows << Flow.create(TABLE_FLOOD_TUNNEL_IDS, 1,
+                           md_create(:network => network_id), {
                              :tunnel_id => network_id | TUNNEL_FLAG_MASK
                            }, md.merge({ :cookie => cookie,
-                                         :goto_table => TABLE_METADATA_TUNNEL_PORTS
+                                         :goto_table => TABLE_FLOOD_TUNNEL_PORTS
                                        }))
 
       @datapath.add_flows(flows)
@@ -205,7 +212,7 @@ module Vnet::Openflow
       cookie = collection_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
       flows = []
-      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 1,
+      flows << Flow.create(TABLE_FLOOD_TUNNEL_PORTS, 1,
                            collection_md,
                            ports.map { |port_number, port|
                              {:output => port_number}

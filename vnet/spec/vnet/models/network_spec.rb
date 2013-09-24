@@ -5,12 +5,12 @@ describe Vnet::Models::Network do
   describe "network_services" do
     before do
       network = Fabricate(:network)
-      interface1 = Fabricate(:iface, network: network)
-      interface2 = Fabricate(:iface, network: network)
-      network_service1 = Fabricate(:network_service, interface: interface1)
-      network_service2 = Fabricate(:network_service, interface: interface1)
-      network_service3 = Fabricate(:network_service, interface: interface2)
-      network_service4 = Fabricate(:network_service, interface: interface2)
+      vif1 = Fabricate(:interface, network: network)
+      vif2 = Fabricate(:interface, network: network)
+      network_service1 = Fabricate(:network_service, interface: vif1)
+      network_service2 = Fabricate(:network_service, interface: vif1)
+      network_service3 = Fabricate(:network_service, interface: vif2)
+      network_service4 = Fabricate(:network_service, interface: vif2)
     end
 
     it "retunr network_services with eager load" do

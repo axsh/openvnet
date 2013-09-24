@@ -3,47 +3,44 @@
 require 'trema/mac'
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
+  put_post_shared_params = [
+    "network_uuid",
+    "mac_address",
+    "owner_datapath_uuid",
+    "ipv4_address",
+    "mode",
+  ]
 
   post do
-    params = parse_params(@params, ['uuid','network_uuid','name','mode','active_datapath_uuid','owner_datapath_uuid'])
+    accepted_params = put_post_shared_params + ["uuid"]
+    required_params = ["mac_address"]
 
-    if params.has_key?('uuid')
-      raise E::DuplicateUUID, params['uuid'] unless M::Interface[params['uuid']].nil?
-      params['uuid'] = M::Interface.trim_uuid(params['uuid'])
-    end
-
-    params['network_id'] = pop_uuid(M::Network, params, 'network_uuid').id if params.has_key?('network_uuid')
-    params['active_datapath_id'] = pop_uuid(M::Datapath, params, 'active_datapath_uuid').id if params.has_key?('active_datapath_uuid')
-    params['owner_datapath_id'] = pop_uuid(M::Datapath, params, 'owner_datapath_uuid').id if params.has_key?('owner_datapath_uuid')
-
-    iface = M::Interface.create(params)
-
-    respond_with(R::Interface.generate(iface))
+    post_new(:Interface, accepted_params, required_params) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
+      params['mac_address'] = parse_mac(params['mac_address'])
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
+      check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+    }
   end
 
   get do
-    ifaces = data_access.iface.all
-    respond_with(R::InterfaceCollection.generate(ifaces))
+    get_all(:Interface)
   end
 
   get '/:uuid' do
-    iface = data_access.iface[@params['uuid']]
-    respond_with(R::Interface.generate(iface))
+    get_by_uuid(:Interface)
   end
 
   delete '/:uuid' do
-    iface = data_access.iface.delete({:uuid => @params['uuid']})
-    respond_with(R::Interface.generate(iface))
+    delete_by_uuid(:Interface)
   end
 
   put '/:uuid' do
-    params = parse_params(@params, ['uuid','network_uuid','name','mode','owner_datapath_uuid','active_datapath_uuid'])
-
-    params['network_id'] = pop_uuid(M::Network, params, 'network_uuid').id if params.has_key?('network_uuid')
-    params['active_datapath_id'] = pop_uuid(M::Datapath, params, 'active_datapath_uuid').id if params.has_key?('active_datapath_uuid')
-    params['owner_datapath_id'] = pop_uuid(M::Datapath, params, 'owner_datapath_uuid').id if params.has_key?('owner_datapath_uuid')
-
-    iface = data_access.iface.update(params)
-    respond_with(R::Interface.generate(iface))
+    update_by_uuid(:Interface, put_post_shared_params) { |params|
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
+      params['mac_address'] = parse_mac(params['mac_address']) if params["ipv4_address"]
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
+      check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+    }
   end
 end

@@ -2,17 +2,22 @@
 
 module Vnet::ModelWrappers
   class Interface < Base
+    include Helpers::IPv4
+    include Helpers::MacAddr
 
     def to_hash
+      network = self.batch.network.commit
+      owner_datapath = self.batch.owner_datapath.commit
+      active_datapath = self.batch.active_datapath.commit
+
       {
-        :uuid => self.uuid,
-        :network_id => self.network_id,
-        :name => self.name,
-        :mode => self.mode,
-        :active_datapath_id => self.active_datapath_id,
-        :owner_datapath_id => self.owner_datapath_id,
-        :created_at => self.created_at,
-        :updated_at => self.updated_at
+        :uuid => uuid,
+        :network_uuid => network && network.uuid,
+        :owner_datapath_uuid => owner_datapath && owner_datapath.uuid,
+        :active_datapath_uuid => active_datapath && active_datapath.uuid,
+        :mac_address => mac_address_s,
+        :ipv4_address => ipv4_address_s,
+        :mode => mode
       }
     end
   end

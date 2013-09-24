@@ -75,6 +75,7 @@ GEM
       certified
       http_parser.rb
     http_parser.rb (0.5.3)
+    ipaddress (0.8.0)
     json (1.8.0)
     kgio (2.8.0)
     method_source (0.8.1)
@@ -163,6 +164,7 @@ DEPENDENCIES
   dcell
   fabrication
   fuguta
+  ipaddress
   json
   mysql2
   net-dhcp (>= 1.1.1)

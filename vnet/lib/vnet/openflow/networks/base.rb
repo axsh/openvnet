@@ -6,13 +6,14 @@ module Vnet::Openflow::Networks
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
+    Flow = Vnet::Openflow::Flow
+
     attr_reader :datapath
     attr_reader :network_id
     attr_reader :uuid
     attr_reader :datapath_of_bridge
 
     attr_reader :ports
-    attr_reader :service_cookies
 
     attr_reader :cookie
     attr_reader :ipv4_network
@@ -25,23 +26,30 @@ module Vnet::Openflow::Networks
       @datapath_of_bridge = nil
 
       @ports = {}
-      @service_cookies = {}
 
       @cookie = @network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = network_map.ipv4_prefix
     end
 
-    def broadcast_mac_addr
-      @datapath_of_bridge && @datapath_of_bridge[:broadcast_mac_addr]
+    def broadcast_mac_address
+      @datapath_of_bridge && @datapath_of_bridge[:broadcast_mac_address]
     end
 
     def to_hash
       { :id => @network_id,
         :uuid => @uuid,
         :type => self.network_type,
+
+        :ipv4_network => @ipv4_network,
+        :ipv4_prefix => @ipv4_prefix,
       }
     end
+
+    def uninstall
+      @datapath.del_cookie(@cookie)
+    end
+
 
     def add_port(params)
       if @ports[params[:port_number]]
@@ -79,77 +87,10 @@ module Vnet::Openflow::Networks
       }
 
       if dpn_map
-        @datapath_of_bridge[:broadcast_mac_addr] = Trema::Mac.new(dpn_map.broadcast_mac_addr)
+        @datapath_of_bridge[:broadcast_mac_address] = Trema::Mac.new(dpn_map.broadcast_mac_address)
       else
         error "network(#{@uuid}): no datapath associated with network."
       end
-    end
-
-    def add_service(service_map)
-      if @service_cookies[service_map.uuid]
-        error "network(#{@uuid}): service already exists '#{service_map.uuid}'"
-        return
-      end
-
-      translated_map = {
-        :datapath => @datapath,
-        :network => self, # Deprecate...
-        :network_id => @network_id,
-        :network_uuid => @uuid,
-        :network_type => self.network_type,
-        :interface_uuid => service_map.interface.uuid,
-        :active_datapath_id => service_map.interface.active_datapath_id,
-        :service_mac => Trema::Mac.new(service_map.interface.mac_addr),
-        :service_ipv4 => IPAddr.new(service_map.interface.ipv4_address, Socket::AF_INET)
-      }
-
-      info "network(#{@uuid}): creating service '#{service_map.display_name}'"
-
-      service = case service_map.display_name
-                when 'arp_lookup' then Vnet::Openflow::Services::ArpLookup.new(translated_map)
-                when 'dhcp'       then Vnet::Openflow::Services::Dhcp.new(translated_map)
-                when 'router'     then Vnet::Openflow::Services::Router.new(translated_map)
-                else
-                  error "network(#{@uuid}): failed to create service '#{service_map.uuid}'"
-                  return
-                end
-
-      @service_cookies[service_map.uuid] = cookie
-
-      if translated_map[:active_datapath_id] &&
-          translated_map[:active_datapath_id] != @datapath_of_bridge[:datapath_id]
-        return
-      end
-
-      pm = @datapath.packet_manager
-
-      cookie = pm.insert(service,
-                         nil,
-                         service_map.id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT))
-
-      if cookie.nil?
-        error "network(#{@uuid}): aborting creation of services '#{service_map.uuid}'"
-        return
-      end
-
-      @service_cookies[service_map.uuid] = cookie
-
-      pm.dispatch(:arp)  { |key, handler| handler.insert_interface(service_map.interface.uuid, self, service_map.interface) }
-      pm.dispatch(:icmp) { |key, handler| handler.insert_interface(service_map.interface.uuid, self, service_map.interface) }
-    end
-
-    def uninstall
-      info "network(#{@uuid}): removing flows"
-
-      pm = @datapath.packet_manager
-
-      @datapath.del_cookie(@cookie)
-
-      @service_cookies.each { |uuid,cookie|
-        pm.remove(cookie)
-        pm.dispatch(:arp)  { |key, handler| handler.remove_interface(service.interface_uuid) }
-        pm.dispatch(:icmp) { |key, handler| handler.remove_interface(service.interface_uuid) }
-      }
     end
 
   end

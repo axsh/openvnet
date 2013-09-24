@@ -14,8 +14,6 @@ module Vnet::Models
       ds.alives
     end
 
-    many_to_one :dc_network
-
     subset(:alives, {})
 
     one_to_many :routes, :class=>Route do |ds|

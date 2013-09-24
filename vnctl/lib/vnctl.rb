@@ -3,19 +3,28 @@
 require 'httparty'
 
 module Vnctl
-  class WebApi
-    include HTTParty
 
-    base_uri '127.0.0.1:9090'
+  def self.conf
+    @conf
   end
+
+  autoload :WebApi, 'vnctl/webapi'
 
   module Cli
     autoload :Base, 'vnctl/cli/base'
-    autoload :Root, 'vnctl/cli/root'
     autoload :Datapath, 'vnctl/cli/datapath'
+    autoload :IpAddress, 'vnctl/cli/ip_address'
+    autoload :IpLease, 'vnctl/cli/ip_lease'
+    autoload :MacLease, 'vnctl/cli/mac_lease'
     autoload :Network, 'vnctl/cli/network'
     autoload :NetworkService, 'vnctl/cli/network_service'
+    autoload :Root, 'vnctl/cli/root'
+    autoload :Route, 'vnctl/cli/route'
     autoload :RouteLink, 'vnctl/cli/route_link'
-    autoload :Routes, 'vnctl/cli/routes'
+    autoload :Vif, 'vnctl/cli/vif'
+  end
+
+  module Configuration
+    autoload :Vnctl, 'vnctl/configuration/vnctl'
   end
 end

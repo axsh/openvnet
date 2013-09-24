@@ -35,8 +35,15 @@ module Vnet::Openflow
       fo_local_md  = flow_options.merge(md_create(:local => nil))
       fo_remote_md = flow_options.merge(md_create(:remote => nil))
 
-      flows << Flow.create(TABLE_CLASSIFIER, 2, {:in_port => OFPP_CONTROLLER}, nil,
-                           fo_local_md.merge(:goto_table => TABLE_CONTROLLER_PORT))
+      fo_controller_md = flow_options.merge(md_create(local: nil,
+                                                      no_controller: nil))
+
+      flows << Flow.create(TABLE_CLASSIFIER, 2, {
+                             :in_port => OFPP_CONTROLLER
+                           },
+                           nil,
+                           fo_controller_md.merge(:goto_table => TABLE_CONTROLLER_PORT))
+
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, nil, flow_options)
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
@@ -44,37 +51,52 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_VIF_PORTS,          0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_LOCAL_PORT,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_CONTROLLER_PORT,    0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_NETWORK_CLASSIFIER, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_VIRTUAL_SRC,  0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:virtual => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 10, md_create(:physical => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       flows << Flow.create(TABLE_ROUTER_INGRESS,    0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_EGRESS,     0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_DST,        0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_ARP_LOOKUP,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ARP_LOOKUP,            0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_VIRTUAL_DST,  0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_DST, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_VIRTUAL_DST,           0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_PHYSICAL_DST,          0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_VIRTUAL_DST,  30, {:eth_dst => MAC_BROADCAST}, nil,
+                           flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))
+      flows << Flow.create(TABLE_PHYSICAL_DST, 30, {:eth_dst => MAC_BROADCAST}, nil,
+                           flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))
+
+      flows << Flow.create(TABLE_INTERFACE_SIMULATED,   0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_MAC_ROUTE,             0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_METADATA_LOCAL,        0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_ROUTE,        0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_SEGMENT,      0, {}, nil,
-                           flow_options.merge(:goto_table => TABLE_METADATA_TUNNEL_IDS))
-      flows << Flow.create(TABLE_METADATA_TUNNEL_IDS,   0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_METADATA_TUNNEL_PORTS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_SIMULATED, 0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_FLOOD_LOCAL))
+      flows << Flow.create(TABLE_FLOOD_LOCAL,        0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_ROUTE,        0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_ROUTE, 10,
+                           md_create(:remote => nil), nil,
+                           flow_options)
+      flows << Flow.create(TABLE_FLOOD_SEGMENT,      0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_FLOOD_TUNNEL_IDS))
+      flows << Flow.create(TABLE_FLOOD_SEGMENT, 10,
+                           md_create(:remote => nil), nil,
+                           flow_options)
+      flows << Flow.create(TABLE_FLOOD_TUNNEL_IDS,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_TUNNEL_PORTS, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
       flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK,  0, {}, nil, flow_options)

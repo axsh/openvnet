@@ -10,12 +10,6 @@ module Vnet::NodeApi
   class DatapathRouteLink < Base
   end
 
-  class DcNetwork < Base
-  end
-
-  class DcNetworkDcSegment < Base
-  end
-
   class DcSegment < Base
   end
 
@@ -34,16 +28,10 @@ module Vnet::NodeApi
   class MacLease < Base
   end
 
-  class MacRange < Base
-  end
-
   class Network < Base
   end
 
   class NetworkService < Base
-  end
-
-  class OpenFlowController < Base
   end
 
   class Route < Base

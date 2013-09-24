@@ -7,11 +7,8 @@ module Vnet::Models
     one_to_many :routes
     one_to_many :datapath_route_links
     one_to_one :mac_address
+    many_to_many :datapaths, :join_table => :datapath_route_links
 
     subset(:alives, {})
-
-    def mac_addr
-      self.mac_address.mac_address
-    end
   end
 end

@@ -3,32 +3,24 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
 
   post do
-    params = parse_params(@params, ['uuid', 'mac_address_id'])
+    accepted_params = ['uuid', 'mac_address']
+    required_params = ['mac_address']
 
-    if params.has_key?('uuid')
-      raise E::DuplicateUUID, params['uuid'] unless M::RouteLink[params['uuid']].nil?
-      params['uuid'] = M::RouteLink.trim_uuid(params['uuid'])
-    end
-
-    params['mac_address_id'] = pop_uuid(M::MacAddress, params, 'mac_address_uuid').id if params.has_key?('mac_address_uuid')
-
-    route_link = M::RouteLink.create(params)
-    respond_with(R::RouteLink.generate(route_link))
+    post_new(:RouteLink, accepted_params, required_params) { |params|
+      params['mac_address'] = parse_mac(params['mac_address'])
+    }
   end
 
   get do
-    route_links = M::RouteLink.all
-    respond_with(R::RouteLinkCollection.generate(route_links))
+    get_all(:RouteLink)
   end
 
   get '/:uuid' do
-    route_link = M::RouteLink[@params['uuid']]
-    respond_with(R::RouteLink.generate(route_link))
+    get_by_uuid(:RouteLink)
   end
 
   delete '/:uuid' do
-    route_link = M::RouteLink.destroy(@params['uuid'])
-    respond_with(R::RouteLink.generate(route_link))
+    delete_by_uuid(:RouteLink)
   end
 
   put '/:uuid' do

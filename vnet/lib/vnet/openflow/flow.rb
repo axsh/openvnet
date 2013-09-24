@@ -88,15 +88,8 @@ module Vnet::Openflow
 
   end
 
-  module FlowHelpers
+  module MetadataHelpers
     include Vnet::Constants::Openflow
-
-    # Add Flow to the namespace of classes outside of Vnet::Openflow.
-    Flow = Flow
-
-    #
-    # Metadata helper methods:
-    #
 
     def md_create(options)
       metadata = 0
@@ -112,9 +105,9 @@ module Vnet::Openflow
         when :datapath
           metadata = metadata | value | METADATA_TYPE_DATAPATH
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
-        when :flood
-          metadata = metadata | METADATA_FLAG_FLOOD
-          metadata_mask = metadata_mask | METADATA_FLAG_FLOOD
+        when :interface
+          metadata = metadata | value | METADATA_TYPE_INTERFACE
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
@@ -133,12 +126,6 @@ module Vnet::Openflow
         when :remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :physical
-          metadata = metadata | METADATA_FLAG_PHYSICAL
-          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
-        when :physical_network
-          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_PHYSICAL
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :reflection
           metadata = metadata | METADATA_FLAG_REFLECTION
           metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
@@ -151,12 +138,6 @@ module Vnet::Openflow
         when :tunnel
           metadata = metadata | METADATA_FLAG_TUNNEL
           metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
-        when :virtual
-          metadata = metadata | METADATA_FLAG_VIRTUAL
-          metadata_mask = metadata_mask | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
-        when :virtual_network
-          metadata = metadata | value | METADATA_TYPE_NETWORK | METADATA_FLAG_VIRTUAL
-          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK | METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL
         when :vif
           metadata = metadata | METADATA_FLAG_VIF
           metadata_mask = metadata_mask | METADATA_FLAG_VIF
@@ -189,6 +170,29 @@ module Vnet::Openflow
       (value & (mask & flag)) == flag
     end
     
+    def md_to_id(type, metadata)
+      type_value = case type
+                   when :network then METADATA_TYPE_NETWORK
+                   when :interface then METADATA_TYPE_INTERFACE
+                   else
+                     return nil
+                   end
+      
+      if metadata.nil? || (metadata & METADATA_TYPE_MASK) != type_value
+        return nil
+      end
+      
+      metadata & METADATA_VALUE_MASK
+    end
+
+  end
+
+  module FlowHelpers
+    include MetadataHelpers
+
+    # Add Flow to the namespace of classes outside of Vnet::Openflow.
+    Flow = Flow
+
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
     end
@@ -213,6 +217,107 @@ module Vnet::Openflow
           :ipv4_src_mask => IPV4_BROADCAST << (32 - prefix)
         }
       end
+    end
+
+    def table_network_dst(network_type)
+      case network_type
+      when :physical then TABLE_PHYSICAL_DST
+      when :virtual  then TABLE_VIRTUAL_DST
+      else
+        raise "Invalid network type value."
+      end
+    end
+
+    def table_network_src(network_type)
+      case network_type
+      when :physical then TABLE_PHYSICAL_SRC
+      when :virtual  then TABLE_VIRTUAL_SRC
+      else
+        raise "Invalid network type value."
+      end
+    end
+
+    def flow_create(type, params)
+      match = {}
+      match_metadata = nil
+      write_metadata = nil
+
+      case type
+      when :catch_arp_lookup
+        table = TABLE_ARP_LOOKUP
+        priority = 20
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = {
+          :network => params[:network_id],
+          :not_no_controller => nil
+        }
+      when :catch_flood_simulated
+        table = TABLE_FLOOD_SIMULATED
+        priority = 30
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :network => params[:network_id] }
+      when :catch_interface_simulated
+        table = TABLE_INTERFACE_SIMULATED
+        priority = 30
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :interface => params[:interface_id] }
+      when :catch_network_dst
+        table = table_network_dst(params[:network_type])
+        priority = 70
+        actions = { :output => Controller::OFPP_CONTROLLER }
+        match_metadata = { :network => params[:network_id] }
+      when :controller_port
+        table = TABLE_CONTROLLER_PORT
+      when :classifier
+        table = TABLE_CLASSIFIER
+      when :host_ports
+        table = TABLE_HOST_PORTS
+      when :network_dst
+        table = table_network_dst(params[:network_type])
+        match_metadata = { :network => params[:network_id] }
+      when :network_src
+        table = table_network_src(params[:network_type])
+        match_metadata = { :network => params[:network_id] }
+      when :network_src_arp_drop
+        table = table_network_src(params[:network_type])
+        priority = 85
+        match_metadata = { :network => params[:network_id] }
+      when :network_src_arp_match
+        table = table_network_src(params[:network_type])
+        priority = 86
+        match_metadata = { :network => params[:network_id] }
+        goto_table = TABLE_ROUTER_CLASSIFIER
+      when :router_dst_match
+        table = TABLE_ROUTER_DST
+        priority = 40
+        match_metadata = { :network => params[:network_id] }
+        goto_table = TABLE_NETWORK_DST_CLASSIFIER
+      when :vif_ports_match
+        table = TABLE_VIF_PORTS
+        priority = 1
+        write_metadata = { :network => params[:network_id] }
+        goto_table = TABLE_NETWORK_SRC_CLASSIFIER
+      else
+        return nil
+      end
+
+      match = params[:match] if params[:match]
+      match = match.merge(md_create(match_metadata)) if match_metadata
+
+      actions = params[:actions] if params[:actions]
+      priority = params[:priority] if params[:priority]
+      goto_table = params[:goto_table] if params[:goto_table]
+
+      write_metadata = params[:write_metadata] if params[:write_metadata]
+
+      instructions = {}
+      instructions[:cookie] = params[:cookie] || self.cookie
+      instructions[:goto_table] = goto_table if goto_table
+      instructions.merge!(md_create(write_metadata)) if write_metadata
+
+      raise "Missing cookie." if cookie.nil?
+
+      Flow.create(table, priority, match, actions, instructions)
     end
 
   end
