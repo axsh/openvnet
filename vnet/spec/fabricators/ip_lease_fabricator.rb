@@ -4,3 +4,6 @@ Fabricator(:ip_lease, class_name: Vnet::Models::IpLease) do
   interface { Fabricate(:interface) }
   ip_address { Fabricate(:ip_address) }
 end
+
+Fabricator(:ip_lease_any, class_name: Vnet::Models::IpLease) do
+end

@@ -155,11 +155,6 @@ module Vnet::Openflow
     def prepare_port_vif(port, port_desc)
       @datapath.mod_port(port.port_number, :no_flood)
 
-<<<<<<< HEAD
-      interface_map = MW::Interface[port_desc.name]
-
-      if interface_map.nil?
-=======
       # TODO: Fix this so that when interface manager creates a new
       # interface, it checks if the port is present and get the
       # port number from port manager.
@@ -168,37 +163,10 @@ module Vnet::Openflow
                                                    reinitialize: true)
 
       if interface.nil?
->>>>>>> master
         error log_format('could not find uuid', "name:#{port_desc.name})")
         return
       end
 
-<<<<<<< HEAD
-      if interface_map.mode != 'vif'
-        info log_format('interface mode not set to \'vif\'', "uuid: #{interface_map.uuid} mode:#{interface_map.mode}")
-        return
-      end
-
-      port.hw_addr = Trema::Mac.new(interface_map.batch.mac_addr.commit)
-      port.ipv4_addr = IPAddr.new(interface_map.batch.ipv4_address.commit.first, Socket::AF_INET)
-
-      interface_map.batch.update(:active_datapath_id => @datapath.datapath_map.id).commit
-
-      network = @datapath.network_manager.add_port(network_id: interface_map.network_id,
-                                                   port_number: port.port_number,
-                                                   port_mode: :vif)
-
-      if network
-        case network[:type]
-        when :physical then port.extend(Ports::Physical)
-        when :virtual  then port.extend(Ports::Virtual)
-        else
-          raise("Unknown network type.")
-        end
-
-        port.network_id = network[:id]
-      end
-=======
       if interface.mode != :vif
         info log_format('vif mode not set to \'vif\'', "mode:#{interface.mode}")
         return
@@ -208,7 +176,6 @@ module Vnet::Openflow
 
       @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                           datapath_id: @datapath.datapath_map.id)
->>>>>>> master
 
       port.extend(Ports::Vif)
       port.install

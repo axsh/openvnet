@@ -2,10 +2,11 @@
 
 module Vnet::Models
   class Interface < Base
-    taggable 'vif'
+    taggable 'if'
     many_to_one :network
 
     one_to_many :ip_leases
+    one_to_many :mac_leases
     one_to_many :network_services
     one_to_many :routes
 
@@ -14,9 +15,24 @@ module Vnet::Models
 
     subset(:alives, {})
 
+    def mac_address
+      if self.mac_leases.size == 1
+        self.mac_leases.first.mac_address.mac_address
+      else
+        self.mac_leases.map do |ml|
+          ml.mac_address.mac_address
+        end
+      end
+    end
+
     def ipv4_address
-      ip_lease = self.ip_leases.first
-      ip_lease && ip_lease.ip_address.ipv4_address
+      if self.ip_leases.size == 1
+        self.ip_leases.first.ip_address.ipv4_address
+      else
+        self.ip_leases.map do |il|
+          il.ip_address.ipv4_address
+        end
+      end
     end
 
     def to_hash

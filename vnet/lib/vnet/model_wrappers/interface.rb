@@ -2,8 +2,10 @@
 
 module Vnet::ModelWrappers
   class Interface < Base
-    include Helpers::IPv4
-    include Helpers::MacAddr
+
+    def mac_address
+      self.batch.mac_address.commit
+    end
 
     def to_hash
       network = self.batch.network.commit
@@ -15,8 +17,6 @@ module Vnet::ModelWrappers
         :network_uuid => network && network.uuid,
         :owner_datapath_uuid => owner_datapath && owner_datapath.uuid,
         :active_datapath_uuid => active_datapath && active_datapath.uuid,
-        :mac_address => mac_address_s,
-        :ipv4_address => ipv4_address_s,
         :mode => mode
       }
     end

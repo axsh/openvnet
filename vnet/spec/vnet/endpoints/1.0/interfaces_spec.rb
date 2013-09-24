@@ -24,20 +24,19 @@ describe "/interfaces" do
     let!(:active) { Fabricate(:datapath) { uuid "dp-active" } }
 
     accepted_params = {
-      :uuid => "vif-test",
+      :uuid => "if-test",
       :network_uuid => "nw-testnet",
-      :mac_address => "52:54:00:12:34:70",
       :owner_datapath_uuid => "dp-owner",
       :mode => "simulated"
     }
-    required_params = [:mac_address]
+    required_params = []
     uuid_params = [:network_uuid, :owner_datapath_uuid]
     expected_response = accepted_params.dup.tap { |n| n.delete(:ipv4_address) }
 
     include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
 
     describe "event handler" do
-      let(:request_params) { { mac_address: random_mac.to_s } }
+      let(:request_params) { {} }
 
       it "handles a single event" do
         expect(last_response).to succeed

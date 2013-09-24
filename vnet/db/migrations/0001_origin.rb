@@ -52,8 +52,8 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true
-      String :name, :null => false
-      String :mode, :null => false
+
+      String :mode, :default => 'vif',:null => false
 
       # Should be a relation allowing for multiple active/owner
       # datapath ids.
@@ -127,14 +127,6 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
-    create_table(:mac_leases) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Bignum :mac_address, :unique => true, :null=>false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
     create_table(:routes) do
       primary_key :id
       String :uuid, :unique => true, :null => false
@@ -169,23 +161,6 @@ Sequel.migration do
       Integer :dst_datapath_id, :index => true, :null => false
 
       index [:src_datapath_id, :dst_datapath_id]
-    end
-
-    create_table(:interfaces) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Integer :network_id, :index => true
-      Bignum :mac_address, :null=>false
-
-      String :mode, :default => 'vif',:null => false
-
-      # Should be a relation allowing for multiple active/owner
-      # datapath ids.
-      Integer :active_datapath_id, :index => true
-      Integer :owner_datapath_id, :index => true
-
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
     end
   end
 
