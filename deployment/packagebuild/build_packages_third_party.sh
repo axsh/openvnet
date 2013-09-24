@@ -30,7 +30,7 @@ function build_package(){
   elif [[ -x ${recipe_dir}/rpmbuild.sh ]]; then
     ${recipe_dir}/rpmbuild.sh
   else
-    echo "[[ERROR]] no script found for ${name}"
+    echo "error: script not found: ${name}"
     exit 1
   fi
   for arch in ${possible_archs}; do
