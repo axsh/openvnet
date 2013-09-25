@@ -18,11 +18,11 @@ describe "/routes" do
   include_examples "DELETE /:uuid"
 
   describe "POST /" do
-    let!(:vif) { Fabricate(:interface) { uuid "vif-test"}  }
+    let!(:interface) { Fabricate(:interface) { uuid "if-test"}  }
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-test" } }
     accepted_params = {
       :uuid => "r-testrout",
-      :vif_uuid => "vif-test",
+      :interface_uuid => "if-test",
       :route_link_uuid => "rl-test",
       :ipv4_address => "192.168.10.10",
       :ipv4_prefix => 16,
@@ -30,22 +30,22 @@ describe "/routes" do
       :egress => false
     }
     required_params = [:ipv4_address, :route_link_uuid]
-    uuid_params = [:vif_uuid, :route_link_uuid]
+    uuid_params = [:interface_uuid, :route_link_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
   describe "PUT /:uuid" do
-    let!(:new_vif) { Fabricate(:interface) { uuid 'vif-newvif' } }
+    let!(:new_interface) { Fabricate(:interface) { uuid 'if-newvif' } }
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-newroute" } }
 
     accepted_params = {
-      :vif_uuid => "vif-newvif",
+      :interface_uuid => "if-newif",
       :route_link_uuid => "rl-newroute",
       :ipv4_address => "192.168.3.50",
       :ipv4_prefix => 16,
     }
-    uuid_params = [:vif_uuid, :route_link_uuid]
+    uuid_params = [:interface_uuid, :route_link_uuid]
 
     include_examples "PUT /:uuid", accepted_params, uuid_params
   end

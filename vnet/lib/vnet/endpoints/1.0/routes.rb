@@ -4,7 +4,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   put_post_shared_params = [
     "ipv4_address",
     "ipv4_prefix",
-    "vif_uuid",
+    "interface_uuid",
     "route_link_uuid"
   ]
 
@@ -19,7 +19,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     post_new(:Route, accepted_params, required_params) { |params|
       params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
       params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
-      check_syntax_and_get_id(M::Interface, params, "vif_uuid", "interface_id") if params["vif_uuid"]
+      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
       check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid", "route_link_id")
     }
   end
@@ -40,7 +40,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     update_by_uuid(:Route, put_post_shared_params) { |params|
       params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
       params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
-      check_syntax_and_get_id(M::Interface, params, "vif_uuid", "interface_id") if params["vif_uuid"]
+      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
       check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid",
         "route_link_id") if params["route_link_uuid"]
     }

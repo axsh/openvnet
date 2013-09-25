@@ -20,6 +20,8 @@ module Vnet::Models
       Datapath.where(~{:id => self.id} & ~{:dc_segment_id => self.dc_segment_id})
     end
 
+    many_to_one :ip_address
+
     dataset_module do
       def find_all_by_network_id(network_id)
         left_join(:datapath_networks, :datapath_id => :id).where(:datapath_networks__network_id => network_id).all
