@@ -64,22 +64,6 @@ module Vnet::Openflow
       { :metadata => metadata, :metadata_mask => metadata_mask }
     end
 
-    def md_network(type, append = nil)
-      if append
-        md_create(append.merge(type => self.network_id))
-      else
-        md_create(type => self.network_id)
-      end
-    end
-
-    def md_port(append = nil)
-      if append
-        md_create(append.merge(:port => self.port_number))
-      else
-        md_create(:port => self.port_number)
-      end
-    end
-
     def md_has_flag(flag, value, mask = nil)
       mask = value if mask.nil?
       (value & (mask & flag)) == flag

@@ -13,7 +13,8 @@ module Vnet::Openflow::Networks
     end
 
     def install
-      fo_network_md = flow_options.merge(md_network(:network))
+      network_md = md_create(:network => @network_id)
+      fo_network_md = flow_options.merge(network_md)
 
       flows = []
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
@@ -21,11 +22,11 @@ module Vnet::Openflow::Networks
                            }, nil,
                            fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 40,
-                           md_network(:network),
+                           network_md,
                            nil,
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
       flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 40,
-                           md_network(:network),
+                           network_md,
                            nil,
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
 
@@ -57,7 +58,7 @@ module Vnet::Openflow::Networks
 
       flows = []
       flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
-                           md_network(:network),
+                           md_create(:network => @network_id),
                            flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_SEGMENT))
 
       @datapath.add_flows(flows)
@@ -67,8 +68,8 @@ module Vnet::Openflow::Networks
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_md = md_network(:network, :remote => nil)
-      learn_md = md_network(:network, {:local => nil, :vif => nil})
+      match_md = md_create(network: @network_id, remote: nil)
+      learn_md = md_create(network: @network_id, local: nil, vif: nil)
 
       flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]
