@@ -4,6 +4,23 @@ module Vnet::Openflow
 
   class ServiceManager < Manager
 
+    def handle_event(params)
+      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
+
+      item = @items[:target_id]
+
+      case params[:event]
+      when :added
+        return nil if item
+        # Check if needed.
+      when :removed
+        return nil if item
+        # Check if needed.
+      end
+
+      nil
+    end
+
     #
     # Internal methods:
     #
@@ -62,6 +79,10 @@ module Vnet::Openflow
       item.install
       item
     end    
+
+    #
+    # Event handlers:
+    #
 
   end
 
