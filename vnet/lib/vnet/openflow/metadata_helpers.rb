@@ -53,8 +53,9 @@ module Vnet::Openflow
           metadata = metadata | METADATA_FLAG_TUNNEL
           metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
         when :vif
-          metadata = metadata | METADATA_FLAG_VIF
-          metadata_mask = metadata_mask | METADATA_FLAG_VIF
+          # Disable the vif flag until we actually need it.
+          # metadata = metadata | METADATA_FLAG_VIF
+          # metadata_mask = metadata_mask | METADATA_FLAG_VIF
         else
           raise("Unknown metadata type: #{key.inspect}")
         end
