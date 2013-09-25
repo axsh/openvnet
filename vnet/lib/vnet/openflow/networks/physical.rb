@@ -13,8 +13,8 @@ module Vnet::Openflow::Networks
     end
 
     def install
-      network_md = md_network(:network)
-      fo_network_md = flow_options.merge(md_network(:network))
+      network_md = md_create(:network => @network_id)
+      fo_network_md = flow_options.merge(network_md)
 
       flows = []
       flows << Flow.create(TABLE_HOST_PORTS, 10,
@@ -45,13 +45,15 @@ module Vnet::Openflow::Networks
         {:output => port_number}
       }
 
+      network_md = md_create(:network => @network_id)
+
       flows = []
       flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
-                           md_network(:network),
+                           network_md,
                            local_actions,
                            flow_options.merge(:goto_table => TABLE_FLOOD_ROUTE))
       flows << Flow.create(TABLE_FLOOD_ROUTE, 1,
-                           md_network(:network),
+                           network_md,
                            remote_actions,
                            flow_options)
 

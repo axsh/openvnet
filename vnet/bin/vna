@@ -7,12 +7,21 @@ require 'rubygems'
 require 'bundler/setup'
 require 'vnet'
 require 'celluloid'
+require 'celluloid/autostart'
 require 'dcell'
 
 conf = Vnet::Configurations::Vna.conf
 
 #Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
 Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "vna.log"))
+
+# Start the switch manager before any celluloid services in order to
+# avoid cloned file descriptors to e.g. zmq remaining open.
+switch_manager_new = Vnet::NodeModules::SwitchManager.new
+switch_manager_new.configure_trema
+switch_manager_new.cleanup_current_session
+switch_manager_new.kill_old_switches
+switch_manager_new.start
 
 Vnet::ModelWrappers::Base.set_proxy(conf.node_api_proxy)
 
@@ -29,9 +38,6 @@ DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
     :host => conf.registry.host,
     :port => conf.registry.port
 })
-
-# Poke the database.
-Vnet::ModelWrappers::Network.batch.name.commit
 
 name = "#{conf.node.id}-#{conf.node.addr.host}"
 service_openflow = Vnet::NodeModules::ServiceOpenflow.supervise_as name.to_sym
