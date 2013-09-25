@@ -51,7 +51,7 @@ module Vnet::Openflow
         return port_to_hash(@ports[port_desc.port_no])
       end
 
-      port = Ports::Base.new(@datapath, port_desc, true)
+      port = Ports::Base.new(@datapath, port_desc)
       @ports[port_desc.port_no] = port
 
       case
@@ -122,7 +122,6 @@ module Vnet::Openflow
       @datapath.mod_port(port.port_number, :no_flood)
 
       port.extend(Ports::Local)
-      port.hw_addr = port_desc.hw_addr
       port.ipv4_addr = @datapath.ipv4_address
 
       network = @datapath.network_manager.add_port(uuid: 'nw-public',
@@ -143,10 +142,6 @@ module Vnet::Openflow
       network = @datapath.network_manager.add_port(uuid: 'nw-public',
                                                    port_number: port.port_number,
                                                    port_mode: :eth)
-      if network
-        port.network_id = network[:id]
-      end
-
       port.install
     end
 

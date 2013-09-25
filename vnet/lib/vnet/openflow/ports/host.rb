@@ -69,8 +69,8 @@ module Vnet::Openflow::Ports
                            },
                            flow_options)
 
-      self.datapath.add_flows(flows)
-      self.datapath.network_manager.update_all_flows
+      @datapath.add_flows(flows)
+      @datapath.network_manager.update_all_flows
     end
 
   end

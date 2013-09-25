@@ -5,6 +5,9 @@ module Vnet::Openflow::Ports
   module Local
     include Vnet::Openflow::FlowHelpers
 
+    attr_accessor :ipv4_addr
+    attr_accessor :network_id
+
     def port_type
       :local
     end
@@ -39,12 +42,12 @@ module Vnet::Openflow::Ports
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_DST, 30, {
-                             :eth_dst => @hw_addr
+                             :eth_dst => self.port_hw_addr
                            }, {
                              :output => OFPP_LOCAL
                            }, flow_options)
       flows << Flow.create(TABLE_MAC_ROUTE, 1, {
-                             :eth_dst => @hw_addr
+                             :eth_dst => self.port_hw_addr
                            }, {
                              :output => OFPP_LOCAL
                            }, flow_options)
@@ -56,12 +59,12 @@ module Vnet::Openflow::Ports
                              network_md.merge({ :eth_type => 0x0800,
                                                 :ipv4_dst => @ipv4_addr
                                               }), {
-                               :eth_dst => @hw_addr
+                               :eth_dst => self.port_hw_addr
                              },
                              flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       end
 
-      self.datapath.add_flows(flows)
+      @datapath.add_flows(flows)
     end
 
   end
