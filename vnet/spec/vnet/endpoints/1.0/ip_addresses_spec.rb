@@ -19,7 +19,7 @@ describe "/ip_addresses" do
 
   describe "POST /" do
     accepted_params = {
-      :uuid => "ia-test",
+      :uuid => "ip-test",
       :ipv4_address => "192.168.2.2",
     }
     required_params = [:ipv4_address]
