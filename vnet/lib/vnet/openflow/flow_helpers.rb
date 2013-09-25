@@ -5,6 +5,8 @@ module Vnet::Openflow
   module FlowHelpers
     include MetadataHelpers
 
+    Flow = Vnet::Openflow::Flow
+
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
     end
