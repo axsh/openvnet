@@ -57,7 +57,7 @@ describe "/datapaths" do
   describe "Many to many relation calls for route links" do
     let(:relation_fabricator) { :route_link }
 
-    include_examples "many_to_many_relation", "route_links", {}
+    include_examples "many_to_many_relation", "route_links", {:mac_address => "02:00:00:cc:00:02"}
   end
 
 end

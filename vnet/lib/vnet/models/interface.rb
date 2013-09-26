@@ -17,12 +17,12 @@ module Vnet::Models
 
     def mac_address
       if self.mac_leases.size == 1
-        self.mac_leases.first.mac_address.mac_address
-      else
-        self.mac_leases.map do |ml|
-          ml.mac_address.mac_address
-        end
+        self.mac_leases.first.mac_address
       end
+    end
+
+    def all_mac_addresses
+      self.mac_leases.map(&:mac_address)
     end
 
     def ipv4_address

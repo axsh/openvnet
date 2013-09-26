@@ -24,25 +24,25 @@ describe "/routes" do
       :uuid => "r-testrout",
       :interface_uuid => "if-test",
       :route_link_uuid => "rl-test",
-      :ipv4_address => "192.168.10.10",
+      :ipv4_network => "192.168.10.0",
       :ipv4_prefix => 16,
       :ingress => true,
       :egress => false
     }
-    required_params = [:ipv4_address, :route_link_uuid]
+    required_params = [:ipv4_network, :route_link_uuid]
     uuid_params = [:interface_uuid, :route_link_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
   describe "PUT /:uuid" do
-    let!(:new_interface) { Fabricate(:interface) { uuid 'if-newvif' } }
+    let!(:new_interface) { Fabricate(:interface) { uuid 'if-newif' } }
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-newroute" } }
 
     accepted_params = {
       :interface_uuid => "if-newif",
       :route_link_uuid => "rl-newroute",
-      :ipv4_address => "192.168.3.50",
+      :ipv4_network => "192.168.3.0",
       :ipv4_prefix => 16,
     }
     uuid_params = [:interface_uuid, :route_link_uuid]

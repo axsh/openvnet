@@ -7,7 +7,7 @@ Fabricator(:ip_address, class_name: Vnet::Models::IpAddress) do
 end
 
 Fabricator(:ip_address_1, class_name: Vnet::Models::IpAddress) do
-  uuid 'ip-address1'
+  uuid 'ia-address1'
   ipv4_address 1
 end
 

@@ -19,17 +19,16 @@ describe "/ip_leases" do
 
   describe "POST /" do
     let!(:network) { Fabricate(:network) { uuid "nw-test" } }
-    let!(:vif) { Fabricate(:interface) { uuid "vif-test"} }
+    let!(:interface) { Fabricate(:interface) { uuid "if-test"} }
     let!(:ip_address) { Fabricate(:ip_address) { uuid "ia-test" } }
 
     accepted_params = {
       :uuid => "il-lease",
       :network_uuid => "nw-test",
-      :vif_uuid => "vif-test",
+      :interface_uuid => "if-test",
       :ip_address_uuid => "ia-test",
-      :alloc_type => 1
     }
-    required_params = [:network_uuid, :vif_uuid, :ip_address_uuid]
+    required_params = [:network_uuid, :interface_uuid, :ip_address_uuid]
     uuid_params = [:uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
@@ -37,14 +36,13 @@ describe "/ip_leases" do
 
   describe "PUT /:uuid" do
     let!(:network) { Fabricate(:network) { uuid "nw-test2" } }
-    let!(:vif) { Fabricate(:interface) { uuid "vif-test2"} }
+    let!(:interface) { Fabricate(:interface) { uuid "if-test2"} }
     let!(:ip_address) { Fabricate(:ip_address) { uuid "ia-test2" } }
 
     accepted_params = {
       :network_uuid => "nw-test2",
-      :vif_uuid => "vif-test2",
+      :interface_uuid => "if-test2",
       :ip_address_uuid => "ia-test2",
-      :alloc_type => 2
     }
 
     include_examples "PUT /:uuid", accepted_params

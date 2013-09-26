@@ -36,7 +36,7 @@ describe Vnet::Openflow::PortManager do
 
     context "eth" do
       before do
-        Fabricate(:eth0)
+        Fabricate(:interface, uuid: "if-eth0")
       end
 
       it "creates an object of Models::Interface for eth0" do
@@ -76,12 +76,12 @@ describe Vnet::Openflow::PortManager do
         Fabricate(:datapath_1)
 
         vnet = Fabricate(:vnet_1)
-        iface = Fabricate(:iface_2, network: vnet)
+        iface = Fabricate(:interface, network: vnet)
 
         ip_addr = Fabricate(:ip_address_1)
         mac = Fabricate(:mac_address)
-        Fabricate(:mac_lease, interface: iface, mac_address: mac)
-        Fabricate(:ip_lease_1, ip_address: ip_addr, interface: iface)
+        Fabricate(:mac_lease, interface: iface, _mac_address: mac)
+        Fabricate(:ip_lease_any, ip_address: ip_addr, interface: iface)
       end
 
       it "creates an instance of interface when the switch receives port_status" do
@@ -94,7 +94,7 @@ describe Vnet::Openflow::PortManager do
 
         port_desc = double(:port_desc)
         port_desc.should_receive(:port_no).exactly(3).times.and_return(2)
-        port_desc.should_receive(:name).exactly(2).times.and_return('if-testuuid')
+        port_desc.should_receive(:name).exactly(3).times.and_return('if-testuuid')
         port_desc.should_receive(:hw_addr)
         port_desc.should_receive(:advertised).and_return(1)
         port_desc.should_receive(:supported).and_return(1)
@@ -102,7 +102,7 @@ describe Vnet::Openflow::PortManager do
         port = double(:port)
         port_info = double(:port_info)
         port_info.should_receive(:name).twice.and_return('if-testuuid')
-        port.should_receive(:port_number).twice.times.and_return(2)
+        port.should_receive(:port_number).exactly(3).times.and_return(2)
         port.should_receive(:port_info).twice.and_return(port_info)
         port.should_receive(:to_hash)
 

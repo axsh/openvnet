@@ -5,6 +5,10 @@ module Vnet::ModelWrappers::Helpers
     def ipv4_address_s
       self.ip_address && IPAddress::IPv4::parse_u32(self.ip_address.ipv4_address).to_s
     end
+
+    def ipv4_network_s
+      self.ipv4_network && IPAddress::IPv4::parse_u32(self.ipv4_network).to_s
+    end
   end
 
   module MacAddr

@@ -9,7 +9,7 @@ Sequel.migration do
       FalseClass :is_connected, :null=>false, :default => false
       String :dpid, :null=>false
       Integer :dc_segment_id, :index => true
-      Integer :ip_address_id, :index => true
+      Bignum :ipv4_address, :null=>false
       String :node_id, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
@@ -19,7 +19,7 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :network_id, :index => true, :null=>false
-      Bignum :broadcast_mac_address, :null=>false
+      Integer :mac_address_id, :index => true
       FalseClass :is_connected, :null=>false
     end
 
@@ -27,7 +27,7 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :route_link_id, :index => true, :null=>false
-      Bignum :mac_address, :null=>false
+      Integer :mac_address_id, :index => true
       FalseClass :is_connected, :null=>false
     end
 
@@ -96,7 +96,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Integer :interface_id, :index => true
-      Integer :mac_address_id, :index => true
+      Integer :mac_address_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -134,7 +134,7 @@ Sequel.migration do
       Integer :route_link_id, :index => true, :null => false
 
       String :route_type, :default => 'gateway', :null => false
-      Bignum :ipv4_address, :null => false
+      Bignum :ipv4_network, :null => false
       Integer :ipv4_prefix, :default => 24, :null => false
 
       Boolean :ingress, :default => true, :null => false
@@ -147,7 +147,7 @@ Sequel.migration do
     create_table(:route_links) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :mac_address_id, :index => true, :null=>false
+      Integer :mac_address_id, :index => true
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false

@@ -2,7 +2,7 @@
 
 module Vnet::Models
   class IpAddress < Base
-    taggable 'ip'
+    taggable 'ia'
     many_to_one :network
     one_to_one :ip_lease
     one_to_one :datapath

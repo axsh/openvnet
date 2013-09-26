@@ -10,8 +10,8 @@ module Vnet::Models
     many_to_many :networks, :join_table => :datapath_networks
     many_to_many :route_links, :join_table => :datapath_route_links
 
-    one_to_many :vifs_owned, :class => Interface, :key => :owner_datapath_id
-    one_to_many :vifs_active, :class => Interface, :key => :active_datapath_id
+    one_to_many :interfaces_owned, :class => Interface, :key => :owner_datapath_id
+    one_to_many :interfaces_active, :class => Interface, :key => :active_datapath_id
 
     one_to_many :tunnels, :key => :src_datapath_id
     subset(:alives, {})
@@ -19,8 +19,6 @@ module Vnet::Models
     one_to_many :on_other_segments, :class => Datapath do |ds|
       Datapath.where(~{:id => self.id} & ~{:dc_segment_id => self.dc_segment_id})
     end
-
-    many_to_one :ip_address
 
     dataset_module do
       def find_all_by_network_id(network_id)
