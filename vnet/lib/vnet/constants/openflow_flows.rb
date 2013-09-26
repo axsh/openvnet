@@ -11,6 +11,9 @@ module Vnet
       # Default table used by all incoming packets.
       TABLE_CLASSIFIER = 0
 
+      # Translation layer for vlan
+      TABLE_VLAN_TRANSLATION = 1
+
       # Handle matching of incoming packets on host ports.
       TABLE_HOST_PORTS = 2
 
