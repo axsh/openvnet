@@ -172,6 +172,9 @@ module Vnet::Openflow
       @datapath.tunnel_manager.delete_tunnel_port(network_id, dpid)
     end
 
+    def update_vlan_translation
+      @datapath.translation_manager.async.update
+    end
   end
 
 end

@@ -48,6 +48,24 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
+    create_table(:interfaces) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :network_id, :index => true
+      Bignum :mac_address, :null=>false
+      String :display_name
+
+      String :mode, :default => 'vif',:null => false
+
+      # Should be a relation allowing for multiple active/owner
+      # datapath ids.
+      Integer :active_datapath_id, :index => true
+      Integer :owner_datapath_id, :index => true
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
     create_table(:ip_addresses) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -139,22 +157,11 @@ Sequel.migration do
       index [:src_datapath_id, :dst_datapath_id]
     end
 
-    create_table(:interfaces) do
+    create_table(:vlan_translation) do
       primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Integer :network_id, :index => true
-      Bignum :mac_address, :null=>false
-      String :display_name
-
-      String :mode, :default => 'vif',:null => false
-
-      # Should be a relation allowing for multiple active/owner
-      # datapath ids.
-      Integer :active_datapath_id, :index => true
-      Integer :owner_datapath_id, :index => true
-
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
+      Bignum :mac_address
+      Integer :vlan_id
+      Integer :network_id
     end
 
   end
@@ -172,6 +179,7 @@ Sequel.migration do
                :routes,
                :route_links,
                :tunnels,
+               :vlan_translation
                )
   end
 end

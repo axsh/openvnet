@@ -92,6 +92,7 @@ module Vnet
     autoload :RouteLink, 'vnet/models/route_link'
     autoload :Taggable, 'vnet/models/base'
     autoload :Tunnel, 'vnet/models/tunnel'
+    autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
 
   module ModelWrappers
@@ -111,6 +112,7 @@ module Vnet
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
+    autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
 
   autoload :NodeApi, 'vnet/node_api'
@@ -131,6 +133,7 @@ module Vnet
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
+    autoload :VlanTranslation, 'vnet/node_api/models.rb'
   end
 
   module NodeModules
