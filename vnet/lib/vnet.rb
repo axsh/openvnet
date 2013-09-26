@@ -180,6 +180,7 @@ module Vnet
 
     module Ports
       autoload :Base, 'vnet/openflow/ports/base'
+      autoload :Generic, 'vnet/openflow/ports/generic'
       autoload :Host, 'vnet/openflow/ports/host'
       autoload :Local, 'vnet/openflow/ports/local'
       autoload :Tunnel, 'vnet/openflow/ports/tunnel'
