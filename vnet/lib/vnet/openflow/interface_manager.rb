@@ -30,6 +30,11 @@ module Vnet::Openflow
       interface.get_ipv4_address(params)
     end
 
+
+    def lookup(params)
+      select_item(select_filter_from_params(params))
+    end
+
     #
     # Internal methods:
     #

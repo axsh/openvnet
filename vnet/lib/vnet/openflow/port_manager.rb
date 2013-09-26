@@ -138,13 +138,26 @@ module Vnet::Openflow
     def prepare_port_eth(port, port_desc)
       @datapath.mod_port(port.port_number, :flood)
 
-      port.extend(Ports::Host)
+      interface = @datapath.interface_manager.lookup(
+        owner_datapath_id: @datapath.datapath_map.id,
+        display_name: port_desc.name
+      )
 
-      network = @datapath.network_manager.add_port(uuid: 'nw-public',
-                                                   port_number: port.port_number,
-                                                   port_mode: :eth)
-      if network
-        port.network_id = network[:id]
+      if interface.nil?
+        raise("#{port_desc.name} is not registered on database")
+      end
+
+      case interface.mode
+      when :edge
+        port.extend(Ports::Generic)
+      else
+        port.extend(Ports::Host)
+        network = @datapath.network_manager.add_port(uuid: 'nw-public',
+                                                     port_number: port.port_number,
+                                                     port_mode: :eth)
+        if network
+          port.network_id = network[:id]
+        end
       end
 
       port.install
