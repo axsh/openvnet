@@ -45,6 +45,7 @@ module Vnet::Openflow
       @route_manager = RouteManager.new(self)
       @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(self)
+      @translation_manager = TranslationManager.new(self)
 
       @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
       @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)

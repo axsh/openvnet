@@ -144,6 +144,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :network_id, :index => true
       Bignum :mac_address, :null=>false
+      String :display_name
 
       String :mode, :default => 'vif',:null => false
 

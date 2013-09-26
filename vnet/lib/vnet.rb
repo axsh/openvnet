@@ -163,6 +163,7 @@ module Vnet
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
+    autoload :TranslationManager, 'vnet/openflow/translation_manager'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
 
     module Interfaces

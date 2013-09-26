@@ -108,6 +108,9 @@ module Vnet::Openflow
       case
       when params[:id]   then {:id => params[:id]}
       when params[:uuid] then params[:uuid]
+      when params[:owner_datapath_id] then
+        {:owner_datapath_id => params[:owner_datapath_id],
+         :display_name => params[:display_name]}
       else
         # Any invalid params that should cause an exception needs to
         # be caught by the item_by_params_direct method.
