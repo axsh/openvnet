@@ -25,9 +25,9 @@ module Vnet::Openflow
       return if route_link.nil?
       return if route_link[:routes].has_key? route_map.id
 
-      info log_format('insert', "id:#{route_map.id} uuid:#{route_map.uuid} vif_id:#{route_map.interface_id}")
-      info log_format('insert', "route.route_type:#{route_map.route_type}")
-      info log_format('insert', "route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}")
+      info log_format("insert #{route_map.uuid}/#{route_map.id}", "vif_id:#{route_map.interface_id}")
+      # info log_format('insert', "route.route_type:#{route_map.route_type}")
+      # info log_format('insert', "route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}")
 
       route = {
         :id => route_map.id,

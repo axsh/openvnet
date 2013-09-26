@@ -103,7 +103,7 @@ module Vnet::Openflow
 
       @items[item_map.id] = interface
 
-      debug log_format('insert', "interface:#{item_map.uuid}/#{item_map.id} mode:#{mode}")
+      debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
 
       # TODO: Make install/uninstall a barrier that enables/disable
       # the creation of flows and ensure that no events gets lost.

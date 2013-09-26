@@ -20,7 +20,7 @@ module Vnet::Openflow
 
     def update_all_flows
       @items.dup.each { |key,network|
-        debug log_format('updating flows for', "uuid:#{network.uuid}")
+        debug log_format("updating flows for #{network.uuid}/#{network.network_id}")
         network.update_flows
       }
       nil
@@ -31,7 +31,7 @@ module Vnet::Openflow
       network = @items.delete(network_id)
 
       if network.nil?
-        info log_format('could not find network to remove', "id:#{network_id}")
+        info log_format('could not find network to remove for', "id:#{network_id}")
         return
       end
 
@@ -132,6 +132,8 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
+      # TODO: Refactor this to only take the network id, and use that
+      # to populate service manager.
       item_map.batch.network_services.commit.each { |service_map|
         @datapath.service_manager.item(:id => service_map.id)
       }
