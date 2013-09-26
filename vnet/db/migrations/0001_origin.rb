@@ -157,7 +157,7 @@ Sequel.migration do
       index [:src_datapath_id, :dst_datapath_id]
     end
 
-    create_table(:vlan_translation) do
+    create_table(:vlan_translations) do
       primary_key :id
       Bignum :mac_address
       Integer :vlan_id
@@ -179,7 +179,7 @@ Sequel.migration do
                :routes,
                :route_links,
                :tunnels,
-               :vlan_translation
+               :vlan_translations
                )
   end
 end
