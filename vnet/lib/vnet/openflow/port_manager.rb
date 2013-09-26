@@ -165,7 +165,7 @@ module Vnet::Openflow
         return
       end
 
-      debug "prepare_port_vif: #{interface.uuid}"
+      debug log_format("prepare_port_vif #{interface.uuid}")
 
       @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                           datapath_id: @datapath.datapath_map.id)
