@@ -4,6 +4,7 @@
 #
 
 set -e
+set -x
 
 package=$1
 work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
@@ -30,7 +31,7 @@ function build_package(){
   elif [[ -x ${recipe_dir}/rpmbuild.sh ]]; then
     ${recipe_dir}/rpmbuild.sh
   else
-    echo "[[ERROR]] no script found for ${name}"
+    echo "error: script not found: ${name}"
     exit 1
   fi
   for arch in ${possible_archs}; do
@@ -48,8 +49,8 @@ function check_repo(){
 }
 
 function cleanup(){
-  for s in package-dir-build package-dir-staging package-rpm-build; do
-    find /tmp -mindepth 1 -maxdepth 1 -type d -mtime +1 -name "${s}*" -exec rm -rf {} \;
+  for s in package-dir-build* package-dir-staging* package-rpm-build* ruby-build.*; do
+    find /tmp -mindepth 1 -maxdepth 1 -mtime +1 -name "${s}" -print0 | xargs -0 rm -rf
   done
 }
 

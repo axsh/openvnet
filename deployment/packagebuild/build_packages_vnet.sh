@@ -25,7 +25,8 @@ function build_package(){
   local recipe_dir=${current_dir}/packages.d/vnet/${name}
   local package_work_dir=${work_dir}/packages.d/vnet/${name}
   [[ -f ${recipe_dir}/recipe.rb ]] || {
-    echo "recipe for ${name} not found"; exit 1;
+    echo "error: recipe not found: ${name}"
+    exit 1
   }
   mkdir ${package_work_dir}
   (cd ${recipe_dir}; BUILD_TIME=${build_time} ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
@@ -39,6 +40,12 @@ function check_repo(){
   mkdir -p ${repo_dir}
   for i in ${possible_archs}; do
     mkdir ${repo_dir}/${i}
+  done
+}
+
+function cleanup(){
+  for s in package-dir-build* package-dir-staging* package-rpm-build*; do
+    find /tmp -mindepth 1 -maxdepth 1 -type d -mtime +1 -name "${s}" -print0 | xargs -0 rm -rf
   done
 }
 
@@ -56,3 +63,5 @@ fi
 (cd ${repo_dir}; createrepo .)
 
 ln -sfn ${repo_dir} ${repo_base_dir}/current
+
+cleanup

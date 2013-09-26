@@ -73,6 +73,20 @@ module Vnet::Openflow
       nil
     end
 
+    def handle_event(params)
+      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
+
+      item = @items[:target_id]
+
+      case params[:event]
+      when :removed
+        return nil if item
+        # Check if needed.
+      end
+
+      nil
+    end
+
     #
     # Internal methods:
     #
@@ -131,6 +145,10 @@ module Vnet::Openflow
                      dpid: @dpid)
       network
     end
+
+    #
+    # Event handlers:
+    #
 
   end
 

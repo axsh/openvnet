@@ -30,6 +30,29 @@ module Vnet::Openflow
       interface.get_ipv4_address(params)
     end
 
+    def handle_event(params)
+      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
+
+      item = @items[:target_id]
+
+      case params[:event]
+      when :added
+        return nil if item
+        # Check if needed.
+      when :removed
+        return nil if item
+        # Check if needed.
+      when :leased_ipv4_address
+        return nil if item.nil?
+        leased_ipv4_address(item, params)
+      when :released_ipv4_address
+        return nil if item.nil?
+        unleased_ipv4_address(item, params)
+      end
+
+      nil
+    end
+
     #
     # Internal methods:
     #
@@ -128,6 +151,18 @@ module Vnet::Openflow
       end
 
       return false
+    end
+
+    #
+    # Event handlers:
+    #
+
+    def leased_ipv4_address(item, params)
+      # mac_address = load_mac_address(params[:mac_address_id])
+      # ipv4_address = load_ipv4_address(params[:ipv4_address_id])
+    end
+
+    def unleased_ipv4_address(item, params)
     end
 
   end
