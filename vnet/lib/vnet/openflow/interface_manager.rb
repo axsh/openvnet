@@ -110,7 +110,8 @@ module Vnet::Openflow
 
       interface.install
 
-      if interface.mode == :vif
+      case interface.mode
+      when :vif
         port = @datapath.port_manager.port_by_port_name(interface.uuid)
         interface.update_port_number(port[:port_number])
       end
@@ -127,6 +128,8 @@ module Vnet::Openflow
       item
     end
 
+    # TODO: Convert the loading of addresses to events, and queue them
+    # with a 'handle_event' queue to ensure consistency.
     def load_addresses(interface, item_map)
       return if item_map.mac_address.nil?
 

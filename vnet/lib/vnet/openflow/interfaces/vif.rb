@@ -11,6 +11,12 @@ module Vnet::Openflow::Interfaces
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
+      @datapath.network_manager.update_interface(event: :insert,
+                                                 id: ipv4_info[:network_id],
+                                                 interface_id: @id,
+                                                 mode: :vif,
+                                                 port_number: @port_number)
+
       return if @port_number.nil?
 
       @datapath.network_manager.add_port(id: ipv4_info[:network_id],
@@ -53,6 +59,11 @@ module Vnet::Openflow::Interfaces
         # @mac_addresses.each...
 
         # add_port...
+
+        # @datapath.network_manager.update_interface(event: :update,
+        #                                            id: ipv4_info[:network_id],
+        #                                            interface_id: @id,
+        #                                            port_number: @port_number)
 
         if !@mac_addresses.empty?
           info log_format("MAC/IP addresses loaded before port number is set is not yet supported, no flows created.")

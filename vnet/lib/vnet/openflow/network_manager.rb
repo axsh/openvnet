@@ -18,6 +18,29 @@ module Vnet::Openflow
       }
     end
 
+    #
+    # Interfaces:
+    #
+
+    def update_interface(params)
+      item = item_by_params(params)
+
+      return nil if item.nil?
+      return nil if params[:interface_id].nil?
+
+      case params[:event]
+      when :insert then item.insert_interface(params)
+      when :remove then item.remove_interface(params)
+      when :update then item.update_interface(params)
+      end
+
+      nil
+    end
+
+    #
+    # Obsolete:
+    #
+
     def update_all_flows
       @items.dup.each { |key,network|
         debug log_format("updating flows for #{network.uuid}/#{network.network_id}")
@@ -51,6 +74,10 @@ module Vnet::Openflow
       
       nil
     end
+
+    #
+    # Events:
+    #
 
     def handle_event(params)
       debug log_format("handle event #{params[:event]}", "#{params.inspect}")
