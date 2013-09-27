@@ -16,28 +16,28 @@ module Vnet::Models
     subset(:alives, {})
 
     def mac_address
-      if self.mac_leases.size == 1
-        self.mac_leases.first.mac_address
-      end
+      mac_leases.first.try(:mac_address)
     end
 
     def all_mac_addresses
-      self.mac_leases.map(&:mac_address)
+      mac_leases.map(&:mac_address)
     end
 
     def ipv4_address
-      if self.ip_leases.size == 1
-        self.ip_leases.first.ip_address.ipv4_address
-      else
-        self.ip_leases.map do |il|
-          il.ip_address.ipv4_address
-        end
-      end
+      ip_leases.first.try(:ipv4_address)
+    end
+
+    def all_ipv4_addresses
+      ip_leases.map(&:ipv4_address)
     end
 
     def to_hash
-      self.values[:ipv4_address] = self.ipv4_address
-      super
+      super.merge({
+        :ipv4_address => self.ipv4_address,
+        :all_ipv4_addresses => self.ipv4_address,
+        :mac_address => self.mac_address,
+        :all_mac_addresses => self.mac_address,
+      })
     end
 
   end

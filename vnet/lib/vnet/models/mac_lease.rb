@@ -11,5 +11,11 @@ module Vnet::Models
     def mac_addr
       self.mac_address.mac_address
     end
+
+    def to_hash
+      super.merge({
+        :mac_address => self.mac_address
+      })
+    end
   end
 end
