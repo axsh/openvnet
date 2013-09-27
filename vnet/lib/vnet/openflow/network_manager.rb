@@ -18,40 +18,42 @@ module Vnet::Openflow
       }
     end
 
-    def update_all_flows
-      @items.dup.each { |key,network|
-        debug log_format('updating flows for', "uuid:#{network.uuid}")
-        network.update_flows
-      }
+    #
+    # Interfaces:
+    #
+
+    def update_interface(params)
+      item = item_by_params(params)
+
+      return nil if item.nil?
+      return nil if params[:interface_id].nil?
+
+      case params[:event]
+      when :insert then item.insert_interface(params)
+      when :remove then item.remove_interface(params)
+      when :update then item.update_interface(params)
+      end
+
       nil
     end
 
-    # Handle this internally.
-    def remove(network_id)
-      network = @items.delete(network_id)
+    #
+    # Obsolete:
+    #
 
-      if network.nil?
-        info log_format('could not find network to remove', "id:#{network_id}")
-        return
-      end
-
-      if !network.ports.empty?
-        info log_format('network still has active ports, and can\'t be removed',
-                        "network:#{network.uuid}/#{network.id}")
-        return
-      end
-
-      network.uninstall
-
-      @datapath.dc_segment_manager.async.remove_network_id(network_id)
+    def update_all_flows
+      @items.dup.each { |key,network|
+        debug log_format("updating flows for #{network.uuid}/#{network.network_id}")
+        network.update_flows
+      }
+      nil
     end
 
     def add_port(params)
       network = item_by_params(params)
       return nil if network.nil?
 
-      network.add_port(port_number: params[:port_number],
-                       port_mode: params[:port_mode])
+      network.add_port(params)
       item_to_hash(network)
     end
 
@@ -72,6 +74,10 @@ module Vnet::Openflow
       
       nil
     end
+
+    #
+    # Events:
+    #
 
     def handle_event(params)
       debug log_format("handle event #{params[:event]}", "#{params.inspect}")
@@ -132,6 +138,8 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
+      # TODO: Refactor this to only take the network id, and use that
+      # to populate service manager.
       item_map.batch.network_services.commit.each { |service_map|
         @datapath.service_manager.item(:id => service_map.id)
       }
@@ -144,6 +152,22 @@ module Vnet::Openflow
                      network_id: network.network_id,
                      dpid: @dpid)
       network
+    end
+
+    def delete_item(item)
+      if !item.ports.empty?
+        info log_format('network still has active ports, and can\'t be removed',
+                        "#{network.uuid}/#{network.id}")
+        return item
+      end
+
+      @items.delete(item.id)
+
+      item.uninstall
+
+      @datapath.dc_segment_manager.async.remove_network_id(item.id)
+
+      item
     end
 
     #

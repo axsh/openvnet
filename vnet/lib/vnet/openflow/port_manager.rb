@@ -36,9 +36,8 @@ module Vnet::Openflow
     end
 
     def insert(port_desc)
-      debug log_format('insert port',
-                       "port_no:#{port_desc.port_no} name:#{port_desc.name} " +
-                       "hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
+      debug log_format("insert port #{port_desc.name}",
+                       "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
       if @datapath.datapath_map.nil?
@@ -73,9 +72,8 @@ module Vnet::Openflow
     end
 
     def remove(port_desc)
-      debug log_format('remove port',
-                       "port_no:#{port_desc.port_no} name:#{port_desc.name} " +
-                       "hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
+      debug log_format("remove port #{port_desc.name}",
+                       "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
       port = @ports.delete(port_desc.port_no)
@@ -87,6 +85,8 @@ module Vnet::Openflow
       end
 
       port.uninstall
+
+      @datapath.interface_manager.unload(port_number: port_desc.port_no)
 
       if port.network_id
         @datapath.network_manager.del_port_number(port.network_id, port.port_number)
@@ -142,6 +142,11 @@ module Vnet::Openflow
       network = @datapath.network_manager.add_port(uuid: 'nw-public',
                                                    port_number: port.port_number,
                                                    port_mode: :eth)
+
+      if network
+        port.network_id = network[:id]
+      end
+
       port.install
     end
 
@@ -156,7 +161,7 @@ module Vnet::Openflow
                                                    reinitialize: true)
 
       if interface.nil?
-        error log_format('could not find uuid', "name:#{port_desc.name})")
+        error log_format("could not find uuid #{port_desc.name}")
         return
       end
 
@@ -165,8 +170,9 @@ module Vnet::Openflow
         return
       end
 
-      debug "prepare_port_vif: #{interface.uuid}"
+      debug log_format("prepare_port_vif #{interface.uuid}")
 
+      # Do this in interface manager.
       @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                           datapath_id: @datapath.datapath_map.id)
 

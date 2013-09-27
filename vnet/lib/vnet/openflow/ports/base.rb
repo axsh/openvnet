@@ -8,6 +8,8 @@ module Vnet::Openflow::Ports
 
     attr_reader :port_info
 
+    attr_accessor :network_id
+
     def initialize(dp, port_info)
       @datapath = dp
       @port_info = port_info
@@ -39,14 +41,6 @@ module Vnet::Openflow::Ports
         :ipv4_address => @ipv4_addr,
         :network_id => @network_id,
       }
-    end
-
-    def inspect
-      str = "<"
-      str << "@port_info=#{@port_info.inspect}, "
-      str << "@port_type=#{@port_type.inspect}, "
-      str << "@is_active=#{@is_active.inspect}>"
-      str
     end
 
     def install

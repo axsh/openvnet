@@ -13,6 +13,9 @@ module Vnet::Openflow::Routers
       @route_link_id = params[:route_link_id]
       @route_link_uuid = params[:route_link_uuid]
       @mac_address = params[:mac_address]
+
+      @dpid = @datapath.dpid
+      @dpid_s = "0x%016x" % @datapath.dpid
     end
 
     def install
@@ -98,7 +101,7 @@ module Vnet::Openflow::Routers
     private
 
     def log_format(message, values)
-      "router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
+      "#{@dpid_s} router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
     end
 
     def create_destination_flow(route)
