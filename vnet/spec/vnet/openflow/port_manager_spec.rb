@@ -37,7 +37,7 @@ describe Vnet::Openflow::PortManager do
 
       port_desc = double(:port_desc)
       port_desc.should_receive(:port_no).exactly(10).times.and_return(1)
-      port_desc.should_receive(:name).exactly(5).times.and_return(interface.display_name)
+      port_desc.should_receive(:name).exactly(4).times.and_return(interface.display_name)
       port_desc.should_receive(:hw_addr).and_return(interface.mac_address)
       port_desc.should_receive(:advertised).and_return(1)
       port_desc.should_receive(:supported).and_return(1)
