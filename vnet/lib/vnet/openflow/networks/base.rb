@@ -13,7 +13,9 @@ module Vnet::Openflow::Networks
     attr_reader :uuid
     attr_reader :datapath_of_bridge
 
+    # Refactoring, replace with 'interfaces'.
     attr_reader :ports
+    attr_reader :interfaces
 
     attr_reader :cookie
     attr_reader :ipv4_network
@@ -26,6 +28,7 @@ module Vnet::Openflow::Networks
       @datapath_of_bridge = nil
 
       @ports = {}
+      @interfaces = {}
 
       @cookie = @network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
@@ -50,6 +53,48 @@ module Vnet::Openflow::Networks
       @datapath.del_cookie(@cookie)
     end
 
+    #
+    # Interfaces:
+    #
+
+    # The 'interfaces' hash holds all interfaces on this network that
+    # are of interest to network manager. These include 'vif' and
+    # those 'simulated' interfaces that provide services for other
+    # datapaths.
+
+    def insert_interface(params)
+      if @interfaces[params[:interface_id]]
+        raise("Interface already added to a network.")
+      end
+      
+      @interfaces[params[:interface_id]] = {
+        :mode => params[:mode],
+        :port_number => params[:port_number],
+      }
+
+      update_flows if params[:port_number]
+    end
+
+    def remove_interface(params)
+      interface = @interfaces.delete(params[:interface_id])
+      raise("Could not find interface.") if interface.nil?
+
+      update_flows if interface[:port_number]
+    end
+
+    def update_interface(params)
+      interface = @interfaces[params[:interface_id]]
+      raise("Could not find interface.") if interface.nil?
+
+      if params.has_key? :port_number
+        interface[:port_number] = params[:port_number]
+        update_flows
+      end
+    end
+
+    #
+    # Obsolete:
+    #
 
     def add_port(params)
       if @ports[params[:port_number]]

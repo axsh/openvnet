@@ -46,15 +46,15 @@ module Vnet::Openflow
     end
 
     def create_item(item_map, params)
-      return nil if item_map.nil?
-
+      # TODO: Refactor this to be thread safe same as interface
+      # manager.
       interface = @datapath.interface_manager.item(:id => item_map.interface_id)
       return nil if interface.nil?
       
       item = @items[item_map.id]
       return item if item
 
-      debug log_format('insert', "service:#{item_map.uuid}/#{item_map.id}")
+      debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
 
       mac_address = interface.mac_addresses.first
       ipv4_address = mac_address[1][:ipv4_addresses].first

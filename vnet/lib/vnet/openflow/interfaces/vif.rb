@@ -11,15 +11,21 @@ module Vnet::Openflow::Interfaces
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
+      @datapath.network_manager.update_interface(event: :insert,
+                                                 id: ipv4_info[:network_id],
+                                                 interface_id: @id,
+                                                 mode: :vif,
+                                                 port_number: @port_number)
+
       return if @port_number.nil?
 
       @datapath.network_manager.add_port(id: ipv4_info[:network_id],
                                          port_number: @port_number,
-                                         port_mode: :vif)
+                                         port_mode: :vif,
+                                         ip_address: ipv4_info[:ipv4_address])
 
       flows = []
-
-      install_ipv4(flows, mac_info, ipv4_info)
+      flows_for_ipv4(flows, mac_info, ipv4_info)
 
       @datapath.add_flows(flows)
     end
@@ -28,8 +34,7 @@ module Vnet::Openflow::Interfaces
       return if @port_number.nil?
 
       flows = []
-
-      install_base(flows)
+      flows_for_base(flows)
 
       @datapath.add_flows(flows)
     end
@@ -49,10 +54,16 @@ module Vnet::Openflow::Interfaces
 
       if new_number
         flows = []
-
-        install_base(flows)
+        flows_for_base(flows)
 
         # @mac_addresses.each...
+
+        # add_port...
+
+        # @datapath.network_manager.update_interface(event: :update,
+        #                                            id: ipv4_info[:network_id],
+        #                                            interface_id: @id,
+        #                                            port_number: @port_number)
 
         if !@mac_addresses.empty?
           info log_format("MAC/IP addresses loaded before port number is set is not yet supported, no flows created.")
@@ -72,7 +83,7 @@ module Vnet::Openflow::Interfaces
       "#{@dpid_s} interfaces/vif: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def install_base(flows)
+    def flows_for_base(flows)
       flows << flow_create(:classifier,
                            priority: 2,
                            match: {
@@ -85,7 +96,7 @@ module Vnet::Openflow::Interfaces
                            goto_table: TABLE_VIF_PORTS)
     end
 
-    def install_mac(flows, mac_info)
+    def flows_for_mac(flows, mac_info)
       # flows << flow_create(:segment_src,
       #                      priority: 85,
       #                      match: {
@@ -106,7 +117,7 @@ module Vnet::Openflow::Interfaces
       #                      cookie: self.cookie)
     end
 
-    def install_ipv4(flows, mac_info, ipv4_info)
+    def flows_for_ipv4(flows, mac_info, ipv4_info)
       #
       # Classifier
       #

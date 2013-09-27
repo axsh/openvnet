@@ -17,7 +17,7 @@ describe Vnet::Openflow::Networks::Virtual do
     let(:vnet_map) { Vnet::ModelWrappers::Network['nw-aaaaaaaa'] }
     let(:datapath) { MockDatapath.new(double(:ofc), ("a" * 16).to_i) }
     let(:flow_options) { {:cookie => vnet_map.network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)} }
-    let(:network_md) { flow_options.merge(subject.md_network(:network)) }
+    let(:network_md) { flow_options.merge(subject.md_create(:network => vnet_map.network_id)) }
     let(:flows) { datapath.added_flows }
 
     subject { Vnet::Openflow::Networks::Virtual.new(datapath, vnet_map) }
@@ -33,13 +33,13 @@ describe Vnet::Openflow::Networks::Virtual do
       expect(flows[1]).to eq Vnet::Openflow::Flow.create(
         TABLE_NETWORK_SRC_CLASSIFIER,
         40,
-        subject.md_network(:network),
+        subject.md_create(:network => vnet_map.network_id),
         nil,
         flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
       expect(flows[2]).to eq Vnet::Openflow::Flow.create(
         TABLE_NETWORK_DST_CLASSIFIER,
         40,
-        subject.md_network(:network),
+        subject.md_create(:network => vnet_map.network_id),
         nil,
         flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
     end

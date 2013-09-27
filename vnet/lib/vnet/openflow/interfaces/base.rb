@@ -73,6 +73,15 @@ module Vnet::Openflow::Interfaces
     def install
     end
 
+    def uninstall
+      debug "interfaces: removing flows..."
+
+      cookie_value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
+      cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
+
+      @datapath.del_cookie(cookie_value, cookie_mask)
+    end
+
     def add_mac_address(mac_address)
       return nil if @mac_addresses.has_key? mac_address
 

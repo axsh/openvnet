@@ -103,14 +103,15 @@ module Vnet::Openflow
 
       @items[item_map.id] = interface
 
-      debug log_format('insert', "interface:#{item_map.uuid}/#{item_map.id} mode:#{mode}")
+      debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
 
       # TODO: Make install/uninstall a barrier that enables/disable
       # the creation of flows and ensure that no events gets lost.
 
       interface.install
 
-      if interface.mode == :vif
+      case interface.mode
+      when :vif
         port = @datapath.port_manager.port_by_port_name(interface.uuid)
         interface.update_port_number(port[:port_number])
       end
@@ -120,6 +121,15 @@ module Vnet::Openflow
       interface # Return nil if interface has been uninstalled.
     end
 
+    def delete_item(item)
+      @items.delete(item.id)
+
+      item.uninstall
+      item
+    end
+
+    # TODO: Convert the loading of addresses to events, and queue them
+    # with a 'handle_event' queue to ensure consistency.
     def load_addresses(interface, item_map)
       return if item_map.mac_address.nil?
 
