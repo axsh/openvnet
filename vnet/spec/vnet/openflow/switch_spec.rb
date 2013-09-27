@@ -11,7 +11,7 @@ describe Vnet::Openflow::Switch do
       switch.create_default_flows
 
       expect(datapath.sent_messages.size).to eq 0
-      expect(datapath.added_flows.size).to eq 40
+      expect(datapath.added_flows.size).to eq 41
       expect(datapath.added_ovs_flows.size).to eq 0
     end
 
@@ -40,7 +40,7 @@ describe Vnet::Openflow::Switch do
         port_desc.should_receive(:hw_addr).exactly(1).times.and_return(nil)
         port_desc.should_receive(:advertised).exactly(1).times.and_return(0)
         port_desc.should_receive(:supported).exactly(1).times.and_return(0)
-        
+
         port = double(:port)
         port_info = double(:port_info)
         port.should_receive(:port_number).exactly(2).times.and_return(5)

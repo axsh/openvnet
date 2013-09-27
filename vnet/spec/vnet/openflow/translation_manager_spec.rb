@@ -22,11 +22,11 @@ describe Vnet::Openflow::TranslationManager do
       expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
         TABLE_VLAN_TRANSLATION,
         2,
-        {:dl_vlan => 1},
+        {:vlan_vid => 1},
         {:strip_vlan => true},
         {:metadata => 1 | METADATA_TYPE_NETWORK,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
-         :goto_table => TABLE_VIF_PORTS})
+         :goto_table => TABLE_NETWORK_SRC_CLASSIFIER})
     end
   end
 end

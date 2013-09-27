@@ -48,6 +48,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
 
+      flows << Flow.create(TABLE_VLAN_TRANSLATION,   0, {}, nil, flow_options)
       flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)

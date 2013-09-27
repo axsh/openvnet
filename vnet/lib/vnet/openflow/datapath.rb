@@ -28,6 +28,7 @@ module Vnet::Openflow
     attr_reader :route_manager
     attr_reader :service_manager
     attr_reader :tunnel_manager
+    attr_reader :translation_manager
 
     def initialize(ofc, dp_id, ofctl = nil)
       @dpid = dp_id

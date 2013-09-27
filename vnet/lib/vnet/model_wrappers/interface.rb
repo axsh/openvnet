@@ -17,7 +17,8 @@ module Vnet::ModelWrappers
         :active_datapath_uuid => active_datapath && active_datapath.uuid,
         :mac_address => mac_address_s,
         :ipv4_address => ipv4_address_s,
-        :mode => mode
+        :mode => mode,
+        :display_name => display_name
       }
     end
   end

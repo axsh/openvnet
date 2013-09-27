@@ -144,13 +144,6 @@ module Vnet::Openflow
       )
 
       if interface.nil?
-        raise("#{port_desc.name} is not registered on database")
-      end
-
-      case interface.mode
-      when :edge
-        port.extend(Ports::Generic)
-      else
         port.extend(Ports::Host)
         network = @datapath.network_manager.add_port(uuid: 'nw-public',
                                                      port_number: port.port_number,
@@ -158,6 +151,9 @@ module Vnet::Openflow
         if network
           port.network_id = network[:id]
         end
+      else
+        port.extend(Ports::Generic)
+        @datapath.translation_manager.async.update
       end
 
       port.install

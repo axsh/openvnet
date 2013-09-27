@@ -54,6 +54,7 @@ Sequel.migration do
       Integer :network_id, :index => true
       Bignum :mac_address, :null=>false
       String :display_name
+      Bignum :ipv4_address, :null=>false
 
       String :mode, :default => 'vif',:null => false
 

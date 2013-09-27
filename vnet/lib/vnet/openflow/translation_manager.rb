@@ -27,13 +27,13 @@ module Vnet::Openflow
             raise("either mac_address of vlan_id is required.")
           else
             flows << Flow.create(TABLE_VLAN_TRANSLATION, 2, {
-                                  :eth_dst => Trema::Mac.new(g.mac_address)
-                                 }, nil, metadata.merge({:goto_table => TABLE_VIF_PORTS}))
+                                  :eth_src => Trema::Mac.new(g.mac_address)
+                                 }, nil, metadata.merge({:goto_table => TABLE_NETWORK_SRC_CLASSIFIER}))
           end
         else
           flows << Flow.create(TABLE_VLAN_TRANSLATION, 2, {
-                                :dl_vlan => g.vlan_id
-                               }, {:strip_vlan => true}, metadata.merge({:goto_table => TABLE_VIF_PORTS}))
+                                :vlan_vid => g.vlan_id
+                               }, {:strip_vlan => true}, metadata.merge({:goto_table => TABLE_NETWORK_SRC_CLASSIFIER}))
         end
 
         @datapath.add_flows(flows)
