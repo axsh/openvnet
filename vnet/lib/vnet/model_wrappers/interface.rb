@@ -3,10 +3,6 @@
 module Vnet::ModelWrappers
   class Interface < Base
 
-    def mac_address
-      self.batch.mac_address.commit
-    end
-
     def to_hash
       network = self.batch.network.commit
       owner_datapath = self.batch.owner_datapath.commit

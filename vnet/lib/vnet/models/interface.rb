@@ -15,28 +15,13 @@ module Vnet::Models
 
     subset(:alives, {})
 
-    def mac_address
-      mac_leases.first.try(:mac_address)
-    end
-
-    def all_mac_addresses
-      mac_leases.map(&:mac_address)
-    end
-
     def ipv4_address
       ip_leases.first.try(:ipv4_address)
-    end
-
-    def all_ipv4_addresses
-      ip_leases.map(&:ipv4_address)
     end
 
     def to_hash
       super.merge({
         :ipv4_address => self.ipv4_address,
-        :all_ipv4_addresses => self.ipv4_address,
-        :mac_address => self.mac_address,
-        :all_mac_addresses => self.mac_address,
       })
     end
 

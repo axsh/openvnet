@@ -14,6 +14,5 @@ describe Vnet::ModelWrappers::Network do
     subject { Vnet::ModelWrappers::Network.batch[network.canonical_uuid].interfaces.first.commit }
     it { expect(subject).to be_a Vnet::ModelWrappers::Interface }
     it { expect(subject.uuid).to eq network.interfaces.first.canonical_uuid }
-    it { expect(subject.mac_address).to eq 0 }
   end
 end

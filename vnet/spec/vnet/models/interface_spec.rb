@@ -20,16 +20,4 @@ describe Vnet::Models::Interface do
   describe "ipv4_address" do
     it {  expect(subject.ipv4_address).to eq 1 }
   end
-
-  describe "all_mac_addresses" do
-    it {  expect(subject.all_ipv4_addresses).to eq [1, 2] }
-  end
-
-  describe "mac_address" do
-    it {  expect(subject.mac_address).to eq 3 }
-  end
-
-  describe "all_mac_addresses" do
-    it {  expect(subject.all_mac_addresses).to eq [3, 4] }
-  end
 end
