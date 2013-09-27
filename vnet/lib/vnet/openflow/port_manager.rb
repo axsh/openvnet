@@ -86,6 +86,8 @@ module Vnet::Openflow
 
       port.uninstall
 
+      @datapath.interface_manager.unload(port_number: port_desc.port_no)
+
       if port.network_id
         @datapath.network_manager.del_port_number(port.network_id, port.port_number)
       end
@@ -170,6 +172,7 @@ module Vnet::Openflow
 
       debug log_format("prepare_port_vif #{interface.uuid}")
 
+      # Do this in interface manager.
       @datapath.interface_manager.update_active_datapaths(id: interface.id,
                                                           datapath_id: @datapath.datapath_map.id)
 

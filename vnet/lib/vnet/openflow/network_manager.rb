@@ -50,8 +50,7 @@ module Vnet::Openflow
       network = item_by_params(params)
       return nil if network.nil?
 
-      network.add_port(port_number: params[:port_number],
-                       port_mode: params[:port_mode])
+      network.add_port(params)
       item_to_hash(network)
     end
 

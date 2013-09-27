@@ -109,14 +109,14 @@ module Vnet::Openflow
       @ovs_ofctl.add_ovs_10_flow(flow_str)
     end
 
-    def del_cookie(cookie)
+    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
       options = {
         :command => Controller::OFPFC_DELETE,
         :table_id => Controller::OFPTT_ALL,
         :out_port => Controller::OFPP_ANY,
         :out_group => Controller::OFPG_ANY,
         :cookie => cookie,
-        :cookie_mask => 0xffffffffffffffff
+        :cookie_mask => cookie_mask
       }
 
       @controller.pass_task { @controller.public_send_flow_mod(@dpid, options) }

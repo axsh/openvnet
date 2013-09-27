@@ -120,6 +120,13 @@ module Vnet::Openflow
       interface # Return nil if interface has been uninstalled.
     end
 
+    def delete_item(item)
+      @items.delete(item.id)
+
+      item.uninstall
+      item
+    end
+
     def load_addresses(interface, item_map)
       return if item_map.mac_address.nil?
 

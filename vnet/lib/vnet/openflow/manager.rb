@@ -20,6 +20,15 @@ module Vnet::Openflow
       item_to_hash(item_by_params(params))
     end
 
+    def unload(params)
+      item = item_by_params_direct(params)
+      return nil if item.nil?
+
+      item_hash = item_to_hash(item)
+      delete_item(item)
+      item_hash
+    end
+
     def packet_in(message)
       item = @items[message.cookie & COOKIE_ID_MASK]
       item.packet_in(message) if item
