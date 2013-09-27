@@ -26,26 +26,6 @@ module Vnet::Openflow
       nil
     end
 
-    # Handle this internally.
-    def remove(network_id)
-      network = @items.delete(network_id)
-
-      if network.nil?
-        info log_format('could not find network to remove for', "id:#{network_id}")
-        return
-      end
-
-      if !network.ports.empty?
-        info log_format('network still has active ports, and can\'t be removed',
-                        "network:#{network.uuid}/#{network.id}")
-        return
-      end
-
-      network.uninstall
-
-      @datapath.dc_segment_manager.async.remove_network_id(network_id)
-    end
-
     def add_port(params)
       network = item_by_params(params)
       return nil if network.nil?
@@ -145,6 +125,22 @@ module Vnet::Openflow
                      network_id: network.network_id,
                      dpid: @dpid)
       network
+    end
+
+    def delete_item(item)
+      if !item.ports.empty?
+        info log_format('network still has active ports, and can\'t be removed',
+                        "#{network.uuid}/#{network.id}")
+        return item
+      end
+
+      @items.delete(item.id)
+
+      item.uninstall
+
+      @datapath.dc_segment_manager.async.remove_network_id(item.id)
+
+      item
     end
 
     #
