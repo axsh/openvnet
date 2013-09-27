@@ -17,7 +17,8 @@ module Sequel
           end
 
           define_method mac_address_attr_name do
-            instance_variable_get("@#{mac_address_attr_name}") || (__send__(mac_address_association_name) ? __send__(mac_address_association_name).mac_address : nil)
+            return instance_variable_get("@#{mac_address_attr_name}") if instance_variable_get("@#{mac_address_attr_name}")
+            instance_variable_set("@#{mac_address_attr_name}", __send__(mac_address_association_name) ? __send__(mac_address_association_name).mac_address : nil)
           end
 
           define_method "#{mac_address_attr_name}=" do |mac_address|
@@ -25,6 +26,7 @@ module Sequel
               instance_variable_set("@#{mac_address_attr_name}", mac_address)
               modified!(mac_address_attr_name)
             end
+            instance_variable_get("@#{mac_address_attr_name}")
           end
         end
       end
@@ -46,14 +48,13 @@ module Sequel
 
         def after_destroy
           super
-          if associations[mac_address_association_name]
-            associations[mac_address_association_name].destroy
-          end
+          associations[mac_address_association_name].try(:destroy)
         end
 
         def to_hash
-          values[mac_address_attr_name] = __send__(mac_address_attr_name)
-          super
+          super.merge({
+            mac_address_attr_name.to_sym => __send__(mac_address_attr_name)
+          })
         end
       end
     end

@@ -82,7 +82,7 @@ describe Sequel::Plugins::MacAddress do
     end
 
     describe "destroy" do
-      it "also destroy associated mac_address object" do
+      it "also destroy associated mac_address model" do
         model # create model
         mac_address_count = Vnet::Models::MacAddress.count
         model.destroy
