@@ -5,6 +5,10 @@ module Vnet::ModelWrappers
     include Helpers::IPv4
     include Helpers::MacAddr
 
+    def all_mac_addresses
+      self.batch.all_mac_addresses.commit
+    end
+
     def to_hash
       network = self.batch.network.commit
       owner_datapath = self.batch.owner_datapath.commit

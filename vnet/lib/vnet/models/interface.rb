@@ -8,11 +8,18 @@ module Vnet::Models
     one_to_many :ip_leases
     one_to_many :network_services
     one_to_many :routes
+    one_to_many :mac_leases
 
     many_to_one :owner_datapath, :class => Datapath
     many_to_one :active_datapath, :class => Datapath
 
     subset(:alives, {})
+
+    def all_mac_addresses
+      self.mac_leases.map do |ml|
+        ml.mac_address
+      end
+    end
 
     def ipv4_address
       ip_lease = self.ip_leases.first

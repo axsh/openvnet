@@ -18,6 +18,17 @@ module Vnet::Openflow::Ports
                             :in_port => self.port_number
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_VLAN_TRANSLATION))
+
+      if mac_addresses != []
+        mac_addresses.each do |mac|
+          flows << Vnet::Openflow::Flow.create(TABLE_VIRTUAL_DST, 80, {
+                                                :eth_dst => Trema::Mac.new(mac)
+                                               }, {
+                                                :output => self.port_number
+                                               }, flow_options)
+        end
+      end
+
       self.datapath.add_flows(flows)
     end
   end

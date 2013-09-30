@@ -13,6 +13,7 @@ module Vnet::Openflow::Ports
     attr_accessor :hw_addr
     attr_accessor :ipv4_addr
     attr_accessor :network_id
+    attr_accessor :mac_addresses
 
     def initialize(dp, port_info, active)
       @datapath = dp

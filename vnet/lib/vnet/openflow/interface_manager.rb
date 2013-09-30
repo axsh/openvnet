@@ -22,17 +22,26 @@ module Vnet::Openflow
       nil
     end
 
+    def get_all_mac_addresses(params)
+      interface = lookup(params)
+      interface.all_mac_addresses
+    end
+
+    def exist_interface?(params)
+      interface = lookup(params)
+      interface != nil
+    end
+
+    def lookup(params)
+      select_item(select_filter_from_params(params))
+    end
+
     # Deprecate this...
     def get_ipv4_address(params)
       interface = item_by_params_direct(params)
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
-    end
-
-
-    def lookup(params)
-      select_item(select_filter_from_params(params))
     end
 
     #
