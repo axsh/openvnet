@@ -28,12 +28,13 @@ module Vnet::Openflow
           else
             flows << Flow.create(TABLE_VLAN_TRANSLATION, 2, {
                                   :eth_src => Trema::Mac.new(g.mac_address)
-                                 }, nil, metadata.merge({:goto_table => TABLE_NETWORK_SRC_CLASSIFIER}))
+                                 }, nil, metadata.merge({:goto_table => TABLE_ROUTER_CLASSIFIER}))
           end
         else
+          # TODO refactor ":strip_vlan => true"
           flows << Flow.create(TABLE_VLAN_TRANSLATION, 2, {
                                 :vlan_vid => g.vlan_id
-                               }, {:strip_vlan => true}, metadata.merge({:goto_table => TABLE_NETWORK_SRC_CLASSIFIER}))
+                               }, {:strip_vlan => true}, metadata.merge({:goto_table => TABLE_ROUTER_CLASSIFIER}))
         end
 
         @datapath.add_flows(flows)

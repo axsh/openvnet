@@ -26,7 +26,7 @@ describe Vnet::Openflow::TranslationManager do
         {:strip_vlan => true},
         {:metadata => 1 | METADATA_TYPE_NETWORK,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
-         :goto_table => TABLE_NETWORK_SRC_CLASSIFIER})
+         :goto_table => TABLE_ROUTER_CLASSIFIER})
     end
   end
 end
