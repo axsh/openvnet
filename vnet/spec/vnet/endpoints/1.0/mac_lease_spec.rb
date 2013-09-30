@@ -17,12 +17,17 @@ describe "/mac_leases" do
   include_examples "GET /:uuid"
   include_examples "DELETE /:uuid"
 
+  before do
+    Fabricate(:interface)
+  end
+
   describe "POST /" do
     accepted_params = {
       :uuid => "ml-test",
+      :vif_uuid => "vif-uuid0",
       :mac_address => "00:21:cc:da:e9:cc"
     }
-    required_params = [:mac_address]
+    required_params = [:mac_address,:vif_uuid]
     uuid_params = [:uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params

@@ -23,10 +23,11 @@ describe Vnet::Openflow::PortManager do
         if_double = double(:interface_double)
 
         interface_manager = double(:interface_manager)
-        interface_manager.should_receive(:lookup).and_return(if_double)
+        interface_manager.should_receive(:exist_interface?).and_return(true)
+        interface_manager.should_receive(:get_all_mac_addresses).and_return([])
 
         d.should_receive(:mod_port)
-        d.should_receive(:interface_manager).and_return(interface_manager)
+        d.should_receive(:interface_manager).twice.and_return(interface_manager)
         d.should_receive(:datapath_map).twice.and_return(datapath_map)
       end
     end
