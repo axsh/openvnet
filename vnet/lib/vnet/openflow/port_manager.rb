@@ -157,6 +157,7 @@ module Vnet::Openflow
       # interface, it checks if the port is present and get the
       # port number from port manager.
       interface = @datapath.interface_manager.item(uuid: port_desc.name,
+                                                   # Remove port_number?...
                                                    port_number: port.port_number,
                                                    reinitialize: true)
 
@@ -177,6 +178,8 @@ module Vnet::Openflow
                                                           datapath_id: @datapath.datapath_map.id)
 
       port.extend(Ports::Vif)
+
+      port.interface_id = interface.id
       port.install
     end
 
