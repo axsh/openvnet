@@ -117,6 +117,7 @@ Sequel.migration do
     create_table(:mac_leases) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
+      Integer :interface_id, :index => true
       Bignum :mac_address, :unique => true, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
