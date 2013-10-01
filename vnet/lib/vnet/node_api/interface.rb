@@ -5,9 +5,11 @@ module Vnet::NodeApi
       def create(options)
         ipv4_address = options.delete(:ipv4_address)
 
+        ipv4_created = false
         interface = transaction do
           model_class.create(options).tap do |interface|
             if interface.network && ipv4_address
+              ipv4_created = true
               interface.add_ip_lease(
                 { :network_id => interface.network.id,
                   :interface_id => interface.id,
@@ -15,9 +17,9 @@ module Vnet::NodeApi
             end
           end
         end
-
-        if interface.network_id
-          dispatch_event("network/vif_added", network_id: interface.network_id, vif_id: interface.id)
+ 
+        if ipv4_created
+          dispatch_event(:leased_ipv4_address, interface_id: interface.id, ip_lease_id: interface.ip_leases.first.id, mac_address: interface.mac_address)
         end
 
         to_hash(interface)
