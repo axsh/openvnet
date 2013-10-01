@@ -26,31 +26,6 @@ module Vnet::Openflow::Interfaces
       @datapath.add_flows(flows)
     end
 
-    def update_port_number(new_number)
-      return if @port_number == new_number
-
-      # Event barrier for port number based events.
-      old_number = @port_number
-      @port_number = nil
-
-      if old_number
-        # remove flows?
-      end
-
-      @port_number = new_number
-
-      if new_number
-        # @datapath.network_manager.update_interface(event: :update,
-        #                                            id: ipv4_info[:network_id],
-        #                                            interface_id: @id,
-        #                                            port_number: @port_number)
-
-        # if !@mac_addresses.empty?
-        #   info log_format("MAC/IP addresses loaded before port number is set is not yet supported, no flows created.")
-        # end
-      end
-    end
-
     #
     # Internal methods:
     #

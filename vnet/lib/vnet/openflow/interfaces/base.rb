@@ -79,8 +79,24 @@ module Vnet::Openflow::Interfaces
       cookie_value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
       cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
 
+      @datapath.network_manager.async.update_interface(event: :remove_all,
+                                                       interface_id: @id)
       @datapath.del_cookie(cookie_value, cookie_mask)
     end
+
+    def update_port_number(new_number)
+      return if @port_number == new_number
+
+      @port_number = new_number
+
+      @datapath.network_manager.async.update_interface(event: :update_all,
+                                                       interface_id: @id,
+                                                       port_number: @port_number)
+    end
+
+    #
+    # Manage MAC and IP addresses:
+    #
 
     def add_mac_address(mac_address)
       return nil if @mac_addresses.has_key? mac_address

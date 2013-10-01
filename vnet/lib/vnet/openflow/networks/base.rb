@@ -74,14 +74,14 @@ module Vnet::Openflow::Networks
 
     def remove_interface(params)
       interface = @interfaces.delete(params[:interface_id])
-      raise("Could not find interface.") if interface.nil?
+      return if interface.nil?
 
       update_flows if interface[:port_number]
     end
 
     def update_interface(params)
       interface = @interfaces[params[:interface_id]]
-      raise("Could not find interface.") if interface.nil?
+      return if interface.nil?
 
       if params.has_key? :port_number
         interface[:port_number] = params[:port_number]
