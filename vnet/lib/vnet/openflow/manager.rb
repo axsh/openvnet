@@ -18,10 +18,6 @@ module Vnet::Openflow
       item_to_hash(item_by_params(params))
     end
 
-    def select(params)
-      select_by_params_direct(params)
-    end
-
     def unload(params)
       item = item_by_params_direct(params)
       return nil if item.nil?
@@ -30,6 +26,26 @@ module Vnet::Openflow
       delete_item(item)
       item_hash
     end
+
+    #
+    # Enumerator methods:
+    #
+
+    def detect(params)
+      item_to_hash(internal_detect(params))
+    end
+
+    def select(params)
+      @items.select { |id, item|
+        match_item?(item, params)
+      }.map { |id, item|
+        item_to_hash(item)
+      }
+    end
+
+    #
+    # Other:
+    #
 
     def packet_in(message)
       item = @items[message.cookie & COOKIE_ID_MASK]
@@ -137,12 +153,20 @@ module Vnet::Openflow
       end
     end
 
-    def select_by_params_direct(params)
-      @items.select { |id, item|
-        match_item?(item, params)
-      }.map { |id, item|
-        item_to_hash(item)
-      }
+    #
+    # Internal enumerators:
+    #
+
+    def internal_detect(params)
+      if params.size == 1 && params.first.first == :id
+        item = @items[params.first.last]
+        item = nil if item && !match_item?(item, params)
+      else
+        item = @items.detect { |id, item|
+          match_item?(item, params)
+        }
+        item = item && item.last
+      end
     end
 
   end

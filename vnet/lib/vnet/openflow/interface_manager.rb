@@ -112,7 +112,7 @@ module Vnet::Openflow
 
       case interface.mode
       when :vif
-        port = @dp_info.port_manager.port_by_port_name(interface.uuid)
+        port = @dp_info.port_manager.detect(port_name: interface.uuid)
         interface.update_port_number(port[:port_number])
       end
 

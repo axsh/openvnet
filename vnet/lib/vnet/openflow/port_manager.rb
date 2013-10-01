@@ -4,22 +4,6 @@ module Vnet::Openflow
 
   class PortManager < Manager
 
-    def ports(params = {})
-      @items.select { |key, port|
-        result = true
-        result = result && (port.port_type == params[:port_type]) if params[:port_type]
-      }.map { |key, port|
-        item_to_hash(port)
-      }
-    end
-
-    def port_by_port_name(port_name)
-      port_number, port = @items.detect { |port_number, port|
-        port_name == port.port_name
-      }
-      item_to_hash(port)
-    end
-
     def insert(port_desc)
       debug log_format("insert port #{port_desc.name}",
                        "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
@@ -99,6 +83,7 @@ module Vnet::Openflow
       return false if params[:id] && params[:id] != item.id
       return false if params[:port_name] && params[:port_name] != item.port_name
       return false if params[:port_number] && params[:port_number] != item.port_number
+      return false if params[:port_type] && params[:port_type] != item.port_type
       true
     end
 
