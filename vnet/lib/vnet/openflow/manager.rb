@@ -7,13 +7,11 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
-    def initialize(dp)
-      @datapath = dp
+    def initialize(dp_info)
+      @dp_info = dp_info
+
       @datapath_id = nil
       @items = {}
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
     end
 
     def item(params)

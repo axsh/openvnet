@@ -28,7 +28,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} service_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} service_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def service_initialize(mode, params)
@@ -48,7 +48,7 @@ module Vnet::Openflow
     def create_item(item_map, params)
       # TODO: Refactor this to be thread safe same as interface
       # manager.
-      interface = @datapath.interface_manager.item(:id => item_map.interface_id)
+      interface = @dp_info.interface_manager.item(:id => item_map.interface_id)
       return nil if interface.nil?
       
       item = @items[item_map.id]
@@ -60,7 +60,8 @@ module Vnet::Openflow
       ipv4_address = mac_address[1][:ipv4_addresses].first
 
       item = service_initialize(item_map.display_name.to_sym,
-                                datapath: @datapath,
+                                dp_info: @dp_info,
+                                datapath: @dp_info.datapath,
                                 manager: self,
                                 id: item_map.id,
                                 uuid: item_map.uuid,

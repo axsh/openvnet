@@ -10,6 +10,7 @@ module Vnet::Openflow
   # Datapath's thread for every time we use a manager.
   class DpInfo
     attr_reader :controller
+    attr_reader :datapath
 
     attr_reader :dpid
     attr_reader :dpid_s
@@ -30,17 +31,18 @@ module Vnet::Openflow
       @dpid_s = "0x%016x" % @dpid
 
       @controller = params[:controller]
+      @datapath = params[:datapath]
       @ovs_ofctl = params[:ovs_ofctl]
 
       @cookie_manager = CookieManager.new
-      @dc_segment_manager = DcSegmentManager.new(params[:datapath])
-      @interface_manager = InterfaceManager.new(params[:datapath])
-      @network_manager = NetworkManager.new(params[:datapath])
-      @packet_manager = PacketManager.new(params[:datapath])
-      @port_manager = PortManager.new(params[:datapath])
-      @route_manager = RouteManager.new(params[:datapath])
-      @service_manager = ServiceManager.new(params[:datapath])
-      @tunnel_manager = TunnelManager.new(params[:datapath])
+      @dc_segment_manager = DcSegmentManager.new(@datapath)
+      @interface_manager = InterfaceManager.new(self)
+      @network_manager = NetworkManager.new(self)
+      @packet_manager = PacketManager.new(@datapath)
+      @port_manager = PortManager.new(@datapath)
+      @route_manager = RouteManager.new(@datapath)
+      @service_manager = ServiceManager.new(self)
+      @tunnel_manager = TunnelManager.new(@datapath)
     end
 
   end

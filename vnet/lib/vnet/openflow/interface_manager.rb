@@ -60,7 +60,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def interface_initialize(mode, params)
@@ -96,7 +96,8 @@ module Vnet::Openflow
       mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
 
       interface = interface_initialize(mode,
-                                       datapath: @datapath,
+                                       dp_info: @dp_info,
+                                       datapath: @dp_info.datapath,
                                        manager: self,
                                        map: item_map)
       return nil if interface.nil?
@@ -112,7 +113,7 @@ module Vnet::Openflow
 
       case interface.mode
       when :vif
-        port = @datapath.port_manager.port_by_port_name(interface.uuid)
+        port = @dp_info.port_manager.port_by_port_name(interface.uuid)
         interface.update_port_number(port[:port_number])
       end
 
@@ -143,7 +144,7 @@ module Vnet::Openflow
         network_id = ip_lease.network_id
         next if network_id.nil?
 
-        network_info = @datapath.network_manager.item(id: network_id)
+        network_info = @dp_info.network_manager.item(id: network_id)
         next if network_info.nil?
 
         interface.add_ipv4_address(mac_address: mac_address,

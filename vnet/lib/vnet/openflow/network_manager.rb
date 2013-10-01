@@ -93,13 +93,13 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def network_initialize(mode, item_map)
       case mode
-      when :physical then Networks::Physical.new(@datapath, item_map)
-      when :virtual then Networks::Virtual.new(@datapath, item_map)
+      when :physical then Networks::Physical.new(@dp_info.datapath, item_map)
+      when :virtual then Networks::Virtual.new(@dp_info.datapath, item_map)
       else
         error log_format('unknown network type',
                          "network_type:#{item_map.network_mode}")
@@ -117,7 +117,7 @@ module Vnet::Openflow
       network = network_initialize(item_map.network_mode.to_sym, item_map)
       @items[network.network_id] = network
 
-      dp_map = @datapath.datapath_map
+      dp_map = @dp_info.datapath.datapath_map
 
       if dp_map.nil?
         error log_format('datapath information not found in database')
@@ -134,12 +134,12 @@ module Vnet::Openflow
       # TODO: Refactor this to only take the network id, and use that
       # to populate service manager.
       item_map.batch.network_services.commit.each { |service_map|
-        @datapath.service_manager.item(:id => service_map.id)
+        @dp_info.service_manager.item(:id => service_map.id)
       }
 
-      @datapath.dc_segment_manager.async.prepare_network(item_map, dp_map)
-      @datapath.tunnel_manager.async.prepare_network(item_map, dp_map)
-      @datapath.route_manager.async.prepare_network(item_map, dp_map)
+      @dp_info.dc_segment_manager.async.prepare_network(item_map, dp_map)
+      @dp_info.tunnel_manager.async.prepare_network(item_map, dp_map)
+      @dp_info.route_manager.async.prepare_network(item_map, dp_map)
 
       dispatch_event("network/added",
                      network_id: network.network_id,
@@ -158,7 +158,7 @@ module Vnet::Openflow
 
       item.uninstall
 
-      @datapath.dc_segment_manager.async.remove_network_id(item.id)
+      @dp_info.dc_segment_manager.async.remove_network_id(item.id)
 
       item
     end
