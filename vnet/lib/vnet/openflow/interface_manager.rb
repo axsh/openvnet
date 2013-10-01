@@ -33,7 +33,7 @@ module Vnet::Openflow
     def handle_event(params)
       debug log_format("handle event #{params[:event]}", "#{params.inspect}")
 
-      item = @items[:target_id]
+      item = @items[params[:target_id]]
 
       case params[:event]
       when :added
@@ -47,7 +47,7 @@ module Vnet::Openflow
         leased_ipv4_address(item, params)
       when :released_ipv4_address
         return nil if item.nil?
-        unleased_ipv4_address(item, params)
+        released_ipv4_address(item, params)
       end
 
       nil
@@ -149,6 +149,7 @@ module Vnet::Openflow
         interface.add_ipv4_address(mac_address: mac_address,
                                    network_id: network_id,
                                    network_type: network_info[:type],
+                                   ip_lease_id: ip_lease.id,
                                    ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
       }
     end
@@ -168,11 +169,26 @@ module Vnet::Openflow
     #
 
     def leased_ipv4_address(item, params)
-      # mac_address = load_mac_address(params[:mac_address_id])
-      # ipv4_address = load_ipv4_address(params[:ipv4_address_id])
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
+
+      return if ip_lease.interface_id != item.id
+      return if ip_lease.interface.nil?
+
+      network = @datapath.network_manager.item(id: ip_lease.interface.network_id)
+
+      item.add_ipv4_address(mac_address: item.mac_address,
+                            network_id: network[:id],
+                            network_type: network[:type],
+                            ip_lease_id: ip_lease.id,
+                            ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
     end
 
-    def unleased_ipv4_address(item, params)
+    def released_ipv4_address(item, params)
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
+
+      return if ip_lease && ip_lease.interface_id == item.id
+
+      item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
     end
 
   end

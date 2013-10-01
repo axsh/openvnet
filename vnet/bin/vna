@@ -42,4 +42,17 @@ DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
 name = "#{conf.node.id}-#{conf.node.addr.host}"
 service_openflow = Vnet::NodeModules::ServiceOpenflow.supervise_as name.to_sym
 
+sleep 5
+# DCell::Node[conf.node.id][name.to_sym].foo(event: :leased_ipv4_address,
+#                      target_id: 1,
+#                      mac_lease_id: 1,
+#                      ip_address_id: 1)
+
+Vnet::ModelWrappers::IpLease.batch[1].update({:interface_id => nil}).commit
+
+DCell::Node[conf.node.id][name.to_sym].released_ip(event: :released_ipv4_address,
+                     target_id: 1,
+                     mac_lease_id: 1,
+                     ip_lease_id: 1)
+
 sleep

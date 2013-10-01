@@ -16,7 +16,7 @@ module Vnet::Openflow::Interfaces
 
     def initialize(params)
       super
-      
+
       arp_lookup_initialize(interface_id: @id,
                             lookup_cookie: self.cookie(TAG_ARP_LOOKUP),
                             reply_cookie: self.cookie(TAG_ARP_REPLY))
@@ -97,7 +97,7 @@ module Vnet::Openflow::Interfaces
                        :payload => raw_in.l4.payload
                      })
         end
-        
+
       end
 
     end
