@@ -88,9 +88,9 @@ module Vnet::Openflow
 
       @datapath.interface_manager.unload(port_number: port_desc.port_no)
 
-      if port.network_id
-        @datapath.network_manager.del_port_number(port.network_id, port.port_number)
-      end
+      # if port.network_id
+      #   @datapath.network_manager.del_port_number(port.network_id, port.port_number)
+      # end
 
       if port.port_name =~ /^vif-/
         @datapath.interface_manager.update_active_datapaths(uuid: port.port_name,
@@ -124,12 +124,12 @@ module Vnet::Openflow
       port.extend(Ports::Local)
       port.ipv4_addr = @datapath.ipv4_address
 
-      network = @datapath.network_manager.add_port(uuid: 'nw-public',
-                                                   port_number: port.port_number,
-                                                   port_mode: :local)
-      if network
-        port.network_id = network[:id]
-      end
+      # network = @datapath.network_manager.add_port(uuid: 'nw-public',
+      #                                              port_number: port.port_number,
+      #                                              port_mode: :local)
+      # if network
+      #   port.network_id = network[:id]
+      # end
 
       port.install
     end
@@ -139,13 +139,13 @@ module Vnet::Openflow
 
       port.extend(Ports::Host)
 
-      network = @datapath.network_manager.add_port(uuid: 'nw-public',
-                                                   port_number: port.port_number,
-                                                   port_mode: :eth)
+      # network = @datapath.network_manager.add_port(uuid: 'nw-public',
+      #                                              port_number: port.port_number,
+      #                                              port_mode: :eth)
 
-      if network
-        port.network_id = network[:id]
-      end
+      # if network
+      #   port.network_id = network[:id]
+      # end
 
       port.install
     end

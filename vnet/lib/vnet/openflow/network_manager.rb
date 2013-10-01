@@ -34,6 +34,15 @@ module Vnet::Openflow
       when :update then item.update_interface(params)
       end
 
+      #   if network.ports.empty?
+      #     remove(network)
+      #     @datapath.tunnel_manager.delete_tunnel_port(network_id, @dpid)
+
+      #     dispatch_event("network/deleted",
+      #                    network_id: network_id,
+      #                    dpid: @dpid)
+      #   end
+
       nil
     end
 
@@ -46,32 +55,6 @@ module Vnet::Openflow
         debug log_format("updating flows for #{network.uuid}/#{network.network_id}")
         network.update_flows
       }
-      nil
-    end
-
-    def add_port(params)
-      network = item_by_params(params)
-      return nil if network.nil?
-
-      network.add_port(params)
-      item_to_hash(network)
-    end
-
-    def del_port_number(network_id, port_number)
-      network = @items[network_id]
-      return nil if network.nil?
-
-      network.del_port_number(port_number)
-
-      if network.ports.empty?
-        remove(network)
-        @datapath.tunnel_manager.delete_tunnel_port(network_id, @dpid)
-
-        dispatch_event("network/deleted",
-                       network_id: network_id,
-                       dpid: @dpid)
-      end
-      
       nil
     end
 

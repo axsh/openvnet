@@ -54,7 +54,11 @@ module Vnet::Openflow::Networks
     end
 
     def update_flows
-      flood_actions = @ports.collect { |port_number, port| {:output => port_number} }
+      flood_actions = @interfaces.select { |interface_id, interface|
+        interface[:port_number]
+      }.collect { |interface_id, interface|
+        { :output => interface[:port_number] }
+      }
 
       flows = []
       flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
