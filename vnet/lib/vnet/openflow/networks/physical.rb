@@ -30,7 +30,7 @@ module Vnet::Openflow::Networks
                            network_md, nil,
                            flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def update_flows
@@ -48,7 +48,7 @@ module Vnet::Openflow::Networks
                            local_actions,
                            flow_options.merge(:goto_table => TABLE_FLOOD_ROUTE))
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
   end

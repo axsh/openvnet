@@ -46,7 +46,7 @@ module Vnet::Openflow::Networks
     end
 
     def uninstall
-      @dp_info.datapath.del_cookie(@cookie)
+      @dp_info.del_cookie(@cookie)
     end
 
     #

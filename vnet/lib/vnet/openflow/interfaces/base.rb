@@ -78,7 +78,7 @@ module Vnet::Openflow::Interfaces
 
       @dp_info.network_manager.async.update_interface(event: :remove_all,
                                                       interface_id: @id)
-      @dp_info.datapath.del_cookie(cookie_value, cookie_mask)
+      @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
     def update_port_number(new_number)

@@ -30,7 +30,7 @@ module Vnet::Openflow::Interfaces
       flows_for_ipv4(flows, mac_info, ipv4_info)
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def install
@@ -39,7 +39,7 @@ module Vnet::Openflow::Interfaces
       flows_for_base(flows)
       arp_lookup_base_flows(flows)
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def packet_in(message)

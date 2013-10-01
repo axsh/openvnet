@@ -40,7 +40,7 @@ module Vnet::Openflow::Services
         }
       }
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def packet_in(message)

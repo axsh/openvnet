@@ -7,8 +7,9 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
-    def initialize(dp)
-      @datapath = dp
+    def initialize(dp_info)
+      @dp_info = dp_info
+      @datapath = dp_info.datapath
       @ports = {}
 
       @dpid = @datapath.dpid
@@ -40,7 +41,7 @@ module Vnet::Openflow
                        "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
-      if @datapath.datapath_map.nil?
+      if @dp_info.datapath.datapath_map.nil?
         warn log_format('cannot initialize ports without a valid datapath database entry')
         return nil
       end
@@ -50,7 +51,7 @@ module Vnet::Openflow
         return port_to_hash(@ports[port_desc.port_no])
       end
 
-      port = Ports::Base.new(@datapath, port_desc)
+      port = Ports::Base.new(@dp_info.datapath, port_desc)
       @ports[port_desc.port_no] = port
 
       case
@@ -63,7 +64,7 @@ module Vnet::Openflow
       when port.port_info.name =~ /^t-/
         prepare_port_tunnel(port, port_desc)
       else
-        @datapath.mod_port(port.port_number, :no_flood)
+        @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
         error log_format('unknown interface type', 'name:#{port.port_info.name}')
       end
@@ -86,15 +87,15 @@ module Vnet::Openflow
 
       port.uninstall
 
-      @datapath.interface_manager.unload(port_number: port_desc.port_no)
+      @dp_info.interface_manager.unload(port_number: port_desc.port_no)
 
       # if port.network_id
-      #   @datapath.network_manager.del_port_number(port.network_id, port.port_number)
+      #   @dp_info.network_manager.del_port_number(port.network_id, port.port_number)
       # end
 
       if port.port_name =~ /^vif-/
-        @datapath.interface_manager.update_active_datapaths(uuid: port.port_name,
-                                                            datapath_id: nil)
+        @dp_info.interface_manager.update_active_datapaths(uuid: port.port_name,
+                                                           datapath_id: nil)
       end
 
       nil
@@ -119,12 +120,12 @@ module Vnet::Openflow
     #
 
     def prepare_port_local(port, port_desc)
-      @datapath.mod_port(port.port_number, :no_flood)
+      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
       port.extend(Ports::Local)
-      port.ipv4_addr = @datapath.ipv4_address
+      port.ipv4_addr = @dp_info.datapath.ipv4_address
 
-      # network = @datapath.network_manager.add_port(uuid: 'nw-public',
+      # network = @dp_info.datapath.network_manager.add_port(uuid: 'nw-public',
       #                                              port_number: port.port_number,
       #                                              port_mode: :local)
       # if network
@@ -135,11 +136,11 @@ module Vnet::Openflow
     end
 
     def prepare_port_eth(port, port_desc)
-      @datapath.mod_port(port.port_number, :flood)
+      @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
       port.extend(Ports::Host)
 
-      # network = @datapath.network_manager.add_port(uuid: 'nw-public',
+      # network = @dp_info.datapath.network_manager.add_port(uuid: 'nw-public',
       #                                              port_number: port.port_number,
       #                                              port_mode: :eth)
 
@@ -151,15 +152,15 @@ module Vnet::Openflow
     end
 
     def prepare_port_vif(port, port_desc)
-      @datapath.mod_port(port.port_number, :no_flood)
+      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
       # TODO: Fix this so that when interface manager creates a new
       # interface, it checks if the port is present and get the
       # port number from port manager.
-      interface = @datapath.interface_manager.item(uuid: port_desc.name,
-                                                   # Remove port_number?...
-                                                   port_number: port.port_number,
-                                                   reinitialize: true)
+      interface = @dp_info.interface_manager.item(uuid: port_desc.name,
+                                                  # Remove port_number?...
+                                                  port_number: port.port_number,
+                                                  reinitialize: true)
 
       if interface.nil?
         error log_format("could not find uuid #{port_desc.name}")
@@ -174,8 +175,8 @@ module Vnet::Openflow
       debug log_format("prepare_port_vif #{interface.uuid}")
 
       # Do this in interface manager.
-      @datapath.interface_manager.update_active_datapaths(id: interface.id,
-                                                          datapath_id: @datapath.datapath_map.id)
+      @dp_info.interface_manager.update_active_datapaths(id: interface.id,
+                                                         datapath_id: @dp_info.datapath.datapath_map.id)
 
       port.extend(Ports::Vif)
 
@@ -184,7 +185,7 @@ module Vnet::Openflow
     end
 
     def prepare_port_tunnel(port, port_desc)
-      @datapath.mod_port(port.port_number, :no_flood)
+      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
       port.extend(Ports::Tunnel)
       port.install

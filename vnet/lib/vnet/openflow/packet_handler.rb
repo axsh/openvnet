@@ -222,7 +222,7 @@ module Vnet::Openflow
 
       message = Trema::Messages::PacketIn.new(packet_params)
 
-      @dp_info.datapath.send_packet_out(message, params[:out_port])
+      @dp_info.send_packet_out(message, params[:out_port])
     end
 
     def packet_udp_in(message)
@@ -262,7 +262,7 @@ module Vnet::Openflow
 
       message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
 
-      @dp_info.datapath.send_packet_out(message, params[:out_port])
+      @dp_info.send_packet_out(message, params[:out_port])
     end
 
     def icmpv4_in(message)
@@ -319,7 +319,7 @@ module Vnet::Openflow
 
       message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
 
-      @dp_info.datapath.send_packet_out(message, params[:out_port])
+      @dp_info.send_packet_out(message, params[:out_port])
     end
 
   end

@@ -16,14 +16,14 @@ module Vnet::Openflow::Interfaces
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def install
       flows = []
       flows_for_base(flows)
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     #

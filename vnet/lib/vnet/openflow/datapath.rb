@@ -74,7 +74,7 @@ module Vnet::Openflow
     end
 
     def inspect
-      "<##{self.class.name} dpid:#{@dpid}>"
+      "<##{self.class.name} dpid:#{@dp_info.dpid}>"
     end
 
     def ipv4_address
@@ -86,7 +86,7 @@ module Vnet::Openflow
       @switch = Switch.new(self)
       @switch.create_default_flows
 
-      @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @dpid)]
+      @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
 
       if @datapath_map.nil?
         warn log_format('could not find dpid in database')
@@ -104,8 +104,11 @@ module Vnet::Openflow
     # Flow modification methods:
     #
 
+    # Use dp_info.
     def add_flow(flow)
-      @controller.pass_task { @controller.send_flow_mod_add(@dpid, flow.to_trema_hash) }
+      @controller.pass_task {
+        @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
+      }
     end
 
     def add_ovs_flow(flow_str)
@@ -116,6 +119,7 @@ module Vnet::Openflow
       @ovs_ofctl.add_ovs_10_flow(flow_str)
     end
 
+    # Use dp_info.
     def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
       options = {
         :command => Controller::OFPFC_DELETE,
@@ -126,35 +130,40 @@ module Vnet::Openflow
         :cookie_mask => cookie_mask
       }
 
-      @controller.pass_task { @controller.public_send_flow_mod(@dpid, options) }
+      @controller.pass_task {
+        @controller.public_send_flow_mod(@dp_info.dpid, options)
+      }
     end
 
+    # Use dp_info.
     def add_flows(flows)
       return if flows.blank?
       @controller.pass_task {
         flows.each { |flow|
-          @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
+          @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
         }
       }
     end
 
+    # Use dp_info.
     def send_message(message)
-      @controller.pass_task { @controller.public_send_message(@dpid, message) }
+      @controller.pass_task {
+        @controller.public_send_message(@dp_info.dpid, message)
+      }
     end
 
+    # Use dp_info.
     def send_packet_out(message, port_no)
-      @controller.pass_task { @controller.public_send_packet_out(@dpid, message, port_no) }
+      @controller.pass_task {
+        @controller.public_send_packet_out(@dp_info.dpid, message, port_no)
+      }
     end
 
     #
     # Port modification methods:
     #
 
-    def mod_port(port_no, action)
-      debug log_format('modifying', "port_number:#{port_no} action:#{action.to_s}")
-      @ovs_ofctl.mod_port(port_no, action)
-    end
-
+    # Obsolete, use DpInfo directly.
     def add_tunnel(tunnel_name, remote_ip)
       @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
     end
@@ -171,7 +180,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
     end
 
   end

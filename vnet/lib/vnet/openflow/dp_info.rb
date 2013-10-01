@@ -39,10 +39,68 @@ module Vnet::Openflow
       @interface_manager = InterfaceManager.new(self)
       @network_manager = NetworkManager.new(self)
       @packet_manager = PacketManager.new(@datapath)
-      @port_manager = PortManager.new(@datapath)
+      @port_manager = PortManager.new(self)
       @route_manager = RouteManager.new(@datapath)
       @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(@datapath)
+    end
+
+    #
+    # Flow modification:
+    #
+
+    def add_flow(flow)
+      @controller.pass_task {
+        @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
+      }
+    end
+
+    def add_flows(flows)
+      return if flows.blank?
+      @controller.pass_task {
+        flows.each { |flow|
+          @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
+        }
+      }
+    end
+
+    def add_ovs_flow(flow_str)
+      @ovs_ofctl.add_ovs_flow(flow_str)
+    end
+
+    def add_ovs_10_flow(flow_str)
+      @ovs_ofctl.add_ovs_10_flow(flow_str)
+    end
+
+    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
+      options = {
+        :command => Controller::OFPFC_DELETE,
+        :table_id => Controller::OFPTT_ALL,
+        :out_port => Controller::OFPP_ANY,
+        :out_group => Controller::OFPG_ANY,
+        :cookie => cookie,
+        :cookie_mask => cookie_mask
+      }
+
+      @controller.pass_task {
+        @controller.public_send_flow_mod(@dpid, options)
+      }
+    end
+
+    #
+    # Trema messaging:
+    #
+
+    def send_message(message)
+      @controller.pass_task {
+        @controller.public_send_message(@dpid, message)
+      }
+    end
+
+    def send_packet_out(message, port_no)
+      @controller.pass_task {
+        @controller.public_send_packet_out(@dpid, message, port_no)
+      }
     end
 
   end

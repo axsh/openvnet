@@ -110,7 +110,7 @@ module Vnet::Openflow
                                                 :goto_table => TABLE_NETWORK_DST_CLASSIFIER
                                               }))
 
-      @dp_info.datapath.add_flow(flow)        
+      @dp_info.add_flow(flow)        
 
       arp_lookup_send_packets(@arp_lookup[:requests].delete(message.arp_spa))
     end
@@ -161,7 +161,7 @@ module Vnet::Openflow
         # TABLE_ROUTER_LINK prior to be sent to the controller.
         message[:message].match.in_port = OFPP_CONTROLLER
 
-        @dp_info.datapath.send_packet_out(message[:message], OFPP_TABLE)
+        @dp_info.send_packet_out(message[:message], OFPP_TABLE)
       }
     end
 
