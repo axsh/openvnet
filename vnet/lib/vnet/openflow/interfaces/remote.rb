@@ -33,7 +33,7 @@ module Vnet::Openflow::Interfaces
       "#{@dpid_s} interfaces/remote: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def install_ipv4(flows, mac_info, ipv4_info)
+    def flows_for_ipv4(flows, mac_info, ipv4_info)
       flows << flow_create(:router_dst_match,
                            priority: 40,
                            match: {
