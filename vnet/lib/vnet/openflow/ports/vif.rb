@@ -38,7 +38,7 @@ module Vnet::Openflow::Ports
                              :output => self.port_number
                            })
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
   end

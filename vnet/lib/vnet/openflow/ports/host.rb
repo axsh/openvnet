@@ -78,8 +78,8 @@ module Vnet::Openflow::Ports
                             { :output => self.port_number }],
                            flow_options)
 
-      @datapath.add_flows(flows)
-      @datapath.network_manager.update_all_flows
+      @dp_info.add_flows(flows)
+      @dp_info.network_manager.update_all_flows
     end
 
   end

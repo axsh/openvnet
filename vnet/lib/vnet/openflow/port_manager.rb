@@ -9,11 +9,7 @@ module Vnet::Openflow
 
     def initialize(dp_info)
       @dp_info = dp_info
-      @datapath = dp_info.datapath
       @ports = {}
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
     end
 
     def ports(params = {})
@@ -51,7 +47,7 @@ module Vnet::Openflow
         return port_to_hash(@ports[port_desc.port_no])
       end
 
-      port = Ports::Base.new(@dp_info.datapath, port_desc)
+      port = Ports::Base.new(@dp_info, port_desc)
       @ports[port_desc.port_no] = port
 
       case
@@ -89,10 +85,6 @@ module Vnet::Openflow
 
       @dp_info.interface_manager.unload(port_number: port_desc.port_no)
 
-      # if port.network_id
-      #   @dp_info.network_manager.del_port_number(port.network_id, port.port_number)
-      # end
-
       if port.port_name =~ /^vif-/
         @dp_info.interface_manager.update_active_datapaths(uuid: port.port_name,
                                                            datapath_id: nil)
@@ -108,7 +100,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} port_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} port_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def port_to_hash(port)
@@ -125,13 +117,6 @@ module Vnet::Openflow
       port.extend(Ports::Local)
       port.ipv4_addr = @dp_info.datapath.ipv4_address
 
-      # network = @dp_info.datapath.network_manager.add_port(uuid: 'nw-public',
-      #                                              port_number: port.port_number,
-      #                                              port_mode: :local)
-      # if network
-      #   port.network_id = network[:id]
-      # end
-
       port.install
     end
 
@@ -139,15 +124,6 @@ module Vnet::Openflow
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
       port.extend(Ports::Host)
-
-      # network = @dp_info.datapath.network_manager.add_port(uuid: 'nw-public',
-      #                                              port_number: port.port_number,
-      #                                              port_mode: :eth)
-
-      # if network
-      #   port.network_id = network[:id]
-      # end
-
       port.install
     end
 
@@ -158,7 +134,6 @@ module Vnet::Openflow
       # interface, it checks if the port is present and get the
       # port number from port manager.
       interface = @dp_info.interface_manager.item(uuid: port_desc.name,
-                                                  # Remove port_number?...
                                                   port_number: port.port_number,
                                                   reinitialize: true)
 
