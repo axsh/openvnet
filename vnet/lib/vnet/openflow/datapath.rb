@@ -9,6 +9,8 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
+    attr_reader :dp_info
+
     attr_reader :controller
     attr_reader :dpid
     attr_reader :ovs_ofctl
@@ -33,18 +35,23 @@ module Vnet::Openflow
       @dpid = dp_id
       @dpid_s = "0x%016x" % @dpid
 
-      @controller = ofc
-      @ovs_ofctl = ofctl
+      @dp_info = DpInfo.new(controller: ofc,
+                            datapath: self,
+                            dpid: dp_id,
+                            ovs_ofctl: ofctl)
 
-      @cookie_manager = CookieManager.new
-      @dc_segment_manager = DcSegmentManager.new(self)
-      @interface_manager = InterfaceManager.new(self)
-      @network_manager = NetworkManager.new(self)
-      @packet_manager = PacketManager.new(self)
-      @port_manager = PortManager.new(self)
-      @route_manager = RouteManager.new(self)
-      @service_manager = ServiceManager.new(self)
-      @tunnel_manager = TunnelManager.new(self)
+      @controller = @dp_info.controller
+      @ovs_ofctl = @dp_info.ovs_ofctl
+
+      @cookie_manager = @dp_info.cookie_manager
+      @dc_segment_manager = @dp_info.dc_segment_manager
+      @interface_manager = @dp_info.interface_manager
+      @network_manager = @dp_info.network_manager
+      @packet_manager = @dp_info.packet_manager
+      @port_manager = @dp_info.port_manager
+      @route_manager = @dp_info.route_manager
+      @service_manager = @dp_info.service_manager
+      @tunnel_manager = @dp_info.tunnel_manager
 
       @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
       @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
