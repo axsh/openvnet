@@ -5,7 +5,7 @@ module Vnet::Openflow
   class InterfaceManager < Manager
 
     def update_active_datapaths(params)
-      interface = item_by_params_direct(params)
+      interface = internal_detect(params)
       return nil if interface.nil?
 
       # Refactor this.
@@ -24,7 +24,7 @@ module Vnet::Openflow
 
     # Deprecate this...
     def get_ipv4_address(params)
-      interface = item_by_params_direct(params)
+      interface = internal_detect(params)
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
@@ -63,6 +63,18 @@ module Vnet::Openflow
       "#{@dp_info.dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
+    #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:mode] && params[:mode] != item.mode
+      return false if params[:port_number] && params[:port_number] != item.port_number
+      true
+    end
+
     def interface_initialize(mode, params)
       case mode
       when :simulated then Interfaces::Simulated.new(params)
@@ -77,19 +89,6 @@ module Vnet::Openflow
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
       MW::Interface.batch[filter].commit(:fill => [:ip_leases => :ip_address])
-    end
-
-    def item_by_params_direct(params)
-      case
-      when params.has_key?(:port_number)
-        port_number = params[:port_number]
-        return if port_number.nil?
-        item = @items.detect { |id, item| item.port_number == port_number }
-        return item && item[1]
-      else
-      end
-
-      super
     end
 
     def create_item(item_map, params)

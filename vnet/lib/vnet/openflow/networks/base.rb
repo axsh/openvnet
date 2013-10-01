@@ -8,7 +8,7 @@ module Vnet::Openflow::Networks
 
     Flow = Vnet::Openflow::Flow
 
-    attr_reader :network_id
+    attr_reader :id
     attr_reader :uuid
     attr_reader :datapath_of_bridge
 
@@ -20,13 +20,15 @@ module Vnet::Openflow::Networks
 
     def initialize(dp_info, network_map)
       @dp_info = dp_info
+
+      @id = network_map.id
       @uuid = network_map.uuid
-      @network_id = network_map.network_id
+
       @datapath_of_bridge = nil
 
       @interfaces = {}
 
-      @cookie = @network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      @cookie = @id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = network_map.ipv4_prefix
     end
@@ -36,7 +38,7 @@ module Vnet::Openflow::Networks
     end
 
     def to_hash
-      { :id => @network_id,
+      { :id => @id,
         :uuid => @uuid,
         :type => self.network_type,
 

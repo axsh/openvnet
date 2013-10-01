@@ -46,10 +46,10 @@ module Vnet::Openflow
 
       #   if network.ports.empty?
       #     remove(network)
-      #     @datapath.tunnel_manager.delete_tunnel_port(network_id, @dpid)
+      #     @datapath.tunnel_manager.delete_tunnel_port(id, @dpid)
 
       #     dispatch_event("network/deleted",
-      #                    network_id: network_id,
+      #                    id: id,
       #                    dpid: @dpid)
       #   end
 
@@ -62,7 +62,7 @@ module Vnet::Openflow
 
     def update_all_flows
       @items.dup.each { |key,network|
-        debug log_format("updating flows for #{network.uuid}/#{network.network_id}")
+        debug log_format("updating flows for #{network.uuid}/#{network.id}")
         network.update_flows
       }
       nil
@@ -96,6 +96,17 @@ module Vnet::Openflow
       "#{@dp_info.dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
+    #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:type] && params[:type] != item.mode
+      true
+    end
+
     def network_initialize(mode, item_map)
       case mode
       when :physical then Networks::Physical.new(@dp_info, item_map)
@@ -115,7 +126,7 @@ module Vnet::Openflow
 
     def create_item(item_map, params)
       network = network_initialize(item_map.network_mode.to_sym, item_map)
-      @items[network.network_id] = network
+      @items[network.id] = network
 
       dp_map = @dp_info.datapath.datapath_map
 
@@ -124,7 +135,7 @@ module Vnet::Openflow
         return network
       end
 
-      dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:network_id => item_map.id).first.commit
+      dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:id => item_map.id).first.commit
 
       network.set_datapath_of_bridge(dp_map, dpn_item_map, false)
 
@@ -142,7 +153,7 @@ module Vnet::Openflow
       @dp_info.route_manager.async.prepare_network(item_map, dp_map)
 
       dispatch_event("network/added",
-                     network_id: network.network_id,
+                     network_id: network.id,
                      dpid: @dpid)
       network
     end

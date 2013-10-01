@@ -19,7 +19,7 @@ module Vnet::Openflow
     end
 
     def unload(params)
-      item = item_by_params_direct(params)
+      item = internal_detect(params)
       return nil if item.nil?
 
       item_hash = item_to_hash(item)
@@ -87,7 +87,7 @@ module Vnet::Openflow
 
     def item_by_params(params)
       if params[:reinitialize] != true
-        item = item_by_params_direct(params)
+        item = internal_detect(params)
 
         if item || params[:dynamic_load] == false
           return item
@@ -128,18 +128,6 @@ module Vnet::Openflow
       end
 
       create_item(item_map, params)
-    end
-
-    def item_by_params_direct(params)
-      case
-      when params[:id] then return @items[params[:id]]
-      when params[:uuid]
-        uuid = params[:uuid]
-        item = @items.detect { |id, item| item.uuid == uuid }
-        return item && item[1]
-      else
-        raise("Missing item id/uuid parameter.")
-      end
     end
 
     def select_filter_from_params(params)
