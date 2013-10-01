@@ -98,8 +98,8 @@ module Vnet::Openflow
 
     def network_initialize(mode, item_map)
       case mode
-      when :physical then Networks::Physical.new(@dp_info.datapath, item_map)
-      when :virtual then Networks::Virtual.new(@dp_info.datapath, item_map)
+      when :physical then Networks::Physical.new(@dp_info, item_map)
+      when :virtual then Networks::Virtual.new(@dp_info, item_map)
       else
         error log_format('unknown network type',
                          "network_type:#{item_map.network_mode}")

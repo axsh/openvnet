@@ -20,7 +20,7 @@ module Vnet::Openflow::Interfaces
       flows = []
       flows_for_ipv4(flows,mac_info, ipv4_info)
 
-      @datapath.add_flows(flows)
+      @dp_info.datapath.add_flows(flows)
     end
 
     #
@@ -30,7 +30,7 @@ module Vnet::Openflow::Interfaces
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/remote: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interfaces/remote: #{message}" + (values ? " (#{values})" : '')
     end
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)

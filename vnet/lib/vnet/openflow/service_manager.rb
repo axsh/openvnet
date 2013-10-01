@@ -61,7 +61,6 @@ module Vnet::Openflow
 
       item = service_initialize(item_map.display_name.to_sym,
                                 dp_info: @dp_info,
-                                datapath: @dp_info.datapath,
                                 manager: self,
                                 id: item_map.id,
                                 uuid: item_map.uuid,

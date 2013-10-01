@@ -8,7 +8,6 @@ module Vnet::Openflow::Networks
 
     Flow = Vnet::Openflow::Flow
 
-    attr_reader :datapath
     attr_reader :network_id
     attr_reader :uuid
     attr_reader :datapath_of_bridge
@@ -19,8 +18,8 @@ module Vnet::Openflow::Networks
     attr_reader :ipv4_network
     attr_reader :ipv4_prefix
 
-    def initialize(dp, network_map)
-      @datapath = dp
+    def initialize(dp_info, network_map)
+      @dp_info = dp_info
       @uuid = network_map.uuid
       @network_id = network_map.network_id
       @datapath_of_bridge = nil
@@ -47,7 +46,7 @@ module Vnet::Openflow::Networks
     end
 
     def uninstall
-      @datapath.del_cookie(@cookie)
+      @dp_info.datapath.del_cookie(@cookie)
     end
 
     #

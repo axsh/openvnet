@@ -97,7 +97,6 @@ module Vnet::Openflow
 
       interface = interface_initialize(mode,
                                        dp_info: @dp_info,
-                                       datapath: @dp_info.datapath,
                                        manager: self,
                                        map: item_map)
       return nil if interface.nil?

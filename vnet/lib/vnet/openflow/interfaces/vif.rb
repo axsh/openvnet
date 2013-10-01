@@ -7,7 +7,7 @@ module Vnet::Openflow::Interfaces
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
-      @datapath.network_manager.update_interface(event: :insert,
+      @dp_info.network_manager.update_interface(event: :insert,
                                                  id: ipv4_info[:network_id],
                                                  interface_id: @id,
                                                  mode: :vif,
@@ -16,14 +16,14 @@ module Vnet::Openflow::Interfaces
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
 
-      @datapath.add_flows(flows)
+      @dp_info.datapath.add_flows(flows)
     end
 
     def install
       flows = []
       flows_for_base(flows)
 
-      @datapath.add_flows(flows)
+      @dp_info.datapath.add_flows(flows)
     end
 
     #
@@ -33,7 +33,7 @@ module Vnet::Openflow::Interfaces
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/vif: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interfaces/vif: #{message}" + (values ? " (#{values})" : '')
     end
 
     def flows_for_base(flows)
