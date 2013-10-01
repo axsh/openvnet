@@ -161,11 +161,11 @@ module Vnet::Openflow
         return item
       end
 
-      @items.delete(item.id)
+      @items.delete(item.network_id)
 
       item.uninstall
 
-      @datapath.dc_segment_manager.async.remove_network_id(item.id)
+      @datapath.dc_segment_manager.async.remove_network_id(item.network_id)
 
       item
     end
