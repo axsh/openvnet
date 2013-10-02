@@ -9,16 +9,6 @@ module Vnet::Openflow
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable
 
-    # TODO: Make this part of Manager.
-    def networks(params = {})
-      @items.select { |key,nw|
-        result = true
-        result = result && (nw.network_type == params[:network_type]) if params[:network_type]
-      }.map { |key,nw|
-        item_to_hash(nw)
-      }
-    end
-
     #
     # Interfaces:
     #
@@ -45,12 +35,6 @@ module Vnet::Openflow
       end
 
       #   if network.ports.empty?
-      #     remove(network)
-      #     @datapath.tunnel_manager.delete_tunnel_port(id, @dpid)
-
-      #     dispatch_event("network/deleted",
-      #                    id: id,
-      #                    dpid: @dpid)
       #   end
 
       nil
@@ -103,7 +87,10 @@ module Vnet::Openflow
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:type] && params[:type] != item.mode
+
+      # Clean up use of this parameter.
+      return false if params[:network_type] && params[:network_type] != item.network_type
+      return false if params[:network_mode] && params[:network_mode] != item.network_type
       true
     end
 
@@ -170,6 +157,11 @@ module Vnet::Openflow
       item.uninstall
 
       @dp_info.dc_segment_manager.async.remove_network_id(item.id)
+      @dp_info.tunnel_manager.async.delete_tunnel_port(item.id, @dpid)
+
+      dispatch_event("network/deleted",
+                     id: item.id,
+                     dpid: @dpid)
 
       item
     end
