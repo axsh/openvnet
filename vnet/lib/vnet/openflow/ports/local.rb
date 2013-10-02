@@ -63,7 +63,7 @@ module Vnet::Openflow::Ports
                              flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       end
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
   end

@@ -69,8 +69,17 @@ module Vnet::Openflow::Ports
                            },
                            flow_options)
 
-      @datapath.add_flows(flows)
-      @datapath.network_manager.update_all_flows
+      # Currently only support a single host port at this moment.
+      #
+      # TODO: Fix this....
+      flows << Flow.create(TABLE_FLOOD_ROUTE, 1,
+                           {},
+                           [{ :output => OFPP_LOCAL },
+                            { :output => self.port_number }],
+                           flow_options)
+
+      @dp_info.add_flows(flows)
+      @dp_info.network_manager.update_all_flows
     end
 
   end
