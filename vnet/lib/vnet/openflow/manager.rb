@@ -20,6 +20,10 @@ module Vnet::Openflow
       item_to_hash(item_by_params(params))
     end
 
+    def select(params)
+      select_by_params_direct(params)
+    end
+
     def unload(params)
       item = item_by_params_direct(params)
       return nil if item.nil?
@@ -111,6 +115,16 @@ module Vnet::Openflow
       else
         raise("Missing item id/uuid parameter.")
       end
+    end
+
+    def select_by_params_direct(params)
+      @items.select { |id, item|
+        next false if params[:id] && params[:id] != id
+        next false if params[:uuid] && params[:uuid] != item.uuid
+        true
+      }.map { |id, item|
+        item_to_hash(item)
+      }
     end
 
     def select_filter_from_params(params)

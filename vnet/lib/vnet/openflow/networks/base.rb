@@ -13,8 +13,6 @@ module Vnet::Openflow::Networks
     attr_reader :uuid
     attr_reader :datapath_of_bridge
 
-    # Refactoring, replace with 'interfaces'.
-    attr_reader :ports
     attr_reader :interfaces
 
     attr_reader :cookie
@@ -27,7 +25,6 @@ module Vnet::Openflow::Networks
       @network_id = network_map.network_id
       @datapath_of_bridge = nil
 
-      @ports = {}
       @interfaces = {}
 
       @cookie = @network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
@@ -77,48 +74,19 @@ module Vnet::Openflow::Networks
 
     def remove_interface(params)
       interface = @interfaces.delete(params[:interface_id])
-      raise("Could not find interface.") if interface.nil?
+      return if interface.nil?
 
       update_flows if interface[:port_number]
     end
 
     def update_interface(params)
       interface = @interfaces[params[:interface_id]]
-      raise("Could not find interface.") if interface.nil?
+      return if interface.nil?
 
       if params.has_key? :port_number
         interface[:port_number] = params[:port_number]
         update_flows
       end
-    end
-
-    #
-    # Obsolete:
-    #
-
-    def add_port(params)
-      if @ports[params[:port_number]]
-        raise("Port already added to a network.")
-      end
-
-      port = {
-        # List of ip/mac addresses on this network, etc.
-        :mode => params[:port_mode],
-      }
-
-      @ports[params[:port_number]] = port
-
-      update_flows
-    end
-
-    def del_port_number(port_number)
-      port = @ports.delete(port_number)
-
-      if port.nil?
-        raise("Port was not added to this network.")
-      end
-
-      update_flows
     end
 
     def set_datapath_of_bridge(datapath_map, dpn_map, should_update)

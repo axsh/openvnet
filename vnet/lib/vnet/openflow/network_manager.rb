@@ -9,6 +9,7 @@ module Vnet::Openflow
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable
 
+    # TODO: Make this part of Manager.
     def networks(params = {})
       @items.select { |key,nw|
         result = true
@@ -23,6 +24,15 @@ module Vnet::Openflow
     #
 
     def update_interface(params)
+      case params[:event]
+      when :remove_all
+        @items.each { |id, item| item.remove_interface(params) }
+        return nil
+      when :update_all
+        # @items.each { |id, item| item.update_interface(params) }
+        return nil
+      end
+
       item = item_by_params(params)
 
       return nil if item.nil?
@@ -33,6 +43,15 @@ module Vnet::Openflow
       when :remove then item.remove_interface(params)
       when :update then item.update_interface(params)
       end
+
+      #   if network.ports.empty?
+      #     remove(network)
+      #     @datapath.tunnel_manager.delete_tunnel_port(network_id, @dpid)
+
+      #     dispatch_event("network/deleted",
+      #                    network_id: network_id,
+      #                    dpid: @dpid)
+      #   end
 
       nil
     end
@@ -46,32 +65,6 @@ module Vnet::Openflow
         debug log_format("updating flows for #{network.uuid}/#{network.network_id}")
         network.update_flows
       }
-      nil
-    end
-
-    def add_port(params)
-      network = item_by_params(params)
-      return nil if network.nil?
-
-      network.add_port(params)
-      item_to_hash(network)
-    end
-
-    def del_port_number(network_id, port_number)
-      network = @items[network_id]
-      return nil if network.nil?
-
-      network.del_port_number(port_number)
-
-      if network.ports.empty?
-        remove(network)
-        @datapath.tunnel_manager.delete_tunnel_port(network_id, @dpid)
-
-        dispatch_event("network/deleted",
-                       network_id: network_id,
-                       dpid: @dpid)
-      end
-      
       nil
     end
 
