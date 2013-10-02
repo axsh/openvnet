@@ -149,6 +149,7 @@ module Vnet::Openflow
       if params.size == 1 && params.first.first == :id
         item = @items[params.first.last]
         item = nil if item && !match_item?(item, params)
+        item
       else
         item = @items.detect { |id, item|
           match_item?(item, params)

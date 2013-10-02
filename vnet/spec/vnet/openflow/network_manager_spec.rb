@@ -12,7 +12,7 @@ describe Vnet::Openflow::NetworkManager do
     Fabricate(:datapath_network_1_2)
   end
 
-  let(:network_manager) { Vnet::Openflow::NetworkManager.new(datapath) }
+  let(:network_manager) { Vnet::Openflow::NetworkManager.new(datapath.dp_info) }
 
   describe "network_by_id" do
     let(:datapath) do
@@ -31,9 +31,9 @@ describe Vnet::Openflow::NetworkManager do
         route_manager.should_receive(:async).and_return(actor)
 
 
-        dp.should_receive(:dc_segment_manager).and_return(dc_segment_manager)
-        dp.should_receive(:tunnel_manager).and_return(tunnel_manager)
-        dp.should_receive(:route_manager).and_return(route_manager)
+        dp.dp_info.should_receive(:dc_segment_manager).and_return(dc_segment_manager)
+        dp.dp_info.should_receive(:tunnel_manager).and_return(tunnel_manager)
+        dp.dp_info.should_receive(:route_manager).and_return(route_manager)
       end
     end
 
@@ -52,25 +52,26 @@ describe Vnet::Openflow::NetworkManager do
         actor = double(:actor)
         actor.should_receive(:prepare_network).exactly(3).and_return(true)
         actor.should_receive(:remove_network_id).and_return(true)
+        actor.should_receive(:delete_tunnel_port).and_return(true)
 
         dc_segment_manager = double(:dc_segment_manager)
         tunnel_manager = double(:tunnel_manager)
         route_manager = double(:route_manager)
 
         dc_segment_manager.should_receive(:async).twice.and_return(actor)
-        tunnel_manager.should_receive(:async).and_return(actor)
+        tunnel_manager.should_receive(:async).twice.and_return(actor)
         route_manager.should_receive(:async).and_return(actor)
 
 
-        dp.should_receive(:dc_segment_manager).twice.and_return(dc_segment_manager)
-        dp.should_receive(:tunnel_manager).and_return(tunnel_manager)
-        dp.should_receive(:route_manager).and_return(route_manager)
+        dp.dp_info.should_receive(:dc_segment_manager).twice.and_return(dc_segment_manager)
+        dp.dp_info.should_receive(:tunnel_manager).twice.and_return(tunnel_manager)
+        dp.dp_info.should_receive(:route_manager).and_return(route_manager)
       end
     end
 
     it "has no flow after delete the last network on itself" do
       network = network_manager.item(uuid: 'nw-aaaaaaaa')
-      network_manager.remove(network[:id])
+      network_manager.unload(id: network[:id])
       expect(datapath.added_flows).to eq []
     end
   end
@@ -92,9 +93,9 @@ describe Vnet::Openflow::NetworkManager do
         route_manager.should_receive(:async).twice.and_return(actor)
 
 
-        dp.should_receive(:dc_segment_manager).twice.and_return(dc_segment_manager)
-        dp.should_receive(:tunnel_manager).twice.and_return(tunnel_manager)
-        dp.should_receive(:route_manager).twice.and_return(route_manager)
+        dp.dp_info.should_receive(:dc_segment_manager).twice.and_return(dc_segment_manager)
+        dp.dp_info.should_receive(:tunnel_manager).twice.and_return(tunnel_manager)
+        dp.dp_info.should_receive(:route_manager).twice.and_return(route_manager)
       end
     end
     
