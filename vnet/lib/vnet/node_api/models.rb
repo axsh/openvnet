@@ -19,9 +19,6 @@ module Vnet::NodeApi
   class IpAddress < Base
   end
 
-  class IpLease < Base
-  end
-
   class MacLease < Base
   end
 

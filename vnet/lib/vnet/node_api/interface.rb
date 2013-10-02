@@ -17,11 +17,6 @@ module Vnet::NodeApi
             end
           end
         end
- 
-        if ipv4_created
-          dispatch_event(:leased_ipv4_address, interface_id: interface.id, ip_lease_id: interface.ip_leases.first.id, mac_address: interface.mac_address)
-        end
-
         to_hash(interface)
       end
 

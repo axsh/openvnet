@@ -18,7 +18,6 @@ describe "/interfaces" do
   include_examples "DELETE /:uuid"
 
   describe "POST /" do
-    before(:all) { use_mock_event_handler }
     let!(:network) { Fabricate(:network) { uuid "nw-testnet" }  }
     let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
     let!(:active) { Fabricate(:datapath) { uuid "dp-active" } }
@@ -34,14 +33,5 @@ describe "/interfaces" do
     uuid_params = [:network_uuid, :owner_datapath_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
-
-    describe "event handler" do
-      let(:request_params) { { network_uuid: "nw-testnet", ipv4_address: "192.168.2.20", mac_address: random_mac.to_s } }
-
-      it "handles a single event" do
-        expect(last_response).to succeed
-        MockEventHandler.handled_events.size.should eq 1
-      end
-    end
   end
 end

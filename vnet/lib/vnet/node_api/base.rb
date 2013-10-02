@@ -4,8 +4,10 @@ module Vnet::NodeApi
     extend Vnet::Event::Dispatchable
 
     class << self
-      def model_class
-        @model_class ||= Vnet::Models.const_get(self.name.demodulize)
+      include Vnet::Event
+
+      def model_class(name = nil)
+        Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
       end
 
       def execute_batch(*args)
