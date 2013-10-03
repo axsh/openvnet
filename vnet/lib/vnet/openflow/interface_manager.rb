@@ -4,6 +4,14 @@ module Vnet::Openflow
 
   class InterfaceManager < Manager
 
+    #
+    # Events:
+    #
+    subscribe_event :added_interface # TODO Check if needed.
+    subscribe_event :removed_interface # TODO Check if needed.
+    subscribe_event LeasedIpv4Address, :leased_ipv4_address
+    subscribe_event ReleasedIpv4Address, :released_ipv4_address
+
     def update_active_datapaths(params)
       interface = item_by_params_direct(params)
       return nil if interface.nil?
@@ -28,29 +36,6 @@ module Vnet::Openflow
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
-    end
-
-    def handle_event(params)
-      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
-
-      item = @items[params[:target_id]]
-
-      case params[:event]
-      when :added
-        return nil if item
-        # Check if needed.
-      when :removed
-        return nil if item
-        # Check if needed.
-      when :leased_ipv4_address
-        return nil if item.nil?
-        leased_ipv4_address(item, params)
-      when :released_ipv4_address
-        return nil if item.nil?
-        released_ipv4_address(item, params)
-      end
-
-      nil
     end
 
     #

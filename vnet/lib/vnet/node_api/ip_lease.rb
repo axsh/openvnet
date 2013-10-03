@@ -11,7 +11,7 @@ module Vnet::NodeApi
           end.save
         end
 
-        dispatch_event(LeasedIpv4Address, interface_id: ip_lease.interface_id, ip_lease_id: ip_lease.id, mac_address: ip_lease.interface.mac_address)
+        dispatch_event(LeasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
         to_hash(ip_lease)
       end
 
@@ -34,8 +34,8 @@ module Vnet::NodeApi
         end
 
         if deleted_ip_address
-          dispatch_event(ReleasedIpv4Address, interface_id: ip_lease.interface_id, ip_lease_id: ip_lease.id, mac_address: ip_lease.interface.mac_address)
-          dispatch_event(LeasedIpv4Address, interface_id: ip_lease.interface_id, ip_lease_id: ip_lease.id, mac_address: ip_lease.interface.mac_address)
+          dispatch_event(ReleasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+          dispatch_event(LeasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
           to_hash(ip_lease)
         end
       end
@@ -47,7 +47,7 @@ module Vnet::NodeApi
           end
         end
 
-        dispatch_event(ReleasedIpv4Address, interface_id: ip_lease.interface_id, ip_lease_id: ip_lease.id, mac_address: ip_lease.interface.mac_address)
+        dispatch_event(ReleasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
         to_hash(ip_lease)
       end
     end

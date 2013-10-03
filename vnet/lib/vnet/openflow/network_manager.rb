@@ -9,6 +9,12 @@ module Vnet::Openflow
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable
 
+    #
+    # Events:
+    #
+    subscribe_event :added_network # TODO Check if needed.
+    subscribe_event :removed_network # TODO Check if needed.
+
     def networks(params = {})
       @items.select { |key,nw|
         result = true
@@ -72,24 +78,6 @@ module Vnet::Openflow
                        dpid: @dpid)
       end
       
-      nil
-    end
-
-    #
-    # Events:
-    #
-
-    def handle_event(params)
-      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
-
-      item = @items[:target_id]
-
-      case params[:event]
-      when :removed
-        return nil if item
-        # Check if needed.
-      end
-
       nil
     end
 

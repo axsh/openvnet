@@ -19,6 +19,9 @@ RSpec.configure do |config|
 
   Vnet::Configurations::Common.paths = ["#{File.dirname(File.expand_path(__FILE__))}/config"]
 
+  #Celluloid.logger = ::Logger.new("test.log")
+  Celluloid.logger = nil
+
   vnmgr_conf = Vnet::Configurations::Vnmgr.load
   webapi_conf = Vnet::Configurations::Webapi.load
 
