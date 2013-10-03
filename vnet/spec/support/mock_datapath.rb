@@ -1,14 +1,66 @@
 # -*- coding: utf-8 -*-
+
+class MockOvsOfctl
+  def initialize(datapath)
+    @datapath = datapath
+  end
+
+  def mod_port(port_no, action)
+  end
+
+  def add_tunnel(tunnel_name, remote_ip)
+    @datapath.added_tunnels << {:tunnel_name => tunnel_name, :remote_ip => remote_ip}
+  end
+
+  def delete_tunnel(tunnel_name)
+    @datapath.deleted_tunnels << tunnel_name
+  end
+end
+
+class MockDpInfo < Vnet::Openflow::DpInfo
+  def create_mock_port_manager
+    @port_manager = MockPortManager.new(self)
+  end
+
+  def send_message(message)
+    @datapath.sent_messages << message
+  end
+
+  def add_flow(flow)
+    @datapath.added_flows << flow
+  end
+
+  def add_flows(flows)
+    @datapath.added_flows += flows
+  end
+
+  def del_cookie(cookie)
+    @datapath.added_flows.delete_if {|f| f.to_trema_hash[:cookie] == cookie }
+  end
+
+  def add_ovs_flow(ovs_flow)
+    @datapath.added_ovs_flows << ovs_flow
+  end
+end
+
 class MockDatapath < Vnet::Openflow::Datapath
   attr_reader :sent_messages
-  attr_reader :added_flows
+  attr_accessor :added_flows
   attr_reader :added_ovs_flows
   attr_reader :added_tunnels
   attr_reader :added_cookie
   attr_reader :deleted_tunnels
 
-  def initialize(*args)
-    super(*args)
+  def initialize(ofc, dp_id, ofctl = nil)
+    super(ofc, dp_id, ofctl)
+
+    @ovs_ofctl = MockOvsOfctl.new(self)
+
+    @dp_info = MockDpInfo.new(controller: ofc,
+                              datapath: self,
+                              dpid: @dp_info.dpid,
+                              ovs_ofctl: @ovs_ofctl)
+
     @sent_messages = []
     @added_flows = []
     @added_ovs_flows = []
@@ -18,11 +70,11 @@ class MockDatapath < Vnet::Openflow::Datapath
   end
 
   def create_datapath_map
-    @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @dpid)]
+    @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
   end
 
   def create_mock_datapath_map
-    @datapath_map = OpenStruct.new(dpid: ("0x%016x" % @dpid),
+    @datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s,
                                    id: 1)
   end
 
@@ -33,7 +85,8 @@ class MockDatapath < Vnet::Openflow::Datapath
 
   def create_mock_port_manager
     create_mock_datapath_map
-    @port_manager = MockPortManager.new(self)
+    @dp_info.create_mock_port_manager
+    @port_manager = @dp_info.port_manager
   end
 
   def send_message(message)
