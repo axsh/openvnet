@@ -5,8 +5,11 @@ module Vnet::Endpoints::V10::Responses
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::IpLease)
       # TODO dirty hack
-      object.vif_uuid = object.batch.interface.commit.uuid
-      object.interface_id = nil
+      object.batch.interface.commit(fill: :network).tap do |interface|
+        object.vif_uuid = interface.uuid
+        object.interface_id = nil
+        object.network_uuid = interface.network.uuid if interface.network
+      end
       object.ipv4_address = object.ipv4_address_s
       object.to_hash
     end

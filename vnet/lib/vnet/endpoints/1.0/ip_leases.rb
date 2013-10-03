@@ -2,7 +2,7 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   put_post_shared_params = [
-    #"network_uuid",
+    "network_uuid",
     "vif_uuid",
     "ipv4_address",
     "alloc_type"
@@ -10,11 +10,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
 
   post do
     accepted_params = put_post_shared_params + ["uuid"]
-    #required_params = ["network_uuid", "vif_uuid", "ip_address_uuid"]
-    required_params = ["vif_uuid", "ipv4_address"]
+    required_params = ["vif_uuid", "network_uuid", "ipv4_address"]
 
     post_new(:IpLease, accepted_params, required_params) { |params|
-      #check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id")
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id")
       check_syntax_and_get_id(M::Interface, params, "vif_uuid", "interface_id")
       params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params['ipv4_address']
     }
@@ -34,7 +33,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
 
   put '/:uuid' do
     update_by_uuid_with_node_api(:IpLease, put_post_shared_params) { |params|
-      #check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::Interface, params, "vif_uuid", "interface_id") if params["vif_uuid"]
       params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params['ipv4_address']
     }

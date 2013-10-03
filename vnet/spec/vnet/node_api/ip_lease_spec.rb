@@ -17,11 +17,14 @@ describe Vnet::NodeApi::IpLease do
       end
 
       ip_lease = Vnet::NodeApi::IpLease.create(
+        network_id: network.id,
         ipv4_address: ipv4_address,
         interface_id: interface.id,
       )
 
       model = Vnet::Models::IpLease[ip_lease[:uuid]]
+      expect(model.ip_address.ipv4_address).to eq ipv4_address
+      expect(model.network_id).to eq network.id
       expect(ip_lease[:ip_address_id]).to eq model.ip_address_id
       expect(ip_lease[:interface_id]).to eq interface.id
 
