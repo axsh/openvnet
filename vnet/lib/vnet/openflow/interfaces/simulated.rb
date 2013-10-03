@@ -8,12 +8,6 @@ module Vnet::Openflow::Interfaces
   class Simulated < Base
     include Vnet::Openflow::ArpLookup
 
-    TAG_ARP_REQUEST_INTERFACE = 0x1
-    TAG_ARP_REQUEST_FLOOD     = 0x2
-    TAG_ARP_LOOKUP            = 0x4
-    TAG_ARP_REPLY             = 0x5
-    TAG_ICMP_REQUEST          = 0x6
-
     def initialize(params)
       super
 

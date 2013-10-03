@@ -4,6 +4,8 @@ module Vnet::Openflow::Interfaces
 
   class Vif < Base
 
+    TAG_IPV4_ADDRESS = 0x1
+
     def initialize(params)
       super
     end
@@ -28,6 +30,22 @@ module Vnet::Openflow::Interfaces
       flows_for_ipv4(flows, mac_info, ipv4_info)
 
       @datapath.add_flows(flows)
+    end
+
+    def remove_ipv4_address(params)
+      debug "interfaces: removing ipv4 flows..."
+
+      mac_info, ipv4_info = super
+
+      return unless ipv4_info
+
+      @datapath.network_manager.update_interface(event: :remove,
+                                                 id: ipv4_info[:network_id],
+                                                 interface_id: @id,
+                                                 mode: :vif,
+                                                 port_number: @port_number)
+
+      del_cookie_for_ip_lease(ipv4_info[:ip_lease_id])
     end
 
     def install
@@ -128,7 +146,8 @@ module Vnet::Openflow::Interfaces
                            },
                            write_metadata: {
                              :network => ipv4_info[:network_id],
-                           })
+                           },
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
       flows << flow_create(:host_ports,
                            priority: 30,
                            match: {
@@ -137,6 +156,7 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :network => ipv4_info[:network_id],
                            },
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
 
       #
@@ -151,14 +171,16 @@ module Vnet::Openflow::Interfaces
                              :arp_sha => mac_info[:mac_address]
                            },
                            network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type])
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
       flows << flow_create(:network_src_arp_drop,
                            match: {
                              :eth_type => 0x0806,
                              :arp_spa => ipv4_info[:ipv4_address],
                            },
                            network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type])
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
 
       # Note that we should consider adding a table for handling
       # segments flows prior to the network classifier table.
@@ -168,14 +190,16 @@ module Vnet::Openflow::Interfaces
                              :eth_src => mac_info[:mac_address],
                            },
                            network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type])
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
       flows << flow_create(:network_src_arp_drop,
                            match: {
                              :eth_type => 0x0806,
                              :arp_sha => mac_info[:mac_address],
                            },
                            network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type])
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
 
       #
       # IPv4 
@@ -190,6 +214,7 @@ module Vnet::Openflow::Interfaces
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
                            goto_table: TABLE_ROUTER_CLASSIFIER)
       flows << flow_create(:network_src,
                            priority: 45,
@@ -201,6 +226,7 @@ module Vnet::Openflow::Interfaces
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
                            goto_table: TABLE_ROUTER_CLASSIFIER)
       flows << flow_create(:network_src,
                            priority: 44,
@@ -209,7 +235,8 @@ module Vnet::Openflow::Interfaces
                              :ipv4_src => ipv4_info[:ipv4_address],
                            },
                            network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type])
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
       flows << flow_create(:network_src,
                            priority: 44,
                            match: {
@@ -217,7 +244,8 @@ module Vnet::Openflow::Interfaces
                              :eth_src => mac_info[:mac_address],
                            },
                            network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type])
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
 
       flows << flow_create(:network_src,
                            priority: 35,
@@ -227,6 +255,7 @@ module Vnet::Openflow::Interfaces
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
                            goto_table: TABLE_ROUTER_CLASSIFIER)
       flows << flow_create(:network_src,
                            priority: 34,
@@ -234,7 +263,8 @@ module Vnet::Openflow::Interfaces
                              :eth_src => mac_info[:mac_address],
                            },
                            network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type])
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
 
       flows << flow_create(:router_dst_match,
                            priority: 40,
@@ -245,7 +275,8 @@ module Vnet::Openflow::Interfaces
                            actions: {
                              :eth_dst => mac_info[:mac_address],
                            },
-                           network_id: ipv4_info[:network_id])
+                           network_id: ipv4_info[:network_id],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
 
       flows << flow_create(:network_dst,
                            priority: 60,
@@ -256,7 +287,8 @@ module Vnet::Openflow::Interfaces
                              :output => @port_number
                            },
                            network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type])
+                           network_type: ipv4_info[:network_type],
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
 
     end
 
