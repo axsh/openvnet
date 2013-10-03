@@ -25,11 +25,8 @@ module Vnet::Openflow::Interfaces
     attr_reader :mac_address
 
     def initialize(params)
-      @datapath = params[:datapath]
+      @dp_info = params[:dp_info]
       @manager = params[:manager]
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
 
       map = params[:map]
 
@@ -77,7 +74,9 @@ module Vnet::Openflow::Interfaces
       cookie_value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) | (tag << COOKIE_TAG_SHIFT)
       cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | (tag ? COOKIE_TAG_MASK : 0)
 
-      @datapath.del_cookie(cookie_value, cookie_mask)
+      @dp_info.network_manager.async.update_interface(event: :remove_all,
+                                                      interface_id: @id)
+      @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
     def del_cookie_for_ip_lease(ip_lease_id)
@@ -106,6 +105,20 @@ module Vnet::Openflow::Interfaces
       del_cookie
     end
 
+    def update_port_number(new_number)
+      return if @port_number == new_number
+
+      @port_number = new_number
+
+      @dp_info.network_manager.async.update_interface(event: :update_all,
+                                                      interface_id: @id,
+                                                      port_number: @port_number)
+    end
+
+    #
+    # Manage MAC and IP addresses:
+    #
+
     def add_mac_address(mac_address)
       return nil if @mac_addresses.has_key? mac_address
 
@@ -123,10 +136,6 @@ module Vnet::Openflow::Interfaces
 
     def add_ipv4_address(params)
       mac_info = @mac_addresses[params[:mac_address]]
-
-      info "===================================="
-      info "mac_info #{mac_info}"
-      info "===================================="
 
       return nil if mac_info.nil?
 
@@ -149,12 +158,6 @@ module Vnet::Openflow::Interfaces
 
     def remove_ipv4_address(params)
       mac_info, ipv4_info = get_ipv4_address(params)
-
-      info "===================================="
-      info @mac_addresses
-      info "mac_info #{mac_info}"
-      info "ipv4_info #{ipv4_info}"
-      info "===================================="
 
       return nil if mac_info.nil? || ipv4_info.nil?
 
@@ -220,7 +223,7 @@ module Vnet::Openflow::Interfaces
                                              ipv4_address: ipv4_address)
       return nil if ipv4_info.nil?
 
-      [mac_info, ipv4_info, @datapath.network_manager.item(id: ipv4_info[:network_id])]
+      [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
     end
 
     #
@@ -230,7 +233,7 @@ module Vnet::Openflow::Interfaces
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
     end
 
   end

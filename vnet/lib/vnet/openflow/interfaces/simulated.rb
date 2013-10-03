@@ -24,7 +24,7 @@ module Vnet::Openflow::Interfaces
       flows_for_ipv4(flows, mac_info, ipv4_info)
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def install
@@ -33,7 +33,7 @@ module Vnet::Openflow::Interfaces
       flows_for_base(flows)
       arp_lookup_base_flows(flows)
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def packet_in(message)
@@ -103,7 +103,7 @@ module Vnet::Openflow::Interfaces
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
     end
 
     def flows_for_base(flows)

@@ -4,32 +4,19 @@ module Vnet::Openflow::Interfaces
 
   class Vif < Base
 
-    TAG_IPV4_ADDRESS = 0x1
-
-    def initialize(params)
-      super
-    end
-
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
-      @datapath.network_manager.update_interface(event: :insert,
+      @dp_info.network_manager.update_interface(event: :insert,
                                                  id: ipv4_info[:network_id],
                                                  interface_id: @id,
                                                  mode: :vif,
                                                  port_number: @port_number)
 
-      return if @port_number.nil?
-
-      @datapath.network_manager.add_port(id: ipv4_info[:network_id],
-                                         port_number: @port_number,
-                                         port_mode: :vif,
-                                         ip_address: ipv4_info[:ipv4_address])
-
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def remove_ipv4_address(params)
@@ -39,7 +26,7 @@ module Vnet::Openflow::Interfaces
 
       return unless ipv4_info
 
-      @datapath.network_manager.update_interface(event: :remove,
+      @dp_info.network_manager.update_interface(event: :remove,
                                                  id: ipv4_info[:network_id],
                                                  interface_id: @id,
                                                  mode: :vif,
@@ -49,46 +36,10 @@ module Vnet::Openflow::Interfaces
     end
 
     def install
-      return if @port_number.nil?
-
       flows = []
       flows_for_base(flows)
 
-      @datapath.add_flows(flows)
-    end
-
-    def update_port_number(new_number)
-      return if @port_number == new_number
-
-      # Event barrier for port number based events.
-      old_number = @port_number
-      @port_number = nil
-
-      if old_number
-        # remove flows
-      end
-
-      @port_number = new_number
-
-      if new_number
-        flows = []
-        flows_for_base(flows)
-
-        # @mac_addresses.each...
-
-        # add_port...
-
-        # @datapath.network_manager.update_interface(event: :update,
-        #                                            id: ipv4_info[:network_id],
-        #                                            interface_id: @id,
-        #                                            port_number: @port_number)
-
-        if !@mac_addresses.empty?
-          info log_format("MAC/IP addresses loaded before port number is set is not yet supported, no flows created.")
-        end
-
-        @datapath.add_flows(flows)
-      end
+      @dp_info.add_flows(flows)
     end
 
     #
@@ -98,20 +49,10 @@ module Vnet::Openflow::Interfaces
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/vif: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interfaces/vif: #{message}" + (values ? " (#{values})" : '')
     end
 
     def flows_for_base(flows)
-      flows << flow_create(:classifier,
-                           priority: 2,
-                           match: {
-                             :in_port => @port_number,
-                           },
-                           write_metadata: {
-                             :vif => nil,
-                             :local => nil,
-                           },
-                           goto_table: TABLE_VIF_PORTS)
     end
 
     def flows_for_mac(flows, mac_info)
@@ -141,8 +82,10 @@ module Vnet::Openflow::Interfaces
       #
       flows << flow_create(:vif_ports_match,
                            match: {
-                             :in_port => @port_number,
                              :eth_src => mac_info[:mac_address],
+                           },
+                           match_metadata: {
+                             :interface => @id
                            },
                            write_metadata: {
                              :network => ipv4_info[:network_id],
@@ -164,7 +107,6 @@ module Vnet::Openflow::Interfaces
       #
       flows << flow_create(:network_src_arp_match,
                            match: {
-                             :in_port => @port_number,
                              :eth_type => 0x0806,
                              :eth_src => mac_info[:mac_address],
                              :arp_spa => ipv4_info[:ipv4_address],
@@ -204,10 +146,8 @@ module Vnet::Openflow::Interfaces
       #
       # IPv4 
       #
-      flows << flow_create(:network_src,
-                           priority: 45,
+      flows << flow_create(:network_src_ipv4_match,
                            match: {
-                             :in_port => @port_number,
                              :eth_type => 0x0800,
                              :eth_src => mac_info[:mac_address],
                              :ipv4_src => ipv4_info[:ipv4_address],
@@ -216,10 +156,8 @@ module Vnet::Openflow::Interfaces
                            network_type: ipv4_info[:network_type],
                            cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
                            goto_table: TABLE_ROUTER_CLASSIFIER)
-      flows << flow_create(:network_src,
-                           priority: 45,
+      flows << flow_create(:network_src_ipv4_match,
                            match: {
-                             :in_port => @port_number,
                              :eth_type => 0x0800,
                              :eth_src => mac_info[:mac_address],
                              :ipv4_src => IPV4_ZERO,
@@ -247,16 +185,16 @@ module Vnet::Openflow::Interfaces
                            network_type: ipv4_info[:network_type],
                            cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
 
-      flows << flow_create(:network_src,
+      flows << flow_create(:network_src_mac_match,
                            priority: 35,
                            match: {
-                             :in_port => @port_number,
                              :eth_src => mac_info[:mac_address],
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
                            cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
                            goto_table: TABLE_ROUTER_CLASSIFIER)
+
       flows << flow_create(:network_src,
                            priority: 34,
                            match: {
@@ -283,12 +221,13 @@ module Vnet::Openflow::Interfaces
                            match: {
                              :eth_dst => mac_info[:mac_address],
                            },
-                           actions: {
-                             :output => @port_number
+                           write_metadata: {
+                             :interface => @id,
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
-                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]))
+                           cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
+                           goto_table: TABLE_INTERFACE_VIF)
 
     end
 

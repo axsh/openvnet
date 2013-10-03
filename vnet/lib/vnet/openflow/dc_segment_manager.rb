@@ -84,7 +84,7 @@ module Vnet::Openflow
     end
 
     def update_network_id(network_id)
-      eth_port = @datapath.port_manager.ports(:port_type => :host).first
+      eth_port = @datapath.port_manager.detect(port_type: :host)
       dpn_list = @datapath_networks[network_id]
 
       return if eth_port.nil? || dpn_list.nil?

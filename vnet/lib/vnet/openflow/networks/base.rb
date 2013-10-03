@@ -8,29 +8,27 @@ module Vnet::Openflow::Networks
 
     Flow = Vnet::Openflow::Flow
 
-    attr_reader :datapath
-    attr_reader :network_id
+    attr_reader :id
     attr_reader :uuid
     attr_reader :datapath_of_bridge
 
-    # Refactoring, replace with 'interfaces'.
-    attr_reader :ports
     attr_reader :interfaces
 
     attr_reader :cookie
     attr_reader :ipv4_network
     attr_reader :ipv4_prefix
 
-    def initialize(dp, network_map)
-      @datapath = dp
+    def initialize(dp_info, network_map)
+      @dp_info = dp_info
+
+      @id = network_map.id
       @uuid = network_map.uuid
-      @network_id = network_map.network_id
+
       @datapath_of_bridge = nil
 
-      @ports = {}
       @interfaces = {}
 
-      @cookie = @network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      @cookie = @id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = network_map.ipv4_prefix
     end
@@ -40,7 +38,7 @@ module Vnet::Openflow::Networks
     end
 
     def to_hash
-      { :id => @network_id,
+      { :id => @id,
         :uuid => @uuid,
         :type => self.network_type,
 
@@ -50,7 +48,7 @@ module Vnet::Openflow::Networks
     end
 
     def uninstall
-      @datapath.del_cookie(@cookie)
+      @dp_info.del_cookie(@cookie)
     end
 
     #
@@ -77,48 +75,19 @@ module Vnet::Openflow::Networks
 
     def remove_interface(params)
       interface = @interfaces.delete(params[:interface_id])
-      raise("Could not find interface.") if interface.nil?
+      return if interface.nil?
 
       update_flows if interface[:port_number]
     end
 
     def update_interface(params)
       interface = @interfaces[params[:interface_id]]
-      raise("Could not find interface.") if interface.nil?
+      return if interface.nil?
 
       if params.has_key? :port_number
         interface[:port_number] = params[:port_number]
         update_flows
       end
-    end
-
-    #
-    # Obsolete:
-    #
-
-    def add_port(params)
-      if @ports[params[:port_number]]
-        raise("Port already added to a network.")
-      end
-
-      port = {
-        # List of ip/mac addresses on this network, etc.
-        :mode => params[:port_mode],
-      }
-
-      @ports[params[:port_number]] = port
-
-      update_flows
-    end
-
-    def del_port_number(port_number)
-      port = @ports.delete(port_number)
-
-      if port.nil?
-        raise("Port was not added to this network.")
-      end
-
-      update_flows
     end
 
     def set_datapath_of_bridge(datapath_map, dpn_map, should_update)

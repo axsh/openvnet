@@ -84,6 +84,7 @@ module Vnet::Openflow
         table = TABLE_CONTROLLER_PORT
       when :classifier
         table = TABLE_CLASSIFIER
+      when :default
       when :host_ports
         table = TABLE_HOST_PORTS
       when :network_dst
@@ -97,9 +98,30 @@ module Vnet::Openflow
         priority = 85
         match_metadata = { :network => params[:network_id] }
       when :network_src_arp_match
+        # Check for local flag since we trust that the local packets
+        # are properly verified in earlier flows. 
         table = table_network_src(params[:network_type])
         priority = 86
-        match_metadata = { :network => params[:network_id] }
+        match_metadata = {
+          :network => params[:network_id],
+          :local => nil
+        }
+        goto_table = TABLE_ROUTER_CLASSIFIER
+      when :network_src_ipv4_match
+        table = table_network_src(params[:network_type])
+        priority = 45
+        match_metadata = {
+          :network => params[:network_id],
+          :local => nil
+        }
+        goto_table = TABLE_ROUTER_CLASSIFIER
+      when :network_src_mac_match
+        table = table_network_src(params[:network_type])
+        priority = 35
+        match_metadata = {
+          :network => params[:network_id],
+          :local => nil
+        }
         goto_table = TABLE_ROUTER_CLASSIFIER
       when :router_dst_match
         table = TABLE_ROUTER_DST
@@ -115,14 +137,16 @@ module Vnet::Openflow
         return nil
       end
 
-      match = params[:match] if params[:match]
-      match = match.merge(md_create(match_metadata)) if match_metadata
-
+      table = params[:table] if params[:table]
       actions = params[:actions] if params[:actions]
       priority = params[:priority] if params[:priority]
       goto_table = params[:goto_table] if params[:goto_table]
 
+      match_metadata = params[:match_metadata] if params[:match_metadata]
       write_metadata = params[:write_metadata] if params[:write_metadata]
+
+      match = params[:match] if params[:match]
+      match = match.merge(md_create(match_metadata)) if match_metadata
 
       instructions = {}
       instructions[:cookie] = params[:cookie] || self.cookie

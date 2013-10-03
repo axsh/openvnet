@@ -148,6 +148,7 @@ module Vnet
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
+    autoload :DpInfo, 'vnet/openflow/dp_info'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'

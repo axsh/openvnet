@@ -19,13 +19,11 @@ module Vnet::Openflow
       end
     end
 
-    def initialize(dp)
-      @datapath = dp
+    def initialize(dp_info)
+      @dp_info = dp_info
+
       @datapath_id = nil
       @items = {}
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
       subscribe_events
     end
 
@@ -34,13 +32,33 @@ module Vnet::Openflow
     end
 
     def unload(params)
-      item = item_by_params_direct(params)
+      item = internal_detect(params)
       return nil if item.nil?
 
       item_hash = item_to_hash(item)
       delete_item(item)
       item_hash
     end
+
+    #
+    # Enumerator methods:
+    #
+
+    def detect(params)
+      item_to_hash(internal_detect(params))
+    end
+
+    def select(params)
+      @items.select { |id, item|
+        match_item?(item, params)
+      }.map { |id, item|
+        item_to_hash(item)
+      }
+    end
+
+    #
+    # Other:
+    #
 
     def packet_in(message)
       item = @items[message.cookie & COOKIE_ID_MASK]
@@ -75,13 +93,24 @@ module Vnet::Openflow
 
     private
 
+    #
+    # Item-related methods:
+    #
+
+    # Override this method to support additional parameters.
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      true
+    end
+
     def item_to_hash(item)
       item && item.to_hash
     end
 
     def item_by_params(params)
       if params[:reinitialize] != true
-        item = item_by_params_direct(params)
+        item = internal_detect(params)
 
         if item || params[:dynamic_load] == false
           return item
@@ -124,18 +153,6 @@ module Vnet::Openflow
       create_item(item_map, params)
     end
 
-    def item_by_params_direct(params)
-      case
-      when params[:id] then return @items[params[:id]]
-      when params[:uuid]
-        uuid = params[:uuid]
-        item = @items.detect { |id, item| item.uuid == uuid }
-        return item && item[1]
-      else
-        raise("Missing item id/uuid parameter.")
-      end
-    end
-
     def select_filter_from_params(params)
       case
       when params[:id]   then {:id => params[:id]}
@@ -160,6 +177,23 @@ module Vnet::Openflow
         end
       end
     end
+
+    #
+    # Internal enumerators:
+    #
+
+    def internal_detect(params)
+      if params.size == 1 && params.first.first == :id
+        item = @items[params.first.last]
+        item = nil if item && !match_item?(item, params)
+      else
+        item = @items.detect { |id, item|
+          match_item?(item, params)
+        }
+        item = item && item.last
+      end
+    end
+
   end
 
 end
