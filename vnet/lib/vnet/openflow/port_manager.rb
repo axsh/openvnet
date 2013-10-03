@@ -140,23 +140,21 @@ module Vnet::Openflow
 
       params = {
         :owner_datapath_id => @datapath.datapath_map.id,
-        :display_name => port_desc.name
+        :display_name => port_desc.name,
+        :reinitialize => true
       }
 
-      interface_exist = @datapath.interface_manager.exist_interface?(params)
+      interface = @datapath.interface_manager.item(params)
 
-      if interface_exist
-        port.extend(Ports::Generic)
-        @datapath.translation_manager.async.update
-        port.mac_addresses = @datapath.interface_manager.get_all_mac_addresses(params)
-      else
+      if interface.nil?
         port.extend(Ports::Host)
         network = @datapath.network_manager.add_port(uuid: 'nw-public',
                                                      port_number: port.port_number,
                                                      port_mode: :eth)
-        if network
-          port.network_id = network[:id]
-        end
+      else
+        port.extend(Ports::Generic)
+      #   @datapath.translation_manager.async.update
+      #   port.mac_addresses = @datapath.interface_manager.get_all_mac_addresses(params)
       end
 
       port.install
