@@ -40,6 +40,10 @@ module Vnet::Openflow::Networks
         { :output => interface[:port_number] }
       }
 
+      # Include port LOCAL until we implement interfaces for local eth
+      # ports.
+      local_actions << { :output => OFPP_LOCAL }
+
       network_md = md_create(:network => @id)
 
       flows = []
