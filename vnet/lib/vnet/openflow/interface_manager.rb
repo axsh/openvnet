@@ -5,7 +5,7 @@ module Vnet::Openflow
   class InterfaceManager < Manager
 
     def update_active_datapaths(params)
-      interface = item_by_params_direct(params)
+      interface = internal_detect(params)
       return nil if interface.nil?
 
       # Refactor this.
@@ -24,7 +24,7 @@ module Vnet::Openflow
 
     # Deprecate this...
     def get_ipv4_address(params)
-      interface = item_by_params_direct(params)
+      interface = internal_detect(params)
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
@@ -60,7 +60,19 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:mode] && params[:mode] != item.mode
+      return false if params[:port_number] && params[:port_number] != item.port_number
+      true
     end
 
     def interface_initialize(mode, params)
@@ -79,24 +91,11 @@ module Vnet::Openflow
       MW::Interface.batch[filter].commit(:fill => [:ip_leases => :ip_address])
     end
 
-    def item_by_params_direct(params)
-      case
-      when params.has_key?(:port_number)
-        port_number = params[:port_number]
-        return if port_number.nil?
-        item = @items.detect { |id, item| item.port_number == port_number }
-        return item && item[1]
-      else
-      end
-
-      super
-    end
-
     def create_item(item_map, params)
       mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
 
       interface = interface_initialize(mode,
-                                       datapath: @datapath,
+                                       dp_info: @dp_info,
                                        manager: self,
                                        map: item_map)
       return nil if interface.nil?
@@ -112,7 +111,7 @@ module Vnet::Openflow
 
       case interface.mode
       when :vif
-        port = @datapath.port_manager.port_by_port_name(interface.uuid)
+        port = @dp_info.port_manager.detect(port_name: interface.uuid)
         interface.update_port_number(port[:port_number])
       end
 
@@ -143,7 +142,7 @@ module Vnet::Openflow
         network_id = ip_lease.network_id
         next if network_id.nil?
 
-        network_info = @datapath.network_manager.item(id: network_id)
+        network_info = @dp_info.network_manager.item(id: network_id)
         next if network_info.nil?
 
         interface.add_ipv4_address(mac_address: mac_address,

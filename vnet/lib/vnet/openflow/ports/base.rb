@@ -10,8 +10,8 @@ module Vnet::Openflow::Ports
 
     attr_accessor :network_id
 
-    def initialize(dp, port_info)
-      @datapath = dp
+    def initialize(dp_info, port_info)
+      @dp_info = dp_info
       @port_info = port_info
 
       @cookie = self.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
@@ -50,7 +50,7 @@ module Vnet::Openflow::Ports
     def uninstall
       debug "port: Removing flows..."
 
-      @datapath.del_cookie(@cookie)
+      @dp_info.del_cookie(@cookie)
     end
 
   end

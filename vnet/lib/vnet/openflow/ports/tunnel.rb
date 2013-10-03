@@ -24,12 +24,12 @@ module Vnet::Openflow::Ports
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
 
-      @datapath.add_flows(flows)
-      @datapath.tunnel_manager.add_port(self)
+      @dp_info.add_flows(flows)
+      @dp_info.tunnel_manager.add_port(self)
     end
 
     def uninstall
-      @datapath.tunnel_manager.del_port(self)
+      @dp_info.tunnel_manager.del_port(self)
       super
     end
 

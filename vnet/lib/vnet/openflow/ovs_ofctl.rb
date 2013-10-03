@@ -92,6 +92,8 @@ module Vnet::Openflow
     end
 
     def mod_port(port_no, action)
+      debug log_format('modifying', "port_number:#{port_no} action:#{action.to_s}")
+
       arg = case action
             when :forward, :down, :flood, :stp, :receive, :up
               action.to_s
@@ -106,10 +108,14 @@ module Vnet::Openflow
     end
 
     def add_tunnel(tunnel_name, remote_ip)
+      debug log_format('create tunnel', "#{tunnel_name}")
+
       system("#{@ovs_vsctl} --may-exist add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:in_key=flow options:out_key=flow")
     end
 
     def delete_tunnel(tunnel_name)
+      debug log_format('delete tunnel', "#{tunnel_name}")
+
       system("#{@ovs_vsctl} del-port #{switch_name} #{tunnel_name}")
     end
 
