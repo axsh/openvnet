@@ -153,8 +153,7 @@ module Vnet::Openflow
                                                      port_mode: :eth)
       else
         port.extend(Ports::Generic)
-      #   @datapath.translation_manager.async.update
-      #   port.mac_addresses = @datapath.interface_manager.get_all_mac_addresses(params)
+        @datapath.translation_manager.async.add_edge_port(port: port, update: true)
       end
 
       port.install

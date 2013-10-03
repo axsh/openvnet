@@ -99,8 +99,13 @@ module Vnet::Openflow
         uuid = params[:uuid]
         item = @items.detect { |id, item| item.uuid == uuid }
         return item && item[1]
+      when params[:display_name] && params[:owner_datapath_id]
+        display_name = params[:display_name]
+        owner_datapath_id = params[:owner_datapath_id]
+        item = @items.detect { |id, item| item.display_name == display_name && item.owner_datapath_ids.include?(owner_datapath_id) }
+        return item && item[1]
       else
-        raise("Missing item id/uuid parameter.")
+        raise("Missing item id/uuid parameter. #{params}")
       end
     end
 

@@ -161,6 +161,7 @@ Sequel.migration do
 
     create_table(:vlan_translations) do
       primary_key :id
+      Integer :interface_id, :index => true
       Bignum :mac_address
       Integer :vlan_id
       Integer :network_id

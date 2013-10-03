@@ -8,7 +8,11 @@ module Vnet::Openflow
 
     def initialize(dp)
       @datapath = dp
+      @dpid_s = "0x%016x" % @datapath.dpid
+
       @edge_ports = []
+
+      info log_format('initialized')
     end
 
     def add_edge_port(params)
@@ -18,11 +22,15 @@ module Vnet::Openflow
 
     def update
       flows = []
-      ovs_flows = []
 
       @translation_map = Vnet::ModelWrappers::VlanTranslation.batch.all.commit
 
       @edge_ports.each do |port|
+        info log_format('create flows for', port.port_name)
+
+        interface = @datapath.interface_manager.item(display_name: port.port_name,
+                                                     owner_datapath_id: @datapath.datapath_map.id,
+                                                     reinitialize: false)
 
         flow_options = {:cookie => port.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)}
 
@@ -31,70 +39,57 @@ module Vnet::Openflow
                              }, nil,
                              flow_options.merge(:goto_table => TABLE_VLAN_TRANSLATION))
 
-        port.mac_addresses.each do |mac|
-          vlan_id = get_vlan_id_from_mac(mac)
+        # port.mac_addresses.each do |mac|
+        #   vlan_ids = get_vlan_ids_by_mac(mac)
 
-          if vlan_id.nil?
-            flows << Flow.create(TABLE_VIRTUAL_DST, 80, {
-                                                  :eth_dst => Trema::Mac.new(mac)
-                                                 }, {
-                                                  :output => port.port_number
-                                                 }, flow_options)
-          else
-            flows << Flow.create(TABLE_VIRTUAL_DST, 80, {
-                                                  :eth_dst => Trema::Mac.new(mac)
-                                                 }, {
-                                                  :vlan_vid => vlan_id,
-                                                  :output => port.port_number
-                                                 }, flow_options)
-          end
+        #   if vlan_ids.empty?
+        #     flows << Flow.create(TABLE_VIRTUAL_DST, 80, {
+        #                                           :eth_dst => Trema::Mac.new(mac)
+        #                                          }, {
+        #                                           :output => port.port_number
+        #                                          }, flow_options)
+        #   else
+        #     vlan.ids.each do |vlan_id|
+        #       flows << Flow.create(TABLE_VIRTUAL_DST, 80, {
+        #                                             :eth_dst => Trema::Mac.new(mac)
+        #                                            }, {
+        #                                             :vlan_vid => vlan_id,
+        #                                             :output => port.port_number
+        #                                            }, flow_options)
+        #     end
+        #   end
+        # end
+
+        vlan_net = @translation_map.select { |t| t.interface_id == interface.id }
+
+        info log_format('associated vlan_id <-> network_id translation', vlan_net)
+
+        vlan_net.each do |t|
+          # strip_tag_flow 1
+          ovs_flow = "table=%d,priority=80,cookie=0x%x,dl_vlan=%x," % [TABLE_VLAN_TRANSLATION, flow_options[:cookie], t.vlan_id]
+
+          # send a packet to in_port with vlan tag
+          ovs_flow << "actions=learn\\(table=%d,cookie=0x%x,priority=90," % [TABLE_VLAN_TRANSLATION, flow_options[:cookie]]
+          ovs_flow << "NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],load:NXM_OF_VLAN_TCI\\[\\]\\-\\>NXM_OF_VLAN_TCI\\[\\],output:NXM_OF_IN_PORT\\[\\]),"
+
+          # strip_tag_flow 2: match vlan tag then strip tag and write metadata. this flow is the same as strip_tag_flow 1 but without learning flow.
+          ovs_flow << "learn\\(table=%d,cookie=0x%x,priority=90," % [TABLE_VLAN_TRANSLATION, flow_options[:cookie]]
+          ovs_flow << "strip_vlan,write_metadata:0x%x/0x%x,goto_table:%d)," % [metadata[:metadata], metadata[:metadata_mask], TABLE_ROUTER_CLASSIFIER]
+
+          ovs_flow << "strip_vlan,write_metadata:0x%x/0x%x," % [metadata[:metadata], metadata[:metadata_mask]]
+          ovs_flow << "goto_table:%d" % TABLE_ROUTER_CLASSIFIER
+
+          @datapath.add_ovs_flow(ovs_flow)
         end
       end
 
-      @translation_map.each do |t|
-        metadata = nil
-
-        if t.network_id
-          metadata = md_create(:network => t.network_id)
-        else
-          raise("no network id found: #{t.inspect}")
-        end
-
-        if t.vlan_id.nil?
-          if t.mac_address.nil?
-            raise("either mac_address of vlan_id is required.")
-          else
-            flows << Flow.create(TABLE_VLAN_TRANSLATION, 2, {
-                                  :eth_src => Trema::Mac.new(t.mac_address)
-                                 }, nil, metadata.merge({:goto_table => TABLE_ROUTER_CLASSIFIER}))
-          end
-        else
-          if t.mac_address.nil?
-            #ovs_flows << "table=#{TABLE_VLAN_TRANSLATION},priority=2,cookie=0x%x,vlan_vid=%x,actions=learn\\(table=#{TABLE_VIRTUAL_DST},cookie=0x%x,priority=80,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\],load:NXM_OF_VLAN_TCI\\[\\]\\-\\>NXM_OF_VLAN_TCI\\[\\],output:NXM_OF_IN_PORT\\[\\]),strip_vlan,goto_table:%d"
-
-            # TODO refactor ":strip_vlan => true"
-            flows << Flow.create(TABLE_VLAN_TRANSLATION, 2, {
-                                  :vlan_vid => t.vlan_id
-                                 }, {:strip_vlan => true}, metadata.merge({:goto_table => TABLE_ROUTER_CLASSIFIER}))
-          else
-            flows << Flow.create(TABLE_VLAN_TRANSLATION, 2, {
-                                  :eth_src => Trema::Mac.new(t.mac_address)
-                                 }, {:strip_vlan => true}, metadata.merge({:goto_table => TABLE_ROUTER_CLASSIFIER}))
-          end
-        end
-
-        @datapath.add_flows(flows)
-      end
+      @datapath.add_flows(flows)
     end
 
     private
 
-    def get_vlan_id_from_mac(mac)
-      translation_map = @translation_map.detect { |t| t.mac_address == mac }
-
-      return nil if translation_map.nil?
-
-      translation_map.vlan_id
+    def log_format(message, values = nil)
+      "#{@dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
     end
   end
 end
