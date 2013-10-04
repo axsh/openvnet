@@ -90,14 +90,14 @@ module Vnet::Openflow::Networks
       end
     end
 
-    def set_datapath_of_bridge(datapath_map, dpn_map, should_update)
+    def set_datapath_of_bridge(datapath_info, dpn_map, should_update)
       # info "network(#{@uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
 
       @datapath_of_bridge = {
-        :uuid => datapath_map.uuid,
-        :display_name => datapath_map.display_name,
-        :ipv4_address => datapath_map.ipv4_address,
-        :datapath_id => datapath_map.id,
+        :uuid => datapath_info.uuid,
+        :display_name => datapath_info.display_name,
+        :ipv4_address => datapath_info.ipv4_address,
+        :datapath_id => datapath_info.id,
       }
 
       if dpn_map

@@ -10,7 +10,7 @@ module Vnet::Openflow
     def initialize(dp_info)
       @dp_info = dp_info
 
-      @datapath_id = nil
+      @datapath_info = nil
       @items = {}
     end
 
@@ -53,12 +53,12 @@ module Vnet::Openflow
       nil
     end
 
-    def set_datapath_id(datapath_id)
-      if @datapath_id
-        raise("Manager.set_datapath_id called twice.")
+    def set_datapath_info(datapath_info)
+      if @datapath_info
+        raise("Manager.set_datapath_info called twice.")
       end
 
-      @datapath_id = datapath_id
+      @datapath_info = datapath_info
       
       # We need to update remote interfaces in case they are now in
       # our datapath.

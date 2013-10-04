@@ -2,6 +2,24 @@
 
 module Vnet::Openflow
 
+  # Read-only thread-safe object to allow other actors to access
+  # static information about this datapath.
+  class DatapathInfo
+
+    attr_reader :id
+    attr_reader :uuid
+    attr_reader :display_name
+    attr_reader :ipv4_address
+
+    def initialize(params)
+      @id = params[:id]
+      @uuid = params[:uuid]
+      @display_name = params[:display_name]
+      @ipv4_address = params[:ipv4_address]
+    end
+
+  end
+
   # OpenFlow datapath allows us to send OF messages and ovs-ofctl
   # commands to a specific bridge/switch.
   class Datapath
@@ -86,6 +104,7 @@ module Vnet::Openflow
       @switch = Switch.new(self)
       @switch.create_default_flows
 
+      # TODO: Don't store the datapath_map...
       @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
 
       if @datapath_map.nil?
@@ -93,9 +112,14 @@ module Vnet::Openflow
         return
       end
 
-      @interface_manager.set_datapath_id(@datapath_map.id)
-      @network_manager.set_datapath_id(@datapath_map.id)
-      @service_manager.set_datapath_id(@datapath_map.id)
+      @datapath_info = DatapathInfo.new(id: @datapath_map.id,
+                                        uuid: @datapath_map.uuid,
+                                        display_name: @datapath_map.display_name,
+                                        ipv4_address: IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET))
+
+      @interface_manager.set_datapath_info(@datapath_info)
+      @network_manager.set_datapath_info(@datapath_info)
+      @service_manager.set_datapath_info(@datapath_info)
 
       @switch.switch_ready
     end

@@ -15,7 +15,7 @@ module Vnet::Openflow
       return nil if params[:network_id].nil?
 
       case params[:event]
-      when :active then active_network(params)
+      when :activate then activate_network(params)
       end
 
       nil
@@ -93,31 +93,11 @@ module Vnet::Openflow
     # Events:
     #
 
-    def active_network(params)
-      # dp_map = @dp_info.datapath.datapath_map
-
-      # if dp_map.nil?
-      #   error log_format('datapath information not found in database')
-      #   return nil
-      # end
-
-      # dpn_items = dp_map.batch.datapath_networks_dataset.where(:network_id => params[:network_id]).commit
-      # dpn_items = dp_map.batch.dataset.find_all_by_network_id(params[:network_id]).commit
-      
-      # dpn_items = dp_map.batch.datapath_networks_dataset.commit
-
-      # info dpn_items.inspect
-
-#       dpn_items = MW::Datapath.batch[:dpid => @dp_info.dpid_s].
-
-# dataset.find_all_by_network_id(params[:network_id]).commit
-
-      info "ASDFASDFSADF"
-
-      dpn_items.each { |dpn|
-        info "XXXXXXXXXXXXXXXXXX"
-        # debug "FFFF: #{params[:network_id]} #{dpn.inspect}"
-      }
+    def activate_network(params)
+      if @datapath_info.nil?
+        error log_format('datapath information not loaded')
+        return nil
+      end
 
     end
 
