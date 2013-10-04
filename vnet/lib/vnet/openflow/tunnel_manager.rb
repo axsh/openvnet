@@ -18,10 +18,6 @@ module Vnet::Openflow
       @tunnels.dup
     end
 
-    def flow_options(network, tunnel_port)
-      { :cookie => (network.network_id << COOKIE_NETWORK_SHIFT) | tunnel_port.port_number | cookie }
-    end
-
     def create_all_tunnels
       debug "creating tunnel ports"
 

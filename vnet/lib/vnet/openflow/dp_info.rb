@@ -17,6 +17,7 @@ module Vnet::Openflow
     attr_reader :ovs_ofctl
 
     attr_reader :cookie_manager
+    attr_reader :datapath_manager
     attr_reader :dc_segment_manager
     attr_reader :interface_manager
     attr_reader :network_manager
@@ -35,6 +36,7 @@ module Vnet::Openflow
       @ovs_ofctl = params[:ovs_ofctl]
 
       @cookie_manager = CookieManager.new
+      @datapath_manager = DatapathManager.new(self)
       @dc_segment_manager = DcSegmentManager.new(@datapath)
       @interface_manager = InterfaceManager.new(self)
       @network_manager = NetworkManager.new(self)

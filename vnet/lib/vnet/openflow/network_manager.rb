@@ -132,9 +132,11 @@ module Vnet::Openflow
       # TODO: Refactor this to only take the network id, and use that
       # to populate service manager.
       item_map.batch.network_services.commit.each { |service_map|
-        @dp_info.service_manager.item(:id => service_map.id)
+        @dp_info.service_manager.async.item(id: service_map.id)
       }
 
+      @dp_info.datapath_manager.async.update_network(event: :active,
+                                                     network_id: network.id)
       @dp_info.dc_segment_manager.async.prepare_network(item_map, dp_map)
       @dp_info.tunnel_manager.async.prepare_network(item_map, dp_map)
       @dp_info.route_manager.async.prepare_network(item_map, dp_map)
