@@ -12,6 +12,8 @@ Dir['./spec/support/*.rb'].map {|f| require f }
 require 'coveralls'
 Coveralls.wear!
 
+DCell.setup
+
 RSpec.configure do |config|
   config.include Rack::Test::Methods
   config.filter_run :focus => true
