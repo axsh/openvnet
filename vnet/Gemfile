@@ -20,9 +20,9 @@ gem "sinatra-hashfix"
 gem "unicorn"
 gem "active_support"
 
-gem 'paper-house'
+gem 'paper_house'
 gem 'rant', '>= 0.5.9', :git => 'https://github.com/axsh/rant.git'
-gem 'trema', :git=>'http://github.com/axsh/trema.git', :branch=>'wakame-edge'
+gem 'trema', :git=>'https://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
   gem "rake"
