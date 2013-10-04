@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
 class MockPortManager < Vnet::Openflow::PortManager
-  attr_reader :ports
+
+  def ports
+    @items
+  end
+
 end

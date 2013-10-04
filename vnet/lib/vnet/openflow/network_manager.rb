@@ -143,7 +143,11 @@ module Vnet::Openflow
     end
 
     def delete_item(item)
-      if !item.ports.empty?
+      if_port = item.interfaces.detect { |id, interface|
+        interface.port_number
+      }
+
+      if if_port
         info log_format('network still has active ports, and can\'t be removed',
                         "#{network.uuid}/#{network.id}")
         return item
