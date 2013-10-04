@@ -7,13 +7,15 @@ module Vnet::Openflow::Interfaces
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
 
+    TAG_DEFAULT               = 0x0
     TAG_ARP_REQUEST_INTERFACE = 0x1
     TAG_ARP_REQUEST_FLOOD     = 0x2
     TAG_ARP_LOOKUP            = 0x4
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
+    TAG_IP_LEASE              = 0x7
 
-    TAG_IP_LEASE_SHIFT = 8
+    TAG_SUFFIX_SHIFT = 8
 
     attr_accessor :id
     attr_accessor :uuid
@@ -61,18 +63,17 @@ module Vnet::Openflow::Interfaces
       end
     end
     
-    def cookie(tag = nil)
-      value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
-      tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
+    def cookie(tag = TAG_DEFAULT, tag_suffix = 0)
+      value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) | (tag << COOKIE_TAG_SHIFT) | (tag_suffix << COOKIE_TAG_SHIFT + TAG_SUFFIX_SHIFT)
     end
 
     def cookie_for_ip_lease(ip_lease_id)
-      cookie(ip_lease_id << TAG_IP_LEASE_SHIFT)
+      cookie(TAG_IP_LEASE, ip_lease_id)
     end
 
-    def del_cookie(tag = nil)
-      cookie_value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) | (tag << COOKIE_TAG_SHIFT)
-      cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | (tag ? COOKIE_TAG_MASK : 0)
+    def del_cookie(tag = TAG_DEFAULT, tag_suffix = 0)
+      cookie_value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) | (tag << COOKIE_TAG_SHIFT) | (tag_suffix << COOKIE_TAG_SHIFT + TAG_SUFFIX_SHIFT)
+      cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK
 
       @dp_info.network_manager.async.update_interface(event: :remove_all,
                                                       interface_id: @id)
@@ -80,7 +81,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def del_cookie_for_ip_lease(ip_lease_id)
-      del_cookie(ip_lease_id << TAG_IP_LEASE_SHIFT)
+      del_cookie(TAG_IP_LEASE, ip_lease_id)
     end
 
     # Update variables by first duplicating to avoid memory
@@ -101,7 +102,6 @@ module Vnet::Openflow::Interfaces
 
     def uninstall
       debug "interfaces: removing flows..."
-
       del_cookie
     end
 
