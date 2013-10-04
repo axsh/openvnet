@@ -144,6 +144,9 @@ module Vnet::Openflow
 
       @datapath.send_message(Trema::Messages::FeaturesRequest.new)
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
+
+      # Temporary hack to load the public network.
+      @datapath.network_manager.async.item(uuid: 'nw-public')
     end
 
     def features_reply(message)
