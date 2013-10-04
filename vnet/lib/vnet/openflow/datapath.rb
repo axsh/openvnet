@@ -9,12 +9,15 @@ module Vnet::Openflow
     attr_reader :id
     attr_reader :uuid
     attr_reader :display_name
+
+    attr_reader :dc_segment_id
     attr_reader :ipv4_address
 
     def initialize(params)
       @id = params[:id]
       @uuid = params[:uuid]
       @display_name = params[:display_name]
+      @dc_segment_id = params[:dc_segment_id]
       @ipv4_address = params[:ipv4_address]
     end
 
@@ -117,9 +120,10 @@ module Vnet::Openflow
                                         display_name: @datapath_map.display_name,
                                         ipv4_address: IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET))
 
-      @interface_manager.set_datapath_info(@datapath_info)
-      @network_manager.set_datapath_info(@datapath_info)
-      @service_manager.set_datapath_info(@datapath_info)
+      @dp_info.datapath_manager.set_datapath_info(@datapath_info)
+      @dp_info.interface_manager.set_datapath_info(@datapath_info)
+      @dp_info.network_manager.set_datapath_info(@datapath_info)
+      @dp_info.service_manager.set_datapath_info(@datapath_info)
 
       @switch.switch_ready
     end

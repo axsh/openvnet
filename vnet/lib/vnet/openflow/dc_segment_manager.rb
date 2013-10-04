@@ -48,10 +48,10 @@ module Vnet::Openflow
       self.update_network_id(dpn_map.network_id)
     end
 
-    def prepare_network(network_map, dp_map)
+    def prepare_network(network_map, datapath_info)
       return unless network_map.network_mode == 'virtual'
 
-      network_map.batch.datapath_networks_dataset.on_segment(dp_map).all.commit(:fill => :datapath).each { |dpn_map|
+      network_map.batch.datapath_networks_dataset.on_segment(datapath_info).all.commit(:fill => :datapath).each { |dpn_map|
         self.insert(dpn_map)
       }
 
@@ -59,7 +59,8 @@ module Vnet::Openflow
       flow_options = {:cookie => cookie}
       nw_virtual_md = flow_options.merge(md_create(:network => network_map.network_id))
 
-      dpn = network_map.batch.datapath_networks_dataset.on_specific_datapath(dp_map).first.commit
+      dpn = MW::DatapathNetwork[datapath_id: datapath_info.id,
+                                network_id: network_map.id]
 
       flows = []
       flows << Flow.create(TABLE_HOST_PORTS, 30, {

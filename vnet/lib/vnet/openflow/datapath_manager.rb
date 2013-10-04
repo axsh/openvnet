@@ -9,9 +9,6 @@ module Vnet::Openflow
     #
 
     def update_network(params)
-      # item = item_by_params(params)
-
-      # return nil if item.nil?
       return nil if params[:network_id].nil?
 
       case params[:event]
@@ -99,6 +96,10 @@ module Vnet::Openflow
         return nil
       end
 
+      dpn_items = MW::DatapathNetwork.batch.dataset.where(network_id: params[:network_id]).all.commit
+
+      dpn_items.each { |dpn|
+      }
     end
 
   end
