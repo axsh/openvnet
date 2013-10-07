@@ -4,14 +4,27 @@ module Vnet::Openflow
 
   class Manager
     include Celluloid
+    include Celluloid::Notifications
     include Celluloid::Logger
     include FlowHelpers
+    include Vnet::Event
+
+    class << self
+      def events
+        @events ||= {}
+      end
+
+      def subscribe_event(event, method = nil, &bloc)
+        self.events[event] = method
+      end
+    end
 
     def initialize(dp_info)
       @dp_info = dp_info
 
       @datapath_id = nil
       @items = {}
+      subscribe_events
     end
 
     def item(params)
@@ -64,6 +77,16 @@ module Vnet::Openflow
       # our datapath.
     end
 
+    def handle_event(event, params)
+      debug log_format("handle event #{event}", "#{params.inspect}")
+
+      item = @items[params[:target_id]]
+      if handler = self.class.events[event]
+        __send__(handler, item, params)
+      end
+
+      return nil
+    end
     #
     # Internal methods:
     #
@@ -138,6 +161,20 @@ module Vnet::Openflow
         # Any invalid params that should cause an exception needs to
         # be caught by the item_by_params_direct method.
         return nil
+      end
+    end
+
+    def subscribe_events
+      self.class.events.each do |event, method|
+        # FIXME
+        # We should raise error if Celluloid::Notifications is not working.
+        # If you know how to start notifier actor correctly in rspec, remove 'begin ~ rescue' clouse.
+        begin
+          subscribe(event, :handle_event)
+        rescue Celluloid::DeadActorError => e
+          error e.message
+          error e.backtrace
+        end
       end
     end
 

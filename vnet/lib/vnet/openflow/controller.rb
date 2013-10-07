@@ -12,6 +12,7 @@ module Vnet::Openflow
     include Celluloid::Logger
     include Vnet::Constants::Openflow
 
+    attr_reader :datapaths
     attr_accessor :trema_thread
 
     def initialize

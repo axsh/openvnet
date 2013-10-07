@@ -82,6 +82,14 @@ module Vnet::Endpoints::V10
       respond_with([mw.uuid])
     end
 
+    # TODO refactor
+    def delete_by_uuid_with_node_api(class_name)
+      model_wrapper = M.const_get(class_name)
+      mw = check_syntax_and_pop_uuid(model_wrapper, @params)
+      model_wrapper.destroy(mw.uuid)
+      respond_with([mw.uuid])
+    end
+
     def get_all(class_name)
       model_wrapper = M.const_get(class_name)
       response = R.const_get("#{class_name}Collection")
@@ -106,6 +114,21 @@ module Vnet::Endpoints::V10
       # This yield is for extra argument validation
       yield(params) if block_given?
       object.batch.update(params).commit
+
+      updated_object = model_wrapper[@params["uuid"]]
+      respond_with(response.generate(updated_object))
+    end
+
+    # TODO refactor
+    def update_by_uuid_with_node_api(class_name, accepted_params)
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+
+      params = parse_params(@params, accepted_params + ["uuid"])
+      object = check_syntax_and_pop_uuid(model_wrapper, params)
+      # This yield is for extra argument validation
+      yield(params) if block_given?
+      model_wrapper.update(@params[:uuid], params)
 
       updated_object = model_wrapper[@params["uuid"]]
       respond_with(response.generate(updated_object))

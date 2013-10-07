@@ -8,15 +8,9 @@ module Vnet::Openflow::Interfaces
   class Simulated < Base
     include Vnet::Openflow::ArpLookup
 
-    TAG_ARP_REQUEST_INTERFACE = 0x1
-    TAG_ARP_REQUEST_FLOOD     = 0x2
-    TAG_ARP_LOOKUP            = 0x4
-    TAG_ARP_REPLY             = 0x5
-    TAG_ICMP_REQUEST          = 0x6
-
     def initialize(params)
       super
-      
+
       arp_lookup_initialize(interface_id: @id,
                             lookup_cookie: self.cookie(TAG_ARP_LOOKUP),
                             reply_cookie: self.cookie(TAG_ARP_REPLY))
@@ -97,7 +91,7 @@ module Vnet::Openflow::Interfaces
                        :payload => raw_in.l4.payload
                      })
         end
-        
+
       end
 
     end
