@@ -99,6 +99,10 @@ module Vnet::Openflow
       dpn_items = MW::DatapathNetwork.batch.dataset.where(network_id: params[:network_id]).all.commit
 
       dpn_items.each { |dpn|
+        item = item_by_params(id: dpn.datapath_id)
+        next if item.nil?
+
+        item.add_active_network(dpn)
       }
     end
 

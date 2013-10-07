@@ -27,24 +27,6 @@ module Vnet::Openflow
 
       dpn_list[dpn_map.id] = dpn
 
-      actions = {:cookie => dpn[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)}
-
-      flows = []
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_dst => dpn[:broadcast_mac_address]
-                           }, nil, actions)
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_src => dpn[:broadcast_mac_address]
-                           }, nil, actions)
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_dst => dpn[:broadcast_mac_address]
-                           }, nil, actions)
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_src => dpn[:broadcast_mac_address]
-                           }, nil, actions)
-
-      @datapath.add_flows(flows)
-
       self.update_network_id(dpn_map.network_id)
     end
 

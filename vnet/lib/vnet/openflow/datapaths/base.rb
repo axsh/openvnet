@@ -17,6 +17,8 @@ module Vnet::Openflow::Datapaths
 
       @id = map.id
       @uuid = map.uuid
+
+      @active_networks = {}
     end
     
     # def cookie(tag = nil)
@@ -34,12 +36,65 @@ module Vnet::Openflow::Datapaths
     end
 
     def uninstall
-      debug "interfaces: removing flows..."
+      debug log_format("removing flows")
 
       # cookie_value = self.cookie
       # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
 
       # @dp_info.del_cookie(cookie_value, cookie_mask)
+    end
+
+    #
+    # Networks:
+    #
+
+    def add_active_network(dpn_map)
+      debug log_format("adding active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
+
+      return if @active_networks.has_key? dpn_map.id
+
+      active_network = {
+        :dpn_id => dpn_map.id,
+        :datapath_id => dpn_map.datapath_id,
+        :network_id => dpn_map.network_id,
+        :broadcast_mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
+      }
+
+      @active_networks[dpn_map.network_id] = active_network
+
+      cookie = active_network[:dpn_id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
+
+      flows = []
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           priority: 90,
+                           match: {
+                             :eth_src => active_network[:broadcast_mac_address]
+                           },
+                           cookie: cookie)
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           priority: 90,
+                           match: {
+                             :eth_dst => active_network[:broadcast_mac_address]
+                           },
+                           cookie: cookie)
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_DST_CLASSIFIER,
+                           priority: 90,
+                           match: {
+                             :eth_src => active_network[:broadcast_mac_address]
+                           },
+                           cookie: cookie)
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_DST_CLASSIFIER,
+                           priority: 90,
+                           match: {
+                             :eth_dst => active_network[:broadcast_mac_address]
+                           },
+                           cookie: cookie)
+
+      @dp_info.add_flows(flows)
     end
 
     #

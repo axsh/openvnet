@@ -153,7 +153,7 @@ module Vnet::Openflow
       instructions[:goto_table] = goto_table if goto_table
       instructions.merge!(md_create(write_metadata)) if write_metadata
 
-      raise "Missing cookie." if cookie.nil?
+      raise "Missing cookie." if instructions[:cookie].nil?
 
       Flow.create(table, priority, match, actions, instructions)
     end

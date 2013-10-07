@@ -124,6 +124,7 @@ module Vnet::Openflow
       @dp_info.interface_manager.set_datapath_info(@datapath_info)
       @dp_info.network_manager.set_datapath_info(@datapath_info)
       @dp_info.service_manager.set_datapath_info(@datapath_info)
+      @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
 
       @switch.switch_ready
     end

@@ -44,7 +44,7 @@ module Vnet::Openflow
       @port_manager = PortManager.new(self)
       @route_manager = RouteManager.new(@datapath)
       @service_manager = ServiceManager.new(self)
-      @tunnel_manager = TunnelManager.new(@datapath)
+      @tunnel_manager = TunnelManager.new(self)
     end
 
     #

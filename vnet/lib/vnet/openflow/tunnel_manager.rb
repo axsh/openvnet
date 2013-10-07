@@ -2,13 +2,12 @@
 
 module Vnet::Openflow
 
-  class TunnelManager
-    include Celluloid
-    include Celluloid::Logger
-    include FlowHelpers
+  class TunnelManager < Manager
 
-    def initialize(dp)
-      @datapath = dp
+    def initialize(dp_info)
+      super
+
+      @datapath = dp_info.datapath
       @tunnels = []
 
       @tunnel_ports = {}
@@ -21,13 +20,16 @@ module Vnet::Openflow
     def create_all_tunnels
       debug "creating tunnel ports"
 
-      dp_map = MW::Datapath.first(:dpid => "0x%016x" % @datapath.dpid)
+      if @datapath_info.nil?
+        error log_format('datapath information not loaded')
+        return nil
+      end
 
-      raise "Datapath not found: #{'0x%016x' % @datapath.dpid}" unless dp_map
-
-      @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
+      @tunnels = MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.map do |target_dp_map|
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
-        tunnel = MW::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
+        tunnel = MW::Tunnel.create(:src_datapath_id => @datapath_info.id,
+                                   :dst_datapath_id => target_dp_map.id,
+                                   :display_name => tunnel_name)
         tunnel.to_hash.tap do |t|
           t[:dst_dpid] = target_dp_map.dpid
           t[:datapath_networks] = []
@@ -52,22 +54,6 @@ module Vnet::Openflow
 
       tunnel = @tunnels.find{ |t| t[:dst_dpid] == datapath_network[:dpid] }
       tunnel[:datapath_networks] << datapath_network
-
-      cookie = datapath_network[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
-
-      flows = []
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_dst => datapath_network[:broadcast_mac_address]
-                           }, nil, {
-                             :cookie => cookie
-                           })
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_dst => datapath_network[:broadcast_mac_address]
-                           }, nil, {
-                             :cookie => cookie
-                           })
-
-      @datapath.add_flows(flows)
 
       update_network_id(datapath_network[:network_id]) if should_update
     end
