@@ -90,6 +90,20 @@ module Vnet::Openflow
     end
 
     #
+    # Port modification methods:
+    #
+
+    def add_tunnel(tunnel_name, remote_ip)
+      # debug log_format('adding tunnel', "#{tunnel_name}")
+      @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
+    end
+
+    def delete_tunnel(tunnel_name)
+      # debug log_format('deleting tunnel', "#{tunnel_name}")
+      @ovs_ofctl.delete_tunnel(tunnel_name)
+    end
+
+    #
     # Trema messaging:
     #
 

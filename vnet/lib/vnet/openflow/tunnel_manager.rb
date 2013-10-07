@@ -6,9 +6,6 @@ module Vnet::Openflow
 
     def initialize(dp_info)
       super
-
-      @datapath = dp_info.datapath
-
       @tunnel_ports = {}
     end
 
@@ -38,7 +35,7 @@ module Vnet::Openflow
       }
 
       @items.each { |tunnel_id, tunnel|
-        @datapath.add_tunnel(tunnel[:display_name], IPAddr.new(tunnel[:dst_ipv4_address], Socket::AF_INET).to_s)
+        @dp_info.add_tunnel(tunnel[:display_name], IPAddr.new(tunnel[:dst_ipv4_address], Socket::AF_INET).to_s)
       }
     end
 
@@ -107,23 +104,23 @@ module Vnet::Openflow
                                          :goto_table => TABLE_FLOOD_TUNNEL_PORTS
                                        }))
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def delete_tunnel_port(network_id, remote_dpid)
 
-      # if #{remote_dpid} is equal to #{@datapath.dpid},
+      # if #{remote_dpid} is equal to #{@dp_info.dpid},
       # it can be regard as the network deletion happens on
       # the local datapath (not on the remote datapath)
 
-      if remote_dpid == @datapath.dpid
-        debug "delete tunnel on local datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
+      if remote_dpid == @dp_info.dpid
+        debug "delete tunnel on local datapath: local_dpid => #{@dp_info.dpid} remote_dpid => #{remote_dpid}"
         @items.each do |tunnel_id, tunnel|
           debug "try to delete tunnel #{t[:display_name]}"
           delete_tunnel_if_datapath_networks_empty(t, network_id)
         end
       else
-        debug "delete tunnel for remote datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
+        debug "delete tunnel for remote datapath: local_dpid => #{@dp_info.dpid} remote_dpid => #{remote_dpid}"
         @items.each do |tunnel_id, tunnel|
           if t[:dst_dpid] == "0x%016x" % remote_dpid
             debug "found a tunnel to delete: display_name => #{t[:display_name]}"
@@ -163,7 +160,7 @@ module Vnet::Openflow
                            :cookie => cookie
                          })
 
-      @datapath.add_flow(flow)
+      @dp_info.add_flow(flow)
 
       tunnel[1][:datapath_networks].each { |dpn|
         update_network_id(dpn[:network_id])
@@ -204,14 +201,14 @@ module Vnet::Openflow
                              :cookie => cookie
                            })
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def delete_tunnel_if_datapath_networks_empty(tunnel, network_id)
       tunnel[:datapath_networks].delete_if { |dpn| dpn[:network_id] == network_id }
       if tunnel[:datapath_networks].empty?
         debug "delete tunnel #{tunnel[:display_name]}"
-        @datapath.delete_tunnel(tunnel[:display_name])
+        @dp_info.delete_tunnel(tunnel[:display_name])
         t = MW::Tunnel[:display_name => tunnel[:display_name]]
         t.batch.destroy.commit
       else
