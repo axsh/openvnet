@@ -34,7 +34,7 @@ module Vnet::Openflow
       else
         @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
-        error log_format('unknown interface type', 'name:#{port.port_info.name}')
+        error log_format('unknown interface type', "name:#{port.port_info.name}")
       end
 
       item_to_hash(port)
