@@ -4,22 +4,11 @@ module Vnet::Openflow
 
   class ServiceManager < Manager
 
-    def handle_event(params)
-      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
-
-      item = @items[:target_id]
-
-      case params[:event]
-      when :added
-        return nil if item
-        # Check if needed.
-      when :removed
-        return nil if item
-        # Check if needed.
-      end
-
-      nil
-    end
+    #
+    # Events:
+    #
+    subscribe_event :added_service # TODO Check if needed.
+    subscribe_event :removed_service # TODO Check if needed.
 
     #
     # Internal methods:
@@ -28,7 +17,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} service_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} service_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     def service_initialize(mode, params)
@@ -46,21 +35,21 @@ module Vnet::Openflow
     end
 
     def create_item(item_map, params)
-      return nil if item_map.nil?
-
-      interface = @datapath.interface_manager.item(:id => item_map.interface_id)
+      # TODO: Refactor this to be thread safe same as interface
+      # manager.
+      interface = @dp_info.interface_manager.item(:id => item_map.interface_id)
       return nil if interface.nil?
       
       item = @items[item_map.id]
       return item if item
 
-      debug log_format('insert', "service:#{item_map.uuid}/#{item_map.id}")
+      debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
 
       mac_address = interface.mac_addresses.first
       ipv4_address = mac_address[1][:ipv4_addresses].first
 
       item = service_initialize(item_map.display_name.to_sym,
-                                datapath: @datapath,
+                                dp_info: @dp_info,
                                 manager: self,
                                 id: item_map.id,
                                 uuid: item_map.uuid,

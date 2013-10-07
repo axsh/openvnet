@@ -12,17 +12,17 @@ module Sequel
             networks.first
           end
 
-          def network_uuid
-            return @network_uuid if @network_uuid
-            @network_uuid = self.ip_address.try(:network).try(:canonical_uuid)
+          def network_id
+            return @network_id if @network_id
+            @network_id = self.ip_address.try(:network_id)
           end
 
-          def network_uuid=(network_uuid)
-            unless network_uuid == self.network_uuid
-              @network_uuid = network_uuid
-              modified!(:network_uuid)
+          def network_id=(network_id)
+            unless network_id == self.network_id
+              @network_id = network_id
+              modified!(:network_id)
             end
-            @network_uuid
+            @network_id
           end
 
           def ipv4_address
@@ -43,13 +43,13 @@ module Sequel
       module InstanceMethods
         def validate
           super
-          errors.add(:network_uuid, 'cannot be empty') if self.network_uuid.blank?
+          errors.add(:network_id, 'cannot be empty') if self.network_id.blank?
           errors.add(:ipv4_address, 'cannot be empty') if self.ipv4_address.blank?
         end
 
         def before_save
-          if @network_uuid
-            if self.ip_address && self.ip_address.network.canonical_uuid != @network_uuid
+          if @network_id
+            if self.ip_address && self.ip_address.network_id != @network_id
               self.ip_address.destroy
               self.ip_address = nil
             end
@@ -62,7 +62,7 @@ module Sequel
           end
           unless self.ip_address
             self.ip_address = self.class.association_reflection(:ip_address).associated_class.new(ipv4_address: @ipv4_address).tap do |model|
-              model.network = model.class.association_reflection(:network).associated_class[@network_uuid]
+              model.network = model.class.association_reflection(:network).associated_class[@network_id]
               model.save
             end
           end
@@ -76,7 +76,7 @@ module Sequel
 
         def to_hash
           super.merge({
-            :network_uuid => self.network_uuid,
+            :network_id => self.network_id,
             :ipv4_address => self.ipv4_address,
           })
         end

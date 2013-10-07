@@ -8,8 +8,10 @@ module Vnet::Openflow::Ports
 
     attr_reader :port_info
 
-    def initialize(dp, port_info)
-      @datapath = dp
+    attr_accessor :network_id
+
+    def initialize(dp_info, port_info)
+      @dp_info = dp_info
       @port_info = port_info
 
       @cookie = self.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
@@ -41,14 +43,6 @@ module Vnet::Openflow::Ports
       }
     end
 
-    def inspect
-      str = "<"
-      str << "@port_info=#{@port_info.inspect}, "
-      str << "@port_type=#{@port_type.inspect}, "
-      str << "@is_active=#{@is_active.inspect}>"
-      str
-    end
-
     def install
       error "port: No install action implemented for this port."
     end
@@ -56,7 +50,7 @@ module Vnet::Openflow::Ports
     def uninstall
       debug "port: Removing flows..."
 
-      @datapath.del_cookie(@cookie)
+      @dp_info.del_cookie(@cookie)
     end
 
   end

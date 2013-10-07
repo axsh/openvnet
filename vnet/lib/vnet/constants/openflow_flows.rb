@@ -58,8 +58,11 @@ module Vnet
       TABLE_PHYSICAL_DST = 22
 
       TABLE_INTERFACE_SIMULATED = 23
+      TABLE_INTERFACE_VIF = 24
 
       # Route based on the mac address only.
+      #
+      # Deprecated...
       TABLE_MAC_ROUTE = 25
 
       TABLE_FLOOD_SIMULATED    = 30
@@ -88,10 +91,10 @@ module Vnet
       COOKIE_ID_MASK = (0xffffffff)
 
       COOKIE_TAG_SHIFT = 32
-      COOKIE_TAG_MASK = (0xffff << COOKIE_TAG_SHIFT)
+      COOKIE_TAG_MASK = (0xffffff << COOKIE_TAG_SHIFT)
 
-      COOKIE_PREFIX_SHIFT = 48
-      COOKIE_PREFIX_MASK = (0xffff << COOKIE_PREFIX_SHIFT)
+      COOKIE_PREFIX_SHIFT = 56
+      COOKIE_PREFIX_MASK = (0xff << COOKIE_PREFIX_SHIFT)
 
       COOKIE_PREFIX_COLLECTION     = 0x1
       COOKIE_PREFIX_DP_NETWORK     = 0x2

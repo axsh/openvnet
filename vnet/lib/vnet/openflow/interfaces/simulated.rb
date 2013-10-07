@@ -8,48 +8,32 @@ module Vnet::Openflow::Interfaces
   class Simulated < Base
     include Vnet::Openflow::ArpLookup
 
-    TAG_ARP_REQUEST_INTERFACE = 0x1
-    TAG_ARP_REQUEST_FLOOD     = 0x2
-    TAG_ARP_LOOKUP            = 0x4
-    TAG_ARP_REPLY             = 0x5
-    TAG_ICMP_REQUEST          = 0x6
-
     def initialize(params)
       super
-      
+
       arp_lookup_initialize(interface_id: @id,
                             lookup_cookie: self.cookie(TAG_ARP_LOOKUP),
                             reply_cookie: self.cookie(TAG_ARP_REPLY))
     end
 
-    # TODO: Refactor this for all classes...
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
-      install_ipv4(mac_info, ipv4_info)
+      flows = []
+
+      flows_for_ipv4(flows, mac_info, ipv4_info)
+      arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
+
+      @dp_info.add_flows(flows)
     end
 
     def install
       flows = []
 
+      flows_for_base(flows)
       arp_lookup_base_flows(flows)
 
-      flows << flow_create(:catch_interface_simulated,
-                           match: {
-                             :eth_type => 0x0806,
-                             :arp_op => 1,
-                           },
-                           interface_id: @id,
-                           cookie: self.cookie(TAG_ARP_REQUEST_INTERFACE))
-      flows << flow_create(:catch_interface_simulated,
-                           match: {
-                             :eth_type => 0x0800,
-                             :ip_proto => 0x01,
-                             :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
-                           },
-                           interface_id: @id,
-                           cookie: self.cookie(TAG_ICMP_REQUEST))
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def packet_in(message)
@@ -107,7 +91,7 @@ module Vnet::Openflow::Interfaces
                        :payload => raw_in.l4.payload
                      })
         end
-        
+
       end
 
     end
@@ -119,16 +103,30 @@ module Vnet::Openflow::Interfaces
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def flows_for_base(flows)
+      flows << flow_create(:catch_interface_simulated,
+                           match: {
+                             :eth_type => 0x0806,
+                             :arp_op => 1,
+                           },
+                           interface_id: @id,
+                           cookie: self.cookie(TAG_ARP_REQUEST_INTERFACE))
+      flows << flow_create(:catch_interface_simulated,
+                           match: {
+                             :eth_type => 0x0800,
+                             :ip_proto => 0x01,
+                             :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
+                           },
+                           interface_id: @id,
+                           cookie: self.cookie(TAG_ICMP_REQUEST))
     end
 
     # TODO: Separate the mac-only flows and add those when
     # add_mac_address is called.
-    def install_ipv4(mac_info, ipv4_info)
-      flows = []
-
-      arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
-
+    def flows_for_ipv4(flows, mac_info, ipv4_info)
       flows << flow_create(:network_dst,
                            priority: 80,
                            match: {
@@ -165,8 +163,6 @@ module Vnet::Openflow::Interfaces
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
                            cookie: self.cookie(TAG_ARP_REQUEST_FLOOD))
-
-      @datapath.add_flows(flows)
     end
 
   end

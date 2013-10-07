@@ -14,11 +14,13 @@ module Vnet::Openflow::Interfaces
       @mode = :remote
     end
 
-    # TODO: Refactor this for all classes...
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
-      install_ipv4(mac_info, ipv4_info)
+      flows = []
+      flows_for_ipv4(flows,mac_info, ipv4_info)
+
+      @dp_info.add_flows(flows)
     end
 
     #
@@ -28,12 +30,10 @@ module Vnet::Openflow::Interfaces
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interfaces/remote: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interfaces/remote: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def install_ipv4(mac_info, ipv4_info)
-      flows = []
-
+    def flows_for_ipv4(flows, mac_info, ipv4_info)
       flows << flow_create(:router_dst_match,
                            priority: 40,
                            match: {
@@ -44,8 +44,6 @@ module Vnet::Openflow::Interfaces
                              :eth_dst => mac_info[:mac_address],
                            },
                            network_id: ipv4_info[:network_id])
-
-      @datapath.add_flows(flows)
     end
 
   end

@@ -4,8 +4,16 @@ module Vnet::Openflow
 
   class InterfaceManager < Manager
 
+    #
+    # Events:
+    #
+    subscribe_event :added_interface # TODO Check if needed.
+    subscribe_event :removed_interface # TODO Check if needed.
+    subscribe_event LeasedIpv4Address, :leased_ipv4_address
+    subscribe_event ReleasedIpv4Address, :released_ipv4_address
+
     def update_active_datapaths(params)
-      interface = item_by_params_direct(params)
+      interface = internal_detect(params)
       return nil if interface.nil?
 
       # Refactor this.
@@ -24,33 +32,10 @@ module Vnet::Openflow
 
     # Deprecate this...
     def get_ipv4_address(params)
-      interface = item_by_params_direct(params)
+      interface = internal_detect(params)
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
-    end
-
-    def handle_event(params)
-      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
-
-      item = @items[:target_id]
-
-      case params[:event]
-      when :added
-        return nil if item
-        # Check if needed.
-      when :removed
-        return nil if item
-        # Check if needed.
-      when :leased_ipv4_address
-        return nil if item.nil?
-        leased_ipv4_address(item, params)
-      when :released_ipv4_address
-        return nil if item.nil?
-        unleased_ipv4_address(item, params)
-      end
-
-      nil
     end
 
     #
@@ -60,7 +45,19 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:mode] && params[:mode] != item.mode
+      return false if params[:port_number] && params[:port_number] != item.port_number
+      true
     end
 
     def interface_initialize(mode, params)
@@ -79,39 +76,27 @@ module Vnet::Openflow
       MW::Interface.batch[filter].commit(:fill => [:ip_leases => :ip_address])
     end
 
-    def item_by_params_direct(params)
-      case
-      when params.has_key?(:port_number)
-        port_number = params[:port_number]
-        return if port_number.nil?
-        item = @items.detect { |id, item| item.port_number == port_number }
-        return item && item[1]
-      else
-      end
-
-      super
-    end
-
     def create_item(item_map, params)
       mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
 
       interface = interface_initialize(mode,
-                                       datapath: @datapath,
+                                       dp_info: @dp_info,
                                        manager: self,
                                        map: item_map)
       return nil if interface.nil?
 
       @items[item_map.id] = interface
 
-      debug log_format('insert', "interface:#{item_map.uuid}/#{item_map.id} mode:#{mode}")
+      debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
 
       # TODO: Make install/uninstall a barrier that enables/disable
       # the creation of flows and ensure that no events gets lost.
 
       interface.install
 
-      if interface.mode == :vif
-        port = @datapath.port_manager.port_by_port_name(interface.uuid)
+      case interface.mode
+      when :vif
+        port = @dp_info.port_manager.detect(port_name: interface.uuid)
         interface.update_port_number(port[:port_number])
       end
 
@@ -120,6 +105,15 @@ module Vnet::Openflow
       interface # Return nil if interface has been uninstalled.
     end
 
+    def delete_item(item)
+      @items.delete(item.id)
+
+      item.uninstall
+      item
+    end
+
+    # TODO: Convert the loading of addresses to events, and queue them
+    # with a 'handle_event' queue to ensure consistency.
     def load_addresses(interface, item_map)
       return if item_map.mac_address.nil?
 
@@ -133,12 +127,13 @@ module Vnet::Openflow
         network_id = ip_lease.network_id
         next if network_id.nil?
 
-        network_info = @datapath.network_manager.item(id: network_id)
+        network_info = @dp_info.network_manager.item(id: network_id)
         next if network_info.nil?
 
         interface.add_ipv4_address(mac_address: mac_address,
                                    network_id: network_id,
                                    network_type: network_info[:type],
+                                   ip_lease_id: ip_lease.id,
                                    ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
       }
     end
@@ -158,11 +153,26 @@ module Vnet::Openflow
     #
 
     def leased_ipv4_address(item, params)
-      # mac_address = load_mac_address(params[:mac_address_id])
-      # ipv4_address = load_ipv4_address(params[:ipv4_address_id])
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
+
+      return if ip_lease.interface_id != item.id
+      return if ip_lease.interface.nil?
+
+      network = @dp_info.network_manager.item(id: ip_lease.interface.network_id)
+
+      item.add_ipv4_address(mac_address: item.mac_address,
+                            network_id: network[:id],
+                            network_type: network[:type],
+                            ip_lease_id: ip_lease.id,
+                            ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
     end
 
-    def unleased_ipv4_address(item, params)
+    def released_ipv4_address(item, params)
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
+
+      return if ip_lease && ip_lease.interface_id == item.id
+
+      item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
     end
 
   end

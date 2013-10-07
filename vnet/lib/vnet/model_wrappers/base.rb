@@ -14,12 +14,7 @@ module Vnet::ModelWrappers
     end
 
     def commit(options = {})
-      puts "-" * 50
-      puts @methods.inspect
-      res = @model._execute_batch(@methods, options)
-      puts @methods.inspect
-      puts "=" * 50
-      res
+      @model._execute_batch(@methods, options)
     end
   end
 
@@ -53,13 +48,8 @@ module Vnet::ModelWrappers
       end
 
       def _call_proxy_method(method_name, *args, &block)
-      puts "-" * 50
-      puts args.inspect
         klass = _proxy.send(self.name.demodulize.underscore.to_sym)
-        res = klass.send(method_name, *args, &block)
-      puts args.inspect
-      puts "=" * 50
-      res
+        klass.send(method_name, *args, &block)
       end
 
       protected

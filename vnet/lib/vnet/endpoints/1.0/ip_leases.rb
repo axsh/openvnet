@@ -7,32 +7,34 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
     "ipv4_address",
   ]
 
+  fill_options = [:interface, { :ip_address => :network }]
+
   post do
     accepted_params = put_post_shared_params + ["uuid"]
     required_params = ["network_uuid", "interface_uuid", "ipv4_address"]
 
-    post_new(:IpLease, accepted_params, required_params) { |params|
-      check_syntax_and_find_by_uuid(M::Network, params, "network_uuid")
+    post_new(:IpLease, accepted_params, required_params, fill_options) { |params|
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id")
       check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id")
       params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
     }
   end
 
   get do
-    get_all(:IpLease)
+    get_all(:IpLease, fill_options)
   end
 
   get '/:uuid' do
-    get_by_uuid(:IpLease)
+    get_by_uuid(:IpLease, fill_options)
   end
 
   delete '/:uuid' do
-    delete_by_uuid(:IpLease)
+    delete_by_uuid_with_node_api(:IpLease)
   end
 
   put '/:uuid' do
-    update_by_uuid(:IpLease, put_post_shared_params) { |params|
-      check_syntax_and_find_by_uuid(M::Network, params, "network_uuid") if params["network_uuid"]
+    update_by_uuid_with_node_api(:IpLease, put_post_shared_params, fill_options) { |params|
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
       params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params['ipv4_address']
     }

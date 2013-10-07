@@ -18,10 +18,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     required_params = []
 
     post_new(:Interface, accepted_params, required_params, fill) { |params|
-      check_syntax_and_find_by_uuid(M::Network, params, "network_uuid") if params["network_uuid"]
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
       params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
-      params['mac_address'] = parse_ipv4(params['mac_address'])
+      params['mac_address'] = parse_mac(params['mac_address'])
     }
   end
 
@@ -39,10 +39,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
 
   put '/:uuid' do
     update_by_uuid_with_node_api(:Interface, put_post_shared_params, fill) { |params|
-      check_syntax_and_find_by_uuid(M::Network, params, "network_uuid") if params["network_uuid"]
       check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
-      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params[:ipv4_address]
-      params['mac_address'] = parse_ipv4(params['mac_address']) if params[:mac_address]
+      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
+      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params["ipv4_address"]
+      params['mac_address'] = parse_mac(params['mac_address']) if params[:mac_address]
     }
   end
 end

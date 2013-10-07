@@ -14,10 +14,6 @@ module Vnet::Endpoints::V10
 
     def pop_uuid(model, params, key = "uuid", fill = {})
       uuid = params.delete(key)
-      find_by_uuid(model, uuid, key, fill)
-    end
-
-    def find_by_uuid(model, uuid, key = "uuid", fill = {})
       model.batch[uuid].commit(:fill => fill) || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
     end
 
@@ -35,11 +31,6 @@ module Vnet::Endpoints::V10
     def check_syntax_and_pop_uuid(model, params, key = "uuid", fill = {})
       check_uuid_syntax(model, params[key])
       pop_uuid(model, params, key, fill)
-    end
-
-    def check_syntax_and_find_by_uuid(model, params, key = "uuid", fill = {})
-      check_uuid_syntax(model, params[key])
-      find_by_uuid(model, params[key], key, fill)
     end
 
     def check_syntax_and_get_id(model, params, uuid_key = "uuid", id_key = "id", fill = {})
@@ -91,6 +82,14 @@ module Vnet::Endpoints::V10
       respond_with([mw.uuid])
     end
 
+    # TODO refactor
+    def delete_by_uuid_with_node_api(class_name)
+      model_wrapper = M.const_get(class_name)
+      mw = check_syntax_and_pop_uuid(model_wrapper, @params)
+      model_wrapper.destroy(mw.uuid)
+      respond_with([mw.uuid])
+    end
+
     def get_all(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get("#{class_name}Collection")
@@ -102,7 +101,7 @@ module Vnet::Endpoints::V10
     def get_by_uuid(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
-      object = check_syntax_and_pop_uuid(model_wrapper, @params)
+      object = check_syntax_and_pop_uuid(model_wrapper, @params, "uuid", fill)
       respond_with(response.generate(object))
     end
 
@@ -114,7 +113,7 @@ module Vnet::Endpoints::V10
       object = check_syntax_and_pop_uuid(model_wrapper, params)
       # This yield is for extra argument validation
       yield(params) if block_given?
-      object.batch.update(params)
+      object.batch.update(params).commit
 
       updated_object = model_wrapper.batch[@params["uuid"]].commit(:fill => fill)
       respond_with(response.generate(updated_object))
@@ -129,9 +128,7 @@ module Vnet::Endpoints::V10
       check_syntax_and_pop_uuid(model_wrapper, params)
       # This yield is for extra argument validation
       yield(params) if block_given?
-      binding.pry
       updated_object = model_wrapper.batch.update(@params["uuid"], params).commit(:fill => fill)
-      binding.pry
       respond_with(response.generate(updated_object))
     end
 

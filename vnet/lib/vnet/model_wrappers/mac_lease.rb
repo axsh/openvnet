@@ -2,5 +2,6 @@
 
 module Vnet::ModelWrappers
   class MacLease < Base
+    include Helpers::MacAddr
   end
 end

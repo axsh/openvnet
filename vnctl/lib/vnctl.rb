@@ -21,7 +21,7 @@ module Vnctl
     autoload :Root, 'vnctl/cli/root'
     autoload :Route, 'vnctl/cli/route'
     autoload :RouteLink, 'vnctl/cli/route_link'
-    autoload :Vif, 'vnctl/cli/interface'
+    autoload :Interface, 'vnctl/cli/interface'
   end
 
   module Configuration

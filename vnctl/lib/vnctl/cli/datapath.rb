@@ -17,7 +17,7 @@ module Vnctl::Cli
 
     define_standard_crud_commands
 
-    rel_option :broadcast_mac_addr, :type => :string, :required => true,
+    rel_option :broadcast_mac_address, :type => :string, :required => true,
       :desc => "The broadcast mac address for mac2mac to use in this network."
     define_relation :networks
 

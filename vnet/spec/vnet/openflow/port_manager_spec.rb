@@ -41,7 +41,6 @@ describe Vnet::Openflow::PortManager do
 
       it "creates an object of Models::Interface for eth0" do
         nm = double(:network_manager)
-        nm.should_receive(:add_port)
         Vnet::Openflow::NetworkManager.stub(:new).and_return(nm)
 
         ofc = double(:ofc)
@@ -58,7 +57,7 @@ describe Vnet::Openflow::PortManager do
         port = double(:port)
         port_info = double(:port_info)
         port_info.should_receive(:name).and_return('eth0')
-        port.should_receive(:port_number).exactly(3).times.and_return(1)
+        port.should_receive(:port_number).exactly(2).times.and_return(1)
         port.should_receive(:port_info).and_return(port_info)
         port.should_receive(:to_hash)
         port.should_receive(:install)

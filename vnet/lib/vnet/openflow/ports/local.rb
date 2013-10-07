@@ -6,7 +6,6 @@ module Vnet::Openflow::Ports
     include Vnet::Openflow::FlowHelpers
 
     attr_accessor :ipv4_addr
-    attr_accessor :network_id
 
     def port_type
       :local
@@ -64,7 +63,7 @@ module Vnet::Openflow::Ports
                              flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       end
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
   end
