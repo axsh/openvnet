@@ -10,6 +10,21 @@ module Vnet::Openflow
     include Vnet::Event::Dispatchable
 
     #
+    # Events:
+    #
+    subscribe_event :added_network # TODO Check if needed.
+    subscribe_event :removed_network # TODO Check if needed.
+
+    def networks(params = {})
+      @items.select { |key,nw|
+        result = true
+        result = result && (nw.network_type == params[:network_type]) if params[:network_type]
+      }.map { |key,nw|
+        item_to_hash(nw)
+      }
+    end
+
+    #
     # Interfaces:
     #
 
@@ -49,24 +64,6 @@ module Vnet::Openflow
         debug log_format("updating flows for #{network.uuid}/#{network.id}")
         network.update_flows
       }
-      nil
-    end
-
-    #
-    # Events:
-    #
-
-    def handle_event(params)
-      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
-
-      item = @items[:target_id]
-
-      case params[:event]
-      when :removed
-        return nil if item
-        # Check if needed.
-      end
-
       nil
     end
 
@@ -156,7 +153,7 @@ module Vnet::Openflow
         return item
       end
 
-      @items.delete(item.id)
+      @items.delete(item.network_id)
 
       item.uninstall
 

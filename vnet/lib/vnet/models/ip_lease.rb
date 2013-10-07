@@ -8,6 +8,8 @@ module Vnet::Models
     many_to_one :ip_address
     many_to_one :interface
 
+    plugin :association_dependencies, ip_address: :destroy
+
     dataset_module do
       def join_vifs
         self.join_table(:inner, :interfaces, :interfaces__id => :ip_leases__interface_id)
@@ -19,5 +21,14 @@ module Vnet::Models
       end
     end
 
+    def ipv4_address
+      self.ip_address.try(:ipv4_address)
+    end
+
+    def to_hash
+      super.merge({
+        ipv4_address: self.ipv4_address
+      })
+    end
   end
 end

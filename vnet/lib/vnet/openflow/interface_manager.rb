@@ -4,6 +4,14 @@ module Vnet::Openflow
 
   class InterfaceManager < Manager
 
+    #
+    # Events:
+    #
+    subscribe_event :added_interface # TODO Check if needed.
+    subscribe_event :removed_interface # TODO Check if needed.
+    subscribe_event LeasedIpv4Address, :leased_ipv4_address
+    subscribe_event ReleasedIpv4Address, :released_ipv4_address
+
     def update_active_datapaths(params)
       interface = internal_detect(params)
       return nil if interface.nil?
@@ -28,29 +36,6 @@ module Vnet::Openflow
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
-    end
-
-    def handle_event(params)
-      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
-
-      item = @items[:target_id]
-
-      case params[:event]
-      when :added
-        return nil if item
-        # Check if needed.
-      when :removed
-        return nil if item
-        # Check if needed.
-      when :leased_ipv4_address
-        return nil if item.nil?
-        leased_ipv4_address(item, params)
-      when :released_ipv4_address
-        return nil if item.nil?
-        unleased_ipv4_address(item, params)
-      end
-
-      nil
     end
 
     #
@@ -148,6 +133,7 @@ module Vnet::Openflow
         interface.add_ipv4_address(mac_address: mac_address,
                                    network_id: network_id,
                                    network_type: network_info[:type],
+                                   ip_lease_id: ip_lease.id,
                                    ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
       }
     end
@@ -167,11 +153,26 @@ module Vnet::Openflow
     #
 
     def leased_ipv4_address(item, params)
-      # mac_address = load_mac_address(params[:mac_address_id])
-      # ipv4_address = load_ipv4_address(params[:ipv4_address_id])
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
+
+      return if ip_lease.interface_id != item.id
+      return if ip_lease.interface.nil?
+
+      network = @dp_info.network_manager.item(id: ip_lease.interface.network_id)
+
+      item.add_ipv4_address(mac_address: item.mac_address,
+                            network_id: network[:id],
+                            network_type: network[:type],
+                            ip_lease_id: ip_lease.id,
+                            ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
     end
 
-    def unleased_ipv4_address(item, params)
+    def released_ipv4_address(item, params)
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
+
+      return if ip_lease && ip_lease.interface_id == item.id
+
+      item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
     end
 
   end
