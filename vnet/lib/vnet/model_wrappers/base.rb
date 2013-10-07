@@ -14,7 +14,12 @@ module Vnet::ModelWrappers
     end
 
     def commit(options = {})
-      @model._execute_batch(@methods, options)
+      puts "-" * 50
+      puts @methods.inspect
+      res = @model._execute_batch(@methods, options)
+      puts @methods.inspect
+      puts "=" * 50
+      res
     end
   end
 
@@ -37,7 +42,8 @@ module Vnet::ModelWrappers
       end
 
       def method_missing(method_name, *args, &block)
-        wrap(_call_proxy_method(method_name, *args, &block))
+        #wrap(_call_proxy_method(method_name, *args, &block))
+        wrap(_call_proxy_method(:execute, *args.dup.unshift(method_name), &block))
       end
 
       def _execute_batch(methods, options = {})
@@ -47,8 +53,13 @@ module Vnet::ModelWrappers
       end
 
       def _call_proxy_method(method_name, *args, &block)
+      puts "-" * 50
+      puts args.inspect
         klass = _proxy.send(self.name.demodulize.underscore.to_sym)
-        klass.send(method_name, *args, &block)
+        res = klass.send(method_name, *args, &block)
+      puts args.inspect
+      puts "=" * 50
+      res
       end
 
       protected

@@ -16,7 +16,7 @@ shared_examples "PUT /:uuid" do |accepted_params, uuid_params = []|
     uuid_params.each { |up| include_examples "uuid_in_param", accepted_params, up }
 
     accepted_params.each { |k,v|
-      context "with only the '#{k}' parameter" do
+      context "with only the '#{k}' parameter", :focus => true do
         let(:request_params) { { k => v } }
 
         it "only that parameter should be updated" do

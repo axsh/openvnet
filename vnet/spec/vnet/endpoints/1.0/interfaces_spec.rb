@@ -26,14 +26,15 @@ describe "/interfaces" do
     accepted_params = {
       :uuid => "if-test",
       :network_uuid => "nw-testnet",
+      :ipv4_address => "192.168.1.10",
+      :mac_address => "11:11:11:11:11:11",
       :owner_datapath_uuid => "dp-owner",
       :mode => "simulated"
     }
     required_params = []
     uuid_params = [:network_uuid, :owner_datapath_uuid]
-    expected_response = accepted_params.dup.tap { |n| n.delete(:ipv4_address) }
 
-    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
+    include_examples "POST /", accepted_params, required_params, uuid_params
 
     describe "event handler" do
       let(:request_params) { {} }
@@ -43,5 +44,22 @@ describe "/interfaces" do
         MockEventHandler.handled_events.size.should eq 1
       end
     end
+  end
+
+  describe "PUT /:uuid" do
+    before(:all) { use_mock_event_handler }
+    let!(:network) { Fabricate(:network) { uuid "nw-testnet" }  }
+    let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
+    let!(:active) { Fabricate(:datapath) { uuid "dp-active" } }
+
+    accepted_params = {
+      :network_uuid => "nw-testnet",
+      :ipv4_address => "192.168.2.10",
+      :mac_address => "22:22:22:22:22:22",
+      :owner_datapath_uuid => "dp-owner",
+      :mode => "simulated"
+    }
+
+    include_examples "PUT /:uuid", accepted_params
   end
 end

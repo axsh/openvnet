@@ -51,7 +51,6 @@ Sequel.migration do
     create_table(:interfaces) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :network_id, :index => true
 
       String :mode, :default => 'vif',:null => false
 
@@ -66,16 +65,16 @@ Sequel.migration do
 
     create_table(:ip_addresses) do
       primary_key :id
-      String :uuid, :unique => true, :null=>false
+      Integer :network_id, :index => true, :null => false
       Bignum :ipv4_address, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+      unique [:network_id, :ipv4_address]
     end
 
     create_table(:ip_leases) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :network_id, :index => true, :null => false
       Integer :interface_id, :index => true, :null => false
       Integer :ip_address_id, :index => true, :null=>false
       DateTime :created_at, :null=>false

@@ -132,13 +132,15 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
-      item_map.batch.network_services.commit.each { |service_map|
-        @datapath.service_manager.item(:id => service_map.id)
-      }
+      # TODO refactor
+      #item_map.batch.network_services.commit.each { |service_map|
+      #  @datapath.service_manager.item(:id => service_map.id)
+      #}
 
       @datapath.dc_segment_manager.async.prepare_network(item_map, dp_map)
       @datapath.tunnel_manager.async.prepare_network(item_map, dp_map)
-      @datapath.route_manager.async.prepare_network(item_map, dp_map)
+      # TODO refactor
+      #@datapath.route_manager.async.prepare_network(item_map, dp_map)
 
       dispatch_event("network/added",
                      network_id: network.network_id,

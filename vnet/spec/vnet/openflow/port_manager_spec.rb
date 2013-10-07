@@ -76,9 +76,9 @@ describe Vnet::Openflow::PortManager do
         Fabricate(:datapath_1)
 
         vnet = Fabricate(:vnet_1)
-        iface = Fabricate(:interface, network: vnet)
+        iface = Fabricate(:interface)
 
-        ip_addr = Fabricate(:ip_address_1)
+        ip_addr = Fabricate(:ip_address_1, network: vnet)
         mac = Fabricate(:mac_address)
         Fabricate(:mac_lease, interface: iface, _mac_address: mac)
         Fabricate(:ip_lease_any, ip_address: ip_addr, interface: iface)

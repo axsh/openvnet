@@ -4,15 +4,19 @@ module Vnet::NodeApi
     extend Vnet::Event::Dispatchable
 
     class << self
-      def model_class
-        @model_class ||= Vnet::Models.const_get(self.name.demodulize)
+      def model_class(name = nil)
+        Vnet::Models.const_get((name || self.name.demodulize).to_s)
+      end
+
+      def execute(method_name, *args, &block)
+        to_hash(self.__send__(method_name, *args, &block))
       end
 
       def execute_batch(*args)
         methods = args.dup
         options = methods.last.is_a?(Hash) ? methods.pop : {}
         transaction do
-          to_hash(methods.inject(model_class) do |klass, method|
+          to_hash(methods.inject(self) do |klass, method|
             name, *args = method
             klass.__send__(name, *args)
           end, options)
@@ -23,7 +27,7 @@ module Vnet::NodeApi
         if model_class.respond_to?(method_name)
           define_singleton_method(method_name) do |*args|
             transaction do
-              to_hash(model_class.__send__(method_name, *args, &block))
+              model_class.__send__(method_name, *args, &block)
             end
           end
           self.__send__(method_name, *args, &block)
@@ -47,8 +51,9 @@ module Vnet::NodeApi
         when Vnet::Models::Base
           data.to_hash.tap do |h|
             options_for_recursive_call = options.dup
-            fill = options_for_recursive_call.delete(:fill)
+            fill = options_for_recursive_call.delete(:fill) || {}
             [fill].flatten.compact.each do |f|
+              next if f.blank?
               if f.is_a?(Hash)
                 key = f.keys.first
                 value = f.values.first

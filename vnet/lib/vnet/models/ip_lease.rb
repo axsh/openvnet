@@ -6,7 +6,6 @@ module Vnet::Models
 
     plugin :ip_address
 
-    many_to_one :network
     many_to_one :interface
 
     dataset_module do
