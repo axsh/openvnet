@@ -8,13 +8,12 @@ module Vnet::Openflow
       super
 
       @datapath = dp_info.datapath
-      @tunnels = []
 
       @tunnel_ports = {}
     end
 
     def tunnels_dup
-      @tunnels.dup
+      @items.dup
     end
 
     def create_all_tunnels
@@ -25,21 +24,22 @@ module Vnet::Openflow
         return nil
       end
 
-      @tunnels = MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.map do |target_dp_map|
+      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
-        tunnel = MW::Tunnel.create(:src_datapath_id => @datapath_info.id,
-                                   :dst_datapath_id => target_dp_map.id,
-                                   :display_name => tunnel_name)
-        tunnel.to_hash.tap do |t|
+        tunnel = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
+                                   dst_datapath_id: target_dp_map.id,
+                                   display_name: tunnel_name)
+
+        @items[tunnel.id] = tunnel.to_hash.tap { |t|
           t[:dst_dpid] = target_dp_map.dpid
           t[:datapath_networks] = []
           t[:dst_ipv4_address] = target_dp_map.ipv4_address
-        end
-      end
+        }
+      }
 
-      @tunnels.each do |tunnel|
+      @items.each { |tunnel_id, tunnel|
         @datapath.add_tunnel(tunnel[:display_name], IPAddr.new(tunnel[:dst_ipv4_address], Socket::AF_INET).to_s)
-      end
+      }
     end
 
     def insert(dpn_map, should_update = false)
@@ -52,8 +52,10 @@ module Vnet::Openflow
         :network_id => dpn_map.network_id,
       }
 
-      tunnel = @tunnels.find{ |t| t[:dst_dpid] == datapath_network[:dpid] }
-      tunnel[:datapath_networks] << datapath_network
+      tunnel = @items.detect { |tunnel_id, tunnel|
+        tunnel[:dst_dpid] == datapath_network[:dpid]
+      }
+      tunnel[1][:datapath_networks] << datapath_network if tunnel
 
       update_network_id(datapath_network[:network_id]) if should_update
     end
@@ -116,13 +118,13 @@ module Vnet::Openflow
 
       if remote_dpid == @datapath.dpid
         debug "delete tunnel on local datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
-        @tunnels.each do |t|
+        @items.each do |tunnel_id, tunnel|
           debug "try to delete tunnel #{t[:display_name]}"
           delete_tunnel_if_datapath_networks_empty(t, network_id)
         end
       else
         debug "delete tunnel for remote datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
-        @tunnels.each do |t|
+        @items.each do |tunnel_id, tunnel|
           if t[:dst_dpid] == "0x%016x" % remote_dpid
             debug "found a tunnel to delete: display_name => #{t[:display_name]}"
             delete_tunnel_if_datapath_networks_empty(t, network_id)
@@ -130,7 +132,7 @@ module Vnet::Openflow
         end
       end
 
-      @tunnels.delete_if { |t| t[:datapath_networks].empty? }
+      @items.delete_if { |tunnel_id, tunnel| tunnel[:datapath_networks].empty? }
     end
 
     private
@@ -143,16 +145,16 @@ module Vnet::Openflow
         return
       end
 
-      tunnel = @tunnels.find{ |t| t[:display_name] == port[:port_name] }
+      tunnel = @items.detect { |tunnel_id, tunnel| tunnel[:display_name] == port[:port_name] }
 
       if tunnel.nil?
         warn "tunnel_manager: port name is not registered in database (#{port[:port_name]})"
         return
       end
 
-      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id],
-                              :tunnel => nil)
-      cookie = tunnel[:dst_datapath_id] | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
+      datapath_md = md_create(datapath: tunnel[1][:dst_datapath_id],
+                              tunnel: nil)
+      cookie = tunnel[1][:dst_datapath_id] | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
       flow = Flow.create(TABLE_OUTPUT_DATAPATH, 5,
                          datapath_md, {
@@ -163,7 +165,7 @@ module Vnet::Openflow
 
       @datapath.add_flow(flow)
 
-      tunnel[:datapath_networks].each { |dpn|
+      tunnel[1][:datapath_networks].each { |dpn|
         update_network_id(dpn[:network_id])
       }
     end
@@ -180,14 +182,14 @@ module Vnet::Openflow
 
     def update_collection_id(collection_id)
       ports = @tunnel_ports.select { |port_number,tunnel_port|
-        tunnel = @tunnels.find{ |t| t[:display_name] == tunnel_port[:port_name] }
+        tunnel = @items.find{ |tunnel_id, tunnel| tunnel[:display_name] == tunnel_port[:port_name] }
 
-        unless tunnel
+        if tunnel.nil?
           warn "tunnel port: #{tunnel_port[:port_name]} is not registered in db"
           next
         end
 
-        tunnel[:datapath_networks].any? { |dpn| dpn[:network_id] == collection_id }
+        tunnel[1][:datapath_networks].any? { |dpn| dpn[:network_id] == collection_id }
       }
 
       collection_md = md_create(:collection => collection_id)
