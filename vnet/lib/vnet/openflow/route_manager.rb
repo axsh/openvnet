@@ -33,7 +33,7 @@ module Vnet::Openflow
         :id => route_map.id,
         :uuid => route_map.uuid,
         :interface => nil,
-        :ipv4_address => IPAddr.new(route_map.ipv4_address, Socket::AF_INET),
+        :ipv4_address => IPAddr.new(route_map.ipv4_network, Socket::AF_INET),
         :ipv4_prefix => route_map.ipv4_prefix,
         :ingress => route_map.ingress,
         :egress => route_map.egress,
