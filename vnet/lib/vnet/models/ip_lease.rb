@@ -6,8 +6,6 @@ module Vnet::Models
 
     plugin :ip_address
 
-    many_to_one :interface
-
     dataset_module do
       def join_interfaces
         self.join_table(:inner, :interfaces, :interfaces__id => :ip_leases__interface_id)

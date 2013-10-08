@@ -36,15 +36,16 @@ describe "/ip_leases" do
 
     let!(:network) { Fabricate(:network) { uuid "nw-test" } }
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+    let!(:mac_lease) { Fabricate(:mac_lease, uuid: "ml-test", interface: interface) }
 
     accepted_params = {
       :uuid => "il-lease",
       :network_uuid => "nw-test",
-      :interface_uuid => "if-test",
+      :mac_lease_uuid => "ml-test",
       :ipv4_address => "192.168.1.10",
     }
-    required_params = [:interface_uuid, :network_uuid, :ipv4_address]
-    uuid_params = [:uuid, :interface_uuid, :network_uuid]
+    required_params = [:mac_lease_uuid, :network_uuid, :ipv4_address]
+    uuid_params = [:uuid, :mac_lease_uuid, :network_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
 
@@ -61,10 +62,11 @@ describe "/ip_leases" do
   #describe "PUT /:uuid" do
   #  let!(:network) { Fabricate(:network) { uuid "nw-test2" } }
   #  let!(:interface) { Fabricate(:interface) { uuid "if-test2" } }
+  #  let!(:mac_lease) { Fabricate(:mac_lease, uuid: "ml-test", interface: interface) }
 
   #  accepted_params = {
   #    :network_uuid => "nw-test2",
-  #    :interface_uuid => "if-test2",
+  #    :mac_lease_uuid => "ml-test",
   #    :ipv4_address => "192.168.1.10",
   #  }
 

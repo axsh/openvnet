@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-describe Vnet::Models::Network do
-  describe "routes" do
+describe Vnet::Models::Route do
+  describe "on_other_networks" do
     let(:network1) do
       Fabricate(:network,
               uuid: "nw-1",
@@ -39,9 +39,8 @@ describe Vnet::Models::Network do
       end
     end
 
-    subject { Vnet::Models::Network["nw-1"].routes }
+    subject { route1.on_other_networks(network1.id) }
 
-    it { expect(subject.size).to eq 3 }
-    it { expect(subject).to eq [ route1, route2, route3 ] }
+    it { expect(subject).to eq [ route2, route3 ] }
   end
 end

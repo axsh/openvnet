@@ -4,6 +4,8 @@ module Sequel
   module Plugins
     module IpAddress
       def self.apply(model, opts=OPTS)
+        model.many_to_one :interface
+        model.many_to_one :mac_lease
         model.many_to_one :ip_address
         model.many_to_many :networks, :join_table => :ip_addresses, :left_key => :id, :left_primary_key => :ip_address_id, :right_key => :network_id
         model.plugin :association_dependencies, :ip_address => :destroy
@@ -44,11 +46,15 @@ module Sequel
       module InstanceMethods
         def validate
           super
+          errors.add(:mac_lease_id, 'cannot be empty') if self.mac_lease_id.blank?
           errors.add(:network_id, 'cannot be empty') if self.network_id.blank?
           errors.add(:ipv4_address, 'cannot be empty') if self.ipv4_address.blank?
         end
 
         def before_save
+          if self.mac_lease
+            self.interface_id = self.mac_lease.interface_id
+          end
           if @network_id
             if self.ip_address && self.ip_address.network_id != @network_id
               self.ip_address.destroy

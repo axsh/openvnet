@@ -11,12 +11,13 @@ describe Vnet::NodeApi::IpLease do
       network = Fabricate(:network)
       ipv4_address = random_ipv4_i
       interface = Fabricate(:interface)
+      mac_lease = Fabricate(:mac_lease, interface: interface)
 
       ip_lease = Vnet::NodeApi::IpLease.execute(
         :create,
+        mac_lease: mac_lease,
         network_id: network.id,
-        ipv4_address: ipv4_address,
-        interface_id: interface.id,
+        ipv4_address: ipv4_address
       )
 
       model = Vnet::Models::IpLease[ip_lease[:uuid]]

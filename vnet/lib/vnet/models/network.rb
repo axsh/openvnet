@@ -15,11 +15,17 @@ module Vnet::Models
 
     subset(:alives, {})
 
-    #one_to_many :routes, :class=>Route do |ds|
-    #  Route.dataset.join_table(:inner, :interfaces,
-    #                           {:interfaces__network_id => self.id} & {:interfaces__id => :routes__interface_id}
-    #                           ).select_all(:routes).alives
-    #end
-
+    one_to_many :routes, :class=>Route do |ds|
+      Route.dataset.join_table(
+        :inner, :interfaces,
+        {interfaces__id: :routes__interface_id}
+      ).join_table(
+        :left, :ip_leases,
+        {ip_leases__interface_id: :interfaces__id}
+      ).join_table(
+        :inner, :ip_addresses,
+        {ip_addresses__id: :ip_leases__ip_address_id} & {ip_addresses__network_id: self.id}
+      ).select_all(:routes).alives
+    end
   end
 end
