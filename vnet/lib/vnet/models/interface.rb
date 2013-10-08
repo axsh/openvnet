@@ -12,6 +12,8 @@ module Vnet::Models
     many_to_one :owner_datapath, :class => Datapath
     many_to_one :active_datapath, :class => Datapath
 
+    many_to_many :security_groups, :join_table => :interface_security_groups
+
     subset(:alives, {})
 
     def ipv4_address
