@@ -4,6 +4,7 @@ module Vnet::Endpoints::V10::Responses
   class Datapath < Vnet::Endpoints::ResponseGenerator
     def self.generate(datapath)
       argument_type_check(datapath, Vnet::ModelWrappers::Datapath)
+      datapath.dc_segment_uuid = datapath.dc_segment.uuid if datapath.dc_segment
       datapath.to_hash
     end
 
