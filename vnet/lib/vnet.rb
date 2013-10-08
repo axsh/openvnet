@@ -202,6 +202,10 @@ module Vnet
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
       autoload :Router, 'vnet/openflow/services/router'
     end
+
+    module VnetEdge
+      autoload :TranslationHandler, 'vnet/openflow/vnet_edge/translation_handler'
+    end
   end
 
 end
