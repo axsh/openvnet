@@ -6,6 +6,7 @@ module Sequel
       def self.apply(model, opts=OPTS)
         model.many_to_one :ip_address
         model.many_to_many :networks, :join_table => :ip_addresses, :left_key => :id, :left_primary_key => :ip_address_id, :right_key => :network_id
+        model.plugin :association_dependencies, :ip_address => :destroy
 
         model.class_eval do
           def network
@@ -67,11 +68,6 @@ module Sequel
             end
           end
           super
-        end
-
-        def after_destroy
-          super
-          self.ip_address.try(:destroy)
         end
 
         def to_hash

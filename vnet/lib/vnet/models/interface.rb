@@ -14,11 +14,11 @@ module Vnet::Models
     many_to_one :owner_datapath, :class => Datapath
     many_to_one :active_datapath, :class => Datapath
 
-    #plugin :association_dependencies,
-    #  :ip_leases => :destroy,
-    #  :mac_leases => :destroy,
-    #  :network_services => :destroy,
-    #  :routes => :destroy
+    plugin :association_dependencies,
+      :ip_leases => :destroy,
+      :mac_leases => :destroy,
+      :network_services => :destroy,
+      :routes => :destroy
 
     subset(:alives, {})
 
