@@ -49,7 +49,7 @@ module Vnet::Openflow
 
           ovs_flow = "table=%d,cookie=0x%x,priority=80,dl_vlan=%d," % [TABLE_VLAN_TRANSLATION, flow_options[:cookie], t.vlan_id]
           ovs_flow << "actions=learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=90,NXM_OF_ETH_DST\\[\\]\\=NXM_OF_ETH_SRC\\[\\]," % [TABLE_VLAN_TRANSLATION, flow_options[:cookie]]
-          ovs_flow << "load:%d\\-\\>NXM_OF_VLAN_TCI\\[\\],output:NXM_OF_IN_PORT\\[\\]\\)," % t.vlan_id
+          ovs_flow << "load:NXM_OF_VLAN_TCI\\[\\]\\-\\>NXM_OF_VLAN_TCI\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),"
           ovs_flow << "strip_vlan,write_metadata:0x%x/0x%x,goto_table:%d" % [metadata[:metadata], metadata[:metadata_mask], TABLE_ROUTER_CLASSIFIER]
 
           @datapath.add_ovs_flow(ovs_flow)
@@ -65,4 +65,5 @@ module Vnet::Openflow
       "#{@dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
     end
   end
+
 end
