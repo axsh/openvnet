@@ -203,6 +203,11 @@ module Vnet
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
       autoload :Router, 'vnet/openflow/services/router'
     end
+
+    module Tunnels
+      autoload :Base, 'vnet/openflow/tunnels/base'
+    end
+
   end
 
 end

@@ -94,8 +94,8 @@ module Vnet::Openflow
         end
       end
 
-      select = select_filter_from_params(params)
-      return nil if select.nil?
+      select_filter = select_filter_from_params(params)
+      return nil if select_filter.nil?
 
       # After the db query, avoid yielding method calls until the item
       # is added to the items list and 'install' method is
@@ -114,7 +114,7 @@ module Vnet::Openflow
       # rely on the 'install' method call as an event barrier for
       # dynamic data.
 
-      item_map = select_item(select)
+      item_map = select_item(select_filter)
       return nil if item_map.nil?
 
       if params[:reinitialize] == true

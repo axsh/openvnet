@@ -23,19 +23,11 @@ module Vnet::Openflow
 
       MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
-        tunnel = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
-                                   dst_datapath_id: target_dp_map.id,
-                                   display_name: tunnel_name)
+        tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
+                                       dst_datapath_id: target_dp_map.id,
+                                       display_name: tunnel_name)
 
-        @items[tunnel.id] = tunnel.to_hash.tap { |t|
-          t[:dst_dpid] = target_dp_map.dpid
-          t[:datapath_networks] = []
-          t[:dst_ipv4_address] = target_dp_map.ipv4_address
-        }
-      }
-
-      @items.each { |tunnel_id, tunnel|
-        @dp_info.add_tunnel(tunnel[:display_name], IPAddr.new(tunnel[:dst_ipv4_address], Socket::AF_INET).to_s)
+        create_item(tunnel_map, dst_dp_map: target_dp_map)
       }
     end
 
@@ -49,10 +41,9 @@ module Vnet::Openflow
         :network_id => dpn_map.network_id,
       }
 
-      tunnel = @items.detect { |tunnel_id, tunnel|
-        tunnel[:dst_dpid] == datapath_network[:dpid]
-      }
-      tunnel[1][:datapath_networks] << datapath_network if tunnel
+      item = internal_detect(dst_dpid: datapath_network[:dpid])
+
+      item.datapath_networks << datapath_network if item
 
       update_network_id(datapath_network[:network_id]) if should_update
     end
@@ -115,24 +106,75 @@ module Vnet::Openflow
 
       if remote_dpid == @dp_info.dpid
         debug "delete tunnel on local datapath: local_dpid => #{@dp_info.dpid} remote_dpid => #{remote_dpid}"
-        @items.each do |tunnel_id, tunnel|
-          debug "try to delete tunnel #{t[:display_name]}"
-          delete_tunnel_if_datapath_networks_empty(t, network_id)
-        end
+
+        @items.each { |id, item|
+          debug "try to delete tunnel #{item.display_name}"
+          delete_tunnel_if_datapath_networks_empty(item, network_id)
+        }
       else
         debug "delete tunnel for remote datapath: local_dpid => #{@dp_info.dpid} remote_dpid => #{remote_dpid}"
-        @items.each do |tunnel_id, tunnel|
-          if t[:dst_dpid] == "0x%016x" % remote_dpid
-            debug "found a tunnel to delete: display_name => #{t[:display_name]}"
-            delete_tunnel_if_datapath_networks_empty(t, network_id)
+
+        @items.each { |id, item|
+          if item.dst_dpid == "0x%016x" % remote_dpid
+            debug "found a tunnel to delete: display_name => #{item.display_name}"
+            delete_tunnel_if_datapath_networks_empty(item, network_id)
           end
-        end
+        }
       end
 
-      @items.delete_if { |tunnel_id, tunnel| tunnel[:datapath_networks].empty? }
+      # Fix this...
+      @items.delete_if { |id, item| item.datapath_networks.empty? }
     end
 
+    #
+    # Internal methods:
+    #
+
     private
+
+    def log_format(message, values = nil)
+      "#{@dp_info.dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:display_name] && params[:display_name] != item.display_name
+      return false if params[:dst_dpid] && params[:dst_dpid] != item.dst_dpid
+      true
+    end
+
+    def item_initialize(params)
+      Tunnels::Base.new(params)
+    end
+
+    def select_item(filter)
+      # Using fill for ip_leases/ip_addresses isn't going to give us a
+      # proper event barrier.
+      MW::Tunnel.batch[filter].commit
+    end
+    
+    def create_item(item_map, params)
+      item = item_initialize(dp_info: @dp_info,
+                             manager: self,
+                             map: item_map,
+                             dst_dp_map: params[:dst_dp_map])
+      return nil if item.nil?
+
+      @items[item_map.id] = item
+
+      debug log_format("insert #{item_map.uuid}/#{item_map.id}")
+
+      item.install
+    end
+
+    #
+    # Refactor:
+    #
 
     def update_tunnel(port_number)
       port = @tunnel_ports[port_number]
@@ -142,16 +184,16 @@ module Vnet::Openflow
         return
       end
 
-      tunnel = @items.detect { |tunnel_id, tunnel| tunnel[:display_name] == port[:port_name] }
+      item = internal_detect(display_name: port[:port_name])
 
-      if tunnel.nil?
+      if item.nil?
         warn "tunnel_manager: port name is not registered in database (#{port[:port_name]})"
         return
       end
 
-      datapath_md = md_create(datapath: tunnel[1][:dst_datapath_id],
+      datapath_md = md_create(datapath: item.dst_datapath_id,
                               tunnel: nil)
-      cookie = tunnel[1][:dst_datapath_id] | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
+      cookie = item.dst_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
       flow = Flow.create(TABLE_OUTPUT_DATAPATH, 5,
                          datapath_md, {
@@ -162,7 +204,7 @@ module Vnet::Openflow
 
       @dp_info.add_flow(flow)
 
-      tunnel[1][:datapath_networks].each { |dpn|
+      item.datapath_networks.each { |dpn|
         update_network_id(dpn[:network_id])
       }
     end
@@ -179,14 +221,14 @@ module Vnet::Openflow
 
     def update_collection_id(collection_id)
       ports = @tunnel_ports.select { |port_number,tunnel_port|
-        tunnel = @items.find{ |tunnel_id, tunnel| tunnel[:display_name] == tunnel_port[:port_name] }
+        item = internal_detect(display_name: tunnel_port[:port_name])
 
-        if tunnel.nil?
+        if item.nil?
           warn "tunnel port: #{tunnel_port[:port_name]} is not registered in db"
           next
         end
 
-        tunnel[1][:datapath_networks].any? { |dpn| dpn[:network_id] == collection_id }
+        item.datapath_networks.any? { |dpn| dpn[:network_id] == collection_id }
       }
 
       collection_md = md_create(:collection => collection_id)
@@ -204,16 +246,21 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
-    def delete_tunnel_if_datapath_networks_empty(tunnel, network_id)
-      tunnel[:datapath_networks].delete_if { |dpn| dpn[:network_id] == network_id }
-      if tunnel[:datapath_networks].empty?
-        debug "delete tunnel #{tunnel[:display_name]}"
-        @dp_info.delete_tunnel(tunnel[:display_name])
-        t = MW::Tunnel[:display_name => tunnel[:display_name]]
-        t.batch.destroy.commit
+    def delete_tunnel_if_datapath_networks_empty(item, network_id)
+      item.datapath_networks.delete_if { |dpn| dpn[:network_id] == network_id }
+
+      if item.datapath_networks.empty?
+        debug "delete tunnel #{item.display_name}"
+
+        t.batch[:display_name => item.display_name].destroy.commit
+
+        #delete_item(item.id.....
+        item.uninstall
       else
         debug "tunnel datapath is not empty"
       end
     end
+
   end
+
 end
