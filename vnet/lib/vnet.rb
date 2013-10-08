@@ -94,7 +94,6 @@ module Vnet
     autoload :Route, 'vnet/models/route'
     autoload :RouteLink, 'vnet/models/route_link'
     autoload :SecurityGroup, 'vnet/models/security_group'
-    autoload :SecurityGroupRule, 'vnet/models/security_group_rule'
     autoload :Taggable, 'vnet/models/base'
     autoload :Tunnel, 'vnet/models/tunnel'
   end
@@ -114,7 +113,6 @@ module Vnet
     autoload :Network, 'vnet/model_wrappers/network'
     autoload :NetworkService, 'vnet/model_wrappers/network_service'
     autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
-    autoload :SecurityGroupRule, 'vnet/model_wrappers/security_group_rule'
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'

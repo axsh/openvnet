@@ -156,13 +156,8 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null => false
       String :display_name, :null => false
+      String :rules, :null => false, :default => ""
       String :description
-    end
-
-    create_table(:security_group_rules) do
-      primary_key :id
-      Integer :security_group_id, :index => true, :null => false
-      String  :permission, :null => false
     end
 
     create_table(:tunnels) do
@@ -192,7 +187,6 @@ Sequel.migration do
                :routes,
                :route_links,
                :security_groups,
-               :security_group_rules,
                :tunnels,
                )
   end
