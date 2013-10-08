@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::ModelWrappers
-  class SecurityGroup
+  class SecurityGroup < Base
     def to_hash
       {
         :uuid => uuid,

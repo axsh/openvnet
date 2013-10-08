@@ -34,6 +34,9 @@ module Vnet::NodeApi
   class RouteLink < Base
   end
 
+  class SecurityGroup < Base
+  end
+
   class Tunnel < Base
   end
 end
