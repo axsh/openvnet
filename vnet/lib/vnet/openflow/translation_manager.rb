@@ -10,6 +10,8 @@ module Vnet::Openflow
       @datapath = dp
       @dpid_s = "0x%016x" % @datapath.dpid
 
+      @datapath.packet_manager.insert(VnetEdge::TranslationHandler.new(datapath: @datapath), nil, (COOKIE_PREFIX_VNETEDGE << COOKIE_PREFIX_SHIFT))
+
       @edge_ports = []
 
       info log_format('initialized')
@@ -31,6 +33,8 @@ module Vnet::Openflow
         interface = @datapath.interface_manager.item(display_name: port.port_name,
                                                      owner_datapath_id: @datapath.datapath_map.id,
                                                      reinitialize: false)
+
+        error log_format('interface has not been found', port.port_name) if interface.nil?
 
         flow_options = {:cookie => port.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)}
 
