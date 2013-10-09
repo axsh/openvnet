@@ -41,7 +41,7 @@ module Vnet::Openflow::Routers
         :require_interface => route_info[:interface][:require_interface],
         :active_datapath_id => route_info[:interface][:active_datapath_id],
 
-        :mac_address => route_info[:interface][:mac_addr],
+        :mac_address => route_info[:interface][:mac_address],
         :ipv4_address => route_info[:ipv4_address],
         :ipv4_prefix => route_info[:ipv4_prefix],
 
