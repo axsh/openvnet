@@ -119,14 +119,14 @@ module Vnet::Openflow
 
       item_map.mac_leases.each do |mac_lease|
         mac_address = Trema::Mac.new(mac_lease.mac_address)
-        interface.add_mac_address(mac_lease)
+        interface.add_mac_address(mac_address)
 
         mac_lease.ip_leases.each { |ip_lease|
           ipv4_address = ip_lease.ip_address.ipv4_address
           error log_format("ipv4_address is nil", ip_lease.uuid) unless ipv4_address
 
           network_id = ip_lease.network_id
-          error log_format("network is nil", ip_lease.uuid) unless network
+          error log_format("network is nil", ip_lease.uuid) unless network_id
 
           network_info = @dp_info.network_manager.item(id: network_id)
           next if network_info.nil?
