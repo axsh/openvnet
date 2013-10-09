@@ -117,7 +117,7 @@ module Vnet::Openflow
     def load_addresses(interface, item_map)
       return if item_map.mac_leases.empty?
 
-      item_map.mac_leases.each do |mac_lease
+      item_map.mac_leases.each do |mac_lease|
         mac_address = Trema::Mac.new(mac_lease.mac_address)
         interface.add_mac_address(mac_lease, mac_address)
 
