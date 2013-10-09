@@ -331,7 +331,7 @@ module Vnet::Openflow
     end
 
     def create_interface_flows(interface)
-      cookie = interface[:id] | (COOKIE_PREFIX_interface << COOKIE_PREFIX_SHIFT)
+      cookie = interface[:id] | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
       network_md = md_create(:network => interface[:network_id])
 
       goto_table = TABLE_NETWORK_DST_CLASSIFIER

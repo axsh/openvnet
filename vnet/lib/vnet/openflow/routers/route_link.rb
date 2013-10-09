@@ -74,7 +74,7 @@ module Vnet::Openflow::Routers
           :ip_leases__network_id => route[:network_id],
           :ip_addresses__ipv4_address => ipv4_dst.to_i
         }
-        ip_lease = MW::IpLease.batch.dataset.where(filter_args).first.commit(:fill => [:interface, :ipv4_address)
+        ip_lease = MW::IpLease.batch.dataset.where(filter_args).first.commit(:fill => [:interface, :ipv4_address])
 
         if ip_lease.nil? || ip_lease.interface.nil?
           return unreachable_ip(message, "no vif found", :no_vif)
