@@ -10,7 +10,7 @@ module Vnet::Models
     one_to_many :tunnels
 
     many_to_many :network_services do |ds|
-      ds.join_table(
+      NetworkService.join_table(
         :inner, :interfaces,
         {interfaces__id: :network_services__interface_id}
       ).join_table(
@@ -23,7 +23,7 @@ module Vnet::Models
     end
 
     one_to_many :routes, :class=>Route do |ds|
-      Route.dataset.join_table(
+      Route.join_table(
         :inner, :interfaces,
         {interfaces__id: :routes__interface_id}
       ).join_table(
