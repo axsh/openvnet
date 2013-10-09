@@ -51,7 +51,6 @@ Sequel.migration do
     create_table(:interfaces) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-
       String :mode, :default => 'vif',:null => false
 
       # Should be a relation allowing for multiple active/owner
@@ -167,10 +166,12 @@ Sequel.migration do
   down do
     drop_table(:datapaths,
                :datapath_networks,
+               :datapath_route_links,
+               :dc_segments,
                :dhcp_ranges,
                :interfaces,
-               :ip_leases,
                :ip_addresses,
+               :ip_leases,
                :mac_addresses,
                :mac_leases,
                :networks,
