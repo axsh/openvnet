@@ -24,7 +24,6 @@ module Vnet::Openflow::Interfaces
     attr_accessor :owner_datapath_ids
 
     attr_reader :port_number
-    attr_reader :mac_address
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -35,9 +34,6 @@ module Vnet::Openflow::Interfaces
       @id = map.id
       @uuid = map.uuid
       @mode = map.mode.to_sym
-
-      # dirty hack...
-      @mac_address = Trema::Mac.new(map.mac_address)
 
       @mac_addresses = {}
 
@@ -161,23 +157,9 @@ module Vnet::Openflow::Interfaces
 
       return nil if mac_info.nil? || ipv4_info.nil?
 
-      # currently interface have a fixed mac address
-      #if mac_info[:ipv4_addresses].size == 1
-      #  mac_addresses = @mac_addresses.dup
-      #  mac_addresses.delete(mac_info[:mac_address])
-      #  @mac_addresses = mac_addresses
-      #else
-      #  ipv4_addresses = mac_info[:ipv4_addresses].dup
-      #  ipv4_addresses.delete_if { |ipv4| ipv4_info.equal?(ipv4) }
-      #  mac_info[:ipv4_addresses] = ipv4_addresses
-      #end
       ipv4_addresses = mac_info[:ipv4_addresses].dup
       ipv4_addresses.delete_if { |ipv4| ipv4_info.equal?(ipv4) }
       mac_info[:ipv4_addresses] = ipv4_addresses
-
-      info mac_info.inspect
-      info ipv4_info.inspect
-      info @mac_addresses.inspect
 
       [mac_info, ipv4_info]
     end
