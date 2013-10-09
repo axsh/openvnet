@@ -9,11 +9,18 @@ module Vnet::Models
     one_to_many :ip_addresses
     one_to_many :tunnels
 
-    #many_to_many :network_services, :join_table => :interfaces, :right_key => :id, :right_primary_key => :interface_id, :eager_graph => { :interface => { :ip_leases => :ip_address }} do |ds|
-    #  ds.alives
-    #end
-
-    subset(:alives, {})
+    many_to_many :network_services do |ds|
+      ds.join_table(
+        :inner, :interfaces,
+        {interfaces__id: :network_services__interface_id}
+      ).join_table(
+        :left, :ip_leases,
+        {ip_leases__interface_id: :interfaces__id}
+      ).join_table(
+        :inner, :ip_addresses,
+        {ip_addresses__id: :ip_leases__ip_address_id} & {ip_addresses__network_id: self.id}
+      ).select_all(:network_services).alives
+    end
 
     one_to_many :routes, :class=>Route do |ds|
       Route.dataset.join_table(
@@ -27,5 +34,7 @@ module Vnet::Models
         {ip_addresses__id: :ip_leases__ip_address_id} & {ip_addresses__network_id: self.id}
       ).select_all(:routes).alives
     end
+
+    subset(:alives, {})
   end
 end
