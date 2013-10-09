@@ -3,11 +3,11 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
 
   post do
-    accepted_params = ['uuid', 'mac_address_uuid']
-    required_params = ['mac_address_uuid']
+    accepted_params = ['uuid', 'mac_address']
+    required_params = ['mac_address']
 
     post_new(:RouteLink, accepted_params, required_params) { |params|
-      check_syntax_and_get_id(M::MacAddress, params, "mac_address_uuid", "mac_address_id") if params["mac_address_uuid"]
+      mac_address = parse_mac(params['mac_address'])
     }
   end
 
@@ -25,7 +25,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
 
   put '/:uuid' do
     params = parse_params(@params, [])
-    params['mac_address_id'] = pop_uuid(M::MacAddress, params, 'mac_address_uuid').id if params.has_key?('mac_address_uuid')
+    mac_address = parse_mac(params[:mac_address]) if params[:mac_address]
     route_link = M::RouteLink.update(@params['uuid'], params)
     respond_with(R::RouteLink.generate(route_link))
   end
