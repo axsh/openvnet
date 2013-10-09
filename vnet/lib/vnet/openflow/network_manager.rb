@@ -119,7 +119,10 @@ module Vnet::Openflow
         return network
       end
 
-      dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:id => item_map.id).first.commit
+      debug "-" * 50
+      dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:network_id => item_map.id).first.commit
+      debug dpn_item_map.inspect
+      debug "=" * 50
 
       network.set_datapath_of_bridge(dp_map, dpn_item_map, false)
 
