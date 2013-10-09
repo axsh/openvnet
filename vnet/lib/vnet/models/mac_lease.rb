@@ -10,10 +10,6 @@ module Vnet::Models
     one_to_many :ip_leases
     plugin :association_dependencies, :ip_leases => :destroy
 
-    def mac_addr
-      self.mac_address.mac_address
-    end
-
     def to_hash
       super.merge({
         :mac_address => self.mac_address
