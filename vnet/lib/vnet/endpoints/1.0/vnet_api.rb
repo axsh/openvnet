@@ -156,7 +156,6 @@ module Vnet::Endpoints::V10
     load_namespace('datapaths')
     load_namespace('interfaces')
     load_namespace('ip_leases')
-    load_namespace('mac_addresses')
     load_namespace('mac_leases')
     load_namespace('networks')
     load_namespace('network_services')
