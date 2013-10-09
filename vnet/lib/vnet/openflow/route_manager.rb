@@ -54,7 +54,7 @@ module Vnet::Openflow
     def prepare_network(network_map, dp_map)
       network_map.batch.routes.commit(ROUTE_COMMIT).each { |route_map|
         if !@route_links.has_key?(route_map.route_link.id)
-          route_map.batch.on_other_networks.commit(ROUTE_COMMIT).each { |other_route_map|
+          route_map.batch.on_other_networks(network_map.id).commit(ROUTE_COMMIT).each { |other_route_map|
             # Replace with a lightweight methods.
             self.insert(other_route_map)
           }
