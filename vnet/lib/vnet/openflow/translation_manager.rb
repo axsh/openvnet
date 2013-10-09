@@ -14,59 +14,36 @@ module Vnet::Openflow
 
       @edge_ports = []
 
+      update_translation_map
+
       info log_format('initialized')
     end
 
-    def add_edge_port(params)
-      @edge_ports << params[:port]
-      update if params[:update]
+    def add_edge_port(port)
+      @edge_ports << port
+      info log_format('edge port added', port.inspect)
     end
 
-    def update
-      flows = []
+    def find_edge_port(port_number)
+      @edge_port.detect { |e| e[:port_number] == port_number }
+    end
 
-      @translation_map = Vnet::ModelWrappers::VlanTranslation.batch.all.commit
+    def find_network_id(edge_port_id, vlan_vid)
+      vt_entry = @translation_map.detect {|t| t.interface_id == edge_port_id && t.vlan_id == vlan_vid }
 
-      @edge_ports.each do |port|
-        info log_format('create flows for', port.port_name)
+      error log_format('entry not found in vlan_translations table') if vt_entry.nil?
 
-        interface = @datapath.interface_manager.item(display_name: port.port_name,
-                                                     owner_datapath_id: @datapath.datapath_map.id,
-                                                     reinitialize: false)
-
-        error log_format('interface has not been found', port.port_name) if interface.nil?
-
-        flow_options = {:cookie => port.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)}
-
-        flows << Flow.create(TABLE_CLASSIFIER, 2, {
-                              :in_port => port.port_number
-                             }, nil,
-                             flow_options.merge(:goto_table => TABLE_VLAN_TRANSLATION))
-
-        vlan_net = @translation_map.select { |t| t.interface_id == interface.id }
-
-        info log_format('associated vlan_id <-> network_id translation', vlan_net)
-
-        vlan_net.each do |t|
-
-          metadata = md_create({:network => t.network_id})
-
-          ovs_flow = "table=%d,cookie=0x%x,priority=80,dl_vlan=%d," % [TABLE_VLAN_TRANSLATION, flow_options[:cookie], t.vlan_id]
-          ovs_flow << "actions=learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=90,NXM_OF_ETH_DST\\[\\]\\=NXM_OF_ETH_SRC\\[\\]," % [TABLE_VLAN_TRANSLATION, flow_options[:cookie]]
-          ovs_flow << "load:NXM_OF_VLAN_TCI\\[\\]\\-\\>NXM_OF_VLAN_TCI\\[\\],output:NXM_OF_IN_PORT\\[\\]\\),"
-          ovs_flow << "strip_vlan,write_metadata:0x%x/0x%x,goto_table:%d" % [metadata[:metadata], metadata[:metadata_mask], TABLE_ROUTER_CLASSIFIER]
-
-          @datapath.add_ovs_flow(ovs_flow)
-        end
-      end
-
-      @datapath.add_flows(flows)
+      vt.entry.network_id
     end
 
     private
 
     def log_format(message, values = nil)
       "#{@dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def update_translation_map
+      @translation_map = Vnet::ModelWrappers::VlanTranslation.batch.all.commit
     end
   end
 
