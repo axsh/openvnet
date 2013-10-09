@@ -11,7 +11,7 @@ end
 describe "/security_groups" do
   let(:api_suffix)  { "security_groups" }
   let(:fabricator)  { :security_group }
-  let(:model_class) { Vnet::Models::SecurityGroup}
+  let(:model_class) { Vnet::Models::SecurityGroup }
 
   include_examples "GET /"
   include_examples "GET /:uuid"
@@ -21,7 +21,11 @@ describe "/security_groups" do
     accepted_params = {
       :uuid => "sg-test",
       :display_name => "our test secg",
-      :description => "A longer description... or it should be at least."
+      :description => "A longer description... or it should be at least.",
+      :rules => "
+        tcp,22:22,0.0.0.0
+        udp,53:53,0.0.0.0
+      "
     }
     required_params = [:display_name]
     uuid_params = [:uuid]

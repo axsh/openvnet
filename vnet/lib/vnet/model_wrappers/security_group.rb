@@ -6,6 +6,7 @@ module Vnet::ModelWrappers
       {
         :uuid => uuid,
         :display_name => display_name,
+        :rules => rules,
         :description => description
       }
     end
