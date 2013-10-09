@@ -184,7 +184,7 @@ module Vnet::Openflow::Interfaces
       ipv4_info = nil
       ipv4_address = params[:ipv4_address]
 
-      mac_info = @mac_addresses.detect { |mac_address, mac_info|
+      mac_info = @mac_addresses.values.detect { |mac_info|
         ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
           next false if network_id && ipv4_info[:network_id] != network_id
           next false if ip_lease_id && ipv4_info[:ip_lease_id] != ip_lease_id
@@ -194,7 +194,7 @@ module Vnet::Openflow::Interfaces
         }
       }
 
-      mac_info && [mac_info[1], ipv4_info]
+      mac_info && [mac_info, ipv4_info]
     end
 
     def find_ipv4_and_network(message, ipv4_address)
