@@ -12,7 +12,11 @@ describe Vnet::Openflow::NetworkManager do
     Fabricate(:datapath_network_1_2)
   end
 
-  let(:network_manager) { Vnet::Openflow::NetworkManager.new(datapath.dp_info) }
+  let(:network_manager) {
+    Vnet::Openflow::NetworkManager.new(datapath.dp_info).tap { |mgr|
+      mgr.set_datapath_info(datapath.datapath_info)
+    }
+  }
 
   describe "network_by_id" do
     let(:datapath) do

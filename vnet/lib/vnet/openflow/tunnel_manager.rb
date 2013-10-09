@@ -254,7 +254,7 @@ module Vnet::Openflow
       if item.datapath_networks.empty?
         debug log_format("delete tunnel #{item.display_name}")
 
-        t.batch[:display_name => item.display_name].destroy.commit
+        MW::Tunnel.batch[:display_name => item.display_name].destroy.commit
 
         #delete_item(item.id.....
         item.uninstall

@@ -137,9 +137,12 @@ module Vnet::Openflow
       #
       # Send messages that will start initializing the switch.
       #
-
       @datapath.send_message(Trema::Messages::FeaturesRequest.new)
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
+
+      # There's a short period of time between the switch being
+      # activated and features_reply installing flow.
+      @datapath.tunnel_manager.create_all_tunnels
     end
 
     def features_reply(message)

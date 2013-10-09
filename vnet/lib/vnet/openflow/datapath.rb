@@ -34,11 +34,13 @@ module Vnet::Openflow
 
     attr_reader :controller
     attr_reader :dpid
+    attr_reader :dpid_s
     attr_reader :ovs_ofctl
 
     # Do not update any values of the datapath db for outside of the
     # Datapath actor.
     attr_reader :datapath_map
+    attr_reader :datapath_info
 
     attr_reader :switch
 
@@ -95,7 +97,7 @@ module Vnet::Openflow
     end
 
     def inspect
-      "<##{self.class.name} dpid:#{@dp_info.dpid}>"
+      "<##{self.class.name} dpid:#{@dp_info && @dp_info.dpid}>"
     end
 
     def ipv4_address
@@ -115,22 +117,9 @@ module Vnet::Openflow
         return
       end
 
-      @datapath_info = DatapathInfo.new(id: @datapath_map.id,
-                                        uuid: @datapath_map.uuid,
-                                        display_name: @datapath_map.display_name,
-                                        ipv4_address: IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET))
-
-      @dp_info.datapath_manager.set_datapath_info(@datapath_info)
-      @dp_info.interface_manager.set_datapath_info(@datapath_info)
-      @dp_info.network_manager.set_datapath_info(@datapath_info)
-      @dp_info.service_manager.set_datapath_info(@datapath_info)
-      @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
+      initialize_datapath_info
 
       @switch.switch_ready
-
-      # There's a short period of time between the switch being
-      # activated and features_reply installing flow.
-      @dp_info.tunnel_manager.create_all_tunnels
     end
 
     #
@@ -214,6 +203,19 @@ module Vnet::Openflow
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def initialize_datapath_info
+      @datapath_info = DatapathInfo.new(id: @datapath_map.id,
+                                        uuid: @datapath_map.uuid,
+                                        display_name: @datapath_map.display_name,
+                                        ipv4_address: IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET))
+
+      @dp_info.datapath_manager.set_datapath_info(@datapath_info)
+      @dp_info.interface_manager.set_datapath_info(@datapath_info)
+      @dp_info.network_manager.set_datapath_info(@datapath_info)
+      @dp_info.service_manager.set_datapath_info(@datapath_info)
+      @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
     end
 
   end

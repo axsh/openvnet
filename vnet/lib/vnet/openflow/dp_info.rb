@@ -35,16 +35,7 @@ module Vnet::Openflow
       @datapath = params[:datapath]
       @ovs_ofctl = params[:ovs_ofctl]
 
-      @cookie_manager = CookieManager.new
-      @datapath_manager = DatapathManager.new(self)
-      @dc_segment_manager = DcSegmentManager.new(@datapath)
-      @interface_manager = InterfaceManager.new(self)
-      @network_manager = NetworkManager.new(self)
-      @packet_manager = PacketManager.new(@datapath)
-      @port_manager = PortManager.new(self)
-      @route_manager = RouteManager.new(@datapath)
-      @service_manager = ServiceManager.new(self)
-      @tunnel_manager = TunnelManager.new(self)
+      initialize_managers
     end
 
     #
@@ -117,6 +108,25 @@ module Vnet::Openflow
       @controller.pass_task {
         @controller.public_send_packet_out(@dpid, message, port_no)
       }
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def initialize_managers
+      @cookie_manager = CookieManager.new
+      @datapath_manager = DatapathManager.new(self)
+      @dc_segment_manager = DcSegmentManager.new(@datapath)
+      @interface_manager = InterfaceManager.new(self)
+      @network_manager = NetworkManager.new(self)
+      @packet_manager = PacketManager.new(@datapath)
+      @port_manager = PortManager.new(self)
+      @route_manager = RouteManager.new(@datapath)
+      @service_manager = ServiceManager.new(self)
+      @tunnel_manager = TunnelManager.new(self)
     end
 
   end
