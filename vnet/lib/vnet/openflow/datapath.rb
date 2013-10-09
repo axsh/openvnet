@@ -127,6 +127,10 @@ module Vnet::Openflow
       @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
 
       @switch.switch_ready
+
+      # There's a short period of time between the switch being
+      # activated and features_reply installing flow.
+      @dp_info.tunnel_manager.create_all_tunnels
     end
 
     #

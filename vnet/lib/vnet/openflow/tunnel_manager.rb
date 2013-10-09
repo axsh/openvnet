@@ -14,7 +14,7 @@ module Vnet::Openflow
     end
 
     def create_all_tunnels
-      debug "creating tunnel ports"
+      debug log_format("creating tunnel ports")
 
       if @datapath_info.nil?
         error log_format('datapath information not loaded')
@@ -52,7 +52,8 @@ module Vnet::Openflow
       old_port = @tunnel_ports.delete(port.port_number)
 
       if old_port
-        error "tunnel_manager: port already added (port:#{port.port_number} old:#{old_port[:port_name]} new:#{port.port_name})"
+        error log_format('port already added',
+                         "port:#{port.port_number} old:#{old_port[:port_name]} new:#{port.port_name}")
       end
 
       @tunnel_ports[port.port_number] = {
@@ -105,18 +106,20 @@ module Vnet::Openflow
       # the local datapath (not on the remote datapath)
 
       if remote_dpid == @dp_info.dpid
-        debug "delete tunnel on local datapath: local_dpid => #{@dp_info.dpid} remote_dpid => #{remote_dpid}"
+        debug log_format('delete tunnel on local datapath',
+                         "local_dpid:#{@dp_info.dpid} remote_dpid:#{remote_dpid}")
 
         @items.each { |id, item|
-          debug "try to delete tunnel #{item.display_name}"
+          debug log_format("try to delete tunnel #{item.display_name}")
           delete_tunnel_if_datapath_networks_empty(item, network_id)
         }
       else
-        debug "delete tunnel for remote datapath: local_dpid => #{@dp_info.dpid} remote_dpid => #{remote_dpid}"
+        debug log_format('delete tunnel for remote datapath',
+                         "local_dpid:#{@dp_info.dpid} remote_dpid:#{remote_dpid}")
 
         @items.each { |id, item|
           if item.dst_dpid == "0x%016x" % remote_dpid
-            debug "found a tunnel to delete: display_name => #{item.display_name}"
+            debug log_format('found a tunnel to delete', "display_name:#{item.display_name}")
             delete_tunnel_if_datapath_networks_empty(item, network_id)
           end
         }
@@ -133,7 +136,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} tunnel_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
     #
@@ -180,19 +183,18 @@ module Vnet::Openflow
       port = @tunnel_ports[port_number]
 
       if port.nil?
-        warn "tunnel_manager: port number not found (#{port_number})"
+        warn log_format('port number not found', "port_number:#{port_number}")
         return
       end
 
       item = internal_detect(display_name: port[:port_name])
 
       if item.nil?
-        warn "tunnel_manager: port name is not registered in database (#{port[:port_name]})"
+        warn log_format('port name is not registered in database', "port_name:#{port[:port_name]}")
         return
       end
 
-      datapath_md = md_create(datapath: item.dst_datapath_id,
-                              tunnel: nil)
+      datapath_md = md_create(datapath: item.dst_id, tunnel: nil)
       cookie = item.dst_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
 
       flow = Flow.create(TABLE_OUTPUT_DATAPATH, 5,
@@ -224,7 +226,7 @@ module Vnet::Openflow
         item = internal_detect(display_name: tunnel_port[:port_name])
 
         if item.nil?
-          warn "tunnel port: #{tunnel_port[:port_name]} is not registered in db"
+          warn log_format("tunnel port: #{tunnel_port[:port_name]} is not registered in db")
           next
         end
 
@@ -250,14 +252,14 @@ module Vnet::Openflow
       item.datapath_networks.delete_if { |dpn| dpn[:network_id] == network_id }
 
       if item.datapath_networks.empty?
-        debug "delete tunnel #{item.display_name}"
+        debug log_format("delete tunnel #{item.display_name}")
 
         t.batch[:display_name => item.display_name].destroy.commit
 
         #delete_item(item.id.....
         item.uninstall
       else
-        debug "tunnel datapath is not empty"
+        debug log_format("tunnel datapath is not empty")
       end
     end
 
