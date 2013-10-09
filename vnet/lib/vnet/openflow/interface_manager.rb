@@ -119,7 +119,7 @@ module Vnet::Openflow
 
       item_map.mac_leases.each do |mac_lease|
         mac_address = Trema::Mac.new(mac_lease.mac_address)
-        interface.add_mac_address(mac_lease, mac_address)
+        interface.add_mac_address(mac_lease)
 
         mac_lease.ip_leases.each { |ip_lease|
           ipv4_address = ip_lease.ip_address.ipv4_address
