@@ -45,9 +45,9 @@ module Vnet::Openflow
     #
 
     def update_all_flows
-      @items.dup.each { |key,network|
-        debug log_format("updating flows for #{network.uuid}/#{network.id}")
-        network.update_flows
+      @items.dup.each { |key, item|
+        debug log_format("updating flows for #{item.uuid}/#{item.id}")
+        item.update_flows
       }
       nil
     end
@@ -147,11 +147,14 @@ module Vnet::Openflow
     end
 
     def delete_item(item)
+      debug log_format("deleting network #{item.uuid}/#{item.id}")
+
       if_port = item.interfaces.detect { |id, interface|
         interface.port_number
       }
 
       if if_port
+        # TODO: Fix this so it sets remaining ports to unknown mode.
         info log_format('network still has active ports, and can\'t be removed',
                         "#{network.uuid}/#{network.id}")
         return item
@@ -162,7 +165,9 @@ module Vnet::Openflow
       item.uninstall
 
       @dp_info.dc_segment_manager.async.remove_network_id(item.id)
-      @dp_info.tunnel_manager.async.delete_tunnel_port(item.id, @dpid)
+      @dp_info.tunnel_manager.async.remove_network_id_for_dpid(item.id, @dpid)
+      @dp_info.datapath_manager.async.update_network(event: :deactivate,
+                                                     network_id: item.id)
 
       dispatch_event("network/deleted",
                      id: item.id,

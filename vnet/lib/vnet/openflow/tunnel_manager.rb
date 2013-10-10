@@ -99,8 +99,7 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
-    def delete_tunnel_port(network_id, remote_dpid)
-
+    def remove_network_id_for_dpid(network_id, remote_dpid)
       # if #{remote_dpid} is equal to #{@dp_info.dpid},
       # it can be regard as the network deletion happens on
       # the local datapath (not on the remote datapath)
@@ -109,24 +108,25 @@ module Vnet::Openflow
         debug log_format('delete tunnel on local datapath',
                          "local_dpid:#{@dp_info.dpid} remote_dpid:#{remote_dpid}")
 
-        @items.each { |id, item|
-          debug log_format("try to delete tunnel #{item.display_name}")
-          delete_tunnel_if_datapath_networks_empty(item, network_id)
+        delete_items = @items.select { |id, item|
+          # debug log_format("try to delete tunnel #{item.display_name}")
+          remove_datapath_network(item, network_id)
         }
       else
         debug log_format('delete tunnel for remote datapath',
                          "local_dpid:#{@dp_info.dpid} remote_dpid:#{remote_dpid}")
 
-        @items.each { |id, item|
+        delete_items = @items.select { |id, item|
           if item.dst_dpid == "0x%016x" % remote_dpid
-            debug log_format('found a tunnel to delete', "display_name:#{item.display_name}")
-            delete_tunnel_if_datapath_networks_empty(item, network_id)
+            # debug log_format('found a tunnel to delete', "display_name:#{item.display_name}")
+            remove_datapath_network(item, network_id)
+          else
+            false
           end
         }
       end
 
-      # Fix this...
-      @items.delete_if { |id, item| item.datapath_networks.empty? }
+      delete_items.each { |id, item| delete_item(item) }
     end
 
     #
@@ -173,6 +173,13 @@ module Vnet::Openflow
       debug log_format("insert #{item_map.uuid}/#{item_map.id}")
 
       item.install
+    end
+
+    def delete_item(item)
+      @items.delete(item.id)
+
+      item.uninstall
+      item
     end
 
     #
@@ -248,18 +255,18 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
-    def delete_tunnel_if_datapath_networks_empty(item, network_id)
+    # Delete the item if it returns true.
+    def remove_datapath_network(item, network_id)
       item.datapath_networks.delete_if { |dpn| dpn[:network_id] == network_id }
 
       if item.datapath_networks.empty?
-        debug log_format("delete tunnel #{item.display_name}")
+        debug log_format("datapath networks is empty for #{item.display_name}")
 
-        MW::Tunnel.batch[:display_name => item.display_name].destroy.commit
-
-        #delete_item(item.id.....
-        item.uninstall
+        MW::Tunnel.batch[display_name: item.display_name].destroy.commit
+        true
       else
-        debug log_format("tunnel datapath is not empty")
+        debug log_format("datapath networs is not empty for #{item.display_name}")
+        false
       end
     end
 
