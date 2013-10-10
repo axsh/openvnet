@@ -85,6 +85,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_INTERFACE_INGRESS_FILTER, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_INTERFACE_SIMULATED,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_INTERFACE_VIF, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_MAC_ROUTE,             0, {}, nil, flow_options)
 

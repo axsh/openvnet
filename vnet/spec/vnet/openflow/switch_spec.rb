@@ -4,17 +4,6 @@ require 'trema'
 
 describe Vnet::Openflow::Switch do
   describe "switch_ready" do
-    it "create default flows" do
-      datapath = MockDatapath.new(double, 1)
-      Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
-      switch = Vnet::Openflow::Switch.new(datapath)
-      switch.create_default_flows
-
-      expect(datapath.sent_messages.size).to eq 0
-      expect(datapath.added_flows.size).to eq 40
-      expect(datapath.added_ovs_flows.size).to eq 0
-    end
-
     it "sends messages" do
       datapath = MockDatapath.new(double, 1)
       Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
@@ -40,7 +29,7 @@ describe Vnet::Openflow::Switch do
         port_desc.should_receive(:hw_addr).exactly(1).times.and_return(nil)
         port_desc.should_receive(:advertised).exactly(1).times.and_return(0)
         port_desc.should_receive(:supported).exactly(1).times.and_return(0)
-        
+
         port = double(:port)
         port_info = double(:port_info)
         port.should_receive(:port_number).exactly(2).times.and_return(5)
