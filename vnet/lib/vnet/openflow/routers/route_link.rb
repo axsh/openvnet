@@ -77,11 +77,11 @@ module Vnet::Openflow::Routers
         ip_lease = MW::IpLease.batch.dataset.join(:ip_addresses).where(filter_args).first.commit(:fill => [:interface, :ipv4_address])
 
         if ip_lease.nil? || ip_lease.interface.nil?
-          return unreachable_ip(message, "no vif found", :no_vif)
+          return unreachable_ip(message, "no interface found", :no_interface)
         end
 
         if ip_lease.interface.active_datapath_id.nil?
-          return unreachable_ip(message, "no active datapath for vif found", :inactive_vif)
+          return unreachable_ip(message, "no active datapath for interface found", :inactive_interface)
         end
 
         debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{ipv4_dst}" % message.cookie)
