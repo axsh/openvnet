@@ -31,6 +31,7 @@ module Vnet
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
+  autoload :Event, 'vnet/event'
   module Event
     autoload :Dispatchable, 'vnet/event/dispatchable'
   end
@@ -124,7 +125,7 @@ module Vnet
     autoload :DhcpRange, 'vnet/node_api/models.rb'
     autoload :Interface, 'vnet/node_api/interface.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
-    autoload :IpLease, 'vnet/node_api/models.rb'
+    autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :MacLease, 'vnet/node_api/models.rb'
     autoload :Network, 'vnet/node_api/models.rb'
     autoload :NetworkService, 'vnet/node_api/models.rb'

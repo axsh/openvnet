@@ -4,22 +4,11 @@ module Vnet::Openflow
 
   class ServiceManager < Manager
 
-    def handle_event(params)
-      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
-
-      item = @items[:target_id]
-
-      case params[:event]
-      when :added
-        return nil if item
-        # Check if needed.
-      when :removed
-        return nil if item
-        # Check if needed.
-      end
-
-      nil
-    end
+    #
+    # Events:
+    #
+    subscribe_event :added_service # TODO Check if needed.
+    subscribe_event :removed_service # TODO Check if needed.
 
     #
     # Internal methods:

@@ -48,6 +48,23 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
+    create_table(:interfaces) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :network_id, :index => true
+      Bignum :mac_address, :null=>false
+
+      String :mode, :default => 'vif',:null => false
+
+      # Should be a relation allowing for multiple active/owner
+      # datapath ids.
+      Integer :active_datapath_id, :index => true
+      Integer :owner_datapath_id, :index => true
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+
     create_table(:ip_addresses) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -67,6 +84,14 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :null=>false
       FalseClass :is_deleted, :null=>false
+    end
+
+    create_table(:mac_leases) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Bignum :mac_address, :unique => true, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
     end
 
     create_table(:networks) do
@@ -91,14 +116,6 @@ Sequel.migration do
       String :display_name, :index => true, :null=>false
       Integer :incoming_port
       Integer :outgoing_port
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
-    create_table(:mac_leases) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Bignum :mac_address, :unique => true, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -139,35 +156,20 @@ Sequel.migration do
       index [:src_datapath_id, :dst_datapath_id]
     end
 
-    create_table(:interfaces) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Integer :network_id, :index => true
-      Bignum :mac_address, :null=>false
-
-      String :mode, :default => 'vif',:null => false
-
-      # Should be a relation allowing for multiple active/owner
-      # datapath ids.
-      Integer :active_datapath_id, :index => true
-      Integer :owner_datapath_id, :index => true
-
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
   end
 
   down do
     drop_table(:datapaths,
                :datapath_networks,
+               :datapath_route_links,
+               :dc_segments,
                :dhcp_ranges,
                :interfaces,
-               :ip_leases,
                :ip_addresses,
+               :ip_leases,
+               :mac_leases,
                :networks,
                :network_services,
-               :mac_leases,
                :routes,
                :route_links,
                :tunnels,
