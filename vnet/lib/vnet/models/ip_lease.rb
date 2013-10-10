@@ -8,7 +8,11 @@ module Vnet::Models
 
     dataset_module do
       def join_interfaces
-        self.join_table(:inner, :interfaces, :interfaces__id => :ip_leases__interface_id)
+        self.join_table(:inner, :interfaces, interfaces__id: :ip_leases__interface_id)
+      end
+
+      def join_ip_addresses
+        self.join(:ip_addresses, ip_addresses__id: :ip_leases__ip_address_id)
       end
     end
 
