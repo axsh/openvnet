@@ -73,7 +73,10 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Interface.batch[filter].commit(:fill => [:ip_leases => :ip_address])
+      #
+      # To avoid a deadlock issue when retriving network type during
+      # load_addresses, we load the network here.
+      MW::Interface.batch[filter].commit(:fill => [:ip_leases => [:ip_address, :network]])
     end
 
     def create_item(item_map, params)
@@ -124,15 +127,12 @@ module Vnet::Openflow
         ipv4_address = ip_lease.ip_address.ipv4_address
         next if ipv4_address.nil?
 
-        network_id = ip_lease.network_id
-        next if network_id.nil?
-
-        network_info = @dp_info.network_manager.item(id: network_id)
-        next if network_info.nil?
+        network = ip_lease.network
+        next if network.nil?
 
         interface.add_ipv4_address(mac_address: mac_address,
-                                   network_id: network_id,
-                                   network_type: network_info[:type],
+                                   network_id: network.id,
+                                   network_type: network.network_mode.to_sym,
                                    ip_lease_id: ip_lease.id,
                                    ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
       }

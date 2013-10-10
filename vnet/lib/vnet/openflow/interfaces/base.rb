@@ -130,6 +130,9 @@ module Vnet::Openflow::Interfaces
 
       @mac_addresses = mac_addresses
 
+      debug log_format("adding mac address to #{@uuid}/#{@id}",
+                       "#{mac_address.to_s}")
+
       # Add to port...
       nil
     end
@@ -152,6 +155,9 @@ module Vnet::Openflow::Interfaces
       ipv4_addresses << ipv4_info
 
       mac_info[:ipv4_addresses] = ipv4_addresses
+
+      debug log_format("adding ipv4 address to #{@uuid}/#{@id}",
+                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
 
       [mac_info, ipv4_info]
     end
@@ -178,6 +184,9 @@ module Vnet::Openflow::Interfaces
       info mac_info.inspect
       info ipv4_info.inspect
       info @mac_addresses.inspect
+
+      debug log_format("removing ipv4 address from #{@uuid}/#{@id}",
+                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
 
       [mac_info, ipv4_info]
     end

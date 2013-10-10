@@ -28,7 +28,15 @@ module Vnet::Openflow
     end
 
     def item(params)
-      item_to_hash(item_by_params(params))
+      begin
+        item_to_hash(item_by_params(params))
+      rescue Celluloid::Task::TerminatedError => e
+        raise e
+      rescue Exception => e
+        info log_format(e.message, e.class.name)
+        e.backtrace.each { |str| info log_format(str) }
+        raise e
+      end
     end
 
     def unload(params)
