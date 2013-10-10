@@ -32,6 +32,11 @@ module Vnet::Openflow::Datapaths
       }
     end
 
+    def is_unused?
+      return false if !@active_networks.empty?
+      true
+    end
+
     def install
     end
 
@@ -49,7 +54,7 @@ module Vnet::Openflow::Datapaths
     #
 
     def add_active_network(dpn_map)
-      debug log_format("adding active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
+      debug log_format("adding to #{@uuid}/#{id} active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
 
       return if @active_networks.has_key? dpn_map.id
 
@@ -95,6 +100,17 @@ module Vnet::Openflow::Datapaths
                            cookie: cookie)
 
       @dp_info.add_flows(flows)
+    end
+
+    def remove_active_network_id(network_id)
+      active_network = @active_networks.delete(network_id)
+      return false if active_networks.nil?
+
+      debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
+
+      @dp_info.del_cookie(active_network[:dpn_id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT))
+      
+      true
     end
 
     #

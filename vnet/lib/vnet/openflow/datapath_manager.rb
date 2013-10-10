@@ -9,10 +9,16 @@ module Vnet::Openflow
     #
 
     def update_network(params)
+      if @datapath_info.nil?
+        error log_format('datapath information not loaded')
+        return nil
+      end
+
       return nil if params[:network_id].nil?
 
       case params[:event]
       when :activate then activate_network(params)
+      when :deactivate then deactivate_network(params)
       end
 
       nil
@@ -91,11 +97,6 @@ module Vnet::Openflow
     #
 
     def activate_network(params)
-      if @datapath_info.nil?
-        error log_format('datapath information not loaded')
-        return nil
-      end
-
       dpn_items = MW::DatapathNetwork.batch.dataset.where(network_id: params[:network_id]).all.commit
 
       dpn_items.each { |dpn|
@@ -103,6 +104,17 @@ module Vnet::Openflow
         next if item.nil?
 
         item.add_active_network(dpn)
+      }
+    end
+
+    def deactivate_network(params)
+      unused_datapaths = @items.select { |id, item|
+        next false if !item.remove_active_network_id(item.id)
+        item.is_unused?
+      }
+
+      unused_datapaths.each { |id, item|
+        delete_item(item)
       }
     end
 
