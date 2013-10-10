@@ -83,6 +83,7 @@ module Vnet::Openflow
                            flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))
 
       flows << Flow.create(TABLE_INTERFACE_SIMULATED,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_INTERFACE_VIF, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_MAC_ROUTE,             0, {}, nil, flow_options)
 
