@@ -28,8 +28,8 @@ module Vnet::Openflow
       trema_hash[:cookie] = @params[:options][:cookie] if @params[:options][:cookie]
       trema_hash[:cookie_mask] = @params[:options][:cookie_mask] if @params[:options][:cookie_mask]
       trema_hash
-    end 
-    
+    end
+
     def ==(flow)
       flow == params
     end
