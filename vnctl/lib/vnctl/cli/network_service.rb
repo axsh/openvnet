@@ -7,7 +7,7 @@ module Vnctl::Cli
 
     add_modify_shared_options {
       option_display_name
-      option :vif_uuid, :type => :string, :desc => "The vif uuid for this network service."
+      option :interface_uuid, :type => :string, :desc => "The interface uuid for this network service."
       option :incoming_port, :type => :numeric, :desc => "The incoming port for this network service."
       option :outgoing_port, :type => :numeric, :desc => "The outgoing port for this network service."
     }
