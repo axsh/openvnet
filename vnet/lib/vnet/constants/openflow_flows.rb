@@ -57,13 +57,15 @@ module Vnet
       TABLE_VIRTUAL_DST = 21
       TABLE_PHYSICAL_DST = 22
 
-      TABLE_INTERFACE_SIMULATED = 23
-      TABLE_INTERFACE_VIF = 24
+      TABLE_INTERFACE_INGRESS_FILTER = 23
+
+      TABLE_INTERFACE_SIMULATED = 24
+      TABLE_INTERFACE_VIF = 25
 
       # Route based on the mac address only.
       #
       # Deprecated...
-      TABLE_MAC_ROUTE = 25
+      TABLE_MAC_ROUTE = 26
 
       TABLE_FLOOD_SIMULATED    = 30
       TABLE_FLOOD_LOCAL        = 31
