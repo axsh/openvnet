@@ -71,10 +71,10 @@ module Vnet::Openflow::Routers
 
       if route[:require_interface] == true
         filter_args = {
-          :ip_leases__network_id => route[:network_id],
+          :ip_addresses__network_id => route[:network_id],
           :ip_addresses__ipv4_address => ipv4_dst.to_i
         }
-        ip_lease = MW::IpLease.batch.dataset.where(filter_args).first.commit(:fill => [:interface, :ipv4_address])
+        ip_lease = MW::IpLease.batch.dataset.join(:ip_addresses).where(filter_args).first.commit(:fill => [:interface, :ipv4_address])
 
         if ip_lease.nil? || ip_lease.interface.nil?
           return unreachable_ip(message, "no vif found", :no_vif)
@@ -107,7 +107,7 @@ module Vnet::Openflow::Routers
     def create_destination_flow(route)
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
-      if route[:require_vif] == true
+      if route[:require_interface] == true
         catch_route_md = md_create(network: route[:network_id],
                                    not_no_controller: nil)
         actions = { :output => OFPP_CONTROLLER }
