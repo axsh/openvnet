@@ -23,8 +23,6 @@ describe Vnet::Openflow::TunnelManager do
     }
 
     it "should create tunnels whose name is the same as datapath.uuid" do
-      Celluloid.logger.info "XXXXXXXXXXXXXXXX #{datapath.datapath_info.inspect}"
-
       subject.create_all_tunnels
       expect(datapath.dp_info.added_tunnels[0][:tunnel_name]).to eq "t-test3"
     end
@@ -221,7 +219,7 @@ describe Vnet::Openflow::TunnelManager do
 
   end
 
-  describe "delete_tunnel_port" do
+  describe "remove_network_id_for_dpid" do
     before do
       # id=1, dpid="0x"+"a"*16
       Fabricate("datapath_1")
@@ -254,12 +252,12 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     it "should delete tunnel when the network is deleted on the local datapath" do
-      subject.delete_tunnel_port(1, ("a" * 16).to_i(16))
+      subject.remove_network_id_for_dpid(1, ("a" * 16).to_i(16))
       expect(datapath.dp_info.deleted_tunnels[0]).to eq "t-test3"
     end
 
     it "should delete tunnel when the network is deleted on the remote datapath" do
-      subject.delete_tunnel_port(1, ("c" * 16).to_i(16))
+      subject.remove_network_id_for_dpid(1, ("c" * 16).to_i(16))
       expect(datapath.dp_info.deleted_tunnels[0]).to eq "t-test3"
     end
   end
