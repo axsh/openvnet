@@ -157,7 +157,7 @@ module Vnet::Openflow
         return item
       end
 
-      @items.delete(item.network_id)
+      @items.delete(item.id)
 
       item.uninstall
 
