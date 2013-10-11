@@ -132,7 +132,7 @@ module Vnet
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :MacAddress, 'vnet/node_api/models.rb'
-    autoload :MacLease, 'vnet/node_api/models.rb'
+    autoload :MacLease, 'vnet/node_api/mac_lease.rb'
     autoload :Network, 'vnet/node_api/models.rb'
     autoload :NetworkService, 'vnet/node_api/models.rb'
     autoload :Route, 'vnet/node_api/models.rb'
