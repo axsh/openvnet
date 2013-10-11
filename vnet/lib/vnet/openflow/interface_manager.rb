@@ -11,6 +11,8 @@ module Vnet::Openflow
     subscribe_event :removed_interface # TODO Check if needed.
     subscribe_event LeasedIpv4Address, :leased_ipv4_address
     subscribe_event ReleasedIpv4Address, :released_ipv4_address
+    subscribe_event LeasedMacAddress, :leased_mac_address
+    subscribe_event ReleasedMacAddress, :released_mac_address
 
     def update_active_datapaths(params)
       interface = internal_detect(params)
@@ -118,24 +120,26 @@ module Vnet::Openflow
     # TODO: Convert the loading of addresses to events, and queue them
     # with a 'handle_event' queue to ensure consistency.
     def load_addresses(interface, item_map)
-      return if item_map.mac_address.nil?
+      return if item_map.mac_leases.empty?
 
-      mac_address = Trema::Mac.new(item_map.mac_address)
-      interface.add_mac_address(mac_address)
+      item_map.mac_leases.each do |mac_lease|
+        mac_address = Trema::Mac.new(mac_lease.mac_address)
+        interface.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
 
-      item_map.ip_leases.each { |ip_lease|
-        ipv4_address = ip_lease.ip_address.ipv4_address
-        next if ipv4_address.nil?
+        mac_lease.ip_leases.each { |ip_lease|
+          ipv4_address = ip_lease.ip_address.ipv4_address
+          error log_format("ipv4_address is nil", ip_lease.uuid) unless ipv4_address
 
-        network = ip_lease.network
-        next if network.nil?
+          network = ip_lease.network
+          error log_format("network is nil", ip_lease.uuid) unless network
 
-        interface.add_ipv4_address(mac_address: mac_address,
-                                   network_id: network.id,
-                                   network_type: network.network_mode.to_sym,
-                                   ip_lease_id: ip_lease.id,
-                                   ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
-      }
+          interface.add_ipv4_address(mac_lease_id: mac_lease.id,
+                                     network_id: network.id,
+                                     network_type: network.network_mode.to_sym,
+                                     ip_lease_id: ip_lease.id,
+                                     ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
+        }
+      end
     end
 
     def is_remote?(item_map)
@@ -152,15 +156,31 @@ module Vnet::Openflow
     # Event handlers:
     #
 
+    def leased_mac_address(item, params)
+      mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(:fill => [:interface])
+
+      return unless mac_lease && mac_lease.interface_id == item.id
+
+      mac_address = Trema::Mac.new(mac_lease.mac_address)
+      item.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
+    end
+
+    def released_mac_address(item, params)
+      mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit
+
+      return if mac_lease && mac_lease.interface_id == item.id
+
+      item.remove_mac_address(mac_lease_id: params[:mac_lease_id])
+    end
+
     def leased_ipv4_address(item, params)
-      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:ip_address])
 
-      return if ip_lease.interface_id != item.id
-      return if ip_lease.interface.nil?
+      return unless ip_lease && ip_lease.interface_id == item.id
 
-      network = @dp_info.network_manager.item(id: ip_lease.interface.network_id)
+      network = @dp_info.network_manager.item(id: ip_lease.ip_address.network_id)
 
-      item.add_ipv4_address(mac_address: item.mac_address,
+      item.add_ipv4_address(mac_lease_id: ip_lease.mac_lease_id,
                             network_id: network[:id],
                             network_type: network[:type],
                             ip_lease_id: ip_lease.id,
@@ -168,7 +188,7 @@ module Vnet::Openflow
     end
 
     def released_ipv4_address(item, params)
-      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit
 
       return if ip_lease && ip_lease.interface_id == item.id
 

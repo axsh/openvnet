@@ -8,18 +8,16 @@ describe Vnet::NodeApi::IpLease do
 
   describe "create" do
     it "success" do
-      mac_address = random_mac_i
       network = Fabricate(:network)
       ipv4_address = random_ipv4_i
-      interface = Fabricate(:interface) do
-        network network
-        mac_address mac_address
-      end
+      interface = Fabricate(:interface)
+      mac_lease = Fabricate(:mac_lease, interface: interface)
 
-      ip_lease = Vnet::NodeApi::IpLease.create(
+      ip_lease = Vnet::NodeApi::IpLease.execute(
+        :create,
+        mac_lease: mac_lease,
         network_id: network.id,
-        ipv4_address: ipv4_address,
-        interface_id: interface.id,
+        ipv4_address: ipv4_address
       )
 
       model = Vnet::Models::IpLease[ip_lease[:uuid]]
@@ -38,17 +36,7 @@ describe Vnet::NodeApi::IpLease do
 
   describe "destroy" do
     it "success" do
-      mac_address = random_mac_i
-      network = Fabricate(:network)
-      interface = Fabricate(:interface) do
-        network network
-        mac_address mac_address
-      end
-      ip_address = Fabricate(:ip_address)
-      ip_lease = Fabricate(:ip_lease) do
-        interface interface
-        ip_address ip_address
-      end
+      ip_lease = Fabricate(:ip_lease)
 
       ip_lease_count = Vnet::Models::IpLease.count
       ip_address_count = Vnet::Models::IpAddress.count
@@ -61,7 +49,7 @@ describe Vnet::NodeApi::IpLease do
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
       expect(events[0][:event]).to eq Vnet::Event::ReleasedIpv4Address
-      expect(events[0][:options][:target_id]).to eq interface.id
+      expect(events[0][:options][:target_id]).to eq ip_lease.interface_id
       expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
     end
   end

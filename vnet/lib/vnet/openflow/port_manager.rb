@@ -27,7 +27,7 @@ module Vnet::Openflow
         prepare_port_local(port, port_desc)
       when port.port_info.name =~ /^eth/
         prepare_port_eth(port, port_desc)
-      when port.port_info.name =~ /^vif-/
+      when port.port_info.name =~ /^if-/
         prepare_port_vif(port, port_desc)
       when port.port_info.name =~ /^t-/
         prepare_port_tunnel(port, port_desc)
@@ -57,9 +57,9 @@ module Vnet::Openflow
 
       @dp_info.interface_manager.unload(port_number: port_desc.port_no)
 
-      if port.port_name =~ /^vif-/
+      if port.port_name =~ /^if-/
         @dp_info.interface_manager.update_active_datapaths(uuid: port.port_name,
-                                                           datapath_id: nil)
+                                                            datapath_id: nil)
       end
 
       nil

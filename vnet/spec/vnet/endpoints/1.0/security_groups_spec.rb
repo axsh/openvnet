@@ -8,10 +8,10 @@ def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
-describe "/ip_addresses" do
-  let(:api_suffix)  { "ip_addresses" }
-  let(:fabricator)  { :ip_address }
-  let(:model_class) { Vnet::Models::IpAddress }
+describe "/security_groups" do
+  let(:api_suffix)  { "security_groups" }
+  let(:fabricator)  { :security_group }
+  let(:model_class) { Vnet::Models::SecurityGroup }
 
   include_examples "GET /"
   include_examples "GET /:uuid"
@@ -19,19 +19,17 @@ describe "/ip_addresses" do
 
   describe "POST /" do
     accepted_params = {
-      :uuid => "ia-test",
-      :ipv4_address => "192.168.2.2",
+      :uuid => "sg-test",
+      :display_name => "our test secg",
+      :description => "A longer description... or it should be at least.",
+      :rules => "
+        tcp,22:22,0.0.0.0
+        udp,53:53,0.0.0.0
+      "
     }
-    required_params = [:ipv4_address]
+    required_params = [:display_name]
     uuid_params = [:uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
-
-  describe "PUT /:uuid" do
-    accepted_params = { :ipv4_address => "192.168.2.2" }
-
-    include_examples "PUT /:uuid", accepted_params
-  end
-
 end

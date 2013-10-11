@@ -85,7 +85,7 @@ module Vnet::Openflow
       @cookie_manager.create_category(:route_link,     COOKIE_PREFIX_ROUTE_LINK)
       @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
       @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
-      @cookie_manager.create_category(:vif,            COOKIE_PREFIX_VIF)
+      @cookie_manager.create_category(:interface,      COOKIE_PREFIX_VIF)
     end
 
     def datapath_batch
