@@ -4,6 +4,10 @@ module Vnet::Openflow::Interfaces
 
   class Vif < Base
 
+    def add_security_groups
+      @dp_info.security_group_manager.insert_catch_flow(self)
+    end
+
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
@@ -227,7 +231,7 @@ module Vnet::Openflow::Interfaces
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
                            cookie: self.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
-                           goto_table: TABLE_INTERFACE_VIF)
+                           goto_table: TABLE_INTERFACE_INGRESS_FILTER)
 
     end
 

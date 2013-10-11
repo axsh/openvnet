@@ -50,6 +50,7 @@ module Vnet::Openflow
       @packet_manager = @dp_info.packet_manager
       @port_manager = @dp_info.port_manager
       @route_manager = @dp_info.route_manager
+      @security_group_manager = @dp_info.security_group_manager
       @service_manager = @dp_info.service_manager
       @tunnel_manager = @dp_info.tunnel_manager
 

@@ -167,6 +167,7 @@ module Vnet
     autoload :PacketManager, 'vnet/openflow/packet_manager'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
+    autoload :SecurityGroupManager, 'vnet/openflow/security_group_manager'
     autoload :Service, 'vnet/openflow/service'
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'

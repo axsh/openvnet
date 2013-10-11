@@ -98,6 +98,7 @@ module Vnet::Openflow
       when :vif
         port = @dp_info.port_manager.detect(port_name: interface.uuid)
         interface.update_port_number(port[:port_number])
+        interface.add_security_groups
       end
 
       load_addresses(interface, item_map)
