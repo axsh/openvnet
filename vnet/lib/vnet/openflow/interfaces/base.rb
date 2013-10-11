@@ -147,7 +147,7 @@ module Vnet::Openflow::Interfaces
       @mac_addresses = mac_addresses
 
       debug log_format("adding mac address to #{@uuid}/#{@id}",
-                       "#{mac_address.to_s}")
+                       "#{params[:mac_address].to_s}")
 
       # Add to port...
       nil
