@@ -39,7 +39,14 @@ module Vnet::Openflow::Interfaces
     def packet_in(message)
       # info "simulated packet in: #{message.inspect}"
 
-      case (message.cookie & COOKIE_TAG_MASK) >> COOKIE_TAG_SHIFT
+      tag = (message.cookie & COOKIE_TAG_MASK) >> COOKIE_TAG_SHIFT
+
+      # process only OPTIONAL_TYPE_TAG
+      return unless tag & OPTIONAL_TYPE_MASK == OPTIONAL_TYPE_TAG
+
+      value = (message.cookie << OPTIONAL_VALUE_SHIFT) & OPTIONAL_VALUE_MASK
+
+      case value
       when TAG_ARP_REQUEST_FLOOD, TAG_ARP_REQUEST_INTERFACE
         info log_format('simulated arp reply', "arp_tpa:#{message.arp_tpa}")
 

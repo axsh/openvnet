@@ -7,15 +7,21 @@ module Vnet::Openflow::Interfaces
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
 
-    TAG_DEFAULT               = 0x0
+    OPTIONAL_TYPE_MASK      = 0xf
+
+    OPTIONAL_TYPE_TAG      = 0x1
+    OPTIONAL_TYPE_IP_LEASE  = 0x2
+    OPTIONAL_TYPE_MAC_LEASE = 0x3
+    OPTIONAL_TYPE_IP_RANGE  = 0x4
+
+    OPTIONAL_VALUE_SHIFT    = 36
+    OPTIONAL_VALUE_MASK    = 0xfffff
+
     TAG_ARP_REQUEST_INTERFACE = 0x1
     TAG_ARP_REQUEST_FLOOD     = 0x2
     TAG_ARP_LOOKUP            = 0x4
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
-    TAG_IP_LEASE              = 0x7
-
-    TAG_SUFFIX_SHIFT = 8
 
     attr_accessor :id
     attr_accessor :uuid
@@ -59,16 +65,25 @@ module Vnet::Openflow::Interfaces
       end
     end
     
-    def cookie(tag = TAG_DEFAULT, tag_suffix = 0)
-      value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) | (tag << COOKIE_TAG_SHIFT) | (tag_suffix << COOKIE_TAG_SHIFT + TAG_SUFFIX_SHIFT)
+    def cookie(type = 0, value = 0)
+      unless type & 0xf == type
+        raise "Invalid cookie optional type: %#x" % type
+      end
+      unless value & OPTIONAL_VALUE_MASK == value
+        raise "Invalid cookie optional value: %#x" % value
+      end
+      @id |
+        (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) |
+        type << COOKIE_TAG_SHIFT |
+        value << OPTIONAL_VALUE_SHIFT
     end
 
-    def cookie_for_ip_lease(ip_lease_id)
-      cookie(TAG_IP_LEASE, ip_lease_id)
+    def cookie_for_ip_lease(value)
+      cookie(OPTIONAL_TYPE_IP_LEASE, value)
     end
 
-    def del_cookie(tag = TAG_DEFAULT, tag_suffix = 0)
-      cookie_value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) | (tag << COOKIE_TAG_SHIFT) | (tag_suffix << COOKIE_TAG_SHIFT + TAG_SUFFIX_SHIFT)
+    def del_cookie(type = 0, value = 0)
+      cookie_value = cookie(type, value)
       cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK
 
       @dp_info.network_manager.async.update_interface(event: :remove_all,
@@ -76,8 +91,8 @@ module Vnet::Openflow::Interfaces
       @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
-    def del_cookie_for_ip_lease(ip_lease_id)
-      del_cookie(TAG_IP_LEASE, ip_lease_id)
+    def del_cookie_for_ip_lease(value)
+      del_cookie(OPTIONAL_TYPE_IP_LEASE, value)
     end
 
     # Update variables by first duplicating to avoid memory
