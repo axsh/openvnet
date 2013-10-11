@@ -78,7 +78,11 @@ module Vnet::Openflow
       #
       # To avoid a deadlock issue when retriving network type during
       # load_addresses, we load the network here.
-      MW::Interface.batch[filter].commit(:fill => [:ip_leases => [:ip_address, :network]])
+
+      fill = [:mac_leases => [:ip_leases => [:ip_address, :network]],
+              :ip_leases => [:ip_address, :network]]              
+
+      MW::Interface.batch[filter].commit(:fill => fill)
     end
 
     def create_item(item_map, params)
@@ -102,7 +106,7 @@ module Vnet::Openflow
       case interface.mode
       when :vif
         port = @dp_info.port_manager.detect(port_name: interface.uuid)
-        interface.update_port_number(port[:port_number])
+        interface.update_port_number(port[:port_number]) if port
       end
 
       load_addresses(interface, item_map)
@@ -124,7 +128,8 @@ module Vnet::Openflow
 
       item_map.mac_leases.each do |mac_lease|
         mac_address = Trema::Mac.new(mac_lease.mac_address)
-        interface.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
+        interface.add_mac_address(mac_lease_id: mac_lease.id,
+                                  mac_address: mac_address)
 
         mac_lease.ip_leases.each { |ip_lease|
           ipv4_address = ip_lease.ip_address.ipv4_address
