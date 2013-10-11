@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 require 'sequel/model'
+require 'sequel/plugins/mac_address'
+require 'sequel/plugins/ip_address'
 
 Sequel.extension(:core_extensions)
 

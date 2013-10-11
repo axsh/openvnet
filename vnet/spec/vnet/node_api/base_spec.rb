@@ -11,10 +11,7 @@ module Vnet::Models
     def self.aaa
       self.new(:name => :aaa)
     end
-    #def initialize(:name)
-    #  super
-    #  self.name = name
-    #end
+ 
     def to_hash
       super.tap {|h| h[:name] = self.name}
     end
@@ -23,7 +20,7 @@ end
 
 describe Vnet::NodeApi::Base do
   describe "single method" do
-    subject { Vnet::NodeApi::TestModel.aaa }
+    subject { Vnet::NodeApi::TestModel.execute(:aaa) }
 
     context "model method not found" do
       it { expect(subject).to be_a Hash }

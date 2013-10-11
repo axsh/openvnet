@@ -2,6 +2,7 @@
 
 module Vnet::Models
   class DatapathNetwork < Base
+    plugin :mac_address, :attr_name => :broadcast_mac_address
 
     many_to_one :datapath
     many_to_one :network

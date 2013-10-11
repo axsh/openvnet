@@ -20,7 +20,7 @@ describe Vnet::ModelWrappers::Base do
     describe "single execution" do
       let(:model) do
         double(:model).tap do |model|
-          model.should_receive(:all).and_return([parent])
+          model.should_receive(:execute).with(:all).and_return([parent])
         end
       end
 
@@ -119,7 +119,7 @@ describe Vnet::ModelWrappers::Base do
     describe "batch" do
       let(:model) do
         double(:model).tap do |model|
-          model.should_receive(:[]).with("p-xxx").and_return(parent)
+          model.should_receive(:execute).with(:[], "p-xxx").and_return(parent)
           model.should_receive(:execute_batch).with([:[], 1], [:update, {:name => "parent"}], {}).and_return(parent.merge(name: "parent"))
         end
       end
