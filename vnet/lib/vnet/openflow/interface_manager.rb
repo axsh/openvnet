@@ -59,7 +59,21 @@ module Vnet::Openflow
       return false if params[:uuid] && params[:uuid] != item.uuid
       return false if params[:mode] && params[:mode] != item.mode
       return false if params[:port_number] && params[:port_number] != item.port_number
+      return false if params[:port_name] && params[:port_name] != item.port_name
       true
+    end
+
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      when params[:port_name] then
+        { :port_name => params[:port_name] }
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
+      end
     end
 
     def interface_initialize(mode, params)
@@ -96,7 +110,7 @@ module Vnet::Openflow
 
       @items[item_map.id] = interface
 
-      debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
+      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
 
       # TODO: Make install/uninstall a barrier that enables/disable
       # the creation of flows and ensure that no events gets lost.

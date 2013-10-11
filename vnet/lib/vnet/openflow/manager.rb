@@ -103,15 +103,29 @@ module Vnet::Openflow
     private
 
     #
-    # Item-related methods:
+    # Override these method to support additional parameters.
     #
 
-    # Override this method to support additional parameters.
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
       true
     end
+
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
+      end
+    end
+
+    #
+    # Item-related methods:
+    #
 
     def item_to_hash(item)
       item && item.to_hash
@@ -160,17 +174,6 @@ module Vnet::Openflow
       end
 
       create_item(item_map, params)
-    end
-
-    def select_filter_from_params(params)
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
-        return nil
-      end
     end
 
     def subscribe_events

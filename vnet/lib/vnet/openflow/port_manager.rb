@@ -34,7 +34,16 @@ module Vnet::Openflow
       else
         @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
-        error log_format('unknown interface type', "name:#{port.port_info.name}")
+        # Currently only support vif.
+        interface = @dp_info.interface_manager.item(port_name: port_desc.name,
+                                                    port_number: port.port_number,
+                                                    reinitialize: true)
+
+        if interface
+          prepare_port_vif(port, port_desc, interface)
+        else
+          error log_format('unknown interface type', "name:#{port.port_name}")
+        end
       end
 
       item_to_hash(port)
@@ -107,27 +116,29 @@ module Vnet::Openflow
       port.install
     end
 
-    def prepare_port_vif(port, port_desc)
-      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
+    def prepare_port_vif(port, port_desc, interface = nil)
       # TODO: Fix this so that when interface manager creates a new
       # interface, it checks if the port is present and get the
       # port number from port manager.
-      interface = @dp_info.interface_manager.item(uuid: port_desc.name,
-                                                  port_number: port.port_number,
-                                                  reinitialize: true)
+      if interface.nil?
+        @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+
+        interface = @dp_info.interface_manager.item(uuid: port_desc.name,
+                                                    port_number: port.port_number,
+                                                    reinitialize: true)
+      end
 
       if interface.nil?
-        error log_format("could not find uuid #{port_desc.name}")
+        error log_format("could not find interface for #{port_desc.name}")
         return
       end
 
       if interface.mode != :vif
-        info log_format('vif mode not set to \'vif\'', "mode:#{interface.mode}")
+        info log_format('interface mode not set to \'vif\' for #{interface.uuid}', "mode:#{interface.mode}")
         return
       end
 
-      debug log_format("prepare_port_vif #{interface.uuid}")
+      debug log_format("prepare_port_vif #{interface.uuid}", "port_name:#{port.port_name}")
 
       # Do this in interface manager.
       @dp_info.interface_manager.update_active_datapaths(id: interface.id,

@@ -26,6 +26,7 @@ module Vnet::Openflow::Interfaces
     attr_accessor :id
     attr_accessor :uuid
     attr_accessor :mode
+    attr_accessor :port_name
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
 
@@ -40,6 +41,7 @@ module Vnet::Openflow::Interfaces
       @id = map.id
       @uuid = map.uuid
       @mode = map.mode.to_sym
+      @port_name = map.port_name
 
       @mac_addresses = {}
 

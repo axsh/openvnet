@@ -105,12 +105,14 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Network.batch[filter].commit
+      MW::Network.batch[filter].commit(:fill => :network_services)
     end
 
     def create_item(item_map, params)
       network = network_initialize(item_map.network_mode.to_sym, item_map)
       @items[network.id] = network
+
+      debug log_format("create #{item_map.uuid}/#{item_map.id}")
 
       if @datapath_info.nil?
         error log_format('datapath information not loaded')
@@ -125,9 +127,7 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
-      # TODO: Refactor this to only take the network id, and use that
-      # to populate service manager.
-      item_map.batch.network_services.commit.each { |service_map|
+      item_map.network_services.each { |service_map|
         @dp_info.service_manager.async.item(id: service_map.id)
       }
 
