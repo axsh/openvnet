@@ -18,5 +18,6 @@ module Vnctl::Cli
     vnctl_register(C::Route, "routes")
     vnctl_register(C::RouteLink, "route links")
     vnctl_register(C::Interface, "interfaces")
+    vnctl_register(C::SecurityGroup, "security groups")
   end
 end

@@ -9,6 +9,11 @@ require 'vnet'
 
 Dir['./spec/support/*.rb'].map {|f| require f }
 
+require "rack"
+require "rack/test"
+require "fabrication"
+require "database_cleaner"
+
 require 'coveralls'
 Coveralls.wear!
 

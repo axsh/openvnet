@@ -62,6 +62,12 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
+    create_table(:interface_security_groups) do
+      primary_key :id
+      Integer :interface_id, :index => true, :null => false
+      Integer :security_group_id, :index => true, :null => false
+    end
+
     create_table(:ip_addresses) do
       primary_key :id
       Integer :network_id, :index => true, :null => false
@@ -152,6 +158,14 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
+    create_table(:security_groups) do
+      primary_key :id
+      String :uuid, :unique => true, :null => false
+      String :display_name, :null => false
+      String :rules, :null => false, :default => ""
+      String :description
+    end
+
     create_table(:tunnels) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -170,6 +184,7 @@ Sequel.migration do
                :dc_segments,
                :dhcp_ranges,
                :interfaces,
+               :interface_security_groups,
                :ip_addresses,
                :ip_leases,
                :mac_addresses,
@@ -178,6 +193,7 @@ Sequel.migration do
                :network_services,
                :routes,
                :route_links,
+               :security_groups,
                :tunnels,
                )
   end

@@ -14,6 +14,8 @@ module Vnet::Models
     many_to_one :owner_datapath, :class => Datapath
     many_to_one :active_datapath, :class => Datapath
 
+    many_to_many :security_groups, :join_table => :interface_security_groups
+
     plugin :association_dependencies,
       :ip_leases => :destroy,
       :mac_leases => :destroy,
