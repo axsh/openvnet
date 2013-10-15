@@ -78,6 +78,10 @@ module Vnet::Openflow::Interfaces
         value << OPTIONAL_VALUE_SHIFT
     end
 
+    def cookie_for_tag(value)
+      cookie(OPTIONAL_TYPE_TAG, value)
+    end
+
     def cookie_for_ip_lease(value)
       cookie(OPTIONAL_TYPE_IP_LEASE, value)
     end

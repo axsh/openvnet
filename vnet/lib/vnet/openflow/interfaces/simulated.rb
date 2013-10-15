@@ -12,8 +12,8 @@ module Vnet::Openflow::Interfaces
       super
 
       arp_lookup_initialize(interface_id: @id,
-                            lookup_cookie: self.cookie(TAG_ARP_LOOKUP),
-                            reply_cookie: self.cookie(TAG_ARP_REPLY))
+                            lookup_cookie: self.cookie_for_tag(TAG_ARP_LOOKUP),
+                            reply_cookie: self.cookie_for_tag(TAG_ARP_REPLY))
     end
 
     def add_ipv4_address(params)
@@ -44,7 +44,7 @@ module Vnet::Openflow::Interfaces
       # process only OPTIONAL_TYPE_TAG
       return unless tag & OPTIONAL_TYPE_MASK == OPTIONAL_TYPE_TAG
 
-      value = (message.cookie << OPTIONAL_VALUE_SHIFT) & OPTIONAL_VALUE_MASK
+      value = (message.cookie >> OPTIONAL_VALUE_SHIFT) & OPTIONAL_VALUE_MASK
 
       case value
       when TAG_ARP_REQUEST_FLOOD, TAG_ARP_REQUEST_INTERFACE
@@ -120,7 +120,7 @@ module Vnet::Openflow::Interfaces
                              :arp_op => 1,
                            },
                            interface_id: @id,
-                           cookie: self.cookie(TAG_ARP_REQUEST_INTERFACE))
+                           cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
       flows << flow_create(:catch_interface_simulated,
                            match: {
                              :eth_type => 0x0800,
@@ -128,7 +128,7 @@ module Vnet::Openflow::Interfaces
                              :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
                            },
                            interface_id: @id,
-                           cookie: self.cookie(TAG_ICMP_REQUEST))
+                           cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
     end
 
     # TODO: Separate the mac-only flows and add those when
@@ -169,7 +169,7 @@ module Vnet::Openflow::Interfaces
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
-                           cookie: self.cookie(TAG_ARP_REQUEST_FLOOD))
+                           cookie: self.cookie_for_tag(TAG_ARP_REQUEST_FLOOD))
     end
 
   end
