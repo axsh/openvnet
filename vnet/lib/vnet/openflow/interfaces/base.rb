@@ -145,6 +145,21 @@ module Vnet::Openflow::Interfaces
       nil
     end
 
+    def remove_mac_address(mac_address)
+      return nil if @mac_addresses.has_key? mac_address
+
+      mac_info = @mac_addresses[mac_address]
+      return unless mac_info
+
+      mac_info[:ipv4_addresses].each do |ipv4_info|
+        remove_ipv4_address(ip_lease_id: ipv4_info[:ip_lease_id])
+      end
+
+      mac_addresses = @mac_addresses.dup
+      mac_address.delete(mac_address)
+      @mac_addresses = mac_addresses
+    end
+
     def add_ipv4_address(params)
       mac_info = @mac_addresses[params[:mac_address]]
 

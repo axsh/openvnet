@@ -11,6 +11,8 @@ module Vnet::Openflow
     subscribe_event :removed_interface # TODO Check if needed.
     subscribe_event LeasedIpv4Address, :leased_ipv4_address
     subscribe_event ReleasedIpv4Address, :released_ipv4_address
+    subscribe_event LeasedMacAddress, :leased_mac_address
+    subscribe_event ReleasedMacAddress, :released_mac_address
 
     def update_active_datapaths(params)
       interface = internal_detect(params)
@@ -154,6 +156,24 @@ module Vnet::Openflow
     # Event handlers:
     #
 
+    def leased_mac_address(item, params)
+      mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(:fill => [:interface])
+
+      return if ip_lease.interface_id != item.id
+      return if ip_lease.interface.nil?
+
+      mac_address = Trema::Mac.new(mac_lease.mac_address)
+      item.add_mac_address(mac_address)
+    end
+
+    def released_mac_address(item, params)
+      mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(:fill => [:interface])
+
+      return if mac_lease && mac_lease.interface_id == item.id
+
+      item.remove_mac_address(mac_address)
+    end
+
     def leased_ipv4_address(item, params)
       ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address])
 
@@ -176,7 +196,5 @@ module Vnet::Openflow
 
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
     end
-
   end
-
 end
