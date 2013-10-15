@@ -56,6 +56,7 @@ module Vnet
         autoload :NetworkService, 'vnet/endpoints/1.0/responses/network_service'
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
+        autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
@@ -70,6 +71,7 @@ module Vnet
         autoload :NetworkServiceCollection, 'vnet/endpoints/1.0/responses/network_service'
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
+        autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
       end
     end
   end
@@ -95,6 +97,7 @@ module Vnet
     autoload :NetworkService, 'vnet/models/network_service'
     autoload :Route, 'vnet/models/route'
     autoload :RouteLink, 'vnet/models/route_link'
+    autoload :SecurityGroup, 'vnet/models/security_group'
     autoload :Taggable, 'vnet/models/base'
     autoload :Tunnel, 'vnet/models/tunnel'
   end
@@ -114,6 +117,7 @@ module Vnet
     autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :Network, 'vnet/model_wrappers/network'
     autoload :NetworkService, 'vnet/model_wrappers/network_service'
+    autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
@@ -137,6 +141,7 @@ module Vnet
     autoload :NetworkService, 'vnet/node_api/models.rb'
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
+    autoload :SecurityGroup, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
   end
 

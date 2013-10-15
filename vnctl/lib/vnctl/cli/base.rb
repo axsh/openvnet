@@ -12,6 +12,10 @@ module Vnctl::Cli
         option :display_name, :type => :string, :desc => "Human readable display name."
       end
 
+      def self.option_description
+        option :description, :type => :string, :desc => "Optional verbose description."
+      end
+
       def self.define_add
         desc "add [OPTIONS]", "Creates a new #{namespace}."
         add_required_options.each { |o|
