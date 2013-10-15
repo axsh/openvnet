@@ -4,15 +4,13 @@ module Vnet::NodeApi
     class << self
       def create(options)
         options = options.dup
-        ipv4_address = options.delete(:ipv4_address)
         ip_lease = transaction do
-          model_class.new(options).tap do |model|
-            model.ip_address = model_class(:ip_address).create(ipv4_address: ipv4_address)
-          end.save
+          model_class.create(options)
         end
 
         dispatch_event(LeasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
-        to_hash(ip_lease)
+
+        ip_lease
       end
 
       def update(uuid, options)
@@ -36,8 +34,9 @@ module Vnet::NodeApi
         if deleted_ip_address
           dispatch_event(ReleasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
           dispatch_event(LeasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
-          to_hash(ip_lease)
         end
+
+        ip_lease
       end
 
       def destroy(uuid)
@@ -48,7 +47,8 @@ module Vnet::NodeApi
         end
 
         dispatch_event(ReleasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
-        to_hash(ip_lease)
+
+        ip_lease
       end
     end
   end

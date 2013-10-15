@@ -3,15 +3,12 @@ require 'spec_helper'
 
 describe Vnet::ModelWrappers::Network do
   let(:network) do
-    Fabricate(:network).tap do |n|
-      n.add_interface(Fabricate(:interface))
-    end
+    Fabricate(:network, :ip_addresses => [Fabricate(:ip_address)])
   end
 
   context "with real proxy" do
-    subject { Vnet::ModelWrappers::Network.batch[network.canonical_uuid].interfaces.first.commit }
-    it { expect(subject).to be_a Vnet::ModelWrappers::Interface }
-    it { expect(subject.uuid).to eq network.interfaces.first.canonical_uuid }
-    it { expect(subject.mac_address).to eq 0 }
+    subject { Vnet::ModelWrappers::Network.batch[network.canonical_uuid].ip_addresses.first.commit }
+    it { expect(subject).to be_a Vnet::ModelWrappers::IpAddress }
+    it { expect(subject.id).to eq network.ip_addresses.first.id }
   end
 end

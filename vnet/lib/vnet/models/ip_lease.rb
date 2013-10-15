@@ -4,25 +4,16 @@ module Vnet::Models
   class IpLease < Base
     taggable 'il'
 
-    many_to_one :network
-    many_to_one :ip_address
-    many_to_one :interface
-
-    plugin :association_dependencies, ip_address: :destroy
+    plugin :ip_address
 
     dataset_module do
-      def join_vifs
-        self.join_table(:inner, :interfaces, :interfaces__id => :ip_leases__interface_id)
+      def join_interfaces
+        self.join_table(:inner, :interfaces, interfaces__id: :ip_leases__interface_id)
       end
 
-      def with_ipv4
-        ds = self.join_table(:inner, :ip_addresses, :ip_leases__ip_address_id => :ip_addresses__id)
-        ds = ds.select_all(:ip_addresses, :ip_leases)
+      def join_ip_addresses
+        self.join(:ip_addresses, ip_addresses__id: :ip_leases__ip_address_id)
       end
-    end
-
-    def ipv4_address
-      self.ip_address.try(:ipv4_address)
     end
 
     def to_hash

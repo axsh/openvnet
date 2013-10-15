@@ -35,13 +35,13 @@ module Vnet::Openflow::Routers
       route = {
         :route_id => route_info[:id],
         :route_uuid => route_info[:uuid],
-        :network_id => route_info[:vif][:network_id],
-        :network_type => route_info[:vif][:network_type],
+        :network_id => route_info[:interface][:network_id],
+        :network_type => route_info[:interface][:network_type],
 
-        :require_vif => route_info[:vif][:require_vif],
-        :active_datapath_id => route_info[:vif][:active_datapath_id],
+        :require_interface => route_info[:interface][:require_interface],
+        :active_datapath_id => route_info[:interface][:active_datapath_id],
 
-        :mac_address => route_info[:vif][:mac_address],
+        :mac_address => route_info[:interface][:mac_address],
         :ipv4_address => route_info[:ipv4_address],
         :ipv4_prefix => route_info[:ipv4_prefix],
 
@@ -69,19 +69,19 @@ module Vnet::Openflow::Routers
 
       return unreachable_ip(message, "no route found", :no_route) if route.nil?
 
-      if route[:require_vif] == true
+      if route[:require_interface] == true
         filter_args = {
-          :ip_leases__network_id => route[:network_id],
+          :ip_addresses__network_id => route[:network_id],
           :ip_addresses__ipv4_address => ipv4_dst.to_i
         }
-        ip_lease = MW::IpLease.batch.dataset.with_ipv4.where(filter_args).first.commit(:fill => :interface)
+        ip_lease = MW::IpLease.batch.dataset.join_ip_addresses.where(filter_args).first.commit(:fill => [:interface, :ipv4_address])
 
         if ip_lease.nil? || ip_lease.interface.nil?
-          return unreachable_ip(message, "no vif found", :no_vif)
+          return unreachable_ip(message, "no interface found", :no_interface)
         end
 
         if ip_lease.interface.active_datapath_id.nil?
-          return unreachable_ip(message, "no active datapath for vif found", :inactive_vif)
+          return unreachable_ip(message, "no active datapath for interface found", :inactive_interface)
         end
 
         debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{ipv4_dst}" % message.cookie)
@@ -90,7 +90,7 @@ module Vnet::Openflow::Routers
         send_packet(message)
 
       else
-        debug log_format('packet_in, no destination vif needed for route', "#{route[:uuid]}")
+        debug log_format('packet_in, no destination interface needed for route', "#{route[:uuid]}")
       end
     end
 
@@ -107,7 +107,7 @@ module Vnet::Openflow::Routers
     def create_destination_flow(route)
       cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
 
-      if route[:require_vif] == true
+      if route[:require_interface] == true
         catch_route_md = md_create(network: route[:network_id],
                                    not_no_controller: nil)
         actions = { :output => OFPP_CONTROLLER }
@@ -168,12 +168,12 @@ module Vnet::Openflow::Routers
     end
 
     def suppress_packets(message, reason)
-      # These should set us as listeners to events for the vif
+      # These should set us as listeners to events for the interface
       # becoming active or IP address being leased.
       case reason
       when :no_route     then hard_timeout = 30
-      when :no_vif       then hard_timeout = 30
-      when :inactive_vif then hard_timeout = 10
+      when :no_interface       then hard_timeout = 30
+      when :inactive_interface then hard_timeout = 10
       end
 
       flow = Flow.create(TABLE_ROUTER_DST, 35,

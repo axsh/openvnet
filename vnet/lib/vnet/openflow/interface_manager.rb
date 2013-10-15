@@ -73,7 +73,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Interface.batch[filter].commit(:fill => [:ip_leases => :ip_address])
+      MW::Interface.batch[filter].commit(:fill => [{:mac_leases => {:ip_leases => :ip_address}}])
     end
 
     def create_item(item_map, params)
@@ -115,27 +115,29 @@ module Vnet::Openflow
     # TODO: Convert the loading of addresses to events, and queue them
     # with a 'handle_event' queue to ensure consistency.
     def load_addresses(interface, item_map)
-      return if item_map.mac_address.nil?
+      return if item_map.mac_leases.empty?
 
-      mac_address = Trema::Mac.new(item_map.mac_address)
-      interface.add_mac_address(mac_address)
+      item_map.mac_leases.each do |mac_lease|
+        mac_address = Trema::Mac.new(mac_lease.mac_address)
+        interface.add_mac_address(mac_address)
 
-      item_map.ip_leases.each { |ip_lease|
-        ipv4_address = ip_lease.ip_address.ipv4_address
-        next if ipv4_address.nil?
+        mac_lease.ip_leases.each { |ip_lease|
+          ipv4_address = ip_lease.ip_address.ipv4_address
+          error log_format("ipv4_address is nil", ip_lease.uuid) unless ipv4_address
 
-        network_id = ip_lease.network_id
-        next if network_id.nil?
+          network_id = ip_lease.network_id
+          error log_format("network is nil", ip_lease.uuid) unless network_id
 
-        network_info = @dp_info.network_manager.item(id: network_id)
-        next if network_info.nil?
+          network_info = @dp_info.network_manager.item(id: network_id)
+          next if network_info.nil?
 
-        interface.add_ipv4_address(mac_address: mac_address,
-                                   network_id: network_id,
-                                   network_type: network_info[:type],
-                                   ip_lease_id: ip_lease.id,
-                                   ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
-      }
+          interface.add_ipv4_address(mac_address: mac_address,
+                                     network_id: network_id,
+                                     network_type: network_info[:type],
+                                     ip_lease_id: ip_lease.id,
+                                     ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
+        }
+      end
     end
 
     def is_remote?(item_map)
