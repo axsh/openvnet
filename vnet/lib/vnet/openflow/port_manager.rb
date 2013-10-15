@@ -153,7 +153,7 @@ module Vnet::Openflow
                                                      port_mode: :eth)
       else
         port.extend(Ports::Generic)
-        @datapath.translation_manager.async.add_edge_port(port: port)
+        @datapath.translation_manager.async.add_edge_port(port: port, interface: interface)
       end
 
       port.install

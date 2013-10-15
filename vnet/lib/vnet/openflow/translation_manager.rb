@@ -19,21 +19,23 @@ module Vnet::Openflow
       info log_format('initialized')
     end
 
-    def add_edge_port(port)
-      @edge_ports << port
-      info log_format('edge port added', port.inspect)
+    def add_edge_port(params)
+      @edge_ports << {
+        :port => params[:port],
+        :interface => params[:interface],
+        :vlan_vs_mac_address => []
+      }
     end
 
-    def find_edge_port(port_number)
-      @edge_port.detect { |e| e[:port_number] == port_number }
+    def network_to_vlan(network_id)
+      entry = @translation_map.find { |t| t.network_id == network_id }
+      return nil if entry.nil?
+      entry.vlan_id
     end
 
-    def find_network_id(edge_port_id, vlan_vid)
-      vt_entry = @translation_map.detect {|t| t.interface_id == edge_port_id && t.vlan_id == vlan_vid }
-
-      error log_format('entry not found in vlan_translations table') if vt_entry.nil?
-
-      vt.entry.network_id
+    def vlan_to_network(vlan_vid)
+      entry = @translation_map.find { |t| t.vlan_id == vlan_vid }
+      entry.network_id
     end
 
     private

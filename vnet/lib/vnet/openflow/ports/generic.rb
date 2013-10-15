@@ -13,6 +13,11 @@ module Vnet::Openflow::Ports
     end
 
     def install
+      flows = []
+      flows << Flow.create(TABLE_CLASSIFIER, 2, {
+                            :in_port => self.port_number
+                           }, nil, flow_options.merge({:goto_table => TABLE_EDGE_SRC}))
+      @datapath.add_flows(flows)
     end
   end
 end

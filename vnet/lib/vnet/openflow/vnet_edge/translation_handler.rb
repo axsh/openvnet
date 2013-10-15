@@ -7,36 +7,26 @@ module Vnet::Openflow::VnetEdge
 
     def initialize(params)
       @datapath = params[:datapath]
-      @translation_manager = @datapath.translation_manager
-      @interface_manager = @datapath.interface_manager
     end
 
     def packet_in(message)
       debug log_format('packet_in', message.inspect)
 
-      in_port = message.in_port
-      vlan_vid = message.vlan_vid
-      mac = message.packet_info.eth_src.to_s
-      edge_port = translation_manager.find_edge_port(in_port)
-      network_id = translation_manager.find_network_id(edge_port.id, vlan_vid)
-
-      cookie = {:cookie => in_port | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)}
-      md = cookie.merge(md_create(:network => network_id))
-
-      @datapath.add_flow(Flow.create(TABLE_VLAN_TRANLATION, 2, {
-                          :in_port => in_port,
-                          :dl_vlan => vlan_vid
-                         }, {
-                          :strip_vlan => true,
-                         }, md.merge({:goto_table => TABLE_ROUTER_CLASSIFIER})))
-
-      @datapath.add_flow(Flow.create(TABLE_VLAN_TRANLATION, 2, {
-                          :eth_dst => mac
-                         }, {
-                          :mod_vlan_vid => vlan_vid,
-                         }, cookie.merge({:output => in_port})))
-
-      @datapath.send_packet_out(message, message.in_port)
+      case message.in_port
+      when 1
+        handle_packet_from_host_port(
+          in_port: message.in_port,
+          src_mac: message.eth_src,
+          dst_mac: message.eth_dst
+        )
+      else
+        handle_packet_from_edge_port(
+          in_port: message.in_port,
+          src_mac: message.eth_src,
+          dst_mac: message.eth_dst,
+          vlan_vid: message.vlan_vid
+        )
+      end
     end
 
     def install
@@ -44,6 +34,73 @@ module Vnet::Openflow::VnetEdge
     end
 
     private
+
+    def handle_packet_from_host_port(params)
+      flows = []
+
+      in_port = params[:in_port]
+      src_mac = params[:src_mac]
+      dst_mac = params[:dst_mac]
+
+      debug log_format('handle_packet_from_host_port : [src_mac]', src_mac)
+      debug log_format('handle_packet_from_host_port : [src_mac.value]', src_mac.value)
+      src_network_id = @datapath.interface_manager.network_id_by_mac(src_mac.value)
+
+      return if src_network_id.nil?
+
+      debug log_format('handle_packet_from_host_port : [src_network_id]', src_network_id)
+      vlan_vids = @datapath.translation_manager.network_to_vlan(src_network_id)
+
+      return if vlan_vids.nil?
+
+      flows << "table=#{TABLE_EDGE_SRC},priority=2,dl_src=#{src_mac},actions=write_metadata:0x%x,goto_table=#{TABLE_EDGE_DST}" % METADATA_TYPE_VIRTUAL_TO_EDGE
+
+      case vlan_vids
+      when Array
+        actions=""
+        vlan_vids.each do |vlan_vid|
+          actions << "mod_vlan_vid:#{vlan_vid},output:2,"
+        end
+        actions.chop!
+      else
+        actions = "mod_vlan_vid:#{vlan_vids},output:2"
+      end
+
+      if dst_mac.broadcast?
+        flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=ff:ff:ff:ff:ff:ff,metadata=0x%x/0x%x,actions=#{actions}" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
+      end
+
+      flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=output:1" %  [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK ]
+
+      flows.each { |flow| @datapath.add_ovs_flow(flow) }
+    end
+
+    def handle_packet_from_edge_port(params)
+      flows = []
+
+      in_port = params[:in_port]
+      src_mac = params[:src_mac]
+      dst_mac = params[:dst_mac]
+      vlan_vid = params[:vlan_vid]
+
+      debug log_format('edge_port', in_port)
+      debug log_format('edge_port', src_mac.inspect)
+      debug log_format('edge_port', dst_mac.inspect)
+      debug log_format('edge_port', vlan_vid)
+
+      network_id = @datapath.translation_manager.vlan_to_network(vlan_vid)
+
+      flows << "table=#{TABLE_EDGE_SRC},priority=2,dl_src=#{src_mac},dl_vlan=#{vlan_vid},actions=strip_vlan,write_metadata:0x%x,goto_table:#{TABLE_EDGE_DST}" % METADATA_TYPE_EDGE_TO_VIRTUAL
+
+      if dst_mac.broadcast?
+        md = md_create(:network => network_id)
+        flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=ff:ff:ff:ff:ff:ff,metadata=0x%x/0x%x,actions=write_metadata:0x%x/0x%x,goto_table:#{TABLE_ROUTER_CLASSIFIER}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK, md[:metadata], md[:metadata_mask] ]
+      end
+
+      flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=mod_vlan_vid:#{vlan_vid},output:2" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
+
+      flows.each { |flow| @datapath.add_ovs_flow(flow) }
+    end
 
     def log_format(message, values = nil)
       "#{@dpid_s} translation_handler: #{message}" + (values ? " (#{values})" : '')

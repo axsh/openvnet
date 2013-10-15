@@ -26,10 +26,10 @@ module Vnet::Models
       ip_lease && ip_lease.ip_address.ipv4_address
     end
 
+
     def to_hash
       self.values[:ipv4_address] = self.ipv4_address
       super
     end
-
   end
 end

@@ -176,6 +176,7 @@ module Vnet
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
       autoload :Remote, 'vnet/openflow/interfaces/remote'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
+      autoload :Edge, 'vnet/openflow/interfaces/edge'
     end
 
     module Networks

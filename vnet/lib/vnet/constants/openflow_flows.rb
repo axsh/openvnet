@@ -11,9 +11,6 @@ module Vnet
       # Default table used by all incoming packets.
       TABLE_CLASSIFIER = 0
 
-      # Translation layer for vlan
-      TABLE_VLAN_TRANSLATION = 1
-
       # Handle matching of incoming packets on host ports.
       TABLE_HOST_PORTS = 2
 
@@ -35,6 +32,10 @@ module Vnet
       # normal fashion. The in_port is explicitly set to
       # OFPP_CONTROLLER.
       TABLE_CONTROLLER_PORT = 7
+
+      # Translation layer for vlan
+      TABLE_EDGE_SRC = 8
+      TABLE_EDGE_DST = 9
 
       # Initial verification of network number and application of global
       # filtering rules.
@@ -141,6 +142,8 @@ module Vnet
       METADATA_TYPE_ROUTE      = (0x5 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_ROUTE_LINK = (0x6 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_INTERFACE  = (0x7 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_EDGE_TO_VIRTUAL = (0x8 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_VIRTUAL_TO_EDGE = (0x9 << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0xffffffff
 
