@@ -23,11 +23,13 @@ describe Vnet::Openflow::PortManager do
         if_double = double(:interface_double)
 
         interface_manager = double(:interface_manager)
-        interface_manager.should_receive(:exist_interface?).and_return(true)
-        interface_manager.should_receive(:get_all_mac_addresses).and_return([])
+
+        vif = double(:vif)
+        vif.should_receive(:nil?).and_return(false)
+        interface_manager.should_receive(:item).and_return(vif)
 
         d.should_receive(:mod_port)
-        d.should_receive(:interface_manager).twice.and_return(interface_manager)
+        d.should_receive(:interface_manager).and_return(interface_manager)
         d.should_receive(:datapath_map).twice.and_return(datapath_map)
       end
     end
@@ -51,7 +53,7 @@ describe Vnet::Openflow::PortManager do
         {:in_port => port_desc.port_no},
         nil,
         {:cookie => port_desc.port_no | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
-         :goto_table => TABLE_VLAN_TRANSLATION})
+         :goto_table => TABLE_EDGE_SRC})
     end
   end
 end

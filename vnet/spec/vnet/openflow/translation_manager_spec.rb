@@ -18,15 +18,6 @@ describe Vnet::Openflow::TranslationManager do
     subject { Vnet::Openflow::TranslationManager.new(datapath) }
 
     it "creates strip vlan id flow" do
-      subject.update
-      expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
-        TABLE_VLAN_TRANSLATION,
-        2,
-        {:vlan_vid => 1},
-        {:strip_vlan => true},
-        {:metadata => 1 | METADATA_TYPE_NETWORK,
-         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK,
-         :goto_table => TABLE_ROUTER_CLASSIFIER})
     end
   end
 end
