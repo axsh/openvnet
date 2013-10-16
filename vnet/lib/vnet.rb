@@ -199,6 +199,10 @@ module Vnet
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
     end
 
+    module SecurityGroups
+      autoload :SecurityGroup, 'vnet/openflow/security_groups/security_group'
+    end
+
     module Services
       autoload :Base, 'vnet/openflow/services/base'
       autoload :Dhcp, 'vnet/openflow/services/dhcp'

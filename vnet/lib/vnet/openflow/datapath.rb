@@ -28,6 +28,7 @@ module Vnet::Openflow
     attr_reader :packet_manager
     attr_reader :port_manager
     attr_reader :route_manager
+    attr_reader :security_group_manager
     attr_reader :service_manager
     attr_reader :tunnel_manager
 
@@ -61,6 +62,7 @@ module Vnet::Openflow
       @cookie_manager.create_category(:port,           COOKIE_PREFIX_PORT)
       @cookie_manager.create_category(:route,          COOKIE_PREFIX_ROUTE)
       @cookie_manager.create_category(:route_link,     COOKIE_PREFIX_ROUTE_LINK)
+      @cookie_manager.create_category(:security_group, COOKIE_PREFIX_SECURITY_GROUP)
       @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
       @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
       @cookie_manager.create_category(:vif,            COOKIE_PREFIX_VIF)

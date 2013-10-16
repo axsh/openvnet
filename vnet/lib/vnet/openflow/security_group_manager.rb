@@ -2,21 +2,39 @@
 
 module Vnet::Openflow
   class SecurityGroupManager < Manager
-    # include Vnet::Openflow::FlowHelpers
 
-    def insert_catch_flow(vif)
+    def packet_in(message)
+      interface_id = message.cookie & COOKIE_ID_MASK
+      interface = MW::Interface.batch[interface_id].commit
+
+      groups = interface.batch.security_groups.commit.map { |g|
+        Vnet::Openflow::SecurityGroups::SecurityGroup.new(g)
+      }
+
+      flows = groups.map { |g| g.install(interface) }.flatten
+
+      @dp_info.add_flows(flows)
+    end
+
+    def insert_catch_flow(interface)
+      cookie = interface.id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
       flows = [
-        vif.flow_create(:default,
-                    table: TABLE_INTERFACE_INGRESS_FILTER,
-                    priority: 1,
-                    match_metadata: {
-                      :interface => vif.id
-                    },
-                    actions: {
-                      :output => Controller::OFPP_CONTROLLER
-                    })
-        #TODO: Insert a drop flow with very low timeout to avoid flooding
-        #the controller
+        interface.flow_create(:default,
+                              table: TABLE_INTERFACE_INGRESS_FILTER,
+                              priority: 1,
+                              match_metadata: {
+                                :interface => interface.id
+                              },
+                              cookie: cookie,
+                              actions: {
+                                output: Controller::OFPP_CONTROLLER
+                              }),
+        interface.flow_create(:default,
+                              table: TABLE_INTERFACE_INGRESS_FILTER,
+                              priority: 100,
+                              cookie: cookie,
+                              match: { eth_type: 0x0806 },
+                              goto_table: TABLE_INTERFACE_VIF)
       ]
 
       @dp_info.add_flows(flows)
