@@ -134,13 +134,14 @@ module Vnet::Openflow::Interfaces
     # Manage MAC and IP addresses:
     #
 
-    def add_mac_address(mac_address)
-      return nil if @mac_addresses.has_key? mac_address
+    def add_mac_address(params)
+      debug log_format("add_ipv4_address", params.inspect)
+      return if @mac_addresses[params[:mac_lease_id]]
 
       mac_addresses = @mac_addresses.dup
-      mac_addresses[mac_address] = {
+      mac_addresses[params[:mac_lease_id]] = {
         :ipv4_addresses => [],
-        :mac_address => mac_address,
+        :mac_address => params[:mac_address],
       }
 
       @mac_addresses = mac_addresses
@@ -149,10 +150,10 @@ module Vnet::Openflow::Interfaces
       nil
     end
 
-    def remove_mac_address(mac_address)
-      return nil if @mac_addresses.has_key? mac_address
+    def remove_mac_address(params)
+      debug log_format("remove_mac_address", params.inspect)
 
-      mac_info = @mac_addresses[mac_address]
+      mac_info = @mac_addresses[params[:mac_lease_id]]
       return unless mac_info
 
       mac_info[:ipv4_addresses].each do |ipv4_info|
@@ -160,14 +161,15 @@ module Vnet::Openflow::Interfaces
       end
 
       mac_addresses = @mac_addresses.dup
-      mac_address.delete(mac_address)
+      mac_addresses.delete(params[:mac_lease_id])
       @mac_addresses = mac_addresses
     end
 
     def add_ipv4_address(params)
-      mac_info = @mac_addresses[params[:mac_address]]
+      debug log_format("add_ipv4_address", params.inspect)
 
-      return nil if mac_info.nil?
+      mac_info = @mac_addresses[params[:mac_lease_id]]
+      return unless mac_info
 
       # Check if the address already exists.
 
@@ -187,12 +189,18 @@ module Vnet::Openflow::Interfaces
     end
 
     def remove_ipv4_address(params)
-      mac_info, ipv4_info = get_ipv4_address(params)
+      debug log_format("remove_ipv4_address", params.inspect)
 
-      return nil if mac_info.nil? || ipv4_info.nil?
+      ipv4_info = nil
+      ipv4_addresses = nil
+      mac_info = @mac_addresses.values.find do |m|
+        ipv4_info, ipv4_addresses = m[:ipv4_addresses].partition do |i|
+          i[:ip_lease_id] == params[:ip_lease_id]
+        end
+        ipv4_info = ipv4_info.first
+      end
+      return unless mac_info
 
-      ipv4_addresses = mac_info[:ipv4_addresses].dup
-      ipv4_addresses.delete_if { |ipv4| ipv4_info.equal?(ipv4) }
       mac_info[:ipv4_addresses] = ipv4_addresses
 
       [mac_info, ipv4_info]
@@ -208,9 +216,6 @@ module Vnet::Openflow::Interfaces
       when params[:network_md]
         network_id = md_to_id(:network, params[:network_md])
         return nil if network_id.nil?
-      when params[:ip_lease_id]
-        ip_lease_id = params[:ip_lease_id]
-        network_id = nil
       else
         network_id = nil
       end
@@ -221,7 +226,6 @@ module Vnet::Openflow::Interfaces
       mac_info = @mac_addresses.values.detect { |mac_info|
         ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
           next false if network_id && ipv4_info[:network_id] != network_id
-          next false if ip_lease_id && ipv4_info[:ip_lease_id] != ip_lease_id
           next true if ipv4_address.nil?
 
           ipv4_info[:ipv4_address] == ipv4_address

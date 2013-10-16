@@ -81,7 +81,8 @@ module Vnet::Openflow
       debug log_format("handle event #{event}", "#{params.inspect}")
 
       item = @items[params[:target_id]]
-      if handler = self.class.events[event]
+      handler = self.class.events[event]
+      if item && handler
         __send__(handler, item, params)
       end
 
