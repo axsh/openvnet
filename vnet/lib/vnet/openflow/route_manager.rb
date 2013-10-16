@@ -219,7 +219,7 @@ module Vnet::Openflow
         :id => interface_item.id,
         :use_datapath_id => nil,
 
-        :mac_address => mac_info[0],
+        :mac_address => mac_info[1][:mac_address],
         :mode => interface_item.mode,
 
         :network_id => ipv4_info[:network_id],

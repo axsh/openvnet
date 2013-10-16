@@ -60,7 +60,8 @@ module Vnet::NodeApi
       end
 
       def destroy(uuid)
-        # TODO implement me
+        super
+        # TODO dispatch_event
       end
     end
   end

@@ -29,11 +29,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   end
 
   delete '/:uuid' do
-    delete_by_uuid_with_node_api(:IpLease)
+    delete_by_uuid(:IpLease)
   end
 
   put '/:uuid' do
-    update_by_uuid_with_node_api(:IpLease, put_post_shared_params, fill_options) { |params|
+    update_by_uuid(:IpLease, put_post_shared_params, fill_options) { |params|
       check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::MacLease, params, "mac_lease_uuid", "mac_lease_id") if params["mac_lease_uuid"]
       params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params['ipv4_address']
