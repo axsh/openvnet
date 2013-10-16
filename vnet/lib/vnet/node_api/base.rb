@@ -6,6 +6,24 @@ module Vnet::NodeApi
     class << self
       include Vnet::Event
 
+      def create(options)
+        transaction do
+          model_class.create(options)
+        end
+      end
+
+      def update(uuid, options)
+        transaction do
+          model_class[uuid].update(options)
+        end
+      end
+
+      def destroy(uuid)
+        transaction do
+          model_class[uuid].destroy
+        end
+      end
+
       def model_class(name = nil)
         Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
       end
