@@ -28,7 +28,7 @@ module Vnet::Openflow
 
       infos = []
 
-      self.mac_addresses.each { |mac_address, mac_info|
+      self.mac_addresses.each { |mac_lease_id, mac_info|
         mac_info[:ipv4_addresses].each { |ipv4_info|
           next if network_id && ipv4_info[:network_id] != network_id
           next if ipv4_address && ipv4_info[:ipv4_address] != ipv4_address

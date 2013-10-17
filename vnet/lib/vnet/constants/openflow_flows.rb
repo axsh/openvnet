@@ -105,9 +105,9 @@ module Vnet
       COOKIE_PREFIX_ROUTE_LINK     = 0x7
       COOKIE_PREFIX_SERVICE        = 0x8
       COOKIE_PREFIX_SWITCH         = 0x9
-      COOKIE_PREFIX_TUNNEL         = 0x10
-      COOKIE_PREFIX_VIF            = 0x11
-      COOKIE_PREFIX_INTERFACE      = 0x12
+      COOKIE_PREFIX_TUNNEL         = 0xa
+      COOKIE_PREFIX_VIF            = 0xb
+      COOKIE_PREFIX_INTERFACE      = 0xc
 
       METADATA_FLAGS_SHIFT = 40
       METADATA_FLAGS_MASK = (0xffff << METADATA_FLAGS_SHIFT)

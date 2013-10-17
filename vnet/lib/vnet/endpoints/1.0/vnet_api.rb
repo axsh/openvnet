@@ -77,17 +77,11 @@ module Vnet::Endpoints::V10
 
     def delete_by_uuid(class_name)
       model_wrapper = M.const_get(class_name)
-      mw = check_syntax_and_pop_uuid(model_wrapper, @params)
-      mw.batch.destroy.commit
-      respond_with([mw.uuid])
-    end
-
-    # TODO refactor
-    def delete_by_uuid_with_node_api(class_name)
-      model_wrapper = M.const_get(class_name)
-      mw = check_syntax_and_pop_uuid(model_wrapper, @params)
-      model_wrapper.destroy(mw.uuid)
-      respond_with([mw.uuid])
+      uuid = @params[:uuid]
+      # TODO don't need to find model here
+      check_syntax_and_pop_uuid(model_wrapper, @params)
+      model_wrapper.destroy(uuid)
+      respond_with([uuid])
     end
 
     def get_all(class_name, fill = {})
@@ -110,24 +104,11 @@ module Vnet::Endpoints::V10
       response = R.const_get(class_name)
 
       params = parse_params(@params, accepted_params + ["uuid"])
-      object = check_syntax_and_pop_uuid(model_wrapper, params)
-      # This yield is for extra argument validation
-      yield(params) if block_given?
-      object.batch.update(params).commit
-
-      updated_object = model_wrapper.batch[@params["uuid"]].commit(:fill => fill)
-      respond_with(response.generate(updated_object))
-    end
-
-    # TODO refactor
-    def update_by_uuid_with_node_api(class_name, accepted_params, fill = {})
-      model_wrapper = M.const_get(class_name)
-      response = R.const_get(class_name)
-
-      params = parse_params(@params, accepted_params + ["uuid"])
+      # TODO don't need to find model here
       check_syntax_and_pop_uuid(model_wrapper, params)
       # This yield is for extra argument validation
       yield(params) if block_given?
+
       updated_object = model_wrapper.batch.update(@params["uuid"], params).commit(:fill => fill)
       respond_with(response.generate(updated_object))
     end
