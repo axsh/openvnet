@@ -15,8 +15,6 @@ module Vnet::Openflow
       @edge_ports = []
 
       update_translation_map
-
-      info log_format('initialized')
     end
 
     def add_edge_port(params)
