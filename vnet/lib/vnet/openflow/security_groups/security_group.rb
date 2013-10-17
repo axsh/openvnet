@@ -23,20 +23,23 @@ module Vnet::Openflow::SecurityGroups
     end
 
     private
-    # def match_ipv4_subnet_src_icmp(address, prefix)
-    #   match_ipv4_subnet_src(address, prefix).merge({
-
-    #   })
-    # end
+    def ipv4_protocol_string_to_int(protocol)
+      case protocol
+      when "icmp"
+        IPV4_PROTOCOL_ICMP
+      when "tcp"
+        IPV4_PROTOCOL_TCP
+      when "udp"
+        IPV4_PROTOCOL_UDP
+      else
+        raise "Unknown protocol: '#{protocol}'. Must be one of ['tcp', 'udp', 'icmp']"
+      end
+    end
 
     def rule_to_flow(interface, rule)
       debug "installing rule: '#{rule}'"
       protocol, ports, ipv4 = rule.split(":")
       from_port, to_port = ports.split(",")
-      # ipv4_address, ipv4_prefix = ipv4.split("/")
-      # ipv4_prefix ||= 32
-      #TODO: Get rid of this quick dirty hack
-      # ipv4_prefix = ipv4_prefix.to_i
       ipv4 = IPAddress::IPv4.new(ipv4)
 
       flow_create(:default,
@@ -45,9 +48,12 @@ module Vnet::Openflow::SecurityGroups
         match_metadata: {
           :interface => interface.id
         },
-        match: match_ipv4_subnet_src(ipv4.u32, ipv4.prefix.to_i),
+        match: match_ipv4_subnet_src(ipv4.u32, ipv4.prefix.to_i).merge({
+          ip_proto: ipv4_protocol_string_to_int(protocol)
+        }),
         cookie: cookie,
         goto_table: TABLE_INTERFACE_VIF)
     end
   end
+
 end
