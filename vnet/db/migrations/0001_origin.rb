@@ -52,6 +52,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       String :mode, :default => 'vif',:null => false
+      String :display_name
 
       # Should be a relation allowing for multiple active/owner
       # datapath ids.
@@ -175,6 +176,14 @@ Sequel.migration do
 
       index [:src_datapath_id, :dst_datapath_id]
     end
+
+    create_table(:vlan_translations) do
+      primary_key :id
+      Integer :interface_id, :index => true
+      Bignum :mac_address
+      Integer :vlan_id
+      Integer :network_id
+    end
   end
 
   down do
@@ -195,6 +204,7 @@ Sequel.migration do
                :route_links,
                :security_groups,
                :tunnels,
+               :vlan_translations
                )
   end
 end

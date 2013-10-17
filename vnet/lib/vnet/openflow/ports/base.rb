@@ -9,6 +9,7 @@ module Vnet::Openflow::Ports
     attr_reader :port_info
 
     attr_accessor :network_id
+    attr_accessor :mac_addresses
 
     def initialize(dp_info, port_info)
       @dp_info = dp_info
