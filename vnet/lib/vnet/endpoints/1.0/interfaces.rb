@@ -8,6 +8,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     "ipv4_address",
     "mac_address",
     "owner_datapath_uuid",
+    "display_name",
     "mode",
     "display_name",
   ]

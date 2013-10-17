@@ -2,7 +2,7 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
   put_post_shared_params = [
-    "vif_uuid",
+    "interface_uuid",
     "mac_address",
     "vlan_id",
     "network_id"
@@ -14,7 +14,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
 
     post_new(:VlanTranslation, accepted_params, required_params) do |params|
       params['mac_address'] = parse_mac(params['mac_address'])
-      check_syntax_and_get_id(M::Interface, params, "vif_uuid", "interface_id")
+      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id")
     end
   end
 
@@ -33,7 +33,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
   put '/:uuid' do
     update_by_uuid(:VlanTranslation, put_post_shared_params) do |params|
       params['mac_address'] = parse_mac(params['mac_address']) if params["mac_address"]
-      check_syntax_and_get_id(M::Interface, params, "vif_uuid", "interface_id")
+      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id")
     end
   end
 end

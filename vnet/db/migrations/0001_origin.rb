@@ -52,6 +52,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       String :mode, :default => 'vif',:null => false
+      String :display_name
 
       # Should be a relation allowing for multiple active/owner
       # datapath ids.
