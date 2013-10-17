@@ -104,21 +104,18 @@ module Vnet::Openflow
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
       params = {
-        :owner_datapath_id => @datapath.datapath_map.id,
+        :owner_datapath_id => @dp_info.datapath.datapath_map.id,
         :display_name => port_desc.name,
         :reinitialize => true
       }
 
-      interface = @datapath.interface_manager.item(params)
+      interface = @dp_info.interface_manager.item(params)
 
       if interface.nil?
-        port.extend(ports::host)
-        network = @datapath.network_manager.add_port(uuid: 'nw-public',
-                                                     port_number: port.port_number,
-                                                     port_mode: :eth)
+        port.extend(Ports::Host)
       else
-        port.extend(ports::generic)
-        @datapath.translation_manager.async.add_edge_port(port: port, interface: interface)
+        port.extend(Ports::Generic)
+        @dp_info.translation_manager.async.add_edge_port(port: port, interface: interface)
       end
 
       port.install

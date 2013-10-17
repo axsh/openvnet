@@ -21,7 +21,7 @@ module Vnet::Openflow::Ports
                                           :mac2mac => nil
                                         })
 
-      goto_table_on_table_classifier = @datapath.datapath_map.node_id == 'edge' ? TABLE_EDGE_SRC : TABLE_HOST_PORTS
+      goto_table_on_table_classifier = @dp_info.datapath.datapath_map.node_id == 'edge' ? TABLE_EDGE_SRC : TABLE_HOST_PORTS
 
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {

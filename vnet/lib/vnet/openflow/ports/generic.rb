@@ -17,7 +17,7 @@ module Vnet::Openflow::Ports
       flows << Vnet::Openflow::Flow.create(TABLE_CLASSIFIER, 2, {
                             :in_port => self.port_number
                            }, nil, flow_options.merge({:goto_table => TABLE_EDGE_SRC}))
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
   end
 end
