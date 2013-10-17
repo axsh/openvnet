@@ -12,6 +12,7 @@ module Vnet::Openflow
     include Celluloid::Logger
     include Vnet::Constants::Openflow
 
+    attr_reader :datapaths
     attr_accessor :trema_thread
 
     def initialize
@@ -56,7 +57,7 @@ module Vnet::Openflow
       datapath = @datapaths[dpid]
       return if datapath.nil?
 
-      message.parts.each { |port_descs| 
+      message.parts.each { |port_descs|
         debug "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
         port_descs.ports.each { |port_desc| datapath.port_manager.async.insert(port_desc) }

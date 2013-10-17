@@ -13,6 +13,9 @@ module Vnet::Openflow
     def initialize(dp, name = nil)
       @datapath = dp || raise("cannot create a Switch object without a valid datapath")
 
+      @dpid = @datapath.dpid
+      @dpid_s = "0x%016x" % @datapath.dpid
+
       cookie_manager = @datapath.cookie_manager
 
       @catch_flow_cookie   = cookie_manager.acquire(:switch)
@@ -81,6 +84,7 @@ module Vnet::Openflow
                            flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))
 
       flows << Flow.create(TABLE_INTERFACE_SIMULATED,   0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_INTERFACE_VIF, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_MAC_ROUTE,             0, {}, nil, flow_options)
 
@@ -142,40 +146,51 @@ module Vnet::Openflow
 
       @datapath.send_message(Trema::Messages::FeaturesRequest.new)
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
+
+      # Temporary hack to load the public network.
+      @datapath.network_manager.async.item(uuid: 'nw-public')
     end
 
     def features_reply(message)
-      debug "transaction_id: %#x" % message.transaction_id
-      debug "n_buffers: %u" % message.n_buffers
-      debug "n_tables: %u" % message.n_tables
-      debug "capabilities: %u" % message.capabilities
+      debug log_format("transaction_id: %#x" % message.transaction_id)
+      debug log_format("n_buffers: %u" % message.n_buffers)
+      debug log_format("n_tables: %u" % message.n_tables)
+      debug log_format("capabilities: %u" % message.capabilities)
     end
 
     def port_status(message)
-      debug "name: #{message.name}"
-      debug "reason: #{message.reason}"
-      debug "port_no: #{message.port_no}"
-      debug "hw_addr: #{message.hw_addr}"
-      debug "state: %#x" % message.state
+      debug log_format("port_status #{message.name}",
+                       "reason:#{message.reason} port_no:#{message.port_no} " +
+                       "hw_addr:#{message.hw_addr} state:%#x" % message.state)
 
       case message.reason
       when OFPPR_ADD
-        debug "adding port"
+        debug log_format("adding port")
         @datapath.port_manager.insert(message)
       when OFPPR_DELETE
-        debug "deleting port"
+        debug log_format("deleting port")
         @datapath.port_manager.remove(message)
       end
     end
 
     def update_topology(dpid, network_id)
-      debug "[switch] update_topology: dpid => #{dpid}, network_id => #{network_id}"
+      debug log_format("update_topology", "dpid:#{dpid} network_id:#{network_id}")
       @datapath.tunnel_manager.delete_tunnel_port(network_id, dpid)
     end
 
     def update_vlan_translation
-      @datapath.translation_manager.async.update
+      # TODO
     end
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def log_format(message, values = nil)
+      "#{@dpid_s} switch: #{message}" + (values ? " (#{values})" : '')
+    end
+
   end
 
 end

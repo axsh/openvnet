@@ -9,8 +9,15 @@ require 'vnet'
 
 Dir['./spec/support/*.rb'].map {|f| require f }
 
+require "rack"
+require "rack/test"
+require "fabrication"
+require "database_cleaner"
+
 require 'coveralls'
 Coveralls.wear!
+
+DCell.setup
 
 RSpec.configure do |config|
   config.include Rack::Test::Methods
@@ -18,6 +25,9 @@ RSpec.configure do |config|
   config.run_all_when_everything_filtered = true
 
   Vnet::Configurations::Common.paths = ["#{File.dirname(File.expand_path(__FILE__))}/config"]
+
+  #Celluloid.logger = ::Logger.new("test.log")
+  Celluloid.logger = nil
 
   vnmgr_conf = Vnet::Configurations::Vnmgr.load
   webapi_conf = Vnet::Configurations::Webapi.load

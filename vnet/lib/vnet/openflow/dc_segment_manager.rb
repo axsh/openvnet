@@ -55,9 +55,9 @@ module Vnet::Openflow
         self.insert(dpn_map)
       }
 
-      cookie = network_map.network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      cookie = network_map.id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       flow_options = {:cookie => cookie}
-      nw_virtual_md = flow_options.merge(md_create(:network => network_map.network_id))
+      nw_virtual_md = flow_options.merge(md_create(:network => network_map.id))
 
       dpn = network_map.batch.datapath_networks_dataset.on_specific_datapath(dp_map).first.commit
 
@@ -70,7 +70,7 @@ module Vnet::Openflow
 
       @datapath.add_flows(flows)
 
-      self.update_network_id(network_map.network_id)
+      self.update_network_id(network_map.id)
     end
 
     def remove_network_id(network_id)
@@ -84,7 +84,7 @@ module Vnet::Openflow
     end
 
     def update_network_id(network_id)
-      eth_port = @datapath.port_manager.ports(:port_type => :host).first
+      eth_port = @datapath.port_manager.detect(port_type: :host)
       dpn_list = @datapath_networks[network_id]
 
       return if eth_port.nil? || dpn_list.nil?

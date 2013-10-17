@@ -9,6 +9,8 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
+    attr_reader :dp_info
+
     attr_reader :controller
     attr_reader :dpid
     attr_reader :ovs_ofctl
@@ -34,19 +36,24 @@ module Vnet::Openflow
       @dpid = dp_id
       @dpid_s = "0x%016x" % @dpid
 
-      @controller = ofc
-      @ovs_ofctl = ofctl
+      @dp_info = DpInfo.new(controller: ofc,
+                            datapath: self,
+                            dpid: dp_id,
+                            ovs_ofctl: ofctl)
 
-      @cookie_manager = CookieManager.new
-      @dc_segment_manager = DcSegmentManager.new(self)
-      @interface_manager = InterfaceManager.new(self)
-      @network_manager = NetworkManager.new(self)
-      @packet_manager = PacketManager.new(self)
-      @port_manager = PortManager.new(self)
-      @route_manager = RouteManager.new(self)
-      @service_manager = ServiceManager.new(self)
-      @tunnel_manager = TunnelManager.new(self)
-      @translation_manager = TranslationManager.new(self)
+      @controller = @dp_info.controller
+      @ovs_ofctl = @dp_info.ovs_ofctl
+
+      @cookie_manager = @dp_info.cookie_manager
+      @dc_segment_manager = @dp_info.dc_segment_manager
+      @interface_manager = @dp_info.interface_manager
+      @network_manager = @dp_info.network_manager
+      @packet_manager = @dp_info.packet_manager
+      @port_manager = @dp_info.port_manager
+      @route_manager = @dp_info.route_manager
+      @service_manager = @dp_info.service_manager
+      @tunnel_manager = @dp_info.tunnel_manager
+      @translation_manager = @dp_info.translation_manager
 
       @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
       @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
@@ -57,7 +64,7 @@ module Vnet::Openflow
       @cookie_manager.create_category(:route_link,     COOKIE_PREFIX_ROUTE_LINK)
       @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
       @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
-      @cookie_manager.create_category(:vif,            COOKIE_PREFIX_VIF)
+      @cookie_manager.create_category(:interface,      COOKIE_PREFIX_VIF)
     end
 
     def datapath_batch
@@ -69,7 +76,7 @@ module Vnet::Openflow
     end
 
     def inspect
-      "<##{self.class.name} dpid:#{@dpid}>"
+      "<##{self.class.name} dpid:#{@dp_info.dpid}>"
     end
 
     def ipv4_address
@@ -81,7 +88,7 @@ module Vnet::Openflow
       @switch = Switch.new(self)
       @switch.create_default_flows
 
-      @datapath_map = MW::Datapath[:dpid => ("0x%016x" % @dpid)]
+      @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
 
       if @datapath_map.nil?
         warn log_format('could not find dpid in database')
@@ -99,8 +106,11 @@ module Vnet::Openflow
     # Flow modification methods:
     #
 
+    # Use dp_info.
     def add_flow(flow)
-      @controller.pass_task { @controller.send_flow_mod_add(@dpid, flow.to_trema_hash) }
+      @controller.pass_task {
+        @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
+      }
     end
 
     def add_ovs_flow(flow_str)
@@ -111,45 +121,51 @@ module Vnet::Openflow
       @ovs_ofctl.add_ovs_10_flow(flow_str)
     end
 
-    def del_cookie(cookie)
+    # Use dp_info.
+    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
       options = {
         :command => Controller::OFPFC_DELETE,
         :table_id => Controller::OFPTT_ALL,
         :out_port => Controller::OFPP_ANY,
         :out_group => Controller::OFPG_ANY,
         :cookie => cookie,
-        :cookie_mask => 0xffffffffffffffff
+        :cookie_mask => cookie_mask
       }
 
-      @controller.pass_task { @controller.public_send_flow_mod(@dpid, options) }
+      @controller.pass_task {
+        @controller.public_send_flow_mod(@dp_info.dpid, options)
+      }
     end
 
+    # Use dp_info.
     def add_flows(flows)
       return if flows.blank?
       @controller.pass_task {
         flows.each { |flow|
-          @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
+          @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
         }
       }
     end
 
+    # Use dp_info.
     def send_message(message)
-      @controller.pass_task { @controller.public_send_message(@dpid, message) }
+      @controller.pass_task {
+        @controller.public_send_message(@dp_info.dpid, message)
+      }
     end
 
+    # Use dp_info.
     def send_packet_out(message, port_no)
-      @controller.pass_task { @controller.public_send_packet_out(@dpid, message, port_no) }
+      @controller.pass_task {
+        @controller.public_send_packet_out(@dp_info.dpid, message, port_no)
+      }
     end
 
     #
     # Port modification methods:
     #
 
-    def mod_port(port_no, action)
-      debug log_format('modifying', "port_number:#{port_no} action:#{action.to_s}")
-      @ovs_ofctl.mod_port(port_no, action)
-    end
-
+    # Obsolete, use DpInfo directly.
     def add_tunnel(tunnel_name, remote_ip)
       @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
     end
@@ -166,7 +182,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
     end
 
   end

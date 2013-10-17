@@ -8,11 +8,8 @@ module Vnet::Openflow::Services
     include Vnet::Openflow::PacketHelpers
 
     def initialize(params)
-      @datapath = params[:datapath]
+      @dp_info = params[:dp_info]
       @manager = params[:manager]
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
 
       @id = params[:id]
       @uuid = params[:uuid]
@@ -25,7 +22,7 @@ module Vnet::Openflow::Services
     end
 
     def log_format(message, values = nil)
-      "#{@dpid_s} service/base: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} service/base: #{message}" + (values ? " (#{values})" : '')
     end
 
     def install
@@ -43,12 +40,12 @@ module Vnet::Openflow::Services
     def find_ipv4_and_network(message, ipv4_address)
       ipv4_address = ipv4_address != IPV4_BROADCAST ? ipv4_address : nil
 
-      mac_info, ipv4_info = @datapath.interface_manager.get_ipv4_address(id: @interface_id,
-                                                                         any_md: message.match.metadata,
-                                                                         ipv4_address: ipv4_address)
+      mac_info, ipv4_info = @dp_info.interface_manager.get_ipv4_address(id: @interface_id,
+                                                                        any_md: message.match.metadata,
+                                                                        ipv4_address: ipv4_address)
       return nil if ipv4_info.nil?
 
-      [mac_info, ipv4_info, @datapath.network_manager.item(id: ipv4_info[:network_id])]
+      [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
     end
 
   end

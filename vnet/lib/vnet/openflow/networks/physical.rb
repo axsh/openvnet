@@ -13,8 +13,8 @@ module Vnet::Openflow::Networks
     end
 
     def install
-      network_md = md_network(:network)
-      fo_network_md = flow_options.merge(md_network(:network))
+      network_md = md_create(:network => @id)
+      fo_network_md = flow_options.merge(network_md)
 
       flows = []
       flows << Flow.create(TABLE_HOST_PORTS, 10,
@@ -30,32 +30,29 @@ module Vnet::Openflow::Networks
                            network_md, nil,
                            flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def update_flows
-      local_actions = @ports.select { |port_number, port|
-        port[:mode] == :vif || port[:mode] == :local
-      }.collect { |port_number, port|
-        {:output => port_number}
+      local_actions = @interfaces.select { |interface_id, interface|
+        interface[:port_number]
+      }.collect { |interface_id, interface|
+        { :output => interface[:port_number] }
       }
-      remote_actions = @ports.select { |port_number, port|
-        port[:mode] == :eth
-      }.collect { |port_number, port|
-        {:output => port_number}
-      }
+
+      # Include port LOCAL until we implement interfaces for local eth
+      # ports.
+      local_actions << { :output => OFPP_LOCAL }
+
+      network_md = md_create(:network => @id)
 
       flows = []
       flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
-                           md_network(:network),
+                           network_md,
                            local_actions,
                            flow_options.merge(:goto_table => TABLE_FLOOD_ROUTE))
-      flows << Flow.create(TABLE_FLOOD_ROUTE, 1,
-                           md_network(:network),
-                           remote_actions,
-                           flow_options)
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
   end

@@ -42,11 +42,11 @@ module Vnet::Openflow
       when :physical_local
         table = TABLE_PHYSICAL_DST
         priority = 70
-        match = match.merge(params[:network].md_network(:network))
+        match = match.merge(md_create(:network => params[:network_id]))
       when :virtual_local
         table = TABLE_VIRTUAL_DST
         priority = 70
-        match = match.merge(params[:network].md_network(:network))
+        match = match.merge(md_create(:network => params[:network_id]))
       else
         raise "Wrong type for catch_flow."
       end
@@ -215,14 +215,14 @@ module Vnet::Openflow
       }
 
       if params[:in_port]
-        packet_params[:datapath_id] = @datapath.dpid
+        packet_params[:datapath_id] = @dp_info.dpid
         packet_params[:buffer_id] = OFP_NO_BUFFER
         packet_params[:match] = Trema::Match.new(:in_port => params[:in_port])
       end
 
       message = Trema::Messages::PacketIn.new(packet_params)
 
-      @datapath.send_packet_out(message, params[:out_port])
+      @dp_info.send_packet_out(message, params[:out_port])
     end
 
     def packet_udp_in(message)
@@ -262,7 +262,7 @@ module Vnet::Openflow
 
       message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
 
-      @datapath.send_packet_out(message, params[:out_port])
+      @dp_info.send_packet_out(message, params[:out_port])
     end
 
     def icmpv4_in(message)
@@ -319,7 +319,7 @@ module Vnet::Openflow
 
       message = Trema::Messages::PacketIn.new({:data => raw_out.pack.ljust(64, '\0').unpack('C*')})
 
-      @datapath.send_packet_out(message, params[:out_port])
+      @dp_info.send_packet_out(message, params[:out_port])
     end
 
   end

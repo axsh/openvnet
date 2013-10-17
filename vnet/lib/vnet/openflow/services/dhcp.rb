@@ -20,11 +20,11 @@ module Vnet::Openflow::Services
                            cookie: self.cookie)
 
       # This should handled by events.
-      interface = @datapath.interface_manager.item(id: @interface_id,
-                                                   dynamic_load: false)
+      interface = @dp_info.interface_manager.item(id: @interface_id,
+                                                  dynamic_load: false)
       return if interface.nil?
 
-      interface.mac_addresses.each { |mac_address, mac_info|
+      interface.mac_addresses.each { |mac_lease_id, mac_info|
         mac_info[:ipv4_addresses].each { |ipv4_info|
           flows << flow_create(:catch_flood_simulated,
                                match: {
@@ -40,7 +40,7 @@ module Vnet::Openflow::Services
         }
       }
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def packet_in(message)
@@ -102,11 +102,11 @@ module Vnet::Openflow::Services
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
     end
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
-      interface = @datapath.interface_manager.item(port_number: port_number)
+      interface = @dp_info.interface_manager.item(port_number: port_number)
       return [] if interface.nil?
 
       client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])

@@ -22,21 +22,33 @@ describe "/mac_leases" do
   end
 
   describe "POST /" do
+    let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+
     accepted_params = {
       :uuid => "ml-test",
+<<<<<<< HEAD
       :vif_uuid => "vif-uuid0",
       :mac_address => "00:21:cc:da:e9:cc"
     }
     required_params = [:mac_address,:vif_uuid]
     uuid_params = [:uuid]
+=======
+      :interface_uuid => "if-test",
+      :mac_address => "00:21:cc:da:e9:cc"
+    }
+    required_params = [:interface_uuid, :mac_address]
+    uuid_params = [:uuid, :interface_uuid]
+>>>>>>> master
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
-  describe "PUT /:uuid" do
-    accepted_params = { :mac_address => "00:21:cc:da:e9:ff" }
+  #describe "PUT /:uuid" do
+  #  accepted_params = {
+  #    :interface_uuid => "if-test",
+  #    :mac_address => "00:21:cc:da:e9:ff"
+  #  }
 
-    include_examples "PUT /:uuid", accepted_params
-  end
-
+  #  include_examples "PUT /:uuid", accepted_params
+  #end
 end

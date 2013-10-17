@@ -9,6 +9,12 @@ module Vnet::Openflow
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable
 
+    #
+    # Events:
+    #
+    subscribe_event :added_network # TODO Check if needed.
+    subscribe_event :removed_network # TODO Check if needed.
+
     def networks(params = {})
       @items.select { |key,nw|
         result = true
@@ -18,58 +24,46 @@ module Vnet::Openflow
       }
     end
 
-    def update_all_flows
-      @items.dup.each { |key,network|
-        debug log_format('updating flows for', "uuid:#{network.uuid}")
-        network.update_flows
-      }
+    #
+    # Interfaces:
+    #
+
+    def update_interface(params)
+      case params[:event]
+      when :remove_all
+        @items.each { |id, item| item.remove_interface(params) }
+        return nil
+      when :update_all
+        # @items.each { |id, item| item.update_interface(params) }
+        return nil
+      end
+
+      item = item_by_params(params)
+
+      return nil if item.nil?
+      return nil if params[:interface_id].nil?
+
+      case params[:event]
+      when :insert then item.insert_interface(params)
+      when :remove then item.remove_interface(params)
+      when :update then item.update_interface(params)
+      end
+
+      #   if network.ports.empty?
+      #   end
+
       nil
     end
 
-    # Handle this internally.
-    def remove(network_id)
-      network = @items.delete(network_id)
+    #
+    # Obsolete:
+    #
 
-      if network.nil?
-        info log_format('could not find network to remove', "id:#{network_id}")
-        return
-      end
-
-      if !network.ports.empty?
-        info log_format('network still has active ports, and can\'t be removed',
-                        "network:#{network.uuid}/#{network.id}")
-        return
-      end
-
-      network.uninstall
-
-      @datapath.dc_segment_manager.async.remove_network_id(network_id)
-    end
-
-    def add_port(params)
-      network = item_by_params(params)
-      return nil if network.nil?
-
-      network.add_port(port_number: params[:port_number],
-                       port_mode: params[:port_mode])
-      item_to_hash(network)
-    end
-
-    def del_port_number(network_id, port_number)
-      network = @items[network_id]
-      return nil if network.nil?
-
-      network.del_port_number(port_number)
-
-      if network.ports.empty?
-        remove(network)
-        @datapath.tunnel_manager.delete_tunnel_port(network_id, @dpid)
-
-        dispatch_event("network/deleted",
-                       network_id: network_id,
-                       dpid: @dpid)
-      end
-      
+    def update_all_flows
+      @items.dup.each { |key,network|
+        debug log_format("updating flows for #{network.uuid}/#{network.id}")
+        network.update_flows
+      }
       nil
     end
 
@@ -80,13 +74,27 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+
+      # Clean up use of this parameter.
+      return false if params[:network_type] && params[:network_type] != item.network_type
+      return false if params[:network_mode] && params[:network_mode] != item.network_type
+      true
     end
 
     def network_initialize(mode, item_map)
       case mode
-      when :physical then Networks::Physical.new(@datapath, item_map)
-      when :virtual then Networks::Virtual.new(@datapath, item_map)
+      when :physical then Networks::Physical.new(@dp_info, item_map)
+      when :virtual then Networks::Virtual.new(@dp_info, item_map)
       else
         error log_format('unknown network type',
                          "network_type:#{item_map.network_mode}")
@@ -102,9 +110,9 @@ module Vnet::Openflow
 
     def create_item(item_map, params)
       network = network_initialize(item_map.network_mode.to_sym, item_map)
-      @items[network.network_id] = network
+      @items[network.id] = network
 
-      dp_map = @datapath.datapath_map
+      dp_map = @dp_info.datapath.datapath_map
 
       if dp_map.nil?
         error log_format('datapath information not found in database')
@@ -118,19 +126,50 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
+      # TODO: Refactor this to only take the network id, and use that
+      # to populate service manager.
       item_map.batch.network_services.commit.each { |service_map|
-        @datapath.service_manager.item(:id => service_map.id)
+        @dp_info.service_manager.item(:id => service_map.id)
       }
 
-      @datapath.dc_segment_manager.async.prepare_network(item_map, dp_map)
-      @datapath.tunnel_manager.async.prepare_network(item_map, dp_map)
-      @datapath.route_manager.async.prepare_network(item_map, dp_map)
+      @dp_info.dc_segment_manager.async.prepare_network(item_map, dp_map)
+      @dp_info.tunnel_manager.async.prepare_network(item_map, dp_map)
+      @dp_info.route_manager.async.prepare_network(item_map, dp_map)
 
       dispatch_event("network/added",
-                     network_id: network.network_id,
+                     network_id: network.id,
                      dpid: @dpid)
       network
     end
+
+    def delete_item(item)
+      if_port = item.interfaces.detect { |id, interface|
+        interface.port_number
+      }
+
+      if if_port
+        info log_format('network still has active ports, and can\'t be removed',
+                        "#{network.uuid}/#{network.id}")
+        return item
+      end
+
+      @items.delete(item.network_id)
+
+      item.uninstall
+
+      @dp_info.dc_segment_manager.async.remove_network_id(item.id)
+      @dp_info.tunnel_manager.async.delete_tunnel_port(item.id, @dpid)
+
+      dispatch_event("network/deleted",
+                     id: item.id,
+                     dpid: @dpid)
+
+      item
+    end
+
+    #
+    # Event handlers:
+    #
 
   end
 

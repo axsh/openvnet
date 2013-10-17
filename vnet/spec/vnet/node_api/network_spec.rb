@@ -15,7 +15,7 @@ describe Vnet::NodeApi::Network do
           ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
         end
       end
-      ret = Vnet::NodeApi::Network.all
+      ret = Vnet::NodeApi::Network.execute(:all)
       expect(ret).to be_a Array
       expect(ret.size).to eq 3
       ret.each {|r| expect(r[:uuid]).to be_start_with "nw-"}
@@ -29,7 +29,7 @@ describe Vnet::NodeApi::Network do
 
     it "successfully" do
       network = Fabricate(:network)
-      ret = Vnet::NodeApi::Network[network.canonical_uuid]
+      ret = Vnet::NodeApi::Network.execute(:[], network.canonical_uuid)
       expect(ret).to be_a Hash
       expect(ret[:uuid]).to eq network.canonical_uuid
     end

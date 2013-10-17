@@ -53,30 +53,15 @@ module Vnet::Openflow
           metadata = metadata | METADATA_FLAG_TUNNEL
           metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
         when :vif
-          metadata = metadata | METADATA_FLAG_VIF
-          metadata_mask = metadata_mask | METADATA_FLAG_VIF
+          # Disable the vif flag until we actually need it.
+          # metadata = metadata | METADATA_FLAG_VIF
+          # metadata_mask = metadata_mask | METADATA_FLAG_VIF
         else
           raise("Unknown metadata type: #{key.inspect}")
         end
       }
 
       { :metadata => metadata, :metadata_mask => metadata_mask }
-    end
-
-    def md_network(type, append = nil)
-      if append
-        md_create(append.merge(type => self.network_id))
-      else
-        md_create(type => self.network_id)
-      end
-    end
-
-    def md_port(append = nil)
-      if append
-        md_create(append.merge(:port => self.port_number))
-      else
-        md_create(:port => self.port_number)
-      end
     end
 
     def md_has_flag(flag, value, mask = nil)

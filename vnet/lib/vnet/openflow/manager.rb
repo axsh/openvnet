@@ -4,21 +4,61 @@ module Vnet::Openflow
 
   class Manager
     include Celluloid
+    include Celluloid::Notifications
     include Celluloid::Logger
     include FlowHelpers
+    include Vnet::Event
 
-    def initialize(dp)
-      @datapath = dp
+    class << self
+      def events
+        @events ||= {}
+      end
+
+      def subscribe_event(event, method = nil, &bloc)
+        self.events[event] = method
+      end
+    end
+
+    def initialize(dp_info)
+      @dp_info = dp_info
+
       @datapath_id = nil
       @items = {}
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
+      subscribe_events
     end
 
     def item(params)
       item_to_hash(item_by_params(params))
     end
+
+    def unload(params)
+      item = internal_detect(params)
+      return nil if item.nil?
+
+      item_hash = item_to_hash(item)
+      delete_item(item)
+      item_hash
+    end
+
+    #
+    # Enumerator methods:
+    #
+
+    def detect(params)
+      item_to_hash(internal_detect(params))
+    end
+
+    def select(params)
+      @items.select { |id, item|
+        match_item?(item, params)
+      }.map { |id, item|
+        item_to_hash(item)
+      }
+    end
+
+    #
+    # Other:
+    #
 
     def packet_in(message)
       item = @items[message.cookie & COOKIE_ID_MASK]
@@ -37,11 +77,33 @@ module Vnet::Openflow
       # our datapath.
     end
 
+    def handle_event(event, params)
+      debug log_format("handle event #{event}", "#{params.inspect}")
+
+      item = @items[params[:target_id]]
+      handler = self.class.events[event]
+      if item && handler
+        __send__(handler, item, params)
+      end
+
+      return nil
+    end
     #
     # Internal methods:
     #
 
     private
+
+    #
+    # Item-related methods:
+    #
+
+    # Override this method to support additional parameters.
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      true
+    end
 
     def item_to_hash(item)
       item && item.to_hash
@@ -49,7 +111,7 @@ module Vnet::Openflow
 
     def item_by_params(params)
       if params[:reinitialize] != true
-        item = item_by_params_direct(params)
+        item = internal_detect(params)
 
         if item || params[:dynamic_load] == false
           return item
@@ -92,23 +154,6 @@ module Vnet::Openflow
       create_item(item_map, params)
     end
 
-    def item_by_params_direct(params)
-      case
-      when params[:id] then return @items[params[:id]]
-      when params[:uuid]
-        uuid = params[:uuid]
-        item = @items.detect { |id, item| item.uuid == uuid }
-        return item && item[1]
-      when params[:display_name] && params[:owner_datapath_id]
-        display_name = params[:display_name]
-        owner_datapath_id = params[:owner_datapath_id]
-        item = @items.detect { |id, item| item.display_name == display_name && item.owner_datapath_ids.include?(owner_datapath_id) }
-        return item && item[1]
-      else
-        raise("Missing item id/uuid parameter. #{params}")
-      end
-    end
-
     def select_filter_from_params(params)
       case
       when params[:id]   then {:id => params[:id]}
@@ -119,6 +164,37 @@ module Vnet::Openflow
         # Any invalid params that should cause an exception needs to
         # be caught by the item_by_params_direct method.
         return nil
+      end
+    end
+
+    def subscribe_events
+      self.class.events.each do |event, method|
+        # FIXME
+        # We should raise error if Celluloid::Notifications is not working.
+        # If you know how to start notifier actor correctly in rspec, remove 'begin ~ rescue' clouse.
+        begin
+          subscribe(event, :handle_event)
+        rescue Celluloid::DeadActorError => e
+          error e.message
+          error e.backtrace
+        end
+      end
+    end
+
+    #
+    # Internal enumerators:
+    #
+
+    def internal_detect(params)
+      if params.size == 1 && params.first.first == :id
+        item = @items[params.first.last]
+        item = nil if item && !match_item?(item, params)
+        item
+      else
+        item = @items.detect { |id, item|
+          match_item?(item, params)
+        }
+        item = item && item.last
       end
     end
 

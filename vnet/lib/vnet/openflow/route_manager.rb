@@ -16,7 +16,7 @@ module Vnet::Openflow
       @dpid_s = "0x%016x" % @datapath.dpid
 
       @route_links = {}
-      @vifs = {}
+      @interfaces = {}
     end
 
     def insert(route_map)
@@ -25,15 +25,15 @@ module Vnet::Openflow
       return if route_link.nil?
       return if route_link[:routes].has_key? route_map.id
 
-      info log_format('insert', "id:#{route_map.id} uuid:#{route_map.uuid} vif_id:#{route_map.interface_id}")
-      info log_format('insert', "route.route_type:#{route_map.route_type}")
-      info log_format('insert', "route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}")
+      info log_format("insert #{route_map.uuid}/#{route_map.id}", "interface_id:#{route_map.interface_id}")
+      # info log_format('insert', "route.route_type:#{route_map.route_type}")
+      # info log_format('insert', "route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}")
 
       route = {
         :id => route_map.id,
         :uuid => route_map.uuid,
-        :vif => nil,
-        :ipv4_address => IPAddr.new(route_map.ipv4_address, Socket::AF_INET),
+        :interface => nil,
+        :ipv4_address => IPAddr.new(route_map.ipv4_network, Socket::AF_INET),
         :ipv4_prefix => route_map.ipv4_prefix,
         :ingress => route_map.ingress,
         :egress => route_map.egress,
@@ -41,10 +41,10 @@ module Vnet::Openflow
 
       route_link[:routes][route[:id]] = route
 
-      route[:vif] = prepare_interface(route_map.interface_id)
+      route[:interface] = prepare_interface(route_map.interface_id)
 
-      if route[:vif].nil?
-        warn log_format('couldn\'t prepare router vif', "#{route_map.uuid}")
+      if route[:interface].nil?
+        warn log_format('couldn\'t prepare router interface', "#{route_map.uuid}")
         return
       end
 
@@ -54,7 +54,7 @@ module Vnet::Openflow
     def prepare_network(network_map, dp_map)
       network_map.batch.routes.commit(ROUTE_COMMIT).each { |route_map|
         if !@route_links.has_key?(route_map.route_link.id)
-          route_map.batch.on_other_networks.commit(ROUTE_COMMIT).each { |other_route_map|
+          route_map.batch.on_other_networks(network_map.id).commit(ROUTE_COMMIT).each { |other_route_map|
             # Replace with a lightweight methods.
             self.insert(other_route_map)
           }
@@ -192,20 +192,20 @@ module Vnet::Openflow
     end
 
     def prepare_interface(interface_id)
-      interface = @datapath.interface_manager.item(id: interface_id)
-      return nil if interface.nil?
+      interface_item = @datapath.interface_manager.item(id: interface_id)
+      return nil if interface_item.nil?
 
-      info log_format('from interface_manager' , "#{interface.uuid}/#{interface_id}")
+      info log_format('from interface_manager' , "#{interface_item.uuid}/#{interface_id}")
 
-      vif = interface && @vifs[interface.id]
-      return vif if vif
+      interface = interface_item && @interfaces[interface_item.id]
+      return interface if interface
 
-      if interface.mode != :simulated && interface.mode != :remote
-        info log_format('only vifs with mode \'simulated\' are supported', "uuid:#{interface.uuid} mode:#{interface.mode}")
+      if interface_item.mode != :simulated && interface_item.mode != :remote
+        info log_format('only interfaces with mode \'simulated\' are supported', "uuid:#{interface_item.uuid} mode:#{interface_item.mode}")
         return
       end
 
-      mac_info = interface.mac_addresses.first
+      mac_info = interface_item.mac_addresses.first
 
       if mac_info.nil? ||
           mac_info[1][:ipv4_addresses].first.nil?
@@ -215,12 +215,12 @@ module Vnet::Openflow
 
       ipv4_info = mac_info[1][:ipv4_addresses].first
 
-      vif = {
-        :id => interface.id,
+      interface = {
+        :id => interface_item.id,
         :use_datapath_id => nil,
 
-        :mac_address => mac_info[0],
-        :mode => interface.mode,
+        :mac_address => mac_info[1][:mac_address],
+        :mode => interface_item.mode,
 
         :network_id => ipv4_info[:network_id],
         :ipv4_address => ipv4_info[:ipv4_address],
@@ -228,39 +228,38 @@ module Vnet::Openflow
 
       case ipv4_info[:network_type]
       when :physical
-        vif[:require_vif] = false
-        vif[:network_type] = :physical_network
+        interface[:require_interface] = false
+        interface[:network_type] = :physical_network
       when :virtual
-        vif[:require_vif] = true
-        vif[:network_type] = :virtual_network
+        interface[:require_interface] = true
+        interface[:network_type] = :virtual_network
       else
-        warn log_format('vif does not have a known network type', "#{interface.uuid}")
+        warn log_format('interface does not have a known network type', "#{interface_item.uuid}")
         return nil
       end
 
-      @vifs[interface.id] = vif
+      @interfaces[interface_item.id] = interface
 
-      if interface.mode == :remote
-        vif[:use_datapath_id] = interface.owner_datapath_ids && interface.owner_datapath_ids.first
+      if interface_item.mode == :remote
+        interface[:use_datapath_id] = interface_item.owner_datapath_ids && interface_item.owner_datapath_ids.first
 
-        return vif
+        return interface
       end
 
       datapath_id = @datapath.datapath_map.id
 
       # Fix this...
-      if interface.owner_datapath_ids
-        if interface.owner_datapath_ids.include? datapath_id
-          @datapath.interface_manager.update_active_datapaths(id: interface.id,
+      if interface_item.owner_datapath_ids
+        if interface_item.owner_datapath_ids.include? datapath_id
+          @datapath.interface_manager.update_active_datapaths(id: interface_item.id,
                                                               datapath_id: datapath_id)
         else
-          vif[:use_datapath_id] = interface.owner_datapath_ids.first
+          interface[:use_datapath_id] = interface_item.owner_datapath_ids.first
         end
       end
+      create_interface_flows(interface) if interface[:use_datapath_id].nil?
 
-      create_vif_flows(vif) if vif[:use_datapath_id].nil?
-
-      vif
+      interface
     end
 
     def create_route_flows(route_link, route)
@@ -278,22 +277,22 @@ module Vnet::Openflow
       subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
       subnet_src = match_ipv4_subnet_src(route[:ipv4_address], route[:ipv4_prefix])
 
-      if route[:vif][:use_datapath_id].nil?
-        network_md = md_create(network: route[:vif][:network_id])
+      if route[:interface][:use_datapath_id].nil?
+        network_md = md_create(network: route[:interface][:network_id])
 
         rl_reflection_md = md_create({ :route_link => route_link[:id],
                                        :reflection => nil
                                      })
 
         flows << Flow.create(TABLE_CONTROLLER_PORT, priority,
-                             subnet_dst.merge(:eth_src => route[:vif][:mac_address]),
+                             subnet_dst.merge(:eth_src => route[:interface][:mac_address]),
                              nil,
                              network_md.merge(cookie: cookie,
                                               goto_table: TABLE_ROUTER_DST))
 
         if route[:ingress] == true
           flows << Flow.create(TABLE_ROUTER_INGRESS, priority,
-                               network_md.merge(subnet_src).merge(:eth_dst => route[:vif][:mac_address]),
+                               network_md.merge(subnet_src).merge(:eth_dst => route[:interface][:mac_address]),
                                nil,
                                rl_reflection_md.merge({ :cookie => cookie,
                                                         :goto_table => TABLE_ROUTER_EGRESS
@@ -303,7 +302,7 @@ module Vnet::Openflow
         if route[:egress] == true
           flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
                                route_link_md.merge(subnet_dst), {
-                                 :eth_src => route[:vif][:mac_address]
+                                 :eth_src => route[:interface][:mac_address]
                                },
                                network_md.merge({ :cookie => cookie,
                                                   :goto_table => TABLE_ROUTER_DST
@@ -315,7 +314,7 @@ module Vnet::Openflow
         @datapath.add_flows(flows)
 
       else
-        datapath_md = md_create(:datapath => route[:vif][:use_datapath_id])
+        datapath_md = md_create(:datapath => route[:interface][:use_datapath_id])
 
         if route[:egress] == true
           flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
@@ -331,42 +330,42 @@ module Vnet::Openflow
       end
     end
 
-    def create_vif_flows(vif)
-      cookie = vif[:id] | (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
-      network_md = md_create(:network => vif[:network_id])
+    def create_interface_flows(interface)
+      cookie = interface[:id] | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
+      network_md = md_create(:network => interface[:network_id])
 
       goto_table = TABLE_NETWORK_DST_CLASSIFIER
-      controller_md = md_create({ :network => vif[:network_id],
+      controller_md = md_create({ :network => interface[:network_id],
                                   :no_controller => nil
                                 })
 
       flows = []
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 40,
-                           network_md.merge({ :eth_dst => vif[:mac_address],
+                           network_md.merge({ :eth_dst => interface[:mac_address],
                                               :eth_type => 0x0800,
-                                              :ipv4_dst => vif[:ipv4_address]
+                                              :ipv4_dst => interface[:ipv4_address]
                                             }),
                            nil, {
                              :cookie => cookie,
                              :goto_table => goto_table
                            })
       flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
-                             :eth_dst => vif[:mac_address],
+                             :eth_dst => interface[:mac_address],
                              :eth_type => 0x0800,
-                             :ipv4_dst => vif[:ipv4_address]
+                             :ipv4_dst => interface[:ipv4_address]
                            },
                            nil,
                            network_md.merge(cookie: cookie,
                                             goto_table: TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
-                             :eth_dst => vif[:mac_address],
+                             :eth_dst => interface[:mac_address],
                              :eth_type => 0x0806
                            },
                            nil,
                            network_md.merge(cookie: cookie,
                                             goto_table: TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 30,
-                           network_md.merge({ :eth_dst => vif[:mac_address],
+                           network_md.merge({ :eth_dst => interface[:mac_address],
                                               :eth_type => 0x0800
                                             }),
                            nil, {
