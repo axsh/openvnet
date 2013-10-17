@@ -26,19 +26,11 @@ describe "/mac_leases" do
 
     accepted_params = {
       :uuid => "ml-test",
-<<<<<<< HEAD
-      :vif_uuid => "vif-uuid0",
-      :mac_address => "00:21:cc:da:e9:cc"
-    }
-    required_params = [:mac_address,:vif_uuid]
-    uuid_params = [:uuid]
-=======
       :interface_uuid => "if-test",
       :mac_address => "00:21:cc:da:e9:cc"
     }
     required_params = [:interface_uuid, :mac_address]
     uuid_params = [:uuid, :interface_uuid]
->>>>>>> master
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end

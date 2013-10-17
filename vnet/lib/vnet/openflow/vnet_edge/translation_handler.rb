@@ -44,7 +44,7 @@ module Vnet::Openflow::VnetEdge
 
       debug log_format('handle_packet_from_host_port : [src_mac]', src_mac)
       debug log_format('handle_packet_from_host_port : [src_mac.value]', src_mac.value)
-      src_network_id = @datapath.interface_manager.network_id_by_mac(src_mac.value)
+      src_network_id = @datapath.network_manager.network_id_by_mac(src_mac.value)
 
       return if src_network_id.nil?
 
@@ -94,12 +94,14 @@ module Vnet::Openflow::VnetEdge
 
       if dst_mac.broadcast?
         md = md_create(:network => network_id)
-        flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=ff:ff:ff:ff:ff:ff,metadata=0x%x/0x%x,actions=write_metadata:0x%x/0x%x,goto_table:#{TABLE_ROUTER_CLASSIFIER}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK, md[:metadata], md[:metadata_mask] ]
+        flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=ff:ff:ff:ff:ff:ff,metadata=0x%x/0x%x,actions=write_metadata:0x%x/0x%x,goto_table:#{TABLE_VIRTUAL_DST}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK, md[:metadata], md[:metadata_mask] ]
       end
 
       flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=mod_vlan_vid:#{vlan_vid},output:2" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
 
       flows.each { |flow| @datapath.add_ovs_flow(flow) }
+
+      network = @datapath.network_manager.item(id: network_id)
     end
 
     def log_format(message, values = nil)

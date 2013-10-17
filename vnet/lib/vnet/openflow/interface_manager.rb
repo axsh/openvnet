@@ -40,11 +40,6 @@ module Vnet::Openflow
       interface.get_ipv4_address(params)
     end
 
-    def network_id_by_mac(mac_address)
-      interfaces_map = MW::Interface.batch.find({:mac_address => mac_address}).commit
-      return interfaces_map && interfaces_map.network_id
-    end
-
     #
     # Internal methods:
     #
