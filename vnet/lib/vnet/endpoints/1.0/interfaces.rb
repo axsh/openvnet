@@ -8,7 +8,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     "ipv4_address",
     "mac_address",
     "owner_datapath_uuid",
+    "display_name",
     "mode",
+    "display_name",
   ]
 
   fill = [:owner_datapath, :network, {:ip_leases => {:ip_address => :network}}, {:mac_leases => :mac_address}]

@@ -57,4 +57,11 @@ describe Vnet::Models::Network do
 
     it { expect(subject.map(&:canonical_uuid)).to eq [ "ns-1", "ns-2", "ns-3" ] }
   end
+
+  describe "find_by_mac_address" do
+    it { expect(Vnet::Models::Network.find_by_mac_address(0)).to eq network1 }
+    it { expect(Vnet::Models::Network.find_by_mac_address(2)).to eq network1 }
+    it { expect(Vnet::Models::Network.find_by_mac_address(4)).to eq network1 }
+    it { expect(Vnet::Models::Network.find_by_mac_address(6)).to eq network2 }
+  end
 end

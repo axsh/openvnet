@@ -35,6 +35,22 @@ module Vnet::Models
       ).select_all(:routes).alives
     end
 
+    def self.find_by_mac_address(mac_address)
+      dataset.join_table(
+        :left, :ip_addresses,
+        {ip_addresses__network_id: :networks__id}
+      ).join_table(
+        :inner, :ip_leases,
+        {ip_leases__ip_address_id: :ip_addresses__id}
+      ).join_table(
+        :inner, :mac_leases,
+        {ip_leases__mac_lease_id: :mac_leases__id}
+      ).join_table(
+        :inner, :mac_addresses,
+        {mac_addresses__id: :mac_leases__mac_address_id}
+      ).where(mac_addresses__mac_address: mac_address).select_all(:networks).alives.first
+    end
+
     subset(:alives, {})
   end
 end
