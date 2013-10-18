@@ -14,6 +14,18 @@ module Vnet::Openflow
     subscribe_event LeasedMacAddress, :leased_mac_address
     subscribe_event ReleasedMacAddress, :released_mac_address
 
+    def update_item(params)
+      item = item_by_params(params)
+      return nil if item.nil?
+
+      case params[:event]
+      # Reconsider this...
+      when :active_datapath_id then item.update_active_datapath(params)
+      end
+
+      nil
+    end
+
     # Deprecate this...
     def get_ipv4_address(params)
       interface = internal_detect(params)
