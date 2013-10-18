@@ -17,6 +17,10 @@ describe "/mac_leases" do
   include_examples "GET /:uuid"
   include_examples "DELETE /:uuid"
 
+  before do
+    Fabricate(:interface)
+  end
+
   describe "POST /" do
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
 

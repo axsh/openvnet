@@ -108,7 +108,21 @@ module Vnet::Openflow
     def prepare_port_eth(port, port_desc)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
-      port.extend(Ports::Host)
+      params = {
+        :owner_datapath_id => @dp_info.datapath.datapath_map.id,
+        :display_name => port_desc.name,
+        :reinitialize => true
+      }
+
+      interface = @dp_info.interface_manager.item(params)
+
+      if interface.nil?
+        port.extend(Ports::Host)
+      else
+        port.extend(Ports::Generic)
+        @dp_info.translation_manager.async.add_edge_port(port: port, interface: interface)
+      end
+
       port.install
     end
 

@@ -26,6 +26,7 @@ module Vnet::Openflow
     attr_reader :route_manager
     attr_reader :service_manager
     attr_reader :tunnel_manager
+    attr_reader :translation_manager
 
     def initialize(params)
       @dpid = params[:dpid]
@@ -127,6 +128,7 @@ module Vnet::Openflow
       @route_manager = RouteManager.new(@datapath)
       @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(self)
+      @translation_manager = TranslationManager.new(self) 
     end
 
   end

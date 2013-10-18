@@ -29,6 +29,7 @@ module Vnet::Openflow::Interfaces
     attr_accessor :port_name
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
+    attr_accessor :display_name
 
     attr_reader :port_number
 
@@ -42,6 +43,8 @@ module Vnet::Openflow::Interfaces
       @uuid = map.uuid
       @mode = map.mode.to_sym
       @port_name = map.port_name
+
+      @display_name = map.display_name
 
       @mac_addresses = {}
 
@@ -66,7 +69,7 @@ module Vnet::Openflow::Interfaces
         @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
       end
     end
-    
+
     def cookie(type = 0, value = 0)
       unless type & 0xf == type
         raise "Invalid cookie optional type: %#x" % type
@@ -108,6 +111,7 @@ module Vnet::Openflow::Interfaces
                                     uuid: @uuid,
                                     mode: @mode,
                                     port_number: @port_number,
+                                    display_name: @display_name,
                                     mac_addresses: @mac_addresses,
 
                                     active_datapath_ids: @active_datapath_ids,

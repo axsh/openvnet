@@ -57,6 +57,7 @@ module Vnet
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
@@ -72,6 +73,7 @@ module Vnet
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :VlanTranslationCollection, 'vnet/endpoints/1.0/responses/vlan_translation'
       end
     end
   end
@@ -100,6 +102,7 @@ module Vnet
     autoload :SecurityGroup, 'vnet/models/security_group'
     autoload :Taggable, 'vnet/models/base'
     autoload :Tunnel, 'vnet/models/tunnel'
+    autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
 
   module ModelWrappers
@@ -121,6 +124,7 @@ module Vnet
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
+    autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
 
   autoload :NodeApi, 'vnet/node_api'
@@ -143,6 +147,7 @@ module Vnet
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :SecurityGroup, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
+    autoload :VlanTranslation, 'vnet/node_api/models.rb'
   end
 
   module NodeModules
@@ -179,6 +184,7 @@ module Vnet
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
+    autoload :TranslationManager, 'vnet/openflow/translation_manager'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
 
     module Datapaths
@@ -190,6 +196,7 @@ module Vnet
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
       autoload :Remote, 'vnet/openflow/interfaces/remote'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
+      autoload :Edge, 'vnet/openflow/interfaces/edge'
     end
 
     module Networks
@@ -200,6 +207,7 @@ module Vnet
 
     module Ports
       autoload :Base, 'vnet/openflow/ports/base'
+      autoload :Generic, 'vnet/openflow/ports/generic'
       autoload :Host, 'vnet/openflow/ports/host'
       autoload :Local, 'vnet/openflow/ports/local'
       autoload :Tunnel, 'vnet/openflow/ports/tunnel'
@@ -218,6 +226,10 @@ module Vnet
 
     module Tunnels
       autoload :Base, 'vnet/openflow/tunnels/base'
+    end
+
+    module VnetEdge
+      autoload :TranslationHandler, 'vnet/openflow/vnet_edge/translation_handler'
     end
 
   end

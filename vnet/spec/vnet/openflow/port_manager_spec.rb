@@ -50,7 +50,7 @@ describe Vnet::Openflow::PortManager do
 
         port_desc = double(:port_desc)
         port_desc.should_receive(:port_no).exactly(3).times.and_return(1)
-        port_desc.should_receive(:name)
+        port_desc.should_receive(:name).twice
         port_desc.should_receive(:hw_addr)
         port_desc.should_receive(:advertised).and_return(1)
         port_desc.should_receive(:supported).and_return(1)

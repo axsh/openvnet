@@ -21,11 +21,13 @@ module Vnet::Openflow::Ports
                                           :mac2mac => nil
                                         })
 
+      goto_table_on_table_classifier = @dp_info.datapath.datapath_map.node_id == 'edge' ? TABLE_EDGE_SRC : TABLE_HOST_PORTS
+
       flows = []
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => self.port_number
                            }, nil,
-                           set_remote_md.merge(:goto_table => TABLE_HOST_PORTS))
+                           set_remote_md.merge(:goto_table => goto_table_on_table_classifier))
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
                            }, nil,

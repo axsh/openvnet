@@ -10,6 +10,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     "port_name",
     "owner_datapath_uuid",
     "mode",
+    "display_name",
   ]
 
   fill = [:owner_datapath, :network, {:ip_leases => {:ip_address => :network}}, {:mac_leases => :mac_address}]

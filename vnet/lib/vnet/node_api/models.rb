@@ -42,4 +42,7 @@ module Vnet::NodeApi
 
   class Tunnel < Base
   end
+
+  class VlanTranslation < Base
+  end
 end
