@@ -6,11 +6,11 @@ module Vnet::Openflow
     include FlowHelpers
     include Vnet::Event::Dispatchable
 
-    def initialize(dp)
-      @datapath = dp
-      @dpid_s = "0x%016x" % @datapath.dpid
+    def initialize(dp_info)
+      @dp_info = dp_info
+      @dpid_s = "0x%016x" % @dp_info.dpid
 
-      @datapath.packet_manager.insert(VnetEdge::TranslationHandler.new(datapath: @datapath), nil, (COOKIE_PREFIX_VNETEDGE << COOKIE_PREFIX_SHIFT))
+      @dp_info.packet_manager.insert(VnetEdge::TranslationHandler.new(dp_info: @dp_info), nil, (COOKIE_PREFIX_VNETEDGE << COOKIE_PREFIX_SHIFT))
 
       @edge_ports = []
 
