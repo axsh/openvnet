@@ -41,6 +41,7 @@ describe Vnet::Openflow::PortManager do
 
       it "creates an object of Models::Interface for eth0" do
         nm = double(:network_manager)
+        nm.should_receive(:set_datapath_info)
         Vnet::Openflow::NetworkManager.stub(:new).and_return(nm)
 
         ofc = double(:ofc)
@@ -85,6 +86,7 @@ describe Vnet::Openflow::PortManager do
 
       it "creates an instance of interface when the switch receives port_status" do
         nm = double(:network_manager)
+        nm.should_receive(:set_datapath_info)
         Vnet::Openflow::NetworkManager.stub(:new).and_return(nm)
 
         ofc = double(:ofc)
