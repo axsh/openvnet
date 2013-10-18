@@ -7,24 +7,30 @@ module Vnet::Openflow::Interfaces
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
 
-    TAG_DEFAULT               = 0x0
+    OPTIONAL_TYPE_MASK      = 0xf
+
+    OPTIONAL_TYPE_TAG      = 0x1
+    OPTIONAL_TYPE_IP_LEASE  = 0x2
+    OPTIONAL_TYPE_MAC_LEASE = 0x3
+    OPTIONAL_TYPE_IP_RANGE  = 0x4
+
+    OPTIONAL_VALUE_SHIFT    = 36
+    OPTIONAL_VALUE_MASK    = 0xfffff
+
     TAG_ARP_REQUEST_INTERFACE = 0x1
     TAG_ARP_REQUEST_FLOOD     = 0x2
     TAG_ARP_LOOKUP            = 0x4
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
-    TAG_IP_LEASE              = 0x7
-
-    TAG_SUFFIX_SHIFT = 8
 
     attr_accessor :id
     attr_accessor :uuid
     attr_accessor :mode
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
+    attr_accessor :display_name
 
     attr_reader :port_number
-    attr_reader :mac_address
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -36,8 +42,7 @@ module Vnet::Openflow::Interfaces
       @uuid = map.uuid
       @mode = map.mode.to_sym
 
-      # dirty hack...
-      @mac_address = Trema::Mac.new(map.mac_address)
+      @display_name = map.display_name
 
       @mac_addresses = {}
 
@@ -62,17 +67,30 @@ module Vnet::Openflow::Interfaces
         @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
       end
     end
-    
-    def cookie(tag = TAG_DEFAULT, tag_suffix = 0)
-      value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) | (tag << COOKIE_TAG_SHIFT) | (tag_suffix << COOKIE_TAG_SHIFT + TAG_SUFFIX_SHIFT)
+
+    def cookie(type = 0, value = 0)
+      unless type & 0xf == type
+        raise "Invalid cookie optional type: %#x" % type
+      end
+      unless value & OPTIONAL_VALUE_MASK == value
+        raise "Invalid cookie optional value: %#x" % value
+      end
+      @id |
+        (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) |
+        type << COOKIE_TAG_SHIFT |
+        value << OPTIONAL_VALUE_SHIFT
     end
 
-    def cookie_for_ip_lease(ip_lease_id)
-      cookie(TAG_IP_LEASE, ip_lease_id)
+    def cookie_for_tag(value)
+      cookie(OPTIONAL_TYPE_TAG, value)
     end
 
-    def del_cookie(tag = TAG_DEFAULT, tag_suffix = 0)
-      cookie_value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) | (tag << COOKIE_TAG_SHIFT) | (tag_suffix << COOKIE_TAG_SHIFT + TAG_SUFFIX_SHIFT)
+    def cookie_for_ip_lease(value)
+      cookie(OPTIONAL_TYPE_IP_LEASE, value)
+    end
+
+    def del_cookie(type = 0, value = 0)
+      cookie_value = cookie(type, value)
       cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK
 
       @dp_info.network_manager.async.update_interface(event: :remove_all,
@@ -80,8 +98,8 @@ module Vnet::Openflow::Interfaces
       @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
-    def del_cookie_for_ip_lease(ip_lease_id)
-      del_cookie(TAG_IP_LEASE, ip_lease_id)
+    def del_cookie_for_ip_lease(value)
+      del_cookie(OPTIONAL_TYPE_IP_LEASE, value)
     end
 
     # Update variables by first duplicating to avoid memory
@@ -91,6 +109,7 @@ module Vnet::Openflow::Interfaces
                                     uuid: @uuid,
                                     mode: @mode,
                                     port_number: @port_number,
+                                    display_name: @display_name,
                                     mac_addresses: @mac_addresses,
 
                                     active_datapath_ids: @active_datapath_ids,
@@ -119,13 +138,14 @@ module Vnet::Openflow::Interfaces
     # Manage MAC and IP addresses:
     #
 
-    def add_mac_address(mac_address)
-      return nil if @mac_addresses.has_key? mac_address
+    def add_mac_address(params)
+      debug log_format("add_ipv4_address", params.inspect)
+      return if @mac_addresses[params[:mac_lease_id]]
 
       mac_addresses = @mac_addresses.dup
-      mac_addresses[mac_address] = {
+      mac_addresses[params[:mac_lease_id]] = {
         :ipv4_addresses => [],
-        :mac_address => mac_address,
+        :mac_address => params[:mac_address],
       }
 
       @mac_addresses = mac_addresses
@@ -134,10 +154,26 @@ module Vnet::Openflow::Interfaces
       nil
     end
 
-    def add_ipv4_address(params)
-      mac_info = @mac_addresses[params[:mac_address]]
+    def remove_mac_address(params)
+      debug log_format("remove_mac_address", params.inspect)
 
-      return nil if mac_info.nil?
+      mac_info = @mac_addresses[params[:mac_lease_id]]
+      return unless mac_info
+
+      mac_info[:ipv4_addresses].each do |ipv4_info|
+        remove_ipv4_address(ip_lease_id: ipv4_info[:ip_lease_id])
+      end
+
+      mac_addresses = @mac_addresses.dup
+      mac_addresses.delete(params[:mac_lease_id])
+      @mac_addresses = mac_addresses
+    end
+
+    def add_ipv4_address(params)
+      debug log_format("add_ipv4_address", params.inspect)
+
+      mac_info = @mac_addresses[params[:mac_lease_id]]
+      return unless mac_info
 
       # Check if the address already exists.
 
@@ -157,27 +193,19 @@ module Vnet::Openflow::Interfaces
     end
 
     def remove_ipv4_address(params)
-      mac_info, ipv4_info = get_ipv4_address(params)
+      debug log_format("remove_ipv4_address", params.inspect)
 
-      return nil if mac_info.nil? || ipv4_info.nil?
+      ipv4_info = nil
+      ipv4_addresses = nil
+      mac_info = @mac_addresses.values.find do |m|
+        ipv4_info, ipv4_addresses = m[:ipv4_addresses].partition do |i|
+          i[:ip_lease_id] == params[:ip_lease_id]
+        end
+        ipv4_info = ipv4_info.first
+      end
+      return unless mac_info
 
-      # currently interface have a fixed mac address
-      #if mac_info[:ipv4_addresses].size == 1
-      #  mac_addresses = @mac_addresses.dup
-      #  mac_addresses.delete(mac_info[:mac_address])
-      #  @mac_addresses = mac_addresses
-      #else
-      #  ipv4_addresses = mac_info[:ipv4_addresses].dup
-      #  ipv4_addresses.delete_if { |ipv4| ipv4_info.equal?(ipv4) }
-      #  mac_info[:ipv4_addresses] = ipv4_addresses
-      #end
-      ipv4_addresses = mac_info[:ipv4_addresses].dup
-      ipv4_addresses.delete_if { |ipv4| ipv4_info.equal?(ipv4) }
       mac_info[:ipv4_addresses] = ipv4_addresses
-
-      info mac_info.inspect
-      info ipv4_info.inspect
-      info @mac_addresses.inspect
 
       [mac_info, ipv4_info]
     end
@@ -192,9 +220,6 @@ module Vnet::Openflow::Interfaces
       when params[:network_md]
         network_id = md_to_id(:network, params[:network_md])
         return nil if network_id.nil?
-      when params[:ip_lease_id]
-        ip_lease_id = params[:ip_lease_id]
-        network_id = nil
       else
         network_id = nil
       end
@@ -202,17 +227,16 @@ module Vnet::Openflow::Interfaces
       ipv4_info = nil
       ipv4_address = params[:ipv4_address]
 
-      mac_info = @mac_addresses.detect { |mac_address, mac_info|
+      mac_info = @mac_addresses.values.detect { |mac_info|
         ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
           next false if network_id && ipv4_info[:network_id] != network_id
-          next false if ip_lease_id && ipv4_info[:ip_lease_id] != ip_lease_id
           next true if ipv4_address.nil?
 
           ipv4_info[:ipv4_address] == ipv4_address
         }
       }
 
-      mac_info && [mac_info[1], ipv4_info]
+      mac_info && [mac_info, ipv4_info]
     end
 
     def find_ipv4_and_network(message, ipv4_address)

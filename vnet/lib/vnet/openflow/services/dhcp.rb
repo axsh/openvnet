@@ -24,7 +24,7 @@ module Vnet::Openflow::Services
                                                   dynamic_load: false)
       return if interface.nil?
 
-      interface.mac_addresses.each { |mac_address, mac_info|
+      interface.mac_addresses.each { |mac_lease_id, mac_info|
         mac_info[:ipv4_addresses].each { |ipv4_info|
           flows << flow_create(:catch_flood_simulated,
                                match: {

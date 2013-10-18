@@ -22,7 +22,6 @@ describe "/datapaths" do
     accepted_params = {
       :uuid => "dp-test",
       :display_name => "our test datapath",
-      :ipv4_address => "192.168.50.100",
       :is_connected => false,
       :dpid => "0x0000aaaaaaaaaaaa",
       :node_id => "vna45",
@@ -39,7 +38,6 @@ describe "/datapaths" do
     let!(:new_dc_segment) { Fabricate(:dc_segment) { uuid "ds-newseg" } }
     accepted_params = {
       :display_name => "we changed this name",
-      :ipv4_address => "192.168.2.50",
       :dpid => "0x0000abcdefabcdef",
       :dc_segment_uuid => "ds-newseg",
       :node_id => 'vna45'
@@ -59,8 +57,7 @@ describe "/datapaths" do
   describe "Many to many relation calls for route links" do
     let(:relation_fabricator) { :route_link }
 
-    include_examples "many_to_many_relation", "route_links",
-      {:mac_address => "52:54:00:12:34:30" }
+    include_examples "many_to_many_relation", "route_links", {:mac_address => "02:00:00:cc:00:02"}
   end
 
 end

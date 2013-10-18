@@ -19,7 +19,10 @@ module Vnet::NodeApi
   class IpAddress < Base
   end
 
-  class MacLease < Base
+  class IpLease < Base
+  end
+
+  class MacAddress < Base
   end
 
   class Network < Base
@@ -38,5 +41,8 @@ module Vnet::NodeApi
   end
 
   class Tunnel < Base
+  end
+
+  class VlanTranslation < Base
   end
 end

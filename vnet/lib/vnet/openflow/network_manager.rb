@@ -67,6 +67,13 @@ module Vnet::Openflow
       nil
     end
 
+    def network_id_by_mac(mac_address)
+      network_map = MW::Network.batch.find_by_mac_address(mac_address).commit
+      debug log_format("network_id_by_mac : mac_address => #{Trema::Mac.new(mac_address)}")
+      debug log_format("network_id_by_mac : network_map => #{network_map.inspect}")
+      return network_map && network_map.id
+    end
+
     #
     # Internal methods:
     #
@@ -119,7 +126,7 @@ module Vnet::Openflow
         return network
       end
 
-      dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:id => item_map.id).first.commit
+      dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:network_id => item_map.id).first.commit
 
       network.set_datapath_of_bridge(dp_map, dpn_item_map, false)
 

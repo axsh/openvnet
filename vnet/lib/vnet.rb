@@ -49,12 +49,15 @@ module Vnet
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
+        autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
+        autoload :MacAddress, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLease, 'vnet/endpoints/1.0/responses/mac_lease'
         autoload :Network, 'vnet/endpoints/1.0/responses/network'
         autoload :NetworkService, 'vnet/endpoints/1.0/responses/network_service'
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
@@ -63,12 +66,14 @@ module Vnet
         autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
+        autoload :MacAddressCollection, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
         autoload :NetworkCollection, 'vnet/endpoints/1.0/responses/network'
         autoload :NetworkServiceCollection, 'vnet/endpoints/1.0/responses/network_service'
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :VlanTranslationCollection, 'vnet/endpoints/1.0/responses/vlan_translation'
       end
     end
   end
@@ -88,6 +93,7 @@ module Vnet
     autoload :Interface, 'vnet/models/interface'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
+    autoload :MacAddress, 'vnet/models/mac_address'
     autoload :MacLease, 'vnet/models/mac_lease'
     autoload :Network, 'vnet/models/network'
     autoload :NetworkService, 'vnet/models/network_service'
@@ -96,6 +102,7 @@ module Vnet
     autoload :SecurityGroup, 'vnet/models/security_group'
     autoload :Taggable, 'vnet/models/base'
     autoload :Tunnel, 'vnet/models/tunnel'
+    autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
 
   module ModelWrappers
@@ -105,10 +112,11 @@ module Vnet
     autoload :DatapathRouteLink, 'vnet/model_wrappers/datapath_route_link'
     autoload :DcSegment, 'vnet/model_wrappers/dc_segment'
     autoload :DhcpRange, 'vnet/model_wrappers/dhcp_range'
-    autoload :Interface, 'vnet/model_wrappers/interface'
     autoload :Helpers, 'vnet/model_wrappers/helpers'
+    autoload :Interface, 'vnet/model_wrappers/interface'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
+    autoload :MacAddress, 'vnet/model_wrappers/mac_address'
     autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :Network, 'vnet/model_wrappers/network'
     autoload :NetworkService, 'vnet/model_wrappers/network_service'
@@ -116,6 +124,7 @@ module Vnet
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
+    autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
 
   autoload :NodeApi, 'vnet/node_api'
@@ -130,13 +139,15 @@ module Vnet
     autoload :Interface, 'vnet/node_api/interface.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
-    autoload :MacLease, 'vnet/node_api/models.rb'
+    autoload :MacAddress, 'vnet/node_api/models.rb'
+    autoload :MacLease, 'vnet/node_api/mac_lease.rb'
     autoload :Network, 'vnet/node_api/models.rb'
     autoload :NetworkService, 'vnet/node_api/models.rb'
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :SecurityGroup, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
+    autoload :VlanTranslation, 'vnet/node_api/models.rb'
   end
 
   module NodeModules
@@ -172,6 +183,7 @@ module Vnet
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
+    autoload :TranslationManager, 'vnet/openflow/translation_manager'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
 
     module Interfaces
@@ -179,6 +191,7 @@ module Vnet
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
       autoload :Remote, 'vnet/openflow/interfaces/remote'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
+      autoload :Edge, 'vnet/openflow/interfaces/edge'
     end
 
     module Networks
@@ -189,6 +202,7 @@ module Vnet
 
     module Ports
       autoload :Base, 'vnet/openflow/ports/base'
+      autoload :Generic, 'vnet/openflow/ports/generic'
       autoload :Host, 'vnet/openflow/ports/host'
       autoload :Local, 'vnet/openflow/ports/local'
       autoload :Tunnel, 'vnet/openflow/ports/tunnel'
@@ -207,6 +221,10 @@ module Vnet
       autoload :Base, 'vnet/openflow/services/base'
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
       autoload :Router, 'vnet/openflow/services/router'
+    end
+
+    module VnetEdge
+      autoload :TranslationHandler, 'vnet/openflow/vnet_edge/translation_handler'
     end
   end
 

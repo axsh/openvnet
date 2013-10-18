@@ -72,7 +72,7 @@ module Vnet::Openflow
       end
 
       @datapath_id = datapath_id
-      
+
       # We need to update remote interfaces in case they are now in
       # our datapath.
     end
@@ -81,7 +81,8 @@ module Vnet::Openflow
       debug log_format("handle event #{event}", "#{params.inspect}")
 
       item = @items[params[:target_id]]
-      if handler = self.class.events[event]
+      handler = self.class.events[event]
+      if item && handler
         __send__(handler, item, params)
       end
 
@@ -157,6 +158,8 @@ module Vnet::Openflow
       case
       when params[:id]   then {:id => params[:id]}
       when params[:uuid] then params[:uuid]
+      when params[:display_name] && params[:owner_datapath_id] then
+        {:display_name => params[:display_name], :owner_datapath_id => params[:owner_datapath_id]}
       else
         # Any invalid params that should cause an exception needs to
         # be caught by the item_by_params_direct method.

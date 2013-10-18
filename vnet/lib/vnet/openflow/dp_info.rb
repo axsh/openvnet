@@ -26,6 +26,7 @@ module Vnet::Openflow
     attr_reader :security_group_manager
     attr_reader :service_manager
     attr_reader :tunnel_manager
+    attr_reader :translation_manager
 
     def initialize(params)
       @dpid = params[:dpid]
@@ -45,6 +46,7 @@ module Vnet::Openflow
       @security_group_manager = SecurityGroupManager.new(self)
       @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(@datapath)
+      @translation_manager = TranslationManager.new(self)
     end
 
     #

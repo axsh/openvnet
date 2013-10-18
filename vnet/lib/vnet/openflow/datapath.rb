@@ -31,6 +31,7 @@ module Vnet::Openflow
     attr_reader :security_group_manager
     attr_reader :service_manager
     attr_reader :tunnel_manager
+    attr_reader :translation_manager
 
     def initialize(ofc, dp_id, ofctl = nil)
       @dpid = dp_id
@@ -54,6 +55,7 @@ module Vnet::Openflow
       @security_group_manager = @dp_info.security_group_manager
       @service_manager = @dp_info.service_manager
       @tunnel_manager = @dp_info.tunnel_manager
+      @translation_manager = @dp_info.translation_manager
 
       @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
       @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
@@ -65,7 +67,7 @@ module Vnet::Openflow
       @cookie_manager.create_category(:security_group, COOKIE_PREFIX_SECURITY_GROUP)
       @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
       @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
-      @cookie_manager.create_category(:vif,            COOKIE_PREFIX_VIF)
+      @cookie_manager.create_category(:interface,      COOKIE_PREFIX_VIF)
     end
 
     def datapath_batch

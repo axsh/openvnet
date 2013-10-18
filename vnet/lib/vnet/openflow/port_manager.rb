@@ -27,7 +27,7 @@ module Vnet::Openflow
         prepare_port_local(port, port_desc)
       when port.port_info.name =~ /^eth/
         prepare_port_eth(port, port_desc)
-      when port.port_info.name =~ /^vif-/
+      when port.port_info.name =~ /^if-/
         prepare_port_vif(port, port_desc)
       when port.port_info.name =~ /^t-/
         prepare_port_tunnel(port, port_desc)
@@ -57,9 +57,9 @@ module Vnet::Openflow
 
       @dp_info.interface_manager.unload(port_number: port_desc.port_no)
 
-      if port.port_name =~ /^vif-/
+      if port.port_name =~ /^if-/
         @dp_info.interface_manager.update_active_datapaths(uuid: port.port_name,
-                                                           datapath_id: nil)
+                                                            datapath_id: nil)
       end
 
       nil
@@ -103,7 +103,21 @@ module Vnet::Openflow
     def prepare_port_eth(port, port_desc)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
-      port.extend(Ports::Host)
+      params = {
+        :owner_datapath_id => @dp_info.datapath.datapath_map.id,
+        :display_name => port_desc.name,
+        :reinitialize => true
+      }
+
+      interface = @dp_info.interface_manager.item(params)
+
+      if interface.nil?
+        port.extend(Ports::Host)
+      else
+        port.extend(Ports::Generic)
+        @dp_info.translation_manager.async.add_edge_port(port: port, interface: interface)
+      end
+
       port.install
     end
 

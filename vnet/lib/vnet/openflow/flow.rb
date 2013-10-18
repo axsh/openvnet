@@ -81,6 +81,8 @@ module Vnet::Openflow
       when :normal then Trema::Actions::SendOutPort.new(:port_number => OFPP_NORMAL)
       when :output then Trema::Actions::SendOutPort.new(:port_number => arg)
       when :tunnel_id then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TunnelId.new(:tunnel_id => arg)])
+      when :strip_vlan then Trema::Actions::PopVlan.new if arg == true # TODO refactoring
+      when :mod_vlan_vid then Trema::Actions::SetField.new(:action_set => [Trema::Actions::VlanVid.new(:vlan_vid => arg)])
       else
         raise("Unknown action type.")
       end
