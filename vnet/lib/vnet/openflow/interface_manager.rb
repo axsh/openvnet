@@ -15,15 +15,25 @@ module Vnet::Openflow
     subscribe_event ReleasedMacAddress, :released_mac_address
 
     def update_item(params)
+      # Todo: Add the possibility to use a 'filter' parameter for this.
       item = item_by_params(params)
       return nil if item.nil?
 
       case params[:event]
-      # Reconsider this...
-      when :active_datapath_id then item.update_active_datapath(params)
+      when :active_datapath_id
+        # Reconsider this...
+        item.update_active_datapath(params)
+      when :set_port_number
+        # Check if not nil...
+        item.update_port_number(params[:port_number])
+        item.update_active_datapath(datapath_id: @datapath_info.id)
+      when :clear_port_number
+        # Check if nil... (use param :port_number to verify)
+        item.update_port_number(nil)
+        item.update_active_datapath(datapath_id: nil)
       end
 
-      nil
+      item_to_hash(item)
     end
 
     # Deprecate this...
@@ -114,19 +124,6 @@ module Vnet::Openflow
       # the creation of flows and ensure that no events gets lost.
 
       item.install
-
-      case item.mode
-      when :vif
-        # We should require all interfaces to set the port_name field,
-        # however the current code allows for the use of the uuid.
-        port = item.port_name && @dp_info.port_manager.detect(port_name: item.port_name)
-        port = port || @dp_info.port_manager.detect(port_name: item.uuid)
-
-        if port
-          item.update_port_number(port[:port_number])
-          item.update_active_datapath(datapath_id: @datapath_info.id)
-        end
-      end
 
       load_addresses(item, item_map)
 

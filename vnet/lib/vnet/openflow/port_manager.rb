@@ -36,8 +36,7 @@ module Vnet::Openflow
 
         # Currently only support vif.
         interface = @dp_info.interface_manager.item(port_name: port_desc.name,
-                                                    port_number: port.port_number,
-                                                    reinitialize: true)
+                                                    port_number: port.port_number)
 
         if interface
           prepare_port_vif(port, port_desc, interface)
@@ -64,7 +63,9 @@ module Vnet::Openflow
 
       port.uninstall
 
-      @dp_info.interface_manager.unload(port_number: port_desc.port_no)
+      @dp_info.interface_manager.update_item(event: :clear_port_number,
+                                             port_number: port.port_number,
+                                             dynamic_load: false)
 
       nil
     end
@@ -119,8 +120,7 @@ module Vnet::Openflow
         @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
         interface = @dp_info.interface_manager.item(uuid: port_desc.name,
-                                                    port_number: port.port_number,
-                                                    reinitialize: true)
+                                                    port_number: port.port_number)
       end
 
       if interface.nil?
@@ -139,6 +139,12 @@ module Vnet::Openflow
 
       port.interface_id = interface.id
       port.install
+
+      # We don't need to query the interface before updating it, so do
+      # this directly instead of the item request.
+      interface = @dp_info.interface_manager.update_item(event: :set_port_number,
+                                                         id: interface.id,
+                                                         port_number: port.port_number)
     end
 
     def prepare_port_tunnel(port, port_desc)
