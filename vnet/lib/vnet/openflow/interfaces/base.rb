@@ -132,6 +132,18 @@ module Vnet::Openflow::Interfaces
                                                       port_number: @port_number)
     end
 
+    def update_active_datapath(params)
+      if @owner_datapath_ids.nil?
+        return if @mode != :vif
+      end
+
+      # Currently only supports one active datapath id.
+      active_datapath_ids = [params[:datapath_id]]
+
+      @active_datapath_ids = active_datapath_ids
+      MW::Interface.batch[:id => @id].update(:active_datapath_id => params[:datapath_id]).commit
+    end
+
     #
     # Manage MAC and IP addresses:
     #

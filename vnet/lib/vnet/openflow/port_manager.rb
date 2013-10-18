@@ -66,11 +66,6 @@ module Vnet::Openflow
 
       @dp_info.interface_manager.unload(port_number: port_desc.port_no)
 
-      if port.port_name =~ /^if-/
-        @dp_info.interface_manager.update_active_datapaths(uuid: port.port_name,
-                                                            datapath_id: nil)
-      end
-
       nil
     end
 
@@ -139,10 +134,6 @@ module Vnet::Openflow
       end
 
       debug log_format("prepare_port_vif #{interface.uuid}", "port_name:#{port.port_name}")
-
-      # Do this in interface manager.
-      @dp_info.interface_manager.update_active_datapaths(id: interface.id,
-                                                         datapath_id: @dp_info.datapath.datapath_map.id)
 
       port.extend(Ports::Vif)
 

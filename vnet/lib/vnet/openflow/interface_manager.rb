@@ -14,24 +14,6 @@ module Vnet::Openflow
     subscribe_event LeasedMacAddress, :leased_mac_address
     subscribe_event ReleasedMacAddress, :released_mac_address
 
-    def update_active_datapaths(params)
-      interface = internal_detect(params)
-      return nil if interface.nil?
-
-      # Refactor this.
-      if interface.owner_datapath_ids.nil?
-        return if interface.mode != :vif
-      end
-
-      # Currently only supports one active datapath id.
-      active_datapath_ids = [params[:datapath_id]]
-
-      interface.active_datapath_ids = active_datapath_ids
-      MW::Interface.batch[:id => interface.id].update(:active_datapath_id => params[:datapath_id]).commit
-
-      nil
-    end
-
     # Deprecate this...
     def get_ipv4_address(params)
       interface = internal_detect(params)
@@ -76,7 +58,7 @@ module Vnet::Openflow
       end
     end
 
-    def interface_initialize(mode, params)
+    def item_initialize(mode, params)
       case mode
       when :simulated then Interfaces::Simulated.new(params)
       when :remote then Interfaces::Remote.new(params)
@@ -99,39 +81,55 @@ module Vnet::Openflow
       MW::Interface.batch[filter].commit(:fill => fill)
     end
 
+    #
+    # Create / Delete interface:
+    #
+
     def create_item(item_map, params)
       mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
 
-      interface = interface_initialize(mode,
-                                       dp_info: @dp_info,
-                                       manager: self,
-                                       map: item_map)
-      return nil if interface.nil?
+      item = item_initialize(mode,
+                             dp_info: @dp_info,
+                             manager: self,
+                             map: item_map)
+      return nil if item.nil?
 
-      @items[item_map.id] = interface
+      @items[item_map.id] = item
 
       debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
 
       # TODO: Make install/uninstall a barrier that enables/disable
       # the creation of flows and ensure that no events gets lost.
 
-      interface.install
+      item.install
 
-      case interface.mode
+      case item.mode
       when :vif
-        port = @dp_info.port_manager.detect(port_name: interface.uuid)
-        interface.update_port_number(port[:port_number]) if port
+        # We should require all interfaces to set the port_name field,
+        # however the current code allows for the use of the uuid.
+        port = item.port_name && @dp_info.port_manager.detect(port_name: item.port_name)
+        port = port || @dp_info.port_manager.detect(port_name: item.uuid)
+
+        if port
+          item.update_port_number(port[:port_number])
+          item.update_active_datapath(datapath_id: @datapath_info.id)
+        end
       end
 
-      load_addresses(interface, item_map)
+      load_addresses(item, item_map)
 
-      interface # Return nil if interface has been uninstalled.
+      item # Return nil if interface has been uninstalled.
     end
 
     def delete_item(item)
       @items.delete(item.id)
 
       item.uninstall
+
+      if item.port_number
+        item.update_active_datapath(datapath_id: nil)
+      end
+
       item
     end
 
