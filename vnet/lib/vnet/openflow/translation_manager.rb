@@ -10,7 +10,7 @@ module Vnet::Openflow
       @dp_info = dp_info
       @dpid_s = "0x%016x" % @dp_info.dpid
 
-      @dp_info.packet_manager.insert(VnetEdge::TranslationHandler.new(dp_info: @dp_info), nil, (COOKIE_PREFIX_VNETEDGE << COOKIE_PREFIX_SHIFT))
+      @dp_info.packet_manager.insert(VnetEdge::TranslationHandler.new(dp_info: @dp_info), nil, (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT))
 
       @edge_ports = []
 
