@@ -33,14 +33,14 @@ module Vnet::Openflow::Tunnels
       @datapath_networks = []
     end
     
-    # def cookie(tag = nil)
-    #   value = @id | (COOKIE_PREFIX_TUNNEL << COOKIE_PREFIX_SHIFT)
-    #   tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
-    # end
-
     def to_hash
       { :id => @id,
         :uuid => @uuid,
+        :port_name => @display_name,
+
+        :dst_id => @dst_id,
+        :dst_dpid => @dst_dpid,
+        :dst_ipv4_address => @dst_ipv4_address,
       }
     end
 

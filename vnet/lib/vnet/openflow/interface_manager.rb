@@ -105,7 +105,7 @@ module Vnet::Openflow
     end
 
     #
-    # Create / Delete interface:
+    # Create / Delete interfaces:
     #
 
     def create_item(item_map, params)

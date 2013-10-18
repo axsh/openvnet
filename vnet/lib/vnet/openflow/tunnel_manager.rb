@@ -147,9 +147,29 @@ module Vnet::Openflow
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
       return false if params[:display_name] && params[:display_name] != item.display_name
+      return false if params[:port_name] && params[:port_name] != item.display_name
       return false if params[:dst_dpid] && params[:dst_dpid] != item.dst_dpid
       true
     end
+
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      when params[:display_name] then
+        { :display_name => params[:display_name] }
+      when params[:port_name] then
+        { :display_name => params[:port_name] }
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
+      end
+    end
+
+    #
+    # Create / Delete tunnels:
+    #
 
     def item_initialize(params)
       Tunnels::Base.new(params)
@@ -200,18 +220,6 @@ module Vnet::Openflow
         warn log_format('port name is not registered in database', "port_name:#{port[:port_name]}")
         return
       end
-
-      datapath_md = md_create(datapath: item.dst_id, tunnel: nil)
-      cookie = item.dst_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
-
-      flow = Flow.create(TABLE_OUTPUT_DATAPATH, 5,
-                         datapath_md, {
-                           :output => port_number
-                         }, {
-                           :cookie => cookie
-                         })
-
-      @dp_info.add_flow(flow)
 
       item.datapath_networks.each { |dpn|
         update_network_id(dpn[:network_id])
