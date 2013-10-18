@@ -177,7 +177,8 @@ module Vnet::Openflow::Interfaces
         :network_id => params[:network_id],
         :network_type => params[:network_type],
         :ipv4_address => params[:ipv4_address],
-        :ip_lease_id => params[:ip_lease_id]
+        :ip_lease_id => params[:ip_lease_id],
+        :cookie_id => params[:cookie_id],
       }
 
       ipv4_addresses = mac_info[:ipv4_addresses].dup

@@ -75,7 +75,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Interface.batch[filter].commit(:fill => [{:mac_leases => {:ip_leases => :ip_address}}])
+      MW::Interface.batch[filter].commit(:fill => [{:mac_leases => {:ip_leases => [:ip_address, :cookie_id]}}])
     end
 
     def create_item(item_map, params)
@@ -137,6 +137,7 @@ module Vnet::Openflow
                                      network_id: network_id,
                                      network_type: network_info[:type],
                                      ip_lease_id: ip_lease.id,
+                                     cookie_id: ip_lease.cookie_id,
                                      ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
         }
       end
@@ -174,7 +175,7 @@ module Vnet::Openflow
     end
 
     def leased_ipv4_address(item, params)
-      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:ip_address])
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:ip_address, :cookie_id])
 
       return unless ip_lease && ip_lease.interface_id == item.id
 
@@ -184,6 +185,7 @@ module Vnet::Openflow
                             network_id: network[:id],
                             network_type: network[:type],
                             ip_lease_id: ip_lease.id,
+                            cookie_id: ip_lease.cookie_id,
                             ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
     end
 
