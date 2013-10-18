@@ -112,7 +112,7 @@ module Vnet
       COOKIE_PREFIX_TUNNEL         = 0xa
       COOKIE_PREFIX_VIF            = 0xb
       COOKIE_PREFIX_INTERFACE      = 0xc
-      COOKIE_PREFIX_VNETEDGE       = 0xd
+      COOKIE_PREFIX_TRANSLATION       = 0xd
 
       METADATA_FLAGS_SHIFT = 40
       METADATA_FLAGS_MASK = (0xffff << METADATA_FLAGS_SHIFT)

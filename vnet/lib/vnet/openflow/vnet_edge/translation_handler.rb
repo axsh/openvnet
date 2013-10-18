@@ -6,7 +6,7 @@ module Vnet::Openflow::VnetEdge
     include Celluloid::Logger
 
     def initialize(params)
-      @datapath = params[:datapath]
+      @dp_info = params[:dp_info]
     end
 
     def packet_in(message)
@@ -44,12 +44,12 @@ module Vnet::Openflow::VnetEdge
 
       debug log_format('handle_packet_from_host_port : [src_mac]', src_mac)
       debug log_format('handle_packet_from_host_port : [src_mac.value]', src_mac.value)
-      src_network_id = @datapath.network_manager.network_id_by_mac(src_mac.value)
+      src_network_id = @dp_info.network_manager.network_id_by_mac(src_mac.value)
 
       return if src_network_id.nil?
 
       debug log_format('handle_packet_from_host_port : [src_network_id]', src_network_id)
-      vlan_vids = @datapath.translation_manager.network_to_vlan(src_network_id)
+      vlan_vids = @dp_info.translation_manager.network_to_vlan(src_network_id)
 
       return if vlan_vids.nil?
 
@@ -66,13 +66,18 @@ module Vnet::Openflow::VnetEdge
         actions = "mod_vlan_vid:#{vlan_vids},output:2"
       end
 
+      dpn = MW::DatapathNetwork.batch.on_specific_datapath(@dp_info.datapath.datapath_map).all.commit.select { |t| t.network_id == src_network_id }
+      dpn_broadcast = dpn.first.broadcast_mac_address
+
       if dst_mac.broadcast?
         flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=ff:ff:ff:ff:ff:ff,metadata=0x%x/0x%x,actions=#{actions}" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
+      elsif dpn_broadcast == dst_mac.value
+        flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=#{dst_mac},metadata=0x%x/0x%x,actions=mod_dl_dst:ff:ff:ff:ff:ff:ff,#{actions}" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
+      else
+        flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=output:1" %  [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK ]
       end
 
-      flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=output:1" %  [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK ]
-
-      flows.each { |flow| @datapath.add_ovs_flow(flow) }
+      flows.each { |flow| @dp_info.add_ovs_flow(flow) }
     end
 
     def handle_packet_from_edge_port(params)
@@ -88,7 +93,7 @@ module Vnet::Openflow::VnetEdge
       debug log_format('edge_port', dst_mac.inspect)
       debug log_format('edge_port', vlan_vid)
 
-      network_id = @datapath.translation_manager.vlan_to_network(vlan_vid)
+      network_id = @dp_info.translation_manager.vlan_to_network(vlan_vid)
 
       flows << "table=#{TABLE_EDGE_SRC},priority=2,dl_src=#{src_mac},dl_vlan=#{vlan_vid},actions=strip_vlan,write_metadata:0x%x,goto_table:#{TABLE_EDGE_DST}" % METADATA_TYPE_EDGE_TO_VIRTUAL
 
@@ -99,9 +104,9 @@ module Vnet::Openflow::VnetEdge
 
       flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=mod_vlan_vid:#{vlan_vid},output:2" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
 
-      flows.each { |flow| @datapath.add_ovs_flow(flow) }
+      flows.each { |flow| @dp_info.add_ovs_flow(flow) }
 
-      network = @datapath.network_manager.item(id: network_id)
+      network = @dp_info.network_manager.item(id: network_id)
     end
 
     def log_format(message, values = nil)
