@@ -155,8 +155,12 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     it "should add flood flow network 1" do
-      tunnel_manager.add_port(double(port_name: datapath.dp_info.added_tunnels[0][:tunnel_name], port_number: 9))
-      tunnel_manager.add_port(double(port_name: datapath.dp_info.added_tunnels[1][:tunnel_name], port_number: 10))
+      tunnel_manager.update_item(event: :set_port_number,
+                                 port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                                 port_number: 9)
+      tunnel_manager.update_item(event: :set_port_number,
+                                 port_name: datapath.dp_info.added_tunnels[1][:tunnel_name],
+                                 port_number: 10)
 
       datapath.added_flows.clear
 
@@ -188,8 +192,12 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     it "should add flood flow for network 2" do
-      tunnel_manager.add_port(double(port_name: datapath.dp_info.added_tunnels[0][:tunnel_name], port_number: 9))
-      tunnel_manager.add_port(double(port_name: datapath.dp_info.added_tunnels[1][:tunnel_name], port_number: 10))
+      tunnel_manager.update_item(event: :set_port_number,
+                                 port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                                 port_number: 9)
+      tunnel_manager.update_item(event: :set_port_number,
+                                 port_name: datapath.dp_info.added_tunnels[1][:tunnel_name],
+                                 port_number: 10)
 
       datapath.added_flows.clear
 

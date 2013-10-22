@@ -16,6 +16,8 @@ module Vnet::Openflow::Tunnels
 
     attr_reader :datapath_networks
 
+    attr_accessor :port_number
+
     def initialize(params)
       @dp_info = params[:dp_info]
       @manager = params[:manager]
