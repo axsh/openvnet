@@ -79,18 +79,33 @@ module Vnet::Openflow
     end
 
     def update_network_id(network_id)
-      collection_id = find_collection_id(network_id)
+      ports = @tunnel_ports.select { |port_number,tunnel_port|
+        item = internal_detect(display_name: tunnel_port[:port_name])
+
+        if item.nil?
+          warn log_format("tunnel port: #{tunnel_port[:port_name]} is not registered in db")
+          next
+        end
+
+        item.datapath_networks.any? { |dpn| dpn[:network_id] == network_id }
+      }
 
       cookie = network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
-      md = md_create(:collection => collection_id)
+
+      actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
+
+      ports.each { |port_number, port|
+        actions << {:output => port_number}
+      }
 
       flows = []
-      flows << Flow.create(TABLE_FLOOD_TUNNEL_IDS, 1,
-                           md_create(:network => network_id), {
-                             :tunnel_id => network_id | TUNNEL_FLAG_MASK
-                           }, md.merge({ :cookie => cookie,
-                                         :goto_table => TABLE_FLOOD_TUNNEL_PORTS
-                                       }))
+      flows << flow_create(:default,
+                           table: TABLE_FLOOD_TUNNELS,
+                           priority: 1,
+                           match_metadata: { :network => network_id },
+                           actions: actions,
+                           cookie: cookie)
+
 
       @dp_info.add_flows(flows)
     end
@@ -220,43 +235,6 @@ module Vnet::Openflow
       item.datapath_networks.each { |dpn|
         update_network_id(dpn[:network_id])
       }
-    end
-
-    def find_collection_id(network_id)
-      # Currently only use the network id as the collection id.
-      #
-      # Later collections should be created as needed and shared
-      # between network's when possible.
-      update_collection_id(network_id)
-
-      network_id
-    end
-
-    def update_collection_id(collection_id)
-      ports = @tunnel_ports.select { |port_number,tunnel_port|
-        item = internal_detect(display_name: tunnel_port[:port_name])
-
-        if item.nil?
-          warn log_format("tunnel port: #{tunnel_port[:port_name]} is not registered in db")
-          next
-        end
-
-        item.datapath_networks.any? { |dpn| dpn[:network_id] == collection_id }
-      }
-
-      collection_md = md_create(:collection => collection_id)
-      cookie = collection_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
-
-      flows = []
-      flows << Flow.create(TABLE_FLOOD_TUNNEL_PORTS, 1,
-                           collection_md,
-                           ports.map { |port_number, port|
-                             {:output => port_number}
-                           }, {
-                             :cookie => cookie
-                           })
-
-      @dp_info.add_flows(flows)
     end
 
     # Delete the item if it returns true.

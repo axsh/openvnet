@@ -69,12 +69,11 @@ module Vnet
       # Deprecated...
       TABLE_MAC_ROUTE = 25
 
-      TABLE_FLOOD_SIMULATED    = 30
-      TABLE_FLOOD_LOCAL        = 31
-      TABLE_FLOOD_ROUTE        = 32
-      TABLE_FLOOD_SEGMENT      = 33
-      TABLE_FLOOD_TUNNEL_IDS   = 34
-      TABLE_FLOOD_TUNNEL_PORTS = 35
+      TABLE_FLOOD_SIMULATED = 30
+      TABLE_FLOOD_LOCAL     = 31
+      TABLE_FLOOD_ROUTE     = 32
+      TABLE_FLOOD_SEGMENT   = 33
+      TABLE_FLOOD_TUNNELS   = 34
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
@@ -100,7 +99,6 @@ module Vnet
       COOKIE_PREFIX_SHIFT = 56
       COOKIE_PREFIX_MASK = (0xff << COOKIE_PREFIX_SHIFT)
 
-      COOKIE_PREFIX_COLLECTION     = 0x1
       COOKIE_PREFIX_DP_NETWORK     = 0x2
       COOKIE_PREFIX_NETWORK        = 0x3
       COOKIE_PREFIX_PACKET_HANDLER = 0x4
@@ -112,7 +110,7 @@ module Vnet
       COOKIE_PREFIX_TUNNEL         = 0xa
       COOKIE_PREFIX_VIF            = 0xb
       COOKIE_PREFIX_INTERFACE      = 0xc
-      COOKIE_PREFIX_TRANSLATION       = 0xd
+      COOKIE_PREFIX_TRANSLATION    = 0xd
 
       METADATA_FLAGS_SHIFT = 40
       METADATA_FLAGS_MASK = (0xffff << METADATA_FLAGS_SHIFT)
@@ -138,7 +136,6 @@ module Vnet
       METADATA_TYPE_SHIFT      = 56
       METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)
 
-      METADATA_TYPE_COLLECTION = (0x1 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_DATAPATH   = (0x2 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_NETWORK    = (0x3 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_PORT       = (0x4 << METADATA_TYPE_SHIFT)

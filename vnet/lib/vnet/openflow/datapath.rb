@@ -78,7 +78,6 @@ module Vnet::Openflow
       @tunnel_manager = @dp_info.tunnel_manager
       @translation_manager = @dp_info.translation_manager
 
-      @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
       @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
       @cookie_manager.create_category(:network,        COOKIE_PREFIX_NETWORK)
       @cookie_manager.create_category(:packet_handler, COOKIE_PREFIX_PACKET_HANDLER)
