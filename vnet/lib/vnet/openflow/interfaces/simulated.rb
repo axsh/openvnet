@@ -173,6 +173,7 @@ module Vnet::Openflow::Interfaces
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
+                           interface_id: @id,
                            cookie: cookie)
     end
 

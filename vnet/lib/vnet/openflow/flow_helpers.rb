@@ -68,8 +68,9 @@ module Vnet::Openflow
       when :catch_flood_simulated
         table = TABLE_FLOOD_SIMULATED
         priority = 30
-        actions = { :output => Controller::OFPP_CONTROLLER }
         match_metadata = { :network => params[:network_id] }
+        write_metadata = { :interface => params[:interface_id] }
+        goto_table = TABLE_OUTPUT_INTERFACE
       when :catch_interface_simulated
         table = TABLE_OUTPUT_INTERFACE
         priority = 30
