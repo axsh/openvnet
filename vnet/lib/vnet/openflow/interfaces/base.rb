@@ -139,7 +139,7 @@ module Vnet::Openflow::Interfaces
     #
 
     def add_mac_address(params)
-      debug log_format("add_ipv4_address", params.inspect)
+      #debug log_format("add_ipv4_address", params.inspect)
       return if @mac_addresses[params[:mac_lease_id]]
 
       mac_addresses = @mac_addresses.dup
@@ -170,7 +170,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def add_ipv4_address(params)
-      debug log_format("add_ipv4_address", params.inspect)
+      #debug log_format("add_ipv4_address", params.inspect)
 
       mac_info = @mac_addresses[params[:mac_lease_id]]
       return unless mac_info
@@ -181,7 +181,8 @@ module Vnet::Openflow::Interfaces
         :network_id => params[:network_id],
         :network_type => params[:network_type],
         :ipv4_address => params[:ipv4_address],
-        :ip_lease_id => params[:ip_lease_id]
+        :ip_lease_id => params[:ip_lease_id],
+        :cookie_id => params[:cookie_id],
       }
 
       ipv4_addresses = mac_info[:ipv4_addresses].dup
