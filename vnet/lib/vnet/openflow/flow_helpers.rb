@@ -71,7 +71,7 @@ module Vnet::Openflow
         actions = { :output => Controller::OFPP_CONTROLLER }
         match_metadata = { :network => params[:network_id] }
       when :catch_interface_simulated
-        table = TABLE_INTERFACE_SIMULATED
+        table = TABLE_OUTPUT_INTERFACE
         priority = 30
         actions = { :output => Controller::OFPP_CONTROLLER }
         match_metadata = { :interface => params[:interface_id] }
