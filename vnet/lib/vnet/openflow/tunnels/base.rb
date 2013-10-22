@@ -34,16 +34,16 @@ module Vnet::Openflow::Tunnels
     end
     
     def to_hash
-      { :id => @id,
-        :uuid => @uuid,
-        :port_name => @display_name,
-
-        :dst_id => @dst_id,
-        :dst_dpid => @dst_dpid,
-        :dst_ipv4_address => @dst_ipv4_address,
-
-        :datapath_networks_size => @datapath_networks.size,
-      }
+      Vnet::Openflow::Tunnel.new(id: @id,
+                                 uuid: @uuid,
+                                 port_name: @display_name,
+                                 
+                                 dst_id: @dst_id,
+                                 dst_dpid: @dst_dpid,
+                                 dst_ipv4_address: @dst_ipv4_address,
+                                 
+                                 datapath_networks_size: @datapath_networks.size,
+                                 )
     end
 
     def install

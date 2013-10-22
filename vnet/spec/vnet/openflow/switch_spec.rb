@@ -24,7 +24,7 @@ describe Vnet::Openflow::Switch do
         Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
 
         tunnel = double(:tunnel)
-        tunnel.should_receive(:[]).and_return(1)
+        tunnel.should_receive(:dst_id).and_return(1)
 
         Vnet::Openflow::TunnelManager.any_instance.stub(:item).and_return(tunnel)
 

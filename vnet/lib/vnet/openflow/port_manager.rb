@@ -173,7 +173,7 @@ module Vnet::Openflow
 
       port.extend(Ports::Tunnel)
 
-      port.dst_id = tunnel[:dst_id]
+      port.dst_id = tunnel.dst_id
       port.install
     end
 
