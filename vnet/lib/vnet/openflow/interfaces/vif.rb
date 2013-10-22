@@ -31,8 +31,6 @@ module Vnet::Openflow::Interfaces
                                                  interface_id: @id,
                                                  mode: :vif,
                                                  port_number: @port_number)
-
-      del_cookie_for_ip_lease(ipv4_info[:cookie_id])
     end
 
     def install
@@ -78,6 +76,7 @@ module Vnet::Openflow::Interfaces
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+
       #
       # Classifier
       #

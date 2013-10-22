@@ -207,6 +207,8 @@ module Vnet::Openflow::Interfaces
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
+      del_cookie_for_ip_lease(ipv4_info[:cookie_id])
+
       [mac_info, ipv4_info]
     end
 
