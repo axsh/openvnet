@@ -56,7 +56,7 @@ module Vnet::Openflow
       item_to_hash(internal_detect(params))
     end
 
-    def select(params)
+    def select(params = {})
       @items.select { |id, item|
         match_item?(item, params)
       }.map { |id, item|

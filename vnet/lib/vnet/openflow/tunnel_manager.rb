@@ -9,10 +9,6 @@ module Vnet::Openflow
       @tunnel_ports = {}
     end
 
-    def tunnels_dup
-      @items.dup
-    end
-
     def create_all_tunnels
       debug log_format("creating tunnel ports")
 

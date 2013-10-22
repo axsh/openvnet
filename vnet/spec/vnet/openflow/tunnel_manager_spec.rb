@@ -36,9 +36,11 @@ describe Vnet::Openflow::TunnelManager do
       expect(db_tunnels.first.dst_datapath.node_id).to eq "vna3"
       expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq 2
 
-      expect(subject.tunnels_dup.size).to eq 1
-      expect(subject.tunnels_dup.first.last.uuid).to eq db_tunnels.first.canonical_uuid
-      expect(subject.tunnels_dup.first.last.datapath_networks).to eq []
+      tunnel_infos = subject.select
+
+      expect(tunnel_infos.size).to eq 1
+      expect(tunnel_infos.first[:uuid]).to eq db_tunnels.first.canonical_uuid
+      expect(tunnel_infos.first[:datapath_networks_size]).to eq 0
 
       expect(datapath.dp_info.added_tunnels.size).to eq 1
       expect(datapath.dp_info.added_tunnels.first[:remote_ip]).to eq "192.168.2.2"

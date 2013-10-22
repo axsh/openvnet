@@ -41,6 +41,8 @@ module Vnet::Openflow::Tunnels
         :dst_id => @dst_id,
         :dst_dpid => @dst_dpid,
         :dst_ipv4_address => @dst_ipv4_address,
+
+        :datapath_networks_size => @datapath_networks.size,
       }
     end
 
