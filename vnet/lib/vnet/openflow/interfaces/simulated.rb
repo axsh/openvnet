@@ -47,7 +47,7 @@ module Vnet::Openflow::Interfaces
       value = (message.cookie >> OPTIONAL_VALUE_SHIFT) & OPTIONAL_VALUE_MASK
 
       case value
-      when TAG_ARP_REQUEST_FLOOD, TAG_ARP_REQUEST_INTERFACE
+      when TAG_ARP_REQUEST_INTERFACE
         info log_format('simulated arp reply', "arp_tpa:#{message.arp_tpa}")
 
         mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
