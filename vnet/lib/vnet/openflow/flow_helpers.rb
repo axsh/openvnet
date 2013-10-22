@@ -99,7 +99,7 @@ module Vnet::Openflow
         match_metadata = { :network => params[:network_id] }
       when :network_src_arp_match
         # Check for local flag since we trust that the local packets
-        # are properly verified in earlier flows. 
+        # are properly verified in earlier flows.
         table = table_network_src(params[:network_type])
         priority = 86
         match_metadata = {
