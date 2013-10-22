@@ -134,6 +134,8 @@ module Vnet::Openflow::Interfaces
     # TODO: Separate the mac-only flows and add those when
     # add_mac_address is called.
     def flows_for_ipv4(flows, mac_info, ipv4_info)
+      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+
       flows << flow_create(:network_dst,
                            priority: 80,
                            match: {
@@ -146,6 +148,7 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :interface => @id
                            },
+                           cookie: cookie,
                            goto_table: TABLE_INTERFACE_SIMULATED)
       flows << flow_create(:network_dst,
                            priority: 80,
@@ -159,6 +162,7 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :interface => @id
                            },
+                           cookie: cookie,
                            goto_table: TABLE_INTERFACE_SIMULATED)
       flows << flow_create(:catch_flood_simulated,
                            match: {
@@ -169,7 +173,7 @@ module Vnet::Openflow::Interfaces
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
-                           cookie: self.cookie_for_tag(TAG_ARP_REQUEST_FLOOD))
+                           cookie: cookie)
     end
 
   end
