@@ -18,7 +18,6 @@ module Vnet::Openflow::Interfaces
     OPTIONAL_VALUE_MASK    = 0xfffff
 
     TAG_ARP_REQUEST_INTERFACE = 0x1
-    TAG_ARP_REQUEST_FLOOD     = 0x2
     TAG_ARP_LOOKUP            = 0x4
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
@@ -207,6 +206,8 @@ module Vnet::Openflow::Interfaces
       return unless mac_info
 
       mac_info[:ipv4_addresses] = ipv4_addresses
+
+      del_cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       [mac_info, ipv4_info]
     end

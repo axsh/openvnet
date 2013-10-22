@@ -61,7 +61,6 @@ module Vnet
       TABLE_VIRTUAL_DST = 21
       TABLE_PHYSICAL_DST = 22
 
-      TABLE_INTERFACE_SIMULATED = 23
       TABLE_INTERFACE_VIF = 24
 
       # Route based on the mac address only.
@@ -87,6 +86,8 @@ module Vnet
       # tunnels independently of installed flows.
       TABLE_OUTPUT_DP_ROUTE_LINK  = 37
       TABLE_OUTPUT_DATAPATH       = 38
+
+      TABLE_OUTPUT_INTERFACE = 41
 
       #
       # Metadata, tunnel and cookie flags and masks:
