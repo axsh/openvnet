@@ -151,8 +151,9 @@ module Vnet::Openflow::Interfaces
 
       mac_addresses = @mac_addresses.dup
       mac_addresses[params[:mac_lease_id]] = {
-        :ipv4_addresses => [],
-        :mac_address => params[:mac_address],
+        ipv4_addresses: [],
+        mac_address: params[:mac_address],
+        cookie_id: params[:cookie_id],
       }
 
       @mac_addresses = mac_addresses

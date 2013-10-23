@@ -122,7 +122,7 @@ module Vnet::Openflow
 
       item_map.mac_leases.each do |mac_lease|
         mac_address = Trema::Mac.new(mac_lease.mac_address)
-        interface.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
+        interface.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address, cookie_id: mac_lease.cookie_id)
 
         mac_lease.ip_leases.each { |ip_lease|
           ipv4_address = ip_lease.ip_address.ipv4_address
@@ -164,7 +164,7 @@ module Vnet::Openflow
       return unless mac_lease && mac_lease.interface_id == item.id
 
       mac_address = Trema::Mac.new(mac_lease.mac_address)
-      item.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
+      item.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address, cookie_id: mac_lease.cookie_id)
     end
 
     def released_mac_address(item, params)
