@@ -88,6 +88,10 @@ module Vnet::Openflow::Interfaces
       cookie(OPTIONAL_TYPE_IP_LEASE, value)
     end
 
+    def cookie_for_mac_lease(value)
+      cookie(OPTIONAL_TYPE_MAC_LEASE, value)
+    end
+
     def del_cookie(type = 0, value = 0)
       cookie_value = cookie(type, value)
       cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK
@@ -99,6 +103,10 @@ module Vnet::Openflow::Interfaces
 
     def del_cookie_for_ip_lease(value)
       del_cookie(OPTIONAL_TYPE_IP_LEASE, value)
+    end
+
+    def del_cookie_for_mac_lease(value)
+      del_cookie(OPTIONAL_TYPE_MAC_LEASE, value)
     end
 
     # Update variables by first duplicating to avoid memory
