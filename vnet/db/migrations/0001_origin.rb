@@ -105,6 +105,7 @@ Sequel.migration do
       Integer :mac_address_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+      DateTime :deleted_at, :null=>false
     end
 
     create_table(:networks) do
