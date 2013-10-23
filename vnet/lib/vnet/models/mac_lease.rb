@@ -4,6 +4,7 @@ module Vnet::Models
   class MacLease < Base
     taggable 'ml'
 
+    plugin :paranoia
     plugin :mac_address
 
     many_to_one :interface
