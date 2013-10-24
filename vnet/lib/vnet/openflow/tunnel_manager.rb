@@ -14,7 +14,7 @@ module Vnet::Openflow
 
       case params[:event]
       when :set_port_number
-        update_tunnel(item, params[:port_number])
+        update_tunnel(item, params[:port_number]) if params[:port_number]
       when :clear_port_number
         update_tunnel(item, nil)
       end
@@ -22,14 +22,14 @@ module Vnet::Openflow
       item_to_hash(item)
     end
 
-    # def update(params)
-    #   case params[:event]
-    #   when :update_network_id
-    #     update_tunnel(item, params[:port_number])
-    #   end
+    def update(params)
+      case params[:event]
+      when :update_network
+        update_network_id(params[:network_id]) if params[:network_id]
+      end
 
-    #   item_to_hash(item)
-    # end
+      nil
+    end
 
     #
     # Refactor...
