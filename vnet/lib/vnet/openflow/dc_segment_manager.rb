@@ -13,6 +13,8 @@ module Vnet::Openflow
     end
 
     def insert(dpn_map)
+      info "dc_segment_manager: insert id:#{dpn_map.id} network.id:#{dpn_map.network_id}"
+
       dpn_list = (@datapath_networks[dpn_map.network_id] ||= {})
 
       if dpn_list.has_key? dpn_map.id
@@ -33,7 +35,7 @@ module Vnet::Openflow
     def prepare_network(network_map, datapath_info)
       return unless network_map.network_mode == 'virtual'
 
-      network_map.batch.datapath_networks_dataset.on_segment(datapath_info).all.commit(:fill => :datapath).each { |dpn_map|
+      network_map.batch.datapath_networks_dataset.on_segment(@datapath_info).all.commit(:fill => :datapath).each { |dpn_map|
         self.insert(dpn_map)
       }
 
@@ -89,6 +91,17 @@ module Vnet::Openflow
                            })
 
       @datapath.add_flows(flows)
+    end
+
+    def set_datapath_info(datapath_info)
+      if @datapath_info
+        raise("Manager.set_datapath_info called twice.")
+      end
+
+      @datapath_info = datapath_info
+      
+      # We need to update remote interfaces in case they are now in
+      # our datapath.
     end
 
   end

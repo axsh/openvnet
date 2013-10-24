@@ -210,9 +210,11 @@ module Vnet::Openflow
       @datapath_info = DatapathInfo.new(id: @datapath_map.id,
                                         uuid: @datapath_map.uuid,
                                         display_name: @datapath_map.display_name,
+                                        dc_segment_id: @datapath_map.dc_segment_id,
                                         ipv4_address: IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET))
 
       @dp_info.datapath_manager.set_datapath_info(@datapath_info)
+      @dp_info.dc_segment_manager.set_datapath_info(@datapath_info)
       @dp_info.interface_manager.set_datapath_info(@datapath_info)
       @dp_info.network_manager.set_datapath_info(@datapath_info)
       @dp_info.service_manager.set_datapath_info(@datapath_info)
