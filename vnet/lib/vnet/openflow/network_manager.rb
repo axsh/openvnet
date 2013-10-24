@@ -34,7 +34,7 @@ module Vnet::Openflow
         @items.each { |id, item| item.remove_interface(params) }
         return nil
       when :update_all
-        # @items.each { |id, item| item.update_interface(params) }
+        @items.each { |id, item| item.update_interface(params) }
         return nil
       end
 
