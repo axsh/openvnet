@@ -44,11 +44,13 @@ module Vnet::Openflow
       end
 
       MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
+        item = item_by_params(dst_id: target_dp_map.id)
+
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
         tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
                                        dst_datapath_id: target_dp_map.id,
                                        display_name: tunnel_name)
-
+        
         create_item(tunnel_map, dst_dp_map: target_dp_map)
       }
     end
@@ -132,6 +134,7 @@ module Vnet::Openflow
       return false if params[:uuid] && params[:uuid] != item.uuid
       return false if params[:display_name] && params[:display_name] != item.display_name
       return false if params[:port_name] && params[:port_name] != item.display_name
+      return false if params[:dst_id] && params[:dst_id] != item.dst_id
       return false if params[:dst_dpid] && params[:dst_dpid] != item.dst_dpid
       true
     end
@@ -142,10 +145,11 @@ module Vnet::Openflow
       return nil if @datapath_info.nil?
 
       case
-      when params[:id] then { :id => params[:id] }
-      when params[:uuid] then { :uuid => params[:uuid] }
+      when params[:id]           then { :id => params[:id] }
+      when params[:uuid]         then { :uuid => params[:uuid] }
       when params[:display_name] then { :display_name => params[:display_name] }
-      when params[:port_name] then { :display_name => params[:port_name] }
+      when params[:port_name]    then { :display_name => params[:port_name] }
+      when params[:dst_id]       then { :dst_datapath_id => params[:dst_id] }
       else
         # Any invalid params that should cause an exception needs to
         # be caught by the item_by_params_direct method.

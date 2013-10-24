@@ -106,6 +106,7 @@ module Vnet::Openflow
     # Override these method to support additional parameters.
     #
 
+    # Optimize this by returning a proc block.
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid

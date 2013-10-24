@@ -119,6 +119,8 @@ module Vnet::Openflow
       network = network_initialize(item_map.network_mode.to_sym, item_map)
       @items[network.id] = network
 
+      # Dispatch event here.
+
       debug log_format("create #{item_map.uuid}/#{item_map.id}")
 
       if @datapath_info.nil?
@@ -144,6 +146,7 @@ module Vnet::Openflow
       @dp_info.tunnel_manager.async.prepare_network(item_map, @datapath_info)
       @dp_info.route_manager.async.prepare_network(item_map, @datapath_info)
 
+      # Move the dispatch event or verify if still in @items.
       dispatch_event("network/added",
                      network_id: network.id,
                      dpid: @dpid)
