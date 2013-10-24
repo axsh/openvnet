@@ -1,7 +1,9 @@
-wakame-vnet
-===========
+OpenVNet
+========
 
 Data Center Level Virtual Network Toolkit
+
+- http://openvnet.com
 
 License
 -------

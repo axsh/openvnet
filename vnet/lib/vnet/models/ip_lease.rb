@@ -4,6 +4,7 @@ module Vnet::Models
   class IpLease < Base
     taggable 'il'
 
+    plugin :paranoia
     plugin :ip_address
 
     dataset_module do
@@ -14,6 +15,10 @@ module Vnet::Models
       def join_ip_addresses
         self.join(:ip_addresses, ip_addresses__id: :ip_leases__ip_address_id)
       end
+    end
+
+    def cookie_id
+      self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count
     end
 
     def to_hash
