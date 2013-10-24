@@ -14,6 +14,7 @@ module Vnet::Openflow
       flows = groups.map { |g| g.install(interface) }.flatten
 
       @dp_info.add_flows(flows)
+      @dp_info.send_packet_out(message, OFPP_TABLE)
     end
 
     def insert_catch_flow(interface)
@@ -22,9 +23,7 @@ module Vnet::Openflow
         interface.flow_create(:default,
                               table: TABLE_INTERFACE_INGRESS_FILTER,
                               priority: 1,
-                              match_metadata: {
-                                :interface => interface.id
-                              },
+                              match_metadata: { interface: interface.id },
                               cookie: cookie,
                               actions: {
                                 output: Controller::OFPP_CONTROLLER
