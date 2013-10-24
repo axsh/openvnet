@@ -76,7 +76,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Interface.batch[filter].commit(:fill => [{:mac_leases => {:ip_leases => [:ip_address, :cookie_id]}}])
+      MW::Interface.batch[filter].commit(fill: [ { mac_leases: [ :cookie_id, { :ip_leases => [:ip_address, :cookie_id] } ] } ])
     end
 
     def create_item(item_map, params)
@@ -122,7 +122,7 @@ module Vnet::Openflow
 
       item_map.mac_leases.each do |mac_lease|
         mac_address = Trema::Mac.new(mac_lease.mac_address)
-        interface.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
+        interface.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address, cookie_id: mac_lease.cookie_id)
 
         mac_lease.ip_leases.each { |ip_lease|
           ipv4_address = ip_lease.ip_address.ipv4_address
@@ -159,12 +159,12 @@ module Vnet::Openflow
     #
 
     def leased_mac_address(item, params)
-      mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(:fill => [:interface])
+      mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(fill: [:cookie_id, :interface])
 
       return unless mac_lease && mac_lease.interface_id == item.id
 
       mac_address = Trema::Mac.new(mac_lease.mac_address)
-      item.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
+      item.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address, cookie_id: mac_lease.cookie_id)
     end
 
     def released_mac_address(item, params)
