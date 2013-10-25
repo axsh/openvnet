@@ -169,15 +169,7 @@ module Vnet::Openflow
 
     def subscribe_events
       self.class.events.each do |event, method|
-        # FIXME
-        # We should raise error if Celluloid::Notifications is not working.
-        # If you know how to start notifier actor correctly in rspec, remove 'begin ~ rescue' clouse.
-        begin
-          subscribe(event, :handle_event)
-        rescue Celluloid::DeadActorError => e
-          error e.message
-          error e.backtrace
-        end
+        subscribe(event, :handle_event)
       end
     end
 
