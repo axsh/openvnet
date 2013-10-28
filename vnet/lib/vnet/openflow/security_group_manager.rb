@@ -38,8 +38,6 @@ module Vnet::Openflow
     def catch_new_connection(interface, mac_info, ipv4_info)
       cookie = interface.id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
       flows = [
-        # Capture all ip traffic so we can open holes in the firewall for responses
-        # TODO: Limit this to udp and tcp
         flow_create(:default,
                     table: TABLE_VIF_PORTS,
                     priority: 20,
@@ -49,8 +47,17 @@ module Vnet::Openflow
                       ip_proto: IPV4_PROTOCOL_TCP
                     },
                     match_metadata: { interface: interface.id },
-                    # write_metadata: { network: ipv4_info[:network_id] },
-                    # cookie: interface.cookie_for_ip_lease(ipv4_info[:ip_lease_id]),
+                    cookie: cookie,
+                    actions: { output: Controller::OFPP_CONTROLLER }),
+        flow_create(:default,
+                    table: TABLE_VIF_PORTS,
+                    priority: 20,
+                    match: {
+                      eth_src: mac_info[:mac_address],
+                      eth_type: ETH_TYPE_IPV4,
+                      ip_proto: IPV4_PROTOCOL_UDP
+                    },
+                    match_metadata: { interface: interface.id },
                     cookie: cookie,
                     actions: { output: Controller::OFPP_CONTROLLER }),
       ]
@@ -63,6 +70,7 @@ module Vnet::Openflow
       debug "opening new connection"
       interface_id = message.cookie & COOKIE_ID_MASK
       interface = MW::Interface.batch[interface_id].commit
+
       #TODO: Write this as a single query despite model wrappers
       ip_addrs = MW::IpAddress.batch.filter(:ipv4_address => message.ipv4_src.to_i).all.commit
       ip_lease = MW::IpLease.batch.filter(
@@ -74,7 +82,35 @@ module Vnet::Openflow
 
       cookie = interface.id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
 
-      flows = if message.tcp?
+      match_egress, match_ingress = if message.tcp?
+        [
+          {
+            ip_proto: IPV4_PROTOCOL_TCP,
+            tcp_src:  message.tcp_src,
+            tcp_dst:  message.tcp_dst
+          },
+          {
+            ip_proto: IPV4_PROTOCOL_TCP,
+            tcp_src:  message.tcp_dst,
+            tcp_dst:  message.tcp_src
+          }
+        ]
+      elsif message.udp?
+        [
+          {
+            ip_proto: IPV4_PROTOCOL_UDP,
+            udp_src:  message.udp_src,
+            udp_dst:  message.udp_dst
+          },
+          {
+            ip_proto: IPV4_PROTOCOL_UDP,
+            udp_src:  message.udp_dst,
+            udp_dst:  message.udp_src
+          }
+        ]
+      end
+
+      flows = if message.tcp? || message.udp?
         [
           flow_create(:default,
                       table: TABLE_VIF_PORTS,
@@ -84,11 +120,7 @@ module Vnet::Openflow
                         eth_type: message.eth_type,
                         ipv4_src: message.ipv4_src,
                         ipv4_dst: message.ipv4_dst,
-                        #TODO: Don't hard code this to tcp
-                        ip_proto: IPV4_PROTOCOL_TCP,
-                        tcp_src:  message.tcp_src,
-                        tcp_dst:  message.tcp_dst
-                      },
+                      }.merge(match_egress),
                       match_metadata: { interface: interface.id },
                       write_metadata: { network: network.id },
                       # cookie: interface.cookie_for_ip_lease(ip_lease.id),
@@ -103,11 +135,7 @@ module Vnet::Openflow
                         eth_type: ETH_TYPE_IPV4,
                         ipv4_src:   message.ipv4_dst,
                         ipv4_dst:   message.ipv4_src,
-                        #TODO: Don't hard code this to tcp
-                        ip_proto: IPV4_PROTOCOL_TCP,
-                        tcp_src:  message.tcp_dst,
-                        tcp_dst:  message.tcp_src
-                      },
+                      }.merge(match_ingress),
                       match_metadata: { interface: interface.id },
                       goto_table: TABLE_INTERFACE_VIF)
         ]

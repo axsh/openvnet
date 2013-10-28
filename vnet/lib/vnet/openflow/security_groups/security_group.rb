@@ -46,20 +46,6 @@ module Vnet::Openflow::SecurityGroups
   end
 
   class UDP < Rule
-    def install(interface)
-      flow_create(
-        :default,
-        table: TABLE_INTERFACE_INGRESS_FILTER,
-        priority: RULE_PRIORITY,
-        match_metadata: {interface: interface.id},
-        match: match_ipv4_subnet_src(@s_ipv4.u32, @s_ipv4.prefix.to_i).merge(match),
-        cookie: @cookie,
-        actions: {
-          output: Vnet::Openflow::Controller::OFPP_CONTROLLER
-        }
-      )
-    end
-
     def match
       {
         ip_proto: IPV4_PROTOCOL_UDP,
