@@ -81,7 +81,15 @@ module Vnet::Openflow::Ports
                            flow_options)
 
       @dp_info.add_flows(flows)
-      @dp_info.network_manager.update_all_flows
+      @dp_info.network_manager.async.update_all_flows
+
+      @dp_info.dc_segment_manager.async.update(event: :insert_port_number,
+                                               port_number: self.port_number)
+    end
+
+    def uninstall
+      @dp_info.dc_segment_manager.async.update(event: :remove_port_number,
+                                               port_number: self.port_number)
     end
 
   end

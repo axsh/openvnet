@@ -67,6 +67,7 @@ module Vnet::Openflow
       @controller = @dp_info.controller
       @ovs_ofctl = @dp_info.ovs_ofctl
 
+      # TODO: Remove these...
       @cookie_manager = @dp_info.cookie_manager
       @dc_segment_manager = @dp_info.dc_segment_manager
       @interface_manager = @dp_info.interface_manager
