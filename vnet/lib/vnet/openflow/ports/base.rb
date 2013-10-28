@@ -19,7 +19,7 @@ module Vnet::Openflow::Ports
       @dp_info = dp_info
       @port_info = port_info
 
-      @cookie = self.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
+      @cookie = self.port_number | COOKIE_TYPE_PORT
     end
 
     def port_number

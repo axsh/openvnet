@@ -100,7 +100,7 @@ module Vnet::Openflow
         :packet_handler => packet_handler
       }
 
-      cookie = link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
+      cookie = link[:id] | COOKIE_TYPE_ROUTE_LINK
 
       @route_links[rl_map.id] = link
       @datapath.packet_manager.insert(packet_handler, nil, cookie)
@@ -264,7 +264,7 @@ module Vnet::Openflow
     end
 
     def create_route_flows(route_link, route)
-      cookie = route[:id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+      cookie = route[:id] | COOKIE_TYPE_ROUTE
 
       flows = []
       route_link_md = md_create(:route_link => route_link[:id])
@@ -332,7 +332,7 @@ module Vnet::Openflow
     end
 
     def create_interface_flows(interface)
-      cookie = interface[:id] | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
+      cookie = interface[:id] | COOKIE_TYPE_INTERFACE
       network_md = md_create(:network => interface[:network_id])
 
       goto_table = TABLE_NETWORK_DST_CLASSIFIER
@@ -378,7 +378,7 @@ module Vnet::Openflow
     end
 
     def install_route_handler(route_link, route)
-      link_cookie = route_link[:id] | (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
+      link_cookie = route_link[:id] | COOKIE_TYPE_ROUTE_LINK
 
       pm = @datapath.packet_manager
       pm.dispatch(link_cookie) { |key, handler|

@@ -86,7 +86,7 @@ module Vnet::Openflow
                          match: { :eth_dst => Trema::Mac.new(dpn.broadcast_mac_address) },
                          actions: { :eth_dst => MAC_BROADCAST },
                          write_metadata: { :network => network_map.id },
-                         cookie: network_map.id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
+                         cookie: network_map.id | COOKIE_TYPE_NETWORK,
                          goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
 
       @dp_info.add_flow(flow)
@@ -100,7 +100,7 @@ module Vnet::Openflow
       return if dpn_list.nil?
 
       dpn_list.each { |dpn|
-        @dp_info.del_cookie(dpn[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT))
+        @dp_info.del_cookie(dpn[:id] | COOKIE_TYPE_DP_NETWORK)
       }
     end
 
@@ -123,7 +123,7 @@ module Vnet::Openflow
                          priority: 1,
                          match_metadata: { :network => network_id },
                          actions: flood_actions,
-                         cookie: network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
+                         cookie: network_id | COOKIE_TYPE_NETWORK,
                          goto_table: TABLE_FLOOD_TUNNELS)
 
       @dp_info.add_flow(flow)

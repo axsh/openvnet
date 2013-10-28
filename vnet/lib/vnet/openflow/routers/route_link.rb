@@ -49,7 +49,7 @@ module Vnet::Openflow::Routers
         :egress => route_info[:egress],
       }
 
-      cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+      cookie = route[:route_id] | COOKIE_TYPE_ROUTE
 
       @routes[cookie] = route
 
@@ -105,7 +105,7 @@ module Vnet::Openflow::Routers
     end
 
     def create_destination_flow(route)
-      cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+      cookie = route[:route_id] | COOKIE_TYPE_ROUTE
 
       if route[:require_interface] == true
         catch_route_md = md_create(network: route[:network_id],
