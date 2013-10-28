@@ -34,7 +34,7 @@ module Vnet::Openflow
         @items.each { |id, item| item.remove_interface(params) }
         return nil
       when :update_all
-        # @items.each { |id, item| item.update_interface(params) }
+        @items.each { |id, item| item.update_interface(params) }
         return nil
       end
 
@@ -60,9 +60,9 @@ module Vnet::Openflow
     #
 
     def update_all_flows
-      @items.dup.each { |key,network|
-        debug log_format("updating flows for #{network.uuid}/#{network.id}")
-        network.update_flows
+      @items.dup.each { |key, item|
+        debug log_format("updating flows for #{item.uuid}/#{item.id}")
+        item.update_flows
       }
       nil
     end
@@ -112,37 +112,41 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Network.batch[filter].commit
+      MW::Network.batch[filter].commit(:fill => :network_services)
     end
 
     def create_item(item_map, params)
       network = network_initialize(item_map.network_mode.to_sym, item_map)
       @items[network.id] = network
 
-      dp_map = @dp_info.datapath.datapath_map
+      # Dispatch event here.
 
-      if dp_map.nil?
-        error log_format('datapath information not found in database')
+      debug log_format("create #{item_map.uuid}/#{item_map.id}")
+
+      if @datapath_info.nil?
+        error log_format('datapath information not loaded')
         return network
       end
 
-      dpn_item_map = dp_map.batch.datapath_networks_dataset.where(:network_id => item_map.id).first.commit
+      dpn_item = MW::DatapathNetwork[datapath_id: @datapath_info.id,
+                                     network_id: item_map.id]
 
-      network.set_datapath_of_bridge(dp_map, dpn_item_map, false)
+      network.set_datapath_of_bridge(@datapath_info, dpn_item, false)
 
       network.install
       network.update_flows
 
-      # TODO: Refactor this to only take the network id, and use that
-      # to populate service manager.
-      item_map.batch.network_services.commit.each { |service_map|
-        @dp_info.service_manager.item(:id => service_map.id)
+      item_map.network_services.each { |service_map|
+        @dp_info.service_manager.async.item(id: service_map.id)
       }
 
-      @dp_info.dc_segment_manager.async.prepare_network(item_map, dp_map)
-      @dp_info.tunnel_manager.async.prepare_network(item_map, dp_map)
-      @dp_info.route_manager.async.prepare_network(item_map, dp_map)
+      @dp_info.datapath_manager.async.update_network(event: :activate,
+                                                     network_id: network.id)
+      @dp_info.dc_segment_manager.async.prepare_network(item_map, @datapath_info)
+      @dp_info.tunnel_manager.async.prepare_network(item_map, @datapath_info)
+      @dp_info.route_manager.async.prepare_network(item_map, @datapath_info)
 
+      # Move the dispatch event or verify if still in @items.
       dispatch_event("network/added",
                      network_id: network.id,
                      dpid: @dpid)
@@ -150,22 +154,27 @@ module Vnet::Openflow
     end
 
     def delete_item(item)
+      debug log_format("deleting network #{item.uuid}/#{item.id}")
+
       if_port = item.interfaces.detect { |id, interface|
         interface.port_number
       }
 
       if if_port
+        # TODO: Fix this so it sets remaining ports to unknown mode.
         info log_format('network still has active ports, and can\'t be removed',
                         "#{network.uuid}/#{network.id}")
         return item
       end
 
-      @items.delete(item.network_id)
+      @items.delete(item.id)
 
       item.uninstall
 
       @dp_info.dc_segment_manager.async.remove_network_id(item.id)
-      @dp_info.tunnel_manager.async.delete_tunnel_port(item.id, @dpid)
+      @dp_info.tunnel_manager.async.remove_network_id_for_dpid(item.id, @dpid)
+      @dp_info.datapath_manager.async.update_network(event: :deactivate,
+                                                     network_id: item.id)
 
       dispatch_event("network/deleted",
                      id: item.id,

@@ -31,6 +31,9 @@ DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
     :host => conf.registry.host,
     :port => conf.registry.port })
 
+Vnet::NodeModules::EventHandler.supervise_as :event_handler
+DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
+
 map '/api' do
   use Rack::Cors do
     allow do

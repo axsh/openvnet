@@ -34,7 +34,15 @@ module Vnet::Openflow
       else
         @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
-        error log_format('unknown interface type', "name:#{port.port_info.name}")
+        # Currently only support vif.
+        interface = @dp_info.interface_manager.item(port_name: port_desc.name,
+                                                    port_number: port.port_number)
+
+        if interface
+          prepare_port_vif(port, port_desc, interface)
+        else
+          error log_format('unknown interface type', "name:#{port.port_name}")
+        end
       end
 
       item_to_hash(port)
@@ -55,12 +63,9 @@ module Vnet::Openflow
 
       port.uninstall
 
-      @dp_info.interface_manager.unload(port_number: port_desc.port_no)
-
-      if port.port_name =~ /^if-/
-        @dp_info.interface_manager.update_active_datapaths(uuid: port.port_name,
-                                                            datapath_id: nil)
-      end
+      @dp_info.interface_manager.update_item(event: :clear_port_number,
+                                             port_number: port.port_number,
+                                             dynamic_load: false)
 
       nil
     end
@@ -121,42 +126,54 @@ module Vnet::Openflow
       port.install
     end
 
-    def prepare_port_vif(port, port_desc)
-      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
+    def prepare_port_vif(port, port_desc, interface = nil)
       # TODO: Fix this so that when interface manager creates a new
       # interface, it checks if the port is present and get the
       # port number from port manager.
-      interface = @dp_info.interface_manager.item(uuid: port_desc.name,
-                                                  port_number: port.port_number,
-                                                  reinitialize: true)
+      if interface.nil?
+        @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+
+        interface = @dp_info.interface_manager.item(uuid: port_desc.name,
+                                                    port_number: port.port_number)
+      end
 
       if interface.nil?
-        error log_format("could not find uuid #{port_desc.name}")
+        error log_format("could not find interface for #{port_desc.name}")
         return
       end
 
       if interface.mode != :vif
-        info log_format('vif mode not set to \'vif\'', "mode:#{interface.mode}")
+        info log_format('interface mode not set to \'vif\' for #{interface.uuid}', "mode:#{interface.mode}")
         return
       end
 
-      debug log_format("prepare_port_vif #{interface.uuid}")
-
-      # Do this in interface manager.
-      @dp_info.interface_manager.update_active_datapaths(id: interface.id,
-                                                         datapath_id: @dp_info.datapath.datapath_map.id)
+      debug log_format("prepare_port_vif #{interface.uuid}", "port_name:#{port.port_name}")
 
       port.extend(Ports::Vif)
 
       port.interface_id = interface.id
       port.install
+
+      # We don't need to query the interface before updating it, so do
+      # this directly instead of the item request.
+      interface = @dp_info.interface_manager.update_item(event: :set_port_number,
+                                                         id: interface.id,
+                                                         port_number: port.port_number)
     end
 
     def prepare_port_tunnel(port, port_desc)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
+      tunnel = @dp_info.tunnel_manager.item(port_name: port.port_name)
+
+      if tunnel.nil?
+        error log_format("could not find tunnel for #{port.port_name}")
+        return
+      end
+
       port.extend(Ports::Tunnel)
+
+      port.dst_id = tunnel.dst_id
       port.install
     end
 

@@ -13,6 +13,8 @@ module Vnet::Openflow
     end
 
     def insert(dpn_map)
+      info "dc_segment_manager: insert id:#{dpn_map.id} network.id:#{dpn_map.network_id}"
+
       dpn_list = (@datapath_networks[dpn_map.network_id] ||= {})
 
       if dpn_list.has_key? dpn_map.id
@@ -27,31 +29,13 @@ module Vnet::Openflow
 
       dpn_list[dpn_map.id] = dpn
 
-      actions = {:cookie => dpn[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)}
-
-      flows = []
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_dst => dpn[:broadcast_mac_address]
-                           }, nil, actions)
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_src => dpn[:broadcast_mac_address]
-                           }, nil, actions)
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_dst => dpn[:broadcast_mac_address]
-                           }, nil, actions)
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_src => dpn[:broadcast_mac_address]
-                           }, nil, actions)
-
-      @datapath.add_flows(flows)
-
       self.update_network_id(dpn_map.network_id)
     end
 
-    def prepare_network(network_map, dp_map)
+    def prepare_network(network_map, datapath_info)
       return unless network_map.network_mode == 'virtual'
 
-      network_map.batch.datapath_networks_dataset.on_segment(dp_map).all.commit(:fill => :datapath).each { |dpn_map|
+      network_map.batch.datapath_networks_dataset.on_segment(@datapath_info).all.commit(:fill => :datapath).each { |dpn_map|
         self.insert(dpn_map)
       }
 
@@ -59,7 +43,8 @@ module Vnet::Openflow
       flow_options = {:cookie => cookie}
       nw_virtual_md = flow_options.merge(md_create(:network => network_map.id))
 
-      dpn = network_map.batch.datapath_networks_dataset.on_specific_datapath(dp_map).first.commit
+      dpn = MW::DatapathNetwork[datapath_id: datapath_info.id,
+                                network_id: network_map.id]
 
       flows = []
       flows << Flow.create(TABLE_HOST_PORTS, 30, {
@@ -102,10 +87,21 @@ module Vnet::Openflow
                            md_create(network: network_id),
                            flood_actions, {
                              :cookie => network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT),
-                             :goto_table => TABLE_FLOOD_TUNNEL_IDS
+                             :goto_table => TABLE_FLOOD_TUNNELS
                            })
 
       @datapath.add_flows(flows)
+    end
+
+    def set_datapath_info(datapath_info)
+      if @datapath_info
+        raise("Manager.set_datapath_info called twice.")
+      end
+
+      @datapath_info = datapath_info
+      
+      # We need to update remote interfaces in case they are now in
+      # our datapath.
     end
 
   end

@@ -18,6 +18,17 @@ class MockOvsOfctl
 end
 
 class MockDpInfo < Vnet::Openflow::DpInfo
+
+  attr_reader :added_tunnels
+  attr_reader :deleted_tunnels
+
+  def initialize(params)
+    super
+
+    @added_tunnels = []
+    @deleted_tunnels = []
+  end
+
   def create_mock_port_manager
     @port_manager = MockPortManager.new(self)
   end
@@ -41,15 +52,27 @@ class MockDpInfo < Vnet::Openflow::DpInfo
   def add_ovs_flow(ovs_flow)
     @datapath.added_ovs_flows << ovs_flow
   end
+
+  def add_tunnel(tunnel_name, remote_ip)
+    @added_tunnels << {:tunnel_name => tunnel_name, :remote_ip => remote_ip}
+  end
+
+  def delete_tunnel(tunnel_name)
+    @deleted_tunnels << tunnel_name
+  end
+
+  # Delay initialization of managers.
+  def initialize_managers(ignore = true)
+    super() if !ignore
+  end
+
 end
 
 class MockDatapath < Vnet::Openflow::Datapath
   attr_reader :sent_messages
   attr_accessor :added_flows
   attr_reader :added_ovs_flows
-  attr_reader :added_tunnels
   attr_reader :added_cookie
-  attr_reader :deleted_tunnels
 
   def initialize(ofc, dp_id, ofctl = nil)
     super(ofc, dp_id, ofctl)
@@ -64,18 +87,19 @@ class MockDatapath < Vnet::Openflow::Datapath
     @sent_messages = []
     @added_flows = []
     @added_ovs_flows = []
-    @added_tunnels = []
     @added_cookie = []
-    @deleted_tunnels = []
+
+    @dp_info.initialize_managers(false)
   end
 
   def create_datapath_map
     @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
+    initialize_datapath_info
   end
 
   def create_mock_datapath_map
-    @datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s,
-                                   id: 1)
+    @datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1)
+    initialize_datapath_info
   end
 
   def create_mock_switch
@@ -112,11 +136,4 @@ class MockDatapath < Vnet::Openflow::Datapath
   def mod_port(port_no, action)
   end
 
-  def add_tunnel(tunnel_name, remote_ip)
-    @added_tunnels << {:tunnel_name => tunnel_name, :remote_ip => remote_ip}
-  end
-
-  def delete_tunnel(tunnel_name)
-    @deleted_tunnels << tunnel_name
-  end
 end

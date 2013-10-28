@@ -25,6 +25,7 @@ module Vnet::Openflow::Interfaces
     attr_accessor :id
     attr_accessor :uuid
     attr_accessor :mode
+    attr_accessor :port_name
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
     attr_accessor :display_name
@@ -40,6 +41,7 @@ module Vnet::Openflow::Interfaces
       @id = map.id
       @uuid = map.uuid
       @mode = map.mode.to_sym
+      @port_name = map.port_name
 
       @display_name = map.display_name
 
@@ -141,6 +143,18 @@ module Vnet::Openflow::Interfaces
                                                       port_number: @port_number)
     end
 
+    def update_active_datapath(params)
+      if @owner_datapath_ids.nil?
+        return if @mode != :vif
+      end
+
+      # Currently only supports one active datapath id.
+      active_datapath_ids = [params[:datapath_id]]
+
+      @active_datapath_ids = active_datapath_ids
+      MW::Interface.batch[:id => @id].update(:active_datapath_id => params[:datapath_id]).commit
+    end
+
     #
     # Manage MAC and IP addresses:
     #
@@ -157,6 +171,9 @@ module Vnet::Openflow::Interfaces
       }
 
       @mac_addresses = mac_addresses
+
+      debug log_format("adding mac address to #{@uuid}/#{@id}",
+                       "#{params[:mac_address].to_s}")
 
       # Add to port...
       nil
@@ -198,6 +215,9 @@ module Vnet::Openflow::Interfaces
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
+      debug log_format("adding ipv4 address to #{@uuid}/#{@id}",
+                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
+
       [mac_info, ipv4_info]
     end
 
@@ -216,8 +236,11 @@ module Vnet::Openflow::Interfaces
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
-      del_cookie_for_ip_lease(ipv4_info[:cookie_id])
+      debug log_format("removing ipv4 address from #{@uuid}/#{@id}",
+                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
 
+      del_cookie_for_ip_lease(ipv4_info[:cookie_id])
+      
       [mac_info, ipv4_info]
     end
 
