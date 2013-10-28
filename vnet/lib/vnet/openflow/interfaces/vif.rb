@@ -17,6 +17,10 @@ module Vnet::Openflow::Interfaces
                                                  mode: :vif,
                                                  port_number: @port_number)
 
+      @dp_info.security_group_manager.catch_new_connection(self,
+                                                           mac_info,
+                                                           ipv4_info)
+
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
 
