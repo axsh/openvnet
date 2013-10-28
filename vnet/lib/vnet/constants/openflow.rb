@@ -21,6 +21,13 @@ module Vnet
       IPV4_BROADCAST = IPAddr.new('255.255.255.255')
 
       #
+      # eth types
+      #
+
+      ETH_TYPE_IPV4 = 0x0800
+      ETH_TYPE_ARP  = 0x0806
+
+      #
       # IPv4 protocol codes
       # http://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
       #
