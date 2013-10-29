@@ -78,8 +78,6 @@ module Vnet::Openflow
         Connections::TCP.new.open(message)
       elsif message.udp?
         Connections::UDP.new.open(message)
-      else
-        []
       end
 
       @dp_info.add_flows(flows)
