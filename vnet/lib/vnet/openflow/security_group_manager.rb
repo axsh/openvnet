@@ -35,7 +35,7 @@ module Vnet::Openflow
       end
     end
 
-    def insert_catch_flow(interface)
+    def catch_ingress_packet(interface)
       cookie = interface.id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
       flows = [
         flow_create(:default,
@@ -49,7 +49,7 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
-    def catch_new_connection(interface, mac_info, ipv4_info)
+    def catch_new_egress_connection(interface, mac_info, ipv4_info)
       cookie = interface.id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
 
       flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|

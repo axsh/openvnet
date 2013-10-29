@@ -5,7 +5,7 @@ module Vnet::Openflow::Interfaces
   class Vif < Base
 
     def add_security_groups
-      @dp_info.security_group_manager.insert_catch_flow(self)
+      @dp_info.security_group_manager.catch_ingress_packet(self)
     end
 
     def add_ipv4_address(params)
@@ -17,9 +17,9 @@ module Vnet::Openflow::Interfaces
                                                  mode: :vif,
                                                  port_number: @port_number)
 
-      @dp_info.security_group_manager.catch_new_connection(self,
-                                                           mac_info,
-                                                           ipv4_info)
+      @dp_info.security_group_manager.catch_new_egress_connection(self,
+                                                                  mac_info,
+                                                                  ipv4_info)
 
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
