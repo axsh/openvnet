@@ -72,8 +72,6 @@ module Vnet::Openflow
 
     private
     def open_connection(message)
-      debug "opening new connection"
-
       flows = if message.tcp?
         Connections::TCP.new.open(message)
       elsif message.udp?

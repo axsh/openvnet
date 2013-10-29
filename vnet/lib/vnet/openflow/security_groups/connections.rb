@@ -17,6 +17,8 @@ module Vnet::Openflow::SecurityGroups::Connections
       interface_id = message.cookie & COOKIE_ID_MASK
       interface = MW::Interface.batch[interface_id].commit
 
+      log_new_open(interface, message)
+
       #TODO: Write this as a single query despite model wrappers
       ip_addrs = MW::IpAddress.batch.filter(:ipv4_address => message.ipv4_src.to_i).all.commit
       ip_lease = MW::IpLease.batch.filter(
@@ -54,6 +56,10 @@ module Vnet::Openflow::SecurityGroups::Connections
       ]
     end
 
+    def log_new_open(interface, message)
+      # Override with a log message if you want to
+    end
+
     def match_egress(message)
       raise NotImplementedError, "match_egress"
     end
@@ -64,6 +70,11 @@ module Vnet::Openflow::SecurityGroups::Connections
   end
 
   class TCP < Base
+    def log_new_open(interface, message)
+      debug "'%s' Opening new tcp connection %s:%s => %s:%s" %
+        [interface.uuid, message.ipv4_src, message.tcp_src, message.ipv4_dst, message.tcp_dst]
+    end
+
     def match_egress(message)
       {
         ip_proto: IPV4_PROTOCOL_TCP,
@@ -85,6 +96,11 @@ module Vnet::Openflow::SecurityGroups::Connections
   # tracking here. When we send out a packet, we just open up the source port
   # so we can receive a reply.
   class UDP < Base
+    def log_new_open(interface, message)
+      debug "'%s' Opening new udp connection %s:%s => %s:%s" %
+        [interface.uuid, message.ipv4_src, message.udp_src, message.ipv4_dst, message.udp_dst]
+    end
+
     def match_egress(message)
       {
         ip_proto: IPV4_PROTOCOL_UDP,
