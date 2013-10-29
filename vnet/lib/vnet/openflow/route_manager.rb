@@ -330,33 +330,8 @@ module Vnet::Openflow
     end
 
     def create_interface_flows(interface)
-      cookie = interface[:id] | COOKIE_TYPE_INTERFACE
-      network_md = md_create(:network => interface[:network_id])
-
-      controller_md = md_create({ :network => interface[:network_id],
-                                  :no_controller => nil
-                                })
-
-      flows = []
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 40,
-                           network_md.merge({ :eth_dst => interface[:mac_address],
-                                              :eth_type => 0x0800,
-                                              :ipv4_dst => interface[:ipv4_address]
-                                            }),
-                           nil, {
-                             :cookie => cookie,
-                             :goto_table => TABLE_NETWORK_DST_CLASSIFIER
-                           })
-      flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 30,
-                           network_md.merge({ :eth_dst => interface[:mac_address],
-                                              :eth_type => 0x0800
-                                            }),
-                           nil, {
-                             :cookie => cookie,
-                             :goto_table => TABLE_ROUTER_INGRESS
-                           })
-
-      @dp_info.add_flows(flows)
+      @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
+                                                   id: interface[:id])
     end
 
     def install_route_handler(route_link, route)

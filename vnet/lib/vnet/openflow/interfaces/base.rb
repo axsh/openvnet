@@ -125,12 +125,22 @@ module Vnet::Openflow::Interfaces
                                     owner_datapath_ids: @owner_datapath_ids)
     end
 
+    #
+    # Events:
+    #
+
     def install
     end
 
     def uninstall
       debug "interfaces: removing flows..."
       del_cookie
+    end
+
+    def enable_router_ingress
+    end
+
+    def disable_router_ingress
     end
 
     def update_port_number(new_number)
