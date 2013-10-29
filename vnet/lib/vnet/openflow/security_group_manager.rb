@@ -35,14 +35,17 @@ module Vnet::Openflow
       end
     end
 
-    def catch_ingress_packet(interface)
+    def cookie(interface)
       cookie = interface.id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
+    end
+
+    def catch_ingress_packet(interface)
       flows = [
         flow_create(:default,
                     table: TABLE_INTERFACE_INGRESS_FILTER,
                     priority: 1,
                     match_metadata: { interface: interface.id },
-                    cookie: cookie,
+                    cookie: cookie(interface),
                     actions: { output: Controller::OFPP_CONTROLLER }),
       ]
 
@@ -50,8 +53,6 @@ module Vnet::Openflow
     end
 
     def catch_new_egress_connection(interface, mac_info, ipv4_info)
-      cookie = interface.id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
-
       flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
         flow_create(:default,
                     table: TABLE_VIF_PORTS,
@@ -62,7 +63,7 @@ module Vnet::Openflow
                       ip_proto: protocol
                     },
                     match_metadata: { interface: interface.id },
-                    cookie: cookie,
+                    cookie: cookie(interface),
                     actions: { output: Controller::OFPP_CONTROLLER })
       }
 
