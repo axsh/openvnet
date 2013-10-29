@@ -2,18 +2,12 @@
 
 module Vnet::Openflow
 
-  class RouteManager
-    include Celluloid
-    include Celluloid::Logger
-    include FlowHelpers
+  class RouteManager < Manager
 
     ROUTE_COMMIT = {:fill => [:route_link]}
 
-    def initialize(dp)
-      @datapath = dp
-
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
+    def initialize(dp_info)
+      super
 
       @route_links = {}
       @interfaces = {}
@@ -71,15 +65,19 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} route_manager: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} route_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
+    #
+    # Specialize Manager:
+    #
+
     def datapath_route_link(rl_map)
-      @datapath.datapath_batch.datapath_route_links_dataset.where(:route_link_id => rl_map.id).all.commit
+      @datapath_info.datapath_map.batch.datapath_route_links_dataset.where(:route_link_id => rl_map.id).all.commit
     end
 
     def dp_rl_on_segment(rl_map)
-      rl_map.batch.datapath_route_links_dataset.on_segment(@datapath.datapath_map).all.commit
+      rl_map.batch.datapath_route_links_dataset.on_segment(@datapath_info.datapath_map).all.commit
     end
 
     def prepare_link(rl_map)
@@ -87,7 +85,7 @@ module Vnet::Openflow
       return link if link
 
       mac_address = Trema::Mac.new(rl_map.mac_address)
-      packet_handler = Routers::RouteLink.new(datapath: @datapath,
+      packet_handler = Routers::RouteLink.new(dp_info: @dp_info,
                                               route_link_id: rl_map.id,
                                               route_link_uuid: rl_map.uuid,
                                               mac_address: mac_address)
@@ -103,7 +101,7 @@ module Vnet::Openflow
       cookie = link[:id] | COOKIE_TYPE_ROUTE_LINK
 
       @route_links[rl_map.id] = link
-      @datapath.packet_manager.insert(packet_handler, nil, cookie)
+      @dp_info.packet_manager.insert(packet_handler, nil, cookie)
 
       tunnel_md = md_create(:tunnel => nil)
       route_link_md = md_create(:route_link => link[:id])
@@ -187,12 +185,12 @@ module Vnet::Openflow
 
       # ROUTER_DST catch unknown subnets. ??? (or load all subnets)
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
       link
     end
 
     def prepare_interface(interface_id)
-      interface_item = @datapath.interface_manager.item(id: interface_id)
+      interface_item = @dp_info.interface_manager.item(id: interface_id)
       return nil if interface_item.nil?
 
       info log_format('from interface_manager' , "#{interface_item.uuid}/#{interface_id}")
@@ -246,14 +244,14 @@ module Vnet::Openflow
         return interface
       end
 
-      datapath_id = @datapath.datapath_map.id
+      datapath_id = @datapath_info.datapath_map.id
 
       # Fix this...
       if interface_item.owner_datapath_ids
         if interface_item.owner_datapath_ids.include? datapath_id
-          @datapath.interface_manager.update_item(event: :active_datapath_id,
-                                                  id: interface_item.id,
-                                                  datapath_id: datapath_id)
+          @dp_info.interface_manager.update_item(event: :active_datapath_id,
+                                                 id: interface_item.id,
+                                                 datapath_id: datapath_id)
         else
           interface[:use_datapath_id] = interface_item.owner_datapath_ids.first
         end
@@ -312,7 +310,7 @@ module Vnet::Openflow
           install_route_handler(route_link, route)
         end
 
-        @datapath.add_flows(flows)
+        @dp_info.add_flows(flows)
 
       else
         datapath_md = md_create(:datapath => route[:interface][:use_datapath_id])
@@ -327,7 +325,7 @@ module Vnet::Openflow
                                                  }))
         end
 
-        @datapath.add_flows(flows)
+        @dp_info.add_flows(flows)
       end
     end
 
@@ -374,16 +372,15 @@ module Vnet::Openflow
                              :goto_table => TABLE_ROUTER_INGRESS
                            })
 
-      @datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def install_route_handler(route_link, route)
       link_cookie = route_link[:id] | COOKIE_TYPE_ROUTE_LINK
 
-      pm = @datapath.packet_manager
-      pm.dispatch(link_cookie) { |key, handler|
+      @dp_info.packet_manager.dispatch(link_cookie) { |key, handler|
         route_cookie = handler.insert_route(route)
-        pm.link_cookies(key, route_cookie) if route_cookie
+        @dp_info.packet_manager.link_cookies(key, route_cookie) if route_cookie
       }
     end
 

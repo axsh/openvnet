@@ -7,15 +7,17 @@ module Vnet::Openflow::Routers
   class RouteLink < Vnet::Openflow::PacketHandler
 
     def initialize(params)
-      super(params[:datapath])
+      super(params[:dp_info])
+
+      @dp_info = params[:dp_info]
 
       @routes = {}
       @route_link_id = params[:route_link_id]
       @route_link_uuid = params[:route_link_uuid]
       @mac_address = params[:mac_address]
 
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
+      @dpid = @dp_info.dpid
+      @dpid_s = @dp_info.dpid_s
     end
 
     def install

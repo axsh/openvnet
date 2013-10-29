@@ -10,15 +10,20 @@ module Vnet::Openflow
     attr_reader :uuid
     attr_reader :display_name
 
+    attr_reader :datapath_map
+
     attr_reader :dc_segment_id
     attr_reader :ipv4_address
 
-    def initialize(params)
-      @id = params[:id]
-      @uuid = params[:uuid]
-      @display_name = params[:display_name]
-      @dc_segment_id = params[:dc_segment_id]
-      @ipv4_address = params[:ipv4_address]
+    def initialize(datapath_map)
+      @datapath_map = datapath_map
+
+      @id = datapath_map.id
+      @uuid = datapath_map.uuid
+      @display_name = datapath_map.display_name
+
+      @dc_segment_id = datapath_map.dc_segment_id
+      @ipv4_address = IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET)
     end
 
   end
@@ -208,16 +213,13 @@ module Vnet::Openflow
     end
 
     def initialize_datapath_info
-      @datapath_info = DatapathInfo.new(id: @datapath_map.id,
-                                        uuid: @datapath_map.uuid,
-                                        display_name: @datapath_map.display_name,
-                                        dc_segment_id: @datapath_map.dc_segment_id,
-                                        ipv4_address: IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET))
+      @datapath_info = DatapathInfo.new(@datapath_map)
 
       @dp_info.datapath_manager.set_datapath_info(@datapath_info)
       @dp_info.dc_segment_manager.set_datapath_info(@datapath_info)
       @dp_info.interface_manager.set_datapath_info(@datapath_info)
       @dp_info.network_manager.set_datapath_info(@datapath_info)
+      @dp_info.route_manager.set_datapath_info(@datapath_info)
       @dp_info.service_manager.set_datapath_info(@datapath_info)
       @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
     end
