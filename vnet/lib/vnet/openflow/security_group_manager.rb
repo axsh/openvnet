@@ -4,10 +4,27 @@ module Vnet::Openflow
   class SecurityGroupManager < Manager
     include Vnet::Openflow::FlowHelpers
 
-    COOKIE_TAG_RULE     = 0x1
-    COOKIE_TAG_CONTRACK = 0x2
+    COOKIE_TAG_SG_RULE     = 0x1
+    COOKIE_TAG_SG_CONTRACK = 0x2
+    COOKIE_TAG_SG_ARP      = 0x3
 
     Connections = Vnet::Openflow::SecurityGroups::Connections
+
+    def initialize(*args)
+      super(*args)
+
+      cookie = (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
+        (COOKIE_TAG_SG_ARP | COOKIE_TAG_SHIFT)
+
+      @dp_info.add_flows [
+        flow_create(:default,
+                    table: TABLE_INTERFACE_INGRESS_FILTER,
+                    priority: 100,
+                    cookie: cookie,
+                    match: { eth_type: ETH_TYPE_ARP },
+                    goto_table: TABLE_INTERFACE_VIF)
+      ]
+    end
 
     def packet_in(message)
       case message.table_id
@@ -27,14 +44,6 @@ module Vnet::Openflow
                     match_metadata: { interface: interface.id },
                     cookie: cookie,
                     actions: { output: Controller::OFPP_CONTROLLER }),
-        #TODO: Move this somewhere where it doens't get redone every time
-        # a new interface is deployed.
-        flow_create(:default,
-                    table: TABLE_INTERFACE_INGRESS_FILTER,
-                    priority: 100,
-                    cookie: cookie,
-                    match: { eth_type: ETH_TYPE_ARP },
-                    goto_table: TABLE_INTERFACE_VIF)
       ]
 
       @dp_info.add_flows(flows)
@@ -65,9 +74,9 @@ module Vnet::Openflow
       debug "opening new connection"
 
       flows = if message.tcp?
-        Connections::TCP.new.open(interface, message)
+        Connections::TCP.new.open(message)
       elsif message.udp?
-        Connections::UDP.new.open(interface, message)
+        Connections::UDP.new.open(message)
       else
         []
       end

@@ -10,10 +10,10 @@ module Vnet::Openflow::SecurityGroups::Connections
     def cookie(interface)
       interface.id |
       (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
-      (SGM::COOKIE_TAG_CONTRACK << COOKIE_TAG_SHIFT)
+      (SGM::COOKIE_TAG_SG_CONTRACK << COOKIE_TAG_SHIFT)
     end
 
-    def open(interface, message)
+    def open(message)
       interface_id = message.cookie & COOKIE_ID_MASK
       interface = MW::Interface.batch[interface_id].commit
 
