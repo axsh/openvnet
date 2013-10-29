@@ -16,6 +16,7 @@ module Vnet::Openflow
       cookie = (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
         (COOKIE_TAG_SG_ARP | COOKIE_TAG_SHIFT)
 
+      # We add this rule so ingress filter doesn't have an effect on arp
       @dp_info.add_flows [
         flow_create(:default,
                     table: TABLE_INTERFACE_INGRESS_FILTER,

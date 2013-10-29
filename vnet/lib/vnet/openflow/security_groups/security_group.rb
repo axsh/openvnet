@@ -58,24 +58,35 @@ module Vnet::Openflow::SecurityGroups
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 
+    SGM = Vnet::Openflow::SecurityGroupManager
+
     def initialize(group_wrapper)
       @udp_rules = []; @tcp_rules = []; @icmp_rules = []
       @id = group_wrapper.id
       @uuid = group_wrapper.uuid
-      # rule_factory(group_wrapper.rules)
       group_wrapper.rules.split("\n").each {|line| rule_factory(line) }
     end
 
     def cookie
-      @id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
+      @id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
+      (SGM::COOKIE_TAG_SG_RULE << COOKIE_TAG_SHIFT)
     end
 
     def install(interface)
       debug "installing security group '#{@uuid}' for interface '#{interface.uuid}'"
-      (@icmp_rules + @udp_rules + @tcp_rules).map { |r| r.install(interface) }
+      (@icmp_rules + @udp_rules + @tcp_rules).map { |r| r.install(interface) } <<
+      install_drop_flow(interface)
     end
 
     private
+    def install_drop_flow(interface)
+      flow_create(:default,
+                  table: TABLE_INTERFACE_INGRESS_FILTER,
+                  priority: 2,
+                  match_metadata: { interface: interface.id},
+                  cookie: cookie)
+    end
+
     def rule_factory(rule_string)
       protocol, port, ipv4 = rule_string.split(":")
       case protocol
