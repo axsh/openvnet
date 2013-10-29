@@ -234,6 +234,9 @@ module Vnet::Openflow::Interfaces
                            match_metadata: {
                              :network => ipv4_info[:network_id]
                            },
+                           write_metadata: {
+                             :interface => @id
+                           },
                            cookie: cookie,
                            goto_table: TABLE_ROUTER_INGRESS)
       flows << flow_create(:default,

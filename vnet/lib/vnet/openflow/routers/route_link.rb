@@ -38,7 +38,6 @@ module Vnet::Openflow::Routers
         :route_id => route_info[:id],
         :route_uuid => route_info[:uuid],
         :network_id => route_info[:interface][:network_id],
-        :network_type => route_info[:interface][:network_type],
 
         :require_interface => route_info[:interface][:require_interface],
         :active_datapath_id => route_info[:interface][:active_datapath_id],

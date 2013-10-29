@@ -227,10 +227,8 @@ module Vnet::Openflow
       case ipv4_info[:network_type]
       when :physical
         interface[:require_interface] = false
-        interface[:network_type] = :physical_network
       when :virtual
         interface[:require_interface] = true
-        interface[:network_type] = :virtual_network
       else
         warn log_format('interface does not have a known network type', "#{interface_item.uuid}")
         return nil
@@ -256,7 +254,11 @@ module Vnet::Openflow
           interface[:use_datapath_id] = interface_item.owner_datapath_ids.first
         end
       end
-      create_interface_flows(interface) if interface[:use_datapath_id].nil?
+
+      if interface[:use_datapath_id].nil?
+        @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
+                                                     id: interface[:id])
+      end
 
       interface
     end
@@ -278,6 +280,7 @@ module Vnet::Openflow
 
       if route[:interface][:use_datapath_id].nil?
         network_md = md_create(network: route[:interface][:network_id])
+        interface_md = md_create(interface: route[:interface][:id])
 
         rl_reflection_md = md_create({ :route_link => route_link[:id],
                                        :reflection => nil
@@ -291,7 +294,7 @@ module Vnet::Openflow
 
         if route[:ingress] == true
           flows << Flow.create(TABLE_ROUTER_INGRESS, priority,
-                               network_md.merge(subnet_src).merge(:eth_dst => route[:interface][:mac_address]),
+                               interface_md.merge(subnet_src),
                                nil,
                                rl_reflection_md.merge({ :cookie => cookie,
                                                         :goto_table => TABLE_ROUTER_EGRESS
@@ -327,11 +330,6 @@ module Vnet::Openflow
 
         @dp_info.add_flows(flows)
       end
-    end
-
-    def create_interface_flows(interface)
-      @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
-                                                   id: interface[:id])
     end
 
     def install_route_handler(route_link, route)
