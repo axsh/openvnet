@@ -138,7 +138,7 @@ module Vnet::Openflow
                              :eth_dst => link[:mac_address]
                            }, nil,
                            route_link_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTER_EGRESS
+                                                 :goto_table => TABLE_ROUTE_LINK
                                                }))
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
                              :eth_dst => link[:mac_address]
@@ -175,7 +175,7 @@ module Vnet::Openflow
                                :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
                              }, nil,
                              route_link_md.merge({ :cookie => cookie,
-                                                   :goto_table => TABLE_ROUTER_EGRESS
+                                                   :goto_table => TABLE_ROUTE_LINK
                                                  }))
         flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
                                :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
@@ -321,12 +321,12 @@ module Vnet::Openflow
                                interface_md.merge(subnet_src),
                                nil,
                                rl_reflection_md.merge({ :cookie => cookie,
-                                                        :goto_table => TABLE_ROUTER_EGRESS
+                                                        :goto_table => TABLE_ROUTE_LINK
                                                       }))
         end
 
         if route[:egress] == true
-          flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
+          flows << Flow.create(TABLE_ROUTE_LINK, priority,
                                route_link_md.merge(subnet_dst), {
                                  :eth_src => route[:interface][:mac_address]
                                },
@@ -343,7 +343,7 @@ module Vnet::Openflow
         datapath_md = md_create(:datapath => route[:interface][:use_datapath_id])
 
         if route[:egress] == true
-          flows << Flow.create(TABLE_ROUTER_EGRESS, priority,
+          flows << Flow.create(TABLE_ROUTE_LINK, priority,
                                route_link_md.merge(subnet_dst), {
                                  :eth_dst => route_link[:mac_address]
                                },

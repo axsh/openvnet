@@ -71,7 +71,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       flows << Flow.create(TABLE_ROUTER_INGRESS,    0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_EGRESS,     0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTE_LINK,        0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_DST,        0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_ARP_LOOKUP,            0, {}, nil, flow_options)
