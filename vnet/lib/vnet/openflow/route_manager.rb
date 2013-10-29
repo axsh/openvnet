@@ -333,7 +333,6 @@ module Vnet::Openflow
       cookie = interface[:id] | COOKIE_TYPE_INTERFACE
       network_md = md_create(:network => interface[:network_id])
 
-      goto_table = TABLE_NETWORK_DST_CLASSIFIER
       controller_md = md_create({ :network => interface[:network_id],
                                   :no_controller => nil
                                 })
@@ -346,23 +345,8 @@ module Vnet::Openflow
                                             }),
                            nil, {
                              :cookie => cookie,
-                             :goto_table => goto_table
+                             :goto_table => TABLE_NETWORK_DST_CLASSIFIER
                            })
-      flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
-                             :eth_dst => interface[:mac_address],
-                             :eth_type => 0x0800,
-                             :ipv4_dst => interface[:ipv4_address]
-                           },
-                           nil,
-                           network_md.merge(cookie: cookie,
-                                            goto_table: TABLE_ROUTER_CLASSIFIER))
-      flows << Flow.create(TABLE_CONTROLLER_PORT, 40, {
-                             :eth_dst => interface[:mac_address],
-                             :eth_type => 0x0806
-                           },
-                           nil,
-                           network_md.merge(cookie: cookie,
-                                            goto_table: TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 30,
                            network_md.merge({ :eth_dst => interface[:mac_address],
                                               :eth_type => 0x0800
