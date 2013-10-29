@@ -215,6 +215,10 @@ module Vnet
 
     module SecurityGroups
       autoload :SecurityGroup, 'vnet/openflow/security_groups/security_group'
+      module Connections
+        autoload :TCP, 'vnet/openflow/security_groups/connections'
+        autoload :UDP, 'vnet/openflow/security_groups/connections'
+      end
     end
 
     module Services
