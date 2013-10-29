@@ -48,6 +48,8 @@ module Vnet::Openflow::Routers
 
         :ingress => route_info[:ingress],
         :egress => route_info[:egress],
+
+        :route_link => self
       }
 
       cookie = route[:route_id] | COOKIE_TYPE_ROUTE

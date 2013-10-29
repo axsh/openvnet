@@ -13,6 +13,23 @@ module Vnet::Openflow
       @interfaces = {}
     end
 
+    def packet_in(message)
+      case message.cookie >> COOKIE_PREFIX_SHIFT
+      when COOKIE_PREFIX_ROUTE
+        item = @items[message.cookie & COOKIE_ID_MASK]
+        item[:route_link][:packet_handler].packet_in(message) if item
+      when COOKIE_PREFIX_ROUTE_LINK
+        route_link = @route_links[message.cookie & COOKIE_ID_MASK]
+        route_link.packet_in(message) if route_link
+      end
+
+      nil
+    end
+
+    #
+    # Refactor:
+    #
+
     def insert(route_map)
       route_link = prepare_link(route_map.route_link)
 
@@ -31,8 +48,11 @@ module Vnet::Openflow
         :ipv4_prefix => route_map.ipv4_prefix,
         :ingress => route_map.ingress,
         :egress => route_map.egress,
+
+        :route_link => route_link
       }
 
+      @items[route[:id]] = route
       route_link[:routes][route[:id]] = route
 
       route[:interface] = prepare_interface(route_map.interface_id)
@@ -72,6 +92,11 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+
+    #
+    # Refactor:
+    #
+
     def datapath_route_link(rl_map)
       @datapath_info.datapath_map.batch.datapath_route_links_dataset.where(:route_link_id => rl_map.id).all.commit
     end
@@ -101,7 +126,6 @@ module Vnet::Openflow
       cookie = link[:id] | COOKIE_TYPE_ROUTE_LINK
 
       @route_links[rl_map.id] = link
-      @dp_info.packet_manager.insert(packet_handler, nil, cookie)
 
       tunnel_md = md_create(:tunnel => nil)
       route_link_md = md_create(:route_link => link[:id])
@@ -310,7 +334,7 @@ module Vnet::Openflow
                                                   :goto_table => TABLE_ROUTER_DST
                                                 }))
 
-          install_route_handler(route_link, route)
+          route_link[:packet_handler].insert_route(route)
         end
 
         @dp_info.add_flows(flows)
@@ -330,15 +354,6 @@ module Vnet::Openflow
 
         @dp_info.add_flows(flows)
       end
-    end
-
-    def install_route_handler(route_link, route)
-      link_cookie = route_link[:id] | COOKIE_TYPE_ROUTE_LINK
-
-      @dp_info.packet_manager.dispatch(link_cookie) { |key, handler|
-        route_cookie = handler.insert_route(route)
-        @dp_info.packet_manager.link_cookies(key, route_cookie) if route_cookie
-      }
     end
 
   end
