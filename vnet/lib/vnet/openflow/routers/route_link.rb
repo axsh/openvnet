@@ -200,7 +200,7 @@ module Vnet::Openflow::Routers
       # required by the old in_port.
       #
       # The route link is identified by eth_dst, which was set in
-      # TABLE_ROUTE_LINK prior to be sent to the controller.
+      # TABLE_ROUTE_LINK_EGRESS prior to be sent to the controller.
       message.match.in_port = OFPP_CONTROLLER
 
       @datapath.send_packet_out(message, OFPP_TABLE)

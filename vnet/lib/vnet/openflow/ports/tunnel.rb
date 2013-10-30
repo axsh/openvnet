@@ -24,7 +24,7 @@ module Vnet::Openflow::Ports
                            match: {
                              :in_port => self.port_number
                            },
-                           goto_table: TABLE_ROUTER_CLASSIFIER)
+                           goto_table: TABLE_ROUTE_INGRESS)
       flows << flow_create(:default,
                            table: TABLE_OUTPUT_DATAPATH,
                            priority: 5,

@@ -106,7 +106,7 @@ module Vnet::Openflow
           :network => params[:network_id],
           :local => nil
         }
-        goto_table = TABLE_ROUTER_CLASSIFIER
+        goto_table = TABLE_ROUTE_INGRESS
       when :network_src_ipv4_match
         table = table_network_src(params[:network_type])
         priority = 45
@@ -114,7 +114,7 @@ module Vnet::Openflow
           :network => params[:network_id],
           :local => nil
         }
-        goto_table = TABLE_ROUTER_CLASSIFIER
+        goto_table = TABLE_ROUTE_INGRESS
       when :network_src_mac_match
         table = table_network_src(params[:network_type])
         priority = 35
@@ -122,7 +122,7 @@ module Vnet::Openflow
           :network => params[:network_id],
           :local => nil
         }
-        goto_table = TABLE_ROUTER_CLASSIFIER
+        goto_table = TABLE_ROUTE_INGRESS
       when :router_dst_match
         table = TABLE_ROUTER_DST
         priority = 40
@@ -151,18 +151,18 @@ module Vnet::Openflow
         goto_table = TABLE_INTERFACE_EGRESS_MAC
 
       when :router_classifier
-        table = TABLE_ROUTER_CLASSIFIER
+        table = TABLE_ROUTE_INGRESS
         match_metadata = { :network => params[:network_id] }
         if params[:ingress_interface_id]
           priority = 10
           write_metadata = { :interface => params[:ingress_interface_id] }
-          goto_table = TABLE_ROUTER_INGRESS
+          goto_table = TABLE_ROUTE_LINK_INGRESS
         else
           priority = 20
-          goto_table = TABLE_ROUTER_INGRESS
+          goto_table = TABLE_ROUTE_LINK_INGRESS
         end          
       when :route_link_egress
-        table = TABLE_ROUTE_LINK
+        table = TABLE_ROUTE_LINK_EGRESS
         priority = params[:default_route] ? 20 : 30
         match_metadata = { :route_link => params[:route_link_id] }
         write_metadata = { :interface => params[:write_interface_id] }

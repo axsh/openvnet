@@ -51,13 +51,12 @@ module Vnet
       TABLE_VIRTUAL_SRC       = 21
       TABLE_PHYSICAL_SRC      = 22
 
-      TABLE_ROUTER_CLASSIFIER = 33
-      TABLE_ROUTER_INGRESS    = 34
-      TABLE_ROUTE_LINK        = 35
-      TABLE_ROUTE_EGRESS      = 36
-      TABLE_ROUTER_DST        = 37
-
-      TABLE_ARP_LOOKUP        = 38
+      TABLE_ROUTE_INGRESS      = 33
+      TABLE_ROUTE_LINK_INGRESS = 34
+      TABLE_ROUTE_LINK_EGRESS  = 35
+      TABLE_ROUTE_EGRESS       = 36
+      TABLE_ROUTER_DST         = 37
+      TABLE_ARP_LOOKUP         = 38
 
       TABLE_NETWORK_DST_CLASSIFIER = 40
       TABLE_VIRTUAL_DST            = 41
