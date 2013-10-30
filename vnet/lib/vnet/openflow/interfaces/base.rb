@@ -389,7 +389,7 @@ module Vnet::Openflow::Interfaces
                              :network => ipv4_info[:network_id]
                            },
                            cookie: cookie,
-                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+                           goto_table: TABLE_ROUTER_DST)
 
       # TODO: Currently only one mac address / network is supported.
       flows << flow_create(:default,
