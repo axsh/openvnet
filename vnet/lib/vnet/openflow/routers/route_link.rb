@@ -7,15 +7,17 @@ module Vnet::Openflow::Routers
   class RouteLink < Vnet::Openflow::PacketHandler
 
     def initialize(params)
-      super(params[:datapath])
+      super(params[:dp_info])
+
+      @dp_info = params[:dp_info]
 
       @routes = {}
       @route_link_id = params[:route_link_id]
       @route_link_uuid = params[:route_link_uuid]
       @mac_address = params[:mac_address]
 
-      @dpid = @datapath.dpid
-      @dpid_s = "0x%016x" % @datapath.dpid
+      @dpid = @dp_info.dpid
+      @dpid_s = @dp_info.dpid_s
     end
 
     def install
@@ -36,7 +38,6 @@ module Vnet::Openflow::Routers
         :route_id => route_info[:id],
         :route_uuid => route_info[:uuid],
         :network_id => route_info[:interface][:network_id],
-        :network_type => route_info[:interface][:network_type],
 
         :require_interface => route_info[:interface][:require_interface],
         :active_datapath_id => route_info[:interface][:active_datapath_id],
@@ -47,9 +48,11 @@ module Vnet::Openflow::Routers
 
         :ingress => route_info[:ingress],
         :egress => route_info[:egress],
+
+        :route_link => self
       }
 
-      cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+      cookie = route[:route_id] | COOKIE_TYPE_ROUTE
 
       @routes[cookie] = route
 
@@ -105,7 +108,7 @@ module Vnet::Openflow::Routers
     end
 
     def create_destination_flow(route)
-      cookie = route[:route_id] | (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+      cookie = route[:route_id] | COOKIE_TYPE_ROUTE
 
       if route[:require_interface] == true
         catch_route_md = md_create(network: route[:network_id],
@@ -197,7 +200,7 @@ module Vnet::Openflow::Routers
       # required by the old in_port.
       #
       # The route link is identified by eth_dst, which was set in
-      # TABLE_ROUTER_EGRESS prior to be sent to the controller.
+      # TABLE_ROUTE_LINK prior to be sent to the controller.
       message.match.in_port = OFPP_CONTROLLER
 
       @datapath.send_packet_out(message, OFPP_TABLE)

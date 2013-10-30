@@ -217,7 +217,7 @@ module Vnet::Openflow
         actions << {:output => item.port_number}
       }
 
-      cookie = network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      cookie = network_id | COOKIE_TYPE_NETWORK
 
       flows = []
       flows << flow_create(:default,

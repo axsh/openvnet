@@ -97,7 +97,7 @@ module Vnet::Openflow
       match_md = md_create(:network => ipv4_info[:network_id])
       reflection_md = md_create(:reflection => nil)
 
-      cookie = ipv4_info[:network_id] | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      cookie = ipv4_info[:network_id] | COOKIE_TYPE_NETWORK
 
       flow = Flow.create(TABLE_ARP_LOOKUP, 25,
                          match_md.merge({ :eth_type => 0x0800,

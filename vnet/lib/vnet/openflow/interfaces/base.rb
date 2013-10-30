@@ -77,7 +77,7 @@ module Vnet::Openflow::Interfaces
         raise "Invalid cookie optional value: %#x" % value
       end
       @id |
-        (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) |
+        COOKIE_TYPE_INTERFACE |
         type << COOKIE_TAG_SHIFT |
         value << OPTIONAL_VALUE_SHIFT
     end
@@ -125,12 +125,22 @@ module Vnet::Openflow::Interfaces
                                     owner_datapath_ids: @owner_datapath_ids)
     end
 
+    #
+    # Events:
+    #
+
     def install
     end
 
     def uninstall
       debug "interfaces: removing flows..."
       del_cookie
+    end
+
+    def enable_router_ingress
+    end
+
+    def disable_router_ingress
     end
 
     def update_port_number(new_number)
@@ -292,6 +302,40 @@ module Vnet::Openflow::Interfaces
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def flows_for_interface_ipv4(flows, mac_info, ipv4_info)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0800,
+                             :eth_src => mac_info[:mac_address],
+                             :ipv4_src => IPV4_ZERO
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0800,
+                             :eth_src => mac_info[:mac_address],
+                             :ipv4_src => ipv4_info[:ipv4_address]
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0806,
+                             :eth_src => mac_info[:mac_address],
+                             :arp_sha => mac_info[:mac_address],
+                             :arp_spa => ipv4_info[:ipv4_address]
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
     end
 
   end

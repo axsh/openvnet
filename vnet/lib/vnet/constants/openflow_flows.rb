@@ -20,9 +20,6 @@ module Vnet
       TABLE_TUNNEL_PORTS = 3
       TABLE_TUNNEL_NETWORK_IDS = 4
 
-      # Match MAC and IPv4 address of vifs to the proper network.
-      TABLE_VIF_PORTS = 5
-
       TABLE_LOCAL_PORT = 6
 
       # For packets explicitly marked as being from the controller.
@@ -38,6 +35,8 @@ module Vnet
       TABLE_EDGE_DST = 9
       TABLE_INTERFACE_EGRESS_FILTER = 10
 
+      TABLE_INTERFACE_CLASSIFIER = 11
+
       # Initial verification of network number and application of global
       # filtering rules.
       #
@@ -47,28 +46,29 @@ module Vnet
       #
       # Later we will always require a network number to be supplied.
       TABLE_NETWORK_SRC_CLASSIFIER = 20
-      TABLE_NETWORK_DST_CLASSIFIER = 30
 
-      TABLE_VIRTUAL_SRC = 21
-      TABLE_PHYSICAL_SRC = 22
+      TABLE_VIRTUAL_SRC       = 21
+      TABLE_PHYSICAL_SRC      = 22
 
       TABLE_ROUTER_CLASSIFIER = 23
-      TABLE_ROUTER_INGRESS = 24
-      TABLE_ROUTER_EGRESS = 25
-      TABLE_ROUTER_DST = 26
+      TABLE_ROUTER_INGRESS    = 24
+      TABLE_ROUTE_LINK        = 25
 
-      TABLE_ARP_LOOKUP = 27
+      TABLE_ROUTER_DST        = 27
 
-      TABLE_VIRTUAL_DST = 31
-      TABLE_PHYSICAL_DST = 32
+      TABLE_ARP_LOOKUP        = 28
+
+      TABLE_NETWORK_DST_CLASSIFIER = 30
+      TABLE_VIRTUAL_DST            = 31
+      TABLE_PHYSICAL_DST           = 32
 
       TABLE_INTERFACE_INGRESS_FILTER = 33
-      TABLE_INTERFACE_VIF = 34
+      TABLE_INTERFACE_VIF     = 34
 
       # Route based on the mac address only.
       #
       # Deprecated...
-      TABLE_MAC_ROUTE = 36
+      TABLE_MAC_ROUTE       = 35
 
       TABLE_FLOOD_SIMULATED = 40
       TABLE_FLOOD_LOCAL     = 41
@@ -78,20 +78,19 @@ module Vnet
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER     = 46
+      TABLE_OUTPUT_CONTROLLER     = 50
 
       # Send packet to a known datapath id, e.g. using an eth port or
       # tunnel port.
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_OUTPUT_DP_ROUTE_LINK  = 47
-      TABLE_OUTPUT_DATAPATH       = 48
-
-      TABLE_OUTPUT_INTERFACE = 41
+      TABLE_OUTPUT_DP_ROUTE_LINK  = 51
+      TABLE_OUTPUT_DATAPATH       = 52
+      TABLE_OUTPUT_INTERFACE      = 53
 
       #
-      # Metadata, tunnel and cookie flags and masks:
+      # Cookie constants:
       #
 
       COOKIE_ID_MASK = (0xffffffff)
@@ -115,6 +114,23 @@ module Vnet
       COOKIE_PREFIX_INTERFACE      = 0xc
       COOKIE_PREFIX_TRANSLATION    = 0xd
       COOKIE_PREFIX_SECURITY_GROUP = 0xe
+
+      COOKIE_TYPE_DP_NETWORK     = (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_NETWORK        = (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_PACKET_HANDLER = (COOKIE_PREFIX_PACKET_HANDLER << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_PORT           = (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_ROUTE          = (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_ROUTE_LINK     = (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_SERVICE        = (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_SWITCH         = (COOKIE_PREFIX_SWITCH << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_TUNNEL         = (COOKIE_PREFIX_TUNNEL << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_VIF            = (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_INTERFACE      = (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_TRANSLATION    = (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT)
+
+      #
+      # Metadata constants:
+      #
 
       METADATA_FLAGS_SHIFT = 40
       METADATA_FLAGS_MASK = (0xffff << METADATA_FLAGS_SHIFT)
@@ -150,6 +166,10 @@ module Vnet
       METADATA_TYPE_VIRTUAL_TO_EDGE = (0x9 << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0xffffffff
+
+      #
+      # Tunnel constants:
+      #
 
       TUNNEL_FLAG = (0x1 << 31)
       TUNNEL_FLAG_MASK = 0x80000000
