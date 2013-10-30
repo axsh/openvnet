@@ -137,6 +137,7 @@ module Vnet::Openflow
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }
         goto_table = TABLE_INTERFACE_CLASSIFIER
+
       when :interface_classifier
         table = TABLE_INTERFACE_CLASSIFIER
         match_metadata = { :interface => params[:interface_id] }
@@ -148,6 +149,19 @@ module Vnet::Openflow
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_INTERFACE_EGRESS_MAC
+
+      when :router_classifier
+        table = TABLE_ROUTER_CLASSIFIER
+        match_metadata = { :network => params[:network_id] }
+        if params[:ingress_interface_id]
+          priority = 10
+          write_metadata = { :interface => params[:ingress_interface_id] }
+          goto_table = TABLE_ROUTER_INGRESS
+        else
+          priority = 20
+          goto_table = TABLE_ROUTER_INGRESS
+        end          
+
       else
         return nil
       end

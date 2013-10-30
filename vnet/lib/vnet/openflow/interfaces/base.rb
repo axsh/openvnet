@@ -398,34 +398,23 @@ module Vnet::Openflow::Interfaces
     def flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(:default,
-                           table: TABLE_ROUTER_CLASSIFIER,
-                           priority: 30,
+      flows << flow_create(:router_classifier,
                            match: {
-                             :eth_dst => mac_info[:mac_address],
-                             :eth_type => 0x0800
-                           },
-                           match_metadata: {
-                             :network => ipv4_info[:network_id]
-                           },
-                           write_metadata: {
-                             :interface => @id
-                           },
-                           cookie: cookie,
-                           goto_table: TABLE_ROUTER_INGRESS)
-      flows << flow_create(:default,
-                           table: TABLE_ROUTER_CLASSIFIER,
-                           priority: 40,
-                           match: {
-                             :eth_dst => mac_info[:mac_address],
                              :eth_type => 0x0800,
+                             :eth_dst => mac_info[:mac_address]
+                           },
+                           network_id: ipv4_info[:network_id],
+                           ingress_interface_id: @id,
+                           cookie: cookie)
+      flows << flow_create(:router_classifier,
+                           match: {
+                             :eth_type => 0x0800,
+                             :eth_dst => mac_info[:mac_address],
                              :ipv4_dst => ipv4_info[:ipv4_address]
                            },
-                           match_metadata: {
-                             :network => ipv4_info[:network_id]
-                           },
-                           cookie: cookie,
-                           goto_table: TABLE_NETWORK_DST_CLASSIFIER)
+                           network_id: ipv4_info[:network_id],
+                           ingress_interface_id: nil,
+                           cookie: cookie)
     end
 
   end
