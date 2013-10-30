@@ -310,12 +310,6 @@ module Vnet::Openflow
                                        :reflection => nil
                                      })
 
-        # flows << Flow.create(TABLE_CONTROLLER_PORT, priority,
-        #                      subnet_dst.merge(:eth_src => route[:interface][:mac_address]),
-        #                      nil,
-        #                      network_md.merge(cookie: cookie,
-        #                                       goto_table: TABLE_ROUTER_DST))
-
         flows << flow_create(:interface_egress_route,
                              match: subnet_dst,
                              interface_id: route[:interface][:id],

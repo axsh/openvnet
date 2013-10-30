@@ -138,9 +138,24 @@ module Vnet::Openflow::Interfaces
     end
 
     def enable_router_ingress
+      return if @router_ingress != false
+      @router_ingress = true
+
+      flows = []
+
+      @mac_addresses.each { |mac_lease_id, mac_info|
+        flows_for_router_ingress_mac(flows, mac_info)
+
+        mac_info[:ipv4_addresses].each { |ipv4_info|
+          flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
+        }
+      }
+
+      @dp_info.add_flows(flows)
     end
 
     def disable_router_ingress
+      # Not supported atm.
     end
 
     def update_port_number(new_number)
@@ -305,6 +320,11 @@ module Vnet::Openflow::Interfaces
       "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
     end
 
+    # Some flows could be created on demand by checking if the
+    # interface requires egress routing. Currently every interface
+    # creates the flows required for handling routing, even though
+    # those flows will never be touched.
+
     def flows_for_interface_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
@@ -356,6 +376,9 @@ module Vnet::Openflow::Interfaces
                            write_network_id: ipv4_info[:network_id],
                            cookie: cookie)
 
+      #
+      # Not needed unless egress routing is used:
+      #
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_EGRESS_MAC,
                            priority: 20,
@@ -367,6 +390,42 @@ module Vnet::Openflow::Interfaces
                            },
                            cookie: cookie,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+    end
+
+    def flows_for_router_ingress_mac(flows, mac_info)
+    end
+
+    def flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
+      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+
+      flows << flow_create(:default,
+                           table: TABLE_ROUTER_CLASSIFIER,
+                           priority: 30,
+                           match: {
+                             :eth_dst => mac_info[:mac_address],
+                             :eth_type => 0x0800
+                           },
+                           match_metadata: {
+                             :network => ipv4_info[:network_id]
+                           },
+                           write_metadata: {
+                             :interface => @id
+                           },
+                           cookie: cookie,
+                           goto_table: TABLE_ROUTER_INGRESS)
+      flows << flow_create(:default,
+                           table: TABLE_ROUTER_CLASSIFIER,
+                           priority: 40,
+                           match: {
+                             :eth_dst => mac_info[:mac_address],
+                             :eth_type => 0x0800,
+                             :ipv4_dst => ipv4_info[:ipv4_address]
+                           },
+                           match_metadata: {
+                             :network => ipv4_info[:network_id]
+                           },
+                           cookie: cookie,
+                           goto_table: TABLE_NETWORK_DST_CLASSIFIER)
     end
 
   end
