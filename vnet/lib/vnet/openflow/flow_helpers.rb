@@ -53,8 +53,8 @@ module Vnet::Openflow
 
     def flow_create(type, params)
       match = {}
-      match_metadata = nil
-      write_metadata = nil
+      match_metadata = {}
+      write_metadata = {}
 
       case type
       when :catch_arp_lookup
@@ -161,6 +161,13 @@ module Vnet::Openflow
           priority = 20
           goto_table = TABLE_ROUTE_LINK_INGRESS
         end          
+
+      when :route_link_ingress
+        table = TABLE_ROUTE_LINK_INGRESS
+        priority = params[:default_route] ? 20 : 30
+        match_metadata = { :interface => params[:interface_id] }
+        write_metadata = { :route_link => params[:write_route_link_id] }
+        goto_table = TABLE_ROUTE_LINK_EGRESS
       when :route_link_egress
         table = TABLE_ROUTE_LINK_EGRESS
         priority = params[:default_route] ? 20 : 30
@@ -177,23 +184,16 @@ module Vnet::Openflow
       priority = params[:priority] if params[:priority]
       goto_table = params[:goto_table] if params[:goto_table]
 
-      match_metadata = params[:match_metadata] if params[:match_metadata]
+      match_metadata = match_metadata.merge!(params[:match_metadata]) if params[:match_metadata]
+      write_metadata = write_metadata.merge!(params[:write_metadata]) if params[:write_metadata]
 
-      if params[:write_metadata]
-        if write_metadata
-          write_metadata = write_metadata.merge(params[:write_metadata])
-        else
-          write_metadata = params[:write_metadata]
-        end
-      end
-
-      match = params[:match] if params[:match]
-      match = match.merge(md_create(match_metadata)) if match_metadata
+      match = match.merge!(params[:match]) if params[:match]
+      match = match.merge!(md_create(match_metadata)) if !match_metadata.empty?
 
       instructions = {}
       instructions[:cookie] = params[:cookie] || self.cookie
       instructions[:goto_table] = goto_table if goto_table
-      instructions.merge!(md_create(write_metadata)) if write_metadata
+      instructions.merge!(md_create(write_metadata)) if !write_metadata.empty?
 
       raise "Missing cookie." if instructions[:cookie].nil?
 

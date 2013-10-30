@@ -303,13 +303,6 @@ module Vnet::Openflow
       subnet_src = match_ipv4_subnet_src(route[:ipv4_address], route[:ipv4_prefix])
 
       if route[:interface][:use_datapath_id].nil?
-        network_md = md_create(network: route[:interface][:network_id])
-        interface_md = md_create(interface: route[:interface][:id])
-
-        rl_reflection_md = md_create({ :route_link => route_link[:id],
-                                       :reflection => nil
-                                     })
-
         flows << flow_create(:interface_egress_route,
                              match: subnet_dst,
                              interface_id: route[:interface][:id],
@@ -318,12 +311,14 @@ module Vnet::Openflow
                              cookie: cookie)
         
         if route[:ingress] == true
-          flows << Flow.create(TABLE_ROUTE_LINK_INGRESS, priority,
-                               interface_md.merge(subnet_src),
-                               nil,
-                               rl_reflection_md.merge({ :cookie => cookie,
-                                                        :goto_table => TABLE_ROUTE_LINK_EGRESS
-                                                      }))
+          flows << flow_create(:route_link_ingress,
+                               match: subnet_src,
+                               interface_id: route[:interface][:id],
+                               write_route_link_id: route_link[:id],
+                               default_route: is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix]),
+                               reflection: true,
+                               cookie: cookie)
+
         end
 
         if route[:egress] == true
