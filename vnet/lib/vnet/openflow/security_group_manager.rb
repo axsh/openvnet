@@ -7,6 +7,7 @@ module Vnet::Openflow
     COOKIE_TAG_SG_RULE     = 0x1
     COOKIE_TAG_SG_CONTRACK = 0x2
     COOKIE_TAG_SG_ARP      = 0x3
+    COOKIE_TAG_SG_EGRESS   = 0x4
 
     Connections = Vnet::Openflow::SecurityGroups::Connections
 
@@ -31,7 +32,7 @@ module Vnet::Openflow
       case message.table_id
       when TABLE_INTERFACE_INGRESS_FILTER
         apply_rules(message)
-      when TABLE_VIF_PORTS
+      when TABLE_INTERFACE_EGRESS_FILTER
         open_connection(message)
       end
     end
@@ -56,7 +57,7 @@ module Vnet::Openflow
     def catch_new_egress_connection(interface, mac_info, ipv4_info)
       flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
         flow_create(:default,
-                    table: TABLE_VIF_PORTS,
+                    table: TABLE_INTERFACE_EGRESS_FILTER,
                     priority: 20,
                     match: {
                       eth_src: mac_info[:mac_address],
@@ -67,6 +68,14 @@ module Vnet::Openflow
                     cookie: cookie(interface),
                     actions: { output: Controller::OFPP_CONTROLLER })
       }
+
+      cookie = (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
+        (COOKIE_TAG_SG_EGRESS | COOKIE_TAG_SHIFT)
+      flows << flow_create(:default,
+                            table: TABLE_INTERFACE_EGRESS_FILTER,
+                            priority: 1,
+                            cookie: cookie,
+                            goto_table: TABLE_INTERFACE_CLASSIFIER)
 
       @dp_info.add_flows(flows)
     end

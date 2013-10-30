@@ -14,22 +14,16 @@ module Vnet::Openflow::SecurityGroups::Connections
     end
 
     def open(message)
+      # TODO: make the this query and the log optional. It's too expensive to
+      # always query the database just for a simple log message
       interface_id = message.cookie & COOKIE_ID_MASK
       interface = MW::Interface.batch[interface_id].commit
 
       log_new_open(interface, message)
 
-      #TODO: Write this as a single query despite model wrappers
-      ip_addrs = MW::IpAddress.batch.filter(:ipv4_address => message.ipv4_src.to_i).all.commit
-      ip_lease = MW::IpLease.batch.filter(
-        :ip_address_id => ip_addrs.map {|ip| ip.id},
-        :interface_id => interface_id).all.commit.first
-      ip_addr = ip_addrs.find {|i| i.id == ip_lease.ip_address_id }
-      network = MW::Network.batch[ip_addr.network_id].commit
-
       [
         flow_create(:default,
-                    table: TABLE_VIF_PORTS,
+                    table: TABLE_INTERFACE_EGRESS_FILTER,
                     priority: 21,
                     match: {
                       dl_src:   message.packet_info.eth_src,
@@ -38,9 +32,8 @@ module Vnet::Openflow::SecurityGroups::Connections
                       ipv4_dst: message.ipv4_dst,
                     }.merge(match_egress(message)),
                     match_metadata: { interface: interface.id },
-                    write_metadata: { network: network.id },
                     cookie: cookie(interface),
-                    goto_table: TABLE_NETWORK_SRC_CLASSIFIER),
+                    goto_table: TABLE_INTERFACE_CLASSIFIER),
         flow_create(:default,
                     table: TABLE_INTERFACE_INGRESS_FILTER,
                     priority: 10,

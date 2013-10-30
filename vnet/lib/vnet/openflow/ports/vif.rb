@@ -27,7 +27,7 @@ module Vnet::Openflow::Ports
                              :interface => @interface_id,
                              :local => nil,
                            },
-                           goto_table: TABLE_INTERFACE_CLASSIFIER)
+                           goto_table: TABLE_INTERFACE_EGRESS_FILTER)
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_VIF,
                            priority: 30,

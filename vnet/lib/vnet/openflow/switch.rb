@@ -51,13 +51,14 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
       flows << Flow.create(TABLE_EDGE_SRC,   0, {}, {:output => Controller::OFPP_CONTROLLER}, {:cookie => COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT} )
-      flows << Flow.create(TABLE_EDGE_DST,   0, {}, nil, flow_options) 
+      flows << Flow.create(TABLE_EDGE_DST,   0, {}, nil, flow_options)
       flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_LOCAL_PORT,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_CONTROLLER_PORT,    0, {}, nil, flow_options)
 
+      flows << Flow.create(TABLE_INTERFACE_EGRESS_FILTER, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_INTERFACE_CLASSIFIER,   0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 0, {}, nil, flow_options)
