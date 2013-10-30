@@ -34,7 +34,9 @@ module Vnet
       TABLE_EDGE_SRC = 8
       TABLE_EDGE_DST = 9
 
-      TABLE_INTERFACE_CLASSIFIER = 10
+      TABLE_INTERFACE_CLASSIFIER    = 10
+      TABLE_INTERFACE_EGRESS_ROUTES = 11
+      TABLE_INTERFACE_EGRESS_MAC    = 12
 
       # Initial verification of network number and application of global
       # filtering rules.

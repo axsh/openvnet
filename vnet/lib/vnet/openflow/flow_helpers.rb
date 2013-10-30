@@ -142,6 +142,12 @@ module Vnet::Openflow
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_NETWORK_SRC_CLASSIFIER
+      when :interface_egress_route
+        table = TABLE_INTERFACE_EGRESS_ROUTES
+        priority = params[:default_route] ? 20 : 30
+        match_metadata = { :interface => params[:interface_id] }
+        write_metadata = { :network => params[:write_network_id] }
+        goto_table = TABLE_INTERFACE_EGRESS_MAC
       else
         return nil
       end

@@ -18,6 +18,15 @@ module Vnet::Openflow::Interfaces
                             reply_cookie: self.cookie_for_tag(TAG_ARP_REPLY))
     end
 
+    def add_mac_address(params)
+      mac_info = super
+
+      flows = []
+      flows_for_interface_mac(flows, mac_info)
+
+      @dp_info.add_flows(flows)
+    end
+
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
