@@ -229,8 +229,8 @@ module Vnet
       autoload :Base, 'vnet/openflow/tunnels/base'
     end
 
-    module VnetEdge
-      autoload :TranslationHandler, 'vnet/openflow/vnet_edge/translation_handler'
+    module Translations
+      autoload :VnetEdgeHandler, 'vnet/openflow/translations/vnet_edge_handler'
     end
 
   end

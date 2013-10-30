@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::VnetEdge
-  class TranslationHandler < Vnet::Openflow::PacketHandler
+module Vnet::Openflow::Translations
+  class VnetEdgeHandler
 
     include Celluloid::Logger
 
+    attr_reader :id
+
     def initialize(params)
+      # TODO refactor
+      @id = 1
       @dp_info = params[:dp_info]
+
+      flows = []
+      flows << Flow.create(TABLE_EDGE_SRC,   0, {}, {:output => Controller::OFPP_CONTROLLER}, {:cookie => @id | COOKIE_TYPE_TRANSLATION} )
+      @dp_info.add_flows(flows)
     end
 
     def packet_in(message)

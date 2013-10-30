@@ -9,11 +9,9 @@ module Vnet::Openflow
     def initialize(dp_info)
       @dp_info = dp_info
       @dpid_s = "0x%016x" % @dp_info.dpid
-
-      @dp_info.packet_manager.insert(VnetEdge::TranslationHandler.new(dp_info: @dp_info), nil, (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT))
-
       @edge_ports = []
 
+      add_handler(mode: :vnet_edge, dp_info: @dp_info)
       update_translation_map
     end
 
@@ -41,6 +39,23 @@ module Vnet::Openflow
     #
 
     private
+    
+    def translation_hander_initialize(mode, params)
+      case mode
+      when :vnet_edge  then Translations::VnetEdgeHandler.new(params)
+      else
+        error log_format('failed to create translation handler', "name: #{mode}")
+        nil
+      end
+    end
+
+    def add_handler(mode, params)
+      item = translation_handler_initialize(mode, params)
+
+      return nil if item.nil?
+
+      @items[item.id] = item
+    end
 
     def log_format(message, values = nil)
       "#{@dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
