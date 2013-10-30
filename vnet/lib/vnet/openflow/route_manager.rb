@@ -327,13 +327,12 @@ module Vnet::Openflow
         end
 
         if route[:egress] == true
-          flows << Flow.create(TABLE_ROUTE_LINK, priority,
-                               route_link_md.merge(subnet_dst), {
-                                 :eth_src => route[:interface][:mac_address]
-                               },
-                               network_md.merge({ :cookie => cookie,
-                                                  :goto_table => TABLE_ROUTER_DST
-                                                }))
+          flows << flow_create(:route_link_egress,
+                               match: subnet_dst,
+                               route_link_id: route_link[:id],
+                               write_interface_id: route[:interface][:id],
+                               default_route: is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix]),
+                               cookie: cookie)
 
           route_link[:packet_handler].insert_route(route)
         end

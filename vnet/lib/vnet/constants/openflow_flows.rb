@@ -51,43 +51,43 @@ module Vnet
       TABLE_VIRTUAL_SRC       = 21
       TABLE_PHYSICAL_SRC      = 22
 
-      TABLE_ROUTER_CLASSIFIER = 23
-      TABLE_ROUTER_INGRESS    = 24
-      TABLE_ROUTE_LINK        = 25
+      TABLE_ROUTER_CLASSIFIER = 33
+      TABLE_ROUTER_INGRESS    = 34
+      TABLE_ROUTE_LINK        = 35
+      TABLE_ROUTE_EGRESS      = 36
+      TABLE_ROUTER_DST        = 37
 
-      TABLE_ROUTER_DST        = 27
+      TABLE_ARP_LOOKUP        = 38
 
-      TABLE_ARP_LOOKUP        = 28
+      TABLE_NETWORK_DST_CLASSIFIER = 40
+      TABLE_VIRTUAL_DST            = 41
+      TABLE_PHYSICAL_DST           = 42
 
-      TABLE_NETWORK_DST_CLASSIFIER = 30
-      TABLE_VIRTUAL_DST            = 31
-      TABLE_PHYSICAL_DST           = 32
-
-      TABLE_INTERFACE_VIF     = 34
+      TABLE_INTERFACE_VIF     = 44
 
       # Route based on the mac address only.
       #
       # Deprecated...
-      TABLE_MAC_ROUTE       = 35
+      TABLE_MAC_ROUTE       = 45
 
-      TABLE_FLOOD_SIMULATED = 40
-      TABLE_FLOOD_LOCAL     = 41
-      TABLE_FLOOD_ROUTE     = 42
-      TABLE_FLOOD_SEGMENT   = 43
-      TABLE_FLOOD_TUNNELS   = 44
+      TABLE_FLOOD_SIMULATED = 50
+      TABLE_FLOOD_LOCAL     = 51
+      TABLE_FLOOD_ROUTE     = 52
+      TABLE_FLOOD_SEGMENT   = 53
+      TABLE_FLOOD_TUNNELS   = 54
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER     = 50
+      TABLE_OUTPUT_CONTROLLER     = 60
 
       # Send packet to a known datapath id, e.g. using an eth port or
       # tunnel port.
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_OUTPUT_DP_ROUTE_LINK  = 51
-      TABLE_OUTPUT_DATAPATH       = 52
-      TABLE_OUTPUT_INTERFACE      = 53
+      TABLE_OUTPUT_DP_ROUTE_LINK  = 61
+      TABLE_OUTPUT_DATAPATH       = 62
+      TABLE_OUTPUT_INTERFACE      = 63
 
       #
       # Cookie constants:

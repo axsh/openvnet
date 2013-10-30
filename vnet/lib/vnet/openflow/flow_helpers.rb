@@ -161,6 +161,12 @@ module Vnet::Openflow
           priority = 20
           goto_table = TABLE_ROUTER_INGRESS
         end          
+      when :route_link_egress
+        table = TABLE_ROUTE_LINK
+        priority = params[:default_route] ? 20 : 30
+        match_metadata = { :route_link => params[:route_link_id] }
+        write_metadata = { :interface => params[:write_interface_id] }
+        goto_table = TABLE_ROUTE_EGRESS
 
       else
         return nil

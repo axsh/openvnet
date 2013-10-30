@@ -390,6 +390,22 @@ module Vnet::Openflow::Interfaces
                            },
                            cookie: cookie,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+
+      # TODO: Currently only one mac address / network is supported.
+      flows << flow_create(:default,
+                           table: TABLE_ROUTE_EGRESS,
+                           priority: 20,
+                           actions: {
+                             :eth_src => mac_info[:mac_address]
+                           },
+                           match_metadata: {
+                             :interface => @id
+                           },
+                           write_metadata: {
+                             :network => ipv4_info[:network_id]
+                           },
+                           cookie: cookie,
+                           goto_table: TABLE_ROUTER_DST)
     end
 
     def flows_for_router_ingress_mac(flows, mac_info)

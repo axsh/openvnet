@@ -56,6 +56,7 @@ module Vnet::Openflow
        TABLE_PHYSICAL_SRC,
        TABLE_ROUTER_INGRESS,
        TABLE_ROUTE_LINK,
+       TABLE_ROUTE_EGRESS,
        TABLE_ROUTER_DST,
        TABLE_ARP_LOOKUP,
        TABLE_VIRTUAL_DST,
