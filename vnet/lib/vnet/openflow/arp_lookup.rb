@@ -27,18 +27,6 @@ module Vnet::Openflow
     end
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
-      flows << flow_create(:controller_port,
-                           priority: 40,
-                           match: {
-                             :eth_src => mac_info[:mac_address],
-                             :eth_type => 0x0806,
-                             :arp_spa => ipv4_info[:ipv4_address],
-                           },
-                           write_metadata: {
-                             :network => ipv4_info[:network_id],
-                           },
-                           goto_table: TABLE_NETWORK_DST_CLASSIFIER,
-                           cookie: @arp_lookup[:lookup_cookie])
       flows << flow_create(:catch_arp_lookup,
                            match: {
                              :eth_src => mac_info[:mac_address],
