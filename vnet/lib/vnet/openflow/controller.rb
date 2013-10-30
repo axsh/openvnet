@@ -76,10 +76,12 @@ module Vnet::Openflow
       return if datapath.nil?
 
       case message.cookie >> COOKIE_PREFIX_SHIFT
-      when COOKIE_PREFIX_SERVICE
-        datapath.service_manager.async.packet_in(message)
       when COOKIE_PREFIX_INTERFACE
         datapath.interface_manager.async.packet_in(message)
+      when COOKIE_PREFIX_SERVICE
+        datapath.service_manager.async.packet_in(message)
+      when COOKIE_PREFIX_ROUTE, COOKIE_PREFIX_ROUTE_LINK
+        datapath.route_manager.async.packet_in(message)
       else
         datapath.packet_manager.async.packet_in(message)
       end
