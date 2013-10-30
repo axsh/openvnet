@@ -41,6 +41,35 @@ module Vnet::Openflow
       fo_controller_md = flow_options.merge(md_create(local: nil,
                                                       no_controller: nil))
 
+      [TABLE_EDGE_DST, 
+       TABLE_HOST_PORTS,
+       TABLE_TUNNEL_PORTS,
+       TABLE_TUNNEL_NETWORK_IDS,
+       TABLE_LOCAL_PORT,
+       TABLE_CONTROLLER_PORT,
+       TABLE_INTERFACE_CLASSIFIER,
+       TABLE_NETWORK_SRC_CLASSIFIER,
+       TABLE_NETWORK_DST_CLASSIFIER,
+       TABLE_VIRTUAL_SRC,
+       TABLE_PHYSICAL_SRC,
+       TABLE_ROUTER_INGRESS,
+       TABLE_ROUTE_LINK,
+       TABLE_ROUTER_DST,
+       TABLE_ARP_LOOKUP,
+       TABLE_VIRTUAL_DST,
+       TABLE_PHYSICAL_DST,
+       TABLE_OUTPUT_INTERFACE,
+       TABLE_INTERFACE_VIF,
+       TABLE_MAC_ROUTE,
+       TABLE_FLOOD_LOCAL,
+       TABLE_FLOOD_ROUTE,
+       TABLE_FLOOD_TUNNELS,
+       TABLE_OUTPUT_DP_ROUTE_LINK,
+       TABLE_OUTPUT_DATAPATH,
+      ].each { |table|
+        flows << Flow.create(table, 0, {}, nil, flow_options)
+      }
+
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => OFPP_CONTROLLER
                            },
@@ -51,23 +80,10 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
       flows << Flow.create(TABLE_EDGE_SRC,   0, {}, {:output => Controller::OFPP_CONTROLLER}, {:cookie => COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT} )
-      flows << Flow.create(TABLE_EDGE_DST,   0, {}, nil, flow_options) 
-      flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_LOCAL_PORT,         0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_CONTROLLER_PORT,    0, {}, nil, flow_options)
 
-      flows << Flow.create(TABLE_INTERFACE_CLASSIFIER,   0, {}, nil, flow_options)
-
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 0, {}, nil, flow_options)
-
-      flows << Flow.create(TABLE_VIRTUAL_SRC,  0, {}, nil, flow_options)
       flows << Flow.create(TABLE_VIRTUAL_SRC,  90, {:in_port => OFPP_CONTROLLER}, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       # flows << Flow.create(TABLE_VIRTUAL_SRC,  40, {:eth_type => 0x0800}, nil, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 90, {:in_port => OFPP_CONTROLLER}, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
@@ -75,29 +91,14 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
-      flows << Flow.create(TABLE_ROUTER_INGRESS,    0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTE_LINK,        0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_DST,        0, {}, nil, flow_options)
-
-      flows << Flow.create(TABLE_ARP_LOOKUP,            0, {}, nil, flow_options)
-
-      flows << Flow.create(TABLE_VIRTUAL_DST,           0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_DST,          0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_VIRTUAL_DST,  30, {:eth_dst => MAC_BROADCAST}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))
       flows << Flow.create(TABLE_PHYSICAL_DST, 30, {:eth_dst => MAC_BROADCAST}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))
 
-      flows << Flow.create(TABLE_OUTPUT_INTERFACE,   0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_INTERFACE_VIF, 0, {}, nil, flow_options)
-
-      flows << Flow.create(TABLE_MAC_ROUTE,             0, {}, nil, flow_options)
-
       flows << Flow.create(TABLE_FLOOD_SIMULATED, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_LOCAL))
-      flows << Flow.create(TABLE_FLOOD_LOCAL,        0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_FLOOD_ROUTE,        0, {}, nil, flow_options)
       flows << Flow.create(TABLE_FLOOD_ROUTE, 10,
                            md_create(:remote => nil), nil,
                            flow_options)
@@ -106,11 +107,8 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_FLOOD_SEGMENT, 10,
                            md_create(:remote => nil), nil,
                            flow_options)
-      flows << Flow.create(TABLE_FLOOD_TUNNELS,      0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
-      flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK,  0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_OUTPUT_DATAPATH,       0, {}, nil, flow_options)
 
       flow_options = {:cookie => @catch_flow_cookie}
 
