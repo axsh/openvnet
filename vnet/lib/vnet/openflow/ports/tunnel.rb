@@ -9,28 +9,42 @@ module Vnet::Openflow::Ports
       :tunnel
     end
 
-    def flow_options
-      @flow_options ||= {:cookie => @cookie}
-    end
-
     def install
       flows = []
-      flows << Flow.create(TABLE_TUNNEL_PORTS, 30, {
+      flows << flow_create(:default,
+                           table: TABLE_TUNNEL_PORTS,
+                           priority: 30,
+                           match: {
                              :in_port => self.port_number
-                           }, nil,
-                           flow_options.merge(:goto_table => TABLE_TUNNEL_NETWORK_IDS))
-      flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
+                           },
+                           goto_table: TABLE_TUNNEL_NETWORK_IDS)
+      flows << flow_create(:default,
+                           table: TABLE_VIRTUAL_SRC,
+                           priority: 30,
+                           match: {
                              :in_port => self.port_number
-                           }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
+                           },
+                           goto_table: TABLE_ROUTER_CLASSIFIER)
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DATAPATH,
+                           priority: 5,
+                           match_metadata: {
+                             :datapath => @dst_id,
+                             :tunnel => nil
+                           },
+                           actions: {
+                             :output => self.port_number
+                           })
 
       @dp_info.add_flows(flows)
-      @dp_info.tunnel_manager.add_port(self)
+      @dp_info.tunnel_manager.update_item(event: :set_port_number,
+                                          port_name: self.port_name,
+                                          port_number: self.port_number)
     end
 
     def uninstall
-      @dp_info.tunnel_manager.del_port(self)
-      super
+      @dp_info.tunnel_manager.update_item(event: :clear_port_number,
+                                          port_name: self.port_name)
     end
 
   end

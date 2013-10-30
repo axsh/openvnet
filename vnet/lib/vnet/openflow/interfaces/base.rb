@@ -18,7 +18,6 @@ module Vnet::Openflow::Interfaces
     OPTIONAL_VALUE_MASK    = 0xfffff
 
     TAG_ARP_REQUEST_INTERFACE = 0x1
-    TAG_ARP_REQUEST_FLOOD     = 0x2
     TAG_ARP_LOOKUP            = 0x4
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
@@ -26,6 +25,7 @@ module Vnet::Openflow::Interfaces
     attr_accessor :id
     attr_accessor :uuid
     attr_accessor :mode
+    attr_accessor :port_name
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
     attr_accessor :display_name
@@ -41,6 +41,7 @@ module Vnet::Openflow::Interfaces
       @id = map.id
       @uuid = map.uuid
       @mode = map.mode.to_sym
+      @port_name = map.port_name
 
       @display_name = map.display_name
 
@@ -89,6 +90,10 @@ module Vnet::Openflow::Interfaces
       cookie(OPTIONAL_TYPE_IP_LEASE, value)
     end
 
+    def cookie_for_mac_lease(value)
+      cookie(OPTIONAL_TYPE_MAC_LEASE, value)
+    end
+
     def del_cookie(type = 0, value = 0)
       cookie_value = cookie(type, value)
       cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK
@@ -100,6 +105,10 @@ module Vnet::Openflow::Interfaces
 
     def del_cookie_for_ip_lease(value)
       del_cookie(OPTIONAL_TYPE_IP_LEASE, value)
+    end
+
+    def del_cookie_for_mac_lease(value)
+      del_cookie(OPTIONAL_TYPE_MAC_LEASE, value)
     end
 
     # Update variables by first duplicating to avoid memory
@@ -134,21 +143,37 @@ module Vnet::Openflow::Interfaces
                                                       port_number: @port_number)
     end
 
+    def update_active_datapath(params)
+      if @owner_datapath_ids.nil?
+        return if @mode != :vif
+      end
+
+      # Currently only supports one active datapath id.
+      active_datapath_ids = [params[:datapath_id]]
+
+      @active_datapath_ids = active_datapath_ids
+      MW::Interface.batch[:id => @id].update(:active_datapath_id => params[:datapath_id]).commit
+    end
+
     #
     # Manage MAC and IP addresses:
     #
 
     def add_mac_address(params)
-      debug log_format("add_ipv4_address", params.inspect)
+      #debug log_format("add_ipv4_address", params.inspect)
       return if @mac_addresses[params[:mac_lease_id]]
 
       mac_addresses = @mac_addresses.dup
       mac_addresses[params[:mac_lease_id]] = {
-        :ipv4_addresses => [],
-        :mac_address => params[:mac_address],
+        ipv4_addresses: [],
+        mac_address: params[:mac_address],
+        cookie_id: params[:cookie_id],
       }
 
       @mac_addresses = mac_addresses
+
+      debug log_format("adding mac address to #{@uuid}/#{@id}",
+                       "#{params[:mac_address].to_s}")
 
       # Add to port...
       nil
@@ -170,7 +195,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def add_ipv4_address(params)
-      debug log_format("add_ipv4_address", params.inspect)
+      #debug log_format("add_ipv4_address", params.inspect)
 
       mac_info = @mac_addresses[params[:mac_lease_id]]
       return unless mac_info
@@ -181,13 +206,17 @@ module Vnet::Openflow::Interfaces
         :network_id => params[:network_id],
         :network_type => params[:network_type],
         :ipv4_address => params[:ipv4_address],
-        :ip_lease_id => params[:ip_lease_id]
+        :ip_lease_id => params[:ip_lease_id],
+        :cookie_id => params[:cookie_id],
       }
 
       ipv4_addresses = mac_info[:ipv4_addresses].dup
       ipv4_addresses << ipv4_info
 
       mac_info[:ipv4_addresses] = ipv4_addresses
+
+      debug log_format("adding ipv4 address to #{@uuid}/#{@id}",
+                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
 
       [mac_info, ipv4_info]
     end
@@ -207,6 +236,11 @@ module Vnet::Openflow::Interfaces
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
+      debug log_format("removing ipv4 address from #{@uuid}/#{@id}",
+                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
+
+      del_cookie_for_ip_lease(ipv4_info[:cookie_id])
+      
       [mac_info, ipv4_info]
     end
 

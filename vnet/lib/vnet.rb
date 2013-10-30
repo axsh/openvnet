@@ -163,6 +163,8 @@ module Vnet
     autoload :CookieManager, 'vnet/openflow/cookie_manager'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
+    autoload :DatapathInfo, 'vnet/openflow/datapath'
+    autoload :DatapathManager, 'vnet/openflow/datapath_manager'
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :DpInfo, 'vnet/openflow/dp_info'
     autoload :Flow, 'vnet/openflow/flow'
@@ -184,7 +186,12 @@ module Vnet
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
     autoload :TranslationManager, 'vnet/openflow/translation_manager'
+    autoload :Tunnel, 'vnet/openflow/tunnel'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
+
+    module Datapaths
+      autoload :Base, 'vnet/openflow/datapaths/base'
+    end
 
     module Interfaces
       autoload :Base, 'vnet/openflow/interfaces/base'
@@ -227,9 +234,14 @@ module Vnet
       autoload :Router, 'vnet/openflow/services/router'
     end
 
+    module Tunnels
+      autoload :Base, 'vnet/openflow/tunnels/base'
+    end
+
     module VnetEdge
       autoload :TranslationHandler, 'vnet/openflow/vnet_edge/translation_handler'
     end
+
   end
 
 end

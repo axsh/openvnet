@@ -36,6 +36,7 @@ module Vnet::Openflow::Services
                                  :udp_src => 68
                                },
                                network_id: ipv4_info[:network_id],
+                               interface_id: interface.id,
                                cookie: self.cookie)
         }
       }

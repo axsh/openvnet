@@ -47,7 +47,7 @@ module Vnet::Openflow::Interfaces
       value = (message.cookie >> OPTIONAL_VALUE_SHIFT) & OPTIONAL_VALUE_MASK
 
       case value
-      when TAG_ARP_REQUEST_FLOOD, TAG_ARP_REQUEST_INTERFACE
+      when TAG_ARP_REQUEST_INTERFACE
         info log_format('simulated arp reply', "arp_tpa:#{message.arp_tpa}")
 
         mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
@@ -134,6 +134,8 @@ module Vnet::Openflow::Interfaces
     # TODO: Separate the mac-only flows and add those when
     # add_mac_address is called.
     def flows_for_ipv4(flows, mac_info, ipv4_info)
+      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+
       flows << flow_create(:network_dst,
                            priority: 80,
                            match: {
@@ -146,7 +148,8 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :interface => @id
                            },
-                           goto_table: TABLE_INTERFACE_SIMULATED)
+                           cookie: cookie,
+                           goto_table: TABLE_OUTPUT_INTERFACE)
       flows << flow_create(:network_dst,
                            priority: 80,
                            match: {
@@ -159,7 +162,8 @@ module Vnet::Openflow::Interfaces
                            write_metadata: {
                              :interface => @id
                            },
-                           goto_table: TABLE_INTERFACE_SIMULATED)
+                           cookie: cookie,
+                           goto_table: TABLE_OUTPUT_INTERFACE)
       flows << flow_create(:catch_flood_simulated,
                            match: {
                              :eth_type => 0x0806,
@@ -169,7 +173,8 @@ module Vnet::Openflow::Interfaces
                            },
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
-                           cookie: self.cookie_for_tag(TAG_ARP_REQUEST_FLOOD))
+                           interface_id: @id,
+                           cookie: cookie)
     end
 
   end

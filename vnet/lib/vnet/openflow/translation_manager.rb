@@ -6,11 +6,11 @@ module Vnet::Openflow
     include FlowHelpers
     include Vnet::Event::Dispatchable
 
-    def initialize(dp)
-      @datapath = dp
-      @dpid_s = "0x%016x" % @datapath.dpid
+    def initialize(dp_info)
+      @dp_info = dp_info
+      @dpid_s = "0x%016x" % @dp_info.dpid
 
-      @datapath.packet_manager.insert(VnetEdge::TranslationHandler.new(datapath: @datapath), nil, (COOKIE_PREFIX_VNETEDGE << COOKIE_PREFIX_SHIFT))
+      @dp_info.packet_manager.insert(VnetEdge::TranslationHandler.new(dp_info: @dp_info), nil, (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT))
 
       @edge_ports = []
 
@@ -36,15 +36,39 @@ module Vnet::Openflow
       entry.network_id
     end
 
+    #
+    # Internal methods:
+    #
+
     private
 
     def log_format(message, values = nil)
       "#{@dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
+    #
+    # Specialize Manager:
+    #
+
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      when params[:display_name] && params[:owner_datapath_id]
+        { :display_name => params[:display_name],
+          :owner_datapath_id => params[:owner_datapath_id]
+        }
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
+      end
+    end
+
     def update_translation_map
       @translation_map = Vnet::ModelWrappers::VlanTranslation.batch.all.commit
     end
+
   end
 
 end

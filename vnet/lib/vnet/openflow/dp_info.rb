@@ -17,6 +17,7 @@ module Vnet::Openflow
     attr_reader :ovs_ofctl
 
     attr_reader :cookie_manager
+    attr_reader :datapath_manager
     attr_reader :dc_segment_manager
     attr_reader :interface_manager
     attr_reader :network_manager
@@ -36,17 +37,7 @@ module Vnet::Openflow
       @datapath = params[:datapath]
       @ovs_ofctl = params[:ovs_ofctl]
 
-      @cookie_manager = CookieManager.new
-      @dc_segment_manager = DcSegmentManager.new(@datapath)
-      @interface_manager = InterfaceManager.new(self)
-      @network_manager = NetworkManager.new(self)
-      @packet_manager = PacketManager.new(@datapath)
-      @port_manager = PortManager.new(self)
-      @route_manager = RouteManager.new(@datapath)
-      @security_group_manager = SecurityGroupManager.new(self)
-      @service_manager = ServiceManager.new(self)
-      @tunnel_manager = TunnelManager.new(@datapath)
-      @translation_manager = TranslationManager.new(self)
+      initialize_managers
     end
 
     #
@@ -92,6 +83,20 @@ module Vnet::Openflow
     end
 
     #
+    # Port modification methods:
+    #
+
+    def add_tunnel(tunnel_name, remote_ip)
+      # debug log_format('adding tunnel', "#{tunnel_name}")
+      @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
+    end
+
+    def delete_tunnel(tunnel_name)
+      # debug log_format('deleting tunnel', "#{tunnel_name}")
+      @ovs_ofctl.delete_tunnel(tunnel_name)
+    end
+
+    #
     # Trema messaging:
     #
 
@@ -105,6 +110,27 @@ module Vnet::Openflow
       @controller.pass_task {
         @controller.public_send_packet_out(@dpid, message, port_no)
       }
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def initialize_managers
+      @cookie_manager = CookieManager.new
+      @datapath_manager = DatapathManager.new(self)
+      @dc_segment_manager = DcSegmentManager.new(@datapath)
+      @interface_manager = InterfaceManager.new(self)
+      @network_manager = NetworkManager.new(self)
+      @packet_manager = PacketManager.new(@datapath)
+      @port_manager = PortManager.new(self)
+      @route_manager = RouteManager.new(@datapath)
+      @security_group_manager = SecurityGroupManager.new(self)
+      @service_manager = ServiceManager.new(self)
+      @tunnel_manager = TunnelManager.new(self)
+      @translation_manager = TranslationManager.new(self)
     end
 
   end

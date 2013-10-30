@@ -63,21 +63,18 @@ module Vnet
       TABLE_PHYSICAL_DST = 32
 
       TABLE_INTERFACE_INGRESS_FILTER = 33
-
-      TABLE_INTERFACE_SIMULATED = 34
-      TABLE_INTERFACE_VIF = 35
+      TABLE_INTERFACE_VIF = 34
 
       # Route based on the mac address only.
       #
       # Deprecated...
       TABLE_MAC_ROUTE = 36
 
-      TABLE_FLOOD_SIMULATED    = 40
-      TABLE_FLOOD_LOCAL        = 41
-      TABLE_FLOOD_ROUTE        = 42
-      TABLE_FLOOD_SEGMENT      = 43
-      TABLE_FLOOD_TUNNEL_IDS   = 44
-      TABLE_FLOOD_TUNNEL_PORTS = 45
+      TABLE_FLOOD_SIMULATED = 40
+      TABLE_FLOOD_LOCAL     = 41
+      TABLE_FLOOD_ROUTE     = 42
+      TABLE_FLOOD_SEGMENT   = 43
+      TABLE_FLOOD_TUNNELS   = 44
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
@@ -91,6 +88,8 @@ module Vnet
       TABLE_OUTPUT_DP_ROUTE_LINK  = 47
       TABLE_OUTPUT_DATAPATH       = 48
 
+      TABLE_OUTPUT_INTERFACE = 41
+
       #
       # Metadata, tunnel and cookie flags and masks:
       #
@@ -103,7 +102,6 @@ module Vnet
       COOKIE_PREFIX_SHIFT = 56
       COOKIE_PREFIX_MASK = (0xff << COOKIE_PREFIX_SHIFT)
 
-      COOKIE_PREFIX_COLLECTION     = 0x1
       COOKIE_PREFIX_DP_NETWORK     = 0x2
       COOKIE_PREFIX_NETWORK        = 0x3
       COOKIE_PREFIX_PACKET_HANDLER = 0x4
@@ -115,7 +113,7 @@ module Vnet
       COOKIE_PREFIX_TUNNEL         = 0xa
       COOKIE_PREFIX_VIF            = 0xb
       COOKIE_PREFIX_INTERFACE      = 0xc
-      COOKIE_PREFIX_VNETEDGE       = 0xd
+      COOKIE_PREFIX_TRANSLATION    = 0xd
       COOKIE_PREFIX_SECURITY_GROUP = 0xe
 
       METADATA_FLAGS_SHIFT = 40
@@ -142,7 +140,6 @@ module Vnet
       METADATA_TYPE_SHIFT      = 56
       METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)
 
-      METADATA_TYPE_COLLECTION = (0x1 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_DATAPATH   = (0x2 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_NETWORK    = (0x3 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_PORT       = (0x4 << METADATA_TYPE_SHIFT)

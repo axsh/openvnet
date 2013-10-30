@@ -14,22 +14,26 @@ module Vnet::Openflow
     subscribe_event LeasedMacAddress, :leased_mac_address
     subscribe_event ReleasedMacAddress, :released_mac_address
 
-    def update_active_datapaths(params)
-      interface = internal_detect(params)
-      return nil if interface.nil?
+    def update_item(params)
+      # Todo: Add the possibility to use a 'filter' parameter for this.
+      item = item_by_params(params)
+      return nil if item.nil?
 
-      # Refactor this.
-      if interface.owner_datapath_ids.nil?
-        return if interface.mode != :vif
+      case params[:event]
+      when :active_datapath_id
+        # Reconsider this...
+        item.update_active_datapath(params)
+      when :set_port_number
+        # Check if not nil...
+        item.update_port_number(params[:port_number])
+        item.update_active_datapath(datapath_id: @datapath_info.id)
+      when :clear_port_number
+        # Check if nil... (use param :port_number to verify)
+        item.update_port_number(nil)
+        item.update_active_datapath(datapath_id: nil)
       end
 
-      # Currently only supports one active datapath id.
-      active_datapath_ids = [params[:datapath_id]]
-
-      interface.active_datapath_ids = active_datapath_ids
-      MW::Interface.batch[:id => interface.id].update(:active_datapath_id => params[:datapath_id]).commit
-
-      nil
+      item_to_hash(item)
     end
 
     # Deprecate this...
@@ -59,10 +63,24 @@ module Vnet::Openflow
       return false if params[:uuid] && params[:uuid] != item.uuid
       return false if params[:mode] && params[:mode] != item.mode
       return false if params[:port_number] && params[:port_number] != item.port_number
+      return false if params[:port_name] && params[:port_name] != item.port_name
       true
     end
 
-    def interface_initialize(mode, params)
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      when params[:port_name] then
+        { :port_name => params[:port_name] }
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
+      end
+    end
+
+    def item_initialize(mode, params)
       case mode
       when :simulated then Interfaces::Simulated.new(params)
       when :remote then Interfaces::Remote.new(params)
@@ -76,43 +94,52 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Interface.batch[filter].commit(:fill => [{:mac_leases => {:ip_leases => :ip_address}}])
+      #
+      # To avoid a deadlock issue when retriving network type during
+      # load_addresses, we load the network here.
+
+      fill = [:mac_leases => [:cookie_id, :ip_leases => [:cookie_id, :ip_address, :network]],
+              :ip_leases => [:cookie_id, :ip_address, :network]]
+
+      MW::Interface.batch[filter].commit(:fill => fill)
     end
+
+    #
+    # Create / Delete interfaces:
+    #
 
     def create_item(item_map, params)
       mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
 
-      interface = interface_initialize(mode,
-                                       dp_info: @dp_info,
-                                       manager: self,
-                                       map: item_map)
-      return nil if interface.nil?
+      item = item_initialize(mode,
+                             dp_info: @dp_info,
+                             manager: self,
+                             map: item_map)
+      return nil if item.nil?
 
-      @items[item_map.id] = interface
+      @items[item_map.id] = item
 
-      debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
+      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
 
       # TODO: Make install/uninstall a barrier that enables/disable
       # the creation of flows and ensure that no events gets lost.
 
-      interface.install
+      item.install
 
-      case interface.mode
-      when :vif
-        port = @dp_info.port_manager.detect(port_name: interface.uuid)
-        interface.update_port_number(port[:port_number])
-        interface.add_security_groups
-      end
-
-      load_addresses(interface, item_map)
-
-      interface # Return nil if interface has been uninstalled.
+      load_addresses(item, item_map)
+""
+      item # Return nil if interface has been uninstalled.
     end
 
     def delete_item(item)
       @items.delete(item.id)
 
       item.uninstall
+
+      if item.port_number
+        item.update_active_datapath(datapath_id: nil)
+      end
+
       item
     end
 
@@ -123,22 +150,22 @@ module Vnet::Openflow
 
       item_map.mac_leases.each do |mac_lease|
         mac_address = Trema::Mac.new(mac_lease.mac_address)
-        interface.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
+        interface.add_mac_address(mac_lease_id: mac_lease.id,
+                                  mac_address: mac_address,
+                                  cookie_id: mac_lease.cookie_id)
 
         mac_lease.ip_leases.each { |ip_lease|
           ipv4_address = ip_lease.ip_address.ipv4_address
           error log_format("ipv4_address is nil", ip_lease.uuid) unless ipv4_address
 
-          network_id = ip_lease.network_id
-          error log_format("network is nil", ip_lease.uuid) unless network_id
-
-          network_info = @dp_info.network_manager.item(id: network_id)
-          next if network_info.nil?
+          network = ip_lease.network
+          error log_format("network is nil", ip_lease.uuid) unless network
 
           interface.add_ipv4_address(mac_lease_id: mac_lease.id,
-                                     network_id: network_id,
-                                     network_type: network_info[:type],
+                                     network_id: network.id,
+                                     network_type: network.network_mode.to_sym,
                                      ip_lease_id: ip_lease.id,
+                                     cookie_id: ip_lease.cookie_id,
                                      ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
         }
       end
@@ -148,7 +175,7 @@ module Vnet::Openflow
       return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?
 
       if item_map.owner_datapath_id
-        return item_map.owner_datapath_id != @datapath_id
+        return item_map.owner_datapath_id != @datapath_info.id
       end
 
       return false
@@ -159,12 +186,14 @@ module Vnet::Openflow
     #
 
     def leased_mac_address(item, params)
-      mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(:fill => [:interface])
+      mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(fill: [:cookie_id, :interface])
 
       return unless mac_lease && mac_lease.interface_id == item.id
 
       mac_address = Trema::Mac.new(mac_lease.mac_address)
-      item.add_mac_address(mac_lease_id: mac_lease.id, mac_address: mac_address)
+      item.add_mac_address(mac_lease_id: mac_lease.id,
+                           mac_address: mac_address,
+                           cookie_id: mac_lease.cookie_id)
     end
 
     def released_mac_address(item, params)
@@ -176,7 +205,7 @@ module Vnet::Openflow
     end
 
     def leased_ipv4_address(item, params)
-      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:ip_address])
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:ip_address, :cookie_id])
 
       return unless ip_lease && ip_lease.interface_id == item.id
 
@@ -186,6 +215,7 @@ module Vnet::Openflow
                             network_id: network[:id],
                             network_type: network[:type],
                             ip_lease_id: ip_lease.id,
+                            cookie_id: ip_lease.cookie_id,
                             ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
     end
 
@@ -196,5 +226,7 @@ module Vnet::Openflow
 
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
     end
+
   end
+
 end

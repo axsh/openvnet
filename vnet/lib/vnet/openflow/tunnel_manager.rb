@@ -2,46 +2,57 @@
 
 module Vnet::Openflow
 
-  class TunnelManager
-    include Celluloid
-    include Celluloid::Logger
-    include FlowHelpers
+  class TunnelManager < Manager
 
-    def initialize(dp)
-      @datapath = dp
-      @tunnels = []
+    #
+    # Events:
+    #
 
-      @tunnel_ports = {}
+    def update_item(params)
+      item = item_by_params(params)
+      return nil if item.nil?
+
+      case params[:event]
+      when :set_port_number
+        update_tunnel(item, params[:port_number]) if params[:port_number]
+      when :clear_port_number
+        update_tunnel(item, nil)
+      end
+
+      item_to_hash(item)
     end
 
-    def tunnels_dup
-      @tunnels.dup
+    def update(params)
+      case params[:event]
+      when :update_network
+        update_network_id(params[:network_id]) if params[:network_id]
+      end
+
+      nil
     end
 
-    def flow_options(network, tunnel_port)
-      { :cookie => (network.network_id << COOKIE_NETWORK_SHIFT) | tunnel_port.port_number | cookie }
-    end
+    #
+    # Refactor...
+    #
 
     def create_all_tunnels
-      debug "creating tunnel ports"
+      debug log_format("creating tunnel ports")
 
-      dp_map = MW::Datapath.first(:dpid => "0x%016x" % @datapath.dpid)
+      if @datapath_info.nil?
+        error log_format('datapath information not loaded')
+        return nil
+      end
 
-      raise "Datapath not found: #{'0x%016x' % @datapath.dpid}" unless dp_map
+      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
+        item = item_by_params(dst_id: target_dp_map.id)
 
-      @tunnels = dp_map.batch.on_other_segments.commit.map do |target_dp_map|
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
-        tunnel = MW::Tunnel.create(:src_datapath_id => dp_map.id, :dst_datapath_id => target_dp_map.id, :display_name => tunnel_name)
-        tunnel.to_hash.tap do |t|
-          t[:dst_dpid] = target_dp_map.dpid
-          t[:datapath_networks] = []
-          t[:dst_ipv4_address] = target_dp_map.ipv4_address
-        end
-      end
-
-      @tunnels.each do |tunnel|
-        @datapath.add_tunnel(tunnel[:display_name], IPAddr.new(tunnel[:dst_ipv4_address], Socket::AF_INET).to_s)
-      end
+        tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
+                                       dst_datapath_id: target_dp_map.id,
+                                       display_name: tunnel_name)
+        
+        create_item(tunnel_map, dst_dp_map: target_dp_map)
+      }
     end
 
     def insert(dpn_map, should_update = false)
@@ -54,46 +65,11 @@ module Vnet::Openflow
         :network_id => dpn_map.network_id,
       }
 
-      tunnel = @tunnels.find{ |t| t[:dst_dpid] == datapath_network[:dpid] }
-      tunnel[:datapath_networks] << datapath_network
+      item = internal_detect(dst_dpid: datapath_network[:dpid])
 
-      cookie = datapath_network[:id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
-
-      flows = []
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_dst => datapath_network[:broadcast_mac_address]
-                           }, nil, {
-                             :cookie => cookie
-                           })
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_dst => datapath_network[:broadcast_mac_address]
-                           }, nil, {
-                             :cookie => cookie
-                           })
-
-      @datapath.add_flows(flows)
+      item.datapath_networks << datapath_network if item
 
       update_network_id(datapath_network[:network_id]) if should_update
-    end
-
-    def add_port(port)
-      old_port = @tunnel_ports.delete(port.port_number)
-
-      if old_port
-        error "tunnel_manager: port already added (port:#{port.port_number} old:#{old_port[:port_name]} new:#{port.port_name})"
-      end
-
-      @tunnel_ports[port.port_number] = {
-        :port_name => port.port_name,
-      }
-
-      update_tunnel(port.port_number)
-    end
-
-    def del_port(port)
-      old_port = @tunnel_ports.delete(port.port_number)
-
-      update_tunnel(old_port[:port_name]) if old_port
     end
 
     def prepare_network(network_map, dp_map)
@@ -109,130 +85,171 @@ module Vnet::Openflow
       update_network_id(network_map.id) if update_networks
     end
 
-    def update_network_id(network_id)
-      collection_id = find_collection_id(network_id)
-
-      cookie = network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
-      md = md_create(:collection => collection_id)
-
-      flows = []
-      flows << Flow.create(TABLE_FLOOD_TUNNEL_IDS, 1,
-                           md_create(:network => network_id), {
-                             :tunnel_id => network_id | TUNNEL_FLAG_MASK
-                           }, md.merge({ :cookie => cookie,
-                                         :goto_table => TABLE_FLOOD_TUNNEL_PORTS
-                                       }))
-
-      @datapath.add_flows(flows)
-    end
-
-    def delete_tunnel_port(network_id, remote_dpid)
-
-      # if #{remote_dpid} is equal to #{@datapath.dpid},
+    def remove_network_id_for_dpid(network_id, remote_dpid)
+      # if #{remote_dpid} is equal to #{@dp_info.dpid},
       # it can be regard as the network deletion happens on
       # the local datapath (not on the remote datapath)
 
-      if remote_dpid == @datapath.dpid
-        debug "delete tunnel on local datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
-        @tunnels.each do |t|
-          debug "try to delete tunnel #{t[:display_name]}"
-          delete_tunnel_if_datapath_networks_empty(t, network_id)
-        end
+      if remote_dpid == @dp_info.dpid
+        debug log_format('delete tunnel on local datapath',
+                         "local_dpid:#{@dp_info.dpid} remote_dpid:#{remote_dpid}")
+
+        delete_items = @items.select { |id, item|
+          # debug log_format("try to delete tunnel #{item.display_name}")
+          remove_datapath_network(item, network_id)
+        }
       else
-        debug "delete tunnel for remote datapath: local_dpid => #{@datapath.dpid} remote_dpid => #{remote_dpid}"
-        @tunnels.each do |t|
-          if t[:dst_dpid] == "0x%016x" % remote_dpid
-            debug "found a tunnel to delete: display_name => #{t[:display_name]}"
-            delete_tunnel_if_datapath_networks_empty(t, network_id)
+        debug log_format('delete tunnel for remote datapath',
+                         "local_dpid:#{@dp_info.dpid} remote_dpid:#{remote_dpid}")
+
+        delete_items = @items.select { |id, item|
+          if item.dst_dpid == "0x%016x" % remote_dpid
+            # debug log_format('found a tunnel to delete', "display_name:#{item.display_name}")
+            remove_datapath_network(item, network_id)
+          else
+            false
           end
-        end
+        }
       end
 
-      @tunnels.delete_if { |t| t[:datapath_networks].empty? }
+      delete_items.each { |id, item| delete_item(item) }
     end
+
+    #
+    # Internal methods:
+    #
 
     private
 
-    def update_tunnel(port_number)
-      port = @tunnel_ports[port_number]
+    def log_format(message, values = nil)
+      "#{@dp_info.dpid_s} tunnel_manager: #{message}" + (values ? " (#{values})" : '')
+    end
 
-      if port.nil?
-        warn "tunnel_manager: port number not found (#{port_number})"
-        return
+    #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:display_name] && params[:display_name] != item.display_name
+      return false if params[:port_name] && params[:port_name] != item.display_name
+      return false if params[:dst_id] && params[:dst_id] != item.dst_id
+      return false if params[:dst_dpid] && params[:dst_dpid] != item.dst_dpid
+      true
+    end
+
+    def select_filter_from_params(params)
+      # Make sure we only update tunnel items belonging to this
+      # datapath.
+      return nil if @datapath_info.nil?
+
+      case
+      when params[:id]           then { :id => params[:id] }
+      when params[:uuid]         then { :uuid => params[:uuid] }
+      when params[:display_name] then { :display_name => params[:display_name] }
+      when params[:port_name]    then { :display_name => params[:port_name] }
+      when params[:dst_id]       then { :dst_datapath_id => params[:dst_id] }
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
       end
+    end
 
-      tunnel = @tunnels.find{ |t| t[:display_name] == port[:port_name] }
+    #
+    # Create / Delete tunnels:
+    #
 
-      if tunnel.nil?
-        warn "tunnel_manager: port name is not registered in database (#{port[:port_name]})"
-        return
-      end
+    def item_initialize(params)
+      Tunnels::Base.new(params)
+    end
 
-      datapath_md = md_create(:datapath => tunnel[:dst_datapath_id],
-                              :tunnel => nil)
-      cookie = tunnel[:dst_datapath_id] | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
+    def select_item(filter)
+      # Using fill for ip_leases/ip_addresses isn't going to give us a
+      # proper event barrier.
+      MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit
+    end
+    
+    def create_item(item_map, params)
+      item = item_initialize(dp_info: @dp_info,
+                             manager: self,
+                             map: item_map,
+                             dst_dp_map: params[:dst_dp_map])
+      return nil if item.nil?
 
-      flow = Flow.create(TABLE_OUTPUT_DATAPATH, 5,
-                         datapath_md, {
-                           :output => port_number
-                         }, {
-                           :cookie => cookie
-                         })
+      @items[item_map.id] = item
 
-      @datapath.add_flow(flow)
+      debug log_format("insert #{item_map.uuid}/#{item_map.id}")
 
-      tunnel[:datapath_networks].each { |dpn|
+      item.install
+    end
+
+    def delete_item(item)
+      @items.delete(item.id)
+
+      item.uninstall
+      item
+    end
+
+    #
+    # Event handlers:
+    #
+
+    def update_tunnel(item, port_number)
+      return if item.port_number == port_number
+      item.port_number = port_number
+
+      item.datapath_networks.each { |dpn|
         update_network_id(dpn[:network_id])
       }
     end
 
-    def find_collection_id(network_id)
-      # Currently only use the network id as the collection id.
-      #
-      # Later collections should be created as needed and shared
-      # between network's when possible.
-      update_collection_id(network_id)
+    def update_network_id(network_id)
+      actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
 
-      network_id
-    end
+      @items.select { |item_id, item|
+        next false if item.port_number.nil?
 
-    def update_collection_id(collection_id)
-      ports = @tunnel_ports.select { |port_number,tunnel_port|
-        tunnel = @tunnels.find{ |t| t[:display_name] == tunnel_port[:port_name] }
+        item.datapath_networks.any? { |dpn| dpn[:network_id] == network_id }
 
-        unless tunnel
-          warn "tunnel port: #{tunnel_port[:port_name]} is not registered in db"
-          next
-        end
-
-        tunnel[:datapath_networks].any? { |dpn| dpn[:network_id] == collection_id }
+      }.each { |item_id, item|
+        actions << {:output => item.port_number}
       }
 
-      collection_md = md_create(:collection => collection_id)
-      cookie = collection_id | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)
+      cookie = network_id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
 
       flows = []
-      flows << Flow.create(TABLE_FLOOD_TUNNEL_PORTS, 1,
-                           collection_md,
-                           ports.map { |port_number, port|
-                             {:output => port_number}
-                           }, {
-                             :cookie => cookie
-                           })
+      flows << flow_create(:default,
+                           table: TABLE_FLOOD_TUNNELS,
+                           priority: 1,
+                           match_metadata: { :network => network_id },
+                           actions: actions,
+                           cookie: cookie)
 
-      @datapath.add_flows(flows)
+
+      @dp_info.add_flows(flows)
     end
 
-    def delete_tunnel_if_datapath_networks_empty(tunnel, network_id)
-      tunnel[:datapath_networks].delete_if { |dpn| dpn[:network_id] == network_id }
-      if tunnel[:datapath_networks].empty?
-        debug "delete tunnel #{tunnel[:display_name]}"
-        @datapath.delete_tunnel(tunnel[:display_name])
-        t = MW::Tunnel[:display_name => tunnel[:display_name]]
-        t.batch.destroy.commit
+    #
+    # Refactor:
+    #
+
+    # Delete the item if it returns true.
+    def remove_datapath_network(item, network_id)
+      item.datapath_networks.delete_if { |dpn| dpn[:network_id] == network_id }
+
+      if item.datapath_networks.empty?
+        debug log_format("datapath networks is empty for #{item.display_name}")
+
+        MW::Tunnel.batch[display_name: item.display_name].destroy.commit
+        true
       else
-        debug "tunnel datapath is not empty"
+        debug log_format("datapath networs is not empty for #{item.display_name}")
+        false
       end
     end
+
   end
+
 end

@@ -54,6 +54,8 @@ Sequel.migration do
       String :mode, :default => 'vif',:null => false
       String :display_name
 
+      String :port_name, :index => true, :null => true
+
       # Should be a relation allowing for multiple active/owner
       # datapath ids.
       Integer :active_datapath_id, :index => true
@@ -86,7 +88,7 @@ Sequel.migration do
       Integer :ip_address_id, :index => true, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
-      DateTime :deleted_at, :null=>false
+      DateTime :deleted_at
       FalseClass :is_deleted, :null=>false
     end
 
@@ -105,6 +107,7 @@ Sequel.migration do
       Integer :mac_address_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+      DateTime :deleted_at
     end
 
     create_table(:networks) do

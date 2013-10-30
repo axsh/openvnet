@@ -7,9 +7,13 @@ module Vnet::Openflow::Ports
     include Vnet::Openflow::FlowHelpers
 
     attr_reader :port_info
+    attr_reader :cookie
 
     attr_accessor :network_id
     attr_accessor :mac_addresses
+
+    # Work-around...
+    attr_accessor :dst_id
 
     def initialize(dp_info, port_info)
       @dp_info = dp_info
