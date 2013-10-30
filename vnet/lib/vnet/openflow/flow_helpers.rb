@@ -133,6 +133,10 @@ module Vnet::Openflow
       # Refactored:
       #
       when :default
+      when :controller_classifier
+        table = TABLE_CONTROLLER_PORT
+        write_metadata = { :interface => params[:write_interface_id] }
+        goto_table = TABLE_INTERFACE_CLASSIFIER
       when :interface_classifier
         table = TABLE_INTERFACE_CLASSIFIER
         match_metadata = { :interface => params[:interface_id] }
@@ -150,7 +154,11 @@ module Vnet::Openflow
       match_metadata = params[:match_metadata] if params[:match_metadata]
 
       if params[:write_metadata]
-        write_metadata = write_metadata ? write_metadata.merge(params[:write_metadata]) : params[:write_metadata]
+        if write_metadata
+          write_metadata = write_metadata.merge(params[:write_metadata])
+        else
+          write_metadata = params[:write_metadata]
+        end
       end
 
       match = params[:match] if params[:match]

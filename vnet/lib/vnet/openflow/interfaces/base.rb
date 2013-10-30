@@ -304,6 +304,40 @@ module Vnet::Openflow::Interfaces
       "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def flows_for_interface_ipv4(flows, mac_info, ipv4_info)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0800,
+                             :eth_src => mac_info[:mac_address],
+                             :ipv4_src => IPV4_ZERO
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0800,
+                             :eth_src => mac_info[:mac_address],
+                             :ipv4_src => ipv4_info[:ipv4_address]
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0806,
+                             :eth_src => mac_info[:mac_address],
+                             :arp_sha => mac_info[:mac_address],
+                             :arp_spa => ipv4_info[:ipv4_address]
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
+    end
+
   end
 
 end

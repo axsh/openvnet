@@ -24,6 +24,7 @@ module Vnet::Openflow::Interfaces
       flows = []
 
       flows_for_ipv4(flows, mac_info, ipv4_info)
+      flows_for_interface_ipv4(flows, mac_info, ipv4_info)
       flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
 
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
@@ -165,18 +166,21 @@ module Vnet::Openflow::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(:controller_port,
-                           priority: 40,
+      #
+      # Classifiers:
+      #
+      flows << flow_create(:controller_classifier,
+                           priority: 30,
                            match: {
-                             :eth_type => 0x0806,
                              :eth_src => mac_info[:mac_address],
-                             :ipv4_src => ipv4_info[:ipv4_address]
                            },
-                           write_metadata: {
-                             :network => ipv4_info[:network_id]
-                           },
-                           cookie: cookie,
-                           goto_table: TABLE_NETWORK_DST_CLASSIFIER)
+                           write_interface_id: @id,
+                           cookie: cookie)
+
+      #
+      # IPv4:
+      #
+
       flows << flow_create(:network_dst,
                            priority: 80,
                            match: {
