@@ -80,17 +80,15 @@ module Vnet::Openflow::Interfaces
       #
       # Classifier
       #
-      flows << flow_create(:vif_ports_match,
+      flows << flow_create(:interface_classifier,
+                           priority: 30,
                            match: {
                              :eth_src => mac_info[:mac_address],
                            },
-                           match_metadata: {
-                             :interface => @id
-                           },
-                           write_metadata: {
-                             :network => ipv4_info[:network_id],
-                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
                            cookie: cookie)
+
       flows << flow_create(:host_ports,
                            priority: 30,
                            match: {

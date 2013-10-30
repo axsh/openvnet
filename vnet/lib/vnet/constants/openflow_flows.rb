@@ -20,9 +20,6 @@ module Vnet
       TABLE_TUNNEL_PORTS = 3
       TABLE_TUNNEL_NETWORK_IDS = 4
 
-      # Match MAC and IPv4 address of vifs to the proper network.
-      TABLE_VIF_PORTS = 5
-
       TABLE_LOCAL_PORT = 6
 
       # For packets explicitly marked as being from the controller.
@@ -37,6 +34,8 @@ module Vnet
       TABLE_EDGE_SRC = 8
       TABLE_EDGE_DST = 9
 
+      TABLE_INTERFACE_CLASSIFIER = 10
+
       # Initial verification of network number and application of global
       # filtering rules.
       #
@@ -45,49 +44,48 @@ module Vnet
       # currently known as the 'physical' network.
       #
       # Later we will always require a network number to be supplied.
-      TABLE_NETWORK_SRC_CLASSIFIER = 10
-      TABLE_NETWORK_DST_CLASSIFIER = 20
+      TABLE_NETWORK_SRC_CLASSIFIER = 20
 
-      TABLE_VIRTUAL_SRC = 11
-      TABLE_PHYSICAL_SRC = 12
+      TABLE_VIRTUAL_SRC       = 21
+      TABLE_PHYSICAL_SRC      = 22
 
-      TABLE_ROUTER_CLASSIFIER = 13
-      TABLE_ROUTER_INGRESS = 14
-      TABLE_ROUTE_LINK = 15
+      TABLE_ROUTER_CLASSIFIER = 23
+      TABLE_ROUTER_INGRESS    = 24
+      TABLE_ROUTE_LINK        = 25
 
-      TABLE_ROUTER_DST = 17
+      TABLE_ROUTER_DST        = 27
 
-      TABLE_ARP_LOOKUP = 18
+      TABLE_ARP_LOOKUP        = 28
 
-      TABLE_VIRTUAL_DST = 21
-      TABLE_PHYSICAL_DST = 22
+      TABLE_NETWORK_DST_CLASSIFIER = 30
+      TABLE_VIRTUAL_DST            = 31
+      TABLE_PHYSICAL_DST           = 32
 
-      TABLE_INTERFACE_VIF = 24
+      TABLE_INTERFACE_VIF     = 34
 
       # Route based on the mac address only.
       #
       # Deprecated...
-      TABLE_MAC_ROUTE = 25
+      TABLE_MAC_ROUTE       = 35
 
-      TABLE_FLOOD_SIMULATED = 30
-      TABLE_FLOOD_LOCAL     = 31
-      TABLE_FLOOD_ROUTE     = 32
-      TABLE_FLOOD_SEGMENT   = 33
-      TABLE_FLOOD_TUNNELS   = 34
+      TABLE_FLOOD_SIMULATED = 40
+      TABLE_FLOOD_LOCAL     = 41
+      TABLE_FLOOD_ROUTE     = 42
+      TABLE_FLOOD_SEGMENT   = 43
+      TABLE_FLOOD_TUNNELS   = 44
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER     = 36
+      TABLE_OUTPUT_CONTROLLER     = 50
 
       # Send packet to a known datapath id, e.g. using an eth port or
       # tunnel port.
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_OUTPUT_DP_ROUTE_LINK  = 37
-      TABLE_OUTPUT_DATAPATH       = 38
-
-      TABLE_OUTPUT_INTERFACE = 41
+      TABLE_OUTPUT_DP_ROUTE_LINK  = 51
+      TABLE_OUTPUT_DATAPATH       = 52
+      TABLE_OUTPUT_INTERFACE      = 53
 
       #
       # Cookie constants:
