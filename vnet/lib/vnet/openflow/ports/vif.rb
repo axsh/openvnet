@@ -12,7 +12,7 @@ module Vnet::Openflow::Ports
     end
 
     def cookie(tag = nil)
-      value = self.port_number | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
+      value = self.port_number | COOKIE_TYPE_PORT
       tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
     end
 

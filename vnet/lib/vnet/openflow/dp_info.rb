@@ -120,7 +120,7 @@ module Vnet::Openflow
     def initialize_managers
       @cookie_manager = CookieManager.new
       @datapath_manager = DatapathManager.new(self)
-      @dc_segment_manager = DcSegmentManager.new(@datapath)
+      @dc_segment_manager = DcSegmentManager.new(self)
       @interface_manager = InterfaceManager.new(self)
       @network_manager = NetworkManager.new(self)
       @packet_manager = PacketManager.new(@datapath)

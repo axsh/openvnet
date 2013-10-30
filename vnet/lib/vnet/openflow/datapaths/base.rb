@@ -22,7 +22,7 @@ module Vnet::Openflow::Datapaths
     end
     
     # def cookie(tag = nil)
-    #   value = @id | (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
+    #   value = @id | COOKIE_TYPE_INTERFACE
     #   tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
     # end
 
@@ -67,7 +67,7 @@ module Vnet::Openflow::Datapaths
 
       @active_networks[dpn_map.network_id] = active_network
 
-      cookie = active_network[:dpn_id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
+      cookie = active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
 
       flows = []
       flows << flow_create(:default,
@@ -108,7 +108,7 @@ module Vnet::Openflow::Datapaths
 
       debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
 
-      @dp_info.del_cookie(active_network[:dpn_id] | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT))
+      @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       
       true
     end

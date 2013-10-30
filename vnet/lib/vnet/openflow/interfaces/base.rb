@@ -77,7 +77,7 @@ module Vnet::Openflow::Interfaces
         raise "Invalid cookie optional value: %#x" % value
       end
       @id |
-        (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) |
+        COOKIE_TYPE_INTERFACE |
         type << COOKIE_TAG_SHIFT |
         value << OPTIONAL_VALUE_SHIFT
     end

@@ -28,7 +28,7 @@ module Vnet::Openflow::Networks
 
       @interfaces = {}
 
-      @cookie = @id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      @cookie = @id | COOKIE_TYPE_NETWORK
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = network_map.ipv4_prefix
     end
