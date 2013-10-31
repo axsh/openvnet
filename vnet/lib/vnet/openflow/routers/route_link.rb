@@ -38,7 +38,6 @@ module Vnet::Openflow::Routers
         :route_id => route_info[:id],
         :route_uuid => route_info[:uuid],
         :network_id => route_info[:interface][:network_id],
-        :network_type => route_info[:interface][:network_type],
 
         :require_interface => route_info[:interface][:require_interface],
         :active_datapath_id => route_info[:interface][:active_datapath_id],
@@ -49,6 +48,8 @@ module Vnet::Openflow::Routers
 
         :ingress => route_info[:ingress],
         :egress => route_info[:egress],
+
+        :route_link => self
       }
 
       cookie = route[:route_id] | COOKIE_TYPE_ROUTE
@@ -199,7 +200,7 @@ module Vnet::Openflow::Routers
       # required by the old in_port.
       #
       # The route link is identified by eth_dst, which was set in
-      # TABLE_ROUTER_EGRESS prior to be sent to the controller.
+      # TABLE_ROUTE_LINK prior to be sent to the controller.
       message.match.in_port = OFPP_CONTROLLER
 
       @datapath.send_packet_out(message, OFPP_TABLE)

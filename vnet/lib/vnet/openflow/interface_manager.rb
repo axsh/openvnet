@@ -31,6 +31,8 @@ module Vnet::Openflow
         # Check if nil... (use param :port_number to verify)
         item.update_port_number(nil)
         item.update_active_datapath(datapath_id: nil)
+      when :enable_router_ingress
+        item.enable_router_ingress
       end
 
       item_to_hash(item)
