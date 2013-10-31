@@ -7,19 +7,22 @@ module Vnet::Openflow::SecurityGroups::Connections
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 
-    def cookie(interface)
-      interface.id |
+    def cookie(interface_id)
+      interface_id |
       (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
       (SGM::COOKIE_TAG_SG_CONTRACK << COOKIE_TAG_SHIFT)
     end
 
     def open(message)
-      # TODO: make the this query and the log optional. It's too expensive to
-      # always query the database just for a simple log message
       interface_id = message.cookie & COOKIE_ID_MASK
-      interface = MW::Interface.batch[interface_id].commit
-
-      log_new_open(interface, message)
+      # Log messages for connections are disabled by default since they
+      # require database access which is too expensive.
+      # They can be enabled by writing the following in vna.conf
+      # security_groups { log_connection_tracking true }
+      if Vnet::Configurations::Vna.conf.security_groups.log_connection_tracking
+        interface = MW::Interface.batch[interface_id].commit
+        log_new_open(interface, message)
+      end
 
       [
         flow_create(:default,
@@ -31,20 +34,20 @@ module Vnet::Openflow::SecurityGroups::Connections
                       ipv4_src: message.ipv4_src,
                       ipv4_dst: message.ipv4_dst,
                     }.merge(match_egress(message)),
-                    match_metadata: { interface: interface.id },
-                    cookie: cookie(interface),
+                    match_metadata: { interface: interface_id },
+                    cookie: cookie(interface_id),
                     goto_table: TABLE_INTERFACE_CLASSIFIER),
         flow_create(:default,
                     table: TABLE_INTERFACE_INGRESS_FILTER,
                     priority: 10,
-                    cookie: cookie(interface),
+                    cookie: cookie(interface_id),
                     match: {
                       dl_dst:   message.packet_info.eth_src,
                       eth_type: ETH_TYPE_IPV4,
                       ipv4_src:   message.ipv4_dst,
                       ipv4_dst:   message.ipv4_src,
                     }.merge(match_ingress(message)),
-                    match_metadata: { interface: interface.id },
+                    match_metadata: { interface: interface_id },
                     goto_table: TABLE_INTERFACE_VIF)
       ]
     end
