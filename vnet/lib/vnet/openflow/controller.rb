@@ -78,6 +78,8 @@ module Vnet::Openflow
       case message.cookie >> COOKIE_PREFIX_SHIFT
       when COOKIE_PREFIX_INTERFACE
         datapath.interface_manager.async.packet_in(message)
+      when COOKIE_PREFIX_TRANSLATION
+        datapath.translation_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
         datapath.service_manager.async.packet_in(message)
       when COOKIE_PREFIX_ROUTE, COOKIE_PREFIX_ROUTE_LINK

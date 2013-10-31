@@ -222,6 +222,7 @@ module Vnet::Openflow
       @dp_info.route_manager.set_datapath_info(@datapath_info)
       @dp_info.service_manager.set_datapath_info(@datapath_info)
       @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
+      @dp_info.translation_manager.set_datapath_info(@datapath_info)
     end
 
   end
