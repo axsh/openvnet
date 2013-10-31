@@ -14,7 +14,7 @@ module Vnet::Openflow::Translations
       @dp_info = params[:dp_info]
 
       flows = []
-      flows << Flow.create(TABLE_EDGE_SRC,   0, {}, {:output => Vnet::Openflow::Controller::OFPP_CONTROLLER}, {:cookie => @id | COOKIE_TYPE_TRANSLATION} )
+      flows << Flow.create(TABLE_EDGE_SRC,   1, {}, {:output => Vnet::Openflow::Controller::OFPP_CONTROLLER}, {:cookie => @id | COOKIE_TYPE_TRANSLATION} )
       @dp_info.datapath.add_flows(flows)
     end
 
