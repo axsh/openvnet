@@ -80,6 +80,8 @@ module Vnet::Openflow
         datapath.interface_manager.async.packet_in(message)
       when COOKIE_PREFIX_SECURITY_GROUP
         datapath.security_group_manager.async.packet_in(message)
+      when COOKIE_PREFIX_TRANSLATION
+        datapath.translation_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
         datapath.service_manager.async.packet_in(message)
       when COOKIE_PREFIX_ROUTE, COOKIE_PREFIX_ROUTE_LINK
