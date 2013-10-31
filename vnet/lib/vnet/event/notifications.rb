@@ -4,6 +4,7 @@ module Vnet::Event::Notifications
       include Celluloid
       include Celluloid::Logger
       include Celluloid::Notifications
+      include Vnet::Event
       prepend Initializer
     end
     klass.extend(ClassMethods)
@@ -43,16 +44,14 @@ module Vnet::Event::Notifications
 
     return unless event[:method]
 
-    item_status = @item_statuses[params[:target_id]]
-
-    if event[:options][:pending].member?(item_status)
+    if event[:options][:pending].member?(@item_statuses[params[:target_id]])
       event_queue = (@event_queues[params[:target_id]] || []).dup
       event_queue << { event_name: event_name, params: params.dup }
       @event_queues[params[:target_id]] = event_queue
       return
     end
 
-    return unless item_status == event[:options][:before]
+    return unless @item_statuses[params[:target_id]] == event[:options][:before]
 
     @item_statuses[params[:target_id]] = event[:options][:during]
 
