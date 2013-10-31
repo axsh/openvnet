@@ -22,13 +22,21 @@ module Vnet::Openflow
     def initialize(dp_info)
       @dp_info = dp_info
 
-      @datapath_id = nil
+      @datapath_info = nil
       @items = {}
       subscribe_events
     end
 
     def item(params)
-      item_to_hash(item_by_params(params))
+      begin
+        item_to_hash(item_by_params(params))
+      rescue Celluloid::Task::TerminatedError => e
+        raise e
+      rescue Exception => e
+        info log_format(e.message, e.class.name)
+        e.backtrace.each { |str| info log_format(str) }
+        raise e
+      end
     end
 
     def unload(params)
@@ -48,7 +56,7 @@ module Vnet::Openflow
       item_to_hash(internal_detect(params))
     end
 
-    def select(params)
+    def select(params = {})
       @items.select { |id, item|
         match_item?(item, params)
       }.map { |id, item|
@@ -66,13 +74,13 @@ module Vnet::Openflow
       nil
     end
 
-    def set_datapath_id(datapath_id)
-      if @datapath_id
-        raise("Manager.set_datapath_id called twice.")
+    def set_datapath_info(datapath_info)
+      if @datapath_info
+        raise("Manager.set_datapath_info called twice.")
       end
 
-      @datapath_id = datapath_id
-
+      @datapath_info = datapath_info
+      
       # We need to update remote interfaces in case they are now in
       # our datapath.
     end
@@ -88,6 +96,7 @@ module Vnet::Openflow
 
       return nil
     end
+
     #
     # Internal methods:
     #
@@ -95,15 +104,30 @@ module Vnet::Openflow
     private
 
     #
-    # Item-related methods:
+    # Override these method to support additional parameters.
     #
 
-    # Override this method to support additional parameters.
+    # Optimize this by returning a proc block.
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
       true
     end
+
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
+      end
+    end
+
+    #
+    # Item-related methods:
+    #
 
     def item_to_hash(item)
       item && item.to_hash
@@ -118,8 +142,8 @@ module Vnet::Openflow
         end
       end
 
-      select = select_filter_from_params(params)
-      return nil if select.nil?
+      select_filter = select_filter_from_params(params)
+      return nil if select_filter.nil?
 
       # After the db query, avoid yielding method calls until the item
       # is added to the items list and 'install' method is
@@ -138,7 +162,7 @@ module Vnet::Openflow
       # rely on the 'install' method call as an event barrier for
       # dynamic data.
 
-      item_map = select_item(select)
+      item_map = select_item(select_filter)
       return nil if item_map.nil?
 
       if params[:reinitialize] == true
@@ -152,19 +176,6 @@ module Vnet::Openflow
       end
 
       create_item(item_map, params)
-    end
-
-    def select_filter_from_params(params)
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      when params[:display_name] && params[:owner_datapath_id] then
-        {:display_name => params[:display_name], :owner_datapath_id => params[:owner_datapath_id]}
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
-        return nil
-      end
     end
 
     def subscribe_events

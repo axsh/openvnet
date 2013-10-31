@@ -9,6 +9,12 @@ describe Vnet::Openflow::PortManager do
         ofc = double(:ofc)
         dp = MockDatapath.new(ofc, 1)
         Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
+
+        tunnel = double(:tunnel)
+        tunnel.should_receive(:dst_id).and_return(1)
+
+        Vnet::Openflow::TunnelManager.any_instance.stub(:item).and_return(tunnel)
+
         dp.create_mock_port_manager
         port_desc = double(:port_desc)
         port_desc.should_receive(:port_no).exactly(3).times.and_return(5)
@@ -19,9 +25,11 @@ describe Vnet::Openflow::PortManager do
 
         port = double(:port)
         port_info = double(:port_info)
+        port.should_receive(:port_name).exactly(1).times.and_return("t-src1dst3")
         port.should_receive(:port_number).exactly(2).times.and_return(5)
         port.should_receive(:port_info).exactly(3).times.and_return(port_info)
         port.should_receive(:extend).and_return(Vnet::Openflow::Ports::Tunnel)
+        port.should_receive(:dst_id=)
         port.should_receive(:to_hash)
         port.should_receive(:install)
         port_info.should_receive(:name).exactly(3).times.and_return("t-src1dst3")
@@ -41,6 +49,7 @@ describe Vnet::Openflow::PortManager do
 
       it "creates an object of Models::Interface for eth0" do
         nm = double(:network_manager)
+        nm.should_receive(:set_datapath_info)
         Vnet::Openflow::NetworkManager.stub(:new).and_return(nm)
 
         ofc = double(:ofc)
@@ -85,6 +94,7 @@ describe Vnet::Openflow::PortManager do
 
       it "creates an instance of interface when the switch receives port_status" do
         nm = double(:network_manager)
+        nm.should_receive(:set_datapath_info)
         Vnet::Openflow::NetworkManager.stub(:new).and_return(nm)
 
         ofc = double(:ofc)

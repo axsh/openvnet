@@ -2,6 +2,32 @@
 
 module Vnet::Openflow
 
+  # Read-only thread-safe object to allow other actors to access
+  # static information about this datapath.
+  class DatapathInfo
+
+    attr_reader :id
+    attr_reader :uuid
+    attr_reader :display_name
+
+    attr_reader :datapath_map
+
+    attr_reader :dc_segment_id
+    attr_reader :ipv4_address
+
+    def initialize(datapath_map)
+      @datapath_map = datapath_map
+
+      @id = datapath_map.id
+      @uuid = datapath_map.uuid
+      @display_name = datapath_map.display_name
+
+      @dc_segment_id = datapath_map.dc_segment_id
+      @ipv4_address = IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET)
+    end
+
+  end
+
   # OpenFlow datapath allows us to send OF messages and ovs-ofctl
   # commands to a specific bridge/switch.
   class Datapath
@@ -13,11 +39,13 @@ module Vnet::Openflow
 
     attr_reader :controller
     attr_reader :dpid
+    attr_reader :dpid_s
     attr_reader :ovs_ofctl
 
     # Do not update any values of the datapath db for outside of the
     # Datapath actor.
     attr_reader :datapath_map
+    attr_reader :datapath_info
 
     attr_reader :switch
 
@@ -44,6 +72,7 @@ module Vnet::Openflow
       @controller = @dp_info.controller
       @ovs_ofctl = @dp_info.ovs_ofctl
 
+      # TODO: Remove these...
       @cookie_manager = @dp_info.cookie_manager
       @dc_segment_manager = @dp_info.dc_segment_manager
       @interface_manager = @dp_info.interface_manager
@@ -55,7 +84,6 @@ module Vnet::Openflow
       @tunnel_manager = @dp_info.tunnel_manager
       @translation_manager = @dp_info.translation_manager
 
-      @cookie_manager.create_category(:collection,     COOKIE_PREFIX_COLLECTION)
       @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
       @cookie_manager.create_category(:network,        COOKIE_PREFIX_NETWORK)
       @cookie_manager.create_category(:packet_handler, COOKIE_PREFIX_PACKET_HANDLER)
@@ -76,7 +104,7 @@ module Vnet::Openflow
     end
 
     def inspect
-      "<##{self.class.name} dpid:#{@dp_info.dpid}>"
+      "<##{self.class.name} dpid:#{@dp_info && @dp_info.dpid}>"
     end
 
     def ipv4_address
@@ -88,6 +116,7 @@ module Vnet::Openflow
       @switch = Switch.new(self)
       @switch.create_default_flows
 
+      # TODO: Don't store the datapath_map...
       @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
 
       if @datapath_map.nil?
@@ -95,9 +124,7 @@ module Vnet::Openflow
         return
       end
 
-      @interface_manager.set_datapath_id(@datapath_map.id)
-      @network_manager.set_datapath_id(@datapath_map.id)
-      @service_manager.set_datapath_id(@datapath_map.id)
+      initialize_datapath_info
 
       @switch.switch_ready
     end
@@ -183,6 +210,18 @@ module Vnet::Openflow
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def initialize_datapath_info
+      @datapath_info = DatapathInfo.new(@datapath_map)
+
+      @dp_info.datapath_manager.set_datapath_info(@datapath_info)
+      @dp_info.dc_segment_manager.set_datapath_info(@datapath_info)
+      @dp_info.interface_manager.set_datapath_info(@datapath_info)
+      @dp_info.network_manager.set_datapath_info(@datapath_info)
+      @dp_info.route_manager.set_datapath_info(@datapath_info)
+      @dp_info.service_manager.set_datapath_info(@datapath_info)
+      @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
     end
 
   end

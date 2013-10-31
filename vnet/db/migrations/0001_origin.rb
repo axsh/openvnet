@@ -54,6 +54,8 @@ Sequel.migration do
       String :mode, :default => 'vif',:null => false
       String :display_name
 
+      String :port_name, :index => true, :null => true
+
       # Should be a relation allowing for multiple active/owner
       # datapath ids.
       Integer :active_datapath_id, :index => true

@@ -25,6 +25,7 @@ module Vnet::Openflow::Interfaces
     attr_accessor :id
     attr_accessor :uuid
     attr_accessor :mode
+    attr_accessor :port_name
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
     attr_accessor :display_name
@@ -40,6 +41,7 @@ module Vnet::Openflow::Interfaces
       @id = map.id
       @uuid = map.uuid
       @mode = map.mode.to_sym
+      @port_name = map.port_name
 
       @display_name = map.display_name
 
@@ -75,7 +77,7 @@ module Vnet::Openflow::Interfaces
         raise "Invalid cookie optional value: %#x" % value
       end
       @id |
-        (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT) |
+        COOKIE_TYPE_INTERFACE |
         type << COOKIE_TAG_SHIFT |
         value << OPTIONAL_VALUE_SHIFT
     end
@@ -123,12 +125,22 @@ module Vnet::Openflow::Interfaces
                                     owner_datapath_ids: @owner_datapath_ids)
     end
 
+    #
+    # Events:
+    #
+
     def install
     end
 
     def uninstall
       debug "interfaces: removing flows..."
       del_cookie
+    end
+
+    def enable_router_ingress
+    end
+
+    def disable_router_ingress
     end
 
     def update_port_number(new_number)
@@ -139,6 +151,18 @@ module Vnet::Openflow::Interfaces
       @dp_info.network_manager.async.update_interface(event: :update_all,
                                                       interface_id: @id,
                                                       port_number: @port_number)
+    end
+
+    def update_active_datapath(params)
+      if @owner_datapath_ids.nil?
+        return if @mode != :vif
+      end
+
+      # Currently only supports one active datapath id.
+      active_datapath_ids = [params[:datapath_id]]
+
+      @active_datapath_ids = active_datapath_ids
+      MW::Interface.batch[:id => @id].update(:active_datapath_id => params[:datapath_id]).commit
     end
 
     #
@@ -157,6 +181,9 @@ module Vnet::Openflow::Interfaces
       }
 
       @mac_addresses = mac_addresses
+
+      debug log_format("adding mac address to #{@uuid}/#{@id}",
+                       "#{params[:mac_address].to_s}")
 
       # Add to port...
       nil
@@ -198,6 +225,9 @@ module Vnet::Openflow::Interfaces
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
+      debug log_format("adding ipv4 address to #{@uuid}/#{@id}",
+                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
+
       [mac_info, ipv4_info]
     end
 
@@ -216,8 +246,11 @@ module Vnet::Openflow::Interfaces
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
-      del_cookie_for_ip_lease(ipv4_info[:cookie_id])
+      debug log_format("removing ipv4 address from #{@uuid}/#{@id}",
+                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
 
+      del_cookie_for_ip_lease(ipv4_info[:cookie_id])
+      
       [mac_info, ipv4_info]
     end
 
@@ -269,6 +302,40 @@ module Vnet::Openflow::Interfaces
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def flows_for_interface_ipv4(flows, mac_info, ipv4_info)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0800,
+                             :eth_src => mac_info[:mac_address],
+                             :ipv4_src => IPV4_ZERO
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0800,
+                             :eth_src => mac_info[:mac_address],
+                             :ipv4_src => ipv4_info[:ipv4_address]
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
+      flows << flow_create(:interface_classifier,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0806,
+                             :eth_src => mac_info[:mac_address],
+                             :arp_sha => mac_info[:mac_address],
+                             :arp_spa => ipv4_info[:ipv4_address]
+                           },
+                           interface_id: @id,
+                           write_network_id: ipv4_info[:network_id],
+                           cookie: cookie)
     end
 
   end

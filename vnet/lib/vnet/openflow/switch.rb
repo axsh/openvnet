@@ -55,14 +55,16 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_HOST_PORTS,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_PORTS,       0, {}, nil, flow_options)
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_VIF_PORTS,          0, {}, nil, flow_options)
       flows << Flow.create(TABLE_LOCAL_PORT,         0, {}, nil, flow_options)
       flows << Flow.create(TABLE_CONTROLLER_PORT,    0, {}, nil, flow_options)
+
+      flows << Flow.create(TABLE_INTERFACE_CLASSIFIER,   0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_VIRTUAL_SRC,  0, {}, nil, flow_options)
+      # flows << Flow.create(TABLE_VIRTUAL_SRC,  40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 0, {}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
@@ -70,7 +72,7 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_ROUTER_CLASSIFIER, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
       flows << Flow.create(TABLE_ROUTER_INGRESS,    0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_ROUTER_EGRESS,     0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_ROUTE_LINK,        0, {}, nil, flow_options)
       flows << Flow.create(TABLE_ROUTER_DST,        0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_ARP_LOOKUP,            0, {}, nil, flow_options)
@@ -96,12 +98,11 @@ module Vnet::Openflow
                            md_create(:remote => nil), nil,
                            flow_options)
       flows << Flow.create(TABLE_FLOOD_SEGMENT,      0, {}, nil,
-                           flow_options.merge(:goto_table => TABLE_FLOOD_TUNNEL_IDS))
+                           flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
       flows << Flow.create(TABLE_FLOOD_SEGMENT, 10,
                            md_create(:remote => nil), nil,
                            flow_options)
-      flows << Flow.create(TABLE_FLOOD_TUNNEL_IDS,   0, {}, nil, flow_options)
-      flows << Flow.create(TABLE_FLOOD_TUNNEL_PORTS, 0, {}, nil, flow_options)
+      flows << Flow.create(TABLE_FLOOD_TUNNELS,      0, {}, nil, flow_options)
 
       flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
       flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK,  0, {}, nil, flow_options)
@@ -143,7 +144,6 @@ module Vnet::Openflow
       #
       # Send messages that will start initializing the switch.
       #
-
       @datapath.send_message(Trema::Messages::FeaturesRequest.new)
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
 

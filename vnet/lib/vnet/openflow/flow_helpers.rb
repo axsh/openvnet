@@ -85,7 +85,6 @@ module Vnet::Openflow
         table = TABLE_CONTROLLER_PORT
       when :classifier
         table = TABLE_CLASSIFIER
-      when :default
       when :host_ports
         table = TABLE_HOST_PORTS
       when :network_dst
@@ -129,10 +128,19 @@ module Vnet::Openflow
         priority = 40
         match_metadata = { :network => params[:network_id] }
         goto_table = TABLE_NETWORK_DST_CLASSIFIER
-      when :vif_ports_match
-        table = TABLE_VIF_PORTS
-        priority = 1
-        write_metadata = { :network => params[:network_id] }
+
+      #
+      # Refactored:
+      #
+      when :default
+      when :controller_classifier
+        table = TABLE_CONTROLLER_PORT
+        write_metadata = { :interface => params[:write_interface_id] }
+        goto_table = TABLE_INTERFACE_CLASSIFIER
+      when :interface_classifier
+        table = TABLE_INTERFACE_CLASSIFIER
+        match_metadata = { :interface => params[:interface_id] }
+        write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_NETWORK_SRC_CLASSIFIER
       else
         return nil
@@ -144,7 +152,14 @@ module Vnet::Openflow
       goto_table = params[:goto_table] if params[:goto_table]
 
       match_metadata = params[:match_metadata] if params[:match_metadata]
-      write_metadata = params[:write_metadata] if params[:write_metadata]
+
+      if params[:write_metadata]
+        if write_metadata
+          write_metadata = write_metadata.merge(params[:write_metadata])
+        else
+          write_metadata = params[:write_metadata]
+        end
+      end
 
       match = params[:match] if params[:match]
       match = match.merge(md_create(match_metadata)) if match_metadata
@@ -154,7 +169,7 @@ module Vnet::Openflow
       instructions[:goto_table] = goto_table if goto_table
       instructions.merge!(md_create(write_metadata)) if write_metadata
 
-      raise "Missing cookie." if cookie.nil?
+      raise "Missing cookie." if instructions[:cookie].nil?
 
       Flow.create(table, priority, match, actions, instructions)
     end

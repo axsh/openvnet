@@ -20,9 +20,6 @@ module Vnet
       TABLE_TUNNEL_PORTS = 3
       TABLE_TUNNEL_NETWORK_IDS = 4
 
-      # Match MAC and IPv4 address of vifs to the proper network.
-      TABLE_VIF_PORTS = 5
-
       TABLE_LOCAL_PORT = 6
 
       # For packets explicitly marked as being from the controller.
@@ -37,6 +34,8 @@ module Vnet
       TABLE_EDGE_SRC = 8
       TABLE_EDGE_DST = 9
 
+      TABLE_INTERFACE_CLASSIFIER = 10
+
       # Initial verification of network number and application of global
       # filtering rules.
       #
@@ -45,52 +44,51 @@ module Vnet
       # currently known as the 'physical' network.
       #
       # Later we will always require a network number to be supplied.
-      TABLE_NETWORK_SRC_CLASSIFIER = 10
-      TABLE_NETWORK_DST_CLASSIFIER = 20
+      TABLE_NETWORK_SRC_CLASSIFIER = 20
 
-      TABLE_VIRTUAL_SRC = 11
-      TABLE_PHYSICAL_SRC = 12
+      TABLE_VIRTUAL_SRC       = 21
+      TABLE_PHYSICAL_SRC      = 22
 
-      TABLE_ROUTER_CLASSIFIER = 13
-      TABLE_ROUTER_INGRESS = 14
-      TABLE_ROUTER_EGRESS = 15
-      TABLE_ROUTER_DST = 16
+      TABLE_ROUTER_CLASSIFIER = 23
+      TABLE_ROUTER_INGRESS    = 24
+      TABLE_ROUTE_LINK        = 25
 
-      TABLE_ARP_LOOKUP = 17
+      TABLE_ROUTER_DST        = 27
 
-      TABLE_VIRTUAL_DST = 21
-      TABLE_PHYSICAL_DST = 22
+      TABLE_ARP_LOOKUP        = 28
 
-      TABLE_INTERFACE_VIF = 24
+      TABLE_NETWORK_DST_CLASSIFIER = 30
+      TABLE_VIRTUAL_DST            = 31
+      TABLE_PHYSICAL_DST           = 32
+
+      TABLE_INTERFACE_VIF     = 34
 
       # Route based on the mac address only.
       #
       # Deprecated...
-      TABLE_MAC_ROUTE = 25
+      TABLE_MAC_ROUTE       = 35
 
-      TABLE_FLOOD_SIMULATED    = 30
-      TABLE_FLOOD_LOCAL        = 31
-      TABLE_FLOOD_ROUTE        = 32
-      TABLE_FLOOD_SEGMENT      = 33
-      TABLE_FLOOD_TUNNEL_IDS   = 34
-      TABLE_FLOOD_TUNNEL_PORTS = 35
+      TABLE_FLOOD_SIMULATED = 40
+      TABLE_FLOOD_LOCAL     = 41
+      TABLE_FLOOD_ROUTE     = 42
+      TABLE_FLOOD_SEGMENT   = 43
+      TABLE_FLOOD_TUNNELS   = 44
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER     = 36
+      TABLE_OUTPUT_CONTROLLER     = 50
 
       # Send packet to a known datapath id, e.g. using an eth port or
       # tunnel port.
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_OUTPUT_DP_ROUTE_LINK  = 37
-      TABLE_OUTPUT_DATAPATH       = 38
-
-      TABLE_OUTPUT_INTERFACE = 41
+      TABLE_OUTPUT_DP_ROUTE_LINK  = 51
+      TABLE_OUTPUT_DATAPATH       = 52
+      TABLE_OUTPUT_INTERFACE      = 53
 
       #
-      # Metadata, tunnel and cookie flags and masks:
+      # Cookie constants:
       #
 
       COOKIE_ID_MASK = (0xffffffff)
@@ -101,7 +99,6 @@ module Vnet
       COOKIE_PREFIX_SHIFT = 56
       COOKIE_PREFIX_MASK = (0xff << COOKIE_PREFIX_SHIFT)
 
-      COOKIE_PREFIX_COLLECTION     = 0x1
       COOKIE_PREFIX_DP_NETWORK     = 0x2
       COOKIE_PREFIX_NETWORK        = 0x3
       COOKIE_PREFIX_PACKET_HANDLER = 0x4
@@ -113,7 +110,24 @@ module Vnet
       COOKIE_PREFIX_TUNNEL         = 0xa
       COOKIE_PREFIX_VIF            = 0xb
       COOKIE_PREFIX_INTERFACE      = 0xc
-      COOKIE_PREFIX_TRANSLATION       = 0xd
+      COOKIE_PREFIX_TRANSLATION    = 0xd
+
+      COOKIE_TYPE_DP_NETWORK     = (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_NETWORK        = (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_PACKET_HANDLER = (COOKIE_PREFIX_PACKET_HANDLER << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_PORT           = (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_ROUTE          = (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_ROUTE_LINK     = (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_SERVICE        = (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_SWITCH         = (COOKIE_PREFIX_SWITCH << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_TUNNEL         = (COOKIE_PREFIX_TUNNEL << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_VIF            = (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_INTERFACE      = (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_TRANSLATION    = (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT)
+
+      #
+      # Metadata constants:
+      #
 
       METADATA_FLAGS_SHIFT = 40
       METADATA_FLAGS_MASK = (0xffff << METADATA_FLAGS_SHIFT)
@@ -139,7 +153,6 @@ module Vnet
       METADATA_TYPE_SHIFT      = 56
       METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)
 
-      METADATA_TYPE_COLLECTION = (0x1 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_DATAPATH   = (0x2 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_NETWORK    = (0x3 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_PORT       = (0x4 << METADATA_TYPE_SHIFT)
@@ -150,6 +163,10 @@ module Vnet
       METADATA_TYPE_VIRTUAL_TO_EDGE = (0x9 << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0xffffffff
+
+      #
+      # Tunnel constants:
+      #
 
       TUNNEL_FLAG = (0x1 << 31)
       TUNNEL_FLAG_MASK = 0x80000000

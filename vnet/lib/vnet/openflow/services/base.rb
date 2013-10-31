@@ -17,7 +17,7 @@ module Vnet::Openflow::Services
     end
 
     def cookie(tag = nil)
-      value = @id | (COOKIE_PREFIX_SERVICE << COOKIE_PREFIX_SHIFT)
+      value = @id | COOKIE_TYPE_SERVICE
       tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
     end
 

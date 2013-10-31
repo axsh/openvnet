@@ -15,6 +15,7 @@ module Vnet::Openflow::Interfaces
 
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
+      flows_for_interface_ipv4(flows, mac_info, ipv4_info)
 
       @dp_info.add_flows(flows)
     end
@@ -80,17 +81,6 @@ module Vnet::Openflow::Interfaces
       #
       # Classifier
       #
-      flows << flow_create(:vif_ports_match,
-                           match: {
-                             :eth_src => mac_info[:mac_address],
-                           },
-                           match_metadata: {
-                             :interface => @id
-                           },
-                           write_metadata: {
-                             :network => ipv4_info[:network_id],
-                           },
-                           cookie: cookie)
       flows << flow_create(:host_ports,
                            priority: 30,
                            match: {
