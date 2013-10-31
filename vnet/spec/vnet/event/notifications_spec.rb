@@ -2,7 +2,7 @@
 require 'spec_helper'
 
 describe Vnet::Event::Notifications do
-  describe "handle_event without options" do
+  describe "handle_event" do
     let(:notifier) { Celluloid::Notifications.notifier }
 
     let(:manager_class) do
