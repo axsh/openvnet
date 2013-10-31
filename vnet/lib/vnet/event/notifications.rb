@@ -11,70 +11,60 @@ module Vnet::Event::Notifications
   end
 
   module ClassMethods
-    def events
-      @events ||= {}
+    def event_definitions
+      @event_definitions ||= {}
     end
 
     def subscribe_event(event_name, method = nil, options = {})
-      options.fetch(:before)
-      options.fetch(:during)
-      options.fetch(:after)
-      options[:pending] = [options[:pending] || []].flatten
-      self.events[event_name] = { method: method, options: options }
+      self.event_definitions[event_name] = { method: method, options: options }
     end
   end
 
   module Initializer
     def initialize(*args, &block)
       super
-      @item_statuses = {}
+      @queue_statuses = {}
       @event_queues = {}
       subscribe_events
     end
   end
 
-  def events
-    self.class.events
+  def event_definitions
+    self.class.event_definitions
   end
 
   def handle_event(event_name, params)
-    #debug "handle event: #{event_name} params: #{params.inspect} status: #{@item_statuses[params[:target_id]]}"
-
-    event = events[event_name]
-
-    return unless event[:method]
-
-    if event[:options][:pending].member?(@item_statuses[params[:target_id]])
-      event_queue = (@event_queues[params[:target_id]] || []).dup
-      event_queue << { event_name: event_name, params: params.dup }
-      @event_queues[params[:target_id]] = event_queue
-      return
+    #debug "handle event: #{event_name} params: #{params.inspect}}"
+    event_queue = (@event_queues[params[:target_id]] || []).dup
+    event_queue << { event_name: event_name, params: params.dup }
+    @event_queues[params[:target_id]] = event_queue
+    unless @queue_statuses[params[:target_id]]
+      @queue_statuses[params[:target_id]] = true
+      async(:execute_queued_events, params[:target_id])
     end
+  end
 
-    return unless @item_statuses[params[:target_id]] == event[:options][:before]
+  def execute_queued_events(target_id)
+    while @event_queues[target_id].present?
+      event_queue = @event_queues[target_id]
+      event = event_queue.shift
+      @event_queues[target_id] = event_queue
 
-    @item_statuses[params[:target_id]] = event[:options][:during]
+      event_definition = event_definitions[event[:event_name]]
+      next unless event_definition[:method]
 
-    __send__(event[:method], params)
+      #debug "execute event: #{event[:event_name]} method: #{event_definition[:method]} params: #{event[:params].inspect}"
 
-    @item_statuses[params[:target_id]] = event[:options][:after]
-
-    (@event_queues[params[:target_id]] || []).dup.tap do |event_queue|
-      while e = event_queue.shift
-        if events[e[:event_name]][:options][:before] == @item_statuses[params[:target_id]]
-          @event_queues[params[:target_id]] = event_queue
-          # the rest of queues will be processed recursively
-          async(:handle_event, e[:event_name], e[:params])
-          return
-        end
-      end
+      public_send(event_definition[:method], event[:params])
     end
-
-    return nil
+    @event_queues.delete(target_id)
+    return 
+  ensure
+    @queue_statuses.delete(target_id)
   end
 
   def subscribe_events
-    self.events.keys.each do |event_name|
+    self.event_definitions.keys.each do |event_name|
       subscribe(event_name, :handle_event)
     end
   end
