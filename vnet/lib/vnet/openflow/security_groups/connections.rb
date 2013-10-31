@@ -10,9 +10,7 @@ module Vnet::Openflow::SecurityGroups::Connections
     IDLE_TIMEOUT = 600
 
     def cookie(interface_id)
-      interface_id |
-      (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
-      (SGM::COOKIE_TAG_SG_CONTRACK << COOKIE_TAG_SHIFT)
+      interface_id | COOKIE_TYPE_SECURITY_GROUP | SGM::COOKIE_TAG_SG_CONTRACK
     end
 
     def open(message)

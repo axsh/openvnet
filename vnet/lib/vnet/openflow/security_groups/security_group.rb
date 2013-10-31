@@ -70,8 +70,7 @@ module Vnet::Openflow::SecurityGroups
     end
 
     def cookie
-      @id | (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
-      (SGM::COOKIE_TAG_SG_RULE << COOKIE_TAG_SHIFT)
+      @id | COOKIE_TYPE_SECURITY_GROUP | SGM::COOKIE_TAG_SG_RULE
     end
 
     def install(interface)
