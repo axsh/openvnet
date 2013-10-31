@@ -14,18 +14,8 @@ module Vnet::Openflow
     def initialize(*args)
       super(*args)
 
-      cookie = (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
-        (COOKIE_TAG_SG_ARP | COOKIE_TAG_SHIFT)
-
-      # We add this rule so ingress filter doesn't have an effect on arp
-      @dp_info.add_flows [
-        flow_create(:default,
-                    table: TABLE_INTERFACE_INGRESS_FILTER,
-                    priority: 100,
-                    cookie: cookie,
-                    match: { eth_type: ETH_TYPE_ARP },
-                    goto_table: TABLE_INTERFACE_VIF)
-      ]
+      accept_all_egress
+      accept_ingress_arp
     end
 
     def packet_in(message)
@@ -69,18 +59,37 @@ module Vnet::Openflow
                     actions: { output: Controller::OFPP_CONTROLLER })
       }
 
-      cookie = (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
-        (COOKIE_TAG_SG_EGRESS | COOKIE_TAG_SHIFT)
-      flows << flow_create(:default,
-                            table: TABLE_INTERFACE_EGRESS_FILTER,
-                            priority: 1,
-                            cookie: cookie,
-                            goto_table: TABLE_INTERFACE_CLASSIFIER)
-
       @dp_info.add_flows(flows)
     end
 
     private
+    def accept_all_egress
+      cookie = (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
+        (COOKIE_TAG_SG_EGRESS | COOKIE_TAG_SHIFT)
+
+      @dp_info.add_flows [
+        flow_create(:default,
+                    table: TABLE_INTERFACE_EGRESS_FILTER,
+                    priority: 1,
+                    cookie: cookie,
+                    goto_table: TABLE_INTERFACE_CLASSIFIER)
+      ]
+    end
+
+    def accept_ingress_arp
+      cookie = (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
+        (COOKIE_TAG_SG_ARP | COOKIE_TAG_SHIFT)
+
+      @dp_info.add_flows [
+        flow_create(:default,
+                    table: TABLE_INTERFACE_INGRESS_FILTER,
+                    priority: 100,
+                    cookie: cookie,
+                    match: { eth_type: ETH_TYPE_ARP },
+                    goto_table: TABLE_INTERFACE_VIF)
+      ]
+    end
+
     def open_connection(message)
       flows = if message.tcp?
         Connections::TCP.new.open(message)
