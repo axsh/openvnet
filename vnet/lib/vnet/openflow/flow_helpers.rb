@@ -171,6 +171,9 @@ module Vnet::Openflow
 
       raise "Missing cookie." if instructions[:cookie].nil?
 
+      instructions[:idle_timeout] = params[:idle_timeout]
+      instructions[:hard_timeout] = params[:hard_timeout]
+
       Flow.create(table, priority, match, actions, instructions)
     end
 

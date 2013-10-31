@@ -16,6 +16,7 @@ module Vnet::Openflow::SecurityGroups
     end
 
     RULE_PRIORITY = 10
+    IDLE_TIMEOUT  = 1200
 
     def install(interface)
       flow_create(
@@ -25,6 +26,7 @@ module Vnet::Openflow::SecurityGroups
         match_metadata: {interface: interface.id},
         match: match_ipv4_subnet_src(@s_ipv4.u32, @s_ipv4.prefix.to_i).merge(match),
         cookie: @cookie,
+        idle_timeout: IDLE_TIMEOUT,
         goto_table: TABLE_INTERFACE_VIF
       )
     end

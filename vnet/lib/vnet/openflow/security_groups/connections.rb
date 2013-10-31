@@ -7,6 +7,8 @@ module Vnet::Openflow::SecurityGroups::Connections
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 
+    IDLE_TIMEOUT = 600
+
     def cookie(interface_id)
       interface_id |
       (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT) |
@@ -15,6 +17,7 @@ module Vnet::Openflow::SecurityGroups::Connections
 
     def open(message)
       interface_id = message.cookie & COOKIE_ID_MASK
+
       # Log messages for connections are disabled by default since they
       # require database access which is too expensive.
       # They can be enabled by writing the following in vna.conf
@@ -35,12 +38,12 @@ module Vnet::Openflow::SecurityGroups::Connections
                       ipv4_dst: message.ipv4_dst,
                     }.merge(match_egress(message)),
                     match_metadata: { interface: interface_id },
+                    idle_timeout: IDLE_TIMEOUT,
                     cookie: cookie(interface_id),
                     goto_table: TABLE_INTERFACE_CLASSIFIER),
         flow_create(:default,
                     table: TABLE_INTERFACE_INGRESS_FILTER,
                     priority: 10,
-                    cookie: cookie(interface_id),
                     match: {
                       dl_dst:   message.packet_info.eth_src,
                       eth_type: ETH_TYPE_IPV4,
@@ -48,6 +51,8 @@ module Vnet::Openflow::SecurityGroups::Connections
                       ipv4_dst:   message.ipv4_src,
                     }.merge(match_ingress(message)),
                     match_metadata: { interface: interface_id },
+                    idle_timeout: IDLE_TIMEOUT,
+                    cookie: cookie(interface_id),
                     goto_table: TABLE_INTERFACE_VIF)
       ]
     end
