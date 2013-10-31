@@ -7,11 +7,10 @@ module Vnet::Openflow
     include Vnet::Event::Dispatchable
 
     def initialize(dp_info)
-      @dp_info = dp_info
+      super(dp_info)
       @dpid_s = "0x%016x" % @dp_info.dpid
       @edge_ports = []
 
-      add_handler(mode: :vnet_edge, dp_info: @dp_info)
       update_translation_map
     end
 
@@ -34,27 +33,37 @@ module Vnet::Openflow
       entry.network_id
     end
 
+    def set_datapath_info(datapath_info)
+      super(datapath_info)
+      initialize_handlers
+    end
     #
     # Internal methods:
     #
 
     private
-    
-    def translation_hander_initialize(mode, params)
-      case mode
+
+    def translation_handler_initialize(params)
+      case params[:mode]
       when :vnet_edge  then Translations::VnetEdgeHandler.new(params)
       else
-        error log_format('failed to create translation handler', "name: #{mode}")
+        error log_format('failed to create translation handler', "name: #{params[:mode]}")
         nil
       end
     end
 
-    def add_handler(mode, params)
-      item = translation_handler_initialize(mode, params)
+    def add_handler(params)
+      info log_format("install handlers", params[:mode])
+      item = translation_handler_initialize(params)
 
       return nil if item.nil?
 
       @items[item.id] = item
+    end
+
+    def initialize_handlers
+      return unless @dp_info.datapath.datapath_map.node_id == 'edge'
+      add_handler(mode: :vnet_edge, dp_info: @dp_info)
     end
 
     def log_format(message, values = nil)

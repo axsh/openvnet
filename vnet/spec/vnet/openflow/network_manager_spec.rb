@@ -32,7 +32,6 @@ describe Vnet::Openflow::NetworkManager do
         dc_segment_manager.should_receive(:async).and_return(actor)
         tunnel_manager.should_receive(:async).and_return(actor)
 
-
         dp.dp_info.should_receive(:dc_segment_manager).and_return(dc_segment_manager)
         dp.dp_info.should_receive(:tunnel_manager).and_return(tunnel_manager)
         #dp.dp_info.should_receive(:route_manager).and_return(route_manager)

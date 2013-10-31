@@ -4,6 +4,7 @@ module Vnet::Openflow::Translations
   class VnetEdgeHandler
 
     include Celluloid::Logger
+    include Vnet::Openflow::FlowHelpers
 
     attr_reader :id
 
@@ -13,8 +14,8 @@ module Vnet::Openflow::Translations
       @dp_info = params[:dp_info]
 
       flows = []
-      flows << Flow.create(TABLE_EDGE_SRC,   0, {}, {:output => Controller::OFPP_CONTROLLER}, {:cookie => @id | COOKIE_TYPE_TRANSLATION} )
-      @dp_info.add_flows(flows)
+      flows << Flow.create(TABLE_EDGE_SRC,   0, {}, {:output => Vnet::Openflow::Controller::OFPP_CONTROLLER}, {:cookie => @id | COOKIE_TYPE_TRANSLATION} )
+      @dp_info.datapath.add_flows(flows)
     end
 
     def packet_in(message)
