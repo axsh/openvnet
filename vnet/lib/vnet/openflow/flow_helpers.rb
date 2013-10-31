@@ -7,6 +7,17 @@ module Vnet::Openflow
 
     Flow = Vnet::Openflow::Flow
 
+    FLOW_MATCH_METADATA_PARAMS = [:match_interface,
+                                  :match_network,
+                                  :match_reflection,
+                                  :match_route_link,
+                                 ]
+    FLOW_WRITE_METADATA_PARAMS = [:write_interface,
+                                  :write_network,
+                                  :write_reflection,
+                                  :write_route_link,
+                                 ]
+
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
     end
@@ -143,12 +154,6 @@ module Vnet::Openflow
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_NETWORK_SRC_CLASSIFIER
-      when :interface_egress_route
-        table = TABLE_INTERFACE_EGRESS_ROUTES
-        priority = params[:default_route] ? 20 : 30
-        match_metadata = { :interface => params[:interface_id] }
-        write_metadata = { :network => params[:write_network_id] }
-        goto_table = TABLE_INTERFACE_EGRESS_MAC
 
       when :router_classifier
         table = TABLE_ROUTE_INGRESS
@@ -162,28 +167,34 @@ module Vnet::Openflow
           goto_table = TABLE_ROUTE_LINK_INGRESS
         end          
 
-      when :route_link_ingress
-        table = TABLE_ROUTE_LINK_INGRESS
+      when :routing
         priority = params[:default_route] ? 20 : 30
-        match_metadata = { :interface => params[:interface_id] }
-        write_metadata = { :route_link => params[:write_route_link_id] }
-        goto_table = TABLE_ROUTE_LINK_EGRESS
-      when :route_link_egress
-        table = TABLE_ROUTE_LINK_EGRESS
-        priority = params[:default_route] ? 20 : 30
-        match_metadata = { :route_link => params[:route_link_id] }
-        write_metadata = { :interface => params[:write_interface_id] }
-        goto_table = TABLE_ROUTE_EGRESS
 
       else
         return nil
       end
 
+      #
+      # Generic:
+      #
       table = params[:table] if params[:table]
       actions = params[:actions] if params[:actions]
       priority = params[:priority] if params[:priority]
       goto_table = params[:goto_table] if params[:goto_table]
 
+      #
+      # Match/Write Metadata options:
+      #
+      FLOW_MATCH_METADATA_PARAMS.each { |type|
+        match_metadata[type] = params[type] if params[type]
+      }
+      FLOW_WRITE_METADATA_PARAMS.each { |type|
+        write_metadata[type] = params[type] if params[type]
+      }
+
+      #
+      # Output:
+      #
       match_metadata = match_metadata.merge!(params[:match_metadata]) if params[:match_metadata]
       write_metadata = write_metadata.merge!(params[:write_metadata]) if params[:write_metadata]
 
