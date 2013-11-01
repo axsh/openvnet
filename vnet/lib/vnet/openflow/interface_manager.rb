@@ -7,8 +7,9 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event :added_interface # TODO Check if needed.
-    subscribe_event :removed_interface # TODO Check if needed.
+    subscribe_event ADDED_INTERFACE, :item
+    subscribe_event REMOVED_INTERFACE, :delete_item
+    subscribe_event INITIALIZED_INTERFACE, :create_item
     subscribe_event LeasedIpv4Address, :leased_ipv4_address
     subscribe_event ReleasedIpv4Address, :released_ipv4_address
     subscribe_event LeasedMacAddress, :leased_mac_address
@@ -82,7 +83,12 @@ module Vnet::Openflow
       end
     end
 
-    def item_initialize(mode, params)
+    def item_initialize(item_map, params)
+      mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
+      params = { dp_info: @dp_info,
+                 manager: self,
+                 map: item_map }
+
       case mode
       when :simulated then Interfaces::Simulated.new(params)
       when :remote then Interfaces::Remote.new(params)
@@ -91,6 +97,10 @@ module Vnet::Openflow
       else
         Interfaces::Base.new(params)
       end
+    end
+
+    def initialized_item_event
+      CreatedlInterface
     end
 
     def select_item(filter)
@@ -111,20 +121,10 @@ module Vnet::Openflow
     #
 
     def create_item(item_map, params)
-      mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
-
-      item = item_initialize(mode,
-                             dp_info: @dp_info,
-                             manager: self,
-                             map: item_map)
+      item = @items[item_map.id]
       return nil if item.nil?
 
-      @items[item_map.id] = item
-
       debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{mode}")
-
-      # TODO: Make install/uninstall a barrier that enables/disable
-      # the creation of flows and ensure that no events gets lost.
 
       item.install
 

@@ -161,8 +161,15 @@ module Vnet::Openflow
     # Create / Delete tunnels:
     #
 
-    def item_initialize(params)
-      Tunnels::Base.new(params)
+    def item_initialize(item_map, params)
+      Tunnels::Base.new(dp_info: @dp_info,
+                        manager: self,
+                        map: item_map,
+                        dst_dp_map: params[:dst_dp_map])
+    end
+
+    def initialized_item_event
+      INITIALIZED_TUNNEL
     end
 
     def select_item(filter)
@@ -172,10 +179,7 @@ module Vnet::Openflow
     end
     
     def create_item(item_map, params)
-      item = item_initialize(dp_info: @dp_info,
-                             manager: self,
-                             map: item_map,
-                             dst_dp_map: params[:dst_dp_map])
+      item = item_initialize(item_map, params)
       return nil if item.nil?
 
       @items[item_map.id] = item

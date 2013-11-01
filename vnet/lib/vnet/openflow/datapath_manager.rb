@@ -5,6 +5,13 @@ module Vnet::Openflow
   class DatapathManager < Manager
 
     #
+    # Events:
+    #
+    subscribe_event :added_service # TODO Check if needed.
+    subscribe_event :removed_service # TODO Check if needed.
+    subscribe_event INITIALIZED_DATAPATH, :create_item
+
+    #
     # Networks:
     #
 
@@ -71,13 +78,19 @@ module Vnet::Openflow
       MW::Datapath.batch[filter].commit #(:fill => [:ip_leases => :ip_address])
     end
 
-    def create_item(item_map, params)
-      item = Datapaths::Base.new(dp_info: @dp_info,
-                                 manager: self,
-                                 map: item_map)
-      return nil if item.nil?
+    def item_initialize(item_map, params)
+      Datapaths::Base.new(dp_info: @dp_info,
+                          manager: self,
+                          map: item_map)
+    end
 
-      @items[item_map.id] = item
+    def initialized_item_event
+      INITIALIZED_DATAPATH
+    end
+
+    def create_item(item_map, params)
+      item = @items[item_map.id]
+      return nil if item.nil?
 
       debug log_format("insert #{item_map.uuid}/#{item_map.id}")
 
