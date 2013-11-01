@@ -100,7 +100,7 @@ module Vnet::Openflow
     end
 
     def initialized_item_event
-      CreatedlInterface
+      INITIALIZED_INTERFACE
     end
 
     def select_item(filter)
