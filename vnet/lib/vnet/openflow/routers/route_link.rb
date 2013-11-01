@@ -56,7 +56,6 @@ module Vnet::Openflow::Routers
 
       @routes[cookie] = route
 
-      create_destination_flow(route)
       cookie
     end
 
@@ -105,39 +104,6 @@ module Vnet::Openflow::Routers
 
     def log_format(message, values)
       "#{@dpid_s} router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
-    end
-
-    def create_destination_flow(route)
-      cookie = route[:route_id] | COOKIE_TYPE_ROUTE
-
-      if route[:require_interface] == true
-        catch_route_md = md_create(network: route[:network_id],
-                                   not_no_controller: nil)
-        actions = { :output => OFPP_CONTROLLER }
-        instructions = { :cookie => cookie }
-      else
-        catch_route_md = md_create(network: route[:network_id])
-        actions = nil
-        instructions = {
-          :goto_table => TABLE_ARP_LOOKUP,
-          :cookie => cookie
-        }
-      end
-
-      if is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix])
-        priority = 30
-      else
-        priority = 31
-      end
-
-      subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
-
-      # flow = Flow.create(TABLE_ARP_TABLE, priority,
-      #                    catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
-      #                    actions,
-      #                    instructions)
-
-      # @datapath.add_flow(flow)
     end
 
     def match_packet(message)

@@ -291,13 +291,6 @@ module Vnet::Openflow
       cookie = route[:id] | COOKIE_TYPE_ROUTE
 
       flows = []
-      route_link_md = md_create(:route_link => route_link[:id])
-
-      if is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix])
-        priority = 30
-      else
-        priority = 31
-      end
 
       subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
       subnet_src = match_ipv4_subnet_src(route[:ipv4_address], route[:ipv4_prefix])
@@ -343,16 +336,16 @@ module Vnet::Openflow
         @dp_info.add_flows(flows)
 
       else
-        datapath_md = md_create(:datapath => route[:interface][:use_datapath_id])
-
         if route[:egress] == true
-          flows << Flow.create(TABLE_ROUTE_LINK_EGRESS, priority,
-                               route_link_md.merge(subnet_dst), {
-                                 :eth_dst => route_link[:mac_address]
-                               },
-                               datapath_md.merge({ :cookie => cookie,
-                                                   :goto_table => TABLE_OUTPUT_ROUTE_LINK
-                                                 }))
+          flows << flow_create(:routing,
+                               table: TABLE_ROUTE_LINK_EGRESS,
+                               goto_table: TABLE_OUTPUT_ROUTE_LINK,
+
+                               match: subnet_dst,
+                               match_route_link: route_link[:id],
+                               write_datapath: route[:interface][:use_datapath_id],
+                               default_route: is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix]),
+                               cookie: cookie)
         end
 
         @dp_info.add_flows(flows)
