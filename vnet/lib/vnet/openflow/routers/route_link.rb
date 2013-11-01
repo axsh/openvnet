@@ -132,7 +132,7 @@ module Vnet::Openflow::Routers
 
       subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
 
-      # flow = Flow.create(TABLE_ROUTER_DST, priority,
+      # flow = Flow.create(TABLE_ARP_TABLE, priority,
       #                    catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
       #                    actions,
       #                    instructions)
@@ -158,7 +158,7 @@ module Vnet::Openflow::Routers
                                :reflection => nil
                              })
 
-      flow = Flow.create(TABLE_ROUTER_DST, 35,
+      flow = Flow.create(TABLE_ARP_TABLE, 35,
                          match_packet(message), {
                            :eth_dst => @mac_address
                          },
@@ -179,7 +179,7 @@ module Vnet::Openflow::Routers
       when :inactive_interface then hard_timeout = 10
       end
 
-      flow = Flow.create(TABLE_ROUTER_DST, 35,
+      flow = Flow.create(TABLE_ARP_TABLE, 35,
                          match_packet(message),
                          nil, {
                            :cookie => message.cookie,
@@ -196,7 +196,7 @@ module Vnet::Openflow::Routers
 
       # Set the in_port to OFPP_CONTROLLER since the packets stored
       # have already been processed by TABLE_CLASSIFIER to
-      # TABLE_ROUTER_DST, and as such no longer match the fields
+      # TABLE_ARP_TABLE, and as such no longer match the fields
       # required by the old in_port.
       #
       # The route link is identified by eth_dst, which was set in

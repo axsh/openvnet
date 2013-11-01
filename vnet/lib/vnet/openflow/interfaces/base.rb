@@ -389,7 +389,7 @@ module Vnet::Openflow::Interfaces
                              :network => ipv4_info[:network_id]
                            },
                            cookie: cookie,
-                           goto_table: TABLE_ROUTER_DST)
+                           goto_table: TABLE_ARP_TABLE)
 
       # TODO: Currently only one mac address / network is supported.
       flows << flow_create(:default,
@@ -405,7 +405,7 @@ module Vnet::Openflow::Interfaces
                              :network => ipv4_info[:network_id]
                            },
                            cookie: cookie,
-                           goto_table: TABLE_ROUTER_DST)
+                           goto_table: TABLE_ARP_TABLE)
     end
 
     def flows_for_router_ingress_mac(flows, mac_info)

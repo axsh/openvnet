@@ -54,7 +54,7 @@ module Vnet::Openflow::Ports
       if @network_id && @ipv4_addr
         network_md = md_create(:network => @network_id)
 
-        flows << Flow.create(TABLE_ROUTER_DST, 40,
+        flows << Flow.create(TABLE_ARP_TABLE, 40,
                              network_md.merge({ :eth_type => 0x0800,
                                                 :ipv4_dst => @ipv4_addr
                                               }), {

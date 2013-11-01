@@ -55,7 +55,7 @@ module Vnet
       TABLE_ROUTE_LINK_INGRESS = 34
       TABLE_ROUTE_LINK_EGRESS  = 35
       TABLE_ROUTE_EGRESS       = 36
-      TABLE_ROUTER_DST         = 37
+      TABLE_ARP_TABLE          = 37
       TABLE_ARP_LOOKUP         = 38
 
       TABLE_NETWORK_DST_CLASSIFIER = 40

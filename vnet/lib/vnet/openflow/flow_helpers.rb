@@ -137,7 +137,7 @@ module Vnet::Openflow
         }
         goto_table = TABLE_ROUTE_INGRESS
       when :router_dst_match
-        table = TABLE_ROUTER_DST
+        table = TABLE_ARP_TABLE
         priority = 40
         match_metadata = { :network => params[:network_id] }
         goto_table = TABLE_NETWORK_DST_CLASSIFIER
