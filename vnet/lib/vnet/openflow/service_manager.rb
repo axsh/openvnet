@@ -55,7 +55,8 @@ module Vnet::Openflow
       MW::NetworkService[filter]
     end
 
-    def create_item(item_map, params)
+    def create_item(params)
+      item_map = params[:item_map]
       item = @items[item_map.id]
       return unless item
 

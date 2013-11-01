@@ -88,9 +88,10 @@ module Vnet::Openflow
       INITIALIZED_DATAPATH
     end
 
-    def create_item(item_map, params)
+    def create_item(params)
+      item_map = params[:item_map]
       item = @items[item_map.id]
-      return nil if item.nil?
+      return unless item
 
       debug log_format("insert #{item_map.uuid}/#{item_map.id}")
 

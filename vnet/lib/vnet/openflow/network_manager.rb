@@ -120,7 +120,8 @@ module Vnet::Openflow
       MW::Network.batch[filter].commit(:fill => :network_services)
     end
 
-    def create_item(item_map, params)
+    def create_item(params)
+      item_map = params[:item_map]
       network = @items[item_map.id]
       return unless network
 
