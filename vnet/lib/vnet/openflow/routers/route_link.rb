@@ -59,43 +59,6 @@ module Vnet::Openflow::Routers
       cookie
     end
 
-    def packet_in(message)
-      ipv4_dst = message.ipv4_dst
-      ipv4_src = message.ipv4_src
-      port_number = message.match.in_port
-
-      route = @routes[message.cookie]
-
-      debug log_format('packet_in',
-                       "port_number:#{port_number} ipv4_src:#{ipv4_src.to_s} ipv4_dst:#{ipv4_dst.to_s}")
-
-      return unreachable_ip(message, "no route found", :no_route) if route.nil?
-
-      if route[:require_interface] == true
-        filter_args = {
-          :ip_addresses__network_id => route[:network_id],
-          :ip_addresses__ipv4_address => ipv4_dst.to_i
-        }
-        ip_lease = MW::IpLease.batch.dataset.join_ip_addresses.where(filter_args).first.commit(:fill => [:interface, :ipv4_address])
-
-        if ip_lease.nil? || ip_lease.interface.nil?
-          return unreachable_ip(message, "no interface found", :no_interface)
-        end
-
-        if ip_lease.interface.active_datapath_id.nil?
-          return unreachable_ip(message, "no active datapath for interface found", :inactive_interface)
-        end
-
-        debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{ipv4_dst}" % message.cookie)
-
-        route_packets(message, ip_lease)
-        send_packet(message)
-
-      else
-        debug log_format('packet_in, no destination interface needed for route', "#{route[:uuid]}")
-      end
-    end
-
     #
     # Internal methods:
     #
@@ -104,78 +67,6 @@ module Vnet::Openflow::Routers
 
     def log_format(message, values)
       "#{@dpid_s} router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
-    end
-
-    def match_packet(message)
-      # Verify metadata is a network type.
-
-      match = md_create(:network => message.match.metadata & METADATA_VALUE_MASK)
-      match.merge!({ :eth_type => 0x0800,
-                     # :eth_src => message.eth_src,
-                     :ipv4_dst => message.ipv4_dst
-                   })
-    end
-
-    # Create a flow that matches all packets to the same destination
-    # ip address. The output datapath route link table will figure out
-    # for us if the output port should be a MAC2MAC or tunnel port.
-    def route_packets(message, ip_lease)
-      actions_md = md_create({ :datapath => ip_lease.interface.active_datapath_id,
-                               :reflection => nil
-                             })
-
-      flow = Flow.create(TABLE_ARP_TABLE, 35,
-                         match_packet(message), {
-                           :eth_dst => @mac_address
-                         },
-                         actions_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK,
-                                            :cookie => message.cookie,
-                                            :idle_timeout => 60 * 60
-                                          }))
-
-      @datapath.add_flow(flow)
-    end
-
-    def suppress_packets(message, reason)
-      # These should set us as listeners to events for the interface
-      # becoming active or IP address being leased.
-      case reason
-      when :no_route     then hard_timeout = 30
-      when :no_interface       then hard_timeout = 30
-      when :inactive_interface then hard_timeout = 10
-      end
-
-      flow = Flow.create(TABLE_ARP_TABLE, 35,
-                         match_packet(message),
-                         nil, {
-                           :cookie => message.cookie,
-                           :hard_timeout => hard_timeout
-                         })
-
-      @datapath.add_flow(flow)
-    end
-
-    def send_packet(message)
-      # We're modifying the in_port field, so duplicate the message to
-      # avoid race conditions with the flow add message.
-      message = message.dup
-
-      # Set the in_port to OFPP_CONTROLLER since the packets stored
-      # have already been processed by TABLE_CLASSIFIER to
-      # TABLE_ARP_TABLE, and as such no longer match the fields
-      # required by the old in_port.
-      #
-      # The route link is identified by eth_dst, which was set in
-      # TABLE_ROUTE_LINK_EGRESS prior to be sent to the controller.
-      message.match.in_port = OFPP_CONTROLLER
-
-      @datapath.send_packet_out(message, OFPP_TABLE)
-    end
-
-    def unreachable_ip(message, error_msg, suppress_reason)
-      debug log_format("packet_in, error '#{error_msg}'", "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
-      suppress_packets(message, suppress_reason)
-      nil
     end
 
   end

@@ -82,8 +82,6 @@ module Vnet::Openflow
         datapath.translation_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
         datapath.service_manager.async.packet_in(message)
-      when COOKIE_PREFIX_ROUTE, COOKIE_PREFIX_ROUTE_LINK
-        datapath.route_manager.async.packet_in(message)
       else
         datapath.packet_manager.async.packet_in(message)
       end

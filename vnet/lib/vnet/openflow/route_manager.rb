@@ -13,19 +13,6 @@ module Vnet::Openflow
       @interfaces = {}
     end
 
-    def packet_in(message)
-      case message.cookie >> COOKIE_PREFIX_SHIFT
-      when COOKIE_PREFIX_ROUTE
-        item = @items[message.cookie & COOKIE_ID_MASK]
-        item[:route_link][:packet_handler].packet_in(message) if item
-      when COOKIE_PREFIX_ROUTE_LINK
-        route_link = @route_links[message.cookie & COOKIE_ID_MASK]
-        route_link.packet_in(message) if route_link
-      end
-
-      nil
-    end
-
     #
     # Refactor:
     #
@@ -37,8 +24,6 @@ module Vnet::Openflow
       return if route_link[:routes].has_key? route_map.id
 
       info log_format("insert #{route_map.uuid}/#{route_map.id}", "interface_id:#{route_map.interface_id}")
-      # info log_format('insert', "route.route_type:#{route_map.route_type}")
-      # info log_format('insert', "route.route_link: id:#{route_map.route_link.id} uuid:#{route_map.route_link.uuid}")
 
       route = {
         :id => route_map.id,
@@ -49,7 +34,11 @@ module Vnet::Openflow
         :ingress => route_map.ingress,
         :egress => route_map.egress,
 
-        :route_link => route_link
+        :route_link => route_link,
+
+        :route => Routes::Base.new(dp_info: @dp_info,
+                                   manager: self,
+                                   map: route_map)
       }
 
       @items[route[:id]] = route
@@ -62,7 +51,13 @@ module Vnet::Openflow
         return
       end
 
-      create_route_flows(route_link, route)
+      if route[:interface][:use_datapath_id].nil? && route[:egress] == true
+        route_link[:packet_handler].insert_route(route)
+      end
+
+      route[:route].network_id = route[:interface][:network_id]
+      route[:route].use_datapath_id = route[:interface][:use_datapath_id]
+      route[:route].install
     end
 
     def prepare_network(network_map, dp_map)
@@ -285,71 +280,6 @@ module Vnet::Openflow
       end
 
       interface
-    end
-
-    def create_route_flows(route_link, route)
-      cookie = route[:id] | COOKIE_TYPE_ROUTE
-
-      flows = []
-
-      subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
-      subnet_src = match_ipv4_subnet_src(route[:ipv4_address], route[:ipv4_prefix])
-
-      if route[:interface][:use_datapath_id].nil?
-        flows << flow_create(:routing,
-                             table: TABLE_INTERFACE_EGRESS_ROUTES,
-                             goto_table: TABLE_INTERFACE_EGRESS_MAC,
-
-                             match: subnet_dst,
-                             match_interface: route[:interface][:id],
-                             write_network: route[:interface][:network_id],
-                             default_route: is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix]),
-                             cookie: cookie)
-
-        if route[:ingress] == true
-          flows << flow_create(:routing,
-                               table: TABLE_ROUTE_LINK_INGRESS,
-                               goto_table: TABLE_ROUTE_LINK_EGRESS,
-
-                               match: subnet_src,
-                               match_interface: route[:interface][:id],
-                               write_route_link: route_link[:id],
-                               default_route: is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix]),
-                               write_reflection: true,
-                               cookie: cookie)
-        end
-
-        if route[:egress] == true
-          flows << flow_create(:routing,
-                               table: TABLE_ROUTE_LINK_EGRESS,
-                               goto_table: TABLE_ROUTE_EGRESS,
-
-                               match: subnet_dst,
-                               match_route_link: route_link[:id],
-                               write_interface: route[:interface][:id],
-                               default_route: is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix]),
-                               cookie: cookie)
-
-          route_link[:packet_handler].insert_route(route)
-        end
-
-        @dp_info.add_flows(flows)
-
-      else
-        if route[:egress] == true
-          flows << flow_create(:routing,
-                               table: TABLE_ROUTE_LINK_EGRESS,
-                               goto_table: TABLE_OUTPUT_ROUTE_LINK,
-
-                               match: subnet_dst,
-                               match_route_link: route_link[:id],
-                               write_datapath: route[:interface][:use_datapath_id],
-                               default_route: is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix]),
-                               cookie: cookie)
-        end
-
-        @dp_info.add_flows(flows)
-      end
     end
 
   end

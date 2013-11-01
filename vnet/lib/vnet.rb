@@ -215,6 +215,10 @@ module Vnet
       autoload :Vif, 'vnet/openflow/ports/vif'
     end
 
+    module Routes
+      autoload :Base, 'vnet/openflow/routes/base'
+    end
+
     module Routers
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
     end
