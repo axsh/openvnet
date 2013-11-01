@@ -41,7 +41,8 @@ module Vnet::Openflow
       fo_controller_md = flow_options.merge(md_create(local: nil,
                                                       no_controller: nil))
 
-      [TABLE_EDGE_DST, 
+      [TABLE_EDGE_SRC,
+       TABLE_EDGE_DST,
        TABLE_HOST_PORTS,
        TABLE_TUNNEL_PORTS,
        TABLE_TUNNEL_NETWORK_IDS,
@@ -57,7 +58,6 @@ module Vnet::Openflow
        TABLE_ROUTE_LINK_INGRESS,
        TABLE_ROUTE_LINK_EGRESS,
        TABLE_ROUTE_EGRESS,
-       # TABLE_ROUTER_DST,
        TABLE_ARP_LOOKUP,
        TABLE_VIRTUAL_DST,
        TABLE_PHYSICAL_DST,
@@ -84,7 +84,6 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, nil, flow_options)
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
-      flows << Flow.create(TABLE_EDGE_SRC,   0, {}, {:output => Controller::OFPP_CONTROLLER}, {:cookie => COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT} )
 
       flows << Flow.create(TABLE_VIRTUAL_SRC,  90, {:in_port => OFPP_CONTROLLER}, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
