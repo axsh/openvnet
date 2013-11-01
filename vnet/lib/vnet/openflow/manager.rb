@@ -154,7 +154,7 @@ module Vnet::Openflow
 
       item_initialize(item_map, params).tap do |item|
         return unless item
-        return @items[item_map.id] if @iitems[item_map.id]
+        return @items[item_map.id] if @items[item_map.id]
         @items[item_map.id] = item
         publish(initialized_item_event, item_map, params)
       end
