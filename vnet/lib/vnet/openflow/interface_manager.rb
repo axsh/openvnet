@@ -10,10 +10,10 @@ module Vnet::Openflow
     subscribe_event ADDED_INTERFACE, :item
     subscribe_event REMOVED_INTERFACE, :delete_item
     subscribe_event INITIALIZED_INTERFACE, :create_item
-    subscribe_event LeasedIpv4Address, :leased_ipv4_address
-    subscribe_event ReleasedIpv4Address, :released_ipv4_address
-    subscribe_event LeasedMacAddress, :leased_mac_address
-    subscribe_event ReleasedMacAddress, :released_mac_address
+    subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
+    subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
+    subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
+    subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
 
     def update_item(params)
       # Todo: Add the possibility to use a 'filter' parameter for this.

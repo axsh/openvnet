@@ -8,7 +8,7 @@ module Vnet::NodeApi
           model_class.create(options)
         end
 
-        dispatch_event(LeasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+        dispatch_event(LEASED_IPV4_ADDRESS, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
 
         ip_lease
       end
@@ -32,8 +32,8 @@ module Vnet::NodeApi
         end
 
         if deleted_ip_address
-          dispatch_event(ReleasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
-          dispatch_event(LeasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+          dispatch_event(RELEASED_IPV4_ADDRESS, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+          dispatch_event(LEASED_IPV4_ADDRESS, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
         end
 
         ip_lease
@@ -46,7 +46,7 @@ module Vnet::NodeApi
           end
         end
 
-        dispatch_event(ReleasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+        dispatch_event(RELEASED_IPV4_ADDRESS, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
 
         ip_lease
       end

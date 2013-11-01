@@ -26,7 +26,7 @@ module Vnet::NodeApi
         # TODO dispatch_event
         #if interface.ip_leases.present?
         #  interface.ip_leases.each do |ip_lease|
-        #    dispatch_event(LeasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+        #    dispatch_event(LEASED_IPV4_ADDRESS, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
         #  end
         #end
 

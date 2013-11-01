@@ -12,12 +12,12 @@ module Vnet
     INITIALIZED_INTERFACE = "initialized_interface"
 
     # ipv4 address
-    LeasedIpv4Address = "leased_ipv4_address"
-    ReleasedIpv4Address = "released_ipv4_address"
+    LEASED_IPV4_ADDRESS = "leased_ipv4_address"
+    RELEASED_IPV4_ADDRESS = "released_ipv4_address"
 
     # mac address
-    LeasedMacAddress = "leased_mac_address"
-    ReleasedMacAddress = "released_mac_address"
+    LEASED_MAC_ADDRESS = "leased_mac_address"
+    RELEASED_MAC_ADDRESS = "released_mac_address"
 
     #
     # datapatath event
