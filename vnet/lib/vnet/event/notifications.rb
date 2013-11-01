@@ -55,7 +55,7 @@ module Vnet::Event::Notifications
 
       #debug "execute event: #{event[:event_name]} method: #{event_definition[:method]} params: #{event[:params].inspect}"
 
-      public_send(event_definition[:method], event[:params])
+      __send__(event_definition[:method], event[:params])
     end
     @event_queues.delete(id)
     return 
