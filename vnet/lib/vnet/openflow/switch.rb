@@ -57,18 +57,20 @@ module Vnet::Openflow
        TABLE_ROUTE_LINK_INGRESS,
        TABLE_ROUTE_LINK_EGRESS,
        TABLE_ROUTE_EGRESS,
-       TABLE_ROUTER_DST,
+       # TABLE_ROUTER_DST,
        TABLE_ARP_LOOKUP,
        TABLE_VIRTUAL_DST,
        TABLE_PHYSICAL_DST,
-       TABLE_OUTPUT_INTERFACE,
        TABLE_INTERFACE_VIF,
        TABLE_MAC_ROUTE,
        TABLE_FLOOD_LOCAL,
        TABLE_FLOOD_ROUTE,
        TABLE_FLOOD_TUNNELS,
-       TABLE_OUTPUT_DP_ROUTE_LINK,
+       TABLE_OUTPUT_ROUTE_LINK,
+       TABLE_OUTPUT_ROUTE_LINK_HACK,
        TABLE_OUTPUT_DATAPATH,
+       TABLE_OUTPUT_MAC2MAC,
+       TABLE_OUTPUT_INTERFACE,
       ].each { |table|
         flows << Flow.create(table, 0, {}, nil, flow_options)
       }
@@ -94,6 +96,8 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_ROUTE_INGRESS, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
+      flows << Flow.create(TABLE_ROUTER_DST, 0, {}, nil,
+                           flow_options.merge(:goto_table => TABLE_ARP_LOOKUP))
 
       flows << Flow.create(TABLE_VIRTUAL_DST,  30, {:eth_dst => MAC_BROADCAST}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))

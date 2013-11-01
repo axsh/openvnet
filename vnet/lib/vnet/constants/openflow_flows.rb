@@ -77,16 +77,21 @@ module Vnet
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER     = 60
+      TABLE_OUTPUT_CONTROLLER  = 60
 
       # Send packet to a known datapath id, e.g. using an eth port or
       # tunnel port.
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_OUTPUT_DP_ROUTE_LINK  = 61
-      TABLE_OUTPUT_DATAPATH       = 62
-      TABLE_OUTPUT_INTERFACE      = 63
+
+      # TODO: Fix this...
+      TABLE_OUTPUT_ROUTE_LINK      = 61
+      TABLE_OUTPUT_ROUTE_LINK_HACK = 62
+
+      TABLE_OUTPUT_DATAPATH  = 63
+      TABLE_OUTPUT_MAC2MAC   = 64
+      TABLE_OUTPUT_INTERFACE = 65
 
       #
       # Cookie constants:
@@ -100,6 +105,7 @@ module Vnet
       COOKIE_PREFIX_SHIFT = 56
       COOKIE_PREFIX_MASK = (0xff << COOKIE_PREFIX_SHIFT)
 
+      COOKIE_PREFIX_DATAPATH       = 0x1
       COOKIE_PREFIX_DP_NETWORK     = 0x2
       COOKIE_PREFIX_NETWORK        = 0x3
       COOKIE_PREFIX_PACKET_HANDLER = 0x4
@@ -113,6 +119,7 @@ module Vnet
       COOKIE_PREFIX_INTERFACE      = 0xc
       COOKIE_PREFIX_TRANSLATION    = 0xd
 
+      COOKIE_TYPE_DATAPATH       = (COOKIE_PREFIX_DATAPATH << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_NETWORK     = (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_NETWORK        = (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_PACKET_HANDLER = (COOKIE_PREFIX_PACKET_HANDLER << COOKIE_PREFIX_SHIFT)

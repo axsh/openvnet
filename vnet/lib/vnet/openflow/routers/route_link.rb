@@ -132,12 +132,12 @@ module Vnet::Openflow::Routers
 
       subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
 
-      flow = Flow.create(TABLE_ROUTER_DST, priority,
-                         catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
-                         actions,
-                         instructions)
+      # flow = Flow.create(TABLE_ROUTER_DST, priority,
+      #                    catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
+      #                    actions,
+      #                    instructions)
 
-      @datapath.add_flow(flow)
+      # @datapath.add_flow(flow)
     end
 
     def match_packet(message)
@@ -145,7 +145,7 @@ module Vnet::Openflow::Routers
 
       match = md_create(:network => message.match.metadata & METADATA_VALUE_MASK)
       match.merge!({ :eth_type => 0x0800,
-                     :eth_src => message.eth_src,
+                     # :eth_src => message.eth_src,
                      :ipv4_dst => message.ipv4_dst
                    })
     end
@@ -162,7 +162,7 @@ module Vnet::Openflow::Routers
                          match_packet(message), {
                            :eth_dst => @mac_address
                          },
-                         actions_md.merge({ :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK,
+                         actions_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK,
                                             :cookie => message.cookie,
                                             :idle_timeout => 60 * 60
                                           }))

@@ -60,12 +60,23 @@ module Vnet::Openflow::Ports
 
       # For now set the latest eth port as the default MAC2MAC output
       # port.
-      flows << Flow.create(TABLE_OUTPUT_DATAPATH, 2,
+      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK_HACK, 2,
                            reflection_mac2mac_md.merge(:in_port => self.port_number), {
                              :output => OFPP_IN_PORT
                            },
                            flow_options)
-      flows << Flow.create(TABLE_OUTPUT_DATAPATH, 1,
+      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK_HACK, 1,
+                           md_create(:mac2mac => nil), {
+                             :output => self.port_number
+                           },
+                           flow_options)
+
+      flows << Flow.create(TABLE_OUTPUT_MAC2MAC, 2,
+                           reflection_mac2mac_md.merge(:in_port => self.port_number), {
+                             :output => OFPP_IN_PORT
+                           },
+                           flow_options)
+      flows << Flow.create(TABLE_OUTPUT_MAC2MAC, 1,
                            md_create(:mac2mac => nil), {
                              :output => self.port_number
                            },

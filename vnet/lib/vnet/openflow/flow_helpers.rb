@@ -8,11 +8,13 @@ module Vnet::Openflow
     Flow = Vnet::Openflow::Flow
 
     FLOW_MATCH_METADATA_PARAMS = [:match_interface,
+                                  :match_mac2mac,
                                   :match_network,
                                   :match_reflection,
                                   :match_route_link,
                                  ]
     FLOW_WRITE_METADATA_PARAMS = [:write_interface,
+                                  :write_mac2mac,
                                   :write_network,
                                   :write_reflection,
                                   :write_route_link,

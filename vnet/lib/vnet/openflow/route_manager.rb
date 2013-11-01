@@ -160,11 +160,11 @@ module Vnet::Openflow
                            }, nil, {
                              :cookie => cookie
                            })
-      flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK, 4, {
+      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK, 4, {
                              :eth_dst => mac_address
                            }, {
                              :tunnel_id => TUNNEL_ROUTE_LINK
-                           }, tunnel_md.merge({ :goto_table => TABLE_OUTPUT_DATAPATH,
+                           }, tunnel_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK_HACK,
                                                 :cookie => cookie
                                               }))
 
@@ -199,10 +199,10 @@ module Vnet::Openflow
         datapath_md = md_create(:datapath => dp_rl_map.datapath_id)
         mac2mac_md = md_create(:mac2mac => nil)
 
-        flows << Flow.create(TABLE_OUTPUT_DP_ROUTE_LINK, 5,
+        flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK, 5,
                              datapath_md.merge(:eth_dst => mac_address), {
                                :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
-                             }, mac2mac_md.merge({ :goto_table => TABLE_OUTPUT_DATAPATH,
+                             }, mac2mac_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK_HACK,
                                                    :cookie => cookie
                                                  }))
       }
@@ -351,7 +351,7 @@ module Vnet::Openflow
                                  :eth_dst => route_link[:mac_address]
                                },
                                datapath_md.merge({ :cookie => cookie,
-                                                   :goto_table => TABLE_OUTPUT_DP_ROUTE_LINK
+                                                   :goto_table => TABLE_OUTPUT_ROUTE_LINK
                                                  }))
         end
 
