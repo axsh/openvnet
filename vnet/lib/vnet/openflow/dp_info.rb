@@ -128,7 +128,7 @@ module Vnet::Openflow
       @route_manager = RouteManager.new(@datapath)
       @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(self)
-      @translation_manager = TranslationManager.new(self) 
+      @translation_manager = TranslationManager.new(self)
     end
 
   end
