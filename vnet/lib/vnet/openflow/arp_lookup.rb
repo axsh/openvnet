@@ -201,7 +201,8 @@ module Vnet::Openflow
                          match_md.merge({ :eth_type => 0x0800,
                                           :ipv4_dst => params[:request_ipv4]
                                         }), {
-                           :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address)
+                           :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address),
+                           :tunnel_id => params[:interface_network_id] | TUNNEL_FLAG
                          },
                          reflection_md.merge!({ :cookie => @arp_lookup[:reply_cookie],
                                                 :idle_timeout => 3600,
