@@ -28,9 +28,6 @@ module Vnet::Openflow
       item = @items[item_map.id]
       return item if item
 
-      mac_address = interface.mac_addresses.first
-      ipv4_address = mac_address[1][:ipv4_addresses].first
-
       mode = item_map.display_name.to_sym
       params = { dp_info: @dp_info,
                  manager: self,
