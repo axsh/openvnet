@@ -35,20 +35,20 @@ module Vnet::Event::Notifications
 
   def handle_event(event_name, params)
     #debug "handle event: #{event_name} params: #{params.inspect}}"
-    event_queue = (@event_queues[params[:target_id]] || []).dup
+    event_queue = (@event_queues[params[:id]] || []).dup
     event_queue << { event_name: event_name, params: params.dup }
-    @event_queues[params[:target_id]] = event_queue
-    unless @queue_statuses[params[:target_id]]
-      @queue_statuses[params[:target_id]] = true
-      async(:execute_queued_events, params[:target_id])
+    @event_queues[params[:id]] = event_queue
+    unless @queue_statuses[params[:id]]
+      @queue_statuses[params[:id]] = true
+      async(:execute_queued_events, params[:id])
     end
   end
 
-  def execute_queued_events(target_id)
-    while @event_queues[target_id].present?
-      event_queue = @event_queues[target_id]
+  def execute_queued_events(id)
+    while @event_queues[id].present?
+      event_queue = @event_queues[id]
       event = event_queue.shift
-      @event_queues[target_id] = event_queue
+      @event_queues[id] = event_queue
 
       event_definition = event_definitions[event[:event_name]]
       next unless event_definition[:method]
@@ -57,10 +57,10 @@ module Vnet::Event::Notifications
 
       public_send(event_definition[:method], event[:params])
     end
-    @event_queues.delete(target_id)
+    @event_queues.delete(id)
     return 
   ensure
-    @queue_statuses.delete(target_id)
+    @queue_statuses.delete(id)
   end
 
   def subscribe_events

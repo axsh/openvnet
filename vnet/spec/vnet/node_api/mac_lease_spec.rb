@@ -22,7 +22,7 @@ describe Vnet::NodeApi::MacLease do
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
       expect(events[0][:event]).to eq Vnet::Event::LEASED_MAC_ADDRESS
-      expect(events[0][:options][:target_id]).to eq interface.id
+      expect(events[0][:options][:id]).to eq interface.id
       expect(events[0][:options][:mac_lease_id]).to eq mac_lease[:id]
     end
   end
@@ -42,7 +42,7 @@ describe Vnet::NodeApi::MacLease do
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
       expect(events[0][:event]).to eq Vnet::Event::RELEASED_MAC_ADDRESS
-      expect(events[0][:options][:target_id]).to eq mac_lease.interface_id
+      expect(events[0][:options][:id]).to eq mac_lease.interface_id
       expect(events[0][:options][:mac_lease_id]).to eq mac_lease.id
     end
   end

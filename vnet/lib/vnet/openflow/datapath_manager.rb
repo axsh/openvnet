@@ -38,7 +38,7 @@ module Vnet::Openflow
     def handle_event(params)
       debug log_format("handle event #{params[:event]}", "#{params.inspect}")
 
-      item = @items[:target_id]
+      item = @items[:id]
 
       case params[:event]
       when :added

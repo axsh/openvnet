@@ -120,7 +120,8 @@ module Vnet::Openflow
     # Create / Delete interfaces:
     #
 
-    def create_item(item_map, params)
+    def create_item(params)
+      item_map = params[:item_map]
       item = @items[item_map.id]
       return nil if item.nil?
 
@@ -187,7 +188,10 @@ module Vnet::Openflow
     # Event handlers:
     #
 
-    def leased_mac_address(item, params)
+    def leased_mac_address(params)
+      item = @items[params[:id]]
+      return unless item
+
       mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(fill: [:cookie_id, :interface])
 
       return unless mac_lease && mac_lease.interface_id == item.id
@@ -198,7 +202,10 @@ module Vnet::Openflow
                            cookie_id: mac_lease.cookie_id)
     end
 
-    def released_mac_address(item, params)
+    def released_mac_address(params)
+      item = @items[params[:id]]
+      return unless item
+
       mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit
 
       return if mac_lease && mac_lease.interface_id == item.id
@@ -206,7 +213,10 @@ module Vnet::Openflow
       item.remove_mac_address(mac_lease_id: params[:mac_lease_id])
     end
 
-    def leased_ipv4_address(item, params)
+    def leased_ipv4_address(params)
+      item = @items[params[:id]]
+      return unless item
+
       ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:ip_address, :cookie_id])
 
       return unless ip_lease && ip_lease.interface_id == item.id
@@ -221,7 +231,10 @@ module Vnet::Openflow
                             ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
     end
 
-    def released_ipv4_address(item, params)
+    def released_ipv4_address(params)
+      item = @items[params[:id]]
+      return unless item
+
       ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit
 
       return if ip_lease && ip_lease.interface_id == item.id

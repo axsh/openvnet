@@ -39,31 +39,31 @@ describe Vnet::Event::Notifications do
 
         def create_item(params)
           #debug "create_item #{params.inspect}"
-          db_item = find_db_item(params[:target_id], @sleep)
+          db_item = find_db_item(params[:id], @sleep)
           return unless db_item
-          return if @items[params[:target_id]]
-          @items[params[:target_id]] = db_item.dup
+          return if @items[params[:id]]
+          @items[params[:id]] = db_item.dup
           @executed_methods << { method: :create_item, params: params }
           debug "item_created #{params.inspect}"
         end
 
         def update_item(params)
           #debug "update_item #{params.inspect}"
-          db_item = find_db_item(params[:target_id], @sleep)
+          db_item = find_db_item(params[:id], @sleep)
           return unless db_item
-          return unless @items[params[:target_id]]
-          return if @items[params[:target_id]][:name] == db_item[:name]
-          @items[params[:target_id]][:name] = db_item[:name]
+          return unless @items[params[:id]]
+          return if @items[params[:id]][:name] == db_item[:name]
+          @items[params[:id]][:name] = db_item[:name]
           @executed_methods << { method: :update_item, params: params }
           debug "item_updated #{params.inspect}"
         end
 
         def delete_item(params)
           #debug "delete_item #{params.inspect}"
-          db_item = find_db_item(params[:target_id], @sleep)
+          db_item = find_db_item(params[:id], @sleep)
           return if db_item
-          return unless @items[params[:target_id]]
-          @items.delete(params[:target_id])
+          return unless @items[params[:id]]
+          @items.delete(params[:id])
           @executed_methods << { method: :delete_item, params: params }
           debug "item_deleted #{params.inspect}"
         end
@@ -74,7 +74,7 @@ describe Vnet::Event::Notifications do
       item_manager = manager_class.new
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", target_id: 1)
+      notifier.publish("item_created", id: 1)
 
       item_manager.wait_for_events_done
 
@@ -88,9 +88,9 @@ describe Vnet::Event::Notifications do
       item_manager = manager_class.new
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", target_id: 1)
-      notifier.publish("item_created", target_id: 1)
-      notifier.publish("item_created", target_id: 1)
+      notifier.publish("item_created", id: 1)
+      notifier.publish("item_created", id: 1)
+      notifier.publish("item_created", id: 1)
 
       item_manager.wait_for_events_done
 
@@ -102,12 +102,12 @@ describe Vnet::Event::Notifications do
       item_manager = manager_class.new
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", target_id: 1)
+      notifier.publish("item_created", id: 1)
 
       item_manager.wait_for_events_done
 
       item_manager.find_db_item(1)[:name] = :bar
-      notifier.publish("item_updated", target_id: 1)
+      notifier.publish("item_updated", id: 1)
 
       item_manager.wait_for_events_done
 
@@ -121,10 +121,10 @@ describe Vnet::Event::Notifications do
       item_manager = manager_class.new
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", target_id: 1)
+      notifier.publish("item_created", id: 1)
 
       item_manager.find_db_item(1)[:name] = :bar
-      notifier.publish("item_updated", target_id: 1)
+      notifier.publish("item_updated", id: 1)
 
       item_manager.wait_for_events_done
 
@@ -138,12 +138,12 @@ describe Vnet::Event::Notifications do
       item_manager = manager_class.new
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", target_id: 1)
+      notifier.publish("item_created", id: 1)
 
       item_manager.wait_for_events_done
 
       item_manager.db_items.delete_if{|i| i[:id] == 1}
-      notifier.publish("item_deleted", target_id: 1)
+      notifier.publish("item_deleted", id: 1)
 
       item_manager.wait_for_events_done
 
@@ -155,12 +155,12 @@ describe Vnet::Event::Notifications do
       item_manager = manager_class.new
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", target_id: 1)
+      notifier.publish("item_created", id: 1)
 
       item_manager.wait_for_events_done
 
       item_manager.db_items.delete_if{|i| i[:id] == 1}
-      notifier.publish("item_deleted", target_id: 1)
+      notifier.publish("item_deleted", id: 1)
 
       item_manager.wait_for_events_done
 
@@ -172,10 +172,10 @@ describe Vnet::Event::Notifications do
       item_manager = manager_class.new
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", target_id: 1)
+      notifier.publish("item_created", id: 1)
 
       item_manager.db_items.delete_if{|i| i[:id] == 1}
-      notifier.publish("item_deleted", target_id: 1)
+      notifier.publish("item_deleted", id: 1)
 
       item_manager.wait_for_events_done
 
@@ -190,24 +190,24 @@ describe Vnet::Event::Notifications do
         loop do
           ev = %w(created updated deleted).shuffle.first
           id = rand(3).to_i + 1
-          notifier.publish("item_#{ev}", target_id: id)
+          notifier.publish("item_#{ev}", id: id)
         end
       end
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", target_id: 1, actual: true)
+      notifier.publish("item_created", id: 1, actual: true)
       sleep 0.01
       item_manager.db_items.push({ id: 2, name: :bar })
-      notifier.publish("item_created", target_id: 2, actual: true)
+      notifier.publish("item_created", id: 2, actual: true)
       sleep 0.01
       item_manager.db_items.push({ id: 3, name: :baz })
-      notifier.publish("item_created", target_id: 3, actual: true)
+      notifier.publish("item_created", id: 3, actual: true)
       sleep 0.01
       item_manager.db_items.find{|i| i[:id] == 2}[:name] = :boo
-      notifier.publish("item_updated", target_id: 2, actual: true)
+      notifier.publish("item_updated", id: 2, actual: true)
       sleep 0.01
       item_manager.db_items.delete_if{|i| i[:id] == 3}
-      notifier.publish("item_deleted", target_id: 3, actual: true)
+      notifier.publish("item_deleted", id: 3, actual: true)
 
       t.exit
 

@@ -87,7 +87,6 @@ module Vnet::Openflow
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:target_id] && params[:target_id] != item.id
       true
     end
 
@@ -156,7 +155,8 @@ module Vnet::Openflow
         return unless item
         return @items[item_map.id] if @items[item_map.id]
         @items[item_map.id] = item
-        publish(initialized_item_event, item_map, params)
+        publish(initialized_item_event, params.merge(id: item_map.id,
+                                                     item_map: item_map))
       end
     end
 
