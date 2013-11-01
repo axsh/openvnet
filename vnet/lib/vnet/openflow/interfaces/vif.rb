@@ -4,6 +4,16 @@ module Vnet::Openflow::Interfaces
 
   class Vif < Base
 
+    def add_mac_address(params)
+      mac_info = super
+
+      flows = []
+      flows_for_interface_mac(flows, mac_info)
+      flows_for_router_ingress_mac(flows, mac_info) if @router_ingress == true
+
+      @dp_info.add_flows(flows)
+    end
+
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
@@ -16,6 +26,7 @@ module Vnet::Openflow::Interfaces
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
+      flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
 
       @dp_info.add_flows(flows)
     end
@@ -145,7 +156,7 @@ module Vnet::Openflow::Interfaces
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
                            cookie: cookie,
-                           goto_table: TABLE_ROUTER_CLASSIFIER)
+                           goto_table: TABLE_ROUTE_INGRESS)
       flows << flow_create(:network_src_ipv4_match,
                            match: {
                              :eth_type => 0x0800,
@@ -155,7 +166,7 @@ module Vnet::Openflow::Interfaces
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
                            cookie: cookie,
-                           goto_table: TABLE_ROUTER_CLASSIFIER)
+                           goto_table: TABLE_ROUTE_INGRESS)
       flows << flow_create(:network_src,
                            priority: 44,
                            match: {
@@ -183,7 +194,7 @@ module Vnet::Openflow::Interfaces
                            network_id: ipv4_info[:network_id],
                            network_type: ipv4_info[:network_type],
                            cookie: cookie,
-                           goto_table: TABLE_ROUTER_CLASSIFIER)
+                           goto_table: TABLE_ROUTE_INGRESS)
 
       flows << flow_create(:network_src,
                            priority: 34,

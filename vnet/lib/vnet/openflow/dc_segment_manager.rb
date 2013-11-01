@@ -58,6 +58,18 @@ module Vnet::Openflow
 
       dpn_list[dpn_map.id] = dpn
 
+      # Fix this...
+      flow = flow_create(:default,
+                         table: TABLE_OUTPUT_DATAPATH,
+                         goto_table: TABLE_OUTPUT_MAC2MAC,
+                         priority: 5,
+                         match_metadata: {
+                           :datapath => dpn_map.datapath_id
+                         },
+                         write_mac2mac: true,
+                         cookie: dpn_map.datapath_id | COOKIE_TYPE_DATAPATH)
+      @dp_info.add_flow(flow)
+
       self.update_network_id(dpn_map.network_id)
     end
 

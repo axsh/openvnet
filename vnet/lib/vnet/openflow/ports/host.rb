@@ -31,21 +31,21 @@ module Vnet::Openflow::Ports
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
                              :eth_type => 0x0800
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
                              :eth_type => 0x0806
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 31, {
                              :in_port => self.port_number
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTER_CLASSIFIER))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
 
       flows << Flow.create(TABLE_PHYSICAL_DST, 21,
                            reflection_md.merge(:in_port => self.port_number), {
@@ -60,12 +60,23 @@ module Vnet::Openflow::Ports
 
       # For now set the latest eth port as the default MAC2MAC output
       # port.
-      flows << Flow.create(TABLE_OUTPUT_DATAPATH, 2,
+      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK_HACK, 2,
                            reflection_mac2mac_md.merge(:in_port => self.port_number), {
                              :output => OFPP_IN_PORT
                            },
                            flow_options)
-      flows << Flow.create(TABLE_OUTPUT_DATAPATH, 1,
+      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK_HACK, 1,
+                           md_create(:mac2mac => nil), {
+                             :output => self.port_number
+                           },
+                           flow_options)
+
+      flows << Flow.create(TABLE_OUTPUT_MAC2MAC, 2,
+                           reflection_mac2mac_md.merge(:in_port => self.port_number), {
+                             :output => OFPP_IN_PORT
+                           },
+                           flow_options)
+      flows << Flow.create(TABLE_OUTPUT_MAC2MAC, 1,
                            md_create(:mac2mac => nil), {
                              :output => self.port_number
                            },

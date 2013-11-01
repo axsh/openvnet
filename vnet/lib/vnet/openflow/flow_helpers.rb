@@ -7,6 +7,19 @@ module Vnet::Openflow
 
     Flow = Vnet::Openflow::Flow
 
+    FLOW_MATCH_METADATA_PARAMS = [:match_interface,
+                                  :match_mac2mac,
+                                  :match_network,
+                                  :match_reflection,
+                                  :match_route_link,
+                                 ]
+    FLOW_WRITE_METADATA_PARAMS = [:write_interface,
+                                  :write_mac2mac,
+                                  :write_network,
+                                  :write_reflection,
+                                  :write_route_link,
+                                 ]
+
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
     end
@@ -53,8 +66,8 @@ module Vnet::Openflow
 
     def flow_create(type, params)
       match = {}
-      match_metadata = nil
-      write_metadata = nil
+      match_metadata = {}
+      write_metadata = {}
 
       case type
       when :catch_arp_lookup
@@ -106,7 +119,7 @@ module Vnet::Openflow
           :network => params[:network_id],
           :local => nil
         }
-        goto_table = TABLE_ROUTER_CLASSIFIER
+        goto_table = TABLE_ROUTE_INGRESS
       when :network_src_ipv4_match
         table = table_network_src(params[:network_type])
         priority = 45
@@ -114,7 +127,7 @@ module Vnet::Openflow
           :network => params[:network_id],
           :local => nil
         }
-        goto_table = TABLE_ROUTER_CLASSIFIER
+        goto_table = TABLE_ROUTE_INGRESS
       when :network_src_mac_match
         table = table_network_src(params[:network_type])
         priority = 35
@@ -122,7 +135,7 @@ module Vnet::Openflow
           :network => params[:network_id],
           :local => nil
         }
-        goto_table = TABLE_ROUTER_CLASSIFIER
+        goto_table = TABLE_ROUTE_INGRESS
       when :router_dst_match
         table = TABLE_ROUTER_DST
         priority = 40
@@ -137,37 +150,63 @@ module Vnet::Openflow
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }
         goto_table = TABLE_INTERFACE_CLASSIFIER
+
       when :interface_classifier
         table = TABLE_INTERFACE_CLASSIFIER
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_NETWORK_SRC_CLASSIFIER
+
+      when :router_classifier
+        table = TABLE_ROUTE_INGRESS
+        match_metadata = { :network => params[:network_id] }
+        if params[:ingress_interface_id]
+          priority = 10
+          write_metadata = { :interface => params[:ingress_interface_id] }
+          goto_table = TABLE_ROUTE_LINK_INGRESS
+        else
+          priority = 20
+          goto_table = TABLE_ROUTE_LINK_INGRESS
+        end          
+
+      when :routing
+        priority = params[:default_route] ? 20 : 30
+
       else
         return nil
       end
 
+      #
+      # Generic:
+      #
       table = params[:table] if params[:table]
       actions = params[:actions] if params[:actions]
       priority = params[:priority] if params[:priority]
       goto_table = params[:goto_table] if params[:goto_table]
 
-      match_metadata = params[:match_metadata] if params[:match_metadata]
+      #
+      # Match/Write Metadata options:
+      #
+      FLOW_MATCH_METADATA_PARAMS.each { |type|
+        match_metadata[type] = params[type] if params[type]
+      }
+      FLOW_WRITE_METADATA_PARAMS.each { |type|
+        write_metadata[type] = params[type] if params[type]
+      }
 
-      if params[:write_metadata]
-        if write_metadata
-          write_metadata = write_metadata.merge(params[:write_metadata])
-        else
-          write_metadata = params[:write_metadata]
-        end
-      end
+      #
+      # Output:
+      #
+      match_metadata = match_metadata.merge!(params[:match_metadata]) if params[:match_metadata]
+      write_metadata = write_metadata.merge!(params[:write_metadata]) if params[:write_metadata]
 
-      match = params[:match] if params[:match]
-      match = match.merge(md_create(match_metadata)) if match_metadata
+      match = match.merge!(params[:match]) if params[:match]
+      match = match.merge!(md_create(match_metadata)) if !match_metadata.empty?
 
       instructions = {}
       instructions[:cookie] = params[:cookie] || self.cookie
       instructions[:goto_table] = goto_table if goto_table
-      instructions.merge!(md_create(write_metadata)) if write_metadata
+      instructions.merge!(md_create(write_metadata)) if !write_metadata.empty?
 
       raise "Missing cookie." if instructions[:cookie].nil?
 
