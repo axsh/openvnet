@@ -21,43 +21,28 @@ module Vnet::Openflow
       route_link = prepare_link(route_map.route_link)
 
       return if route_link.nil?
-      return if route_link[:routes].has_key? route_map.id
+      return if route_link.routes.has_key? route_map.id
 
       info log_format("insert #{route_map.uuid}/#{route_map.id}", "interface_id:#{route_map.interface_id}")
 
-      route = {
-        :id => route_map.id,
-        :uuid => route_map.uuid,
-        :interface => nil,
-        :ipv4_address => IPAddr.new(route_map.ipv4_network, Socket::AF_INET),
-        :ipv4_prefix => route_map.ipv4_prefix,
-        :ingress => route_map.ingress,
-        :egress => route_map.egress,
+      route = Routes::Base.new(dp_info: @dp_info,
+                               manager: self,
+                               map: route_map)
 
-        :route_link => route_link,
+      @items[route.id] = route
 
-        :route => Routes::Base.new(dp_info: @dp_info,
-                                   manager: self,
-                                   map: route_map)
-      }
+      route_link.routes[route.id] = route
 
-      @items[route[:id]] = route
-      route_link[:routes][route[:id]] = route
+      interface = prepare_interface(route_map.interface_id)
 
-      route[:interface] = prepare_interface(route_map.interface_id)
-
-      if route[:interface].nil?
+      if interface.nil?
         warn log_format('couldn\'t prepare router interface', "#{route_map.uuid}")
         return
       end
 
-      if route[:interface][:use_datapath_id].nil? && route[:egress] == true
-        route_link[:packet_handler].insert_route(route)
-      end
-
-      route[:route].network_id = route[:interface][:network_id]
-      route[:route].use_datapath_id = route[:interface][:use_datapath_id]
-      route[:route].install
+      route.network_id = interface[:network_id]
+      route.use_datapath_id = interface[:use_datapath_id]
+      route.install
     end
 
     def prepare_network(network_map, dp_map)
@@ -105,58 +90,48 @@ module Vnet::Openflow
       return link if link
 
       mac_address = Trema::Mac.new(rl_map.mac_address)
-      packet_handler = Routers::RouteLink.new(dp_info: @dp_info,
-                                              route_link_id: rl_map.id,
-                                              route_link_uuid: rl_map.uuid,
-                                              mac_address: mac_address)
 
-      link = {
-        :id => rl_map.id,
-        :uuid => rl_map.uuid,
-        :mac_address => mac_address,
-        :routes => {},
-        :packet_handler => packet_handler
-      }
+      route_link = Routers::RouteLink.new(dp_info: @dp_info, map: rl_map)
 
-      cookie = link[:id] | COOKIE_TYPE_ROUTE_LINK
+      cookie = route_link.id | COOKIE_TYPE_ROUTE_LINK
 
-      @route_links[rl_map.id] = link
+      @route_links[route_link.id] = route_link
 
       tunnel_md = md_create(:tunnel => nil)
-      route_link_md = md_create(:route_link => link[:id])
+      route_link_md = md_create(:route_link => route_link.id)
 
       # TODO: Move flow creation to Routers::RouteLink...
 
       flows = []
       flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
                              :tunnel_id => TUNNEL_ROUTE_LINK,
-                             :eth_dst => link[:mac_address]
+                             :eth_dst => route_link.mac_address
                            }, nil,
                            route_link_md.merge({ :cookie => cookie,
                                                  :goto_table => TABLE_ROUTE_LINK_EGRESS
                                                }))
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_dst => link[:mac_address]
+                             :eth_dst => route_link.mac_address
                            }, nil, {
                              :cookie => cookie
                            })
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_src => link[:mac_address]
+                             :eth_src => route_link.mac_address
                            }, nil, {
                              :cookie => cookie
                            })
       flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_dst => link[:mac_address]
+                             :eth_dst => route_link.mac_address
                            }, nil, {
                              :cookie => cookie
                            })
       flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_src => link[:mac_address]
+                             :eth_src => route_link.mac_address
                            }, nil, {
                              :cookie => cookie
                            })
       flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK, 4, {
-                             :eth_dst => mac_address
+                             :eth_dst => route_link.mac_address
                            }, {
                              :tunnel_id => TUNNEL_ROUTE_LINK
                            }, tunnel_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK_HACK,
@@ -195,7 +170,7 @@ module Vnet::Openflow
         mac2mac_md = md_create(:mac2mac => nil)
 
         flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK, 5,
-                             datapath_md.merge(:eth_dst => mac_address), {
+                             datapath_md.merge(:eth_dst => route_link.mac_address), {
                                :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
                              }, mac2mac_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK_HACK,
                                                    :cookie => cookie
@@ -205,7 +180,7 @@ module Vnet::Openflow
       # ROUTER_DST catch unknown subnets. ??? (or load all subnets)
 
       @dp_info.add_flows(flows)
-      link
+      route_link
     end
 
     def prepare_interface(interface_id)
