@@ -40,11 +40,11 @@ module Vnet::Event::Notifications
     @event_queues[params[:id]] = event_queue
     unless @queue_statuses[params[:id]]
       @queue_statuses[params[:id]] = true
-      async(:execute_queued_events, params[:id])
+      async(:fetch_queued_events, params[:id])
     end
   end
 
-  def execute_queued_events(id)
+  def fetch_queued_events(id)
     while @event_queues[id].present?
       event_queue = @event_queues[id]
       event = event_queue.shift
