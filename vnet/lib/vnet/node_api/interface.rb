@@ -23,12 +23,7 @@ module Vnet::NodeApi
           end
         end
 
-        # TODO dispatch_event
-        #if interface.ip_leases.present?
-        #  interface.ip_leases.each do |ip_lease|
-        #    dispatch_event(LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
-        #  end
-        #end
+        dispatch_event(ADDED_INTERFACE, id: interface.id)
 
         interface
       end
@@ -60,8 +55,11 @@ module Vnet::NodeApi
       end
 
       def destroy(uuid)
-        super
-        # TODO dispatch_event
+        interface = super
+
+        dispatch_event(REMOVED_INTERFACE, id: interface.id)
+
+        nil
       end
     end
   end
