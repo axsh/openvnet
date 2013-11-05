@@ -22,9 +22,6 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      interface = @dp_info.interface_manager.item(:id => item_map.interface_id)
-      return nil if interface.nil?
-      
       item = @items[item_map.id]
       return item if item
 
@@ -33,13 +30,12 @@ module Vnet::Openflow
                  manager: self,
                  id: item_map.id,
                  uuid: item_map.uuid,
-                 interface_id: interface.id }
+                 interface_id: item_map.interface_id }
 
       case mode
       when :dhcp       then Vnet::Openflow::Services::Dhcp.new(params)
       when :router     then Vnet::Openflow::Services::Router.new(params)
       else
-        error log_format('failed to create service',  "name:#{mode}")
         nil
       end
     end
