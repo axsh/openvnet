@@ -110,17 +110,18 @@ module Vnet::Openflow
 
       params = {
         :owner_datapath_id => @dp_info.datapath.datapath_map.id,
-        :display_name => port_desc.name,
+        :port_name => port_desc.name,
         :reinitialize => true
       }
 
       interface = @dp_info.interface_manager.item(params)
 
-      if interface.nil?
+      if interface.nil? || (interface && interface.mode == :host)
         port.extend(Ports::Host)
-      else
+      elsif interface && interface.mode == :edge
         port.extend(Ports::Generic)
-        @dp_info.translation_manager.async.add_edge_port(port: port, interface: interface)
+      else
+        error log_format("unknown port type", interface.mode)
       end
 
       port.install

@@ -9,17 +9,7 @@ module Vnet::Openflow
     def initialize(dp_info)
       super(dp_info)
       @dpid_s = "0x%016x" % @dp_info.dpid
-      @edge_ports = []
-
       update_translation_map
-    end
-
-    def add_edge_port(params)
-      @edge_ports << {
-        :port => params[:port],
-        :interface => params[:interface],
-        :vlan_vs_mac_address => []
-      }
     end
 
     def network_to_vlan(network_id)
