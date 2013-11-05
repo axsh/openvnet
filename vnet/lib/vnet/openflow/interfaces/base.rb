@@ -185,7 +185,7 @@ module Vnet::Openflow::Interfaces
     #
 
     def add_mac_address(params)
-      #debug log_format("add_ipv4_address", params.inspect)
+      #debug log_format("add_mac_address", params.inspect)
       return if @mac_addresses[params[:mac_lease_id]]
 
       mac_addresses = @mac_addresses.dup
@@ -206,7 +206,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def remove_mac_address(params)
-      debug log_format("remove_mac_address", params.inspect)
+      #debug log_format("remove_mac_address", params.inspect)
 
       mac_info = @mac_addresses[params[:mac_lease_id]]
       return unless mac_info
@@ -216,8 +216,13 @@ module Vnet::Openflow::Interfaces
       end
 
       mac_addresses = @mac_addresses.dup
-      mac_addresses.delete(params[:mac_lease_id])
+      mac_address = mac_addresses.delete(params[:mac_lease_id])
       @mac_addresses = mac_addresses
+
+      debug log_format("removing mac address from #{@uuid}/#{@id}",
+                       "#{mac_address[:mac_address].to_s}")
+
+      mac_info
     end
 
     def add_ipv4_address(params)
@@ -248,7 +253,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def remove_ipv4_address(params)
-      debug log_format("remove_ipv4_address", params.inspect)
+      #debug log_format("remove_ipv4_address", params.inspect)
 
       ipv4_info = nil
       ipv4_addresses = nil
