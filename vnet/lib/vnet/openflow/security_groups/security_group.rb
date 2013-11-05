@@ -3,6 +3,8 @@
 require "ipaddress"
 
 module Vnet::Openflow::SecurityGroups
+  IDLE_TIMEOUT  = 1200
+
   class Rule
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
@@ -16,7 +18,6 @@ module Vnet::Openflow::SecurityGroups
     end
 
     RULE_PRIORITY = 10
-    IDLE_TIMEOUT  = 1200
 
     def install(interface)
       flow_create(
@@ -62,15 +63,19 @@ module Vnet::Openflow::SecurityGroups
 
     SGM = Vnet::Openflow::SecurityGroupManager
 
-    def initialize(group_wrapper)
+    attr_reader :id, :uuid
+
+    def initialize(group_wrapper, interface_id)
       @udp_rules = []; @tcp_rules = []; @icmp_rules = []
       @id = group_wrapper.id
       @uuid = group_wrapper.uuid
+      @interface_cookie_id = group_wrapper.batch.interface_cookie_id(interface_id).commit
       group_wrapper.rules.split("\n").each {|line| rule_factory(line) }
     end
 
     def cookie
-      @id | COOKIE_TYPE_SECURITY_GROUP | SGM::COOKIE_TAG_SG_RULE
+      @id | COOKIE_TYPE_SECURITY_GROUP | SGM::COOKIE_SG_TYPE_RULE |
+        (@interface_cookie_id << SGM::COOKIE_TYPE_VALUE_SHIFT)
     end
 
     def install(interface)
@@ -84,6 +89,7 @@ module Vnet::Openflow::SecurityGroups
       flow_create(:default,
                   table: TABLE_INTERFACE_INGRESS_FILTER,
                   priority: 2,
+                  idle_timeout: IDLE_TIMEOUT,
                   match_metadata: { interface: interface.id},
                   cookie: cookie)
     end

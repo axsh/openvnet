@@ -4,18 +4,18 @@ module Vnet::Openflow
   class SecurityGroupManager < Manager
     include Vnet::Openflow::FlowHelpers
 
-    COOKIE_TAG_TYPE_MASK   = 0xf << COOKIE_TAG_SHIFT
+    COOKIE_SG_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
 
-    COOKIE_TYPE_TAG        = 0x1 << COOKIE_TAG_SHIFT
-    COOKIE_TYPE_RULE       = 0x2 << COOKIE_TAG_SHIFT
-    COOKIE_TYPE_CONTRACK   = 0x3 << COOKIE_TAG_SHIFT
+    COOKIE_SG_TYPE_TAG  = 0x1 << COOKIE_TAG_SHIFT
+    COOKIE_SG_TYPE_RULE = 0x2 << COOKIE_TAG_SHIFT
 
-    COOKIE_TAG_VALUE_SHIFT = 36
-    COOKIE_TAG_VALUE_MASK  = 0xfffff << COOKIE_TAG_VALUE_SHIFT
+    COOKIE_TYPE_VALUE_SHIFT = 36
+    COOKIE_TYPE_VALUE_MASK  = 0xfffff << COOKIE_TYPE_VALUE_SHIFT
 
-    COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TAG_VALUE_SHIFT
-    COOKIE_TAG_EGRESS_ACCEPT      = 0x3 << COOKIE_TAG_VALUE_SHIFT
-    COOKIE_TAG_INGRESS_CATCH      = 0x2 << COOKIE_TAG_VALUE_SHIFT
+    COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
+    COOKIE_TAG_INGRESS_CATCH      = 0x2 << COOKIE_TYPE_VALUE_SHIFT
+    COOKIE_TAG_EGRESS_ACCEPT      = 0x3 << COOKIE_TYPE_VALUE_SHIFT
+    COOKIE_TAG_CONTRACK           = 0x4 << COOKIE_TAG_SHIFT
 
     Connections = Vnet::Openflow::SecurityGroups::Connections
 
@@ -93,13 +93,13 @@ module Vnet::Openflow
     def catch_ingress_cookie(interface)
       interface.id |
         COOKIE_TYPE_SECURITY_GROUP |
-        COOKIE_TYPE_TAG |
+        COOKIE_SG_TYPE_TAG |
         COOKIE_TAG_INGRESS_CATCH
     end
 
     def accept_all_egress
       cookie = COOKIE_TYPE_SECURITY_GROUP |
-        COOKIE_TYPE_TAG |
+        COOKIE_SG_TYPE_TAG |
         COOKIE_TAG_EGRESS_ACCEPT
 
       @dp_info.add_flows [
@@ -113,7 +113,7 @@ module Vnet::Openflow
 
     def accept_ingress_arp
       cookie = COOKIE_TYPE_SECURITY_GROUP |
-        COOKIE_TYPE_TAG |
+        COOKIE_SG_TYPE_TAG |
         COOKIE_TAG_INGRESS_ARP_ACCEPT
 
       @dp_info.add_flows [
@@ -142,7 +142,7 @@ module Vnet::Openflow
       interface = MW::Interface.batch[interface_id].commit
 
       groups = interface.batch.security_groups.commit.map { |g|
-        Vnet::Openflow::SecurityGroups::SecurityGroup.new(g)
+        Vnet::Openflow::SecurityGroups::SecurityGroup.new(g, interface_id)
       }
 
       flows = groups.map { |g| g.install(interface) }.flatten
