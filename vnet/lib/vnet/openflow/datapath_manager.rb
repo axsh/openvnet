@@ -61,7 +61,7 @@ module Vnet::Openflow
       MW::Datapath.batch[filter].commit #(:fill => [:ip_leases => :ip_address])
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       Datapaths::Base.new(dp_info: @dp_info,
                           manager: self,
                           map: item_map)

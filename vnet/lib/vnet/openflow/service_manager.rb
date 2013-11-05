@@ -21,7 +21,7 @@ module Vnet::Openflow
       "#{@dp_info.dpid_s} service_manager: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       item = @items[item_map.id]
       return item if item
 

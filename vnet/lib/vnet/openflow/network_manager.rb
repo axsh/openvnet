@@ -99,7 +99,7 @@ module Vnet::Openflow
       true
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       case item_map.network_mode.to_sym
       when :physical then Networks::Physical.new(@dp_info, item_map)
       when :virtual then Networks::Virtual.new(@dp_info, item_map)

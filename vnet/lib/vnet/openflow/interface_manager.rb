@@ -83,7 +83,7 @@ module Vnet::Openflow
       end
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
       params = { dp_info: @dp_info,
                  manager: self,
