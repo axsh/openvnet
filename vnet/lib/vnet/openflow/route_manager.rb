@@ -89,97 +89,18 @@ module Vnet::Openflow
       link = @route_links[rl_map.id]
       return link if link
 
-      mac_address = Trema::Mac.new(rl_map.mac_address)
-
       route_link = Routers::RouteLink.new(dp_info: @dp_info, map: rl_map)
-
-      cookie = route_link.id | COOKIE_TYPE_ROUTE_LINK
-
       @route_links[route_link.id] = route_link
 
-      tunnel_md = md_create(:tunnel => nil)
-      route_link_md = md_create(:route_link => route_link.id)
-
-      # TODO: Move flow creation to Routers::RouteLink...
-
-      flows = []
-      flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
-                             :tunnel_id => TUNNEL_ROUTE_LINK,
-                             :eth_dst => route_link.mac_address
-                           }, nil,
-                           route_link_md.merge({ :cookie => cookie,
-                                                 :goto_table => TABLE_ROUTE_LINK_EGRESS
-                                               }))
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_dst => route_link.mac_address
-                           }, nil, {
-                             :cookie => cookie
-                           })
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_src => route_link.mac_address
-                           }, nil, {
-                             :cookie => cookie
-                           })
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_dst => route_link.mac_address
-                           }, nil, {
-                             :cookie => cookie
-                           })
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_src => route_link.mac_address
-                           }, nil, {
-                             :cookie => cookie
-                           })
-      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK, 4, {
-                             :eth_dst => route_link.mac_address
-                           }, {
-                             :tunnel_id => TUNNEL_ROUTE_LINK
-                           }, tunnel_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK_HACK,
-                                                :cookie => cookie
-                                              }))
-
-      # Handle MAC2MAC packets for this route link using a unique MAC
-      # address for this datapath, route link pair.
       datapath_route_link(rl_map).each { |dp_rl_map|
-        flows << Flow.create(TABLE_HOST_PORTS, 30, {
-                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
-                             }, nil,
-                             route_link_md.merge({ :cookie => cookie,
-                                                   :goto_table => TABLE_ROUTE_LINK_EGRESS
-                                                 }))
-        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
-                             }, nil, {
-                               :cookie => cookie
-                             })
-        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
-                             }, nil, {
-                               :cookie => cookie
-                             })
+        route_link.set_dp_route_link(dp_rl_map)
       }
 
-      # Use the datapath id in the metadata field and the route link
-      # MAC address in the destination field to figure out the MAC2MAC
-      # datapath, route link pair MAC address to use.
-      #
-      # If not found it is assumed to be using a tunnel where the
-      # route link MAC address is to be used.
       dp_rl_on_segment(rl_map).each { |dp_rl_map|
-        datapath_md = md_create(:datapath => dp_rl_map.datapath_id)
-        mac2mac_md = md_create(:mac2mac => nil)
-
-        flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK, 5,
-                             datapath_md.merge(:eth_dst => route_link.mac_address), {
-                               :eth_dst => Trema::Mac.new(dp_rl_map.mac_address)
-                             }, mac2mac_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK_HACK,
-                                                   :cookie => cookie
-                                                 }))
+        route_link.add_datapath_on_segment(dp_rl_map)
       }
 
-      # ROUTER_DST catch unknown subnets. ??? (or load all subnets)
-
-      @dp_info.add_flows(flows)
+      route_link.install
       route_link
     end
 

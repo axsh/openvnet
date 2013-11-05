@@ -5,7 +5,6 @@ module Vnet::Openflow::Routes
   class Base
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
-    include Vnet::Openflow::PacketHelpers
 
     attr_reader :id
     attr_reader :uuid

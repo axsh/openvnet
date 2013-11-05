@@ -13,6 +13,7 @@ module Vnet::Openflow
                                   :match_network,
                                   :match_reflection,
                                   :match_route_link,
+                                  :match_tunnel,
                                  ]
     FLOW_WRITE_METADATA_PARAMS = [:write_datapath,
                                   :write_interface,
@@ -20,6 +21,7 @@ module Vnet::Openflow
                                   :write_network,
                                   :write_reflection,
                                   :write_route_link,
+                                  :write_tunnel,
                                  ]
 
     def is_ipv4_broadcast(address, prefix)
@@ -148,6 +150,8 @@ module Vnet::Openflow
       # Refactored:
       #
       when :default
+      when :drop
+        priority = 90
       when :controller_classifier
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }
@@ -213,6 +217,29 @@ module Vnet::Openflow
       raise "Missing cookie." if instructions[:cookie].nil?
 
       Flow.create(table, priority, match, actions, instructions)
+    end
+
+    def flows_for_filtering_mac_address(flows, mac_address)
+      flows << flow_create(:drop,
+                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           match: {
+                             :eth_dst => mac_address
+                           })
+      flows << flow_create(:drop,
+                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           match: {
+                             :eth_src => mac_address
+                           })
+      flows << flow_create(:drop,
+                           table: TABLE_NETWORK_DST_CLASSIFIER,
+                           match: {
+                             :eth_dst => mac_address
+                           })
+      flows << flow_create(:drop,
+                           table: TABLE_NETWORK_DST_CLASSIFIER,
+                           match: {
+                             :eth_src => mac_address
+                           })
     end
 
   end
