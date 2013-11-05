@@ -32,9 +32,12 @@ module Vnet::Openflow
     def update_interface(params)
       case params[:event]
       when :remove_all
+        params = params.merge(no_update: true)
         @items.each { |id, item| item.remove_interface(params) }
         return nil
       when :update_all
+        params = params.merge(no_update: true)
+        params.delete(:port_number)
         @items.each { |id, item| item.update_interface(params) }
         return nil
       end

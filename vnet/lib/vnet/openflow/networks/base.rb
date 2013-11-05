@@ -77,7 +77,7 @@ module Vnet::Openflow::Networks
       interface = @interfaces.delete(params[:interface_id])
       return if interface.nil?
 
-      update_flows if interface[:port_number]
+      update_flows if interface[:port_number] && params[:update_flows]
     end
 
     def update_interface(params)
@@ -86,7 +86,7 @@ module Vnet::Openflow::Networks
 
       if params.has_key? :port_number
         interface[:port_number] = params[:port_number]
-        update_flows
+        update_flows unless params[:no_update]
       end
     end
 
