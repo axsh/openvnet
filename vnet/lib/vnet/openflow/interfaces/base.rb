@@ -7,15 +7,15 @@ module Vnet::Openflow::Interfaces
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
 
-    OPTIONAL_TYPE_MASK      = 0xf
+    OPTIONAL_TYPE_MASK        = 0xf
 
-    OPTIONAL_TYPE_TAG      = 0x1
-    OPTIONAL_TYPE_IP_LEASE  = 0x2
-    OPTIONAL_TYPE_MAC_LEASE = 0x3
-    OPTIONAL_TYPE_IP_RANGE  = 0x4
+    OPTIONAL_TYPE_TAG         = 0x1
+    OPTIONAL_TYPE_IP_LEASE    = 0x2
+    OPTIONAL_TYPE_MAC_LEASE   = 0x3
+    OPTIONAL_TYPE_IP_RANGE    = 0x4
 
-    OPTIONAL_VALUE_SHIFT    = 36
-    OPTIONAL_VALUE_MASK    = 0xfffff
+    OPTIONAL_VALUE_SHIFT      = 36
+    OPTIONAL_VALUE_MASK       = 0xfffff
 
     TAG_ARP_REQUEST_INTERFACE = 0x1
     TAG_ARP_LOOKUP            = 0x4
@@ -67,6 +67,12 @@ module Vnet::Openflow::Interfaces
         @owner_datapath_ids = nil
         @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
       end
+    end
+
+    def add_security_groups
+    end
+
+    def del_security_groups
     end
 
     def cookie(type = 0, value = 0)
@@ -250,7 +256,7 @@ module Vnet::Openflow::Interfaces
                        "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
 
       del_cookie_for_ip_lease(ipv4_info[:cookie_id])
-      
+
       [mac_info, ipv4_info]
     end
 

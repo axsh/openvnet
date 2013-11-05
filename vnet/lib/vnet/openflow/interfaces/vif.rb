@@ -8,6 +8,11 @@ module Vnet::Openflow::Interfaces
       @dp_info.security_group_manager.catch_ingress_packet(self)
     end
 
+    def del_security_groups
+      # @dp_info.security_group_manager.uninstall(self)
+      @dp_info.security_group_manager.remove_catch_ingress(self)
+    end
+
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
@@ -47,6 +52,7 @@ module Vnet::Openflow::Interfaces
       flows_for_base(flows)
 
       @dp_info.add_flows(flows)
+      add_security_groups
     end
 
     #
@@ -60,7 +66,6 @@ module Vnet::Openflow::Interfaces
     end
 
     def flows_for_base(flows)
-      add_security_groups
     end
 
     def flows_for_mac(flows, mac_info)
