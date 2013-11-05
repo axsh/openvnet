@@ -129,7 +129,7 @@ module Vnet::Openflow
 
       item.install
 
-      load_addresses(item, item_map)
+      load_addresses(item_map)
 
       item # Return nil if interface has been uninstalled.
     end
@@ -146,11 +146,11 @@ module Vnet::Openflow
       item
     end
 
-    def load_addresses(interface, item_map)
-      interface.mac_leases.each do |mac_lease|
-        publish(LEASED_MAC_ADDRESS, id: interface.id, mac_lease_id: mac_lease.id)
+    def load_addresses(item_map)
+      item_map.mac_leases.each do |mac_lease|
+        publish(LEASED_MAC_ADDRESS, id: item_map.id, mac_lease_id: mac_lease.id)
         mac_lease.ip_leases.each do |ip_lease|
-          publish(LEASED_IPV4_ADDRESS, id: interface.id, ip_lease_id: ip_lease.id)
+          publish(LEASED_IPV4_ADDRESS, id: item_map.id, ip_lease_id: ip_lease.id)
         end
       end
     end
