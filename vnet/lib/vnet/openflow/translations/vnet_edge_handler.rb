@@ -19,22 +19,28 @@ module Vnet::Openflow::Translations
     end
 
     def packet_in(message)
-      debug log_format('packet_in', message.inspect)
+      debug log_format('packet_in', dump_packet_in(message))
 
-      case message.in_port
-      when 1
+      port = @dp_info.port_manager.item(port_number: message.in_port,
+                                        reinitialize: false,
+                                        dynamic_load: false)
+
+      case port[:type]
+      when :host
         handle_packet_from_host_port(
           in_port: message.in_port,
           src_mac: message.eth_src,
           dst_mac: message.eth_dst
         )
-      else
+      when :generic
         handle_packet_from_edge_port(
           in_port: message.in_port,
           src_mac: message.eth_src,
           dst_mac: message.eth_dst,
           vlan_vid: message.vlan_vid
         )
+      else
+        error log_format("unknown type of port", port[:type])
       end
     end
 
@@ -120,6 +126,19 @@ module Vnet::Openflow::Translations
 
     def log_format(message, values = nil)
       "#{@dpid_s} translation_handler: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def dump_packet_in(message)
+      output_str = ""
+      output_str << "in_port=#{message.in_port},"
+      output_str << "src=#{message.eth_src},"
+      output_str << "dst=#{message.eth_dst},"
+      output_str << "eth_type=#{message.eth_type},"
+      output_str << "vlan_vid=#{message.vlan_vid},"
+      output_str << "arp?=#{message.packet_info.arp},"
+      output_str << "arp_request?=#{message.packet_info.arp_request},"
+      output_str << "arp_reply?=#{message.packet_info.arp_reply},"
+      output_str
     end
   end
 end
