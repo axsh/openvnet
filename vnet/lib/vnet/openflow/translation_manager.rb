@@ -20,6 +20,7 @@ module Vnet::Openflow
 
     def vlan_to_network(vlan_vid)
       entry = @translation_map.find { |t| t.vlan_id == vlan_vid }
+      return nil if entry.nil?
       entry.network_id
     end
 

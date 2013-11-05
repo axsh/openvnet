@@ -27,18 +27,9 @@ module Vnet::Openflow::Translations
 
       case port[:type]
       when :host
-        handle_packet_from_host_port(
-          in_port: message.in_port,
-          src_mac: message.eth_src,
-          dst_mac: message.eth_dst
-        )
+        handle_packet_from_host_port(message)
       when :generic
-        handle_packet_from_edge_port(
-          in_port: message.in_port,
-          src_mac: message.eth_src,
-          dst_mac: message.eth_dst,
-          vlan_vid: message.vlan_vid
-        )
+        handle_packet_from_edge_port(message)
       else
         error log_format("unknown type of port", port[:type])
       end
@@ -50,12 +41,13 @@ module Vnet::Openflow::Translations
 
     private
 
-    def handle_packet_from_host_port(params)
+    def handle_packet_from_host_port(message)
+      info log_format("handle_packet_from_host_port")
       flows = []
 
-      in_port = params[:in_port]
-      src_mac = params[:src_mac]
-      dst_mac = params[:dst_mac]
+      in_port = message.in_port
+      src_mac = message.eth_src
+      dst_mac = message.eth_dst
 
       debug log_format('handle_packet_from_host_port : [src_mac]', src_mac)
       debug log_format('handle_packet_from_host_port : [src_mac.value]', src_mac.value)
@@ -95,22 +87,28 @@ module Vnet::Openflow::Translations
       flows.each { |flow| @dp_info.add_ovs_flow(flow) }
     end
 
-    def handle_packet_from_edge_port(params)
+    def handle_packet_from_edge_port(message)
+      info log_format("handle_packet_from_edge_port")
       flows = []
 
-      in_port = params[:in_port]
-      src_mac = params[:src_mac]
-      dst_mac = params[:dst_mac]
-      vlan_vid = params[:vlan_vid]
+      in_port = message.in_port
+      src_mac = message.eth_src
+      dst_mac = message.eth_dst
+      vlan_vid = message.vlan_vid
 
-      debug log_format('edge_port', in_port)
-      debug log_format('edge_port', src_mac.inspect)
-      debug log_format('edge_port', dst_mac.inspect)
-      debug log_format('edge_port', vlan_vid)
+      if vlan_vid == 0
+        error log_format("blank vlan_vid", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
+        return nil
+      end
 
       network_id = @dp_info.translation_manager.vlan_to_network(vlan_vid)
 
-      flows << "table=#{TABLE_EDGE_SRC},priority=2,dl_src=#{src_mac},dl_vlan=#{vlan_vid},actions=strip_vlan,write_metadata:0x%x,goto_table:#{TABLE_EDGE_DST}" % METADATA_TYPE_EDGE_TO_VIRTUAL
+      if network_id.nil?
+        error log_format("no corresponded translation entry has been found", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
+        return nil
+      end
+
+      flows << "table=#{TABLE_EDGE_SRC},priority=2,dl_src=#{src_mac},dl_vlan=#{vlan_vid},actions=strip_vlan,write_metadata:0x%x/0x%x,goto_table:#{TABLE_EDGE_DST}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK ]
 
       if dst_mac.broadcast?
         md = md_create(:network => network_id)
@@ -119,9 +117,11 @@ module Vnet::Openflow::Translations
 
       flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=mod_vlan_vid:#{vlan_vid},output:2" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
 
+      network = @dp_info.network_manager.item(id: network_id)
+
       flows.each { |flow| @dp_info.add_ovs_flow(flow) }
 
-      network = @dp_info.network_manager.item(id: network_id)
+      @dp_info.send_packet_out(message, OFPP_TABLE)
     end
 
     def log_format(message, values = nil)
