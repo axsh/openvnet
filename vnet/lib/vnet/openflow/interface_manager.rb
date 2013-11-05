@@ -146,31 +146,12 @@ module Vnet::Openflow
       item
     end
 
-    # TODO: Convert the loading of addresses to events, and queue them
-    # with a 'handle_event' queue to ensure consistency.
     def load_addresses(interface, item_map)
-      return if item_map.mac_leases.empty?
-
-      item_map.mac_leases.each do |mac_lease|
-        mac_address = Trema::Mac.new(mac_lease.mac_address)
-        interface.add_mac_address(mac_lease_id: mac_lease.id,
-                                  mac_address: mac_address,
-                                  cookie_id: mac_lease.cookie_id)
-
-        mac_lease.ip_leases.each { |ip_lease|
-          ipv4_address = ip_lease.ip_address.ipv4_address
-          error log_format("ipv4_address is nil", ip_lease.uuid) unless ipv4_address
-
-          network = ip_lease.network
-          error log_format("network is nil", ip_lease.uuid) unless network
-
-          interface.add_ipv4_address(mac_lease_id: mac_lease.id,
-                                     network_id: network.id,
-                                     network_type: network.network_mode.to_sym,
-                                     ip_lease_id: ip_lease.id,
-                                     cookie_id: ip_lease.cookie_id,
-                                     ipv4_address: IPAddr.new(ipv4_address, Socket::AF_INET))
-        }
+      interface.mac_leases.each do |mac_lease|
+        publish(LEASED_MAC_ADDRESS, id: interface.id, mac_lease_id: mac_lease.id)
+        mac_lease.ip_leases.each do |ip_lease|
+          publish(LEASED_IPV4_ADDRESS, id: interface.id, ip_lease_id: ip_lease.id)
+        end
       end
     end
 
