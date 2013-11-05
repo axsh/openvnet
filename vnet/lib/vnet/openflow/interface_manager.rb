@@ -33,6 +33,8 @@ module Vnet::Openflow
         item.update_active_datapath(datapath_id: nil)
       when :enable_router_ingress
         item.enable_router_ingress
+      when :enable_router_egress
+        item.enable_router_egress
       end
 
       item_to_hash(item)

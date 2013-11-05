@@ -114,7 +114,8 @@ module Vnet::Openflow
       return interface if interface
 
       if interface_item.mode != :simulated && interface_item.mode != :remote
-        info log_format('only interfaces with mode \'simulated\' are supported', "uuid:#{interface_item.uuid} mode:#{interface_item.mode}")
+        info log_format('only interfaces with mode \'simulated\' or \'remote\' are supported',
+                        "uuid:#{interface_item.uuid} mode:#{interface_item.mode}")
         return
       end
 
@@ -132,22 +133,9 @@ module Vnet::Openflow
         :id => interface_item.id,
         :use_datapath_id => nil,
 
-        :mac_address => mac_info[1][:mac_address],
         :mode => interface_item.mode,
-
         :network_id => ipv4_info[:network_id],
-        :ipv4_address => ipv4_info[:ipv4_address],
       }
-
-      case ipv4_info[:network_type]
-      when :physical
-        interface[:require_interface] = false
-      when :virtual
-        interface[:require_interface] = true
-      else
-        warn log_format('interface does not have a known network type', "#{interface_item.uuid}")
-        return nil
-      end
 
       @interfaces[interface_item.id] = interface
 
@@ -172,6 +160,8 @@ module Vnet::Openflow
 
       if interface[:use_datapath_id].nil?
         @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
+                                                     id: interface[:id])
+        @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
                                                      id: interface[:id])
       end
 
