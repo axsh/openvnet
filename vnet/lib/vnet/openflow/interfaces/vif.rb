@@ -11,6 +11,7 @@ module Vnet::Openflow::Interfaces
     def del_security_groups
       @dp_info.security_group_manager.remove_rules(self)
       @dp_info.security_group_manager.remove_catch_ingress(self)
+      @dp_info.security_group_manager.close_connections(self)
     end
 
     def add_mac_address(params)

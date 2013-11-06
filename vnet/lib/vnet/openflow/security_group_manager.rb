@@ -15,7 +15,7 @@ module Vnet::Openflow
     COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
     COOKIE_TAG_INGRESS_CATCH      = 0x2 << COOKIE_TYPE_VALUE_SHIFT
     COOKIE_TAG_EGRESS_ACCEPT      = 0x3 << COOKIE_TYPE_VALUE_SHIFT
-    COOKIE_TAG_CONTRACK           = 0x4 << COOKIE_TAG_SHIFT
+    COOKIE_TAG_CONTRACK           = 0x4 << COOKIE_TYPE_VALUE_SHIFT
 
     Connections = Vnet::Openflow::SecurityGroups::Connections
 
@@ -85,6 +85,10 @@ module Vnet::Openflow
         debug "'#{interface.uuid}' removing rules for group '#{g.uuid}'"
         @dp_info.del_cookie(g.cookie)
       }
+    end
+
+    def close_connections(interface)
+      @dp_info.del_cookie Connections::Base.cookie(interface.id)
     end
 
     private
