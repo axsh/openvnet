@@ -9,7 +9,7 @@ module Vnet::Openflow
     #
     subscribe_event ADDED_INTERFACE, :item
     subscribe_event REMOVED_INTERFACE, :delete_item
-    subscribe_event INITIALIZED_INTERFACE, :create_item
+    subscribe_event INITIALIZED_INTERFACE, :install_item
     subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
@@ -124,7 +124,7 @@ module Vnet::Openflow
     # Create / Delete interfaces:
     #
 
-    def create_item(params)
+    def install_item(params)
       item_map = params[:item_map]
       item = @items[item_map.id]
       return nil if item.nil?
