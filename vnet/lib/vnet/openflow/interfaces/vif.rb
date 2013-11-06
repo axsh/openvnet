@@ -9,7 +9,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def del_security_groups
-      # @dp_info.security_group_manager.uninstall(self)
+      @dp_info.security_group_manager.remove_rules(self)
       @dp_info.security_group_manager.remove_catch_ingress(self)
     end
 

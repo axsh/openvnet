@@ -74,17 +74,16 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
-    def uninstall(interface)
+    def remove_rules(interface)
       interface = MW::Interface.batch[interface.id].commit
 
       groups = interface.batch.security_groups.commit.map { |g|
-        Vnet::Openflow::SecurityGroups::SecurityGroup.new(g)
+        Vnet::Openflow::SecurityGroups::SecurityGroup.new(g, interface.id)
       }
 
       groups.each { |g|
-        debug "'#{interface.uuid}' uninstalling group '#{g.uuid}'"
-        cookie = g.id | COOKIE_TYPE_SECURITY_GROUP | COOKIE_TAG_RULE
-        @dp_info.del_cookie(cookie)
+        debug "'#{interface.uuid}' removing rules for group '#{g.uuid}'"
+        @dp_info.del_cookie(g.cookie)
       }
     end
 
