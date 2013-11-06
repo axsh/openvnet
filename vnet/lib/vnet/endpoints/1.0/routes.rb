@@ -5,6 +5,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     "ipv4_network",
     "ipv4_prefix",
     "interface_uuid",
+    "network_uuid",
     "route_link_uuid"
   ]
 
@@ -14,12 +15,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
       "ingress",
       "egress"
     ]
-    required_params = ["ipv4_network", "route_link_uuid"]
+    required_params = ["ipv4_network", "network_uuid", "route_link_uuid"]
 
     post_new(:Route, accepted_params, required_params) { |params|
       params['ipv4_network'] = parse_ipv4(params['ipv4_network'])
       params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
       check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
+      check_syntax_and_get_id(M::Network,   params, "network_uuid", "network_id")
       check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid", "route_link_id")
     }
   end
@@ -41,6 +43,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
       params['ipv4_network'] = parse_ipv4(params['ipv4_network']) if params["ipv4_network"]
       params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
       check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
+      check_syntax_and_get_id(M::Network,   params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid",
         "route_link_id") if params["route_link_uuid"]
     }
