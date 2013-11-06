@@ -179,11 +179,11 @@ module Vnet::Openflow
                                                                                                        { :mac_lease => :mac_address }])
 
       if ip_lease.nil? || ip_lease.interface.nil?
-        return unreachable_ip(message, "no interface found", :no_interface)
+        return unreachable_ip(messages, "no interface found", :no_interface)
       end
 
       if ip_lease.interface.active_datapath_id.nil?
-        return unreachable_ip(message, "no active datapath for interface found", :inactive_interface)
+        return unreachable_ip(messages, "no active datapath for interface found", :inactive_interface)
       end
 
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
@@ -235,8 +235,13 @@ module Vnet::Openflow
     # Refactor...
     #
 
-    def unreachable_ip(message, error_msg, suppress_reason)
-      debug log_format("packet_in, error '#{error_msg}'", "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
+    def unreachable_ip(messages, error_msg, suppress_reason)
+      message = messages.last[:message]
+      return if message.nil?
+
+      debug log_format("packet_in, error '#{error_msg}'",
+                       "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
+
       suppress_packets(message, suppress_reason)
       nil
     end
