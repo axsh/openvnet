@@ -172,7 +172,7 @@ module Vnet::Openflow
           goto_table = TABLE_ROUTE_LINK_INGRESS
         else
           priority = 20
-          goto_table = TABLE_ROUTE_LINK_INGRESS
+          goto_table = TABLE_NETWORK_DST_CLASSIFIER
         end          
 
       when :routing

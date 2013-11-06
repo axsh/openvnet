@@ -350,19 +350,6 @@ module Vnet::Openflow::Interfaces
     # those flows will never be touched.
 
     def flows_for_interface_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
-
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_CLASSIFIER,
-                           priority: 20,
-                           match: {
-                             :eth_src => mac_info[:mac_address]
-                           },
-                           match_metadata: {
-                             :interface => @id
-                           },
-                           cookie: cookie,
-                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES)
     end
 
     def flows_for_interface_ipv4(flows, mac_info, ipv4_info)
@@ -427,6 +414,19 @@ module Vnet::Openflow::Interfaces
     end
 
     def flows_for_router_egress_mac(flows, mac_info)
+      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_CLASSIFIER,
+                           priority: 20,
+                           match: {
+                             :eth_src => mac_info[:mac_address]
+                           },
+                           match_metadata: {
+                             :interface => @id
+                           },
+                           cookie: cookie,
+                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES)
     end
 
     def flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
