@@ -80,7 +80,7 @@ module Vnet::Openflow::Routers
     private
 
     def log_format(message, values)
-      "#{@dp_info.dpid_s} router::router_link: #{message} (route_link:#{@uuid}/#{@id}#{values ? ' ' : ''}#{values})"
+      "#{@dp_info.dpid_s} routers/router_link: #{message} (route_link:#{@uuid}/#{@id}#{values ? ' ' : ''}#{values})"
     end
 
     def flows_for_route_link(flows)
