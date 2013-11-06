@@ -235,6 +235,15 @@ module Vnet::Openflow
     # Refactor...
     #
 
+    def match_packet(message)
+      # Verify metadata is a network type.
+
+      match = md_create(:network => message.match.metadata & METADATA_VALUE_MASK)
+      match.merge!({ :eth_type => 0x0800,
+                     :ipv4_dst => message.ipv4_dst
+                   })
+    end
+
     def unreachable_ip(messages, error_msg, suppress_reason)
       message = messages.last[:message]
       return if message.nil?
@@ -262,7 +271,7 @@ module Vnet::Openflow
                            :hard_timeout => hard_timeout
                          })
 
-      @datapath.add_flow(flow)
+      @dp_info.add_flow(flow)
     end
 
   end
