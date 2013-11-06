@@ -21,10 +21,10 @@ module Vnet::Openflow::Datapaths
       @active_networks = {}
     end
     
-    # def cookie(tag = nil)
-    #   value = @id | COOKIE_TYPE_INTERFACE
-    #   tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
-    # end
+    def cookie(tag = nil)
+      value = @id | COOKIE_TYPE_INTERFACE
+      tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
+    end
 
     def to_hash
       { :id => @id,
@@ -41,7 +41,7 @@ module Vnet::Openflow::Datapaths
     end
 
     def uninstall
-      debug log_format("removing flows")
+      # debug log_format("removing flows")
 
       # cookie_value = self.cookie
       # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
