@@ -135,15 +135,9 @@ module Vnet::Openflow
 
       datapath_id = @datapath_info.datapath_map.id
 
-      # Fix this...
-      if interface_item.owner_datapath_ids
-        if interface_item.owner_datapath_ids.include? datapath_id
-          @dp_info.interface_manager.update_item(event: :active_datapath_id,
-                                                 id: interface_item.id,
-                                                 datapath_id: datapath_id)
-        else
-          interface[:use_datapath_id] = interface_item.owner_datapath_ids.first
-        end
+      if interface_item.active_datapath_ids &&
+          interface_item.active_datapath_ids.include?(datapath_id)
+        interface[:use_datapath_id] = interface_item.active_datapath_ids.first
       end
 
       if interface[:use_datapath_id].nil?
