@@ -62,6 +62,11 @@ module Vnet::Openflow
       debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
 
       item.install
+
+      @dp_info.interface_manager.async.update_item(event: :add_service,
+                                                   id: item_map.interface_id,
+                                                   service: item_map.display_name.to_sym)
+
       item
     end    
 

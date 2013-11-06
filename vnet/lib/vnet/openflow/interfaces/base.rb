@@ -47,6 +47,8 @@ module Vnet::Openflow::Interfaces
 
       @mac_addresses = {}
 
+      @services = []
+
       # The 'owner_datapath_ids' set has two possible states; the set
       # can contain zero or more datapaths that can activate this
       # interface, or if nil it can either be activated by any
@@ -94,17 +96,17 @@ module Vnet::Openflow::Interfaces
       cookie(OPTIONAL_TYPE_MAC_LEASE, value)
     end
 
-    def del_cookie(type = 0, value = 0)
+    def del_cookie(type = 0, value = 0, options = {})
       cookie_value = cookie(type, value)
       cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK
 
       @dp_info.network_manager.async.update_interface(event: :remove_all,
                                                       interface_id: @id)
-      @dp_info.del_cookie(cookie_value, cookie_mask)
+      @dp_info.del_cookie(cookie_value, cookie_mask, options)
     end
 
-    def del_cookie_for_ip_lease(value)
-      del_cookie(OPTIONAL_TYPE_IP_LEASE, value)
+    def del_cookie_for_ip_lease(value, options = {})
+      del_cookie(OPTIONAL_TYPE_IP_LEASE, value, options)
     end
 
     def del_cookie_for_mac_lease(value)
@@ -180,6 +182,44 @@ module Vnet::Openflow::Interfaces
       MW::Interface.batch[:id => @id].update(:active_datapath_id => params[:datapath_id]).commit
     end
 
+    def add_service(service)
+      return if @services.include?(service)
+
+      @services << service
+
+      flows = []
+      @mac_addresses.values.each do |mac_info|
+        mac_info[:ipv4_addresses].each do |ipv4_info|
+          flows_for_service(flows, service, ipv4_info)
+        end
+      end
+
+      @dp_info.add_flows(flows)
+    end
+
+    def remove_service(service)
+      return unless @services.include?(service)
+
+      @services.delete(service)
+
+      # TODO Refactor
+      case service
+      when :dhcp
+        @mac_addresses.values.each do |mac_info|
+          mac_info[:ipv4_addresses].each do |ipv4_info|
+            del_cookie_for_ip_lease(ipv4_info[:cookie_id],
+                                    table_id: TABLE_FLOOD_SIMULATED,
+                                    match: Trema::Match.new(:eth_type => 0x0800,
+                                                            :ip_proto => 0x11,
+                                                            :ipv4_dst => IPV4_BROADCAST,
+                                                            :ipv4_src => IPV4_ZERO,
+                                                            :udp_dst => 67,
+                                                            :udp_src => 68))
+          end
+        end
+      end
+    end
+
     #
     # Manage MAC and IP addresses:
     #
@@ -248,6 +288,12 @@ module Vnet::Openflow::Interfaces
 
       debug log_format("adding ipv4 address to #{@uuid}/#{@id}",
                        "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
+
+      flows =  []
+      @services.each do |service|
+        flows_for_service(flows, service, ipv4_info)
+      end
+      @dp_info.add_flows(flows)
 
       [mac_info, ipv4_info]
     end
@@ -438,6 +484,28 @@ module Vnet::Openflow::Interfaces
                            cookie: cookie)
     end
 
+    def flows_for_service(flows, service, ipv4_info)
+      # TODO Refactor
+      case service
+      when :dhcp
+        @mac_addresses.each do |mac_lease_id, mac_info|
+          mac_info[:ipv4_addresses].each do |ipv4_info|
+            flows << flow_create(:catch_flood_simulated,
+                                 match: {
+                                   :eth_type => 0x0800,
+                                   :ip_proto => 0x11,
+                                   :ipv4_dst => IPV4_BROADCAST,
+                                   :ipv4_src => IPV4_ZERO,
+                                   :udp_dst => 67,
+                                   :udp_src => 68
+                                 },
+                                 network_id: ipv4_info[:network_id],
+                                 interface_id: self.id,
+                                 cookie: cookie_for_ip_lease(ipv4_info[:cookie_id]))
+          end
+        end
+      end
+    end
   end
 
 end

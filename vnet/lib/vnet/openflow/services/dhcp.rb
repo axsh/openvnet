@@ -19,28 +19,6 @@ module Vnet::Openflow::Services
                            interface_id: @interface_id,
                            cookie: self.cookie)
 
-      # This should handled by events.
-      interface = @dp_info.interface_manager.item(id: @interface_id,
-                                                  dynamic_load: false)
-      return if interface.nil?
-
-      interface.mac_addresses.each { |mac_lease_id, mac_info|
-        mac_info[:ipv4_addresses].each { |ipv4_info|
-          flows << flow_create(:catch_flood_simulated,
-                               match: {
-                                 :eth_type => 0x0800,
-                                 :ip_proto => 0x11,
-                                 :ipv4_dst => IPV4_BROADCAST,
-                                 :ipv4_src => IPV4_ZERO,
-                                 :udp_dst => 67,
-                                 :udp_src => 68
-                               },
-                               network_id: ipv4_info[:network_id],
-                               interface_id: interface.id,
-                               cookie: self.cookie)
-        }
-      }
-
       @dp_info.add_flows(flows)
     end
 
