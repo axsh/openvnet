@@ -72,11 +72,6 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
-
-    #
-    # Refactor:
-    #
-
     def datapath_route_link(rl_map)
       @datapath_info.datapath_map.batch.datapath_route_links_dataset.where(:route_link_id => rl_map.id).all.commit
     end
