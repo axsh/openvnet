@@ -27,7 +27,8 @@ module Vnet::Openflow
 
       route = Routes::Base.new(dp_info: @dp_info,
                                manager: self,
-                               map: route_map)
+                               map: route_map,
+                               route_link_mac_address: route_link.mac_address)
 
       @items[route.id] = route
 
@@ -136,7 +137,7 @@ module Vnet::Openflow
       datapath_id = @datapath_info.datapath_map.id
 
       if interface_item.active_datapath_ids &&
-          interface_item.active_datapath_ids.include?(datapath_id)
+          !interface_item.active_datapath_ids.include?(datapath_id)
         interface[:use_datapath_id] = interface_item.active_datapath_ids.first
       end
 
