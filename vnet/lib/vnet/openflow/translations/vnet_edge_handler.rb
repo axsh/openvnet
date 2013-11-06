@@ -21,6 +21,8 @@ module Vnet::Openflow::Translations
     def packet_in(message)
       debug log_format('packet_in', dump_packet_in(message))
 
+      return if not message.packet_info.arp
+
       port = @dp_info.port_manager.item(port_number: message.in_port,
                                         reinitialize: false,
                                         dynamic_load: false)
@@ -49,13 +51,10 @@ module Vnet::Openflow::Translations
       src_mac = message.eth_src
       dst_mac = message.eth_dst
 
-      debug log_format('handle_packet_from_host_port : [src_mac]', src_mac)
-      debug log_format('handle_packet_from_host_port : [src_mac.value]', src_mac.value)
       src_network_id = @dp_info.network_manager.network_id_by_mac(src_mac.value)
 
       return if src_network_id.nil?
 
-      debug log_format('handle_packet_from_host_port : [src_network_id]', src_network_id)
       vlan_vids = @dp_info.translation_manager.network_to_vlan(src_network_id)
 
       return if vlan_vids.nil?
@@ -96,6 +95,8 @@ module Vnet::Openflow::Translations
       dst_mac = message.eth_dst
       vlan_vid = message.vlan_vid
 
+      return if message.packet_info.arp_request && !dst_mac.broadcast?
+
       if vlan_vid == 0
         error log_format("blank vlan_vid", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
         return nil
@@ -108,13 +109,9 @@ module Vnet::Openflow::Translations
         return nil
       end
 
+      md = md_create(:network => network_id)
       flows << "table=#{TABLE_EDGE_SRC},priority=2,dl_src=#{src_mac},dl_vlan=#{vlan_vid},actions=strip_vlan,write_metadata:0x%x/0x%x,goto_table:#{TABLE_EDGE_DST}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK ]
-
-      if dst_mac.broadcast?
-        md = md_create(:network => network_id)
-        flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=ff:ff:ff:ff:ff:ff,metadata=0x%x/0x%x,actions=write_metadata:0x%x/0x%x,goto_table:#{TABLE_VIRTUAL_DST}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK, md[:metadata], md[:metadata_mask] ]
-      end
-
+      flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=ff:ff:ff:ff:ff:ff,metadata=0x%x/0x%x,actions=write_metadata:0x%x/0x%x,goto_table:#{TABLE_VIRTUAL_DST}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK, md[:metadata], md[:metadata_mask] ]
       flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=mod_vlan_vid:#{vlan_vid},output:2" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
 
       network = @dp_info.network_manager.item(id: network_id)
@@ -138,6 +135,8 @@ module Vnet::Openflow::Translations
       output_str << "arp?=#{message.packet_info.arp},"
       output_str << "arp_request?=#{message.packet_info.arp_request},"
       output_str << "arp_reply?=#{message.packet_info.arp_reply},"
+      output_str << "arp_sha=#{message.packet_info.arp_sha},"
+      output_str << "arp_tha=#{message.packet_info.arp_tha}"
       output_str
     end
   end
