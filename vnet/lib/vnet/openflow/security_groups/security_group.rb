@@ -3,8 +3,6 @@
 require "ipaddress"
 
 module Vnet::Openflow::SecurityGroups
-  IDLE_TIMEOUT  = 1200
-
   class Rule
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
@@ -16,8 +14,6 @@ module Vnet::Openflow::SecurityGroups
       @cookie = cookie
       @port = port.to_i
     end
-
-    RULE_PRIORITY = 10
 
     def install(interface)
       flow_create(

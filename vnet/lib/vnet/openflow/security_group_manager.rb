@@ -14,8 +14,9 @@ module Vnet::Openflow
 
     COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
     COOKIE_TAG_INGRESS_CATCH      = 0x2 << COOKIE_TYPE_VALUE_SHIFT
-    COOKIE_TAG_EGRESS_ACCEPT      = 0x3 << COOKIE_TYPE_VALUE_SHIFT
-    COOKIE_TAG_CONTRACK           = 0x4 << COOKIE_TYPE_VALUE_SHIFT
+    COOKIE_TAG_INGRESS_ACCEPT_ALL = 0x3 << COOKIE_TYPE_VALUE_SHIFT
+    COOKIE_TAG_EGRESS_ACCEPT      = 0x4 << COOKIE_TYPE_VALUE_SHIFT
+    COOKIE_TAG_CONTRACK           = 0x5 << COOKIE_TYPE_VALUE_SHIFT
 
     Connections = Vnet::Openflow::SecurityGroups::Connections
 
@@ -148,7 +149,26 @@ module Vnet::Openflow
         Vnet::Openflow::SecurityGroups::SecurityGroup.new(g, interface_id)
       }
 
-      flows = groups.map { |g| g.install(interface) }.flatten
+      flows = if groups.empty?
+        # Accept all traffic if this interface isn't in any security groups
+        # This behaviour will change in the future
+        cookie = interface_id |
+          COOKIE_TYPE_SECURITY_GROUP |
+          COOKIE_SG_TYPE_TAG |
+          COOKIE_TAG_INGRESS_ACCEPT_ALL
+
+        [
+          flow_create(:default,
+            table: TABLE_INTERFACE_INGRESS_FILTER,
+            priority: Vnet::Openflow::SecurityGroups::RULE_PRIORITY,
+            idle_timeout: Vnet::Openflow::SecurityGroups::IDLE_TIMEOUT,
+            cookie: cookie,
+            match_metadata: { interface: interface_id },
+            goto_table: TABLE_INTERFACE_VIF)
+        ]
+      else
+        groups.map { |g| g.install(interface) }.flatten
+      end
 
       @dp_info.add_flows(flows)
       @dp_info.send_packet_out(message, OFPP_TABLE)
