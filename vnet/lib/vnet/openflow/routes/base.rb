@@ -12,6 +12,7 @@ module Vnet::Openflow::Routes
     attr_reader :interface_id
     attr_reader :route_link_id
 
+    attr_reader :network_id
     attr_reader :ipv4_address
     attr_reader :ipv4_prefix
 
@@ -30,10 +31,10 @@ module Vnet::Openflow::Routes
       @id = map.id
       @uuid = map.uuid
 
-      @interface = nil
       @interface_id = map.interface_id
       @route_link_id = map.route_link_id
 
+      @network_id = map.network_id
       @ipv4_address = IPAddr.new(map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = map.ipv4_prefix
 
@@ -65,8 +66,6 @@ module Vnet::Openflow::Routes
       subnet_src = match_ipv4_subnet_src(@ipv4_address, @ipv4_prefix)
 
       if @use_datapath_id.nil?
-        # Refactor this so as to make network id a proper part of the
-        # routes db entry.
         flows << flow_create(:routing,
                              table: TABLE_INTERFACE_EGRESS_ROUTES,
                              goto_table: TABLE_INTERFACE_EGRESS_MAC,

@@ -40,7 +40,6 @@ module Vnet::Openflow
         return
       end
 
-      route.network_id = interface[:network_id]
       route.use_datapath_id = interface[:use_datapath_id]
       route.install
     end
@@ -119,22 +118,11 @@ module Vnet::Openflow
         return
       end
 
-      mac_info = interface_item.mac_addresses.first
-
-      if mac_info.nil? ||
-          mac_info[1][:ipv4_addresses].first.nil?
-        warn log_format('could not find ipv4 address')
-        return nil
-      end
-
-      ipv4_info = mac_info[1][:ipv4_addresses].first
-
       interface = {
         :id => interface_item.id,
         :use_datapath_id => nil,
 
         :mode => interface_item.mode,
-        :network_id => ipv4_info[:network_id],
       }
 
       @interfaces[interface_item.id] = interface
