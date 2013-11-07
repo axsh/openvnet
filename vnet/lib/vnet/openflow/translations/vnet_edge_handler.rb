@@ -110,15 +110,48 @@ module Vnet::Openflow::Translations
       end
 
       md = md_create(:network => network_id)
-      flows << "table=#{TABLE_EDGE_SRC},priority=2,dl_src=#{src_mac},dl_vlan=#{vlan_vid},actions=strip_vlan,write_metadata:0x%x/0x%x,goto_table:#{TABLE_EDGE_DST}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK ]
-      flows << "table=#{TABLE_EDGE_DST},priority=2,arp,dl_dst=ff:ff:ff:ff:ff:ff,metadata=0x%x/0x%x,actions=write_metadata:0x%x/0x%x,goto_table:#{TABLE_VIRTUAL_DST}" % [ METADATA_TYPE_EDGE_TO_VIRTUAL, METADATA_TYPE_MASK, md[:metadata], md[:metadata_mask] ]
-      flows << "table=#{TABLE_EDGE_DST},priority=2,dl_dst=#{src_mac},metadata=0x%x/0x%x,actions=mod_vlan_vid:#{vlan_vid},output:2" % [ METADATA_TYPE_VIRTUAL_TO_EDGE, METADATA_TYPE_MASK ]
+
+      flows << Flow.create(TABLE_EDGE_SRC, 2, {
+                           :eth_src => src_mac,
+                           :vlan_vid => (vlan_vid | VLAN_TCI_DEI),
+                           :vlan_vid_mask => VLAN_TCI_MASK_NO_PRIORITY
+                          }, {
+                           :strip_vlan => true
+                          }, {
+                           :goto_table => TABLE_EDGE_DST,
+                           :metadata => METADATA_TYPE_EDGE_TO_VIRTUAL,
+                           :metadata_mask => METADATA_TYPE_MASK
+                          })
+      flows << Flow.create(TABLE_EDGE_DST, 2, {
+                           :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+                           :metadata => METADATA_TYPE_EDGE_TO_VIRTUAL,
+                           :metadata_mask => METADATA_TYPE_MASK
+                          }, {}, {
+                           :goto_table => TABLE_VIRTUAL_DST,
+                           :metadata => md[:metadata],
+                           :metadata_mask => md[:metadata_mask]
+                          })
+      flows << Flow.create(TABLE_EDGE_DST, 2, {
+                           :eth_dst => src_mac,
+                           :metadata => METADATA_TYPE_VIRTUAL_TO_EDGE,
+                           :metadata_mask => METADATA_TYPE_MASK
+                          }, {
+                           :mod_vlan_vid => vlan_vid,
+                           :output => message.in_port
+                          }, {})
+
+      @dp_info.add_flows(flows)
 
       network = @dp_info.network_manager.item(id: network_id)
 
-      flows.each { |flow| @dp_info.add_ovs_flow(flow) }
-
       @dp_info.send_packet_out(message, OFPP_TABLE)
+    end
+
+    def flow_options(vlan_vid, network_id)
+      {:cookie => (vlan_vid << COOKIE_TAG_MASK) | network_id | COOKIE_TYPE_TRANSLATION}
+    end
+
+    def cookie(vlan_vid, network_id)
     end
 
     def log_format(message, values = nil)
@@ -131,6 +164,7 @@ module Vnet::Openflow::Translations
       output_str << "src=#{message.eth_src},"
       output_str << "dst=#{message.eth_dst},"
       output_str << "eth_type=#{message.eth_type},"
+      output_str << "vlan_tci=#{message.vlan_tci},"
       output_str << "vlan_vid=#{message.vlan_vid},"
       output_str << "arp?=#{message.packet_info.arp},"
       output_str << "arp_request?=#{message.packet_info.arp_request},"

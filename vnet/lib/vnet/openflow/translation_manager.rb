@@ -14,14 +14,12 @@ module Vnet::Openflow
 
     def network_to_vlan(network_id)
       entry = @translation_map.find { |t| t.network_id == network_id }
-      return nil if entry.nil?
-      entry.vlan_id
+      entry && entry.vlan_id
     end
 
     def vlan_to_network(vlan_vid)
       entry = @translation_map.find { |t| t.vlan_id == vlan_vid }
-      return nil if entry.nil?
-      entry.network_id
+      entry && entry.network_id
     end
 
     def set_datapath_info(datapath_info)
