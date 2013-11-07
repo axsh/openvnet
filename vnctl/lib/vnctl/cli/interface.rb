@@ -5,7 +5,7 @@ module Vnctl::Cli
     namespace :security_groups
     api_suffix "/api/interfaces"
 
-    desc "add INTERFACE_UUID, SECURITY_GROUP_UUID(S)", "Adds one or more security groups to this interface."
+    desc "add INTERFACE_UUID, SECURITY_GROUP_UUID(S)", "Adds one or more security groups to an interface."
     def add(interface_uuid, *secg_uuids)
       secg_uuids.each { |secg_uuid|
         query = { :security_group_uuid => secg_uuid }
@@ -16,6 +16,13 @@ module Vnctl::Cli
     desc "show INTERFACE_UUID", "Shows all security groups this interface is in."
     def show(interface_uuid)
       puts get("#{suffix}/#{interface_uuid}/security_groups")
+    end
+
+    desc "del INTERFACE_UUID, SECURITY_GROUP_UUID(S)", "Removes one of more security groups from an interface."
+    def del(interface_uuid, *secg_uuids)
+      secg_uuids.map { |secg_uuid|
+        puts delete("#{suffix}/#{interface_uuid}/security_groups/#{secg_uuid}")
+      }
     end
   end
 

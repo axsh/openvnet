@@ -55,11 +55,27 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     check_syntax_and_get_id(M::SecurityGroup, params, 'security_group_uuid', 'security_group_id')
     interface = check_syntax_and_get_id(M::Interface, params, 'uuid', 'interface_id')
 
+    #TODO: Check if the interface already has this security group
+
     M::InterfaceSecurityGroup.create(params)
     respond_with(R::Interface.security_groups(interface))
   end
 
   get '/:uuid/security_groups' do
     show_relations(:Interface, :security_groups)
+  end
+
+  delete '/:uuid/security_groups/:security_group_uuid' do
+    params = parse_params(@params, ['uuid', 'security_group_uuid'])
+    check_required_params(params, ['uuid', 'security_group_uuid'])
+
+    interface = check_syntax_and_pop_uuid(M::Interface, params)
+    security_group = check_syntax_and_pop_uuid(M::SecurityGroup, params, 'security_group_uuid')
+
+    relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
+      :security_group_id => security_group.id).all.commit
+
+    relations.each { |r| r.batch.destroy.commit }
+    respond_with(R::Interface.security_groups(interface))
   end
 end
