@@ -44,14 +44,16 @@ module Vnet::Openflow
       end
 
       MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
-        item = item_by_params(dst_id: target_dp_map.id)
+        item = item_by_params(dst_id: target_dp_map.id,
+                              dst_dp_map: target_dp_map)
 
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
         tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
                                        dst_datapath_id: target_dp_map.id,
                                        display_name: tunnel_name)
         
-        create_item(tunnel_map, dst_dp_map: target_dp_map)
+        create_item(tunnel_map,
+                    dst_dp_map: target_dp_map)
       }
     end
 
