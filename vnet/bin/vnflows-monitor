@@ -21,7 +21,6 @@ class Flow
   attr_reader :n_packets
 
   def initialize(flow_match, flow_actions)
-    @cookie       = flow_match.delete(:cookie)
     @duration     = flow_match.delete(:duration)
     @table        = dec_to_i(flow_match.delete(:table))
     @priority     = dec_to_i(flow_match.delete(:priority))
@@ -84,6 +83,8 @@ class Flow
     case field[0]
     when :goto_table
       "#{self.class.table_name(field[1].to_i)}(#{field[1]})"
+    when :cookie
+        "#{self.cookie_to_pretty(field[1])}"
     when :metadata, :write_metadata
       result = field[1].scan(/^0x([[:xdigit:]]*)\/0x([[:xdigit:]]*)$/)
 
@@ -111,11 +112,22 @@ class Flow
     (~value & (mask & flag)) == flag
   end
 
+  def cookie_to_pretty(hexstring)
+    value = hexstring.to_i(16)
+    id = value & COOKIE_ID_MASK
+    tag = ( value & COOKIE_TAG_MASK ) >> COOKIE_TAG_SHIFT
+    type = value >> COOKIE_PREFIX_SHIFT
+
+    tname = self.class.cookie_type_name(type)
+
+    "#{tname}:tag[#{"0x%x" % tag}]id[#{"0x%x" % id}]"
+  end
+
   def metadata_to_pretty(value, mask)
     result = ''
 
     if (mask & METADATA_TYPE_MASK) == METADATA_TYPE_MASK
-      result << self.class.type_name(value & (mask & METADATA_TYPE_MASK)) << '|'
+      result << self.class.metadata_type_name(value & (mask & METADATA_TYPE_MASK)) << '|'
     end
 
     case value & (mask & (METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE))
@@ -228,13 +240,22 @@ class Flow
     name.to_s if name
   end
 
-  def self.type_name(number)
+  def self.metadata_type_name(number)
     name = Vnet::Constants::OpenflowFlows.constants.select { |const|
       const.to_s.start_with?('METADATA_TYPE_')
     }.detect { |const|
       Vnet::Constants::OpenflowFlows.const_get(const) == number
     }
     name ? name.to_s.sub(/^METADATA_/, '') : 'TYPE_ANY'
+  end
+
+  def self.cookie_type_name(number)
+    name = Vnet::Constants::OpenflowFlows.constants.select { |const|
+      const.to_s.start_with?('COOKIE_PREFIX_')
+    }.detect { |const|
+      Vnet::Constants::OpenflowFlows.const_get(const) == number
+    }
+    name ? name.to_s.sub(/^COOKIE_PREFIX_/, '') : ( "0x%x" % number )
   end
 
   private
