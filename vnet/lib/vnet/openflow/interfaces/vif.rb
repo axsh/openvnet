@@ -109,15 +109,18 @@ module Vnet::Openflow::Interfaces
       #
       # ARP anti-spoof
       #
-      flows << flow_create(:network_src_arp_match,
+      flows << flow_create(:default,
+                           table_network_src: ipv4_info[:network_type],
+                           goto_table: TABLE_ROUTE_INGRESS,
+                           priority: 86,
                            match: {
                              :eth_type => 0x0806,
                              :eth_src => mac_info[:mac_address],
                              :arp_spa => ipv4_info[:ipv4_address],
                              :arp_sha => mac_info[:mac_address]
                            },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
+                           match_network: ipv4_info[:network_id],
+                           match_local: true,
                            cookie: cookie)
       flows << flow_create(:default,
                            table_network_src: ipv4_info[:network_type],

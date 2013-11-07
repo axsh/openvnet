@@ -9,6 +9,7 @@ module Vnet::Openflow
 
     FLOW_MATCH_METADATA_PARAMS = [:match_datapath,
                                   :match_interface,
+                                  :match_local,
                                   :match_mac2mac,
                                   :match_network,
                                   :match_not_no_controller,
@@ -18,6 +19,7 @@ module Vnet::Openflow
                                  ]
     FLOW_WRITE_METADATA_PARAMS = [:write_datapath,
                                   :write_interface,
+                                  :write_local,
                                   :write_mac2mac,
                                   :write_network,
                                   :write_not_no_controller,
@@ -76,21 +78,6 @@ module Vnet::Openflow
       write_metadata = {}
 
       case type
-      when :catch_network_dst
-        table = table_network_dst(params[:network_type])
-        priority = 70
-        actions = { :output => Controller::OFPP_CONTROLLER }
-        match_metadata = { :network => params[:network_id] }
-      when :network_src_arp_match
-        # Check for local flag since we trust that the local packets
-        # are properly verified in earlier flows. 
-        table = table_network_src(params[:network_type])
-        priority = 86
-        match_metadata = {
-          :network => params[:network_id],
-          :local => nil
-        }
-        goto_table = TABLE_ROUTE_INGRESS
       when :network_src_ipv4_match
         table = table_network_src(params[:network_type])
         priority = 45
