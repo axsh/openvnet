@@ -93,7 +93,9 @@ module Vnet::Openflow
       dpn = MW::DatapathNetwork[datapath_id: datapath_info.id,
                                 network_id: network_map.id]
 
-      flow = flow_create(:host_ports,
+      flow = flow_create(:default,
+                         table: TABLE_HOST_PORTS,
+
                          priority: 30,
                          match: { :eth_dst => Trema::Mac.new(dpn.broadcast_mac_address) },
                          actions: { :eth_dst => MAC_BROADCAST },

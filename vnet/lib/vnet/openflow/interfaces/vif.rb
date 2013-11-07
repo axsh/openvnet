@@ -94,7 +94,8 @@ module Vnet::Openflow::Interfaces
       #
       # Classifier
       #
-      flows << flow_create(:host_ports,
+      flows << flow_create(:default,
+                           table: TABLE_HOST_PORTS,
                            priority: 30,
                            match: {
                              :eth_dst => mac_info[:mac_address],

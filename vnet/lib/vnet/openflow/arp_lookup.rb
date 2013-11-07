@@ -17,22 +17,27 @@ module Vnet::Openflow
     end
 
     def arp_lookup_base_flows(flows)
-      flows << flow_create(:catch_interface_simulated,
+      flows << flow_create(:controller,
+                           table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
                            match: {
                              :eth_type => 0x0806,
                              :arp_op => 2,
                            },
-                           interface_id: @arp_lookup[:interface_id],
+                           match_interface: @arp_lookup[:interface_id],
                            cookie: @arp_lookup[:reply_cookie])
     end
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
-      flows << flow_create(:catch_arp_lookup,
+      flows << flow_create(:controller,
+                           table: TABLE_ARP_LOOKUP,
+                           priority: 20,
                            match: {
                              :eth_src => mac_info[:mac_address],
                              :eth_type => 0x0800
                            },
-                           network_id: ipv4_info[:network_id],
+                           match_network: ipv4_info[:network_id],
+                           match_not_no_controller: true,
                            cookie: @arp_lookup[:lookup_cookie])
     end
 

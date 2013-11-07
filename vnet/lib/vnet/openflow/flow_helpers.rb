@@ -11,6 +11,7 @@ module Vnet::Openflow
                                   :match_interface,
                                   :match_mac2mac,
                                   :match_network,
+                                  :match_not_no_controller,
                                   :match_reflection,
                                   :match_route_link,
                                   :match_tunnel,
@@ -19,6 +20,7 @@ module Vnet::Openflow
                                   :write_interface,
                                   :write_mac2mac,
                                   :write_network,
+                                  :write_not_no_controller,
                                   :write_reflection,
                                   :write_route_link,
                                   :write_tunnel,
@@ -74,36 +76,11 @@ module Vnet::Openflow
       write_metadata = {}
 
       case type
-      when :catch_arp_lookup
-        table = TABLE_ARP_LOOKUP
-        priority = 20
-        actions = { :output => Controller::OFPP_CONTROLLER }
-        match_metadata = {
-          :network => params[:network_id],
-          :not_no_controller => nil
-        }
-      when :catch_flood_simulated
-        table = TABLE_FLOOD_SIMULATED
-        priority = 30
-        match_metadata = { :network => params[:network_id] }
-        write_metadata = { :interface => params[:interface_id] }
-        goto_table = TABLE_OUTPUT_INTERFACE
-      when :catch_interface_simulated
-        table = TABLE_OUTPUT_INTERFACE
-        priority = 30
-        actions = { :output => Controller::OFPP_CONTROLLER }
-        match_metadata = { :interface => params[:interface_id] }
       when :catch_network_dst
         table = table_network_dst(params[:network_type])
         priority = 70
         actions = { :output => Controller::OFPP_CONTROLLER }
         match_metadata = { :network => params[:network_id] }
-      when :controller_port
-        table = TABLE_CONTROLLER_PORT
-      when :classifier
-        table = TABLE_CLASSIFIER
-      when :host_ports
-        table = TABLE_HOST_PORTS
       when :network_dst
         table = table_network_dst(params[:network_type])
         match_metadata = { :network => params[:network_id] }
@@ -152,17 +129,17 @@ module Vnet::Openflow
       when :default
       when :drop
         priority = 90
+      when :controller
+        actions = { :output => Controller::OFPP_CONTROLLER }
       when :controller_classifier
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }
         goto_table = TABLE_INTERFACE_CLASSIFIER
-
       when :interface_classifier
         table = TABLE_INTERFACE_CLASSIFIER
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_NETWORK_SRC_CLASSIFIER
-
       when :router_classifier
         table = TABLE_ROUTE_INGRESS
         match_metadata = { :network => params[:network_id] }
@@ -174,10 +151,8 @@ module Vnet::Openflow
           priority = 20
           goto_table = TABLE_NETWORK_DST_CLASSIFIER
         end          
-
       when :routing
         priority = params[:default_route] ? 20 : 30
-
       else
         return nil
       end

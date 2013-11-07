@@ -18,7 +18,8 @@ module Vnet::Openflow::Ports
 
     def install
       flows = []
-      flows << flow_create(:classifier,
+      flows << flow_create(:default,
+                           table: TABLE_CLASSIFIER,
                            priority: 2,
                            match: {
                              :in_port => self.port_number,
