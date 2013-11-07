@@ -422,9 +422,7 @@ module Vnet::Openflow::Interfaces
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_metadata: {
-                             :interface => @id
-                           },
+                           match_interface: @id,
                            cookie: cookie,
                            goto_table: TABLE_INTERFACE_EGRESS_ROUTES)
     end

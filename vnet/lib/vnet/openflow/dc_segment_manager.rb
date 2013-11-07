@@ -63,9 +63,7 @@ module Vnet::Openflow
                          table: TABLE_OUTPUT_DATAPATH,
                          goto_table: TABLE_OUTPUT_MAC2MAC,
                          priority: 5,
-                         match_metadata: {
-                           :datapath => dpn_map.datapath_id
-                         },
+                         match_datapath: dpn_map.datapath_id,
                          write_mac2mac: true,
                          cookie: dpn_map.datapath_id | COOKIE_TYPE_DATAPATH)
       @dp_info.add_flow(flow)
@@ -135,7 +133,7 @@ module Vnet::Openflow
       flow = flow_create(:default,
                          table: TABLE_FLOOD_SEGMENT,
                          priority: 1,
-                         match_metadata: { :network => network_id },
+                         match_network: network_id,
                          actions: flood_actions,
                          cookie: network_id | COOKIE_TYPE_NETWORK,
                          goto_table: TABLE_FLOOD_TUNNELS)
