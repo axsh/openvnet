@@ -81,16 +81,6 @@ module Vnet::Openflow
         priority = 70
         actions = { :output => Controller::OFPP_CONTROLLER }
         match_metadata = { :network => params[:network_id] }
-      when :network_dst
-        table = table_network_dst(params[:network_type])
-        match_metadata = { :network => params[:network_id] }
-      when :network_src
-        table = table_network_src(params[:network_type])
-        match_metadata = { :network => params[:network_id] }
-      when :network_src_arp_drop
-        table = table_network_src(params[:network_type])
-        priority = 85
-        match_metadata = { :network => params[:network_id] }
       when :network_src_arp_match
         # Check for local flag since we trust that the local packets
         # are properly verified in earlier flows. 
@@ -164,6 +154,12 @@ module Vnet::Openflow
       actions = params[:actions] if params[:actions]
       priority = params[:priority] if params[:priority]
       goto_table = params[:goto_table] if params[:goto_table]
+
+      if params.has_key?(:table_network_dst)
+        table = table_network_dst(params[:table_network_dst])
+      elsif params.has_key?(:table_network_src)
+        table = table_network_src(params[:table_network_src])
+      end
 
       #
       # Match/Write Metadata options:

@@ -176,29 +176,29 @@ module Vnet::Openflow::Interfaces
       # IPv4:
       #
 
-      flows << flow_create(:network_dst,
+      flows << flow_create(:default,
+                           table_network_dst: ipv4_info[:network_type],
                            priority: 80,
                            match: {
                              :eth_type => 0x0800,
                              :eth_dst => mac_info[:mac_address],
                              :ipv4_dst => ipv4_info[:ipv4_address]
                            },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
+                           match_network: ipv4_info[:network_id],
                            write_metadata: {
                              :interface => @id
                            },
                            cookie: cookie,
                            goto_table: TABLE_OUTPUT_INTERFACE)
-      flows << flow_create(:network_dst,
+      flows << flow_create(:default,
+                           table_network_dst: ipv4_info[:network_type],
                            priority: 80,
                            match: {
                              :eth_type => 0x0806,
                              :eth_dst => mac_info[:mac_address],
                              :arp_tpa => ipv4_info[:ipv4_address]
                            },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
+                           match_network: ipv4_info[:network_id],
                            write_metadata: {
                              :interface => @id
                            },
