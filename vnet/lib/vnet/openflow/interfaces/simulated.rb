@@ -185,9 +185,7 @@ module Vnet::Openflow::Interfaces
                              :ipv4_dst => ipv4_info[:ipv4_address]
                            },
                            match_network: ipv4_info[:network_id],
-                           write_metadata: {
-                             :interface => @id
-                           },
+                           write_interface: @id,
                            cookie: cookie,
                            goto_table: TABLE_OUTPUT_INTERFACE)
       flows << flow_create(:default,
@@ -199,9 +197,7 @@ module Vnet::Openflow::Interfaces
                              :arp_tpa => ipv4_info[:ipv4_address]
                            },
                            match_network: ipv4_info[:network_id],
-                           write_metadata: {
-                             :interface => @id
-                           },
+                           write_interface: @id,
                            cookie: cookie,
                            goto_table: TABLE_OUTPUT_INTERFACE)
       flows << flow_create(:default,

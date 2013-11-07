@@ -97,7 +97,7 @@ module Vnet::Openflow
                          priority: 30,
                          match: { :eth_dst => Trema::Mac.new(dpn.broadcast_mac_address) },
                          actions: { :eth_dst => MAC_BROADCAST },
-                         write_metadata: { :network => network_map.id },
+                         write_network: network_map.id,
                          cookie: network_map.id | COOKIE_TYPE_NETWORK,
                          goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
 

@@ -441,9 +441,7 @@ module Vnet::Openflow::Interfaces
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_metadata: {
-                             :network => ipv4_info[:network_id]
-                           },
+                           match_network: ipv4_info[:network_id],
                            cookie: cookie,
                            goto_table: TABLE_ARP_TABLE)
       flows << flow_create(:default,
@@ -452,12 +450,8 @@ module Vnet::Openflow::Interfaces
                            actions: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_metadata: {
-                             :interface => @id
-                           },
-                           write_metadata: {
-                             :network => ipv4_info[:network_id]
-                           },
+                           match_interface: @id,
+                           write_network: ipv4_info[:network_id],
                            cookie: cookie,
                            goto_table: TABLE_ARP_TABLE)
     end

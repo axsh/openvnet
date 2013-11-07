@@ -100,9 +100,7 @@ module Vnet::Openflow::Interfaces
                            match: {
                              :eth_dst => mac_info[:mac_address],
                            },
-                           write_metadata: {
-                             :network => ipv4_info[:network_id],
-                           },
+                           write_network: ipv4_info[:network_id],
                            cookie: cookie,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
 
