@@ -123,7 +123,7 @@ module Vnet::Openflow::Translations
                            :metadata_mask => METADATA_TYPE_MASK
                           })
       flows << Flow.create(TABLE_EDGE_DST, 2, {
-                           :eth_dst => Trema::Mac.new('ff:ff:ff:ff:ff:ff'),
+                           :eth_dst => MAC_BROADCAST,
                            :metadata => METADATA_TYPE_EDGE_TO_VIRTUAL,
                            :metadata_mask => METADATA_TYPE_MASK
                           }, {}, {
