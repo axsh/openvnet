@@ -49,6 +49,6 @@ module Vnctl::Cli
     end
 
     register(DhcpRanges, :dhcp_ranges, "dhcp_ranges OPTIONS",
-      "subcommand to mange dhcp ranges for a network")
+      "subcommand to manage dhcp ranges for a network")
   end
 end

@@ -1,6 +1,19 @@
 # -*- coding: utf-8 -*-
 
 module Vnctl::Cli
+  class SecurityGroups < Base
+    namespace :security_groups
+    api_suffix "/api/interfaces"
+
+    desc "add INTERFACE_UUID, SECURITY_GROUP_UUID(S)", "Adds one or more security groups to this interface."
+    def add(interface_uuid, *secg_uuids)
+      secg_uuids.each { |secg_uuid|
+        query = { :security_group_uuid => secg_uuid }
+        puts post("#{suffix}/#{interface_uuid}/security_groups", :query => query)
+      }
+    end
+  end
+
   class Interface < Base
     namespace :interface
     api_suffix "/api/interfaces"
@@ -16,6 +29,7 @@ module Vnctl::Cli
 
     option_uuid
     option :ipv4_address, :type => :string, :desc => "The first ip lease for this interface."
+    option :security_groups, :type => :array, :desc => "The security groups to put this interface in."
     add_modify_shared_options
     define_add
 
@@ -24,5 +38,8 @@ module Vnctl::Cli
 
     define_show
     define_del
+
+    register(SecurityGroups, :security_groups, "security_groups OPTIONS",
+      "subcommand to manage security groups for an interface")
   end
 end

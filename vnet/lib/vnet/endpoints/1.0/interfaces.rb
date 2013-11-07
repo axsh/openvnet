@@ -47,4 +47,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
       params['mac_address'] = parse_mac(params['mac_address']) if params[:mac_address]
     }
   end
+
+  post '/:interface_uuid/security_groups' do
+    params = parse_params(@params, ['interface_uuid', 'security_group_uuid'])
+    check_required_params(params, ['interface_uuid', 'security_group_uuid'])
+
+    check_syntax_and_get_id(M::SecurityGroup, params, 'security_group_uuid', 'security_group_id')
+    interface = check_syntax_and_get_id(M::Interface, params, 'interface_uuid', 'interface_id')
+
+    M::InterfaceSecurityGroup.create(params)
+    respond_with(R::Interface.security_groups(interface))
+  end
 end
