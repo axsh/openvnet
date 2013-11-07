@@ -219,27 +219,31 @@ module Vnet::Openflow
       Flow.create(table, priority, match, actions, instructions)
     end
 
-    def flows_for_filtering_mac_address(flows, mac_address)
+    def flows_for_filtering_mac_address(flows, mac_address, use_cookie = self.cookie)
       flows << flow_create(:drop,
                            table: TABLE_NETWORK_SRC_CLASSIFIER,
                            match: {
                              :eth_dst => mac_address
-                           })
+                           },
+                           cookie: use_cookie)
       flows << flow_create(:drop,
                            table: TABLE_NETWORK_SRC_CLASSIFIER,
                            match: {
                              :eth_src => mac_address
-                           })
+                           },
+                           cookie: use_cookie)
       flows << flow_create(:drop,
                            table: TABLE_NETWORK_DST_CLASSIFIER,
                            match: {
                              :eth_dst => mac_address
-                           })
+                           },
+                           cookie: use_cookie)
       flows << flow_create(:drop,
                            table: TABLE_NETWORK_DST_CLASSIFIER,
                            match: {
                              :eth_src => mac_address
-                           })
+                           },
+                           cookie: use_cookie)
     end
 
   end
