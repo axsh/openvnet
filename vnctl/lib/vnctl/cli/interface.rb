@@ -12,6 +12,11 @@ module Vnctl::Cli
         puts post("#{suffix}/#{interface_uuid}/security_groups", :query => query)
       }
     end
+
+    desc "show INTERFACE_UUID", "Shows all security groups this interface is in."
+    def show(interface_uuid)
+      puts get("#{suffix}/#{interface_uuid}/security_groups")
+    end
   end
 
   class Interface < Base

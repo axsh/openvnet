@@ -48,14 +48,18 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     }
   end
 
-  post '/:interface_uuid/security_groups' do
-    params = parse_params(@params, ['interface_uuid', 'security_group_uuid'])
-    check_required_params(params, ['interface_uuid', 'security_group_uuid'])
+  post '/:uuid/security_groups' do
+    params = parse_params(@params, ['uuid', 'security_group_uuid'])
+    check_required_params(params, ['uuid', 'security_group_uuid'])
 
     check_syntax_and_get_id(M::SecurityGroup, params, 'security_group_uuid', 'security_group_id')
-    interface = check_syntax_and_get_id(M::Interface, params, 'interface_uuid', 'interface_id')
+    interface = check_syntax_and_get_id(M::Interface, params, 'uuid', 'interface_id')
 
     M::InterfaceSecurityGroup.create(params)
     respond_with(R::Interface.security_groups(interface))
+  end
+
+  get '/:uuid/security_groups' do
+    show_relations(:Interface, :security_groups)
   end
 end
