@@ -72,10 +72,11 @@ class Flow
   def to_pretty
     case $opts.prettytype
     when 0 then to_pretty0
+    when 1 then to_pretty0
     when 99 then to_pretty99
     else 
       puts "invalid pretty type"
-      exit
+      to_pretty0
     end
   end
 
@@ -90,8 +91,12 @@ class Flow
 
       value = result[0][0].to_i(16)
       mask = result[0][1] ? result[0][1].to_i(16) : ((1 << 64) - 1)
-
-      "#{self.metadata_to_pretty(value, mask)}(#{field[1]})"
+      case $opts.prettytype
+      when 0 then
+        "#{self.metadata_to_pretty(value, mask)}(#{field[1]})"
+      else 
+        "#{self.metadata_to_pretty(value, mask)}(#{"0x%x" % (value & 0xffffffff) })"
+      end
     else
       field[1]
     end
@@ -258,7 +263,7 @@ class VnflowsMonitorOptions
     @nextset = :@interval
     @runselect = 0 # most recent archived flow
     @iterationselect = [] # process live flows
-    @prettytype = 0 # original
+    @prettytype = 1 # only show low 32bits of metadata value
   end
 
   def parse_options(str)
@@ -450,6 +455,9 @@ c n   -output n iterations and stop
 
 d 1   -turn on diff mode
 d 0   -turn off diff mode {default}
+
+p 0   -full output
+p 1   -only show low 32bits of metadata value {default}
 
 t 2   -pause 2 seconds between iterations {default}
 
