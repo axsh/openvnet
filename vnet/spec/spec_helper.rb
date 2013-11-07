@@ -47,6 +47,7 @@ RSpec.configure do |config|
   config.before(:each) do
     DatabaseCleaner.start
     Fabrication.clear_definitions
+    Celluloid.shutdown
     Celluloid.boot
   end
 
