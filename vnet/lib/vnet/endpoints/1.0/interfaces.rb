@@ -52,10 +52,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     params = parse_params(@params, ['uuid', 'security_group_uuid'])
     check_required_params(params, ['uuid', 'security_group_uuid'])
 
-    check_syntax_and_get_id(M::SecurityGroup, params, 'security_group_uuid', 'security_group_id')
+    security_group = check_syntax_and_get_id(M::SecurityGroup, params, 'security_group_uuid', 'security_group_id')
     interface = check_syntax_and_get_id(M::Interface, params, 'uuid', 'interface_id')
 
-    #TODO: Check if the interface already has this security group
+    M::InterfaceSecurityGroup.filter(:interface_id => interface.id,
+      :security_group_id => security_group.id).empty? ||
+    raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
     M::InterfaceSecurityGroup.create(params)
     respond_with(R::Interface.security_groups(interface))
