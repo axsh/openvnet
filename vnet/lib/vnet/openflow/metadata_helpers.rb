@@ -56,6 +56,13 @@ module Vnet::Openflow
           # Disable the vif flag until we actually need it.
           # metadata = metadata | METADATA_FLAG_VIF
           # metadata_mask = metadata_mask | METADATA_FLAG_VIF
+
+        #
+        # Refactored:
+        #
+        when :match_ignore_mac2mac, :write_ignore_mac2mac
+          metadata = metadata | (value == true ? METADATA_FLAG_IGNORE_MAC2MAC : 0)
+          metadata_mask = metadata_mask | METADATA_FLAG_IGNORE_MAC2MAC
         else
           raise("Unknown metadata type: #{key.inspect}")
         end
