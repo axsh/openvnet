@@ -33,11 +33,12 @@ module Vnet
       # Translation layer for vlan
       TABLE_EDGE_SRC = 8
       TABLE_EDGE_DST = 9
-      TABLE_INTERFACE_EGRESS_FILTER = 10
 
-      TABLE_INTERFACE_CLASSIFIER    = 11
-      TABLE_INTERFACE_EGRESS_ROUTES = 12
-      TABLE_INTERFACE_EGRESS_MAC    = 13
+      TABLE_INTERFACE_CLASSIFIER    = 10
+      TABLE_INTERFACE_EGRESS_ROUTES = 11
+      TABLE_INTERFACE_EGRESS_MAC    = 12
+
+      TABLE_INTERFACE_EGRESS_FILTER = 13
 
       # Initial verification of network number and application of global
       # filtering rules.

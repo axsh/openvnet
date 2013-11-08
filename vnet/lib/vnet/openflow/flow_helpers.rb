@@ -155,7 +155,7 @@ module Vnet::Openflow
         table = TABLE_INTERFACE_CLASSIFIER
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
-        goto_table = TABLE_NETWORK_SRC_CLASSIFIER
+        goto_table = TABLE_INTERFACE_EGRESS_FILTER
 
       when :router_classifier
         table = TABLE_ROUTE_INGRESS
@@ -167,7 +167,7 @@ module Vnet::Openflow
         else
           priority = 20
           goto_table = TABLE_ROUTE_LINK_INGRESS
-        end          
+        end
 
       when :routing
         priority = params[:default_route] ? 20 : 30

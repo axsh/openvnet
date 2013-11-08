@@ -67,7 +67,6 @@ module Vnet::Openflow
                       eth_type: ETH_TYPE_IPV4,
                       ip_proto: protocol
                     },
-                    match_metadata: { interface: interface.id },
                     cookie: cookie(interface),
                     actions: { output: Controller::OFPP_CONTROLLER })
       }
@@ -111,7 +110,7 @@ module Vnet::Openflow
                     table: TABLE_INTERFACE_EGRESS_FILTER,
                     priority: 1,
                     cookie: cookie,
-                    goto_table: TABLE_INTERFACE_CLASSIFIER)
+                    goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
       ]
     end
 
