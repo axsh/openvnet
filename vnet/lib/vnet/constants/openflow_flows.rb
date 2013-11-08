@@ -182,6 +182,14 @@ module Vnet
 
       TUNNEL_ROUTE_LINK = 0x1
 
+      #
+      # 802.1Q constants:
+      #
+
+      VLAN_TCI_VID_SHIFT = 12
+      VLAN_TCI_DEI = (0x1 << VLAN_TCI_VID_SHIFT)
+      VLAN_TCI_MASK_NO_PRIORITY = (0x0fff | VLAN_TCI_DEI)
+
     end
   end
 end
