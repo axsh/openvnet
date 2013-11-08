@@ -103,7 +103,7 @@ module Vnet::Openflow::Routers
                            actions: {
                              :tunnel_id => TUNNEL_ROUTE_LINK
                            },
-                           write_tunnel: nil)
+                           write_tunnel: true)
 
       flows_for_filtering_mac_address(flows, @mac_address)
     end
