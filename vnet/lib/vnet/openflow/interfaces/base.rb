@@ -98,7 +98,10 @@ module Vnet::Openflow::Interfaces
 
     def del_cookie(type = 0, value = 0, options = {})
       cookie_value = cookie(type, value)
-      cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK
+      cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
+      unless type == 0 && value == 0
+        cookie_mask |= COOKIE_TAG_MASK
+      end
 
       @dp_info.network_manager.async.update_interface(event: :remove_all,
                                                       interface_id: @id)
