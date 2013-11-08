@@ -107,52 +107,49 @@ describe "event_if" do
     end
   end
 
-  # 
-  # pending
-  #
-  #describe "interface" do
-  #  describe "release" do
-  #    before(:all) do
-  #      vm1.remove_interface("if-v1")
-  #    end
-  #
-  #    it_behaves_like "vm1(unreachable)"
-  #  end
-  #
-  #  describe "lease" do
-  #    before(:all) do
-  #      vm1.add_interface(
-  #        uuid: "if-v1",
-  #        mac_address: "02:00:00:00:00:01",
-  #        network_uuid: "nw-vnet1",
-  #        ipv4_address: "10.101.0.10"
-  #      )
-  #
-  #      sleep(3)
-  #
-  #      vm1.restart_network
-  #    end
-  #
-  #    describe "vm1(vnet1)" do
-  #      context "mac2mac" do
-  #        it "reachable to vm3(vnet1)" do
-  #          expect(vm1).to be_reachable_to(vm3)
-  #        end
-  #        it "not reachable to vm4(vnet2)" do
-  #          expect(vm1).not_to be_reachable_to(vm4)
-  #        end
-  #      end
-  #
-  #      context "tunnel" do
-  #        it "reachable to vm5(vnet1)" do
-  #          expect(vm1).to be_reachable_to(vm5)
-  #        end
-  #
-  #        it "not reachable to vm6(vnet2)" do
-  #          expect(vm1).not_to be_reachable_to(vm6)
-  #        end
-  #      end
-  #    end
-  #  end
-  #end
+  describe "interface" do
+    describe "release" do
+      before(:all) do
+        vm1.remove_interface("if-v1")
+      end
+  
+      it_behaves_like "vm1(unreachable)"
+    end
+  
+    describe "lease" do
+      before(:all) do
+        vm1.add_interface(
+          uuid: "if-v1",
+          mac_address: "02:00:00:00:00:01",
+          network_uuid: "nw-vnet1",
+          ipv4_address: "10.101.0.10"
+        )
+  
+        sleep(3)
+  
+        vm1.restart_network
+      end
+  
+      describe "vm1(vnet1)" do
+        context "mac2mac" do
+          it "reachable to vm3(vnet1)" do
+            expect(vm1).to be_reachable_to(vm3)
+          end
+          it "not reachable to vm4(vnet2)" do
+            expect(vm1).not_to be_reachable_to(vm4)
+          end
+        end
+  
+        context "tunnel" do
+          it "reachable to vm5(vnet1)" do
+            expect(vm1).to be_reachable_to(vm5)
+          end
+  
+          it "not reachable to vm6(vnet2)" do
+            expect(vm1).not_to be_reachable_to(vm6)
+          end
+        end
+      end
+    end
+  end
 end
