@@ -1,0 +1,2 @@
+#!/bin/bash
+VNSPEC_ENV=dev $(dirname ${BASH_SOURCE[0]})/vnspec $*

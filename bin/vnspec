@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+require 'bundler/setup'
+$LOAD_PATH << File.expand_path("../lib", File.dirname(__FILE__))
+require 'vnspec'
+
+invoker = Vnspec::Invoker.new
+args = ARGV
+args << "run" if args.empty?
+invoker.__send__(*args).tap do |success|
+  puts
+  if success
+    puts "result: success"
+  else
+    puts "result: failure"
+  end
+  exit 1 unless success
+end
