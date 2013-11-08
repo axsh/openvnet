@@ -70,9 +70,12 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
+      # TODO refactoring
       case
       when params[:id]   then {:id => params[:id]}
       when params[:uuid] then params[:uuid]
+      when params[:owner_datapath_id] && params[:port_name] then
+        {:owner_datapath_id => params[:owner_datapath_id], :port_name => params[:port_name]}
       when params[:port_name] then
         { :port_name => params[:port_name] }
       else
