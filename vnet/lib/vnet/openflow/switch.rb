@@ -97,7 +97,7 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_ROUTE_INGRESS, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
-      flows << Flow.create(TABLE_ROUTER_DST, 0, {}, nil,
+      flows << Flow.create(TABLE_ARP_TABLE, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_ARP_LOOKUP))
 
       flows << Flow.create(TABLE_VIRTUAL_DST,  30, {:eth_dst => MAC_BROADCAST}, nil,

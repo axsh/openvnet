@@ -4,97 +4,73 @@ require 'racket'
 
 module Vnet::Openflow::Routers
 
-  class RouteLink < Vnet::Openflow::PacketHandler
+  class RouteLink
+    include Celluloid::Logger
+    include Vnet::Openflow::FlowHelpers
+
+    attr_reader :id
+    attr_reader :uuid
+    attr_reader :mac_address
+    attr_reader :dp_mac_address
+
+    attr_reader :routes
 
     def initialize(params)
-      super(params[:dp_info])
-
       @dp_info = params[:dp_info]
 
-      @routes = {}
-      @route_link_id = params[:route_link_id]
-      @route_link_uuid = params[:route_link_uuid]
-      @mac_address = params[:mac_address]
+      map = params[:map]
 
-      @dpid = @dp_info.dpid
-      @dpid_s = @dp_info.dpid_s
+      @id = map.id
+      @uuid = map.uuid
+      @mac_address = Trema::Mac.new(map.mac_address)
+      @dp_mac_address = nil
+
+      @routes = {}
+      @datapaths_on_segment = {}
+    end
+
+    def cookie
+      @id | COOKIE_TYPE_ROUTE_LINK
     end
 
     def install
       debug log_format('install', "mac:#{@mac_address}")
-    end
 
-    def insert_route(route_info)
-      ipv4_s = "#{route_info[:ipv4_address].to_s}/#{route_info[:ipv4_prefix]}"
+      flows = []
 
-      debug log_format('insert route', "route:#{route_info[:uuid]}/#{route_info[:id]} ipv4:#{ipv4_s}")
+      flows_for_route_link(flows)
+      flows_for_dp_route_link(flows) if @dp_mac_address
 
-      if @routes.has_key? route_info[:id]
-        warn log_format('route already exists', "#{route_info[:uuid]}")
-        return nil
-      end
-
-      route = {
-        :route_id => route_info[:id],
-        :route_uuid => route_info[:uuid],
-        :network_id => route_info[:interface][:network_id],
-
-        :require_interface => route_info[:interface][:require_interface],
-        :active_datapath_id => route_info[:interface][:active_datapath_id],
-
-        :mac_address => route_info[:interface][:mac_address],
-        :ipv4_address => route_info[:ipv4_address],
-        :ipv4_prefix => route_info[:ipv4_prefix],
-
-        :ingress => route_info[:ingress],
-        :egress => route_info[:egress],
-
-        :route_link => self
+      @datapaths_on_segment.each { |datapath_id, dp_rl_info|
+        flows_for_datapath_on_segment(flows, dp_rl_info)
       }
 
-      cookie = route[:route_id] | COOKIE_TYPE_ROUTE
-
-      @routes[cookie] = route
-
-      create_destination_flow(route)
-      cookie
+      @dp_info.add_flows(flows)
     end
 
-    def packet_in(message)
-      ipv4_dst = message.ipv4_dst
-      ipv4_src = message.ipv4_src
-      port_number = message.match.in_port
+    # Handle MAC2MAC packets for this route link using a unique MAC
+    # address for this datapath, route link pair.
+    def set_dp_route_link(dp_rl_map)
+      @dp_mac_address = Trema::Mac.new(dp_rl_map.mac_address)
 
-      route = @routes[message.cookie]
+      # Install flows if activated.
+    end
 
-      debug log_format('packet_in',
-                       "port_number:#{port_number} ipv4_src:#{ipv4_src.to_s} ipv4_dst:#{ipv4_dst.to_s}")
+    # Use the datapath id in the metadata field and the route link
+    # MAC address in the destination field to figure out the MAC2MAC
+    # datapath, route link pair MAC address to use.
+    #
+    # If not found it is assumed to be using a tunnel where the
+    # route link MAC address is to be used.
+    def add_datapath_on_segment(dp_rl_map)
+      return if @datapaths_on_segment.has_key? dp_rl_map.datapath_id
 
-      return unreachable_ip(message, "no route found", :no_route) if route.nil?
+      @datapaths_on_segment[dp_rl_map.datapath_id] = {
+        :datapath_id => dp_rl_map.datapath_id,
+        :mac_address => Trema::Mac.new(dp_rl_map.mac_address),
+      }
 
-      if route[:require_interface] == true
-        filter_args = {
-          :ip_addresses__network_id => route[:network_id],
-          :ip_addresses__ipv4_address => ipv4_dst.to_i
-        }
-        ip_lease = MW::IpLease.batch.dataset.join_ip_addresses.where(filter_args).first.commit(:fill => [:interface, :ipv4_address])
-
-        if ip_lease.nil? || ip_lease.interface.nil?
-          return unreachable_ip(message, "no interface found", :no_interface)
-        end
-
-        if ip_lease.interface.active_datapath_id.nil?
-          return unreachable_ip(message, "no active datapath for interface found", :inactive_interface)
-        end
-
-        debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{ipv4_dst}" % message.cookie)
-
-        route_packets(message, ip_lease)
-        send_packet(message)
-
-      else
-        debug log_format('packet_in, no destination interface needed for route', "#{route[:uuid]}")
-      end
+      # Install flows if activated.
     end
 
     #
@@ -104,112 +80,62 @@ module Vnet::Openflow::Routers
     private
 
     def log_format(message, values)
-      "#{@dpid_s} router::router_link: #{message} (route_link:#{@route_link_uuid}/#{@route_link_id}#{values ? ' ' : ''}#{values})"
+      "#{@dp_info.dpid_s} routers/router_link: #{message} (route_link:#{@uuid}/#{@id}#{values ? ' ' : ''}#{values})"
     end
 
-    def create_destination_flow(route)
-      cookie = route[:route_id] | COOKIE_TYPE_ROUTE
+    def flows_for_route_link(flows)
+      flows << flow_create(:default,
+                           table: TABLE_TUNNEL_NETWORK_IDS,
+                           goto_table: TABLE_ROUTE_LINK_EGRESS,
+                           priority: 30,
+                           match: {
+                             :tunnel_id => TUNNEL_ROUTE_LINK,
+                             :eth_dst => @mac_address
+                           },
+                           write_route_link: @id)
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_ROUTE_LINK,
+                           goto_table: TABLE_OUTPUT_ROUTE_LINK_HACK,
+                           priority: 4,
+                           match: {
+                             :eth_dst => @mac_address
+                           },
+                           actions: {
+                             :tunnel_id => TUNNEL_ROUTE_LINK
+                           },
+                           write_tunnel: true)
 
-      if route[:require_interface] == true
-        catch_route_md = md_create(network: route[:network_id],
-                                   not_no_controller: nil)
-        actions = { :output => OFPP_CONTROLLER }
-        instructions = { :cookie => cookie }
-      else
-        catch_route_md = md_create(network: route[:network_id])
-        actions = nil
-        instructions = {
-          :goto_table => TABLE_ARP_LOOKUP,
-          :cookie => cookie
-        }
-      end
-
-      if is_ipv4_broadcast(route[:ipv4_address], route[:ipv4_prefix])
-        priority = 30
-      else
-        priority = 31
-      end
-
-      subnet_dst = match_ipv4_subnet_dst(route[:ipv4_address], route[:ipv4_prefix])
-
-      # flow = Flow.create(TABLE_ROUTER_DST, priority,
-      #                    catch_route_md.merge(subnet_dst).merge(:eth_src => route[:mac_address]),
-      #                    actions,
-      #                    instructions)
-
-      # @datapath.add_flow(flow)
+      flows_for_filtering_mac_address(flows, @mac_address)
     end
 
-    def match_packet(message)
-      # Verify metadata is a network type.
+    def flows_for_dp_route_link(flows)
+      flows << flow_create(:default,
+                           table: TABLE_HOST_PORTS,
+                           goto_table: TABLE_ROUTE_LINK_EGRESS,
+                           priority: 30,
+                           match: {
+                             :eth_dst => @dp_mac_address
+                           },
+                           write_route_link: @id)
 
-      match = md_create(:network => message.match.metadata & METADATA_VALUE_MASK)
-      match.merge!({ :eth_type => 0x0800,
-                     # :eth_src => message.eth_src,
-                     :ipv4_dst => message.ipv4_dst
-                   })
+      flows_for_filtering_mac_address(flows, @dp_mac_address)
     end
 
-    # Create a flow that matches all packets to the same destination
-    # ip address. The output datapath route link table will figure out
-    # for us if the output port should be a MAC2MAC or tunnel port.
-    def route_packets(message, ip_lease)
-      actions_md = md_create({ :datapath => ip_lease.interface.active_datapath_id,
-                               :reflection => nil
-                             })
+    def flows_for_datapath_on_segment(flows, dp_rl_info)
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_ROUTE_LINK,
+                           goto_table: TABLE_OUTPUT_ROUTE_LINK_HACK,
+                           priority: 5,
+                           match: {
+                             :eth_dst => @mac_address
+                           },
+                           match_datapath: dp_rl_info[:datapath_id],
+                           actions: {
+                             :eth_dst => dp_rl_info[:mac_address]
+                           },
+                           write_mac2mac: true)
 
-      flow = Flow.create(TABLE_ROUTER_DST, 35,
-                         match_packet(message), {
-                           :eth_dst => @mac_address
-                         },
-                         actions_md.merge({ :goto_table => TABLE_OUTPUT_ROUTE_LINK,
-                                            :cookie => message.cookie,
-                                            :idle_timeout => 60 * 60
-                                          }))
-
-      @datapath.add_flow(flow)
-    end
-
-    def suppress_packets(message, reason)
-      # These should set us as listeners to events for the interface
-      # becoming active or IP address being leased.
-      case reason
-      when :no_route     then hard_timeout = 30
-      when :no_interface       then hard_timeout = 30
-      when :inactive_interface then hard_timeout = 10
-      end
-
-      flow = Flow.create(TABLE_ROUTER_DST, 35,
-                         match_packet(message),
-                         nil, {
-                           :cookie => message.cookie,
-                           :hard_timeout => hard_timeout
-                         })
-
-      @datapath.add_flow(flow)
-    end
-
-    def send_packet(message)
-      # We're modifying the in_port field, so duplicate the message to
-      # avoid race conditions with the flow add message.
-      message = message.dup
-
-      # Set the in_port to OFPP_CONTROLLER since the packets stored
-      # have already been processed by TABLE_CLASSIFIER to
-      # TABLE_ROUTER_DST, and as such no longer match the fields
-      # required by the old in_port.
-      #
-      # The route link is identified by eth_dst, which was set in
-      # TABLE_ROUTE_LINK_EGRESS prior to be sent to the controller.
-      message.match.in_port = OFPP_CONTROLLER
-
-      @datapath.send_packet_out(message, OFPP_TABLE)
-    end
-
-    def unreachable_ip(message, error_msg, suppress_reason)
-      debug log_format("packet_in, error '#{error_msg}'", "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
-      suppress_packets(message, suppress_reason)
-      nil
+      flows_for_filtering_mac_address(flows, dp_rl_info[:mac_address])
     end
 
   end

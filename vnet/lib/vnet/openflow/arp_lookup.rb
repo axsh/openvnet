@@ -17,22 +17,27 @@ module Vnet::Openflow
     end
 
     def arp_lookup_base_flows(flows)
-      flows << flow_create(:catch_interface_simulated,
+      flows << flow_create(:controller,
+                           table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
                            match: {
                              :eth_type => 0x0806,
                              :arp_op => 2,
                            },
-                           interface_id: @arp_lookup[:interface_id],
+                           match_interface: @arp_lookup[:interface_id],
                            cookie: @arp_lookup[:reply_cookie])
     end
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
-      flows << flow_create(:catch_arp_lookup,
+      flows << flow_create(:controller,
+                           table: TABLE_ARP_LOOKUP,
+                           priority: 20,
                            match: {
                              :eth_src => mac_info[:mac_address],
                              :eth_type => 0x0800
                            },
-                           network_id: ipv4_info[:network_id],
+                           match_network: ipv4_info[:network_id],
+                           match_not_no_controller: true,
                            cookie: @arp_lookup[:lookup_cookie])
     end
 
@@ -179,11 +184,11 @@ module Vnet::Openflow
                                                                                                        { :mac_lease => :mac_address }])
 
       if ip_lease.nil? || ip_lease.interface.nil?
-        return unreachable_ip(message, "no interface found", :no_interface)
+        return unreachable_ip(messages, "no interface found", :no_interface)
       end
 
       if ip_lease.interface.active_datapath_id.nil?
-        return unreachable_ip(message, "no active datapath for interface found", :inactive_interface)
+        return unreachable_ip(messages, "no active datapath for interface found", :inactive_interface)
       end
 
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
@@ -235,8 +240,22 @@ module Vnet::Openflow
     # Refactor...
     #
 
-    def unreachable_ip(message, error_msg, suppress_reason)
-      debug log_format("packet_in, error '#{error_msg}'", "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
+    def match_packet(message)
+      # Verify metadata is a network type.
+
+      match = md_create(:network => message.match.metadata & METADATA_VALUE_MASK)
+      match.merge!({ :eth_type => 0x0800,
+                     :ipv4_dst => message.ipv4_dst
+                   })
+    end
+
+    def unreachable_ip(messages, error_msg, suppress_reason)
+      message = messages.last[:message]
+      return if message.nil?
+
+      debug log_format("packet_in, error '#{error_msg}'",
+                       "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
+
       suppress_packets(message, suppress_reason)
       nil
     end
@@ -257,7 +276,7 @@ module Vnet::Openflow
                            :hard_timeout => hard_timeout
                          })
 
-      @datapath.add_flow(flow)
+      @dp_info.add_flow(flow)
     end
 
   end

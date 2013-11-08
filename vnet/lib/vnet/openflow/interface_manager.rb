@@ -34,6 +34,8 @@ module Vnet::Openflow
         item.del_security_groups
       when :enable_router_ingress
         item.enable_router_ingress
+      when :enable_router_egress
+        item.enable_router_egress
       end
 
       item_to_hash(item)
@@ -71,9 +73,12 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
+      # TODO refactoring
       case
       when params[:id]   then {:id => params[:id]}
       when params[:uuid] then params[:uuid]
+      when params[:owner_datapath_id] && params[:port_name] then
+        {:owner_datapath_id => params[:owner_datapath_id], :port_name => params[:port_name]}
       when params[:port_name] then
         { :port_name => params[:port_name] }
       else
@@ -129,6 +134,11 @@ module Vnet::Openflow
 
       item.install
 
+      if item.owner_datapath_ids &&
+          item.owner_datapath_ids.include?(@datapath_info.id)
+        item.update_active_datapath(datapath_id: @datapath_info.id)
+      end
+
       load_addresses(item, item_map)
 
       item # Return nil if interface has been uninstalled.
@@ -139,7 +149,7 @@ module Vnet::Openflow
 
       item.uninstall
 
-      if item.port_number
+      if item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
         item.update_active_datapath(datapath_id: nil)
       end
 
