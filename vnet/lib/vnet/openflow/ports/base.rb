@@ -25,6 +25,7 @@ module Vnet::Openflow::Ports
     def port_number
       @port_info.port_no
     end
+    alias_method :id, :port_number
 
     def port_name
       @port_info.name

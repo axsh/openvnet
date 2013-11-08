@@ -38,5 +38,11 @@ module Vnet
     # tunnel event
     #
     INITIALIZED_TUNNEL = "initialized_tunnel"
+
+    #
+    # port event
+    #
+    INITIALIZED_PORT = "initialized_port"
+    FINALIZED_PORT = "finalized_port"
   end
 end

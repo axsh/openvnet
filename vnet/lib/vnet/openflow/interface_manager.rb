@@ -7,7 +7,7 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event ADDED_INTERFACE, :item
+    subscribe_event ADDED_INTERFACE, :create_item
     subscribe_event REMOVED_INTERFACE, :delete_item
     subscribe_event INITIALIZED_INTERFACE, :install_item
     subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
@@ -124,12 +124,25 @@ module Vnet::Openflow
     # Create / Delete interfaces:
     #
 
+    def create_item(params)
+      return if @items[params[:id]]
+
+      item = self.item(params)
+      return unless item
+
+      debug log_format("create #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+
+      @dp_info.port_manager.attach_interface(port_name: item.uuid)
+
+      item
+    end
+
     def install_item(params)
       item_map = params[:item_map]
       item = @items[item_map.id]
       return nil if item.nil?
 
-      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
+      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
 
       item.install
 
@@ -138,13 +151,15 @@ module Vnet::Openflow
       item # Return nil if interface has been uninstalled.
     end
 
-    def delete_item(item)
-      @items.delete(item.id)
+    def delete_item(params)
+      item = @items.delete(params[:id])
+
+      debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.mode}")
 
       item.uninstall
 
       if item.port_number
-        item.update_active_datapath(datapath_id: nil)
+        @dp_info.port_manager.detach_interface(port_number: item.port_number)
       end
 
       item
