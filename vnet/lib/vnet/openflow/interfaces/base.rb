@@ -47,6 +47,9 @@ module Vnet::Openflow::Interfaces
 
       @mac_addresses = {}
 
+      @router_ingress = false
+      @router_egress = false
+
       # The 'owner_datapath_ids' set has two possible states; the set
       # can contain zero or more datapaths that can activate this
       # interface, or if nil it can either be activated by any
@@ -155,6 +158,27 @@ module Vnet::Openflow::Interfaces
     end
 
     def disable_router_ingress
+      # Not supported atm.
+    end
+
+    def enable_router_egress
+      return if @router_egress != false
+      @router_egress = true
+
+      flows = []
+
+      @mac_addresses.each { |mac_lease_id, mac_info|
+        flows_for_router_egress_mac(flows, mac_info)
+
+        mac_info[:ipv4_addresses].each { |ipv4_info|
+          flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
+        }
+      }
+
+      @dp_info.add_flows(flows)
+    end
+
+    def disable_router_egress
       # Not supported atm.
     end
 
@@ -326,19 +350,6 @@ module Vnet::Openflow::Interfaces
     # those flows will never be touched.
 
     def flows_for_interface_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
-
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_CLASSIFIER,
-                           priority: 20,
-                           match: {
-                             :eth_src => mac_info[:mac_address]
-                           },
-                           match_metadata: {
-                             :interface => @id
-                           },
-                           cookie: cookie,
-                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES)
     end
 
     def flows_for_interface_ipv4(flows, mac_info, ipv4_info)
@@ -375,37 +386,6 @@ module Vnet::Openflow::Interfaces
                            interface_id: @id,
                            write_network_id: ipv4_info[:network_id],
                            cookie: cookie)
-
-      #
-      # Not needed unless egress routing is used:
-      #
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_EGRESS_MAC,
-                           priority: 20,
-                           match: {
-                             :eth_src => mac_info[:mac_address]
-                           },
-                           match_metadata: {
-                             :network => ipv4_info[:network_id]
-                           },
-                           cookie: cookie,
-                           goto_table: TABLE_ROUTER_DST)
-
-      # TODO: Currently only one mac address / network is supported.
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS,
-                           priority: 20,
-                           actions: {
-                             :eth_src => mac_info[:mac_address]
-                           },
-                           match_metadata: {
-                             :interface => @id
-                           },
-                           write_metadata: {
-                             :network => ipv4_info[:network_id]
-                           },
-                           cookie: cookie,
-                           goto_table: TABLE_ROUTER_DST)
     end
 
     def flows_for_router_ingress_mac(flows, mac_info)
@@ -431,6 +411,49 @@ module Vnet::Openflow::Interfaces
                            network_id: ipv4_info[:network_id],
                            ingress_interface_id: nil,
                            cookie: cookie)
+    end
+
+    def flows_for_router_egress_mac(flows, mac_info)
+      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_CLASSIFIER,
+                           priority: 20,
+                           match: {
+                             :eth_src => mac_info[:mac_address]
+                           },
+                           match_interface: @id,
+                           cookie: cookie,
+                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES)
+    end
+
+    def flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
+      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+
+      #
+      # Not needed unless egress routing is used:
+      #
+
+      # TODO: Currently only one mac address / network is supported.
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_EGRESS_MAC,
+                           priority: 20,
+                           match: {
+                             :eth_src => mac_info[:mac_address]
+                           },
+                           match_network: ipv4_info[:network_id],
+                           cookie: cookie,
+                           goto_table: TABLE_ARP_TABLE)
+      flows << flow_create(:default,
+                           table: TABLE_ROUTE_EGRESS,
+                           priority: 20,
+                           actions: {
+                             :eth_src => mac_info[:mac_address]
+                           },
+                           match_interface: @id,
+                           write_network: ipv4_info[:network_id],
+                           cookie: cookie,
+                           goto_table: TABLE_ARP_TABLE)
     end
 
   end

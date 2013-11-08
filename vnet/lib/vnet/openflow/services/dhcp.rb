@@ -9,14 +9,17 @@ module Vnet::Openflow::Services
 
     def install
       flows = []
-      flows << flow_create(:catch_interface_simulated,
+      flows << flow_create(:controller,
+                           table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
+
                            match: {
                              :eth_type => 0x0800,
                              :ip_proto => 0x11,
                              :udp_dst => 67,
                              :udp_src => 68
                            },
-                           interface_id: @interface_id,
+                           match_interface: @interface_id,
                            cookie: self.cookie)
 
       # This should handled by events.
@@ -26,7 +29,10 @@ module Vnet::Openflow::Services
 
       interface.mac_addresses.each { |mac_lease_id, mac_info|
         mac_info[:ipv4_addresses].each { |ipv4_info|
-          flows << flow_create(:catch_flood_simulated,
+          flows << flow_create(:default,
+                               table: TABLE_FLOOD_SIMULATED,
+                               goto_table: TABLE_OUTPUT_INTERFACE,
+                               priority: 30,
                                match: {
                                  :eth_type => 0x0800,
                                  :ip_proto => 0x11,
@@ -35,9 +41,8 @@ module Vnet::Openflow::Services
                                  :udp_dst => 67,
                                  :udp_src => 68
                                },
-                               network_id: ipv4_info[:network_id],
-                               interface_id: interface.id,
-                               cookie: self.cookie)
+                               match_network: ipv4_info[:network_id],
+                               write_interface: interface.id)
         }
       }
 

@@ -143,7 +143,10 @@ Sequel.migration do
       Integer :route_link_id, :index => true, :null => false
 
       String :route_type, :default => 'gateway', :null => false
-      Bignum :ipv4_network, :null => false
+
+      # Change network id to segment id once supported.
+      Integer :network_id, :null => false
+      Bignum  :ipv4_network, :null => false
       Integer :ipv4_prefix, :default => 24, :null => false
 
       Boolean :ingress, :default => true, :null => false

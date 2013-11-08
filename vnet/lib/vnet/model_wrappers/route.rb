@@ -6,9 +6,11 @@ module Vnet::ModelWrappers
 
     def to_hash
       interface = self.batch.interface.commit
+      network = self.batch.network.commit
       {
         :uuid => self.uuid,
         :route_link_uuid => self.batch.route_link.commit.uuid,
+        :network_uuid => network && network.uuid,
         :interface_uuid => interface && interface.uuid,
         :route_type => self.route_type,
         :ipv4_network => self.ipv4_network,

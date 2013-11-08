@@ -225,7 +225,7 @@ module Vnet::Openflow
       flows << flow_create(:default,
                            table: TABLE_FLOOD_TUNNELS,
                            priority: 1,
-                           match_metadata: { :network => network_id },
+                           match_network: network_id,
                            actions: actions,
                            cookie: cookie)
 

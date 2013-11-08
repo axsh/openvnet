@@ -33,6 +33,8 @@ module Vnet::Openflow
         item.update_active_datapath(datapath_id: nil)
       when :enable_router_ingress
         item.enable_router_ingress
+      when :enable_router_egress
+        item.enable_router_egress
       end
 
       item_to_hash(item)
@@ -131,6 +133,11 @@ module Vnet::Openflow
 
       item.install
 
+      if item.owner_datapath_ids &&
+          item.owner_datapath_ids.include?(@datapath_info.id)
+        item.update_active_datapath(datapath_id: @datapath_info.id)
+      end
+
       load_addresses(item, item_map)
 
       item # Return nil if interface has been uninstalled.
@@ -141,7 +148,7 @@ module Vnet::Openflow
 
       item.uninstall
 
-      if item.port_number
+      if item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
         item.update_active_datapath(datapath_id: nil)
       end
 
