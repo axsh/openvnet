@@ -116,10 +116,6 @@ network_services:
     interface_uuid: if-routerp2v
     display_name: router
 
-  - uuid: ns-arpp2v
-    interface_uuid: if-routerp2v
-    display_name: arp_lookup
-
 datapath_networks:
 
   - datapath_uuid: dp-1
