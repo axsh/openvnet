@@ -5,6 +5,7 @@ module Vnet::Models
     taggable 'r'
 
     many_to_one :interface
+    many_to_one :network
     many_to_one :route_link
 
     subset(:alives, {})

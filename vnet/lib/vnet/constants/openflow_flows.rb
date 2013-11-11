@@ -55,7 +55,7 @@ module Vnet
       TABLE_ROUTE_LINK_INGRESS = 34
       TABLE_ROUTE_LINK_EGRESS  = 35
       TABLE_ROUTE_EGRESS       = 36
-      TABLE_ROUTER_DST         = 37
+      TABLE_ARP_TABLE          = 37
       TABLE_ARP_LOOKUP         = 38
 
       TABLE_NETWORK_DST_CLASSIFIER = 40
@@ -181,6 +181,14 @@ module Vnet
       TUNNEL_NETWORK_MASK = 0x7fffffff
 
       TUNNEL_ROUTE_LINK = 0x1
+
+      #
+      # 802.1Q constants:
+      #
+
+      VLAN_TCI_VID_SHIFT = 12
+      VLAN_TCI_DEI = (0x1 << VLAN_TCI_VID_SHIFT)
+      VLAN_TCI_MASK_NO_PRIORITY = (0x0fff | VLAN_TCI_DEI)
 
     end
   end

@@ -18,22 +18,19 @@ module Vnet::Openflow::Ports
 
     def install
       flows = []
-      flows << flow_create(:classifier,
+      flows << flow_create(:default,
+                           table: TABLE_CLASSIFIER,
                            priority: 2,
                            match: {
                              :in_port => self.port_number,
                            },
-                           write_metadata: {
-                             :interface => @interface_id,
-                             :local => nil,
-                           },
+                           write_interface: @interface_id,
+                           write_local: true,
                            goto_table: TABLE_INTERFACE_CLASSIFIER)
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_VIF,
                            priority: 30,
-                           match_metadata: {
-                             :interface => @interface_id
-                           },
+                           match_interface: @interface_id,
                            actions: {
                              :output => self.port_number
                            })

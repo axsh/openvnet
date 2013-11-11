@@ -67,37 +67,10 @@ module Vnet::Openflow::Datapaths
 
       @active_networks[dpn_map.network_id] = active_network
 
-      cookie = active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
-
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           priority: 90,
-                           match: {
-                             :eth_src => active_network[:broadcast_mac_address]
-                           },
-                           cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           priority: 90,
-                           match: {
-                             :eth_dst => active_network[:broadcast_mac_address]
-                           },
-                           cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_DST_CLASSIFIER,
-                           priority: 90,
-                           match: {
-                             :eth_src => active_network[:broadcast_mac_address]
-                           },
-                           cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_DST_CLASSIFIER,
-                           priority: 90,
-                           match: {
-                             :eth_dst => active_network[:broadcast_mac_address]
-                           },
-                           cookie: cookie)
+      flows_for_filtering_mac_address(flows,
+                                      active_network[:broadcast_mac_address],
+                                      active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
 
       @dp_info.add_flows(flows)
     end

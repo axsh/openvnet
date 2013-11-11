@@ -9,14 +9,17 @@ module Vnet::Openflow::Services
 
     def install
       flows = []
-      flows << flow_create(:catch_interface_simulated,
+      flows << flow_create(:controller,
+                           table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
+
                            match: {
                              :eth_type => 0x0800,
                              :ip_proto => 0x11,
                              :udp_dst => 67,
                              :udp_src => 68
                            },
-                           interface_id: @interface_id,
+                           match_interface: @interface_id,
                            cookie: self.cookie)
 
       @dp_info.add_flows(flows)

@@ -34,6 +34,8 @@ module Vnet::Openflow
         item.update_active_datapath(datapath_id: nil)
       when :enable_router_ingress
         item.enable_router_ingress
+      when :enable_router_egress
+        item.enable_router_egress
       when :add_service
         item.add_service(params[:service])
       when :remove_service
@@ -75,9 +77,12 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
+      # TODO refactoring
       case
       when params[:id]   then {:id => params[:id]}
       when params[:uuid] then params[:uuid]
+      when params[:owner_datapath_id] && params[:port_name] then
+        {:owner_datapath_id => params[:owner_datapath_id], :port_name => params[:port_name]}
       when params[:port_name] then
         { :port_name => params[:port_name] }
       else
@@ -146,6 +151,11 @@ module Vnet::Openflow
 
       item.install
 
+      if item.owner_datapath_ids &&
+          item.owner_datapath_ids.include?(@datapath_info.id)
+        item.update_active_datapath(datapath_id: @datapath_info.id)
+      end
+
       load_addresses(item_map)
 
       item # Return nil if interface has been uninstalled.
@@ -157,6 +167,10 @@ module Vnet::Openflow
       debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.mode}")
 
       item.uninstall
+
+      #if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
+      #  item.update_active_datapath(datapath_id: nil)
+      #end
 
       if item.port_number
         @dp_info.port_manager.detach_interface(port_number: item.port_number)

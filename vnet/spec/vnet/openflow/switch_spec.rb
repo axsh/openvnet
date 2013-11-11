@@ -37,7 +37,8 @@ describe Vnet::Openflow::Switch do
 
         port = double(:port)
         port_info = double(:port_info)
-        port.should_receive(:port_number).exactly(2).times.and_return(5)
+        port.should_receive(:port_number).exactly(1).times.and_return(5)
+        port.should_receive(:id).exactly(1).times.and_return(5)
 
         Vnet::Openflow::Ports::Base.stub(:new).and_return(port)
 

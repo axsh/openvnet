@@ -24,6 +24,7 @@ module Vnet::Openflow::Interfaces
       flows = []
       flows_for_interface_mac(flows, mac_info)
       flows_for_router_ingress_mac(flows, mac_info) if @router_ingress == true
+      flows_for_router_egress_mac(flows, mac_info) if @router_egress == true
 
       @dp_info.add_flows(flows)
     end
@@ -36,6 +37,7 @@ module Vnet::Openflow::Interfaces
       flows_for_ipv4(flows, mac_info, ipv4_info)
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
       flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
+      flows_for_router_egress_ipv4(flows, mac_info, ipv4_info) if @router_egress == true
 
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
 
@@ -133,20 +135,24 @@ module Vnet::Openflow::Interfaces
     end
 
     def flows_for_base(flows)
-      flows << flow_create(:catch_interface_simulated,
+      flows << flow_create(:controller,
+                           table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
                            match: {
                              :eth_type => 0x0806,
                              :arp_op => 1,
                            },
-                           interface_id: @id,
+                           match_interface: @id,
                            cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
-      flows << flow_create(:catch_interface_simulated,
+      flows << flow_create(:controller,
+                           table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
                            match: {
                              :eth_type => 0x0800,
                              :ip_proto => 0x01,
                              :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
                            },
-                           interface_id: @id,
+                           match_interface: @id,
                            cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
     end
 
@@ -170,44 +176,42 @@ module Vnet::Openflow::Interfaces
       # IPv4:
       #
 
-      flows << flow_create(:network_dst,
+      flows << flow_create(:default,
+                           table_network_dst: ipv4_info[:network_type],
                            priority: 80,
                            match: {
                              :eth_type => 0x0800,
                              :eth_dst => mac_info[:mac_address],
                              :ipv4_dst => ipv4_info[:ipv4_address]
                            },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
-                           write_metadata: {
-                             :interface => @id
-                           },
+                           match_network: ipv4_info[:network_id],
+                           write_interface: @id,
                            cookie: cookie,
                            goto_table: TABLE_OUTPUT_INTERFACE)
-      flows << flow_create(:network_dst,
+      flows << flow_create(:default,
+                           table_network_dst: ipv4_info[:network_type],
                            priority: 80,
                            match: {
                              :eth_type => 0x0806,
                              :eth_dst => mac_info[:mac_address],
                              :arp_tpa => ipv4_info[:ipv4_address]
                            },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
-                           write_metadata: {
-                             :interface => @id
-                           },
+                           match_network: ipv4_info[:network_id],
+                           write_interface: @id,
                            cookie: cookie,
                            goto_table: TABLE_OUTPUT_INTERFACE)
-      flows << flow_create(:catch_flood_simulated,
+      flows << flow_create(:default,
+                           table: TABLE_FLOOD_SIMULATED,
+                           goto_table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
                            match: {
                              :eth_type => 0x0806,
                              :arp_op => 1,
                              :arp_tha => MAC_ZERO,
                              :arp_tpa => ipv4_info[:ipv4_address],
                            },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
-                           interface_id: @id,
+                           match_network: ipv4_info[:network_id],
+                           write_interface: @id,
                            cookie: cookie)
     end
 
