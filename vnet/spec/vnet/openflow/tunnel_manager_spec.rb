@@ -5,13 +5,15 @@ require 'trema'
 include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::TunnelManager do
+  include_context :ofc_double
+
   describe "create_all_tunnels" do
     before(:each) do
       (1..3).each { |i| Fabricate("datapath_#{i}") }
     end
 
     let(:datapath) {
-      MockDatapath.new(double, ("a" * 16).to_i(16)).tap { |dp|
+      MockDatapath.new(ofc, ("a" * 16).to_i(16)).tap { |dp|
         dp.create_mock_datapath_map
       }
     }
@@ -56,7 +58,7 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     let(:datapath) do
-      MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |datapath|
+      MockDatapath.new(ofc, ("a" * 16).to_i(16)).tap do |datapath|
         datapath.create_mock_datapath_map
 
         # datapath.switch = double(:cookie_manager => Vnet::Openflow::CookieManager.new)
@@ -230,7 +232,7 @@ describe Vnet::Openflow::TunnelManager do
 
     let(:ofctl) { double(:ofctl) }
     let(:datapath) {
-      MockDatapath.new(double, ("a" * 16).to_i(16), ofctl).tap { |dp|
+      MockDatapath.new(ofc, ("a" * 16).to_i(16), ofctl).tap { |dp|
         dp.create_mock_datapath_map
       }
     }

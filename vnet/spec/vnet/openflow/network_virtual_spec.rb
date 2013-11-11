@@ -13,9 +13,10 @@ describe Vnet::Openflow::Networks::Virtual do
   end
 
   describe "install vnet_1 without broadcast_mac_address" do
+    include_context :ofc_double
 
     let(:vnet_map) { Vnet::ModelWrappers::Network['nw-aaaaaaaa'] }
-    let(:datapath) { MockDatapath.new(double(:ofc), ("a" * 16).to_i) }
+    let(:datapath) { MockDatapath.new(ofc, ("a" * 16).to_i) }
     let(:flow_options) { {:cookie => vnet_map.id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)} }
     let(:network_md) { subject.md_create(:network => vnet_map.id) }
     let(:fo_network_md) { flow_options.merge(network_md) }

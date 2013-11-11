@@ -3,10 +3,11 @@ require 'spec_helper'
 require 'trema'
 
 describe Vnet::Openflow::PortManager do
+  include_context :ofc_double
+
   describe "insert" do
     context "tunnel" do
       it "should create a port object whose datapath_id is 1" do
-        ofc = double(:ofc)
         dp = MockDatapath.new(ofc, 1)
         Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
 
@@ -52,7 +53,6 @@ describe Vnet::Openflow::PortManager do
         nm.should_receive(:set_datapath_info)
         Vnet::Openflow::NetworkManager.stub(:new).and_return(nm)
 
-        ofc = double(:ofc)
         dp = MockDatapath.new(ofc, 1)
         dp.create_mock_port_manager
 
@@ -97,7 +97,6 @@ describe Vnet::Openflow::PortManager do
         nm.should_receive(:set_datapath_info)
         Vnet::Openflow::NetworkManager.stub(:new).and_return(nm)
 
-        ofc = double(:ofc)
         dp = MockDatapath.new(ofc, 1)
         dp.create_mock_port_manager
 

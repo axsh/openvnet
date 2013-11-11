@@ -4,6 +4,8 @@ require 'trema'
 
 describe Vnet::Openflow::NetworkManager do
 
+  include_context :ofc_double
+
   before do
     Fabricate(:vnet_1)
     Fabricate(:vnet_2)
@@ -20,7 +22,7 @@ describe Vnet::Openflow::NetworkManager do
 
   describe "network_by_id" do
     let(:datapath) do
-      MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |dp|
+      MockDatapath.new(ofc, ("a" * 16).to_i(16)).tap do |dp|
         dp.create_datapath_map
 
         actor = double(:actor)
@@ -47,7 +49,7 @@ describe Vnet::Openflow::NetworkManager do
 
   describe "remove" do
     let(:datapath) do
-      MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |dp|
+      MockDatapath.new(ofc, ("a" * 16).to_i(16)).tap do |dp|
         dp.create_datapath_map
 
         actor = double(:actor)
@@ -83,7 +85,7 @@ describe Vnet::Openflow::NetworkManager do
 
   describe "network_by_uuid_direct" do
     let(:datapath) do
-      MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |dp|
+      MockDatapath.new(ofc, ("a" * 16).to_i(16)).tap do |dp|
         dp.create_datapath_map
 
         actor = double(:actor)
@@ -101,7 +103,7 @@ describe Vnet::Openflow::NetworkManager do
         #dp.dp_info.should_receive(:route_manager).twice.and_return(route_manager)
       end
     end
-    
+
     subject do
       network_manager.item(uuid: 'nw-aaaaaaaa')
       network_manager.item(uuid: 'nw-bbbbbbbb')

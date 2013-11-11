@@ -80,7 +80,7 @@ module Vnet::Openflow
       end
 
       @datapath_info = datapath_info
-      
+
       # We need to update remote interfaces in case they are now in
       # our datapath.
     end
