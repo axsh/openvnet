@@ -46,6 +46,8 @@ module Vnet::Openflow
       debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
 
       mac_address = interface.mac_addresses.first
+      debug log_format("mac_address", mac_address)
+      debug log_format("interface.inspect", interface.inspect)
       ipv4_address = mac_address[1][:ipv4_addresses].first
 
       item = service_initialize(item_map.display_name.to_sym,

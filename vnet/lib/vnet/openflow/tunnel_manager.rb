@@ -46,14 +46,28 @@ module Vnet::Openflow
       MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
         item = item_by_params(dst_id: target_dp_map.id,
                               dst_dp_map: target_dp_map)
+        
+        tp = find_tunneling_protocol(@datapath_info.datapath_map.dc_segment_id, target_dp_map.dc_segment_id)
+        
+        protocol = case tp
+                   when nil then 'gre'
+                   else 
+                     tp[:protocol]
+                   end
+        
+        if protocol != 'gre' && protocol != 'vxlan'
+          error log_format("unknown tunneling protocol", protocol)
+          return nil
+        end
 
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
         tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
                                        dst_datapath_id: target_dp_map.id,
                                        display_name: tunnel_name)
-        
+
         create_item(tunnel_map,
-                    dst_dp_map: target_dp_map)
+                    dst_dp_map: target_dp_map,
+                    protocol: protocol)
       }
     end
 
@@ -177,7 +191,8 @@ module Vnet::Openflow
       item = item_initialize(dp_info: @dp_info,
                              manager: self,
                              map: item_map,
-                             dst_dp_map: params[:dst_dp_map])
+                             dst_dp_map: params[:dst_dp_map],
+                             protocol: params[:protocol])
       return nil if item.nil?
 
       @items[item_map.id] = item
@@ -250,6 +265,12 @@ module Vnet::Openflow
         debug log_format("datapath networs is not empty for #{item.display_name}")
         false
       end
+    end
+
+    def find_tunneling_protocol(dcseg1, dcseg2)
+      tp1 = MW::TunnelingProtocol.batch.find({:src_dc_segment_id => dcseg1, :dst_dc_segment_id => dcseg2}).commit
+      tp2 = MW::TunnelingProtocol.batch.find({:src_dc_segment_id => dcseg2, :dst_dc_segment_id => dcseg1}).commit
+      tp1 || tp2
     end
 
   end

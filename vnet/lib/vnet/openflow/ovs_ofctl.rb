@@ -107,10 +107,10 @@ module Vnet::Openflow
       system("#{@ovs_ofctl_10} mod-port #{switch_name} #{port_no} #{arg}")
     end
 
-    def add_tunnel(tunnel_name, remote_ip)
+    def add_tunnel(tunnel_name, remote_ip, protocol)
       debug log_format('create tunnel', "#{tunnel_name}")
 
-      system("#{@ovs_vsctl} --may-exist add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=gre options:remote_ip=#{remote_ip} options:in_key=flow options:out_key=flow")
+      system("#{@ovs_vsctl} --may-exist add-port #{switch_name} #{tunnel_name} -- set interface #{tunnel_name} type=#{protocol} options:remote_ip=#{remote_ip} options:in_key=flow options:out_key=flow")
     end
 
     def delete_tunnel(tunnel_name)
