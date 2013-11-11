@@ -168,9 +168,9 @@ module Vnet::Openflow
 
       item.uninstall
 
-      #if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
-      #  item.update_active_datapath(datapath_id: nil)
-      #end
+      if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
+        item.update_active_datapath(datapath_id: nil)
+      end
 
       if item.port_number
         @dp_info.port_manager.detach_interface(port_number: item.port_number)
