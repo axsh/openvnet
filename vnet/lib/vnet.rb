@@ -57,6 +57,7 @@ module Vnet
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :TunnelingProtocol, 'vnet/endpoints/1.0/responses/tunneling_protocol'
         autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
@@ -73,6 +74,7 @@ module Vnet
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :TunnelingProtocolCollection, 'vnet/endpoints/1.0/responses/tunneling_protocol'
         autoload :VlanTranslationCollection, 'vnet/endpoints/1.0/responses/vlan_translation'
       end
     end
@@ -101,6 +103,7 @@ module Vnet
     autoload :RouteLink, 'vnet/models/route_link'
     autoload :SecurityGroup, 'vnet/models/security_group'
     autoload :Taggable, 'vnet/models/base'
+    autoload :TunnelingProtocol, 'vnet/models/tunneling_protocol'
     autoload :Tunnel, 'vnet/models/tunnel'
     autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
@@ -123,6 +126,7 @@ module Vnet
     autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
+    autoload :TunnelingProtocol, 'vnet/model_wrappers/tunneling_protocol'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
     autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
@@ -146,6 +150,7 @@ module Vnet
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :SecurityGroup, 'vnet/node_api/models.rb'
+    autoload :TunnelingProtocol, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
     autoload :VlanTranslation, 'vnet/node_api/models.rb'
   end

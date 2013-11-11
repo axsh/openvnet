@@ -173,6 +173,18 @@ Sequel.migration do
       String :description
     end
 
+    create_table(:tunneling_protocols) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :src_dc_segment_id, :index => true, :null => false
+      Integer :dst_dc_segment_id, :index => true, :null => false
+      String :protocol, :index => true, :null => false
+      DateTime :created_at, :null => false
+      DateTime :updated_at, :null => false
+
+      index [:src_dc_segment_id, :dst_dc_segment_id]
+    end
+
     create_table(:tunnels) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -209,6 +221,7 @@ Sequel.migration do
                :routes,
                :route_links,
                :security_groups,
+               :tunneling_protocols,
                :tunnels,
                :vlan_translations
                )
