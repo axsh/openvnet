@@ -79,7 +79,7 @@ describe Vnet::Openflow::NetworkManager do
     it "has no flow after delete the last network on itself" do
       network = network_manager.item(uuid: 'nw-aaaaaaaa')
       network_manager.unload(id: network[:id])
-      expect(datapath.added_flows).to eq []
+      expect(datapath.added_flows.size).to eq DATAPATH_IDLE_FLOWCOUNT
     end
   end
 

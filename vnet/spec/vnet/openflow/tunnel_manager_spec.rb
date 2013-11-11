@@ -106,7 +106,7 @@ describe Vnet::Openflow::TunnelManager do
       flows = datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq 0
+      expect(flows.size).to eq DATAPATH_IDLE_FLOWCOUNT
 
       # TunnelManager no longer creates the drop flows for broadcast
       # mac addresses, move.

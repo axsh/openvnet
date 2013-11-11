@@ -5,9 +5,11 @@ require 'trema'
 include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::Ports::Tunnel do
+  include_context :ofc_double
+
   describe "install" do
     it "creates tunnel specific flows" do
-      datapath = MockDatapath.new(double, 10)
+      datapath = MockDatapath.new(ofc, 10)
       port = Vnet::Openflow::Ports::Base.new(datapath.dp_info, double(port_no: 10, name: 't-a'))
       port.extend(Vnet::Openflow::Ports::Tunnel)
       port.dst_id = 5
@@ -18,19 +20,17 @@ describe Vnet::Openflow::Ports::Tunnel do
 
       port.install
 
-      # pp datapath.added_flows
-
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq 4
+      expect(datapath.added_flows.size).to eq(4 + DATAPATH_IDLE_FLOWCOUNT)
 
-      expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
+      expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
                                               TABLE_TUNNEL_PORTS,
                                               30,
                                               {:in_port => 10},
                                               nil,
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
                                                :goto_table => TABLE_TUNNEL_NETWORK_IDS})
-      expect(datapath.added_flows[1]).to eq Vnet::Openflow::Flow.create(
+      expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
                                               TABLE_VIRTUAL_SRC,
                                               30,
                                               {:in_port => 10},
@@ -38,14 +38,14 @@ describe Vnet::Openflow::Ports::Tunnel do
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
                                                :goto_table => TABLE_ROUTE_INGRESS})
 
-      expect(datapath.added_flows[2]).to eq Vnet::Openflow::Flow.create(
+      expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
                                               TABLE_OUTPUT_ROUTE_LINK_HACK,
                                               5,
                                               port.md_create(datapath: 5,
                                                              tunnel: nil),
                                               {:output => 10},
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)})
-      expect(datapath.added_flows[3]).to eq Vnet::Openflow::Flow.create(
+      expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
                                               TABLE_OUTPUT_DATAPATH,
                                               5,
                                               port.md_create(datapath: 5),

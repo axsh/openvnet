@@ -26,19 +26,19 @@ describe Vnet::Openflow::Networks::Virtual do
 
     it "has flows for destination filtering" do
       subject.install
-      expect(flows[0]).to eq Vnet::Openflow::Flow.create(
+      expect(flows).to include Vnet::Openflow::Flow.create(
         TABLE_TUNNEL_NETWORK_IDS,
         30,
         {:tunnel_id => vnet_map.id | TUNNEL_FLAG_MASK},
         nil,
         fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
-      expect(flows[1]).to eq Vnet::Openflow::Flow.create(
+      expect(flows).to include Vnet::Openflow::Flow.create(
         TABLE_NETWORK_SRC_CLASSIFIER,
         40,
         network_md,
         nil,
         flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
-      expect(flows[2]).to eq Vnet::Openflow::Flow.create(
+      expect(flows).to include Vnet::Openflow::Flow.create(
         TABLE_NETWORK_DST_CLASSIFIER,
         40,
         network_md,

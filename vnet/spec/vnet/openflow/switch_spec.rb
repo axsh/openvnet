@@ -13,7 +13,7 @@ describe Vnet::Openflow::Switch do
       switch.switch_ready
 
       expect(datapath.sent_messages.size).to eq 2
-      expect(datapath.added_flows.size).to eq 0
+      expect(datapath.added_flows.size).to eq DATAPATH_IDLE_FLOWCOUNT
       expect(datapath.added_ovs_flows.size).to eq 0
     end
   end

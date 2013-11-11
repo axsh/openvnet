@@ -19,6 +19,11 @@ Coveralls.wear!
 
 DCell.setup
 
+# When a datapath is initialized, it'll have two flows. One to allow ARP in
+# TABLE_INTERFACE_INGRESS_FILTER and another one to allow all traffic by default
+# in TABLE_INTERFACE_EGRESS_FILTER
+DATAPATH_IDLE_FLOWCOUNT = 2
+
 RSpec.configure do |config|
   config.include Rack::Test::Methods
   config.filter_run :focus => true
