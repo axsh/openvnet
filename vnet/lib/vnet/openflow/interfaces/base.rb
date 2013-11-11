@@ -206,13 +206,8 @@ module Vnet::Openflow::Interfaces
       active_datapath_ids = [params[:datapath_id]]
 
       @active_datapath_ids = active_datapath_ids
-      begin
-        MW::Interface.batch.update(@id, :active_datapath_id => params[:datapath_id]).commit
-      rescue => e
-        warn log_format("update active_datapath_id failed", "interface_id: #{@id}")
-        warn e
-        e.backtrace.each { |str| warn str }
-      end
+
+      MW::Interface.batch.update(@id, :active_datapath_id => params[:datapath_id]).commit rescue nil
     end
 
     def add_service(service)
