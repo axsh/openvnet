@@ -66,7 +66,7 @@ module Vnet::Openflow
       @ovs_ofctl.add_ovs_10_flow(flow_str)
     end
 
-    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff, options = {})
+    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
       options = {
         :command => Controller::OFPFC_DELETE,
         :table_id => Controller::OFPTT_ALL,
@@ -74,10 +74,10 @@ module Vnet::Openflow
         :out_group => Controller::OFPG_ANY,
         :cookie => cookie,
         :cookie_mask => cookie_mask
-      }.merge(options)
+      }
 
       @controller.pass_task {
-        @controller.public_send_flow_mod(@dpid, options.merge(options))
+        @controller.public_send_flow_mod(@dpid, options)
       }
     end
 

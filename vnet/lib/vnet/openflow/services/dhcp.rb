@@ -77,6 +77,30 @@ module Vnet::Openflow::Services
                      })
     end
 
+    def add_network(network_id)
+      flows = []
+      flows << flow_create(:default,
+                           table: TABLE_FLOOD_SIMULATED,
+                           goto_table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
+                           match: {
+                             :eth_type => 0x0800,
+                             :ip_proto => 0x11,
+                             :ipv4_dst => IPV4_BROADCAST,
+                             :ipv4_src => IPV4_ZERO,
+                             :udp_dst => 67,
+                             :udp_src => 68
+                           },
+                           cookie: cookie_for_network(network_id),
+                           match_network: network_id,
+                           write_interface: @interface_id)
+      @dp_info.add_flows(flows)
+    end
+
+    def remove_network(network_id)
+      del_cookie_for_network(network_id)
+    end
+
     #
     # Internal methods:
     #

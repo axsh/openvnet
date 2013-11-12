@@ -36,10 +36,6 @@ module Vnet::Openflow
         item.enable_router_ingress
       when :enable_router_egress
         item.enable_router_egress
-      when :add_service
-        item.add_service(params[:service])
-      when :remove_service
-        item.remove_service(params[:service])
       end
 
       item_to_hash(item)

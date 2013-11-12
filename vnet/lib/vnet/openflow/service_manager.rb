@@ -11,6 +11,22 @@ module Vnet::Openflow
     subscribe_event :removed_service # TODO Check if needed.
     subscribe_event INITIALIZED_SERVICE, :create_item
 
+    def update_item(params)
+      select(params).map do |item_hash|
+        item = internal_detect(params)
+        next unless item
+
+        case params[:event]
+        when :add_network
+          item.add_network_unless_exists(params[:network_id])
+        when :remove_network
+          item.remove_network_if_exists(params[:network_id])
+        when :remove_all_networks
+          item.remove_all_networks
+        end
+      end
+    end
+
     #
     # Internal methods:
     #
@@ -48,6 +64,10 @@ module Vnet::Openflow
       MW::NetworkService[filter]
     end
 
+    #
+    # Event handlers:
+    #
+
     def create_item(params)
       item_map = params[:item_map]
       item = @items[item_map.id]
@@ -70,10 +90,10 @@ module Vnet::Openflow
       item
     end    
 
-    #
-    # Event handlers:
-    #
-
+    def match_item?(item, params)
+      return false if params[:interface_id] && params[:interface_id] != item.interface_id
+      super
+    end
   end
 
 end

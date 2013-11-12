@@ -50,8 +50,6 @@ module Vnet::Openflow::Interfaces
       @router_ingress = false
       @router_egress = false
 
-      @services = []
-
       # The 'owner_datapath_ids' set has two possible states; the set
       # can contain zero or more datapaths that can activate this
       # interface, or if nil it can either be activated by any
@@ -210,44 +208,6 @@ module Vnet::Openflow::Interfaces
       MW::Interface.batch.update(@id, :active_datapath_id => params[:datapath_id]).commit rescue nil
     end
 
-    def add_service(service)
-      return if @services.include?(service)
-
-      @services << service
-
-      flows = []
-      @mac_addresses.values.each do |mac_info|
-        mac_info[:ipv4_addresses].each do |ipv4_info|
-          flows_for_service(flows, service, ipv4_info)
-        end
-      end
-
-      @dp_info.add_flows(flows)
-    end
-
-    def remove_service(service)
-      return unless @services.include?(service)
-
-      @services.delete(service)
-
-      # TODO Refactor
-      case service
-      when :dhcp
-        @mac_addresses.values.each do |mac_info|
-          mac_info[:ipv4_addresses].each do |ipv4_info|
-            del_cookie_for_ip_lease(ipv4_info[:cookie_id],
-                                    table_id: TABLE_FLOOD_SIMULATED,
-                                    match: Trema::Match.new(:eth_type => 0x0800,
-                                                            :ip_proto => 0x11,
-                                                            :ipv4_dst => IPV4_BROADCAST,
-                                                            :ipv4_src => IPV4_ZERO,
-                                                            :udp_dst => 67,
-                                                            :udp_src => 68))
-          end
-        end
-      end
-    end
-
     #
     # Manage MAC and IP addresses:
     #
@@ -316,12 +276,6 @@ module Vnet::Openflow::Interfaces
 
       debug log_format("adding ipv4 address to #{@uuid}/#{@id}",
                        "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
-
-      flows =  []
-      @services.each do |service|
-        flows_for_service(flows, service, ipv4_info)
-      end
-      @dp_info.add_flows(flows)
 
       [mac_info, ipv4_info]
     end
@@ -511,31 +465,6 @@ module Vnet::Openflow::Interfaces
                            goto_table: TABLE_ARP_TABLE)
     end
 
-    def flows_for_service(flows, service, ipv4_info)
-      # TODO Refactor
-      case service
-      when :dhcp
-        @mac_addresses.each do |mac_lease_id, mac_info|
-          mac_info[:ipv4_addresses].each do |ipv4_info|
-            flows << flow_create(:default,
-                                 table: TABLE_FLOOD_SIMULATED,
-                                 goto_table: TABLE_OUTPUT_INTERFACE,
-                                 priority: 30,
-                                 match: {
-                                   :eth_type => 0x0800,
-                                   :ip_proto => 0x11,
-                                   :ipv4_dst => IPV4_BROADCAST,
-                                   :ipv4_src => IPV4_ZERO,
-                                   :udp_dst => 67,
-                                   :udp_src => 68
-                                 },
-                                 cookie: cookie_for_ip_lease(ipv4_info[:cookie_id]),
-                                 match_network: ipv4_info[:network_id],
-                                 write_interface: self.id)
-          end
-        end
-      end
-    end
   end
 
 end
