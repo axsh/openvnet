@@ -108,9 +108,10 @@ module Vnet::Openflow
     end
 
     def uninstall_item(params)
-      port = @items.delete(params[:id])
-      return unless port
-      return unless port.installed?
+      port = @items[params[:id]]
+      return unless port && port.installed?
+
+      @items.delete(params[:id])
 
       # reinitialize port
       @items[port.port_number] = Ports::Base.new(@dp_info, port.port_info)
