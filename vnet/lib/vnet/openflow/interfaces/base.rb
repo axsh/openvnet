@@ -205,7 +205,7 @@ module Vnet::Openflow::Interfaces
 
       @active_datapath_ids = active_datapath_ids
 
-      MW::Interface.batch.update(@id, :active_datapath_id => params[:datapath_id]).commit rescue nil
+      MW::Interface.batch.update(@id, :active_datapath_id => params[:datapath_id]).commit
     end
 
     #

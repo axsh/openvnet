@@ -37,6 +37,7 @@ module Vnet::NodeApi
           mac_address = options.delete(:mac_address)
 
           model_class[uuid].tap do |i|
+            return unless i
             i.update(options)
             if mac_address
               mac_lease = i.mac_leases.first
