@@ -16,7 +16,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def add_ipv4_address(params)
-      debug "interfaces: removing ipv4 flows..."
+      debug "interfaces: adding ipv4 flows..."
       mac_info, ipv4_info = super
 
       @dp_info.network_manager.update_interface(event: :insert,
