@@ -159,8 +159,6 @@ module Vnet
 
   module Openflow
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
-    autoload :CookieCategory, 'vnet/openflow/cookie_manager'
-    autoload :CookieManager, 'vnet/openflow/cookie_manager'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DatapathInfo, 'vnet/openflow/datapath'
@@ -175,9 +173,7 @@ module Vnet
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
-    autoload :PacketHandler, 'vnet/openflow/packet_handler'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
-    autoload :PacketManager, 'vnet/openflow/packet_manager'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
     autoload :Service, 'vnet/openflow/service'

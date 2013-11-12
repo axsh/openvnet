@@ -32,7 +32,7 @@ module Vnet::Openflow
 
       if interface
         case interface.mode
-        when :host
+        when :host, :edge
           prepare_port_eth(port, port_desc, interface)
         when :vif
           prepare_port_vif(port, port_desc, interface)

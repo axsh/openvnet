@@ -15,12 +15,6 @@ module Vnet::Openflow
 
       @dpid = @datapath.dpid
       @dpid_s = "0x%016x" % @datapath.dpid
-
-      cookie_manager = @datapath.cookie_manager
-
-      @catch_flow_cookie   = cookie_manager.acquire(:switch)
-      @default_flow_cookie = cookie_manager.acquire(:switch)
-      @test_flow_cookie    = cookie_manager.acquire(:switch)
     end
 
     #
@@ -34,7 +28,7 @@ module Vnet::Openflow
 
       flows = []
 
-      flow_options = {:cookie => @default_flow_cookie}
+      flow_options = {:cookie => COOKIE_TYPE_SWITCH}
       fo_local_md  = flow_options.merge(md_create(:local => nil))
       fo_remote_md = flow_options.merge(md_create(:remote => nil))
 
@@ -115,8 +109,6 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
 
-      flow_options = {:cookie => @catch_flow_cookie}
-
       # Catches all arp packets that are from local ports.
       #
       # All local ports have the port part of metadata [0,31] zero'ed
@@ -135,8 +127,6 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
                            }, nil, flow_options)
-
-      flow_options = {:cookie => @test_flow_cookie}
 
       # Add any test flows here.
 
