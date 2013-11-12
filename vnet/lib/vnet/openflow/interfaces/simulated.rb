@@ -5,7 +5,7 @@ module Vnet::Openflow::Interfaces
   # Simulated interfaces does all packet handling using the OpenFlow
   # controller.
 
-  class Simulated < Base
+  class Simulated < IfBase
     include Vnet::Openflow::ArpLookup
 
     def initialize(params)

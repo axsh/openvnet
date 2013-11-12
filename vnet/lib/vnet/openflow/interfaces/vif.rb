@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Interfaces
 
-  class Vif < Base
+  class Vif < IfBase
 
     def add_mac_address(params)
       mac_info = super
