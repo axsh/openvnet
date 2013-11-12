@@ -106,7 +106,7 @@ module Vnet::Openflow::Interfaces
 
       @dp_info.network_manager.async.update_interface(event: :remove_all,
                                                       interface_id: @id)
-      @dp_info.del_cookie(cookie_value, cookie_mask, options)
+      @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
     def del_cookie_for_ip_lease(value, options = {})
