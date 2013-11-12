@@ -43,14 +43,18 @@ module Vnet::Openflow::Interfaces
 
       @dp_info.add_flows(flows)
 
-      @dp_info.service_manager.update_item(event: :add_network, interface_id: @id, network_id: ipv4_info[:network_id])
+      @dp_info.service_manager.update_item(event: :add_network,
+                                           interface_id: @id,
+                                           network_id: ipv4_info[:network_id])
     end
 
     def remove_ipv4_address(params)
       mac_info, ipv4_info = super
       return unless ipv4_info
 
-      @dp_info.service_manager.update_item(event: :remove_network, interface_id: @id, network_id: ipv4_info[:network_id])
+      @dp_info.service_manager.update_item(event: :remove_network,
+                                           interface_id: @id,
+                                           network_id: ipv4_info[:network_id])
     end
 
     #
@@ -67,7 +71,8 @@ module Vnet::Openflow::Interfaces
     end
 
     def uninstall
-      @dp_info.service_manager.update_item(event: :remove_all_networks, interface_id: @id)
+      @dp_info.service_manager.update_item(event: :remove_all_networks,
+                                           interface_id: @id)
     end
 
     def packet_in(message)
