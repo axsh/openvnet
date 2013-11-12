@@ -133,8 +133,6 @@ module Vnet::Openflow
 
       debug log_format("create #{item.uuid}/#{item.id}", "mode:#{item.mode}")
 
-      @dp_info.port_manager.attach_interface(port_name: item.uuid)
-
       item
     end
 
@@ -154,6 +152,8 @@ module Vnet::Openflow
 
       load_addresses(item_map)
 
+      @dp_info.port_manager.async.attach_interface(port_name: item.uuid)
+
       item # Return nil if interface has been uninstalled.
     end
 
@@ -169,7 +169,7 @@ module Vnet::Openflow
       end
 
       if item.port_number
-        @dp_info.port_manager.detach_interface(port_number: item.port_number)
+        @dp_info.port_manager.async.detach_interface(port_number: item.port_number)
       end
 
       item
