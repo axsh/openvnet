@@ -79,6 +79,7 @@ module Vnet::Openflow
     def install_item(params)
       port = @items[params[:id]]
       return unless port
+      return if port.installed?
 
       case
       when port.port_number == OFPP_LOCAL
@@ -109,6 +110,7 @@ module Vnet::Openflow
     def uninstall_item(params)
       port = @items.delete(params[:id])
       return unless port
+      return unless port.installed?
 
       # reinitialize port
       @items[port.port_number] = Ports::Base.new(@dp_info, port.port_info)

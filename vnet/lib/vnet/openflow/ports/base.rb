@@ -2,9 +2,21 @@
 
 module Vnet::Openflow::Ports
 
+  module Install
+    def install
+      @installed = true
+      super
+    end
+
+    def installed?
+      !!@installed
+    end
+  end
+
   class Base
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
+    prepend Install
 
     attr_reader :port_info
     attr_reader :cookie
