@@ -22,26 +22,38 @@ module Vnet::Openflow
       port = Ports::Base.new(@dp_info, port_desc)
       @items[port_desc.port_no] = port
 
-      case
-      when port.port_number == OFPP_LOCAL
-        prepare_port_local(port, port_desc)
-      when port.port_info.name =~ /^eth/
-        prepare_port_eth(port, port_desc)
-      when port.port_info.name =~ /^if-/
-        prepare_port_vif(port, port_desc)
-      when port.port_info.name =~ /^t-/
-        prepare_port_tunnel(port, port_desc)
-      else
-        @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+      interface = @dp_info.interface_manager.item(port_name: port_desc.name,
+                                                  port_number: port.port_number,
+                                                  owner_datapath_id: @dp_info.datapath.datapath_map.id)
 
-        # Currently only support vif.
-        interface = @dp_info.interface_manager.item(port_name: port_desc.name,
-                                                    port_number: port.port_number)
+      interface = interface || @dp_info.interface_manager.item(port_name: port_desc.name,
+                                                               port_number: port.port_number,
+                                                               owner_datapath_id: nil)
 
-        if interface
+      if interface
+        case interface.mode
+        when :host
+          prepare_port_eth(port, port_desc, interface)
+        when :vif
           prepare_port_vif(port, port_desc, interface)
         else
-          error log_format('unknown interface type', "name:#{port.port_name}")
+          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+
+          error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
+        end
+
+      else
+        case
+        when port.port_number == OFPP_LOCAL
+          prepare_port_local(port, port_desc)
+        when port.port_info.name =~ /^if-/
+          prepare_port_vif(port, port_desc)
+        when port.port_info.name =~ /^t-/
+          prepare_port_tunnel(port, port_desc)
+        else
+          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+
+          error log_format('unknown interface', "name:#{port.port_name}")
         end
       end
 
@@ -104,7 +116,7 @@ module Vnet::Openflow
       port.install
     end
 
-    def prepare_port_eth(port, port_desc)
+    def prepare_port_eth(port, port_desc, interface)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
       params = {
@@ -113,9 +125,7 @@ module Vnet::Openflow
         :reinitialize => true
       }
 
-      interface = @dp_info.interface_manager.item(params)
-
-      if interface.nil? || (interface && interface.mode == :host)
+      if interface && interface.mode == :host
         port.extend(Ports::Host)
       elsif interface && interface.mode == :edge
         port.extend(Ports::Generic)
