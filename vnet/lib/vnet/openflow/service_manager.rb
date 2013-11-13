@@ -18,7 +18,7 @@ module Vnet::Openflow
 
         case params[:event]
         when :add_network
-          item.add_network_unless_exists(params[:network_id])
+          item.add_network_unless_exists(params[:network_id], params[:cookie_id])
         when :remove_network
           item.remove_network_if_exists(params[:network_id])
         when :remove_all_networks

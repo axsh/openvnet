@@ -28,7 +28,7 @@ module Vnet::Openflow::Services
       @id = params[:id]
       @uuid = params[:uuid]
       @interface_id = params[:interface_id]
-      @networks = []
+      @networks = {}
     end
 
     def cookie(type = 0, value = 0)
@@ -89,30 +89,33 @@ module Vnet::Openflow::Services
       [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
     end
 
-    def add_network_unless_exists(network_id)
-      return if @networks.member?(network_id)
-      @networks << network_id
-      add_network(network_id)
+    def add_network_unless_exists(network_id, cookie_id)
+      return if @networks[network_id]
+      @networks[network_id] = { network_id: network_id,
+                                cookie_id: cookie_id }
+
+      add_network(network_id, cookie_id)
     end
 
-    def add_network(network_id)
+    def add_network(network_id, cookie_id)
+      debug log_format("add_network")
       # Implement in subclass if needed
     end
 
     def remove_network_if_exists(network_id)
       return unless @networks.member?(network_id)
-      @networks.delete(network_id)
-      remove_network(network_id)
+      network = @networks.delete(network_id)
+      remove_network(network_id[:cookie_id])
     end
 
-    def remove_network(network_id)
-      # Implement in subclass if needed
+    def remove_network(cookie_id)
+      del_cookie_for_network(cookie_id)
     end
 
     def remove_all_networks
       removed_networks, @networks = @networks, nil
-      removed_networks.each do |network_id|
-        remove_network(network_id)
+      removed_networks.values.each do |network|
+        remove_network(network[:cookie_id])
       end
     end
   end

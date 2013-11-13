@@ -77,7 +77,7 @@ module Vnet::Openflow::Services
                      })
     end
 
-    def add_network(network_id)
+    def add_network(network_id, cookie_id)
       flows = []
       flows << flow_create(:default,
                            table: TABLE_FLOOD_SIMULATED,
@@ -91,14 +91,10 @@ module Vnet::Openflow::Services
                              :udp_dst => 67,
                              :udp_src => 68
                            },
-                           cookie: cookie_for_network(network_id),
+                           cookie: cookie_for_network(cookie_id),
                            match_network: network_id,
                            write_interface: @interface_id)
       @dp_info.add_flows(flows)
-    end
-
-    def remove_network(network_id)
-      del_cookie_for_network(network_id)
     end
 
     #
