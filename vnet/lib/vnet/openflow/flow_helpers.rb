@@ -80,22 +80,6 @@ module Vnet::Openflow
       write_metadata = {}
 
       case type
-      when :network_src_ipv4_match
-        table = table_network_src(params[:network_type])
-        priority = 45
-        match_metadata = {
-          :network => params[:network_id],
-          :local => nil
-        }
-        goto_table = TABLE_ROUTE_INGRESS
-      when :network_src_mac_match
-        table = table_network_src(params[:network_type])
-        priority = 35
-        match_metadata = {
-          :network => params[:network_id],
-          :local => nil
-        }
-        goto_table = TABLE_ROUTE_INGRESS
       when :router_dst_match
         table = TABLE_ARP_TABLE
         priority = 40

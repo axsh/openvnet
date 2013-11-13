@@ -104,19 +104,6 @@ module Vnet::Openflow::Interfaces
       #
       flows << flow_create(:default,
                            table_network_src: ipv4_info[:network_type],
-                           goto_table: TABLE_ROUTE_INGRESS,
-                           priority: 86,
-                           match: {
-                             :eth_type => 0x0806,
-                             :eth_src => mac_info[:mac_address],
-                             :arp_spa => ipv4_info[:ipv4_address],
-                             :arp_sha => mac_info[:mac_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           match_local: true,
-                           cookie: cookie)
-      flows << flow_create(:default,
-                           table_network_src: ipv4_info[:network_type],
                            priority: 85,
                            match: {
                              :eth_type => 0x0806,
@@ -124,9 +111,6 @@ module Vnet::Openflow::Interfaces
                            },
                            match_network: ipv4_info[:network_id],
                            cookie: cookie)
-
-      # Note that we should consider adding a table for handling
-      # segments flows prior to the network classifier table.
       flows << flow_create(:default,
                            table_network_src: ipv4_info[:network_type],
                            priority: 85,
@@ -149,26 +133,6 @@ module Vnet::Openflow::Interfaces
       #
       # IPv4 
       #
-      flows << flow_create(:network_src_ipv4_match,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_src => mac_info[:mac_address],
-                             :ipv4_src => ipv4_info[:ipv4_address],
-                           },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
-                           cookie: cookie,
-                           goto_table: TABLE_ROUTE_INGRESS)
-      flows << flow_create(:network_src_ipv4_match,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_src => mac_info[:mac_address],
-                             :ipv4_src => IPV4_ZERO,
-                           },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
-                           cookie: cookie,
-                           goto_table: TABLE_ROUTE_INGRESS)
       flows << flow_create(:default,
                            table_network_src: ipv4_info[:network_type],
                            priority: 44,
@@ -187,15 +151,6 @@ module Vnet::Openflow::Interfaces
                            },
                            match_network: ipv4_info[:network_id],
                            cookie: cookie)
-      flows << flow_create(:network_src_mac_match,
-                           priority: 35,
-                           match: {
-                             :eth_src => mac_info[:mac_address],
-                           },
-                           network_id: ipv4_info[:network_id],
-                           network_type: ipv4_info[:network_type],
-                           cookie: cookie,
-                           goto_table: TABLE_ROUTE_INGRESS)
       flows << flow_create(:default,
                            table_network_src: ipv4_info[:network_type],
                            priority: 34,
