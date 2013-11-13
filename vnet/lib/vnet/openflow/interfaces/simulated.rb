@@ -175,7 +175,6 @@ module Vnet::Openflow::Interfaces
       #
       # IPv4:
       #
-
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],
                            priority: 80,

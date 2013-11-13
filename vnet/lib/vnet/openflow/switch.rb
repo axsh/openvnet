@@ -78,11 +78,6 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
 
-      flows << Flow.create(TABLE_VIRTUAL_SRC,  90, {:in_port => OFPP_CONTROLLER}, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
-      # flows << Flow.create(TABLE_VIRTUAL_SRC,  40, {:eth_type => 0x0800}, nil, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 90, {:in_port => OFPP_CONTROLLER}, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
