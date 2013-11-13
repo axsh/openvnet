@@ -22,6 +22,7 @@ module Vnet::Openflow::Interfaces
       mac_info = super
 
       flows = []
+      flows_for_mac(flows, mac_info)
       flows_for_interface_mac(flows, mac_info)
       flows_for_router_ingress_mac(flows, mac_info) if @router_ingress == true
       flows_for_router_egress_mac(flows, mac_info) if @router_egress == true
@@ -156,10 +157,8 @@ module Vnet::Openflow::Interfaces
                            cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
     end
 
-    # TODO: Separate the mac-only flows and add those when
-    # add_mac_address is called.
-    def flows_for_ipv4(flows, mac_info, ipv4_info)
-      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+    def flows_for_mac(flows, mac_info)
+      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
       #
       # Classifiers:
@@ -171,6 +170,12 @@ module Vnet::Openflow::Interfaces
                            },
                            write_interface_id: @id,
                            cookie: cookie)
+    end
+
+    # TODO: Separate the mac-only flows and add those when
+    # add_mac_address is called.
+    def flows_for_ipv4(flows, mac_info, ipv4_info)
+      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       #
       # IPv4:

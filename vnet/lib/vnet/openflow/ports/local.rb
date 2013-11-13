@@ -51,18 +51,6 @@ module Vnet::Openflow::Ports
                              :output => OFPP_LOCAL
                            }, flow_options)
 
-      if @network_id && @ipv4_addr
-        network_md = md_create(:network => @network_id)
-
-        flows << Flow.create(TABLE_ARP_TABLE, 40,
-                             network_md.merge({ :eth_type => 0x0800,
-                                                :ipv4_dst => @ipv4_addr
-                                              }), {
-                               :eth_dst => self.port_hw_addr
-                             },
-                             flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
-      end
-
       @dp_info.add_flows(flows)
     end
 

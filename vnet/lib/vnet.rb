@@ -191,11 +191,12 @@ module Vnet
 
     module Interfaces
       autoload :Base, 'vnet/openflow/interfaces/base'
-      autoload :IfBase, 'vnet/openflow/interfaces/if_base'
-      autoload :Simulated, 'vnet/openflow/interfaces/simulated'
-      autoload :Remote, 'vnet/openflow/interfaces/remote'
-      autoload :Vif, 'vnet/openflow/interfaces/vif'
       autoload :Edge, 'vnet/openflow/interfaces/edge'
+      autoload :Host, 'vnet/openflow/interfaces/host'
+      autoload :IfBase, 'vnet/openflow/interfaces/if_base'
+      autoload :Remote, 'vnet/openflow/interfaces/remote'
+      autoload :Simulated, 'vnet/openflow/interfaces/simulated'
+      autoload :Vif, 'vnet/openflow/interfaces/vif'
     end
 
     module Networks

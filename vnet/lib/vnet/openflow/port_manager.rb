@@ -127,6 +127,7 @@ module Vnet::Openflow
 
       if interface && interface.mode == :host
         port.extend(Ports::Host)
+        port.interface_id = interface.id
       elsif interface && interface.mode == :edge
         port.extend(Ports::Generic)
       else

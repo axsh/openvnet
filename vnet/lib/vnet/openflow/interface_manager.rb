@@ -99,10 +99,11 @@ module Vnet::Openflow
 
     def item_initialize(mode, params)
       case mode
-      when :simulated then Interfaces::Simulated.new(params)
-      when :remote then Interfaces::Remote.new(params)
-      when :vif then Interfaces::Vif.new(params)
       when :edge then Interfaces::Edge.new(params)
+      when :host then Interfaces::Host.new(params)
+      when :remote then Interfaces::Remote.new(params)
+      when :simulated then Interfaces::Simulated.new(params)
+      when :vif then Interfaces::Vif.new(params)
       else
         Interfaces::Base.new(params)
       end

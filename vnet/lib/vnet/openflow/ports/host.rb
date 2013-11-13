@@ -5,6 +5,8 @@ module Vnet::Openflow::Ports
   module Host
     include Vnet::Openflow::FlowHelpers
 
+    attr_accessor :interface_id
+
     def port_type
       :host
     end
@@ -81,8 +83,6 @@ module Vnet::Openflow::Ports
                            flow_options)
 
       @dp_info.add_flows(flows)
-      @dp_info.network_manager.async.update_all_flows
-
       @dp_info.dc_segment_manager.async.update(event: :insert_port_number,
                                                port_number: self.port_number)
     end
