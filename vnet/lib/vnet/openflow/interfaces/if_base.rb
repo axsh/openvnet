@@ -6,6 +6,10 @@ module Vnet::Openflow::Interfaces
 
   class IfBase < Base
     
+    #
+    # Router ingress/egress:
+    #
+
     def enable_router_ingress
       return if @router_ingress != false
       @router_ingress = true

@@ -158,6 +158,7 @@ module Vnet
   end
 
   module Openflow
+    autoload :AddressHelpers, 'vnet/openflow/address_helpers'
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'

@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Interfaces
 
-  class Vif < IfBase
+  class Host < IfBase
 
     def add_mac_address(params)
       mac_info = super
@@ -19,10 +19,10 @@ module Vnet::Openflow::Interfaces
       mac_info, ipv4_info = super
 
       @dp_info.network_manager.update_interface(event: :insert,
-                                                id: ipv4_info[:network_id],
-                                                interface_id: @id,
-                                                mode: :vif,
-                                                port_number: @port_number)
+                                                 id: ipv4_info[:network_id],
+                                                 interface_id: @id,
+                                                 mode: :host,
+                                                 port_number: @port_number)
 
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
@@ -43,7 +43,7 @@ module Vnet::Openflow::Interfaces
       @dp_info.network_manager.update_interface(event: :remove,
                                                 id: ipv4_info[:network_id],
                                                 interface_id: @id,
-                                                mode: :vif,
+                                                mode: :host,
                                                 port_number: @port_number)
     end
 
