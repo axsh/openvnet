@@ -39,15 +39,13 @@ module Vnet::Openflow
       # manager.
       interface = @dp_info.interface_manager.item(:id => item_map.interface_id)
       return nil if interface.nil?
-      
+
       item = @items[item_map.id]
       return item if item
 
       debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
 
       mac_address = interface.mac_addresses.first
-      debug log_format("mac_address", mac_address)
-      debug log_format("interface.inspect", interface.inspect)
       ipv4_address = mac_address[1][:ipv4_addresses].first
 
       item = service_initialize(item_map.display_name.to_sym,
@@ -69,7 +67,7 @@ module Vnet::Openflow
 
       item.install
       item
-    end    
+    end
 
     #
     # Event handlers:
