@@ -71,13 +71,17 @@ module Vnet::Openflow::Networks
       }
 
       update_flows if params[:port_number]
+
+      self
     end
 
     def remove_interface(params)
       interface = @interfaces.delete(params[:interface_id])
       return if interface.nil?
 
-      update_flows if interface[:port_number] && params[:update_flows]
+      update_flows if interface[:port_number] && !params[:no_update]
+
+      self
     end
 
     def update_interface(params)
@@ -88,6 +92,8 @@ module Vnet::Openflow::Networks
         interface[:port_number] = params[:port_number]
         update_flows unless params[:no_update]
       end
+
+      self
     end
 
     def set_datapath_of_bridge(datapath_info, dpn_map, should_update)

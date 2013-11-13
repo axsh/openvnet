@@ -33,12 +33,19 @@ module Vnet::Openflow
       case params[:event]
       when :remove_all
         params = params.merge(no_update: true)
-        @items.each { |id, item| item.remove_interface(params) }
+        @items.values.select do |item|
+          item.remove_interface(params)
+        end.each do |item|
+          item.update_flows
+        end
         return nil
       when :update_all
         params = params.merge(no_update: true)
-        params.delete(:port_number)
-        @items.each { |id, item| item.update_interface(params) }
+        @items.values.select do |item|
+          item.update_interface(params)
+        end.each do |item|
+          item.update_flows
+        end
         return nil
       end
 
