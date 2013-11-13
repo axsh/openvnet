@@ -3,16 +3,17 @@
 module Vnet::Models
   class SecurityGroup < Base
     taggable 'sg'
+    plugin :paranoia
     many_to_many :interfaces, :join_table => :interface_security_groups
 
     def interface_cookie_id(interface_id)
-      cookie_id = self.interfaces_dataset.where(
-        "interfaces.id <= #{interface_id}").count
+      row_id = InterfaceSecurityGroup.where(:security_group_id => self.id,
+        :interface_id => interface_id).first.id
 
-      raise "Interface '%s' isn't in security group '%s'" %
-        [interface_id, self.canonical_uuid] if cookie_id == 0
+      #TODO: raise error when row not found
 
-      cookie_id
+      InterfaceSecurityGroup.with_deleted.where(
+        :security_group_id => self.id).where("id <= #{row_id}").count
     end
   end
 end
