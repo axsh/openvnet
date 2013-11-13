@@ -56,7 +56,6 @@ module Vnet::Openflow
        TABLE_VIRTUAL_DST,
        TABLE_PHYSICAL_DST,
        TABLE_INTERFACE_VIF,
-       TABLE_MAC_ROUTE,
        TABLE_FLOOD_LOCAL,
        TABLE_FLOOD_ROUTE,
        TABLE_FLOOD_TUNNELS,

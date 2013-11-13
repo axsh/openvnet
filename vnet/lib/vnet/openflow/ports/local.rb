@@ -45,11 +45,6 @@ module Vnet::Openflow::Ports
                            }, {
                              :output => OFPP_LOCAL
                            }, flow_options)
-      flows << Flow.create(TABLE_MAC_ROUTE, 1, {
-                             :eth_dst => self.port_hw_addr
-                           }, {
-                             :output => OFPP_LOCAL
-                           }, flow_options)
 
       @dp_info.add_flows(flows)
     end

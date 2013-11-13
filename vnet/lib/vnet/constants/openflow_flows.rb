@@ -64,11 +64,6 @@ module Vnet
 
       TABLE_INTERFACE_VIF     = 44
 
-      # Route based on the mac address only.
-      #
-      # Deprecated...
-      TABLE_MAC_ROUTE       = 45
-
       TABLE_FLOOD_SIMULATED = 50
       TABLE_FLOOD_LOCAL     = 51
       TABLE_FLOOD_ROUTE     = 52
