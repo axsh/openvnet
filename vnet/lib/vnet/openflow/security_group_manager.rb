@@ -37,6 +37,7 @@ module Vnet::Openflow
     end
 
     def cookie(interface)
+      #TODO: Make this a proper cookie
       cookie = interface.id | COOKIE_TYPE_SECURITY_GROUP
     end
 
@@ -72,6 +73,10 @@ module Vnet::Openflow
       }
 
       @dp_info.add_flows(flows)
+    end
+
+    def remove_catch_new_egress_connection(interface)
+      @dp_info.del_cookie cookie(interface)
     end
 
     def remove_rules(interface)
