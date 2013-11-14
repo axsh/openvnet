@@ -147,7 +147,11 @@ module Vnctl::Cli
       end
 
       [:post, :get, :delete, :put].each { |req_type|
-        define_method(req_type) { |*args| Vnctl::WebApi.send(req_type, *args).parsed_response }
+        define_method(req_type) { |*args|
+          uri = args.shift
+          format = Vnctl.conf.output_format
+          Vnctl::WebApi.send(req_type, "#{uri}.#{format}", *args)
+        }
       }
     }
   end

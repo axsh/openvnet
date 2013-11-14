@@ -42,7 +42,31 @@ module Vnet::Openflow::Interfaces
 
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
 
+      @mac_addresses.values.any? do |m|
+        m[:ipv4_addresses].any? do |i|
+          i[:ip_lease_id] != ipv4_info[:ip_lease_id] &&
+            i[:network_id] == ipv4_info[:network_id]
+        end
+      end || @dp_info.service_manager.async.update_item(event: :add_network,
+                                                        interface_id: @id,
+                                                        network_id: ipv4_info[:network_id],
+                                                        cookie_id: ipv4_info[:cookie_id])
+
       @dp_info.add_flows(flows)
+    end
+
+    def remove_ipv4_address(params)
+      mac_info, ipv4_info = super
+      return unless ipv4_info
+
+      @mac_addresses.values.any? do |m|
+        m[:ipv4_addresses].any? do |i|
+          i[:ip_lease_id] != ipv4_info[:ip_lease_id] &&
+            i[:network_id] == ipv4_info[:network_id]
+        end
+      end || @dp_info.service_manager.async.update_item(event: :remove_network,
+                                                        interface_id: @id,
+                                                        network_id: ipv4_info[:network_id])
     end
 
     #
@@ -56,6 +80,11 @@ module Vnet::Openflow::Interfaces
       arp_lookup_base_flows(flows)
 
       @dp_info.add_flows(flows)
+    end
+
+    def uninstall
+      @dp_info.service_manager.update_item(event: :remove_all_networks,
+                                           interface_id: @id)
     end
 
     def packet_in(message)

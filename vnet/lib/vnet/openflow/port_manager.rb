@@ -4,6 +4,12 @@ module Vnet::Openflow
 
   class PortManager < Manager
 
+    #
+    # Events:
+    #
+    subscribe_event INITIALIZED_PORT, :install_item
+    subscribe_event FINALIZED_PORT, :uninstall_item
+
     def insert(port_desc)
       debug log_format("insert port #{port_desc.name}",
                        "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
@@ -20,44 +26,9 @@ module Vnet::Openflow
       end
 
       port = Ports::Base.new(@dp_info, port_desc)
-      @items[port_desc.port_no] = port
+      @items[port.port_number] = port
 
-      interface = @dp_info.interface_manager.item(port_name: port_desc.name,
-                                                  port_number: port.port_number,
-                                                  owner_datapath_id: @dp_info.datapath.datapath_map.id)
-
-      interface = interface || @dp_info.interface_manager.item(port_name: port_desc.name,
-                                                               port_number: port.port_number,
-                                                               owner_datapath_id: nil)
-
-      if interface
-        case interface.mode
-        when :host, :edge
-          prepare_port_eth(port, port_desc, interface)
-        when :vif
-          prepare_port_vif(port, port_desc, interface)
-        else
-          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
-          error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
-        end
-
-      else
-        case
-        when port.port_number == OFPP_LOCAL
-          prepare_port_local(port, port_desc)
-        when port.port_info.name =~ /^if-/
-          prepare_port_vif(port, port_desc)
-        when port.port_info.name =~ /^t-/
-          prepare_port_tunnel(port, port_desc)
-        else
-          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
-          error log_format('unknown interface', "name:#{port.port_name}")
-        end
-      end
-
-      item_to_hash(port)
+      publish(INITIALIZED_PORT, id: port.id)
     end
 
     def remove(port_desc)
@@ -65,21 +36,30 @@ module Vnet::Openflow
                        "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
-      port = @items.delete(port_desc.port_no)
-
+      port = @items[port_desc.port_no]
       if port.nil?
         debug log_format('port status could not delete uninitialized port',
                          "port_number:#{port_desc.port_no}")
         return nil
       end
 
-      port.uninstall
+      publish(FINALIZED_PORT, id: port.id)
 
-      @dp_info.interface_manager.update_item(event: :clear_port_number,
-                                             port_number: port.port_number,
-                                             dynamic_load: false)
+      item_to_hash(port)
+    end
 
-      nil
+    def attach_interface(params)
+      port = internal_detect(params)
+      return unless port
+
+      # reinitialize
+      publish(FINALIZED_PORT, id: port.id)
+      publish(INITIALIZED_PORT, id: port.id)
+    end
+
+    def detach_interface(params)
+      # currently attach_interface and detach_interface is tha same thing.
+      attach_interface(params)
     end
 
     #
@@ -90,6 +70,73 @@ module Vnet::Openflow
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} port_manager: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    #
+    # Event handlers.
+    #
+
+    def install_item(params)
+      port = @items[params[:id]]
+      return unless port
+      return if port.installed?
+
+      interface = @dp_info.interface_manager.item(port_name: port.port_name,
+                                                  port_number: port.port_number,
+                                                  owner_datapath_id: @dp_info.datapath.datapath_map.id)
+
+      # Request twice since we're lacking the proper search parameter.
+      interface = interface || @dp_info.interface_manager.item(port_name: port.port_name,
+                                                               port_number: port.port_number,
+                                                               owner_datapath_id: nil)
+
+      if interface
+        case interface.mode
+        when :host, :edge
+          prepare_port_eth(port, interface)
+        when :vif
+          prepare_port_vif(port, interface)
+        else
+          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+
+          error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
+        end
+      else
+        case
+        when port.port_number == OFPP_LOCAL
+          prepare_port_local(port)
+        when port.port_info.name =~ /^eth/
+          prepare_port_eth(port)
+        when port.port_info.name =~ /^if-/
+          prepare_port_vif(port)
+        when port.port_info.name =~ /^t-/
+          prepare_port_tunnel(port)
+        else
+          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+
+          error log_format('unknown interface type', "name:#{port.port_name}")
+        end
+      end
+
+      item_to_hash(port)
+    end
+
+    def uninstall_item(params)
+      port = @items[params[:id]]
+      return unless port && port.installed?
+
+      @items.delete(params[:id])
+
+      # reinitialize port
+      @items[port.port_number] = Ports::Base.new(@dp_info, port.port_info)
+
+      port.uninstall
+
+      @dp_info.interface_manager.update_item(event: :clear_port_number,
+                                             port_number: port.port_number,
+                                             dynamic_load: false)
+
+      nil
     end
 
     #
@@ -107,7 +154,7 @@ module Vnet::Openflow
     # Ports:
     #
 
-    def prepare_port_local(port, port_desc)
+    def prepare_port_local(port)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
       port.extend(Ports::Local)
@@ -116,14 +163,16 @@ module Vnet::Openflow
       port.install
     end
 
-    def prepare_port_eth(port, port_desc, interface)
+    def prepare_port_eth(port, interface = nil)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
       params = {
         :owner_datapath_id => @dp_info.datapath.datapath_map.id,
-        :port_name => port_desc.name,
+        :port_name => port.port_name,
         :reinitialize => true
       }
+
+      interface = interface || @dp_info.interface_manager.item(params)
 
       if interface && interface.mode == :host
         port.extend(Ports::Host)
@@ -137,19 +186,19 @@ module Vnet::Openflow
       port.install
     end
 
-    def prepare_port_vif(port, port_desc, interface = nil)
+    def prepare_port_vif(port, interface = nil)
       # TODO: Fix this so that when interface manager creates a new
       # interface, it checks if the port is present and get the
       # port number from port manager.
       if interface.nil?
         @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
-        interface = @dp_info.interface_manager.item(uuid: port_desc.name,
+        interface = @dp_info.interface_manager.item(uuid: port.port_name,
                                                     port_number: port.port_number)
       end
 
       if interface.nil?
-        error log_format("could not find interface for #{port_desc.name}")
+        error log_format("could not find interface for #{port.port_name}")
         return
       end
 
@@ -172,7 +221,7 @@ module Vnet::Openflow
                                                          port_number: port.port_number)
     end
 
-    def prepare_port_tunnel(port, port_desc)
+    def prepare_port_tunnel(port)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
       tunnel = @dp_info.tunnel_manager.item(port_name: port.port_name)

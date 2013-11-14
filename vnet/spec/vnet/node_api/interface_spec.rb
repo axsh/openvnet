@@ -26,40 +26,31 @@ describe Vnet::NodeApi::Interface do
       expect(model.mac_address).to eq 2
       expect(model.owner_datapath.id).to eq datapath.id
 
-      # TODO test event
-      #events = MockEventHandler.handled_events
-      #expect(events.size).to eq 1
-      #expect(events[0][:event]).to eq "network/interface_added"
-      #expect(events[0][:options][:network_id]).to eq network.id
-      #expect(events[0][:options][:interface_id]).to eq interface[:id]
+      events = MockEventHandler.handled_events
+      expect(events.size).to eq 1
+      expect(events.first[:event]).to eq Vnet::Event::ADDED_INTERFACE
+      expect(events.first[:options][:id]).to eq interface[:id]
     end
   end
 
   describe "update" do
+    let(:network_old) { Fabricate(:network) }
+    let(:network_new) { Fabricate(:network) }
+    let(:datapath) { Fabricate(:datapath) }
+    let(:interface) do
+      Fabricate(:interface,
+        mac_leases: [
+          Fabricate(:mac_lease,
+            mac_address: 2,
+            ip_leases: [
+              Fabricate(:ip_lease,
+                ipv4_address: 1,
+                network_id: network_old.id)
+            ])],
+        owner_datapath: datapath)
+    end
+
     it "with associations" do
-      network_old = Fabricate(:network)
-      network_new = Fabricate(:network)
-      datapath = Fabricate(:datapath)
-
-      interface = Fabricate(:interface) do
-        ip_leases(count: 1) do
-          Fabricate(:ip_lease) do
-            network_id network_old.id
-            ip_address do
-              Fabricate(:ip_address) do
-                ipv4_address 1
-              end
-            end
-          end
-        end
-        mac_leases(count: 1) do
-          Fabricate(:mac_lease) do
-            mac_address 2
-          end
-        end
-        owner_datapath datapath
-      end
-
       Vnet::NodeApi::Interface.execute(:update,
         interface.canonical_uuid,
         {
@@ -80,6 +71,34 @@ describe Vnet::NodeApi::Interface do
       #expect(events[0][:event]).to eq "network/interface_added"
       #expect(events[0][:options][:network_id]).to eq network.id
       #expect(events[0][:options][:interface_id]).to eq interface[:id]
+    end
+  end
+
+  describe "delete" do
+    let(:network) { Fabricate(:network) }
+    let(:datapath) { Fabricate(:datapath) }
+    let(:interface) do
+      Fabricate(:interface,
+        mac_leases: [
+          Fabricate(:mac_lease,
+            mac_address: 2,
+            ip_leases: [
+              Fabricate(:ip_lease,
+                ipv4_address: 1,
+                network_id: network.id)
+            ])],
+        owner_datapath: datapath)
+    end
+
+    it "with associations" do
+      Vnet::NodeApi::Interface.execute(:destroy, interface.canonical_uuid)
+
+      expect(Vnet::Models::Interface[interface.id]).to be_nil
+
+      events = MockEventHandler.handled_events
+      expect(events.size).to eq 1
+      expect(events.first[:event]).to eq Vnet::Event::REMOVED_INTERFACE
+      expect(events.first[:options][:id]).to eq interface[:id]
     end
   end
 end
