@@ -15,6 +15,7 @@ module Vnet::Openflow
                                   :match_network,
                                   :match_not_no_controller,
                                   :match_reflection,
+                                  :match_remote,
                                   :match_route_link,
                                   :match_tunnel,
                                  ]
@@ -26,6 +27,7 @@ module Vnet::Openflow
                                   :write_network,
                                   :write_not_no_controller,
                                   :write_reflection,
+                                  :write_remote,
                                   :write_route_link,
                                   :write_tunnel,
                                  ]
