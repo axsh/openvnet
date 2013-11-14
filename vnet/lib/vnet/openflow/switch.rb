@@ -48,7 +48,6 @@ module Vnet::Openflow
        TABLE_TUNNEL_NETWORK_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
-       TABLE_INTERFACE_EGRESS_FILTER,
        TABLE_INTERFACE_CLASSIFIER,
        TABLE_INTERFACE_EGRESS_ROUTES,
        TABLE_INTERFACE_EGRESS_MAC,
@@ -86,6 +85,9 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, nil, flow_options)
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
+
+      flows << Flow.create(TABLE_INTERFACE_EGRESS_FILTER, 0, {}, nil,
+                           flow_options.merge(goto_table: TABLE_NETWORK_SRC_CLASSIFIER))
 
       flows << Flow.create(TABLE_VIRTUAL_SRC,  90, {:in_port => OFPP_CONTROLLER}, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))

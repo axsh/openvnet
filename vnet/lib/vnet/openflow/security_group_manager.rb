@@ -15,12 +15,10 @@ module Vnet::Openflow
     COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
     COOKIE_TAG_INGRESS_CATCH      = 0x2 << COOKIE_TYPE_VALUE_SHIFT
     COOKIE_TAG_INGRESS_ACCEPT_ALL = 0x3 << COOKIE_TYPE_VALUE_SHIFT
-    COOKIE_TAG_EGRESS_ACCEPT      = 0x4 << COOKIE_TYPE_VALUE_SHIFT
 
     def initialize(*args)
       super(*args)
 
-      accept_all_egress
       accept_ingress_arp
     end
 
@@ -59,26 +57,11 @@ module Vnet::Openflow
     end
 
     private
-    #TODO: Move all the cookie methods to classes?
     def catch_ingress_cookie(interface)
       interface.id |
         COOKIE_TYPE_SECURITY_GROUP |
         COOKIE_SG_TYPE_TAG |
         COOKIE_TAG_INGRESS_CATCH
-    end
-
-    def accept_all_egress
-      cookie = COOKIE_TYPE_SECURITY_GROUP |
-        COOKIE_SG_TYPE_TAG |
-        COOKIE_TAG_EGRESS_ACCEPT
-
-      @dp_info.add_flows [
-        flow_create(:default,
-                    table: TABLE_INTERFACE_EGRESS_FILTER,
-                    priority: 1,
-                    cookie: cookie,
-                    goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
-      ]
     end
 
     def accept_ingress_arp
