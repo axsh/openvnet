@@ -26,8 +26,11 @@ RSpec.configure do |config|
 
   Vnet::Configurations::Common.paths = ["#{File.dirname(File.expand_path(__FILE__))}/config"]
 
-  #Celluloid.logger = ::Logger.new("test.log")
-  Celluloid.logger = nil
+  logfile = File.open(File.expand_path("../log/spec.log", __FILE__), 'a')
+  logfile.sync = true
+  Celluloid.logger = Logger.new(logfile)
+  #Celluloid.logger = nil
+  Celluloid.shutdown_timeout = 1
 
   vnmgr_conf = Vnet::Configurations::Vnmgr.load
   webapi_conf = Vnet::Configurations::Webapi.load
@@ -44,9 +47,12 @@ RSpec.configure do |config|
   config.before(:each) do
     DatabaseCleaner.start
     Fabrication.clear_definitions
+    Celluloid.shutdown
+    Celluloid.boot
   end
 
   config.after(:each) do
+    Celluloid.shutdown
     DatabaseCleaner.clean
   end
 end

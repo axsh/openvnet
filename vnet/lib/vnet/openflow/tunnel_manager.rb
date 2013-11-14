@@ -51,9 +51,9 @@ module Vnet::Openflow
         tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
                                        dst_datapath_id: target_dp_map.id,
                                        display_name: tunnel_name)
-        
-        create_item(tunnel_map,
-                    dst_dp_map: target_dp_map)
+
+        tunnel_map.dst_dp_map = target_dp_map
+        create_item(item_map: tunnel_map)
       }
     end
 
@@ -163,8 +163,15 @@ module Vnet::Openflow
     # Create / Delete tunnels:
     #
 
-    def item_initialize(params)
-      Tunnels::Base.new(params)
+    def item_initialize(item_map)
+      Tunnels::Base.new(dp_info: @dp_info,
+                        manager: self,
+                        map: item_map,
+                        dst_dp_map: item_map.dst_dp_map)
+    end
+
+    def initialized_item_event
+      INITIALIZED_TUNNEL
     end
 
     def select_item(filter)
@@ -173,11 +180,9 @@ module Vnet::Openflow
       MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit
     end
     
-    def create_item(item_map, params)
-      item = item_initialize(dp_info: @dp_info,
-                             manager: self,
-                             map: item_map,
-                             dst_dp_map: params[:dst_dp_map])
+    def create_item(params)
+      item_map = params[:item_map]
+      item = item_initialize(item_map)
       return nil if item.nil?
 
       @items[item_map.id] = item

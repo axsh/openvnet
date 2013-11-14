@@ -34,6 +34,7 @@ module Vnet
   autoload :Event, 'vnet/event'
   module Event
     autoload :Dispatchable, 'vnet/event/dispatchable'
+    autoload :Notifications, 'vnet/event/notifications'
   end
 
   module Endpoints

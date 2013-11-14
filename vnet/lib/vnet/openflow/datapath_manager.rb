@@ -5,6 +5,13 @@ module Vnet::Openflow
   class DatapathManager < Manager
 
     #
+    # Events:
+    #
+    subscribe_event :added_service # TODO Check if needed.
+    subscribe_event :removed_service # TODO Check if needed.
+    subscribe_event INITIALIZED_DATAPATH, :create_item
+
+    #
     # Networks:
     #
 
@@ -28,23 +35,6 @@ module Vnet::Openflow
     # Events:
     #
 
-    def handle_event(params)
-      debug log_format("handle event #{params[:event]}", "#{params.inspect}")
-
-      item = @items[:target_id]
-
-      case params[:event]
-      when :added
-        return nil if item
-        # Check if needed.
-      when :removed
-        return nil if item
-        # Check if needed.
-      end
-
-      nil
-    end
-    
     #
     # Internal methods:
     #
@@ -71,13 +61,20 @@ module Vnet::Openflow
       MW::Datapath.batch[filter].commit #(:fill => [:ip_leases => :ip_address])
     end
 
-    def create_item(item_map, params)
-      item = Datapaths::Base.new(dp_info: @dp_info,
-                                 manager: self,
-                                 map: item_map)
-      return nil if item.nil?
+    def item_initialize(item_map)
+      Datapaths::Base.new(dp_info: @dp_info,
+                          manager: self,
+                          map: item_map)
+    end
 
-      @items[item_map.id] = item
+    def initialized_item_event
+      INITIALIZED_DATAPATH
+    end
+
+    def create_item(params)
+      item_map = params[:item_map]
+      item = @items[item_map.id]
+      return unless item
 
       debug log_format("insert #{item_map.uuid}/#{item_map.id}")
 

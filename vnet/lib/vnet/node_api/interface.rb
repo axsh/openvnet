@@ -23,12 +23,7 @@ module Vnet::NodeApi
           end
         end
 
-        # TODO dispatch_event
-        #if interface.ip_leases.present?
-        #  interface.ip_leases.each do |ip_lease|
-        #    dispatch_event(LeasedIpv4Address, target_id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
-        #  end
-        #end
+        dispatch_event(ADDED_INTERFACE, id: interface.id)
 
         interface
       end
@@ -42,6 +37,7 @@ module Vnet::NodeApi
           mac_address = options.delete(:mac_address)
 
           model_class[uuid].tap do |i|
+            return unless i
             i.update(options)
             if mac_address
               mac_lease = i.mac_leases.first
@@ -60,8 +56,11 @@ module Vnet::NodeApi
       end
 
       def destroy(uuid)
-        super
-        # TODO dispatch_event
+        interface = super
+
+        dispatch_event(REMOVED_INTERFACE, id: interface.id)
+
+        nil
       end
     end
   end
