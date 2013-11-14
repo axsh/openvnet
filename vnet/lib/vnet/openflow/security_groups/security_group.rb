@@ -87,7 +87,8 @@ module Vnet::Openflow::SecurityGroups
                   priority: 2,
                   idle_timeout: IDLE_TIMEOUT,
                   match_metadata: { interface: interface.id},
-                  cookie: cookie)
+                  cookie: cookie,
+                  goto_table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP)
     end
 
     def rule_factory(rule_string)

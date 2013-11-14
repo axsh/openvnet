@@ -49,6 +49,7 @@ module Vnet::Openflow
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
        TABLE_INTERFACE_CLASSIFIER,
+       TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
        TABLE_INTERFACE_EGRESS_ROUTES,
        TABLE_INTERFACE_EGRESS_MAC,
        TABLE_NETWORK_SRC_CLASSIFIER,
@@ -61,7 +62,6 @@ module Vnet::Openflow
        TABLE_ARP_LOOKUP,
        TABLE_VIRTUAL_DST,
        TABLE_PHYSICAL_DST,
-       TABLE_INTERFACE_INGRESS_FILTER,
        TABLE_INTERFACE_VIF,
        TABLE_MAC_ROUTE,
        TABLE_FLOOD_LOCAL,
@@ -88,6 +88,8 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_INTERFACE_EGRESS_FILTER, 0, {}, nil,
                            flow_options.merge(goto_table: TABLE_NETWORK_SRC_CLASSIFIER))
+      flows << Flow.create(TABLE_INTERFACE_INGRESS_FILTER, 0, {}, nil,
+                           flow_options.merge(goto_table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP))
 
       flows << Flow.create(TABLE_VIRTUAL_SRC,  90, {:in_port => OFPP_CONTROLLER}, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))

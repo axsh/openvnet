@@ -43,7 +43,7 @@ module Vnet::Openflow::Connections
                     cookie: cookie(interface_id),
                     goto_table: TABLE_NETWORK_SRC_CLASSIFIER),
         flow_create(:default,
-                    table: TABLE_INTERFACE_INGRESS_FILTER,
+                    table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
                     priority: 10,
                     match: {
                       eth_dst:   message.packet_info.eth_src,

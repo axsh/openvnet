@@ -65,12 +65,14 @@ module Vnet
       TABLE_PHYSICAL_DST           = 42
 
       TABLE_INTERFACE_INGRESS_FILTER = 43
-      TABLE_INTERFACE_VIF     = 44
+      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP = 44
+
+      TABLE_INTERFACE_VIF     = 45
 
       # Route based on the mac address only.
       #
       # Deprecated...
-      TABLE_MAC_ROUTE       = 45
+      TABLE_MAC_ROUTE       = 46
 
       TABLE_FLOOD_SIMULATED = 50
       TABLE_FLOOD_LOCAL     = 51
