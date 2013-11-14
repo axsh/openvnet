@@ -49,6 +49,7 @@ module Vnet::Openflow
 
     attr_reader :switch
 
+    attr_reader :connection_manager
     attr_reader :cookie_manager
     attr_reader :dc_segment_manager
     attr_reader :interface_manager
@@ -74,6 +75,7 @@ module Vnet::Openflow
       @ovs_ofctl = @dp_info.ovs_ofctl
 
       # TODO: Remove these...
+      @connection_manager = @dp_info.connection_manager
       @cookie_manager = @dp_info.cookie_manager
       @dc_segment_manager = @dp_info.dc_segment_manager
       @interface_manager = @dp_info.interface_manager
@@ -86,6 +88,7 @@ module Vnet::Openflow
       @tunnel_manager = @dp_info.tunnel_manager
       @translation_manager = @dp_info.translation_manager
 
+      @cookie_manager.create_category(:contrack,       COOKIE_PREFIX_CONTRACK)
       @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
       @cookie_manager.create_category(:network,        COOKIE_PREFIX_NETWORK)
       @cookie_manager.create_category(:packet_handler, COOKIE_PREFIX_PACKET_HANDLER)

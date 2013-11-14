@@ -16,9 +16,6 @@ module Vnet::Openflow
     COOKIE_TAG_INGRESS_CATCH      = 0x2 << COOKIE_TYPE_VALUE_SHIFT
     COOKIE_TAG_INGRESS_ACCEPT_ALL = 0x3 << COOKIE_TYPE_VALUE_SHIFT
     COOKIE_TAG_EGRESS_ACCEPT      = 0x4 << COOKIE_TYPE_VALUE_SHIFT
-    COOKIE_TAG_CONTRACK           = 0x5 << COOKIE_TYPE_VALUE_SHIFT
-
-    Connections = Vnet::Openflow::SecurityGroups::Connections
 
     def initialize(*args)
       super(*args)
@@ -28,17 +25,7 @@ module Vnet::Openflow
     end
 
     def packet_in(message)
-      case message.table_id
-      when TABLE_INTERFACE_INGRESS_FILTER
-        apply_rules(message)
-      when TABLE_INTERFACE_EGRESS_FILTER
-        open_connection(message)
-      end
-    end
-
-    def cookie(interface)
-      #TODO: Make this a proper cookie
-      cookie = interface.id | COOKIE_TYPE_SECURITY_GROUP
+      apply_rules(message)
     end
 
     def catch_ingress_packet(interface)
@@ -58,27 +45,6 @@ module Vnet::Openflow
       @dp_info.del_cookie catch_ingress_cookie(interface)
     end
 
-    def catch_new_egress_connection(interface, mac_info, ipv4_info)
-      flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
-        flow_create(:default,
-                    table: TABLE_INTERFACE_EGRESS_FILTER,
-                    priority: 20,
-                    match: {
-                      eth_src: mac_info[:mac_address],
-                      eth_type: ETH_TYPE_IPV4,
-                      ip_proto: protocol
-                    },
-                    cookie: cookie(interface),
-                    actions: { output: Controller::OFPP_CONTROLLER })
-      }
-
-      @dp_info.add_flows(flows)
-    end
-
-    def remove_catch_new_egress_connection(interface)
-      @dp_info.del_cookie cookie(interface)
-    end
-
     def remove_rules(interface)
       interface = MW::Interface.batch[interface.id].commit
 
@@ -90,10 +56,6 @@ module Vnet::Openflow
         debug "'#{interface.uuid}' removing rules for group '#{g.uuid}'"
         @dp_info.del_cookie(g.cookie)
       }
-    end
-
-    def close_connections(interface)
-      @dp_info.del_cookie Connections::Base.cookie(interface.id)
     end
 
     private
@@ -132,17 +94,6 @@ module Vnet::Openflow
                     match: { eth_type: ETH_TYPE_ARP },
                     goto_table: TABLE_INTERFACE_VIF)
       ]
-    end
-
-    def open_connection(message)
-      flows = if message.tcp?
-        Connections::TCP.new.open(message)
-      elsif message.udp?
-        Connections::UDP.new.open(message)
-      end
-
-      @dp_info.add_flows(flows)
-      @dp_info.send_packet_out(message, OFPP_TABLE)
     end
 
     def apply_rules(message)

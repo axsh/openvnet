@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::SecurityGroups::Connections
-  SGM = Vnet::Openflow::SecurityGroupManager
-
+module Vnet::Openflow::Connections
   class Base
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 
+    CM = Vnet::Openflow::ConnectionManager
+
     IDLE_TIMEOUT = 600
 
     def self.cookie(interface_id)
-      interface_id |
-        COOKIE_TYPE_SECURITY_GROUP |
-        SGM::COOKIE_SG_TYPE_TAG |
-        SGM::COOKIE_TAG_CONTRACK
+      COOKIE_TYPE_CONTRACK | CM::COOKIE_TAG_INGRESS_CONNECTION | interface_id
     end
 
     def cookie(interface_id)
@@ -71,55 +68,6 @@ module Vnet::Openflow::SecurityGroups::Connections
 
     def match_ingress(message)
       raise NotImplementedError, "match_ingress"
-    end
-  end
-
-  class TCP < Base
-    def log_new_open(interface, message)
-      debug "'%s' Opening new tcp connection %s:%s => %s:%s" %
-        [interface.uuid, message.ipv4_src, message.tcp_src, message.ipv4_dst, message.tcp_dst]
-    end
-
-    def match_egress(message)
-      {
-        ip_proto: IPV4_PROTOCOL_TCP,
-        tcp_src:  message.tcp_src,
-        tcp_dst:  message.tcp_dst
-      }
-    end
-
-    def match_ingress(message)
-      {
-        ip_proto: IPV4_PROTOCOL_TCP,
-        tcp_src:  message.tcp_dst,
-        tcp_dst:  message.tcp_src
-      }
-    end
-  end
-
-  # UDP is a connectionless protocol but we're not doing real connection
-  # tracking here. When we send out a packet, we just open up the source port
-  # so we can receive a reply.
-  class UDP < Base
-    def log_new_open(interface, message)
-      debug "'%s' Opening new udp connection %s:%s => %s:%s" %
-        [interface.uuid, message.ipv4_src, message.udp_src, message.ipv4_dst, message.udp_dst]
-    end
-
-    def match_egress(message)
-      {
-        ip_proto: IPV4_PROTOCOL_UDP,
-        udp_src:  message.udp_src,
-        udp_dst:  message.udp_dst
-      }
-    end
-
-    def match_ingress(message)
-      {
-        ip_proto: IPV4_PROTOCOL_UDP,
-        udp_src:  message.udp_dst,
-        udp_dst:  message.udp_src
-      }
     end
   end
 end

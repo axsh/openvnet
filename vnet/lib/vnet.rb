@@ -161,6 +161,7 @@ module Vnet
 
   module Openflow
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
+    autoload :ConnectionManager, 'vnet/openflow/connection_manager'
     autoload :CookieCategory, 'vnet/openflow/cookie_manager'
     autoload :CookieManager, 'vnet/openflow/cookie_manager'
     autoload :Controller, 'vnet/openflow/controller'
@@ -190,6 +191,12 @@ module Vnet
     autoload :TranslationManager, 'vnet/openflow/translation_manager'
     autoload :Tunnel, 'vnet/openflow/tunnel'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
+
+    module Connections
+      autoload :Base, 'vnet/openflow/connections/base'
+      autoload :TCP, 'vnet/openflow/connections/tcp'
+      autoload :UDP, 'vnet/openflow/connections/udp'
+    end
 
     module Datapaths
       autoload :Base, 'vnet/openflow/datapaths/base'
@@ -231,11 +238,6 @@ module Vnet
       RULE_PRIORITY = 10
 
       autoload :SecurityGroup, 'vnet/openflow/security_groups/security_group'
-      module Connections
-        autoload :Base, 'vnet/openflow/security_groups/connections'
-        autoload :TCP, 'vnet/openflow/security_groups/connections'
-        autoload :UDP, 'vnet/openflow/security_groups/connections'
-      end
     end
 
     module Services

@@ -16,6 +16,7 @@ module Vnet::Openflow
     attr_reader :dpid_s
     attr_reader :ovs_ofctl
 
+    attr_reader :connection_manager
     attr_reader :cookie_manager
     attr_reader :datapath_manager
     attr_reader :dc_segment_manager
@@ -119,6 +120,7 @@ module Vnet::Openflow
     private
 
     def initialize_managers
+      @connection_manager = ConnectionManager.new(self)
       @cookie_manager = CookieManager.new
       @datapath_manager = DatapathManager.new(self)
       @dc_segment_manager = DcSegmentManager.new(self)
