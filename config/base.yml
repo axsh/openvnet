@@ -1,7 +1,7 @@
 specs: [simple, vxlan, router_v2v, router_p2v, event_if]
 vnet_branch: master
 log_level: info
-vnflows_cmd: /opt/axsh/wakame-vnet/vnctl/bin/vnflows
+vnflows_cmd: /opt/axsh/wakame-vnet/vnet/bin/vnflows-monitor
 
 vms:
   vm1:
