@@ -43,7 +43,7 @@ module Vnspec
     end
 
     private
-    def  init_dataset
+    def init_dataset
       @dataset = ["base", name].inject({}) do |h, n|
         h.merge(load_file(n))
       end
