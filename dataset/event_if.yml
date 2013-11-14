@@ -16,7 +16,7 @@ networks:
 
   - uuid: nw-vnet2
     display_name: vnet2
-    ipv4_network: 10.101.0.0
+    ipv4_network: 10.102.0.0
     ipv4_prefix: 24
     domain_name: vnet2
     network_mode: virtual
@@ -31,7 +31,7 @@ interfaces:
   - uuid: if-v2
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:02"
-    ipv4_address: 10.101.0.10
+    ipv4_address: 10.102.0.10
 
   - uuid: if-v3
     network_uuid: nw-vnet1
@@ -41,7 +41,7 @@ interfaces:
   - uuid: if-v4
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:04"
-    ipv4_address: 10.101.0.11
+    ipv4_address: 10.102.0.11
 
   - uuid: if-v5
     network_uuid: nw-vnet1
@@ -51,7 +51,7 @@ interfaces:
   - uuid: if-v6
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:06"
-    ipv4_address: 10.101.0.12
+    ipv4_address: 10.102.0.12
 
   - uuid: if-dhcppub
     network_uuid: nw-public
@@ -68,7 +68,19 @@ interfaces:
   - uuid: if-dhcp2
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:01:02"
-    ipv4_address: 10.101.0.2
+    ipv4_address: 10.102.0.2
+    mode: simulated
+
+  - uuid: if-router1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:02:01"
+    ipv4_address: 10.101.0.1
+    mode: simulated
+
+  - uuid: if-router2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:02:02"
+    ipv4_address: 10.102.0.1
     mode: simulated
 
 network_services:
@@ -84,6 +96,14 @@ network_services:
   - uuid: ns-dhcp2
     interface_uuid: if-dhcp2
     display_name: dhcp
+
+  - uuid: ns-router1
+    interface_uuid: if-router1
+    display_name: router
+
+  - uuid: ns-router2
+    interface_uuid: if-router2
+    display_name: router
 
 datapath_networks:
 
@@ -122,3 +142,35 @@ datapath_networks:
   - datapath_uuid: dp-3
     network_uuid: nw-vnet2
     broadcast_mac_address: "02:00:00:cc:00:02"
+
+route_links:
+
+  - uuid: rl-1
+    mac_address: "02:00:10:00:00:01"
+
+datapath_route_links:
+  - datapath_uuid: dp-1
+    route_link_uuid: rl-1
+    mac_address: "02:00:10:aa:00:01"
+
+  - datapath_uuid: dp-2
+    route_link_uuid: rl-1
+    mac_address: "02:00:10:bb:00:01"
+
+  - datapath_uuid: dp-3
+    route_link_uuid: rl-1
+    mac_address: "02:00:10:cc:00:01"
+
+routes:
+
+  - uuid: r-1
+    interface_uuid: if-router1
+    network_uuid: nw-vnet1
+    route_link_uuid: rl-1
+    ipv4_network: 10.101.0.0
+
+  - uuid: r-2
+    interface_uuid: if-router2
+    network_uuid: nw-vnet2
+    route_link_uuid: rl-1
+    ipv4_network: 10.102.0.0
