@@ -14,6 +14,7 @@ module Vnet::Openflow
     #
     subscribe_event :added_network # TODO Check if needed.
     subscribe_event :removed_network # TODO Check if needed.
+    subscribe_event INITIALIZED_NETWORK, :create_item
 
     def networks(params = {})
       @items.select { |key,nw|
@@ -31,10 +32,20 @@ module Vnet::Openflow
     def update_interface(params)
       case params[:event]
       when :remove_all
-        @items.each { |id, item| item.remove_interface(params) }
+        params = params.merge(no_update: true)
+        @items.values.select do |item|
+          item.remove_interface(params)
+        end.each do |item|
+          item.update_flows
+        end
         return nil
       when :update_all
-        @items.each { |id, item| item.update_interface(params) }
+        params = params.merge(no_update: true)
+        @items.values.select do |item|
+          item.update_interface(params)
+        end.each do |item|
+          item.update_flows
+        end
         return nil
       end
 
@@ -98,8 +109,8 @@ module Vnet::Openflow
       true
     end
 
-    def network_initialize(mode, item_map)
-      case mode
+    def item_initialize(item_map)
+      case item_map.network_mode.to_sym
       when :physical then Networks::Physical.new(@dp_info, item_map)
       when :virtual then Networks::Virtual.new(@dp_info, item_map)
       else
@@ -109,17 +120,20 @@ module Vnet::Openflow
       end
     end
 
+    def initialized_item_event
+      INITIALIZED_NETWORK
+    end
+
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
       MW::Network.batch[filter].commit(:fill => :network_services)
     end
 
-    def create_item(item_map, params)
-      network = network_initialize(item_map.network_mode.to_sym, item_map)
-      @items[network.id] = network
-
-      # Dispatch event here.
+    def create_item(params)
+      item_map = params[:item_map]
+      network = @items[item_map.id]
+      return unless network
 
       debug log_format("create #{item_map.uuid}/#{item_map.id}")
 

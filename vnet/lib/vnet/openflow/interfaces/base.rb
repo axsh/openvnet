@@ -103,17 +103,20 @@ module Vnet::Openflow::Interfaces
       cookie(OPTIONAL_TYPE_MAC_LEASE, value)
     end
 
-    def del_cookie(type = 0, value = 0)
+    def del_cookie(type = 0, value = 0, options = {})
       cookie_value = cookie(type, value)
-      cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK
+      cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
+      unless type == 0 && value == 0
+        cookie_mask |= COOKIE_TAG_MASK
+      end
 
       @dp_info.network_manager.async.update_interface(event: :remove_all,
                                                       interface_id: @id)
       @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
-    def del_cookie_for_ip_lease(value)
-      del_cookie(OPTIONAL_TYPE_IP_LEASE, value)
+    def del_cookie_for_ip_lease(value, options = {})
+      del_cookie(OPTIONAL_TYPE_IP_LEASE, value, options)
     end
 
     def del_cookie_for_mac_lease(value)
@@ -207,7 +210,8 @@ module Vnet::Openflow::Interfaces
       active_datapath_ids = [params[:datapath_id]]
 
       @active_datapath_ids = active_datapath_ids
-      MW::Interface.batch[:id => @id].update(:active_datapath_id => params[:datapath_id]).commit
+
+      MW::Interface.batch.update(@id, :active_datapath_id => params[:datapath_id]).commit
     end
 
     #
@@ -215,7 +219,7 @@ module Vnet::Openflow::Interfaces
     #
 
     def add_mac_address(params)
-      #debug log_format("add_ipv4_address", params.inspect)
+      #debug log_format("add_mac_address", params.inspect)
       return if @mac_addresses[params[:mac_lease_id]]
 
       mac_addresses = @mac_addresses.dup
@@ -236,7 +240,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def remove_mac_address(params)
-      debug log_format("remove_mac_address", params.inspect)
+      #debug log_format("remove_mac_address", params.inspect)
 
       mac_info = @mac_addresses[params[:mac_lease_id]]
       return unless mac_info
@@ -246,8 +250,13 @@ module Vnet::Openflow::Interfaces
       end
 
       mac_addresses = @mac_addresses.dup
-      mac_addresses.delete(params[:mac_lease_id])
+      mac_address = mac_addresses.delete(params[:mac_lease_id])
       @mac_addresses = mac_addresses
+
+      debug log_format("removing mac address from #{@uuid}/#{@id}",
+                       "#{mac_address[:mac_address].to_s}")
+
+      mac_info
     end
 
     def add_ipv4_address(params)
@@ -278,7 +287,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def remove_ipv4_address(params)
-      debug log_format("remove_ipv4_address", params.inspect)
+      #debug log_format("remove_ipv4_address", params.inspect)
 
       ipv4_info = nil
       ipv4_addresses = nil
