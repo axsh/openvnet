@@ -13,7 +13,7 @@ describe "simple" do
       end
     end
 
-    context "tunnel" do
+    context "mac2mac over gre tunnel" do
       it "reachable to vnet1" do
         expect(vm1).to be_reachable_to(vm5)
       end
@@ -35,7 +35,7 @@ describe "simple" do
       end
     end
 
-    context "tunnel" do
+    context "mac2mac over gre tunnel" do
       it "reachable to vnet2" do
         expect(vm2).to be_reachable_to(vm6)
       end

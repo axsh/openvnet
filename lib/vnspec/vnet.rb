@@ -63,14 +63,14 @@ module Vnspec
         multi_ssh(config[:nodes][:vnmgr], "bash -l -c 'cd /opt/axsh/wakame-vnet/vnet; bundle exec rake db:reset'")
       end
 
-      def dump_flows
+      def dump_flows(vna_index = nil)
         config[:nodes][:vna].each_with_index do |ip, i|
+          next if vna_index && vna_index.to_i != i + 1
           logger.info "#" * 50
           logger.info "# dump_flows: vna#{i + 1}"
           logger.info "#" * 50
-          ofctl_output = ssh(ip, "ovs-ofctl -O OpenFlow13 dump-flows br0", debug: false)
-          vnflows_output = %x(echo "#{ofctl_output.chomp}" | #{config[:vnflows_cmd]})
-          logger.info vnflows_output
+          output = ssh(ip, config[:vnflows_cmd], debug: false)
+          logger.info output
           logger.info
         end
       end

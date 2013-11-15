@@ -115,3 +115,9 @@ datapath_networks:
   - datapath_uuid: dp-3
     network_uuid: nw-vnet2
     broadcast_mac_address: "02:00:00:cc:00:02"
+
+tunneling_protocols:
+  - uuid: tp-vxlan
+    src_dc_segment_uuid: ds-1
+    dst_dc_segment_uuid: ds-2
+    protocol: vxlan
