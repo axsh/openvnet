@@ -13,6 +13,7 @@ module Vnet::Openflow::Tunnels
     attr_reader :dst_id
     attr_reader :dst_dpid
     attr_reader :dst_ipv4_address
+    attr_reader :protocol
 
     attr_reader :datapath_networks
 
@@ -35,17 +36,17 @@ module Vnet::Openflow::Tunnels
 
       @datapath_networks = []
     end
-    
+
     def to_hash
       Vnet::Openflow::Tunnel.new(id: @id,
                                  uuid: @uuid,
                                  port_name: @display_name,
-                                 
+
                                  dst_id: @dst_id,
                                  dst_dpid: @dst_dpid,
                                  dst_ipv4_address: @dst_ipv4_address,
                                  protocol: @protocol,
-                                 
+
                                  datapath_networks_size: @datapath_networks.size,
                                  )
     end

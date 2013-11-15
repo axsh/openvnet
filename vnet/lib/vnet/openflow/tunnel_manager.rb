@@ -178,7 +178,15 @@ module Vnet::Openflow
     #
 
     def item_initialize(params)
-      Tunnels::Base.new(params)
+      case params[:protocol]
+      when "gre"
+        Tunnels::Gre.new(params)
+      when "vxlan"
+        Tunnels::Vxlan.new(params)
+      else
+        error log_format("unknown type of protocol", params[:protocol])
+        nil
+      end
     end
 
     def select_item(filter)
@@ -186,7 +194,7 @@ module Vnet::Openflow
       # proper event barrier.
       MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit
     end
-    
+
     def create_item(item_map, params)
       item = item_initialize(dp_info: @dp_info,
                              manager: self,
@@ -223,18 +231,23 @@ module Vnet::Openflow
     end
 
     def update_network_id(network_id)
-      actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
-
+      list = {}
       @items.select { |item_id, item|
         next false if item.port_number.nil?
-
         item.datapath_networks.any? { |dpn| dpn[:network_id] == network_id }
-
-      }.each { |item_id, item|
-        actions << {:output => item.port_number}
+      }.each {|id, item|
+        if list[item.protocol].nil?
+          list[item.protocol] = [:tunnel_id => network_id | item.mask]
+        end
+        list[item.protocol] << {:output => item.port_number}
       }
 
       cookie = network_id | COOKIE_TYPE_NETWORK
+
+      actions = []
+      list.each_value { |v| 
+        actions.concat(v)
+      }
 
       flows = []
       flows << flow_create(:default,

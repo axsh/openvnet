@@ -17,10 +17,12 @@ module Vnet::Openflow::Networks
       fo_network_md = flow_options.merge(network_md)
 
       flows = []
-      flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
-                             :tunnel_id => @id | TUNNEL_FLAG_MASK
-                           }, nil,
-                           fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
+      [GRE_FLAG_MASK, VXLAN_FLAG_MASK].each do |flag|
+        flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
+                               :tunnel_id => @id | flag
+                             }, nil,
+                             fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
+      end
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 40,
                            network_md,
                            nil,

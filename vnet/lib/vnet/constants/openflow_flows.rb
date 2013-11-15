@@ -177,14 +177,12 @@ module Vnet
       #
 
       # constants for gre
-      # TUNNEL_FLAG = (0x1 << 31)
-      # TUNNEL_FLAG_MASK = 0x80000000
-      # TUNNEL_NETWORK_MASK = 0x7fffffff
+      GRE_FLAG = (0x1 << 31)
+      GRE_FLAG_MASK = 0x80000000
 
       # constants for vxlan
-      TUNNEL_FLAG = (0x1 << 23)
-      TUNNEL_FLAG_MASK = 0x800000
-      TUNNEL_NETWORK_MASK = 0x7fffff
+      VXLAN_FLAG = (0x1 << 23)
+      VXLAN_FLAG_MASK = 0x800000
 
       TUNNEL_ROUTE_LINK = 0x1
 

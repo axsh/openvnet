@@ -236,6 +236,8 @@ module Vnet
 
     module Tunnels
       autoload :Base, 'vnet/openflow/tunnels/base'
+      autoload :Gre, 'vnet/openflow/tunnels/gre'
+      autoload :Vxlan, 'vnet/openflow/tunnels/vxlan'
     end
 
     module Translations
