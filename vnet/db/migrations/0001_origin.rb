@@ -191,6 +191,7 @@ Sequel.migration do
       String :display_name, :index => true, :null => false
       Integer :src_datapath_id, :index => true, :null => false
       Integer :dst_datapath_id, :index => true, :null => false
+      String :protocol, :index => true, :null => false
 
       index [:src_datapath_id, :dst_datapath_id]
     end

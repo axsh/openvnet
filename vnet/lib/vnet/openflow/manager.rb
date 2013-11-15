@@ -4,27 +4,15 @@ module Vnet::Openflow
 
   class Manager
     include Celluloid
-    include Celluloid::Notifications
     include Celluloid::Logger
     include FlowHelpers
-    include Vnet::Event
-
-    class << self
-      def events
-        @events ||= {}
-      end
-
-      def subscribe_event(event, method = nil, &bloc)
-        self.events[event] = method
-      end
-    end
+    include Vnet::Event::Notifications
 
     def initialize(dp_info)
       @dp_info = dp_info
 
       @datapath_info = nil
       @items = {}
-      subscribe_events
     end
 
     def item(params)
@@ -83,18 +71,6 @@ module Vnet::Openflow
       
       # We need to update remote interfaces in case they are now in
       # our datapath.
-    end
-
-    def handle_event(event, params)
-      debug log_format("handle event #{event}", "#{params.inspect}")
-
-      item = @items[params[:target_id]]
-      handler = self.class.events[event]
-      if item && handler
-        __send__(handler, item, params)
-      end
-
-      return nil
     end
 
     #
@@ -175,21 +151,22 @@ module Vnet::Openflow
         return item if item
       end
 
-      create_item(item_map, params)
+      item_initialize(item_map).tap do |item|
+        return unless item
+        @items[item_map.id] = item
+        publish(initialized_item_event, params.merge(id: item_map.id,
+                                                     item_map: item_map))
+      end
     end
 
-    def subscribe_events
-      self.class.events.each do |event, method|
-        # FIXME
-        # We should raise error if Celluloid::Notifications is not working.
-        # If you know how to start notifier actor correctly in rspec, remove 'begin ~ rescue' clouse.
-        begin
-          subscribe(event, :handle_event)
-        rescue Celluloid::DeadActorError => e
-          error e.message
-          error e.backtrace
-        end
-      end
+    def item_initialize(item_map)
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
+    def initialized_item_event
+      # Must be implemented by subclass
+      raise NotImplementedError
     end
 
     #
@@ -209,6 +186,8 @@ module Vnet::Openflow
       end
     end
 
+    def log_format(message, values = nil)
+      "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: #{message}" + (values ? " (#{values})" : '')
+    end
   end
-
 end

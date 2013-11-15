@@ -20,7 +20,7 @@ module Vnet::NodeApi
 
       def destroy(uuid)
         transaction do
-          model_class[uuid].destroy
+          model_class[uuid].tap(&:destroy)
         end
       end
 

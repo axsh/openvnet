@@ -2,6 +2,13 @@
 
 module Vnet::Openflow::Ports
 
+  module Install
+    def install
+      @installed = true
+      super
+    end
+  end
+
   class Base
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
@@ -15,16 +22,25 @@ module Vnet::Openflow::Ports
     # Work-around...
     attr_accessor :dst_id
 
+    def extend(m)
+      # `install` method will set true to @installed automatically
+      m.class_eval { prepend Install }
+      super
+    end
+
     def initialize(dp_info, port_info)
       @dp_info = dp_info
       @port_info = port_info
 
       @cookie = self.port_number | COOKIE_TYPE_PORT
+
+      @installed = false
     end
 
     def port_number
       @port_info.port_no
     end
+    alias_method :id, :port_number
 
     def port_name
       @port_info.name
@@ -50,6 +66,10 @@ module Vnet::Openflow::Ports
 
     def install
       error "port: No install action implemented for this port."
+    end
+
+    def installed?
+      !!@installed
     end
 
     def uninstall

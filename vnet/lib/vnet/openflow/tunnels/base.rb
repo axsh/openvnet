@@ -32,7 +32,7 @@ module Vnet::Openflow::Tunnels
       @dst_id = params[:dst_dp_map].id
       @dst_dpid = params[:dst_dp_map].dpid
       @dst_ipv4_address = IPAddr.new(params[:dst_dp_map].ipv4_address, Socket::AF_INET)
-      @protocol = params[:protocol]
+      @protocol = params[:map].protocol
 
       @datapath_networks = []
     end

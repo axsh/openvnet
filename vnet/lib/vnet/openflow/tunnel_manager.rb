@@ -46,15 +46,16 @@ module Vnet::Openflow
       MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
         item = item_by_params(dst_id: target_dp_map.id,
                               dst_dp_map: target_dp_map)
-        
+
         tp = find_tunneling_protocol(@datapath_info.datapath_map.dc_segment_id, target_dp_map.dc_segment_id)
-        
-        protocol = case tp
-                   when nil then 'gre'
-                   else 
-                     tp[:protocol]
-                   end
-        
+
+        protocol = tp[:protocol] ? tp[:protocol] : 'gre'
+                   # case tp
+                   # when nil then 'gre'
+                   # else
+                   #   tp[:protocol]
+                   # end
+
         if protocol != 'gre' && protocol != 'vxlan'
           error log_format("unknown tunneling protocol", protocol)
           return nil
@@ -63,11 +64,11 @@ module Vnet::Openflow
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
         tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
                                        dst_datapath_id: target_dp_map.id,
-                                       display_name: tunnel_name)
+                                       display_name: tunnel_name,
+                                       protocol: protocol)
 
-        create_item(tunnel_map,
-                    dst_dp_map: target_dp_map,
-                    protocol: protocol)
+        tunnel_map.dst_dp_map = target_dp_map
+        create_item(item_map: tunnel_map)
       }
     end
 
@@ -177,7 +178,14 @@ module Vnet::Openflow
     # Create / Delete tunnels:
     #
 
-    def item_initialize(params)
+    def item_initialize(item_map)
+      params = {
+        :dp_info => @dp_info,
+        :manager => self,
+        :map => item_map,
+        :dst_dp_map => item_map.dst_dp_map
+      }
+
       case params[:protocol]
       when "gre"
         Tunnels::Gre.new(params)
@@ -189,18 +197,20 @@ module Vnet::Openflow
       end
     end
 
+    def initialized_item_event
+      INITIALIZED_TUNNEL
+    end
+
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
       MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit
     end
 
-    def create_item(item_map, params)
-      item = item_initialize(dp_info: @dp_info,
-                             manager: self,
-                             map: item_map,
-                             dst_dp_map: params[:dst_dp_map],
-                             protocol: params[:protocol])
+    def create_item(params)
+      item_map = params[:item_map]
+      item = item_initialize(item_map)
+
       return nil if item.nil?
 
       @items[item_map.id] = item

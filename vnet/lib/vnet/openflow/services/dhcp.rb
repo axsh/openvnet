@@ -22,30 +22,6 @@ module Vnet::Openflow::Services
                            match_interface: @interface_id,
                            cookie: self.cookie)
 
-      # This should handled by events.
-      interface = @dp_info.interface_manager.item(id: @interface_id,
-                                                  dynamic_load: false)
-      return if interface.nil?
-
-      interface.mac_addresses.each { |mac_lease_id, mac_info|
-        mac_info[:ipv4_addresses].each { |ipv4_info|
-          flows << flow_create(:default,
-                               table: TABLE_FLOOD_SIMULATED,
-                               goto_table: TABLE_OUTPUT_INTERFACE,
-                               priority: 30,
-                               match: {
-                                 :eth_type => 0x0800,
-                                 :ip_proto => 0x11,
-                                 :ipv4_dst => IPV4_BROADCAST,
-                                 :ipv4_src => IPV4_ZERO,
-                                 :udp_dst => 67,
-                                 :udp_src => 68
-                               },
-                               match_network: ipv4_info[:network_id],
-                               write_interface: interface.id)
-        }
-      }
-
       @dp_info.add_flows(flows)
     end
 
@@ -99,6 +75,26 @@ module Vnet::Openflow::Services
                        :dst_port => 68,
                        :payload => dhcp_out.pack
                      })
+    end
+
+    def add_network(network_id, cookie_id)
+      flows = []
+      flows << flow_create(:default,
+                           table: TABLE_FLOOD_SIMULATED,
+                           goto_table: TABLE_OUTPUT_INTERFACE,
+                           priority: 30,
+                           match: {
+                             :eth_type => 0x0800,
+                             :ip_proto => 0x11,
+                             :ipv4_dst => IPV4_BROADCAST,
+                             :ipv4_src => IPV4_ZERO,
+                             :udp_dst => 67,
+                             :udp_src => 68
+                           },
+                           cookie: cookie_for_network(cookie_id),
+                           match_network: network_id,
+                           write_interface: @interface_id)
+      @dp_info.add_flows(flows)
     end
 
     #
