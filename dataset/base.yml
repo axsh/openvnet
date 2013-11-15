@@ -20,3 +20,38 @@ datapaths:
     ipv4_address: <%= dp3_ipv4_address %>
     dpid: "0x0000cccccccccccc"
     dc_segment_uuid: ds-2
+
+networks:
+
+  - uuid: nw-public
+    display_name: public
+    ipv4_network: <%= public_ipv4_network %>
+    ipv4_prefix: <%= public_ipv4_prefix %>
+    domain_name: public
+    network_mode: physical
+
+interfaces:
+
+  - uuid: if-dp1eth0
+    mode: host
+    port_name: eth0
+    owner_datapath_uuid: dp-1
+    network_uuid: nw-public
+    mac_address: "02:01:00:00:00:01"
+    ipv4_address: <%= dp1_ipv4_address %>
+
+  - uuid: if-dp2eth0
+    mode: host
+    port_name: eth0
+    owner_datapath_uuid: dp-2
+    network_uuid: nw-public
+    mac_address: "02:01:00:00:00:02"
+    ipv4_address: <%= dp2_ipv4_address %>
+
+  - uuid: if-dp3eth0
+    mode: host
+    port_name: eth0
+    owner_datapath_uuid: dp-3
+    network_uuid: nw-public
+    mac_address: "02:01:00:00:00:03"
+    ipv4_address: <%= dp3_ipv4_address %>
