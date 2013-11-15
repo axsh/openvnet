@@ -5,12 +5,11 @@ module Vnet::Openflow::Interfaces
   class Vif < Base
 
     def add_security_groups
-      @dp_info.security_group_manager.catch_ingress_packet(self)
+      @dp_info.security_group_manager.apply_rules(self)
     end
 
     def del_security_groups
       @dp_info.security_group_manager.remove_rules(self)
-      @dp_info.security_group_manager.remove_catch_ingress(self)
       @dp_info.connection_manager.close_connections(self)
       @dp_info.connection_manager.remove_catch_new_egress(self)
     end

@@ -234,9 +234,6 @@ module Vnet
     end
 
     module SecurityGroups
-      IDLE_TIMEOUT  = 1200
-      RULE_PRIORITY = 10
-
       autoload :SecurityGroup, 'vnet/openflow/security_groups/security_group'
     end
 

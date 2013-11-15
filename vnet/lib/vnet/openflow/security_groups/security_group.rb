@@ -7,6 +7,8 @@ module Vnet::Openflow::SecurityGroups
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 
+    RULE_PRIORITY = 10
+
     attr_reader :cookie
 
     def initialize(s_ipv4, port, cookie)
@@ -23,7 +25,6 @@ module Vnet::Openflow::SecurityGroups
         match_metadata: {interface: interface.id},
         match: match_ipv4_subnet_src(@s_ipv4.u32, @s_ipv4.prefix.to_i).merge(match),
         cookie: @cookie,
-        idle_timeout: IDLE_TIMEOUT,
         goto_table: TABLE_INTERFACE_VIF
       )
     end
@@ -76,21 +77,10 @@ module Vnet::Openflow::SecurityGroups
 
     def install(interface)
       debug "installing security group '#{@uuid}' for interface '#{interface.uuid}'"
-      (@icmp_rules + @udp_rules + @tcp_rules).map { |r| r.install(interface) } <<
-      install_drop_flow(interface)
+      (@icmp_rules + @udp_rules + @tcp_rules).map { |r| r.install(interface) }
     end
 
     private
-    def install_drop_flow(interface)
-      flow_create(:default,
-                  table: TABLE_INTERFACE_INGRESS_FILTER,
-                  priority: 2,
-                  idle_timeout: IDLE_TIMEOUT,
-                  match_metadata: { interface: interface.id},
-                  cookie: cookie,
-                  goto_table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP)
-    end
-
     def rule_factory(rule_string)
       protocol, port, ipv4 = rule_string.split(":")
       case protocol
