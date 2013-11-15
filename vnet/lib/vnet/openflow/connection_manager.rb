@@ -3,6 +3,7 @@
 module Vnet::Openflow
   class ConnectionManager < Manager
     include Vnet::Openflow::FlowHelpers
+    include Celluloid::Logger
 
     COOKIE_TAG_CATCH_FLOW         = 0x1 << COOKIE_TAG_SHIFT
     COOKIE_TAG_INGRESS_CONNECTION = 0x2 << COOKIE_TAG_SHIFT
@@ -37,6 +38,7 @@ module Vnet::Openflow
     end
 
     def close_connections(interface)
+      debug "Closing all connections for interface '#{interface.uuid}'"
       @dp_info.del_cookie Connections::Base.cookie(interface.id)
     end
 
