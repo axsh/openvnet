@@ -49,12 +49,11 @@ module Vnet::Openflow
 
         tp = find_tunneling_protocol(@datapath_info.datapath_map.dc_segment_id, target_dp_map.dc_segment_id)
 
-        protocol = tp[:protocol] ? tp[:protocol] : 'gre'
-                   # case tp
-                   # when nil then 'gre'
-                   # else
-                   #   tp[:protocol]
-                   # end
+        protocol = case tp
+                   when nil then 'gre'
+                   else
+                     tp[:protocol]
+                   end
 
         if protocol != 'gre' && protocol != 'vxlan'
           error log_format("unknown tunneling protocol", protocol)
@@ -186,13 +185,13 @@ module Vnet::Openflow
         :dst_dp_map => item_map.dst_dp_map
       }
 
-      case params[:protocol]
+      case params[:map].protocol
       when "gre"
         Tunnels::Gre.new(params)
       when "vxlan"
         Tunnels::Vxlan.new(params)
       else
-        error log_format("unknown type of protocol", params[:protocol])
+        error log_format("unknown type of protocol", params[:map].protocol)
         nil
       end
     end
