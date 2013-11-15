@@ -1,12 +1,5 @@
 networks:
 
-  - uuid: nw-public
-    display_name: public
-    ipv4_network: <%= public_ipv4_network %>
-    ipv4_prefix: <%= public_ipv4_prefix %>
-    domain_name: public
-    network_mode: physical
-
   - uuid: nw-vnet1
     display_name: vnet1
     ipv4_network: 10.101.0.0
