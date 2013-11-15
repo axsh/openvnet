@@ -7,8 +7,8 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event :added_service # TODO Check if needed.
-    subscribe_event :removed_service # TODO Check if needed.
+    subscribe_event ADDED_SERVICE, :item
+    subscribe_event REMOVED_SERVICE, :delete_item
     subscribe_event INITIALIZED_SERVICE, :create_item
 
     def update_item(params)
@@ -79,16 +79,28 @@ module Vnet::Openflow
       #     interface.active_datapath_id != @datapath.datapath_id
       #   return
       # end
-      debug log_format("insert #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
+      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
 
       item.install
 
-      @dp_info.interface_manager.async.update_item(event: :add_service,
-                                                   id: item_map.interface_id,
-                                                   service: item_map.display_name.to_sym)
+      interface_item = @dp_info.interface_manager.item(id: item_map.interface_id)
+      interface_item.mac_addresses.map { |_, mac_info|  mac_info[:ipv4_addresses] }.flatten(1).compact.each do |ip_info|
+        item.add_network_unless_exists(ip_info[:network_id], ip_info[:cookie_id])
+      end
 
       item
     end    
+
+    def delete_item(params)
+      item = @items.delete(params[:id])
+      return unless item
+
+      debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.class.name.split("::").last.downcase}")
+
+      item.uninstall
+
+      item
+    end
 
     def match_item?(item, params)
       return false if params[:interface_id] && params[:interface_id] != item.interface_id
