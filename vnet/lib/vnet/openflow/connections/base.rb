@@ -7,7 +7,8 @@ module Vnet::Openflow::Connections
 
     CM = Vnet::Openflow::ConnectionManager
 
-    IDLE_TIMEOUT = 600
+    EGRESS_IDLE_TIMEOUT  = 550
+    INGRESS_IDLE_TIMEOUT = 600
 
     def self.cookie(interface_id)
       COOKIE_TYPE_CONTRACK | CM::COOKIE_TAG_INGRESS_CONNECTION | interface_id
@@ -39,7 +40,7 @@ module Vnet::Openflow::Connections
                       ipv4_src: message.ipv4_src,
                       ipv4_dst: message.ipv4_dst,
                     }.merge(match_egress(message)),
-                    idle_timeout: IDLE_TIMEOUT,
+                    idle_timeout: EGRESS_IDLE_TIMEOUT,
                     cookie: cookie(interface_id),
                     goto_table: TABLE_NETWORK_SRC_CLASSIFIER),
         flow_create(:default,
@@ -52,7 +53,7 @@ module Vnet::Openflow::Connections
                       ipv4_dst:   message.ipv4_src,
                     }.merge(match_ingress(message)),
                     match_metadata: { interface: interface_id },
-                    idle_timeout: IDLE_TIMEOUT,
+                    idle_timeout: INGRESS_IDLE_TIMEOUT,
                     cookie: cookie(interface_id),
                     goto_table: TABLE_INTERFACE_VIF)
       ]
