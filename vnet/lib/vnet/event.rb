@@ -23,6 +23,8 @@ module Vnet
     # datapatath event
     #
     INITIALIZED_DATAPATH = "initialized_datapath"
+    ADDED_DATAPATH = "added_datapath"
+    REMOVED_DATAPATH = "removed_datapath"
 
     #
     # network event
