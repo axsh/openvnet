@@ -80,7 +80,7 @@ module Vnet::Openflow
       @dp_info.add_flows [
         flow_create(:default,
                     table: TABLE_INTERFACE_INGRESS_FILTER,
-                    priority: 100,
+                    priority: 90,
                     cookie: cookie,
                     match: { eth_type: ETH_TYPE_ARP },
                     goto_table: TABLE_INTERFACE_VIF)
