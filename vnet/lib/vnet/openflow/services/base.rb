@@ -69,6 +69,10 @@ module Vnet::Openflow::Services
     def install
     end
 
+    def uninstall
+      del_cookie
+    end
+
     def packet_in(message)
     end
 
