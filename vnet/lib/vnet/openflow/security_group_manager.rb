@@ -21,8 +21,8 @@ module Vnet::Openflow
       accept_ingress_arp
     end
 
-    def apply_rules(interface)
-      interface_id = interface.id
+    def apply_rules(openflow_interface)
+      interface_id = openflow_interface.id
       interface = MW::Interface.batch[interface_id].commit
 
       groups = interface.batch.security_groups.commit.map { |g|
@@ -39,17 +39,15 @@ module Vnet::Openflow
     end
 
     def remove_rules(interface)
-      interface = MW::Interface.batch[interface.id].commit
       @dp_info.del_cookie(accept_all_traffic_cookie(interface.id))
 
-      groups = interface.batch.security_groups.commit.map { |g|
-        Vnet::Openflow::SecurityGroups::SecurityGroup.new(g, interface.id)
-      }
+      sg_rules = COOKIE_TYPE_SECURITY_GROUP |
+        COOKIE_SG_TYPE_RULE |
+        interface.id << COOKIE_TYPE_VALUE_SHIFT
 
-      groups.each { |g|
-        debug "'#{interface.uuid}' removing rules for group '#{g.uuid}'"
-        @dp_info.del_cookie(g.cookie)
-      }
+      sg_rules_mask = COOKIE_PREFIX_MASK | COOKIE_TAG_MASK
+
+      @dp_info.del_cookie(sg_rules, sg_rules_mask)
     end
 
     private
