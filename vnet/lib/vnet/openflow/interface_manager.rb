@@ -32,7 +32,6 @@ module Vnet::Openflow
         # Check if nil... (use param :port_number to verify)
         item.update_port_number(nil)
         item.update_active_datapath(datapath_id: nil)
-        item.del_security_groups
       when :enable_router_ingress
         item.enable_router_ingress
       when :enable_router_egress
@@ -162,6 +161,8 @@ module Vnet::Openflow
       item = @items.delete(params[:id])
 
       debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+
+      item.del_security_groups
 
       item.uninstall
 
