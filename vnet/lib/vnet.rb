@@ -235,7 +235,11 @@ module Vnet
     end
 
     module SecurityGroups
-      autoload :SecurityGroup, 'vnet/openflow/security_groups/security_group'
+      autoload :Group, 'vnet/openflow/security_groups/group'
+      autoload :Rule, 'vnet/openflow/security_groups/rules'
+      autoload :ICMP, 'vnet/openflow/security_groups/rules'
+      autoload :TCP, 'vnet/openflow/security_groups/rules'
+      autoload :UDP, 'vnet/openflow/security_groups/rules'
     end
 
     module Services

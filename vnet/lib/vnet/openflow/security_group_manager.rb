@@ -8,6 +8,8 @@ module Vnet::Openflow
 
     COOKIE_SG_TYPE_TAG  = 0x1 << COOKIE_TAG_SHIFT
     COOKIE_SG_TYPE_RULE = 0x2 << COOKIE_TAG_SHIFT
+    COOKIE_SG_TYPE_REF  = 0x3 << COOKIE_TAG_SHIFT
+    COOKIE_SG_TYPE_ISO  = 0x4 << COOKIE_TAG_SHIFT
 
     COOKIE_TYPE_VALUE_SHIFT = 36
     COOKIE_TYPE_VALUE_MASK  = 0xfffff << COOKIE_TYPE_VALUE_SHIFT
@@ -26,7 +28,7 @@ module Vnet::Openflow
       interface = MW::Interface.batch[interface_id].commit
 
       groups = interface.batch.security_groups.commit.map { |g|
-        Vnet::Openflow::SecurityGroups::SecurityGroup.new(g, interface_id)
+        Vnet::Openflow::SecurityGroups::Group.new(g, interface_id)
       }
 
       flows = if groups.empty?
