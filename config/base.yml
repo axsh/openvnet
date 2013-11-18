@@ -46,3 +46,7 @@ vms:
     interfaces:
       - uuid: if-v6
         name: eth0
+legacy:
+  legacy1:
+    name: legacy-1
+    ssh_ip: 192.168.100.100

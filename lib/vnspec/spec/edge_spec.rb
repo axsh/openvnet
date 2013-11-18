@@ -2,6 +2,10 @@
 require_relative "spec_helper"
 
 describe "edge" do
+  before(:all) do
+    setup_legacy_machine
+  end
+
   describe "mac2mac" do
     it "reachable to vnet1" do
       expect(legacy1).to be_reachable_to(vm1)
@@ -13,11 +17,11 @@ describe "edge" do
 
     # context "tunnel" do
     #   it "reachable to vnet1" do
-    #     expect(vm1).to be_reachable_to(vm5)
+    #     expect(legacy1).to be_reachable_to(vm5)
     #   end
 
     #   it "not reachable to vnet2" do
-    #     expect(vm1).not_to be_reachable_to(vm6)
+    #     expect(legacy1).not_to be_reachable_to(vm6)
     #   end
     # end
   end
