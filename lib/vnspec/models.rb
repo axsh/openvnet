@@ -34,20 +34,15 @@ module Vnspec
           end
         end
 
-        def find(uuid)
-          all.find{|i| i.uuid == uuid}
-        end
-        alias_method :[], :find
-
         def create(options)
           API.request(:post, "interfaces", options) do |response|
-            return self.new(options.merge(uuid: response["uuid"])).tap do |interface|
-              if options[:mac_address] && response["mac_leases"].first
-                mac_lease = response["mac_leases"].first
-                interface.mac_leases << Models::MacLease.new(uuid: mac_lease["uuid"], interface: interface,  mac_address: mac_lease["mac_address"]).tap do |mac_lease|
-                  if options[:network_uuid] && options[:ipv4_address] && response["ip_leases"].first
-                    ip_lease = response["ip_leases"].first
-                    mac_lease.ip_leases << Models::IpLease.new(uuid: ip_lease["uuid"], mac_lease: mac_lease, ipv4_address: ip_lease["ipv4_address"], network_uuid: ip_lease["network_uuid"])
+            return self.new(options.merge(uuid: response[:uuid])).tap do |interface|
+              if options[:mac_address] && response[:mac_leases].first
+                mac_lease = response[:mac_leases].first
+                interface.mac_leases << Models::MacLease.new(uuid: mac_lease[:uuid], interface: interface,  mac_address: mac_lease[:mac_address]).tap do |mac_lease|
+                  if options[:network_uuid] && options[:ipv4_address] && response[:ip_leases].first
+                    ip_lease = response[:ip_leases].first
+                    mac_lease.ip_leases << Models::IpLease.new(uuid: ip_lease[:uuid], mac_lease: mac_lease, ipv4_address: ip_lease[:ipv4_address], network_uuid: ip_lease[:network_uuid])
                   end
                 end
               end
@@ -88,7 +83,7 @@ module Vnspec
       class << self
         def create(interface, options)
           API.request(:post, "mac_leases", options.merge(interface_uuid: interface.uuid)) do |response|
-            return self.new(options.merge(uuid: response["uuid"], interface: interface))
+            return self.new(options.merge(uuid: response[:uuid:], interface: interface))
           end
         end
       end
@@ -121,7 +116,7 @@ module Vnspec
       class << self
         def create(mac_lease, options)
           API.request(:post, "ip_leases", options.merge(mac_lease_uuid: mac_lease.uuid)) do |response|
-            return self.new(options.merge(uuid: response["uuid"], mac_lease: mac_lease)).tap do |instance|
+            return self.new(options.merge(uuid: response[:uuid], mac_lease: mac_lease)).tap do |instance|
             end
           end
         end
