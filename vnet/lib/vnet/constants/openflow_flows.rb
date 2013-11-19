@@ -62,8 +62,6 @@ module Vnet
       TABLE_VIRTUAL_DST            = 41
       TABLE_PHYSICAL_DST           = 42
 
-      TABLE_INTERFACE_VIF     = 44
-
       TABLE_FLOOD_SIMULATED = 50
       TABLE_FLOOD_LOCAL     = 51
       TABLE_FLOOD_ROUTE     = 52

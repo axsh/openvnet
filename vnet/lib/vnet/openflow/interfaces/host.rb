@@ -106,7 +106,7 @@ module Vnet::Openflow::Interfaces
                            match_network: ipv4_info[:network_id],
                            write_interface: @id,
                            cookie: cookie,
-                           goto_table: TABLE_INTERFACE_VIF)
+                           goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],
                            priority: 20,
@@ -115,8 +115,8 @@ module Vnet::Openflow::Interfaces
                            cookie: cookie,
                            goto_table: TABLE_OUTPUT_INTERFACE_EGRESS)
       flows << flow_create(:default,
-                           table: TABLE_INTERFACE_VIF,
-                           priority: 30,
+                           table: TABLE_OUTPUT_INTERFACE_INGRESS,
+                           priority: 10,
                            match_interface: @id,
                            actions: {
                              :output => OFPP_LOCAL
