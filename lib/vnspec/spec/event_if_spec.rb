@@ -125,10 +125,10 @@ describe "event_if" do
       before(:all) do
         vm1.remove_interface("if-v1")
       end
-  
+
       it_behaves_like "vm1(unreachable)"
     end
-  
+
     describe "add" do
       before(:all) do
         vm1.add_interface(
@@ -153,12 +153,12 @@ describe "event_if" do
             expect(vm1).to be_reachable_to(vm4)
           end
         end
-  
+
         context "tunnel" do
           it "reachable to vm5(vnet1)" do
             expect(vm1).to be_reachable_to(vm5)
           end
-  
+
           it "reachable to vm6(vnet2)" do
             expect(vm1).to be_reachable_to(vm6)
           end
