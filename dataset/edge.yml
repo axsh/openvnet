@@ -1,12 +1,5 @@
 networks:
 
-  - uuid: nw-public
-    display_name: public
-    ipv4_network: <%= public_ipv4_network %>
-    ipv4_prefix: <%= public_ipv4_prefix %>
-    domain_name: public
-    network_mode: physical
-
   - uuid: nw-vnet1
     display_name: vnet1
     ipv4_network: 10.101.0.0
@@ -139,7 +132,20 @@ datapath_networks:
     network_uuid: nw-vnet2
     broadcast_mac_address: "02:00:00:cc:00:02"
 
+  - datapath_uuid: dp-edge
+    network_uuid: nw-public
+    broadcast_mac_address: "02:00:01:dd:01:01"
+
+  - datapath_uuid: dp-edge
+    network_uuid: nw-vnet1
+    broadcast_mac_address: "02:00:00:dd:00:01"
+
+  - datapath_uuid: dp-edge
+    network_uuid: nw-vnet2
+    broadcast_mac_address: "02:00:00:dd:00:02"
+
 vlan_translations:
   - vlan_id: 100
-    network_uuid: nw-vnet1
+    network_id: 2
+    interface_uuid: if-edge
 

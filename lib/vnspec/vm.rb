@@ -6,6 +6,7 @@ module Vnspec
     include Logger
 
     class << self
+      include SSH
       include Config
       include Logger
 
@@ -24,6 +25,10 @@ module Vnspec
                 end
               end
             end
+          end
+
+          config[:legacy_network].each do |k,v|
+            ssh(vm.host_ip, "ssh #{vm.ssh_ip} route add -net #{v[:ipv4]}/#{v[:prefix]} dev eth0", {})
           end
         end
       end
