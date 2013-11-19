@@ -90,7 +90,7 @@ module Vnspec
       class << self
         def create(interface, options)
           API.request(:post, "mac_leases", options.merge(interface_uuid: interface.uuid)) do |response|
-            return self.new(options.merge(uuid: response[:uuid:], interface: interface))
+            return self.new(options.merge(uuid: response[:uuid], interface: interface))
           end
         end
       end
