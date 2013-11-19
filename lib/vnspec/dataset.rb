@@ -44,8 +44,11 @@ module Vnspec
 
     private
     def  init_dataset
-      @dataset = ["base", name].inject({}) do |h, n|
-        h.merge(load_file(n))
+      @dataset = ["base", name].each_with_object({}) do |n, h|
+        load_file(n).each do |k, v|
+          h[k] ||= []
+          h[k] += v
+        end
       end
     end
 
