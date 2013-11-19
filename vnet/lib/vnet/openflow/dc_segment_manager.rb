@@ -64,6 +64,7 @@ module Vnet::Openflow
                          goto_table: TABLE_OUTPUT_MAC2MAC,
                          priority: 5,
                          match_datapath: dpn_map.datapath_id,
+                         match_ignore_mac2mac: false,
                          write_mac2mac: true,
                          cookie: dpn_map.datapath_id | COOKIE_TYPE_DATAPATH)
       @dp_info.add_flow(flow)

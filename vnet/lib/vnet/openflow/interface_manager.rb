@@ -69,6 +69,13 @@ module Vnet::Openflow
       return false if params[:mode] && params[:mode] != item.mode
       return false if params[:port_number] && params[:port_number] != item.port_number
       return false if params[:port_name] && params[:port_name] != item.port_name
+
+      if params.has_key? :owner_datapath_id
+        return false if params[:owner_datapath_id].nil? && item.owner_datapath_ids
+        return false if params[:owner_datapath_id] && item.owner_datapath_ids.nil?
+        return false if params[:owner_datapath_id] && item.owner_datapath_ids.find_index(params[:owner_datapath_id]).nil?
+      end
+
       true
     end
 
@@ -77,9 +84,12 @@ module Vnet::Openflow
       case
       when params[:id]   then {:id => params[:id]}
       when params[:uuid] then params[:uuid]
-      when params[:owner_datapath_id] && params[:port_name] then
+      when params[:owner_datapath_id] && params[:port_name]
         {:owner_datapath_id => params[:owner_datapath_id], :port_name => params[:port_name]}
-      when params[:port_name] then
+      # when params[:allowed_datapath_id] && params[:port_name]
+      #   {:owner_datapath_id => params[:allowed_datapath_id], :port_name => params[:port_name]} |
+      #     {:owner_datapath_id => nil, :port_name => params[:port_name]}
+      when params[:port_name]
         { :port_name => params[:port_name] }
       else
         # Any invalid params that should cause an exception needs to
@@ -95,10 +105,11 @@ module Vnet::Openflow
                  map: item_map }
 
       case mode
-      when :simulated then Interfaces::Simulated.new(params)
-      when :remote then Interfaces::Remote.new(params)
-      when :vif then Interfaces::Vif.new(params)
       when :edge then Interfaces::Edge.new(params)
+      when :host then Interfaces::Host.new(params)
+      when :remote then Interfaces::Remote.new(params)
+      when :simulated then Interfaces::Simulated.new(params)
+      when :vif then Interfaces::Vif.new(params)
       else
         Interfaces::Base.new(params)
       end

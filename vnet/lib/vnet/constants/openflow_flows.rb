@@ -64,11 +64,6 @@ module Vnet
 
       TABLE_INTERFACE_VIF     = 44
 
-      # Route based on the mac address only.
-      #
-      # Deprecated...
-      TABLE_MAC_ROUTE       = 45
-
       TABLE_FLOOD_SIMULATED = 50
       TABLE_FLOOD_LOCAL     = 51
       TABLE_FLOOD_ROUTE     = 52
@@ -84,14 +79,10 @@ module Vnet
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-
-      # TODO: Fix this...
-      TABLE_OUTPUT_ROUTE_LINK      = 61
-      TABLE_OUTPUT_ROUTE_LINK_HACK = 62
-
-      TABLE_OUTPUT_DATAPATH  = 63
-      TABLE_OUTPUT_MAC2MAC   = 64
-      TABLE_OUTPUT_INTERFACE = 65
+      TABLE_OUTPUT_ROUTE_LINK = 61
+      TABLE_OUTPUT_DATAPATH   = 62
+      TABLE_OUTPUT_MAC2MAC    = 63
+      TABLE_OUTPUT_INTERFACE  = 64
 
       #
       # Cookie constants:
@@ -148,15 +139,16 @@ module Vnet
       METADATA_FLAG_VIF        = (0x020 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_MAC2MAC    = (0x040 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_TUNNEL     = (0x080 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_IGNORE_MAC2MAC = (0x100 << METADATA_FLAGS_SHIFT)
 
       # Allow reflection for this packet, such that if the ingress
       # port is the same as the egress port we will use the
       # 'output:OFPP_IN_PORT' action.
-      METADATA_FLAG_REFLECTION = (0x100 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_REFLECTION = (0x200 << METADATA_FLAGS_SHIFT)
 
       # Don't pass this packet to the controller, e.g. to look up
       # routing information.
-      METADATA_FLAG_NO_CONTROLLER = (0x200 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_NO_CONTROLLER = (0x400 << METADATA_FLAGS_SHIFT)
 
       METADATA_TYPE_SHIFT      = 56
       METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)

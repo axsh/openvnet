@@ -5,7 +5,7 @@ module Vnet::Openflow::Interfaces
   # Simulated interfaces does all packet handling using the OpenFlow
   # controller.
 
-  class Simulated < Base
+  class Simulated < IfBase
     include Vnet::Openflow::ArpLookup
 
     def initialize(params)
@@ -22,6 +22,7 @@ module Vnet::Openflow::Interfaces
       mac_info = super
 
       flows = []
+      flows_for_mac(flows, mac_info)
       flows_for_interface_mac(flows, mac_info)
       flows_for_router_ingress_mac(flows, mac_info) if @router_ingress == true
       flows_for_router_egress_mac(flows, mac_info) if @router_egress == true
@@ -185,10 +186,8 @@ module Vnet::Openflow::Interfaces
                            cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
     end
 
-    # TODO: Separate the mac-only flows and add those when
-    # add_mac_address is called.
-    def flows_for_ipv4(flows, mac_info, ipv4_info)
-      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+    def flows_for_mac(flows, mac_info)
+      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
       #
       # Classifiers:
@@ -200,10 +199,45 @@ module Vnet::Openflow::Interfaces
                            },
                            write_interface_id: @id,
                            cookie: cookie)
+    end
 
+    # TODO: Separate the mac-only flows and add those when
+    # add_mac_address is called.
+    def flows_for_ipv4(flows, mac_info, ipv4_info)
+      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+
+      #
+      # ARP:
+      #
+      # TODO: Fix this so it is more secure...
+      flows << flow_create(:default,
+                           table_network_src: ipv4_info[:network_type],
+                           goto_table: TABLE_ROUTE_INGRESS,
+                           priority: 86,
+                           match: {
+                             :eth_type => 0x0806,
+                             :eth_src => mac_info[:mac_address],
+                             :arp_spa => ipv4_info[:ipv4_address],
+                             :arp_sha => mac_info[:mac_address]
+                           },
+                           match_network: ipv4_info[:network_id],
+                           match_local: true,
+                           cookie: cookie)
       #
       # IPv4:
       #
+      # TODO: Fix this so it is more secure...
+      flows << flow_create(:default,
+                           table_network_src: ipv4_info[:network_type],
+                           goto_table: TABLE_ROUTE_INGRESS,
+                           priority: 45,
+                           match: {
+                             :eth_type => 0x0800,
+                             :eth_src => mac_info[:mac_address],
+                             # :ipv4_src => ipv4_info[:ipv4_address]
+                           },
+                           match_network: ipv4_info[:network_id],
+                           cookie: cookie)
 
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],

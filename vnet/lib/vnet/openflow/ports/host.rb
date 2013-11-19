@@ -5,6 +5,8 @@ module Vnet::Openflow::Ports
   module Host
     include Vnet::Openflow::FlowHelpers
 
+    attr_accessor :interface_id
+
     def port_type
       :host
     end
@@ -24,10 +26,19 @@ module Vnet::Openflow::Ports
       goto_table_on_table_classifier = @dp_info.datapath.datapath_map.node_id == 'edge' ? TABLE_EDGE_SRC : TABLE_HOST_PORTS
 
       flows = []
-      flows << Flow.create(TABLE_CLASSIFIER, 2, {
+      # flows << Flow.create(TABLE_CLASSIFIER, 2, {
+      #                        :in_port => self.port_number
+      #                      }, nil,
+      #                      set_remote_md.merge(:goto_table => goto_table_on_table_classifier))
+      flows << flow_create(:default,
+                           table: TABLE_CLASSIFIER,
+                           goto_table: goto_table_on_table_classifier,
+                           priority: 2,
+                           match: {
                              :in_port => self.port_number
-                           }, nil,
-                           set_remote_md.merge(:goto_table => goto_table_on_table_classifier))
+                           },
+                           write_remote: true)
+
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
                            }, nil,
@@ -60,17 +71,6 @@ module Vnet::Openflow::Ports
 
       # For now set the latest eth port as the default MAC2MAC output
       # port.
-      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK_HACK, 2,
-                           reflection_mac2mac_md.merge(:in_port => self.port_number), {
-                             :output => OFPP_IN_PORT
-                           },
-                           flow_options)
-      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK_HACK, 1,
-                           md_create(:mac2mac => nil), {
-                             :output => self.port_number
-                           },
-                           flow_options)
-
       flows << Flow.create(TABLE_OUTPUT_MAC2MAC, 2,
                            reflection_mac2mac_md.merge(:in_port => self.port_number), {
                              :output => OFPP_IN_PORT
@@ -92,8 +92,6 @@ module Vnet::Openflow::Ports
                            flow_options)
 
       @dp_info.add_flows(flows)
-      @dp_info.network_manager.async.update_all_flows
-
       @dp_info.dc_segment_manager.async.update(event: :insert_port_number,
                                                port_number: self.port_number)
     end
