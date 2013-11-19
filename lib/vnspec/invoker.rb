@@ -33,7 +33,7 @@ module Vnspec
         end
         logger.info("-" * 50)
 
-         return statuses.all?{|n, s| s }
+        return statuses.all?{|n, s| s }
       end
       unless config[:specs].member?(name.to_s)
         logger.error("spec not found: #{name}")
