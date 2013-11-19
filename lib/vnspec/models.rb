@@ -18,6 +18,13 @@ module Vnspec
       def ==(other)
         self.uuid == other.uuid
       end
+
+      class << self
+        def find(uuid)
+          all.find{|i| i.uuid == uuid}
+        end
+        alias_method :[], :find
+      end
     end
 
     class Interface < Base
