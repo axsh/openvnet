@@ -120,7 +120,6 @@ describe "event_if" do
     end
   end
 
-  #describe "interface", focus: true do
   describe "interface" do
     describe "remove" do
       before(:all) do
