@@ -64,9 +64,8 @@ module Vnet
 
       TABLE_FLOOD_SIMULATED = 50
       TABLE_FLOOD_LOCAL     = 51
-      TABLE_FLOOD_ROUTE     = 52
-      TABLE_FLOOD_SEGMENT   = 53
-      TABLE_FLOOD_TUNNELS   = 54
+      TABLE_FLOOD_SEGMENT   = 52
+      TABLE_FLOOD_TUNNELS   = 53
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
