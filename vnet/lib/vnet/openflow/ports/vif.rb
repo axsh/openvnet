@@ -28,8 +28,8 @@ module Vnet::Openflow::Ports
                            write_local: true,
                            goto_table: TABLE_INTERFACE_CLASSIFIER)
       flows << flow_create(:default,
-                           table: TABLE_INTERFACE_VIF,
-                           priority: 30,
+                           table: TABLE_OUTPUT_INTERFACE_INGRESS,
+                           priority: 10,
                            match_interface: @interface_id,
                            actions: {
                              :output => self.port_number

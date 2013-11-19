@@ -55,14 +55,14 @@ module Vnet::Openflow
        TABLE_ARP_LOOKUP,
        TABLE_VIRTUAL_DST,
        TABLE_PHYSICAL_DST,
-       TABLE_INTERFACE_VIF,
        TABLE_FLOOD_LOCAL,
        TABLE_FLOOD_ROUTE,
        TABLE_FLOOD_TUNNELS,
        TABLE_OUTPUT_ROUTE_LINK,
        TABLE_OUTPUT_DATAPATH,
        TABLE_OUTPUT_MAC2MAC,
-       TABLE_OUTPUT_INTERFACE,
+       TABLE_OUTPUT_INTERFACE_INGRESS,
+       TABLE_OUTPUT_INTERFACE_EGRESS,
       ].each { |table|
         flows << Flow.create(table, 0, {}, nil, flow_options)
       }
