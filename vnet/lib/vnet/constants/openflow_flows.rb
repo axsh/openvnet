@@ -79,10 +79,11 @@ module Vnet
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_OUTPUT_ROUTE_LINK = 61
-      TABLE_OUTPUT_DATAPATH   = 62
-      TABLE_OUTPUT_MAC2MAC    = 63
-      TABLE_OUTPUT_INTERFACE  = 64
+      TABLE_OUTPUT_ROUTE_LINK        = 61
+      TABLE_OUTPUT_DATAPATH          = 62
+      TABLE_OUTPUT_MAC2MAC           = 63
+      TABLE_OUTPUT_INTERFACE_INGRESS = 64
+      TABLE_OUTPUT_INTERFACE_EGRESS  = 65
 
       #
       # Cookie constants:
