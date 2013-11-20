@@ -118,6 +118,8 @@ module Vnet::Openflow
 
       port.uninstall
 
+      debug log_format("uninstall #{port.id}")
+
       @dp_info.interface_manager.update_item(event: :clear_port_number,
                                              port_number: port.port_number,
                                              dynamic_load: false)
