@@ -118,6 +118,10 @@ module Vnet::Openflow
       @switch = Switch.new(self)
       @switch.create_default_flows
 
+      switch_ready
+    end
+
+    def switch_ready
       # TODO: Don't store the datapath_map...
       @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
 
@@ -129,6 +133,11 @@ module Vnet::Openflow
       initialize_datapath_info
 
       @switch.switch_ready
+    end
+
+    def reset
+      del_all_flows
+      @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
     #
@@ -173,6 +182,19 @@ module Vnet::Openflow
         flows.each { |flow|
           @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
         }
+      }
+    end
+
+    def del_all_flows
+      options = {
+        :command => Controller::OFPFC_DELETE,
+        :table_id => Controller::OFPTT_ALL,
+        :out_port => Controller::OFPP_ANY,
+        :out_group => Controller::OFPG_ANY,
+      }
+
+      @controller.pass_task {
+        @controller.public_send_flow_mod(@dp_info.dpid, options)
       }
     end
 

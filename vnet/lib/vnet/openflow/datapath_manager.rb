@@ -7,9 +7,9 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event :added_service # TODO Check if needed.
-    subscribe_event :removed_service # TODO Check if needed.
-    subscribe_event INITIALIZED_DATAPATH, :create_item
+    subscribe_event ADDED_DATAPATH, :create_item
+    subscribe_event REMOVED_DATAPATH, :delete_item
+    subscribe_event INITIALIZED_DATAPATH, :install_item
 
     #
     # Networks:
@@ -71,22 +71,34 @@ module Vnet::Openflow
       INITIALIZED_DATAPATH
     end
 
-    def create_item(params)
+    def install_item(params)
       item_map = params[:item_map]
       item = @items[item_map.id]
       return unless item
 
-      debug log_format("insert #{item_map.uuid}/#{item_map.id}")
+      debug log_format("install #{item_map.uuid}/#{item_map.id}")
 
       item.install
+
       item
     end
 
-    def delete_item(item)
-      @items.delete(item.id)
+    def create_item(params)
+      debug log_format("creating datapath id: #{params[:id]}")
+      return if @items[params[:id]]
+      item(params)
+      @dp_info.datapath.switch_ready
+    end
 
-      item.uninstall
-      item
+    def delete_item(params)
+      debug log_format("deleting datapath id: #{params[:id]}")
+      item = @items.delete(params[:id])
+      debug log_format("#{item.dpid}")
+      debug log_format("#{@dp_info.dpid}")
+      return unless item
+      return unless item.dpid == @dp_info.dpid
+
+      @dp_info.datapath.reset
     end
 
     #

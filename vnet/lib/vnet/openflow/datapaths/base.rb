@@ -21,6 +21,10 @@ module Vnet::Openflow::Datapaths
       @active_networks = {}
     end
     
+    def dpid
+      @dp_info.dpid
+    end
+
     def cookie(tag = nil)
       value = @id | COOKIE_TYPE_INTERFACE
       tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))

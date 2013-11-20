@@ -25,23 +25,7 @@ module Vnet::Openflow
 
     def switch_ready(dpid)
       info "switch_ready from %#x." % dpid
-
-      # Sometimes ovs changes the datapath ID and reconnects.
-      old_datapath = @datapaths.delete(dpid)
-
-      if old_datapath
-        info "found old bridge: dpid:%016x" % dpid
-      end
-
-      # There is no need to clean up the old switch, as all the
-      # previous flows are removed. Just let it rebuild everything.
-      #
-      # This might not be optimal in cases where the switch got
-      # disconnected for a short period, as Open vSwitch has the
-      # ability to keep flows between sessions.
-      datapath = @datapaths[dpid] = Datapath.new(self, dpid, OvsOfctl.new(dpid))
-
-      datapath.async.create_switch
+      initialize_datapath(dpid)
     end
 
     def features_reply(dpid, message)
@@ -109,6 +93,41 @@ module Vnet::Openflow
                         :packet_in => message,
                         :actions => [Trema::Actions::SendOutPort.new(:port_number => port_no)]
                       })
+    end
+
+    def reset_datapath(dpid)
+      terminate_datapath(dpid)
+      initialize_datapath(dpid)
+    end
+
+    def initialize_datapath(dpid)
+      info "initialize datapath actor. dpid: #{dpid}"
+
+      # Sometimes ovs changes the datapath ID and reconnects.
+      old_datapath = @datapaths.delete(dpid)
+
+      if old_datapath
+        info "found old bridge: dpid:%016x" % dpid
+      end
+
+      # There is no need to clean up the old switch, as all the
+      # previous flows are removed. Just let it rebuild everything.
+      #
+      # This might not be optimal in cases where the switch got
+      # disconnected for a short period, as Open vSwitch has the
+      # ability to keep flows between sessions.
+      datapath = @datapaths[dpid] = Datapath.new(self, dpid, OvsOfctl.new(dpid))
+
+      datapath.async.create_switch
+    end
+
+    def terminate_datapath(dpid)
+      info "terminate datapath actor. dpid: #{dpid}"
+
+      datapath = @datapaths.delete(dpid)
+      return unless datapath
+
+      datapath.terminate
     end
 
     def update_topology(dpid, network_id)
