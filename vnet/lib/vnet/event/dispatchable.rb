@@ -5,7 +5,7 @@ module Vnet::Event
 
     def dispatch_event(event, options = {})
       self.event_handler ||= _find_event_handler
-      self.event_handler.handle_event(event, options)
+      self.event_handler.async.handle_event(event, options)
     end
 
     def _find_event_handler
