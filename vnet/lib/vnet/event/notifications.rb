@@ -6,6 +6,7 @@ module Vnet::Event::Notifications
       include Celluloid::Notifications
       include Vnet::Event
       prepend Initializer
+      trap_exit :unsubscribe_events
     end
     klass.extend(ClassMethods)
   end
@@ -67,5 +68,9 @@ module Vnet::Event::Notifications
     self.event_definitions.keys.each do |event_name|
       subscribe(event_name, :handle_event)
     end
+  end
+
+  def unsubscribe_events(actor, reason)
+    self.event_definitions.keys.each { |e| unsubscribe(e) }
   end
 end
