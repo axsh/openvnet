@@ -201,7 +201,7 @@ module Vnet::Openflow::Interfaces
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
       flows << flow_create(:default,
-                           table: TABLE_INTERFACE_CLASSIFIER,
+                           table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                            priority: 20,
                            match: {
                              :eth_src => mac_info[:mac_address]

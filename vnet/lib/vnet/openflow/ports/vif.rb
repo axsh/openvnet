@@ -26,7 +26,7 @@ module Vnet::Openflow::Ports
                            },
                            write_interface: @interface_id,
                            write_local: true,
-                           goto_table: TABLE_INTERFACE_CLASSIFIER)
+                           goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER)
       flows << flow_create(:default,
                            table: TABLE_OUTPUT_INTERFACE_INGRESS,
                            priority: 10,

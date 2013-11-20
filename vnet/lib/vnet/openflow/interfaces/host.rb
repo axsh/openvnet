@@ -76,7 +76,7 @@ module Vnet::Openflow::Interfaces
       #
       flows << flow_create(:default,
                            table: TABLE_LOCAL_PORT,
-                           goto_table: TABLE_INTERFACE_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                            priority: 30,
                            match: {
                              :eth_src => mac_info[:mac_address],
