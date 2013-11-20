@@ -69,6 +69,15 @@ module Vnet::Openflow::Ports
 
       if @interface_id
         flows << flow_create(:default,
+                             table: TABLE_HOST_PORTS,
+                             goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             priority: 10,
+                             match: {
+                               :in_port => self.port_number
+                             },
+                             write_interface: @interface_id)
+
+        flows << flow_create(:default,
                              table: TABLE_OUTPUT_INTERFACE_EGRESS,
                              priority: 2,
                              match: {

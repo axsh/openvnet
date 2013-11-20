@@ -34,10 +34,14 @@ module Vnet
       TABLE_EDGE_SRC = 8
       TABLE_EDGE_DST = 9
 
+      # Handle ingress packets to host interfaces from untrusted
+      # sources.
+      TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
+
       # Handle egress packets from trusted interfaces.
-      TABLE_INTERFACE_EGRESS_CLASSIFIER = 10
-      TABLE_INTERFACE_EGRESS_ROUTES     = 11
-      TABLE_INTERFACE_EGRESS_MAC        = 12
+      TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15
+      TABLE_INTERFACE_EGRESS_ROUTES      = 16
+      TABLE_INTERFACE_EGRESS_MAC         = 17
 
       # Initial verification of network number and application of global
       # filtering rules.

@@ -17,9 +17,6 @@ module Vnet::Openflow::Networks
       fo_network_md = flow_options.merge(network_md)
 
       flows = []
-      flows << Flow.create(TABLE_HOST_PORTS, 10,
-                           {}, nil,
-                           fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
       flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 30,
                            network_md, nil,
                            flow_options.merge(:goto_table => TABLE_PHYSICAL_SRC))

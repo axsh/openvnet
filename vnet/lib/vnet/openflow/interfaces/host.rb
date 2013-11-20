@@ -88,15 +88,21 @@ module Vnet::Openflow::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(:default,
-                           table: TABLE_HOST_PORTS,
-                           priority: 30,
-                           match: {
-                             :eth_dst => mac_info[:mac_address],
-                           },
-                           write_network: ipv4_info[:network_id],
-                           cookie: cookie,
-                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+      if ipv4_info[:network_type] == :physical
+        # We currently only support a single physical network for a
+        # host interface.
+        #
+        # Until network segments are supported this is difficult to
+        # implement.
+        flows << flow_create(:default,
+                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             priority: 10,
+                             match_interface: @id,
+                             write_network: ipv4_info[:network_id],
+                             cookie: cookie,
+                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+      end
+
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],
                            priority: 60,
