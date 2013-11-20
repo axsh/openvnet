@@ -93,6 +93,8 @@ module Vnet::Openflow
       @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
       @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
       @cookie_manager.create_category(:interface,      COOKIE_PREFIX_VIF)
+
+      link_with_managers
     end
 
     def datapath_batch
@@ -214,15 +216,35 @@ module Vnet::Openflow
 
     def initialize_datapath_info
       @datapath_info = DatapathInfo.new(@datapath_map)
+      each_managers { |manager| manager.set_datapath_info(@datapath_info) }
+    end
 
-      @dp_info.datapath_manager.set_datapath_info(@datapath_info)
-      @dp_info.dc_segment_manager.set_datapath_info(@datapath_info)
-      @dp_info.interface_manager.set_datapath_info(@datapath_info)
-      @dp_info.network_manager.set_datapath_info(@datapath_info)
-      @dp_info.route_manager.set_datapath_info(@datapath_info)
-      @dp_info.service_manager.set_datapath_info(@datapath_info)
-      @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
-      @dp_info.translation_manager.set_datapath_info(@datapath_info)
+    def link_with_managers
+      each_managers do |manager|
+        begin
+          link(manager)
+        rescue => e
+          error e
+          error "#{name}"
+          raise e
+        end
+      end
+    end
+
+    def each_managers(&block)
+      %w(
+        datapath
+        dc_segment
+        interface
+        network
+        route
+        service
+        tunnel
+        translation
+      ).each do |name|
+        manager = @dp_info.__send__("#{name}_manager")
+        yield(manager)
+      end
     end
 
   end
