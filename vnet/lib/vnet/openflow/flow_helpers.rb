@@ -99,9 +99,9 @@ module Vnet::Openflow
       when :controller_classifier
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }
-        goto_table = TABLE_INTERFACE_CLASSIFIER
+        goto_table = TABLE_INTERFACE_EGRESS_CLASSIFIER
       when :interface_classifier
-        table = TABLE_INTERFACE_CLASSIFIER
+        table = TABLE_INTERFACE_EGRESS_CLASSIFIER
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_NETWORK_SRC_CLASSIFIER

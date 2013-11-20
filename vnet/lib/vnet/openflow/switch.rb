@@ -42,7 +42,8 @@ module Vnet::Openflow
        TABLE_TUNNEL_NETWORK_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
-       TABLE_INTERFACE_CLASSIFIER,
+       TABLE_INTERFACE_INGRESS_CLASSIFIER,
+       TABLE_INTERFACE_EGRESS_CLASSIFIER,
        TABLE_INTERFACE_EGRESS_ROUTES,
        TABLE_INTERFACE_EGRESS_MAC,
        TABLE_NETWORK_SRC_CLASSIFIER,
@@ -56,7 +57,6 @@ module Vnet::Openflow
        TABLE_VIRTUAL_DST,
        TABLE_PHYSICAL_DST,
        TABLE_FLOOD_LOCAL,
-       TABLE_FLOOD_ROUTE,
        TABLE_FLOOD_TUNNELS,
        TABLE_OUTPUT_ROUTE_LINK,
        TABLE_OUTPUT_DATAPATH,
@@ -98,9 +98,6 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_FLOOD_SIMULATED, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_LOCAL))
-      flows << Flow.create(TABLE_FLOOD_ROUTE, 10,
-                           md_create(:remote => nil), nil,
-                           flow_options)
       flows << Flow.create(TABLE_FLOOD_SEGMENT,      0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
       flows << Flow.create(TABLE_FLOOD_SEGMENT, 10,

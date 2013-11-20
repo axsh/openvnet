@@ -67,16 +67,16 @@ module Vnet::Openflow::Ports
                            },
                            flow_options)
 
-      # Currently only support a single host port at this moment.
-      #
-      # TODO: Fix this....
-      flows << Flow.create(TABLE_FLOOD_ROUTE, 1,
-                           {},
-                           [{ :output => OFPP_LOCAL },
-                            { :output => self.port_number }],
-                           flow_options)
-
       if @interface_id
+        flows << flow_create(:default,
+                             table: TABLE_HOST_PORTS,
+                             goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             priority: 10,
+                             match: {
+                               :in_port => self.port_number
+                             },
+                             write_interface: @interface_id)
+
         flows << flow_create(:default,
                              table: TABLE_OUTPUT_INTERFACE_EGRESS,
                              priority: 2,
