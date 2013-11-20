@@ -202,19 +202,22 @@ module Vnet::Openflow
 
       cookie = params[:interface_network_id] | COOKIE_TYPE_NETWORK
 
-      flow = Flow.create(TABLE_ARP_LOOKUP, 25,
-                         match_md.merge({ :eth_type => 0x0800,
-                                          :ipv4_dst => params[:request_ipv4]
-                                        }), {
-                           :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address),
-                           :tunnel_id => params[:interface_network_id] | TUNNEL_FLAG
-                         },
-                         reflection_md.merge!({ :cookie => @arp_lookup[:reply_cookie],
-                                                :idle_timeout => 3600,
-                                                :goto_table => TABLE_OUTPUT_DATAPATH
-                                              }))
+      flows = []
+      [GRE_FLAG, VXLAN_FLAG].each do |flag|
+        flows << Flow.create(TABLE_ARP_LOOKUP, 25,
+                           match_md.merge({ :eth_type => 0x0800,
+                                            :ipv4_dst => params[:request_ipv4]
+                                          }), {
+                             :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address),
+                             :tunnel_id => params[:interface_network_id] | flag
+                           },
+                           reflection_md.merge!({ :cookie => @arp_lookup[:reply_cookie],
+                                                  :idle_timeout => 3600,
+                                                  :goto_table => TABLE_OUTPUT_DATAPATH
+                                                }))
+      end
 
-      @dp_info.add_flow(flow)        
+      @dp_info.add_flows(flows)        
 
       arp_lookup_send_packets(@arp_lookup[:requests].delete(params[:request_ipv4]))
     end

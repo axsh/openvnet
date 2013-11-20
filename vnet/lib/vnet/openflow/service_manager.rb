@@ -89,7 +89,7 @@ module Vnet::Openflow
       end
 
       item
-    end    
+    end
 
     def delete_item(params)
       item = @items.delete(params[:id])

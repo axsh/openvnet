@@ -47,10 +47,24 @@ module Vnet::Openflow
         item = item_by_params(dst_id: target_dp_map.id,
                               dst_dp_map: target_dp_map)
 
+        tp = find_tunneling_protocol(@datapath_info.datapath_map.dc_segment_id, target_dp_map.dc_segment_id)
+
+        protocol = case tp
+                   when nil then 'gre'
+                   else
+                     tp[:protocol]
+                   end
+
+        if protocol != 'gre' && protocol != 'vxlan'
+          error log_format("unknown tunneling protocol", protocol)
+          return nil
+        end
+
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
         tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
                                        dst_datapath_id: target_dp_map.id,
-                                       display_name: tunnel_name)
+                                       display_name: tunnel_name,
+                                       protocol: protocol)
 
         tunnel_map.dst_dp_map = target_dp_map
         create_item(item_map: tunnel_map)
@@ -164,10 +178,22 @@ module Vnet::Openflow
     #
 
     def item_initialize(item_map)
-      Tunnels::Base.new(dp_info: @dp_info,
-                        manager: self,
-                        map: item_map,
-                        dst_dp_map: item_map.dst_dp_map)
+      params = {
+        :dp_info => @dp_info,
+        :manager => self,
+        :map => item_map,
+        :dst_dp_map => item_map.dst_dp_map
+      }
+
+      case params[:map].protocol
+      when "gre"
+        Tunnels::Gre.new(params)
+      when "vxlan"
+        Tunnels::Vxlan.new(params)
+      else
+        error log_format("unknown type of protocol", params[:map].protocol)
+        nil
+      end
     end
 
     def initialized_item_event
@@ -179,10 +205,11 @@ module Vnet::Openflow
       # proper event barrier.
       MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit
     end
-    
+
     def create_item(params)
       item_map = params[:item_map]
       item = item_initialize(item_map)
+
       return nil if item.nil?
 
       @items[item_map.id] = item
@@ -213,18 +240,23 @@ module Vnet::Openflow
     end
 
     def update_network_id(network_id)
-      actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
-
+      list = {}
       @items.select { |item_id, item|
         next false if item.port_number.nil?
-
         item.datapath_networks.any? { |dpn| dpn[:network_id] == network_id }
-
-      }.each { |item_id, item|
-        actions << {:output => item.port_number}
+      }.each {|id, item|
+        if list[item.protocol].nil?
+          list[item.protocol] = [:tunnel_id => network_id | item.mask]
+        end
+        list[item.protocol] << {:output => item.port_number}
       }
 
       cookie = network_id | COOKIE_TYPE_NETWORK
+
+      actions = []
+      list.each_value { |v| 
+        actions.concat(v)
+      }
 
       flows = []
       flows << flow_create(:default,
@@ -255,6 +287,12 @@ module Vnet::Openflow
         debug log_format("datapath networs is not empty for #{item.display_name}")
         false
       end
+    end
+
+    def find_tunneling_protocol(dcseg1, dcseg2)
+      tp1 = MW::TunnelingProtocol.batch.find({:src_dc_segment_id => dcseg1, :dst_dc_segment_id => dcseg2}).commit
+      tp2 = MW::TunnelingProtocol.batch.find({:src_dc_segment_id => dcseg2, :dst_dc_segment_id => dcseg1}).commit
+      tp1 || tp2
     end
 
   end

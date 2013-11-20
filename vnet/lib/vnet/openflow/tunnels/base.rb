@@ -13,6 +13,7 @@ module Vnet::Openflow::Tunnels
     attr_reader :dst_id
     attr_reader :dst_dpid
     attr_reader :dst_ipv4_address
+    attr_reader :protocol
 
     attr_reader :datapath_networks
 
@@ -31,19 +32,21 @@ module Vnet::Openflow::Tunnels
       @dst_id = params[:dst_dp_map].id
       @dst_dpid = params[:dst_dp_map].dpid
       @dst_ipv4_address = IPAddr.new(params[:dst_dp_map].ipv4_address, Socket::AF_INET)
+      @protocol = params[:map].protocol
 
       @datapath_networks = []
     end
-    
+
     def to_hash
       Vnet::Openflow::Tunnel.new(id: @id,
                                  uuid: @uuid,
                                  port_name: @display_name,
-                                 
+
                                  dst_id: @dst_id,
                                  dst_dpid: @dst_dpid,
                                  dst_ipv4_address: @dst_ipv4_address,
-                                 
+                                 protocol: @protocol,
+
                                  datapath_networks_size: @datapath_networks.size,
                                  )
     end
@@ -57,7 +60,7 @@ module Vnet::Openflow::Tunnels
         return
       end
 
-      @dp_info.add_tunnel(@display_name, @dst_ipv4_address.to_s)
+      @dp_info.add_tunnel(@display_name, @dst_ipv4_address.to_s, @protocol)
     end
 
     def uninstall

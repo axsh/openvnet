@@ -40,6 +40,9 @@ module Vnet::NodeApi
   class SecurityGroup < Base
   end
 
+  class TunnelingProtocol < Base
+  end
+
   class Tunnel < Base
   end
 

@@ -83,9 +83,10 @@ module Vnet::Openflow
     # Port modification methods:
     #
 
-    def add_tunnel(tunnel_name, remote_ip)
+    def add_tunnel(tunnel_name, remote_ip, protocol)
       # debug log_format('adding tunnel', "#{tunnel_name}")
-      @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
+        
+      @ovs_ofctl.add_tunnel(tunnel_name, remote_ip, protocol)
     end
 
     def delete_tunnel(tunnel_name)

@@ -182,7 +182,7 @@ describe Vnet::Openflow::TunnelManager do
         1,
         {:metadata => 1 | METADATA_TYPE_NETWORK,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
-        [{:tunnel_id => 1 | TUNNEL_FLAG_MASK}, {:output => 9}, {:output => 10}],
+        [{:tunnel_id => 1 | GRE_FLAG_MASK}, {:output => 9}, {:output => 10}],
         {:cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
     end
 
@@ -214,7 +214,7 @@ describe Vnet::Openflow::TunnelManager do
         1,
         {:metadata => 2 | METADATA_TYPE_NETWORK,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
-        [{:tunnel_id => 2 | TUNNEL_FLAG_MASK}, {:output => 9}],
+        [{:tunnel_id => 2 | GRE_FLAG_MASK}, {:output => 9}],
         {:cookie => 2 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
     end
 
