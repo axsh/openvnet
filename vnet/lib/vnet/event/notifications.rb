@@ -71,6 +71,6 @@ module Vnet::Event::Notifications
   end
 
   def unsubscribe_events(actor, reason)
-    self.event_definitions.keys.each { |e| unsubscribe(e) }
+    self.event_definitions.keys.each { |e| unsubscribe(e) } if Celluloid::Notifications.notifier
   end
 end
