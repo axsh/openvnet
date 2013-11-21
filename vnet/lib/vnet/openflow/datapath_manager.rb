@@ -93,8 +93,6 @@ module Vnet::Openflow
     def delete_item(params)
       debug log_format("deleting datapath id: #{params[:id]}")
       item = @items.delete(params[:id])
-      debug log_format("#{item.dpid}")
-      debug log_format("#{@dp_info.dpid}")
       return unless item
       return unless item.dpid == @dp_info.dpid
 
