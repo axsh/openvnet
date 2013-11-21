@@ -1,5 +1,4 @@
-#specs: [simple, vxlan, router_v2v, router_p2v, event_if]
-specs: [simple, router_v2v, router_p2v, event_if] # vxlan does not work atm
+specs: [simple, edge, router_v2v, router_p2v, event_if]
 vnet_branch: master
 log_level: info
 vnflows_cmd: /opt/axsh/wakame-vnet/vnet/bin/vnflows-monitor
@@ -47,3 +46,9 @@ vms:
     interfaces:
       - uuid: if-v6
         name: eth0
+
+
+legacy_networks:
+  n1:
+    ipv4: 192.168.0.0
+    prefix: 16
