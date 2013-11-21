@@ -25,7 +25,7 @@ module Vnet::Openflow::SecurityGroups
         match_metadata: {interface: interface.id},
         match: match_ipv4_subnet_src(@s_ipv4.u32, @s_ipv4.prefix.to_i).merge(match),
         cookie: @cookie,
-        goto_table: TABLE_INTERFACE_VIF
+        goto_table: TABLE_OUTPUT_INTERFACE_INGRESS
       )
     end
   end

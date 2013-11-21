@@ -161,10 +161,9 @@ module Vnet
   end
 
   module Openflow
+    autoload :AddressHelpers, 'vnet/openflow/address_helpers'
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :ConnectionManager, 'vnet/openflow/connection_manager'
-    autoload :CookieCategory, 'vnet/openflow/cookie_manager'
-    autoload :CookieManager, 'vnet/openflow/cookie_manager'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DatapathInfo, 'vnet/openflow/datapath'
@@ -179,9 +178,7 @@ module Vnet
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
-    autoload :PacketHandler, 'vnet/openflow/packet_handler'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
-    autoload :PacketManager, 'vnet/openflow/packet_manager'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
     autoload :SecurityGroupManager, 'vnet/openflow/security_group_manager'
@@ -205,10 +202,12 @@ module Vnet
 
     module Interfaces
       autoload :Base, 'vnet/openflow/interfaces/base'
-      autoload :Simulated, 'vnet/openflow/interfaces/simulated'
-      autoload :Remote, 'vnet/openflow/interfaces/remote'
-      autoload :Vif, 'vnet/openflow/interfaces/vif'
       autoload :Edge, 'vnet/openflow/interfaces/edge'
+      autoload :Host, 'vnet/openflow/interfaces/host'
+      autoload :IfBase, 'vnet/openflow/interfaces/if_base'
+      autoload :Remote, 'vnet/openflow/interfaces/remote'
+      autoload :Simulated, 'vnet/openflow/interfaces/simulated'
+      autoload :Vif, 'vnet/openflow/interfaces/vif'
     end
 
     module Networks

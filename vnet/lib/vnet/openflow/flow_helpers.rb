@@ -8,22 +8,26 @@ module Vnet::Openflow
     Flow = Vnet::Openflow::Flow
 
     FLOW_MATCH_METADATA_PARAMS = [:match_datapath,
+                                  :match_ignore_mac2mac,
                                   :match_interface,
                                   :match_local,
                                   :match_mac2mac,
                                   :match_network,
                                   :match_not_no_controller,
                                   :match_reflection,
+                                  :match_remote,
                                   :match_route_link,
                                   :match_tunnel,
                                  ]
     FLOW_WRITE_METADATA_PARAMS = [:write_datapath,
+                                  :write_ignore_mac2mac,
                                   :write_interface,
                                   :write_local,
                                   :write_mac2mac,
                                   :write_network,
                                   :write_not_no_controller,
                                   :write_reflection,
+                                  :write_remote,
                                   :write_route_link,
                                   :write_tunnel,
                                  ]
@@ -78,22 +82,6 @@ module Vnet::Openflow
       write_metadata = {}
 
       case type
-      when :network_src_ipv4_match
-        table = table_network_src(params[:network_type])
-        priority = 45
-        match_metadata = {
-          :network => params[:network_id],
-          :local => nil
-        }
-        goto_table = TABLE_ROUTE_INGRESS
-      when :network_src_mac_match
-        table = table_network_src(params[:network_type])
-        priority = 35
-        match_metadata = {
-          :network => params[:network_id],
-          :local => nil
-        }
-        goto_table = TABLE_ROUTE_INGRESS
       when :router_dst_match
         table = TABLE_ARP_TABLE
         priority = 40
@@ -111,9 +99,9 @@ module Vnet::Openflow
       when :controller_classifier
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }
-        goto_table = TABLE_INTERFACE_CLASSIFIER
+        goto_table = TABLE_INTERFACE_EGRESS_CLASSIFIER
       when :interface_classifier
-        table = TABLE_INTERFACE_CLASSIFIER
+        table = TABLE_INTERFACE_EGRESS_CLASSIFIER
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_INTERFACE_EGRESS_FILTER
@@ -152,10 +140,10 @@ module Vnet::Openflow
       # Match/Write Metadata options:
       #
       FLOW_MATCH_METADATA_PARAMS.each { |type|
-        match_metadata[type] = params[type] if params[type]
+        match_metadata[type] = params[type] if params.has_key? type
       }
       FLOW_WRITE_METADATA_PARAMS.each { |type|
-        write_metadata[type] = params[type] if params[type]
+        write_metadata[type] = params[type] if params.has_key? type
       }
 
       #

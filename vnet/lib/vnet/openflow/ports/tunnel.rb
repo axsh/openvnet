@@ -26,14 +26,6 @@ module Vnet::Openflow::Ports
                            },
                            goto_table: TABLE_ROUTE_INGRESS)
       flows << flow_create(:default,
-                           table: TABLE_OUTPUT_ROUTE_LINK_HACK,
-                           priority: 5,
-                           match_datapath: @dst_id,
-                           match_tunnel: true,
-                           actions: {
-                             :output => self.port_number
-                           })
-      flows << flow_create(:default,
                            table: TABLE_OUTPUT_DATAPATH,
                            priority: 5,
                            match_datapath: @dst_id,

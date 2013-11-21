@@ -34,9 +34,14 @@ module Vnet
       TABLE_EDGE_SRC = 8
       TABLE_EDGE_DST = 9
 
-      TABLE_INTERFACE_CLASSIFIER    = 10
-      TABLE_INTERFACE_EGRESS_ROUTES = 11
-      TABLE_INTERFACE_EGRESS_MAC    = 12
+      # Handle ingress packets to host interfaces from untrusted
+      # sources.
+      TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
+
+      # Handle egress packets from trusted interfaces.
+      TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15
+      TABLE_INTERFACE_EGRESS_ROUTES      = 16
+      TABLE_INTERFACE_EGRESS_MAC         = 17
 
       TABLE_INTERFACE_EGRESS_FILTER = 13
 
@@ -67,18 +72,10 @@ module Vnet
       TABLE_INTERFACE_INGRESS_FILTER = 43
       TABLE_INTERFACE_INGRESS_FILTER_LOOKUP = 44
 
-      TABLE_INTERFACE_VIF     = 45
-
-      # Route based on the mac address only.
-      #
-      # Deprecated...
-      TABLE_MAC_ROUTE       = 46
-
       TABLE_FLOOD_SIMULATED = 50
       TABLE_FLOOD_LOCAL     = 51
-      TABLE_FLOOD_ROUTE     = 52
-      TABLE_FLOOD_SEGMENT   = 53
-      TABLE_FLOOD_TUNNELS   = 54
+      TABLE_FLOOD_SEGMENT   = 52
+      TABLE_FLOOD_TUNNELS   = 53
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
@@ -89,14 +86,11 @@ module Vnet
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-
-      # TODO: Fix this...
-      TABLE_OUTPUT_ROUTE_LINK      = 61
-      TABLE_OUTPUT_ROUTE_LINK_HACK = 62
-
-      TABLE_OUTPUT_DATAPATH  = 63
-      TABLE_OUTPUT_MAC2MAC   = 64
-      TABLE_OUTPUT_INTERFACE = 65
+      TABLE_OUTPUT_ROUTE_LINK        = 61
+      TABLE_OUTPUT_DATAPATH          = 62
+      TABLE_OUTPUT_MAC2MAC           = 63
+      TABLE_OUTPUT_INTERFACE_INGRESS = 64
+      TABLE_OUTPUT_INTERFACE_EGRESS  = 65
 
       #
       # Cookie constants:
@@ -157,15 +151,16 @@ module Vnet
       METADATA_FLAG_VIF        = (0x020 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_MAC2MAC    = (0x040 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_TUNNEL     = (0x080 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_IGNORE_MAC2MAC = (0x100 << METADATA_FLAGS_SHIFT)
 
       # Allow reflection for this packet, such that if the ingress
       # port is the same as the egress port we will use the
       # 'output:OFPP_IN_PORT' action.
-      METADATA_FLAG_REFLECTION = (0x100 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_REFLECTION = (0x200 << METADATA_FLAGS_SHIFT)
 
       # Don't pass this packet to the controller, e.g. to look up
       # routing information.
-      METADATA_FLAG_NO_CONTROLLER = (0x200 << METADATA_FLAGS_SHIFT)
+      METADATA_FLAG_NO_CONTROLLER = (0x400 << METADATA_FLAGS_SHIFT)
 
       METADATA_TYPE_SHIFT      = 56
       METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)

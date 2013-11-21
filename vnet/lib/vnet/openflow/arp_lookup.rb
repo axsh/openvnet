@@ -18,7 +18,7 @@ module Vnet::Openflow
 
     def arp_lookup_base_flows(flows)
       flows << flow_create(:controller,
-                           table: TABLE_OUTPUT_INTERFACE,
+                           table: TABLE_OUTPUT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
                              :eth_type => 0x0806,

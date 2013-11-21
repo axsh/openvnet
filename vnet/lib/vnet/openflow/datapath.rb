@@ -50,11 +50,9 @@ module Vnet::Openflow
     attr_reader :switch
 
     attr_reader :connection_manager
-    attr_reader :cookie_manager
     attr_reader :dc_segment_manager
     attr_reader :interface_manager
     attr_reader :network_manager
-    attr_reader :packet_manager
     attr_reader :port_manager
     attr_reader :route_manager
     attr_reader :security_group_manager
@@ -76,29 +74,15 @@ module Vnet::Openflow
 
       # TODO: Remove these...
       @connection_manager = @dp_info.connection_manager
-      @cookie_manager = @dp_info.cookie_manager
       @dc_segment_manager = @dp_info.dc_segment_manager
       @interface_manager = @dp_info.interface_manager
       @network_manager = @dp_info.network_manager
-      @packet_manager = @dp_info.packet_manager
       @port_manager = @dp_info.port_manager
       @route_manager = @dp_info.route_manager
       @security_group_manager = @dp_info.security_group_manager
       @service_manager = @dp_info.service_manager
       @tunnel_manager = @dp_info.tunnel_manager
       @translation_manager = @dp_info.translation_manager
-
-      @cookie_manager.create_category(:contrack,       COOKIE_PREFIX_CONTRACK)
-      @cookie_manager.create_category(:dp_network,     COOKIE_PREFIX_DP_NETWORK)
-      @cookie_manager.create_category(:network,        COOKIE_PREFIX_NETWORK)
-      @cookie_manager.create_category(:packet_handler, COOKIE_PREFIX_PACKET_HANDLER)
-      @cookie_manager.create_category(:port,           COOKIE_PREFIX_PORT)
-      @cookie_manager.create_category(:route,          COOKIE_PREFIX_ROUTE)
-      @cookie_manager.create_category(:route_link,     COOKIE_PREFIX_ROUTE_LINK)
-      @cookie_manager.create_category(:security_group, COOKIE_PREFIX_SECURITY_GROUP)
-      @cookie_manager.create_category(:switch,         COOKIE_PREFIX_SWITCH)
-      @cookie_manager.create_category(:tunnel,         COOKIE_PREFIX_TUNNEL)
-      @cookie_manager.create_category(:interface,      COOKIE_PREFIX_VIF)
     end
 
     def datapath_batch
