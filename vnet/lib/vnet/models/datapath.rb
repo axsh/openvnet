@@ -14,6 +14,11 @@ module Vnet::Models
     one_to_many :interfaces_active, :class => Interface, :key => :active_datapath_id
 
     one_to_many :tunnels, :key => :src_datapath_id
+
+    one_to_many :host_ports, :class => Interface do |ds|
+      Interface.where({owner_datapath_id: self.id} & {mode: 'host'})
+    end
+
     subset(:alives, {})
 
     one_to_many :on_other_segments, :class => Datapath do |ds|
