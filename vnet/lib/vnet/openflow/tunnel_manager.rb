@@ -43,17 +43,15 @@ module Vnet::Openflow
         return nil
       end
 
-      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
-        item = item_by_params(dst_id: target_dp_map.id,
-                              dst_dp_map: target_dp_map)
-
+      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.map { |target_dp_map|
         tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
         tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
                                        dst_datapath_id: target_dp_map.id,
                                        display_name: tunnel_name)
+        target_dp_map.id
 
-        tunnel_map.dst_dp_map = target_dp_map
-        create_item(item_map: tunnel_map)
+      }.each { |dst_datapath_id|
+        item_by_params(dst_id: dst_datapath_id)
       }
     end
 
@@ -163,13 +161,6 @@ module Vnet::Openflow
     # Create / Delete tunnels:
     #
 
-    def item_initialize(item_map)
-      Tunnels::Base.new(dp_info: @dp_info,
-                        manager: self,
-                        map: item_map,
-                        dst_dp_map: item_map.dst_dp_map)
-    end
-
     def initialized_item_event
       INITIALIZED_TUNNEL
     end
@@ -177,27 +168,35 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit
+      MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit(:fill => :dst_datapath)
     end
     
-    def create_item(params)
-      item_map = params[:item_map]
-      item = item_initialize(item_map)
-      return nil if item.nil?
+    def item_initialize(item_map)
+      item = Tunnels::Base.new(dp_info: @dp_info,
+                               manager: self,
+                               map: item_map)
 
-      @items[item_map.id] = item
-
-      debug log_format("insert #{item_map.uuid}/#{item_map.id}")
-
+      # Do install here until events work properly...
+      return if item.nil?
       item.install
-    end
 
-    def delete_item(item)
-      @items.delete(item.id)
-
-      item.uninstall
       item
     end
+
+    def install_item(params)
+      item = @items[params[:id]]
+      return if item.nil?
+
+      # item.install
+      item
+    end
+
+    # def delete_item(item)
+    #   @items.delete(item.id)
+
+    #   item.uninstall
+    #   item
+    # end
 
     #
     # Event handlers:

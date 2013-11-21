@@ -28,9 +28,12 @@ module Vnet::Openflow::Tunnels
       @uuid = map.uuid
       @display_name = map.display_name
 
-      @dst_id = params[:dst_dp_map].id
-      @dst_dpid = params[:dst_dp_map].dpid
-      @dst_ipv4_address = IPAddr.new(params[:dst_dp_map].ipv4_address, Socket::AF_INET)
+      @dst_id = map.dst_datapath_id
+
+      if map.dst_datapath
+        @dst_dpid = map.dst_datapath.dpid
+        @dst_ipv4_address = IPAddr.new(map.dst_datapath.ipv4_address, Socket::AF_INET)
+      end
 
       @datapath_networks = []
     end
@@ -49,7 +52,11 @@ module Vnet::Openflow::Tunnels
     end
 
     def install
-      info log_format("install #{@display_name}", "ip_address:#{@dst_ipv4_address.to_s}")
+      if @dst_ipv4_address.nil?
+        error log_format("no valid destination datapath loaded for #{@uuid}",
+                         "dst_datapath_id:#{@dst_datapath_id}")
+        return
+      end
 
       if !@dst_ipv4_address.ipv4?
         error log_format("no valid remote IPv4 address for #{@uuid}",
@@ -58,6 +65,8 @@ module Vnet::Openflow::Tunnels
       end
 
       @dp_info.add_tunnel(@display_name, @dst_ipv4_address.to_s)
+
+      info log_format("install #{@display_name}", "ip_address:#{@dst_ipv4_address.to_s}")
     end
 
     def uninstall
