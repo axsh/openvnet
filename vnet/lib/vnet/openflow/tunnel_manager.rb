@@ -191,12 +191,12 @@ module Vnet::Openflow
       item
     end
 
-    # def delete_item(item)
-    #   @items.delete(item.id)
+    def delete_item(item)
+      @items.delete(item.id)
 
-    #   item.uninstall
-    #   item
-    # end
+      item.uninstall
+      item
+    end
 
     #
     # Event handlers:
