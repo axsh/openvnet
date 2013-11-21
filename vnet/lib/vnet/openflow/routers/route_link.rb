@@ -95,7 +95,7 @@ module Vnet::Openflow::Routers
                            write_route_link: @id)
       flows << flow_create(:default,
                            table: TABLE_OUTPUT_ROUTE_LINK,
-                           goto_table: TABLE_OUTPUT_ROUTE_LINK_HACK,
+                           goto_table: TABLE_OUTPUT_DATAPATH,
                            priority: 4,
                            match: {
                              :eth_dst => @mac_address
@@ -103,7 +103,7 @@ module Vnet::Openflow::Routers
                            actions: {
                              :tunnel_id => TUNNEL_ROUTE_LINK
                            },
-                           write_tunnel: true)
+                           write_ignore_mac2mac: true)
 
       flows_for_filtering_mac_address(flows, @mac_address)
     end
@@ -124,7 +124,7 @@ module Vnet::Openflow::Routers
     def flows_for_datapath_on_segment(flows, dp_rl_info)
       flows << flow_create(:default,
                            table: TABLE_OUTPUT_ROUTE_LINK,
-                           goto_table: TABLE_OUTPUT_ROUTE_LINK_HACK,
+                           goto_table: TABLE_OUTPUT_MAC2MAC,
                            priority: 5,
                            match: {
                              :eth_dst => @mac_address

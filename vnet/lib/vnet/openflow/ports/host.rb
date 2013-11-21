@@ -5,6 +5,8 @@ module Vnet::Openflow::Ports
   module Host
     include Vnet::Openflow::FlowHelpers
 
+    attr_accessor :interface_id
+
     def port_type
       :host
     end
@@ -24,10 +26,15 @@ module Vnet::Openflow::Ports
       goto_table_on_table_classifier = @dp_info.datapath.datapath_map.node_id == 'edge' ? TABLE_EDGE_SRC : TABLE_HOST_PORTS
 
       flows = []
-      flows << Flow.create(TABLE_CLASSIFIER, 2, {
+      flows << flow_create(:default,
+                           table: TABLE_CLASSIFIER,
+                           goto_table: goto_table_on_table_classifier,
+                           priority: 2,
+                           match: {
                              :in_port => self.port_number
-                           }, nil,
-                           set_remote_md.merge(:goto_table => goto_table_on_table_classifier))
+                           },
+                           write_remote: true)
+
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
                            }, nil,
@@ -47,30 +54,8 @@ module Vnet::Openflow::Ports
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
 
-      flows << Flow.create(TABLE_PHYSICAL_DST, 21,
-                           reflection_md.merge(:in_port => self.port_number), {
-                             :output => OFPP_IN_PORT
-                           },
-                           flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_DST, 20, {
-                           }, {
-                             :output => self.port_number
-                           },
-                           flow_options)
-
       # For now set the latest eth port as the default MAC2MAC output
       # port.
-      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK_HACK, 2,
-                           reflection_mac2mac_md.merge(:in_port => self.port_number), {
-                             :output => OFPP_IN_PORT
-                           },
-                           flow_options)
-      flows << Flow.create(TABLE_OUTPUT_ROUTE_LINK_HACK, 1,
-                           md_create(:mac2mac => nil), {
-                             :output => self.port_number
-                           },
-                           flow_options)
-
       flows << Flow.create(TABLE_OUTPUT_MAC2MAC, 2,
                            reflection_mac2mac_md.merge(:in_port => self.port_number), {
                              :output => OFPP_IN_PORT
@@ -82,18 +67,37 @@ module Vnet::Openflow::Ports
                            },
                            flow_options)
 
-      # Currently only support a single host port at this moment.
-      #
-      # TODO: Fix this....
-      flows << Flow.create(TABLE_FLOOD_ROUTE, 1,
-                           {},
-                           [{ :output => OFPP_LOCAL },
-                            { :output => self.port_number }],
-                           flow_options)
+      if @interface_id
+        flows << flow_create(:default,
+                             table: TABLE_HOST_PORTS,
+                             goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             priority: 10,
+                             match: {
+                               :in_port => self.port_number
+                             },
+                             write_interface: @interface_id)
+
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_INTERFACE_EGRESS,
+                             priority: 2,
+                             match: {
+                               :in_port => self.port_number
+                             },
+                             match_interface: @interface_id,
+                             match_reflection: true,
+                             actions: {
+                               :output => OFPP_IN_PORT
+                             })
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_INTERFACE_EGRESS,
+                             priority: 1,
+                             match_interface: @interface_id,
+                             actions: {
+                               :output => self.port_number
+                             })
+      end
 
       @dp_info.add_flows(flows)
-      @dp_info.network_manager.async.update_all_flows
-
       @dp_info.dc_segment_manager.async.update(event: :insert_port_number,
                                                port_number: self.port_number)
     end

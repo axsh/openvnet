@@ -16,12 +16,10 @@ module Vnet::Openflow
     attr_reader :dpid_s
     attr_reader :ovs_ofctl
 
-    attr_reader :cookie_manager
     attr_reader :datapath_manager
     attr_reader :dc_segment_manager
     attr_reader :interface_manager
     attr_reader :network_manager
-    attr_reader :packet_manager
     attr_reader :port_manager
     attr_reader :route_manager
     attr_reader :service_manager
@@ -118,12 +116,10 @@ module Vnet::Openflow
     private
 
     def initialize_managers
-      @cookie_manager = CookieManager.new
       @datapath_manager = DatapathManager.new(self)
       @dc_segment_manager = DcSegmentManager.new(self)
       @interface_manager = InterfaceManager.new(self)
       @network_manager = NetworkManager.new(self)
-      @packet_manager = PacketManager.new(@datapath)
       @port_manager = PortManager.new(self)
       @route_manager = RouteManager.new(@datapath)
       @service_manager = ServiceManager.new(self)

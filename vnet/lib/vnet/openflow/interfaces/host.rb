@@ -2,12 +2,13 @@
 
 module Vnet::Openflow::Interfaces
 
-  class Vif < IfBase
+  class Host < IfBase
 
     def add_mac_address(params)
       mac_info = super
 
       flows = []
+      flows_for_mac(flows, mac_info)
       flows_for_interface_mac(flows, mac_info)
       flows_for_router_ingress_mac(flows, mac_info) if @router_ingress == true
       flows_for_router_egress_mac(flows, mac_info) if @router_egress == true
@@ -16,14 +17,13 @@ module Vnet::Openflow::Interfaces
     end
 
     def add_ipv4_address(params)
-      debug "interfaces: adding ipv4 flows..."
       mac_info, ipv4_info = super
 
       @dp_info.network_manager.update_interface(event: :insert,
-                                                id: ipv4_info[:network_id],
-                                                interface_id: @id,
-                                                mode: :vif,
-                                                port_number: @port_number)
+                                                 id: ipv4_info[:network_id],
+                                                 interface_id: @id,
+                                                 mode: :host,
+                                                 port_number: @port_number)
 
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
@@ -44,7 +44,7 @@ module Vnet::Openflow::Interfaces
       @dp_info.network_manager.update_interface(event: :remove,
                                                 id: ipv4_info[:network_id],
                                                 interface_id: @id,
-                                                mode: :vif,
+                                                mode: :host,
                                                 port_number: @port_number)
     end
 
@@ -62,43 +62,42 @@ module Vnet::Openflow::Interfaces
     private
 
     def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interfaces/vif: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} interfaces/host: #{message}" + (values ? " (#{values})" : '')
     end
 
     def flows_for_base(flows)
     end
 
     def flows_for_mac(flows, mac_info)
-      # flows << flow_create(:segment_src,
-      #                      priority: 85,
-      #                      match: {
-      #                        :eth_type => 0x0806,
-      #                        :eth_src => mac_info[:mac_address],
-      #                      },
-      #                      network_id: ipv4_info[:network_id],
-      #                      network_type: ipv4_info[:network_type],
-      #                      cookie: self.cookie)
-      # flows << flow_create(:segment_src,
-      #                      priority: 85,
-      #                      match: {
-      #                        :eth_type => 0x0806,
-      #                        :arp_sha => mac_info[:mac_address],
-      #                      },
-      #                      network_id: ipv4_info[:network_id],
-      #                      network_type: ipv4_info[:network_type],
-      #                      cookie: self.cookie)
+      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+
+      #
+      # Classifiers:
+      #
+      flows << flow_create(:default,
+                           table: TABLE_LOCAL_PORT,
+                           goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                           priority: 30,
+                           match: {
+                             :eth_src => mac_info[:mac_address],
+                           },
+                           write_interface: @id,
+                           cookie: cookie)
     end
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      if ipv4_info[:network_type] == :virtual
+      if ipv4_info[:network_type] == :physical
+        # We currently only support a single physical network for a
+        # host interface.
+        #
+        # Until network segments are supported this is difficult to
+        # implement.
         flows << flow_create(:default,
-                             table: TABLE_HOST_PORTS,
-                             priority: 30,
-                             match: {
-                               :eth_dst => mac_info[:mac_address],
-                             },
+                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             priority: 10,
+                             match_interface: @id,
                              write_network: ipv4_info[:network_id],
                              cookie: cookie,
                              goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
@@ -114,7 +113,20 @@ module Vnet::Openflow::Interfaces
                            write_interface: @id,
                            cookie: cookie,
                            goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
-
+      flows << flow_create(:default,
+                           table_network_dst: ipv4_info[:network_type],
+                           priority: 20,
+                           match_network: ipv4_info[:network_id],
+                           write_interface: @id,
+                           cookie: cookie,
+                           goto_table: TABLE_OUTPUT_INTERFACE_EGRESS)
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_INTERFACE_INGRESS,
+                           priority: 10,
+                           match_interface: @id,
+                           actions: {
+                             :output => OFPP_LOCAL
+                           })
     end
 
   end

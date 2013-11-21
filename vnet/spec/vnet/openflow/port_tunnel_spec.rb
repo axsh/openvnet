@@ -21,7 +21,7 @@ describe Vnet::Openflow::Ports::Tunnel do
       # pp datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq 4
+      expect(datapath.added_flows.size).to eq 3
 
       expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
                                               TABLE_TUNNEL_PORTS,
@@ -37,15 +37,7 @@ describe Vnet::Openflow::Ports::Tunnel do
                                               nil,
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
                                                :goto_table => TABLE_ROUTE_INGRESS})
-
       expect(datapath.added_flows[2]).to eq Vnet::Openflow::Flow.create(
-                                              TABLE_OUTPUT_ROUTE_LINK_HACK,
-                                              5,
-                                              port.md_create(datapath: 5,
-                                                             tunnel: nil),
-                                              {:output => 10},
-                                              {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)})
-      expect(datapath.added_flows[3]).to eq Vnet::Openflow::Flow.create(
                                               TABLE_OUTPUT_DATAPATH,
                                               5,
                                               port.md_create(datapath: 5),

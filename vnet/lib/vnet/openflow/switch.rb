@@ -15,12 +15,6 @@ module Vnet::Openflow
 
       @dpid = @datapath.dpid
       @dpid_s = "0x%016x" % @datapath.dpid
-
-      cookie_manager = @datapath.cookie_manager
-
-      @catch_flow_cookie   = cookie_manager.acquire(:switch)
-      @default_flow_cookie = cookie_manager.acquire(:switch)
-      @test_flow_cookie    = cookie_manager.acquire(:switch)
     end
 
     #
@@ -34,7 +28,7 @@ module Vnet::Openflow
 
       flows = []
 
-      flow_options = {:cookie => @default_flow_cookie}
+      flow_options = {:cookie => COOKIE_TYPE_SWITCH}
       fo_local_md  = flow_options.merge(md_create(:local => nil))
       fo_remote_md = flow_options.merge(md_create(:remote => nil))
 
@@ -48,7 +42,8 @@ module Vnet::Openflow
        TABLE_TUNNEL_NETWORK_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
-       TABLE_INTERFACE_CLASSIFIER,
+       TABLE_INTERFACE_INGRESS_CLASSIFIER,
+       TABLE_INTERFACE_EGRESS_CLASSIFIER,
        TABLE_INTERFACE_EGRESS_ROUTES,
        TABLE_INTERFACE_EGRESS_MAC,
        TABLE_NETWORK_SRC_CLASSIFIER,
@@ -61,16 +56,13 @@ module Vnet::Openflow
        TABLE_ARP_LOOKUP,
        TABLE_VIRTUAL_DST,
        TABLE_PHYSICAL_DST,
-       TABLE_INTERFACE_VIF,
-       TABLE_MAC_ROUTE,
        TABLE_FLOOD_LOCAL,
-       TABLE_FLOOD_ROUTE,
        TABLE_FLOOD_TUNNELS,
        TABLE_OUTPUT_ROUTE_LINK,
-       TABLE_OUTPUT_ROUTE_LINK_HACK,
        TABLE_OUTPUT_DATAPATH,
        TABLE_OUTPUT_MAC2MAC,
-       TABLE_OUTPUT_INTERFACE,
+       TABLE_OUTPUT_INTERFACE_INGRESS,
+       TABLE_OUTPUT_INTERFACE_EGRESS,
       ].each { |table|
         flows << Flow.create(table, 0, {}, nil, flow_options)
       }
@@ -85,11 +77,12 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
 
-      flows << Flow.create(TABLE_VIRTUAL_SRC,  90, {:in_port => OFPP_CONTROLLER}, nil,
+      # LOCAL packets have already been verified earlier.
+      flows << Flow.create(TABLE_VIRTUAL_SRC,  90, md_create(:local => nil), nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
-      # flows << Flow.create(TABLE_VIRTUAL_SRC,  40, {:eth_type => 0x0800}, nil, flow_options)
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 90, {:in_port => OFPP_CONTROLLER}, nil,
+      flows << Flow.create(TABLE_PHYSICAL_SRC,  90, md_create(:local => nil), nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
+
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
@@ -105,9 +98,6 @@ module Vnet::Openflow
 
       flows << Flow.create(TABLE_FLOOD_SIMULATED, 0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_LOCAL))
-      flows << Flow.create(TABLE_FLOOD_ROUTE, 10,
-                           md_create(:remote => nil), nil,
-                           flow_options)
       flows << Flow.create(TABLE_FLOOD_SEGMENT,      0, {}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
       flows << Flow.create(TABLE_FLOOD_SEGMENT, 10,
@@ -115,8 +105,6 @@ module Vnet::Openflow
                            flow_options)
 
       flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
-
-      flow_options = {:cookie => @catch_flow_cookie}
 
       # Catches all arp packets that are from local ports.
       #
@@ -136,8 +124,6 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
                            }, nil, flow_options)
-
-      flow_options = {:cookie => @test_flow_cookie}
 
       # Add any test flows here.
 
