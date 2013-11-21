@@ -27,7 +27,7 @@ module Vnspec
             end
           end
 
-          config[:legacy_network].each do |k,v|
+          config[:legacy_networks].each do |k,v|
             ssh(vm.host_ip, "ssh #{vm.ssh_ip} route add -net #{v[:ipv4]}/#{v[:prefix]} dev eth0", {})
           end
         end

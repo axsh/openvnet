@@ -15,6 +15,14 @@ describe "edge" do
       expect(legacy1).not_to be_reachable_to(vm2)
     end
 
+    it "reachable to edge from vnet1" do
+      expect(vm1).to be_reachable_to(legacy1)
+    end
+
+    it "not reachable to edge from vnet2" do
+      expect(vm2).not_to be_reachable_to(legacy1)
+    end
+
     # context "tunnel" do
     #   it "reachable to vnet1" do
     #     expect(legacy1).to be_reachable_to(vm5)
