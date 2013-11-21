@@ -3,6 +3,9 @@
 module Vnet::Models
   class Datapath < Base
     taggable 'dp'
+
+    plugin :paranoia
+
     many_to_one :dc_segment
 
     one_to_many :datapath_networks

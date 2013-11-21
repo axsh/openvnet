@@ -11,7 +11,7 @@ module Vnet::NodeApi
 
       def destroy(uuid)
         super.tap do |datapath|
-          dispatch_event(REMOVED_DATAPATH, id: datapath.id, node_id: datapath.node_id)
+          dispatch_event(REMOVED_DATAPATH, id: datapath.id)
         end
       end
     end

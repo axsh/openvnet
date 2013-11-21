@@ -13,6 +13,7 @@ Sequel.migration do
       String :node_id, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+      DateTime :deleted_at
     end
 
     create_table(:datapath_networks) do
