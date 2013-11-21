@@ -64,8 +64,7 @@ module Vnet::Openflow
       [
         flow_create(:default,
           table: TABLE_INTERFACE_INGRESS_FILTER,
-          priority: Vnet::Openflow::SecurityGroups::RULE_PRIORITY,
-          idle_timeout: Vnet::Openflow::SecurityGroups::IDLE_TIMEOUT,
+          priority: Vnet::Openflow::SecurityGroups::Rule::RULE_PRIORITY,
           cookie: accept_all_traffic_cookie(interface_id),
           match_metadata: { interface: interface_id },
           goto_table: TABLE_INTERFACE_VIF)
