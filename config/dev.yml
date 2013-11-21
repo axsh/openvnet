@@ -21,3 +21,8 @@ dataset_options:
   public_ipv4_address2: 172.16.20.21
   public_dhcp_ipv4_address: 172.16.20.3
   public_router_ipv4_address: 172.16.20.4
+
+legacy_machines:
+  legacy1:
+    ssh_ip: 192.168.2.64
+    ipv4_address: 192.168.100.100

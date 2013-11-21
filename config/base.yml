@@ -47,10 +47,6 @@ vms:
       - uuid: if-v6
         name: eth0
 
-legacy_machines:
-  legacy1:
-    ssh_ip: 192.168.2.74
-    ipv4_address: 192.168.100.100
 
 legacy_networks:
   n1:
