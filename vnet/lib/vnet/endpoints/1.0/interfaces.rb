@@ -13,7 +13,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     "display_name",
   ]
 
-  fill = [:owner_datapath, :network, {:ip_leases => {:ip_address => :network}}, {:mac_leases => :mac_address}]
+  fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
 
   post do
     accepted_params = put_post_shared_params + ["uuid"]
