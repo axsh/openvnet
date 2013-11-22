@@ -163,7 +163,7 @@ module Vnet::Openflow
 
       load_addresses(item_map)
 
-      @dp_info.port_manager.async.attach_interface(port_name: item_port_name || item.uuid)
+      @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
 
       item # Return nil if interface has been uninstalled.
     end

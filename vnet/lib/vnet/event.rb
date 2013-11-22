@@ -32,6 +32,12 @@ module Vnet
     INITIALIZED_NETWORK = "initialized_network"
 
     #
+    # datapath_network event
+    #
+    ADDED_DATAPATH_NETWORK = "added_datapath_network"
+    REMOVED_DATAPATH_NETWORK = "removed_datapath_network"
+
+    #
     # service event
     #
     INITIALIZED_SERVICE = "initialized_service"

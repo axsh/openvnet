@@ -125,6 +125,7 @@ module Vnet::Openflow::Interfaces
                                     uuid: @uuid,
                                     mode: @mode,
                                     port_number: @port_number,
+                                    port_name: @port_name,
                                     display_name: @display_name,
                                     mac_addresses: @mac_addresses,
 

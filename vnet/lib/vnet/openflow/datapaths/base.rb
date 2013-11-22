@@ -6,8 +6,9 @@ module Vnet::Openflow::Datapaths
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_accessor :id
-    attr_accessor :uuid
+    attr_reader :id
+    attr_reader :uuid
+    attr_reader :dpid
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -17,12 +18,13 @@ module Vnet::Openflow::Datapaths
 
       @id = map.id
       @uuid = map.uuid
+      @dpid = map.dpid.hex
 
       @active_networks = {}
     end
     
-    def dpid
-      @dp_info.dpid
+    def owner?
+      @dpid == @dp_info.dpid_s
     end
 
     def cookie(tag = nil)
@@ -36,9 +38,8 @@ module Vnet::Openflow::Datapaths
       }
     end
 
-    def is_unused?
-      return false if !@active_networks.empty?
-      true
+    def unused?
+      !!@active_networks.empty?
     end
 
     def install
@@ -77,11 +78,19 @@ module Vnet::Openflow::Datapaths
                                       active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
 
       @dp_info.add_flows(flows)
+
+      if owner?
+        @dp_info.network_manager.update_item(
+          event: set_broadcast_mac_address,
+          id: dpn_map.network_id,
+          broadcast_mac_address: dpn_map.broadcast_mac_address
+        )
+      end
     end
 
     def remove_active_network_id(network_id)
       active_network = @active_networks.delete(network_id)
-      return false if active_networks.nil?
+      return false if active_network.nil?
 
       debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
 

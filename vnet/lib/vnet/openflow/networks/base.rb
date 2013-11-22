@@ -96,7 +96,7 @@ module Vnet::Openflow::Networks
       self
     end
 
-    def set_datapath_of_bridge(datapath_info, dpn_map, should_update)
+    def set_datapath_of_bridge(datapath_info)
       # info "network(#{@uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
 
       @datapath_of_bridge = {
@@ -105,12 +105,12 @@ module Vnet::Openflow::Networks
         :ipv4_address => datapath_info.ipv4_address,
         :datapath_id => datapath_info.id,
       }
+    end
 
-      if dpn_map
-        @datapath_of_bridge[:broadcast_mac_address] = Trema::Mac.new(dpn_map.broadcast_mac_address)
-      else
-        error "network(#{@uuid}): no datapath associated with network."
-      end
+    def set_broadcast_mac_address(broadcast_mac_address)
+      return if @datapath_of_bridge[:broadcast_mac_address] == broadcast_mac_address
+      @datapath_of_bridge[:broadcast_mac_address] = broadcast_mac_address
+      update_flows
     end
 
   end

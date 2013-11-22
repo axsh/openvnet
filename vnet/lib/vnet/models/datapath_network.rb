@@ -29,6 +29,14 @@ module Vnet::Models
                       {:datapaths__dc_segment_id => datapath.dc_segment_id})
         ds = ds.select_all(:datapath_networks)
       end
+
+      def only_deleted
+        with_deleted.~(deleted_at: nil)
+      end
+    end
+
+    def datapath_networks_in_the_same_network
+      ds = self.class.join(:datapaths, id: datapath_id).where(network_id: self.network_id).all
     end
   end
 end
