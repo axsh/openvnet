@@ -105,8 +105,6 @@ module Vnet::Openflow
         case
         when port.port_number == OFPP_LOCAL
           prepare_port_local(port)
-        when port.port_info.name =~ /^eth/
-          prepare_port_eth(port)
         when port.port_info.name =~ /^if-/
           prepare_port_vif(port)
         when port.port_info.name =~ /^t-/
