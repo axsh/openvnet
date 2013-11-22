@@ -25,6 +25,10 @@ module Vnet::Models
 
     subset(:alives, {})
 
+    def port_name
+      self[:port_name] || canonical_uuid
+    end
+
     def network
       ip_leases.first.try(:network)
     end
