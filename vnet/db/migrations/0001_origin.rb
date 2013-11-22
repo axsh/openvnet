@@ -22,6 +22,7 @@ Sequel.migration do
       Integer :network_id, :index => true, :null=>false
       Integer :mac_address_id, :index => true
       FalseClass :is_connected, :null=>false
+      DateTime :deleted_at
     end
 
     create_table(:datapath_route_links) do

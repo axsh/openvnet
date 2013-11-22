@@ -2,6 +2,7 @@
 
 module Vnet::Models
   class DatapathNetwork < Base
+    plugin :paranoia
     plugin :mac_address, :attr_name => :broadcast_mac_address
 
     many_to_one :datapath
