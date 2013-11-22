@@ -20,7 +20,7 @@ module Vnet
     RELEASED_MAC_ADDRESS = "released_mac_address"
 
     #
-    # datapatath event
+    # datapath event
     #
     INITIALIZED_DATAPATH = "initialized_datapath"
     ADDED_DATAPATH = "added_datapath"
