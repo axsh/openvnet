@@ -142,7 +142,7 @@ module Vnet::Openflow
       item = self.item(params)
       return unless item
 
-      debug log_format("create #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+      debug log_format("create #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
       item
     end
@@ -152,7 +152,7 @@ module Vnet::Openflow
       item = @items[item_map.id]
       return nil if item.nil?
 
-      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
+      debug log_format("install #{item_map.uuid}/#{item_map.id}/#{item.port_name}", "mode:#{item.mode}")
 
       item.install
 
@@ -163,7 +163,7 @@ module Vnet::Openflow
 
       load_addresses(item_map)
 
-      @dp_info.port_manager.async.attach_interface(port_name: item.uuid)
+      @dp_info.port_manager.async.attach_interface(port_name: item_port_name || item.uuid)
 
       item # Return nil if interface has been uninstalled.
     end
@@ -171,7 +171,7 @@ module Vnet::Openflow
     def delete_item(params)
       item = @items.delete(params[:id])
 
-      debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+      debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
       item.uninstall
 
