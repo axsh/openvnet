@@ -12,6 +12,7 @@ vnet_branch: master
 log_level: debug
 
 dataset_options:
+  edge_ipv4_address: 172.16.20.10
   dp1_ipv4_address: 172.16.20.11
   dp2_ipv4_address: 172.16.20.12
   dp3_ipv4_address: 172.16.30.11
