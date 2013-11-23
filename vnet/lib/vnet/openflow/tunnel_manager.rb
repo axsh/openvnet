@@ -43,15 +43,32 @@ module Vnet::Openflow
         return nil
       end
 
-      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.map { |target_dp_map|
-        tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
-        tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
-                                       dst_datapath_id: target_dp_map.id,
-                                       display_name: tunnel_name)
-        target_dp_map.id
+      # Since we make all the tunnels up-front we need to assume the
+      # host ports are already created for all datapaths.
+      datapath_map = MW::Datapath.batch[@datapath_info.id].commit(:fill => :host_interfaces)
 
-      }.each { |dst_datapath_id|
-        item_by_params(dst_id: dst_datapath_id)
+      if datapath_map.host_interfaces.empty?
+        error log_format("could not find any host interface for this datapath, aborting tunnel creation")
+        return
+      end
+
+      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit(:fill => :host_interfaces).map { |target_dp_map|
+        datapath_map.host_interfaces.map { |host_interface|
+          target_dp_map.host_interfaces.map { |dst_interface|
+            info log_format("creating tunnel entry",
+                            "src_host:#{host_interface.uuid}/#{host_interface.port_name} dst_host:#{dst_interface.uuid}/#{dst_interface.port_name}")
+
+            tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
+                                           dst_datapath_id: target_dp_map.id,
+                                           src_interface_id: host_interface.id,
+                                           dst_interface_id: target_dp_map.id,
+                                           )
+            tunnel_map.id
+          }
+        }
+
+      }.flatten.each { |tunnel_id|
+        item_by_params(id: tunnel_id) if tunnel_id
       }
     end
 
@@ -168,7 +185,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit(:fill => :dst_datapath)
+      MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit(:fill => [:dst_datapath, :src_interface])
     end
     
     def item_initialize(item_map)

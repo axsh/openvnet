@@ -35,6 +35,8 @@ module Vnet::Openflow::Tunnels
         @dst_ipv4_address = IPAddr.new(map.dst_datapath.ipv4_address, Socket::AF_INET)
       end
 
+      @src_interface = map.src_interface
+
       @datapath_networks = []
     end
     
@@ -64,7 +66,13 @@ module Vnet::Openflow::Tunnels
         return
       end
 
-      @dp_info.add_tunnel(@display_name, @dst_ipv4_address.to_s)
+      if @src_interface.nil?
+        error log_format("no valid source interface loaded for #{@uuid}")
+        return
+      end
+
+      @dp_info.add_tunnel(@uuid, @dst_ipv4_address.to_s,
+                          egress_iface: @src_interface.port_name)
 
       info log_format("install #{@display_name}", "ip_address:#{@dst_ipv4_address.to_s}")
     end

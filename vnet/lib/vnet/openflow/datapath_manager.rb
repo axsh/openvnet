@@ -58,7 +58,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Datapath.batch[filter].commit #(:fill => [:ip_leases => :ip_address])
+      MW::Datapath.batch[filter].commit(:fill => :host_interfaces)
     end
 
     def item_initialize(item_map)
@@ -72,13 +72,13 @@ module Vnet::Openflow
     end
 
     def create_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
+      item = @items[params[:item_map].id]
       return unless item
 
-      debug log_format("insert #{item_map.uuid}/#{item_map.id}")
-
       item.install
+
+      debug log_format("insert #{item.uuid}/#{item.id}")
+
       item
     end
 
