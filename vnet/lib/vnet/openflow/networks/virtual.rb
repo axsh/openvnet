@@ -50,21 +50,6 @@ module Vnet::Openflow::Networks
                            md_create(:network => @id),
                            flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_SEGMENT))
 
-      if @broadcast_mac_address
-        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                               :eth_dst => @broadcast_mac_address
-                             }, {}, flow_options)
-        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                               :eth_src => @broadcast_mac_address
-                             }, {}, flow_options)
-        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                               :eth_dst => @broadcast_mac_address
-                             }, {}, flow_options)
-        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                               :eth_src => @broadcast_mac_address
-                             }, {}, flow_options)
-      end
-
       @dp_info.add_flows(flows)
     end
 

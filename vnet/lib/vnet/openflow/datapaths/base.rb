@@ -77,15 +77,15 @@ module Vnet::Openflow::Datapaths
                                       active_network[:broadcast_mac_address],
                                       active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
 
-      @dp_info.add_flows(flows)
-
       if owner?
-        @dp_info.network_manager.update_item(
-          event: set_broadcast_mac_address,
-          id: dpn_map.network_id,
-          broadcast_mac_address: dpn_map.broadcast_mac_address
+        flows_for_broadcast_mac_address(
+          flows,
+          active_network[:broadcast_mac_address],
+          active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
         )
       end
+
+      @dp_info.add_flows(flows)
     end
 
     def remove_active_network_id(network_id)
@@ -111,4 +111,18 @@ module Vnet::Openflow::Datapaths
 
   end
 
+  def flows_for_broadcast_mac_address(flows, broadcast_mac_address, cookie)
+    flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                           :eth_dst => broadcast_mac_address
+                         }, {}, cookie: cookie)
+    flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                           :eth_src => broadcast_mac_address
+                         }, {}, cookie: cookie)
+    flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                           :eth_dst => broadcast_mac_address
+                         }, {}, cookie: cookie)
+    flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                             :eth_src => broadcast_mac_address
+                           }, {}, cookie: cookie)
+  end
 end

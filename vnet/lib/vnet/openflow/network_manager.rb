@@ -25,16 +25,6 @@ module Vnet::Openflow
       }
     end
 
-    def update_item(params)
-      item = item_by_params(params)
-      return nil if item.nil?
-
-      case params[:event]
-      when :set_broadcast_mac_address
-        item.set_broadcast_mac_address(Trema::Mac.new(params[:broadcast_mac_address]))
-      end
-    end
-
     #
     # Interfaces:
     #

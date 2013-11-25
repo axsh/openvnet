@@ -33,10 +33,6 @@ module Vnet::Openflow::Networks
       @ipv4_prefix = network_map.ipv4_prefix
     end
 
-    def broadcast_mac_address
-      @datapath_of_bridge && @datapath_of_bridge[:broadcast_mac_address]
-    end
-
     def to_hash
       { :id => @id,
         :uuid => @uuid,
@@ -105,12 +101,6 @@ module Vnet::Openflow::Networks
         :ipv4_address => datapath_info.ipv4_address,
         :datapath_id => datapath_info.id,
       }
-    end
-
-    def set_broadcast_mac_address(broadcast_mac_address)
-      return if @datapath_of_bridge[:broadcast_mac_address] == broadcast_mac_address
-      @datapath_of_bridge[:broadcast_mac_address] = broadcast_mac_address
-      update_flows
     end
 
   end
