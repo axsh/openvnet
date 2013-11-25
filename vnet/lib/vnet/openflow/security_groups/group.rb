@@ -29,7 +29,7 @@ module Vnet::Openflow::SecurityGroups
 
     private
     def rule_factory(rule_string)
-      protocol, port, ipv4 = rule_string.split(":")
+      protocol, port, ipv4 = rule_string.strip.split(":")
       case protocol
       when 'icmp'
         @icmp_rules << ICMP.new(ipv4, port, cookie)
