@@ -43,7 +43,7 @@ module Vnet
       TABLE_INTERFACE_EGRESS_ROUTES      = 16
       TABLE_INTERFACE_EGRESS_MAC         = 17
 
-      TABLE_INTERFACE_EGRESS_FILTER = 13
+      TABLE_INTERFACE_EGRESS_FILTER = 18
 
       # Initial verification of network number and application of global
       # filtering rules.

@@ -64,7 +64,7 @@ module Vnet::Openflow::Networks
       if @interfaces[params[:interface_id]]
         raise("Interface already added to a network.")
       end
-      
+
       @interfaces[params[:interface_id]] = {
         :mode => params[:mode],
         :port_number => params[:port_number],

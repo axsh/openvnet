@@ -67,7 +67,7 @@ module Vnet::Openflow
           priority: Vnet::Openflow::SecurityGroups::Rule::RULE_PRIORITY,
           cookie: accept_all_traffic_cookie(interface_id),
           match_metadata: { interface: interface_id },
-          goto_table: TABLE_INTERFACE_VIF)
+          goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
       ]
     end
 
@@ -82,7 +82,7 @@ module Vnet::Openflow
                     priority: 90,
                     cookie: cookie,
                     match: { eth_type: ETH_TYPE_ARP },
-                    goto_table: TABLE_INTERFACE_VIF)
+                    goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
       ]
     end
   end
