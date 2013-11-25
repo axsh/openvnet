@@ -37,7 +37,7 @@ describe Vnet::Openflow::Ports::Tunnel do
                                               nil,
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
                                                :goto_table => TABLE_ROUTE_INGRESS})
-      expect(datapath.added_flows[2]).to eq Vnet::Openflow::Flow.create(
+      expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
                                               TABLE_OUTPUT_DATAPATH,
                                               5,
                                               port.md_create(datapath: 5),
