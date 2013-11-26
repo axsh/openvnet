@@ -189,6 +189,8 @@ module Vnet
 
     module Datapaths
       autoload :Base, 'vnet/openflow/datapaths/base'
+      autoload :Host, 'vnet/openflow/datapaths/host'
+      autoload :Remote, 'vnet/openflow/datapaths/remote'
     end
 
     module Interfaces

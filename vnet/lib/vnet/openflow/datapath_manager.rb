@@ -73,9 +73,15 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map)
-      Datapaths::Base.new(dp_info: @dp_info,
-                          manager: self,
-                          map: item_map)
+      if item_map.dpid == @dp_info.dpid_s
+        Datapaths::Host.new(dp_info: @dp_info,
+                            manager: self,
+                            map: item_map)
+      else
+        Datapaths::Remote.new(dp_info: @dp_info,
+                              manager: self,
+                              map: item_map)
+      end
     end
 
     def initialized_item_event
@@ -131,7 +137,7 @@ module Vnet::Openflow
     def activate_route_link(params)
       return if params[:route_link_id].nil?
 
-      dp_rl_items = MW::DatapathRouteLink.batch.dataset.where(route_link_id: params[:route_link_id]).all.commit
+      dp_rl_items = MW::DatapathRouteLink.batch.dataset.where(route_link_id: params[:route_link_id]).all.commit(:fill => :route_link)
 
       dp_rl_items.each { |dp_rl|
         item = item_by_params(id: dp_rl.datapath_id)

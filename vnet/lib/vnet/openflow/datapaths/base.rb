@@ -92,6 +92,7 @@ module Vnet::Openflow::Datapaths
     #
 
     def add_active_route_link(dp_rl_map)
+      return if dp_rl_map.route_link.nil?
       return if @active_route_links.has_key? dp_rl_map.id
 
       dp_rl = {
@@ -107,6 +108,7 @@ module Vnet::Openflow::Datapaths
       flows_for_filtering_mac_address(flows,
                                       dp_rl[:mac_address],
                                       dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+      flows_for_dp_route_link(flows, dp_rl)
 
       @dp_info.add_flows(flows)
 
@@ -121,6 +123,9 @@ module Vnet::Openflow::Datapaths
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapaths/base: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def flows_for_dp_route_link(flows, dp_rl)
     end
 
   end
