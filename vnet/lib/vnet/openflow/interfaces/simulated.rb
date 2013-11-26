@@ -166,7 +166,7 @@ module Vnet::Openflow::Interfaces
 
     def flows_for_base(flows)
       flows << flow_create(:controller,
-                           table: TABLE_OUTPUT_INTERFACE_INGRESS,
+                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
                              :eth_type => 0x0806,
@@ -175,7 +175,7 @@ module Vnet::Openflow::Interfaces
                            match_interface: @id,
                            cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
       flows << flow_create(:controller,
-                           table: TABLE_OUTPUT_INTERFACE_INGRESS,
+                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
                              :eth_type => 0x0800,
@@ -250,7 +250,7 @@ module Vnet::Openflow::Interfaces
                            match_network: ipv4_info[:network_id],
                            write_interface: @id,
                            cookie: cookie,
-                           goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],
                            priority: 80,
@@ -262,10 +262,10 @@ module Vnet::Openflow::Interfaces
                            match_network: ipv4_info[:network_id],
                            write_interface: @id,
                            cookie: cookie,
-                           goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
       flows << flow_create(:default,
                            table: TABLE_FLOOD_SIMULATED,
-                           goto_table: TABLE_OUTPUT_INTERFACE_INGRESS,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
                              :eth_type => 0x0806,

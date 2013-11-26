@@ -114,14 +114,13 @@ module Vnet
       #
       # Output ports tables:
       #
+
       # Directly output to a port type with no additional
       # actions. Usable by any table and as such need to be the last
       # tables. 
-
-      # TODO: Rename to TABLE_OUT_PORT_*.
-      TABLE_OUTPUT_INTERFACE_INGRESS = 90
-      TABLE_OUTPUT_INTERFACE_EGRESS  = 91
-      TABLE_OUT_PORT_TUNNEL          = 92
+      TABLE_OUT_PORT_INTERFACE_INGRESS = 90
+      TABLE_OUT_PORT_INTERFACE_EGRESS  = 91
+      TABLE_OUT_PORT_TUNNEL            = 92
 
       #
       # Cookie constants:

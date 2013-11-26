@@ -78,7 +78,7 @@ module Vnet::Openflow::Ports
                              write_interface: @interface_id)
 
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_INTERFACE_EGRESS,
+                             table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                              priority: 2,
                              match: {
                                :in_port => self.port_number
@@ -89,7 +89,7 @@ module Vnet::Openflow::Ports
                                :output => OFPP_IN_PORT
                              })
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_INTERFACE_EGRESS,
+                             table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                              priority: 1,
                              match_interface: @interface_id,
                              actions: {

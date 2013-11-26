@@ -135,7 +135,7 @@ module Vnet::Openflow::Routers
       if @interface_id
         flows << flow_create(:default,
                              table: TABLE_OUTPUT_ROUTE_LINK,
-                             goto_table: TABLE_OUTPUT_INTERFACE_EGRESS,
+                             goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                              priority: 5,
                              match: {
                                :eth_dst => @mac_address

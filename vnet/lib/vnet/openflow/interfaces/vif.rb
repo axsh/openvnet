@@ -113,7 +113,7 @@ module Vnet::Openflow::Interfaces
                            match_network: ipv4_info[:network_id],
                            write_interface: @id,
                            cookie: cookie,
-                           goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
 
     end
 
