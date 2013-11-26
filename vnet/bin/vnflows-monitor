@@ -9,6 +9,8 @@ require 'vnet/constants/openflow_flows'
 require 'io/wait'
 # require 'generator' #does not work in 2.0??
 
+Signal.trap("PIPE", "EXIT")
+
 class Flow
   include Vnet::Constants::OpenflowFlows
 
@@ -42,6 +44,7 @@ class Flow
 
   def to_pretty0
     "%3u-%02u  %7u %7u => %-24s %s actions=%s" %
+    # "%3u-%02u  %7u %7u => %s actions=%s" %
       [@table,
        @priority,
        @n_packets,
@@ -128,6 +131,11 @@ class Flow
   def metadata_to_pretty(value, mask)
     result = ''
 
+    if (value & METADATA_VALUE_PAIR_TYPE) == METADATA_VALUE_PAIR_TYPE
+      result = "VALUE_PAIR(0x%x/0x%x)" % [value, mask]
+      return result
+    end
+
     if (mask & METADATA_TYPE_MASK) == METADATA_TYPE_MASK
       result << self.class.metadata_type_name(value & (mask & METADATA_TYPE_MASK)) << '|'
     end
@@ -147,11 +155,13 @@ class Flow
     result << 'VIF|'        if md_has_flag(METADATA_FLAG_VIF, value, mask)
     result << 'FLOOD|'      if md_has_flag(METADATA_FLAG_FLOOD, value, mask)
     result << 'MAC2MAC|'    if md_has_flag(METADATA_FLAG_MAC2MAC, value, mask)
-    result << 'TUNNEL|'     if md_has_flag(METADATA_FLAG_TUNNEL, value, mask)
     result << 'REFLECTION|' if md_has_flag(METADATA_FLAG_REFLECTION, value, mask)
 
-    result << 'NO_CONTROLLER|'  if md_has_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
-    result << '!NO_CONTROLLER|' if md_has_not_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
+    result << 'NO_CONTROLLER|'   if md_has_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
+    result << '!NO_CONTROLLER|'  if md_has_not_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
+
+    result << 'IGNORE_MAC2MAC|'  if md_has_flag(METADATA_FLAG_IGNORE_MAC2MAC, value, mask)
+    result << '!IGNORE_MAC2MAC|' if md_has_not_flag(METADATA_FLAG_IGNORE_MAC2MAC, value, mask)
 
     result.chomp('|')
   end

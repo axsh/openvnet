@@ -19,10 +19,12 @@ module Vnet::Openflow
                                   :match_remote,
                                   :match_route_link,
                                   :match_tunnel,
+                                  :match_value_pair_flag,
                                   :match_value_pair_first,
                                   :match_value_pair_second,
                                  ]
-    FLOW_WRITE_METADATA_PARAMS = [:write_datapath,
+    FLOW_WRITE_METADATA_PARAMS = [:clear_all,
+                                  :write_datapath,
                                   :write_dp_route_link,
                                   :write_ignore_mac2mac,
                                   :write_interface,
@@ -34,6 +36,7 @@ module Vnet::Openflow
                                   :write_remote,
                                   :write_route_link,
                                   :write_tunnel,
+                                  :write_value_pair_flag,
                                   :write_value_pair_first,
                                   :write_value_pair_second,
                                  ]

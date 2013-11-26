@@ -37,9 +37,17 @@ module Vnet::Openflow::Tunnels
 
       @src_interface = map.src_interface
 
+      @src_interface_id = map.src_interface_id
+      @dst_interface_id = map.dst_interface_id
+
       @datapath_networks = []
     end
     
+    def cookie(tag = nil)
+      value = @id | COOKIE_TYPE_TUNNEL
+      tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
+    end
+
     def to_hash
       Vnet::Openflow::Tunnel.new(id: @id,
                                  uuid: @uuid,
@@ -73,6 +81,30 @@ module Vnet::Openflow::Tunnels
 
       @dp_info.add_tunnel(@uuid, @dst_ipv4_address.to_s,
                           egress_iface: @src_interface.port_name)
+
+      if !(@src_interface_id && @src_interface_id > 0) ||
+          !(@dst_interface_id && @dst_interface_id > 0)
+        error log_format("no valid src/dst interface id's found for #{@uuid}")
+        return
+      end
+
+      flows = []
+
+      [true, false].each { |reflection|
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_DP_OVER_TUNNEL,
+                             goto_table: TABLE_OUT_PORT_TUNNEL,
+                             priority: 1,
+
+                             match_value_pair_flag: reflection,
+                             match_value_pair_first: @src_interface_id,
+                             match_value_pair_second: @dst_interface_id,
+
+                             write_tunnel: @id,
+                             write_reflection: reflection)
+      }
+
+      @dp_info.add_flows(flows)
 
       info log_format("install #{@display_name}", "ip_address:#{@dst_ipv4_address.to_s}")
     end
