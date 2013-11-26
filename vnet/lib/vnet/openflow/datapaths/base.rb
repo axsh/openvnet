@@ -8,7 +8,6 @@ module Vnet::Openflow::Datapaths
 
     attr_reader :id
     attr_reader :uuid
-    attr_reader :dpid
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -18,13 +17,21 @@ module Vnet::Openflow::Datapaths
 
       @id = map.id
       @uuid = map.uuid
-      @dpid = map.dpid.hex
 
       @active_networks = {}
+
+      @mode =
+        if map.dpid == @dp_info.dpid_s
+          :owner
+        elsif map.dc_segment_id == params[:owner_dc_segment_id]
+          :segment
+        else
+          :tunnel
+        end
     end
     
     def owner?
-      @dpid == @dp_info.dpid_s
+      @mode == :owner
     end
 
     def cookie(tag = nil)
@@ -77,12 +84,20 @@ module Vnet::Openflow::Datapaths
                                       active_network[:broadcast_mac_address],
                                       active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
 
-      if owner?
+      case @mode
+      when :owner
         flows_for_broadcast_mac_address(
           flows,
           active_network[:broadcast_mac_address],
           active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
         )
+        @dp_info.dc_segment_manager.async.prepare_network(active_network[:network_id])
+        # nothing to do
+        @dp_info.tunnel_manager.async.prepare_network(active_network[:network_id])
+      when :segment
+        @dp_info.dc_segment_manager.async.insert(active_network[:dpn_id])
+      when :tunnel
+        @dp_info.tunnel_manager.async.insert(active_network[:dpn_id])
       end
 
       @dp_info.add_flows(flows)
@@ -93,6 +108,16 @@ module Vnet::Openflow::Datapaths
       return false if active_network.nil?
 
       debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
+
+      case @mode
+      when :owner
+        @dp_info.dc_segment_manager.async.remove_network_id(network_id)
+        @dp_info.tunnel_manager.async.remove_network_id_for_dpid(network_id, @dpid)
+      when :segment
+        @dp_info.dc_segment_manager.async.remove(active_network[:dpn_id])
+      when :tunnel
+        @dp_info.tunnel_manager.async.remove_network_id_for_dpid(network_id, @dpid)
+      end
 
       @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       
@@ -109,20 +134,19 @@ module Vnet::Openflow::Datapaths
       "#{@dp_info.dpid_s} datapaths/base: #{message}" + (values ? " (#{values})" : '')
     end
 
-  end
-
-  def flows_for_broadcast_mac_address(flows, broadcast_mac_address, cookie)
-    flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                           :eth_dst => broadcast_mac_address
-                         }, {}, cookie: cookie)
-    flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                           :eth_src => broadcast_mac_address
-                         }, {}, cookie: cookie)
-    flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                           :eth_dst => broadcast_mac_address
-                         }, {}, cookie: cookie)
-    flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+    def flows_for_broadcast_mac_address(flows, broadcast_mac_address, cookie)
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
+                             :eth_dst => broadcast_mac_address
+                           }, {}, cookie: cookie)
+      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
                              :eth_src => broadcast_mac_address
                            }, {}, cookie: cookie)
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                             :eth_dst => broadcast_mac_address
+                           }, {}, cookie: cookie)
+      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
+                             :eth_src => broadcast_mac_address
+                           }, {}, cookie: cookie)
+    end
   end
 end

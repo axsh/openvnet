@@ -39,7 +39,10 @@ module Vnet::Openflow
     # Refactor...
     #
 
-    def insert(dpn_map)
+    def insert(dpn_id)
+      dpn_map = MW::DatapathNetwork[dpn_id]
+      return unless dpn_map
+
       info log_format("insert datapath network id #{dpn_map.id}",
                       "network.id:#{dpn_map.network_id}")
 
@@ -72,6 +75,14 @@ module Vnet::Openflow
       self.update_network_id(dpn_map.network_id)
     end
 
+    def remove(dpn_id)
+      dpn_map = MW::DatapathNetwork[dpn_id]
+      return if dpn_map
+
+      @items[dpn_map.network_id].delete(dpn_id) if @items[network_id]
+      # The dpn flows should have already been deleted by cookie.
+    end
+
     #
     # Update state:
     #
@@ -82,14 +93,12 @@ module Vnet::Openflow
       }
     end
 
-    def prepare_network(network_map, datapath_info)
-      return unless network_map.network_mode == 'virtual'
+    def prepare_network(network_id)
+      debug log_format("prepare_network", network_id)
+      network_map = MW::Network[network_id]
+      return unless network_map && network_map.network_mode == 'virtual'
 
-      network_map.batch.datapath_networks_dataset.on_segment(@datapath_info).all.commit(:fill => :datapath).each { |dpn_map|
-        self.insert(dpn_map)
-      }
-
-      dpn = MW::DatapathNetwork[datapath_id: datapath_info.id,
+      dpn = MW::DatapathNetwork[datapath_id: @datapath_info.id,
                                 network_id: network_map.id]
 
       flow = flow_create(:default,

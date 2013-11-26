@@ -9,6 +9,7 @@ module Vnet::Openflow
     attr_reader :id
     attr_reader :uuid
     attr_reader :display_name
+    attr_reader :node_id
 
     attr_reader :datapath_map
 
@@ -21,6 +22,7 @@ module Vnet::Openflow
       @id = datapath_map.id
       @uuid = datapath_map.uuid
       @display_name = datapath_map.display_name
+      @node_id = datapath_map.node_id
 
       @dc_segment_id = datapath_map.dc_segment_id
       @ipv4_address = IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET)
@@ -83,20 +85,12 @@ module Vnet::Openflow
       link_with_managers
     end
 
-    def datapath_batch
-      @datapath_map.batch
-    end
-
-    def datapath_id
-      @datapath_map && @datapath_map.id
-    end
-
     def inspect
       "<##{self.class.name} dpid:#{@dp_info && @dp_info.dpid}>"
     end
 
     def ipv4_address
-      ipv4_value = @datapath_map.ipv4_address
+      ipv4_value = @datapath_info.ipv4_address
       ipv4_value && IPAddr.new(ipv4_value, Socket::AF_INET)
     end
 
@@ -105,18 +99,21 @@ module Vnet::Openflow
       @switch.create_default_flows
 
       switch_ready
+
+      return @switch
     end
 
     def switch_ready
-      # TODO: Don't store the datapath_map...
-      @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
+      datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
 
-      if @datapath_map.nil?
+      if datapath_map.nil?
         warn log_format('could not find dpid in database')
         return
       end
 
-      initialize_datapath_info
+      initialize_datapath_info(datapath_map)
+
+      @dp_info.datapath_manager.item(id: datapath_map.id)
 
       @switch.switch_ready
     end
@@ -222,8 +219,8 @@ module Vnet::Openflow
       "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def initialize_datapath_info
-      @datapath_info = DatapathInfo.new(@datapath_map)
+    def initialize_datapath_info(datapath_map)
+      @datapath_info = DatapathInfo.new(datapath_map)
       each_managers { |manager| manager.set_datapath_info(@datapath_info) }
     end
 

@@ -42,4 +42,13 @@ describe Vnet::Models::DatapathNetwork do
     it { expect(subject.first).to be_a Vnet::Models::DatapathNetwork }
     it { expect(subject.first.mac_address).to eq mac_address_1_1 }
   end
+
+  describe "datapath_networks_in_the_same_network" do
+    subject { datapath_1.datapath_networks.first.datapath_networks_in_the_same_network }
+    it { puts Vnet::ModelWrappers::DatapathNetwork.batch[1].datapath_networks_in_the_same_network.commit }
+    it { puts subject.inspect }
+    it { expect(subject.size).to eq 2 }
+    it { expect(subject.map(&:network_id).uniq).to eq [1]}
+    it { expect(subject.map(&:datapath_id)).to eq [2, 3]}
+  end
 end

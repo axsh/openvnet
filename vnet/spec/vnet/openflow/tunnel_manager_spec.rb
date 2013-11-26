@@ -53,6 +53,11 @@ describe Vnet::Openflow::TunnelManager do
       Fabricate(:datapath_1, :dc_segment_id => 1)
       Fabricate(:datapath_2, :dc_segment_id => 2)
       Fabricate(:datapath_3, :dc_segment_id => 2)
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, broadcast_mac_address: 1)
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 2, broadcast_mac_address: 2)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, broadcast_mac_address: 3)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 2, broadcast_mac_address: 4)
+      Fabricate(:datapath_network, datapath_id: 3, network_id: 1, broadcast_mac_address: 5)
     end
 
     let(:datapath) do
@@ -71,30 +76,11 @@ describe Vnet::Openflow::TunnelManager do
         tunnel_manager.set_datapath_info(datapath.datapath_info)
 
         tunnel_manager.create_all_tunnels
-        tunnel_manager.insert(
-          double(:id => 1,
-                 :broadcast_mac_address => "bb:bb:bb:11:11:11",
-                 :network_id => 1,
-                 :datapath => double(:dpid => "0x#{'b' * 16}",
-                                     :ipv4_address => IPAddr.new('1.1.1.1', Socket::AF_INET).to_i,
-                                     :datapath_id => 1
-                                     )))
-        tunnel_manager.insert(
-          double(:id => 2,
-                 :broadcast_mac_address => "bb:bb:bb:22:22:22",
-                 :network_id => 2,
-                 :datapath => double(:dpid => "0x#{'b' * 16}",
-                                     :ipv4_address => IPAddr.new('2.2.2.2', Socket::AF_INET).to_i,
-                                     :datapath_id => 2
-                                     )))
-        tunnel_manager.insert(
-          double(:id => 3,
-                 :broadcast_mac_address => "cc:cc:cc:11:11:11",
-                 :network_id => 1,
-                 :datapath => double(:dpid => "0x#{'c' * 16}",
-                                     :ipv4_address => IPAddr.new('1.1.1.2', Socket::AF_INET).to_i,
-                                     :datapath_id => 3
-                                     )))
+        tunnel_manager.insert(1)
+        tunnel_manager.insert(2)
+        tunnel_manager.insert(3)
+        tunnel_manager.insert(4)
+        tunnel_manager.insert(5)
       end
     end
 
@@ -104,7 +90,7 @@ describe Vnet::Openflow::TunnelManager do
       flows = datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq 0
+      expect(flows.size).to eq 5
 
       # TunnelManager no longer creates the drop flows for broadcast
       # mac addresses, move.
@@ -226,6 +212,7 @@ describe Vnet::Openflow::TunnelManager do
       Fabricate("datapath_1")
       # id=2, dpid="0x"+"c"*16
       Fabricate("datapath_3")
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, broadcast_mac_address: 1)
     end
 
     let(:ofctl) { double(:ofctl) }
@@ -240,14 +227,7 @@ describe Vnet::Openflow::TunnelManager do
         tm.set_datapath_info(datapath.datapath_info)
 
         tm.create_all_tunnels
-        tm.insert(
-          double(:id => 1,
-                 :broadcast_mac_address => "bb:bb:bb:11:11:11",
-                 :network_id => 1,
-                 :datapath => double(:dpid => "0x#{'c' * 16}",
-                                     :ipv4_address => IPAddr.new('1.1.1.1', Socket::AF_INET).to_i,
-                                     :datapath_id => 1
-                                     )))
+        tm.insert(1)
 
       end
     end

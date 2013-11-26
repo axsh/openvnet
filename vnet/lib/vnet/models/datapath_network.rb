@@ -36,7 +36,7 @@ module Vnet::Models
     end
 
     def datapath_networks_in_the_same_network
-      ds = self.class.join(:datapaths, id: datapath_id).where(network_id: self.network_id).all
+      self.class.eager_graph(:datapath).where(network_id: self.network_id).exclude(datapath_networks__id: self.id).all
     end
   end
 end

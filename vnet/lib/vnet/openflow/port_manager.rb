@@ -15,7 +15,7 @@ module Vnet::Openflow
                        "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
-      if @dp_info.datapath.datapath_map.nil?
+      if @dp_info.datapath.datapath_info.nil?
         warn log_format('cannot initialize ports without a valid datapath database entry')
         return nil
       end
@@ -83,7 +83,7 @@ module Vnet::Openflow
 
       interface = @dp_info.interface_manager.item(port_name: port.port_name,
                                                   port_number: port.port_number,
-                                                  owner_datapath_id: @dp_info.datapath.datapath_map.id)
+                                                  owner_datapath_id: @dp_info.datapath.datapath_info.id)
 
       # Request twice since we're lacking the proper search parameter.
       interface = interface || @dp_info.interface_manager.item(port_name: port.port_name,
@@ -169,7 +169,7 @@ module Vnet::Openflow
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
       params = {
-        :owner_datapath_id => @dp_info.datapath.datapath_map.id,
+        :owner_datapath_id => @dp_info.datapath.datapath_info.id,
         :port_name => port.port_name,
         :reinitialize => true
       }

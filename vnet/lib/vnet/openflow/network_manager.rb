@@ -151,8 +151,6 @@ module Vnet::Openflow
         @dp_info.service_manager.async.item(id: service_map.id)
       }
 
-      @dp_info.dc_segment_manager.async.prepare_network(item_map, @datapath_info)
-      @dp_info.tunnel_manager.async.prepare_network(item_map, @datapath_info)
       @dp_info.route_manager.async.prepare_network(item_map, @datapath_info)
 
       # Move the dispatch event or verify if still in @items.
@@ -179,9 +177,6 @@ module Vnet::Openflow
       @items.delete(item.id)
 
       item.uninstall
-
-      @dp_info.dc_segment_manager.async.remove_network_id(item.id)
-      @dp_info.tunnel_manager.async.remove_network_id_for_dpid(item.id, @dpid)
 
       dispatch_event("network/deleted",
                      id: item.id,

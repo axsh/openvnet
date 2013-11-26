@@ -43,6 +43,7 @@ module Vnet::Openflow
     def item_initialize(item_map)
       Datapaths::Base.new(dp_info: @dp_info,
                           manager: self,
+                          owner_dc_segment_id: @datapath_info.dc_segment_id,
                           map: item_map)
     end
 
@@ -59,7 +60,11 @@ module Vnet::Openflow
 
       item.install
 
-      item_map.datapath_networks.each { |dpn_map| activate_network(dpn_map) }
+      if item.owner?
+        item_map.datapath_networks.each do |dpn_map|
+          publish(ADDED_DATAPATH_NETWORK, dpn_map: dpn_map)
+        end
+      end
 
       item
     end
@@ -67,12 +72,6 @@ module Vnet::Openflow
     def create_item(params)
       debug log_format("creating datapath id: #{params[:id]}")
       return if @items[params[:id]]
-
-      # don't create the item of other datapath in the same vna
-      datapath = MW::Datapath[params[:id]]
-      return unless datapath && datapath.dpid == @dp_info.dpid_s
-
-      item(params)
 
       @dp_info.datapath.switch_ready
     end
@@ -90,15 +89,15 @@ module Vnet::Openflow
 
     def add_datapath_network(params)
       unless params[:id]
-        dpn_map = NW::DatapathNetwork.find(params[:datapath_network_id])
+        dpn_map = params[:dpn_map] || MW::DatapathNetwork.find(params[:datapath_network_id])
         return unless dpn_map
 
         publish(ADDED_DATAPATH_NETWORK, id: dpn_map.datapath_id, dpn_map: dpn_map)
 
         # need to be propagated if it is newly added network
         if dpn_map.datapath_id == @datapath_info.id
-          dpn_map.datapath_networks_in_the_same_network.each do |dpn_map|
-            publish(ADDED_DATAPATH_NETWORK, id: dpn_map.datapath_id, dpn_map: dpn_map)
+          dpn_map.batch.datapath_networks_in_the_same_network.commit.each do |peer_dpn_map|
+            publish(ADDED_DATAPATH_NETWORK, id: peer_dpn_map.datapath_id, dpn_map: peer_dpn_map)
           end
         end
       end
@@ -110,7 +109,7 @@ module Vnet::Openflow
 
     def remove_datapath_network(params)
       unless params[:id]
-        dpn_map = NW::DatapathNetwork.batch.only_deleted.first(id: params[:datapath_network_id]).commit
+        dpn_map = MW::DatapathNetwork.batch.only_deleted.first(id: params[:datapath_network_id]).commit
         return unless dpn_map
 
         publish(REMOVED_DATAPATH_NETWORK, id: dpn_map.datapath_id, dpn_map: dpn_map)

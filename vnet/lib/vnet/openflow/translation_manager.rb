@@ -51,7 +51,7 @@ module Vnet::Openflow
     end
 
     def initialize_handlers
-      return unless @dp_info.datapath.datapath_map.node_id == 'edge'
+      return unless @dp_info.datapath.datapath_info.datapath_map.node_id == 'edge'
       add_handler(mode: :vnet_edge, dp_info: @dp_info)
     end
 
