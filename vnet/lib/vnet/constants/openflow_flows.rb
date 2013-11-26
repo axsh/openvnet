@@ -85,11 +85,43 @@ module Vnet
       TABLE_OUTPUT_DATAPATH          = 62
       TABLE_OUTPUT_MAC2MAC           = 63
 
-      # Output tables only, no goto_table should be used.
-      TABLE_OUTPUT_DP_ROUTE_LINK     = 70
-      TABLE_OUTPUT_INTERFACE_INGRESS = 71
-      TABLE_OUTPUT_INTERFACE_EGRESS  = 72
-      TABLE_OUTPUT_TUNNEL            = 73
+      # The 'output dp * lookup' tables use the DatapathNetwork and
+      # DatapathRouteLink database entry keys to determine what source
+      # interface and destination interfaces should be used for
+      # packets.
+      #
+      # For MAC2MAC this only requires changing the destionation MAC
+      # address to the one associated with that particular datapath
+      # network or route link, while for tunnels the output port needs
+      # to be selected from pre-created tunnels.
+
+      TABLE_OUTPUT_DP_NETWORK_LOOKUP_DST    = 80
+      TABLE_OUTPUT_DP_NETWORK_LOOKUP_SRC    = 81
+
+      TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_DST = 82
+
+      # Verify that the route link mac address and the id in the first
+      # value are valid.
+      #
+      # TABLE_OUTPUT_DP_ROUTE_LINK_VERIFY
+      TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_SRC = 84
+
+      TABLE_OUTPUT_DP_OVER_MAC2MAC          = 85 # Match src/dst if id, output if present.
+      TABLE_OUTPUT_DP_NETWORK_SET_MAC       = 86 # If broadcast -> set MAC2MAC or drop. default goto next
+      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC    = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
+      TABLE_OUTPUT_DP_OVER_TUNNEL           = 88 # Use tun_id to determine type for goto_table.
+
+      #
+      # Output ports tables:
+      #
+      # Directly output to a port type with no additional
+      # actions. Usable by any table and as such need to be the last
+      # tables. 
+
+      # TODO: Rename to TABLE_OUT_PORT_*.
+      TABLE_OUTPUT_INTERFACE_INGRESS = 90
+      TABLE_OUTPUT_INTERFACE_EGRESS  = 91
+      TABLE_OUT_PORT_TUNNEL          = 92
 
       #
       # Cookie constants:
@@ -171,6 +203,19 @@ module Vnet
       METADATA_TYPE_TUNNEL          = (0xa << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0xffffffff
+
+      # Special case of the metadata bitfield that allows storing two
+      # 31-bit values and one single flag.
+      #
+      # <64, 63] => 1-bit always true
+      # <63, 48] => first 31-bit value
+      # <48, 47] => 1-bit flag for any use
+      # <47,  0] => second 31-bit value
+
+      METADATA_VALUE_PAIR_TYPE        = (0x1 << 63)
+      METADATA_VALUE_PAIR_FLAG        = (0x1 << 31)
+      METADATA_VALUE_PAIR_FIRST_MASK  = (0x7fffffff << 32)
+      METADATA_VALUE_PAIR_SECOND_MASK = 0x7fffffff
 
       #
       # Tunnel constants:

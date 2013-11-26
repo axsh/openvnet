@@ -56,9 +56,20 @@ module Vnet::Openflow
         #
         # Refactored:
         #
+        when :match_dp_route_link, :write_dp_route_link
+          metadata = metadata | (value & METADATA_VALUE_MASK) | METADATA_TYPE_DP_ROUTE_LINK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :match_ignore_mac2mac, :write_ignore_mac2mac
           metadata = metadata | (value == true ? METADATA_FLAG_IGNORE_MAC2MAC : 0)
           metadata_mask = metadata_mask | METADATA_FLAG_IGNORE_MAC2MAC
+
+        when :match_value_pair_first, :write_value_pair_first
+          metadata = metadata | ((value << 32) & METADATA_VALUE_PAIR_FIRST_MASK) | METADATA_VALUE_PAIR_TYPE
+          metadata_mask = metadata_mask | METADATA_VALUE_PAIR_FIRST_MASK | METADATA_VALUE_PAIR_TYPE
+        when :match_value_pair_second, :write_value_pair_second
+          metadata = metadata | (value & METADATA_VALUE_PAIR_SECOND_MASK) | METADATA_VALUE_PAIR_TYPE
+          metadata_mask = metadata_mask | METADATA_VALUE_PAIR_SECOND_MASK | METADATA_VALUE_PAIR_TYPE
+
         else
           raise("Unknown metadata type: #{key.inspect}")
         end

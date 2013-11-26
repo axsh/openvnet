@@ -38,7 +38,7 @@ module Vnet::Openflow::Ports
 
       if @tunnel_id && @tunnel_id > 0
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_TUNNEL,
+                             table: TABLE_OUT_PORT_TUNNEL,
                              priority: 5,
                              match_tunnel: @tunnel_id,
                              actions: {
