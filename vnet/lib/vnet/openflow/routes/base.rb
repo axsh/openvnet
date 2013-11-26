@@ -106,9 +106,23 @@ module Vnet::Openflow::Routes
 
       else
         if @egress == true
+          # flows << flow_create(:routing,
+          #                      table: TABLE_ROUTE_LINK_EGRESS,
+          #                      goto_table: TABLE_OUTPUT_ROUTE_LINK,
+
+          #                      match: subnet_dst,
+          #                      match_route_link: @route_link_id,
+
+          #                      actions: {
+          #                        :eth_dst => @route_link_mac_address
+          #                      },
+          #                      write_datapath: @use_datapath_id,
+          #                      default_route: self.is_default_route,
+          #                      cookie: cookie)
+
           flows << flow_create(:routing,
                                table: TABLE_ROUTE_LINK_EGRESS,
-                               goto_table: TABLE_OUTPUT_ROUTE_LINK,
+                               goto_table: TABLE_ROUTE_EGRESS,
 
                                match: subnet_dst,
                                match_route_link: @route_link_id,
@@ -116,7 +130,7 @@ module Vnet::Openflow::Routes
                                actions: {
                                  :eth_dst => @route_link_mac_address
                                },
-                               write_datapath: @use_datapath_id,
+                               write_interface: @interface_id,
                                default_route: self.is_default_route,
                                cookie: cookie)
         end

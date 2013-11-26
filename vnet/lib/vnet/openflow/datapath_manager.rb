@@ -11,6 +11,17 @@ module Vnet::Openflow
     subscribe_event :removed_service # TODO Check if needed.
     subscribe_event INITIALIZED_DATAPATH, :create_item
 
+    def update(params)
+      case params[:event]
+      when :activate_route_link
+        activate_route_link(params)
+      when :deactivate_route_link
+        # deactivate_route_link(params)
+      end
+
+      nil
+    end
+
     #
     # Networks:
     #
@@ -94,6 +105,8 @@ module Vnet::Openflow
     #
 
     def activate_network(params)
+      return if params[:network_id].nil?
+
       dpn_items = MW::DatapathNetwork.batch.dataset.where(network_id: params[:network_id]).all.commit
 
       dpn_items.each { |dpn|
@@ -112,6 +125,19 @@ module Vnet::Openflow
 
       unused_datapaths.each { |id, item|
         delete_item(item)
+      }
+    end
+
+    def activate_route_link(params)
+      return if params[:route_link_id].nil?
+
+      dp_rl_items = MW::DatapathRouteLink.batch.dataset.where(route_link_id: params[:route_link_id]).all.commit
+
+      dp_rl_items.each { |dp_rl|
+        item = item_by_params(id: dp_rl.datapath_id)
+        next if item.nil?
+
+        item.add_active_route_link(dp_rl)
       }
     end
 

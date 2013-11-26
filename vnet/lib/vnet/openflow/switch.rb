@@ -61,8 +61,10 @@ module Vnet::Openflow
        TABLE_OUTPUT_ROUTE_LINK,
        TABLE_OUTPUT_DATAPATH,
        TABLE_OUTPUT_MAC2MAC,
+       TABLE_OUTPUT_DP_ROUTE_LINK,
        TABLE_OUTPUT_INTERFACE_INGRESS,
        TABLE_OUTPUT_INTERFACE_EGRESS,
+       TABLE_OUTPUT_TUNNEL,
       ].each { |table|
         flows << Flow.create(table, 0, {}, nil, flow_options)
       }

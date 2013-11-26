@@ -22,6 +22,7 @@ module Vnet::Openflow::Routers
 
       @id = map.id
       @uuid = map.uuid
+
       @mac_address = Trema::Mac.new(map.mac_address)
       @dp_mac_address = nil
 
@@ -34,10 +35,13 @@ module Vnet::Openflow::Routers
     end
 
     def install
-      debug log_format('install', "mac:#{@mac_address}")
+      msg = "installing"
+      msg << " with mac2mac" if @dp_mac_address && @interface_id
+      values = "rl_mac:#{@mac_address}"
+      values << " dp_rl_mac:#{@dp_mac_address}" if @dp_mac_address
+      values << " host_interface:#{@interface_id}" if @interface_id
 
       flows = []
-
       flows_for_route_link(flows)
       flows_for_dp_route_link(flows) if @dp_mac_address
 
@@ -46,11 +50,14 @@ module Vnet::Openflow::Routers
       }
 
       @dp_info.add_flows(flows)
+
+      debug log_format(msg, values)
     end
 
     # Handle MAC2MAC packets for this route link using a unique MAC
     # address for this datapath, route link pair.
     def set_dp_route_link(dp_rl_map)
+      @interface_id = dp_rl_map.interface_id
       @dp_mac_address = Trema::Mac.new(dp_rl_map.mac_address)
 
       # Install flows if activated.
@@ -109,34 +116,47 @@ module Vnet::Openflow::Routers
     end
 
     def flows_for_dp_route_link(flows)
-      flows << flow_create(:default,
-                           table: TABLE_HOST_PORTS,
-                           goto_table: TABLE_ROUTE_LINK_EGRESS,
-                           priority: 30,
-                           match: {
-                             :eth_dst => @dp_mac_address
-                           },
-                           write_route_link: @id)
+      if @interface_id
+        flows << flow_create(:default,
+                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             goto_table: TABLE_ROUTE_LINK_EGRESS,
+                             priority: 30,
+                             match: {
+                               :eth_dst => @dp_mac_address
+                             },
+                             match_interface: @interface_id,
+                             write_route_link: @id)
+      end
 
       flows_for_filtering_mac_address(flows, @dp_mac_address)
     end
 
     def flows_for_datapath_on_segment(flows, dp_rl_info)
-      flows << flow_create(:default,
-                           table: TABLE_OUTPUT_ROUTE_LINK,
-                           goto_table: TABLE_OUTPUT_MAC2MAC,
-                           priority: 5,
-                           match: {
-                             :eth_dst => @mac_address
-                           },
-                           match_datapath: dp_rl_info[:datapath_id],
-                           actions: {
-                             :eth_dst => dp_rl_info[:mac_address]
-                           },
-                           write_mac2mac: true)
+      if @interface_id
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_ROUTE_LINK,
+                             goto_table: TABLE_OUTPUT_INTERFACE_EGRESS,
+                             priority: 5,
+                             match: {
+                               :eth_dst => @mac_address
+                             },
+                             match_datapath: dp_rl_info[:datapath_id],
+                             actions: {
+                               :eth_dst => dp_rl_info[:mac_address]
+                             },
+                             write_interface: @interface_id)
+      end
 
       flows_for_filtering_mac_address(flows, dp_rl_info[:mac_address])
     end
+
+      # flows << flow_create(:default,
+      #                      table: TABLE_OUTPUT_DP_ROUTE_LINK,
+      #                      goto_table: TABLE_OUTPUT_,
+      #                      priority: 5,
+      #                      match_dp_route_link: dp_rl_info[:id],
+      #                      write_tunnel: 
+
 
   end
 

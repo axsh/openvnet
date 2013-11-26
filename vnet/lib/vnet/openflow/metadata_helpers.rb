@@ -49,13 +49,9 @@ module Vnet::Openflow
         when :route_link, :match_route_link, :write_route_link
           metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
-        when :tunnel, :match_tunnel, :write_tunnel
-          metadata = metadata | METADATA_FLAG_TUNNEL
-          metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
-        when :vif, :match_vif, :write_vif
-          # Disable the vif flag until we actually need it.
-          # metadata = metadata | METADATA_FLAG_VIF
-          # metadata_mask = metadata_mask | METADATA_FLAG_VIF
+        when :match_tunnel, :write_tunnel
+          metadata = metadata | value | METADATA_TYPE_TUNNEL
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
 
         #
         # Refactored:

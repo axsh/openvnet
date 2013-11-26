@@ -81,14 +81,16 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   post '/:uuid/route_links/:route_link_uuid' do
-    params = parse_params(@params, ['uuid', 'route_link_uuid', 'mac_address'])
-    check_required_params(params, ['mac_address'])
+    params = parse_params(@params, ['uuid', 'route_link_uuid', 'interface_uuid', 'mac_address'])
+    check_required_params(params, ['interface_uuid', 'mac_address'])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
+    interface = check_syntax_and_pop_uuid(M::Interface, params, 'interface_uuid')
     route_link = check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid')
     mac_address = parse_mac(params['mac_address'])
 
     M::DatapathRouteLink.create({ :datapath_id => datapath.id,
+                                  :interface_id => interface.id,
                                   :route_link_id => route_link.id,
                                   :mac_address => mac_address,
                                 })

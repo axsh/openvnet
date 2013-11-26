@@ -19,6 +19,7 @@ module Vnet::Openflow::Datapaths
       @uuid = map.uuid
 
       @active_networks = {}
+      @active_route_links = {}
     end
     
     def cookie(tag = nil)
@@ -79,11 +80,20 @@ module Vnet::Openflow::Datapaths
       active_network = @active_networks.delete(network_id)
       return false if active_networks.nil?
 
-      debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
-
       @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       
+      debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
+
       true
+    end
+
+    #
+    # Route links:
+    #
+
+    def add_active_route_link(dp_rl_map)
+      debug log_format("adding to #{@uuid}/#{id} active datapath network #{dp_rl_map.datapath_id}/#{dp_rl_map.route_link_id}", dp_rl_map.inspect)
+      
     end
 
     #
