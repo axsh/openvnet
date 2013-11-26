@@ -61,7 +61,7 @@ module Vnet::Openflow
             tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
                                            dst_datapath_id: target_dp_map.id,
                                            src_interface_id: host_interface.id,
-                                           dst_interface_id: target_dp_map.id,
+                                           dst_interface_id: dst_interface.id
                                            )
             tunnel_map.id
           }
