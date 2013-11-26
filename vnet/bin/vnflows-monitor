@@ -155,13 +155,14 @@ class Flow
     result << 'VIF|'        if md_has_flag(METADATA_FLAG_VIF, value, mask)
     result << 'FLOOD|'      if md_has_flag(METADATA_FLAG_FLOOD, value, mask)
     result << 'MAC2MAC|'    if md_has_flag(METADATA_FLAG_MAC2MAC, value, mask)
-    result << 'REFLECTION|' if md_has_flag(METADATA_FLAG_REFLECTION, value, mask)
-
-    result << 'NO_CONTROLLER|'   if md_has_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
-    result << '!NO_CONTROLLER|'  if md_has_not_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
 
     result << 'IGNORE_MAC2MAC|'  if md_has_flag(METADATA_FLAG_IGNORE_MAC2MAC, value, mask)
+    result << 'NO_CONTROLLER|'   if md_has_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
+    result << 'REFLECTION|'      if md_has_flag(METADATA_FLAG_REFLECTION, value, mask)
+
     result << '!IGNORE_MAC2MAC|' if md_has_not_flag(METADATA_FLAG_IGNORE_MAC2MAC, value, mask)
+    result << '!NO_CONTROLLER|'  if md_has_not_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
+    result << '!REFLECTION|'     if md_has_not_flag(METADATA_FLAG_REFLECTION, value, mask)
 
     result.chomp('|')
   end

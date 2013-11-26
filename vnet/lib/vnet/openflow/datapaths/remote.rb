@@ -11,21 +11,35 @@ module Vnet::Openflow::Datapaths
     end
 
     def flows_for_dp_route_link(flows, dp_rl)
-      flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_DST,
-                           goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
-                           priority: 5,
+      # We write the destination interface id in the second value
+      # field, and then prepare for the next table by writing the
+      # route link id in the first value field.
+      #
+      # The route link id will then be used to identify what source
+      # interface id is set using the host's datapath route link
+      # entry.
 
-                           match_dp_route_link: dp_rl[:id],
+      [true, false].each { |reflection|
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_DST,
+                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_SRC,
+                             priority: 1,
 
-                           actions: {
-                             :eth_dst => dp_rl[:mac_address]
-                           },
+                             match_dp_route_link: dp_rl[:id],
+                             match_reflection: reflection,
 
-                           # write pair..
+                             # Not yet MAC2MAC friendly...
+                             actions: {
+                               # :eth_dst => dp_rl[:mac_address]
+                               :eth_dst => dp_rl[:route_link_mac_address]
+                             },
 
-                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+                             write_value_pair_flag: reflection,
+                             write_value_pair_first: dp_rl[:route_link_id],
+                             write_value_pair_second: dp_rl[:interface_id],
 
+                             cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+      }
     end
 
   end

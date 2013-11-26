@@ -98,11 +98,19 @@ module Vnet::Openflow::Datapaths
       dp_rl = {
         :id => dp_rl_map.id,
         :datapath_id => dp_rl_map.datapath_id,
-        :route_link_id => dp_rl_map.route_link_id,
+        :interface_id => dp_rl_map.interface_id,
         :mac_address => Trema::Mac.new(dp_rl_map.mac_address),
+
+        :route_link_id => dp_rl_map.route_link_id,
+        :route_link_mac_address => Trema::Mac.new(dp_rl_map.route_link.mac_address),
       }
 
       @active_route_links[dp_rl_map.route_link_id] = dp_rl
+
+      return if dp_rl[:interface_id].nil?
+      return if dp_rl[:datapath_id].nil?
+      return if dp_rl[:route_link_id].nil?
+      return if dp_rl[:route_link_mac_address].nil?
 
       flows = []
       flows_for_filtering_mac_address(flows,
