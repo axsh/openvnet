@@ -147,16 +147,8 @@ module Vnet::Openflow::Routers
                              write_interface: @interface_id)
       end
 
-      flows_for_filtering_mac_address(flows, dp_rl_info[:mac_address])
+      # flows_for_filtering_mac_address(flows, dp_rl_info[:mac_address])
     end
-
-      # flows << flow_create(:default,
-      #                      table: TABLE_OUTPUT_DP_ROUTE_LINK,
-      #                      goto_table: TABLE_OUTPUT_,
-      #                      priority: 5,
-      #                      match_dp_route_link: dp_rl_info[:id],
-      #                      write_tunnel: 
-
 
   end
 

@@ -55,8 +55,6 @@ module Vnet::Openflow::Datapaths
     #
 
     def add_active_network(dpn_map)
-      debug log_format("adding to #{@uuid}/#{id} active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
-
       return if @active_networks.has_key? dpn_map.id
 
       active_network = {
@@ -74,6 +72,8 @@ module Vnet::Openflow::Datapaths
                                       active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
 
       @dp_info.add_flows(flows)
+
+      debug log_format("adding to #{@uuid}/#{id} active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
     end
 
     def remove_active_network_id(network_id)
@@ -92,8 +92,25 @@ module Vnet::Openflow::Datapaths
     #
 
     def add_active_route_link(dp_rl_map)
-      debug log_format("adding to #{@uuid}/#{id} active datapath network #{dp_rl_map.datapath_id}/#{dp_rl_map.route_link_id}", dp_rl_map.inspect)
-      
+      return if @active_route_links.has_key? dp_rl_map.id
+
+      dp_rl = {
+        :id => dp_rl_map.id,
+        :datapath_id => dp_rl_map.datapath_id,
+        :route_link_id => dp_rl_map.route_link_id,
+        :mac_address => Trema::Mac.new(dp_rl_map.mac_address),
+      }
+
+      @active_route_links[dp_rl_map.route_link_id] = dp_rl
+
+      flows = []
+      flows_for_filtering_mac_address(flows,
+                                      dp_rl[:mac_address],
+                                      dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
+      @dp_info.add_flows(flows)
+
+      debug log_format("adding to #{@uuid}/#{id} active datapath route link #{dp_rl_map.datapath_id}/#{dp_rl_map.route_link_id}", dp_rl_map.inspect)
     end
 
     #
