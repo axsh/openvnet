@@ -170,6 +170,7 @@ module Vnet::Openflow
 
     def delete_item(params)
       item = @items.delete(params[:id])
+      return unless item
 
       debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
