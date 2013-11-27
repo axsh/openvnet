@@ -5,48 +5,6 @@ require 'trema'
 include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::TunnelManager do
-  describe "create_all_tunnels" do
-    before(:each) do
-      (1..3).each { |i| Fabricate("datapath_#{i}") }
-    end
-
-    let(:datapath) {
-      MockDatapath.new(double, ("a" * 16).to_i(16)).tap { |dp|
-        dp.create_mock_datapath_map
-      }
-    }
-
-    subject {
-      Vnet::Openflow::TunnelManager.new(datapath.dp_info).tap { |mgr|
-        mgr.set_datapath_info(datapath.datapath_info)
-      }
-    }
-
-    it "should create tunnels whose name is the same as datapath.uuid" do
-      subject.create_all_tunnels
-      expect(datapath.dp_info.added_tunnels[0][:tunnel_name]).to eq "t-test3"
-    end
-
-    it "should create the entries in the tunnel table" do
-      subject.create_all_tunnels
-
-      conf = Vnet::Configurations::Vna.conf
-      db_tunnels = Vnet::Models::Datapath.find({:node_id => conf.node.id}).tunnels
-      expect(db_tunnels.size).to eq 1
-      expect(db_tunnels.first.dst_datapath.node_id).to eq "vna3"
-      expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq 2
-
-      tunnel_infos = subject.select
-
-      expect(tunnel_infos.size).to eq 1
-      expect(tunnel_infos.first.uuid).to eq db_tunnels.first.canonical_uuid
-      expect(tunnel_infos.first.datapath_networks_size).to eq 0
-
-      expect(datapath.dp_info.added_tunnels.size).to eq 1
-      expect(datapath.dp_info.added_tunnels.first[:remote_ip]).to eq "192.168.2.2"
-    end
-
-  end
 
   describe "update_virtual_network" do
     before do
@@ -61,7 +19,7 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     let(:datapath) do
-      MockDatapath.new(double, ("a" * 16).to_i(16)).tap do |datapath|
+      MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16)).tap do |datapath|
         datapath.create_mock_datapath_map
 
         # datapath.switch = double(:cookie_manager => Vnet::Openflow::CookieManager.new)
@@ -72,12 +30,7 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     let(:tunnel_manager) do
-      Vnet::Openflow::TunnelManager.new(datapath.dp_info).tap do |tunnel_manager|
-        tunnel_manager.set_datapath_info(datapath.datapath_info)
-
-        tunnel_manager.create_all_tunnels
-        tunnel_manager.insert(1)
-        tunnel_manager.insert(2)
+      datapath.dp_info.tunnel_manager.tap do |tunnel_manager|
         tunnel_manager.insert(3)
         tunnel_manager.insert(4)
         tunnel_manager.insert(5)
@@ -90,7 +43,7 @@ describe Vnet::Openflow::TunnelManager do
       flows = datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq 5
+      expect(flows.size).to eq 3
 
       # TunnelManager no longer creates the drop flows for broadcast
       # mac addresses, move.
@@ -142,10 +95,10 @@ describe Vnet::Openflow::TunnelManager do
 
     it "should add flood flow network 1" do
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                                 port_name: "t-test2",
                                  port_number: 9)
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[1][:tunnel_name],
+                                 port_name: "t-test3",
                                  port_number: 10)
 
       datapath.added_flows.clear
@@ -174,10 +127,10 @@ describe Vnet::Openflow::TunnelManager do
 
     it "should add flood flow for network 2" do
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                                 port_name: "t-test2",
                                  port_number: 9)
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[1][:tunnel_name],
+                                 port_name: "t-test3",
                                  port_number: 10)
 
       datapath.added_flows.clear
@@ -208,38 +161,33 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "remove_network_id_for_dpid" do
     before do
-      # id=1, dpid="0x"+"a"*16
       Fabricate("datapath_1")
-      # id=2, dpid="0x"+"c"*16
-      Fabricate("datapath_3")
+      Fabricate("datapath_2")
       Fabricate(:datapath_network, datapath_id: 1, network_id: 1, broadcast_mac_address: 1)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, broadcast_mac_address: 2)
     end
 
     let(:ofctl) { double(:ofctl) }
     let(:datapath) {
-      MockDatapath.new(double, ("a" * 16).to_i(16), ofctl).tap { |dp|
+      MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16), ofctl).tap { |dp|
         dp.create_mock_datapath_map
       }
     }
 
     subject do
-      Vnet::Openflow::TunnelManager.new(datapath.dp_info).tap do |tm|
-        tm.set_datapath_info(datapath.datapath_info)
-
-        tm.create_all_tunnels
-        tm.insert(1)
-
+      datapath.dp_info.tunnel_manager.tap do |tm|
+        tm.insert(2)
       end
     end
 
     it "should delete tunnel when the network is deleted on the local datapath" do
-      subject.remove_network_id_for_dpid(1, ("a" * 16).to_i(16))
-      expect(datapath.dp_info.deleted_tunnels[0]).to eq "t-test3"
+      subject.remove_network_id_for_dpid(1, ("0x#{'a' * 16}").to_i(16))
+      expect(datapath.dp_info.deleted_tunnels[0]).to eq "t-test2"
     end
 
     it "should delete tunnel when the network is deleted on the remote datapath" do
-      subject.remove_network_id_for_dpid(1, ("c" * 16).to_i(16))
-      expect(datapath.dp_info.deleted_tunnels[0]).to eq "t-test3"
+      subject.remove_network_id_for_dpid(1, ("0x#{'b' * 16}").to_i(16))
+      expect(datapath.dp_info.deleted_tunnels[0]).to eq "t-test2"
     end
   end
 end

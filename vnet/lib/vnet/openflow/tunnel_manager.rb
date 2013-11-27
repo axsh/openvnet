@@ -52,8 +52,6 @@ module Vnet::Openflow
         )
 
         item = item_by_params(dst_id: dpn_map.datapath_id)
-
-        info log_format("creating tunnel", "#{item.id}")
       end
 
       datapath_network = {

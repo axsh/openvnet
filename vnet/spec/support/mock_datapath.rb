@@ -60,12 +60,6 @@ class MockDpInfo < Vnet::Openflow::DpInfo
   def delete_tunnel(tunnel_name)
     @deleted_tunnels << tunnel_name
   end
-
-  # Delay initialization of managers.
-  def initialize_managers(ignore = true)
-    super() if !ignore
-  end
-
 end
 
 class MockDatapath < Vnet::Openflow::Datapath
@@ -75,31 +69,31 @@ class MockDatapath < Vnet::Openflow::Datapath
   attr_reader :added_cookie
 
   def initialize(ofc, dp_id, ofctl = nil)
-    super(ofc, dp_id, ofctl)
+    @dpid = dp_id
+    @dpid_s = "0x%016x" % @dpid
 
     @ovs_ofctl = MockOvsOfctl.new(self)
+    @controller = ofc
 
-    @dp_info = MockDpInfo.new(controller: ofc,
+    @dp_info = MockDpInfo.new(controller: @controller,
                               datapath: self,
-                              dpid: @dp_info.dpid,
+                              dpid: @dpid,
                               ovs_ofctl: @ovs_ofctl)
 
     @sent_messages = []
     @added_flows = []
     @added_ovs_flows = []
     @added_cookie = []
-
-    @dp_info.initialize_managers(false)
   end
 
   def create_datapath_map
-    @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
-    initialize_datapath_info
+    datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
+    initialize_datapath_info(datapath_map)
   end
 
   def create_mock_datapath_map
-    @datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1)
-    initialize_datapath_info
+    datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1)
+    initialize_datapath_info(datapath_map)
   end
 
   def create_mock_switch
