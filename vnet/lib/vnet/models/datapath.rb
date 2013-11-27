@@ -17,6 +17,12 @@ module Vnet::Models
     one_to_many :interfaces_active, :class => Interface, :key => :active_datapath_id
 
     one_to_many :tunnels, :key => :src_datapath_id
+
+    plugin :association_dependencies,
+      datapath_networks: :destroy,
+      interfaces_owned: :nullify,
+      interfaces_active: :nullify
+
     subset(:alives, {})
 
     one_to_many :on_other_segments, :class => Datapath do |ds|
@@ -26,10 +32,6 @@ module Vnet::Models
     dataset_module do
       def find_all_by_network_id(network_id)
         left_join(:datapath_networks, :datapath_id => :id).where(:datapath_networks__network_id => network_id).all
-      end
-
-      def only_deleted
-        with_deleted.~(deleted_at: nil)
       end
     end
   end

@@ -78,7 +78,7 @@ module Vnet::Openflow
 
     def delete_item(params)
       debug log_format("deleting datapath id: #{params[:id]}")
-      return unless MW::Datapath.batch.only_deleted.first(id: params[:id]).commit
+      return if MW::Datapath[params[:id]]
 
       item = @items.delete(params[:id])
       return unless item
@@ -109,8 +109,8 @@ module Vnet::Openflow
 
     def remove_datapath_network(params)
       unless params[:id]
-        dpn_map = MW::DatapathNetwork.batch.only_deleted.first(id: params[:datapath_network_id]).commit
-        return unless dpn_map
+        dpn_map = MW::DatapathNetwork.batch.with_deleted.first(id: params[:datapath_network_id]).commit
+        return unless dpn_map.deleted_at
 
         publish(REMOVED_DATAPATH_NETWORK, id: dpn_map.datapath_id, dpn_map: dpn_map)
       end
