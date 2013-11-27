@@ -43,8 +43,9 @@ module Vnet::Models
 
     def to_hash
       super.merge({
-        :ipv4_address => self.ipv4_address,
-        :mac_address => self.mac_address,
+        port_name: port_name,
+        ipv4_address: self.ipv4_address,
+        mac_address: self.mac_address,
       })
     end
   end
