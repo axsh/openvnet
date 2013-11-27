@@ -85,6 +85,8 @@ module Vnet
       TABLE_OUTPUT_DATAPATH          = 62
       TABLE_OUTPUT_MAC2MAC           = 63
 
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 70
+
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source
       # interface and destination interfaces should be used for
@@ -95,21 +97,16 @@ module Vnet
       # network or route link, while for tunnels the output port needs
       # to be selected from pre-created tunnels.
 
-      TABLE_OUTPUT_DP_NETWORK_LOOKUP_DST    = 80
-      TABLE_OUTPUT_DP_NETWORK_LOOKUP_SRC    = 81
+      TABLE_OUTPUT_DP_NETWORK_DST        = 80
+      TABLE_OUTPUT_DP_NETWORK_SRC        = 81
 
-      TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_DST = 82
+      TABLE_OUTPUT_DP_ROUTE_LINK_DST     = 82
+      TABLE_OUTPUT_DP_ROUTE_LINK_SRC     = 84
 
-      # Verify that the route link mac address and the id in the first
-      # value are valid.
-      #
-      # TABLE_OUTPUT_DP_ROUTE_LINK_VERIFY
-      TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_SRC = 84
-
-      TABLE_OUTPUT_DP_OVER_MAC2MAC          = 85 # Match src/dst if id, output if present.
-      TABLE_OUTPUT_DP_NETWORK_SET_MAC       = 86 # If broadcast -> set MAC2MAC or drop. default goto next
-      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC    = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
-      TABLE_OUTPUT_DP_OVER_TUNNEL           = 88 # Use tun_id to determine type for goto_table.
+      TABLE_OUTPUT_DP_OVER_MAC2MAC       = 85 # Match src/dst if id, output if present.
+      TABLE_OUTPUT_DP_NETWORK_SET_MAC    = 86 # If broadcast -> set MAC2MAC or drop. default goto next
+      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
+      TABLE_OUTPUT_DP_OVER_TUNNEL        = 88 # Use tun_id to determine type for goto_table.
 
       #
       # Output ports tables:

@@ -21,7 +21,7 @@ module Vnet::Openflow::Datapaths
       # associations usable for output to the proper port.
 
       flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_SRC,
+                           table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
                            goto_table: TABLE_OUTPUT_DP_OVER_TUNNEL,
                            priority: 1,
 

@@ -100,6 +100,7 @@ module Vnet::Openflow::Tunnels
                              match_value_pair_first: @src_interface_id,
                              match_value_pair_second: @dst_interface_id,
 
+                             clear_all: true,
                              write_tunnel: @id,
                              write_reflection: reflection)
       }

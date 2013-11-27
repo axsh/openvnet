@@ -11,22 +11,37 @@ module Vnet::Openflow::Datapaths
     end
 
     def flows_for_dp_route_link(flows, dp_rl)
-      # We write the destination interface id in the second value
-      # field, and then prepare for the next table by writing the
-      # route link id in the first value field.
-      #
-      # The route link id will then be used to identify what source
-      # interface id is set using the host's datapath route link
-      # entry.
-
       [true, false].each { |reflection|
+
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_DST,
-                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_LOOKUP_SRC,
+                             table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
+                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST,
                              priority: 1,
 
-                             match_dp_route_link: dp_rl[:id],
+                             match_value_pair_flag: reflection,
+                             match_value_pair_first: @id,
+                             match_value_pair_second: dp_rl[:route_link_id],
+
+                             clear_all: true,
+                             write_reflection: reflection,
+                             write_dp_route_link: dp_rl[:id],
+
+                             cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
+        # We write the destination interface id in the second value
+        # field, and then prepare for the next table by writing the
+        # route link id in the first value field.
+        #
+        # The route link id will then be used to identify what source
+        # interface id is set using the host's datapath route link
+        # entry.
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_DP_ROUTE_LINK_DST,
+                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
+                             priority: 1,
+
                              match_reflection: reflection,
+                             match_dp_route_link: dp_rl[:id],
 
                              # Not yet MAC2MAC friendly...
                              actions: {

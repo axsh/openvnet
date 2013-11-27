@@ -106,9 +106,34 @@ module Vnet::Openflow::Routes
 
       else
         if @egress == true
+          [true, false].each { |reflection|
+
+            # TODO: Instead use the interface ID as the second value,
+            # and have a datapath:interface -> dp route link lookup
+            # table.
+            #
+            # Add that table as a goto_table at the end where it jumps
+            # to TABLE_LOOKUP_DP_ROUTE_LINK_IF, with mac set to rl mac.
+
+            flows << flow_create(:routing,
+                                 table: TABLE_ROUTE_LINK_EGRESS,
+                                 goto_table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
+
+                                 match: subnet_dst,
+                                 match_reflection: reflection,
+                                 match_route_link: @route_link_id,
+
+                                 write_value_pair_flag: reflection,
+                                 write_value_pair_first: @use_datapath_id,
+                                 write_value_pair_second: @route_link_id,
+
+                                 default_route: self.is_default_route,
+                                 cookie: cookie)
+          }
+
           # flows << flow_create(:routing,
           #                      table: TABLE_ROUTE_LINK_EGRESS,
-          #                      goto_table: TABLE_OUTPUT_ROUTE_LINK,
+          #                      goto_table: TABLE_ROUTE_EGRESS,
 
           #                      match: subnet_dst,
           #                      match_route_link: @route_link_id,
@@ -116,23 +141,9 @@ module Vnet::Openflow::Routes
           #                      actions: {
           #                        :eth_dst => @route_link_mac_address
           #                      },
-          #                      write_datapath: @use_datapath_id,
+          #                      write_interface: @interface_id,
           #                      default_route: self.is_default_route,
           #                      cookie: cookie)
-
-          flows << flow_create(:routing,
-                               table: TABLE_ROUTE_LINK_EGRESS,
-                               goto_table: TABLE_ROUTE_EGRESS,
-
-                               match: subnet_dst,
-                               match_route_link: @route_link_id,
-
-                               actions: {
-                                 :eth_dst => @route_link_mac_address
-                               },
-                               write_interface: @interface_id,
-                               default_route: self.is_default_route,
-                               cookie: cookie)
         end
       end
 
