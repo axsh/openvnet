@@ -46,7 +46,8 @@ module Vnet::Openflow::Datapaths
                              # Not yet MAC2MAC friendly...
                              actions: {
                                # :eth_dst => dp_rl[:mac_address]
-                               :eth_dst => dp_rl[:route_link_mac_address]
+                               :eth_dst => dp_rl[:route_link_mac_address],
+                               :tunnel_id => TUNNEL_ROUTE_LINK
                              },
 
                              write_value_pair_flag: reflection,
