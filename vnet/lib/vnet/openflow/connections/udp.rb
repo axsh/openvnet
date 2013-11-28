@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::SecurityGroups::Connections
+module Vnet::Openflow::Connections
 
   # UDP is a connectionless protocol but we're not doing real connection
   # tracking here. When we send out a packet, we just open up the source port

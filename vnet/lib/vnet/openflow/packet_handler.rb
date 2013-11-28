@@ -58,7 +58,7 @@ module Vnet::Openflow
       raw_out.l3 = Racket::L3::IPv4.new
       raw_out.l3.src_ip = params[:src_ip].to_s
       raw_out.l3.dst_ip = params[:dst_ip].to_s
-      raw_out.l3.protocol = IPV4_PROTOCOL_UDP
+      raw_out.l3.protocol = Vnet::Constants::Openflow::IPV4_PROTOCOL_UDP
       raw_out.l3.ttl = 128
 
       raw_out.l4 = Racket::L4::UDP.new
