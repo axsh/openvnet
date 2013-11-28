@@ -8,8 +8,9 @@ module Vnctl::Cli
     add_modify_shared_options {
       option :network_uuid, :type => :string, :desc => "The uuid of the network this interface is in."
       option :mac_address, :type => :string, :desc => "The mac address for this interface."
+      option :port_name, :type => :string, :desc => "The port name for this interface."
       option :owner_datapath_uuid, :type => :string, :desc => "The uuid of the datapath that owns this interface."
-      option :active_datapath_uuid, :type => :string, :desc => "The uuid of this interface's active datapath."
+      option :mode, :type => :string, :desc => "The type of this interface."
     }
 
     add_required_options [:mac_address]
