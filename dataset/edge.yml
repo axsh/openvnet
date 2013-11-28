@@ -80,6 +80,14 @@ interfaces:
     ipv4_address: "192.168.60.100"
     owner_datapath_uuid: dp-edge
 
+  - uuid: if-edgeeth0
+    mode: host
+    port_name: eth0
+    owner_datapath_uuid: dp-edge
+    network_uuid: nw-public
+    mac_address: "02:01:00:00:00:04"
+    ipv4_address: <%= edge_ipv4_address %>
+
 network_services:
 
   - uuid: ns-dhcppub
