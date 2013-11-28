@@ -263,12 +263,12 @@ module Vnet::Openflow
       item.datapath_networks.delete_if { |dpn| dpn[:network_id] == network_id }
 
       if item.datapath_networks.empty?
-        debug log_format("datapath networks is empty for #{item.display_name}")
+        debug log_format("datapath networks is empty for #{item.uuid}")
 
-        MW::Tunnel.batch[display_name: item.display_name].destroy.commit
+        MW::Tunnel.batch[:id => item.id].destroy.commit
         true
       else
-        debug log_format("datapath networs is not empty for #{item.display_name}")
+        debug log_format("datapath networks is not empty for #{item.uuid}")
         false
       end
     end

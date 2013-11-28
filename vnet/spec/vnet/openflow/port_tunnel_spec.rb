@@ -13,8 +13,10 @@ describe Vnet::Openflow::Ports::Tunnel do
       port.dst_id = 5
 
       tunnel_manager = double(:tunnel_manager)
-      tunnel_manager.should_receive(:update_item)
-      datapath.dp_info.should_receive(:tunnel_manager).and_return(tunnel_manager)
+
+      # update_item is now called from port manager.
+      # tunnel_manager.should_receive(:update_item)
+      # datapath.dp_info.should_receive(:tunnel_manager).and_return(tunnel_manager)
 
       port.install
 

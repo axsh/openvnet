@@ -20,6 +20,24 @@ Fabricator(:network_for_range, class_name: Vnet::Models::Network) do
   network_mode 'virtual'
 end
 
+Fabricator(:pnet_public1, class_name: Vnet::Models::Network) do
+  uuid "nw-public1"
+  display_name "public1"
+  ipv4_network IPAddr.new("192.168.1.0").to_i
+  ipv4_prefix 24
+  domain_name "example.com"
+  network_mode 'physical'
+end
+
+Fabricator(:pnet_public2, class_name: Vnet::Models::Network) do
+  uuid "nw-public2"
+  display_name "public2"
+  ipv4_network IPAddr.new("192.168.2.0").to_i
+  ipv4_prefix 24
+  domain_name "example.com"
+  network_mode 'physical'
+end
+
 Fabricator(:vnet_1, class_name: Vnet::Models::Network) do
   uuid "nw-aaaaaaaa"
   display_name "vnet1"

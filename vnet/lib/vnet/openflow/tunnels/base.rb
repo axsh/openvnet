@@ -113,7 +113,7 @@ module Vnet::Openflow::Tunnels
     def uninstall
       debug log_format("removing flows")
 
-      @dp_info.delete_tunnel(@display_name)
+      @dp_info.delete_tunnel(@uuid)
 
       # cookie_value = self.cookie
       # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
