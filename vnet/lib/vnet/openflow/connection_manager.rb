@@ -38,7 +38,7 @@ module Vnet::Openflow
     end
 
     def close_connections(interface)
-      debug "Closing all connections for interface '#{interface.uuid}'"
+      debug log_format("Closing all connections for interface '#{interface.uuid}'")
       @dp_info.del_cookie Connections::Base.cookie(interface.id)
     end
 
