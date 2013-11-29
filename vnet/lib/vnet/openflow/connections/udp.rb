@@ -6,11 +6,6 @@ module Vnet::Openflow::Connections
   # tracking here. When we send out a packet, we just open up the source port
   # so we can receive a reply.
   class UDP < Base
-    def log_new_open(interface, message)
-      debug "'%s' Opening new udp connection %s:%s => %s:%s" %
-        [interface.uuid, message.ipv4_src, message.udp_src, message.ipv4_dst, message.udp_dst]
-    end
-
     def match_egress(message)
       {
         ip_proto: IPV4_PROTOCOL_UDP,

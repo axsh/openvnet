@@ -21,15 +21,6 @@ module Vnet::Openflow::Connections
     def open(message)
       interface_id = message.cookie & COOKIE_ID_MASK
 
-      # Log messages for connections are disabled by default since they
-      # require database access which is too expensive.
-      # They can be enabled by writing the following in vna.conf
-      # security_groups { log_connection_tracking true }
-      if Vnet::Configurations::Vna.conf.security_groups.log_connection_tracking
-        interface = MW::Interface.batch[interface_id].commit
-        log_new_open(interface, message)
-      end
-
       [
         flow_create(:default,
                     table: TABLE_INTERFACE_EGRESS_FILTER,
@@ -57,10 +48,6 @@ module Vnet::Openflow::Connections
                     cookie: cookie(interface_id),
                     goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
       ]
-    end
-
-    def log_new_open(interface, message)
-      # Override with a log message if you want to
     end
 
     def match_egress(message)

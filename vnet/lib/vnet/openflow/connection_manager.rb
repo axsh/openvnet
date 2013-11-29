@@ -44,13 +44,22 @@ module Vnet::Openflow
 
     def open_connection(message)
       flows = if message.tcp?
+        log_new_connection("tcp", message)
         Connections::TCP.new.open(message)
       elsif message.udp?
+        log_new_connection("udp", message)
         Connections::UDP.new.open(message)
       end
 
       @dp_info.add_flows(flows)
       @dp_info.send_packet_out(message, OFPP_TABLE)
+    end
+
+    private
+    def log_new_connection(protocol, message)
+      debug log_format("Opening new %s connection: (%s:%s => %s:%s)" %
+        [protocol, message.ipv4_src, message.tcp_src, message.ipv4_dst, message.tcp_dst]
+      )
     end
 
   end
