@@ -17,6 +17,10 @@ module Vnet::Openflow
       @dpid_s = "0x%016x" % @datapath.dpid
     end
 
+    def cookie
+      COOKIE_TYPE_SWITCH
+    end
+
     #
     # Event handlers:
     #
@@ -119,7 +123,23 @@ module Vnet::Openflow
                            md_create(:remote => nil), nil,
                            flow_options)
 
-      flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
+      flows << Flow.create(TABLE_OUTPUT_CONTROLLER, 0, {}, {:output => OFPP_CONTROLLER}, flow_options)
+
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+                           goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
+                           priority: 1,
+                           match: {
+                             :tunnel_id => TUNNEL_ROUTE_LINK
+                           })
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+                           goto_table: TABLE_OUTPUT_DP_NETWORK_SET_MAC,
+                           priority: 1,
+                           match: {
+                             :tunnel_id => TUNNEL_FLAG,
+                             :tunnel_id_mask => TUNNEL_FLAG_MASK
+                           })
 
       # Catches all arp packets that are from local ports.
       #
@@ -148,6 +168,7 @@ module Vnet::Openflow
     def switch_ready
       # There's a short period of time between the switch being
       # activated and features_reply installing flow.
+      @datapath.dc_segment_manager.create_all_tunnels
       @datapath.tunnel_manager.create_all_tunnels
 
       #

@@ -27,6 +27,18 @@ module Vnet::Openflow::Datapaths
                              write_dp_route_link: dp_rl[:id],
 
                              cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
+                             goto_table: TABLE_OUTPUT_DP_OVER_TUNNEL,
+                             priority: 1,
+
+                             match: {
+                               :eth_dst => dp_rl[:mac_address]
+                             },
+                             actions: {
+                               :eth_dst => dp_rl[:route_link_mac_address]
+                             },
+                             cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
 
         # We write the destination interface id in the second value
         # field, and then prepare for the next table by writing the
@@ -43,10 +55,8 @@ module Vnet::Openflow::Datapaths
                              match_reflection: reflection,
                              match_dp_route_link: dp_rl[:id],
 
-                             # Not yet MAC2MAC friendly...
                              actions: {
-                               # :eth_dst => dp_rl[:mac_address]
-                               :eth_dst => dp_rl[:route_link_mac_address],
+                               :eth_dst => dp_rl[:mac_address],
                                :tunnel_id => TUNNEL_ROUTE_LINK
                              },
 

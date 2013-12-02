@@ -22,7 +22,7 @@ module Vnet::Openflow::Datapaths
 
       flows << flow_create(:default,
                            table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
-                           goto_table: TABLE_OUTPUT_DP_OVER_TUNNEL,
+                           goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 
                            match_value_pair_first: dp_rl[:route_link_id],
