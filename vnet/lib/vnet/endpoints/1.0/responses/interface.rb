@@ -14,6 +14,16 @@ module Vnet::Endpoints::V10::Responses
       object.owner_datapath_uuid = object.owner_datapath.uuid if object.owner_datapath
       object.to_hash
     end
+
+    def self.security_groups(interface)
+      argument_type_check(interface, Vnet::ModelWrappers::Interface)
+      {
+        :uuid => interface.uuid,
+        :security_groups => SecurityGroupCollection.generate(
+          interface.batch.security_groups.commit
+        )
+      }
+    end
   end
 
   class InterfaceCollection < Vnet::Endpoints::ResponseGenerator
