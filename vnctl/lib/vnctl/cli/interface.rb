@@ -8,8 +8,7 @@ module Vnctl::Cli
     desc "add INTERFACE_UUID, SECURITY_GROUP_UUID(S)", "Adds one or more security groups to an interface."
     def add(interface_uuid, *secg_uuids)
       secg_uuids.each { |secg_uuid|
-        query = { :security_group_uuid => secg_uuid }
-        puts post("#{suffix}/#{interface_uuid}/security_groups", :query => query)
+        puts post("#{suffix}/#{interface_uuid}/security_groups/#{secg_uuid}")
       }
     end
 

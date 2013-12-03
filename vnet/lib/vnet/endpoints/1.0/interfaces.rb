@@ -48,7 +48,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     }
   end
 
-  post '/:uuid/security_groups' do
+  post '/:uuid/security_groups/:security_group_uuid' do
     params = parse_params(@params, ['uuid', 'security_group_uuid'])
     check_required_params(params, ['uuid', 'security_group_uuid'])
 
