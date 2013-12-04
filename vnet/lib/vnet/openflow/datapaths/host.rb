@@ -10,6 +10,18 @@ module Vnet::Openflow::Datapaths
       "#{@dp_info.dpid_s} datapaths/host: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def flows_for_dp_network(flows, dp_nw)
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_NETWORK_SRC,
+                           goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+                           priority: 1,
+
+                           match_value_pair_first: dp_nw[:network_id],
+                           write_value_pair_first: dp_nw[:interface_id],
+
+                           cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
+    end
+
     def flows_for_dp_route_link(flows, dp_rl)
       # We match the route link id stored in the first value field to
       # the one associated with this host's datapath, and then prepare

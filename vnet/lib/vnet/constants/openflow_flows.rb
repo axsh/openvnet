@@ -85,7 +85,8 @@ module Vnet
       TABLE_OUTPUT_DATAPATH          = 62
       TABLE_OUTPUT_MAC2MAC           = 63
 
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 70
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 70
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 71
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source
@@ -197,6 +198,7 @@ module Vnet
       METADATA_TYPE_EDGE_TO_VIRTUAL = (0x8 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_VIRTUAL_TO_EDGE = (0x9 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_TUNNEL          = (0xa << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_DP_NETWORK      = (0xb << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0xffffffff
 

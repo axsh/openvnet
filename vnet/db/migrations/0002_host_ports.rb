@@ -1,5 +1,9 @@
 Sequel.migration do
   up do
+    alter_table(:datapath_networks) do
+      add_column :interface_id, Integer, :index => true, :null=>true
+    end
+
     alter_table(:datapath_route_links) do
       add_column :interface_id, Integer, :index => true, :null=>true
     end
@@ -14,6 +18,10 @@ Sequel.migration do
   end
 
   down do
+    drop_table(:datapath_networks) do
+      drop_column :interface_id
+    end
+
     drop_table(:datapath_route_links) do
       drop_column :interface_id
     end

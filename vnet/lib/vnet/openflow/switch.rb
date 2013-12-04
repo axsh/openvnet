@@ -66,6 +66,7 @@ module Vnet::Openflow
        TABLE_OUTPUT_DATAPATH,
        TABLE_OUTPUT_MAC2MAC,
 
+       TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
        TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
 
        TABLE_OUTPUT_DP_NETWORK_DST,
@@ -74,7 +75,6 @@ module Vnet::Openflow
        TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
 
        TABLE_OUTPUT_DP_OVER_MAC2MAC,
-       TABLE_OUTPUT_DP_NETWORK_SET_MAC,
        TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
        TABLE_OUTPUT_DP_OVER_TUNNEL,
 
@@ -140,6 +140,10 @@ module Vnet::Openflow
                              :tunnel_id => TUNNEL_FLAG,
                              :tunnel_id_mask => TUNNEL_FLAG_MASK
                            })
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_NETWORK_SET_MAC,
+                           goto_table: TABLE_OUTPUT_DP_OVER_TUNNEL,
+                           priority: 0)
 
       # Catches all arp packets that are from local ports.
       #

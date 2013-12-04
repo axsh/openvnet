@@ -173,7 +173,7 @@ module Vnet::Openflow
       }
 
       debug log_format('arp_lookup: process timeout, looking up in database',
-                       "ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]}")
+                       "network:#{params[:interface_network_id]} ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]}")
       
       filter_args = {
         :ip_addresses__network_id => params[:interface_network_id],
@@ -193,26 +193,30 @@ module Vnet::Openflow
 
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
       
-      #
-      # Ergh...
-      #
-      match_md = md_create(:network => params[:interface_network_id])
-      reflection_md = md_create(:write_datapath => ip_lease.interface.active_datapath_id,
-                                :reflection => nil)
+      flow = flow_create(:default,
+                         table: TABLE_ARP_LOOKUP,
+                         goto_table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
+                         priority: 25,
 
-      cookie = params[:interface_network_id] | COOKIE_TYPE_NETWORK
-
-      flow = Flow.create(TABLE_ARP_LOOKUP, 25,
-                         match_md.merge({ :eth_type => 0x0800,
-                                          :ipv4_dst => params[:request_ipv4]
-                                        }), {
-                           :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address),
-                           :tunnel_id => params[:interface_network_id] | TUNNEL_FLAG
+                         match: {
+                           :eth_type => 0x0800,
+                           :ipv4_dst => params[:request_ipv4]
                          },
-                         reflection_md.merge!({ :cookie => @arp_lookup[:reply_cookie],
-                                                :idle_timeout => 3600,
-                                                :goto_table => TABLE_OUTPUT_DATAPATH
-                                              }))
+                         match_network: params[:interface_network_id],
+
+                         actions: {
+                           :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address),
+                           :tunnel_id => params[:interface_network_id] | TUNNEL_FLAG,
+                         },
+
+                         idle_timeout: 3600,
+
+                         # Reflection based on metadata flag...
+                         write_value_pair_flag: true,
+                         write_value_pair_first: ip_lease.interface.active_datapath_id,
+                         write_value_pair_second: params[:interface_network_id],
+
+                         cookie: @arp_lookup[:reply_cookie])
 
       @dp_info.add_flow(flow)        
 

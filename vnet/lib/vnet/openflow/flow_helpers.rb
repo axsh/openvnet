@@ -8,6 +8,7 @@ module Vnet::Openflow
     Flow = Vnet::Openflow::Flow
 
     FLOW_MATCH_METADATA_PARAMS = [:match_datapath,
+                                  :match_dp_network,
                                   :match_dp_route_link,
                                   :match_ignore_mac2mac,
                                   :match_interface,
@@ -25,6 +26,7 @@ module Vnet::Openflow
                                  ]
     FLOW_WRITE_METADATA_PARAMS = [:clear_all,
                                   :write_datapath,
+                                  :write_dp_network,
                                   :write_dp_route_link,
                                   :write_ignore_mac2mac,
                                   :write_interface,
@@ -167,6 +169,10 @@ module Vnet::Openflow
       instructions = {}
       instructions[:cookie] = params[:cookie] || self.cookie
       instructions[:goto_table] = goto_table if goto_table
+
+      instructions[:hard_timeout] = params[:hard_timeout] if params[:hard_timeout]
+      instructions[:idle_timeout] = params[:idle_timeout] if params[:idle_timeout]
+
       instructions.merge!(md_create(write_metadata)) if !write_metadata.empty?
 
       raise "Missing cookie." if instructions[:cookie].nil?

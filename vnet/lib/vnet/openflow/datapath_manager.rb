@@ -15,6 +15,8 @@ module Vnet::Openflow
       case params[:event]
       when :activate_route_link
         activate_route_link(params)
+      when :activate_network
+        activate_network(params)
       when :deactivate_route_link
         # deactivate_route_link(params)
       end

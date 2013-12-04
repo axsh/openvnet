@@ -55,12 +55,16 @@ module Vnet::Openflow::Datapaths
     #
 
     def add_active_network(dpn_map)
-      return if @active_networks.has_key? dpn_map.id
+      return if @active_networks.has_key? dpn_map.network_id
 
       active_network = {
+        :id => dpn_map.id,
         :dpn_id => dpn_map.id,
         :datapath_id => dpn_map.datapath_id,
+        :interface_id => dpn_map.interface_id,
         :network_id => dpn_map.network_id,
+
+        :mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
         :broadcast_mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
       }
 
@@ -70,6 +74,7 @@ module Vnet::Openflow::Datapaths
       flows_for_filtering_mac_address(flows,
                                       active_network[:broadcast_mac_address],
                                       active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+      flows_for_dp_network(flows, active_network)
 
       @dp_info.add_flows(flows)
 
@@ -93,7 +98,7 @@ module Vnet::Openflow::Datapaths
 
     def add_active_route_link(dp_rl_map)
       return if dp_rl_map.route_link.nil?
-      return if @active_route_links.has_key? dp_rl_map.id
+      return if @active_route_links.has_key? dp_rl_map.route_link_id
 
       dp_rl = {
         :id => dp_rl_map.id,
