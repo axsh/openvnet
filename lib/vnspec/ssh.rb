@@ -17,14 +17,32 @@ module Vnspec
       options = ssh_options.merge(options)
       logger.info "[#{host}] #{command}" if options[:debug]
 
+      stdout = ""
+      stderr = ""
+      exit_code = nil
+      exit_signal = nil
+
       Net::SSH.start(host, options[:user]) do |ssh|
-        ssh.exec!(command).tap do |result|
-          break unless result
-          result.split(/\r[\n]?|\n/).map do |line|
-            logger.info("[#{host}] #{line}") if options[:debug]
+        ssh.open_channel do |channel|
+          channel.exec(command) do |ch, success|
+            abort "Failed to execute [#{host}] #{command}" unless success
+
+            channel.on_data { |ch, data| stdout += data.to_s }
+            channel.on_extended_data { |ch, data| data; stderr += data.to_s }
+            channel.on_request("exit-status") { |ch, data| exit_code = data.read_long }
+            channel.on_request("exit-signal") { |ch, data| exit_code = data.read_long }
           end
         end
+        ssh.loop
       end
+
+      if options[:debug]
+        stdout.split(/\r[\n]?|\n/).map do |line|
+          logger.info("[#{host}] #{line}")
+        end
+      end
+
+      {stdout: stdout, stderr: stderr, exit_code: exit_code, exit_signal: exit_signal}
     end
 
     def multi_ssh(hosts, *commands)

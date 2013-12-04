@@ -12,6 +12,16 @@ describe "security groups" do
         expect(vm5).not_to be_reachable_to(vm1)
       end
     end
+
+    describe "icmp:-1:10.101.0.11" do
+      it "accepts incoming icmp from '10.101.0.11/32'" do
+        expect(vm3).to be_able_to_ping(vm1)
+      end
+
+      it "blocks everything else" do
+        expect(vm5).not_to be_able_to_ping(vm1)
+      end
+    end
   end
 
   describe "connection tracking" do

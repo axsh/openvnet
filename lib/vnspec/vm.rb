@@ -131,7 +131,7 @@ module Vnspec
     def ready?(timeout = 600)
       logger.info("waiting for ready: #{self.name}")
       expires_at = Time.now.to_i + timeout
-      while ssh_on_guest("hostname", {ConnectTimeout: 1}, {debug: true}).chomp != name.to_s
+      while ssh_on_guest("hostname", {ConnectTimeout: 1}, {debug: true})[:stdout].chomp != name.to_s
         if Time.now.to_i >= expires_at
           logger.info("#{self.name} is down")
           return false
@@ -146,6 +146,10 @@ module Vnspec
       hostname_for(vm.ipv4_address, timeout) == vm.name.to_s
     end
 
+    def able_to_ping?(vm)
+      ssh_on_guest("ping -c 1 #{vm.ipv4_address}")[:exit_code] == 0
+    end
+
     def hostname_for(ip, timeout = 2)
       options = to_ssh_option_string(
         "StrictHostKeyChecking" => "no",
@@ -153,7 +157,7 @@ module Vnspec
         "LogLevel" => "ERROR",
         "ConnectTimeout" => timeout
       )
-      ssh_on_guest("ssh #{options} #{ip} hostname").chomp
+      ssh_on_guest("ssh #{options} #{ip} hostname")[:stdout].chomp
     end
 
     def ssh_on_guest(command, options = {}, host_options = {})

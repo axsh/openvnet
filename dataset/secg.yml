@@ -124,7 +124,9 @@ security_groups:
 
   - uuid: sg-sshvm3
     display_name: "accept icmp from vnet1"
-    rules: "tcp:22:10.101.0.11"
+    rules: |
+      tcp:22:10.101.0.11
+      icmp:-1:10.101.0.11
 
 interface_security_groups:
   - interface_uuid: if-v1
