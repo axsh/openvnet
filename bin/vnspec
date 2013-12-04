@@ -8,11 +8,10 @@ invoker = Vnspec::Invoker.new
 args = ARGV
 args << "run" if args.empty?
 invoker.__send__(*args).tap do |success|
-  puts
   if success
     puts "result: success"
   else
     puts "result: failure"
+    exit 1
   end
-  exit 1 unless success
 end
