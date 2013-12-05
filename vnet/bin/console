@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'dcell'
+require 'vnet'
+require 'pry'
+
+conf = Vnet::Configurations::Vna.conf
+
+Vnet::ModelWrappers::Base.set_proxy(conf.node_api_proxy)
+
+Vnet::Initializers::DB.run(conf.db_uri)
+
+DCell.start :registry => {
+  :adapter => conf.registry.adapter,
+  :host => conf.registry.host,
+  :port => conf.registry.port
+}
+
+$0 = 'pry'
+Pry::CLI.parse_options
