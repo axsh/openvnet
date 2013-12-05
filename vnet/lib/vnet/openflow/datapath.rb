@@ -65,7 +65,7 @@ module Vnet::Openflow
     end
 
     def inspect
-      "<##{self.class.name} dpid:#{@dp_info && @dp_info.dpid}>"
+      "<##{self.class.name} dpid:#{@dpid}>"
     end
 
     def ipv4_address

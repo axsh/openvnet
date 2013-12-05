@@ -109,6 +109,10 @@ module Vnet::Openflow
       }
     end
 
+    def inspect
+      "<##{self.class.name} dpid:#{@dpid}>"
+    end
+
     #
     # Internal methods:
     #
