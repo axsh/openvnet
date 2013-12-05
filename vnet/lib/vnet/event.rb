@@ -40,9 +40,9 @@ module Vnet
     #
     # service event
     #
-    INITIALIZED_SERVICE = "initialized_service"
     ADDED_SERVICE = "added_service"
     REMOVED_SERVICE = "removed_service"
+    INITIALIZED_SERVICE = "initialized_service"
 
     #
     # tunnel event
