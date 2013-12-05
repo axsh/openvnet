@@ -8,9 +8,7 @@ module Vnspec
     }
 
     def ssh_options
-      DEFAULT_OPTIONS.keys.each_with_object({}) do |k, r|
-        r[k] = config[k] || DEFAULT_OPTIONS[k]
-      end
+      DEFAULT_OPTIONS.merge(config[:ssh_options] || {})
     end
 
     def ssh(host, command, options = {})
