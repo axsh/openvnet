@@ -9,9 +9,14 @@ module Vnet::NodeApi
         end
       end
 
-      def destroy(uuid)
-        super.tap do |datapath_network|
-          dispatch_event(REMOVED_DATAPATH_NETWORK, datapath_network_id: datapath_network.id)
+      def destroy(datapath_id: datapath_id, network_id: network_id)
+        transaction {
+          model_class.find(datapath_id: datapath_id, network_id: network_id).tap(&:destroy)
+        }.tap do |datapath_network|
+          dispatch_event(
+            REMOVED_DATAPATH_NETWORK,
+            datapath_network_id: datapath_network.id
+          ) if datapath_network
         end
       end
     end

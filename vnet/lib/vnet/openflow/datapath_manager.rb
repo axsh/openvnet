@@ -88,35 +88,24 @@ module Vnet::Openflow
     end
 
     def add_datapath_network(params)
-      unless params[:id]
-        dpn_map = params[:dpn_map] || MW::DatapathNetwork.find(params[:datapath_network_id])
-        return unless dpn_map
+      dpn_map = params[:dpn_map] || MW::DatapathNetwork.find(id: params[:datapath_network_id])
+      return unless dpn_map
 
-        publish(ADDED_DATAPATH_NETWORK, id: dpn_map.datapath_id, dpn_map: dpn_map)
+      activate_network(dpn_map)
 
-        # need to be propagated if it is newly added network
-        if dpn_map.datapath_id == @datapath_info.id
-          dpn_map.batch.datapath_networks_in_the_same_network.commit.each do |peer_dpn_map|
-            publish(ADDED_DATAPATH_NETWORK, id: peer_dpn_map.datapath_id, dpn_map: peer_dpn_map)
-          end
+      # need to be propagated if it is newly added network
+      if dpn_map.datapath_id == @datapath_info.id
+        dpn_map.batch.datapath_networks_in_the_same_network.commit.each do |peer_dpn_map|
+          activate_network(peer_dpn_map)
         end
       end
-
-      return unless params[:id] && params[:dpn_map]
-
-      activate_network(params[:dpn_map])
     end
 
     def remove_datapath_network(params)
-      unless params[:id]
-        dpn_map = MW::DatapathNetwork.batch.with_deleted.first(id: params[:datapath_network_id]).commit
-        return unless dpn_map.deleted_at
+      dpn_map = MW::DatapathNetwork.batch.with_deleted.first(id: params[:datapath_network_id]).commit
+      return unless dpn_map.deleted_at
 
-        publish(REMOVED_DATAPATH_NETWORK, id: dpn_map.datapath_id, dpn_map: dpn_map)
-      end
-
-      return unless params[:id] && params[:dpn_map]
-      deactivate_network(params[:dpn_map])
+      deactivate_network(dpn_map)
     end
 
     def activate_network(dpn_map)
@@ -131,7 +120,7 @@ module Vnet::Openflow
       return if item.nil?
 
       if item.remove_active_network_id(dpn_map.network_id)
-        if item.unused? && item.owner?
+        if item.unused? && !item.owner?
           publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
         end
       end

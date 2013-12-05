@@ -134,7 +134,7 @@ module Vnet
     autoload :DirectProxy, 'vnet/node_api/proxies'
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
-    autoload :DatapathNetwork, 'vnet/node_api/models.rb'
+    autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
     autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DhcpRange, 'vnet/node_api/models.rb'
     autoload :Interface, 'vnet/node_api/interface.rb'
