@@ -125,6 +125,7 @@ module Vnet::Openflow
       @network_manager = NetworkManager.new(self)
       @port_manager = PortManager.new(self)
       @route_manager = RouteManager.new(self)
+      @security_group_manager = SecurityGroupManager.new(self)
       @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(self)
       @translation_manager = TranslationManager.new(self)

@@ -109,7 +109,7 @@ module Vnet::Openflow
       raw_out.l3 = Racket::L3::IPv4.new
       raw_out.l3.src_ip = params[:ipv4_src].to_s
       raw_out.l3.dst_ip = params[:ipv4_dst].to_s
-      raw_out.l3.protocol = IPV4_PROTOCOL_ICMP
+      raw_out.l3.protocol = Vnet::Constants::Openflow::IPV4_PROTOCOL_ICMP
       raw_out.l3.ttl = 128
 
       case params[:icmpv4_type]
