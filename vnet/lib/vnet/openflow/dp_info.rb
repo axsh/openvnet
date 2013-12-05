@@ -16,12 +16,14 @@ module Vnet::Openflow
     attr_reader :dpid_s
     attr_reader :ovs_ofctl
 
+    attr_reader :connection_manager
     attr_reader :datapath_manager
     attr_reader :dc_segment_manager
     attr_reader :interface_manager
     attr_reader :network_manager
     attr_reader :port_manager
     attr_reader :route_manager
+    attr_reader :security_group_manager
     attr_reader :service_manager
     attr_reader :tunnel_manager
     attr_reader :translation_manager
@@ -116,6 +118,7 @@ module Vnet::Openflow
     private
 
     def initialize_managers
+      @connection_manager = ConnectionManager.new(self)
       @datapath_manager = DatapathManager.new(self)
       @dc_segment_manager = DcSegmentManager.new(self)
       @interface_manager = InterfaceManager.new(self)

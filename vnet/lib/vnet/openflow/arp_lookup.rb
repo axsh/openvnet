@@ -113,7 +113,7 @@ module Vnet::Openflow
                                                   :goto_table => TABLE_NETWORK_DST_CLASSIFIER
                                                 }))
 
-        @dp_info.add_flow(flow)        
+        @dp_info.add_flow(flow)
 
         arp_lookup_send_packets(@arp_lookup[:requests].delete(message.arp_spa))
       end

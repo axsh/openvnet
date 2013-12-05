@@ -29,4 +29,5 @@ module Vnet::Configurations
     param :trema_home, :default => Gem::Specification.find_by_name('trema').gem_dir
     param :trema_tmp, :default => '/var/run/wakame-vnet'
   end
+
 end

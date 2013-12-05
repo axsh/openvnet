@@ -47,6 +47,7 @@ module Vnet::Openflow
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
        TABLE_INTERFACE_INGRESS_CLASSIFIER,
+       TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
        TABLE_INTERFACE_EGRESS_CLASSIFIER,
        TABLE_INTERFACE_EGRESS_ROUTES,
        TABLE_INTERFACE_EGRESS_MAC,
@@ -96,6 +97,10 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
 
+      flows << Flow.create(TABLE_INTERFACE_EGRESS_FILTER, 0, {}, nil,
+                           flow_options.merge(goto_table: TABLE_NETWORK_SRC_CLASSIFIER))
+      flows << Flow.create(TABLE_INTERFACE_INGRESS_FILTER, 0, {}, nil,
+                           flow_options.merge(goto_table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP))
       # LOCAL packets have already been verified earlier.
       flows << Flow.create(TABLE_VIRTUAL_SRC,  90, md_create(:local => nil), nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))

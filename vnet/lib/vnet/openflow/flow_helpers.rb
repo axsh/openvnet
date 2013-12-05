@@ -115,7 +115,7 @@ module Vnet::Openflow
         table = TABLE_INTERFACE_EGRESS_CLASSIFIER
         match_metadata = { :interface => params[:interface_id] }
         write_metadata = { :network => params[:write_network_id] }
-        goto_table = TABLE_NETWORK_SRC_CLASSIFIER
+        goto_table = TABLE_INTERFACE_EGRESS_FILTER
       when :router_classifier
         table = TABLE_ROUTE_INGRESS
         match_metadata = { :network => params[:network_id] }
@@ -126,7 +126,7 @@ module Vnet::Openflow
         else
           priority = 20
           goto_table = TABLE_NETWORK_DST_CLASSIFIER
-        end          
+        end
       when :routing
         priority = params[:default_route] ? 20 : 30
       else
@@ -176,6 +176,9 @@ module Vnet::Openflow
       instructions.merge!(md_create(write_metadata)) if !write_metadata.empty?
 
       raise "Missing cookie." if instructions[:cookie].nil?
+
+      instructions[:idle_timeout] = params[:idle_timeout] if params[:idle_timeout]
+      instructions[:hard_timeout] = params[:hard_timeout] if params[:hard_timeout]
 
       Flow.create(table, priority, match, actions, instructions)
     end

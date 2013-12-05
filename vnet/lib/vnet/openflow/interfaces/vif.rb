@@ -4,6 +4,16 @@ module Vnet::Openflow::Interfaces
 
   class Vif < IfBase
 
+    def add_security_groups
+      @dp_info.security_group_manager.apply_rules(self)
+    end
+
+    def del_security_groups
+      @dp_info.security_group_manager.remove_rules(self)
+      @dp_info.connection_manager.close_connections(self)
+      @dp_info.connection_manager.remove_catch_new_egress(self)
+    end
+
     def add_mac_address(params)
       mac_info = super
 
@@ -24,6 +34,10 @@ module Vnet::Openflow::Interfaces
                                                 interface_id: @id,
                                                 mode: :vif,
                                                 port_number: @port_number)
+
+      @dp_info.connection_manager.catch_new_egress(self,
+                                                   mac_info,
+                                                   ipv4_info)
 
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
@@ -53,6 +67,7 @@ module Vnet::Openflow::Interfaces
       flows_for_base(flows)
 
       @dp_info.add_flows(flows)
+      add_security_groups
     end
 
     #

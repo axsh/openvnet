@@ -22,7 +22,7 @@ gem "unicorn"
 gem "active_support"
 
 # trema and build requirement gems
-gem 'paper_house'
+gem 'paper_house', '~>0.4.0'
 gem 'rant', '>= 0.5.9', :git => 'https://github.com/axsh/rant.git'
 gem 'trema', :git=>'https://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
