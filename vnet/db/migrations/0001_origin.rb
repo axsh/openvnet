@@ -13,7 +13,7 @@ Sequel.migration do
       String :node_id, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
-      DateTime :deleted_at
+      DateTime :deleted_at, :index => true
     end
 
     create_table(:datapath_networks) do
@@ -22,7 +22,8 @@ Sequel.migration do
       Integer :network_id, :index => true, :null=>false
       Integer :mac_address_id, :index => true
       FalseClass :is_connected, :null=>false
-      DateTime :deleted_at
+      DateTime :deleted_at, :index => true
+      index [:datapath_id, :network_id]
     end
 
     create_table(:datapath_route_links) do
@@ -181,6 +182,7 @@ Sequel.migration do
       String :display_name, :index => true, :null => false
       Integer :src_datapath_id, :index => true, :null => false
       Integer :dst_datapath_id, :index => true, :null => false
+      DateTime :deleted_at, :index => true
 
       index [:src_datapath_id, :dst_datapath_id]
     end
