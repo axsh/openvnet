@@ -15,7 +15,7 @@ module Vnspec
           # TODO status check
           raise "Request failed: #{response.status}" unless response.status.to_s =~ /^20\d$/
 
-          yield JSON.parse(response.body).symbolize_keys if block_given?
+          return yield({ body: JSON.parse(response.body) }.symbolize_keys[:body]) if block_given?
         end
       end
 
