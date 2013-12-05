@@ -30,6 +30,7 @@ describe Vnet::NodeApi::Interface do
       expect(events.size).to eq 1
       expect(events.first[:event]).to eq Vnet::Event::ADDED_INTERFACE
       expect(events.first[:options][:id]).to eq interface[:id]
+      expect(events.first[:options][:port_name]).to eq interface[:port_name]
     end
   end
 

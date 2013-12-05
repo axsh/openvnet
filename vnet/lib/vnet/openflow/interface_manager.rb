@@ -139,6 +139,11 @@ module Vnet::Openflow
     def create_item(params)
       return if @items[params[:id]]
 
+      return unless @dp_info.port_manager.item(
+        port_name: params[:port_name],
+        dynamic_load: false
+      )
+
       item = self.item(params)
       return unless item
 
@@ -197,13 +202,7 @@ module Vnet::Openflow
     end
 
     def is_remote?(item_map)
-      return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?
-
-      if item_map.owner_datapath_id
-        return item_map.owner_datapath_id != @datapath_info.id
-      end
-
-      return false
+      return item_map.owner_datapath_id && item_map.owner_datapath_id != @datapath_info.id
     end
 
     #
@@ -236,12 +235,23 @@ module Vnet::Openflow
     end
 
     def leased_ipv4_address(params)
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address, :cookie_id])
+      return unless ip_lease
+
       item = @items[params[:id]]
-      return unless item
 
-      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:ip_address, :cookie_id])
+      if !item && ip_lease.interface.mode.to_sym == :simulated &&
+        @dp_info.network_manager.item(
+          id: ip_lease.ip_address.network_id,
+          dynamic_load: false
+        )
 
-      return unless ip_lease && ip_lease.interface_id == item.id
+        @dp_info.interface_manager.item(id: ip_lease.interface.id)
+
+        return
+      end
+
+      return unless item && ip_lease.interface_id == item.id
 
       network = @dp_info.network_manager.item(id: ip_lease.ip_address.network_id)
 

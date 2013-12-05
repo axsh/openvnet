@@ -23,7 +23,11 @@ module Vnet::NodeApi
           end
         end
 
-        dispatch_event(ADDED_INTERFACE, id: interface.id)
+        dispatch_event(
+          ADDED_INTERFACE,
+          id: interface.id,
+          port_name: interface.port_name
+        )
 
         interface
       end
