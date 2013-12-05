@@ -37,7 +37,6 @@ module Vnet::Openflow::Datapaths
                              match_dp_network: dp_nw[:id],
 
                              actions: {
-                               :eth_dst => dp_nw[:mac_address],
                                :tunnel_id => dp_nw[:network_id] | TUNNEL_FLAG
                              },
 
@@ -46,19 +45,6 @@ module Vnet::Openflow::Datapaths
                              write_value_pair_second: dp_nw[:interface_id],
 
                              cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
-
-        # flows << flow_create(:default,
-        #                      table: TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
-        #                      goto_table: TABLE_OUTPUT_DP_OVER_TUNNEL,
-        #                      priority: 1,
-
-        #                      match: {
-        #                        :eth_dst => dp_rl[:mac_address]
-        #                      },
-        #                      actions: {
-        #                        :eth_dst => dp_rl[:route_link_mac_address]
-        #                      },
-        #                      cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
       }
     end
 

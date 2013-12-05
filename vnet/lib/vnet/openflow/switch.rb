@@ -126,6 +126,12 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_OUTPUT_CONTROLLER, 0, {}, {:output => OFPP_CONTROLLER}, flow_options)
 
       flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_NETWORK_DST,
+                           priority: 2,
+                           match: {
+                             :eth_dst => MAC_BROADCAST
+                           })
+      flows << flow_create(:default,
                            table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
                            priority: 1,
