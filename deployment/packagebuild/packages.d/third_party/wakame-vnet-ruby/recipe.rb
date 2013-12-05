@@ -2,11 +2,10 @@ class WakameVnetRuby < FPM::Cookery::Recipe
   description 'The Ruby virtual machine(For Wakame-VNET bundle)'
 
   name 'wakame-vnet-ruby'
-  version '2.0.0.247'
+  version '2.0.0.353'
   revision 0
   homepage 'http://www.ruby-lang.org/'
   source "http://ftp.ruby-lang.org/pub/ruby/2.0/ruby-#{version.split('.')[0,3].join('.')}-p#{version.split('.')[3]}.tar.bz2"
-  sha256 '08e3d4b85b8a1118a8e81261f59dd8b4ddcfd70b6ae554e0ec5ceb99c3185e8a'
 
   vendor     'axsh'
   license    'The Ruby License'
@@ -17,7 +16,7 @@ class WakameVnetRuby < FPM::Cookery::Recipe
     build_depends 'autoconf', 'bison', 'zlib1g-dev', 'libssl-dev', 'libyaml-dev',
     'libffi-dev', 'libgdbm-dev', 'libncurses5-dev', 'libreadline6-dev', 'chrpath',
     'libxml2-dev', 'libxslt1-dev'
-    
+
     depends 'libffi6', 'libssl1.0.0', 'libtinfo5', 'libyaml-0-2', 'zlib1g', 'libgdbm3',
     'libncurses5', 'libreadline6', 'libxml2', 'libxslt1.1'
   end
@@ -30,12 +29,12 @@ class WakameVnetRuby < FPM::Cookery::Recipe
     depends 'libffi', 'ncurses-libs', 'openssl', 'libyaml', 'zlib', 'gdbm', 'readline',
     'libxml2', 'libxslt'
   end
-  
+
   def build
     ENV['CFLAGS']="-O0 -ggdb3 -Wall"
     configure :prefix => prefixdir, :sysconfdir => '/etc',
       'disable-install-doc' => true
-    
+
     make
   end
 
