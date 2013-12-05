@@ -50,8 +50,12 @@ describe "/datapaths" do
   describe "Many to many relation calls for networks" do
     let(:relation_fabricator) { :network }
 
-    include_examples "many_to_many_relation", "networks",
-      {:broadcast_mac_address => "02:00:00:cc:00:02"}
+    let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+
+    include_examples "many_to_many_relation", "networks", {
+      :broadcast_mac_address => "02:00:00:cc:00:02",
+      :interface_uuid => 'if-test'
+    }
   end
 
   describe "Many to many relation calls for route links" do
