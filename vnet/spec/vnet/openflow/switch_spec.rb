@@ -41,9 +41,9 @@ describe Vnet::Openflow::Switch do
 
         allow_any_instance_of(Vnet::Openflow::Ports::Base).to receive(:new).and_return(port)
 
-        dp.port_manager.insert(port_desc)
+        dp.dp_info.port_manager.insert(port_desc)
 
-        expect(dp.port_manager.ports[5].id).to eq 5
+        expect(dp.dp_info.port_manager.ports[5].id).to eq 5
       end
     end
 
