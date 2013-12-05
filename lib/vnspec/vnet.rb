@@ -45,7 +45,7 @@ module Vnspec
           )
         when :git
           multi_ssh(config[:nodes][:vna],
-            "cd #{config[:vnet_path]}; git fetch --prune origin && git fetch --tags origin && git reset --hard origin/#{branch} && git clean -f -d && git checkout #{branch};",
+            "cd #{config[:vnet_path]}; git fetch --prune origin; git fetch --tags origin; git clean -f -d; git rev-parse #{branch} | xargs git reset --hard; git checkout #{branch};",
             "bash -l -c 'cd #{File.join(config[:vnet_path], "vnet")}; bundle install --path vendor/bundle;'",
             "bash -l -c 'cd #{File.join(config[:vnet_path], "vnctl")}; bundle install --path vendor/bundle;'")
         end
