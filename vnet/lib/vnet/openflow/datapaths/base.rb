@@ -52,15 +52,25 @@ module Vnet::Openflow::Datapaths
     end
 
     def install
+      case @mode
+      when :tunnel
+        @dp_info.tunnel_manager.async.create_item(dst_id: id)
+      end
     end
 
     def uninstall
-      # debug log_format("removing flows")
+      @active_networks.each do |_, active_network|
+        @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+      end
 
-      # cookie_value = self.cookie
-      # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
-
-      # @dp_info.del_cookie(cookie_value, cookie_mask)
+      case @mode
+      when :owner
+        @dp_info.datapath.reset
+      when :segment
+        @dp_info.dc_segment_manager.async.remove_datapath(id)
+      when :tunnel
+        @dp_info.tunnel_manager.async.unload(dst_id: id)
+      end
     end
 
     #

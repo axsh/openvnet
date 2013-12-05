@@ -28,9 +28,9 @@ module Vnet::Openflow::Tunnels
       @uuid = map.uuid
       @display_name = map.display_name
 
-      @dst_id = params[:dst_dp_map].id
-      @dst_dpid = params[:dst_dp_map].dpid
-      @dst_ipv4_address = IPAddr.new(params[:dst_dp_map].ipv4_address, Socket::AF_INET)
+      @dst_id = map.dst_datapath.id
+      @dst_dpid = map.dst_datapath.dpid
+      @dst_ipv4_address = IPAddr.new(map.dst_datapath.ipv4_address, Socket::AF_INET)
 
       @datapath_networks = []
     end

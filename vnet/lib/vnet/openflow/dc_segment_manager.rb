@@ -43,20 +43,21 @@ module Vnet::Openflow
       dpn_map = MW::DatapathNetwork[dpn_id]
       return unless dpn_map
 
-      info log_format("insert datapath network id #{dpn_map.id}",
-                      "network.id:#{dpn_map.network_id}")
+      info log_format("insert datapath network",
+                      "network_id:#{dpn_map.network_id} dpn_id:#{dpn_map.id}")
 
       dpn_list = (@items[dpn_map.network_id] ||= {})
 
       if dpn_list.has_key? dpn_map.id
         warn log_format("datapath network id already exists",
-                        "network_id:#{dpn_map.network_id}) dpn_id:#{dpn_map.id}")
+                        "network_id:#{dpn_map.network_id} dpn_id:#{dpn_map.id}")
         return
       end
 
       dpn = {
         :id => dpn_map.id,
         :broadcast_mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
+        :datapath_id => dpn_map.datapath_id,
       }
 
       dpn_list[dpn_map.id] = dpn
@@ -76,11 +77,22 @@ module Vnet::Openflow
     end
 
     def remove(dpn_id)
-      dpn_map = MW::DatapathNetwork[dpn_id]
-      return if dpn_map
+      @items.each do |network_id, dpn_list|
+        next unless dpn_list.delete(dpn_id)
 
-      @items[dpn_map.network_id].delete(dpn_id) if @items[network_id]
-      # The dpn flows should have already been deleted by cookie.
+        debug log_format("remove datapath network",
+                      "network_id:#{network_id} dpn_id:#{dpn_id}")
+
+        update_network_id(network_id)
+        break
+      end
+    end
+
+    def remove_datapath(datapath_id)
+      changed_items = @items.select do |network_id, dpn_list|
+        dpn_list.reject! { |dpn_id, dpn| dpn[:datapath_id] == datapath_id }
+      end
+      changed_items.each { |network_id, _| update_network_id(network_id) }
     end
 
     #
@@ -121,9 +133,13 @@ module Vnet::Openflow
 
       return if dpn_list.nil?
 
-      dpn_list.each { |dpn|
-        @dp_info.del_cookie(dpn[:id] | COOKIE_TYPE_DP_NETWORK)
+      debug log_format("remove network_id: #{network_id}")
+
+      dpn_list.keys.each { |id|
+        @dp_info.del_cookie(id | COOKIE_TYPE_DP_NETWORK)
       }
+
+      update_network_id(network_id)
     end
 
     def update_network_id(network_id)

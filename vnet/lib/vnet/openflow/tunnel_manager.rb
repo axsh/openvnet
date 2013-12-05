@@ -7,6 +7,7 @@ module Vnet::Openflow
     #
     # Events:
     #
+    subscribe_event REMOVED_TUNNEL, :unload
     subscribe_event INITIALIZED_TUNNEL, :install_item
 
     def update_item(params)
@@ -32,27 +33,50 @@ module Vnet::Openflow
       nil
     end
 
+    #
+    # Refactor...
+    #
+
+    def create_all_tunnels
+      debug log_format("creating tunnel ports")
+
+      if @datapath_info.nil?
+        error log_format('datapath information not loaded')
+        return nil
+      end
+
+      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
+        item = item_by_params(dst_id: target_dp_map.id,
+                              dst_dp_map: target_dp_map)
+        next if item
+
+        create_item(dst_id: target_dp_map.id)
+      }
+    end
+
+    def create_item(params)
+      item = internal_detect(dst_id: params[:dst_id])
+      return if item
+
+      tunnel_name = "t-#{params[:dst_id]}"
+      tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
+                                     dst_datapath_id: params[:dst_id],
+                                     display_name: tunnel_name)
+
+      debug log_format("create #{tunnel_map.uuid}/#{tunnel_map.id}")
+
+      item(id: tunnel_map.id)
+    end
+
+
     def insert(dpn_id)
       dpn_map = MW::DatapathNetwork.batch[dpn_id].commit(fill: :datapath)
       return unless dpn_map
 
-      info log_format("insert datapath network id #{dpn_map.id}",
-                      "network.id:#{dpn_map.network_id}")
+      info log_format("insert datapath network",
+                      "network_id:#{dpn_map.network_id} id:#{dpn_map.id}")
 
       item = internal_detect(dst_id: dpn_map.datapath_id)
-      unless item
-        info log_format("creating tunnel",
-                        "dst_datapath dpid: #{dpn_map.datapath.dpid}")
-
-        tunnel_name = "t-#{dpn_map.datapath.uuid.split("-")[1]}"
-        tunnel_map = MW::Tunnel.create(
-          src_datapath_id: @datapath_info.id,
-          dst_datapath_id: dpn_map.datapath_id,
-          display_name: tunnel_name
-        )
-
-        item = item_by_params(dst_id: dpn_map.datapath_id)
-      end
 
       datapath_network = {
         :id => dpn_map.id,
@@ -99,6 +123,13 @@ module Vnet::Openflow
       end
 
       delete_items.each { |id, item| delete_item(item) }
+
+      update_network_id(network_id)
+    end
+
+    def delete_all_tunnels
+      @items.values.each { |item| unload(id: item.id) }
+      nil
     end
 
     #
@@ -149,10 +180,11 @@ module Vnet::Openflow
     #
 
     def item_initialize(item_map)
-      Tunnels::Base.new(dp_info: @dp_info,
-                        manager: self,
-                        map: item_map,
-                        dst_dp_map: item_map.dst_datapath)
+      Tunnels::Base.new(
+        dp_info: @dp_info,
+        manager: self,
+        map: item_map
+      )
     end
 
     def initialized_item_event
@@ -164,11 +196,11 @@ module Vnet::Openflow
       # proper event barrier.
       MW::Tunnel.batch[filter].commit(fill: :dst_datapath)
     end
-    
+
     def install_item(params)
       item = @items[params[:item_map].id]
 
-      debug log_format("insert #{item.uuid}/#{item.id}")
+      debug log_format("install #{item.uuid}/#{item.id}")
 
       item.install
     end
@@ -176,7 +208,14 @@ module Vnet::Openflow
     def delete_item(item)
       @items.delete(item.id)
 
+      debug log_format("delete #{item.uuid}/#{item.id}")
+
+      update_tunnel(item, nil)
+
       item.uninstall
+
+      MW::Tunnel.batch.destroy(id: item.id).commit
+
       item
     end
 
@@ -215,7 +254,6 @@ module Vnet::Openflow
                            actions: actions,
                            cookie: cookie)
 
-
       @dp_info.add_flows(flows)
     end
 
@@ -230,7 +268,8 @@ module Vnet::Openflow
       if item.datapath_networks.empty?
         debug log_format("datapath networks is empty for #{item.display_name}")
 
-        MW::Tunnel.batch[display_name: item.display_name].destroy.commit
+        # Currently dynamic creation and deletion does not work
+        #MW::Tunnel.batch[display_name: item.display_name].destroy.commit
         true
       else
         debug log_format("datapath networs is not empty for #{item.display_name}")

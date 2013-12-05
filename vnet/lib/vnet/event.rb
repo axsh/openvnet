@@ -47,6 +47,8 @@ module Vnet
     #
     # tunnel event
     #
+    ADDED_TUNNEL = "added_tunnel"
+    REMOVED_TUNNEL = "removed_tunnel"
     INITIALIZED_TUNNEL = "initialized_tunnel"
 
     #

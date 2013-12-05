@@ -114,12 +114,14 @@ module Vnet::Openflow
       initialize_datapath_info(datapath_map)
 
       @dp_info.datapath_manager.item(id: datapath_map.id)
+      @dp_info.tunnel_manager.create_all_tunnels
 
       @switch.switch_ready
     end
 
     def reset
       del_all_flows
+      @dp_info.tunnel_manager.delete_all_tunnels
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
