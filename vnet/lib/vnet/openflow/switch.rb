@@ -156,16 +156,16 @@ module Vnet::Openflow
       case message.reason
       when OFPPR_ADD
         debug log_format("adding port")
-        @datapath.port_manager.insert(message)
+        @datapath.dp_info.port_manager.insert(message)
       when OFPPR_DELETE
         debug log_format("deleting port")
-        @datapath.port_manager.remove(message)
+        @datapath.dp_info.port_manager.remove(message)
       end
     end
 
     def update_topology(dpid, network_id)
       debug log_format("update_topology", "dpid:#{dpid} network_id:#{network_id}")
-      @datapath.tunnel_manager.delete_tunnel_port(network_id, dpid)
+      @datapath.dp_info.tunnel_manager.delete_tunnel_port(network_id, dpid)
     end
 
     def update_vlan_translation
