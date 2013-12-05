@@ -8,6 +8,7 @@ module Vnet::Openflow::Datapaths
 
     attr_reader :id
     attr_reader :uuid
+    attr_reader :mode
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -17,6 +18,7 @@ module Vnet::Openflow::Datapaths
 
       @id = map.id
       @uuid = map.uuid
+      @dpid = map.dpid.hex
 
       @active_networks = {}
 

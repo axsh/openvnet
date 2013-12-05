@@ -73,18 +73,23 @@ module Vnet::Openflow
       debug log_format("creating datapath id: #{params[:id]}")
       return if @items[params[:id]]
 
+      if @datapath_info && @datapath_info.id != params[:id]
+        item(id: params[:id])
+        return
+      end
+
       @dp_info.datapath.switch_ready
     end
 
     def delete_item(params)
-      debug log_format("deleting datapath id: #{params[:id]}")
       return if MW::Datapath[params[:id]]
 
       item = @items.delete(params[:id])
       return unless item
-      return unless item.id == @datapath_info.id
 
-      @dp_info.datapath.reset
+      debug log_format("deleting datapath id: #{params[:id]}")
+
+      item.uninstall
     end
 
     def add_datapath_network(params)

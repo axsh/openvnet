@@ -71,11 +71,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   delete '/:uuid/networks/:network_uuid' do
     datapath = check_syntax_and_pop_uuid(M::Datapath, @params)
     network = check_syntax_and_pop_uuid(M::Network, @params, 'network_uuid')
-    relations = M::DatapathNetwork.filter({ :datapath_id => datapath.id,
-                                :network_id => network.id
-                              })
 
-    relations.each { |r| r.destroy }
+    M::DatapathNetwork.destroy(
+      :datapath_id => datapath.id,
+      :network_id => network.id
+    )
 
     respond_with(R::Datapath.networks(datapath))
   end
