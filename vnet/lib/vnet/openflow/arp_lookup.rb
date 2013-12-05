@@ -206,7 +206,6 @@ module Vnet::Openflow
 
                          actions: {
                            :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address),
-                           :tunnel_id => params[:interface_network_id] | TUNNEL_FLAG,
                          },
 
                          idle_timeout: 3600,
