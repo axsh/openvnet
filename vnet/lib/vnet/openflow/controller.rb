@@ -44,7 +44,7 @@ module Vnet::Openflow
       message.parts.each { |port_descs|
         debug "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
-        port_descs.ports.each { |port_desc| datapath.dp_info.port_manager.async.insert(port_desc) }
+        port_descs.ports.each { |port_desc| datapath.port_manager.async.insert(port_desc) }
       }
     end
 
@@ -61,11 +61,11 @@ module Vnet::Openflow
 
       case message.cookie >> COOKIE_PREFIX_SHIFT
       when COOKIE_PREFIX_INTERFACE
-        datapath.dp_info.interface_manager.async.packet_in(message)
+        datapath.interface_manager.async.packet_in(message)
       when COOKIE_PREFIX_TRANSLATION
-        datapath.dp_info.translation_manager.async.packet_in(message)
+        datapath.translation_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
-        datapath.dp_info.service_manager.async.packet_in(message)
+        datapath.service_manager.async.packet_in(message)
       end
     end
 
