@@ -9,6 +9,7 @@ require 'pry'
 require_relative '../../vnspec'
 
 Dir[File.expand_path('./support/*.rb', File.dirname(__FILE__))].map {|f| require f }
+Dir[File.expand_path('./shared_examples/*.rb', File.dirname(__FILE__))].map {|f| require f }
 
 RSpec.configure do |c|
   c.include Vnspec::Logger

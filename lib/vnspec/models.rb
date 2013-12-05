@@ -9,19 +9,35 @@ module Vnspec
 
     class Base
       attr_reader :uuid
-      def self.inherited(klass)
-        klass.class_eval do
-          prepend(BaseModule)
-        end
-      end
-
       def ==(other)
         self.uuid == other.uuid
       end
 
       class << self
-        def find(uuid)
-          all.find{|i| i.uuid == uuid}
+        def inherited(klass)
+          klass.class_eval do
+            prepend(BaseModule)
+            def self.inherited(klass)
+              klass.class_eval do
+                prepend(BaseModule)
+              end
+            end
+          end
+        end
+
+        def find(options)
+          case options
+          when String
+            all.find { |i| i.uuid == options }
+          when Integer
+            all.find { |i| i.id == options }
+          when Hash
+            all.find do |i|
+              options.all? do |k, v|
+                i.__send__(k) == v
+              end
+            end
+          end
         end
         alias_method :[], :find
       end
@@ -45,11 +61,11 @@ module Vnspec
           API.request(:post, "interfaces", options) do |response|
             return self.new(options.merge(uuid: response[:uuid])).tap do |interface|
               if options[:mac_address] && response[:mac_leases].first
-                mac_lease = response[:mac_leases].first
-                interface.mac_leases << Models::MacLease.new(uuid: mac_lease[:uuid], interface: interface,  mac_address: mac_lease[:mac_address]).tap do |mac_lease|
-                  if options[:network_uuid] && options[:ipv4_address] && response[:ip_leases].first
-                    ip_lease = response[:ip_leases].first
-                    mac_lease.ip_leases << Models::IpLease.new(uuid: ip_lease[:uuid], mac_lease: mac_lease, ipv4_address: ip_lease[:ipv4_address], network_uuid: ip_lease[:network_uuid])
+                m = response[:mac_leases].first
+                interface.mac_leases << Models::MacLease.new(uuid: m[:uuid], interface: interface,  mac_address: m[:mac_address]).tap do |mac_lease|
+                  if options[:network_uuid] && options[:ipv4_address] && m[:ip_leases].first
+                    i = m[:ip_leases].first
+                    mac_lease.ip_leases << Models::IpLease.new(uuid: i[:uuid], mac_lease: mac_lease, ipv4_address: i[:ipv4_address], network_uuid: i[:network_uuid])
                   end
                 end
               end
@@ -138,6 +154,53 @@ module Vnspec
       def destroy
         API.request(:delete, "ip_leases/#{uuid}")
         self.mac_lease.ip_leases.delete_if{|i| i.uuid == uuid}
+      end
+    end
+
+    class Datapath < Base
+      attr_accessor :name
+
+      class << self
+        def all
+          API.request(:get, "datapaths") do |response|
+            response.map do |r|
+              self.new(r)
+            end
+          end
+        end
+
+        def create(options)
+          API.request(:post, "datapaths", options) do |response|
+            return self.new(options.merge(uuid: response[:uuid]))
+          end
+        end
+      end
+
+      def initialize(options)
+        @node_id = options.fetch(:node_id)
+        @ipv4_address = options.fetch(:ipv4_address)
+        @dpid = options.fetch(:dpid)
+
+        @display_name = options[:display_name]
+        @dc_segment_uuid = options[:dc_segment_uuid]
+        @datapath_networks = []
+        @datapath_networks_loaded = false
+      end
+
+      def destroy
+        API.request(:delete, "datapaths/#{uuid}")
+      end
+
+      def add_datapath_network(network_uuid, broadcast_mac_address)
+        API.request(:post, "datapaths/#{uuid}/networks/#{network_uuid}", broadcast_mac_address: broadcast_mac_address) do |response|
+          @datapath_networks = response[:networks].map { |n| OpenStruct.new(n) }
+        end
+      end
+
+      def remove_datapath_network(network_uuid)
+        API.request(:delete, "datapaths/#{uuid}/networks/#{network_uuid}") do |response|
+          @datapath_networks = response[:networks].map { |n| OpenStruct.new(n) }
+        end
       end
     end
   end

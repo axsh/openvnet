@@ -1,14 +1,37 @@
 # -*- coding: utf-8 -*-
 require_relative "spec_helper"
 
-shared_examples "vm1(unreachable)" do
-  describe "vm1(vnet1)" do
+shared_examples_for "vm(reachable)" do |vm|
+  describe "#{vm.name}(#{vm.network})" do
+    context "mac2mac" do
+      it "reachable to vm3(vnet1)" do
+        expect(vm).to be_reachable_to(vm3)
+      end
+      it "reachable to vm4(vnet2)" do
+        expect(vm).to be_reachable_to(vm4)
+      end
+    end
+
+    context "tunnel" do
+      it "reachable to vm5(vnet1)" do
+        expect(vm).to be_reachable_to(vm5)
+      end
+
+      it "reachable to vm6(vnet2)" do
+        expect(vm).to be_reachable_to(vm6)
+      end
+    end
+  end
+end
+
+shared_examples_for "vm(unreachable)" do |vm|
+  describe "#{vm.name}(#{vm.network})" do
     context "mac2mac" do
       it "not reachable to vm3(vnet1)" do
         expect(vm1).not_to be_reachable_to(vm3)
       end
 
-      it "not reachable to vm4(vnet1)" do
+      it "not reachable to vm4(vnet2)" do
         expect(vm1).not_to be_reachable_to(vm4)
       end
     end
@@ -37,13 +60,17 @@ describe "event_if" do
     end
   end
 
+  before(:each) do
+    vms.peach { |vm| vm.clear_arp_cache }
+  end
+
   describe "ip_lease" do
     describe "release" do
       before(:all) do
         vm1.interfaces.first.mac_leases.first.ip_leases.first.destroy
       end
 
-      it_behaves_like "vm1(unreachable)"
+      it_behaves_like "vm(unreachable)", vm1
     end
 
     describe "lease ipv4_address(vnet2)" do
@@ -54,26 +81,7 @@ describe "event_if" do
         vm1.ssh_on_guest("ip route add default via 10.102.0.1")
       end
 
-      describe "vm1(vnet2)" do
-        context "mac2mac" do
-          it "reachable to vm3(vnet1)" do
-            expect(vm1).to be_reachable_to(vm3)
-          end
-          it "reachable to vm4(vnet2)" do
-            expect(vm1).to be_reachable_to(vm4)
-          end
-        end
-
-        context "tunnel" do
-          it "reachable to vm5(vnet1)" do
-            expect(vm1).to be_reachable_to(vm5)
-          end
-
-          it "reachable to vm6(vnet2)" do
-            expect(vm1).to be_reachable_to(vm6)
-          end
-        end
-      end
+      it_behaves_like "vm(reachable)", vm1
     end
   end
 
@@ -83,7 +91,7 @@ describe "event_if" do
         vm1.interfaces.first.mac_leases.first.destroy
       end
 
-      it_behaves_like "vm1(unreachable)"
+      it_behaves_like "vm(unreachable)", vm1
     end
 
     describe "lease" do
@@ -97,26 +105,7 @@ describe "event_if" do
         vm1.ssh_on_guest("ip route add default via 10.101.0.1")
       end
 
-      describe "vm1(vnet1)" do
-        context "mac2mac" do
-          it "reachable to vm3(vnet1)" do
-            expect(vm1).to be_reachable_to(vm3)
-          end
-          it "reachable to vm4(vnet2)" do
-            expect(vm1).to be_reachable_to(vm4)
-          end
-        end
-
-        context "tunnel" do
-          it "reachable to vm5(vnet1)" do
-            expect(vm1).to be_reachable_to(vm5)
-          end
-
-          it "reachable to vm6(vnet2)" do
-            expect(vm1).to be_reachable_to(vm6)
-          end
-        end
-      end
+      it_behaves_like "vm(reachable)", vm1
     end
   end
 
@@ -126,7 +115,7 @@ describe "event_if" do
         vm1.remove_interface("if-v1")
       end
 
-      it_behaves_like "vm1(unreachable)"
+      it_behaves_like "vm(unreachable)", vm1
     end
 
     describe "add" do
@@ -137,33 +126,49 @@ describe "event_if" do
           network_uuid: "nw-vnet1",
           ipv4_address: "10.101.0.10"
         )
-  
+
         sleep(3)
-  
+
         vm1.restart_network
         vm1.ssh_on_guest("ip route add default via 10.101.0.1")
       end
-  
-      describe "vm1(vnet1)" do
-        context "mac2mac" do
-          it "reachable to vm3(vnet1)" do
-            expect(vm1).to be_reachable_to(vm3)
-          end
-          it "reachable to vm4(vnet2)" do
-            expect(vm1).to be_reachable_to(vm4)
-          end
-        end
 
-        context "tunnel" do
-          it "reachable to vm5(vnet1)" do
-            expect(vm1).to be_reachable_to(vm5)
-          end
+      it_behaves_like "vm(reachable)", vm1
+    end
+  end
 
-          it "reachable to vm6(vnet2)" do
-            expect(vm1).to be_reachable_to(vm6)
-          end
-        end
+  describe "datapath" do
+    describe "remove" do
+      before(:all) do
+        datapath = Vnspec::Models::Datapath.find("dp-1")
+        datapath.remove_datapath_network("nw-vnet1")
+        datapath.remove_datapath_network("nw-vnet2")
+        datapath.destroy
+        sleep(1)
       end
+
+      context "from vm1(vnet1)" do
+        it_behaves_like "vm(unreachable)", vm1
+      end
+    end
+
+    describe "add" do
+      before(:all) do
+        datapath = Vnspec::Models::Datapath.create(
+          uuid: "dp-new",
+          node_id: "vna1",
+          display_name: "node1",
+          ipv4_address: config[:dataset_options][:dp1_ipv4_address],
+          dpid: "0x0000aaaaaaaaaaaa",
+          dc_segment_uuid: "ds-1"
+        )
+        datapath.add_datapath_network("nw-vnet1", "02:00:00:aa:00:01")
+        datapath.add_datapath_network("nw-vnet2", "02:00:00:aa:00:02")
+
+        sleep(1)
+      end
+
+      it_behaves_like "vm(reachable)", vm1
     end
   end
 end
