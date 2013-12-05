@@ -8,7 +8,7 @@ module Vnet::Openflow
     # Events:
     #
     subscribe_event ADDED_INTERFACE, :create_item
-    subscribe_event REMOVED_INTERFACE, :delete_item
+    subscribe_event REMOVED_INTERFACE, :unload
     subscribe_event INITIALIZED_INTERFACE, :install_item
     subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
@@ -173,10 +173,7 @@ module Vnet::Openflow
       item # Return nil if interface has been uninstalled.
     end
 
-    def delete_item(params)
-      item = @items.delete(params[:id])
-      return unless item
-
+    def delete_item(item)
       debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
       item.uninstall

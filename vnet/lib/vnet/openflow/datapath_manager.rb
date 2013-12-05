@@ -8,7 +8,7 @@ module Vnet::Openflow
     # Events:
     #
     subscribe_event ADDED_DATAPATH, :create_item
-    subscribe_event REMOVED_DATAPATH, :delete_item
+    subscribe_event REMOVED_DATAPATH, :unload
     subscribe_event INITIALIZED_DATAPATH, :install_item
 
     subscribe_event ADDED_DATAPATH_NETWORK, :add_datapath_network
@@ -81,15 +81,11 @@ module Vnet::Openflow
       @dp_info.datapath.switch_ready
     end
 
-    def delete_item(params)
-      return if MW::Datapath[params[:id]]
-
-      item = @items.delete(params[:id])
-      return unless item
-
-      debug log_format("deleting datapath id: #{params[:id]}")
+    def delete_item(item)
+      debug log_format("deleting datapath: #{item.uuid}/#{item.id}")
 
       item.uninstall
+      item
     end
 
     def add_datapath_network(params)

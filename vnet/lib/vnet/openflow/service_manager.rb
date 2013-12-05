@@ -8,7 +8,7 @@ module Vnet::Openflow
     # Events:
     #
     subscribe_event ADDED_SERVICE, :item
-    subscribe_event REMOVED_SERVICE, :delete_item
+    subscribe_event REMOVED_SERVICE, :unload
     subscribe_event INITIALIZED_SERVICE, :create_item
 
     def update_item(params)
@@ -91,10 +91,7 @@ module Vnet::Openflow
       item
     end    
 
-    def delete_item(params)
-      item = @items.delete(params[:id])
-      return unless item
-
+    def delete_item(item)
       debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.class.name.split("::").last.downcase}")
 
       item.uninstall
