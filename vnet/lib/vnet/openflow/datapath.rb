@@ -51,15 +51,6 @@ module Vnet::Openflow
 
     attr_reader :switch
 
-    attr_reader :dc_segment_manager
-    attr_reader :interface_manager
-    attr_reader :network_manager
-    attr_reader :port_manager
-    attr_reader :route_manager
-    attr_reader :service_manager
-    attr_reader :tunnel_manager
-    attr_reader :translation_manager
-
     def initialize(ofc, dp_id, ofctl = nil)
       @dpid = dp_id
       @dpid_s = "0x%016x" % @dpid
@@ -71,18 +62,6 @@ module Vnet::Openflow
 
       @controller = @dp_info.controller
       @ovs_ofctl = @dp_info.ovs_ofctl
-
-      # TODO: Remove these...
-      @dc_segment_manager = @dp_info.dc_segment_manager
-      @interface_manager = @dp_info.interface_manager
-      @network_manager = @dp_info.network_manager
-      @port_manager = @dp_info.port_manager
-      @route_manager = @dp_info.route_manager
-      @service_manager = @dp_info.service_manager
-      @tunnel_manager = @dp_info.tunnel_manager
-      @translation_manager = @dp_info.translation_manager
-
-      link_with_managers
     end
 
     def inspect
@@ -223,37 +202,16 @@ module Vnet::Openflow
 
     def initialize_datapath_info(datapath_map)
       @datapath_info = DatapathInfo.new(datapath_map)
-      each_managers { |manager| manager.set_datapath_info(@datapath_info) }
-    end
 
-    def link_with_managers
-      each_managers do |manager|
-        begin
-          link(manager)
-        rescue => e
-          error e
-          error "#{name}"
-          raise e
-        end
-      end
+      @dp_info.datapath_manager.set_datapath_info(@datapath_info)
+      @dp_info.dc_segment_manager.set_datapath_info(@datapath_info)
+      @dp_info.interface_manager.set_datapath_info(@datapath_info)
+      @dp_info.network_manager.set_datapath_info(@datapath_info)
+      @dp_info.route_manager.set_datapath_info(@datapath_info)
+      @dp_info.service_manager.set_datapath_info(@datapath_info)
+      @dp_info.tunnel_manager.set_datapath_info(@datapath_info)
+      @dp_info.translation_manager.set_datapath_info(@datapath_info)
     end
-
-    def each_managers(&block)
-      %w(
-        datapath
-        dc_segment
-        interface
-        network
-        route
-        service
-        tunnel
-        translation
-      ).each do |name|
-        manager = @dp_info.__send__("#{name}_manager")
-        yield(manager)
-      end
-    end
-
   end
 
 end
