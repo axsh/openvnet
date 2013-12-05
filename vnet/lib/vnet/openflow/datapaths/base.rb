@@ -59,6 +59,7 @@ module Vnet::Openflow::Datapaths
     end
 
     def uninstall
+      @dp_info.del_cookie(id | COOKIE_TYPE_DATAPATH)
       @active_networks.each do |_, active_network|
         @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       end
