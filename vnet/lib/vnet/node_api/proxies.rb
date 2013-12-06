@@ -27,6 +27,7 @@ module Vnet::NodeApi
         raise exception if Vnet::NodeApi.raise_on_error
         logger.debug("#{exception.class}: #{exception.to_s}\n\t")
         logger.debug(exception.backtrace.join("\n\t"))
+        nil
       end
 
       private
