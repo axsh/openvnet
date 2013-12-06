@@ -6,11 +6,11 @@ describe Vnet::NodeApi do
     let(:actor) { double(:actor) }
 
     before(:each) do
-      DCell::Global.stub(:[]).with(:rpc).and_return(actor)
+      allow(DCell::Global).to receive(:[]).with(:rpc).and_return(actor)
     end
 
     subject do
-      actor.should_receive(:execute).with(:network, :all).and_return([{uuid: "test-uuid"}])
+      expect(actor).to receive(:execute).with(:network, :all).and_return([{uuid: "test-uuid"}])
       Vnet::NodeApi::RpcProxy.new.network.all
     end
 
@@ -23,14 +23,14 @@ describe Vnet::NodeApi do
   describe Vnet::NodeApi::DirectProxy do
     describe "without options" do
       before(:each) do
-        Vnet::Models::Network.stub(:all).and_return([{uuid: "test-uuid"}])
+        allow(Vnet::Models::Network).to receive(:all).and_return([{uuid: "test-uuid"}])
       end
 
       subject do
         Vnet::NodeApi::DirectProxy.new.network.all
       end
 
-      it { should be_a Array }
+      it { expect(subject).to be_a Array }
       it { expect(subject.size).to eq 1 }
       it { expect(subject.first).to be_a Hash }
       it { expect(subject.first[:uuid]).to eq "test-uuid" }
