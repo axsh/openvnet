@@ -2,12 +2,27 @@
 
 module Vnet
   module NodeApi
-    def self.get_proxy(name)
+    @@options = {
+      raise_on_error: true,
+      logger: ::Logger.new(STDOUT)
+    }
+
+    module_function
+
+    def raise_on_error=(raise_on_error)
+      @@options[:raise_on_error] = !! raise_on_error
+    end
+
+    def logger=(logger)
+      @@options[:logger] = logger
+    end
+
+    def get_proxy(name)
       case name.to_sym
       when :rpc
-        RpcProxy.new
+        RpcProxy.new(@@options)
       when :direct
-        DirectProxy.new
+        DirectProxy.new(@@options)
       else
         raise "Unknown proxy: #{name}"
       end

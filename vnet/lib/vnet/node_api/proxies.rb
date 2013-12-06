@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
   class Proxy
+    def initialize(options = {})
+      @options = options
+    end
+
     def method_missing(class_name, *args, &block)
       if class_name.present? && args.empty? && Vnet::NodeApi.const_defined?(class_name.to_s.camelize)
-        _call_class.new(class_name).tap do |call|
+        _call_class.new(class_name, @options).tap do |call|
           define_singleton_method(class_name){ call }
         end
       else
@@ -17,8 +21,23 @@ module Vnet::NodeApi
     end
 
     class Call
-      def initialize(class_name)
+      def initialize(class_name, options = {})
         @class_name = class_name
+        @raise_on_error = options[:raise_on_error]
+        @logger = options[:logger]
+      end
+
+      def method_missing(method_name, *args, &block)
+        _call(method_name, *args, &block)
+      rescue => exception
+        raise exception if @raise_on_error
+        if @logger
+          @logger.debug("#{exception.class}: #{exception.to_s}\n\t")
+          @logger.debug(exception.backtrace.join("\n\t"))
+        end
+      end
+
+      def _call(method_name, *args, &block)
       end
     end
   end
@@ -26,12 +45,12 @@ module Vnet::NodeApi
   class RpcProxy < Proxy
     protected
     class RpcCall < Call
-      def initialize(class_name)
+      def initialize(class_name, options = {})
         super
         @actor = DCell::Global[:rpc] or raise "rpc not found in DCell::Global"
       end
 
-      def method_missing(method_name, *args, &block)
+      def _call(method_name, *args, &block)
         @actor.execute(@class_name, method_name, *args, &block)
       end
     end
@@ -44,12 +63,12 @@ module Vnet::NodeApi
   class DirectProxy < Proxy
     protected
     class DirectCall < Call
-      def initialize(class_name)
+      def initialize(class_name, options = {})
         super
         @method_caller = Vnet::NodeApi.const_get(class_name.to_s.camelize)
       end
 
-      def method_missing(method_name, *args, &block)
+      def _call(method_name, *args, &block)
         @method_caller.send(method_name, *args, &block)
       end
     end

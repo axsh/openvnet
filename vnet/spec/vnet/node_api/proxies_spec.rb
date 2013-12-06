@@ -21,17 +21,31 @@ describe Vnet::NodeApi do
   end
 
   describe Vnet::NodeApi::DirectProxy do
-    before(:each) do
-      Vnet::Models::Network.stub(:all).and_return([{uuid: "test-uuid"}])
+    describe "without options" do
+      before(:each) do
+        Vnet::Models::Network.stub(:all).and_return([{uuid: "test-uuid"}])
+      end
+
+      subject do
+        Vnet::NodeApi::DirectProxy.new.network.all
+      end
+
+      it { should be_a Array }
+      it { expect(subject.size).to eq 1 }
+      it { expect(subject.first).to be_a Hash }
+      it { expect(subject.first[:uuid]).to eq "test-uuid" }
     end
 
-    subject do
-      Vnet::NodeApi::DirectProxy.new.network.all
-    end
+    describe "raise_on_error" do
+      it "raises an execption" do
+        options = { raise_on_error: true }
+        expect { Vnet::NodeApi::DirectProxy.new(options).network.foo }.to raise_error
+      end
 
-    it { should be_a Array }
-    it { expect(subject.size).to eq 1 }
-    it { expect(subject.first).to be_a Hash }
-    it { expect(subject.first[:uuid]).to eq "test-uuid" }
+      it "does not raise any exception" do
+        options = { raise_on_error: false }
+        expect { Vnet::NodeApi::DirectProxy.new(options).network.foo }.not_to raise_error
+      end
+    end
   end
 end
