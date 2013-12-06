@@ -11,7 +11,7 @@ conf = Vnet::Configurations::Webapi.conf
 #Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
 Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "webapi.log"))
 
-Vnet::ModelWrappers::Base.set_proxy(conf.node_api_proxy)
+Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'

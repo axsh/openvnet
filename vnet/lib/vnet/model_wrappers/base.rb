@@ -20,12 +20,8 @@ module Vnet::ModelWrappers
 
   class Base < OpenStruct
     class << self
-      def set_proxy(conf)
-        @@proxy = Vnet::NodeApi.get_proxy(conf)
-      end
-
       def _proxy
-        @@proxy
+        Vnet::NodeApi.proxy
       end
 
       def batch(&block)
@@ -37,7 +33,6 @@ module Vnet::ModelWrappers
       end
 
       def method_missing(method_name, *args, &block)
-        #wrap(_call_proxy_method(method_name, *args, &block))
         wrap(_call_proxy_method(:execute, *args.dup.unshift(method_name), &block))
       end
 

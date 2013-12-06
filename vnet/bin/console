@@ -11,7 +11,7 @@ require 'pry'
 
 conf = Vnet::Configurations::Vna.conf
 
-Vnet::ModelWrappers::Base.set_proxy(conf.node_api_proxy)
+Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 
 Vnet::Initializers::DB.run(conf.db_uri)
 
