@@ -37,14 +37,15 @@ describe Vnet::NodeApi do
     end
 
     describe "raise_on_error" do
+      subject { Vnet::NodeApi::DirectProxy.new.network.foo }
       it "raises an execption" do
-        options = { raise_on_error: true }
-        expect { Vnet::NodeApi::DirectProxy.new(options).network.foo }.to raise_error
+        Vnet::NodeApi.raise_on_error = true
+        expect { subject }.to raise_error
       end
 
       it "does not raise any exception" do
-        options = { raise_on_error: false }
-        expect { Vnet::NodeApi::DirectProxy.new(options).network.foo }.not_to raise_error
+        Vnet::NodeApi.raise_on_error = false
+        expect { subject }.not_to raise_error
       end
     end
   end
