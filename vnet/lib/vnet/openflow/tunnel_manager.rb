@@ -215,7 +215,7 @@ module Vnet::Openflow
 
       item.uninstall
 
-      MW::Tunnel.batch.destroy(id: item.id).commit
+      MW::Tunnel.batch.destroy(item.uuid).commit
 
       item
     end
@@ -271,7 +271,7 @@ module Vnet::Openflow
 
         # Currently dynamic creation and deletion does not work
         #MW::Tunnel.batch[display_name: item.display_name].destroy.commit
-        true
+        #true
       else
         debug log_format("datapath networs is not empty for #{item.display_name}")
         false

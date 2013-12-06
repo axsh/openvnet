@@ -14,8 +14,15 @@ module Vnet::Openflow
     subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
+    subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
 
     def update_item(params)
+      case params[:event]
+      when :remove_all_active_datapath
+        @items.each { |_, item| item.update_active_datapath(datapath_id: nil) }
+        return
+      end
+
       # Todo: Add the possibility to use a 'filter' parameter for this.
       item = item_by_params(params)
       return nil if item.nil?
@@ -47,6 +54,12 @@ module Vnet::Openflow
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
+    end
+
+    def del_flows_for_active_datapath(params)
+      internal_select(mode: :simulated).each do |item|
+        item.del_flows_for_active_datapath(params[:ipv4_addresses])
+      end
     end
 
     #

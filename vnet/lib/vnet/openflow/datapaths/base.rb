@@ -66,6 +66,7 @@ module Vnet::Openflow::Datapaths
 
       case @mode
       when :owner
+        @dp_info.interface_manager.update_item(event: :remove_all_active_datapath)
         @dp_info.datapath.reset
       when :segment
         @dp_info.dc_segment_manager.async.remove_datapath(id)

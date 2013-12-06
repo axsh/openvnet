@@ -20,8 +20,7 @@ module Vnet::Models
 
     plugin :association_dependencies,
       datapath_networks: :destroy,
-      interfaces_owned: :nullify,
-      interfaces_active: :nullify
+      interfaces_owned: :nullify
 
     subset(:alives, {})
 

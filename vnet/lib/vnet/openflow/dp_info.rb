@@ -79,6 +79,19 @@ module Vnet::Openflow
       }
     end
 
+    def del_flows(params = {})
+      options = {
+        :command => Controller::OFPFC_DELETE,
+        :table_id => Controller::OFPTT_ALL,
+        :out_port => Controller::OFPP_ANY,
+        :out_group => Controller::OFPG_ANY,
+      }.merge(params)
+
+      @controller.pass_task {
+        @controller.public_send_flow_mod(@dpid, options)
+      }
+    end
+
     #
     # Port modification methods:
     #

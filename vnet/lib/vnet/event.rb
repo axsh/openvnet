@@ -19,6 +19,9 @@ module Vnet
     LEASED_MAC_ADDRESS = "leased_mac_address"
     RELEASED_MAC_ADDRESS = "released_mac_address"
 
+    # active_datapath
+    REMOVED_ACTIVE_DATAPATH = "removed_active_datapath"
+
     #
     # datapath event
     #

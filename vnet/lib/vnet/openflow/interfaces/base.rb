@@ -7,6 +7,8 @@ module Vnet::Openflow::Interfaces
     include Vnet::Openflow::AddressHelpers
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
+    include Vnet::Event
+    include Vnet::Event::Dispatchable
 
     OPTIONAL_TYPE_MASK      = 0xf
 
@@ -178,6 +180,19 @@ module Vnet::Openflow::Interfaces
       @active_datapath_ids = active_datapath_ids
 
       MW::Interface.batch.update(@id, :active_datapath_id => params[:datapath_id]).commit
+
+      unless params[:datapath_id]
+
+        unless ipv4_addresses.empty?
+          dispatch_event(
+            REMOVED_ACTIVE_DATAPATH,
+            id: id,
+            ipv4_addresses: ipv4_addresses.map do |i|
+              { network_id: i[:network_id], ipv4_address: i[:ipv4_address].to_i }
+            end
+          )
+        end
+      end
     end
 
     #

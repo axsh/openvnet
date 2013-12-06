@@ -104,6 +104,13 @@ module Vnet::Openflow
       [mac_info, ipv4_info]
     end
 
+    def ipv4_addresses
+      @mac_addresses.values.map { |m| m[:ipv4_addresses] }.flatten(1)
+    end
+
+    def has_network?(network_id)
+      ipv4_addresses.any?{ |i| i[:network_id] == network_id }
+    end
   end
 
 end

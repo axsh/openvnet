@@ -186,6 +186,10 @@ module Vnet::Openflow
       end
     end
 
+    def internal_select(params)
+      @items.values.select { |item| match_item?(item, params) }
+    end
+
     def log_format(message, values = nil)
       "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: #{message}" + (values ? " (#{values})" : '')
     end
