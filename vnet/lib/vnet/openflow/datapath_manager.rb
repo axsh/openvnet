@@ -82,6 +82,9 @@ module Vnet::Openflow
     end
 
     def delete_item(item)
+      item = @items.delete(item.id)
+      return unless item
+
       debug log_format("deleting datapath: #{item.uuid}/#{item.id}")
 
       item.uninstall
