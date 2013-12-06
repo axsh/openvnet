@@ -35,10 +35,6 @@ module Vnspec
 
         return statuses.all?{|n, s| s }
       end
-      unless config[:specs].member?(name.to_s)
-        logger.error("spec not found: #{name}")
-        raise
-      end
       setup(name)
       sleep(1)
       SPec.exec(name)
