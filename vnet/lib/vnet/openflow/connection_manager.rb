@@ -17,20 +17,24 @@ module Vnet::Openflow
     end
 
     def catch_new_egress(interface, mac_info, ipv4_info)
-      flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
-        flow_create(:default,
-                    table: TABLE_INTERFACE_EGRESS_FILTER,
-                    priority: 20,
-                    match: {
-                      eth_src: mac_info[:mac_address],
-                      eth_type: ETH_TYPE_IPV4,
-                      ip_proto: protocol
-                    },
-                    cookie: catch_flow_cookie(interface),
-                    actions: { output: Controller::OFPP_CONTROLLER })
-      }
+      interface_model = MW::Interface.batch[interface.id].commit
 
-      @dp_info.add_flows(flows)
+      unless interface_model.batch.security_groups.commit.empty?
+        flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
+          flow_create(:default,
+                      table: TABLE_INTERFACE_EGRESS_FILTER,
+                      priority: 20,
+                      match: {
+                        eth_src: mac_info[:mac_address],
+                        eth_type: ETH_TYPE_IPV4,
+                        ip_proto: protocol
+                      },
+                      cookie: catch_flow_cookie(interface),
+                      actions: { output: Controller::OFPP_CONTROLLER })
+        }
+
+        @dp_info.add_flows(flows)
+      end
     end
 
     def remove_catch_new_egress(interface)
