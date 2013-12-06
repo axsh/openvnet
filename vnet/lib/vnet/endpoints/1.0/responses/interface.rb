@@ -17,7 +17,12 @@ module Vnet::Endpoints::V10::Responses
           ip_lease.mac_lease_uuid = mac_lease.uuid
           IpLease.generate(ip_lease)
         end
-        mac_lease.interface_uuid= object.uuid
+
+        # just for compatibility
+        # TODO remove it when unnecessary
+        object.ip_leases = mac_lease.ip_leases
+
+        mac_lease.interface_uuid = object.uuid
         MacLease.generate(mac_lease)
       end
       object.owner_datapath_uuid = object.owner_datapath.uuid if object.owner_datapath
