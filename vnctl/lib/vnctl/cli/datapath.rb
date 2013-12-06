@@ -21,7 +21,7 @@ module Vnctl::Cli
       :desc => "The broadcast mac address for mac2mac to use in this network."
     define_relation :networks
 
-    rel_option :link_mac_address, :type => :string, :required => true,
+    rel_option :mac_address, :type => :string, :required => true,
         :desc => "The mac address to use for this link"
     define_relation(:route_links)
   end

@@ -92,6 +92,7 @@ module Vnet
     autoload :DcSegment, 'vnet/models/dc_segment'
     autoload :DhcpRange, 'vnet/models/dhcp_range'
     autoload :Interface, 'vnet/models/interface'
+    autoload :InterfaceSecurityGroup, 'vnet/models/interface_security_group'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
     autoload :MacAddress, 'vnet/models/mac_address'
@@ -115,6 +116,7 @@ module Vnet
     autoload :DhcpRange, 'vnet/model_wrappers/dhcp_range'
     autoload :Helpers, 'vnet/model_wrappers/helpers'
     autoload :Interface, 'vnet/model_wrappers/interface'
+    autoload :InterfaceSecurityGroup, 'vnet/model_wrappers/interface_security_group'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
     autoload :MacAddress, 'vnet/model_wrappers/mac_address'
@@ -161,6 +163,7 @@ module Vnet
   module Openflow
     autoload :AddressHelpers, 'vnet/openflow/address_helpers'
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
+    autoload :ConnectionManager, 'vnet/openflow/connection_manager'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DatapathInfo, 'vnet/openflow/datapath'
@@ -178,6 +181,7 @@ module Vnet
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
+    autoload :SecurityGroupManager, 'vnet/openflow/security_group_manager'
     autoload :Service, 'vnet/openflow/service'
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
@@ -185,6 +189,12 @@ module Vnet
     autoload :TranslationManager, 'vnet/openflow/translation_manager'
     autoload :Tunnel, 'vnet/openflow/tunnel'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
+
+    module Connections
+      autoload :Base, 'vnet/openflow/connections/base'
+      autoload :TCP, 'vnet/openflow/connections/tcp'
+      autoload :UDP, 'vnet/openflow/connections/udp'
+    end
 
     module Datapaths
       autoload :Base, 'vnet/openflow/datapaths/base'
@@ -221,6 +231,14 @@ module Vnet
 
     module Routers
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
+    end
+
+    module SecurityGroups
+      autoload :Group, 'vnet/openflow/security_groups/group'
+      autoload :Rule, 'vnet/openflow/security_groups/rules'
+      autoload :ICMP, 'vnet/openflow/security_groups/rules'
+      autoload :TCP, 'vnet/openflow/security_groups/rules'
+      autoload :UDP, 'vnet/openflow/security_groups/rules'
     end
 
     module Services

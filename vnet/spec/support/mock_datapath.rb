@@ -38,11 +38,11 @@ class MockDpInfo < Vnet::Openflow::DpInfo
   end
 
   def add_flow(flow)
-    @datapath.added_flows << flow
+    @datapath.add_flow(flow)
   end
 
   def add_flows(flows)
-    @datapath.added_flows += flows
+    @datapath.add_flows(flows)
   end
 
   def del_cookie(cookie)
@@ -75,15 +75,16 @@ class MockDatapath < Vnet::Openflow::Datapath
     @ovs_ofctl = MockOvsOfctl.new(self)
     @controller = ofc
 
+    @sent_messages = []
+    @added_flows = []
+    @added_ovs_flows = []
+    @added_cookie = []
+
     @dp_info = MockDpInfo.new(controller: @controller,
                               datapath: self,
                               dpid: @dpid,
                               ovs_ofctl: @ovs_ofctl)
 
-    @sent_messages = []
-    @added_flows = []
-    @added_ovs_flows = []
-    @added_cookie = []
   end
 
   def create_datapath_map

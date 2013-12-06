@@ -42,13 +42,13 @@ module Vnctl::Cli
       desc "del NETWORK_UUID DHCP_RANGE_UUID(S)",
         "Removes dhcp ranges from a network."
       def del(base_uuid, *rel_uuids)
-        puts rel_uuids.map { |rel_uuid|
-          delete("#{suffix}/#{base_uuid}/dhcp_ranges/#{rel_uuid}")
+        rel_uuids.map { |rel_uuid|
+          puts delete("#{suffix}/#{base_uuid}/dhcp_ranges/#{rel_uuid}")
         }.join("\n")
       end
     end
 
     register(DhcpRanges, :dhcp_ranges, "dhcp_ranges OPTIONS",
-      "subcommand to mange dhcp ranges for a network")
+      "subcommand to manage dhcp ranges for a network")
   end
 end

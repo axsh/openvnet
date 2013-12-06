@@ -140,7 +140,7 @@ module Vnet::Openflow
       # load_addresses, we load the network here.
 
       fill = [:mac_leases => [:cookie_id, :ip_leases => [:cookie_id, :ip_address, :network]],
-              :ip_leases => [:cookie_id, :ip_address, :network]]              
+              :ip_leases => [:cookie_id, :ip_address, :network]]
 
       MW::Interface.batch[filter].commit(:fill => fill)
     end
@@ -191,6 +191,8 @@ module Vnet::Openflow
       return unless item
 
       debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
+
+      item.del_security_groups
 
       item.uninstall
 

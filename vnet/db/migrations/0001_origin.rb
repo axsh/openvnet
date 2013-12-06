@@ -72,6 +72,7 @@ Sequel.migration do
       primary_key :id
       Integer :interface_id, :index => true, :null => false
       Integer :security_group_id, :index => true, :null => false
+      DateTime :deleted_at
     end
 
     create_table(:ip_addresses) do
@@ -174,6 +175,7 @@ Sequel.migration do
       String :display_name, :null => false
       String :rules, :null => false, :default => ""
       String :description
+      DateTime :deleted_at
     end
 
     create_table(:tunnels) do

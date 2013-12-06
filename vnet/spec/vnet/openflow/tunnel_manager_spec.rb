@@ -6,6 +6,45 @@ include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::TunnelManager do
 
+  describe "create_all_tunnels" do
+    before(:each) do
+      (1..3).each { |i| Fabricate("datapath_#{i}") }
+    end
+
+    let(:datapath) {
+      MockDatapath.new(double, ("a" * 16).to_i(16)).tap { |dp|
+        dp.create_mock_datapath_map
+      }
+    }
+
+    subject {
+      Vnet::Openflow::TunnelManager.new(datapath.dp_info).tap { |mgr|
+        mgr.set_datapath_info(datapath.datapath_info)
+      }
+    }
+
+    it "should create the entries in the tunnel table" do
+      subject.create_all_tunnels
+
+      conf = Vnet::Configurations::Vna.conf
+      db_tunnels = Vnet::Models::Datapath.find({:node_id => conf.node.id}).tunnels
+      expect(db_tunnels.size).to eq 1
+      expect(db_tunnels.first.dst_datapath.node_id).to eq "vna3"
+      expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq 2
+
+      tunnel_infos = subject.select
+
+      expect(tunnel_infos.size).to eq 1
+      expect(tunnel_infos.first.uuid).to eq db_tunnels.first.canonical_uuid
+      expect(tunnel_infos.first.datapath_networks_size).to eq 0
+
+      expect(datapath.dp_info.added_tunnels.size).to eq 1
+      expect(datapath.dp_info.added_tunnels.first[:tunnel_name]).to eq "t-3"
+      expect(datapath.dp_info.added_tunnels.first[:remote_ip]).to eq "192.168.2.2"
+    end
+
+  end
+
   describe "update_virtual_network" do
     before do
       Fabricate(:datapath_1, :dc_segment_id => 1)
@@ -44,8 +83,7 @@ describe Vnet::Openflow::TunnelManager do
       flows = datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq 3
-
+      expect(flows.size).to eq 4
     end
 
     it "should add flood flow network 1" do

@@ -6,11 +6,12 @@ describe Vnet::Openflow::Switch do
   describe "switch_ready" do
     it "sends messages" do
       datapath = MockDatapath.new(double, 1)
+      Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
       switch = Vnet::Openflow::Switch.new(datapath)
       switch.switch_ready
 
       expect(datapath.sent_messages.size).to eq 2
-      expect(datapath.added_flows.size).to eq 0
+      expect(datapath.added_flows.size).to eq DATAPATH_IDLE_FLOWCOUNT
       expect(datapath.added_ovs_flows.size).to eq 0
     end
   end
@@ -18,8 +19,7 @@ describe Vnet::Openflow::Switch do
   describe "handle_port_desc" do
     context "tunnel" do
       it "should create a port object whose datapath_id is 1" do
-        ofc = double(:ofc)
-        dp = MockDatapath.new(ofc, 1)
+        dp = MockDatapath.new(double, 1)
 
         tunnel = double(:tunnel)
 
