@@ -27,5 +27,5 @@ end
 require_relative("node_api/proxies")
 
 Vnet::NodeApi.raise_on_error = true
-Vnet::NodeApi.logger = Logger.new(STDERR).tap { |l| l.level = Logger::INFO }
+Vnet::NodeApi.logger = ::Logger.new(STDERR).tap { |l| l.level = ::Logger::INFO }
 Vnet::NodeApi.set_proxy(:direct)
