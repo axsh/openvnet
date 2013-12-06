@@ -13,6 +13,8 @@ conf = Vnet::Configurations::Vnmgr.conf
 #Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
 Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "vnmgr.log"))
 
+Vnet::NodeApi.logger = Celluloid.logger
+
 Vnet::Initializers::DB.run(conf.db_uri)
 
 DCell.start :id => conf.node.id, :addr => conf.node.addr_string,

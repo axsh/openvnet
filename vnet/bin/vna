@@ -25,6 +25,7 @@ switch_manager_new.start
 
 Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 Vnet::NodeApi.raise_on_error = false # dont raise any errors
+Vnet::NodeApi.logger = Celluloid.logger
 
 case conf.node_api_proxy
 when :rpc
