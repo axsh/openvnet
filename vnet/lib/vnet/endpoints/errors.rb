@@ -70,10 +70,11 @@ module Vnet::Endpoints
   end
 
   define_error(:UnknownUUIDResource, 404, '100')
-  define_error(:InvalidUUID,400,'101')
-  define_error(:DuplicateUUID,400,'102')
+  define_error(:InvalidUUID, 400, '101')
+  define_error(:DuplicateUUID, 400, '102')
 
-  define_error(:ArgumentError,400,'103')
-  define_error(:MissingArgument,400,'104')
+  define_error(:ArgumentError, 400, '103')
+  define_error(:MissingArgument, 400, '104')
+  define_error(:RelationAlreadyExists, 400, '105')
 
 end

@@ -19,6 +19,10 @@ Coveralls.wear!
 
 DCell.setup
 
+# When a datapath is initialized, it'll have flow.
+# The one that accepts ARP in the INTERFACE_INGRESS_FILTER table
+DATAPATH_IDLE_FLOWCOUNT = 1
+
 RSpec.configure do |config|
   config.include Rack::Test::Methods
   config.filter_run :focus => true

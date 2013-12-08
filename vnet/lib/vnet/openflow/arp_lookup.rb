@@ -113,7 +113,7 @@ module Vnet::Openflow
                                                   :goto_table => TABLE_NETWORK_DST_CLASSIFIER
                                                 }))
 
-        @dp_info.add_flow(flow)        
+        @dp_info.add_flow(flow)
 
         arp_lookup_send_packets(@arp_lookup[:requests].delete(message.arp_spa))
       end
@@ -174,7 +174,7 @@ module Vnet::Openflow
 
       debug log_format('arp_lookup: process timeout, looking up in database',
                        "ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]}")
-      
+
       filter_args = {
         :ip_addresses__network_id => params[:interface_network_id],
         :ip_addresses__ipv4_address => params[:request_ipv4].to_i
@@ -192,7 +192,7 @@ module Vnet::Openflow
       end
 
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
-      
+
       #
       # Ergh...
       #
@@ -214,7 +214,7 @@ module Vnet::Openflow
                                                 :goto_table => TABLE_OUTPUT_DATAPATH
                                               }))
 
-      @dp_info.add_flow(flow)        
+      @dp_info.add_flow(flow)
 
       arp_lookup_send_packets(@arp_lookup[:requests].delete(params[:request_ipv4]))
     end

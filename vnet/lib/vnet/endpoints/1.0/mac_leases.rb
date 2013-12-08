@@ -29,7 +29,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
 
   put '/:uuid' do
     update_by_uuid(:MacLease, put_post_shared_params, fill_options) { |params|
-      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id")
+      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
       params['mac_address'] = parse_mac(params['mac_address']) if params['mac_address']
     }
   end
