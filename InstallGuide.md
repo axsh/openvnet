@@ -198,7 +198,7 @@ Config files(vnmgr.conf, vna.conf and webapi.conf) in /etc/wakame-vnet directory
 ### Other package installation
 
     # yum install qemu-kvm
-    # yum install tcpdmup
+    # yum install tcpdump
 
 
 Start the process relevant to OpenVNet
