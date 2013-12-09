@@ -201,11 +201,11 @@ module Vnet::Openflow
 
     def initialize_datapath_info(datapath_map)
       @datapath_info = DatapathInfo.new(datapath_map)
-      each_managers { |manager| manager.set_datapath_info(@datapath_info) }
+      @dp_info.managers.each { |manager| manager.set_datapath_info(@datapath_info) }
     end
 
     def link_with_managers
-      each_managers do |manager|
+      @dp_info.managers.each do |manager|
         begin
           link(manager)
         rescue => e
@@ -215,23 +215,6 @@ module Vnet::Openflow
         end
       end
     end
-
-    def each_managers(&block)
-      %w(
-        datapath
-        dc_segment
-        interface
-        network
-        route
-        service
-        tunnel
-        translation
-      ).each do |name|
-        manager = @dp_info.__send__("#{name}_manager")
-        yield(manager)
-      end
-    end
-
   end
 
 end

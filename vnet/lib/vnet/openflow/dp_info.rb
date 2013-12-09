@@ -9,24 +9,31 @@ module Vnet::Openflow
   # Since this isn't an actor we avoid the need to go through
   # Datapath's thread for every time we use a manager.
   class DpInfo
+
+    MANAGER_NAMES = %w(
+      connection
+      datapath
+      dc_segment
+      interface
+      network
+      port
+      route
+      security_group
+      service
+      tunnel
+      translation
+    ).freeze
+
+    MANAGER_NAMES.each do |name|
+      attr_reader "#{name}_manager"
+    end
+
     attr_reader :controller
     attr_reader :datapath
 
     attr_reader :dpid
     attr_reader :dpid_s
     attr_reader :ovs_ofctl
-
-    attr_reader :connection_manager
-    attr_reader :datapath_manager
-    attr_reader :dc_segment_manager
-    attr_reader :interface_manager
-    attr_reader :network_manager
-    attr_reader :port_manager
-    attr_reader :route_manager
-    attr_reader :security_group_manager
-    attr_reader :service_manager
-    attr_reader :tunnel_manager
-    attr_reader :translation_manager
 
     def initialize(params)
       @dpid = params[:dpid]
@@ -128,6 +135,10 @@ module Vnet::Openflow
       "<##{self.class.name} dpid:#{@dpid}>"
     end
 
+    def managers
+      MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
+    end
+
     #
     # Internal methods:
     #
@@ -135,17 +146,9 @@ module Vnet::Openflow
     private
 
     def initialize_managers
-      @connection_manager = ConnectionManager.new(self)
-      @datapath_manager = DatapathManager.new(self)
-      @dc_segment_manager = DcSegmentManager.new(self)
-      @interface_manager = InterfaceManager.new(self)
-      @network_manager = NetworkManager.new(self)
-      @port_manager = PortManager.new(self)
-      @route_manager = RouteManager.new(self)
-      @security_group_manager = SecurityGroupManager.new(self)
-      @service_manager = ServiceManager.new(self)
-      @tunnel_manager = TunnelManager.new(self)
-      @translation_manager = TranslationManager.new(self)
+      MANAGER_NAMES.each do |name|
+        instance_variable_set("@#{name}_manager", Vnet::Openflow.const_get("#{name.to_s.camelize}Manager").new(self))
+      end
     end
 
   end
