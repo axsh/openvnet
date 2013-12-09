@@ -1,7 +1,7 @@
 # OpenVNet #
----------------------------------------------------------------------
+
 # Preliminary Operations and Installation #
----------------------------------------------------------------------
+
 
 Installation Requirements
 -------------------------
@@ -139,15 +139,14 @@ Start the OpenVNet services
 
 OpenVNet writes its logs in the /var/log/wakame-vnet directory. If there's a problem starting any of the services, you can find its log files there.
 
-</br>
+　　　　　
 
 ---------------------------------------------------------------------
 
 # Let's try 1Box OpenVNet !!#
 
----------------------------------------------------------------------
 
-Let's install OpenVNet in one node!!. </br>
+Let's install OpenVNet in one node!!.   
 Virtual network environment can be experienced easily. 
 
 In the node which installs OpenVNet, Please install
@@ -161,7 +160,7 @@ Installation and Setup of OpenVNet
 
 ### Setup of network intafaces
 
-eth0 is changed into a setup for openvswitch. </br>
+eth0 is changed into a setup for openvswitch.   
 In addition, please enable it to access the Internet with the interface of eth1 or others. 
 
     # vi /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -181,7 +180,7 @@ In addition, please enable it to access the Internet with the interface of eth1 
     BOOTPROTO=static
     IPADDR=172.16.20.41
     NETMASK=255.255.255.0
-    HOSTPLUG=no
+    HOTPLUG=no
     OVS_EXTRA="
      set bridge     ${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
      set bridge     ${DEVICE} other_config:disable-in-band=true --
@@ -189,15 +188,17 @@ In addition, please enable it to access the Internet with the interface of eth1 
      set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
      set-fail-mode  ${DEVICE} standalone --
      set-controller ${DEVICE} tcp:127.0.0.1:6633
+    "
 
 ### OpenVNet package installation
 
-Please install OpenVNet according to "Preliminary Operations and Installation." </br>
+Please install OpenVNet according to "Pre-setup" and the "OpenVNet installation" section of "Preliminary Operations and Installation".  
 Config files(vnmgr.conf, vna.conf and webapi.conf) in /etc/wakame-vnet directory, do not need to edit. 
 
 ### Other package installation
 
     # yum install qemu-kvm
+    # yum install tcpdmup
 
 
 Start the process relevant to OpenVNet
@@ -238,10 +239,10 @@ Start OpenVNet
 Download test environment
 --------------------------
 
-Test environment aruchive is downloaded and it develops under "/root". </br>
+Test environment aruchive is downloaded and it develops under "/root".  
 The size of this archive is about 1.3 GB. 
 
-     # curl -o /root/vnet-test.tgz -R http://dlc.openvnet.axsh.jp/tests/vnet-test-kvm.tgz
+     # curl -o /root/vnet-test-kvm.tgz -R http://dlc.openvnet.axsh.jp/tests/vnet-test-kvm.tgz
      # tar xvfz ./vnet-test-kvm.tgz
 
 Create Database
@@ -251,7 +252,7 @@ Create database and register the SampleData into a database.
 
     # vi ~/.bash_profile
     PATH=$PATH:$HOME/bin -> PATH=$PATH:$HOME/bin:/opt/axsh/wakame-vnet/ruby/bin
-    #
+    # source ~/.bash_profile
     # cd /root/vnet-test-kvm
     # ./db.sh
 
@@ -310,7 +311,7 @@ Check Operation of Virtual Network.
 
 ### Start VM(s)
 
-Four VM(s) are started using registered interface to DB. There are KVM processes.</br>
+Four VM(s) are started using registered interface to DB. There are KVM processes.  
 Started VM is arranged as follows in two virtual networks. 
 
 + vm1, vm3 -> vnet1 
@@ -318,7 +319,7 @@ Started VM is arranged as follows in two virtual networks.
 
 The command "run-vm-all" starts four VM(s) at once. 
 
-    # cd /root/project/vnet-test-kvm/vm
+    # cd /root/vnet-test-kvm/vm
     # ./run-vm-all
     *** vm1 ***
     node-id: 1
@@ -350,7 +351,7 @@ PORT-NO is
 + vm3 : 5003
 + vm4 : 5004
 
-IP address is assigned as follows. </br>
+IP address is assigned as follows.   
 vm1 and vm3, similarly  vm2 and vm4 are assigned the same IP address.  
 
 + vm1 : 10.102.0.10
@@ -386,29 +387,29 @@ vm1 and vm3, similarly  vm2 and vm4 are assigned the same IP address.
 
 ### Check Dissociating in Virtual Network
 
-Interface of vm3 (10.102.0.11) and vm4 (10.102.0.11) is supervised by tcpdump. </br>
+Interface of vm3 (10.102.0.11) and vm4 (10.102.0.11) is supervised by tcpdump.  
 The packet from vm1 and vm2 checks having reached interface of vm of the respectively same virtual network. 
 
 **Perform tcpdump to interface of vm3 and vm4 on the host of vm.** 
 
 **vm3**
 
-    [root@vm3 ~]# tcpdump–i if-bvixz40n
+    [root@vm3 ~]# tcpdump -i if-bvixz40n
     tcpdump: WARNING: if-bvixz40n: no IPv4 address assigned
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on if-bvixz40n, link-type EN10MB (Ethernet), capture size 65535 bytes
 
 **vm4**
 
-    [root@vm4 ~]# tcpdump–i if-7st2alal
+    [root@vm4 ~]# tcpdump -i if-7st2alal
     tcpdump: WARNING: if-7st2alal: no IPv4 address assigned
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on if-7st2alal, link-type EN10MB (Ethernet), capture size 65535 bytes
 
-**"ping" from vm1 to "10.102.0.11".**</br>
+**"ping" from vm1 to "10.102.0.11".**  
 It checks that a packet reaches vm3 and does not reach vm4.
  
-**"ping" from vm2 to "10.102.0.11".**</br> 
+**"ping" from vm2 to "10.102.0.11".**  
 It checks that a packet reaches vm4 and does not reach vm3. 
 
 
