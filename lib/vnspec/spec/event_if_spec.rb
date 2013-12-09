@@ -60,10 +60,6 @@ describe "event_if" do
     end
   end
 
-  before(:each) do
-    vms.peach { |vm| vm.clear_arp_cache }
-  end
-
   describe "ip_lease" do
     describe "release" do
       before(:all) do
@@ -137,7 +133,11 @@ describe "event_if" do
     end
   end
 
-  describe "datapath" do
+  describe "datapath", focus:true do
+    before(:each) do
+      vms.peach { |vm| vm.clear_arp_cache }
+    end
+
     describe "remove" do
       before(:all) do
         datapath = Vnspec::Models::Datapath.find("dp-1")
