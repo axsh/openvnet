@@ -44,9 +44,6 @@ module Vnet::Openflow
     attr_reader :dpid_s
     attr_reader :ovs_ofctl
 
-    # Do not update any values of the datapath db for outside of the
-    # Datapath actor.
-    attr_reader :datapath_map
     attr_reader :datapath_info
 
     attr_reader :switch
