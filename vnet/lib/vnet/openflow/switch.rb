@@ -175,8 +175,6 @@ module Vnet::Openflow
                              :eth_type => 0x0806,
                            }, nil, flow_options)
 
-      # Add any test flows here.
-
       @datapath.add_flows(flows)
     end
 
