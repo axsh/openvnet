@@ -6,6 +6,7 @@ gem "net-ssh-multi"
 gem "net-scp"
 gem "faraday"
 gem "faraday_middleware"
+gem "ipaddress"
 
 gem "peach"
 

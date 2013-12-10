@@ -127,6 +127,7 @@ security_groups:
     rules: |
       tcp:22:10.101.0.11
       icmp:-1:10.101.0.11
+      udp:344:10.101.0.11
 
 interface_security_groups:
   - interface_uuid: if-v1
