@@ -12,7 +12,7 @@ module Vnet
       TABLE_CLASSIFIER = 0
 
       # Handle matching of incoming packets on host ports.
-      TABLE_HOST_PORTS = 2
+      TABLE_IN_PORT_HOST_INTERFACE = 2
 
       # Straight-forward routing of packets to the port tied to the
       # destination mac address, which includes all non-virtual
@@ -34,9 +34,12 @@ module Vnet
       TABLE_EDGE_SRC = 8
       TABLE_EDGE_DST = 9
 
+      TABLE_INTERFACE_NW_TO_CLASSIFIER   = 10
+      TABLE_INTERFACE_NW_POST_VALIDATION = 11
+
       # Handle ingress packets to host interfaces from untrusted
       # sources.
-      TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
+      TABLE_INTERFACE_INGRESS_CLASSIFIER = 12
 
       # Handle egress packets from trusted interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15

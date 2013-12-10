@@ -109,26 +109,44 @@ module Vnet::Openflow::Interfaces
 
       if ipv4_info[:network_type] == :virtual
         flows << flow_create(:default,
-                             table: TABLE_HOST_PORTS,
+                             table: TABLE_IN_PORT_HOST_INTERFACE,
                              priority: 30,
+
                              match: {
                                :eth_dst => mac_info[:mac_address],
                              },
-                             write_network: ipv4_info[:network_id],
+
+                             write_value_pair_flag: true,
+                             write_value_pair_first: ipv4_info[:network_id],
+                             # write_value_pair_second: <- host interface id, already set.
+
                              cookie: cookie,
-                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+                             goto_table: TABLE_INTERFACE_NW_TO_CLASSIFIER)
+        flows << flow_create(:default,
+                             table: TABLE_INTERFACE_NW_POST_VALIDATION,
+                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
+                             priority: 30,
+
+                             match: {
+                               :eth_dst => mac_info[:mac_address],
+                             },
+
+                             write_network: ipv4_info[:network_id],
+
+                             cookie: cookie)
       end
 
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 60,
+
                            match: {
                              :eth_dst => mac_info[:mac_address],
                            },
                            match_network: ipv4_info[:network_id],
                            write_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
+                           cookie: cookie)
 
     end
 

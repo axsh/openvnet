@@ -41,16 +41,19 @@ module Vnet::Openflow
 
       [TABLE_EDGE_SRC,
        TABLE_EDGE_DST,
-       TABLE_HOST_PORTS,
        TABLE_TUNNEL_PORTS,
        TABLE_TUNNEL_NETWORK_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
+
+       TABLE_INTERFACE_NW_TO_CLASSIFIER,
+       TABLE_INTERFACE_NW_POST_VALIDATION,
        TABLE_INTERFACE_INGRESS_CLASSIFIER,
        TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
        TABLE_INTERFACE_EGRESS_CLASSIFIER,
        TABLE_INTERFACE_EGRESS_ROUTES,
        TABLE_INTERFACE_EGRESS_MAC,
+
        TABLE_NETWORK_SRC_CLASSIFIER,
        TABLE_NETWORK_DST_CLASSIFIER,
        TABLE_VIRTUAL_SRC,
@@ -96,6 +99,11 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 1, {:tunnel_id => 0}, nil, flow_options)
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
+
+      flows << flow_create(:default,
+                           table: TABLE_IN_PORT_HOST_INTERFACE,
+                           goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                           priority: 0)
 
       flows << Flow.create(TABLE_INTERFACE_EGRESS_FILTER, 0, {}, nil,
                            flow_options.merge(goto_table: TABLE_NETWORK_SRC_CLASSIFIER))

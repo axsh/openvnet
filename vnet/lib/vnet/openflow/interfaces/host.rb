@@ -101,6 +101,31 @@ module Vnet::Openflow::Interfaces
                              write_network: ipv4_info[:network_id],
                              cookie: cookie,
                              goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+
+        flows << flow_create(:default,
+                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             priority: 20,
+
+                             match: {
+                               :eth_dst => mac_info[:mac_address],
+                             },
+                             match_interface: @id,
+                             write_network: ipv4_info[:network_id],
+
+                             cookie: cookie,
+                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+        flows << flow_create(:default,
+                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             priority: 20,
+
+                             match: {
+                               :eth_dst => MAC_BROADCAST
+                             },
+                             match_interface: @id,
+                             write_network: ipv4_info[:network_id],
+
+                             cookie: cookie,
+                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
       end
 
       flows << flow_create(:default,
