@@ -125,7 +125,7 @@ module Vnet::Openflow::Datapaths
 
       @dp_info.add_flows(flows)
 
-      debug log_format("adding to #{@uuid}/#{id} active datapath route link #{dp_rl_map.datapath_id}/#{dp_rl_map.route_link_id}", dp_rl_map.inspect)
+      debug log_format("adding to #{@uuid}/#{id} active datapath route link #{dp_rl_map.datapath_id}/#{dp_rl_map.route_link_id}")
     end
 
     #
