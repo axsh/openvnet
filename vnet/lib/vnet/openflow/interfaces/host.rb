@@ -96,11 +96,10 @@ module Vnet::Openflow::Interfaces
         # implement.
         flows << flow_create(:default,
                              table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_INGRESS_MAC,
                              priority: 10,
                              match_interface: @id,
-                             write_network: ipv4_info[:network_id],
-                             cookie: cookie,
-                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+                             cookie: cookie)
 
         flows << flow_create(:default,
                              table: TABLE_INTERFACE_INGRESS_CLASSIFIER,

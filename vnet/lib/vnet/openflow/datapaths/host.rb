@@ -12,17 +12,17 @@ module Vnet::Openflow::Datapaths
 
     def flows_for_dp_network(flows, dp_nw)
       flows << flow_create(:default,
-                           table: TABLE_INTERFACE_NW_TO_CLASSIFIER,
-                           goto_table: TABLE_INTERFACE_NW_POST_VALIDATION,
+                           table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
                            priority: 1,
 
                            match_value_pair_flag: true,
                            match_value_pair_first: dp_nw[:network_id],
                            match_value_pair_second: dp_nw[:interface_id],
 
-                           clear: true,
+                           clear_all: true,
                            write_remote: true,
-                           write_interface: dp_nw[:interface_id],
+                           write_network: dp_nw[:network_id],
 
                            cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
       flows << flow_create(:default,

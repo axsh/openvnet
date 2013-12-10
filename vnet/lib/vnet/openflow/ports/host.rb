@@ -71,7 +71,7 @@ module Vnet::Openflow::Ports
       if @interface_id && @dp_info.datapath.datapath_map.node_id != 'edge'
         flows << flow_create(:default,
                              table: TABLE_CLASSIFIER,
-                             goto_table: TABLE_IN_PORT_HOST_INTERFACE,
+                             goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                              priority: 2,
 
                              match: {
