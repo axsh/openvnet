@@ -42,7 +42,7 @@ describe "security groups" do
         vm1.udp_close(344)
       end
 
-      it "accepts incoming udp packets on port 344 from '10.101.0.11/32h'" do
+      it "accepts incoming udp packets on port 344 from '10.101.0.11/32'" do
         expect(vm3).to be_able_to_send_udp(vm1, 344)
       end
 
@@ -61,6 +61,39 @@ describe "security groups" do
       it "accepts incoming icmp from everywhere" do
         expect(vm4).to be_able_to_ping(vm2)
         expect(vm6).to be_able_to_ping(vm2)
+      end
+
+      it "Blocks other traffic" do
+        vm2.tcp_listen(456)
+        vm2.udp_listen(456)
+
+        expect(vm4).not_to be_able_to_send_tcp(vm2, 456)
+        expect(vm5).not_to be_able_to_send_udp(vm2, 456)
+
+        vm2.tcp_close(456)
+        vm2.udp_close(456)
+      end
+    end
+
+    describe "udp:678:10.101.0.0/24" do
+      before(:each) { vm5.udp_listen(678) }
+      after(:each) { vm5.udp_close(678) }
+
+      it "accepts incoming udp packets on port 678 from '10.101.0.0/24'" do
+        expect(vm1).to be_able_to_send_udp(vm5, 678)
+        expect(vm3).to be_able_to_send_udp(vm5, 678)
+      end
+
+      it "blocks other traffic" do
+        vm5.udp_listen(466)
+        vm5.tcp_listen(466)
+
+        expect(vm1).not_to be_able_to_send_udp(vm5, 466)
+        expect(vm3).not_to be_able_to_send_tcp(vm5, 466)
+        expect(vm3).not_to be_able_to_ping(vm5)
+
+        vm5.udp_close(466)
+        vm5.tcp_close(466)
       end
     end
   end

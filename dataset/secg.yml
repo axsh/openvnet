@@ -123,14 +123,20 @@ security_groups:
     rules: "icmp:-1:0.0.0.0/0"
 
   - uuid: sg-sshvm3
-    display_name: "accept icmp from vnet1"
+    display_name: "accept a bunch of traffic from vm3"
     rules: |
       tcp:22:10.101.0.11
       icmp:-1:10.101.0.11
       udp:344:10.101.0.11
+
+  - uuid: sg-udpvnet1
+    display_name: "accept udp from vnet1"
+    rules: "udp:678:10.101.0.0/24"
 
 interface_security_groups:
   - interface_uuid: if-v1
     security_group_uuid: sg-sshvm3
   - interface_uuid: if-v2
     security_group_uuid: sg-pingall
+  - interface_uuid: if-v5
+    security_group_uuid: sg-udpvnet1
