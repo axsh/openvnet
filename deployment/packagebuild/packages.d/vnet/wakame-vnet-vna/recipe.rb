@@ -23,6 +23,7 @@ class WakameVnetVna < FPM::Cookery::Recipe
 
   def install
     opt('axsh/wakame-vnet/vnet/bin').install Dir["vnet/bin/vna"]
+    opt('axsh/wakame-vnet/vnet/bin').install Dir["vnet/bin/vnflows-monitor"]
     etc('/init').install Dir['deployment/conf_files/etc/init/vnet-vna.conf']
     etc('/default').install Dir['deployment/conf_files/etc/default/vnet-vna']
     etc('/wakame-vnet').install Dir['deployment/conf_files/etc/wakame-vnet/vna.conf']
