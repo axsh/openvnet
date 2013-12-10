@@ -56,6 +56,13 @@ describe "security groups" do
         expect(vm5).not_to be_able_to_send_udp(vm1, 344)
       end
     end
+
+    describe "icmp:-1:0.0.0.0/0" do
+      it "accepts incoming icmp from everywhere" do
+        expect(vm4).to be_able_to_ping(vm2)
+        expect(vm6).to be_able_to_ping(vm2)
+      end
+    end
   end
 
   describe "connection tracking" do

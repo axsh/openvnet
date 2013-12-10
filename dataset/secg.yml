@@ -118,9 +118,9 @@ datapath_networks:
 
 security_groups:
 
-  - uuid: sg-sshall
+  - uuid: sg-pingall
     display_name: "accept all icmp"
-    rules: "icmp:-1:0.0.0.0"
+    rules: "icmp:-1:0.0.0.0/0"
 
   - uuid: sg-sshvm3
     display_name: "accept icmp from vnet1"
@@ -132,6 +132,5 @@ security_groups:
 interface_security_groups:
   - interface_uuid: if-v1
     security_group_uuid: sg-sshvm3
-
-  # - interface_uuid: if-v3
-  #   security_group_uuid: sg-ssh1
+  - interface_uuid: if-v2
+    security_group_uuid: sg-pingall
