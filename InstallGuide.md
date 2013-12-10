@@ -19,11 +19,11 @@ Installation Requirements
 Pre-setup
 ---------
 
-Download openvnet.repo file and put it to your /etc/yum.repos.d/ repository.
+Download the openvnet.repo file and put it to your /etc/yum.repos.d/ directory.
 
     # curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.github.com/axsh/openvnet/master/openvnet.repo
 
-Download openvnet-third-party.repo file and put it to your /etc/yum.repos.d/ repository.
+Download the openvnet-third-party.repo file and put it in your /etc/yum.repos.d/ directory.
 
     # curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.github.com/axsh/openvnet/master/openvnet-third-party.repo
 
@@ -44,7 +44,7 @@ Initial Configuration
 
 ### Setup vnmgr
 
-Modify the following section in /etc/wakame-vnet/vnmgr.conf in a vnmgr node.
+Modify the following section in /etc/wakame-vnet/vnmgr.conf on the vnmgr node.
 
     node {
       id "vnmgr"
@@ -55,13 +55,13 @@ Modify the following section in /etc/wakame-vnet/vnmgr.conf in a vnmgr node.
       }
     }
 
-- **host** : The IP address or host name of ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the webapi process is run with the same node as vna or webapi, specify a different value from vna and webapi.
+- **host** : The IP address or host name of the ZeroMQ node.
+- **port** : The port number for connecting with ZeroMQ. If the webapi process is run on the same node as vna or webapi, specify a different value from vna and webapi.
 
 
 ### Setup vna
 
-Modify the following section in /etc/wakame-vnet/vna.conf in a vna node.
+Modify the following section in /etc/wakame-vnet/vna.conf on the node.
 
     node {
       id "vna"
@@ -72,13 +72,13 @@ Modify the following section in /etc/wakame-vnet/vna.conf in a vna node.
       }
     }
 
-- **host** : The IP address or host name of ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the webapi process is run with the same node as vnmgr or webapi, specify a different value from vnmgr or webapi.
+- **host** : The IP address or host name of the ZeroMQ node.
+- **port** : The port number for connecting with ZeroMQ. If the webapi process is run on the same node as vnmgr or webapi, specify a different value from vnmgr and webapi.
 
 
 ### Setup webapi
 
-Modify the following section in /etc/wakame-vnet/webapi.conf in a webapi node.
+Modify the following section in /etc/wakame-vnet/webapi.conf on the webapi node.
 
     node {
       id "webapi"
@@ -88,14 +88,14 @@ Modify the following section in /etc/wakame-vnet/webapi.conf in a webapi node.
         port 9101
       }
 
-- **host** : The IP address or host name of ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the webapi process is run with the same node as vnmgr or vna, specify a different value from vnmgr and vna.
+- **host** : The IP address or host name of the ZeroMQ node.
+- **port** : The port number for connecting with ZeroMQ. If the webapi process is run on the same node as vnmgr or vna, specify a different value from vnmgr and vna.
 
 
 Configuring Database
 --------------------
 
-Modify the following section in /etc/wakame-vnet/common.conf in a all node.
+Modify the following section in /etc/wakame-vnet/common.conf on all nodes.
 
     db {
       adapter "mysql2"
@@ -106,7 +106,7 @@ Modify the following section in /etc/wakame-vnet/common.conf in a all node.
       password ""
     }
 
-- **host** : The IP address which mysqld uses.
+- **host** : The IP address of the node running mysqld.
 - **database** : The database name.
 - **port** : The port number for connecting with mysqld. If necessary.
 - **user** : The user name for connecting.
@@ -115,17 +115,17 @@ Modify the following section in /etc/wakame-vnet/common.conf in a all node.
 Creating Database
 -----------------
 
-Before creating the database, you need to launch mysql-server.
+Before creating the database, you need to launch the mysql server.
 
     # service mysqld start
 
-To automatically launch mysql-server, execute the following command.
+To automatically launch the mysql server, execute the following command.
 
     # chkconfig mysqld on
 
 Create Database
 
-    # mysqladmin -uroot create vnet 
+    # mysqladmin -uroot create vnet
     # cd /opt/axsh/wakame-vnet/vnet
     # bundle exec rake db:init
 
@@ -139,29 +139,26 @@ Start the OpenVNet services
 
 OpenVNet writes its logs in the /var/log/wakame-vnet directory. If there's a problem starting any of the services, you can find its log files there.
 
-　　　　　
+
 
 ---------------------------------------------------------------------
 
-# Let's try 1Box OpenVNet !!#
+# Let's try 1Box OpenVNet#
 
+This section explains how to install OpenVNet on one node. This is a great way to try it out.
 
-Let's install OpenVNet in one node!!.   
-Virtual network environment can be experienced easily. 
+Install the following operation system and kernel.
 
-In the node which installs OpenVNet, Please install
-
-+ RHEL 6.4
++ RHEL (or Centos) 6.4
 + Kernel 2.6.32-358.6.2.el6.x86_64
 
 
 Installation and Setup of OpenVNet
 -----------------------------------
 
-### Setup of network intafaces
+### Network interfaces setup
 
-eth0 is changed into a setup for openvswitch.   
-In addition, please enable it to access the Internet with the interface of eth1 or others. 
+We're going to enslave eth0 to openvswitch so OpenVNet can use it. You will no longer be able to use eth0 to ssh into the node or access the Internet. Prepare another interface for that if you need to.
 
     # vi /etc/sysconfig/network-scripts/ifcfg-eth0
     DEVICE=eth0
@@ -192,8 +189,9 @@ In addition, please enable it to access the Internet with the interface of eth1 
 
 ### OpenVNet package installation
 
-Please install OpenVNet according to "Pre-setup" and the "OpenVNet installation" section of "Preliminary Operations and Installation".  
-Config files(vnmgr.conf, vna.conf and webapi.conf) in /etc/wakame-vnet directory, do not need to edit. 
+Please install OpenVNet according to the "Pre-setup" and "OpenVNet installation" sections of "Preliminary Operations and Installation".
+
+The config files (vnmgr.conf, vna.conf and webapi.conf) in the /etc/wakame-vnet directory do not need to be edited. They're set up for a single node installation by default.
 
 ### Other package installation
 
@@ -201,8 +199,8 @@ Config files(vnmgr.conf, vna.conf and webapi.conf) in /etc/wakame-vnet directory
     # yum install tcpdump
 
 
-Start the process relevant to OpenVNet
----------------------------------------
+Start the required processes for OpenVNet
+-----------------------------------------
 
 ### redis
 
@@ -230,17 +228,16 @@ Start OpenVNet
     # initctl start vnet-vnmgr
     # initctl start vnet-webapi
     # initctl start vnet-vna
-    # initctl list | grep vnet   <- It checks that three processes have started. 
-    vnet-vna start/running, process 2505 
+    # initctl list | grep vnet # <- This line confirms that all three process have started successfully.
+    vnet-vna start/running, process 2505
     vnet-vnmgr start/running, process 2286
-    vnet-webapi start/running, process 2296 
+    vnet-webapi start/running, process 2296
 
 
 Download test environment
 --------------------------
 
-Test environment aruchive is downloaded and it develops under "/root".  
-The size of this archive is about 1.3 GB. 
+Download the test environment archive and unpack it in the /root directory. The size of this archive is about 1.3 GB.
 
      # curl -o /root/vnet-test-kvm.tgz -R http://dlc.openvnet.axsh.jp/tests/vnet-test-kvm.tgz
      # tar xvfz ./vnet-test-kvm.tgz
@@ -248,7 +245,7 @@ The size of this archive is about 1.3 GB.
 Create Database
 ----------------
 
-Create database and register the SampleData into a database.
+Create the database and enter the sample data.
 
     # vi ~/.bash_profile
     PATH=$PATH:$HOME/bin -> PATH=$PATH:$HOME/bin:/opt/axsh/wakame-vnet/ruby/bin
@@ -261,10 +258,10 @@ Reboot vna
 -----------
 
     # initctl restart vnet-vna
-    # initctl list | grep vnet
-    vnet-vna start/running, process 2699   <- It checks that the vna process has started. 
+    # initctl list | grep vnet # <- This line confirms that all three process have started successfully.
+    vnet-vna start/running, process 2699
     vnet-vnmgr start/running, process 2286
-    vnet-webapi start/running, process 2296 
+    vnet-webapi start/running, process 2296
 
 
 Check setup for OpenFlow
@@ -292,9 +289,12 @@ Check setup for OpenFlow
 
 ### Initial Flow
 
-For example, the following Flow(s) are set up. 
+Use the following command to check if flows have been applied
 
     # ovs-ofctl dump-flows br0
+
+Below is an example of some flows you should see.
+
     NXST_FLOW reply (xid=0x4):
     cookie=0x900000000000001, duration=297.442s, table=0, n_packets=0, n_bytes=0, idle_age=297, priority=1,tun_id=0 actions=drop
      cookie=0x900000000000001, duration=297.442s, table=0, n_packets=0, n_bytes=0, idle_age=297, priority=2,in_port=CONTROLLER actions=write_metadata:0x2040000000000/0x20c0000000000
@@ -306,18 +306,17 @@ For example, the following Flow(s) are set up.
      cookie=0xc00001100000005, duration=272.126s, table=65, n_packets=0, n_bytes=0, idle_age=272, priority=30,arp,metadata=0x700000000000005/0xff000000ffffffff,arp_op=1 actions=CONTROLLER:65535
 
 
-Check Operation of Virtual Network.
+Check Virtual Network Operation.
 ------------------------------------
 
 ### Start VM(s)
 
-Four VM(s) are started using registered interface to DB. There are KVM processes.  
-Started VM is arranged as follows in two virtual networks. 
+We use kvm to start four virtual machines. Their interfaces were registered in the database earlier. These VMs and their networks are arranged as follows.
 
-+ vm1, vm3 -> vnet1 
++ vm1, vm3 -> vnet1
 + vm2, vm4 -> vnet2
 
-The command "run-vm-all" starts four VM(s) at once. 
+The command "run-vm-all" starts all four virtual machines at once.
 
     # cd /root/vnet-test-kvm/vm
     # ./run-vm-all
@@ -338,26 +337,27 @@ The command "run-vm-all" starts four VM(s) at once.
     interface name: if-7st2alal
     mac address: 52:54:00:e5:f9:fb
 
-### Check the IP address of VM(s)
+### Check the IP address of virtual machines
 
-It logs in to each VM using the telnet command, and checks the IP address assigned to eth0. 
+You can log into the virtual machines using the telnet command.
 
     # telnet localhost PORT-NO
 
-PORT-NO is 
+The port numbers are:
 
 + vm1 : 5001
 + vm2 : 5002
 + vm3 : 5003
 + vm4 : 5004
 
-IP address is assigned as follows.   
-vm1 and vm3, similarly  vm2 and vm4 are assigned the same IP address.  
+The ip addresses are assigned as follows. As you can see, vm1 and vm3, share the same ip address, as do vm2 and vm4.
 
 + vm1 : 10.102.0.10
 + vm2 : 10.102.0.10
 + vm3 : 10.102.0.11
 + vm4 : 10.102.0.11
+
+Log into the virtual machines and make sure their ip addresses are correct.
 
 **ex) vm1**
 
@@ -365,10 +365,10 @@ vm1 and vm3, similarly  vm2 and vm4 are assigned the same IP address.
     Trying 127.0.0.1...
     Connected to localhost.
     Escape character is '^]'.
-    
+
     CentOS release 6.4 (Final)
     Kernel 2.6.32-358.el6.x86_64 on an x86_64
-    
+
     vm1 login: root
     Password:
     Last login: Thu Nov 28 21:06:57 on ttyS0
@@ -385,12 +385,11 @@ vm1 and vm3, similarly  vm2 and vm4 are assigned the same IP address.
            valid_lft forever preferred_lft forever
 
 
-### Check Dissociating in Virtual Network
+### Check if the virtual networks work correctly
 
-Interface of vm3 (10.102.0.11) and vm4 (10.102.0.11) is supervised by tcpdump.  
-The packet from vm1 and vm2 checks having reached interface of vm of the respectively same virtual network. 
+Use tcpdump to supervise the interfaces of vm3 (10.102.0.11) and vm4 (10.102.0.11). This is going to show us that only the virtual machines that are in the same virtual network will be able to reach each other.
 
-**Perform tcpdump to interface of vm3 and vm4 on the host of vm.** 
+**Run tcpdump on the node where you installed OpenVNet and supervise the interfaces of vm3 and vm4**
 
 **vm3**
 
@@ -406,11 +405,11 @@ The packet from vm1 and vm2 checks having reached interface of vm of the respect
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on if-7st2alal, link-type EN10MB (Ethernet), capture size 65535 bytes
 
-**"ping" from vm1 to "10.102.0.11".**  
-It checks that a packet reaches vm3 and does not reach vm4.
- 
-**"ping" from vm2 to "10.102.0.11".**  
-It checks that a packet reaches vm4 and does not reach vm3. 
+**"ping" from vm1 to "10.102.0.11".**
+You should see that the ping packets reach vm3 and not vm4.
+
+**"ping" from vm2 to "10.102.0.11".**
+This time you should see that the ping packets reach vm4 and not vm3.
 
 
 ---------------------------------------------------------------------
@@ -419,5 +418,5 @@ It checks that a packet reaches vm4 and does not reach vm3.
 
 ---------------------------------------------------------------------
 
-Copyright (c) Axsh Co. Components are included distribution under LGPL 3.0
+Copyright (c) Axsh Co. Components included are distributed under LGPL 3.0
 
