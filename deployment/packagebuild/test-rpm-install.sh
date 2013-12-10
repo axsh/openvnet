@@ -45,7 +45,7 @@ function create_chroot_cache(){
   rpm --root ${chroot_cache_dir} --initdb
   yumdownloader --destdir=/var/tmp centos-release
   cd /var/tmp
-  rpm --root ${chroot_cache_dir} -ivh --nodeps centos-release*rpm
+  rpm --root ${chroot_cache_dir} -ivh --nodeps centos-release-6-4*rpm
   cp /etc/fstab ${chroot_cache_dir}/etc/
   touch ${chroot_cache_dir}/var/lib/random-seed
   yum --installroot=${chroot_cache_dir} -y install rpm-build yum kernel-$(uname -r)
