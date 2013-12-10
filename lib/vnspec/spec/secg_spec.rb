@@ -76,12 +76,13 @@ describe "security groups" do
     end
 
     describe "udp:678:10.101.0.0/24" do
-      before(:each) { vm5.udp_listen(678) }
-      after(:each) { vm5.udp_close(678) }
-
       it "accepts incoming udp packets on port 678 from '10.101.0.0/24'" do
+        vm5.udp_listen(678)
+
         expect(vm1).to be_able_to_send_udp(vm5, 678)
         expect(vm3).to be_able_to_send_udp(vm5, 678)
+
+        vm5.udp_close(678)
       end
 
       it "blocks other traffic" do
