@@ -37,7 +37,9 @@ module Vnet::Openflow::Interfaces
 
       flows_for_ipv4(flows, mac_info, ipv4_info)
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
+      flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)
       flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
+      flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
       flows_for_router_egress_ipv4(flows, mac_info, ipv4_info) if @router_egress == true
 
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
