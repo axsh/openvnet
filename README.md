@@ -5,6 +5,11 @@ Data Center Level Virtual Network Toolkit
 
 - http://openvnet.com
 
+Getting Started
+---------------
+
+- [Installation Guide](https://github.com/axsh/openvnet/blob/master/InstallGuide.md)
+
 License
 -------
 
