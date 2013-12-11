@@ -173,8 +173,12 @@ module Vnspec
     end
 
     def udp_close(port)
-      ssh_on_guest("kill #{@open_udp_ports.delete(port)}")
-      ssh_on_guest("rm -f #{UDP_OUTPUT_DIR}/#{port}")
+      cmds = [
+        "kill #{@open_udp_ports.delete(port)}",
+        "rm -f #{UDP_OUTPUT_DIR}/#{port}"
+      ]
+
+      ssh_on_guest(cmds.join(";"))
     end
 
     def tcp_listen(port)
@@ -187,6 +191,10 @@ module Vnspec
 
     def tcp_close(port)
       ssh_on_guest("kill #{@open_tcp_ports.delete(port)}")
+    end
+
+    def close_all_listening_ports
+      ssh_on_guest("killall nc")
     end
 
     def hostname_for(ip, timeout = 2)
