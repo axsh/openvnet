@@ -74,6 +74,15 @@ module Vnspec
           logger.info
         end
       end
+
+      def install_package(name)
+        run_command_on_vna_nodes("yum install -y #{name}")
+      end
+
+      def run_command_on_vna_nodes(*args)
+        multi_ssh(config[:nodes][:vna], args.join(" "))
+      end
+      alias_method :run_command, :run_command_on_vna_nodes
     end
   end
 end
