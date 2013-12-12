@@ -7,6 +7,8 @@ require 'sequel/plugins/ip_address'
 Sequel.extension(:core_extensions)
 
 module Vnet::Models
+  class DeleteRestrictionError < StandardError; end
+
   # Sequal::Model plugin to inject the Taggable feature to the model
   # class.
   #

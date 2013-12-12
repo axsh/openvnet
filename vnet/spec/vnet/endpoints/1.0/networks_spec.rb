@@ -17,6 +17,18 @@ describe "/networks" do
   include_examples "GET /:uuid"
   include_examples "DELETE /:uuid"
 
+  describe "DELETE /:uuid" do
+    it "returns DependencyExists(400) error" do
+      network = Fabricate(:network)
+      ip_address = Fabricate(:ip_address, network: network)
+
+      delete "/networks/#{network.canonical_uuid}"
+
+      expect(last_response.status).to be 400
+      expect(last_response.body).to match /DeleteRestrictionError/
+    end
+  end
+
   describe "POST /" do
     accepted_params = {
       :uuid => "nw-test",
