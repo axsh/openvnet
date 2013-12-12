@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::SecurityGroups
-  class Group
+module Vnet::Openflow::Filters
+  class SecurityGroup
     include Vnet::Constants::OpenflowFlows
     include Celluloid::Logger
 
-    SGM = Vnet::Openflow::SecurityGroupManager
+    FM = Vnet::Openflow::FilterManager
 
     attr_reader :id, :uuid
 
@@ -18,8 +18,8 @@ module Vnet::Openflow::SecurityGroups
     end
 
     def cookie
-      @id | COOKIE_TYPE_SECURITY_GROUP | SGM::COOKIE_SG_TYPE_RULE |
-        (@interface_cookie_id << SGM::COOKIE_TYPE_VALUE_SHIFT)
+      @id | COOKIE_TYPE_SECURITY_GROUP | FM::COOKIE_SG_TYPE_RULE |
+        (@interface_cookie_id << FM::COOKIE_TYPE_VALUE_SHIFT)
     end
 
     def install(interface)

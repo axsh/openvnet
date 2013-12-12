@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Openflow
-  class SecurityGroupManager < Manager
+  class FilterManager < Manager
     include Vnet::Openflow::FlowHelpers
 
     COOKIE_SG_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
@@ -28,7 +28,7 @@ module Vnet::Openflow
       interface = MW::Interface.batch[interface_id].commit
 
       groups = interface.batch.security_groups.commit.map { |g|
-        Vnet::Openflow::SecurityGroups::Group.new(g, interface_id)
+        Vnet::Openflow::Filters::SecurityGroup.new(g, interface_id)
       }
 
       flows = if groups.empty?
@@ -64,7 +64,7 @@ module Vnet::Openflow
       [
         flow_create(:default,
           table: TABLE_INTERFACE_INGRESS_FILTER,
-          priority: Vnet::Openflow::SecurityGroups::Rule::RULE_PRIORITY,
+          priority: Vnet::Openflow::Filters::Rule::RULE_PRIORITY,
           cookie: accept_all_traffic_cookie(interface_id),
           match_metadata: { interface: interface_id },
           goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)

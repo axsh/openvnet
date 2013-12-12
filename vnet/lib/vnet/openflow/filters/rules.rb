@@ -2,7 +2,7 @@
 
 require "ipaddress"
 
-module Vnet::Openflow::SecurityGroups
+module Vnet::Openflow::Filters
   class Rule
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
