@@ -85,9 +85,9 @@ module Vnet::Openflow
     # Port modification methods:
     #
 
-    def add_tunnel(tunnel_name, remote_ip)
+    def add_tunnel(tunnel_name, remote_ip, params = {})
       # debug log_format('adding tunnel', "#{tunnel_name}")
-      @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
+      @ovs_ofctl.add_tunnel(tunnel_name, remote_ip, params)
     end
 
     def delete_tunnel(tunnel_name)
@@ -124,7 +124,7 @@ module Vnet::Openflow
       @interface_manager = InterfaceManager.new(self)
       @network_manager = NetworkManager.new(self)
       @port_manager = PortManager.new(self)
-      @route_manager = RouteManager.new(@datapath)
+      @route_manager = RouteManager.new(self)
       @security_group_manager = SecurityGroupManager.new(self)
       @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(self)

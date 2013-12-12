@@ -9,7 +9,24 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "create_all_tunnels" do
     before(:each) do
-      (1..3).each { |i| Fabricate("datapath_#{i}") }
+      networks = (1..2).map { |i|
+        Fabricate("pnet_public#{i}")
+      }.values_at(0, 0, 1)
+
+      (1..3).map { |i|
+        dp_self = Fabricate("datapath_#{i}")
+
+        ip_lease = Fabricate(:ip_lease,
+                             ipv4_address: dp_self.ipv4_address,
+                             network_id: networks[i-1].id)
+        mac_lease = Fabricate(:mac_lease,
+                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value,
+                              ip_leases: [ip_lease])
+
+        Fabricate("interface_dp#{i}eth0",
+                  owner_datapath_id: dp_self.id,
+                  mac_leases: [mac_lease])
+      }
     end
 
     let(:datapath) {
@@ -24,9 +41,11 @@ describe Vnet::Openflow::TunnelManager do
       }
     }
 
-    it "should create tunnels whose name is the same as datapath.uuid" do
+    it "should create tunnels whose name is a tunnel uuid" do
       subject.create_all_tunnels
-      expect(datapath.dp_info.added_tunnels[0][:tunnel_name]).to eq "t-test3"
+
+      expect(datapath.dp_info.added_tunnels.size).to eq 1
+      expect(datapath.dp_info.added_tunnels[0][:tunnel_name]).to match(/^t-/)
     end
 
     it "should create the entries in the tunnel table" do
@@ -52,9 +71,31 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "update_virtual_network" do
     before do
-      Fabricate(:datapath_1, :dc_segment_id => 1)
-      Fabricate(:datapath_2, :dc_segment_id => 2)
-      Fabricate(:datapath_3, :dc_segment_id => 2)
+      networks = (1..2).map { |i|
+        Fabricate("pnet_public#{i}")
+      }.values_at(0, 0, 1)
+
+      (1..3).map { |i|
+        dp_self = Fabricate("datapath_#{i}",
+                            :dc_segment_id => [1, 2, 2][i-1])
+
+        ip_lease = Fabricate(:ip_lease,
+                             ipv4_address: dp_self.ipv4_address,
+                             network_id: networks[i-1].id)
+        mac_lease = Fabricate(:mac_lease,
+                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value,
+                              ip_leases: [ip_lease])
+
+        interface = Fabricate("interface_dp#{i}eth0",
+                              owner_datapath_id: dp_self.id,
+                              mac_leases: [mac_lease])
+      }
+
+      Fabricate("datapath_network_1_1")
+      Fabricate("datapath_network_1_2")
+      Fabricate("datapath_network_2_1")
+      Fabricate("datapath_network_2_2")
+      Fabricate("datapath_network_2_3")
     end
 
     let(:datapath) do
@@ -106,47 +147,10 @@ describe Vnet::Openflow::TunnelManager do
       flows = datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq DATAPATH_IDLE_FLOWCOUNT
+      expect(flows.size).to eq 5
 
       # TunnelManager no longer creates the drop flows for broadcast
       # mac addresses, move.
-
-      # expect(flows.size).to eq 6
-
-      # expect(flows[0]).to eq Vnet::Openflow::Flow.create(
-      #   TABLE_NETWORK_SRC_CLASSIFIER,
-      #   90,
-      #   {:eth_dst => Trema::Mac.new('bb:bb:bb:11:11:11')},
-      #   nil,
-      #   {:cookie => 1 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
-
-      # expect(flows[1]).to eq Vnet::Openflow::Flow.create(
-      #   TABLE_NETWORK_DST_CLASSIFIER,
-      #   90,
-      #   {:eth_dst => Trema::Mac.new('bb:bb:bb:11:11:11')},
-      #   nil,
-      #   {:cookie => 1 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
-
-      # expect(flows[2]).to eq Vnet::Openflow::Flow.create(
-      #   TABLE_NETWORK_SRC_CLASSIFIER,
-      #   90,
-      #   {:eth_dst => Trema::Mac.new('bb:bb:bb:22:22:22')},
-      #   nil,
-      #   {:cookie => 2 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
-
-      # expect(flows[3]).to eq Vnet::Openflow::Flow.create(
-      #   TABLE_NETWORK_DST_CLASSIFIER,
-      #   90,
-      #   {:eth_dst => Trema::Mac.new('bb:bb:bb:22:22:22')},
-      #   nil,
-      #   {:cookie => 2 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
-
-      # expect(flows[4]).to eq Vnet::Openflow::Flow.create(
-      #   TABLE_NETWORK_SRC_CLASSIFIER,
-      #   90,
-      #   {:eth_dst => Trema::Mac.new('cc:cc:cc:11:11:11')},
-      #   nil,
-      #   {:cookie => 3 | (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)})
 
       # expect(flows[5]).to eq Vnet::Openflow::Flow.create(
       #   TABLE_NETWORK_DST_CLASSIFIER,
@@ -158,10 +162,10 @@ describe Vnet::Openflow::TunnelManager do
 
     it "should add flood flow network 1" do
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                                 uuid: datapath.dp_info.added_tunnels[0][:tunnel_name],
                                  port_number: 9)
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[1][:tunnel_name],
+                                 uuid: datapath.dp_info.added_tunnels[1][:tunnel_name],
                                  port_number: 10)
 
       datapath.added_flows.clear
@@ -190,10 +194,10 @@ describe Vnet::Openflow::TunnelManager do
 
     it "should add flood flow for network 2" do
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                                 uuid: datapath.dp_info.added_tunnels[0][:tunnel_name],
                                  port_number: 9)
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[1][:tunnel_name],
+                                 uuid: datapath.dp_info.added_tunnels[1][:tunnel_name],
                                  port_number: 10)
 
       datapath.added_flows.clear
@@ -224,10 +228,30 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "remove_network_id_for_dpid" do
     before do
-      # id=1, dpid="0x"+"a"*16
-      Fabricate("datapath_1")
-      # id=2, dpid="0x"+"c"*16
-      Fabricate("datapath_3")
+      # # id=1, dpid="0x"+"a"*16
+      # Fabricate("datapath_1")
+      # # id=2, dpid="0x"+"c"*16
+      # Fabricate("datapath_3")
+
+      networks = (1..2).map { |i|
+        Fabricate("pnet_public#{i}")
+      }.values_at(0, 0, 1)
+
+      [1,3].map { |i|
+        dp_self = Fabricate("datapath_#{i}",
+                            :dc_segment_id => [1, 2, 2][i-1])
+
+        ip_lease = Fabricate(:ip_lease,
+                             ipv4_address: dp_self.ipv4_address,
+                             network_id: networks[i-1].id)
+        mac_lease = Fabricate(:mac_lease,
+                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value,
+                              ip_leases: [ip_lease])
+
+        interface = Fabricate("interface_dp#{i}eth0",
+                              owner_datapath_id: dp_self.id,
+                              mac_leases: [mac_lease])
+      }
     end
 
     let(:ofctl) { double(:ofctl) }
@@ -256,12 +280,16 @@ describe Vnet::Openflow::TunnelManager do
 
     it "should delete tunnel when the network is deleted on the local datapath" do
       subject.remove_network_id_for_dpid(1, ("a" * 16).to_i(16))
-      expect(datapath.dp_info.deleted_tunnels[0]).to eq "t-test3"
+
+      expect(datapath.dp_info.added_tunnels[0][:tunnel_name]).to match(/^t-/)
+      expect(datapath.dp_info.deleted_tunnels[0]).to eq datapath.dp_info.added_tunnels[0][:tunnel_name]
     end
 
     it "should delete tunnel when the network is deleted on the remote datapath" do
       subject.remove_network_id_for_dpid(1, ("c" * 16).to_i(16))
-      expect(datapath.dp_info.deleted_tunnels[0]).to eq "t-test3"
+
+      expect(datapath.dp_info.added_tunnels[0][:tunnel_name]).to match(/^t-/)
+      expect(datapath.dp_info.deleted_tunnels[0]).to eq datapath.dp_info.added_tunnels[0][:tunnel_name]
     end
   end
 end

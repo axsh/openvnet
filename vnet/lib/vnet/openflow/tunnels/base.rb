@@ -28,11 +28,24 @@ module Vnet::Openflow::Tunnels
       @uuid = map.uuid
       @display_name = map.display_name
 
-      @dst_id = params[:dst_dp_map].id
-      @dst_dpid = params[:dst_dp_map].dpid
-      @dst_ipv4_address = IPAddr.new(params[:dst_dp_map].ipv4_address, Socket::AF_INET)
+      @dst_id = map.dst_datapath_id
+
+      if map.dst_datapath
+        @dst_dpid = map.dst_datapath.dpid
+        @dst_ipv4_address = IPAddr.new(map.dst_datapath.ipv4_address, Socket::AF_INET)
+      end
+
+      @src_interface = map.src_interface
+
+      @src_interface_id = map.src_interface_id
+      @dst_interface_id = map.dst_interface_id
 
       @datapath_networks = []
+    end
+    
+    def cookie(tag = nil)
+      value = @id | COOKIE_TYPE_TUNNEL
+      tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
     end
 
     def to_hash
@@ -49,7 +62,11 @@ module Vnet::Openflow::Tunnels
     end
 
     def install
-      info log_format("install #{@display_name}", "ip_address:#{@dst_ipv4_address.to_s}")
+      if @dst_ipv4_address.nil?
+        error log_format("no valid destination datapath loaded for #{@uuid}",
+                         "dst_datapath_id:#{@dst_datapath_id}")
+        return
+      end
 
       if !@dst_ipv4_address.ipv4?
         error log_format("no valid remote IPv4 address for #{@uuid}",
@@ -57,13 +74,46 @@ module Vnet::Openflow::Tunnels
         return
       end
 
-      @dp_info.add_tunnel(@display_name, @dst_ipv4_address.to_s)
+      if @src_interface.nil?
+        error log_format("no valid source interface loaded for #{@uuid}")
+        return
+      end
+
+      @dp_info.add_tunnel(@uuid, @dst_ipv4_address.to_s,
+                          egress_iface: @src_interface.port_name)
+
+      if !(@src_interface_id && @src_interface_id > 0) ||
+          !(@dst_interface_id && @dst_interface_id > 0)
+        error log_format("no valid src/dst interface id's found for #{@uuid}")
+        return
+      end
+
+      flows = []
+
+      [true, false].each { |reflection|
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_DP_OVER_TUNNEL,
+                             goto_table: TABLE_OUT_PORT_TUNNEL,
+                             priority: 1,
+
+                             match_value_pair_flag: reflection,
+                             match_value_pair_first: @src_interface_id,
+                             match_value_pair_second: @dst_interface_id,
+
+                             clear_all: true,
+                             write_tunnel: @id,
+                             write_reflection: reflection)
+      }
+
+      @dp_info.add_flows(flows)
+
+      info log_format("install #{@display_name}", "ip_address:#{@dst_ipv4_address.to_s}")
     end
 
     def uninstall
       debug log_format("removing flows")
 
-      @dp_info.delete_tunnel(@display_name)
+      @dp_info.delete_tunnel(@uuid)
 
       # cookie_value = self.cookie
       # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK

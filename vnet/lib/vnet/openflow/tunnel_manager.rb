@@ -43,17 +43,32 @@ module Vnet::Openflow
         return nil
       end
 
-      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
-        item = item_by_params(dst_id: target_dp_map.id,
-                              dst_dp_map: target_dp_map)
+      # Since we make all the tunnels up-front we need to assume the
+      # host ports are already created for all datapaths.
+      datapath_map = MW::Datapath.batch[@datapath_info.id].commit(:fill => :host_interfaces)
 
-        tunnel_name = "t-#{target_dp_map.uuid.split("-")[1]}"
-        tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
-                                       dst_datapath_id: target_dp_map.id,
-                                       display_name: tunnel_name)
+      if datapath_map.host_interfaces.empty?
+        error log_format("could not find any host interface for this datapath, aborting tunnel creation")
+        return
+      end
 
-        tunnel_map.dst_dp_map = target_dp_map
-        create_item(item_map: tunnel_map)
+      MW::Datapath.batch.on_other_segments(@datapath_info.id).all.commit(:fill => :host_interfaces).map { |target_dp_map|
+        datapath_map.host_interfaces.map { |host_interface|
+          target_dp_map.host_interfaces.map { |dst_interface|
+            info log_format("creating tunnel entry",
+                            "src_host:#{host_interface.uuid}/#{host_interface.port_name} dst_host:#{dst_interface.uuid}/#{dst_interface.port_name}")
+
+            tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
+                                           dst_datapath_id: target_dp_map.id,
+                                           src_interface_id: host_interface.id,
+                                           dst_interface_id: dst_interface.id
+                                           )
+            tunnel_map.id
+          }
+        }
+
+      }.flatten.each { |tunnel_id|
+        item_by_params(id: tunnel_id) if tunnel_id
       }
     end
 
@@ -163,13 +178,6 @@ module Vnet::Openflow
     # Create / Delete tunnels:
     #
 
-    def item_initialize(item_map)
-      Tunnels::Base.new(dp_info: @dp_info,
-                        manager: self,
-                        map: item_map,
-                        dst_dp_map: item_map.dst_dp_map)
-    end
-
     def initialized_item_event
       INITIALIZED_TUNNEL
     end
@@ -177,19 +185,27 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit
+      MW::Tunnel.batch[filter.merge(src_datapath_id: @datapath_info.id)].commit(:fill => [:dst_datapath, :src_interface])
     end
     
-    def create_item(params)
-      item_map = params[:item_map]
-      item = item_initialize(item_map)
-      return nil if item.nil?
+    def item_initialize(item_map)
+      item = Tunnels::Base.new(dp_info: @dp_info,
+                               manager: self,
+                               map: item_map)
 
-      @items[item_map.id] = item
-
-      debug log_format("insert #{item_map.uuid}/#{item_map.id}")
-
+      # Do install here until events work properly...
+      return if item.nil?
       item.install
+
+      item
+    end
+
+    def install_item(params)
+      item = @items[params[:id]]
+      return if item.nil?
+
+      # item.install
+      item
     end
 
     def delete_item(item)
@@ -247,12 +263,12 @@ module Vnet::Openflow
       item.datapath_networks.delete_if { |dpn| dpn[:network_id] == network_id }
 
       if item.datapath_networks.empty?
-        debug log_format("datapath networks is empty for #{item.display_name}")
+        debug log_format("datapath networks is empty for #{item.uuid}")
 
-        MW::Tunnel.batch[display_name: item.display_name].destroy.commit
+        MW::Tunnel.batch[:id => item.id].destroy.commit
         true
       else
-        debug log_format("datapath networs is not empty for #{item.display_name}")
+        debug log_format("datapath networks is not empty for #{item.uuid}")
         false
       end
     end

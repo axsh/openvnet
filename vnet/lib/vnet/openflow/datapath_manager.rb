@@ -11,6 +11,19 @@ module Vnet::Openflow
     subscribe_event :removed_service # TODO Check if needed.
     subscribe_event INITIALIZED_DATAPATH, :create_item
 
+    def update(params)
+      case params[:event]
+      when :activate_route_link
+        activate_route_link(params)
+      when :activate_network
+        activate_network(params)
+      when :deactivate_route_link
+        # deactivate_route_link(params)
+      end
+
+      nil
+    end
+
     #
     # Networks:
     #
@@ -58,13 +71,19 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Datapath.batch[filter].commit #(:fill => [:ip_leases => :ip_address])
+      MW::Datapath.batch[filter].commit(:fill => :host_interfaces)
     end
 
     def item_initialize(item_map)
-      Datapaths::Base.new(dp_info: @dp_info,
-                          manager: self,
-                          map: item_map)
+      if item_map.dpid == @dp_info.dpid_s
+        Datapaths::Host.new(dp_info: @dp_info,
+                            manager: self,
+                            map: item_map)
+      else
+        Datapaths::Remote.new(dp_info: @dp_info,
+                              manager: self,
+                              map: item_map)
+      end
     end
 
     def initialized_item_event
@@ -72,13 +91,13 @@ module Vnet::Openflow
     end
 
     def create_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
+      item = @items[params[:item_map].id]
       return unless item
 
-      debug log_format("insert #{item_map.uuid}/#{item_map.id}")
-
       item.install
+
+      debug log_format("insert #{item.uuid}/#{item.id}")
+
       item
     end
 
@@ -94,6 +113,8 @@ module Vnet::Openflow
     #
 
     def activate_network(params)
+      return if params[:network_id].nil?
+
       dpn_items = MW::DatapathNetwork.batch.dataset.where(network_id: params[:network_id]).all.commit
 
       dpn_items.each { |dpn|
@@ -112,6 +133,19 @@ module Vnet::Openflow
 
       unused_datapaths.each { |id, item|
         delete_item(item)
+      }
+    end
+
+    def activate_route_link(params)
+      return if params[:route_link_id].nil?
+
+      dp_rl_items = MW::DatapathRouteLink.batch.dataset.where(route_link_id: params[:route_link_id]).all.commit(:fill => :route_link)
+
+      dp_rl_items.each { |dp_rl|
+        item = item_by_params(id: dp_rl.datapath_id)
+        next if item.nil?
+
+        item.add_active_route_link(dp_rl)
       }
     end
 

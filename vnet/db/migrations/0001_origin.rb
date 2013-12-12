@@ -19,6 +19,7 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :network_id, :index => true, :null=>false
+      Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
       FalseClass :is_connected, :null=>false
     end
@@ -27,6 +28,7 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :route_link_id, :index => true, :null=>false
+      Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
       FalseClass :is_connected, :null=>false
     end
@@ -179,8 +181,11 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       String :display_name, :index => true, :null => false
+
       Integer :src_datapath_id, :index => true, :null => false
       Integer :dst_datapath_id, :index => true, :null => false
+      Integer :src_interface_id, :index => true, :null => false
+      Integer :dst_interface_id, :index => true, :null => false
 
       index [:src_datapath_id, :dst_datapath_id]
     end

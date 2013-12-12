@@ -26,7 +26,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def add_ipv4_address(params)
-      debug "interfaces: adding ipv4 flows..."
+      #debug log_format("interfaces: adding ipv4 flows...")
       mac_info, ipv4_info = super
 
       @dp_info.network_manager.update_interface(event: :insert,
@@ -42,14 +42,16 @@ module Vnet::Openflow::Interfaces
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
+      flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)
       flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
+      flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
       flows_for_router_egress_ipv4(flows, mac_info, ipv4_info) if @router_egress == true
 
       @dp_info.add_flows(flows)
     end
 
     def remove_ipv4_address(params)
-      debug "interfaces: removing ipv4 flows..."
+      #debug log_format("interfaces: removing ipv4 flows...")
 
       mac_info, ipv4_info = super
 
@@ -107,29 +109,17 @@ module Vnet::Openflow::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      if ipv4_info[:network_type] == :virtual
-        flows << flow_create(:default,
-                             table: TABLE_HOST_PORTS,
-                             priority: 30,
-                             match: {
-                               :eth_dst => mac_info[:mac_address],
-                             },
-                             write_network: ipv4_info[:network_id],
-                             cookie: cookie,
-                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
-      end
-
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 60,
+
                            match: {
                              :eth_dst => mac_info[:mac_address],
                            },
                            match_network: ipv4_info[:network_id],
                            write_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_INTERFACE_INGRESS_FILTER)
-
+                           cookie: cookie)
     end
 
   end
