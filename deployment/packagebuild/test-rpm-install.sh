@@ -10,7 +10,7 @@ third_party_repo_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/third_party/c
 chroot_dir=${work_dir}/chroot
 chroot_cache_dir=${work_dir}/chroot_cache
 
-centos_version=${CENTOS_VERSION:-6-4}
+centos_version=${CENTOS_VERSION:-6-5}
 
 function prepare_chroot_env(){
   umount_for_chroot
