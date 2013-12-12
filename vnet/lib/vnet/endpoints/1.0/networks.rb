@@ -30,7 +30,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   delete '/:uuid' do
-    delete_by_uuid(:Network)
+    begin
+      delete_by_uuid(:Network)
+    rescue Vnet::Models::DeleteRestrictionError => e
+      raise E::DeleteRestrictionError, e.message
+    end
   end
 
   put '/:uuid' do

@@ -64,4 +64,17 @@ describe Vnet::Models::Network do
     it { expect(Vnet::Models::Network.find_by_mac_address(4)).to eq network1 }
     it { expect(Vnet::Models::Network.find_by_mac_address(6)).to eq network2 }
   end
+
+  describe "destroy" do
+    subject {  network1.destroy }
+
+    it "cannot delete a network while any related model to the network exists" do
+      expect { subject }.to raise_error Vnet::Models::DeleteRestrictionError
+    end
+
+    it "can delete a network after all the relations was deleted" do
+      network1.remove_all_ip_addresses
+      expect(subject).to be_a Vnet::Models::Network
+    end
+  end
 end
