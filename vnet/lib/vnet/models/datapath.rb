@@ -23,13 +23,13 @@ module Vnet::Models
 
     dataset_module do
       def on_other_segments(datapath_id)
-        dc_segment_id = Datapath.where(id: datapath_id).select(:dc_segment_id)
-        Datapath.where(~{id: datapath_id} & ~{dc_segment_id: dc_segment_id})
+        dc_segment_id = self.where(id: datapath_id).select(:dc_segment_id)
+        self.where(~{id: datapath_id} & ~{dc_segment_id: dc_segment_id})
       end
 
       def on_same_segment(datapath_id)
-        dc_segment_id = Datapath.where(id: datapath_id).select(:dc_segment_id)
-        Datapath.where(~{id: datapath_id} & {dc_segment_id: dc_segment_id})
+        dc_segment_id = self.where(id: datapath_id).select(:dc_segment_id)
+        self.where(~{id: datapath_id} & {dc_segment_id: dc_segment_id})
       end
 
       def find_all_by_network_id(network_id)

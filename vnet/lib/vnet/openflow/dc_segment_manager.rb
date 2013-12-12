@@ -60,7 +60,7 @@ module Vnet::Openflow
 
       # We currently depend on the dc segment id despite this being
       # the wrong way to decide between tunnel and mac2mac.
-      MW::Datapath.batch[@datapath_info.id].on_same_segment.commit(:fill => :host_interfaces).map { |target_dp_map|
+      MW::Datapath.batch.on_same_segment(@datapath_info.id).all.commit(:fill => :host_interfaces).map { |target_dp_map|
         datapath_map.host_interfaces.map { |host_interface|
           target_dp_map.host_interfaces.map { |dst_interface|
             info log_format("creating mac2mac entry",

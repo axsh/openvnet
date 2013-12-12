@@ -52,7 +52,7 @@ module Vnet::Openflow
         return
       end
 
-      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit(:fill => :host_interfaces).map { |target_dp_map|
+      MW::Datapath.batch.on_other_segments(@datapath_info.id).all.commit(:fill => :host_interfaces).map { |target_dp_map|
         datapath_map.host_interfaces.map { |host_interface|
           target_dp_map.host_interfaces.map { |dst_interface|
             info log_format("creating tunnel entry",
