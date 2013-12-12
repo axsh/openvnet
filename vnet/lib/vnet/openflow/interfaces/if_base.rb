@@ -250,7 +250,7 @@ module Vnet::Openflow::Interfaces
                            cookie: cookie,
                            goto_table: TABLE_ARP_TABLE)
       flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS,
+                           table: TABLE_ROUTE_EGRESS_INTERFACE,
                            priority: 20,
                            actions: {
                              :eth_src => mac_info[:mac_address]
