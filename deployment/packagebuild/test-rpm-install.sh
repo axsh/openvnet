@@ -10,6 +10,8 @@ third_party_repo_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/third_party/c
 chroot_dir=${work_dir}/chroot
 chroot_cache_dir=${work_dir}/chroot_cache
 
+centos_version=${CENTOS_VERSION:-6-4}
+
 function prepare_chroot_env(){
   umount_for_chroot
   rm -rf ${chroot_dir}
@@ -45,7 +47,7 @@ function create_chroot_cache(){
   rpm --root ${chroot_cache_dir} --initdb
   yumdownloader --destdir=/var/tmp centos-release
   cd /var/tmp
-  rpm --root ${chroot_cache_dir} -ivh --nodeps centos-release-*rpm
+  rpm --root ${chroot_cache_dir} -ivh --nodeps centos-release-${centos_version}*rpm
   cp /etc/fstab ${chroot_cache_dir}/etc/
   touch ${chroot_cache_dir}/var/lib/random-seed
   yum --installroot=${chroot_cache_dir} -y install rpm-build yum kernel-$(uname -r)
