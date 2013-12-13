@@ -8,7 +8,6 @@ module Vnet::Openflow::Datapaths
 
     attr_reader :id
     attr_reader :uuid
-    attr_reader :mode
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -22,20 +21,17 @@ module Vnet::Openflow::Datapaths
 
       @active_networks = {}
 
-      @mode =
-        if map.dpid == @dp_info.dpid_s
-          :owner
-        elsif map.dc_segment_id == params[:owner_dc_segment_id]
-          :segment
-        else
-          :tunnel
-        end
-
       @active_route_links = {}
+
+      @same_segment = @dp_info.datapaths.dc_segment_id == map[:dc_segment_id]
     end
     
-    def owner?
-      @mode == :owner
+    def host?
+      false
+    end
+
+    def same_segment?
+      !! @same_segment
     end
 
     def cookie(tag = nil)
@@ -54,26 +50,12 @@ module Vnet::Openflow::Datapaths
     end
 
     def install
-      case @mode
-      when :tunnel
-        @dp_info.tunnel_manager.async.create_item(dst_id: id)
-      end
     end
 
     def uninstall
       @dp_info.del_cookie(id | COOKIE_TYPE_DATAPATH)
       @active_networks.each do |_, active_network|
         @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
-      end
-
-      case @mode
-      when :owner
-        @dp_info.interface_manager.update_item(event: :remove_all_active_datapath)
-        @dp_info.datapath.reset
-      when :segment
-        @dp_info.dc_segment_manager.async.remove_datapath(id)
-      when :tunnel
-        @dp_info.tunnel_manager.async.unload(dst_id: id)
       end
     end
 
@@ -103,43 +85,23 @@ module Vnet::Openflow::Datapaths
                                       active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       flows_for_dp_network(flows, active_network)
 
-      case @mode
-      when :owner
-        flows_for_broadcast_mac_address(
-          flows,
-          active_network[:broadcast_mac_address],
-          active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
-        )
-        @dp_info.dc_segment_manager.async.prepare_network(active_network[:network_id])
-        # nothing to do
-        @dp_info.tunnel_manager.async.prepare_network(active_network[:network_id])
-      when :segment
-        @dp_info.dc_segment_manager.async.insert(active_network[:dpn_id])
-      when :tunnel
-        @dp_info.tunnel_manager.async.insert(active_network[:dpn_id])
-      end
-
       @dp_info.add_flows(flows)
 
+      after_add_active_network
+
       debug log_format("adding to #{@uuid}/#{id} active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
+
+      true
     end
 
-    def remove_active_network_id(network_id)
+    def remove_active_network(network_id)
       active_network = @active_networks.delete(network_id)
       return false if active_network.nil?
 
-      case @mode
-      when :owner
-        @dp_info.dc_segment_manager.async.remove_network_id(network_id)
-        @dp_info.tunnel_manager.async.remove_network_id_for_dpid(network_id, @dpid)
-      when :segment
-        @dp_info.dc_segment_manager.async.remove(active_network[:dpn_id])
-      when :tunnel
-        @dp_info.tunnel_manager.async.remove_network_id_for_dpid(network_id, @dpid)
-      end
-
       @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       
+      after_remove_active_network
+
       debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
 
       true

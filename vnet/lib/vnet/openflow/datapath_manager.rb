@@ -62,7 +62,6 @@ module Vnet::Openflow
       item_class.new(
         dp_info: @dp_info,
         manager: self,
-        owner_dc_segment_id: @datapath_info.dc_segment_id,
         map: item_map
       )
     end
@@ -79,7 +78,7 @@ module Vnet::Openflow
 
       debug log_format("install #{item_map.uuid}/#{item_map.id}")
 
-      if item.owner?
+      if item.host?
         item_map.datapath_networks.each do |dpn_map|
           publish(ADDED_DATAPATH_NETWORK, dpn_map: dpn_map)
         end
@@ -142,8 +141,8 @@ module Vnet::Openflow
       item = item_by_params(id: dpn_map.datapath_id)
       return if item.nil?
 
-      if item.remove_active_network_id(dpn_map.network_id)
-        if item.unused? && !item.owner?
+      if item.remove_active_network(dpn_map.network_id)
+        if item.unused? && !item.host?
           publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
         end
       end
