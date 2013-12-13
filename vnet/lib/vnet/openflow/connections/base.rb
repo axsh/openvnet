@@ -46,7 +46,7 @@ module Vnet::Openflow::Connections
                     match_metadata: { interface: interface_id },
                     idle_timeout: INGRESS_IDLE_TIMEOUT,
                     cookie: cookie(interface_id),
-                    goto_table: TABLE_OUTPUT_INTERFACE_INGRESS)
+                    goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
       ]
     end
 

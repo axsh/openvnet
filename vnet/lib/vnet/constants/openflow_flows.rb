@@ -11,9 +11,6 @@ module Vnet
       # Default table used by all incoming packets.
       TABLE_CLASSIFIER = 0
 
-      # Handle matching of incoming packets on host ports.
-      TABLE_HOST_PORTS = 2
-
       # Straight-forward routing of packets to the port tied to the
       # destination mac address, which includes all non-virtual
       # networks.
@@ -37,13 +34,14 @@ module Vnet
       # Handle ingress packets to host interfaces from untrusted
       # sources.
       TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
+      TABLE_INTERFACE_INGRESS_MAC        = 11
+      TABLE_INTERFACE_INGRESS_NW_IF      = 12
 
       # Handle egress packets from trusted interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15
       TABLE_INTERFACE_EGRESS_ROUTES      = 16
       TABLE_INTERFACE_EGRESS_MAC         = 17
-
-      TABLE_INTERFACE_EGRESS_FILTER = 18
+      TABLE_INTERFACE_EGRESS_FILTER      = 18
 
       # Initial verification of network number and application of global
       # filtering rules.
@@ -89,8 +87,41 @@ module Vnet
       TABLE_OUTPUT_ROUTE_LINK        = 61
       TABLE_OUTPUT_DATAPATH          = 62
       TABLE_OUTPUT_MAC2MAC           = 63
-      TABLE_OUTPUT_INTERFACE_INGRESS = 64
-      TABLE_OUTPUT_INTERFACE_EGRESS  = 65
+
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 70
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 71
+
+      # The 'output dp * lookup' tables use the DatapathNetwork and
+      # DatapathRouteLink database entry keys to determine what source
+      # interface and destination interfaces should be used for
+      # packets.
+      #
+      # For MAC2MAC this only requires changing the destionation MAC
+      # address to the one associated with that particular datapath
+      # network or route link, while for tunnels the output port needs
+      # to be selected from pre-created tunnels.
+
+      TABLE_OUTPUT_DP_NETWORK_DST        = 80
+      TABLE_OUTPUT_DP_NETWORK_SRC        = 81
+
+      TABLE_OUTPUT_DP_ROUTE_LINK_DST     = 82
+      TABLE_OUTPUT_DP_ROUTE_LINK_SRC     = 84
+
+      TABLE_OUTPUT_DP_OVER_MAC2MAC       = 85 # Match src/dst if id, output if present.
+      TABLE_OUTPUT_DP_NETWORK_SET_MAC    = 86 # If broadcast -> set MAC2MAC or drop. default goto next
+      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
+      TABLE_OUTPUT_DP_OVER_TUNNEL        = 88 # Use tun_id to determine type for goto_table.
+
+      #
+      # Output ports tables:
+      #
+
+      # Directly output to a port type with no additional
+      # actions. Usable by any table and as such need to be the last
+      # tables. 
+      TABLE_OUT_PORT_INTERFACE_INGRESS = 90
+      TABLE_OUT_PORT_INTERFACE_EGRESS  = 91
+      TABLE_OUT_PORT_TUNNEL            = 92
 
       #
       # Cookie constants:
@@ -106,8 +137,8 @@ module Vnet
 
       COOKIE_PREFIX_DATAPATH       = 0x1
       COOKIE_PREFIX_DP_NETWORK     = 0x2
-      COOKIE_PREFIX_NETWORK        = 0x3
-      COOKIE_PREFIX_PACKET_HANDLER = 0x4
+      COOKIE_PREFIX_DP_ROUTE_LINK  = 0x3
+      COOKIE_PREFIX_NETWORK        = 0x4
       COOKIE_PREFIX_PORT           = 0x5
       COOKIE_PREFIX_ROUTE          = 0x6
       COOKIE_PREFIX_ROUTE_LINK     = 0x7
@@ -123,8 +154,8 @@ module Vnet
       COOKIE_TYPE_CONTRACK       = (COOKIE_PREFIX_CONTRACK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DATAPATH       = (COOKIE_PREFIX_DATAPATH << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_NETWORK     = (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_DP_ROUTE_LINK  = (COOKIE_PREFIX_DP_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_NETWORK        = (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
-      COOKIE_TYPE_PACKET_HANDLER = (COOKIE_PREFIX_PACKET_HANDLER << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_PORT           = (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_ROUTE          = (COOKIE_PREFIX_ROUTE << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_ROUTE_LINK     = (COOKIE_PREFIX_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
@@ -150,7 +181,6 @@ module Vnet
       METADATA_FLAG_FLOOD      = (0x010 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_VIF        = (0x020 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_MAC2MAC    = (0x040 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_TUNNEL     = (0x080 << METADATA_FLAGS_SHIFT)
       METADATA_FLAG_IGNORE_MAC2MAC = (0x100 << METADATA_FLAGS_SHIFT)
 
       # Allow reflection for this packet, such that if the ingress
@@ -165,16 +195,32 @@ module Vnet
       METADATA_TYPE_SHIFT      = 56
       METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)
 
-      METADATA_TYPE_DATAPATH   = (0x2 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_NETWORK    = (0x3 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_PORT       = (0x4 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_ROUTE      = (0x5 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_ROUTE_LINK = (0x6 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_INTERFACE  = (0x7 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_DATAPATH        = (0x1 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_DP_ROUTE_LINK   = (0x2 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_NETWORK         = (0x3 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_PORT            = (0x4 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_ROUTE           = (0x5 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_ROUTE_LINK      = (0x6 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_INTERFACE       = (0x7 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_EDGE_TO_VIRTUAL = (0x8 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_VIRTUAL_TO_EDGE = (0x9 << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_TUNNEL          = (0xa << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_DP_NETWORK      = (0xb << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0xffffffff
+
+      # Special case of the metadata bitfield that allows storing two
+      # 31-bit values and one single flag.
+      #
+      # <64, 63] => 1-bit always true
+      # <63, 48] => first 31-bit value
+      # <48, 47] => 1-bit flag for any use
+      # <47,  0] => second 31-bit value
+
+      METADATA_VALUE_PAIR_TYPE        = (0x1 << 63)
+      METADATA_VALUE_PAIR_FLAG        = (0x1 << 31)
+      METADATA_VALUE_PAIR_FIRST_MASK  = (0x7fffffff << 32)
+      METADATA_VALUE_PAIR_SECOND_MASK = 0x7fffffff
 
       #
       # Tunnel constants:

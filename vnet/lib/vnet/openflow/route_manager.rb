@@ -95,6 +95,9 @@ module Vnet::Openflow
         route_link.add_datapath_on_segment(dp_rl_map)
       }
 
+      @dp_info.datapath_manager.async.update(event: :activate_route_link,
+                                             route_link_id: route_link.id)
+
       route_link.install
       route_link
     end
@@ -103,7 +106,7 @@ module Vnet::Openflow
       interface_item = @dp_info.interface_manager.item(id: interface_id)
       return nil if interface_item.nil?
 
-      info log_format('from interface_manager' , "#{interface_item.uuid}/#{interface_id}")
+      info log_format('from interface_manager' , "#{interface_item.uuid}/#{interface_id} mode:#{interface_item.mode}")
 
       interface = interface_item && @interfaces[interface_item.id]
       return interface if interface
@@ -125,6 +128,13 @@ module Vnet::Openflow
 
       if interface_item.mode == :remote
         interface[:use_datapath_id] = interface_item.owner_datapath_ids && interface_item.owner_datapath_ids.first
+
+        # if interface[:use_datapath_id]
+          # @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
+          #                                              id: interface[:id])
+          @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
+                                                       id: interface[:id])
+        # end
 
         return interface
       end

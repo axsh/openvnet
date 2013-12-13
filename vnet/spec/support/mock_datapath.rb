@@ -53,8 +53,12 @@ class MockDpInfo < Vnet::Openflow::DpInfo
     @datapath.added_ovs_flows << ovs_flow
   end
 
-  def add_tunnel(tunnel_name, remote_ip)
-    @added_tunnels << {:tunnel_name => tunnel_name, :remote_ip => remote_ip}
+  def add_tunnel(tunnel_name, remote_ip, params = {})
+    @added_tunnels << {
+      :tunnel_name => tunnel_name,
+      :remote_ip => remote_ip,
+      :params => params
+    }
   end
 
   def delete_tunnel(tunnel_name)

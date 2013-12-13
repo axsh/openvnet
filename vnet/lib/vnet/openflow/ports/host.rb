@@ -23,17 +23,18 @@ module Vnet::Openflow::Ports
                                           :mac2mac => nil
                                         })
 
-      goto_table_on_table_classifier = @dp_info.datapath.datapath_map.node_id == 'edge' ? TABLE_EDGE_SRC : TABLE_HOST_PORTS
-
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_CLASSIFIER,
-                           goto_table: goto_table_on_table_classifier,
-                           priority: 2,
-                           match: {
-                             :in_port => self.port_number
-                           },
-                           write_remote: true)
+
+      if @dp_info.datapath.datapath_map.node_id == 'edge'
+        flows << flow_create(:default,
+                             table: TABLE_CLASSIFIER,
+                             goto_table: TABLE_EDGE_SRC,
+                             priority: 2,
+                             match: {
+                               :in_port => self.port_number
+                             },
+                             write_remote: true)
+      end
 
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
@@ -67,18 +68,21 @@ module Vnet::Openflow::Ports
                            },
                            flow_options)
 
-      if @interface_id
+      if @interface_id && @dp_info.datapath.datapath_map.node_id != 'edge'
         flows << flow_create(:default,
-                             table: TABLE_HOST_PORTS,
+                             table: TABLE_CLASSIFIER,
                              goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                             priority: 10,
+                             priority: 2,
+
                              match: {
                                :in_port => self.port_number
                              },
-                             write_interface: @interface_id)
+
+                             write_interface: @interface_id,
+                             write_remote: true)
 
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_INTERFACE_EGRESS,
+                             table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                              priority: 2,
                              match: {
                                :in_port => self.port_number
@@ -89,7 +93,7 @@ module Vnet::Openflow::Ports
                                :output => OFPP_IN_PORT
                              })
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_INTERFACE_EGRESS,
+                             table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                              priority: 1,
                              match_interface: @interface_id,
                              actions: {
