@@ -25,18 +25,40 @@ module Vnet::Openflow::Ports
                              :in_port => self.port_number
                            },
                            goto_table: TABLE_ROUTE_INGRESS)
-      flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DATAPATH,
-                           priority: 5,
-                           match_datapath: @dst_id,
-                           actions: {
-                             :output => self.port_number
-                           })
+
+      if @dst_id && @dst_id > 0
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_DATAPATH,
+                             priority: 5,
+                             match_datapath: @dst_id,
+                             actions: {
+                               :output => self.port_number
+                             })
+      end
+
+      if @tunnel_id && @tunnel_id > 0
+        flows << flow_create(:default,
+                             table: TABLE_OUT_PORT_TUNNEL,
+                             priority: 1,
+                             match_tunnel: @tunnel_id,
+                             actions: {
+                               :output => self.port_number
+                             })
+        flows << flow_create(:default,
+                             table: TABLE_OUT_PORT_TUNNEL,
+                             priority: 2,
+
+                             match_tunnel: @tunnel_id,
+                             match_reflection: true,
+                             match: {
+                               :in_port => self.port_number
+                             },
+                             actions: {
+                               :output => OFPP_IN_PORT
+                             })
+      end
 
       @dp_info.add_flows(flows)
-      @dp_info.tunnel_manager.update_item(event: :set_port_number,
-                                          port_name: self.port_name,
-                                          port_number: self.port_number)
     end
 
     def uninstall

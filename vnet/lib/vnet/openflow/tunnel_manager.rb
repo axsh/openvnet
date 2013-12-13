@@ -45,12 +45,32 @@ module Vnet::Openflow
         return nil
       end
 
-      MW::Datapath.batch[@datapath_info.id].on_other_segments.commit.each { |target_dp_map|
-        item = item_by_params(dst_id: target_dp_map.id,
-                              dst_dp_map: target_dp_map)
-        next if item
+      # Since we make all the tunnels up-front we need to assume the
+      # host ports are already created for all datapaths.
+      datapath_map = MW::Datapath.batch[@datapath_info.id].commit(:fill => :host_interfaces)
 
-        create_item(dst_id: target_dp_map.id)
+      if datapath_map.host_interfaces.empty?
+        error log_format("could not find any host interface for this datapath, aborting tunnel creation")
+        return
+      end
+
+      MW::Datapath.batch.on_other_segments(@datapath_info.id).all.commit(:fill => :host_interfaces).map { |target_dp_map|
+        datapath_map.host_interfaces.map { |host_interface|
+          target_dp_map.host_interfaces.map { |dst_interface|
+            info log_format("creating tunnel entry",
+                            "src_host:#{host_interface.uuid}/#{host_interface.port_name} dst_host:#{dst_interface.uuid}/#{dst_interface.port_name}")
+
+            tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
+                                           dst_datapath_id: target_dp_map.id,
+                                           src_interface_id: host_interface.id,
+                                           dst_interface_id: dst_interface.id
+                                           )
+            tunnel_map.id
+          }
+        }
+
+      }.flatten.each { |tunnel_id|
+        item_by_params(id: tunnel_id) if tunnel_id
       }
     end
 
@@ -194,7 +214,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Tunnel.batch[filter].commit(fill: :dst_datapath)
+      MW::Tunnel.batch[filter].commit(fill: [:dst_datapath, :src_interface])
     end
 
     def install_item(params)
@@ -267,13 +287,13 @@ module Vnet::Openflow
       item.datapath_networks.delete_if { |dpn| dpn[:network_id] == network_id }
 
       if item.datapath_networks.empty?
-        debug log_format("datapath networks is empty for #{item.display_name}")
+        debug log_format("datapath networks is empty for #{item.uuid}")
 
         # Currently dynamic creation and deletion does not work
-        #MW::Tunnel.batch[display_name: item.display_name].destroy.commit
+        #MW::Tunnel.batch[:id => item.id].destroy.commit
         #true
       else
-        debug log_format("datapath networs is not empty for #{item.display_name}")
+        debug log_format("datapath networks is not empty for #{item.uuid}")
         false
       end
     end

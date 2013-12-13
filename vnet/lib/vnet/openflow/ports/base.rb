@@ -21,6 +21,7 @@ module Vnet::Openflow::Ports
 
     # Work-around...
     attr_accessor :dst_id
+    attr_accessor :tunnel_id
 
     def extend(m)
       # `install` method will set true to @installed automatically

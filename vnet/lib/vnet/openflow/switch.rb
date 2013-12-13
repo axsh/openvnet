@@ -17,6 +17,10 @@ module Vnet::Openflow
       @dpid_s = "0x%016x" % @datapath.dpid
     end
 
+    def cookie
+      COOKIE_TYPE_SWITCH
+    end
+
     #
     # Event handlers:
     #
@@ -37,16 +41,19 @@ module Vnet::Openflow
 
       [TABLE_EDGE_SRC,
        TABLE_EDGE_DST,
-       TABLE_HOST_PORTS,
        TABLE_TUNNEL_PORTS,
        TABLE_TUNNEL_NETWORK_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
+
        TABLE_INTERFACE_INGRESS_CLASSIFIER,
+       TABLE_INTERFACE_INGRESS_MAC,
+       TABLE_INTERFACE_INGRESS_NW_IF,
        TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
        TABLE_INTERFACE_EGRESS_CLASSIFIER,
        TABLE_INTERFACE_EGRESS_ROUTES,
        TABLE_INTERFACE_EGRESS_MAC,
+
        TABLE_NETWORK_SRC_CLASSIFIER,
        TABLE_NETWORK_DST_CLASSIFIER,
        TABLE_VIRTUAL_SRC,
@@ -62,8 +69,23 @@ module Vnet::Openflow
        TABLE_OUTPUT_ROUTE_LINK,
        TABLE_OUTPUT_DATAPATH,
        TABLE_OUTPUT_MAC2MAC,
-       TABLE_OUTPUT_INTERFACE_INGRESS,
-       TABLE_OUTPUT_INTERFACE_EGRESS,
+
+       TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
+       TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
+
+       TABLE_OUTPUT_DP_NETWORK_DST,
+       TABLE_OUTPUT_DP_NETWORK_SRC,
+       TABLE_OUTPUT_DP_ROUTE_LINK_DST,
+       TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
+
+       TABLE_OUTPUT_DP_OVER_MAC2MAC,
+       TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
+       TABLE_OUTPUT_DP_OVER_TUNNEL,
+
+       TABLE_OUT_PORT_INTERFACE_INGRESS,
+       TABLE_OUT_PORT_INTERFACE_EGRESS,
+       TABLE_OUT_PORT_TUNNEL,
+
       ].each { |table|
         flows << Flow.create(table, 0, {}, nil, flow_options)
       }
@@ -109,7 +131,33 @@ module Vnet::Openflow
                            md_create(:remote => nil), nil,
                            flow_options)
 
-      flows << Flow.create(TABLE_OUTPUT_CONTROLLER,     0, {}, {:output => OFPP_CONTROLLER}, flow_options)
+      flows << Flow.create(TABLE_OUTPUT_CONTROLLER, 0, {}, {:output => OFPP_CONTROLLER}, flow_options)
+
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_NETWORK_DST,
+                           priority: 2,
+                           match: {
+                             :eth_dst => MAC_BROADCAST
+                           })
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+                           goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
+                           priority: 1,
+                           match: {
+                             :tunnel_id => TUNNEL_ROUTE_LINK
+                           })
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+                           goto_table: TABLE_OUTPUT_DP_NETWORK_SET_MAC,
+                           priority: 1,
+                           match: {
+                             :tunnel_id => TUNNEL_FLAG,
+                             :tunnel_id_mask => TUNNEL_FLAG_MASK
+                           })
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DP_NETWORK_SET_MAC,
+                           goto_table: TABLE_OUTPUT_DP_OVER_TUNNEL,
+                           priority: 0)
 
       # Catches all arp packets that are from local ports.
       #
@@ -129,8 +177,6 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_VIRTUAL_SRC, 80, {
                              :eth_type => 0x0806,
                            }, nil, flow_options)
-
-      # Add any test flows here.
 
       @datapath.add_flows(flows)
     end

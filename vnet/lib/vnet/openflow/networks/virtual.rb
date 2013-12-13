@@ -58,7 +58,7 @@ module Vnet::Openflow::Networks
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
       match_md = md_create(network: @id, remote: nil)
-      learn_md = md_create(network: @id, local: nil, vif: nil)
+      learn_md = md_create(network: @id, local: nil)
 
       flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]

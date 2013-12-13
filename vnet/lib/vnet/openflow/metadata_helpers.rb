@@ -11,8 +11,6 @@ module Vnet::Openflow
 
       options.each { |key,value|
         case key
-        when :clear_all
-          metadata_mask = 0xffffffffffffffff
         when :collection, :match_collection, :write_collection
           metadata = metadata | value | METADATA_TYPE_COLLECTION
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
@@ -40,7 +38,7 @@ module Vnet::Openflow
         when :remote, :match_remote, :write_remote
           metadata = metadata | METADATA_FLAG_REMOTE
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :reflection, :match_reflection, :write_reflection
+        when :reflection
           metadata = metadata | METADATA_FLAG_REFLECTION
           metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
         when :route, :match_route, :write_route
@@ -49,20 +47,40 @@ module Vnet::Openflow
         when :route_link, :match_route_link, :write_route_link
           metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
-        when :tunnel, :match_tunnel, :write_tunnel
-          metadata = metadata | METADATA_FLAG_TUNNEL
-          metadata_mask = metadata_mask | METADATA_FLAG_TUNNEL
-        when :vif, :match_vif, :write_vif
-          # Disable the vif flag until we actually need it.
-          # metadata = metadata | METADATA_FLAG_VIF
-          # metadata_mask = metadata_mask | METADATA_FLAG_VIF
+        when :match_tunnel, :write_tunnel
+          metadata = metadata | value | METADATA_TYPE_TUNNEL
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
 
         #
         # Refactored:
         #
+        when :clear_all
+          metadata_mask = 0xffffffffffffffff
+
+        when :match_dp_network, :write_dp_network
+          metadata = metadata | (value & METADATA_VALUE_MASK) | METADATA_TYPE_DP_NETWORK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :match_dp_route_link, :write_dp_route_link
+          metadata = metadata | (value & METADATA_VALUE_MASK) | METADATA_TYPE_DP_ROUTE_LINK
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :match_ignore_mac2mac, :write_ignore_mac2mac
-          metadata = metadata | (value == true ? METADATA_FLAG_IGNORE_MAC2MAC : 0)
+          metadata = metadata | METADATA_FLAG_IGNORE_MAC2MAC if value == true
           metadata_mask = metadata_mask | METADATA_FLAG_IGNORE_MAC2MAC
+
+        when :match_reflection, :write_reflection
+          metadata = metadata | METADATA_FLAG_REFLECTION if value == true
+          metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
+
+        when :match_value_pair_flag, :write_value_pair_flag
+          metadata = metadata | METADATA_VALUE_PAIR_FLAG | METADATA_VALUE_PAIR_TYPE if value == true
+          metadata_mask = metadata_mask | METADATA_VALUE_PAIR_FLAG | METADATA_VALUE_PAIR_TYPE
+        when :match_value_pair_first, :write_value_pair_first
+          metadata = metadata | ((value << 32) & METADATA_VALUE_PAIR_FIRST_MASK) | METADATA_VALUE_PAIR_TYPE
+          metadata_mask = metadata_mask | METADATA_VALUE_PAIR_FIRST_MASK | METADATA_VALUE_PAIR_TYPE
+        when :match_value_pair_second, :write_value_pair_second
+          metadata = metadata | (value & METADATA_VALUE_PAIR_SECOND_MASK) | METADATA_VALUE_PAIR_TYPE
+          metadata_mask = metadata_mask | METADATA_VALUE_PAIR_SECOND_MASK | METADATA_VALUE_PAIR_TYPE
+
         else
           raise("Unknown metadata type: #{key.inspect}")
         end

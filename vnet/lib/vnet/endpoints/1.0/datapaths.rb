@@ -48,15 +48,17 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   post '/:uuid/networks/:network_uuid' do
-    params = parse_params(@params, ['uuid','network_uuid','broadcast_mac_address'])
-    check_required_params(params, ["broadcast_mac_address", "network_uuid"])
+    params = parse_params(@params, ['uuid', 'network_uuid', 'broadcast_mac_address', 'interface_uuid'])
+    check_required_params(params, ["broadcast_mac_address", 'interface_uuid', "network_uuid"])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
+    interface = check_syntax_and_pop_uuid(M::Interface, params, 'interface_uuid')
     network = check_syntax_and_pop_uuid(M::Network, params, 'network_uuid')
 
     broadcast_mac_address = parse_mac(params['broadcast_mac_address'])
 
     M::DatapathNetwork.create({ :datapath_id => datapath.id,
+                                :interface_id => interface.id,
                                 :network_id => network.id,
                                 :broadcast_mac_address => broadcast_mac_address,
                               })
@@ -81,14 +83,16 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   post '/:uuid/route_links/:route_link_uuid' do
-    params = parse_params(@params, ['uuid', 'route_link_uuid', 'mac_address'])
-    check_required_params(params, ['mac_address'])
+    params = parse_params(@params, ['uuid', 'route_link_uuid', 'interface_uuid', 'mac_address'])
+    check_required_params(params, ['interface_uuid', 'mac_address'])
 
     datapath = check_syntax_and_pop_uuid(M::Datapath, params)
+    interface = check_syntax_and_pop_uuid(M::Interface, params, 'interface_uuid')
     route_link = check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid')
     mac_address = parse_mac(params['mac_address'])
 
     M::DatapathRouteLink.create({ :datapath_id => datapath.id,
+                                  :interface_id => interface.id,
                                   :route_link_id => route_link.id,
                                   :mac_address => mac_address,
                                 })

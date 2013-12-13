@@ -41,5 +41,10 @@ map '/api' do
     end
   end
 
+  map '/1.0' do
+    run Vnet::Endpoints::V10::VnetAPI.new
+  end
+
+  # for compatibirity
   run Vnet::Endpoints::V10::VnetAPI.new
 end

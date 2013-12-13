@@ -8,7 +8,24 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "create_all_tunnels" do
     before(:each) do
-      (1..3).each { |i| Fabricate("datapath_#{i}") }
+      networks = (1..2).map { |i|
+        Fabricate("pnet_public#{i}")
+      }.values_at(0, 0, 1)
+
+      (1..3).map { |i|
+        dp_self = Fabricate("datapath_#{i}")
+
+        ip_lease = Fabricate(:ip_lease,
+                             ipv4_address: dp_self.ipv4_address,
+                             network_id: networks[i-1].id)
+        mac_lease = Fabricate(:mac_lease,
+                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value,
+                              ip_leases: [ip_lease])
+
+        Fabricate("interface_dp#{i}eth0",
+                  owner_datapath_id: dp_self.id,
+                  mac_leases: [mac_lease])
+      }
     end
 
     let(:datapath) {
@@ -39,7 +56,6 @@ describe Vnet::Openflow::TunnelManager do
       expect(tunnel_infos.first.datapath_networks_size).to eq 0
 
       expect(datapath.dp_info.added_tunnels.size).to eq 1
-      expect(datapath.dp_info.added_tunnels.first[:tunnel_name]).to eq "t-3"
       expect(datapath.dp_info.added_tunnels.first[:remote_ip]).to eq "192.168.2.2"
     end
 
@@ -47,9 +63,28 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "update_virtual_network" do
     before do
-      Fabricate(:datapath_1, :dc_segment_id => 1)
-      Fabricate(:datapath_2, :dc_segment_id => 2)
-      Fabricate(:datapath_3, :dc_segment_id => 2)
+      networks = (1..2).map { |i|
+        Fabricate("pnet_public#{i}")
+      }.values_at(0, 0, 1)
+
+      (1..3).map { |i|
+        dp_self = Fabricate("datapath_#{i}",
+                            :dc_segment_id => [1, 2, 2][i-1])
+
+        interface = Fabricate("interface_dp#{i}eth0",
+                              owner_datapath_id: dp_self.id)
+
+        mac_lease = Fabricate(:mac_lease,
+                              interface: interface,
+                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value)
+
+        ip_lease = Fabricate(:ip_lease,
+                             mac_lease: mac_lease,
+                             ipv4_address: dp_self.ipv4_address,
+                             network_id: networks[i-1].id)
+
+      }
+
       Fabricate(:datapath_network, datapath_id: 1, network_id: 1, broadcast_mac_address: 1)
       Fabricate(:datapath_network, datapath_id: 1, network_id: 2, broadcast_mac_address: 2)
       Fabricate(:datapath_network, datapath_id: 2, network_id: 1, broadcast_mac_address: 3)
@@ -83,15 +118,15 @@ describe Vnet::Openflow::TunnelManager do
       flows = datapath.added_flows
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq 4
+      expect(flows.size).to eq 8
     end
 
     it "should add flood flow network 1" do
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                                 uuid: datapath.dp_info.added_tunnels[0][:tunnel_name],
                                  port_number: 9)
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[1][:tunnel_name],
+                                 uuid: datapath.dp_info.added_tunnels[1][:tunnel_name],
                                  port_number: 10)
 
       datapath.added_flows.clear
@@ -112,10 +147,10 @@ describe Vnet::Openflow::TunnelManager do
 
     it "should add flood flow for network 2" do
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                                 uuid: datapath.dp_info.added_tunnels[0][:tunnel_name],
                                  port_number: 9)
       tunnel_manager.update_item(event: :set_port_number,
-                                 port_name: datapath.dp_info.added_tunnels[1][:tunnel_name],
+                                 uuid: datapath.dp_info.added_tunnels[1][:tunnel_name],
                                  port_number: 10)
 
       datapath.added_flows.clear
@@ -146,8 +181,35 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "remove_network_id_for_dpid" do
     before do
-      Fabricate("datapath_1", dc_segment_id: 1)
-      Fabricate("datapath_2", dc_segment_id: 2)
+      #Fabricate("datapath_1", dc_segment_id: 1)
+      #Fabricate("datapath_2", dc_segment_id: 2)
+
+      # # id=1, dpid="0x"+"a"*16
+      # Fabricate("datapath_1")
+      # # id=2, dpid="0x"+"c"*16
+      # Fabricate("datapath_3")
+
+      networks = (1..2).map { |i|
+        Fabricate("pnet_public#{i}")
+      }.values_at(0, 0, 1)
+
+      (1..3).map { |i|
+        dp_self = Fabricate("datapath_#{i}",
+                            :dc_segment_id => [1, 2, 2][i-1])
+
+        interface = Fabricate("interface_dp#{i}eth0",
+                              owner_datapath_id: dp_self.id)
+
+        mac_lease = Fabricate(:mac_lease,
+                              interface: interface,
+                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value)
+
+        ip_lease = Fabricate(:ip_lease,
+                             mac_lease: mac_lease,
+                             ipv4_address: dp_self.ipv4_address,
+                             network_id: networks[i-1].id)
+      }
+
       Fabricate(:datapath_network, datapath_id: 1, network_id: 1, broadcast_mac_address: 1)
       Fabricate(:datapath_network, datapath_id: 2, network_id: 1, broadcast_mac_address: 2)
     end

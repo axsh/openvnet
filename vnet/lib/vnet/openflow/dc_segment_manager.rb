@@ -39,6 +39,41 @@ module Vnet::Openflow
     # Refactor...
     #
 
+    def create_all_tunnels
+      debug log_format("creating mac2mac flows")
+
+      if @datapath_info.nil?
+        error log_format('datapath information not loaded')
+        return nil
+      end
+
+      # Since we make all the tunnels up-front we need to assume the
+      # host ports are already created for all datapaths.
+      datapath_map = MW::Datapath.batch[@datapath_info.id].commit(:fill => :host_interfaces)
+
+      if datapath_map.host_interfaces.empty?
+        error log_format("could not find any host interface for this datapath, aborting mac2mac flow creation")
+        return
+      end
+
+      flows = []
+
+      # We currently depend on the dc segment id despite this being
+      # the wrong way to decide between tunnel and mac2mac.
+      MW::Datapath.batch.on_same_segment(@datapath_info.id).all.commit(:fill => :host_interfaces).map { |target_dp_map|
+        datapath_map.host_interfaces.map { |host_interface|
+          target_dp_map.host_interfaces.map { |dst_interface|
+            info log_format("creating mac2mac entry",
+                            "src_host:#{host_interface.uuid}/#{host_interface.port_name} dst_host:#{dst_interface.uuid}/#{dst_interface.port_name}")
+
+            prepare_interfaces(flows, target_dp_map.id, host_interface.id, dst_interface.id)
+          }
+        }
+      }
+
+      @dp_info.add_flows(flows)
+    end
+
     def insert(dpn_id)
       dpn_map = MW::DatapathNetwork[dpn_id]
       return unless dpn_map
@@ -63,15 +98,17 @@ module Vnet::Openflow
       dpn_list[dpn_map.id] = dpn
 
       # Fix this...
-      flow = flow_create(:default,
-                         table: TABLE_OUTPUT_DATAPATH,
-                         goto_table: TABLE_OUTPUT_MAC2MAC,
-                         priority: 5,
-                         match_datapath: dpn_map.datapath_id,
-                         match_ignore_mac2mac: false,
-                         write_mac2mac: true,
-                         cookie: dpn_map.datapath_id | COOKIE_TYPE_DATAPATH)
-      @dp_info.add_flow(flow)
+      flows = []
+      flows << flow_create(:default,
+                           table: TABLE_OUTPUT_DATAPATH,
+                           goto_table: TABLE_OUTPUT_MAC2MAC,
+                           priority: 5,
+                           match_datapath: dpn_map.datapath_id,
+                           match_ignore_mac2mac: false,
+                           write_mac2mac: true,
+                           cookie: dpn_map.datapath_id | COOKIE_TYPE_DATAPATH)
+
+      @dp_info.add_flows(flows)
 
       self.update_network_id(dpn_map.network_id)
     end
@@ -126,6 +163,30 @@ module Vnet::Openflow
       @dp_info.add_flow(flow)
 
       self.update_network_id(network_map.id)
+    end
+
+    def prepare_interfaces(flows, datapath_id, src_interface_id, dst_interface_id)
+      # TODO:
+      #
+      # MAC2MAC -> Do we need a relationship table, e.g. tunnel table
+      # has a 'mode' entry?
+
+      [true, false].each { |reflection|
+        flows << flow_create(:default,
+                             table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+                             goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+                             priority: 2,
+
+                             match_value_pair_flag: reflection,
+                             match_value_pair_first: src_interface_id,
+                             match_value_pair_second: dst_interface_id,
+
+                             clear_all: true,
+                             write_interface: src_interface_id,
+                             write_reflection: reflection,
+
+                             cookie: datapath_id | COOKIE_TYPE_DATAPATH)
+      }
     end
 
     def remove_network_id(network_id)

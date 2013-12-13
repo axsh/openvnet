@@ -137,6 +137,7 @@ module Vnet
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
+    autoload :DatapathRouteLink, 'vnet/node_api/models.rb'
     autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DhcpRange, 'vnet/node_api/models.rb'
     autoload :Interface, 'vnet/node_api/interface.rb'
@@ -198,6 +199,8 @@ module Vnet
 
     module Datapaths
       autoload :Base, 'vnet/openflow/datapaths/base'
+      autoload :Host, 'vnet/openflow/datapaths/host'
+      autoload :Remote, 'vnet/openflow/datapaths/remote'
     end
 
     module Interfaces

@@ -14,6 +14,17 @@ module Vnet::Openflow
     subscribe_event ADDED_DATAPATH_NETWORK, :add_datapath_network
     subscribe_event REMOVED_DATAPATH_NETWORK, :remove_datapath_network
 
+    def update(params)
+      case params[:event]
+      when :activate_route_link
+        activate_route_link(params)
+      when :deactivate_route_link
+        # deactivate_route_link(params)
+      end
+
+      nil
+    end
+
     #
     # Internal methods:
     #
@@ -37,14 +48,23 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Datapath.batch[filter].commit(fill: :datapath_networks)
+      MW::Datapath.batch[filter].commit(fill: [:datapath_networks, :host_interfaces])
     end
 
     def item_initialize(item_map)
-      Datapaths::Base.new(dp_info: @dp_info,
-                          manager: self,
-                          owner_dc_segment_id: @datapath_info.dc_segment_id,
-                          map: item_map)
+      item_class = 
+        if item_map.dpid == @dp_info.dpid_s
+          Datapaths::Host
+        else
+          Datapaths::Remote
+        end
+
+      item_class.new(
+        dp_info: @dp_info,
+        manager: self,
+        owner_dc_segment_id: @datapath_info.dc_segment_id,
+        map: item_map
+      )
     end
 
     def initialized_item_event
@@ -52,13 +72,12 @@ module Vnet::Openflow
     end
 
     def install_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
+      item = @items[params[:item_map].id]
       return unless item
 
-      debug log_format("install #{item_map.uuid}/#{item_map.id}")
-
       item.install
+
+      debug log_format("install #{item_map.uuid}/#{item_map.id}")
 
       if item.owner?
         item_map.datapath_networks.each do |dpn_map|
@@ -129,6 +148,20 @@ module Vnet::Openflow
         end
       end
     end
+
+    def activate_route_link(params)
+      return if params[:route_link_id].nil?
+
+      dp_rl_items = MW::DatapathRouteLink.batch.dataset.where(route_link_id: params[:route_link_id]).all.commit(:fill => :route_link)
+
+      dp_rl_items.each { |dp_rl|
+        item = item_by_params(id: dp_rl.datapath_id)
+        next if item.nil?
+
+        item.add_active_route_link(dp_rl)
+      }
+    end
+
   end
 
 end

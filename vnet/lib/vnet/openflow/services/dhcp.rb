@@ -10,7 +10,7 @@ module Vnet::Openflow::Services
     def install
       flows = []
       flows << flow_create(:controller,
-                           table: TABLE_OUTPUT_INTERFACE_INGRESS,
+                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
 
                            match: {
@@ -81,7 +81,7 @@ module Vnet::Openflow::Services
       flows = []
       flows << flow_create(:default,
                            table: TABLE_FLOOD_SIMULATED,
-                           goto_table: TABLE_OUTPUT_INTERFACE_INGRESS,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
                              :eth_type => 0x0800,
