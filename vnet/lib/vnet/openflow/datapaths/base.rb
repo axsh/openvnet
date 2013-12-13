@@ -23,7 +23,7 @@ module Vnet::Openflow::Datapaths
 
       @active_route_links = {}
 
-      @same_segment = @dp_info.datapaths.dc_segment_id == map[:dc_segment_id]
+      @same_segment = @dp_info.datapath.datapath_info.dc_segment_id == map[:dc_segment_id]
     end
     
     def host?
@@ -87,7 +87,7 @@ module Vnet::Openflow::Datapaths
 
       @dp_info.add_flows(flows)
 
-      after_add_active_network
+      after_add_active_network(active_network)
 
       debug log_format("adding to #{@uuid}/#{id} active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
 
@@ -100,7 +100,7 @@ module Vnet::Openflow::Datapaths
 
       @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       
-      after_remove_active_network
+      after_remove_active_network(active_network)
 
       debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
 

@@ -92,7 +92,7 @@ module Vnet::Openflow
       initialize_datapath_info(datapath_map)
 
       @dp_info.datapath_manager.item(id: datapath_map.id)
-      @datapath.dc_segment_manager.create_all_tunnels
+      @dp_info.dc_segment_manager.create_all_tunnels
       @dp_info.tunnel_manager.create_all_tunnels
 
       @switch.switch_ready

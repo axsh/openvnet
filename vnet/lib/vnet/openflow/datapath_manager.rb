@@ -71,12 +71,13 @@ module Vnet::Openflow
     end
 
     def install_item(params)
-      item = @items[params[:item_map].id]
+      item_map =  params[:item_map]
+      item = @items[item_map.id]
       return unless item
 
       item.install
 
-      debug log_format("install #{item_map.uuid}/#{item_map.id}")
+      debug log_format("install #{item.uuid}/#{item.id}")
 
       if item.host?
         item_map.datapath_networks.each do |dpn_map|

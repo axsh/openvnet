@@ -56,5 +56,13 @@ module Vnet::Models
         left_join(:datapath_networks, :datapath_id => :id).where(:datapath_networks__network_id => network_id).all
       end
     end
+
+    def on_other_segments
+      self.class.on_other_segments(id).all
+    end
+
+    def on_same_segment
+      self.class.on_same_segment(id).all
+    end
   end
 end

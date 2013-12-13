@@ -143,24 +143,8 @@ module Vnet::Openflow
     end
 
     def prepare_network(network_id)
-      debug log_format("prepare_network", network_id)
       network_map = MW::Network[network_id]
       return unless network_map && network_map.network_mode == 'virtual'
-
-      dpn = MW::DatapathNetwork[datapath_id: @datapath_info.id,
-                                network_id: network_map.id]
-
-      flow = flow_create(:default,
-                         table: TABLE_HOST_PORTS,
-
-                         priority: 30,
-                         match: { :eth_dst => Trema::Mac.new(dpn.broadcast_mac_address) },
-                         actions: { :eth_dst => MAC_BROADCAST },
-                         write_network: network_map.id,
-                         cookie: network_map.id | COOKIE_TYPE_NETWORK,
-                         goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
-
-      @dp_info.add_flow(flow)
 
       self.update_network_id(network_map.id)
     end
