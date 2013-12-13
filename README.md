@@ -10,6 +10,14 @@ Getting Started
 
 - [Installation Guide](https://github.com/axsh/openvnet/blob/master/InstallGuide.md)
 
+Contributors
+------------
+
+Special thanks to all contributors for submitting patches. A full list
+of contributors including their patches can be found at:
+
+https://github.com/axsh/openvnet/graphs/contributors
+
 License
 -------
 
