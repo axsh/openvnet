@@ -73,12 +73,6 @@ module Vnet::Openflow::Interfaces
       end
     end
 
-    def add_security_groups
-    end
-
-    def del_security_groups
-    end
-
     def cookie(type = 0, value = 0)
       unless type & 0xf == type
         raise "Invalid cookie optional type: %#x" % type

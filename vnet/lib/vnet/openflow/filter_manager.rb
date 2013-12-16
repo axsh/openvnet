@@ -4,86 +4,67 @@ module Vnet::Openflow
   class FilterManager < Manager
     include Vnet::Openflow::FlowHelpers
 
-    COOKIE_SG_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
+    subscribe_event INITIALIZED_INTERFACE, :apply_filters
+    subscribe_event REMOVED_INTERFACE, :remove_filters
 
-    COOKIE_SG_TYPE_TAG  = 0x1 << COOKIE_TAG_SHIFT
-    COOKIE_SG_TYPE_RULE = 0x2 << COOKIE_TAG_SHIFT
-    COOKIE_SG_TYPE_REF  = 0x3 << COOKIE_TAG_SHIFT
-    COOKIE_SG_TYPE_ISO  = 0x4 << COOKIE_TAG_SHIFT
-
-    COOKIE_TYPE_VALUE_SHIFT = 36
-    COOKIE_TYPE_VALUE_MASK  = 0xfffff << COOKIE_TYPE_VALUE_SHIFT
-
-    COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
-    COOKIE_TAG_INGRESS_ACCEPT_ALL = 0x2 << COOKIE_TYPE_VALUE_SHIFT
+    GLOBAL_FILTERS_KEY = 'global'
 
     def initialize(*args)
       super(*args)
 
-      accept_ingress_arp
+      @items[GLOBAL_FILTERS_KEY] = []
+      initialize_filter(type: :accept_ingress_arp)
     end
 
-    def apply_rules(openflow_interface)
-      interface_id = openflow_interface.id
-      interface = MW::Interface.batch[interface_id].commit
+    def initialized_item_event
+      INITIALIZED_FILTER
+    end
 
-      groups = interface.batch.security_groups.commit.map { |g|
-        Vnet::Openflow::Filters::SecurityGroup.new(g, interface_id)
-      }
+    def apply_filters(interface_hash)
+      interface = interface_hash[:item_map]
+      groups = interface.batch.security_groups.commit
 
-      flows = if groups.empty?
-        accept_all_traffic(interface_id)
+      if groups.empty?
+        debug log_format("Accepting all ingress traffic on interface '%s'" %
+          interface.uuid)
+
+        initialize_filter(type: :accept_all_traffic,
+                          interface_id: interface.id)
       else
-        groups.map { |g| g.install(interface) }.flatten
-      end
+        groups.each do |group|
+          debug log_format("Installing security group '%s' for interface '%s'" %
+            [group.uuid, interface.uuid])
 
-      @dp_info.add_flows(flows)
+          initialize_filter(type: :security_group,
+                            interface_id: interface.id,
+                            group_wrapper: group)
+        end
+      end
     end
 
-    def remove_rules(interface)
-      @dp_info.del_cookie(accept_all_traffic_cookie(interface.id))
-
-      sg_rules = COOKIE_TYPE_SECURITY_GROUP |
-        COOKIE_SG_TYPE_RULE |
-        interface.id << COOKIE_TYPE_VALUE_SHIFT
-
-      sg_rules_mask = COOKIE_PREFIX_MASK | COOKIE_TAG_MASK
-
-      @dp_info.del_cookie(sg_rules, sg_rules_mask)
+    def remove_filters(interface_hash)
+      @items[interface_hash.id].each { |item| @dp_info.del_cookie item.cookie }
     end
 
     private
-    def accept_all_traffic_cookie(interface_id)
-      interface_id |
-        COOKIE_TYPE_SECURITY_GROUP |
-        COOKIE_SG_TYPE_TAG |
-        COOKIE_TAG_INGRESS_ACCEPT_ALL
-    end
+    def initialize_filter(params)
+      interface_id = params[:interface_id]
 
-    def accept_all_traffic(interface_id)
-      [
-        flow_create(:default,
-          table: TABLE_INTERFACE_INGRESS_FILTER,
-          priority: Vnet::Openflow::Filters::Rule::RULE_PRIORITY,
-          cookie: accept_all_traffic_cookie(interface_id),
-          match_metadata: { interface: interface_id },
-          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
-      ]
-    end
+      item = case params[:type]
+      when :accept_ingress_arp
+        Filters::AcceptIngressArp.new.tap {|f| @items[GLOBAL_FILTERS_KEY] << f}
+      when :accept_all_traffic
+        Filters::AcceptAllTraffic.new(interface_id)
+      when :security_group
+        Filters::SecurityGroup.new(params[:group_wrapper], interface_id)
+      end
 
-    def accept_ingress_arp
-      cookie = COOKIE_TYPE_SECURITY_GROUP |
-        COOKIE_SG_TYPE_TAG |
-        COOKIE_TAG_INGRESS_ARP_ACCEPT
+      if interface_id
+        @items[interface_id] ||= []
+        @items[interface_id] << item
+      end
 
-      @dp_info.add_flows [
-        flow_create(:default,
-                    table: TABLE_INTERFACE_INGRESS_FILTER,
-                    priority: 90,
-                    cookie: cookie,
-                    match: { eth_type: ETH_TYPE_ARP },
-                    goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
-      ]
+      @dp_info.add_flows item.install
     end
   end
 end

@@ -173,8 +173,6 @@ module Vnet::Openflow
 
       debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.mode}")
 
-      item.del_security_groups
-
       item.uninstall
 
       if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number

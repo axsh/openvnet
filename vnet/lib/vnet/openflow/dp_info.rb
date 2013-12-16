@@ -51,6 +51,7 @@ module Vnet::Openflow
 
     def add_flows(flows)
       return if flows.blank?
+      flows = [flows] unless flows.is_a?(Enumerable)
       @controller.pass_task {
         flows.each { |flow|
           @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)

@@ -3,34 +3,49 @@
 require "ipaddress"
 
 module Vnet::Openflow::Filters
-  class Rule
-    include Vnet::Openflow::FlowHelpers
+  class Rule < Base
     include Celluloid::Logger
 
-    RULE_PRIORITY = 10
+    PRIORITY = 10
 
     attr_reader :cookie
 
-    def initialize(s_ipv4, port, cookie)
-      @s_ipv4 = IPAddress::IPv4.new(s_ipv4)
-      @cookie = cookie
-      @port = port.to_i
+    def self.create(rule_string, interface_id, cookie)
+      protocol, port, ipv4 = rule_string.strip.split(":")
+      case protocol
+      when 'icmp'
+        ICMP.new(ipv4, interface_id, cookie)
+      when 'tcp'
+        TCP.new(ipv4, port, interface_id, cookie)
+      when 'udp'
+        UDP.new(ipv4, port, interface_id, cookie)
+      end
     end
 
-    def install(interface)
+    def initialize(s_ipv4, port, interface_id, cookie)
+      @s_ipv4 = IPAddress::IPv4.new(s_ipv4)
+      @port = port.to_i
+      @interface_id = interface_id
+      @cookie = cookie
+    end
+
+    def install
       flow_create(
         :default,
         table: TABLE_INTERFACE_INGRESS_FILTER,
-        priority: RULE_PRIORITY,
-        match_metadata: {interface: interface.id},
+        priority: PRIORITY,
+        match_metadata: {interface: @interface_id},
         match: match_ipv4_subnet_src(@s_ipv4.u32, @s_ipv4.prefix.to_i).merge(match),
-        cookie: @cookie,
         goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
       )
     end
   end
 
   class ICMP < Rule
+    def initialize(s_ipv4, interface_id, cookie)
+      super(s_ipv4, nil, interface_id, cookie)
+    end
+
     def match
       {ip_proto: IPV4_PROTOCOL_ICMP}
     end
@@ -40,7 +55,7 @@ module Vnet::Openflow::Filters
     def match
       {
         ip_proto: IPV4_PROTOCOL_TCP,
-        tcp_dst: @port.to_i
+        tcp_dst: @port
       }
     end
   end
@@ -49,7 +64,7 @@ module Vnet::Openflow::Filters
     def match
       {
         ip_proto: IPV4_PROTOCOL_UDP,
-        udp_dst: @port.to_i
+        udp_dst: @port
       }
     end
   end

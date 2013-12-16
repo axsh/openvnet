@@ -237,6 +237,10 @@ module Vnet
     end
 
     module Filters
+      autoload :AcceptAllTraffic, 'vnet/openflow/filters/accept_all_traffic'
+      autoload :AcceptIngressArp, 'vnet/openflow/filters/accept_ingress_arp'
+      autoload :Base, 'vnet/openflow/filters/base'
+      autoload :Cookies, 'vnet/openflow/filters/cookies'
       autoload :SecurityGroup, 'vnet/openflow/filters/security_group'
       autoload :Rule, 'vnet/openflow/filters/rules'
       autoload :ICMP, 'vnet/openflow/filters/rules'
