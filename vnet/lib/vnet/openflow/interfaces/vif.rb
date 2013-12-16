@@ -25,10 +25,6 @@ module Vnet::Openflow::Interfaces
                                                 mode: :vif,
                                                 port_number: @port_number)
 
-      @dp_info.connection_manager.catch_new_egress(self,
-                                                   mac_info,
-                                                   ipv4_info)
-
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)

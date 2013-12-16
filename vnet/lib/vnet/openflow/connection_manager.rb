@@ -8,28 +8,35 @@ module Vnet::Openflow
     COOKIE_TAG_CATCH_FLOW         = 0x1 << COOKIE_TAG_SHIFT
     COOKIE_TAG_INGRESS_CONNECTION = 0x2 << COOKIE_TAG_SHIFT
 
+    subscribe_event LEASED_MAC_ADDRESS, :catch_new_egress
+    subscribe_event RELEASED_MAC_ADDRESS, :remove_catch_new_egress
+    subscribe_event REMOVED_INTERFACE, :close_connections
+
     def packet_in(message)
       open_connection(message)
     end
 
-    def catch_flow_cookie(interface)
-      COOKIE_TYPE_CONTRACK | COOKIE_TAG_CATCH_FLOW | interface.id
+    def catch_flow_cookie(interface_id)
+      COOKIE_TYPE_CONTRACK | COOKIE_TAG_CATCH_FLOW | interface_id
     end
 
-    def catch_new_egress(interface, mac_info, ipv4_info)
-      interface_model = MW::Interface.batch[interface.id].commit
+    def catch_new_egress(interface_mac_lease)
+      interface_id = interface_mac_lease[:id]
+      interface = MW::Interface.batch[interface_id].commit
 
-      unless interface_model.batch.security_groups.commit.empty?
+      unless interface.batch.security_groups.commit.empty?
+        debug log_format("Catching new egress connections", interface.uuid)
+
         flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
           flow_create(:default,
                       table: TABLE_INTERFACE_EGRESS_FILTER,
                       priority: 20,
                       match: {
-                        eth_src: mac_info[:mac_address],
+                        eth_src: Trema::Mac.new(interface_mac_lease[:mac_address]),
                         eth_type: ETH_TYPE_IPV4,
                         ip_proto: protocol
                       },
-                      cookie: catch_flow_cookie(interface),
+                      cookie: catch_flow_cookie(interface_id),
                       actions: { output: Controller::OFPP_CONTROLLER })
         }
 
@@ -37,8 +44,8 @@ module Vnet::Openflow
       end
     end
 
-    def remove_catch_new_egress(interface)
-      @dp_info.del_cookie catch_flow_cookie(interface)
+    def remove_catch_new_egress(interface_mac_lease)
+      @dp_info.del_cookie catch_flow_cookie(interface_mac_lease[:id])
     end
 
     def close_connections(interface)

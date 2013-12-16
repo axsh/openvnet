@@ -188,7 +188,10 @@ module Vnet::Openflow
 
     def load_addresses(item_map)
       item_map.mac_leases.each do |mac_lease|
-        publish(LEASED_MAC_ADDRESS, id: item_map.id, mac_lease_id: mac_lease.id)
+        publish(LEASED_MAC_ADDRESS, id: item_map.id,
+                                    mac_lease_id: mac_lease.id,
+                                    mac_address: mac_lease.mac_address)
+
         mac_lease.ip_leases.each do |ip_lease|
           publish(LEASED_IPV4_ADDRESS, id: item_map.id, ip_lease_id: ip_lease.id)
         end
