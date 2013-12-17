@@ -14,7 +14,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
 
     post_new(:VlanTranslation, accepted_params, required_params) do |params|
       params['mac_address'] = parse_mac(params['mac_address'])
-      check_syntax_and_get_id(M::Translation, params, "translation_uuid", "translation_id")
+      translation = check_syntax_and_get_id(M::Translation, params, "translation_uuid", "translation_id")
+
+      if translation.mode != 'vnet_edge'
+        raise(E::ArgumentError, 'Translation mode must be "vnet_edge".')
+      end
     end
   end
 
