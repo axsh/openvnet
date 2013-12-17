@@ -2,6 +2,6 @@
 
 module Vnet::Models
   class VlanTranslation < Base
-    many_to_one :interface
+    many_to_one :translation
   end
 end

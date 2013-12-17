@@ -148,7 +148,7 @@ module Vnet::Openflow::Translations
 
       return if message.packet_info.arp_request && !dst_mac.broadcast?
 
-      if vlan_vid == 0
+      if vlan_vid == 0 || vlan_vid.nil?
         error log_format("blank vlan_vid", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
         return nil
       end
