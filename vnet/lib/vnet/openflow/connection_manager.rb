@@ -48,9 +48,9 @@ module Vnet::Openflow
       @dp_info.del_cookie catch_flow_cookie(interface_mac_lease[:id])
     end
 
-    def close_connections(interface)
-      debug log_format("Closing all connections for interface '#{interface.uuid}'")
-      @dp_info.del_cookie Connections::Base.cookie(interface.id)
+    def close_connections(interface_hash)
+      # debug log_format("Closing all connections for interface '#{interface.uuid}'")
+      @dp_info.del_cookie Connections::Base.cookie(interface_hash[:id])
     end
 
     def open_connection(message)

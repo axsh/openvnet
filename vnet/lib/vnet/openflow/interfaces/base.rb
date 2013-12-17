@@ -32,6 +32,7 @@ module Vnet::Openflow::Interfaces
     attr_accessor :display_name
 
     attr_reader :port_number
+    attr_reader :mac_addresses
 
     def initialize(params)
       @dp_info = params[:dp_info]
