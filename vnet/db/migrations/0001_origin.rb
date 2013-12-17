@@ -177,6 +177,29 @@ Sequel.migration do
       DateTime :deleted_at
     end
 
+    create_table(:translations) do
+      primary_key :id
+      String :uuid, :unique => true, :null => false
+
+      Integer :interface_id, :index => true
+      String :mode, :index => true, :null => false
+
+      Boolean :passthrough, :default => false, :null => false
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:translate_static_addresses) do
+      primary_key :id
+
+      Integer :translation_id, :index => true, :null => false
+      
+      Bignum :ingress_ipv4_address, :index => true, :null => false
+      Bignum :egress_ipv4_address, :index => true, :null => false
+    end
+
     create_table(:tunnels) do
       primary_key :id
       String :uuid, :unique => true, :null=>false

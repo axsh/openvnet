@@ -103,6 +103,8 @@ module Vnet
     autoload :RouteLink, 'vnet/models/route_link'
     autoload :SecurityGroup, 'vnet/models/security_group'
     autoload :Taggable, 'vnet/models/base'
+    autoload :Translation, 'vnet/models/translation'
+    autoload :TranslateStaticAddress, 'vnet/models/translate_static_address'
     autoload :Tunnel, 'vnet/models/tunnel'
     autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
@@ -123,9 +125,11 @@ module Vnet
     autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :Network, 'vnet/model_wrappers/network'
     autoload :NetworkService, 'vnet/model_wrappers/network_service'
-    autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
+    autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
+    autoload :Translation, 'vnet/model_wrappers/translation'
+    autoload :TranslateStaticAddress, 'vnet/model_wrappers/translation'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
     autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
@@ -150,6 +154,8 @@ module Vnet
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :SecurityGroup, 'vnet/node_api/models.rb'
+    autoload :Translation, 'vnet/node_api/models.rb'
+    autoload :TranslateStaticAddress, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
     autoload :VlanTranslation, 'vnet/node_api/models.rb'
   end
@@ -187,6 +193,7 @@ module Vnet
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
+    autoload :Translation, 'vnet/openflow/translation'
     autoload :TranslationManager, 'vnet/openflow/translation_manager'
     autoload :Tunnel, 'vnet/openflow/tunnel'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
@@ -250,12 +257,14 @@ module Vnet
       autoload :Router, 'vnet/openflow/services/router'
     end
 
-    module Tunnels
-      autoload :Base, 'vnet/openflow/tunnels/base'
+    module Translations
+      autoload :Base, 'vnet/openflow/translations/base'
+      autoload :StaticAddress, 'vnet/openflow/translations/static_address'
+      autoload :VnetEdgeHandler, 'vnet/openflow/translations/vnet_edge_handler'
     end
 
-    module Translations
-      autoload :VnetEdgeHandler, 'vnet/openflow/translations/vnet_edge_handler'
+    module Tunnels
+      autoload :Base, 'vnet/openflow/tunnels/base'
     end
 
   end

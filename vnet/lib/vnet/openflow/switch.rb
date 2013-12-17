@@ -199,8 +199,8 @@ module Vnet::Openflow
     def switch_ready
       # There's a short period of time between the switch being
       # activated and features_reply installing flow.
-      @datapath.dc_segment_manager.create_all_tunnels
-      @datapath.tunnel_manager.create_all_tunnels
+      @datapath.dc_segment_manager.async.create_all_tunnels
+      @datapath.tunnel_manager.async.create_all_tunnels
 
       #
       # Send messages that will start initializing the switch.
