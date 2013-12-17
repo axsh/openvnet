@@ -58,6 +58,7 @@ module Vnet
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :Translation, 'vnet/endpoints/1.0/responses/translation'
         autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
@@ -74,6 +75,7 @@ module Vnet
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :TranslationCollection, 'vnet/endpoints/1.0/responses/translation'
         autoload :VlanTranslationCollection, 'vnet/endpoints/1.0/responses/vlan_translation'
       end
     end
