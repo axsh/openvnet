@@ -19,10 +19,14 @@ module Vnctl::Cli
 
     rel_option :broadcast_mac_address, :type => :string, :required => true,
       :desc => "The broadcast mac address for mac2mac to use in this network."
+    rel_option :interface_uuid, :type => :string, :required => true,
+      :desc => "The host interface uuid to use for this network."
     define_relation :networks
 
     rel_option :mac_address, :type => :string, :required => true,
         :desc => "The mac address to use for this link"
+    rel_option :interface_uuid, :type => :string, :required => true,
+      :desc => "The host interface uuid to use for this route link."
     define_relation(:route_links)
   end
 end
