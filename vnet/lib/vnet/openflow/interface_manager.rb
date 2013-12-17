@@ -165,6 +165,11 @@ module Vnet::Openflow
 
       @dp_info.port_manager.async.attach_interface(port_name: item.uuid)
 
+      if item.mode != :remote
+        @dp_info.translation_manager.async.update(event: :install_interface,
+                                                  interface_id: item.id)
+      end
+
       item # Return nil if interface has been uninstalled.
     end
 
@@ -183,6 +188,11 @@ module Vnet::Openflow
 
       if item.port_number
         @dp_info.port_manager.async.detach_interface(port_number: item.port_number)
+      end
+
+      if item.mode != :remote
+        @dp_info.translation_manager.async.update(event: :remove_interface,
+                                                  interface_id: item.id)
       end
 
       item

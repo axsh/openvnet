@@ -5,36 +5,29 @@ module Vnet::Openflow
   class TranslationManager < Manager
     include Vnet::Event::Dispatchable
 
+    def initialize(params)
+      super
+
+      @interfaces = {}
+    end
+
     #
     # Events:
     #
     subscribe_event INITIALIZED_TRANSLATION, :install_item
 
     def update(params)
-      # case params[:event]
-      #   nil
-      # end
+      case params[:event]
+      when :install_interface
+        install_interface(params)
+      when :remove_interface
+        remove_interface(params)
+      else
+        nil
+      end
 
       nil
     end
-
-    #
-    # Refactor:
-    #
-
-    # def update_translation_map
-    #   @translation_map = Vnet::ModelWrappers::VlanTranslation.batch.all.commit
-    # end
-
-    # def network_to_vlan(network_id)
-    #   entry = @translation_map.find { |t| t.network_id == network_id }
-    #   entry && entry.vlan_id
-    # end
-
-    # def vlan_to_network(vlan_vid)
-    #   entry = @translation_map.find { |t| t.vlan_id == vlan_vid }
-    #   entry && entry.network_id
-    # end
 
     #
     # Internal methods:
@@ -53,6 +46,7 @@ module Vnet::Openflow
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:interface_id] && params[:interface_id] != item.interface_id
       true
     end
     
@@ -60,6 +54,7 @@ module Vnet::Openflow
       case
       when params[:id]   then {:id => params[:id]}
       when params[:uuid] then params[:uuid]
+      when params[:interface_id] then {:interface_id => params[:interface_id]}
       else
         # Any invalid params that should cause an exception needs to
         # be caught by the item_by_params_direct method.
@@ -82,6 +77,7 @@ module Vnet::Openflow
 
       case item_map.mode && item_map.mode.to_sym
       when :static_address then Translations::StaticAddress.new(params)
+      when :vnet_edge      then Translations::VnetEdgeHandler.new(params)
       else
         nil
       end
@@ -120,22 +116,30 @@ module Vnet::Openflow
     end
 
     #
-    # Refactor:
+    # Event handlers:
     #
 
-    # def add_handler(params)
-    #   info log_format("install handlers", params[:mode])
-    #   item = translation_handler_initialize(params)
+    def install_interface(params)
+      return if params[:interface_id].nil?
+      return if @interfaces.has_key? params[:interface_id]
 
-    #   return nil if item.nil?
+      @interfaces[params[:interface_id]] = {
+      }
 
-    #   @items[item.id] = item
-    # end
+      # Currently only support a single item with the same interface
+      # id.
+      item = item_by_params(interface_id: params[:interface_id])
+    end
 
-    # def initialize_handlers
-    #   return unless @dp_info.datapath.datapath_map.node_id == 'edge'
-    #   add_handler(mode: :vnet_edge, dp_info: @dp_info)
-    # end
+    def remove_interface(params)
+      return if params[:interface_id].nil?
+
+      @interfaces.delete(params[:interface_id])
+
+      item = internal_detect(interface_id: params[:interface_id])
+
+      delete_item(item) if item
+    end
 
   end
 
