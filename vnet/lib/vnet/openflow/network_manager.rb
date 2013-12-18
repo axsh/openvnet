@@ -153,10 +153,6 @@ module Vnet::Openflow
 
       @dp_info.route_manager.async.prepare_network(item_map, @datapath_info)
 
-      # Move the dispatch event or verify if still in @items.
-      dispatch_event("network/added",
-                     network_id: network.id,
-                     dpid: @dpid)
       network
     end
 
