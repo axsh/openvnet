@@ -8,7 +8,7 @@ module Vnet::Openflow::Filters
 
     def self.cookie(interface_id)
       interface_id |
-        COOKIE_TYPE_SECURITY_GROUP |
+        COOKIE_TYPE_FILTER |
         COOKIE_SG_TYPE_TAG |
         COOKIE_TAG_INGRESS_ACCEPT_ALL
     end

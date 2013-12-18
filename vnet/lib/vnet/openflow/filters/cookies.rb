@@ -17,7 +17,7 @@ module Vnet::Openflow::Filters::Cookies
   COOKIE_TAG_INGRESS_ACCEPT_ALL = 0x2 << COOKIE_TYPE_VALUE_SHIFT
 
   def remove_all_rules_cookie(interface_id)
-    sg_rules = COOKIE_TYPE_SECURITY_GROUP |
+    sg_rules = COOKIE_TYPE_FILTER |
       COOKIE_SG_TYPE_RULE |
       interface.id << COOKIE_TYPE_VALUE_SHIFT
 
