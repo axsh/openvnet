@@ -4,7 +4,7 @@ module Vnet::Openflow::Filters
   class AcceptIngressArp < Base
     def self.cookie
       COOKIE_TYPE_FILTER |
-      COOKIE_SG_TYPE_TAG |
+      COOKIE_TYPE_TAG |
       COOKIE_TAG_INGRESS_ARP_ACCEPT
     end
 

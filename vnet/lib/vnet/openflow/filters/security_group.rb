@@ -17,7 +17,7 @@ module Vnet::Openflow::Filters
     end
 
     def self.cookie(group_id, interface_cookie_id)
-      group_id | COOKIE_TYPE_FILTER | COOKIE_SG_TYPE_RULE |
+      group_id | COOKIE_TYPE_FILTER | COOKIE_TYPE_RULE |
         (interface_cookie_id << COOKIE_TYPE_VALUE_SHIFT)
     end
 
