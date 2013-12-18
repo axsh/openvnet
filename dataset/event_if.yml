@@ -102,38 +102,47 @@ datapath_networks:
 
   - datapath_uuid: dp-1
     network_uuid: nw-public
+    interface_uuid: if-dp1eth0
     broadcast_mac_address: "02:00:01:aa:01:01"
 
   - datapath_uuid: dp-1
     network_uuid: nw-vnet1
+    interface_uuid: if-dp1eth0
     broadcast_mac_address: "02:00:00:aa:00:01"
 
   - datapath_uuid: dp-1
     network_uuid: nw-vnet2
+    interface_uuid: if-dp1eth0
     broadcast_mac_address: "02:00:00:aa:00:02"
 
   - datapath_uuid: dp-2
     network_uuid: nw-public
+    interface_uuid: if-dp2eth0
     broadcast_mac_address: "02:00:01:bb:01:01"
 
   - datapath_uuid: dp-2
     network_uuid: nw-vnet1
+    interface_uuid: if-dp2eth0
     broadcast_mac_address: "02:00:00:bb:00:01"
 
   - datapath_uuid: dp-2
     network_uuid: nw-vnet2
+    interface_uuid: if-dp2eth0
     broadcast_mac_address: "02:00:00:bb:00:02"
 
   - datapath_uuid: dp-3
     network_uuid: nw-public
+    interface_uuid: if-dp3eth0
     broadcast_mac_address: "02:00:01:cc:01:01"
 
   - datapath_uuid: dp-3
     network_uuid: nw-vnet1
+    interface_uuid: if-dp3eth0
     broadcast_mac_address: "02:00:00:cc:00:01"
 
   - datapath_uuid: dp-3
     network_uuid: nw-vnet2
+    interface_uuid: if-dp3eth0
     broadcast_mac_address: "02:00:00:cc:00:02"
 
 route_links:
@@ -144,14 +153,17 @@ route_links:
 datapath_route_links:
   - datapath_uuid: dp-1
     route_link_uuid: rl-1
+    interface_uuid: if-dp1eth0
     mac_address: "02:00:10:aa:00:01"
 
   - datapath_uuid: dp-2
     route_link_uuid: rl-1
+    interface_uuid: if-dp2eth0
     mac_address: "02:00:10:bb:00:01"
 
   - datapath_uuid: dp-3
     route_link_uuid: rl-1
+    interface_uuid: if-dp3eth0
     mac_address: "02:00:10:cc:00:01"
 
 routes:

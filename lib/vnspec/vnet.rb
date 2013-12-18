@@ -74,6 +74,21 @@ module Vnspec
           logger.info
         end
       end
+
+      def install_package(name)
+        run_command_on_vna_nodes("yum install -y #{name}")
+      end
+
+      def install_proxy_server
+        install_package("squid")
+        run_command_on_vna_nodes("service squid start")
+        run_command_on_vna_nodes("chkconfig squid on")
+      end
+
+      def run_command_on_vna_nodes(*args)
+        multi_ssh(config[:nodes][:vna], args.join(" "))
+      end
+      alias_method :run_command, :run_command_on_vna_nodes
     end
   end
 end
