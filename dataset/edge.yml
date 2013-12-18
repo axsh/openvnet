@@ -172,5 +172,5 @@ translations:
 vlan_translations:
   - vlan_id: 100
     network_id: 2
-    interface_uuid: tr-edge
+    translation_uuid: tr-edge
 
