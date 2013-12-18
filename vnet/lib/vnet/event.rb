@@ -10,6 +10,7 @@ module Vnet
     ADDED_INTERFACE = "added_interface"
     REMOVED_INTERFACE = "removed_interface"
     INITIALIZED_INTERFACE = "initialized_interface"
+    UPDATED_INTERFACE = "updated_interface"
 
     # ipv4 address
     LEASED_IPV4_ADDRESS = "leased_ipv4_address"

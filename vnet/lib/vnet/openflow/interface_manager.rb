@@ -10,6 +10,7 @@ module Vnet::Openflow
     subscribe_event ADDED_INTERFACE, :create_item
     subscribe_event REMOVED_INTERFACE, :unload
     subscribe_event INITIALIZED_INTERFACE, :install_item
+    subscribe_event UPDATED_INTERFACE, :update_item
     subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
@@ -17,15 +18,24 @@ module Vnet::Openflow
     subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
 
     def update_item(params)
-      case params[:event]
-      when :remove_all_active_datapath
-        @items.each { |_, item| item.update_active_datapath(datapath_id: nil) }
-        return
+      unless params[:id]
+        case params[:event]
+        when :remove_all_active_datapath
+          @items.each do |_, item|
+            publish(UPDATED_INTERFACE, event: :active_datapath_id, id: item.id, datapath_id: nil)
+          end
+          return
+        end
       end
 
       # Todo: Add the possibility to use a 'filter' parameter for this.
-      item = item_by_params(params)
+      item = internal_detect(params)
       return nil if item.nil?
+
+      unless params[:id]
+        publish(UPDATED_INTERFACE, params.merge(id: item.id))
+        return
+      end
 
       case params[:event]
       when :active_datapath_id
