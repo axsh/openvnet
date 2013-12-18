@@ -21,8 +21,8 @@ module Vnet::Openflow
     end
 
     def apply_filters(interface_hash)
-      #TODO: Only apply filters for vifs
       interface = interface_hash[:item_map]
+      return unless interface.mode == 'vif'
       groups = interface.batch.security_groups.commit
 
       if groups.empty?
@@ -44,8 +44,9 @@ module Vnet::Openflow
     end
 
     def remove_filters(interface_hash)
-      # TODO: Remove the items
-      @items[interface_hash[:id]].each { |item| @dp_info.del_cookie item.cookie }
+      @items.delete(interface_hash[:id]).each { |item|
+        @dp_info.del_cookie item.cookie
+      }
     end
 
     private
