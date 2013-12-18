@@ -244,6 +244,9 @@ module Vnet::Openflow::Interfaces
     # creates the flows required for handling routing, even though
     # those flows will never be touched.
 
+    def flows_for_datapath(flows)
+    end
+
     def flows_for_interface_mac(flows, mac_info)
     end
 
