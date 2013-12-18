@@ -18,11 +18,13 @@ module Vnet::Openflow::Filters
     end
 
     def install
-      flow_create(:default,
-        table: TABLE_INTERFACE_INGRESS_FILTER,
-        priority: Vnet::Openflow::Filters::Rule::PRIORITY,
-        match_metadata: { interface: @interface_id },
-        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
+      [
+        flow_create(:default,
+          table: TABLE_INTERFACE_INGRESS_FILTER,
+          priority: Vnet::Openflow::Filters::Rule::PRIORITY,
+          match_metadata: { interface: @interface_id },
+          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
+      ]
     end
   end
 end
