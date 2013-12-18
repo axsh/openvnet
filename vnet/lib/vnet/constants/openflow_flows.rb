@@ -118,7 +118,7 @@ module Vnet
 
       # Directly output to a port type with no additional
       # actions. Usable by any table and as such need to be the last
-      # tables. 
+      # tables.
       TABLE_OUT_PORT_INTERFACE_INGRESS = 90
       TABLE_OUT_PORT_INTERFACE_EGRESS  = 91
       TABLE_OUT_PORT_TUNNEL            = 92
@@ -149,9 +149,9 @@ module Vnet
       COOKIE_PREFIX_INTERFACE      = 0xc
       COOKIE_PREFIX_TRANSLATION    = 0xd
       COOKIE_PREFIX_SECURITY_GROUP = 0xe
-      COOKIE_PREFIX_CONTRACK       = 0xf
+      COOKIE_PREFIX_CONNECTION     = 0xf
 
-      COOKIE_TYPE_CONTRACK       = (COOKIE_PREFIX_CONTRACK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_CONNECTION     = (COOKIE_PREFIX_CONNECTION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DATAPATH       = (COOKIE_PREFIX_DATAPATH << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_NETWORK     = (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_ROUTE_LINK  = (COOKIE_PREFIX_DP_ROUTE_LINK << COOKIE_PREFIX_SHIFT)

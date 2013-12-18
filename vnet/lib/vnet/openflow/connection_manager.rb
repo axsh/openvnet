@@ -17,7 +17,7 @@ module Vnet::Openflow
     end
 
     def catch_flow_cookie(interface_id)
-      COOKIE_TYPE_CONTRACK | COOKIE_TAG_CATCH_FLOW | interface_id
+      COOKIE_TYPE_CONNECTION | COOKIE_TAG_CATCH_FLOW | interface_id
     end
 
     def catch_new_egress(interface_mac_lease)

@@ -82,7 +82,7 @@ module Vnet::Openflow
         datapath.translation_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
         datapath.service_manager.async.packet_in(message)
-      when COOKIE_PREFIX_CONTRACK
+      when COOKIE_PREFIX_CONNECTION
         datapath.dp_info.connection_manager.async.packet_in(message)
       end
     end
