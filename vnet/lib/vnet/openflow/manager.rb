@@ -15,7 +15,7 @@ module Vnet::Openflow
       @items = {}
     end
 
-    def item(params)
+    def retrieve(params)
       begin
         item_to_hash(item_by_params(params))
       rescue Celluloid::Task::TerminatedError => e
@@ -26,6 +26,7 @@ module Vnet::Openflow
         raise e
       end
     end
+    alias_method :item, :retrieve
 
     def unload(params)
       item = internal_detect(params)
