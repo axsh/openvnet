@@ -22,7 +22,6 @@ module Vnet::Openflow
 
     def apply_filters(interface_hash)
       interface = interface_hash[:item_map]
-      return unless interface.mode == 'vif'
       groups = interface.batch.security_groups.commit
 
       if groups.empty?
