@@ -117,12 +117,12 @@ module Vnet::Openflow
         write_metadata = { :network => params[:write_network_id] }
         goto_table = TABLE_INTERFACE_EGRESS_FILTER
       when :router_classifier
-        table = TABLE_ROUTE_INGRESS
+        table = TABLE_ROUTE_INGRESS_INTERFACE
         match_metadata = { :network => params[:network_id] }
         if params[:ingress_interface_id]
           priority = 10
           write_metadata = { :interface => params[:ingress_interface_id] }
-          goto_table = TABLE_ROUTE_LINK_INGRESS
+          goto_table = TABLE_ROUTE_INGRESS_TRANSLATION
         else
           priority = 20
           goto_table = TABLE_NETWORK_DST_CLASSIFIER

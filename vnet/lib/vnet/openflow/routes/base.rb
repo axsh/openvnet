@@ -95,7 +95,7 @@ module Vnet::Openflow::Routes
         if @egress == true
           flows << flow_create(:routing,
                                table: TABLE_ROUTE_LINK_EGRESS,
-                               goto_table: TABLE_ROUTE_EGRESS,
+                               goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
 
                                match: subnet_dst,
                                match_route_link: @route_link_id,
@@ -133,7 +133,7 @@ module Vnet::Openflow::Routes
 
           # flows << flow_create(:routing,
           #                      table: TABLE_ROUTE_LINK_EGRESS,
-          #                      goto_table: TABLE_ROUTE_EGRESS,
+          #                      goto_table: TABLE_ROUTE_EGRESS_INTERFACE,
 
           #                      match: subnet_dst,
           #                      match_route_link: @route_link_id,

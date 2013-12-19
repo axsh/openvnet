@@ -82,7 +82,7 @@ module Vnet::Openflow::Networks
 
       flow_learn_arp << learn_options
 
-      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTE_INGRESS
+      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTE_INGRESS_INTERFACE
       flow_learn_arp
     end
   end

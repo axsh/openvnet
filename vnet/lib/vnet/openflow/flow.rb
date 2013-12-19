@@ -76,8 +76,11 @@ module Vnet::Openflow
 
     def to_action(tag, arg)
       case tag
-      when :eth_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
-      when :eth_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])
+      when :eth_dst  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
+      when :eth_src  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])
+      when :ipv4_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::Ipv4DstAddr.new(:ip_addr => arg)])
+      when :ipv4_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::Ipv4SrcAddr.new(:ip_addr => arg)])
+
       when :normal then Trema::Actions::SendOutPort.new(:port_number => OFPP_NORMAL)
       when :output then Trema::Actions::SendOutPort.new(:port_number => arg)
       when :tunnel_id then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TunnelId.new(:tunnel_id => arg)])
