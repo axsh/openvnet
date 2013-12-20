@@ -49,7 +49,7 @@ describe Vnet::NodeApi::Interface do
         owner_datapath: datapath)
     end
 
-    it "with associations" do
+    it "success" do
       Vnet::NodeApi::Interface.execute(:update,
         interface.canonical_uuid,
         {
@@ -64,6 +64,39 @@ describe Vnet::NodeApi::Interface do
       expect(events.size).to eq 1
       expect(events.first[:event]).to eq Vnet::Event::UPDATED_INTERFACE
       expect(events.first[:options][:id]).to eq interface[:id]
+    end
+  end
+
+  describe "update_active_datapath" do
+    let(:datapath) { Fabricate(:datapath) }
+    let(:interface) do
+      Fabricate(:interface,
+        mac_leases: [
+          Fabricate(:mac_lease,
+            mac_address: 2,
+            ip_leases: [
+              Fabricate(:ip_lease,
+                ipv4_address: 1,
+                network_id: Fabricate(:network).id)
+            ])],
+        owner_datapath: datapath)
+    end
+
+    it "success" do
+      result = Vnet::NodeApi::Interface.execute(
+        :update_active_datapath,
+        interface.canonical_uuid,
+        datapath.id 
+      )
+
+      expect(result[:active_datapath_id]).to eq datapath.id
+
+      model = Vnet::Models::Interface[interface.id]
+      expect(model.active_datapath_id).to eq datapath.id
+
+      # no events
+      events = MockEventHandler.handled_events
+      expect(events.size).to eq 0
     end
   end
 

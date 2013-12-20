@@ -165,7 +165,28 @@ module Vnet::Openflow::Interfaces
     def disable_router_egress
     end
 
+    def update
+      interface = MW::Interface[@id]
+      @display_name = interface.display_name
+      if @owner_datapath_ids != [interface.owner_datapath_id]
+        update_owner_datapath(interface.owner_datapath_id)
+      end
+    end
+
+    def update_owner_datapath(owner_datapath_id)
+      if owner_datapath_id
+        # add new owner_datapath_id
+        @owner_datapath_ids = [owner_datapath_id]
+        if owner_datapath_id == @dp_info.datapath.datapath_info.id
+          update_active_datapath(datapath_id: @dp_info.datapath.datapath_info.id)
+        end
+      else
+        @owner_datapath_ids = nil
+      end
+    end
+
     def update_port_number(new_number)
+      debug log_format("update_port_number", new_number)
       return if @port_number == new_number
 
       @port_number = new_number
@@ -185,7 +206,7 @@ module Vnet::Openflow::Interfaces
 
       @active_datapath_ids = active_datapath_ids
 
-      MW::Interface.batch.update(@id, :active_datapath_id => params[:datapath_id]).commit
+      MW::Interface.batch.update_active_datapath(@id, params[:datapath_id]).commit
 
       unless params[:datapath_id]
 
@@ -245,6 +266,9 @@ module Vnet::Openflow::Interfaces
       [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
     end
 
+    def del_flows_for_active_datapath(ipv4_addresses)
+    end
+
     #
     # Internal methods:
     #
@@ -253,6 +277,7 @@ module Vnet::Openflow::Interfaces
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
+      debug log_format("is_remote #{@datapath_info}")
     end
 
     # Some flows could be created on demand by checking if the

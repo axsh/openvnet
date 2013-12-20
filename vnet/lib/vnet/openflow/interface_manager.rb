@@ -10,7 +10,7 @@ module Vnet::Openflow
     subscribe_event ADDED_INTERFACE, :create_item
     subscribe_event REMOVED_INTERFACE, :unload
     subscribe_event INITIALIZED_INTERFACE, :install_item
-    subscribe_event UPDATED_INTERFACE, :update_item
+    subscribe_event UPDATED_INTERFACE, :update_item_exclusively
     subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
@@ -18,44 +18,14 @@ module Vnet::Openflow
     subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
 
     def update_item(params)
-      unless params[:id]
-        case params[:event]
-        when :remove_all_active_datapath
-          @items.each do |_, item|
-            publish(UPDATED_INTERFACE, event: :active_datapath_id, id: item.id, datapath_id: nil)
-          end
-          return
-        end
-      end
-
-      # Todo: Add the possibility to use a 'filter' parameter for this.
-      item = internal_detect(params)
-      return nil if item.nil?
-
-      unless params[:id]
-        publish(UPDATED_INTERFACE, params.merge(id: item.id))
-        return
-      end
-
       case params[:event]
-      when :active_datapath_id
-        # Reconsider this...
-        item.update_active_datapath(params)
-      when :set_port_number
-        # Check if not nil...
-        item.update_port_number(params[:port_number])
-        item.update_active_datapath(datapath_id: @datapath_info.id)
-      when :clear_port_number
-        # Check if nil... (use param :port_number to verify)
-        item.update_port_number(nil)
-        item.update_active_datapath(datapath_id: nil)
-      when :enable_router_ingress
-        item.enable_router_ingress
-      when :enable_router_egress
-        item.enable_router_egress
+      when :remove_all_active_datapath
+        @items.each do |_, item|
+          publish(UPDATED_INTERFACE, event: :active_datapath_id, id: item.id, datapath_id: nil)
+        end
+      else
+        publish(UPDATED_INTERFACE, params)
       end
-
-      item_to_hash(item)
     end
 
     # Deprecate this...
@@ -67,7 +37,7 @@ module Vnet::Openflow
     end
 
     def del_flows_for_active_datapath(params)
-      internal_select(mode: :simulated).each do |item|
+      @items.values.each do |item|
         item.del_flows_for_active_datapath(params[:ipv4_addresses])
       end
     end
@@ -297,6 +267,40 @@ module Vnet::Openflow
       return if ip_lease && ip_lease.interface_id == item.id
 
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
+    end
+
+    def update_item_exclusively(params)
+      id = params.fetch(:id)
+      event = params[:event]
+
+      # Todo: Add the possibility to use a 'filter' parameter for this.
+      item = internal_detect(id: id)
+      return nil if item.nil?
+
+      case event
+      when :active_datapath_id
+        # Reconsider this...
+        item.update_active_datapath(params)
+      when :set_port_number
+        debug log_format("update_item", params)
+        # Check if not nil...
+        item.update_port_number(params[:port_number])
+        item.update_active_datapath(datapath_id: @datapath_info.id)
+      when :clear_port_number
+        debug log_format("update_item", params)
+        # Check if nil... (use param :port_number to verify)
+        item.update_port_number(nil)
+        item.update_active_datapath(datapath_id: nil)
+      when :enable_router_ingress
+        item.enable_router_ingress
+      when :enable_router_egress
+        item.enable_router_egress
+      else
+        # api event
+        item.update
+      end
+
+      item_to_hash(item)
     end
 
   end
