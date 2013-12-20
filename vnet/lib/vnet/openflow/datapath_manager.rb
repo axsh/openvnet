@@ -14,7 +14,7 @@ module Vnet::Openflow
     subscribe_event ADDED_DATAPATH_NETWORK, :add_datapath_network
     subscribe_event REMOVED_DATAPATH_NETWORK, :remove_datapath_network
 
-    def update(params)
+    def update_item(params)
       case params[:event]
       when :activate_route_link
         activate_route_link(params)
@@ -81,7 +81,7 @@ module Vnet::Openflow
 
       if item.host?
         item_map.datapath_networks.each do |dpn_map|
-          publish(ADDED_DATAPATH_NETWORK, dpn_map: dpn_map)
+          publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
         end
       end
 
@@ -119,7 +119,7 @@ module Vnet::Openflow
       # need to be propagated if it is newly added network
       if dpn_map.datapath_id == @datapath_info.id
         dpn_map.batch.datapath_networks_in_the_same_network.commit.each do |peer_dpn_map|
-          activate_network(peer_dpn_map)
+          publish(ADDED_DATAPATH_NETWORK, id: peer_dpn_map.datapath_id, dpn_map: peer_dpn_map)
         end
       end
     end
@@ -162,6 +162,9 @@ module Vnet::Openflow
       }
     end
 
+    def host
+      @items.find { |i| i.host? }
+    end
   end
 
 end

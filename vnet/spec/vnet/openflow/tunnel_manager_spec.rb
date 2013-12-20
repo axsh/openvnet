@@ -6,61 +6,6 @@ include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::TunnelManager do
 
-  describe "create_all_tunnels" do
-    before(:each) do
-      networks = (1..2).map { |i|
-        Fabricate("pnet_public#{i}")
-      }.values_at(0, 0, 1)
-
-      (1..3).map { |i|
-        dp_self = Fabricate("datapath_#{i}")
-
-        ip_lease = Fabricate(:ip_lease,
-                             ipv4_address: dp_self.ipv4_address,
-                             network_id: networks[i-1].id)
-        mac_lease = Fabricate(:mac_lease,
-                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value,
-                              ip_leases: [ip_lease])
-
-        Fabricate("interface_dp#{i}eth0",
-                  owner_datapath_id: dp_self.id,
-                  mac_leases: [mac_lease])
-      }
-    end
-
-    let(:datapath) {
-      MockDatapath.new(double, ("a" * 16).to_i(16)).tap { |dp|
-        dp.create_mock_datapath_map
-      }
-    }
-
-    subject {
-      Vnet::Openflow::TunnelManager.new(datapath.dp_info).tap { |mgr|
-        mgr.set_datapath_info(datapath.datapath_info)
-      }
-    }
-
-    it "should create the entries in the tunnel table" do
-      subject.create_all_tunnels
-
-      conf = Vnet::Configurations::Vna.conf
-      db_tunnels = Vnet::Models::Datapath.find({:node_id => conf.node.id}).tunnels
-      expect(db_tunnels.size).to eq 1
-      expect(db_tunnels.first.dst_datapath.node_id).to eq "vna3"
-      expect(db_tunnels.first.dst_datapath.dc_segment_id).to eq 2
-
-      tunnel_infos = subject.select
-
-      expect(tunnel_infos.size).to eq 1
-      expect(tunnel_infos.first.uuid).to eq db_tunnels.first.canonical_uuid
-      expect(tunnel_infos.first.datapath_networks_size).to eq 0
-
-      expect(datapath.dp_info.added_tunnels.size).to eq 1
-      expect(datapath.dp_info.added_tunnels.first[:remote_ip]).to eq "192.168.2.2"
-    end
-
-  end
-
   describe "update_virtual_network" do
     before do
       networks = (1..2).map { |i|
@@ -85,11 +30,11 @@ describe Vnet::Openflow::TunnelManager do
 
       }
 
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, broadcast_mac_address: 1)
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 2, broadcast_mac_address: 2)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, broadcast_mac_address: 3)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 2, broadcast_mac_address: 4)
-      Fabricate(:datapath_network, datapath_id: 3, network_id: 1, broadcast_mac_address: 5)
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, broadcast_mac_address: 1)
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 2, interface_id: 1, broadcast_mac_address: 2)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, interface_id: 2, broadcast_mac_address: 3)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 2, interface_id: 2, broadcast_mac_address: 4)
+      Fabricate(:datapath_network, datapath_id: 3, network_id: 1, interface_id: 3, broadcast_mac_address: 5)
     end
 
     let(:datapath) do
@@ -105,7 +50,8 @@ describe Vnet::Openflow::TunnelManager do
 
     let(:tunnel_manager) do
       datapath.dp_info.tunnel_manager.tap do |tunnel_manager|
-        tunnel_manager.create_all_tunnels
+        tunnel_manager.prepare_network(1)
+        tunnel_manager.prepare_network(2)
         tunnel_manager.insert(3)
         tunnel_manager.insert(4)
         tunnel_manager.insert(5)
@@ -210,8 +156,8 @@ describe Vnet::Openflow::TunnelManager do
                              network_id: networks[i-1].id)
       }
 
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, broadcast_mac_address: 1)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, broadcast_mac_address: 2)
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, broadcast_mac_address: 1)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, interface_id: 2, broadcast_mac_address: 2)
     end
 
     let(:ofctl) { double(:ofctl) }
@@ -223,18 +169,20 @@ describe Vnet::Openflow::TunnelManager do
 
     subject do
       datapath.dp_info.tunnel_manager.tap do |tm|
-        tm.create_all_tunnels
+        tm.prepare_network(1)
         tm.insert(2)
       end
     end
 
     it "should delete tunnel when the network is deleted on the local datapath" do
-      subject.remove_network_id_for_dpid(1, ("0x#{'a' * 16}").to_i(16))
-      expect(datapath.dp_info.deleted_tunnels[0]).to eq datapath.dp_info.added_tunnels[0][:tunnel_name]
+      pending
+      subject.remove_network(1)
+      # TODO flood flow should be deleted
     end
 
     it "should delete tunnel when the network is deleted on the remote datapath" do
-      subject.remove_network_id_for_dpid(1, ("0x#{'b' * 16}").to_i(16))
+      subject.remove(2)
+      sleep(0.001)
       expect(datapath.dp_info.deleted_tunnels[0]).to eq datapath.dp_info.added_tunnels[0][:tunnel_name]
     end
   end

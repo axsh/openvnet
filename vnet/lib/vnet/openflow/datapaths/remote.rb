@@ -4,12 +4,6 @@ module Vnet::Openflow::Datapaths
 
   class Remote < Base
 
-    def install
-      unless same_segment?
-        @dp_info.tunnel_manager.async.create_item(dst_id: id)
-      end
-    end
-
     def uninstall
       if same_segment?
         @dp_info.dc_segment_manager.async.remove_datapath(id)
@@ -32,7 +26,7 @@ module Vnet::Openflow::Datapaths
       if same_segment?
         @dp_info.dc_segment_manager.async.remove(active_network[:dpn_id])
       else
-        @dp_info.tunnel_manager.async.remove_network_id_for_dpid(network_id, @dpid)
+        @dp_info.tunnel_manager.async.remove(active_network[:dpn_id])
       end
     end
 

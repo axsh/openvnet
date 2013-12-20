@@ -10,8 +10,13 @@ module Vnet::Openflow
     subscribe_event REMOVED_TUNNEL, :unload
     subscribe_event INITIALIZED_TUNNEL, :install_item
 
+    def initialize(*args)
+      super
+      @host_datapath_networks = {}
+    end
+
     def update_item(params)
-      item = item_by_params(params)
+      item = internal_detect(params)
       return nil if item.nil?
 
       case params[:event]
@@ -33,118 +38,61 @@ module Vnet::Openflow
       nil
     end
 
-    #
-    # Refactor...
-    #
-
-    def create_all_tunnels
-      debug log_format("creating tunnel ports")
-
-      if @datapath_info.nil?
-        error log_format('datapath information not loaded')
-        return nil
-      end
-
-      # Since we make all the tunnels up-front we need to assume the
-      # host ports are already created for all datapaths.
-      datapath_map = MW::Datapath.batch[@datapath_info.id].commit(:fill => :host_interfaces)
-
-      if datapath_map.host_interfaces.empty?
-        error log_format("could not find any host interface for this datapath, aborting tunnel creation")
-        return
-      end
-
-      MW::Datapath.batch.on_other_segments(@datapath_info.id).all.commit(:fill => :host_interfaces).map { |target_dp_map|
-        datapath_map.host_interfaces.map { |host_interface|
-          target_dp_map.host_interfaces.map { |dst_interface|
-            info log_format("creating tunnel entry",
-                            "src_host:#{host_interface.uuid}/#{host_interface.port_name} dst_host:#{dst_interface.uuid}/#{dst_interface.port_name}")
-
-            tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
-                                           dst_datapath_id: target_dp_map.id,
-                                           src_interface_id: host_interface.id,
-                                           dst_interface_id: dst_interface.id
-                                           )
-            tunnel_map.id
-          }
-        }
-
-      }.flatten.each { |tunnel_id|
-        item_by_params(id: tunnel_id) if tunnel_id
-      }
-    end
-
-    def create_item(params)
-      item = internal_detect(dst_id: params[:dst_id])
-      return if item
-
-      tunnel_name = "t-#{params[:dst_id]}"
-      tunnel_map = MW::Tunnel.create(src_datapath_id: @datapath_info.id,
-                                     dst_datapath_id: params[:dst_id],
-                                     display_name: tunnel_name)
-
-      debug log_format("create #{tunnel_map.uuid}/#{tunnel_map.id}")
-
-      item(id: tunnel_map.id)
-    end
-
-
     def insert(dpn_id)
-      dpn_map = MW::DatapathNetwork.batch[dpn_id].commit(fill: :datapath)
-      return unless dpn_map
+      datapath_network = create_datapath_network(dpn_id)
+      return unless datapath_network
 
-      info log_format("insert datapath network",
-                      "network_id:#{dpn_map.network_id} id:#{dpn_map.id}")
+      info log_format(
+        "insert datapath network",
+        "datapath_id:#{datapath_network[:datapath_id]}" +
+        "network_id:#{datapath_network[:network_id]}" +
+        "interface_id:#{datapath_network[:interface_id]}"
+      )
 
-      item = internal_detect(dst_id: dpn_map.datapath_id)
-
-      datapath_network = {
-        :id => dpn_map.id,
-        :dpid => dpn_map.datapath.dpid,
-        :ipv4_address => dpn_map.datapath.ipv4_address,
-        :datapath_id => dpn_map.datapath.dpid,
-        :broadcast_mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
-        :network_id => dpn_map.network_id,
+      options = {
+        src_datapath_id: @datapath_info.id,
+        dst_datapath_id: datapath_network[:datapath_id],
+        src_interface_id: @host_datapath_networks[datapath_network[:network_id]][:interface_id],
+        dst_interface_id: datapath_network[:interface_id],
       }
 
-      item.datapath_networks << datapath_network if item
+      item = internal_detect(options)
+      unless item
+        info log_format(
+          "creating tunnel entry",
+          options.map { |k, v| "#{k}: #{v}" }.join(" ")
+        )
+        MW::Tunnel.create(options).tap do |tunnel|
+          item = item_by_params(id: tunnel.id)
+        end
+      end
 
+      item.add_datapath_network(datapath_network)
       update_network_id(datapath_network[:network_id])
     end
 
-    def prepare_network(network_id)
+    def remove(dpn_id)
+      @items.values.find { |item|
+        item.datapath_networks.any? { |dpn| dpn[:id] == dpn_id }
+      }.tap do |item|
+        return unless item
+
+        datapath_network = item.remove_datapath_network(dpn_id)
+        update_network_id(datapath_network[:network_id]) if datapath_network
+        publish(REMOVED_TUNNEL, id: item.id) if item.unused?
+      end
     end
 
-    def remove_network_id_for_dpid(network_id, remote_dpid)
-      # if #{remote_dpid} is equal to #{@dp_info.dpid},
-      # it can be regard as the network deletion happens on
-      # the local datapath (not on the remote datapath)
+    def prepare_network(dpn_id)
+      datapath_network = create_datapath_network(dpn_id)
+      return unless datapath_network
+      @host_datapath_networks[datapath_network[:network_id]] = datapath_network
+    end
 
-      if remote_dpid == @dp_info.dpid
-        debug log_format('delete tunnel on local datapath',
-                         "local_dpid:#{@dp_info.dpid} remote_dpid:#{remote_dpid}")
-
-        delete_items = @items.select { |id, item|
-          # debug log_format("try to delete tunnel #{item.display_name}")
-          remove_datapath_network(item, network_id)
-        }
-      else
-        debug log_format('delete tunnel for remote datapath',
-                         "local_dpid:#{@dp_info.dpid} remote_dpid:#{remote_dpid}")
-
-        delete_items = @items.select { |id, item|
-          if item.dst_dpid == "0x%016x" % remote_dpid
-            # debug log_format('found a tunnel to delete', "display_name:#{item.display_name}")
-            remove_datapath_network(item, network_id)
-          else
-            false
-          end
-        }
-      end
-
-      delete_items.each { |id, item| delete_item(item) }
-
-      update_network_id(network_id)
+    def remove_network(network_id)
+      @host_datapath_networks.delete(network_id)
+      # TODO
+      # * remove the flow which is created by `update_network_id`
     end
 
     def delete_all_tunnels
@@ -172,7 +120,10 @@ module Vnet::Openflow
       return false if params[:display_name] && params[:display_name] != item.display_name
       return false if params[:port_name] && params[:port_name] != item.display_name
       return false if params[:dst_id] && params[:dst_id] != item.dst_id
+      return false if params[:dst_datapath_id] && params[:dst_datapath_id] != item.dst_id
       return false if params[:dst_dpid] && params[:dst_dpid] != item.dst_dpid
+      return false if params[:src_interface_id] && params[:src_interface_id] != item.src_interface_id
+      return false if params[:dst_interface_id] && params[:dst_interface_id] != item.dst_interface_id
       true
     end
 
@@ -278,26 +229,19 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
-    #
-    # Refactor:
-    #
+    def create_datapath_network(dpn_id)
+      dpn_map = MW::DatapathNetwork.batch[dpn_id].commit(fill: :datapath)
+      return unless  dpn_map
 
-    # Delete the item if it returns true.
-    def remove_datapath_network(item, network_id)
-      item.datapath_networks.delete_if { |dpn| dpn[:network_id] == network_id }
-
-      if item.datapath_networks.empty?
-        debug log_format("datapath networks is empty for #{item.uuid}")
-
-        # Currently dynamic creation and deletion does not work
-        #MW::Tunnel.batch[:id => item.id].destroy.commit
-        #true
-      else
-        debug log_format("datapath networks is not empty for #{item.uuid}")
-        false
-      end
+      {
+        id: dpn_map.id,
+        dpid: dpn_map.datapath.dpid,
+        ipv4_address: dpn_map.datapath.ipv4_address,
+        datapath_id: dpn_map.datapath_id,
+        network_id: dpn_map.network_id,
+        interface_id: dpn_map.interface_id,
+        broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
+      }
     end
-
   end
-
 end

@@ -26,17 +26,16 @@ module Vnet::Openflow::Datapaths
       @dp_info.add_flows(flows)
 
       @dp_info.dc_segment_manager.async.prepare_network(active_network[:network_id])
-      # nothing to do
       @dp_info.tunnel_manager.async.prepare_network(active_network[:network_id])
     end  
 
     def after_remove_active_network(active_network)
       @dp_info.dc_segment_manager.async.remove_network_id(active_network[:network_id])
-      @dp_info.tunnel_manager.async.remove_network_id_for_dpid(active_network[:network_id], @dpid)
+      @dp_info.tunnel_manager.async.remove_network(active_network[:network_id])
     end
-         
-    def   log_format(message, values = nil)
-      "  #{@dp_info.dpid_s} datapaths/host: #{message}" + (values ? " (#{values})" : '')
+
+    def log_format(message, values = nil)
+      "#{@dp_info.dpid_s} datapaths/host: #{message}" + (values ? " (#{values})" : '')
     end  
          
     def   flows_for_dp_network(flows, dp_nw)

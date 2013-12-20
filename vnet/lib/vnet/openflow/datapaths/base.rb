@@ -40,8 +40,10 @@ module Vnet::Openflow::Datapaths
     end
 
     def to_hash
-      { :id => @id,
-        :uuid => @uuid,
+      {
+        id: @id,
+        uuid: @uuid,
+        active_networks: @active_networks.values,
       }
     end
 
@@ -67,14 +69,13 @@ module Vnet::Openflow::Datapaths
       return if @active_networks.has_key? dpn_map.network_id
 
       active_network = {
-        :id => dpn_map.id,
-        :dpn_id => dpn_map.id,
-        :datapath_id => dpn_map.datapath_id,
-        :interface_id => dpn_map.interface_id,
-        :network_id => dpn_map.network_id,
-
-        :mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
-        :broadcast_mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
+        id: dpn_map.id,
+        dpn_id: dpn_map.id,
+        datapath_id: dpn_map.datapath_id,
+        interface_id: dpn_map.interface_id,
+        network_id: dpn_map.network_id,
+        mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
+        broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
       }
 
       @active_networks[dpn_map.network_id] = active_network

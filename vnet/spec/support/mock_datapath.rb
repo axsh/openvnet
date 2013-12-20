@@ -135,4 +135,11 @@ class MockDatapath < Vnet::Openflow::Datapath
   def mod_port(port_no, action)
   end
 
+  def added_tunnels
+    @dp_info.added_tunnels
+  end
+
+  def deleted_tunnels
+    @dp_info.deleted_tunnels
+  end
 end
