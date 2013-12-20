@@ -78,7 +78,7 @@ module Vnctl::Cli
 
           desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
             "Adds #{desc_label} to a #{parent.namespace}."
-          rel_opts.each { |o| option(o[:name], o[:desc]) }
+          rel_opts && rel_opts.each { |o| option(o[:name], o[:desc]) }
           def add(base_uuid, rel_uuid)
             puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
           end
