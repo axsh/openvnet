@@ -17,6 +17,9 @@ module Vnet::Openflow::Datapaths
     private
 
     def after_add_active_network(active_network)
+      @dp_info.dc_segment_manager.async.prepare_network(active_network[:network_id])
+      @dp_info.tunnel_manager.async.prepare_network(active_network[:id])
+
       flows = []
       flows_for_broadcast_mac_address(
         flows,
@@ -24,9 +27,6 @@ module Vnet::Openflow::Datapaths
         active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
       )
       @dp_info.add_flows(flows)
-
-      @dp_info.dc_segment_manager.async.prepare_network(active_network[:network_id])
-      @dp_info.tunnel_manager.async.prepare_network(active_network[:network_id])
     end  
 
     def after_remove_active_network(active_network)
