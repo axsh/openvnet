@@ -18,7 +18,7 @@ module Vnctl::Cli
 
       def self.define_add
         desc "add [OPTIONS]", "Creates a new #{namespace}."
-        add_required_options.each { |o|
+        set_required_options.each { |o|
           options[o].instance_variable_set(:@required, true)
         }
         define_method(:add) do
@@ -107,9 +107,9 @@ module Vnctl::Cli
         @relation_options = []
       end
 
-      def self.add_required_options(opts = nil)
-        @add_required_options = opts unless opts.nil?
-        @add_required_options || []
+      def self.set_required_options(opts = nil)
+        @required_options_for_add = opts unless opts.nil?
+        @required_options_for_add || []
       end
 
       def self.add_modify_shared_options(&blk)

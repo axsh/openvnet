@@ -12,7 +12,7 @@ module Vnctl::Cli
       option :outgoing_port, :type => :numeric, :desc => "The outgoing port for this network service."
     }
 
-    add_required_options [:display_name]
+    set_required_options [:display_name]
 
     define_standard_crud_commands
   end

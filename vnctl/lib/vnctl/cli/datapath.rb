@@ -13,7 +13,7 @@ module Vnctl::Cli
       option :ipv4_address, :type => :string, :desc => "Ipv4 address for the datapath."
       option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
     }
-    add_required_options [:display_name, :dpid, :node_id]
+    set_required_options [:display_name, :dpid, :node_id]
 
     define_standard_crud_commands
 

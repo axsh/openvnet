@@ -37,7 +37,7 @@ module Vnctl::Cli
       option :mode, :type => :string, :desc => "The type of this interface."
     }
 
-    add_required_options [:mac_address]
+    set_required_options [:mac_address]
 
     option_uuid
     option :ipv4_address, :type => :string, :desc => "The first ip lease for this interface."
