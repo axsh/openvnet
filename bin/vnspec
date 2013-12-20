@@ -13,6 +13,6 @@ invoker.__send__(*args).tap do |success|
     puts "result: success"
   else
     puts "result: failure"
+    exit 1
   end
-  exit 1 unless success
 end

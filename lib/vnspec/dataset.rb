@@ -30,6 +30,8 @@ module Vnspec
             "datapaths/#{v.delete(:datapath_uuid)}/networks/#{v.delete(:network_uuid)}"
           when :datapath_route_links
             "datapaths/#{v.delete(:datapath_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
+          when :interface_security_groups
+            "interfaces/#{v.delete(:interface_uuid)}/security_groups/#{v.delete(:security_group_uuid)}"
           else
             key.to_s
           end

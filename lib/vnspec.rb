@@ -8,6 +8,7 @@ require 'faraday_middleware'
 require 'peach'
 require 'rspec'
 require 'pp'
+require 'ipaddress'
 # for debug
 require 'pry'
 

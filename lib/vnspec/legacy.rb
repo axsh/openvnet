@@ -39,8 +39,8 @@ module Vnspec
         "LogLevel" => "ERROR",
         "ConnectTimeout" => timeout
       )
-      ret = ssh(ssh_ip, "ssh #{options} #{vm.ipv4_address} hostname", {}).chomp!
-      ret == vm.name.to_s
+      ret = ssh(ssh_ip, "ssh #{options} #{vm.ipv4_address} hostname", {})
+      ret[:stdout].chomp == vm.name.to_s
     end
   end
 end
