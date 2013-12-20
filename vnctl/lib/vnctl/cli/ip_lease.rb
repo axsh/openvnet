@@ -7,10 +7,10 @@ module Vnctl::Cli
 
     add_modify_shared_options {
       option :network_uuid, :type => :string, :desc => "The network to lease this ip in."
-      option :interface_uuid, :type => :string, :desc => "The uuid of the interface to lease this ip to."
-      option :ip_address_uuid, :type => :string, :desc => "The uuid of the ip address to lease."
+      option :mac_lease_uuid, :type => :string, :desc => "The mac lease that this ip lease is tried to."
+      option :ip_address, :type => :string, :desc => "The uuid of the ip address to lease."
     }
-    set_required_options [:network_uuid, :interface_uuid, :ip_address_uuid]
+    set_required_options [:network_uuid, :mac_lease_uuid, :ip_address]
 
     define_standard_crud_commands
   end
