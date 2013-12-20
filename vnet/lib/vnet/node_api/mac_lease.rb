@@ -8,7 +8,9 @@ module Vnet::NodeApi
           model_class.create(options)
         end
 
-        dispatch_event(LEASED_MAC_ADDRESS, id: mac_lease.interface_id, mac_lease_id: mac_lease.id)
+        dispatch_event(LEASED_MAC_ADDRESS, id: mac_lease.interface_id,
+                                           mac_lease_id: mac_lease.id,
+                                           mac_address: mac_lease.mac_address)
 
         mac_lease
       end
@@ -32,8 +34,12 @@ module Vnet::NodeApi
         end
 
         if deleted_mac_address
-          dispatch_event(RELEASED_MAC_ADDRESS, id: mac_lease.interface_id, mac_lease_id: mac_lease.id)
-          dispatch_event(LEASED_MAC_ADDRESS, id: mac_lease.interface_id, mac_lease_id: mac_lease.id)
+          dispatch_event(RELEASED_MAC_ADDRESS, id: mac_lease.interface_id,
+                                               mac_lease_id: mac_lease.id)
+
+          dispatch_event(LEASED_MAC_ADDRESS, id: mac_lease.interface_id,
+                                             mac_lease_id: mac_lease.id,
+                                             mac_address: mac_lease.mac_address)
         end
 
         mac_lease

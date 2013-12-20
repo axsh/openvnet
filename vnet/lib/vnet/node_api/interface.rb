@@ -60,6 +60,11 @@ module Vnet::NodeApi
 
         dispatch_event(REMOVED_INTERFACE, id: interface.id)
 
+        model_class(:mac_lease).with_deleted.where(interface_id: interface.id).each do |mac_lease|
+          dispatch_event(RELEASED_MAC_ADDRESS, id: interface.id,
+                                               mac_lease_id: mac_lease.id)
+        end
+
         nil
       end
     end

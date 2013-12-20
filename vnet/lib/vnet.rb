@@ -190,7 +190,7 @@ module Vnet
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
-    autoload :SecurityGroupManager, 'vnet/openflow/security_group_manager'
+    autoload :FilterManager, 'vnet/openflow/filter_manager'
     autoload :Service, 'vnet/openflow/service'
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
@@ -245,12 +245,16 @@ module Vnet
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
     end
 
-    module SecurityGroups
-      autoload :Group, 'vnet/openflow/security_groups/group'
-      autoload :Rule, 'vnet/openflow/security_groups/rules'
-      autoload :ICMP, 'vnet/openflow/security_groups/rules'
-      autoload :TCP, 'vnet/openflow/security_groups/rules'
-      autoload :UDP, 'vnet/openflow/security_groups/rules'
+    module Filters
+      autoload :AcceptAllTraffic, 'vnet/openflow/filters/accept_all_traffic'
+      autoload :AcceptIngressArp, 'vnet/openflow/filters/accept_ingress_arp'
+      autoload :Base, 'vnet/openflow/filters/base'
+      autoload :Cookies, 'vnet/openflow/filters/cookies'
+      autoload :SecurityGroup, 'vnet/openflow/filters/security_group'
+      autoload :Rule, 'vnet/openflow/filters/rules'
+      autoload :ICMP, 'vnet/openflow/filters/rules'
+      autoload :TCP, 'vnet/openflow/filters/rules'
+      autoload :UDP, 'vnet/openflow/filters/rules'
     end
 
     module Services
