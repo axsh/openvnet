@@ -37,6 +37,11 @@ module Vnet
     REMOVED_SERVICE = "removed_service"
 
     #
+    # translation event
+    #
+    INITIALIZED_TRANSLATION = "initialized_translation"
+
+    #
     # tunnel event
     #
     INITIALIZED_TUNNEL = "initialized_tunnel"

@@ -24,7 +24,7 @@ module Vnet::Openflow::Ports
                            match: {
                              :in_port => self.port_number
                            },
-                           goto_table: TABLE_ROUTE_INGRESS)
+                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE)
 
       if @dst_id && @dst_id > 0
         flows << flow_create(:default,

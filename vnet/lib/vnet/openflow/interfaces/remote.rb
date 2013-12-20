@@ -87,7 +87,7 @@ module Vnet::Openflow::Interfaces
       return if datapath_id.nil?
 
       flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS,
+                           table: TABLE_ROUTE_EGRESS_INTERFACE,
                            goto_table: TABLE_OUTPUT_ROUTE_LINK,
                            priority: 20,
                            match_interface: @id,

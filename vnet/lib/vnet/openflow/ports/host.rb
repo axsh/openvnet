@@ -39,21 +39,21 @@ module Vnet::Openflow::Ports
       flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
                              :in_port => self.port_number
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
                              :eth_type => 0x0800
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
                              :in_port => self.port_number,
                              :eth_type => 0x0806
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
       flows << Flow.create(TABLE_PHYSICAL_SRC, 31, {
                              :in_port => self.port_number
                            }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
 
       # For now set the latest eth port as the default MAC2MAC output
       # port.
