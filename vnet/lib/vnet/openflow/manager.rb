@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+require 'sequel/core'
+require 'sequel/sql'
+
 module Vnet::Openflow
 
   class Manager
@@ -99,6 +102,16 @@ module Vnet::Openflow
         # Any invalid params that should cause an exception needs to
         # be caught by the item_by_params_direct method.
         return nil
+      end
+    end
+
+    def create_batch(batch, uuid, filters)
+      expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
+
+      if expression
+        uuid ? batch[uuid].where(expression) : batch.dataset.where(expression).first
+      else
+        uuid ? batch[uuid] : nil
       end
     end
 
