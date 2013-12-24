@@ -1,0 +1,35 @@
+# -*- coding: utf-8 -*-
+
+module Vnet::Openflow::Filters
+  class Base
+    include Vnet::Openflow::FlowHelpers
+
+    COOKIE_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
+
+    COOKIE_TYPE_TAG  = 0x1 << COOKIE_TAG_SHIFT
+    COOKIE_TYPE_RULE = 0x2 << COOKIE_TAG_SHIFT
+    COOKIE_TYPE_REF  = 0x3 << COOKIE_TAG_SHIFT
+    COOKIE_TYPE_ISO  = 0x4 << COOKIE_TAG_SHIFT
+
+    COOKIE_TYPE_VALUE_SHIFT = 36
+    COOKIE_TYPE_VALUE_MASK  = 0xfffff << COOKIE_TYPE_VALUE_SHIFT
+
+    COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
+    COOKIE_TAG_INGRESS_ACCEPT_ALL = 0x2 << COOKIE_TYPE_VALUE_SHIFT
+
+    # We make a class method out of cookie so we can access
+    # it easily in unit tests.
+    def self.cookie
+      raise NotImplementedError
+    end
+
+    def cookie
+      self.class.cookie
+    end
+
+    def install
+      raise NotImplementedError
+    end
+
+  end
+end
