@@ -84,6 +84,8 @@ module Vnet::Openflow
       item.install
 
       interface_item = @dp_info.interface_manager.item(id: item_map.interface_id)
+      return item if interface_item.nil?
+
       interface_item.mac_addresses.map { |_, mac_info|  mac_info[:ipv4_addresses] }.flatten(1).compact.each do |ip_info|
         item.add_network_unless_exists(ip_info[:network_id], ip_info[:cookie_id])
       end
