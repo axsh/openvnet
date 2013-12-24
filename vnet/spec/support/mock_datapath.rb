@@ -8,8 +8,8 @@ class MockOvsOfctl
   def mod_port(port_no, action)
   end
 
-  def add_tunnel(tunnel_name, remote_ip)
-    @datapath.added_tunnels << {:tunnel_name => tunnel_name, :remote_ip => remote_ip}
+  def add_tunnel(tunnel_name, params)
+    @datapath.added_tunnels << params.merge(tunnel_name: tunnel_name)
   end
 
   def delete_tunnel(tunnel_name)
@@ -53,12 +53,8 @@ class MockDpInfo < Vnet::Openflow::DpInfo
     @datapath.added_ovs_flows << ovs_flow
   end
 
-  def add_tunnel(tunnel_name, remote_ip, params = {})
-    @added_tunnels << {
-      :tunnel_name => tunnel_name,
-      :remote_ip => remote_ip,
-      :params => params
-    }
+  def add_tunnel(tunnel_name, params = {})
+    @added_tunnels << params.merge(tunnel_name: tunnel_name)
   end
 
   def delete_tunnel(tunnel_name)

@@ -16,16 +16,17 @@ describe Vnet::Openflow::TunnelManager do
       (1..3).map { |i|
         dp_self = Fabricate("datapath_#{i}")
 
+        interface = Fabricate("interface_dp#{i}eth0",
+                              owner_datapath_id: dp_self.id)
+
         ip_lease = Fabricate(:ip_lease,
+                             interface_id: interface.id,
                              ipv4_address: dp_self.ipv4_address,
                              network_id: networks[i-1].id)
         mac_lease = Fabricate(:mac_lease,
+                              interface_id: interface.id,
                               mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value,
                               ip_leases: [ip_lease])
-
-        Fabricate("interface_dp#{i}eth0",
-                  owner_datapath_id: dp_self.id,
-                  mac_leases: [mac_lease])
       }
     end
 
