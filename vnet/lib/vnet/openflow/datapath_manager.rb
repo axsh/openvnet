@@ -74,7 +74,7 @@ module Vnet::Openflow
       MW::Datapath.batch[filter].commit(:fill => :host_interfaces)
     end
 
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       if item_map.dpid == @dp_info.dpid_s
         Datapaths::Host.new(dp_info: @dp_info,
                             manager: self,

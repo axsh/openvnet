@@ -165,7 +165,7 @@ module Vnet::Openflow
         return item if item
       end
 
-      item_initialize(item_map).tap do |item|
+      item_initialize(item_map, params).tap do |item|
         return unless item
         @items[item_map.id] = item
         publish(initialized_item_event, params.merge(id: item_map.id,
@@ -173,7 +173,7 @@ module Vnet::Openflow
       end
     end
 
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       # Must be implemented by subclass
       raise NotImplementedError
     end

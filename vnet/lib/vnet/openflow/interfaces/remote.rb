@@ -91,16 +91,16 @@ module Vnet::Openflow::Interfaces
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       # TODO: Change this to if nw:
-      flows << flow_create(:router_dst_match,
-                           priority: 40,
-                           match: {
-                             :eth_type => 0x0800,
-                             :ipv4_dst => ipv4_info[:ipv4_address],
-                           },
-                           actions: {
-                             :eth_dst => mac_info[:mac_address],
-                           },
-                           network_id: ipv4_info[:network_id])
+      # flows << flow_create(:router_dst_match,
+      #                      priority: 40,
+      #                      match: {
+      #                        :eth_type => 0x0800,
+      #                        :ipv4_dst => ipv4_info[:ipv4_address],
+      #                      },
+      #                      actions: {
+      #                        :eth_dst => mac_info[:mac_address],
+      #                      },
+      #                      network_id: ipv4_info[:network_id])
     end
 
     #

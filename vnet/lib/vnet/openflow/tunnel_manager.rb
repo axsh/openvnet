@@ -191,7 +191,7 @@ module Vnet::Openflow
                                                                                       ])
     end
     
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       item = Tunnels::Base.new(dp_info: @dp_info,
                                manager: self,
                                map: item_map)

@@ -193,9 +193,13 @@ module Vnet::Openflow
 
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
       
+      # Load remote interface.
+      interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id,
+                                                      remote: true)
+
       flow = flow_create(:default,
                          table: TABLE_ARP_LOOKUP,
-                         goto_table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
+                         goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
                          priority: 25,
 
                          match: {
@@ -212,7 +216,7 @@ module Vnet::Openflow
 
                          # Reflection based on metadata flag...
                          write_value_pair_flag: true,
-                         write_value_pair_first: ip_lease.interface.active_datapath_id,
+                         write_value_pair_first: ip_lease.interface_id,
                          write_value_pair_second: params[:interface_network_id],
 
                          cookie: @arp_lookup[:reply_cookie])

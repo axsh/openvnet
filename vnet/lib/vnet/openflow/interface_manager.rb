@@ -100,8 +100,16 @@ module Vnet::Openflow
                            :ip_leases => [:cookie_id, :ip_address, :network]])
     end
 
-    def item_initialize(item_map)
-      mode = is_remote?(item_map) ? :remote : (item_map.mode && item_map.mode.to_sym)
+    def item_initialize(item_map, params)
+      if params[:remote]
+        return if !is_assigned_remotely?(item_map)
+        mode = :remote
+      elsif is_remote?(item_map)
+        mode = :remote
+      else
+        mode = (item_map.mode && item_map.mode.to_sym)
+      end
+
       params = { dp_info: @dp_info,
                  manager: self,
                  map: item_map }
@@ -205,6 +213,13 @@ module Vnet::Openflow
       end
 
       return false
+    end
+
+    def is_assigned_remotely?(item_map)
+      return item_map.owner_datapath_id != @datapath_info.id if item_map.owner_datapath_id
+      return item_map.active_datapath_id != @datapath_info.id if item_map.active_datapath_id
+
+      false
     end
 
     #
