@@ -80,22 +80,24 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
-      # TODO refactoring
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      when params[:owner_datapath_id] && params[:port_name]
-        {:owner_datapath_id => params[:owner_datapath_id], :port_name => params[:port_name]}
-      # when params[:allowed_datapath_id] && params[:port_name]
-      #   {:owner_datapath_id => params[:allowed_datapath_id], :port_name => params[:port_name]} |
-      #     {:owner_datapath_id => nil, :port_name => params[:port_name]}
-      when params[:port_name]
-        { :port_name => params[:port_name] }
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
-        return nil
-      end
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+      filters << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
+      filters << {port_name: params[:port_name]} if params.has_key? :port_name
+
+      create_batch(MW::Interface.batch, params[:uuid], filters)
+    end
+
+    def select_item(filter)
+      # Using fill for ip_leases/ip_addresses isn't going to give us a
+      # proper event barrier.
+      #
+      # To avoid a deadlock issue when retriving network type during
+      # load_addresses, we load the network here.
+      filter.commit(fill: [:mac_leases => [:cookie_id, :ip_leases => [:cookie_id, :ip_address, :network]],
+                           :ip_leases => [:cookie_id, :ip_address, :network]])
     end
 
     def item_initialize(item_map)
@@ -117,19 +119,6 @@ module Vnet::Openflow
 
     def initialized_item_event
       INITIALIZED_INTERFACE
-    end
-
-    def select_item(filter)
-      # Using fill for ip_leases/ip_addresses isn't going to give us a
-      # proper event barrier.
-      #
-      # To avoid a deadlock issue when retriving network type during
-      # load_addresses, we load the network here.
-
-      fill = [:mac_leases => [:cookie_id, :ip_leases => [:cookie_id, :ip_address, :network]],
-              :ip_leases => [:cookie_id, :ip_address, :network]]
-
-      MW::Interface.batch[filter].commit(:fill => fill)
     end
 
     #

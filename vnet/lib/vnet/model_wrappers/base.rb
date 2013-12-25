@@ -8,6 +8,10 @@ module Vnet::ModelWrappers
       @methods = []
     end
 
+    def methods_empty?
+      @methods.empty?
+    end
+
     def method_missing(method_name, *args)
       @methods << [method_name, *args]
       self

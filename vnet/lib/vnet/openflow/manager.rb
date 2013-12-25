@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+require 'sequel/core'
+require 'sequel/sql'
+
 module Vnet::Openflow
 
   class Manager
@@ -15,7 +18,7 @@ module Vnet::Openflow
       @items = {}
     end
 
-    def item(params)
+    def retrieve(params)
       begin
         item_to_hash(item_by_params(params))
       rescue Celluloid::Task::TerminatedError => e
@@ -26,6 +29,7 @@ module Vnet::Openflow
         raise e
       end
     end
+    alias_method :item, :retrieve
 
     def unload(params)
       item = internal_detect(params)
@@ -98,6 +102,16 @@ module Vnet::Openflow
         # Any invalid params that should cause an exception needs to
         # be caught by the item_by_params_direct method.
         return nil
+      end
+    end
+
+    def create_batch(batch, uuid, filters)
+      expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
+
+      if expression
+        uuid ? batch[uuid].where(expression) : batch.dataset.where(expression).first
+      else
+        uuid ? batch[uuid] : nil
       end
     end
 
