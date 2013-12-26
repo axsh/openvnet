@@ -162,8 +162,24 @@ describe "event" do
           dpid: "0x0000aaaaaaaaaaaa",
           dc_segment_uuid: "ds-1"
         )
-        datapath.add_datapath_network("nw-vnet1", "02:00:00:aa:00:01")
-        datapath.add_datapath_network("nw-vnet2", "02:00:00:aa:00:02")
+
+        datapath.add_datapath_network(
+          "nw-vnet1",
+          interface_uuid: "if-dp1eth0",
+          broadcast_mac_address: "02:00:00:aa:00:01"
+        )
+
+        datapath.add_datapath_network(
+          "nw-vnet2",
+          interface_uuid: "if-dp1eth0",
+          broadcast_mac_address: "02:00:00:aa:00:02"
+        )
+
+        Vnspec::Models::Interface.find("if-dp1eth0").update(owner_datapath_uuid: "dp-new")
+
+        vm1.restart_network
+
+        vm1.ssh_on_guest("ip route add default via 10.101.0.1")
 
         sleep(1)
       end
