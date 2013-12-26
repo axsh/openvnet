@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 module Vnspec
   class VM
+    UDP_OUTPUT_DIR="/tmp"
+
     include Config
     include SSH
     include Logger
@@ -104,6 +106,9 @@ module Vnspec
       @interfaces = vm_config[:interfaces].map do |interface|
         Models::Interface.new(uuid: interface[:uuid], name: interface[:name])
       end
+
+      @open_udp_ports = {}
+      @open_tcp_ports = {}
     end
 
     def start
@@ -139,7 +144,7 @@ module Vnspec
     def ready?(timeout = 600)
       logger.info("waiting for ready: #{self.name}")
       expires_at = Time.now.to_i + timeout
-      while ssh_on_guest("hostname", {ConnectTimeout: 1}, {debug: true}).chomp != name.to_s
+      while ssh_on_guest("hostname", {ConnectTimeout: 1}, {debug: true})[:stdout].chomp != name.to_s
         if Time.now.to_i >= expires_at
           logger.info("#{self.name} is down")
           return false
@@ -154,6 +159,52 @@ module Vnspec
       hostname_for(vm.ipv4_address, timeout) == vm.name.to_s
     end
 
+    def able_to_ping?(vm)
+      ssh_on_guest("ping -c 1 #{vm.ipv4_address}")[:exit_code] == 0
+    end
+
+    def able_to_send_udp?(vm, port)
+      ssh_on_guest("nc -zu #{vm.ipv4_address} #{port}")
+      vm.ssh_on_guest("cat #{UDP_OUTPUT_DIR}/#{port}")[:stdout] == "XXXXX"
+    end
+
+    def able_to_send_tcp?(vm, port)
+      ssh_on_guest("nc -zw 3 #{vm.ipv4_address} #{port}")[:exit_code] == 0
+    end
+
+    def udp_listen(port)
+      cmd = "'nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!'" %
+        [port, "#{UDP_OUTPUT_DIR}/#{port}"]
+
+      pid = ssh_on_guest(cmd)[:stdout].chomp
+      @open_udp_ports[port] = pid
+    end
+
+    def udp_close(port)
+      cmds = [
+        "kill #{@open_udp_ports.delete(port)}",
+        "rm -f #{UDP_OUTPUT_DIR}/#{port}"
+      ]
+
+      ssh_on_guest(cmds.join(";"))
+    end
+
+    def tcp_listen(port)
+      cmd = "nohup nc -l %s > /dev/null 2> /dev/null < /dev/null & echo $!" %
+        port
+
+      pid = ssh_on_guest(cmd)[:stdout].chomp
+      @open_tcp_ports[port] = pid
+    end
+
+    def tcp_close(port)
+      ssh_on_guest("kill #{@open_tcp_ports.delete(port)}")
+    end
+
+    def close_all_listening_ports
+      ssh_on_guest("killall nc")
+    end
+
     def hostname_for(ip, timeout = 2)
       options = to_ssh_option_string(
         "StrictHostKeyChecking" => "no",
@@ -161,7 +212,7 @@ module Vnspec
         "LogLevel" => "ERROR",
         "ConnectTimeout" => timeout
       )
-      ssh_on_guest("ssh #{options} #{ip} hostname").chomp
+      ssh_on_guest("ssh #{options} #{ip} hostname")[:stdout].chomp
     end
 
     def ssh_on_guest(command, options = {}, host_options = {})
@@ -174,8 +225,12 @@ module Vnspec
     end
 
     def ipv4_address
-      # TODO
-      interfaces.first.mac_leases.first.ip_leases.first.ipv4_address rescue nil
+      begin
+        ip = interfaces.first.mac_leases.first.ip_leases.first.ipv4_address
+        IPAddress::IPv4.parse_u32(ip).to_s
+      rescue NoMethodError
+        nil
+      end
     end
 
     def network

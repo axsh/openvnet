@@ -7,6 +7,7 @@ GEM
       multipart-post (~> 1.1)
     faraday_middleware (0.9.0)
       faraday (>= 0.7.4, < 0.9)
+    ipaddress (0.8.0)
     method_source (0.8.2)
     multipart-post (1.2.0)
     net-scp (1.1.1)
@@ -41,6 +42,7 @@ PLATFORMS
 DEPENDENCIES
   faraday
   faraday_middleware
+  ipaddress
   net-scp
   net-ssh
   net-ssh-multi

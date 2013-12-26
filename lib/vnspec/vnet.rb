@@ -71,7 +71,7 @@ module Vnspec
           logger.info "# dump_flows: vna#{i + 1}"
           logger.info "#" * 50
           output = ssh(ip, config[:vnflows_cmd], debug: false)
-          logger.info output
+          logger.info output[:stdout]
           logger.info
         end
       end

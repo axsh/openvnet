@@ -14,15 +14,6 @@ networks:
     domain_name: vnet2
     network_mode: virtual
 
-datapaths:
-
-  - uuid: dp-edge
-    node_id: edge
-    display_name: edge
-    ipv4_address: <%= edge_ipv4_address %>
-    dpid: "0x0000dddddddddddd"
-    dc_segment_uuid: ds-1
-
 interfaces:
 
   - uuid: if-v1
@@ -72,21 +63,6 @@ interfaces:
     mac_address: "02:00:00:00:01:02"
     ipv4_address: 10.101.0.2
     mode: simulated
-
-  - uuid: if-edge
-    port_name: "eth2"
-    mode: "edge"
-    mac_address: "52:54:00:00:99:98"
-    ipv4_address: "192.168.60.100"
-    owner_datapath_uuid: dp-edge
-
-  - uuid: if-edgeeth0
-    mode: host
-    port_name: eth0
-    owner_datapath_uuid: dp-edge
-    network_uuid: nw-public
-    mac_address: "02:01:00:00:00:04"
-    ipv4_address: <%= edge_ipv4_address %>
 
 network_services:
 
@@ -149,28 +125,27 @@ datapath_networks:
     interface_uuid: if-dp3eth0
     broadcast_mac_address: "02:00:00:cc:00:02"
 
-  - datapath_uuid: dp-edge
-    network_uuid: nw-public
-    interface_uuid: if-edgeeth0
-    broadcast_mac_address: "02:00:01:dd:01:01"
+security_groups:
 
-  - datapath_uuid: dp-edge
-    network_uuid: nw-vnet1
-    interface_uuid: if-edgeeth0
-    broadcast_mac_address: "02:00:00:dd:00:01"
+  - uuid: sg-pingall
+    display_name: "accept all icmp"
+    rules: "icmp:-1:0.0.0.0/0"
 
-  - datapath_uuid: dp-edge
-    network_uuid: nw-vnet2
-    interface_uuid: if-edgeeth0
-    broadcast_mac_address: "02:00:00:dd:00:02"
+  - uuid: sg-sshvm3
+    display_name: "accept a bunch of traffic from vm3"
+    rules: |
+      tcp:22:10.101.0.11
+      icmp:-1:10.101.0.11
+      udp:344:10.101.0.11
 
-translations:
-  - uuid: tr-edge
-    interface_uuid: if-edge
-    mode: vnet_edge
+  - uuid: sg-udpvnet1
+    display_name: "accept udp from vnet1"
+    rules: "udp:678:10.101.0.0/24"
 
-vlan_translations:
-  - vlan_id: 100
-    network_id: 2
-    translation_uuid: tr-edge
-
+interface_security_groups:
+  - interface_uuid: if-v1
+    security_group_uuid: sg-sshvm3
+  - interface_uuid: if-v2
+    security_group_uuid: sg-pingall
+  - interface_uuid: if-v5
+    security_group_uuid: sg-udpvnet1
