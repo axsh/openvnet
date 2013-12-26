@@ -165,9 +165,15 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Tunnel.batch[filter].commit(fill: [:dst_datapath, :src_interface])
+      MW::Tunnel.batch[filter].commit(
+        fill: [
+          :dst_datapath,
+          { :dst_interface => :ipv4_address },
+          { :src_interface => :ipv4_address },
+        ]
+      )
     end
-
+    
     def install_item(params)
       item = @items[params[:item_map].id]
 

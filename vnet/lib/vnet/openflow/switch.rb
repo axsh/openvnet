@@ -58,10 +58,13 @@ module Vnet::Openflow
        TABLE_NETWORK_DST_CLASSIFIER,
        TABLE_VIRTUAL_SRC,
        TABLE_PHYSICAL_SRC,
+
+       TABLE_ROUTE_INGRESS_INTERFACE,
        TABLE_ROUTE_LINK_INGRESS,
        TABLE_ROUTE_LINK_EGRESS,
-       TABLE_ROUTE_EGRESS,
+       TABLE_ROUTE_EGRESS_INTERFACE,
        TABLE_ARP_LOOKUP,
+
        TABLE_VIRTUAL_DST,
        TABLE_PHYSICAL_DST,
        TABLE_FLOOD_LOCAL,
@@ -70,6 +73,7 @@ module Vnet::Openflow
        TABLE_OUTPUT_DATAPATH,
        TABLE_OUTPUT_MAC2MAC,
 
+       TABLE_LOOKUP_IF_NW_TO_DP_NW,
        TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
        TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
 
@@ -106,17 +110,29 @@ module Vnet::Openflow
                            flow_options.merge(goto_table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP))
       # LOCAL packets have already been verified earlier.
       flows << Flow.create(TABLE_VIRTUAL_SRC,  90, md_create(:local => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
       flows << Flow.create(TABLE_PHYSICAL_SRC,  90, md_create(:local => nil), nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS))
+                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
 
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
-      flows << Flow.create(TABLE_ROUTE_INGRESS, 0, {}, nil,
-                           flow_options.merge(:goto_table => TABLE_NETWORK_DST_CLASSIFIER))
-      flows << Flow.create(TABLE_ARP_TABLE, 0, {}, nil,
-                           flow_options.merge(:goto_table => TABLE_ARP_LOOKUP))
+      flows << flow_create(:default,
+                           table: TABLE_ROUTE_INGRESS_INTERFACE,
+                           goto_table: TABLE_NETWORK_DST_CLASSIFIER,
+                           priority: 0)
+      flows << flow_create(:default,
+                           table: TABLE_ROUTE_INGRESS_TRANSLATION,
+                           goto_table: TABLE_ROUTE_LINK_INGRESS,
+                           priority: 0)
+      flows << flow_create(:default,
+                           table: TABLE_ROUTE_EGRESS_TRANSLATION,
+                           goto_table: TABLE_ROUTE_EGRESS_INTERFACE,
+                           priority: 0)
+      flows << flow_create(:default,
+                           table: TABLE_ARP_TABLE,
+                           goto_table: TABLE_ARP_LOOKUP,
+                           priority: 0)
 
       flows << Flow.create(TABLE_VIRTUAL_DST,  30, {:eth_dst => MAC_BROADCAST}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))

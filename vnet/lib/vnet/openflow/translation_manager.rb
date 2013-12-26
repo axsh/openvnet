@@ -1,66 +1,144 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Openflow
+
   class TranslationManager < Manager
-    include Celluloid::Logger
-    include FlowHelpers
     include Vnet::Event::Dispatchable
 
-    def initialize(dp_info)
-      super(dp_info)
-      @dpid_s = "0x%016x" % @dp_info.dpid
-      update_translation_map
+    def initialize(params)
+      super
+
+      @interfaces = {}
     end
 
-    def network_to_vlan(network_id)
-      entry = @translation_map.find { |t| t.network_id == network_id }
-      entry && entry.vlan_id
+    #
+    # Events:
+    #
+    subscribe_event INITIALIZED_TRANSLATION, :install_item
+
+    def update(params)
+      case params[:event]
+      when :install_interface
+        install_interface(params)
+      when :remove_interface
+        remove_interface(params)
+      else
+        nil
+      end
+
+      nil
     end
 
-    def vlan_to_network(vlan_vid)
-      entry = @translation_map.find { |t| t.vlan_id == vlan_vid }
-      entry && entry.network_id
-    end
-
-    def set_datapath_info(datapath_info)
-      super(datapath_info)
-      initialize_handlers
-    end
     #
     # Internal methods:
     #
 
     private
 
-    def translation_handler_initialize(params)
-      case params[:mode]
-      when :vnet_edge  then Translations::VnetEdgeHandler.new(params)
+    def log_format(message, values = nil)
+      "#{@dp_info.dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:interface_id] && params[:interface_id] != item.interface_id
+      true
+    end
+    
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      when params[:interface_id] then {:interface_id => params[:interface_id]}
       else
-        error log_format('failed to create translation handler', "name: #{params[:mode]}")
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
+      end
+    end
+
+    def select_item(filter)
+      MW::Translation.batch[filter].commit(fill: :translate_static_addresses)
+    end
+
+    def item_initialize(item_map)
+      params = {
+        dp_info: @dp_info,
+        manager: self,
+        map: item_map
+      }
+
+      debug log_format("item initialize", item_map.inspect)
+
+      case item_map.mode && item_map.mode.to_sym
+      when :static_address then Translations::StaticAddress.new(params)
+      when :vnet_edge      then Translations::VnetEdgeHandler.new(params)
+      else
         nil
       end
     end
 
-    def add_handler(params)
-      info log_format("install handlers", params[:mode])
-      item = translation_handler_initialize(params)
+    def initialized_item_event
+      INITIALIZED_TRANSLATION
+    end
 
+    def create_item(params)
+      item = @items[params[:item_map].id]
+      return unless item
+
+      debug log_format("insert #{item.uuid}/#{item.id}")
+
+      item
+    end
+
+    def install_item(params)
+      item_map = params[:item_map]
+      item = @items[item_map.id]
       return nil if item.nil?
 
-      @items[item.id] = item
+      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
+
+      item.install
+
+      item
     end
 
-    def initialize_handlers
-      return unless @dp_info.datapath.datapath_info.datapath_map.node_id == 'edge'
-      add_handler(mode: :vnet_edge, dp_info: @dp_info)
+    def delete_item(item)
+      @items.delete(item.id)
+
+      item.uninstall
+      item
     end
 
-    def log_format(message, values = nil)
-      "#{@dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
+    #
+    # Event handlers:
+    #
+
+    def install_interface(params)
+      return if params[:interface_id].nil?
+      return if @interfaces.has_key? params[:interface_id]
+
+      @interfaces[params[:interface_id]] = {
+      }
+
+      # Currently only support a single item with the same interface
+      # id.
+      item = item_by_params(interface_id: params[:interface_id])
     end
 
-    def update_translation_map
-      @translation_map = Vnet::ModelWrappers::VlanTranslation.batch.all.commit
+    def remove_interface(params)
+      return if params[:interface_id].nil?
+
+      @interfaces.delete(params[:interface_id])
+
+      item = internal_detect(interface_id: params[:interface_id])
+
+      delete_item(item) if item
     end
 
   end

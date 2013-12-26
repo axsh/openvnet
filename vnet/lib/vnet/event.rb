@@ -49,6 +49,11 @@ module Vnet
     INITIALIZED_SERVICE = "initialized_service"
 
     #
+    # translation event
+    #
+    INITIALIZED_TRANSLATION = "initialized_translation"
+
+    #
     # tunnel event
     #
     ADDED_TUNNEL = "added_tunnel"

@@ -230,7 +230,7 @@ module Vnet::Openflow::Interfaces
       # TODO: Fix this so it is more secure...
       flows << flow_create(:default,
                            table_network_src: ipv4_info[:network_type],
-                           goto_table: TABLE_ROUTE_INGRESS,
+                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
                            priority: 86,
                            match: {
                              :eth_type => 0x0806,
@@ -247,7 +247,7 @@ module Vnet::Openflow::Interfaces
       # TODO: Fix this so it is more secure...
       flows << flow_create(:default,
                            table_network_src: ipv4_info[:network_type],
-                           goto_table: TABLE_ROUTE_INGRESS,
+                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
                            priority: 45,
                            match: {
                              :eth_type => 0x0800,
@@ -268,7 +268,7 @@ module Vnet::Openflow::Interfaces
                            match_network: ipv4_info[:network_id],
                            write_interface: @id,
                            cookie: cookie,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
+                           goto_table: TABLE_INTERFACE_INGRESS_FILTER)
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],
                            priority: 80,

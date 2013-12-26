@@ -56,12 +56,14 @@ module Vnet
       TABLE_VIRTUAL_SRC       = 21
       TABLE_PHYSICAL_SRC      = 22
 
-      TABLE_ROUTE_INGRESS      = 33
-      TABLE_ROUTE_LINK_INGRESS = 34
-      TABLE_ROUTE_LINK_EGRESS  = 35
-      TABLE_ROUTE_EGRESS       = 36
-      TABLE_ARP_TABLE          = 37
-      TABLE_ARP_LOOKUP         = 38
+      TABLE_ROUTE_INGRESS_INTERFACE   = 30
+      TABLE_ROUTE_INGRESS_TRANSLATION = 31
+      TABLE_ROUTE_LINK_INGRESS        = 32
+      TABLE_ROUTE_LINK_EGRESS         = 33
+      TABLE_ROUTE_EGRESS_TRANSLATION  = 36
+      TABLE_ROUTE_EGRESS_INTERFACE    = 37
+      TABLE_ARP_TABLE                 = 38
+      TABLE_ARP_LOOKUP                = 39
 
       TABLE_NETWORK_DST_CLASSIFIER = 40
       TABLE_VIRTUAL_DST            = 41
@@ -88,8 +90,9 @@ module Vnet
       TABLE_OUTPUT_DATAPATH          = 62
       TABLE_OUTPUT_MAC2MAC           = 63
 
-      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 70
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 71
+      TABLE_LOOKUP_IF_NW_TO_DP_NW         = 70
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 71
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 72
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source
@@ -118,7 +121,7 @@ module Vnet
 
       # Directly output to a port type with no additional
       # actions. Usable by any table and as such need to be the last
-      # tables. 
+      # tables.
       TABLE_OUT_PORT_INTERFACE_INGRESS = 90
       TABLE_OUT_PORT_INTERFACE_EGRESS  = 91
       TABLE_OUT_PORT_TUNNEL            = 92
@@ -148,10 +151,10 @@ module Vnet
       COOKIE_PREFIX_VIF            = 0xb
       COOKIE_PREFIX_INTERFACE      = 0xc
       COOKIE_PREFIX_TRANSLATION    = 0xd
-      COOKIE_PREFIX_SECURITY_GROUP = 0xe
-      COOKIE_PREFIX_CONTRACK       = 0xf
+      COOKIE_PREFIX_FILTER         = 0xe
+      COOKIE_PREFIX_CONNECTION     = 0xf
 
-      COOKIE_TYPE_CONTRACK       = (COOKIE_PREFIX_CONTRACK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_CONNECTION     = (COOKIE_PREFIX_CONNECTION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DATAPATH       = (COOKIE_PREFIX_DATAPATH << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_NETWORK     = (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_ROUTE_LINK  = (COOKIE_PREFIX_DP_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
@@ -165,7 +168,7 @@ module Vnet
       COOKIE_TYPE_VIF            = (COOKIE_PREFIX_VIF << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_INTERFACE      = (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_TRANSLATION    = (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT)
-      COOKIE_TYPE_SECURITY_GROUP = (COOKIE_PREFIX_SECURITY_GROUP << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_FILTER         = (COOKIE_PREFIX_FILTER << COOKIE_PREFIX_SHIFT)
 
       #
       # Metadata constants:

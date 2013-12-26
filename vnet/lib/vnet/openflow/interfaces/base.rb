@@ -34,6 +34,7 @@ module Vnet::Openflow::Interfaces
     attr_accessor :display_name
 
     attr_reader :port_number
+    attr_reader :mac_addresses
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -73,12 +74,6 @@ module Vnet::Openflow::Interfaces
         @owner_datapath_ids = nil
         @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
       end
-    end
-
-    def add_security_groups
-    end
-
-    def del_security_groups
     end
 
     def cookie(type = 0, value = 0)
@@ -284,6 +279,9 @@ module Vnet::Openflow::Interfaces
     # interface requires egress routing. Currently every interface
     # creates the flows required for handling routing, even though
     # those flows will never be touched.
+
+    def flows_for_datapath(flows)
+    end
 
     def flows_for_interface_mac(flows, mac_info)
     end

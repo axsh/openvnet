@@ -58,6 +58,7 @@ module Vnet
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :Translation, 'vnet/endpoints/1.0/responses/translation'
         autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
@@ -74,6 +75,7 @@ module Vnet
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :TranslationCollection, 'vnet/endpoints/1.0/responses/translation'
         autoload :VlanTranslationCollection, 'vnet/endpoints/1.0/responses/vlan_translation'
       end
     end
@@ -103,6 +105,8 @@ module Vnet
     autoload :RouteLink, 'vnet/models/route_link'
     autoload :SecurityGroup, 'vnet/models/security_group'
     autoload :Taggable, 'vnet/models/base'
+    autoload :Translation, 'vnet/models/translation'
+    autoload :TranslateStaticAddress, 'vnet/models/translate_static_address'
     autoload :Tunnel, 'vnet/models/tunnel'
     autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
@@ -123,9 +127,11 @@ module Vnet
     autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :Network, 'vnet/model_wrappers/network'
     autoload :NetworkService, 'vnet/model_wrappers/network_service'
-    autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
+    autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
+    autoload :Translation, 'vnet/model_wrappers/translation'
+    autoload :TranslateStaticAddress, 'vnet/model_wrappers/translation'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
     autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
@@ -150,6 +156,8 @@ module Vnet
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :SecurityGroup, 'vnet/node_api/models.rb'
+    autoload :Translation, 'vnet/node_api/models.rb'
+    autoload :TranslateStaticAddress, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
     autoload :VlanTranslation, 'vnet/node_api/models.rb'
   end
@@ -182,11 +190,12 @@ module Vnet
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :RouteManager, 'vnet/openflow/route_manager'
-    autoload :SecurityGroupManager, 'vnet/openflow/security_group_manager'
+    autoload :FilterManager, 'vnet/openflow/filter_manager'
     autoload :Service, 'vnet/openflow/service'
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
+    autoload :Translation, 'vnet/openflow/translation'
     autoload :TranslationManager, 'vnet/openflow/translation_manager'
     autoload :Tunnel, 'vnet/openflow/tunnel'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
@@ -236,12 +245,16 @@ module Vnet
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
     end
 
-    module SecurityGroups
-      autoload :Group, 'vnet/openflow/security_groups/group'
-      autoload :Rule, 'vnet/openflow/security_groups/rules'
-      autoload :ICMP, 'vnet/openflow/security_groups/rules'
-      autoload :TCP, 'vnet/openflow/security_groups/rules'
-      autoload :UDP, 'vnet/openflow/security_groups/rules'
+    module Filters
+      autoload :AcceptAllTraffic, 'vnet/openflow/filters/accept_all_traffic'
+      autoload :AcceptIngressArp, 'vnet/openflow/filters/accept_ingress_arp'
+      autoload :Base, 'vnet/openflow/filters/base'
+      autoload :Cookies, 'vnet/openflow/filters/cookies'
+      autoload :SecurityGroup, 'vnet/openflow/filters/security_group'
+      autoload :Rule, 'vnet/openflow/filters/rules'
+      autoload :ICMP, 'vnet/openflow/filters/rules'
+      autoload :TCP, 'vnet/openflow/filters/rules'
+      autoload :UDP, 'vnet/openflow/filters/rules'
     end
 
     module Services
@@ -250,12 +263,14 @@ module Vnet
       autoload :Router, 'vnet/openflow/services/router'
     end
 
-    module Tunnels
-      autoload :Base, 'vnet/openflow/tunnels/base'
+    module Translations
+      autoload :Base, 'vnet/openflow/translations/base'
+      autoload :StaticAddress, 'vnet/openflow/translations/static_address'
+      autoload :VnetEdgeHandler, 'vnet/openflow/translations/vnet_edge_handler'
     end
 
-    module Translations
-      autoload :VnetEdgeHandler, 'vnet/openflow/translations/vnet_edge_handler'
+    module Tunnels
+      autoload :Base, 'vnet/openflow/tunnels/base'
     end
 
   end

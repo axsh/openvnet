@@ -31,9 +31,9 @@ module Vnet::Openflow::Tunnels
 
       if map.dst_datapath
         @dst_dpid = map.dst_datapath.dpid
-        @dst_ipv4_address = IPAddr.new(map.dst_datapath.ipv4_address, Socket::AF_INET)
       end
 
+      @dst_interface = map.dst_interface
       @src_interface = map.src_interface
 
       @src_interface_id = map.src_interface_id
@@ -55,21 +55,18 @@ module Vnet::Openflow::Tunnels
                                  dst_id: @dst_id,
                                  dst_dpid: @dst_dpid,
                                  dst_ipv4_address: @dst_ipv4_address,
+                                 src_ipv4_address: @src_ipv4_address,
 
                                  datapath_networks_size: @datapath_networks.size,
                                  )
     end
 
     def install
-      if @dst_ipv4_address.nil?
-        error log_format("no valid destination datapath loaded for #{@uuid}",
-                         "dst_datapath_id:#{@dst_datapath_id}")
-        return
-      end
+      info log_format("AAAAAAAAAA dst", @dst_interface.inspect)
+      info log_format("AAAAAAAAAA src", @src_interface.inspect)
 
-      if !@dst_ipv4_address.ipv4?
-        error log_format("no valid remote IPv4 address for #{@uuid}",
-                         "ip_address:#{@dst_ipv4_address.to_s}")
+      if @dst_interface.nil?
+        error log_format("no valid destination interface loaded for #{@uuid}")
         return
       end
 
@@ -78,14 +75,30 @@ module Vnet::Openflow::Tunnels
         return
       end
 
-      @dp_info.add_tunnel(@uuid, @dst_ipv4_address.to_s,
-                          egress_iface: @src_interface.port_name)
+      @dst_ipv4_address = IPAddr.new(@dst_interface.ipv4_address, Socket::AF_INET)
+      @src_ipv4_address = IPAddr.new(@src_interface.ipv4_address, Socket::AF_INET)
+
+      if !@dst_ipv4_address.ipv4?
+        error log_format("no valid remote IPv4 address for #{@uuid}",
+                         "ip_address:#{@dst_ipv4_address.to_s}")
+        return
+      end
+
+      if !@src_ipv4_address.ipv4?
+        error log_format("no valid local IPv4 address for #{@uuid}",
+                         "ip_address:#{@src_ipv4_address.to_s}")
+        return
+      end
 
       if !(@src_interface_id && @src_interface_id > 0) ||
           !(@dst_interface_id && @dst_interface_id > 0)
         error log_format("no valid src/dst interface id's found for #{@uuid}")
         return
       end
+
+      @dp_info.add_tunnel(@uuid,
+                          remote_ip: @dst_ipv4_address.to_s,
+                          local_ip: @src_ipv4_address.to_s)
 
       flows = []
 

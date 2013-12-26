@@ -73,26 +73,28 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
-      # TODO refactoring
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      when params[:owner_datapath_id] && params[:port_name]
-        {:owner_datapath_id => params[:owner_datapath_id], :port_name => params[:port_name]}
-      # when params[:allowed_datapath_id] && params[:port_name]
-      #   {:owner_datapath_id => params[:allowed_datapath_id], :port_name => params[:port_name]} |
-      #     {:owner_datapath_id => nil, :port_name => params[:port_name]}
-      when params[:port_name]
-        { :port_name => params[:port_name] }
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
-        return nil
-      end
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+      filters << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
+      filters << {port_name: params[:port_name]} if params.has_key? :port_name
+
+      create_batch(MW::Interface.batch, params[:uuid], filters)
+    end
+
+    def select_item(filter)
+      # Using fill for ip_leases/ip_addresses isn't going to give us a
+      # proper event barrier.
+      #
+      # To avoid a deadlock issue when retriving network type during
+      # load_addresses, we load the network here.
+      filter.commit(fill: [:mac_leases => [:cookie_id, :ip_leases => [:cookie_id, :ip_address, :network]],
+                           :ip_leases => [:cookie_id, :ip_address, :network]])
     end
 
     def item_initialize(item_map)
-      mode = is_remote?(item_map) ? :remote : item_map.mode.to_sym
+      mode = is_remote?(item_map) ? :remote : (item_map.mode && item_map.mode.to_sym)
       params = { dp_info: @dp_info,
                  manager: self,
                  map: item_map }
@@ -110,19 +112,6 @@ module Vnet::Openflow
 
     def initialized_item_event
       INITIALIZED_INTERFACE
-    end
-
-    def select_item(filter)
-      # Using fill for ip_leases/ip_addresses isn't going to give us a
-      # proper event barrier.
-      #
-      # To avoid a deadlock issue when retriving network type during
-      # load_addresses, we load the network here.
-
-      fill = [:mac_leases => [:cookie_id, :ip_leases => [:cookie_id, :ip_address, :network]],
-              :ip_leases => [:cookie_id, :ip_address, :network]]
-
-      MW::Interface.batch[filter].commit(:fill => fill)
     end
 
     #
@@ -163,6 +152,11 @@ module Vnet::Openflow
 
       @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
 
+      if item.mode != :remote
+        @dp_info.translation_manager.async.update(event: :install_interface,
+                                                  interface_id: item.id)
+      end
+
       item # Return nil if interface has been uninstalled.
     end
 
@@ -171,8 +165,6 @@ module Vnet::Openflow
       return unless item
 
       debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
-
-      item.del_security_groups
 
       item.uninstall
 
@@ -184,12 +176,20 @@ module Vnet::Openflow
         @dp_info.port_manager.async.detach_interface(port_number: item.port_number)
       end
 
+      if item.mode != :remote
+        @dp_info.translation_manager.async.update(event: :remove_interface,
+                                                  interface_id: item.id)
+      end
+
       item
     end
 
     def load_addresses(item_map)
       item_map.mac_leases.each do |mac_lease|
-        publish(LEASED_MAC_ADDRESS, id: item_map.id, mac_lease_id: mac_lease.id)
+        publish(LEASED_MAC_ADDRESS, id: item_map.id,
+                                    mac_lease_id: mac_lease.id,
+                                    mac_address: mac_lease.mac_address)
+
         mac_lease.ip_leases.each do |ip_lease|
           publish(LEASED_IPV4_ADDRESS, id: item_map.id, ip_lease_id: ip_lease.id)
         end

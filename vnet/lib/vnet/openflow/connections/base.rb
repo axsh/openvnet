@@ -11,7 +11,7 @@ module Vnet::Openflow::Connections
     INGRESS_IDLE_TIMEOUT = 600
 
     def self.cookie(interface_id)
-      COOKIE_TYPE_CONTRACK | CM::COOKIE_TAG_INGRESS_CONNECTION | interface_id
+      COOKIE_TYPE_CONNECTION | CM::COOKIE_TAG_INGRESS_CONNECTION | interface_id
     end
 
     def cookie(interface_id)

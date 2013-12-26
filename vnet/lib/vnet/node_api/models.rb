@@ -40,6 +40,12 @@ module Vnet::NodeApi
   class SecurityGroup < Base
   end
 
+  class Translation < Base
+  end
+
+  class TranslateStaticAddress < Base
+  end
+
   class Tunnel < Base
   end
 

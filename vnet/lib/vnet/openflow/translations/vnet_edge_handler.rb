@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Openflow::Translations
-  class VnetEdgeHandler
 
-    include Celluloid::Logger
-    include Vnet::Openflow::FlowHelpers
-
-    attr_reader :id
+  class VnetEdgeHandler < Base
 
     def initialize(params)
-      # TODO refactor
-      @id = 1
-      @dp_info = params[:dp_info]
+      super
+    end
 
-      flows = []
-      flows << Flow.create(TABLE_EDGE_SRC,   1, {}, {:output => Vnet::Openflow::Controller::OFPP_CONTROLLER}, {:cookie => @id | COOKIE_TYPE_TRANSLATION} )
-      @dp_info.datapath.add_flows(flows)
+    def network_to_vlan(network_id)
+      entry = @translation_map.find { |t| t.network_id == network_id }
+      entry && entry.vlan_id
+    end
+
+    def vlan_to_network(vlan_vid)
+      entry = @translation_map.find { |t| t.vlan_id == vlan_vid }
+      entry && entry.network_id
     end
 
     def packet_in(message)
@@ -39,6 +39,17 @@ module Vnet::Openflow::Translations
 
     def install
       debug log_format('install')
+
+      @translation_map = Vnet::ModelWrappers::VlanTranslation.batch.all.commit
+
+      flows = []
+      flows << Flow.create(TABLE_EDGE_SRC, 1, {}, {
+                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                           }, {
+                             :cookie => self.cookie
+                           })
+
+      @dp_info.datapath.add_flows(flows)
     end
 
     private
@@ -58,7 +69,7 @@ module Vnet::Openflow::Translations
         return nil
       end
 
-      vlan_vids = @dp_info.translation_manager.network_to_vlan(src_network_id)
+      vlan_vids = network_to_vlan(src_network_id)
 
       if vlan_vids.nil?
         error log_format("blank vlan_vid", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
@@ -137,12 +148,12 @@ module Vnet::Openflow::Translations
 
       return if message.packet_info.arp_request && !dst_mac.broadcast?
 
-      if vlan_vid == 0
+      if vlan_vid == 0 || vlan_vid.nil?
         error log_format("blank vlan_vid", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
         return nil
       end
 
-      network_id = @dp_info.translation_manager.vlan_to_network(vlan_vid)
+      network_id = vlan_to_network(vlan_vid)
 
       if network_id.nil?
         error log_format("no corresponded translation entry has been found", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
@@ -185,13 +196,6 @@ module Vnet::Openflow::Translations
       network = @dp_info.network_manager.item(id: network_id)
 
       @dp_info.send_packet_out(message, OFPP_TABLE)
-    end
-
-    def flow_options(vlan_vid, network_id)
-      {:cookie => (vlan_vid << COOKIE_TAG_MASK) | network_id | COOKIE_TYPE_TRANSLATION}
-    end
-
-    def cookie(vlan_vid, network_id)
     end
 
     def log_format(message, values = nil)
