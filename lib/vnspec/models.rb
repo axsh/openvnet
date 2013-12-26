@@ -79,6 +79,13 @@ module Vnspec
         @mac_leases = []
       end
 
+      def update(options)
+        API.request(:put, "interfaces/#{uuid}", options) do |response|
+          @display_name = response[:display_name]
+          @owner_datapath_uuid = response[:owner_datapath_uuid]
+        end
+      end
+
       def destroy
         API.request(:delete, "interfaces/#{uuid}")
       end
@@ -191,8 +198,8 @@ module Vnspec
         API.request(:delete, "datapaths/#{uuid}")
       end
 
-      def add_datapath_network(network_uuid, broadcast_mac_address)
-        API.request(:post, "datapaths/#{uuid}/networks/#{network_uuid}", broadcast_mac_address: broadcast_mac_address) do |response|
+      def add_datapath_network(network_uuid, options)
+        API.request(:post, "datapaths/#{uuid}/networks/#{network_uuid}", options) do |response|
           @datapath_networks = response[:networks].map { |n| OpenStruct.new(n) }
         end
       end
