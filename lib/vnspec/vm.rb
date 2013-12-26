@@ -202,7 +202,7 @@ module Vnspec
     end
 
     def remove_interface(uuid)
-      interface = @interfaces.find{|i| i.uuid == uuid}.tap do |interface|
+      @interfaces.find{|i| i.uuid == uuid}.tap do |interface|
         return unless interface
         @interfaces.delete(interface)
         interface.destroy
