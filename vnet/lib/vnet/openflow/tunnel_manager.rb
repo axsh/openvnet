@@ -62,8 +62,12 @@ module Vnet::Openflow
           "creating tunnel entry",
           options.map { |k, v| "#{k}: #{v}" }.join(" ")
         )
-        MW::Tunnel.create(options).tap do |tunnel|
+        tunnel = MW::Tunnel.create(options)
+        if tunnel
           item = item_by_params(id: tunnel.id)
+        else
+          # the tunnel should have been added
+          item = item_by_params(options)
         end
       end
 
@@ -130,14 +134,16 @@ module Vnet::Openflow
     def select_filter_from_params(params)
       return nil if @datapath_info.nil?
 
+      return params if params.keys == [:src_datapath_id, :dst_datapath_id, :src_interface_id, :dst_interface_id]
+
       # Ensure to update tunnel items only belonging to this
       { src_datapath_id: @datapath_info.id }.tap do |options|
         case
-        when params[:id]           then options[:id] = params[:id]
-        when params[:uuid]         then options[:uuid] = params[:uuid]
-        when params[:display_name] then options[:display_name] = params[:display_name]
-        when params[:port_name]    then options[:display_name] = params[:port_name]
-        when params[:dst_id]       then options[:dst_datapath_id] = params[:dst_id]
+        when params[:id]              then options[:id] = params[:id]
+        when params[:uuid]            then options[:uuid] = params[:uuid]
+        when params[:display_name]    then options[:display_name] = params[:display_name]
+        when params[:port_name]       then options[:display_name] = params[:port_name]
+        when params[:dst_id]          then options[:dst_datapath_id] = params[:dst_id]
         else
           # Any invalid params that should cause an exception needs to
           # be caught by the item_by_params_direct method.
