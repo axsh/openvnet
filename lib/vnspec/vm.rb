@@ -63,6 +63,10 @@ module Vnspec
         success
       end
 
+      def install_package(name)
+        all.peach { |vm| vm.install_package(name) }
+      end
+
       %w(start stop start_network stop_network).each do |command|
         define_method(command, ->(name = :all) do
           if name.to_sym == :all
@@ -208,6 +212,10 @@ module Vnspec
     def clear_arp_cache
       logger.debug("clear arp cahe: #{name}")
       ssh_on_guest("ip -s -s neigh flush all")
+    end
+
+    def install_package(name)
+      ssh_on_guest("http_proxy=#{config[:vm_http_proxy]} yum install -y #{name}")
     end
 
     private

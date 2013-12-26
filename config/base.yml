@@ -2,6 +2,7 @@ specs: [edge, simple, router_v2v, router_p2v, event]
 vnet_branch: master
 log_level: info
 vnflows_cmd: /opt/axsh/wakame-vnet/vnet/bin/vnflows-monitor
+vm_http_proxy: http://10.50.0.2:3128
 dump_flows: true
 
 vms:
