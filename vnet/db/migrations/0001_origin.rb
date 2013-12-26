@@ -24,7 +24,8 @@ Sequel.migration do
       Integer :mac_address_id, :index => true
       FalseClass :is_connected, :null=>false
       DateTime :deleted_at, :index => true
-      index [:datapath_id, :network_id]
+      Integer :deleted, :default => 0, :null => false
+      index [:datapath_id, :network_id, :deleted], :unique => true
     end
 
     create_table(:datapath_route_links) do
@@ -210,11 +211,13 @@ Sequel.migration do
 
       Integer :src_datapath_id, :index => true, :null => false
       Integer :dst_datapath_id, :index => true, :null => false
-      DateTime :deleted_at, :index => true
       Integer :src_interface_id, :index => true, :null => false
       Integer :dst_interface_id, :index => true, :null => false
 
-      index [:src_datapath_id, :dst_datapath_id]
+      DateTime :deleted_at, :index => true
+      Integer :deleted, :default => 0, :null => false
+
+      index [:src_datapath_id, :dst_datapath_id, :src_interface_id, :dst_interface_id, :deleted], :unique => true, :name => :tunnels_datapath_id_interface_id_index
     end
 
     create_table(:vlan_translations) do

@@ -34,5 +34,11 @@ module Vnet::Models
     def datapath_networks_in_the_same_network
       self.class.eager_graph(:datapath).where(network_id: self.network_id).exclude(datapath_networks__id: self.id).all
     end
+
+    private
+
+    def before_destroy
+      self.deleted = id
+    end
   end
 end
