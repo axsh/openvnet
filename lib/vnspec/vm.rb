@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+require 'resolv'
+
 module Vnspec
   class VM
     UDP_OUTPUT_DIR="/tmp"
@@ -223,7 +225,9 @@ module Vnspec
     def ipv4_address
       begin
         ip = interfaces.first.mac_leases.first.ip_leases.first.ipv4_address
-        IPAddress::IPv4.parse_u32(ip).to_s
+        # for compativility
+        ip = IPAddress::IPv4.parse_u32(ip).to_s unless ip =~ Resolv::IPv4::Regex
+        ip
       rescue NoMethodError
         nil
       end
