@@ -17,7 +17,7 @@ module Vnet::Openflow::Datapaths
     private
 
     def after_add_active_network(active_network)
-      @dp_info.dc_segment_manager.async.prepare_network(active_network[:network_id])
+      @dp_info.dc_segment_manager.async.prepare_network(active_network[:id])
       @dp_info.tunnel_manager.async.prepare_network(active_network[:id])
 
       flows = []
