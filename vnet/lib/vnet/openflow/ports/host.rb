@@ -55,19 +55,6 @@ module Vnet::Openflow::Ports
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
 
-      # For now set the latest eth port as the default MAC2MAC output
-      # port.
-      flows << Flow.create(TABLE_OUTPUT_MAC2MAC, 2,
-                           reflection_mac2mac_md.merge(:in_port => self.port_number), {
-                             :output => OFPP_IN_PORT
-                           },
-                           flow_options)
-      flows << Flow.create(TABLE_OUTPUT_MAC2MAC, 1,
-                           md_create(:mac2mac => nil), {
-                             :output => self.port_number
-                           },
-                           flow_options)
-
       if @interface_id && @dp_info.datapath.datapath_map.node_id != 'edge'
         flows << flow_create(:default,
                              table: TABLE_CLASSIFIER,

@@ -81,14 +81,6 @@ module Vnet
       # non-action instructions such as 'write_metadata'.
       TABLE_OUTPUT_CONTROLLER  = 60
 
-      # Send packet to a known datapath id, e.g. using an eth port or
-      # tunnel port.
-      #
-      # Note, this table could later be used to automatically create
-      # tunnels independently of installed flows.
-      TABLE_OUTPUT_DATAPATH          = 62
-      TABLE_OUTPUT_MAC2MAC           = 63
-
       TABLE_LOOKUP_IF_NW_TO_DP_NW         = 70
       TABLE_LOOKUP_IF_RL_TO_DP_RL         = 71
       TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 72
