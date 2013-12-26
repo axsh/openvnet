@@ -34,6 +34,17 @@ module Vnet::Openflow::Routers
       @id | COOKIE_TYPE_ROUTE_LINK
     end
 
+    def to_hash
+      Vnet::Openflow::Router.new(id: @id,
+                                 uuid: @uuid,
+                                 #mode: @mode,
+                                 )
+    end
+
+    #
+    # 
+    #
+
     def install
       msg = "installing"
       msg << " with mac2mac" if @dp_mac_address && @interface_id

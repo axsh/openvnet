@@ -23,6 +23,7 @@ module Vnet::Openflow
     attr_reader :network_manager
     attr_reader :port_manager
     attr_reader :route_manager
+    attr_reader :router_manager
     attr_reader :filter_manager
     attr_reader :service_manager
     attr_reader :tunnel_manager
@@ -126,6 +127,7 @@ module Vnet::Openflow
       @port_manager = PortManager.new(self)
       @filter_manager = FilterManager.new(self)
       @route_manager = RouteManager.new(self)
+      @router_manager = RouterManager.new(self)
       @service_manager = ServiceManager.new(self)
       @tunnel_manager = TunnelManager.new(self)
       @translation_manager = TranslationManager.new(self)
