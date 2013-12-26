@@ -23,7 +23,7 @@ describe Vnet::Openflow::Ports::Tunnel do
       port.install
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq(3 + DATAPATH_IDLE_FLOWCOUNT)
+      expect(datapath.added_flows.size).to eq(2 + DATAPATH_IDLE_FLOWCOUNT)
 
       expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
                                               TABLE_TUNNEL_PORTS,
@@ -39,12 +39,6 @@ describe Vnet::Openflow::Ports::Tunnel do
                                               nil,
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
                                                :goto_table => TABLE_ROUTE_INGRESS_INTERFACE})
-      expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
-                                              TABLE_OUTPUT_DATAPATH,
-                                              5,
-                                              port.md_create(datapath: 5),
-                                              {:output => 10},
-                                              {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT)})
     end
 
   end
