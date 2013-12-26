@@ -48,7 +48,7 @@ shared_examples_for "vm(unreachable)" do |vm|
   end
 end
 
-describe "event_if" do
+describe "event" do
   before(:all) do
     # add routes
     [vm1, vm3, vm5].each do |vm|
