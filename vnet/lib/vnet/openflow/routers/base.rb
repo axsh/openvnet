@@ -19,6 +19,8 @@ module Vnet::Openflow::Routers
       @uuid = map.uuid
 
       @mac_address = Trema::Mac.new(map.mac_address)
+
+      @routes = {}
     end
 
     def cookie
@@ -42,6 +44,15 @@ module Vnet::Openflow::Routers
 
     def uninstall
     end    
+
+    def add_active_route(route_id)
+      return if @routes.has_key? route_id
+
+      @routes[route_id] = {
+      }
+
+      debug log_format("adding active route #{route_id}")
+    end
 
     #
     # Internal methods:

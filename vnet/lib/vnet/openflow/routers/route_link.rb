@@ -4,10 +4,6 @@ module Vnet::Openflow::Routers
 
   class RouteLink < Base
 
-    def initialize(params)
-      super
-    end
-
     #
     # Events: 
     #

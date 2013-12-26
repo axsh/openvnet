@@ -12,6 +12,11 @@ module Vnet::Openflow
     subscribe_event INITIALIZED_ROUTER, :install_item
 
     def update(params)
+      case params[:event]
+      when :activate_route
+        activate_route(params)
+      end
+
       nil
     end
 
@@ -72,6 +77,15 @@ module Vnet::Openflow
     #
     # Events:
     #
+
+    def activate_route(params)
+      item = item_by_params(id: params[:id])
+
+      return if item.nil?
+      return if params[:route_id].nil?
+
+      item.add_active_route(params[:route_id])
+    end
 
   end
 

@@ -11,7 +11,6 @@ module Vnet::Openflow::Routes
 
     attr_reader :interface_id
     attr_reader :route_link_id
-    attr_reader :route_link_mac_address
 
     attr_reader :network_id
     attr_reader :ipv4_address
@@ -34,7 +33,6 @@ module Vnet::Openflow::Routes
 
       @interface_id = map.interface_id
       @route_link_id = map.route_link_id
-      @route_link_mac_address = params[:route_link_mac_address]
 
       @network_id = map.network_id
       @ipv4_address = IPAddr.new(map.ipv4_network, Socket::AF_INET)
@@ -60,8 +58,7 @@ module Vnet::Openflow::Routes
       return if
         @interface_id.nil? ||
         @network_id.nil? ||
-        @route_link_id.nil? ||
-        @route_link_mac_address.nil?
+        @route_link_id.nil?
 
       flows = []
 
@@ -130,20 +127,6 @@ module Vnet::Openflow::Routes
                                  default_route: self.is_default_route,
                                  cookie: cookie)
           }
-
-          # flows << flow_create(:routing,
-          #                      table: TABLE_ROUTE_LINK_EGRESS,
-          #                      goto_table: TABLE_ROUTE_EGRESS_INTERFACE,
-
-          #                      match: subnet_dst,
-          #                      match_route_link: @route_link_id,
-
-          #                      actions: {
-          #                        :eth_dst => @route_link_mac_address
-          #                      },
-          #                      write_interface: @interface_id,
-          #                      default_route: self.is_default_route,
-          #                      cookie: cookie)
         end
       end
 

@@ -18,19 +18,18 @@ module Vnet::Openflow
     def insert(route_map)
       return if @items[route_map.id]
 
-      route_link = prepare_link(route_map.route_link_id)
-      return if route_link.nil?
-
       info log_format("insert #{route_map.uuid}/#{route_map.id}", "interface_id:#{route_map.interface_id}")
 
       route = Routes::Base.new(dp_info: @dp_info,
                                manager: self,
-                               map: route_map,
-                               route_link_mac_address: route_link.mac_address)
+                               map: route_map)
 
       @items[route.id] = route
 
-      # TODO: Add route id to route_link.
+      route_link = @dp_info.router_manager.update(event: :activate_route,
+                                                  id: route_map.route_link_id,
+                                                  route_id: route_map.id)
+      @route_links[route_link.id] = true if route_link
 
       interface = prepare_interface(route_map.interface_id)
 
@@ -69,16 +68,6 @@ module Vnet::Openflow
     #
     # Specialize Manager:
     #
-
-    def prepare_link(route_link_id)
-      link = @route_links[route_link_id]
-      return link if link
-
-      route_link = @dp_info.router_manager.retrieve(id: route_link_id)
-      @route_links[route_link.id] = route_link
-
-      route_link
-    end
 
     def prepare_interface(interface_id)
       interface_item = @dp_info.interface_manager.item(id: interface_id)
