@@ -33,8 +33,8 @@ module Vnet::Openflow
 
       @mac_addresses = mac_addresses
 
-      debug log_format("adding mac address to #{@uuid}/#{@id}",
-                       "#{params[:mac_address].to_s}")
+      #debug log_format("adding mac address to #{@uuid}/#{@id}",
+      #                 "#{params[:mac_address].to_s}")
 
       mac_info
     end
