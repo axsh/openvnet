@@ -56,6 +56,7 @@ module Vnet::Openflow::Interfaces
 
     def install
       flows = []
+      flows_for_base(flows)
       flows_for_datapath(flows)
       
       @dp_info.add_flows(flows)
