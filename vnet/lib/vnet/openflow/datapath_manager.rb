@@ -112,6 +112,8 @@ module Vnet::Openflow
     # Events:
     #
 
+    # TODO: Add a list of active networks/route_links.
+
     def activate_network(params)
       return if params[:network_id].nil?
 

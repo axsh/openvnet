@@ -86,13 +86,13 @@ module Vnet
       #
       # Note, this table could later be used to automatically create
       # tunnels independently of installed flows.
-      TABLE_OUTPUT_ROUTE_LINK        = 61
       TABLE_OUTPUT_DATAPATH          = 62
       TABLE_OUTPUT_MAC2MAC           = 63
 
       TABLE_LOOKUP_IF_NW_TO_DP_NW         = 70
-      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 71
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 72
+      TABLE_LOOKUP_IF_RL_TO_DP_RL         = 71
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 72
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 73
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source

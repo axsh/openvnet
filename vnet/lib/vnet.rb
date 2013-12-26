@@ -244,6 +244,7 @@ module Vnet
     end
 
     module Routers
+      autoload :Base, 'vnet/openflow/routers/base'
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
     end
 

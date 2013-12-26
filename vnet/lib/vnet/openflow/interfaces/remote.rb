@@ -85,6 +85,15 @@ module Vnet::Openflow::Interfaces
                            write_value_pair_first: datapath_id,
 
                            cookie: cookie)
+      flows << flow_create(:default,
+                           table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
+                           goto_table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
+                           priority: 1,
+
+                           match_value_pair_first: @id,
+                           write_value_pair_first: datapath_id,
+
+                           cookie: cookie)
     end
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)
@@ -107,18 +116,6 @@ module Vnet::Openflow::Interfaces
     # Not needed unless egress routing is used:
     #
     def flows_for_router_egress_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
-
-      datapath_id = @owner_datapath_ids && @owner_datapath_ids.first
-      return if datapath_id.nil?
-
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS_INTERFACE,
-                           goto_table: TABLE_OUTPUT_ROUTE_LINK,
-                           priority: 20,
-                           match_interface: @id,
-                           write_datapath: datapath_id,
-                           cookie: cookie)
     end    
 
   end

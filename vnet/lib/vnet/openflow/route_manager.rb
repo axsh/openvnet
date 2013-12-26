@@ -4,8 +4,6 @@ module Vnet::Openflow
 
   class RouteManager < Manager
 
-    ROUTE_COMMIT = {:fill => [:route_link]}
-
     def initialize(dp_info)
       super
 
@@ -18,10 +16,10 @@ module Vnet::Openflow
     #
 
     def insert(route_map)
-      route_link = prepare_link(route_map.route_link)
+      return if @items[route_map.id]
 
+      route_link = prepare_link(route_map.route_link_id)
       return if route_link.nil?
-      return if route_link.routes.has_key? route_map.id
 
       info log_format("insert #{route_map.uuid}/#{route_map.id}", "interface_id:#{route_map.interface_id}")
 
@@ -32,7 +30,7 @@ module Vnet::Openflow
 
       @items[route.id] = route
 
-      route_link.routes[route.id] = route
+      # TODO: Add route id to route_link.
 
       interface = prepare_interface(route_map.interface_id)
 
@@ -46,9 +44,9 @@ module Vnet::Openflow
     end
 
     def prepare_network(network_map, dp_map)
-      network_map.batch.routes.commit(ROUTE_COMMIT).each { |route_map|
-        if !@route_links.has_key?(route_map.route_link.id)
-          route_map.batch.on_other_networks(network_map.id).commit(ROUTE_COMMIT).each { |other_route_map|
+      network_map.batch.routes.commit.each { |route_map|
+        if !@route_links.has_key?(route_map.route_link_id)
+          route_map.batch.on_other_networks(network_map.id).commit.each { |other_route_map|
             # Replace with a lightweight methods.
             self.insert(other_route_map)
           }
@@ -72,33 +70,13 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
-    def datapath_route_link(rl_map)
-      @datapath_info.datapath_map.batch.datapath_route_links_dataset.where(:route_link_id => rl_map.id).all.commit
-    end
-
-    def dp_rl_on_segment(rl_map)
-      rl_map.batch.datapath_route_links_dataset.on_segment(@datapath_info.datapath_map).all.commit
-    end
-
-    def prepare_link(rl_map)
-      link = @route_links[rl_map.id]
+    def prepare_link(route_link_id)
+      link = @route_links[route_link_id]
       return link if link
 
-      route_link = Routers::RouteLink.new(dp_info: @dp_info, map: rl_map)
+      route_link = @dp_info.router_manager.retrieve(id: route_link_id)
       @route_links[route_link.id] = route_link
 
-      datapath_route_link(rl_map).each { |dp_rl_map|
-        route_link.set_dp_route_link(dp_rl_map)
-      }
-
-      dp_rl_on_segment(rl_map).each { |dp_rl_map|
-        route_link.add_datapath_on_segment(dp_rl_map)
-      }
-
-      @dp_info.datapath_manager.async.update(event: :activate_route_link,
-                                             route_link_id: route_link.id)
-
-      route_link.install
       route_link
     end
 
