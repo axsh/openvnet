@@ -73,32 +73,32 @@ module Vnet::Openflow::Routes
                              match: subnet_dst,
                              match_interface: @interface_id,
                              write_network: @network_id,
-                             default_route: self.is_default_route,
-                             cookie: cookie)
+                             default_route: self.is_default_route)
 
         if @ingress == true
           flows << flow_create(:routing,
                                table: TABLE_ROUTE_LINK_INGRESS,
                                goto_table: TABLE_ROUTE_LINK_EGRESS,
+                               default_route: self.is_default_route,
 
                                match: subnet_src,
                                match_interface: @interface_id,
                                write_route_link: @route_link_id,
-                               default_route: self.is_default_route,
-                               write_reflection: true,
-                               cookie: cookie)
+                               write_reflection: true)
         end
 
         if @egress == true
           flows << flow_create(:routing,
                                table: TABLE_ROUTE_LINK_EGRESS,
-                               goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
+                               goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
+                               default_route: self.is_default_route,
 
                                match: subnet_dst,
                                match_route_link: @route_link_id,
-                               write_interface: @interface_id,
-                               default_route: self.is_default_route,
-                               cookie: cookie)
+
+                               write_value_pair_flag: true,
+                               write_value_pair_first: @interface_id,
+                               write_value_pair_second: @route_link_id)
         end
 
       else
@@ -114,18 +114,17 @@ module Vnet::Openflow::Routes
 
             flows << flow_create(:routing,
                                  table: TABLE_ROUTE_LINK_EGRESS,
-                                 goto_table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
+                                 goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
 
                                  match: subnet_dst,
                                  match_reflection: reflection,
                                  match_route_link: @route_link_id,
 
-                                 write_value_pair_flag: reflection,
-                                 write_value_pair_first: @use_datapath_id,
+                                 write_value_pair_flag: true,
+                                 write_value_pair_first: @interface_id,
                                  write_value_pair_second: @route_link_id,
 
-                                 default_route: self.is_default_route,
-                                 cookie: cookie)
+                                 default_route: self.is_default_route)
           }
         end
       end

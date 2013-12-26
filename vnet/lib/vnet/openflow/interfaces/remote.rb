@@ -71,6 +71,19 @@ module Vnet::Openflow::Interfaces
       "#{@dp_info.dpid_s} interfaces/remote: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def flows_for_base(flows)
+      # TODO: Only add when router egress is set.
+      flows << flow_create(:default,
+                           table: TABLE_ROUTE_EGRESS_LOOKUP,
+                           goto_table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
+                           priority: 1,
+
+                           match_value_pair_first: @id)
+                           
+                           # write_value_pair_first: @id,
+                           # write_value_pair_second: )
+    end
+
     def flows_for_datapath(flows)
       datapath_id = @active_datapath_ids && @active_datapath_ids.first
       # datapath_id = @owner_datapath_ids && @owner_datapath_ids.first if datapath_id.nil?
@@ -112,9 +125,6 @@ module Vnet::Openflow::Interfaces
       #                      network_id: ipv4_info[:network_id])
     end
 
-    #
-    # Not needed unless egress routing is used:
-    #
     def flows_for_router_egress_mac(flows, mac_info)
     end    
 
