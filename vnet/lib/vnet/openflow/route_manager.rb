@@ -38,7 +38,6 @@ module Vnet::Openflow
         return
       end
 
-      route.use_datapath_id = interface[:use_datapath_id]
       route.install
     end
 
