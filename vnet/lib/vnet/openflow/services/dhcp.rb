@@ -36,6 +36,8 @@ module Vnet::Openflow::Services
       mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
       return if network.nil?
 
+      static_routes = find_static_routes(network[:id])
+
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
       return if client_info.nil?
 
@@ -46,6 +48,7 @@ module Vnet::Openflow::Services
         :ipv4_address => ipv4_info[:ipv4_address],
         :ipv4_network => network[:ipv4_network],
         :ipv4_prefix => network[:ipv4_prefix],
+        :routes_info => static_routes
       }
 
       case message_type[0].payload[0]
@@ -107,6 +110,30 @@ module Vnet::Openflow::Services
       "#{@dp_info.dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def find_static_routes(net_id)
+      routes_on_network = @dp_info.route_manager.retrieve_all(network_id: net_id)
+      static_routes = routes_on_network.collect_concat do |rnear|
+        link_id = rnear[:route_link_id]
+        routes_w_route_link = @dp_info.route_manager.retrieve_all(route_link_id: link_id)
+        outgoing_routes =  routes_w_route_link.select do |rfar|
+          rfar[:network_id] != net_id
+          ## TODO: check egress ingress
+        end
+        if outgoing_routes
+          router_mac, router_ipv4 = @dp_info.interface_manager.get_ipv4_address(id: rnear[:interface_id])
+          router_ip_ints = router_ipv4[:ipv4_address].to_s.split(".").map { |s| s.to_i }
+        end
+        outgoing_routes.collect do |outr|
+          dest_ip = outr[:ipv4_address]
+          dest_prefix = outr[:ipv4_prefix]
+          dest_ip_ints = dest_ip.to_s.split(".").map { |s| s.to_i }
+          [ dest_ip_ints , dest_prefix, router_ip_ints ]
+        end
+      end
+      p "static_routes #{static_routes}"
+      static_routes
+    end
+
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
       interface = @dp_info.interface_manager.item(port_number: port_number)
       return [] if interface.nil?
@@ -152,6 +179,14 @@ module Vnet::Openflow::Services
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (params[:ipv4_network] | ~subnet_mask).hton.unpack('C*'))
 
+      payload = params[:routes_info].collect_concat do |g|
+        dst_ip, dst_pre, router_ip = g
+        # keep only unmasked ints, following rfc3442
+        keep = (dst_pre + 7 ) / 8
+        [ dst_pre ] + dst_ip.first(keep) + router_ip
+      end
+      dhcp_out.options << DHCP::Option.new(:type => 121, :payload => payload)
+
       # if nw_services[:gateway]
       #   dhcp_out.options << DHCP::RouterOption.new(:payload => nw_services[:gateway].ip.to_short)
       # end
@@ -163,7 +198,9 @@ module Vnet::Openflow::Services
       #   dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns].ip
       # end
 
+      # TODO, check packet size does not exceed any known limits
       dhcp_out
+
     end
 
   end

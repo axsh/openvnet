@@ -52,6 +52,24 @@ module Vnet::Openflow::Routes
       is_ipv4_broadcast(@ipv4_address, @ipv4_prefix)
     end
 
+    # Update variables by first duplicating to avoid memory
+    # consistency issues with values passed to other actors.
+    def to_hash
+      Vnet::Openflow::Route.new(id: @id,
+                                    uuid: @uuid,
+                                    
+                                    interface_id: @interface_id,
+                                    route_link_id: @route_link_id,
+                                    route_link_mac_address: @route_link_mac_address,
+                                    
+                                    network_id: @network_id,
+                                    ipv4_address: @ipv4_address,
+                                    ipv4_prefix: @ipv4_prefix,
+                                    
+                                    ingress: @ingress,
+                                    egress: @egress)
+    end
+
     #
     # Events:
     #

@@ -189,6 +189,7 @@ module Vnet
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :PortManager, 'vnet/openflow/port_manager'
+    autoload :Route, 'vnet/openflow/route'
     autoload :RouteManager, 'vnet/openflow/route_manager'
     autoload :FilterManager, 'vnet/openflow/filter_manager'
     autoload :Service, 'vnet/openflow/service'

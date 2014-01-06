@@ -14,6 +14,17 @@ module Vnet::Openflow
     end
 
     #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:network_id] && params[:network_id] != item.network_id
+      true
+    end
+
+    #
     # Refactor:
     #
 
