@@ -69,10 +69,10 @@ module Vnet::Openflow
     #
 
     def prepare_interface(interface_id)
+      # TODO: Only allow remotes to be loaded by route manager.
+
       interface_item = @dp_info.interface_manager.item(id: interface_id)
       return nil if interface_item.nil?
-
-      info log_format('from interface_manager' , "#{interface_item.uuid}/#{interface_id} mode:#{interface_item.mode}")
 
       interface = interface_item && @interfaces[interface_item.id]
       return interface if interface
@@ -85,39 +85,17 @@ module Vnet::Openflow
 
       interface = {
         :id => interface_item.id,
-        :use_datapath_id => nil,
-
         :mode => interface_item.mode,
       }
 
       @interfaces[interface_item.id] = interface
 
-      if interface_item.mode == :remote
-        interface[:use_datapath_id] = interface_item.owner_datapath_ids && interface_item.owner_datapath_ids.first
+      info log_format('from interface_manager' , "#{interface_item.uuid}/#{interface_id} mode:#{interface_item.mode}")
 
-        # if interface[:use_datapath_id]
-          # @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
-          #                                              id: interface[:id])
-          @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
-                                                       id: interface[:id])
-        # end
-
-        return interface
-      end
-
-      datapath_id = @datapath_info.datapath_map.id
-
-      if interface_item.active_datapath_ids &&
-          !interface_item.active_datapath_ids.include?(datapath_id)
-        interface[:use_datapath_id] = interface_item.active_datapath_ids.first
-      end
-
-      if interface[:use_datapath_id].nil?
-        @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
-                                                     id: interface[:id])
-        @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
-                                                     id: interface[:id])
-      end
+      @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
+                                                   id: interface[:id])
+      @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
+                                                   id: interface[:id])
 
       interface
     end
