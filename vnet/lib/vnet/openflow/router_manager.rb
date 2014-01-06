@@ -50,7 +50,6 @@ module Vnet::Openflow
       item = @items[params[:item_map].id]
       return unless item
 
-      debug log_format("insert #{item.uuid}/#{item.id}")
       item
     end
 
