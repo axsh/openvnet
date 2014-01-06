@@ -121,7 +121,7 @@ describe "event_if" do
   end
 
   #describe "interface", focus: true do
-  describe "interface" do
+  describe "interface", focus:true do
     describe "remove" do
       before(:all) do
         vm1.remove_interface("if-v1")
@@ -136,7 +136,8 @@ describe "event_if" do
           uuid: "if-v1",
           mac_address: "02:00:00:00:00:01",
           network_uuid: "nw-vnet1",
-          ipv4_address: "10.101.0.10"
+          ipv4_address: "10.101.0.10",
+          port_name: "if-v1"
         )
   
         sleep(3)
