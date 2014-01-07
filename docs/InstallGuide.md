@@ -418,7 +418,5 @@ This time you should see that the ping packets reach vm4 and not vm3.
 
 # License
 
----------------------------------------------------------------------
-
 Copyright (c) Axsh Co. Components included are distributed under LGPL 3.0
 
