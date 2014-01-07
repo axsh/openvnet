@@ -12,6 +12,7 @@ module Vnet::Openflow
 
     def initialize(dp, name = nil)
       @datapath = dp || raise("cannot create a Switch object without a valid datapath")
+      @dp_info = dp.dp_info
 
       @dpid = @datapath.dpid
       @dpid_s = "0x%016x" % @datapath.dpid
@@ -205,7 +206,7 @@ module Vnet::Openflow
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
 
       # Temporary hack to load the public network.
-      @datapath.dp_info.network_manager.async.item(uuid: 'nw-public')
+      @dp_info.network_manager.async.item(uuid: 'nw-public')
     end
 
     def features_reply(message)
@@ -223,10 +224,10 @@ module Vnet::Openflow
       case message.reason
       when OFPPR_ADD
         debug log_format("adding port")
-        @datapath.dp_info.port_manager.insert(message)
+        @dp_info.port_manager.insert(message)
       when OFPPR_DELETE
         debug log_format("deleting port")
-        @datapath.dp_info.port_manager.remove(message)
+        @dp_info.port_manager.remove(message)
       end
     end
 
