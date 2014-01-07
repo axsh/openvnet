@@ -56,7 +56,7 @@ Modify the following section in /etc/wakame-vnet/vnmgr.conf on the vnmgr node.
     }
 
 - **host** : The IP address or host name of the ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the webapi process is run on the same node as vna or webapi, specify a different value from vna and webapi.
+- **port** : The port number for connecting with ZeroMQ. If the vnmgr process is run on the same node as vna or webapi, specify a different value from vna and webapi.
 
 
 ### Setup vna
@@ -73,7 +73,7 @@ Modify the following section in /etc/wakame-vnet/vna.conf on the node.
     }
 
 - **host** : The IP address or host name of the ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the webapi process is run on the same node as vnmgr or webapi, specify a different value from vnmgr and webapi.
+- **port** : The port number for connecting with ZeroMQ. If the vna process is run on the same node as vnmgr or webapi, specify a different value from vnmgr and webapi.
 
 
 ### Setup webapi
@@ -147,6 +147,7 @@ OpenVNet writes its logs in the /var/log/wakame-vnet directory. If there's a pro
 # Let's try 1Box OpenVNet#
 
 This section explains how to install OpenVNet on one node. This is a great way to try it out.
+![1BOX](OpenVNet_1Box_environment.gif)
 
 Install the following operation system and kernel.
 
@@ -229,7 +230,7 @@ Start OpenVNet
     # initctl start vnet-vnmgr
     # initctl start vnet-webapi
     # initctl start vnet-vna
-    # initctl list | grep vnet # <- This line confirms that all three process have started successfully.
+    # initctl list | grep vnet # <- This line confirms that all three processes have started successfully.
     vnet-vna start/running, process 2505
     vnet-vnmgr start/running, process 2286
     vnet-webapi start/running, process 2296
