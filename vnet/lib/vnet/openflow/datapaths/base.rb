@@ -18,20 +18,15 @@ module Vnet::Openflow::Datapaths
       @id = map.id
       @uuid = map.uuid
       @dpid = map.dpid.hex
+      @dc_segment_id = map.dc_segment_id
 
       @active_networks = {}
 
       @active_route_links = {}
-
-      @same_segment = @dp_info.datapath.datapath_info.dc_segment_id == map[:dc_segment_id]
     end
     
     def host?
       false
-    end
-
-    def same_segment?
-      !! @same_segment
     end
 
     def cookie(tag = nil)

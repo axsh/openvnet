@@ -4,6 +4,11 @@ module Vnet::Openflow::Datapaths
 
   class Host < Base
 
+    def initialize(params)
+      params[:dp_info].datapath.initialize_datapath_info(params[:map])
+      super
+    end
+
     def host?
       true
     end

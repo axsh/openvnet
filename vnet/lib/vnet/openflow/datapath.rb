@@ -82,16 +82,10 @@ module Vnet::Openflow
     end
 
     def switch_ready
-      datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
-
-      if datapath_map.nil?
+      unless @dp_info.datapath_manager.item(dpid: @dp_info.dpid_s)
         warn log_format('could not find dpid in database')
         return
       end
-
-      initialize_datapath_info(datapath_map)
-
-      @dp_info.datapath_manager.item(id: datapath_map.id)
 
       @switch.switch_ready
     end
@@ -188,6 +182,11 @@ module Vnet::Openflow
       @ovs_ofctl.delete_tunnel(tunnel_name)
     end
 
+    def initialize_datapath_info(datapath_map)
+      @datapath_info = DatapathInfo.new(datapath_map)
+      @dp_info.managers.each { |manager| manager.set_datapath_info(@datapath_info) }
+    end
+
     #
     # Internal methods:
     #
@@ -196,11 +195,6 @@ module Vnet::Openflow
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
-    end
-
-    def initialize_datapath_info(datapath_map)
-      @datapath_info = DatapathInfo.new(datapath_map)
-      @dp_info.managers.each { |manager| manager.set_datapath_info(@datapath_info) }
     end
 
     def link_with_managers

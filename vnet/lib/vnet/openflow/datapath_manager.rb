@@ -45,6 +45,15 @@ module Vnet::Openflow
       true
     end
     
+    def select_filter_from_params(params)
+      {}.tap do |options|
+        case
+        when params[:id]    then options[:id] = params[:id]
+        when params[:dpid]  then options[:dpid] = params[:dpid]
+        end
+      end
+    end
+
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
@@ -92,7 +101,7 @@ module Vnet::Openflow
       debug log_format("creating datapath id: #{params[:id]}")
       return if @items[params[:id]]
 
-      if @datapath_info && @datapath_info.id != params[:id]
+      if @dp_info.dpid_s != params[:dpid]
         item(id: params[:id])
         return
       end

@@ -14,6 +14,10 @@ module Vnet::Openflow::Datapaths
 
     private
 
+    def same_segment?
+      @dp_info.datapath.datapath_info.dc_segment_id == @dc_segment_id
+    end
+
     def after_add_active_network(active_network)
       if same_segment?
         @dp_info.dc_segment_manager.async.insert(active_network[:dpn_id])

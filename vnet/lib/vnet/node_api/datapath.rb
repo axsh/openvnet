@@ -5,7 +5,7 @@ module Vnet::NodeApi
     class << self
       def create(options)
         super.tap do |datapath|
-          dispatch_event(ADDED_DATAPATH, id: datapath.id)
+          dispatch_event(ADDED_DATAPATH, id: datapath.id, dpid: datapath.dpid)
         end
       end
 
