@@ -130,12 +130,6 @@ module Vnet::Openflow
       datapath.terminate
     end
 
-    def update_topology(dpid, network_id)
-      debug "[controller]: update_topology: dpid => #{dpid}, network_id => #{network_id}"
-      datapath = @datapaths[@datapaths.keys[0]]
-      datapath.switch.async.update_topology(dpid, network_id)
-    end
-
     def update_vlan_translation
       datapath.switch.async.update_vlan_translation
     end

@@ -230,11 +230,6 @@ module Vnet::Openflow
       end
     end
 
-    def update_topology(dpid, network_id)
-      debug log_format("update_topology", "dpid:#{dpid} network_id:#{network_id}")
-      @datapath.dp_info.tunnel_manager.delete_tunnel_port(network_id, dpid)
-    end
-
     def update_vlan_translation
       # TODO
     end
