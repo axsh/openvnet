@@ -91,7 +91,6 @@ module Vnet::Openflow
     end
 
     def reset
-      del_all_flows
       @dp_info.tunnel_manager.delete_all_tunnels
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
