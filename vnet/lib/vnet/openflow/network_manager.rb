@@ -127,7 +127,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Network.batch[filter].commit(:fill => :network_services)
+      MW::Network.batch[filter].commit(fill: :network_services)
     end
 
     def create_item(params)

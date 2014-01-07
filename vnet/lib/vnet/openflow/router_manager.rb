@@ -35,7 +35,7 @@ module Vnet::Openflow
     #
 
     def select_item(filter)
-      MW::RouteLink.batch[filter].commit
+      MW::RouteLink.batch[filter].commit(fill: :routes)
     end
 
     def item_initialize(item_map, params)
@@ -63,6 +63,11 @@ module Vnet::Openflow
                                              route_link_id: item.id)
 
       debug log_format("install #{item.uuid}/#{item.id}")
+
+      params[:item_map].routes.each { |route_map|
+        @dp_info.route_manager.async.insert(route_map)
+      }
+
       item
     end
 
@@ -78,10 +83,7 @@ module Vnet::Openflow
     #
 
     def activate_route(params)
-
-      # TODO: Add route_id to hash.
-
-      item = item_by_params(id: params[:id])
+      item = internal_detect(id: params[:id])
 
       return if item.nil?
       return if params[:route_id].nil?
