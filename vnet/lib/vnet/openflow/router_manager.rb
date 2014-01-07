@@ -65,7 +65,7 @@ module Vnet::Openflow
       debug log_format("install #{item.uuid}/#{item.id}")
 
       params[:item_map].routes.each { |route_map|
-        @dp_info.route_manager.async.insert(route_map)
+        @dp_info.route_manager.async.retrieve(id: route_map.id)
       }
 
       item

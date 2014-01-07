@@ -30,6 +30,13 @@ module Vnet
     INITIALIZED_NETWORK = "initialized_network"
 
     #
+    # route event
+    #
+    INITIALIZED_ROUTE = "initialized_route"
+    ADDED_ROUTE = "added_route"
+    REMOVED_ROUTE = "removed_route"
+
+    #
     # router event
     #
     INITIALIZED_ROUTER = "initialized_router"

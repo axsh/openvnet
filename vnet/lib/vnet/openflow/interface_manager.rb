@@ -139,8 +139,6 @@ module Vnet::Openflow
       item = self.item(params)
       return unless item
 
-      debug log_format("create #{item.uuid}/#{item.id}", "mode:#{item.mode}")
-
       item
     end
 
@@ -149,9 +147,9 @@ module Vnet::Openflow
       item = @items[item_map.id]
       return nil if item.nil?
 
-      item.install
-
       debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
+
+      item.install
 
       if item.owner_datapath_ids &&
           item.owner_datapath_ids.include?(@datapath_info.id)
