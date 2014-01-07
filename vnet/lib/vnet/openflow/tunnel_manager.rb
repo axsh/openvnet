@@ -42,13 +42,6 @@ module Vnet::Openflow
       datapath_network = create_datapath_network(dpn_id)
       return unless datapath_network
 
-      info log_format(
-        "insert datapath network",
-        "datapath_id:#{datapath_network[:datapath_id]}" +
-        "network_id:#{datapath_network[:network_id]}" +
-        "interface_id:#{datapath_network[:interface_id]}"
-      )
-
       options = {
         src_datapath_id: @datapath_info.id,
         dst_datapath_id: datapath_network[:datapath_id],
@@ -73,6 +66,13 @@ module Vnet::Openflow
 
       item.add_datapath_network(datapath_network)
       update_network_id(datapath_network[:network_id])
+
+      info log_format(
+        "insert datapath network",
+        "datapath_id:#{datapath_network[:datapath_id]}" +
+        "network_id:#{datapath_network[:network_id]}" +
+        "interface_id:#{datapath_network[:interface_id]}"
+      )
     end
 
     def remove(dpn_id)
