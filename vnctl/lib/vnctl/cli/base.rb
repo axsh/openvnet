@@ -18,7 +18,7 @@ module Vnctl::Cli
 
       def self.define_add
         desc "add [OPTIONS]", "Creates a new #{namespace}."
-        add_required_options.each { |o|
+        set_required_options.each { |o|
           options[o].instance_variable_set(:@required, true)
         }
         define_method(:add) do
@@ -78,7 +78,7 @@ module Vnctl::Cli
 
           desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
             "Adds #{desc_label} to a #{parent.namespace}."
-          rel_opts.each { |o| option(o[:name], o[:desc]) }
+          rel_opts && rel_opts.each { |o| option(o[:name], o[:desc]) }
           def add(base_uuid, rel_uuid)
             puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
           end
@@ -107,9 +107,9 @@ module Vnctl::Cli
         @relation_options = []
       end
 
-      def self.add_required_options(opts = nil)
-        @add_required_options = opts unless opts.nil?
-        @add_required_options || []
+      def self.set_required_options(opts = nil)
+        @required_options_for_add = opts unless opts.nil?
+        @required_options_for_add || []
       end
 
       def self.add_modify_shared_options(&blk)

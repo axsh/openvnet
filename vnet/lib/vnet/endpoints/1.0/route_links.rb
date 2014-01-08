@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
+  put_post_shared_params = ["mac_address"]
 
   post do
-    accepted_params = ['uuid', 'mac_address']
+    accepted_params = put_post_shared_params + ['uuid']
     required_params = ['mac_address']
 
     post_new(:RouteLink, accepted_params, required_params) { |params|
@@ -24,9 +25,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
   end
 
   put '/:uuid' do
-    params = parse_params(@params, [])
-    params[:mac_address] = parse_mac(params[:mac_address]) if params[:mac_address]
-    route_link = M::RouteLink.update(@params['uuid'], params)
-    respond_with(R::RouteLink.generate(route_link))
+    update_by_uuid(:RouteLink, put_post_shared_params) { |params|
+      params[:mac_address] = parse_mac(params[:mac_address]) if params[:mac_address]
+    }
   end
 end
