@@ -18,13 +18,13 @@ module Vnspec
         all.each do |vm|
           vm.interfaces.each do |interface|
             API.request(:get, "interfaces/#{interface.uuid}") do |response|
-              response["mac_leases"].each do |mac_lease|
-                interface.mac_leases << Models::MacLease.new(uuid: mac_lease["uuid"], interface: interface,  mac_address: mac_lease["mac_address"]).tap do |m|
-                  response["ip_leases"].select do |ip_lease|
+              response[:mac_leases].each do |mac_lease|
+                interface.mac_leases << Models::MacLease.new(uuid: mac_lease[:uuid], interface: interface,  mac_address: mac_lease[:mac_address]).tap do |m|
+                  mac_lease[:ip_leases].select do |ip_lease|
                     # TODO use uuid instead of id
-                    ip_lease["mac_lease_id"] == mac_lease["id"]
+                    ip_lease[:mac_lease_id] == mac_lease[:id]
                   end.each do |ip_lease|
-                    m.ip_leases << Models::IpLease.new(uuid: ip_lease["uuid"], mac_lease: m, ipv4_address: ip_lease["ipv4_address"], network_uuid: ip_lease["network_uuid"])
+                    m.ip_leases << Models::IpLease.new(uuid: ip_lease[:uuid], mac_lease: m, ipv4_address: ip_lease[:ipv4_address], network_uuid: ip_lease[:network_uuid])
                   end
                 end
               end
@@ -114,10 +114,12 @@ module Vnspec
     end
 
     def start
+      logger.info "start: #{name}"
       ssh_on_host("cd /images; ./run-#{name}")
     end
 
     def stop
+      logger.info "stop: #{name}"
       ssh_on_host("cat /images/#{name}.pid | xargs kill -TERM")
     end
 
@@ -127,10 +129,12 @@ module Vnspec
     end
 
     def start_network
+      logger.info "start network: #{name}"
       _network_ctl(:start)
     end
 
     def stop_network
+      logger.info "stop network: #{name}"
       _network_ctl(:stop)
     end
 
@@ -233,6 +237,15 @@ module Vnspec
       end
     end
 
+    def network
+      network_uuid.split('-').last if network_uuid
+    end
+
+    def network_uuid
+      # TODO
+      interfaces.first.mac_leases.first.ip_leases.first.network_uuid rescue nil
+    end
+
     def add_interface(options)
       if @interfaces.find{|i| i.uuid == options[:uuid] }
         raise "interface exists: #{options[:uuid]}"
@@ -248,11 +261,16 @@ module Vnspec
     end
 
     def remove_interface(uuid)
-      interface = @interfaces.find{|i| i.uuid == uuid}.tap do |interface|
+      @interfaces.find{|i| i.uuid == uuid}.tap do |interface|
         return unless interface
         @interfaces.delete(interface)
         interface.destroy
       end
+    end
+
+    def clear_arp_cache
+      logger.debug("clear arp cahe: #{name}")
+      ssh_on_guest("ip -s -s neigh flush all")
     end
 
     def install_package(name)

@@ -33,7 +33,7 @@ module Vnspec
         end
         logger.info("-" * 50)
 
-         return statuses.all?{|n, s| s }
+        return statuses.all?{|n, s| s }
       end
       setup(name)
       sleep(1)
@@ -48,7 +48,7 @@ module Vnspec
 
       VM.stop_network
       Vnet.stop
-      #add_normal_flow
+      #Vnet.add_normal_flow
       Vnet.delete_tunnels
 
       Vnet.reset_db
