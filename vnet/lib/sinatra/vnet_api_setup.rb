@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'json'
+require 'yaml'
 
 require 'sinatra/respond_with'
 require 'sinatra/namespace'
