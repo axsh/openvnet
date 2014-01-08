@@ -4,7 +4,35 @@ module Vnet::Openflow::Datapaths
 
   class Remote < Base
 
+    def uninstall
+      if same_segment?
+        @dp_info.dc_segment_manager.async.remove_datapath(id)
+      else
+        @dp_info.tunnel_manager.async.unload(dst_id: id)
+      end
+    end
+
     private
+
+    def same_segment?
+      @dp_info.datapath.datapath_info.dc_segment_id == @dc_segment_id
+    end
+
+    def after_add_active_network(active_network)
+      if same_segment?
+        @dp_info.dc_segment_manager.async.insert(active_network[:dpn_id])
+      else
+        @dp_info.tunnel_manager.async.insert(active_network[:dpn_id])
+      end
+    end
+
+    def after_remove_active_network(active_network)
+      if same_segment?
+        @dp_info.dc_segment_manager.async.remove(active_network[:dpn_id])
+      else
+        @dp_info.tunnel_manager.async.remove(active_network[:dpn_id])
+      end
+    end
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapaths/remote: #{message}" + (values ? " (#{values})" : '')

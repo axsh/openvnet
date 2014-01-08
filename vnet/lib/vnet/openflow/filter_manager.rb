@@ -43,9 +43,9 @@ module Vnet::Openflow
     end
 
     def remove_filters(interface_hash)
-      @items.delete(interface_hash[:id]).each { |item|
-        @dp_info.del_cookie item.cookie
-      }
+      if item = @items.delete(interface_hash[:id])
+        item.each { |item| @dp_info.del_cookie item.cookie }
+      end
     end
 
     private

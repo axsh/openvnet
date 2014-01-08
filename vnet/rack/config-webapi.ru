@@ -11,7 +11,9 @@ conf = Vnet::Configurations::Webapi.conf
 #Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
 Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "webapi.log"))
 
-Vnet::ModelWrappers::Base.set_proxy(conf.node_api_proxy)
+Vnet::NodeApi.logger = Celluloid.logger
+
+Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'
@@ -30,9 +32,6 @@ DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
     :adapter => conf.registry.adapter,
     :host => conf.registry.host,
     :port => conf.registry.port })
-
-Vnet::NodeModules::EventHandler.supervise_as :event_handler
-DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
 
 map '/api' do
   use Rack::Cors do

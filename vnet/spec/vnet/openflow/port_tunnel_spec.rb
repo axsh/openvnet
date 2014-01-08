@@ -5,11 +5,9 @@ require 'trema'
 include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::Ports::Tunnel do
-  include_context :ofc_double
-
   describe "install" do
     it "creates tunnel specific flows" do
-      datapath = MockDatapath.new(ofc, 10)
+      datapath = MockDatapath.new(double, 10)
       port = Vnet::Openflow::Ports::Base.new(datapath.dp_info, double(port_no: 10, name: 't-a'))
       port.extend(Vnet::Openflow::Ports::Tunnel)
       port.dst_id = 5

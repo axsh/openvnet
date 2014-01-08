@@ -9,14 +9,13 @@ module Vnet::Openflow::Tunnels
     attr_reader :id
     attr_reader :uuid
     attr_reader :display_name
-
     attr_reader :dst_id
     attr_reader :dst_dpid
     attr_reader :dst_ipv4_address
-
     attr_reader :datapath_networks
-
     attr_accessor :port_number
+    attr_accessor :src_interface_id
+    attr_accessor :dst_interface_id
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -132,6 +131,21 @@ module Vnet::Openflow::Tunnels
       # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
 
       # @dp_info.del_cookie(cookie_value, cookie_mask)
+    end
+
+    def add_datapath_network(datapath_network)
+      return if @datapath_networks.detect { |d| d[:id] == datapath_network[:id] }
+      @datapath_networks << datapath_network
+    end
+
+    def remove_datapath_network(dpn_id)
+      @datapath_networks.find { |d| d[:id] == dpn_id }.tap do |datapath_network|
+        @datapath_networks.delete(datapath_network) if datapath_network
+      end
+    end
+
+    def unused?
+      @datapath_networks.empty?
     end
 
     #

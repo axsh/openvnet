@@ -38,11 +38,11 @@ class MockDpInfo < Vnet::Openflow::DpInfo
   end
 
   def add_flow(flow)
-    @datapath.added_flows << flow
+    @datapath.add_flow(flow)
   end
 
   def add_flows(flows)
-    @datapath.added_flows += flows
+    @datapath.add_flows(flows)
   end
 
   def del_cookie(cookie)
@@ -60,12 +60,6 @@ class MockDpInfo < Vnet::Openflow::DpInfo
   def delete_tunnel(tunnel_name)
     @deleted_tunnels << tunnel_name
   end
-
-  # Delay initialization of managers.
-  def initialize_managers(ignore = true)
-    super() if !ignore
-  end
-
 end
 
 class MockDatapath < Vnet::Openflow::Datapath
@@ -75,31 +69,32 @@ class MockDatapath < Vnet::Openflow::Datapath
   attr_reader :added_cookie
 
   def initialize(ofc, dp_id, ofctl = nil)
-    super(ofc, dp_id, ofctl)
+    @dpid = dp_id
+    @dpid_s = "0x%016x" % @dpid
 
     @ovs_ofctl = MockOvsOfctl.new(self)
-
-    @dp_info = MockDpInfo.new(controller: ofc,
-                              datapath: self,
-                              dpid: @dp_info.dpid,
-                              ovs_ofctl: @ovs_ofctl)
+    @controller = ofc
 
     @sent_messages = []
     @added_flows = []
     @added_ovs_flows = []
     @added_cookie = []
 
-    @dp_info.initialize_managers(false)
+    @dp_info = MockDpInfo.new(controller: @controller,
+                              datapath: self,
+                              dpid: @dpid,
+                              ovs_ofctl: @ovs_ofctl)
+
   end
 
   def create_datapath_map
-    @datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
-    initialize_datapath_info
+    datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
+    initialize_datapath_info(datapath_map)
   end
 
   def create_mock_datapath_map
-    @datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1)
-    initialize_datapath_info
+    datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1)
+    initialize_datapath_info(datapath_map)
   end
 
   def create_mock_switch
@@ -136,4 +131,11 @@ class MockDatapath < Vnet::Openflow::Datapath
   def mod_port(port_no, action)
   end
 
+  def added_tunnels
+    @dp_info.added_tunnels
+  end
+
+  def deleted_tunnels
+    @dp_info.deleted_tunnels
+  end
 end

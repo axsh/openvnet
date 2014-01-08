@@ -33,8 +33,8 @@ module Vnet::Openflow
 
       @mac_addresses = mac_addresses
 
-      debug log_format("adding mac address to #{@uuid}/#{@id}",
-                       "#{params[:mac_address].to_s}")
+      #debug log_format("adding mac address to #{@uuid}/#{@id}",
+      #                 "#{params[:mac_address].to_s}")
 
       mac_info
     end
@@ -104,6 +104,13 @@ module Vnet::Openflow
       [mac_info, ipv4_info]
     end
 
+    def ipv4_addresses
+      @mac_addresses.values.map { |m| m[:ipv4_addresses] }.flatten(1)
+    end
+
+    def has_network?(network_id)
+      ipv4_addresses.any?{ |i| i[:network_id] == network_id }
+    end
   end
 
 end

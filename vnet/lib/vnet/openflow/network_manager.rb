@@ -142,10 +142,7 @@ module Vnet::Openflow
         return network
       end
 
-      dpn_item = MW::DatapathNetwork[datapath_id: @datapath_info.id,
-                                     network_id: item_map.id]
-
-      network.set_datapath_of_bridge(@datapath_info, dpn_item, false)
+      network.set_datapath_of_bridge(@datapath_info)
 
       network.install
       network.update_flows
@@ -154,16 +151,8 @@ module Vnet::Openflow
         @dp_info.service_manager.async.item(id: service_map.id)
       }
 
-      @dp_info.datapath_manager.async.update_network(event: :activate,
-                                                     network_id: network.id)
-      @dp_info.dc_segment_manager.async.prepare_network(item_map, @datapath_info)
-      @dp_info.tunnel_manager.async.prepare_network(item_map, @datapath_info)
       @dp_info.route_manager.async.prepare_network(item_map, @datapath_info)
 
-      # Move the dispatch event or verify if still in @items.
-      dispatch_event("network/added",
-                     network_id: network.id,
-                     dpid: @dpid)
       network
     end
 
@@ -184,11 +173,6 @@ module Vnet::Openflow
       @items.delete(item.id)
 
       item.uninstall
-
-      @dp_info.dc_segment_manager.async.remove_network_id(item.id)
-      @dp_info.tunnel_manager.async.remove_network_id_for_dpid(item.id, @dpid)
-      @dp_info.datapath_manager.async.update_network(event: :deactivate,
-                                                     network_id: item.id)
 
       dispatch_event("network/deleted",
                      id: item.id,

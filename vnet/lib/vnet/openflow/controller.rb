@@ -25,65 +25,49 @@ module Vnet::Openflow
 
     def switch_ready(dpid)
       info "switch_ready from %#x." % dpid
-
-      # Sometimes ovs changes the datapath ID and reconnects.
-      old_datapath = @datapaths.delete(dpid)
-
-      if old_datapath
-        info "found old bridge: dpid:%016x" % dpid
-      end
-
-      # There is no need to clean up the old switch, as all the
-      # previous flows are removed. Just let it rebuild everything.
-      #
-      # This might not be optimal in cases where the switch got
-      # disconnected for a short period, as Open vSwitch has the
-      # ability to keep flows between sessions.
-      datapath = @datapaths[dpid] = Datapath.new(self, dpid, OvsOfctl.new(dpid))
-
-      datapath.async.create_switch
+      initialize_datapath(dpid)
     end
 
     def features_reply(dpid, message)
       info "features_reply from %#x." % dpid
 
-      datapath = @datapaths[dpid] || raise("No datapath found.")
+      datapath = datapath(dpid) || raise("No datapath found.")
       datapath.switch.async.features_reply(message)
     end
 
     def port_desc_multipart_reply(dpid, message)
       info "port_desc_multipart_reply from %#x." % dpid
 
-      datapath = @datapaths[dpid]
-      return if datapath.nil?
+      dp_info = dp_info(dpid)
+      return unless dp_info
 
       message.parts.each { |port_descs|
         debug "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
-        port_descs.ports.each { |port_desc| datapath.port_manager.async.insert(port_desc) }
+        port_descs.ports.each { |port_desc| dp_info.port_manager.async.insert(port_desc) }
       }
     end
 
     def port_status(dpid, message)
       debug "port_status from %#x." % dpid
 
-      datapath = @datapaths[dpid]
+      datapath = datapath(dpid)
       datapath.switch.async.port_status(message) if datapath && datapath.switch
     end
 
     def packet_in(dpid, message)
-      datapath = @datapaths[dpid]
-      return if datapath.nil?
+      dp_info = dp_info(dpid)
+      return unless dp_info
 
       case message.cookie >> COOKIE_PREFIX_SHIFT
       when COOKIE_PREFIX_INTERFACE
-        datapath.interface_manager.async.packet_in(message)
+        dp_info.interface_manager.async.packet_in(message)
       when COOKIE_PREFIX_TRANSLATION
-        datapath.translation_manager.async.packet_in(message)
+        dp_info.translation_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
-        datapath.service_manager.async.packet_in(message)
+        dp_info.service_manager.async.packet_in(message)
       when COOKIE_PREFIX_CONNECTION
-        datapath.dp_info.connection_manager.async.packet_in(message)
+        dp_info.connection_manager.async.packet_in(message)
       end
     end
 
@@ -111,14 +95,53 @@ module Vnet::Openflow
                       })
     end
 
-    def update_topology(dpid, network_id)
-      debug "[controller]: update_topology: dpid => #{dpid}, network_id => #{network_id}"
-      datapath = @datapaths[@datapaths.keys[0]]
-      datapath.switch.async.update_topology(dpid, network_id)
+    def reset_datapath(dpid)
+      terminate_datapath(dpid)
+      initialize_datapath(dpid)
+    end
+
+    def initialize_datapath(dpid)
+      info "initialize datapath actor. dpid: #{dpid}"
+
+      # Sometimes ovs changes the datapath ID and reconnects.
+      old_datapath = @datapaths.delete(dpid)
+
+      if old_datapath
+        info "found old bridge: dpid:%016x" % dpid
+      end
+
+      # There is no need to clean up the old switch, as all the
+      # previous flows are removed. Just let it rebuild everything.
+      #
+      # This might not be optimal in cases where the switch got
+      # disconnected for a short period, as Open vSwitch has the
+      # ability to keep flows between sessions.
+      datapath = Datapath.new(self, dpid, OvsOfctl.new(dpid))
+      @datapaths[dpid] = { datapath: datapath, dp_info: datapath.dp_info }
+
+      datapath.async.create_switch
+    end
+
+    def terminate_datapath(dpid)
+      info "terminate datapath actor. dpid: #{dpid}"
+
+      datapath = @datapaths.delete(dpid)
+      return unless datapath
+
+      datapath[:datapath].del_all_flows
+      datapath[:datapath].terminate
     end
 
     def update_vlan_translation
       datapath.switch.async.update_vlan_translation
+    end
+
+    def datapath(dpid)
+      @datapaths[dpid] && @datapaths[dpid][:datapath]
+    end
+
+    def dp_info(dpid)
+      @datapaths[dpid] && @datapaths[dpid][:dp_info]
     end
   end
 

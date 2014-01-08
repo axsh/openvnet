@@ -20,6 +20,23 @@ module Vnet::NodeApi
       def initialize(class_name)
         @class_name = class_name
       end
+
+      def method_missing(method_name, *args, &block)
+        _call(method_name, *args, &block)
+      rescue => exception
+        raise exception if Vnet::NodeApi.raise_on_error
+        logger.debug("#{exception.class}: #{exception.to_s}\n\t")
+        nil
+      end
+
+      private
+
+      def _call(method_name, *args, &block)
+      end
+
+      def logger
+        Vnet::NodeApi.logger
+      end
     end
   end
 
@@ -31,7 +48,7 @@ module Vnet::NodeApi
         @actor = DCell::Global[:rpc] or raise "rpc not found in DCell::Global"
       end
 
-      def method_missing(method_name, *args, &block)
+      def _call(method_name, *args, &block)
         @actor.execute(@class_name, method_name, *args, &block)
       end
     end
@@ -49,7 +66,7 @@ module Vnet::NodeApi
         @method_caller = Vnet::NodeApi.const_get(class_name.to_s.camelize)
       end
 
-      def method_missing(method_name, *args, &block)
+      def _call(method_name, *args, &block)
         @method_caller.send(method_name, *args, &block)
       end
     end

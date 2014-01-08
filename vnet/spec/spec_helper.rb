@@ -39,7 +39,7 @@ RSpec.configure do |config|
   vnmgr_conf = Vnet::Configurations::Vnmgr.load
   webapi_conf = Vnet::Configurations::Webapi.load
 
-  Vnet::ModelWrappers::Base.set_proxy(webapi_conf.node_api_proxy)
+  Vnet::NodeApi.set_proxy(webapi_conf.node_api_proxy)
   Vnet::Initializers::DB.run(webapi_conf.db_uri)
   #Vnet::Initializers::DB.run(vnmgr_conf.db_uri, :debug_sql => true)
 
