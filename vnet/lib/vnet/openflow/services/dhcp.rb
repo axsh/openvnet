@@ -182,15 +182,17 @@ module Vnet::Openflow::Services
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (params[:ipv4_network] | ~subnet_mask).hton.unpack('C*'))
 
       # http://tools.ietf.org/html/rfc3442  (option 121)
-      payload = params[:routes_info].collect_concat do |g|
-        dst_ip, dst_pre, router_ip = g
-        # keep only unmasked ints, following rfc3442
-        keep = (dst_pre + 7 ) / 8
-        [ dst_pre ] + dst_ip.first(keep) + router_ip
+      if params[:routes_info]
+        payload = params[:routes_info].collect_concat do |g|
+          dst_ip, dst_pre, router_ip = g
+          # keep only unmasked ints, following rfc3442
+          keep = (dst_pre + 7 ) / 8
+          [ dst_pre ] + dst_ip.first(keep) + router_ip
+        end
+        # TODO: subclass DHCP::Option and 121 constant, mainly so that
+        # the to_s will give better debugging output
+        dhcp_out.options << DHCP::Option.new(:type => 121, :payload => payload)
       end
-      # TODO: subclass DHCP::Option and 121 constant, mainly so that
-      # the to_s will give better debugging output
-      dhcp_out.options << DHCP::Option.new(:type => 121, :payload => payload)
 
       # if nw_services[:gateway]
       #   dhcp_out.options << DHCP::RouterOption.new(:payload => nw_services[:gateway].ip.to_short)
