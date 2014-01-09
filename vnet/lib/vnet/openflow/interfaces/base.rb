@@ -272,7 +272,6 @@ module Vnet::Openflow::Interfaces
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
-      debug log_format("is_remote #{@datapath_info}")
     end
 
     # Some flows could be created on demand by checking if the
