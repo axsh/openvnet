@@ -111,13 +111,12 @@ module Vnet::Openflow::Services
     end
 
     def find_static_routes(net_id)
-      routes_on_network = @dp_info.route_manager.select(network_id: net_id)
+      routes_on_network = @dp_info.route_manager.select(network_id: net_id, ingress: true)
       static_routes = routes_on_network.collect_concat do |rnear|
         link_id = rnear[:route_link_id]
-        routes_w_route_link = @dp_info.route_manager.select(route_link_id: link_id)
+        routes_w_route_link = @dp_info.route_manager.select(route_link_id: link_id, egress: true)
         outgoing_routes =  routes_w_route_link.select do |rfar|
           rfar[:network_id] != net_id
-          ## TODO: check egress ingress
         end
         if outgoing_routes
           router_mac, router_ipv4 = @dp_info.interface_manager.get_ipv4_address(id: rnear[:interface_id])
