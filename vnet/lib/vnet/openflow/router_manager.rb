@@ -34,8 +34,17 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def select_filter_from_params(params)
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+
+      create_batch(MW::RouteLink.batch, params[:uuid], filters)
+    end
+
     def select_item(filter)
-      MW::RouteLink.batch[filter].commit(fill: :routes)
+      filter.commit(fill: :routes)
     end
 
     def item_initialize(item_map, params)
