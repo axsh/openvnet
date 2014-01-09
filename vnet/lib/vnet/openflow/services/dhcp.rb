@@ -111,25 +111,28 @@ module Vnet::Openflow::Services
     end
 
     def find_static_routes(net_id)
+      # Overview: network -> (near)vnetroute(s).route_link -> (far)vnetroute(s)
+      # (1) get nearside vnet routes:
       routes_on_network = @dp_info.route_manager.select(network_id: net_id, ingress: true)
       static_routes = routes_on_network.collect_concat do |rnear|
+        # (2) get farside vnet routes
         link_id = rnear[:route_link_id]
         routes_w_route_link = @dp_info.route_manager.select(route_link_id: link_id, egress: true)
         outgoing_routes =  routes_w_route_link.select do |rfar|
           rfar[:network_id] != net_id
         end
         if outgoing_routes
+          # (3) route addresses on farside routes to nearside interface's IP address (the router)
           router_mac, router_ipv4 = @dp_info.interface_manager.get_ipv4_address(id: rnear[:interface_id])
           router_ip_ints = router_ipv4[:ipv4_address].to_s.split(".").map { |s| s.to_i }
-        end
-        outgoing_routes.collect do |outr|
-          dest_ip = outr[:ipv4_address]
-          dest_prefix = outr[:ipv4_prefix]
-          dest_ip_ints = dest_ip.to_s.split(".").map { |s| s.to_i }
-          [ dest_ip_ints , dest_prefix, router_ip_ints ]
+          outgoing_routes.collect do |outr|
+            dest_ip = outr[:ipv4_address]
+            dest_prefix = outr[:ipv4_prefix]
+            dest_ip_ints = dest_ip.to_s.split(".").map { |s| s.to_i }
+            [ dest_ip_ints , dest_prefix, router_ip_ints ]
+          end
         end
       end
-      p "static_routes #{static_routes}"
       static_routes
     end
 
@@ -178,12 +181,15 @@ module Vnet::Openflow::Services
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (params[:ipv4_network] | ~subnet_mask).hton.unpack('C*'))
 
+      # http://tools.ietf.org/html/rfc3442  (option 121)
       payload = params[:routes_info].collect_concat do |g|
         dst_ip, dst_pre, router_ip = g
         # keep only unmasked ints, following rfc3442
         keep = (dst_pre + 7 ) / 8
         [ dst_pre ] + dst_ip.first(keep) + router_ip
       end
+      # TODO: subclass DHCP::Option and 121 constant, mainly so that
+      # the to_s will give better debugging output
       dhcp_out.options << DHCP::Option.new(:type => 121, :payload => payload)
 
       # if nw_services[:gateway]
