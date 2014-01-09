@@ -51,16 +51,20 @@ module Vnet::Openflow
 
       item = internal_detect(options)
       unless item
-        info log_format(
-          "creating tunnel entry",
-          options.map { |k, v| "#{k}: #{v}" }.join(" ")
-        )
+        info log_format("creating tunnel entry",
+                        options.map { |k, v| "#{k}: #{v}" }.join(" "))
         tunnel = MW::Tunnel.create(options)
         if tunnel
           item = item_by_params(id: tunnel.id)
         else
           # the tunnel should have been added
           item = item_by_params(options)
+        end
+
+        if item.nil? || !item.instance_of?(Tunnels::Base)
+          warn log_format('could not create tunnel',
+                          options.map { |k, v| "#{k}: #{v}" }.join(" "))
+          return
         end
       end
 
@@ -156,7 +160,7 @@ module Vnet::Openflow
     # Create / Delete tunnels:
     #
 
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       Tunnels::Base.new(
         dp_info: @dp_info,
         manager: self,
@@ -180,10 +184,9 @@ module Vnet::Openflow
       )
     end
     
-    def item_initialize(item_map, params)
-      item = Tunnels::Base.new(dp_info: @dp_info,
-                               manager: self,
-                               map: item_map)
+    def install_item(params)
+      item = @items[params[:item_map].id]
+      return unless item
 
       debug log_format("install #{item.uuid}/#{item.id}")
 

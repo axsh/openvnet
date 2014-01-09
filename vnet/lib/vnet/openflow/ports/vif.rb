@@ -5,8 +5,6 @@ module Vnet::Openflow::Ports
   module Vif
     include Vnet::Openflow::FlowHelpers
 
-    attr_accessor :interface_id
-
     def port_type
       :vif
     end

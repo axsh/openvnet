@@ -53,7 +53,10 @@ module Vnet::Openflow
       return unless port
 
       # reinitialize
-      publish(FINALIZED_PORT, id: port.id)
+      if port.installed?
+        publish(FINALIZED_PORT, id: port.id)
+      end
+
       publish(INITIALIZED_PORT, id: port.id)
     end
 
@@ -130,7 +133,7 @@ module Vnet::Openflow
 
       port.uninstall
 
-      debug log_format("uninstall #{port.id}")
+      debug log_format("uninstall #{port.port_name}/#{port.id}")
 
       interface = @dp_info.interface_manager.item(
         port_number: port.port_number,
@@ -194,6 +197,8 @@ module Vnet::Openflow
                                                              port_number: port.port_number)
         elsif interface.mode == :edge
           port.extend(Ports::Generic)
+          port.interface_id = interface.id
+
         else
           error log_format("unknown port type", interface.mode)
         end

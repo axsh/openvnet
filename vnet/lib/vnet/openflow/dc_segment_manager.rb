@@ -68,7 +68,7 @@ module Vnet::Openflow
             info log_format("creating mac2mac entry",
                             "src_host:#{host_interface.uuid}/#{host_interface.port_name} dst_host:#{dst_interface.uuid}/#{dst_interface.port_name}")
 
-            prepare_interfaces(flows, target_dp_map.id, host_interface.id, dst_interface.id)
+            prepare_interfaces(flows, host_interface.id, dst_interface.id)
           }
         }
       }
@@ -93,15 +93,41 @@ module Vnet::Openflow
 
       dpn_list[dpn[:id]] = dpn
 
-      options = {
-        dst_datapath_id: dpn[:datapath_id],
-        src_interface_id: @host_datapath_networks[dpn[:network_id]][:interface_id],
-        dst_interface_id: dpn[:interface_id],
-      }
+      host_dpn = @host_datapath_networks[dpn[:network_id]]
 
-      dpn_list[dpn_map.id] = dpn
+      if host_dpn
+        warn log_format('no host datapath network found', "network_id:#{dpn[:network_id]}")
 
-      self.update_network_id(dpn_map.network_id)
+        options = {
+          src_interface_id: host_dpn[:interface_id],
+          dst_interface_id: dpn[:interface_id],
+        }
+
+        flows = []
+
+        interface = @interfaces.find do |interface|
+          options.keys.all? { |k| interface[k] == options[k] }
+        end
+
+        unless interface
+          interface = options.dup
+          @interfaces << interface
+
+          info log_format("creating mac2mac entry",
+                          options.map { |k, v| "#{k}: #{v}" }.join(" ")
+                          )
+
+          prepare_interfaces(flows, options[:src_interface_id], options[:dst_interface_id])
+        end
+
+        @dp_info.add_flows(flows)
+      end
+
+      (interface[:datapath_networks] ||= []).tap do |datapath_networks|
+        datapath_networks << dpn
+      end
+
+      self.update_network_id(dpn[:network_id])
     end
 
     #
@@ -125,7 +151,7 @@ module Vnet::Openflow
       self.update_network_id(dpn[:network_id])
     end
 
-    def prepare_interfaces(flows, datapath_id, src_interface_id, dst_interface_id)
+    def prepare_interfaces(flows, src_interface_id, dst_interface_id)
       # TODO:
       #
       # MAC2MAC -> Do we need a relationship table, e.g. tunnel table
@@ -145,7 +171,10 @@ module Vnet::Openflow
                              write_interface: src_interface_id,
                              write_reflection: reflection,
 
-                             cookie: datapath_id | COOKIE_TYPE_DATAPATH)
+                             # Currently use the dst_interface_id
+                             # until we merge dc_segment manager and
+                             # tunnel manager.
+                             cookie: dst_interface_id | COOKIE_TYPE_INTERFACE)
       }
     end
 
