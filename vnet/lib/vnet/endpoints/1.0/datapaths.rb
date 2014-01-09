@@ -25,6 +25,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
         check_uuid_syntax(M::DcSegment, dc_segment_uuid)
         params["dc_segment_id"] = (M::DcSegment[dc_segment_uuid] || M::DcSegment.create(uuid: dc_segment_uuid)).id
       end
+
+      params["dpid"] = params["dpid"].hex
     }
   end
 
@@ -45,6 +47,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
       params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params['ipv4_address']
       check_syntax_and_get_id(M::DcSegment, params, "dc_segment_uuid", "dc_segment_id") if params["dc_segment_uuid"]
     }
+    params["dpid"] = params["dpid"].hex if params["dpid"]
   end
 
   post '/:uuid/networks/:network_uuid' do
