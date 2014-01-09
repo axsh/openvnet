@@ -11,7 +11,7 @@ module Vnctl::Cli
       option :rules, :type => :string, :desc => "The L3 packetfilter rules for this security group."
     }
 
-    add_required_options [:display_name]
+    set_required_options [:display_name]
 
     define_standard_crud_commands
   end

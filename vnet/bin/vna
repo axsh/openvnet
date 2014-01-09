@@ -23,7 +23,9 @@ switch_manager_new.cleanup_current_session
 switch_manager_new.kill_old_switches
 switch_manager_new.start
 
-Vnet::ModelWrappers::Base.set_proxy(conf.node_api_proxy)
+Vnet::NodeApi.set_proxy(conf.node_api_proxy)
+Vnet::NodeApi.raise_on_error = false # dont raise any errors
+Vnet::NodeApi.logger = Celluloid.logger
 
 case conf.node_api_proxy
 when :rpc
@@ -38,6 +40,11 @@ DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
     :host => conf.registry.host,
     :port => conf.registry.port
 })
+
+
+trap 'TTIN' do
+  Celluloid.stack_dump
+end
 
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
 

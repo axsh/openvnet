@@ -12,6 +12,7 @@ module Vnet::Openflow
 
     def initialize(dp, name = nil)
       @datapath = dp || raise("cannot create a Switch object without a valid datapath")
+      @dp_info = dp.dp_info
 
       @dpid = @datapath.dpid
       @dpid_s = "0x%016x" % @datapath.dpid
@@ -196,11 +197,6 @@ module Vnet::Openflow
     end
 
     def switch_ready
-      # There's a short period of time between the switch being
-      # activated and features_reply installing flow.
-      @datapath.dc_segment_manager.async.create_all_tunnels
-      @datapath.tunnel_manager.async.create_all_tunnels
-
       #
       # Send messages that will start initializing the switch.
       #
@@ -208,7 +204,7 @@ module Vnet::Openflow
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
 
       # Temporary hack to load the public network.
-      @datapath.network_manager.async.item(uuid: 'nw-public')
+      @dp_info.network_manager.async.item(uuid: 'nw-public')
     end
 
     def features_reply(message)
@@ -226,16 +222,11 @@ module Vnet::Openflow
       case message.reason
       when OFPPR_ADD
         debug log_format("adding port")
-        @datapath.port_manager.insert(message)
+        @dp_info.port_manager.insert(message)
       when OFPPR_DELETE
         debug log_format("deleting port")
-        @datapath.port_manager.remove(message)
+        @dp_info.port_manager.remove(message)
       end
-    end
-
-    def update_topology(dpid, network_id)
-      debug log_format("update_topology", "dpid:#{dpid} network_id:#{network_id}")
-      @datapath.tunnel_manager.delete_tunnel_port(network_id, dpid)
     end
 
     def update_vlan_translation

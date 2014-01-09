@@ -9,6 +9,25 @@ module Vnet::Openflow
   # Since this isn't an actor we avoid the need to go through
   # Datapath's thread for every time we use a manager.
   class DpInfo
+
+    MANAGER_NAMES = %w(
+      connection
+      datapath
+      dc_segment
+      interface
+      network
+      port
+      route
+      filter
+      service
+      tunnel
+      translation
+    ).freeze
+
+    MANAGER_NAMES.each do |name|
+      attr_reader "#{name}_manager"
+    end
+
     attr_reader :controller
     attr_reader :datapath
 
@@ -82,6 +101,19 @@ module Vnet::Openflow
       }
     end
 
+    def del_flows(params = {})
+      options = {
+        :command => Controller::OFPFC_DELETE,
+        :table_id => Controller::OFPTT_ALL,
+        :out_port => Controller::OFPP_ANY,
+        :out_group => Controller::OFPG_ANY,
+      }.merge(params)
+
+      @controller.pass_task {
+        @controller.public_send_flow_mod(@dpid, options)
+      }
+    end
+
     #
     # Port modification methods:
     #
@@ -110,6 +142,14 @@ module Vnet::Openflow
       @controller.pass_task {
         @controller.public_send_packet_out(@dpid, message, port_no)
       }
+    end
+
+    def inspect
+      "<##{self.class.name} dpid:#{@dpid}>"
+    end
+
+    def managers
+      MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
     #

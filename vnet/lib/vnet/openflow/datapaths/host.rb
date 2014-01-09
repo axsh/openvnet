@@ -4,13 +4,46 @@ module Vnet::Openflow::Datapaths
 
   class Host < Base
 
+    def initialize(params)
+      params[:dp_info].datapath.initialize_datapath_info(params[:map])
+      super
+    end
+
+    def host?
+      true
+    end
+
+    def uninstall
+      super
+      @dp_info.interface_manager.update_item(event: :remove_all_active_datapath)
+      @dp_info.datapath.reset
+    end
+
     private
+
+    def after_add_active_network(active_network)
+      @dp_info.dc_segment_manager.async.prepare_network(active_network[:id])
+      @dp_info.tunnel_manager.async.prepare_network(active_network[:id])
+
+      flows = []
+      flows_for_broadcast_mac_address(
+        flows,
+        active_network[:broadcast_mac_address],
+        active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
+      )
+      @dp_info.add_flows(flows)
+    end  
+
+    def after_remove_active_network(active_network)
+      @dp_info.dc_segment_manager.async.remove_network_id(active_network[:network_id])
+      @dp_info.tunnel_manager.async.remove_network(active_network[:network_id])
+    end
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapaths/host: #{message}" + (values ? " (#{values})" : '')
-    end
-
-    def flows_for_dp_network(flows, dp_nw)
+    end  
+         
+    def   flows_for_dp_network(flows, dp_nw)
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_INGRESS_NW_IF,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER,

@@ -15,7 +15,7 @@ module Vnet::Openflow
                        "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
-      if @dp_info.datapath.datapath_map.nil?
+      if @dp_info.datapath.datapath_info.nil?
         warn log_format('cannot initialize ports without a valid datapath database entry')
         return nil
       end
@@ -83,7 +83,7 @@ module Vnet::Openflow
 
       interface = @dp_info.interface_manager.item(port_name: port.port_name,
                                                   port_number: port.port_number,
-                                                  owner_datapath_id: @dp_info.datapath.datapath_map.id)
+                                                  owner_datapath_id: @dp_info.datapath.datapath_info.id)
 
       # Request twice since we're lacking the proper search parameter.
       interface = interface || @dp_info.interface_manager.item(port_name: port.port_name,
@@ -130,9 +130,19 @@ module Vnet::Openflow
 
       port.uninstall
 
-      @dp_info.interface_manager.update_item(event: :clear_port_number,
-                                             port_number: port.port_number,
-                                             dynamic_load: false)
+      debug log_format("uninstall #{port.id}")
+
+      interface = @dp_info.interface_manager.item(
+        port_number: port.port_number,
+        dynamic_load: false
+      )
+
+      if interface
+        @dp_info.interface_manager.update_item(
+          event: :clear_port_number,
+          id: interface.id
+        )
+      end
 
       nil
     end
@@ -165,7 +175,7 @@ module Vnet::Openflow
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
       params = {
-        :owner_datapath_id => @dp_info.datapath.datapath_map.id,
+        :owner_datapath_id => @dp_info.datapath.datapath_info.id,
         :port_name => port.port_name,
         :reinitialize => true
       }
@@ -230,14 +240,18 @@ module Vnet::Openflow
     def prepare_port_tunnel(port)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
-      tunnel = @dp_info.tunnel_manager.update_item(event: :set_port_number,
-                                                   uuid: port.port_name,
-                                                   port_number: port.port_number)
+      tunnel = @dp_info.tunnel_manager.item(uuid: port.port_name)
 
       if tunnel.nil?
         error log_format("could not find tunnel for #{port.port_name}")
         return
       end
+
+      @dp_info.tunnel_manager.update_item(
+        event: :set_port_number,
+        id: tunnel.id,
+        port_number: port.port_number
+      )
 
       port.extend(Ports::Tunnel)
 

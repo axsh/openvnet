@@ -52,8 +52,10 @@ module Vnet::Openflow::Ports
     end
 
     def uninstall
+      super
       @dp_info.tunnel_manager.update_item(event: :clear_port_number,
-                                          port_name: self.port_name)
+                                          port_name: self.port_name,
+                                          dynamic_load: false)
     end
 
   end

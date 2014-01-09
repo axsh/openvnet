@@ -2,6 +2,7 @@
 
 module Vnet::Models
   class DatapathNetwork < Base
+    plugin :paranoia
     plugin :mac_address, :attr_name => :broadcast_mac_address
 
     many_to_one :datapath
@@ -28,6 +29,16 @@ module Vnet::Models
                       {:datapaths__dc_segment_id => datapath.dc_segment_id})
         ds = ds.select_all(:datapath_networks)
       end
+    end
+
+    def datapath_networks_in_the_same_network
+      self.class.eager_graph(:datapath).where(network_id: self.network_id).exclude(datapath_networks__id: self.id).all
+    end
+
+    private
+
+    def before_destroy
+      self.deleted = id
     end
   end
 end

@@ -87,6 +87,7 @@ Modify the following section in /etc/wakame-vnet/webapi.conf on the webapi node.
         host "192.168.100.2"
         port 9101
       }
+    }
 
 - **host** : The IP address or host name of the ZeroMQ node.
 - **port** : The port number for connecting with ZeroMQ. If the webapi process is run on the same node as vnmgr or vna, specify a different value from vnmgr and vna.

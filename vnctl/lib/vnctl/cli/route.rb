@@ -15,7 +15,7 @@ module Vnctl::Cli
       option :egress, :type => :boolean, :desc => "Flag to determine if this is an egress route."
     }
 
-    add_required_options [:ipv4_address, :network_uuid, :route_link_uuid]
+    set_required_options [:ipv4_address, :network_uuid, :route_link_uuid]
 
     define_standard_crud_commands
   end
