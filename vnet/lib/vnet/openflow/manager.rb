@@ -18,15 +18,9 @@ module Vnet::Openflow
       @items = {}
     end
 
-    # n=1, return one, not in an array
-    # n=0, return all in an array
-    def retrieve_n(n,params)
+    def retrieve(params)
       begin
-        if n == 1
-          item_to_hash(item_by_params(params))
-        else
-          items_to_hash(items_by_params(params)) # returns array
-        end
+        item_to_hash(item_by_params(params))
       rescue Celluloid::Task::TerminatedError => e
         raise e
       rescue Exception => e
@@ -34,14 +28,6 @@ module Vnet::Openflow
         e.backtrace.each { |str| info log_format(str) }
         raise e
       end
-    end
-
-    def retrieve_all(params)
-      retrieve_n(0,params)
-    end
-
-    def retrieve(params)
-      retrieve_n(1,params)
     end
     alias_method :item, :retrieve
 
@@ -137,16 +123,6 @@ module Vnet::Openflow
       item && item.to_hash
     end
 
-    def items_to_hash(items)
-      items.map { |i| i.to_hash }
-    end
-
-    # this does not implement the select_filter logic in item_by_params
-    # and also not the :reinitialize and :dynamic_load stuff
-    def items_by_params(params)
-      internal_detect_all(params)
-    end
-
     def item_by_params(params)
       if params[:reinitialize] != true
         item = internal_detect(params)
@@ -210,13 +186,6 @@ module Vnet::Openflow
     #
     # Internal enumerators:
     #
-
-    def internal_detect_all(params)
-      items = @items.select { |id, item|
-        match_item?(item, params)
-      }
-      items.map { |i| i.last }
-    end
 
     def internal_detect(params)
       if params.size == 1 && params.first.first == :id
