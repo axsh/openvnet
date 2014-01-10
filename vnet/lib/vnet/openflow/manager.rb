@@ -61,8 +61,17 @@ module Vnet::Openflow
     #
 
     def packet_in(message)
-      item = @items[message.cookie & COOKIE_ID_MASK]
-      item.packet_in(message) if item
+      if message.cookie & COOKIE_DYNAMIC_LOAD_MASK == COOKIE_DYNAMIC_LOAD_MASK
+        # TODO: Check if metadata is the right type:
+
+        # TODO: Buffer packet(s) while loading item.
+
+        item_by_params(id: message.match.metadata & METADATA_VALUE_MASK)
+      else
+        item = @items[message.cookie & COOKIE_ID_MASK]
+        item.packet_in(message) if item
+      end
+
       nil
     end
 
@@ -204,8 +213,6 @@ module Vnet::Openflow
       @items.values.select { |item| match_item?(item, params) }
     end
 
-    def log_format(message, values = nil)
-      "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: #{message}" + (values ? " (#{values})" : '')
-    end
   end
+
 end

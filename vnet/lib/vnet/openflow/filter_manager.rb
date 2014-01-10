@@ -49,6 +49,11 @@ module Vnet::Openflow
     end
 
     private
+
+    def log_format(message, values = nil)
+      "#{@dp_info.dpid_s} filter_manager: #{message}" + (values ? " (#{values})" : '')
+    end
+
     def initialize_filter(params)
       interface_id = params[:interface_id]
 

@@ -10,6 +10,7 @@ module Vnet::Openflow::Routers
 
     def install
       flows = []
+      flows_for_dynamic_load(flows)
       flows_for_route_link(flows)
 
       @dp_info.add_flows(flows)
@@ -25,6 +26,14 @@ module Vnet::Openflow::Routers
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} routers/router_link: #{message} (route_link:#{@uuid}/#{@id}#{values ? ' ' : ''}#{values})"
+    end
+
+    def flows_for_dynamic_load(flows)
+      flows << flow_create(:default,
+                           table: TABLE_ROUTE_LINK_EGRESS,
+                           priority: 10,
+
+                           match_route_link: @id)
     end
 
     def flows_for_route_link(flows)

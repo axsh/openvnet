@@ -126,7 +126,8 @@ module Vnet
       # Cookie constants:
       #
 
-      COOKIE_ID_MASK = (0xffffffff)
+      COOKIE_ID_MASK = (0x7fffffff)
+      COOKIE_DYNAMIC_LOAD_MASK = (0x1 << 31)
 
       COOKIE_TAG_SHIFT = 32
       COOKIE_TAG_MASK = (0xffffff << COOKIE_TAG_SHIFT)
@@ -206,7 +207,7 @@ module Vnet
       METADATA_TYPE_TUNNEL          = (0xa << METADATA_TYPE_SHIFT)
       METADATA_TYPE_DP_NETWORK      = (0xb << METADATA_TYPE_SHIFT)
 
-      METADATA_VALUE_MASK = 0xffffffff
+      METADATA_VALUE_MASK = 0x7fffffff
 
       # Special case of the metadata bitfield that allows storing two
       # 31-bit values and one single flag.

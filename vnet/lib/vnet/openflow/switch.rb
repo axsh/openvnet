@@ -119,6 +119,24 @@ module Vnet::Openflow
       }
 
       #
+      # Default dynamic load flows:
+      #
+
+      [[TABLE_ROUTE_LINK_EGRESS, COOKIE_TYPE_ROUTE_LINK]
+      ].each { |table, cookie_type|
+        flows << flow_create(:default,
+                             table: table,
+                             priority: 1,
+                             
+                             actions: {
+                               output: OFPP_CONTROLLER
+                             },
+
+                             cookie: cookie_type | COOKIE_DYNAMIC_LOAD_MASK)
+      }
+
+
+      #
       # Default flows:
       #
 
