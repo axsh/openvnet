@@ -1,3 +1,6 @@
+Fabricator(:datapath_network, class_name: Vnet::Models::DatapathNetwork) do
+end
+
 Fabricator(:datapath_network_1_1, class_name: Vnet::Models::DatapathNetwork) do
   datapath_id 1
   network_id 1

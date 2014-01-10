@@ -6,6 +6,7 @@ module Vnet::Event::Notifications
       include Celluloid::Notifications
       include Vnet::Event
       prepend Initializer
+      trap_exit :unsubscribe_events
     end
     klass.extend(ClassMethods)
   end
@@ -35,12 +36,13 @@ module Vnet::Event::Notifications
 
   def handle_event(event_name, params)
     #debug "handle event: #{event_name} params: #{params.inspect}}"
-    event_queue = (@event_queues[params[:id]] || []).dup
+    queue_id = queue_id || :defualt
+    event_queue = (@event_queues[queue_id] || []).dup
     event_queue << { event_name: event_name, params: params.dup }
-    @event_queues[params[:id]] = event_queue
-    unless @queue_statuses[params[:id]]
-      @queue_statuses[params[:id]] = true
-      async(:fetch_queued_events, params[:id])
+    @event_queues[queue_id] = event_queue
+    unless @queue_statuses[queue_id]
+      @queue_statuses[queue_id] = true
+      async(:fetch_queued_events, queue_id)
     end
   end
 
@@ -67,5 +69,10 @@ module Vnet::Event::Notifications
     self.event_definitions.keys.each do |event_name|
       subscribe(event_name, :handle_event)
     end
+  end
+
+  def unsubscribe_events(actor, reason)
+    self.event_definitions.keys.each { |e| unsubscribe(e) }
+  rescue Celluloid::DeadActorError
   end
 end

@@ -108,8 +108,8 @@ module Vnet::Openflow
         route_link.add_datapath_on_segment(dp_rl_map)
       }
 
-      @dp_info.datapath_manager.async.update(event: :activate_route_link,
-                                             route_link_id: route_link.id)
+      @dp_info.datapath_manager.async.update_item(event: :activate_route_link,
+                                                  route_link_id: route_link.id)
 
       route_link.install
       route_link

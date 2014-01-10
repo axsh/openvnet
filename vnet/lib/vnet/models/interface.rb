@@ -25,6 +25,10 @@ module Vnet::Models
 
     subset(:alives, {})
 
+    def port_name
+      self[:port_name] || canonical_uuid
+    end
+
     def network
       ip_leases.first.try(:network)
     end
@@ -39,8 +43,9 @@ module Vnet::Models
 
     def to_hash
       super.merge({
-        :ipv4_address => self.ipv4_address,
-        :mac_address => self.mac_address,
+        port_name: port_name,
+        ipv4_address: self.ipv4_address,
+        mac_address: self.mac_address,
       })
     end
   end

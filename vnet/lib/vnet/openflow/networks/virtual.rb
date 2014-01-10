@@ -30,21 +30,6 @@ module Vnet::Openflow::Networks
                            nil,
                            flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
 
-      if @broadcast_mac_address
-        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                               :eth_dst => @broadcast_mac_address
-                             }, {}, flow_options)
-        flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                               :eth_src => @broadcast_mac_address
-                             }, {}, flow_options)
-        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                               :eth_dst => @broadcast_mac_address
-                             }, {}, flow_options)
-        flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                               :eth_src => @broadcast_mac_address
-                             }, {}, flow_options)
-      end
-
       @dp_info.add_flows(flows)
 
       ovs_flows = []

@@ -8,37 +8,24 @@ module Vnet::Openflow
     # Events:
     #
     subscribe_event ADDED_INTERFACE, :create_item
-    subscribe_event REMOVED_INTERFACE, :delete_item
+    subscribe_event REMOVED_INTERFACE, :unload
     subscribe_event INITIALIZED_INTERFACE, :install_item
+    subscribe_event UPDATED_INTERFACE, :update_item_exclusively
     subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
+    subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
 
     def update_item(params)
-      # Todo: Add the possibility to use a 'filter' parameter for this.
-      item = item_by_params(params)
-      return nil if item.nil?
-
       case params[:event]
-      when :active_datapath_id
-        # Reconsider this...
-        item.update_active_datapath(params)
-      when :set_port_number
-        # Check if not nil...
-        item.update_port_number(params[:port_number])
-        item.update_active_datapath(datapath_id: @datapath_info.id)
-      when :clear_port_number
-        # Check if nil... (use param :port_number to verify)
-        item.update_port_number(nil)
-        item.update_active_datapath(datapath_id: nil)
-      when :enable_router_ingress
-        item.enable_router_ingress
-      when :enable_router_egress
-        item.enable_router_egress
+      when :remove_all_active_datapath
+        @items.each do |_, item|
+          publish(UPDATED_INTERFACE, event: :active_datapath_id, id: item.id, datapath_id: nil)
+        end
+      else
+        publish(UPDATED_INTERFACE, params)
       end
-
-      item_to_hash(item)
     end
 
     # Deprecate this...
@@ -47,6 +34,12 @@ module Vnet::Openflow
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
+    end
+
+    def del_flows_for_active_datapath(params)
+      @items.values.each do |item|
+        item.del_flows_for_active_datapath(params[:ipv4_addresses])
+      end
     end
 
     #
@@ -128,10 +121,15 @@ module Vnet::Openflow
     def create_item(params)
       return if @items[params[:id]]
 
+      return unless @dp_info.port_manager.item(
+        port_name: params[:port_name],
+        dynamic_load: false
+      )
+
       item = self.item(params)
       return unless item
 
-      debug log_format("create #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+      debug log_format("create #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
       item
     end
@@ -141,7 +139,7 @@ module Vnet::Openflow
       item = @items[item_map.id]
       return nil if item.nil?
 
-      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
+      debug log_format("install #{item_map.uuid}/#{item_map.id}/#{item.port_name}", "mode:#{item.mode}")
 
       item.install
 
@@ -152,7 +150,7 @@ module Vnet::Openflow
 
       load_addresses(item_map)
 
-      @dp_info.port_manager.async.attach_interface(port_name: item.uuid)
+      @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
 
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :install_interface,
@@ -162,10 +160,11 @@ module Vnet::Openflow
       item # Return nil if interface has been uninstalled.
     end
 
-    def delete_item(params)
-      item = @items.delete(params[:id])
+    def delete_item(item)
+      item = @items.delete(item.id)
+      return unless item
 
-      debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+      debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
       item.uninstall
 
@@ -198,13 +197,7 @@ module Vnet::Openflow
     end
 
     def is_remote?(item_map)
-      return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?
-
-      if item_map.owner_datapath_id
-        return item_map.owner_datapath_id != @datapath_info.id
-      end
-
-      return false
+      return item_map.owner_datapath_id && item_map.owner_datapath_id != @datapath_info.id
     end
 
     #
@@ -237,12 +230,23 @@ module Vnet::Openflow
     end
 
     def leased_ipv4_address(params)
+      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address, :cookie_id])
+      return unless ip_lease
+
       item = @items[params[:id]]
-      return unless item
 
-      ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:ip_address, :cookie_id])
+      if !item && ip_lease.interface.mode.to_sym == :simulated &&
+        @dp_info.network_manager.item(
+          id: ip_lease.ip_address.network_id,
+          dynamic_load: false
+        )
 
-      return unless ip_lease && ip_lease.interface_id == item.id
+        @dp_info.interface_manager.item(id: ip_lease.interface.id)
+
+        return
+      end
+
+      return unless item && ip_lease.interface_id == item.id
 
       network = @dp_info.network_manager.item(id: ip_lease.ip_address.network_id)
 
@@ -263,6 +267,40 @@ module Vnet::Openflow
       return if ip_lease && ip_lease.interface_id == item.id
 
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
+    end
+
+    def update_item_exclusively(params)
+      id = params.fetch(:id)
+      event = params[:event]
+
+      # Todo: Add the possibility to use a 'filter' parameter for this.
+      item = internal_detect(id: id)
+      return nil if item.nil?
+
+      case event
+      when :active_datapath_id
+        # Reconsider this...
+        item.update_active_datapath(params)
+      when :set_port_number
+        debug log_format("update_item", params)
+        # Check if not nil...
+        item.update_port_number(params[:port_number])
+        item.update_active_datapath(datapath_id: @datapath_info.id)
+      when :clear_port_number
+        debug log_format("update_item", params)
+        # Check if nil... (use param :port_number to verify)
+        item.update_port_number(nil)
+        item.update_active_datapath(datapath_id: nil)
+      when :enable_router_ingress
+        item.enable_router_ingress
+      when :enable_router_egress
+        item.enable_router_egress
+      else
+        # api event
+        item.update
+      end
+
+      item_to_hash(item)
     end
 
   end

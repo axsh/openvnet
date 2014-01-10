@@ -19,6 +19,10 @@ class MockEventHandler
       self.class.handled_events << ev
     end
   end
+
+  def async
+    self
+  end
 end
 
 def use_mock_event_handler

@@ -9,6 +9,7 @@ def app
 end
 
 describe "/datapaths" do
+  before(:each) { use_mock_event_handler }
   let(:api_suffix)  { "datapaths" }
   let(:fabricator)  { :datapath }
   let(:model_class) { Vnet::Models::Datapath }

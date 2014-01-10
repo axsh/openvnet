@@ -5,8 +5,10 @@ module Vnet::Openflow
   class DcSegmentManager < Manager
 
     def initialize(dp_info)
-      @port_numbers = []
       super
+      @port_numbers = []
+      @host_datapath_networks = {}
+      @interfaces = []
     end
 
     #
@@ -74,39 +76,91 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
-    def insert(dpn_map)
-      info log_format("insert datapath network id #{dpn_map.id}",
-                      "network.id:#{dpn_map.network_id}")
+    def insert(dpn_id)
+      dpn = create_datapath_network(dpn_id)
+      return unless dpn
 
-      dpn_list = (@items[dpn_map.network_id] ||= {})
+      info log_format("insert datapath network",
+                      "network_id:#{dpn[:network_id]} dpn_id:#{dpn[:id]}")
 
-      if dpn_list.has_key? dpn_map.id
+      dpn_list = (@items[dpn[:network_id]] ||= {})
+
+      if dpn_list.has_key? dpn[:id]
         warn log_format("datapath network id already exists",
-                        "network_id:#{dpn_map.network_id}) dpn_id:#{dpn_map.id}")
+                        "network_id:#{dpn[:network_id]} dpn_id:#{dpn[:id]}")
         return
       end
 
-      dpn = {
-        :id => dpn_map.id,
-        :broadcast_mac_address => Trema::Mac.new(dpn_map.broadcast_mac_address),
+      dpn_list[dpn[:id]] = dpn
+
+      options = {
+        dst_datapath_id: dpn[:datapath_id],
+        src_interface_id: @host_datapath_networks[dpn[:network_id]][:interface_id],
+        dst_interface_id: dpn[:interface_id],
       }
 
-      dpn_list[dpn_map.id] = dpn
+      flows = []
+
+      interface = @interfaces.find do |interface|
+        options.keys.all? { |k| interface[k] == options[k] }
+      end
+
+      unless interface
+        interface = options.dup
+        @interfaces << interface
+
+        info log_format(
+          "creating mac2mac entry",
+          options.map { |k, v| "#{k}: #{v}" }.join(" ")
+        )
+
+        prepare_interfaces(flows, options[:dst_datapath_id], options[:src_interface_id], options[:dst_interface_id])
+      end
+
+      (interface[:datapath_networks] ||= []).tap do |datapath_networks|
+        datapath_networks << dpn
+      end
 
       # Fix this...
-      flows = []
       flows << flow_create(:default,
                            table: TABLE_OUTPUT_DATAPATH,
                            goto_table: TABLE_OUTPUT_MAC2MAC,
                            priority: 5,
-                           match_datapath: dpn_map.datapath_id,
+                           match_datapath: dpn[:datapath_id],
                            match_ignore_mac2mac: false,
                            write_mac2mac: true,
-                           cookie: dpn_map.datapath_id | COOKIE_TYPE_DATAPATH)
+                           cookie: dpn[:datapath_id] | COOKIE_TYPE_DATAPATH)
 
       @dp_info.add_flows(flows)
 
-      self.update_network_id(dpn_map.network_id)
+      self.update_network_id(dpn[:network_id])
+    end
+
+    def remove(dpn_id)
+      @interfaces.find { |interface|
+        interface[:datapath_networks].reject! { |dpn| dpn[:id] == dpn_id }
+      }.tap do |interface|
+        @interfaces.delete(interface) if interface
+      end
+
+      @items.each do |network_id, dpn_list|
+        next unless dpn_list.delete(dpn_id)
+
+        debug log_format("remove datapath network",
+                      "network_id:#{network_id} dpn_id:#{dpn_id}")
+
+        update_network_id(network_id)
+        break
+      end
+    end
+
+    def remove_datapath(datapath_id)
+      @interfaces.delete_if { |interface| interface[:datapath_id] == datapath_id }
+
+      changed_items = @items.select do |network_id, dpn_list|
+        dpn_list.reject! { |dpn_id, dpn| dpn[:datapath_id] == datapath_id }
+      end
+      changed_items.each { |network_id, _| update_network_id(network_id) }
     end
 
     #
@@ -117,6 +171,17 @@ module Vnet::Openflow
       @items.each { |id, item|
         update_network_id(id)
       }
+    end
+
+    def prepare_network(dpn_id)
+      dpn = create_datapath_network(dpn_id)
+      return unless dpn
+
+      @host_datapath_networks[dpn[:network_id]] = dpn
+
+      return unless dpn[:network_mode] == 'virtual'
+
+      self.update_network_id(dpn[:network_id])
     end
 
     def prepare_interfaces(flows, datapath_id, src_interface_id, dst_interface_id)
@@ -143,24 +208,20 @@ module Vnet::Openflow
       }
     end
 
-    def prepare_network(network_map, datapath_info)
-      return unless network_map.network_mode == 'virtual'
-
-      network_map.batch.datapath_networks_dataset.on_segment(@datapath_info).all.commit(:fill => :datapath).each { |dpn_map|
-        self.insert(dpn_map)
-      }
-
-      self.update_network_id(network_map.id)
-    end
-
     def remove_network_id(network_id)
+      @host_datapath_networks.delete(network_id)
+
       dpn_list = @items.delete(network_id)
 
       return if dpn_list.nil?
 
-      dpn_list.each { |dpn|
-        @dp_info.del_cookie(dpn[:id] | COOKIE_TYPE_DP_NETWORK)
+      debug log_format("remove network_id: #{network_id}")
+
+      dpn_list.keys.each { |id|
+        @dp_info.del_cookie(id | COOKIE_TYPE_DP_NETWORK)
       }
+
+      update_network_id(network_id)
     end
 
     def update_network_id(network_id)
@@ -198,6 +259,20 @@ module Vnet::Openflow
       "#{@dp_info.dpid_s} dc_segment_manager: #{message}" + (values ? " (#{values})" : '')
     end
     
+    def create_datapath_network(dpn_id)
+      dpn_map = MW::DatapathNetwork.batch[dpn_id].commit(fill: [ :datapath, :network ])
+      return unless  dpn_map
+
+      {
+        id: dpn_map.id,
+        broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
+        datapath_id: dpn_map.datapath_id,
+        network_id: dpn_map.network_id,
+        network_mode: dpn_map.network.mode,
+        interface_id: dpn_map.interface_id
+      }
+    end
+
     #
     # Specialize Manager:
     #

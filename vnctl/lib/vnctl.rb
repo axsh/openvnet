@@ -13,7 +13,6 @@ module Vnctl
   module Cli
     autoload :Base, 'vnctl/cli/base'
     autoload :Datapath, 'vnctl/cli/datapath'
-    autoload :IpAddress, 'vnctl/cli/ip_address'
     autoload :IpLease, 'vnctl/cli/ip_lease'
     autoload :MacLease, 'vnctl/cli/mac_lease'
     autoload :Network, 'vnctl/cli/network'
@@ -23,6 +22,8 @@ module Vnctl
     autoload :RouteLink, 'vnctl/cli/route_link'
     autoload :Interface, 'vnctl/cli/interface'
     autoload :SecurityGroup, 'vnctl/cli/security_group'
+    autoload :Translation, 'vnctl/cli/translation'
+    autoload :VlanTranslation, 'vnctl/cli/vlan_translation'
   end
 
   module Configuration
