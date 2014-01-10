@@ -101,7 +101,7 @@ module Vnet::Openflow
       debug log_format("creating datapath id: #{params[:id]}")
       return if @items[params[:id]]
 
-      if @dp_info.dpid_s != params[:dpid]
+      if @dp_info.dpid != params[:dpid]
         item(id: params[:id])
         return
       end
