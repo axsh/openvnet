@@ -8,5 +8,12 @@ module Vnet::Models
 
     subset(:alives, {})
 
+    def validate
+      validates_includes [
+        "dhcp",
+        "dns",
+        "router",
+      ], :type
+    end
   end
 end
