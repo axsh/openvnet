@@ -41,11 +41,12 @@ module Vnet::Openflow
       item = @items[item_map.id]
       return item if item
 
-      mode = item_map.display_name.to_sym
+      mode = item_map.type.to_sym
       params = { dp_info: @dp_info,
                  manager: self,
                  id: item_map.id,
                  uuid: item_map.uuid,
+                 type: item_map.type,
                  interface_id: item_map.interface_id }
 
       case mode
