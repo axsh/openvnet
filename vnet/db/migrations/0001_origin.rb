@@ -7,7 +7,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       String :display_name, :null=>false
       FalseClass :is_connected, :null=>false, :default => false
-      String :dpid, :null=>false
+      Bignum :dpid, :null=>false
       Integer :dc_segment_id, :index => true
       Bignum :ipv4_address, :null=>false
       String :node_id, :null=>false
