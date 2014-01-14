@@ -10,9 +10,10 @@ module Vnctl::Cli
       option :interface_uuid, :type => :string, :desc => "The interface uuid for this network service."
       option :incoming_port, :type => :numeric, :desc => "The incoming port for this network service."
       option :outgoing_port, :type => :numeric, :desc => "The outgoing port for this network service."
+      option :type, :type => :string, :desc => "The type of this service."
     }
 
-    set_required_options [:display_name]
+    set_required_options [:type]
 
     define_standard_crud_commands
   end

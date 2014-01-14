@@ -20,6 +20,7 @@ module Vnet::Openflow::Services
     attr_accessor :id
     attr_accessor :uuid
     attr_accessor :interface_id
+    attr_accessor :type
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -27,6 +28,7 @@ module Vnet::Openflow::Services
 
       @id = params[:id]
       @uuid = params[:uuid]
+      @type = params[:type]
       @interface_id = params[:interface_id]
       @networks = {}
     end

@@ -41,11 +41,12 @@ module Vnet::Openflow
       item = @items[item_map.id]
       return item if item
 
-      mode = item_map.display_name.to_sym
+      mode = item_map.type.to_sym
       params = { dp_info: @dp_info,
                  manager: self,
                  id: item_map.id,
                  uuid: item_map.uuid,
+                 type: item_map.type,
                  interface_id: item_map.interface_id }
 
       case mode
@@ -79,7 +80,7 @@ module Vnet::Openflow
       #     interface.active_datapath_id != @datapath.datapath_id
       #   return
       # end
-      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
+      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.type.to_sym}")
 
       item.install
 

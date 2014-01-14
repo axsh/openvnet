@@ -42,8 +42,8 @@ module Vnet::Endpoints::V10
     end
 
     def parse_params(params, mask)
-      params.keys.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |key, h|
-        h[key] = params[key] if mask.member?(key)
+      mask.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |key, h|
+        h[key] = params[key] if params.key?(key)
       end
     end
 
