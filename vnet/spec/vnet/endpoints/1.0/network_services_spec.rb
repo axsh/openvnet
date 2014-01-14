@@ -23,7 +23,7 @@ describe "/network_services" do
     accepted_params = {
       :uuid => "ns-test",
       :interface_uuid => "if-test",
-      :type => "our test network service",
+      :type => "dhcp",
       :incoming_port => 40,
       :outgoing_port => 100
     }
