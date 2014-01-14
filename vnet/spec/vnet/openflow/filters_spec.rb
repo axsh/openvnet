@@ -8,11 +8,24 @@ include Vnet::Openflow::FlowHelpers
 describe Vnet::Openflow::FilterManager do
   let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
   let(:flows) { datapath.added_flows }
-  let(:interface_wrapper) { Vnet::ModelWrappers::Interface[interface.id] }
 
   subject { Vnet::Openflow::FilterManager.new(datapath.dp_info) }
 
+  describe "#initialize" do
+    it "applies a flow that accepts all arp traffic" do
+      expect(flows).to include flow_create(:default,
+        table: TABLE_INTERFACE_INGRESS_FILTER,
+        priority: 90,
+        cookie: Vnet::Openflow::Filters::AcceptIngressArp.cookie,
+        match: { eth_type: ETH_TYPE_ARP },
+        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+      )
+    end
+  end
+
   describe "#apply_filters" do
+    let(:interface_wrapper) { Vnet::ModelWrappers::Interface[interface.id] }
+
     before(:each) { subject.apply_filters({item_map: interface_wrapper}) }
 
     context "with an interface that's in a single security group " do
