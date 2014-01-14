@@ -79,7 +79,7 @@ module Vnet::Openflow
       #     interface.active_datapath_id != @datapath.datapath_id
       #   return
       # end
-      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.display_name.to_sym}")
+      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.type.to_sym}")
 
       item.install
 

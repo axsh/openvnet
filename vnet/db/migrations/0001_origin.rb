@@ -136,7 +136,8 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Integer :interface_id, :index => true
-      String :display_name, :index => true, :null=>false
+      String :display_name
+      String :type, :index => true, :null=>false
       Integer :incoming_port
       Integer :outgoing_port
       DateTime :created_at, :null=>false

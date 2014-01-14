@@ -9,6 +9,7 @@ def app
 end
 
 describe "/network_services" do
+  before(:each) { use_mock_event_handler }
   let(:api_suffix)  { "network_services" }
   let(:fabricator)  { :network_service }
   let(:model_class) { Vnet::Models::NetworkService }
@@ -22,11 +23,11 @@ describe "/network_services" do
     accepted_params = {
       :uuid => "ns-test",
       :interface_uuid => "if-test",
-      :display_name => "our test network service",
+      :type => "our test network service",
       :incoming_port => 40,
       :outgoing_port => 100
     }
-    required_params = [:display_name]
+    required_params = [:type]
     uuid_params = [:uuid, :interface_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
@@ -36,7 +37,6 @@ describe "/network_services" do
     let!(:new_interface) { Fabricate(:interface) { uuid "if-other"}  }
     accepted_params = {
       :interface_uuid => "if-other",
-      :display_name => "our new and improved test network service",
       :incoming_port => 40,
       :outgoing_port => 100
     }
