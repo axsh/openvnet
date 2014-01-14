@@ -24,9 +24,7 @@ describe Vnet::Openflow::FilterManager do
   end
 
   describe "#apply_filters" do
-    let(:interface_wrapper) { Vnet::ModelWrappers::Interface[interface.id] }
-
-    before(:each) { subject.apply_filters({item_map: interface_wrapper}) }
+    before(:each) { subject.apply_filters({item_map: wrapper(interface)}) }
 
     context "with an interface that's in a single security group " do
       let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
@@ -86,6 +84,30 @@ describe Vnet::Openflow::FilterManager do
           match: match_icmp_rule("10.5.4.3/32")
         )
       end
+    end
+  end
+
+  describe "#remove_filters" do
+    let(:group) do
+      rules = "tcp:22:0.0.0.0/0"
+      Fabricate(:security_group, rules: rules)
+    end
+
+    let(:interface) do
+      Fabricate(:interface).tap { |i|
+        i.add_security_group(group)
+      }
+    end
+
+    before(:each) { subject.apply_filters({item_map: wrapper(interface)}) }
+
+    it "Removes filter related flows for a single interface" do
+      subject.remove_filters({id: interface.id})
+
+      expect(flows).not_to include rule_flow(
+        cookie: cookie_id(group),
+        match: match_tcp_rule("0.0.0.0/0", 22),
+      )
     end
   end
 

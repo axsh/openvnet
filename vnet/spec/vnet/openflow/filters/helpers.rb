@@ -7,6 +7,10 @@ def cookie_id(group)
   )
 end
 
+def wrapper(interface)
+  Vnet::ModelWrappers::Interface[interface.id]
+end
+
 def match_rule(source_ip)
   ip = IPAddress::IPv4.new(source_ip)
   match_ipv4_subnet_src(ip.u32, ip.prefix.to_i)
