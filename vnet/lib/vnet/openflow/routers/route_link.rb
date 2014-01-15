@@ -31,7 +31,7 @@ module Vnet::Openflow::Routers
     def flows_for_dynamic_load(flows)
       flows << flow_create(:default,
                            table: TABLE_ROUTER_CLASSIFIER,
-                           goto_table: TABLE_ROUTE_LINK_EGRESS,
+                           goto_table: TABLE_ROUTER_EGRESS,
                            priority: 30,
 
                            # TODO: Set reflection flag here?... If so don't set it in route_link_ingress(?)

@@ -95,7 +95,7 @@ module Vnet::Openflow::Routes
 
       if @ingress == true
         flows << flow_create(:routing,
-                             table: TABLE_ROUTE_LINK_INGRESS,
+                             table: TABLE_ROUTER_INGRESS,
                              goto_table: TABLE_ROUTER_CLASSIFIER,
 
                              match: subnet_src,
@@ -112,7 +112,7 @@ module Vnet::Openflow::Routes
       [true, false].each { |reflection|
         if @egress == true
           flows << flow_create(:routing,
-                               table: TABLE_ROUTE_LINK_EGRESS,
+                               table: TABLE_ROUTER_EGRESS,
                                goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
 
                                match: subnet_dst,

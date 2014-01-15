@@ -57,13 +57,13 @@ module Vnet
       TABLE_PHYSICAL_SRC      = 22
 
 
-      # In the transition from TABLE_ROUTE_LINK_EGRESS to
+      # In the transition from TABLE_ROUTER_EGRESS to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.
       TABLE_ROUTE_INGRESS_INTERFACE   = 30
       TABLE_ROUTE_INGRESS_TRANSLATION = 31
-      TABLE_ROUTE_LINK_INGRESS        = 32
+      TABLE_ROUTER_INGRESS            = 32
       TABLE_ROUTER_CLASSIFIER         = 33
-      TABLE_ROUTE_LINK_EGRESS         = 34
+      TABLE_ROUTER_EGRESS             = 34
       TABLE_ROUTE_EGRESS_LOOKUP       = 35
       TABLE_ROUTE_EGRESS_TRANSLATION  = 36
       TABLE_ROUTE_EGRESS_INTERFACE    = 37

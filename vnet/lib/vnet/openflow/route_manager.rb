@@ -20,10 +20,9 @@ module Vnet::Openflow
       return if routes.nil?
 
       routes.map { |route_map|
-      #   route_map.route_link_id
-      # }.uniq { |route_link_id|
-      #   @dp_info.router_manager.async.retrieve(id: route_link_id)
-        item_by_params(id: route_map.id)
+        route_map.route_link_id
+      }.uniq { |route_link_id|
+        @dp_info.router_manager.async.retrieve(id: route_link_id)
       }
     end
 
