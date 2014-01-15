@@ -18,6 +18,7 @@ module Vnet::Openflow
       network
       port
       route
+      router
       filter
       service
       tunnel
@@ -34,19 +35,6 @@ module Vnet::Openflow
     attr_reader :dpid
     attr_reader :dpid_s
     attr_reader :ovs_ofctl
-
-    attr_reader :connection_manager
-    attr_reader :datapath_manager
-    attr_reader :dc_segment_manager
-    attr_reader :interface_manager
-    attr_reader :network_manager
-    attr_reader :port_manager
-    attr_reader :route_manager
-    attr_reader :router_manager
-    attr_reader :filter_manager
-    attr_reader :service_manager
-    attr_reader :tunnel_manager
-    attr_reader :translation_manager
 
     def initialize(params)
       @dpid = params[:dpid]
@@ -159,18 +147,9 @@ module Vnet::Openflow
     private
 
     def initialize_managers
-      @connection_manager = ConnectionManager.new(self)
-      @datapath_manager = DatapathManager.new(self)
-      @dc_segment_manager = DcSegmentManager.new(self)
-      @interface_manager = InterfaceManager.new(self)
-      @network_manager = NetworkManager.new(self)
-      @port_manager = PortManager.new(self)
-      @filter_manager = FilterManager.new(self)
-      @route_manager = RouteManager.new(self)
-      @router_manager = RouterManager.new(self)
-      @service_manager = ServiceManager.new(self)
-      @tunnel_manager = TunnelManager.new(self)
-      @translation_manager = TranslationManager.new(self)
+      MANAGER_NAMES.each do |name|
+        instance_variable_set("@#{name}_manager", Vnet::Openflow.const_get("#{name.to_s.camelize}Manager").new(self))
+      end
     end
 
   end
