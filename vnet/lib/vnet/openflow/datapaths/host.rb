@@ -32,7 +32,7 @@ module Vnet::Openflow::Datapaths
         active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
       )
       @dp_info.add_flows(flows)
-    end  
+    end
 
     def after_remove_active_network(active_network)
       @dp_info.dc_segment_manager.async.remove_network_id(active_network[:network_id])
@@ -41,9 +41,9 @@ module Vnet::Openflow::Datapaths
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapaths/host: #{message}" + (values ? " (#{values})" : '')
-    end  
-         
-    def   flows_for_dp_network(flows, dp_nw)
+    end
+
+    def flows_for_dp_network(flows, dp_nw)
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_INGRESS_NW_IF,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER,

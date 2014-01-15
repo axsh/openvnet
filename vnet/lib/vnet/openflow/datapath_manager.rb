@@ -44,7 +44,7 @@ module Vnet::Openflow
       return false if params[:uuid] && params[:uuid] != item.uuid
       true
     end
-    
+
     def select_filter_from_params(params)
       {}.tap do |options|
         case
@@ -61,15 +61,18 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      if item_map.dpid == @dp_info.dpid_s
-        Datapaths::Host.new(dp_info: @dp_info,
-                            manager: self,
-                            map: item_map)
-      else
-        Datapaths::Remote.new(dp_info: @dp_info,
-                              manager: self,
-                              map: item_map)
-      end
+      item_class =
+        if item_map.dpid == @dp_info.dpid
+          Datapaths::Host
+        else
+          Datapaths::Remote
+        end
+
+      item_class.new(
+        dp_info: @dp_info,
+        manager: self,
+        map: item_map
+      )
     end
 
     def initialized_item_event
@@ -98,7 +101,7 @@ module Vnet::Openflow
       debug log_format("creating datapath id: #{params[:id]}")
       return if @items[params[:id]]
 
-      if @dp_info.dpid_s != params[:dpid]
+      if @dp_info.dpid != params[:dpid]
         item(id: params[:id])
         return
       end

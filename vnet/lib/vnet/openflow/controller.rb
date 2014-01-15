@@ -103,7 +103,7 @@ module Vnet::Openflow
     end
 
     def initialize_datapath(dpid)
-      info "initialize datapath actor. dpid: #{dpid}"
+      info "initialize datapath actor. dpid: 0x%016x" % dpid
 
       # Sometimes ovs changes the datapath ID and reconnects.
       old_datapath = @datapaths.delete(dpid)
@@ -125,7 +125,7 @@ module Vnet::Openflow
     end
 
     def terminate_datapath(dpid)
-      info "terminate datapath actor. dpid: #{dpid}"
+      info "terminate datapath actor. dpid: 0x%016x" % dpid
 
       datapath = @datapaths.delete(dpid)
       return unless datapath
