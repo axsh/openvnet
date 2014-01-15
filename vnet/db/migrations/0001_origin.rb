@@ -54,6 +54,28 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
     end
 
+    create_table(:dns_services) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :network_service_id, :index => true, :null => false
+      String :public_dns
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:dns_records) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :dns_service_id, :index => true, :null => false
+      String :name, :null => false
+      Bignum :ipv4_address, :null => false
+      Integer :ttl
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
     create_table(:interfaces) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
