@@ -96,7 +96,7 @@ module Vnet::Openflow::Routes
       if @ingress == true
         flows << flow_create(:routing,
                              table: TABLE_ROUTE_LINK_INGRESS,
-                             goto_table: TABLE_ROUTE_LINK_EGRESS,
+                             goto_table: TABLE_ROUTER_CLASSIFIER,
 
                              match: subnet_src,
                              match_interface: @interface_id,

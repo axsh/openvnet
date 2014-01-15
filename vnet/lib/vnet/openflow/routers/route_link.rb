@@ -30,17 +30,30 @@ module Vnet::Openflow::Routers
 
     def flows_for_dynamic_load(flows)
       flows << flow_create(:default,
-                           table: TABLE_ROUTE_LINK_EGRESS,
-                           priority: 10,
+                           table: TABLE_ROUTER_CLASSIFIER,
+                           goto_table: TABLE_ROUTE_LINK_EGRESS,
+                           priority: 30,
 
+                           # TODO: Set reflection flag here?... If so don't set it in route_link_ingress(?)
                            match_route_link: @id)
     end
 
     def flows_for_route_link(flows)
       flows << flow_create(:default,
-                           table: TABLE_TUNNEL_NETWORK_IDS,
-                           goto_table: TABLE_ROUTE_LINK_EGRESS,
+                           table: TABLE_CONTROLLER_PORT,
+                           goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 30,
+
+                           match: {
+                             :eth_src => @mac_address
+                           },
+                           write_route_link: @id)
+
+      flows << flow_create(:default,
+                           table: TABLE_TUNNEL_NETWORK_IDS,
+                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           priority: 30,
+
                            match: {
                              :tunnel_id => TUNNEL_ROUTE_LINK,
                              :eth_dst => @mac_address

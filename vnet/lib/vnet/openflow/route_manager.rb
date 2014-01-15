@@ -20,9 +20,10 @@ module Vnet::Openflow
       return if routes.nil?
 
       routes.map { |route_map|
-        route_map.route_link_id
-      }.uniq { |route_link_id|
-        @dp_info.router_manager.async.retrieve(id: route_link_id)
+      #   route_map.route_link_id
+      # }.uniq { |route_link_id|
+      #   @dp_info.router_manager.async.retrieve(id: route_link_id)
+        item_by_params(id: route_map.id)
       }
     end
 
@@ -91,6 +92,11 @@ module Vnet::Openflow
       debug log_format("install #{item_map.uuid}/#{item_map.id}")
 
       item.install
+
+      @dp_info.interface_manager.async.retrieve(id: item.interface_id)
+      @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
+                                                   id: item.interface_id)
+
       item
     end
     

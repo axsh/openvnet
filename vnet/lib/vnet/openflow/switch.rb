@@ -66,6 +66,7 @@ module Vnet::Openflow
 
        TABLE_ROUTE_INGRESS_INTERFACE,
        TABLE_ROUTE_LINK_INGRESS,
+       TABLE_ROUTER_CLASSIFIER,
        TABLE_ROUTE_LINK_EGRESS,
        TABLE_ROUTE_EGRESS_LOOKUP,
        TABLE_ROUTE_EGRESS_INTERFACE,
@@ -101,7 +102,6 @@ module Vnet::Openflow
       #
       # Default goto_table flows:
       #
-
       [[TABLE_ROUTE_INGRESS_INTERFACE, TABLE_NETWORK_DST_CLASSIFIER],
        [TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTE_LINK_INGRESS],
        [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
@@ -121,8 +121,7 @@ module Vnet::Openflow
       #
       # Default dynamic load flows:
       #
-
-      [[TABLE_ROUTE_LINK_EGRESS, COOKIE_TYPE_ROUTE_LINK]
+      [[TABLE_ROUTER_CLASSIFIER, COOKIE_TYPE_ROUTE_LINK]
       ].each { |table, cookie_type|
         flows << flow_create(:default,
                              table: table,
