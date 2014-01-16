@@ -11,21 +11,17 @@ module Vnet::Openflow
     attr_reader :display_name
     attr_reader :node_id
 
-    attr_reader :datapath_map
-
     attr_reader :dc_segment_id
     attr_reader :ipv4_address
 
     def initialize(datapath_map)
-      @datapath_map = datapath_map
-
       @id = datapath_map.id
       @uuid = datapath_map.uuid
       @display_name = datapath_map.display_name
       @node_id = datapath_map.node_id
 
       @dc_segment_id = datapath_map.dc_segment_id
-      @ipv4_address = IPAddr.new(@datapath_map.ipv4_address, Socket::AF_INET)
+      @ipv4_address = IPAddr.new(datapath_map.ipv4_address, Socket::AF_INET)
     end
 
   end

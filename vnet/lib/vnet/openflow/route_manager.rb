@@ -88,7 +88,7 @@ module Vnet::Openflow
       item = @items[item_map.id]
       return nil if item.nil?
 
-      debug log_format("install #{item_map.uuid}/#{item_map.id}")
+      debug log_format("install #{item.uuid}/#{item.id}")
 
       item.install
 
