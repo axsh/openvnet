@@ -24,7 +24,7 @@ module Vnctl::Cli
     define_relation :networks
 
     rel_option :mac_address, :type => :string, :required => true,
-        :desc => "The mac address to use for this link"
+      :desc => "The mac address to use for this link"
     rel_option :interface_uuid, :type => :string, :required => true,
       :desc => "The host interface uuid to use for this route link."
     define_relation(:route_links)
