@@ -3,6 +3,28 @@
 module Vnctl::Cli
   class Base < Thor
 
+    protected
+    def self.basename
+      "#{super()} #{namespace}"
+    end
+
+    no_tasks {
+      public
+      # add before/after invoke hook.
+      def invoke(task, *args)
+        before_invoke
+        super(task, *args)
+        after_invoke
+      end
+
+      protected
+      def before_invoke
+      end
+
+      def after_invoke
+      end
+    }
+
     no_tasks {
       def self.option_uuid
         option :uuid, :type => :string, :desc => "Unique UUID for the #{namespace}."
@@ -77,7 +99,7 @@ module Vnctl::Cli
           desc_label = relation_name.to_s.gsub('_', ' ')
 
           desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
-            "Adds #{desc_label} to a #{parent.namespace}."
+            "Adds #{desc_label} to a(n) #{parent.namespace}."
           rel_opts && rel_opts.each { |o| option(o[:name], o[:desc]) }
           def add(base_uuid, rel_uuid)
             puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
@@ -90,7 +112,7 @@ module Vnctl::Cli
           end
 
           desc "del #{base_uuid_label} #{relation_uuid_label}(S)",
-            "Removes #{desc_label} from a #{parent.namespace}."
+            "Removes #{desc_label} from a(n) #{parent.namespace}."
           def del(base_uuid, *rel_uuids)
             puts rel_uuids.map { |rel_uuid|
               delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
@@ -150,6 +172,7 @@ module Vnctl::Cli
         define_method(req_type) { |*args|
           uri = args.shift
           format = Vnctl.conf.output_format
+
           Vnctl::WebApi.send(req_type, "#{uri}.#{format}", *args)
         }
       }
