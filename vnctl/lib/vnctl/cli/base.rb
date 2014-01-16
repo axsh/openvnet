@@ -26,6 +26,63 @@ module Vnctl::Cli
     }
 
     no_tasks {
+
+      ######################
+      # API helper methods #
+      ######################
+
+      # Every subclass represents one of OpenVNet's api suffixes. Use this
+      # method to get/set them.
+      def self.api_suffix(suffix = nil)
+        @api_suffix = suffix unless suffix.nil?
+        @api_suffix
+      end
+
+      def suffix
+        self.class.api_suffix
+      end
+
+      # Some syntax sugar for the actual api calls
+      [:post, :get, :delete, :put].each { |req_type|
+        define_method(req_type) { |*args|
+          uri = args.shift
+          format = Vnctl.conf.output_format
+
+          Vnctl::WebApi.send(req_type, "#{uri}.#{format}", *args)
+        }
+      }
+
+      ####################################################
+      # Metaprogramming to define standard CRUD commands #
+      ####################################################
+
+      # The standard crud commands are:
+      # * add
+      # * modify
+      # * del
+      # * show
+
+      # 'Add' and 'modify' often use mostly the same options. Use this method to
+      # define them
+      def self.add_modify_shared_options(&blk)
+        if block_given?
+          @shared_options = blk
+        else
+          @shared_options.call
+        end
+      end
+
+      # 'Add' often has required options while 'modify' tends to be all optional
+      # Use this method to set which options defined in the add_modify_shared_options
+      # method are required for 'add'.
+      def self.set_required_options(opts = nil)
+        @required_options_for_add = opts unless opts.nil?
+        @required_options_for_add || []
+      end
+
+      # 'uuid', 'display_name' and 'description' options are used very often.
+      # These methods are here so you don't have to type the same thing again
+      # for every subclass.
       def self.option_uuid
         option :uuid, :type => :string, :desc => "Unique UUID for the #{namespace}."
       end
@@ -38,6 +95,7 @@ module Vnctl::Cli
         option :description, :type => :string, :desc => "Optional verbose description."
       end
 
+      # And here we have the methods that create the actual CRUD tasks
       def self.define_add
         desc "add [OPTIONS]", "Creates a new #{namespace}."
         set_required_options.each { |o|
@@ -75,6 +133,44 @@ module Vnctl::Cli
         end
       end
 
+      # And one little convenient method to define all CRUD commands
+      def self.define_standard_crud_commands
+        option_uuid
+        add_modify_shared_options
+        define_add
+
+        add_modify_shared_options
+        define_modify
+
+        define_show
+        define_del
+      end
+
+      #######################################
+      # Metaprogramming to define relations #
+      #######################################
+
+      # These define commands for relations. Every relation uses three commands:
+      # * add
+      # * show
+      # * del
+
+      # For example, you might have datapath related to networks.
+      # That translates to the following commands:
+      # ./vnctl datapath networks add
+      # ./vnctl datapath networks show
+      # ./vnctl datapath networks del
+
+      # Some times there are extra options involved for a relation. For example
+      # every network related to a datapath will have its own broadcast mac
+      # address. If a relation has such options, use this method to define them.
+      def self.rel_option(name, desc)
+        @relation_options ||= []
+        @relation_options << {:name => name, :desc => desc}
+      end
+
+      # This magical method creates a new Cli::Base subclass that will define
+      # the relation commands for you.
       def self.define_relation(relation_name, add_options = [])
         parent = self
         rel_opts = @relation_options
@@ -128,54 +224,6 @@ module Vnctl::Cli
 
         @relation_options = []
       end
-
-      def self.set_required_options(opts = nil)
-        @required_options_for_add = opts unless opts.nil?
-        @required_options_for_add || []
-      end
-
-      def self.add_modify_shared_options(&blk)
-        if block_given?
-          @shared_options = blk
-        else
-          @shared_options.call
-        end
-      end
-
-      def self.rel_option(name, desc)
-        @relation_options ||= []
-        @relation_options << {:name => name, :desc => desc}
-      end
-
-      def self.define_standard_crud_commands
-        option_uuid
-        add_modify_shared_options
-        define_add
-
-        add_modify_shared_options
-        define_modify
-
-        define_show
-        define_del
-      end
-
-      def self.api_suffix(suffix = nil)
-        @api_suffix = suffix unless suffix.nil?
-        @api_suffix
-      end
-
-      def suffix
-        self.class.api_suffix
-      end
-
-      [:post, :get, :delete, :put].each { |req_type|
-        define_method(req_type) { |*args|
-          uri = args.shift
-          format = Vnctl.conf.output_format
-
-          Vnctl::WebApi.send(req_type, "#{uri}.#{format}", *args)
-        }
-      }
     }
   end
 end
