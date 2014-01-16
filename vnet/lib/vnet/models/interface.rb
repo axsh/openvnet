@@ -28,16 +28,10 @@ module Vnet::Models
     # We're using paranoia on the join table for the interface <=> security
     # group relation and that's throwing a wrench in Sequel's inner workings.
     # We override the relation accessors to remedy that.
-    def security_groups
-      security_groups_dataset.all
-    end
-
     def security_groups_dataset
-      join_ds = InterfaceSecurityGroup.where(
-        interface_id: self.id
-      ).select(:security_group_id)
-
-      SecurityGroup.where(id: join_ds)
+      ds = SecurityGroup.join(:interface_security_groups, security_group_id: :id)
+      ds = ds.where(interface_security_groups__deleted_at: nil)
+      ds.where(interface_id: self.id).select_all(:security_groups)
     end
 
     def port_name
