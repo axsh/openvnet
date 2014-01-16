@@ -86,23 +86,23 @@ network_services:
 
   - uuid: ns-dhcppub
     interface_uuid: if-dhcppub
-    display_name: dhcp
+    type: dhcp
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
-    display_name: dhcp
+    type: dhcp
 
   - uuid: ns-dhcp2
     interface_uuid: if-dhcp2
-    display_name: dhcp
+    type: dhcp
 
   - uuid: ns-router1
     interface_uuid: if-router1
-    display_name: router
+    type: router
 
   - uuid: ns-router2
     interface_uuid: if-router2
-    display_name: router
+    type: router
 
 datapath_networks:
 
