@@ -46,7 +46,7 @@ describe "/dns_services" do
 
     # let(:accepted_params) do
     accepted_params = {
-        dns_record_uuid: "dnsr-new",
+        uuid: "dnsr-new",
         name: "test-server",
         ipv4_address: "192.168.1.10",
       }
