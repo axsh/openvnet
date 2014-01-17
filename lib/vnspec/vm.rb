@@ -168,7 +168,7 @@ module Vnspec
       [
         %r(^\*\* server can't find),
         %r(^\*\*\* Can't find),
-        %r(;; connection timed out;),
+        %r(^;; connection timed out;),
       ].none? { |m| m.match(stdout) }
     end
 
