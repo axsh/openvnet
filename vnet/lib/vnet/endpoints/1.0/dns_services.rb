@@ -5,6 +5,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
 
   put_post_shared_params = [
     :public_dns,
+    :enabled
   ]
 
   post do
@@ -35,16 +36,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
     update_by_uuid(:DnsService, put_post_shared_params, fill_options)
   end
 
-  post '/:uuid/dns_records' do
-    params = parse_params(@params, [:uuid, :dns_record_uuid, :name, :ipv4_address])
-    check_required_params(params, [:name, :ipv4_address])
+  post '/:dns_service_uuid/dns_records' do
+    params = parse_params(@params, [:uuid, :dns_service_uuid, :name, :ipv4_address])
+    check_required_params(params, [:dns_service_uuid, :name, :ipv4_address])
 
-    dns_service = check_syntax_and_pop_uuid(M::DnsService, params)
+    dns_service = check_syntax_and_pop_uuid(M::DnsService, params, :dns_service_uuid)
 
-    if params[:dns_record_uuid]
-      params[:uuid] = params.delete(:dns_record_uuid)
-      check_and_trim_uuid(M::DnsRecord, params)
-    end
+    check_and_trim_uuid(M::DnsRecord, params) if params[:uuid]
+
     params[:ipv4_address] = parse_ipv4(params[:ipv4_address])
     params[:dns_service_id] = dns_service.id
 
@@ -63,7 +62,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
 
     raise E::UnknownUUIDResource, dns_record.uuid unless dns_record.dns_service_id == dns_service.id
 
-    dns_record.batch.destroy.commit
+    M::DnsRecord.destroy(dns_record.uuid)
 
     respond_with R::DnsService.dns_records(dns_service)
   end
