@@ -155,7 +155,7 @@ module Vnet
     autoload :NetworkService, 'vnet/node_api/network_service.rb'
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
-    autoload :SecurityGroup, 'vnet/node_api/models.rb'
+    autoload :SecurityGroup, 'vnet/node_api/security_group'
     autoload :Translation, 'vnet/node_api/models.rb'
     autoload :TranslateStaticAddress, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'

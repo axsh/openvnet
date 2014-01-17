@@ -65,5 +65,10 @@ module Vnet
     #
     INITIALIZED_PORT = "initialized_port"
     FINALIZED_PORT = "finalized_port"
+
+    #
+    # filter event
+    #
+    UPDATED_FILTER = "updated_filter"
   end
 end

@@ -6,6 +6,7 @@ module Vnet::Openflow
 
     subscribe_event INITIALIZED_INTERFACE, :apply_filters
     subscribe_event REMOVED_INTERFACE, :remove_filters
+    subscribe_event UPDATED_FILTER, :update_item
 
     GLOBAL_FILTERS_KEY = 'global'
 
@@ -39,6 +40,25 @@ module Vnet::Openflow
                             interface_id: interface.id,
                             group_wrapper: group)
         end
+      end
+    end
+
+    def update_item(params)
+      debug log_format("Implement the freaking internal_detect first, you ape!")
+      return nil
+      # There will be multiple interfaces with this security group. We need to
+      # get the references of all items that represent the updated group
+      # ... Or We need to change the contents of @items
+      items = internal_detect(id: id)
+      return nil if item.nil?
+
+      case params[:event]
+      when :update_rules
+        items.each { |i| i.update_rules(params[:rules]) }
+      when :update_isolation
+        items.each { |i| i.update_isolation(params[:isolation_ips]) }
+      when :update_reference
+        items.each { |i| i.update_reference(params[:reference_ips]) }
       end
     end
 
