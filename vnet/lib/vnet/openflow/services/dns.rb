@@ -5,20 +5,13 @@ require 'racket'
 
 module Vnet::Openflow::Services
   class Dns < Base
+    def initialize(*args)
+      super
+      @records = Hash.new { |hash, key| hash[key] = [] }
+      @public_dns_available_at = Time.now
+    end
+
     def install
-      @records ||= 1000.times.map { |i|
-        ["proxy#{i}", "10.50.0.2"]
-      }.each_with_object({}) do |(domain, ip), records|
-        domain += "." unless domain =~ /\.$/
-        records[domain] = IPAddr.new(ip)
-      end
-
-      #@reversed_records ||= @records.each_with_object(Hash.new{|h,k| h[k] = []}) do |(domain, ip), records|
-      #  records[ip.reverse + "."] << domain
-      #end
-
-      update_dhcp_option
-
       flows = []
       flows << flow_create(:controller,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
@@ -37,6 +30,7 @@ module Vnet::Openflow::Services
 
     def packet_in(message)
       debug log_format('packet_in received')
+      #debug log_format('message: ', message.inspect)
 
       mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
       return if network.nil?
@@ -45,10 +39,6 @@ module Vnet::Openflow::Services
       return if client_info.nil?
 
       raw_in_l2, raw_in_l3, raw_in_l4 = packet_udp_in(message)
-      debug log_format('message: ', message.inspect)
-
-      #debug log_format('records: ', @records.inspect)
-      #debug log_format('reversed_records: ', @reversed_records.inspect)
 
       request = Net::DNS::Packet.parse(raw_in_l4.payload)
       #debug log_format('request: ', request.inspect)
@@ -56,37 +46,18 @@ module Vnet::Openflow::Services
       question = request.question.first
       #debug log_format('question: ', question.inspect)
 
-      response = Net::DNS::Packet.new(question.qName)
-      response.header.id = request.header.id
-      response.header.qr = 1
-      #response.header.ra = 1
-      response.question = request.question
-
-      case question.qType.to_s
-      when "A" 
-        if address = @records[question.qName]
-          response.answer = Net::DNS::RR::A.new(
-            :name    => question.qName,
-            :ttl     => 300,
-            :address => address
-          )
-          #response.header.anCount = 1
+      if @dns_service[:enabled]
+        response = process_dns_request(request)
+        if response.answer.empty? && @dns_service[:public_dns]
+          response = forward_dns_request(request)
         end
-      #when "PTR"
-      #  @reversed_records[question.qName].each do |address|
-      #    response.answer << Net::DNS::RR::PTR.new(
-      #      :name    => question.qName,
-      #      :ttl     => 300,
-      #      :ptrdname => address
-      #    )
-      #    #response.header.anCount = 1
-      #  end
+      elsif @dns_service[:public_dns]
+        response = forward_dns_request(request)
       else
-        # not implemented
-        response.header.rCode = 4
+        response = server_not_available_response(request)
       end
 
-      debug log_format("DNS send", "output:#{response.inspect}")
+      #debug log_format("DNS send", "output:#{response.inspect}")
       packet_udp_out(
         :out_port => message.in_port,
         :eth_src => mac_info[:mac_address],
@@ -99,27 +70,8 @@ module Vnet::Openflow::Services
       )
     end
 
-    def dns_server_for(network_id)
-      case @dhcp_option
-      when 0
-        nil
-      when 1, 2
-        interface = @dp_info.interface_manager.item(id: @interface_id)
-        private_dns = interface.get_ipv4_infos.map { |_, ipv4_info| ipv4_info.ipv4_address.to_s }.join(",")
-        @dhcp_option == 1 ? public_dns + "," + private_dns : private_dns + "," + public_dns
-      end
-
-    end
-
     def add_network(network_id, cookie_id)
-      @dp_info.service_manager.update_item(
-        network_id: network_id,
-        display_name: "dhcp",
-        event: add_dns_server,
-        network_id: network_id,
-        dns_server: dns_server_for(network_id)
-      )
-      end
+      add_dns_server(network_id)
 
       flows = []
       flows << flow_create(:default,
@@ -138,5 +90,140 @@ module Vnet::Openflow::Services
                            write_interface: @interface_id)
       @dp_info.add_flows(flows)
     end
+
+    def remove_network(network_id)
+      remove_dns_server(network_id)
+    end
+
+    def add_dns_record(dns_record_map)
+      name = normalize_record_name(dns_record_map.name)
+      @records[name] << {
+        ipv4_address: IPAddr.new(dns_record_map.ipv4_address, Socket::AF_INET),
+        ttl: dns_record_map.ttl
+      }
+    end
+
+    def remove_dns_record(dns_record_map)
+      name = normalize_record_name(dns_record_map.name)
+      @records[name].delete_if do |record|
+        record[:ipv4_address].to_i == dns_record_map.ipv4_address
+      end
+    end
+
+    def add_dns_service(dns_service_map)
+      @dns_service = {
+        public_dns: dns_service_map.public_dns,
+        enabled: dns_service_map.enabled
+      }
+      @networks.each do |_, network|
+        add_dns_server(network[:network_id])
+      end
+    end
+
+    def update_dns_service(dns_service_map)
+      [:public_dns, :enabled].each do |key|
+        @dns_service[key] = dns_service_map[key]
+      end
+    end
+
+    def remove_dns_service
+      @dns_service.clear
+      @records.clear
+      @networks.each do |_, network|
+        remove_dns_server(network[:network_id])
+      end
+    end
+
+    def dns_server_for(network_id)
+      interface = @dp_info.interface_manager.item(id: @interface_id)
+      ipv4_info = interface.get_ipv4_infos(network_id: network_id).map(&:last).detect do |ipv4_info|
+        ipv4_info[:network_id] == network_id
+      end
+      ipv4_info ? ipv4_info[:ipv4_address].to_s : nil
+    end
+
+    def add_dns_server(network_id)
+      if dns_server = dns_server_for(network_id)
+        @manager.add_dns_server(network_id, dns_server)
+      end
+    end
+
+    def remove_dns_server(network_id)
+      @manager.remove_dns_server(network_id)
+    end
+
+    def process_dns_request(request)
+      create_dns_response(request) do |response, question|
+        case question.qType.to_s
+        when "A"
+          records = @records[question.qName]
+          unless records.empty?
+            # Multiple addresses are not suppoerted atm.
+            record = records.first
+
+            ipv4_address = record[:ipv4_address]
+            ttl = record[:ttl] || 300 # TODO should be configurable
+            response.answer = Net::DNS::RR::A.new(
+              :name    => question.qName,
+              :ttl     => ttl,
+              :address => ipv4_address
+            )
+            #response.header.anCount = 1
+          end
+        #when "PTR"
+        #  @reversed_records[question.qName].each do |address|
+        #    response.answer << Net::DNS::RR::PTR.new(
+        #      :name    => question.qName,
+        #      :ttl     => ttl,
+        #      :ptrdname => address
+        #    )
+        #    #response.header.anCount = 1
+        #  end
+        else
+          response.header.rCode = Net::DNS::Header::RCode::NOTIMPLEMENTED
+        end
+      end
+    end
+
+    def forward_dns_request(request)
+      if @public_dns_available_at > Time.now
+        return server_not_available_response(request)
+      end
+
+      question = request.question.first
+      public_dns = (@dns_service[:public_dns] || "").split(",")
+      resolver = Net::DNS::Resolver.new(nameservers: public_dns)
+      begin
+        resolver.search(question.qName, question.qType.to_i, question.qClass.to_i).tap do |response|
+          response.header.id = request.header.id
+        end
+      rescue TimeoutError => e
+        warn log_format("public dns timeout", public_dns)
+        @public_dns_available_at = Time.now + 60 # TODO should be configurable
+        server_not_available_response(request)
+      end
+    end
+
+    def server_not_available_response(request)
+      create_dns_response(request) do |response, _|
+        response.header.rCode = Net::DNS::Header::RCode::SERVER
+      end
+    end
+
+    def create_dns_response(request, &block)
+      question = request.question.first
+      Net::DNS::Packet.new(question.qName).tap do |response|
+        response.header.id = request.header.id
+        response.header.qr = 1
+        #response.header.ra = 1
+        response.question = request.question
+        yield response, question if block_given?
+      end
+    end
+
+    def normalize_record_name(name)
+      name.chomp(".") + "."
+    end
+
   end
 end

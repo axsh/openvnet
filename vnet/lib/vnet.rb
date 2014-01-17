@@ -270,6 +270,7 @@ module Vnet
     module Services
       autoload :Base, 'vnet/openflow/services/base'
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
+      autoload :Dns, 'vnet/openflow/services/dns'
       autoload :Router, 'vnet/openflow/services/router'
     end
 

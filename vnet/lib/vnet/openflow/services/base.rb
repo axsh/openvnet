@@ -21,6 +21,7 @@ module Vnet::Openflow::Services
     attr_accessor :uuid
     attr_accessor :interface_id
     attr_accessor :type
+    attr_reader :networks
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -111,19 +112,37 @@ module Vnet::Openflow::Services
     def remove_network_if_exists(network_id)
       return unless @networks.member?(network_id)
       network = @networks.delete(network_id)
-      remove_network(network_id[:cookie_id])
+      remove_network(network[:network_id])
+      del_cookie_for_network(network[:cookie_id])
     end
 
-    def remove_network(cookie_id)
-      del_cookie_for_network(cookie_id)
+    def remove_network(network_id)
     end
 
     def remove_all_networks
       removed_networks, @networks = @networks, nil
       removed_networks.values.each do |network|
-        remove_network(network[:cookie_id])
+        remove_network(network[:network_id])
+        del_cookie_for_network(network[:cookie_id])
       end
     end
+
+    protected
+
+    def find_client_infos(port_number, server_mac_info, server_ipv4_info)
+      interface = @dp_info.interface_manager.item(port_number: port_number)
+      return [] if interface.nil?
+
+      client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
+
+      # info log_format("find_client_info", "#{interface.inspect}")
+      # info log_format("find_client_info", "server_mac_info:#{server_mac_info.inspect}")
+      # info log_format("find_client_info", "server_ipv4_info:#{server_ipv4_info.inspect}")
+      # info log_format("find_client_info", "client_infos:#{client_infos.inspect}")
+
+      client_infos
+    end
+
   end
 
 end
