@@ -17,6 +17,7 @@ module Vnspec
       def setup
         all.each do |vm|
           vm.interfaces.each do |interface|
+            next unless interface.enabled?
             API.request(:get, "interfaces/#{interface.uuid}") do |response|
               response[:mac_leases].each do |mac_lease|
                 interface.mac_leases << Models::MacLease.new(uuid: mac_lease[:uuid], interface: interface,  mac_address: mac_lease[:mac_address]).tap do |m|
@@ -157,8 +158,18 @@ module Vnspec
       true
     end
 
-    def reachable_to?(vm, timeout = 2)
-      hostname_for(vm.ipv4_address, timeout) == vm.name.to_s
+    def reachable_to?(vm, options = {})
+      via = options.delete(:via) || :ipv4_address
+      hostname_for(vm.__send__(via), options) == vm.name.to_s
+    end
+
+    def resolvable?(name)
+      stdout = ssh_on_guest("nslookup -timeout=1 -retry=0 #{name}")[:stdout]
+      [
+        %r(^\*\* server can't find),
+        %r(^\*\*\* Can't find),
+        %r(;; connection timed out;),
+      ].none? { |m| m.match(stdout) }
     end
 
     def able_to_ping?(vm)
@@ -207,14 +218,14 @@ module Vnspec
       ssh_on_guest("killall nc")
     end
 
-    def hostname_for(ip, timeout = 2)
+    def hostname_for(address, options = {})
       options = to_ssh_option_string(
         "StrictHostKeyChecking" => "no",
         "UserKnownHostsFile" => "/dev/null",
         "LogLevel" => "ERROR",
-        "ConnectTimeout" => timeout
+        "ConnectTimeout" => options[:timeout] || 2
       )
-      ssh_on_guest("ssh #{options} #{ip} hostname")[:stdout].chomp
+      ssh_on_guest("ssh #{options} #{address} hostname")[:stdout].chomp
     end
 
     def ssh_on_guest(command, options = {}, host_options = {})
