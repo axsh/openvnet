@@ -3,27 +3,11 @@
 module Vnctl::Cli
   class Base < Thor
 
-    protected
-    def self.basename
-      "#{super()} #{namespace}"
+    # Monkey patch to get better help output. subcommand needs to be true by
+    # default or things like 'vnctl interface help add' won't output correctly.
+    def self.banner(command, namespace = nil, subcommand = true)
+      "#{basename} #{command.formatted_usage(self, $thor_runner, subcommand)}"
     end
-
-    no_tasks {
-      public
-      # add before/after invoke hook.
-      def invoke(task, *args)
-        before_invoke
-        super(task, *args)
-        after_invoke
-      end
-
-      protected
-      def before_invoke
-      end
-
-      def after_invoke
-      end
-    }
 
     no_tasks {
 
