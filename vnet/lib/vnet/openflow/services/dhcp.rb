@@ -36,7 +36,8 @@ module Vnet::Openflow::Services
       mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
       return if network.nil?
 
-      static_routes = find_static_routes(network[:id])
+      netid_to_routes = @dp_info.route_manager.select(network_id: network[:id], ingress: true)
+      static_routes = find_static_routes(netid_to_routes)
 
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
       return if client_info.nil?
@@ -110,18 +111,16 @@ module Vnet::Openflow::Services
       "#{@dp_info.dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def find_static_routes(net_id)
-      # Overview: network -> (near)vnetroute(s).route_link -> (far)vnetroute(s)
-      # (1) get nearside vnet routes:
-      routes_on_network = @dp_info.route_manager.select(network_id: net_id, ingress: true)
-      static_routes = routes_on_network.collect_concat do |rnear|
-        # (2) get farside vnet routes
+    def find_static_routes(near_routes)
+      # Overview: (near)vnetroute(s).route_link -> (far)vnetroute(s)
+      static_routes = near_routes.collect_concat do |rnear|
+        # (1) get farside vnet routes
         link_id = rnear[:route_link_id]
         outgoing_routes = @dp_info.route_manager.select(route_link_id: link_id,
                                                         egress: true,
                                                         not_network_id: rnear[:network_id])
         if outgoing_routes
-          # (3) route addresses on farside routes to nearside interface's IP address (the router)
+          # (2) route addresses on farside routes to nearside interface's IP address (the router)
           router_mac, router_ipv4 = @dp_info.interface_manager.get_ipv4_address(id: rnear[:interface_id])
           router_ip_octets = ipaddr_to_octets(router_ipv4[:ipv4_address])
           outgoing_routes.collect do |outr|
