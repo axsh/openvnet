@@ -186,7 +186,7 @@ module Vnet::Openflow::Services
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (params[:ipv4_network] | ~subnet_mask).hton.unpack('C*'))
 
       # http://tools.ietf.org/html/rfc3442  (option 121)
-      if params[:routes_info]
+      if !params[:routes_info].empty?
         payload = params[:routes_info].collect_concat do |g|
           dst_ip, dst_pre, router_ip = g
           # keep only unmasked ints, following rfc3442
