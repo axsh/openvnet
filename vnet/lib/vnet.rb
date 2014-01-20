@@ -251,10 +251,6 @@ module Vnet
       autoload :Base, 'vnet/openflow/filters/base'
       autoload :Cookies, 'vnet/openflow/filters/cookies'
       autoload :SecurityGroup, 'vnet/openflow/filters/security_group'
-      autoload :Rule, 'vnet/openflow/filters/rules'
-      autoload :ICMP, 'vnet/openflow/filters/rules'
-      autoload :TCP, 'vnet/openflow/filters/rules'
-      autoload :UDP, 'vnet/openflow/filters/rules'
     end
 
     module Services
