@@ -115,24 +115,28 @@ module Vnet::Openflow::Services
       # Overview: (near)vnetroute(s).route_link -> (far)vnetroute(s)
       static_routes = []
       near_routes.each do |rnear|
-        # (1) get farside vnet routes
+        router_ip_octets = nil
         far_routes = @dp_info.route_manager.select(route_link_id: rnear[:route_link_id],
                                                         egress: true,
                                                         not_network_id: rnear[:network_id])
-        if far_routes
-          # (2) route addresses on farside routes to nearside interface's IP address (the router)
-          router_mac, router_ipv4 = @dp_info.interface_manager.get_ipv4_address(id: rnear[:interface_id])
-          router_ip_octets = ipaddr_to_octets(router_ipv4[:ipv4_address])
-          far_routes.each do |rfar|
-            dest_ip = rfar[:ipv4_address]
-            dest_prefix = rfar[:ipv4_prefix]
-            static_routes << [ ipaddr_to_octets(dest_ip) , dest_prefix, router_ip_octets ]
-          end
+        far_routes.each do |rfar|
+          # get router/gateway target from near router's interface
+          break unless router_ip_octets ||= get_router_octets(rnear)
+          # get subnet to route from far router
+          static_routes << [ ipaddr_to_octets(rfar[:ipv4_address]),
+                             rfar[:ipv4_prefix],
+                             router_ip_octets ]
         end
       end
       static_routes
     end
 
+    def get_router_octets(arouter)
+      near_interface = @dp_info.interface_manager.retrieve(id: arouter[:interface_id])
+      ipv4_infos = near_interface.get_ipv4_infos(network_id: arouter[:network_id]).first
+      ipaddr_to_octets(ipv4_infos[1][:ipv4_address])
+    end
+    
     def ipaddr_to_octets(ip)
       i = ip.to_i
       [ (i >> 24) % 256, (i >> 16) % 256, (i >> 8) % 256, i % 256 ]
