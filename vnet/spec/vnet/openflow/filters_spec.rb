@@ -115,4 +115,42 @@ describe Vnet::Openflow::FilterManager do
     end
   end
 
+  describe "#update_item" do
+    let(:group) do
+      rules = "tcp:22:0.0.0.0/0"
+      Fabricate(:security_group, rules: rules)
+    end
+
+    let(:interface) do
+      Fabricate(:interface).tap { |i|
+        i.add_security_group(group)
+      }
+    end
+
+    before(:each) { subject.apply_filters({item_map: wrapper(interface)}) }
+
+    context "with {event: :update_rules} in the parameters" do
+      before(:each) do
+        subject.update_item({
+          event: :update_rules,
+          id: group.id,
+          rules: "tcp:234:192.168.3.34"
+        })
+      end
+
+      it "Removes the old rules for a security group" do
+        expect(flows).not_to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_tcp_rule("0.0.0.0/0", 22)
+        )
+      end
+
+      it "install the new rules for a security_group" do
+        expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_tcp_rule("192.168.3.34", 234)
+        )
+      end
+    end
+  end
 end
