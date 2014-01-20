@@ -28,6 +28,10 @@ module Vnet::Models
       Interface.where({owner_datapath_id: self.id} & {mode: 'host'})
     end
 
+    def dpid_s
+      "0x%016x" % dpid
+    end
+
     def peers
       # deleted datapath's datapath_networks should also be deleted
       network_ids = (self.deleted_at ? datapath_networks_dataset.unfiltered.where(datapath_id: self.id) : datapath_networks).map(&:network_id)

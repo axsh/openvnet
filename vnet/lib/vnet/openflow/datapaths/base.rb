@@ -17,14 +17,14 @@ module Vnet::Openflow::Datapaths
 
       @id = map.id
       @uuid = map.uuid
-      @dpid = map.dpid.hex
+      @dpid = map.dpid
       @dc_segment_id = map.dc_segment_id
 
       @active_networks = {}
 
       @active_route_links = {}
     end
-    
+
     def host?
       false
     end
@@ -95,7 +95,7 @@ module Vnet::Openflow::Datapaths
       return false if active_network.nil?
 
       @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
-      
+
       after_remove_active_network(active_network)
 
       debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
