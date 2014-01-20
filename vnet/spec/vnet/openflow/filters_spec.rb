@@ -89,6 +89,37 @@ describe Vnet::Openflow::FilterManager do
         )
       end
     end
+
+    context "with a security group in two interfaces" do
+      let(:group) { Fabricate(:security_group, rules: "tcp:456:10.10.10.10") }
+
+      let(:interface) do
+        Fabricate(:interface).tap { |i|
+          i.add_security_group(group)
+        }
+      end
+
+      let(:interface2) do
+        Fabricate(:interface).tap { |i|
+          i.add_security_group(group)
+        }
+      end
+
+      before(:each) { subject.apply_filters({item_map: wrapper(interface2)}) }
+
+      it "applies the group's flows for both interfaces" do
+        expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_tcp_rule("10.10.10.10", 456)
+        )
+
+        expect(flows).to include rule_flow({
+          cookie: cookie_id(group, interface2),
+          match: match_tcp_rule("10.10.10.10", 456)},
+          interface2
+        )
+      end
+    end
   end
 
   describe "#remove_filters" do

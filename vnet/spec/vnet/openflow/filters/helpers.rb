@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-def cookie_id(group)
+def cookie_id(group, interface = interface)
   Vnet::Openflow::Filters::SecurityGroup.cookie(
     group.id,
     group.interface_cookie_id(interface.id),
@@ -35,10 +35,10 @@ def match_icmp_rule(source_ip)
   match_rule(source_ip).merge({ ip_proto: IPV4_PROTOCOL_ICMP })
 end
 
-def rule_flow(rule_hash)
+def rule_flow(rule_hash, interface = interface)
   flow_hash = rule_hash.merge({
     table: TABLE_INTERFACE_INGRESS_FILTER,
-    priority: Vnet::Openflow::Filters::Rule::PRIORITY,
+    priority: Vnet::Openflow::Filters::SecurityGroup::RULE_PRIORITY,
     match_metadata: {interface: interface.id},
     goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
   })
