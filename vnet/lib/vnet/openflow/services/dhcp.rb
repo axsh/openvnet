@@ -124,16 +124,20 @@ module Vnet::Openflow::Services
         if outgoing_routes
           # (3) route addresses on farside routes to nearside interface's IP address (the router)
           router_mac, router_ipv4 = @dp_info.interface_manager.get_ipv4_address(id: rnear[:interface_id])
-          router_ip_ints = router_ipv4[:ipv4_address].to_s.split(".").map { |s| s.to_i }
+          router_ip_octets = ipaddr_to_octets(router_ipv4[:ipv4_address])
           outgoing_routes.collect do |outr|
             dest_ip = outr[:ipv4_address]
             dest_prefix = outr[:ipv4_prefix]
-            dest_ip_ints = dest_ip.to_s.split(".").map { |s| s.to_i }
-            [ dest_ip_ints , dest_prefix, router_ip_ints ]
+            [ ipaddr_to_octets(dest_ip) , dest_prefix, router_ip_octets ]
           end
         end
       end
       static_routes
+    end
+
+    def ipaddr_to_octets(ip)
+      i = ip.to_i
+      [ (i >> 24) % 256, (i >> 16) % 256, (i >> 8) % 256, i % 256 ]
     end
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
