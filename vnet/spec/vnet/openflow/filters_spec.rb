@@ -40,20 +40,24 @@ describe Vnet::Openflow::FilterManager do
       end
     end
 
-    context "with an interface that has no security groups" do
-      let(:interface) { Fabricate(:interface) }
+    #
+    # This probably won't be the final behaviour anyway...
+    #
 
-      F = Vnet::Openflow::Filters
-      it "applies a flow that accepts all traffic on the interface" do
-        expect(flows).to include flow_create(:default,
-          table: TABLE_INTERFACE_INGRESS_FILTER,
-          priority: Vnet::Openflow::Filters::Rule::PRIORITY,
-          cookie: F::AcceptAllTraffic.cookie(interface.id),
-          match_metadata: {interface: interface.id},
-          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-        )
-      end
-    end
+    # context "with an interface that has no security groups" do
+    #   let(:interface) { Fabricate(:interface) }
+
+    #   F = Vnet::Openflow::Filters
+    #   it "applies a flow that accepts all traffic on the interface" do
+    #     expect(flows).to include flow_create(:default,
+    #       table: TABLE_INTERFACE_INGRESS_FILTER,
+    #       priority: Vnet::Openflow::Filters::Rule::PRIORITY,
+    #       cookie: F::AcceptAllTraffic.cookie(interface.id),
+    #       match_metadata: {interface: interface.id},
+    #       goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+    #     )
+    #   end
+    # end
 
     context "with an interface that's in two security groups" do
       let(:group1) do
