@@ -37,7 +37,7 @@ module Vnet::Openflow::Services
       return if network.nil?
 
       netid_to_routes = @dp_info.route_manager.select(network_id: network[:id], ingress: true)
-      static_routes = find_static_routes(netid_to_routes)
+      static_routes = find_static_routes(netid_to_routes.uniq { |r| r[:route_link_id] })
 
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
       return if client_info.nil?
@@ -115,8 +115,7 @@ module Vnet::Openflow::Services
       # Overview: (near)vnetroute(s).route_link -> (far)vnetroute(s)
       static_routes = near_routes.collect_concat do |rnear|
         # (1) get farside vnet routes
-        link_id = rnear[:route_link_id]
-        outgoing_routes = @dp_info.route_manager.select(route_link_id: link_id,
+        outgoing_routes = @dp_info.route_manager.select(route_link_id: rnear[:route_link_id],
                                                         egress: true,
                                                         not_network_id: rnear[:network_id])
         if outgoing_routes
