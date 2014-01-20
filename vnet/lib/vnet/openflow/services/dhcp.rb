@@ -117,10 +117,9 @@ module Vnet::Openflow::Services
       static_routes = routes_on_network.collect_concat do |rnear|
         # (2) get farside vnet routes
         link_id = rnear[:route_link_id]
-        routes_w_route_link = @dp_info.route_manager.select(route_link_id: link_id, egress: true)
-        outgoing_routes =  routes_w_route_link.select do |rfar|
-          rfar[:network_id] != net_id
-        end
+        outgoing_routes = @dp_info.route_manager.select(route_link_id: link_id,
+                                                        egress: true,
+                                                        not_network_id: rnear[:network_id])
         if outgoing_routes
           # (3) route addresses on farside routes to nearside interface's IP address (the router)
           router_mac, router_ipv4 = @dp_info.interface_manager.get_ipv4_address(id: rnear[:interface_id])
