@@ -13,7 +13,7 @@ module Vnet::Openflow
     def initialize(*args)
       super(*args)
 
-      @items[GLOBAL_FILTERS_KEY] = []
+      @items[GLOBAL_FILTERS_KEY] = {}
       initialize_filter(type: :accept_ingress_arp)
     end
 
@@ -64,7 +64,7 @@ module Vnet::Openflow
 
     def remove_filters(interface_hash)
       if item = @items.delete(interface_hash[:id])
-        item.each { |item| @dp_info.del_cookie item.cookie }
+        item.each { |id, item| item.uninstall }
       end
     end
 
@@ -74,19 +74,24 @@ module Vnet::Openflow
 
       item = case params[:type]
       when :accept_ingress_arp
-        Filters::AcceptIngressArp.new.tap {|f| @items[GLOBAL_FILTERS_KEY] << f}
+        Filters::AcceptIngressArp.new.tap {|f| new_item(GLOBAL_FILTERS_KEY, f)}
       when :accept_all_traffic
         Filters::AcceptAllTraffic.new(interface_id)
       when :security_group
+        #TODO: Send all info we need from the group wrapper in the event so
+        # we don't need to make any db calls from here
         Filters::SecurityGroup.new(params[:group_wrapper], interface_id)
       end
 
-      if interface_id
-        @items[interface_id] ||= []
-        @items[interface_id] << item
-      end
+      item.dp_info = @dp_info
+      new_item(interface_id, item) if interface_id
 
-      @dp_info.add_flows item.install
+      item.install
+    end
+
+    def new_item(interface_id, item)
+      @items[interface_id] ||= {}
+      @items[interface_id][item.id] = item
     end
   end
 end

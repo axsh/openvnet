@@ -13,10 +13,15 @@ module Vnet::Openflow::Filters
       @interface_cookie_id = group_wrapper.batch.interface_cookie_id(interface_id).commit
 
       @rules = group_wrapper.rules.split("\n").map { |line|
-        Rule.create(line, interface_id, cookie(:rule))
+        Rule.create(line, interface_id, cookie(:rule)).tap {|r| r.dp_info = dp_info}
       }
       #TODO: Create reference rules
       #TODO: Create isolation
+    end
+
+    def dp_info=(dpi)
+      super
+      @rules.each { |r| r.dp_info = dpi }
     end
 
     def self.cookie(group_id, interface_cookie_id, type)
@@ -38,6 +43,12 @@ module Vnet::Openflow::Filters
       @rules.map { |rule| rule.install }
       #TODO: Install reference rules
       #TODO: Install isolation
+    end
+
+    def uninstall
+      @rules.map { |rule| rule.uninstall }
+      #TODO: Uninstall reference rules
+      #TODO: Uninstall isolation
     end
 
     def update_rules

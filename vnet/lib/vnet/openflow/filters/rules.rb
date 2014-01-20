@@ -30,13 +30,15 @@ module Vnet::Openflow::Filters
     end
 
     def install
-      flow_create(
-        :default,
-        table: TABLE_INTERFACE_INGRESS_FILTER,
-        priority: PRIORITY,
-        match_metadata: {interface: @interface_id},
-        match: match_ipv4_subnet_src(@s_ipv4.u32, @s_ipv4.prefix.to_i).merge(match),
-        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+      @dp_info.add_flow(
+        flow_create(
+          :default,
+          table: TABLE_INTERFACE_INGRESS_FILTER,
+          priority: PRIORITY,
+          match_metadata: {interface: @interface_id},
+          match: match_ipv4_subnet_src(@s_ipv4.u32, @s_ipv4.prefix.to_i).merge(match),
+          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+        )
       )
     end
   end

@@ -6,6 +6,11 @@ module Vnet::Openflow::Filters
       @interface_id = interface_id
     end
 
+    # Just something to identify this thing with in @items in filter manager
+    def id
+      'accept_all'
+    end
+
     def self.cookie(interface_id)
       interface_id |
         COOKIE_TYPE_FILTER |
