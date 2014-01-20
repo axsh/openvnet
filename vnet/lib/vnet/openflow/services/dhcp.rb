@@ -113,19 +113,20 @@ module Vnet::Openflow::Services
 
     def find_static_routes(near_routes)
       # Overview: (near)vnetroute(s).route_link -> (far)vnetroute(s)
-      static_routes = near_routes.collect_concat do |rnear|
+      static_routes = []
+      near_routes.each do |rnear|
         # (1) get farside vnet routes
-        outgoing_routes = @dp_info.route_manager.select(route_link_id: rnear[:route_link_id],
+        far_routes = @dp_info.route_manager.select(route_link_id: rnear[:route_link_id],
                                                         egress: true,
                                                         not_network_id: rnear[:network_id])
-        if outgoing_routes
+        if far_routes
           # (2) route addresses on farside routes to nearside interface's IP address (the router)
           router_mac, router_ipv4 = @dp_info.interface_manager.get_ipv4_address(id: rnear[:interface_id])
           router_ip_octets = ipaddr_to_octets(router_ipv4[:ipv4_address])
-          outgoing_routes.collect do |outr|
-            dest_ip = outr[:ipv4_address]
-            dest_prefix = outr[:ipv4_prefix]
-            [ ipaddr_to_octets(dest_ip) , dest_prefix, router_ip_octets ]
+          far_routes.each do |rfar|
+            dest_ip = rfar[:ipv4_address]
+            dest_prefix = rfar[:ipv4_prefix]
+            static_routes << [ ipaddr_to_octets(dest_ip) , dest_prefix, router_ip_octets ]
           end
         end
       end
