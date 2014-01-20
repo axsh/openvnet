@@ -36,25 +36,36 @@ module Vnet::Openflow
           debug log_format("Installing security group '%s' for interface '%s'" %
             [group.uuid, interface.uuid])
 
+          cookie_id = group.batch.interface_cookie_id(interface.id).commit
           initialize_filter(type: :security_group,
+                            id: group.id,
+                            uuid: group.uuid,
                             interface_id: interface.id,
-                            group_wrapper: group)
+                            interface_cookie_id: cookie_id,
+                            rules: group.rules)
         end
       end
     end
 
+    def internal_detect(params)
+      items = []
+      @items.each { |interface_id, interface|
+        items << interface[params[:id]]
+      }
+      items.compact
+    end
+
     def update_item(params)
-      debug log_format("Implement the freaking internal_detect first, you ape!")
-      return nil
-      # There will be multiple interfaces with this security group. We need to
-      # get the references of all items that represent the updated group
-      # ... Or We need to change the contents of @items
-      items = internal_detect(id: id)
-      return nil if item.nil?
+      items = internal_detect(id: params[:id])
+      debug log_format("got ourselves some items")
+      return nil if items.nil?
 
       case params[:event]
       when :update_rules
-        items.each { |i| i.update_rules(params[:rules]) }
+        items.each { |i|
+          debug log_format("Updating rules for security group '#{i.uuid}'")
+          i.update_rules(params[:rules])
+        }
       when :update_isolation
         items.each { |i| i.update_isolation(params[:isolation_ips]) }
       when :update_reference
@@ -80,7 +91,7 @@ module Vnet::Openflow
       when :security_group
         #TODO: Send all info we need from the group wrapper in the event so
         # we don't need to make any db calls from here
-        Filters::SecurityGroup.new(params[:group_wrapper], interface_id)
+        Filters::SecurityGroup.new(params)
       end
 
       item.dp_info = @dp_info

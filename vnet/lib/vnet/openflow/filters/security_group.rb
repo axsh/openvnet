@@ -6,15 +6,13 @@ module Vnet::Openflow::Filters
 
     attr_reader :id, :uuid
 
-    def initialize(group_wrapper, interface_id)
-      @id = group_wrapper.id
-      @uuid = group_wrapper.uuid
-      #TODO: Get the cookie id directly from the INITIALIZED_INTERFACE event instead?
-      @interface_cookie_id = group_wrapper.batch.interface_cookie_id(interface_id).commit
+    def initialize(params)
+      @id = params[:id]
+      @uuid = params[:uuid]
+      @interface_id = params[:interface_id]
+      @interface_cookie_id = params[:interface_cookie_id]
 
-      @rules = group_wrapper.rules.split("\n").map { |line|
-        Rule.create(line, interface_id, cookie(:rule)).tap {|r| r.dp_info = dp_info}
-      }
+      set_rules params[:rules]
       #TODO: Create reference rules
       #TODO: Create isolation
     end
@@ -51,9 +49,10 @@ module Vnet::Openflow::Filters
       #TODO: Uninstall isolation
     end
 
-    def update_rules
-      p "We're giving those rules a freaking updatin'"
-      #TODO: Implement
+    def update_rules(rules)
+      uninstall_rules
+      set_rules(rules)
+      install_rules
     end
 
     def update_reference
@@ -62,6 +61,23 @@ module Vnet::Openflow::Filters
 
     def update_isolation
       #TODO: Implement
+    end
+
+    private
+    def set_rules(rules)
+      @rules = rules.split("\n").map { |line|
+        Rule.create(line, @interface_id, cookie(:rule)).tap do |r|
+          r.dp_info = dp_info
+        end
+      }
+    end
+
+    def install_rules
+      @rules.map { |rule| rule.install }
+    end
+
+    def uninstall_rules
+      @dp_info.del_cookie cookie(:rule)
     end
   end
 
