@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 Fabricator(:network_service, class_name: Vnet::Models::NetworkService) do
-  display_name "dhcp"
+end
+
+Fabricator(:network_service_dhcp, class_name: Vnet::Models::NetworkService) do
   type "dhcp"
-  #incoming_port
-  #outgoing_port
+end
+
+Fabricator(:network_service_dns, class_name: Vnet::Models::NetworkService) do
+  type "dns"
 end

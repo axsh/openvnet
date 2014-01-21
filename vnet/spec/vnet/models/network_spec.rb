@@ -42,7 +42,11 @@ describe Vnet::Models::Network do
     end
 
     let!("network_service#{i + 1}".to_sym) do
-      Fabricate(:network_service, uuid: "ns-#{i + 1}", interface: send("interface#{i + 1}"))
+      Fabricate(
+        :network_service_dhcp,
+        uuid: "ns-#{i + 1}",
+        interface: send("interface#{i + 1}"),
+      )
     end
   end
 

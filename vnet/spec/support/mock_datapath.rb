@@ -139,3 +139,9 @@ class MockDatapath < Vnet::Openflow::Datapath
     @dp_info.deleted_tunnels
   end
 end
+
+def create_mock_datapath
+  MockDatapath.new(double, 1).tap do |datapath|
+    datapath.create_mock_datapath_map
+  end
+end
