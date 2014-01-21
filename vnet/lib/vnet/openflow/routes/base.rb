@@ -56,18 +56,18 @@ module Vnet::Openflow::Routes
     # consistency issues with values passed to other actors.
     def to_hash
       Vnet::Openflow::Route.new(id: @id,
-                                    uuid: @uuid,
-                                    
-                                    interface_id: @interface_id,
-                                    route_link_id: @route_link_id,
-                                    route_link_mac_address: @route_link_mac_address,
-                                    
-                                    network_id: @network_id,
-                                    ipv4_address: @ipv4_address,
-                                    ipv4_prefix: @ipv4_prefix,
-                                    
-                                    ingress: @ingress,
-                                    egress: @egress)
+                                uuid: @uuid,
+                                
+                                interface_id: @interface_id,
+                                route_link_id: @route_link_id,
+                                route_link_mac_address: @route_link_mac_address,
+                                
+                                network_id: @network_id,
+                                ipv4_address: @ipv4_address,
+                                ipv4_prefix: @ipv4_prefix,
+                                
+                                ingress: @ingress,
+                                egress: @egress)
     end
 
     #
