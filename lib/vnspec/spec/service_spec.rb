@@ -31,39 +31,15 @@ describe "service" do
       include_examples "vm1(reachable)"
     end
 
-    describe "when disabled" do
-      before(:all) do
-        dns_service = Vnspec::Models::DnsService.find("dnss-1")
-        dns_service.disable
-        vm1.restart_network
-      end
-
-      it "vm1 should resolve google.com " do
-        expect(vm1).to be_resolvable("google.com")
-      end
-
-      it "vm1 should not resolve vm3" do
-        expect(vm1).not_to be_resolvable("vm3")
-      end
-    end
-
-    describe "when enabled" do
-      before(:all) do
-        dns_service = Vnspec::Models::DnsService.find("dnss-1")
-        dns_service.enable
-        vm1.restart_network
-      end
-
-      it "vm1 should resolve vm3" do
-        expect(vm1).to be_resolvable("vm3")
-      end
-    end
-
     describe "after removing dns record 'vm1'" do
       before(:all) do
         dns_service = Vnspec::Models::DnsService.find("dnss-1")
         dns_service.remove_dns_record("dnsr-3")
         vm1.restart_network
+      end
+
+      it "vm1 should resolve google.com " do
+        expect(vm1).to be_resolvable("google.com")
       end
 
       it "vm1 should not resolve vm3" do

@@ -219,7 +219,6 @@ module Vnspec
 
     class DnsService < Base
       attr_accessor :public_dns
-      attr_accessor :enabled
       attr_accessor :network_servie_uuid
       API_NAME = "dns_services"
 
@@ -241,21 +240,8 @@ module Vnspec
 
       def initialize(options)
         @public_dns = options[:public_dns]
-        @enabled = options.key?(:enabled) ? options[:enabled] : true
         @network_servie_uuid = options[:network_servie_uuid]
         @dns_records = []
-      end
-
-      def enable
-        return if @enabled
-        API.request(:put, "#{API_NAME}/#{uuid}", enabled: true)
-        @enabled = true
-      end
-
-      def disable
-        return unless @enabled
-        API.request(:put, "#{API_NAME}/#{uuid}", enabled: false)
-        @enabled = false
       end
 
       def update_public_dns(public_dns)
