@@ -82,6 +82,7 @@ module Vnet::Openflow::Services
     def to_hash
       Vnet::Openflow::Service.new(id: @id,
                                   uuid: @uuid,
+                                  type: @type,
                                   interface_id: @interface_id)
     end
 

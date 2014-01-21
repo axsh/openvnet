@@ -10,8 +10,8 @@ module Vnet::Openflow
     subscribe_event ADDED_SERVICE, :item
     subscribe_event REMOVED_SERVICE, :unload
     subscribe_event INITIALIZED_SERVICE, :create_item
-    subscribe_event ADDED_DNS_SERVICE, :add_dns_service
-    subscribe_event REMOVED_DNS_SERVICE, :remove_dns_service
+    subscribe_event ADDED_DNS_SERVICE, :set_dns_service
+    subscribe_event REMOVED_DNS_SERVICE, :clear_dns_service
     subscribe_event UPDATED_DNS_SERVICE, :update_dns_service
     subscribe_event ADDED_DNS_RECORD, :add_dns_record
     subscribe_event REMOVED_DNS_RECORD, :remove_dns_record
@@ -138,14 +138,16 @@ module Vnet::Openflow
       item
     end
 
-    def add_dns_service(params)
+    def set_dns_service(params)
+      return unless params[:id]
+
       dns_service_map = params[:dns_service_map] || MW::DnsService.batch.find(id: params[:dns_service_id]).commit(fill: :dns_records)
       return unless dns_service_map
 
       item = @items[params[:id]]
       return unless item
 
-      item.add_dns_service(dns_service_map)
+      item.set_dns_service(dns_service_map)
 
       dns_service_map.dns_records.each do |dns_record_map|
         publish(ADDED_DNS_RECORD, id: item.id, dns_record_map: dns_record_map)
@@ -162,14 +164,14 @@ module Vnet::Openflow
       item.update_dns_service(dns_service_map)
     end
 
-    def remove_dns_service(params)
+    def clear_dns_service(params)
       dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
       return unless dns_service_map
 
       item = @items[params[:id]]
       return unless item
 
-      item.remove_dns_service
+      item.clear_dns_service
     end
 
     def add_dns_record(params)

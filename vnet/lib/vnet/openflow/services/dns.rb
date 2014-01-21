@@ -5,10 +5,14 @@ require 'racket'
 
 module Vnet::Openflow::Services
   class Dns < Base
+    attr_reader :records
+    attr_reader :dns_service
+
     def initialize(*args)
       super
       @records = Hash.new { |hash, key| hash[key] = [] }
       @public_dns_available_at = Time.now
+      @dns_service = {}
     end
 
     def install
@@ -47,13 +51,6 @@ module Vnet::Openflow::Services
       #debug log_format('question: ', question.inspect)
 
       response = process_dns_request(request)
-      if response.answer.empty?
-        if @dns_service[:public_dns]
-          response = forward_dns_request(request)
-        else
-          response = server_not_available_response(request)
-        end
-      end
 
       #debug log_format("DNS send", "output:#{response.inspect}")
       packet_udp_out(
@@ -108,10 +105,11 @@ module Vnet::Openflow::Services
       end
     end
 
-    def add_dns_service(dns_service_map)
-      @dns_service = {
-        public_dns: dns_service_map.public_dns,
-      }
+    def set_dns_service(dns_service_map)
+        puts "dns#set_dns_service"
+      @dns_service.merge!(
+        public_dns: dns_service_map.public_dns
+      )
       @networks.each do |_, network|
         add_dns_server(network[:network_id])
       end
@@ -123,7 +121,7 @@ module Vnet::Openflow::Services
       end
     end
 
-    def remove_dns_service
+    def clear_dns_service
       @dns_service.clear
       @records.clear
       @networks.each do |_, network|
@@ -150,6 +148,17 @@ module Vnet::Openflow::Services
     end
 
     def process_dns_request(request)
+      response = internal_lookup(request)
+      if response.answer.empty?
+        if @dns_service[:public_dns]
+          response = external_lookup(request)
+        else
+          response = server_not_available_response(request)
+        end
+      end
+    end
+
+    def internal_lookup(request)
       create_dns_response(request) do |response, question|
         case question.qType.to_s
         when "A"
@@ -182,7 +191,7 @@ module Vnet::Openflow::Services
       end
     end
 
-    def forward_dns_request(request)
+    def external_lookup(request)
       if @public_dns_available_at > Time.now
         return server_not_available_response(request)
       end
@@ -221,6 +230,5 @@ module Vnet::Openflow::Services
     def normalize_record_name(name)
       name.chomp(".") + "."
     end
-
   end
 end
