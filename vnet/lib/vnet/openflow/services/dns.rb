@@ -46,15 +46,13 @@ module Vnet::Openflow::Services
       question = request.question.first
       #debug log_format('question: ', question.inspect)
 
-      if @dns_service[:enabled]
-        response = process_dns_request(request)
-        if response.answer.empty? && @dns_service[:public_dns]
+      response = process_dns_request(request)
+      if response.answer.empty?
+        if @dns_service[:public_dns]
           response = forward_dns_request(request)
+        else
+          response = server_not_available_response(request)
         end
-      elsif @dns_service[:public_dns]
-        response = forward_dns_request(request)
-      else
-        response = server_not_available_response(request)
       end
 
       #debug log_format("DNS send", "output:#{response.inspect}")
@@ -113,7 +111,6 @@ module Vnet::Openflow::Services
     def add_dns_service(dns_service_map)
       @dns_service = {
         public_dns: dns_service_map.public_dns,
-        enabled: dns_service_map.enabled
       }
       @networks.each do |_, network|
         add_dns_server(network[:network_id])
@@ -121,7 +118,7 @@ module Vnet::Openflow::Services
     end
 
     def update_dns_service(dns_service_map)
-      [:public_dns, :enabled].each do |key|
+      [:public_dns].each do |key|
         @dns_service[key] = dns_service_map[key]
       end
     end

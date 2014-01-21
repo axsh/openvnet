@@ -5,7 +5,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
 
   put_post_shared_params = [
     :public_dns,
-    :enabled
   ]
 
   post do

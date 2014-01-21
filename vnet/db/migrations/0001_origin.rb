@@ -59,7 +59,6 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :network_service_id, :index => true, :null => false
       String :public_dns
-      Boolean :enabled, :default => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
