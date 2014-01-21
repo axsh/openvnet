@@ -58,6 +58,10 @@ describe "service" do
         expect(vm1).not_to be_resolvable("google.com")
       end
 
+      it "vm1 should not resolve vm3" do
+        expect(vm1).not_to be_resolvable("vm3")
+      end
+
       include_examples "vm1(unreachable)"
     end
 
@@ -73,6 +77,10 @@ describe "service" do
       it "vm1 should not resolve google.com " do
         expect(vm1).not_to be_resolvable("google.com")
       end
+
+      it "vm1 should not resolve vm3" do
+        expect(vm1).not_to be_resolvable("vm3")
+      end
     end
 
     describe "after adding public_dns to dns service" do
@@ -84,6 +92,10 @@ describe "service" do
 
       it "vm1 should resolve google.com " do
         expect(vm1).to be_resolvable("google.com")
+      end
+
+      it "vm1 should not resolve vm3" do
+        expect(vm1).not_to be_resolvable("vm3")
       end
     end
 
@@ -107,6 +119,10 @@ describe "service" do
           ipv4_address: "10.101.0.12"
         )
         vm1.restart_network
+      end
+
+      it "vm1 should resolve google.com " do
+        expect(vm1).to be_resolvable("google.com")
       end
 
       it "vm1 should resolve vm3" do
