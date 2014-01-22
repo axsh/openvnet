@@ -106,7 +106,6 @@ module Vnet::Openflow::Services
     end
 
     def set_dns_service(dns_service_map)
-        puts "dns#set_dns_service"
       @dns_service.merge!(
         public_dns: dns_service_map.public_dns
       )
