@@ -19,10 +19,10 @@ module Vnet::Openflow
       routes = network_map.batch.routes.commit
       return if routes.nil?
 
-      routes.map { |route_map|
+      routes.uniq { |route_map|
         route_map.route_link_id
-      }.uniq { |route_link_id|
-        @dp_info.router_manager.async.retrieve(id: route_link_id)
+      }.each { |route_map|
+        @dp_info.router_manager.async.retrieve(id: route_map.route_link_id)
       }
     end
 
