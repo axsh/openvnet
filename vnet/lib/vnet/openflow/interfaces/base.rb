@@ -197,24 +197,23 @@ module Vnet::Openflow::Interfaces
       end
 
       # Currently only supports one active datapath id.
-      active_datapath_ids = [params[:datapath_id]]
-
-      @active_datapath_ids = active_datapath_ids
+      @active_datapath_ids = [params[:datapath_id]]
 
       MW::Interface.batch.update_active_datapath(@id, params[:datapath_id]).commit
 
-      unless params[:datapath_id]
+      addresses = ipv4_addresses
+      addresses = addresses && addresses.map { |i|
+        { network_id: i[:network_id], ipv4_address: i[:ipv4_address].to_i }
+      }
 
-        unless ipv4_addresses.empty?
-          dispatch_event(
-            REMOVED_ACTIVE_DATAPATH,
-            id: id,
-            ipv4_addresses: ipv4_addresses.map do |i|
-              { network_id: i[:network_id], ipv4_address: i[:ipv4_address].to_i }
-            end
-          )
-        end
-      end
+      dispatch_event(UPDATED_INTERFACE,
+                     event: :remote_datapath_id,
+                     id: id,
+                     datapath_id: @active_datapath_ids.first,
+                     ipv4_addresses: addresses)
+    end
+
+    def update_remote_datapath(params)
     end
 
     #

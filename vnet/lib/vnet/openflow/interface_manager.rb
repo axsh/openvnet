@@ -300,6 +300,9 @@ module Vnet::Openflow
       when :active_datapath_id
         # Reconsider this...
         item.update_active_datapath(params)
+      when :remote_datapath_id
+        item.update_remote_datapath(params)
+        del_flows_for_active_datapath(params) if params[:datapath_id].nil?
       when :set_port_number
         debug log_format("update_item", params)
         # Check if not nil...

@@ -45,6 +45,15 @@ module Vnet::Openflow::Interfaces
       @dp_info.add_flows(flows)
     end
 
+    def update_remote_datapath(params)
+      @active_datapath_ids = [params[:datapath_id]]
+      
+      flows = []
+      flows_for_datapath(flows)
+      
+      @dp_info.add_flows(flows)
+    end
+
     #
     # Internal methods:
     #
