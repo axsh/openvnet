@@ -35,15 +35,15 @@ describe Vnet::Openflow::ServiceManager do
       Fabricate(:network_service_dns, interface: interface)
     end
 
-    describe "when ADDED_SERVICE is published" do
-      let!(:dns_service) do
-        Fabricate(
-          :dns_service,
-          network_service: network_service,
-          dns_records: [ Fabricate(:dns_record) ]
-        )
-      end
+    let!(:dns_service) do
+      Fabricate(
+        :dns_service,
+        network_service: network_service,
+        dns_records: [ Fabricate(:dns_record) ]
+      )
+    end
 
+    describe "when ADDED_SERVICE is published" do
       it "should create a network service with a dns service" do
         service_manager.publish(Vnet::Event::ADDED_SERVICE, id: 1)
 
@@ -64,6 +64,36 @@ describe Vnet::Openflow::ServiceManager do
         }
 
         expect(datapath.added_flows).to be_any { |flow|
+          flow.params[:table_id] == TABLE_FLOOD_SIMULATED
+          flow.params[:priority] == 30
+          flow.params[:match][:eth_type] == 0x0800
+          flow.params[:match][:ip_proto] == 0x11
+          flow.params[:match][:udp_dst] == 53
+        }
+      end
+    end
+
+    describe "when REMOVED_SERVICE is published" do
+      it "should remove a network service" do
+        service_manager.publish(Vnet::Event::ADDED_SERVICE, id: 1)
+        sleep(0.5)
+        expect(service_manager.item(id: network_service.id)).not_to be_nil
+
+        network_service.destroy
+        service_manager.publish(Vnet::Event::REMOVED_SERVICE, id: 1)
+        sleep(0.5)
+
+        expect(service_manager.item(id: network_service.id)).to be_nil
+
+        expect(datapath.deleted_flows).to be_any { |flow|
+          flow.params[:table_id] == TABLE_OUT_PORT_INTERFACE_INGRESS
+          flow.params[:priority] == 30
+          flow.params[:match][:eth_type] == 0x0800
+          flow.params[:match][:ip_proto] == 0x11
+          flow.params[:match][:udp_dst] == 53
+        }
+
+        expect(datapath.deleted_flows).to be_any { |flow|
           flow.params[:table_id] == TABLE_FLOOD_SIMULATED
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800
