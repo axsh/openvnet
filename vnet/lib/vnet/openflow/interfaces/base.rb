@@ -163,8 +163,17 @@ module Vnet::Openflow::Interfaces
     def update
       interface = MW::Interface[@id]
       @display_name = interface.display_name
-      if @owner_datapath_ids != [interface.owner_datapath_id]
-        update_owner_datapath(interface.owner_datapath_id)
+
+      # Check for nil...
+      if @owner_datapath_ids != [interface.owner_datapath_id] ||
+          (@owner_datapath_ids && interface.owner_datapath_id.nil?)
+        # update_owner_datapath(interface.owner_datapath_id)
+
+        @manager.publish(UPDATED_INTERFACE,
+                         event: :owner_datapath_id,
+                         id: @id,
+                         owner_datapath_id: interface.owner_datapath_id,
+                         port_name: interface.port_name)
       end
     end
 

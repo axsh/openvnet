@@ -294,15 +294,39 @@ module Vnet::Openflow
 
       # Todo: Add the possibility to use a 'filter' parameter for this.
       item = internal_detect(id: id)
+
+      # if item.nil?
+      #   case event
+      #   when :owner_datapath_id
+      #     return if params[:port_name].nil? || params[:owner_datapath_id] != @datapath_id
+      #
+      #     @dp_info.port_manager.async.attach_interface(port_name: params[:port_name])
+      #   end
+
+      #   return
+      # end
+
       return nil if item.nil?
 
       case event
+        #
+        # Datapath events:
+        #
       when :active_datapath_id
         # Reconsider this...
         item.update_active_datapath(params)
+
       when :remote_datapath_id
         item.update_remote_datapath(params)
         del_flows_for_active_datapath(params) if params[:datapath_id].nil?
+
+      when :owner_datapath_id
+        delete_item(item)
+        self.async.retrieve(id: item.id)
+
+        #
+        # Port events:
+        #
       when :set_port_number
         debug log_format("update_item", params)
         # Check if not nil...
@@ -313,6 +337,10 @@ module Vnet::Openflow
         # Check if nil... (use param :port_number to verify)
         item.update_port_number(nil)
         item.update_active_datapath(datapath_id: nil)
+
+        #
+        # Capability events:
+        #
       when :enable_router_ingress
         item.enable_router_ingress
       when :enable_router_egress
