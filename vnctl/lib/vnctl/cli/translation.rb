@@ -2,7 +2,7 @@
 
 module Vnctl::Cli
   class Translation < Base
-    namespace :translation
+    namespace :translations
     api_suffix "/api/translations"
 
     add_modify_shared_options {

@@ -2,7 +2,7 @@
 
 module Vnctl::Cli
   class SecurityGroup < Base
-    namespace :security_group
+    namespace :security_groups
     api_suffix "/api/security_groups"
 
     add_modify_shared_options {
