@@ -2,7 +2,7 @@
 
 module Vnctl::Cli
   class Datapath < Base
-    namespace :datapath
+    namespace :datapaths
     api_suffix "/api/datapaths"
 
     add_modify_shared_options {

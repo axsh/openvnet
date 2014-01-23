@@ -2,7 +2,7 @@
 
 module Vnctl::Cli
   class Route < Base
-    namespace :route
+    namespace :routes
     api_suffix "/api/routes"
 
     add_modify_shared_options {

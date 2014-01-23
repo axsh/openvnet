@@ -2,7 +2,7 @@
 
 module Vnctl::Cli
   class VlanTranslation < Base
-    namespace :vlan_translation
+    namespace :vlan_translations
     api_suffix "/api/vlan_translations"
 
     add_modify_shared_options {
