@@ -292,21 +292,11 @@ module Vnet::Openflow
       id = params.fetch(:id)
       event = params[:event]
 
+      return nil if id.nil? || event.nil?
+
       # Todo: Add the possibility to use a 'filter' parameter for this.
       item = internal_detect(id: id)
-
-      # if item.nil?
-      #   case event
-      #   when :owner_datapath_id
-      #     return if params[:port_name].nil? || params[:owner_datapath_id] != @datapath_id
-      #
-      #     @dp_info.port_manager.async.attach_interface(port_name: params[:port_name])
-      #   end
-
-      #   return
-      # end
-
-      return nil if item.nil?
+      return update_item_not_found(event, id, params) if item.nil?
 
       case event
         #
@@ -345,12 +335,27 @@ module Vnet::Openflow
         item.enable_router_ingress
       when :enable_router_egress
         item.enable_router_egress
-      else
+      when :updated
         # api event
         item.update
       end
 
       item_to_hash(item)
+    end
+
+    def update_item_not_found(event, id, params)
+      case event
+      when :updated
+        changed_columns = params[:changed_columns]
+        return if changed_columns != Hash
+
+        if changed_columns["owner_datapath_id"]
+          return if changed_columns["owner_datapath_id"] != @datapath_info.id
+          @dp_info.port_manager.async.attach_interface(port_name: params[:port_name])
+        end
+      end
+
+      nil
     end
 
   end
