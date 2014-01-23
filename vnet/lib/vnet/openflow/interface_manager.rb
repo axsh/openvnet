@@ -347,7 +347,7 @@ module Vnet::Openflow
       case event
       when :updated
         changed_columns = params[:changed_columns]
-        return if changed_columns != Hash
+        return if changed_columns.nil?
 
         if changed_columns["owner_datapath_id"]
           return if changed_columns["owner_datapath_id"] != @datapath_info.id
