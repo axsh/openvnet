@@ -71,10 +71,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} port_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
     #
     # Event handlers.
     #

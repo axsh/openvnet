@@ -225,10 +225,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} dc_segment_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-    
     def create_datapath_network(dpn_id)
       dpn_map = MW::DatapathNetwork.batch[dpn_id].commit(fill: [ :datapath, :network ])
       return unless  dpn_map

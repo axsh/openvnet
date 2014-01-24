@@ -35,10 +35,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
     #
     # Specialize Manager:
     #

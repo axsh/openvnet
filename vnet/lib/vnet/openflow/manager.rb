@@ -17,6 +17,8 @@ module Vnet::Openflow
       @datapath_info = nil
       @items = {}
       @messages = {}
+
+      @log_prefix = "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: "
     end
 
     def retrieve(params)
@@ -89,6 +91,10 @@ module Vnet::Openflow
     #
 
     private
+
+    def log_format(message, values = nil)
+      @log_prefix + message + (values ? " (#{values})" : '')
+    end
 
     #
     # Override these method to support additional parameters.
