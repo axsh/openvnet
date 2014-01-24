@@ -87,6 +87,23 @@ module Vnet::ModelWrappers
       end
     end
 
-    alias_method :to_hash, :marshal_dump
+    alias_method :to_h, :marshal_dump
+
+    def to_h
+      super.tap do |hash|
+        hash.keys.each do |key|
+          case hash[key]
+          when Base
+            hash[key] = hash[key].to_h
+          when Array
+            hash[key] = hash[key].map do |v|
+              v.is_a?(Base) ? v.to_h : v
+            end
+          end
+        end
+      end
+    end
+
+    alias_method :to_hash, :to_h
   end
 end

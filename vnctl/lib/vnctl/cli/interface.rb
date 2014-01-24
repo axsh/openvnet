@@ -2,7 +2,7 @@
 
 module Vnctl::Cli
   class Interface < Base
-    namespace :interface
+    namespace :interfaces
     api_suffix "/api/interfaces"
 
     add_modify_shared_options {

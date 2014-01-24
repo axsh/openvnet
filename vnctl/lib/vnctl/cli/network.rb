@@ -2,7 +2,7 @@
 
 module Vnctl::Cli
   class Network < Base
-    namespace :network
+    namespace :networks
     api_suffix "/api/networks"
 
     add_modify_shared_options {
