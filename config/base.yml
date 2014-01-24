@@ -5,6 +5,8 @@ vnflows_cmd: /opt/axsh/wakame-vnet/vnet/bin/vnflows-monitor
 vm_http_proxy: http://10.50.0.2:3128
 dump_flows: true
 
+api_adapter: :faraday
+
 vms:
   vm1:
     name: vm1

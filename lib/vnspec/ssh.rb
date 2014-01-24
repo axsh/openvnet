@@ -26,7 +26,7 @@ module Vnspec
             abort "Failed to execute [#{host}] #{command}" unless success
 
             channel.on_data { |ch, data| stdout += data.to_s }
-            channel.on_extended_data { |ch, data| data; stderr += data.to_s }
+            channel.on_extended_data { |ch, type, data| data; stderr += data.to_s }
             channel.on_request("exit-status") { |ch, data| exit_code = data.read_long }
             channel.on_request("exit-signal") { |ch, data| exit_code = data.read_long }
           end
