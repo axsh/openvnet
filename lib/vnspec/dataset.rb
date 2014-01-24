@@ -33,7 +33,7 @@ module Vnspec
           when :interface_security_groups
             "interfaces/#{v.delete(:interface_uuid)}/security_groups/#{v.delete(:security_group_uuid)}"
           when :dns_records
-            "dns_services/#{v.delete(:dns_service_uuid)}/dns_records"
+            "dns_services/#{v.delete(:dns_service_uuid)}/dns_records/#{v.delete(:uuid)}"
           else
             key.to_s
           end
