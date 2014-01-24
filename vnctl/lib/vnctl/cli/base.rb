@@ -145,19 +145,10 @@ module Vnctl::Cli
       # ./vnctl datapath networks show
       # ./vnctl datapath networks del
 
-      # Some times there are extra options involved for a relation. For example
-      # every network related to a datapath will have its own broadcast mac
-      # address. If a relation has such options, use this method to define them.
-      def self.rel_option(name, desc)
-        @relation_options ||= []
-        @relation_options << {:name => name, :desc => desc}
-      end
-
       # This magical method creates a new Cli::Base subclass that will define
       # the relation commands for you.
-      def self.define_relation(relation_name, add_options = [])
+      def self.define_relation(relation_name, add_options = [], &block)
         parent = self
-        rel_opts = @relation_options
 
         c = Class.new(Base) do
           no_tasks {
@@ -178,9 +169,10 @@ module Vnctl::Cli
           relation_uuid_label = "#{relation_singular.upcase}_UUID"
           desc_label = relation_name.to_s.gsub('_', ' ')
 
+          yield self if block_given?
+
           desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
             "Adds #{desc_label} to a(n) #{parent.namespace}."
-          rel_opts && rel_opts.each { |o| option(o[:name], o[:desc]) }
           def add(base_uuid, rel_uuid)
             puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
           end
@@ -205,8 +197,6 @@ module Vnctl::Cli
 
         register(c, "#{relation_name}", "#{relation_name} OPTIONS",
           "subcommand to manage #{relation_name} in this #{self.namespace}.")
-
-        @relation_options = []
       end
     }
   end

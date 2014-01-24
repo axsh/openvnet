@@ -14,12 +14,13 @@ module Vnctl::Cli
 
     define_standard_crud_commands
 
-    rel_option :name, :type => :string, :required => true,
-      :desc => "The name for this record."
-    rel_option :ipv4_address, :type => :string, :required => true,
-      :desc => "The ipv4 address for this record."
-    rel_option :ttl, :type => :numeric,
+    define_relation :dns_records do |relation|
+      relation.option :name, :type => :string, :required => true,
+        :desc => "The name for this record."
+      relation.option :ipv4_address, :type => :string, :required => true,
+        :desc => "The ipv4 address for this record."
+      relation.option :ttl, :type => :numeric,
       :desc => "The ttl for this record."
-    define_relation :dns_records
+    end
   end
 end
