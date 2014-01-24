@@ -14,7 +14,9 @@ module Vnctl::Cli
 
     define_standard_crud_commands
 
-    define_relation :dns_records do |relation|
+    define_relation :dns_records, :require_relation_uuid_label => false do |relation|
+      relation.option :uuid, :type => :string,
+        :desc => "Dns record uuid."
       relation.option :name, :type => :string, :required => true,
         :desc => "The name for this record."
       relation.option :ipv4_address, :type => :string, :required => true,

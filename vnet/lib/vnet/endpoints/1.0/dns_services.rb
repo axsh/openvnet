@@ -35,7 +35,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
     update_by_uuid(:DnsService, put_post_shared_params, fill_options)
   end
 
-  post '/:dns_service_uuid/dns_records/:uuid' do
+  post '/:dns_service_uuid/dns_records' do
     params = parse_params(@params, [:uuid, :dns_service_uuid, :name, :ipv4_address])
     check_required_params(params, [:dns_service_uuid, :name, :ipv4_address])
 

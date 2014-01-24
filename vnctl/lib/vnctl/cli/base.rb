@@ -147,7 +147,7 @@ module Vnctl::Cli
 
       # This magical method creates a new Cli::Base subclass that will define
       # the relation commands for you.
-      def self.define_relation(relation_name, add_options = [], &block)
+      def self.define_relation(relation_name, add_options = {}, &block)
         parent = self
 
         c = Class.new(Base) do
@@ -169,12 +169,25 @@ module Vnctl::Cli
           relation_uuid_label = "#{relation_singular.upcase}_UUID"
           desc_label = relation_name.to_s.gsub('_', ' ')
 
+          require_relation_uuid_label = true
+          if add_options.key?(:require_relation_uuid_label)
+            require_relation_uuid_label = add_options[:require_relation_uuid_label]
+          end
+
           yield self if block_given?
 
-          desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
-            "Adds #{desc_label} to a(n) #{parent.namespace}."
-          def add(base_uuid, rel_uuid)
-            puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
+          if require_relation_uuid_label
+            desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
+              "Adds #{desc_label} to a(n) #{parent.namespace}."
+            def add(base_uuid, rel_uuid)
+              puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
+            end
+          else
+            desc "add #{base_uuid_label} OPTIONS",
+              "Adds #{desc_label} to a(n) #{parent.namespace}."
+            def add(base_uuid)
+              puts post("#{suffix}/#{base_uuid}/#{rel_name}", :query => options)
+            end
           end
 
           desc "show #{base_uuid_label}",
