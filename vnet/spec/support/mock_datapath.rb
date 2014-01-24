@@ -64,6 +64,7 @@ end
 
 class MockDatapath < Vnet::Openflow::Datapath
   attr_reader :sent_messages
+  attr_accessor :current_flows
   attr_accessor :added_flows
   attr_accessor :deleted_flows
   attr_reader :added_ovs_flows
@@ -77,6 +78,7 @@ class MockDatapath < Vnet::Openflow::Datapath
     @controller = ofc
 
     @sent_messages = []
+    @current_flows = []
     @added_flows = []
     @deleted_flows = []
     @added_ovs_flows = []
@@ -115,17 +117,22 @@ class MockDatapath < Vnet::Openflow::Datapath
   end
 
   def add_flow(flow)
+    @current_flows << flow
+    @current_flows.uniq!
     @added_flows << flow
     @added_flows.uniq!
   end
 
   def add_flows(flows)
+    @current_flows += flows
+    @current_flows.uniq!
     @added_flows += flows
     @added_flows.uniq!
   end
 
   def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
     @added_flows.select { |f| f.to_trema_hash[:cookie] == cookie }.tap do |deleted_flows|
+      @current_flows -= deleted_flows
       @deleted_flows += deleted_flows
       @deleted_flows.uniq!
     end
