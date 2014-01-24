@@ -254,11 +254,7 @@ module Vnspec
       end
 
       def add_dns_record(options)
-        uri = "#{API_NAME}/#{uuid}/dns_records"
-        if dns_record_uuid = options.delete(:uuid)
-          uri += "/#{dns_record_uuid}"
-        end
-        API.request(:post, uri, options) do |response|
+        API.request(:post, "#{API_NAME}/#{uuid}/dns_records", options) do |response|
           @dns_records = response[:dns_records].map { |n| OpenStruct.new(n) }
         end
       end
