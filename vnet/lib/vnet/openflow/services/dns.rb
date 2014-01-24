@@ -155,6 +155,7 @@ module Vnet::Openflow::Services
           response = server_not_available_response(request)
         end
       end
+      response
     end
 
     def internal_lookup(request)
