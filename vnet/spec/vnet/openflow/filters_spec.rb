@@ -30,7 +30,7 @@ describe Vnet::Openflow::FilterManager do
   describe "#apply_filters" do
     before(:each) { subject.apply_filters({item_map: wrapper(interface)}) }
 
-    context "with an interface that's in a single security group " do
+    context "with an interface that's in a single security group" do
       let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
       let(:interface) do
         Fabricate(:interface, active_datapath_id: 1).tap { |i|
@@ -40,6 +40,22 @@ describe Vnet::Openflow::FilterManager do
 
       it "applies the flows for that group" do
         expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_icmp_rule("0.0.0.0/0")
+        )
+      end
+    end
+
+    context "with a remote interface" do
+      let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
+      let(:interface) do
+        Fabricate(:interface, active_datapath_id: 2).tap { |i|
+          i.add_security_group(group)
+        }
+      end
+
+      it "doesn't apply any flows for it" do
+        expect(flows).not_to include rule_flow(
           cookie: cookie_id(group),
           match: match_icmp_rule("0.0.0.0/0")
         )
