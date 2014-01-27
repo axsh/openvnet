@@ -2,7 +2,7 @@
 
 module Vnctl::Cli
   class RouteLink < Base
-    namespace :route_link
+    namespace :route_links
     api_suffix "/api/route_links"
 
     add_modify_shared_options {
