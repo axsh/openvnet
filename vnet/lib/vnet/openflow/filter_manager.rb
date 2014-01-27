@@ -28,12 +28,18 @@ module Vnet::Openflow
         item = item_by_params(id: group.id)
         item.dp_info = @dp_info
 
-        unless item.has_interface?(interface.id)
-          #TODO: Make sure we only get our own interfaces.
-          item.set_interfaces group.batch.interface_cookie_ids.commit
-        end
+        if item.has_interface?(interface.id)
+          debug log_format("Installing security group '%s'" % item.uuid)
+          item.install
+        else
+          debug log_format("Adding interface '%s' to security group '%s'" %
+            [interface.uuid, item.uuid])
 
-        item.install
+          #TODO: Make sure we only get our own interfaces.
+          cookie_id = group.batch.interface_cookie_id(interface.id).commit
+          item.add_interface(interface.id, cookie_id)
+          item.install(interface.id)
+        end
       end
     end
 

@@ -21,13 +21,16 @@ module Vnet::Openflow::Filters
     end
 
     def self.cookie(group_id, interface_cookie_id, type)
-      types = {
-        rule: COOKIE_TYPE_RULE,
-        reference: COOKIE_TYPE_REF,
-        isolation: COOKIE_TYPE_ISO
-      }
+      cookie_type = case
+        when :rule
+          COOKIE_TYPE_RULE
+        when :reference
+          COOKIE_TYPE_REF
+        when :isolation
+          COOKIE_TYPE_ISO
+      end
 
-      group_id | COOKIE_TYPE_FILTER | types[type] |
+      group_id | COOKIE_TYPE_FILTER | cookie_type |
         (interface_cookie_id << COOKIE_TYPE_VALUE_SHIFT)
     end
 
@@ -39,14 +42,14 @@ module Vnet::Openflow::Filters
       @interfaces.has_key?(interface_id)
     end
 
-    def set_interfaces(interface)
+    def add_interface(interface_id, interface_cookie_id)
       #TODO: Make sure differences between old and new interfaces are taken
       # care of in the flow tables
-      @interfaces.merge! interface
+      @interfaces[interface_id] = interface_cookie_id
     end
 
-    def install
-      install_rules
+    def install(interface_id = nil)
+      install_rules(interface_id)
       #TODO: Install reference rules
       #TODO: Install isolation
     end
@@ -89,8 +92,14 @@ module Vnet::Openflow::Filters
         end
     end
 
-    def install_rules
-      flows = @interfaces.keys.map { |interface_id|
+    def install_rules(interface_id = nil)
+      interface_ids = if interface_id
+        [interface_id]
+      else
+        @interfaces.keys
+      end
+
+      flows = interface_ids.map { |interface_id|
         @rules.split("\n").map do |rule|
           flow_create(:default,
             table: TABLE_INTERFACE_INGRESS_FILTER,
