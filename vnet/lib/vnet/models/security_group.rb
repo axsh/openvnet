@@ -15,11 +15,5 @@ module Vnet::Models
       InterfaceSecurityGroup.with_deleted.where(
         :security_group_id => self.id).where("id <= #{row_id}").count
     end
-
-    def interface_cookie_ids
-      {nowrap: true}.tap do |hash|
-        interfaces.each { |i| hash[i.id] = interface_cookie_id(i.id) }
-      end
-    end
   end
 end

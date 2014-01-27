@@ -22,29 +22,29 @@ module Vnet::Openflow
 
     def apply_filters(interface_hash)
       interface = interface_hash[:item_map]
+      return unless is_local?(interface)
+
       groups = interface.batch.security_groups.commit
 
       groups.each do |group|
         item = item_by_params(id: group.id)
         item.dp_info = @dp_info
 
-        if item.has_interface?(interface.id)
-          debug log_format("Installing security group '%s'" % item.uuid)
-          item.install
-        else
-          debug log_format("Adding interface '%s' to security group '%s'" %
-            [interface.uuid, item.uuid])
+        debug log_format("Adding interface '%s' to security group '%s'" %
+          [interface.uuid, item.uuid])
 
-          #TODO: Make sure we only get our own interfaces.
-          cookie_id = group.batch.interface_cookie_id(interface.id).commit
-          item.add_interface(interface.id, cookie_id)
-          item.install(interface.id)
-        end
+        cookie_id = group.batch.interface_cookie_id(interface.id).commit
+        item.add_interface(interface.id, cookie_id)
+        item.install(interface.id)
       end
     end
 
+    def is_local?(interface)
+      interface.active_datapath_id && interface.active_datapath_id == @datapath_info.id
+    end
+
     def select_item(filter)
-      MW::SecurityGroup.batch[filter].commit(fill: :interface_cookie_ids)
+      MW::SecurityGroup.batch[filter].commit
     end
 
     def update_item(params)

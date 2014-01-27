@@ -15,7 +15,7 @@ module Vnet::Openflow::Filters
 
       # Interfaces holds a hash of this format:
       # { interface_id => interface_cookie_id }
-      @interfaces = item_map.interface_cookie_ids
+      @interfaces = {}
       #TODO: Create reference rules
       #TODO: Create isolation
     end
