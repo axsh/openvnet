@@ -90,7 +90,7 @@ describe Vnet::Openflow::FilterManager do
       end
     end
 
-    context "with a security group in two interfaces" do
+    context "with a security group that has two interfaces in it" do
       let(:group) { Fabricate(:security_group, rules: "tcp:456:10.10.10.10") }
 
       let(:interface) do

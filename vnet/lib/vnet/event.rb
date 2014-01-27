@@ -69,6 +69,7 @@ module Vnet
     #
     # filter event
     #
+    INITIALIZED_FILTER = "initialized_filter"
     UPDATED_FILTER = "updated_filter"
   end
 end

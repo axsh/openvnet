@@ -8,12 +8,11 @@ module Vnet::Openflow::Filters
 
     attr_reader :id, :uuid
 
-    def initialize(params)
-      @id = params[:id]
-      @uuid = params[:uuid]
-      @interface_id = params[:interface_id]
-      @interface_cookie_id = params[:interface_cookie_id]
-      @rules = params[:rules]
+    def initialize(item_map)
+      @id = item_map.id
+      @uuid = item_map.uuid
+      @interfaces = item_map.interface_cookie_ids
+      @rules = item_map.rules
       #TODO: Create reference rules
       #TODO: Create isolation
     end
@@ -29,8 +28,8 @@ module Vnet::Openflow::Filters
         (interface_cookie_id << COOKIE_TYPE_VALUE_SHIFT)
     end
 
-    def cookie(type)
-      self.class.cookie(@id, @interface_cookie_id, type)
+    def cookie(type, interface_id)
+      self.class.cookie(@id, @interfaces[interface_id], type)
     end
 
     def install
@@ -77,18 +76,20 @@ module Vnet::Openflow::Filters
     end
 
     def install_rules
-      @rules.split("\n").each do |rule|
-        rule_flow = flow_create(:default,
-          table: TABLE_INTERFACE_INGRESS_FILTER,
-          priority: RULE_PRIORITY,
-          match_metadata: {interface: @interface_id},
-          cookie: cookie(:rule),
-          match: rule_to_match(rule),
-          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-        )
+      flows = @interfaces.keys.map { |interface_id|
+        @rules.split("\n").map do |rule|
+          flow_create(:default,
+            table: TABLE_INTERFACE_INGRESS_FILTER,
+            priority: RULE_PRIORITY,
+            match_metadata: {interface: interface_id},
+            cookie: cookie(:rule, interface_id),
+            match: rule_to_match(rule),
+            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+          )
+        end
+      }.flatten
 
-        @dp_info.add_flow(rule_flow)
-      end
+      @dp_info.add_flows(flows)
     end
 
     def uninstall_rules

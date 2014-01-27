@@ -49,7 +49,7 @@ module Vnet::Openflow
       return false if params[:interface_id] && params[:interface_id] != item.interface_id
       true
     end
-    
+
     def select_filter_from_params(params)
       case
       when params[:id]   then {:id => params[:id]}

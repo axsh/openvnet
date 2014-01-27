@@ -57,6 +57,8 @@ module Vnet::ModelWrappers
         when Array
           data.map{|d| wrap(d, options) }
         when Hash
+          return data if data.delete(:nowrap)
+
           ::Vnet::ModelWrappers.const_get(data.delete(:class_name)).new(data).tap do |wrapper|
             options_for_recursive_call = options.dup
             fill = options_for_recursive_call.delete(:fill)

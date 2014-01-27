@@ -33,26 +33,15 @@ module Vnet::Openflow
                           interface_id: interface.id)
       else
         groups.each do |group|
-          debug log_format("Installing security group '%s' for interface '%s'" %
-            [group.uuid, interface.uuid])
-
-          cookie_id = group.batch.interface_cookie_id(interface.id).commit
-          initialize_filter(type: :security_group,
-                            id: group.id,
-                            uuid: group.uuid,
-                            interface_id: interface.id,
-                            interface_cookie_id: cookie_id,
-                            rules: group.rules)
+          item = item_by_params(id: group.id)
+          item.dp_info = @dp_info
+          item.install
         end
       end
     end
 
-    def internal_detect(params)
-      items = []
-      @items.each { |interface_id, interface|
-        items << interface[params[:id]]
-      }
-      items.compact
+    def select_item(filter)
+      MW::SecurityGroup.batch[filter].commit(fill: :interface_cookie_ids)
     end
 
     def update_item(params)
@@ -74,12 +63,17 @@ module Vnet::Openflow
     end
 
     def remove_filters(interface_hash)
-      if item = @items.delete(interface_hash[:id])
-        item.each { |id, item| item.uninstall }
-      end
+      # if item = @items.delete(interface_hash[:id])
+      #   item.each { |id, item| item.uninstall }
+      # end
     end
 
     private
+    def item_initialize(item_map)
+      Filters::SecurityGroup.new(item_map)
+    end
+
+    #TODO: Get rid of this method
     def initialize_filter(params)
       interface_id = params[:interface_id]
 
@@ -89,8 +83,6 @@ module Vnet::Openflow
       when :accept_all_traffic
         Filters::AcceptAllTraffic.new(interface_id)
       when :security_group
-        #TODO: Send all info we need from the group wrapper in the event so
-        # we don't need to make any db calls from here
         Filters::SecurityGroup.new(params)
       end
 
