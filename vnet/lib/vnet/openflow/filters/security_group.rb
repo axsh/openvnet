@@ -39,6 +39,12 @@ module Vnet::Openflow::Filters
       @interfaces.has_key?(interface_id)
     end
 
+    def set_interfaces(interface)
+      #TODO: Make sure differences between old and new interfaces are taken
+      # care of in the flow tables
+      @interfaces.merge! interface
+    end
+
     def install
       install_rules
       #TODO: Install reference rules

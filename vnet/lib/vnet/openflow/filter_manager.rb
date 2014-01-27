@@ -27,6 +27,12 @@ module Vnet::Openflow
       groups.each do |group|
         item = item_by_params(id: group.id)
         item.dp_info = @dp_info
+
+        unless item.has_interface?(interface.id)
+          #TODO: Make sure we only get our own interfaces.
+          item.set_interfaces group.batch.interface_cookie_ids.commit
+        end
+
         item.install
       end
     end
