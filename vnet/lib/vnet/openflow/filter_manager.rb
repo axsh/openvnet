@@ -22,10 +22,9 @@ module Vnet::Openflow
 
     def apply_filters(interface_hash)
       interface = interface_hash[:item_map]
-      return unless is_local?(interface)
+      return if is_remote?(interface)
 
       groups = interface.batch.security_groups.commit
-
       groups.each do |group|
         item = item_by_params(id: group.id)
         item.dp_info = @dp_info
@@ -39,8 +38,8 @@ module Vnet::Openflow
       end
     end
 
-    def is_local?(interface)
-      interface.active_datapath_id && interface.active_datapath_id == @datapath_info.id
+    def is_remote?(interface)
+      interface.owner_datapath_id && interface.owner_datapath_id != @datapath_info.id
     end
 
     def select_item(filter)

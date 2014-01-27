@@ -33,7 +33,7 @@ describe Vnet::Openflow::FilterManager do
     context "with an interface that's in a single security group" do
       let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
       let(:interface) do
-        Fabricate(:interface, active_datapath_id: 1).tap { |i|
+        Fabricate(:interface, owner_datapath_id: 1).tap { |i|
           i.add_security_group(group)
         }
       end
@@ -49,7 +49,7 @@ describe Vnet::Openflow::FilterManager do
     context "with a remote interface" do
       let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
       let(:interface) do
-        Fabricate(:interface, active_datapath_id: 2).tap { |i|
+        Fabricate(:interface, owner_datapath_id: 2).tap { |i|
           i.add_security_group(group)
         }
       end
@@ -88,7 +88,7 @@ describe Vnet::Openflow::FilterManager do
       end
       let(:group2) { Fabricate(:security_group, rules: "icmp:-1:10.5.4.3") }
       let(:interface) do
-        Fabricate(:interface, active_datapath_id: 1).tap { |i|
+        Fabricate(:interface, owner_datapath_id: 1).tap { |i|
           i.add_security_group(group1)
           i.add_security_group(group2)
         }
@@ -116,13 +116,13 @@ describe Vnet::Openflow::FilterManager do
       let(:group) { Fabricate(:security_group, rules: "tcp:456:10.10.10.10") }
 
       let(:interface) do
-        Fabricate(:interface, active_datapath_id: 1).tap { |i|
+        Fabricate(:interface, owner_datapath_id: 1).tap { |i|
           i.add_security_group(group)
         }
       end
 
       let(:interface2) do
-        Fabricate(:interface, active_datapath_id: 1).tap { |i|
+        Fabricate(:interface, owner_datapath_id: 1).tap { |i|
           i.add_security_group(group)
         }
       end
@@ -151,7 +151,7 @@ describe Vnet::Openflow::FilterManager do
     end
 
     let(:interface) do
-      Fabricate(:interface, active_datapath_id: 1).tap { |i|
+      Fabricate(:interface, owner_datapath_id: 1).tap { |i|
         i.add_security_group(group)
       }
     end
@@ -175,7 +175,7 @@ describe Vnet::Openflow::FilterManager do
     end
 
     let(:interface) do
-      Fabricate(:interface, active_datapath_id: 1).tap { |i|
+      Fabricate(:interface, owner_datapath_id: 1).tap { |i|
         i.add_security_group(group)
       }
     end

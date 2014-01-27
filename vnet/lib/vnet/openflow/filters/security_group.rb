@@ -21,7 +21,7 @@ module Vnet::Openflow::Filters
     end
 
     def self.cookie(group_id, interface_cookie_id, type)
-      cookie_type = case
+      cookie_type = case type
         when :rule
           COOKIE_TYPE_RULE
         when :reference
@@ -43,8 +43,6 @@ module Vnet::Openflow::Filters
     end
 
     def add_interface(interface_id, interface_cookie_id)
-      #TODO: Make sure differences between old and new interfaces are taken
-      # care of in the flow tables
       @interfaces[interface_id] = interface_cookie_id
     end
 
