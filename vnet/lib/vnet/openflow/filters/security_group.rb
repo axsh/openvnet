@@ -11,8 +11,11 @@ module Vnet::Openflow::Filters
     def initialize(item_map)
       @id = item_map.id
       @uuid = item_map.uuid
-      @interfaces = item_map.interface_cookie_ids
       @rules = item_map.rules
+
+      # Interfaces holds a hash of this format:
+      # { interface_id => interface_cookie_id }
+      @interfaces = item_map.interface_cookie_ids
       #TODO: Create reference rules
       #TODO: Create isolation
     end
@@ -32,16 +35,21 @@ module Vnet::Openflow::Filters
       self.class.cookie(@id, @interfaces[interface_id], type)
     end
 
+    def has_interface?(interface_id)
+      @interfaces.has_key?(interface_id)
+    end
+
     def install
       install_rules
       #TODO: Install reference rules
       #TODO: Install isolation
     end
 
-    def uninstall
-      uninstall_rules
+    def uninstall(interface_id)
+      uninstall_rules(interface_id)
       #TODO: Uninstall reference rules
       #TODO: Uninstall isolation
+      @interfaces.delete(interface_id)
     end
 
     def update_rules(rules)
@@ -92,8 +100,17 @@ module Vnet::Openflow::Filters
       @dp_info.add_flows(flows)
     end
 
-    def uninstall_rules
-      @dp_info.del_cookie cookie(:rule)
+    def uninstall_rules(interface_id = nil)
+      #TODO: Use a proper cookie mask instead
+      interface_ids = if interface_id
+        [interface_id]
+      else
+        @interfaces.keys
+      end
+
+      interface_ids.each do |id|
+        @dp_info.del_cookie cookie(:rule, id)
+      end
     end
   end
 

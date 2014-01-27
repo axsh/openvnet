@@ -13,8 +13,7 @@ module Vnet::Openflow
     def initialize(*args)
       super(*args)
 
-      @items[GLOBAL_FILTERS_KEY] = {}
-      initialize_filter(type: :accept_ingress_arp)
+      accept_ingress_arp
     end
 
     def initialized_item_event
@@ -25,18 +24,10 @@ module Vnet::Openflow
       interface = interface_hash[:item_map]
       groups = interface.batch.security_groups.commit
 
-      if groups.empty?
-        debug log_format("Accepting all ingress traffic on interface '%s'" %
-          interface.uuid)
-
-        initialize_filter(type: :accept_all_traffic,
-                          interface_id: interface.id)
-      else
-        groups.each do |group|
-          item = item_by_params(id: group.id)
-          item.dp_info = @dp_info
-          item.install
-        end
+      groups.each do |group|
+        item = item_by_params(id: group.id)
+        item.dp_info = @dp_info
+        item.install
       end
     end
 
@@ -45,27 +36,25 @@ module Vnet::Openflow
     end
 
     def update_item(params)
-      items = internal_detect(id: params[:id])
-      debug log_format("got ourselves some items")
-      return nil if items.nil?
+      item = internal_detect(id: params[:id])
+      return nil if item.nil?
 
       case params[:event]
       when :update_rules
-        items.each { |i|
-          debug log_format("Updating rules for security group '#{i.uuid}'")
-          i.update_rules(params[:rules])
-        }
+        debug log_format("Updating rules for security group '#{item.uuid}'")
+        item.update_rules(params[:rules])
+        #TODO: Update reference as well
       when :update_isolation
-        items.each { |i| i.update_isolation(params[:isolation_ips]) }
+        item.update_isolation(params[:isolation_ips])
       when :update_reference
-        items.each { |i| i.update_reference(params[:reference_ips]) }
+        item.update_reference(params[:reference_ips])
       end
     end
 
     def remove_filters(interface_hash)
-      # if item = @items.delete(interface_hash[:id])
-      #   item.each { |id, item| item.uninstall }
-      # end
+      items_for_interface(interface_hash[:id]).each { |item|
+        item.uninstall(interface_hash[:id])
+      }
     end
 
     private
@@ -73,28 +62,12 @@ module Vnet::Openflow
       Filters::SecurityGroup.new(item_map)
     end
 
-    #TODO: Get rid of this method
-    def initialize_filter(params)
-      interface_id = params[:interface_id]
-
-      item = case params[:type]
-      when :accept_ingress_arp
-        Filters::AcceptIngressArp.new.tap {|f| new_item(GLOBAL_FILTERS_KEY, f)}
-      when :accept_all_traffic
-        Filters::AcceptAllTraffic.new(interface_id)
-      when :security_group
-        Filters::SecurityGroup.new(params)
-      end
-
-      item.dp_info = @dp_info
-      new_item(interface_id, item) if interface_id
-
-      item.install
+    def items_for_interface(interface_id)
+      @items.values.select { |item| item.has_interface?(interface_id) }
     end
 
-    def new_item(interface_id, item)
-      @items[interface_id] ||= {}
-      @items[interface_id][item.id] = item
+    def accept_ingress_arp
+      Filters::AcceptIngressArp.new.tap {|i| i.dp_info = @dp_info}.install
     end
   end
 end
