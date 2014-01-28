@@ -62,9 +62,6 @@ module Vnet::Openflow::Tunnels
     end
 
     def install
-      info log_format("AAAAAAAAAA dst", @dst_interface.inspect)
-      info log_format("AAAAAAAAAA src", @src_interface.inspect)
-
       if @dst_interface.nil?
         error log_format("no valid destination interface loaded for #{@uuid}")
         return

@@ -91,10 +91,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} network_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
     #
     # Specialize Manager:
     #
@@ -109,7 +105,7 @@ module Vnet::Openflow
       true
     end
 
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       case item_map.network_mode.to_sym
       when :physical then Networks::Physical.new(@dp_info, item_map)
       when :virtual then Networks::Virtual.new(@dp_info, item_map)
@@ -127,7 +123,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Network.batch[filter].commit(:fill => :network_services)
+      MW::Network.batch[filter].commit(fill: :network_services)
     end
 
     def create_item(params)

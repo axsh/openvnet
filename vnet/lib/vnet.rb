@@ -179,6 +179,7 @@ module Vnet
     autoload :DatapathManager, 'vnet/openflow/datapath_manager'
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :DpInfo, 'vnet/openflow/dp_info'
+    autoload :FilterManager, 'vnet/openflow/filter_manager'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'
@@ -189,8 +190,10 @@ module Vnet
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :PortManager, 'vnet/openflow/port_manager'
+    autoload :Route, 'vnet/openflow/route'
     autoload :RouteManager, 'vnet/openflow/route_manager'
-    autoload :FilterManager, 'vnet/openflow/filter_manager'
+    autoload :Router, 'vnet/openflow/router'
+    autoload :RouterManager, 'vnet/openflow/router_manager'
     autoload :Service, 'vnet/openflow/service'
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
@@ -242,6 +245,7 @@ module Vnet
     end
 
     module Routers
+      autoload :Base, 'vnet/openflow/routers/base'
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
     end
 

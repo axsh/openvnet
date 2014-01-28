@@ -250,15 +250,29 @@ module Vnet::Openflow::Interfaces
                            cookie: cookie,
                            goto_table: TABLE_ARP_TABLE)
       flows << flow_create(:default,
+                           table: TABLE_ROUTE_EGRESS_LOOKUP,
+                           goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
+                           priority: 1,
+
+                           match_value_pair_first: @id,
+
+                           clear_all: true,
+                           write_reflection: true,
+                           write_interface: @id,
+                           
+                           cookie: cookie)
+
+      flows << flow_create(:default,
                            table: TABLE_ROUTE_EGRESS_INTERFACE,
+                           goto_table: TABLE_ARP_TABLE,
                            priority: 20,
+
                            actions: {
                              :eth_src => mac_info[:mac_address]
                            },
                            match_interface: @id,
                            write_network: ipv4_info[:network_id],
-                           cookie: cookie,
-                           goto_table: TABLE_ARP_TABLE)
+                           cookie: cookie)
     end    
 
     def flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)

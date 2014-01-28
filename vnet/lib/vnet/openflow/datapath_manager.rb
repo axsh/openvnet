@@ -31,10 +31,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} datapath_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
     #
     # Specialize Manager:
     #
@@ -60,7 +56,7 @@ module Vnet::Openflow
       MW::Datapath.batch[filter].commit(fill: [:datapath_networks, :host_interfaces])
     end
 
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       item_class =
         if item_map.dpid == @dp_info.dpid
           Datapaths::Host
@@ -119,6 +115,10 @@ module Vnet::Openflow
       item
     end
 
+    #
+    # Events:
+    #
+
     def add_datapath_network(params)
       dpn_map = params[:dpn_map] || MW::DatapathNetwork.find(id: params[:datapath_network_id])
       return unless dpn_map
@@ -174,6 +174,7 @@ module Vnet::Openflow
     def host
       @items.find { |i| i.host? }
     end
+
   end
 
 end

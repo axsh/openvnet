@@ -26,16 +26,6 @@ module Vnet::Openflow::Ports
                            },
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE)
 
-      if @dst_id && @dst_id > 0
-        flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DATAPATH,
-                             priority: 5,
-                             match_datapath: @dst_id,
-                             actions: {
-                               :output => self.port_number
-                             })
-      end
-
       if @tunnel_id && @tunnel_id > 0
         flows << flow_create(:default,
                              table: TABLE_OUT_PORT_TUNNEL,

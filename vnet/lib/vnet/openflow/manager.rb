@@ -16,6 +16,9 @@ module Vnet::Openflow
 
       @datapath_info = nil
       @items = {}
+      @messages = {}
+
+      @log_prefix = "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: "
     end
 
     def retrieve(params)
@@ -61,8 +64,14 @@ module Vnet::Openflow
     #
 
     def packet_in(message)
-      item = @items[message.cookie & COOKIE_ID_MASK]
-      item.packet_in(message) if item
+      if (message.cookie & COOKIE_DYNAMIC_LOAD_MASK) == COOKIE_DYNAMIC_LOAD_MASK
+        handle_dynamic_load(id: message.match.metadata & METADATA_VALUE_MASK,
+                            message: message)
+      else
+        item = @items[message.cookie & COOKIE_ID_MASK]
+        item.packet_in(message) if item
+      end
+
       nil
     end
 
@@ -82,6 +91,10 @@ module Vnet::Openflow
     #
 
     private
+
+    def log_format(message, values = nil)
+      @log_prefix + message + (values ? " (#{values})" : '')
+    end
 
     #
     # Override these method to support additional parameters.
@@ -165,7 +178,7 @@ module Vnet::Openflow
         return item if item
       end
 
-      item_initialize(item_map).tap do |item|
+      item_initialize(item_map, params).tap do |item|
         return unless item
         @items[item_map.id] = item
         publish(initialized_item_event, params.merge(id: item_map.id,
@@ -173,7 +186,7 @@ module Vnet::Openflow
       end
     end
 
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       # Must be implemented by subclass
       raise NotImplementedError
     end
@@ -204,8 +217,73 @@ module Vnet::Openflow
       @items.values.select { |item| match_item?(item, params) }
     end
 
-    def log_format(message, values = nil)
-      "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: #{message}" + (values ? " (#{values})" : '')
+    #
+    # Packet handling:
+    #
+
+    def handle_dynamic_load(params)
+      item_id = params[:id]
+
+      debug log_format('handle dynamic load of item', "id: #{item_id}")
+
+      return if !push_message(item_id, params[:message])
+
+      item = item_by_params(id: item_id)
+      return if item.nil?
+
+      # Flush messages should be done after install. (Make sure
+      # interfaces are loaded using sync.
+      flush_messages(item.id,
+                     item.public_method(:mac_address) && item.mac_address)
     end
+
+    # Returns true if the message queue was empty for 'item_id'.
+    def push_message(item_id, message)
+      return if item_id.nil? || item_id <= 0
+      return if message.nil?
+
+      # Check if the item got loaded already. Currently we just drop
+      # the packets to avoid packets being reflected back to the
+      # controller.  
+      return if @items[item_id]
+
+      if @messages.has_key? item_id
+        # TODO: Cull the message queue if above a certain size.
+        @messages[item_id] << {
+          :message => message,
+          :timestamp => Time.now
+        }
+
+        return false
+      end
+
+      @messages[item_id] = [{ :message => message,
+                              :timestamp => Time.now
+                            }]
+      true
+    end
+
+    def flush_messages(item_id, mac_address)
+      return if item_id.nil? || item_id <= 0
+
+      messages = @messages.delete(item_id)
+
+      # The item must have a 'mac_address' attribute that will be used
+      # as the eth_src address for sending packet out messages.
+      if messages.nil? || mac_address.nil?
+        debug log_format('flush messages failed', "id:#{item_id} mac_address:#{mac_address}")
+        return
+      end
+
+      messages.each { |message|
+        packet = message[:message]
+        packet.match.in_port = OFPP_CONTROLLER
+        packet.match.eth_src = mac_address
+
+        @dp_info.send_packet_out(packet, OFPP_TABLE)
+      }
+    end
+
   end
+
 end

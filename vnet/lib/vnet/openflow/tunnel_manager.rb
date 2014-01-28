@@ -49,18 +49,19 @@ module Vnet::Openflow
         dst_interface_id: datapath_network[:interface_id],
       }
 
-      item = internal_detect(options)
+      item = item_by_params(options)
+
       unless item
-        info log_format(
-          "creating tunnel entry",
-          options.map { |k, v| "#{k}: #{v}" }.join(" ")
-        )
+        info log_format("creating tunnel entry",
+                        options.map { |k, v| "#{k}: #{v}" }.join(" "))
+
         tunnel = MW::Tunnel.create(options)
-        if tunnel
-          item = item_by_params(id: tunnel.id)
-        else
-          # the tunnel should have been added
-          item = item_by_params(options)
+        item = item_by_params(options)
+
+        if item.nil? || !item.instance_of?(Tunnels::Base)
+          warn log_format('could not create tunnel',
+                          options.map { |k, v| "#{k}: #{v}" }.join(" "))
+          return
         end
       end
 
@@ -69,8 +70,8 @@ module Vnet::Openflow
 
       info log_format(
         "insert datapath network",
-        "datapath_id:#{datapath_network[:datapath_id]}" +
-        "network_id:#{datapath_network[:network_id]}" +
+        "datapath_id:#{datapath_network[:datapath_id]} " +
+        "network_id:#{datapath_network[:network_id]} " +
         "interface_id:#{datapath_network[:interface_id]}"
       )
     end
@@ -110,10 +111,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} tunnel_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
     #
     # Specialize Manager:
     #
@@ -144,6 +141,11 @@ module Vnet::Openflow
         when params[:display_name]    then options[:display_name] = params[:display_name]
         when params[:port_name]       then options[:display_name] = params[:port_name]
         when params[:dst_id]          then options[:dst_datapath_id] = params[:dst_id]
+
+        when params[:dst_datapath_id]  then options[:dst_datapath_id] = params[:dst_datapath_id]
+        when params[:dst_interface_id] then options[:dst_interface_id] = params[:dst_interface_id]
+        when params[:src_interface_id] then options[:src_interface_id] = params[:src_interface_id]
+
         else
           # Any invalid params that should cause an exception needs to
           # be caught by the item_by_params_direct method.
@@ -156,7 +158,7 @@ module Vnet::Openflow
     # Create / Delete tunnels:
     #
 
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       Tunnels::Base.new(
         dp_info: @dp_info,
         manager: self,
@@ -182,6 +184,7 @@ module Vnet::Openflow
     
     def install_item(params)
       item = @items[params[:item_map].id]
+      return unless item
 
       debug log_format("install #{item.uuid}/#{item.id}")
 
@@ -255,5 +258,7 @@ module Vnet::Openflow
         broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
       }
     end
+
   end
+
 end
