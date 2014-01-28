@@ -219,9 +219,9 @@ module Vnet::Openflow
                          write_value_pair_first: ip_lease.interface_id,
                          write_value_pair_second: params[:interface_network_id],
 
-                         cookie: @arp_lookup[:reply_cookie])
+                         cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
 
-      @dp_info.add_flow(flow)        
+      @dp_info.add_flow(flow)
 
       arp_lookup_send_packets(@arp_lookup[:requests].delete(params[:request_ipv4]))
     end
