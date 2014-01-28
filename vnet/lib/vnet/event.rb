@@ -42,6 +42,20 @@ module Vnet
     REMOVED_DATAPATH_NETWORK = "removed_datapath_network"
 
     #
+    # route event
+    #
+    INITIALIZED_ROUTE = "initialized_route"
+    ADDED_ROUTE = "added_route"
+    REMOVED_ROUTE = "removed_route"
+
+    #
+    # router event
+    #
+    INITIALIZED_ROUTER = "initialized_router"
+    ADDED_ROUTER = "added_router"
+    REMOVED_ROUTER = "removed_router"
+
+    #
     # service event
     #
     ADDED_SERVICE = "added_service"

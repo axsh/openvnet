@@ -40,6 +40,10 @@ module Vnet::Openflow
       fo_controller_md = flow_options.merge(md_create(local: nil,
                                                       no_controller: nil))
 
+      #
+      # Default drop flows:
+      #
+
       [TABLE_EDGE_SRC,
        TABLE_EDGE_DST,
        TABLE_TUNNEL_PORTS,
@@ -61,8 +65,10 @@ module Vnet::Openflow
        TABLE_PHYSICAL_SRC,
 
        TABLE_ROUTE_INGRESS_INTERFACE,
-       TABLE_ROUTE_LINK_INGRESS,
-       TABLE_ROUTE_LINK_EGRESS,
+       TABLE_ROUTER_INGRESS,
+       TABLE_ROUTER_CLASSIFIER,
+       TABLE_ROUTER_EGRESS,
+       TABLE_ROUTE_EGRESS_LOOKUP,
        TABLE_ROUTE_EGRESS_INTERFACE,
        TABLE_ARP_LOOKUP,
 
@@ -70,11 +76,9 @@ module Vnet::Openflow
        TABLE_PHYSICAL_DST,
        TABLE_FLOOD_LOCAL,
        TABLE_FLOOD_TUNNELS,
-       TABLE_OUTPUT_ROUTE_LINK,
-       TABLE_OUTPUT_DATAPATH,
-       TABLE_OUTPUT_MAC2MAC,
 
        TABLE_LOOKUP_IF_NW_TO_DP_NW,
+       TABLE_LOOKUP_IF_RL_TO_DP_RL,
        TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
        TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
 
@@ -92,8 +96,48 @@ module Vnet::Openflow
        TABLE_OUT_PORT_TUNNEL,
 
       ].each { |table|
-        flows << Flow.create(table, 0, {}, nil, flow_options)
+        flows << flow_create(:default, table: table, priority: 0)
       }
+
+      #
+      # Default goto_table flows:
+      #
+      [[TABLE_ROUTE_INGRESS_INTERFACE, TABLE_NETWORK_DST_CLASSIFIER],
+       [TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS],
+       [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
+       [TABLE_ARP_TABLE, TABLE_ARP_LOOKUP],
+       [TABLE_OUTPUT_DP_NETWORK_SET_MAC, TABLE_OUTPUT_DP_OVER_TUNNEL],
+       [TABLE_FLOOD_SIMULATED, TABLE_FLOOD_LOCAL],
+       [TABLE_FLOOD_SEGMENT, TABLE_FLOOD_TUNNELS],
+       [TABLE_INTERFACE_EGRESS_FILTER, TABLE_NETWORK_SRC_CLASSIFIER],
+       [TABLE_INTERFACE_INGRESS_FILTER, TABLE_INTERFACE_INGRESS_FILTER_LOOKUP],
+      ].each { |from_table, to_table|
+        flows << flow_create(:default,
+                             table: from_table,
+                             goto_table: to_table,
+                             priority: 0)
+      }
+
+      #
+      # Default dynamic load flows:
+      #
+      [#[TABLE_ROUTER_CLASSIFIER, COOKIE_TYPE_ROUTE_LINK]
+      ].each { |table, cookie_type|
+        flows << flow_create(:default,
+                             table: table,
+                             priority: 1,
+                             
+                             actions: {
+                               output: OFPP_CONTROLLER
+                             },
+
+                             cookie: cookie_type | COOKIE_DYNAMIC_LOAD_MASK)
+      }
+
+
+      #
+      # Default flows:
+      #
 
       flows << Flow.create(TABLE_CLASSIFIER, 2, {
                              :in_port => OFPP_CONTROLLER
@@ -105,10 +149,6 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_CLASSIFIER, 0, {}, nil,
                            fo_remote_md.merge(:goto_table => TABLE_TUNNEL_PORTS))
 
-      flows << Flow.create(TABLE_INTERFACE_EGRESS_FILTER, 0, {}, nil,
-                           flow_options.merge(goto_table: TABLE_NETWORK_SRC_CLASSIFIER))
-      flows << Flow.create(TABLE_INTERFACE_INGRESS_FILTER, 0, {}, nil,
-                           flow_options.merge(goto_table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP))
       # LOCAL packets have already been verified earlier.
       flows << Flow.create(TABLE_VIRTUAL_SRC,  90, md_create(:local => nil), nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
@@ -118,32 +158,11 @@ module Vnet::Openflow
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0800}, nil, flow_options)
       flows << Flow.create(TABLE_PHYSICAL_SRC, 40, {:eth_type => 0x0806}, nil, flow_options)
 
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_INGRESS_INTERFACE,
-                           goto_table: TABLE_NETWORK_DST_CLASSIFIER,
-                           priority: 0)
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_INGRESS_TRANSLATION,
-                           goto_table: TABLE_ROUTE_LINK_INGRESS,
-                           priority: 0)
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS_TRANSLATION,
-                           goto_table: TABLE_ROUTE_EGRESS_INTERFACE,
-                           priority: 0)
-      flows << flow_create(:default,
-                           table: TABLE_ARP_TABLE,
-                           goto_table: TABLE_ARP_LOOKUP,
-                           priority: 0)
-
       flows << Flow.create(TABLE_VIRTUAL_DST,  30, {:eth_dst => MAC_BROADCAST}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))
       flows << Flow.create(TABLE_PHYSICAL_DST, 30, {:eth_dst => MAC_BROADCAST}, nil,
                            flow_options.merge(:goto_table => TABLE_FLOOD_SIMULATED))
 
-      flows << Flow.create(TABLE_FLOOD_SIMULATED, 0, {}, nil,
-                           flow_options.merge(:goto_table => TABLE_FLOOD_LOCAL))
-      flows << Flow.create(TABLE_FLOOD_SEGMENT,      0, {}, nil,
-                           flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
       flows << Flow.create(TABLE_FLOOD_SEGMENT, 10,
                            md_create(:remote => nil), nil,
                            flow_options)
@@ -171,10 +190,6 @@ module Vnet::Openflow
                              :tunnel_id => TUNNEL_FLAG,
                              :tunnel_id_mask => TUNNEL_FLAG_MASK
                            })
-      flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DP_NETWORK_SET_MAC,
-                           goto_table: TABLE_OUTPUT_DP_OVER_TUNNEL,
-                           priority: 0)
 
       # Catches all arp packets that are from local ports.
       #

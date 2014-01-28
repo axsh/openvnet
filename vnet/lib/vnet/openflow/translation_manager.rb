@@ -35,10 +35,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} translation_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
     #
     # Specialize Manager:
     #
@@ -66,7 +62,7 @@ module Vnet::Openflow
       MW::Translation.batch[filter].commit(fill: :translate_static_addresses)
     end
 
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       params = {
         dp_info: @dp_info,
         manager: self,

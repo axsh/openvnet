@@ -56,10 +56,15 @@ module Vnet
       TABLE_VIRTUAL_SRC       = 21
       TABLE_PHYSICAL_SRC      = 22
 
+
+      # In the transition from TABLE_ROUTER_EGRESS to
+      # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.
       TABLE_ROUTE_INGRESS_INTERFACE   = 30
       TABLE_ROUTE_INGRESS_TRANSLATION = 31
-      TABLE_ROUTE_LINK_INGRESS        = 32
-      TABLE_ROUTE_LINK_EGRESS         = 33
+      TABLE_ROUTER_INGRESS            = 32
+      TABLE_ROUTER_CLASSIFIER         = 33
+      TABLE_ROUTER_EGRESS             = 34
+      TABLE_ROUTE_EGRESS_LOOKUP       = 35
       TABLE_ROUTE_EGRESS_TRANSLATION  = 36
       TABLE_ROUTE_EGRESS_INTERFACE    = 37
       TABLE_ARP_TABLE                 = 38
@@ -81,18 +86,10 @@ module Vnet
       # non-action instructions such as 'write_metadata'.
       TABLE_OUTPUT_CONTROLLER  = 60
 
-      # Send packet to a known datapath id, e.g. using an eth port or
-      # tunnel port.
-      #
-      # Note, this table could later be used to automatically create
-      # tunnels independently of installed flows.
-      TABLE_OUTPUT_ROUTE_LINK        = 61
-      TABLE_OUTPUT_DATAPATH          = 62
-      TABLE_OUTPUT_MAC2MAC           = 63
-
       TABLE_LOOKUP_IF_NW_TO_DP_NW         = 70
-      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 71
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 72
+      TABLE_LOOKUP_IF_RL_TO_DP_RL         = 71
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 72
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 73
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source
@@ -130,7 +127,8 @@ module Vnet
       # Cookie constants:
       #
 
-      COOKIE_ID_MASK = (0xffffffff)
+      COOKIE_ID_MASK = (0x7fffffff)
+      COOKIE_DYNAMIC_LOAD_MASK = (0x1 << 31)
 
       COOKIE_TAG_SHIFT = 32
       COOKIE_TAG_MASK = (0xffffff << COOKIE_TAG_SHIFT)
@@ -210,7 +208,7 @@ module Vnet
       METADATA_TYPE_TUNNEL          = (0xa << METADATA_TYPE_SHIFT)
       METADATA_TYPE_DP_NETWORK      = (0xb << METADATA_TYPE_SHIFT)
 
-      METADATA_VALUE_MASK = 0xffffffff
+      METADATA_VALUE_MASK = 0x7fffffff
 
       # Special case of the metadata bitfield that allows storing two
       # 31-bit values and one single flag.

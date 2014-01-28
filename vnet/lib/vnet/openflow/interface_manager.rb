@@ -48,10 +48,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interface_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
     #
     # Specialize Manager:
     #
@@ -93,8 +89,16 @@ module Vnet::Openflow
                            :ip_leases => [:cookie_id, :ip_address, :network]])
     end
 
-    def item_initialize(item_map)
-      mode = is_remote?(item_map) ? :remote : (item_map.mode && item_map.mode.to_sym)
+    def item_initialize(item_map, params)
+      if params[:remote]
+        return if !is_assigned_remotely?(item_map)
+        mode = :remote
+      elsif is_remote?(item_map)
+        mode = :remote
+      else
+        mode = (item_map.mode && item_map.mode.to_sym)
+      end
+
       params = { dp_info: @dp_info,
                  manager: self,
                  map: item_map }
@@ -128,8 +132,6 @@ module Vnet::Openflow
 
       item = self.item(params)
       return unless item
-
-      debug log_format("create #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
       item
     end
@@ -197,7 +199,20 @@ module Vnet::Openflow
     end
 
     def is_remote?(item_map)
-      return item_map.owner_datapath_id && item_map.owner_datapath_id != @datapath_info.id
+      return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?
+
+      if item_map.owner_datapath_id
+        return item_map.owner_datapath_id != @datapath_info.id
+      end
+
+      return false
+    end
+
+    def is_assigned_remotely?(item_map)
+      return item_map.owner_datapath_id != @datapath_info.id if item_map.owner_datapath_id
+      return item_map.active_datapath_id != @datapath_info.id if item_map.active_datapath_id
+
+      false
     end
 
     #
@@ -273,14 +288,31 @@ module Vnet::Openflow
       id = params.fetch(:id)
       event = params[:event]
 
+      return nil if id.nil? || event.nil?
+
       # Todo: Add the possibility to use a 'filter' parameter for this.
       item = internal_detect(id: id)
-      return nil if item.nil?
+      return update_item_not_found(event, id, params) if item.nil?
 
       case event
+        #
+        # Datapath events:
+        #
       when :active_datapath_id
         # Reconsider this...
         item.update_active_datapath(params)
+
+      when :remote_datapath_id
+        item.update_remote_datapath(params)
+        del_flows_for_active_datapath(params) if params[:datapath_id].nil?
+
+      when :owner_datapath_id
+        delete_item(item)
+        self.async.retrieve(id: item.id)
+
+        #
+        # Port events:
+        #
       when :set_port_number
         debug log_format("update_item", params)
         # Check if not nil...
@@ -291,16 +323,35 @@ module Vnet::Openflow
         # Check if nil... (use param :port_number to verify)
         item.update_port_number(nil)
         item.update_active_datapath(datapath_id: nil)
+
+        #
+        # Capability events:
+        #
       when :enable_router_ingress
         item.enable_router_ingress
       when :enable_router_egress
         item.enable_router_egress
-      else
+      when :updated
         # api event
         item.update
       end
 
       item_to_hash(item)
+    end
+
+    def update_item_not_found(event, id, params)
+      case event
+      when :updated
+        changed_columns = params[:changed_columns]
+        return if changed_columns.nil?
+
+        if changed_columns["owner_datapath_id"]
+          return if changed_columns["owner_datapath_id"] != @datapath_info.id
+          @dp_info.port_manager.async.attach_interface(port_name: params[:port_name])
+        end
+      end
+
+      nil
     end
 
   end

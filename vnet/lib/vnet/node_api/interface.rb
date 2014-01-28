@@ -35,13 +35,18 @@ module Vnet::NodeApi
       # TODO dispatch_event
       def update(uuid, options)
         options = options.dup
+
         transaction {
           model_class[uuid].tap do |i|
             return unless i
             i.update(options)
           end
         }.tap do |interface|
-          dispatch_event(UPDATED_INTERFACE, id: interface.id)
+          dispatch_event(UPDATED_INTERFACE,
+                         event: :updated,
+                         id: interface.id,
+                         port_name: interface.port_name,
+                         changed_columns: options)
         end
       end
 

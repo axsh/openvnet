@@ -17,37 +17,20 @@ module Vnet::Openflow::Interfaces
     def add_mac_address(params)
       mac_info = super
 
-      flows = []
-      flows_for_router_egress_mac(flows, mac_info) if @router_egress == true
-
-      @dp_info.add_flows(flows)
+      # flows = []
+      # @dp_info.add_flows(flows)
     end
 
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
-      flows = []
-      flows_for_ipv4(flows,mac_info, ipv4_info)
-      flows_for_router_egress_ipv4(flows, mac_info, ipv4_info) if @router_egress == true
-
-      @dp_info.add_flows(flows)
+      # flows = []
+      # @dp_info.add_flows(flows)
     end
 
     def enable_router_egress
       return if @router_egress != false
       @router_egress = true
-
-      flows = []
-
-      @mac_addresses.each { |mac_lease_id, mac_info|
-        flows_for_router_egress_mac(flows, mac_info)
-
-        mac_info[:ipv4_addresses].each { |ipv4_info|
-          flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
-        }
-      }
-
-      @dp_info.add_flows(flows)
     end
 
     def disable_router_egress
@@ -55,6 +38,16 @@ module Vnet::Openflow::Interfaces
     end
 
     def install
+      flows = []
+      flows_for_base(flows)
+      flows_for_datapath(flows)
+      
+      @dp_info.add_flows(flows)
+    end
+
+    def update_remote_datapath(params)
+      @active_datapath_ids = [params[:datapath_id]]
+      
       flows = []
       flows_for_datapath(flows)
       
@@ -71,9 +64,18 @@ module Vnet::Openflow::Interfaces
       "#{@dp_info.dpid_s} interfaces/remote: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def flows_for_base(flows)
+      # TODO: Only add when router egress is set.
+      flows << flow_create(:default,
+                           table: TABLE_ROUTE_EGRESS_LOOKUP,
+                           goto_table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
+                           priority: 1,
+
+                           match_value_pair_first: @id)
+    end
+
     def flows_for_datapath(flows)
       datapath_id = @active_datapath_ids && @active_datapath_ids.first
-      # datapath_id = @owner_datapath_ids && @owner_datapath_ids.first if datapath_id.nil?
       return if datapath_id.nil?
 
       flows << flow_create(:default,
@@ -82,44 +84,15 @@ module Vnet::Openflow::Interfaces
                            priority: 1,
 
                            match_value_pair_first: @id,
-                           write_value_pair_first: datapath_id,
-
-                           cookie: cookie)
-    end
-
-    def flows_for_ipv4(flows, mac_info, ipv4_info)
-      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
-
-      # TODO: Change this to if nw:
-      flows << flow_create(:router_dst_match,
-                           priority: 40,
-                           match: {
-                             :eth_type => 0x0800,
-                             :ipv4_dst => ipv4_info[:ipv4_address],
-                           },
-                           actions: {
-                             :eth_dst => mac_info[:mac_address],
-                           },
-                           network_id: ipv4_info[:network_id])
-    end
-
-    #
-    # Not needed unless egress routing is used:
-    #
-    def flows_for_router_egress_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
-
-      datapath_id = @owner_datapath_ids && @owner_datapath_ids.first
-      return if datapath_id.nil?
-
+                           write_value_pair_first: datapath_id)
       flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS_INTERFACE,
-                           goto_table: TABLE_OUTPUT_ROUTE_LINK,
-                           priority: 20,
-                           match_interface: @id,
-                           write_datapath: datapath_id,
-                           cookie: cookie)
-    end    
+                           table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
+                           goto_table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
+                           priority: 1,
+
+                           match_value_pair_first: @id,
+                           write_value_pair_first: datapath_id)
+    end
 
   end
 

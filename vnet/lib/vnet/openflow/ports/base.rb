@@ -19,6 +19,8 @@ module Vnet::Openflow::Ports
     attr_accessor :network_id
     attr_accessor :mac_addresses
 
+    attr_accessor :interface_id
+
     # Work-around...
     attr_accessor :dst_id
     attr_accessor :tunnel_id

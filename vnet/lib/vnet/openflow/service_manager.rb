@@ -59,11 +59,7 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} service_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       item = @items[item_map.id]
       return item if item
 
