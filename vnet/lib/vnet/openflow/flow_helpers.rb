@@ -33,6 +33,7 @@ module Vnet::Openflow
                                   :write_local,
                                   :write_mac2mac,
                                   :write_network,
+                                  :write_no_controller,
                                   :write_not_no_controller,
                                   :write_reflection,
                                   :write_remote,
