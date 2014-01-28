@@ -9,6 +9,7 @@ module Vnctl::Cli
       option :network_uuid, :type => :string, :desc => "The uuid of the network this interface is in."
       option :mac_address, :type => :string, :desc => "The mac address for this interface."
       option :ipv4_address, :type => :string, :desc => "The first ip lease for this interface."
+      option :filters_enabled, :type => :boolean, :desc => "Flag that decides whether or not filtering (security groups) is enabled."
       option :port_name, :type => :string, :desc => "The port name for this interface."
       option :owner_datapath_uuid, :type => :string, :desc => "The uuid of the datapath that owns this interface."
       option :mode, :type => :string, :desc => "The type of this interface."

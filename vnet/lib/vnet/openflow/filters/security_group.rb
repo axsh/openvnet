@@ -46,6 +46,10 @@ module Vnet::Openflow::Filters
       @interfaces[interface_id] = interface_cookie_id
     end
 
+    def remove_interface(interface_id)
+      @interfaces.delete(interface_id)
+    end
+
     def install(interface_id = nil)
       install_rules(interface_id)
       #TODO: Install reference rules

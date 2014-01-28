@@ -4,7 +4,11 @@ module Vnet::Openflow
   class FilterManager < Manager
     include Vnet::Openflow::FlowHelpers
 
-    subscribe_event INITIALIZED_INTERFACE, :apply_filters
+    F = Vnet::Openflow::Filters
+
+    subscribe_event INITIALIZED_INTERFACE, :new_interface
+    subscribe_event ENABLED_FILTERING, :enable_filtering
+    subscribe_event DISABLED_FILTERING, :disable_filtering
     subscribe_event REMOVED_INTERFACE, :remove_filters
     subscribe_event UPDATED_FILTER, :update_item
 
@@ -20,10 +24,38 @@ module Vnet::Openflow
       INITIALIZED_FILTER
     end
 
-    def apply_filters(interface_hash)
+    def new_interface(interface_hash)
       interface = interface_hash[:item_map]
       return if is_remote?(interface)
 
+      if interface.filters_enabled
+        apply_filters(interface)
+      else
+        F::AcceptAllTraffic.new(interface.id, @dp_info).install
+      end
+    end
+
+    def enable_filtering(interface_hash)
+      interface = MW::Interface.batch[interface_hash[:id]].commit
+      return if is_remote?(interface)
+
+      debug log_format("filtering enabled for interface '%s'" % interface.uuid)
+
+      F::AcceptAllTraffic.new(interface.id, @dp_info).uninstall
+      apply_filters(interface)
+    end
+
+    def disable_filtering(interface_hash)
+      interface = MW::Interface.batch[interface_hash[:id]].commit
+      return if is_remote?(interface)
+
+      debug log_format("filtering disabled for interface '%s'" % interface.uuid)
+
+      remove_filters(interface_hash)
+      F::AcceptAllTraffic.new(interface.id, @dp_info).install
+    end
+
+    def apply_filters(interface)
       groups = interface.batch.security_groups.commit
       groups.each do |group|
         item = item_by_params(id: group.id)
@@ -63,8 +95,11 @@ module Vnet::Openflow
     end
 
     def remove_filters(interface_hash)
-      items_for_interface(interface_hash[:id]).each { |item|
-        item.uninstall(interface_hash[:id])
+      interface_id = interface_hash[:id]
+
+      items_for_interface(interface_id).each { |item|
+        item.uninstall(interface_id)
+        item.remove_interface(interface_id)
       }
     end
 

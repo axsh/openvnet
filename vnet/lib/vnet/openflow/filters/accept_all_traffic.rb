@@ -2,8 +2,9 @@
 
 module Vnet::Openflow::Filters
   class AcceptAllTraffic < Base
-    def initialize(interface_id)
+    def initialize(interface_id, dp_info)
       @interface_id = interface_id
+      @dp_info = dp_info
     end
 
     # Just something to identify this thing with in @items in filter manager
@@ -23,13 +24,16 @@ module Vnet::Openflow::Filters
     end
 
     def install
-      [
-        flow_create(:default,
-          table: TABLE_INTERFACE_INGRESS_FILTER,
-          priority: 10,
-          match_metadata: { interface: @interface_id },
-          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
-      ]
+      @dp_info.add_flow flow_create(:default,
+        table: TABLE_INTERFACE_INGRESS_FILTER,
+        priority: 90,
+        match_metadata: { interface: @interface_id },
+        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+      )
+    end
+
+    def uninstall
+      @dp_info.del_cookie cookie
     end
   end
 end

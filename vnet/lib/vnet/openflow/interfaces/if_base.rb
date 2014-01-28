@@ -5,7 +5,7 @@ module Vnet::Openflow::Interfaces
   # Base class for regular interfaces.
 
   class IfBase < Base
-    
+
     #
     # Router ingress/egress:
     #
@@ -132,7 +132,7 @@ module Vnet::Openflow::Interfaces
                            cookie: cookie)
 
       #
-      # IPv4 
+      # IPv4
       #
       flows << flow_create(:default,
                            table_network_src: ipv4_info[:network_type],
@@ -259,7 +259,7 @@ module Vnet::Openflow::Interfaces
                            write_network: ipv4_info[:network_id],
                            cookie: cookie,
                            goto_table: TABLE_ARP_TABLE)
-    end    
+    end
 
     def flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])

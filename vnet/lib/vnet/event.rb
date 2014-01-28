@@ -70,6 +70,8 @@ module Vnet
     # filter event
     #
     INITIALIZED_FILTER = "initialized_filter"
+    ENABLED_FILTERING = "enabled_filtering"
+    DISABLED_FILTERING = "disabled_filtering"
     UPDATED_FILTER = "updated_filter"
   end
 end

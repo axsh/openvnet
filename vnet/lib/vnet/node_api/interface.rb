@@ -42,6 +42,14 @@ module Vnet::NodeApi
           end
         }.tap do |interface|
           dispatch_event(UPDATED_INTERFACE, id: interface.id)
+
+          case options[:filters_enabled]
+          when "true"
+            dispatch_event(ENABLED_FILTERING, id: interface.id)
+          when "false"
+            dispatch_event(DISABLED_FILTERING, id: interface.id)
+          end
+
         end
       end
 
