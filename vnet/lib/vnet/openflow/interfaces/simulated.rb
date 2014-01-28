@@ -219,43 +219,8 @@ module Vnet::Openflow::Interfaces
                            cookie: cookie)
     end
 
-    # TODO: Separate the mac-only flows and add those when
-    # add_mac_address is called.
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
-
-      #
-      # ARP:
-      #
-      # TODO: Fix this so it is more secure...
-      flows << flow_create(:default,
-                           table_network_src: ipv4_info[:network_type],
-                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
-                           priority: 86,
-                           match: {
-                             :eth_type => 0x0806,
-                             :eth_src => mac_info[:mac_address],
-                             :arp_spa => ipv4_info[:ipv4_address],
-                             :arp_sha => mac_info[:mac_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           match_local: true,
-                           cookie: cookie)
-      #
-      # IPv4:
-      #
-      # TODO: Fix this so it is more secure...
-      flows << flow_create(:default,
-                           table_network_src: ipv4_info[:network_type],
-                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
-                           priority: 45,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_src => mac_info[:mac_address],
-                             # :ipv4_src => ipv4_info[:ipv4_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           cookie: cookie)
 
       flows << flow_create(:default,
                            table_network_dst: ipv4_info[:network_type],
