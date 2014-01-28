@@ -144,7 +144,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def uninstall
-      debug "interfaces: removing flows..."
+      debug log_format("interfaces: removing flows...")
       del_cookie
     end
 

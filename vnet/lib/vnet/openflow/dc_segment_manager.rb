@@ -130,6 +130,37 @@ module Vnet::Openflow
       self.update_network_id(dpn[:network_id])
     end
 
+    def remove(dpn_id)
+      @interfaces.find { |interface|
+        interface[:datapath_networks].reject! { |dpn| dpn[:id] == dpn_id }
+      }.tap do |interface|
+        next if interface.nil? || !interface[:datapath_networks].empty?
+
+        @interfaces.delete(interface)
+
+        debug log_format("remove interface #{interface.uuid}/#{interface.id}")
+      end
+
+      @items.each do |network_id, dpn_list|
+        next unless dpn_list.delete(dpn_id)
+
+        debug log_format("remove datapath network",
+                         "network_id:#{network_id} dpn_id:#{dpn_id}")
+
+        update_network_id(network_id)
+        break
+      end
+    end
+
+    def remove_datapath(datapath_id)
+      @interfaces.delete_if { |interface| interface[:datapath_id] == datapath_id }
+
+      changed_items = @items.select do |network_id, dpn_list|
+        dpn_list.reject! { |dpn_id, dpn| dpn[:datapath_id] == datapath_id }
+      end
+      changed_items.each { |network_id, _| update_network_id(network_id) }
+    end
+
     #
     # Update state:
     #
