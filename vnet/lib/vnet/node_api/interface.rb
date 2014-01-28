@@ -43,7 +43,7 @@ module Vnet::NodeApi
         }.tap do |interface|
           dispatch_event(UPDATED_INTERFACE, id: interface.id)
 
-          case options[:filters_enabled]
+          case options[:enable_ingress_filtering]
           when "true"
             dispatch_event(ENABLED_FILTERING, id: interface.id)
           when "false"

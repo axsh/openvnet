@@ -28,7 +28,7 @@ module Vnet::Openflow
       interface = interface_hash[:item_map]
       return if is_remote?(interface)
 
-      if interface.filters_enabled
+      if interface.enable_ingress_filtering
         apply_filters(interface)
       else
         F::AcceptAllTraffic.new(interface.id, @dp_info).install

@@ -5,7 +5,7 @@ require 'trema/mac'
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   put_post_shared_params = [
     "owner_datapath_uuid",
-    "filters_enabled",
+    "enable_ingress_filtering",
     "display_name",
   ]
 

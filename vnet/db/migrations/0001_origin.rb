@@ -67,7 +67,7 @@ Sequel.migration do
       Integer :active_datapath_id, :index => true
       Integer :owner_datapath_id, :index => true
 
-      Boolean :filters_enabled, :default => false, :null => false
+      Boolean :enable_ingress_filtering, :default => false, :null => false
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
