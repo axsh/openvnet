@@ -32,14 +32,15 @@ module Vnspec
       @ipv4_address = config[:legacy_machines][name][:ipv4_address]
     end
 
-    def reachable_to?(vm, timeout = 30)
+    def reachable_to?(vm, options = {})
+      address = vm.__send__(options[:via] || :ipv4_address)
       options = to_ssh_option_string(
         "StrictHostKeyChecking" => "no",
         "UserKnownHostsFile" => "/dev/null",
         "LogLevel" => "ERROR",
-        "ConnectTimeout" => timeout
+        "ConnectTimeout" => options[:timeout] || 30
       )
-      ret = ssh(ssh_ip, "ssh #{options} #{vm.ipv4_address} hostname", {})
+      ret = ssh(ssh_ip, "ssh #{options} #{address} hostname", {})
       ret[:stdout].chomp == vm.name.to_s
     end
   end

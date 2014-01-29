@@ -46,6 +46,7 @@ module Vnspec
     class Interface < Base
       attr_accessor :name
       attr_reader :mac_leases
+      attr_writer :enabled
 
       class << self
         def all
@@ -77,6 +78,7 @@ module Vnspec
       def initialize(options)
         @name = options[:name]
         @mac_leases = []
+        @enabled = options.key?(:enabled) ? options[:enabled] : true
       end
 
       def update(options)
@@ -102,6 +104,10 @@ module Vnspec
 
       def remove_mac_lease(uuid)
         mac_leases(uuid).tap(&:destroy)
+      end
+
+      def enabled?
+        !! @enabled
       end
     end
 
@@ -207,6 +213,55 @@ module Vnspec
       def remove_datapath_network(network_uuid)
         API.request(:delete, "datapaths/#{uuid}/networks/#{network_uuid}") do |response|
           @datapath_networks = response[:networks].map { |n| OpenStruct.new(n) }
+        end
+      end
+    end
+
+    class DnsService < Base
+      attr_accessor :public_dns
+      attr_accessor :network_servie_uuid
+      API_NAME = "dns_services"
+
+      class << self
+        def all
+          API.request(:get, API_NAME) do |response|
+            response.map do |r|
+              self.new(r)
+            end
+          end
+        end
+
+        def create(options)
+          API.request(:post, API_NAME, options) do |response|
+            return self.new(options.merge(uuid: response[:uuid]))
+          end
+        end
+      end
+
+      def initialize(options)
+        @public_dns = options[:public_dns]
+        @network_servie_uuid = options[:network_servie_uuid]
+        @dns_records = []
+      end
+
+      def update_public_dns(public_dns)
+        API.request(:put, "#{API_NAME}/#{uuid}", public_dns: public_dns)
+        @public_dns = public_dns
+      end
+
+      def destroy
+        API.request(:delete, "#{API_NAME}/#{uuid}")
+      end
+
+      def add_dns_record(options)
+        API.request(:post, "#{API_NAME}/#{uuid}/dns_records", options) do |response|
+          @dns_records = response[:dns_records].map { |n| OpenStruct.new(n) }
+        end
+      end
+
+      def remove_dns_record(dns_record_uuid)
+        API.request(:delete, "#{API_NAME}/#{uuid}/dns_records/#{dns_record_uuid}") do |response|
+          @dns_records = response[:dns_records].map { |n| OpenStruct.new(n) }
         end
       end
     end
