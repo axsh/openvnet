@@ -11,6 +11,8 @@ module Vnet::Openflow
     subscribe_event LEASED_MAC_ADDRESS, :catch_new_egress
     subscribe_event RELEASED_MAC_ADDRESS, :remove_catch_new_egress
     subscribe_event REMOVED_INTERFACE, :close_connections
+    subscribe_event ENABLED_FILTERING, :enable_filtering
+    subscribe_event DISABLED_FILTERING, :disable_filtering
 
     def packet_in(message)
       open_connection(message)
@@ -18,6 +20,21 @@ module Vnet::Openflow
 
     def catch_flow_cookie(interface_id)
       COOKIE_TYPE_CONNECTION | COOKIE_TAG_CATCH_FLOW | interface_id
+    end
+
+    def enable_filtering(params)
+      params[:mac_leases].each { |ml|
+        catch_new_egress(
+          id: params[:id],
+          enable_ingress_filtering: true,
+          mac_address: ml[:mac_address]
+        )
+      }
+    end
+
+    def disable_filtering(params)
+      remove_catch_new_egress(params)
+      close_connections(params)
     end
 
     def catch_new_egress(interface_mac_lease)
