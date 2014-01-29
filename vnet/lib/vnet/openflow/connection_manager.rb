@@ -8,9 +8,9 @@ module Vnet::Openflow
     COOKIE_TAG_CATCH_FLOW         = 0x1 << COOKIE_TAG_SHIFT
     COOKIE_TAG_INGRESS_CONNECTION = 0x2 << COOKIE_TAG_SHIFT
 
-    subscribe_event LEASED_MAC_ADDRESS, :catch_new_egress
-    subscribe_event RELEASED_MAC_ADDRESS, :remove_catch_new_egress
-    subscribe_event REMOVED_INTERFACE, :close_connections
+    subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
+    subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
+    subscribe_event REMOVED_INTERFACE, :removed_interface
     subscribe_event ENABLED_FILTERING, :enable_filtering
     subscribe_event DISABLED_FILTERING, :disable_filtering
 
@@ -18,52 +18,67 @@ module Vnet::Openflow
       open_connection(message)
     end
 
-    def catch_flow_cookie(interface_id)
-      COOKIE_TYPE_CONNECTION | COOKIE_TAG_CATCH_FLOW | interface_id
+    #
+    # Event handling
+    #
+
+    def leased_mac_address(params)
+      return unless params[:enable_ingress_filtering]
+
+      catch_new_egress(params[:id], params[:mac_address])
+    end
+
+    def released_mac_address(params)
+      remove_catch_new_egress(params[:id], params[:mac_address])
+    end
+
+    def removed_interface(params)
+      remove_catch_new_egress(params[:id])
+      close_connections(params[:id])
     end
 
     def enable_filtering(params)
       params[:mac_leases].each { |ml|
-        catch_new_egress(
-          id: params[:id],
-          enable_ingress_filtering: true,
-          mac_address: ml[:mac_address]
-        )
+        catch_new_egress(params[:id], ml[:mac_address])
       }
     end
 
     def disable_filtering(params)
-      remove_catch_new_egress(params)
-      close_connections(params)
+      remove_catch_new_egress(params[:id])
+      close_connections(params[:id])
     end
 
-    def catch_new_egress(interface_mac_lease)
-      interface_id = interface_mac_lease[:id]
+    #
+    # The actual connection related stuff
+    #
 
-      if interface_mac_lease[:enable_ingress_filtering]
-        flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
-          flow_create(:default,
-                      table: TABLE_INTERFACE_EGRESS_FILTER,
-                      priority: 20,
-                      match: {
-                        eth_src: Trema::Mac.new(interface_mac_lease[:mac_address]),
-                        eth_type: ETH_TYPE_IPV4,
-                        ip_proto: protocol
-                      },
-                      cookie: catch_flow_cookie(interface_id),
-                      actions: { output: Controller::OFPP_CONTROLLER })
-        }
-
-        @dp_info.add_flows(flows)
-      end
+    def catch_flow_cookie(interface_id)
+      COOKIE_TYPE_CONNECTION | COOKIE_TAG_CATCH_FLOW | interface_id
     end
 
-    def remove_catch_new_egress(interface_mac_lease)
-      @dp_info.del_cookie catch_flow_cookie(interface_mac_lease[:id])
+    def catch_new_egress(interface_id, mac_address)
+      flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
+        flow_create(:default,
+                    table: TABLE_INTERFACE_EGRESS_FILTER,
+                    priority: 20,
+                    match: {
+                      eth_src: Trema::Mac.new(mac_address),
+                      eth_type: ETH_TYPE_IPV4,
+                      ip_proto: protocol
+                    },
+                    cookie: catch_flow_cookie(interface_id),
+                    actions: { output: Controller::OFPP_CONTROLLER })
+      }
+
+      @dp_info.add_flows(flows)
     end
 
-    def close_connections(interface_hash)
-      @dp_info.del_cookie Connections::Base.cookie(interface_hash[:id])
+    def remove_catch_new_egress(interface_id)
+      @dp_info.del_cookie catch_flow_cookie(interface_id)
+    end
+
+    def close_connections(interface_id)
+      @dp_info.del_cookie Connections::Base.cookie(interface_id)
     end
 
     def open_connection(message)
