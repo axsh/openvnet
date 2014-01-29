@@ -65,7 +65,7 @@ module Vnet::Openflow::Translations
     def flows_for_translate(flows, translate)
       flows << flow_create(:default,
                            table: TABLE_ROUTE_INGRESS_TRANSLATION,
-                           goto_table: TABLE_ROUTE_LINK_INGRESS,
+                           goto_table: TABLE_ROUTER_INGRESS,
                            priority: 30,
 
                            match: {

@@ -42,6 +42,20 @@ module Vnet
     REMOVED_DATAPATH_NETWORK = "removed_datapath_network"
 
     #
+    # route event
+    #
+    INITIALIZED_ROUTE = "initialized_route"
+    ADDED_ROUTE = "added_route"
+    REMOVED_ROUTE = "removed_route"
+
+    #
+    # router event
+    #
+    INITIALIZED_ROUTER = "initialized_router"
+    ADDED_ROUTER = "added_router"
+    REMOVED_ROUTER = "removed_router"
+
+    #
     # service event
     #
     ADDED_SERVICE = "added_service"
@@ -73,5 +87,18 @@ module Vnet
     ENABLED_FILTERING = "enabled_filtering"
     DISABLED_FILTERING = "disabled_filtering"
     UPDATED_FILTER = "updated_filter"
+
+    #
+    # dns service
+    #
+    ADDED_DNS_SERVICE = "added_dns_service"
+    REMOVED_DNS_SERVICE = "removed_dns_service"
+    UPDATED_DNS_SERVICE = "updated_dns_service"
+
+    #
+    # dns record
+    #
+    ADDED_DNS_RECORD = "added_dns_record"
+    REMOVED_DNS_RECORD = "removed_dns_record"
   end
 end

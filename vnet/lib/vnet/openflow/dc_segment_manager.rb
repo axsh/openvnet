@@ -68,7 +68,7 @@ module Vnet::Openflow
             info log_format("creating mac2mac entry",
                             "src_host:#{host_interface.uuid}/#{host_interface.port_name} dst_host:#{dst_interface.uuid}/#{dst_interface.port_name}")
 
-            prepare_interfaces(flows, target_dp_map.id, host_interface.id, dst_interface.id)
+            prepare_interfaces(flows, host_interface.id, dst_interface.id)
           }
         }
       }
@@ -93,45 +93,39 @@ module Vnet::Openflow
 
       dpn_list[dpn[:id]] = dpn
 
-      options = {
-        dst_datapath_id: dpn[:datapath_id],
-        src_interface_id: @host_datapath_networks[dpn[:network_id]][:interface_id],
-        dst_interface_id: dpn[:interface_id],
-      }
+      host_dpn = @host_datapath_networks[dpn[:network_id]]
 
-      flows = []
+      if host_dpn
+        warn log_format('no host datapath network found', "network_id:#{dpn[:network_id]}")
 
-      interface = @interfaces.find do |interface|
-        options.keys.all? { |k| interface[k] == options[k] }
-      end
+        options = {
+          src_interface_id: host_dpn[:interface_id],
+          dst_interface_id: dpn[:interface_id],
+        }
 
-      unless interface
-        interface = options.dup
-        @interfaces << interface
+        flows = []
 
-        info log_format(
-          "creating mac2mac entry",
-          options.map { |k, v| "#{k}: #{v}" }.join(" ")
-        )
+        interface = @interfaces.find do |interface|
+          options.keys.all? { |k| interface[k] == options[k] }
+        end
 
-        prepare_interfaces(flows, options[:dst_datapath_id], options[:src_interface_id], options[:dst_interface_id])
+        unless interface
+          interface = options.dup
+          @interfaces << interface
+
+          info log_format("creating mac2mac entry",
+                          options.map { |k, v| "#{k}: #{v}" }.join(" ")
+                          )
+
+          prepare_interfaces(flows, options[:src_interface_id], options[:dst_interface_id])
+        end
+
+        @dp_info.add_flows(flows)
       end
 
       (interface[:datapath_networks] ||= []).tap do |datapath_networks|
         datapath_networks << dpn
       end
-
-      # Fix this...
-      flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DATAPATH,
-                           goto_table: TABLE_OUTPUT_MAC2MAC,
-                           priority: 5,
-                           match_datapath: dpn[:datapath_id],
-                           match_ignore_mac2mac: false,
-                           write_mac2mac: true,
-                           cookie: dpn[:datapath_id] | COOKIE_TYPE_DATAPATH)
-
-      @dp_info.add_flows(flows)
 
       self.update_network_id(dpn[:network_id])
     end
@@ -140,14 +134,18 @@ module Vnet::Openflow
       @interfaces.find { |interface|
         interface[:datapath_networks].reject! { |dpn| dpn[:id] == dpn_id }
       }.tap do |interface|
-        @interfaces.delete(interface) if interface
+        next if interface.nil? || !interface[:datapath_networks].empty?
+
+        @interfaces.delete(interface)
+
+        debug log_format("remove interface #{interface.uuid}/#{interface.id}")
       end
 
       @items.each do |network_id, dpn_list|
         next unless dpn_list.delete(dpn_id)
 
         debug log_format("remove datapath network",
-                      "network_id:#{network_id} dpn_id:#{dpn_id}")
+                         "network_id:#{network_id} dpn_id:#{dpn_id}")
 
         update_network_id(network_id)
         break
@@ -184,7 +182,7 @@ module Vnet::Openflow
       self.update_network_id(dpn[:network_id])
     end
 
-    def prepare_interfaces(flows, datapath_id, src_interface_id, dst_interface_id)
+    def prepare_interfaces(flows, src_interface_id, dst_interface_id)
       # TODO:
       #
       # MAC2MAC -> Do we need a relationship table, e.g. tunnel table
@@ -204,7 +202,10 @@ module Vnet::Openflow
                              write_interface: src_interface_id,
                              write_reflection: reflection,
 
-                             cookie: datapath_id | COOKIE_TYPE_DATAPATH)
+                             # Currently use the dst_interface_id
+                             # until we merge dc_segment manager and
+                             # tunnel manager.
+                             cookie: dst_interface_id | COOKIE_TYPE_INTERFACE)
       }
     end
 
@@ -255,10 +256,6 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} dc_segment_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-    
     def create_datapath_network(dpn_id)
       dpn_map = MW::DatapathNetwork.batch[dpn_id].commit(fill: [ :datapath, :network ])
       return unless  dpn_map

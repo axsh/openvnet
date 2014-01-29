@@ -7,7 +7,7 @@ include Vnet::Openflow::FlowHelpers
 
 describe Vnet::Openflow::FilterManager do
   let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
-  let(:flows) { datapath.added_flows }
+  let(:flows) { datapath.current_flows }
 
   subject do
     Vnet::Openflow::FilterManager.new(datapath.dp_info).tap { |fm|

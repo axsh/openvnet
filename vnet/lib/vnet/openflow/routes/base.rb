@@ -11,7 +11,6 @@ module Vnet::Openflow::Routes
 
     attr_reader :interface_id
     attr_reader :route_link_id
-    attr_reader :route_link_mac_address
 
     attr_reader :network_id
     attr_reader :ipv4_address
@@ -19,9 +18,6 @@ module Vnet::Openflow::Routes
 
     attr_reader :ingress
     attr_reader :egress
-
-    attr_accessor :network_id
-    attr_accessor :use_datapath_id
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -34,7 +30,6 @@ module Vnet::Openflow::Routes
 
       @interface_id = map.interface_id
       @route_link_id = map.route_link_id
-      @route_link_mac_address = params[:route_link_mac_address]
 
       @network_id = map.network_id
       @ipv4_address = IPAddr.new(map.ipv4_network, Socket::AF_INET)
@@ -52,6 +47,23 @@ module Vnet::Openflow::Routes
       is_ipv4_broadcast(@ipv4_address, @ipv4_prefix)
     end
 
+    # Update variables by first duplicating to avoid memory
+    # consistency issues with values passed to other actors.
+    def to_hash
+      Vnet::Openflow::Route.new(id: @id,
+                                uuid: @uuid,
+
+                                interface_id: @interface_id,
+                                route_link_id: @route_link_id,
+                                
+                                network_id: @network_id,
+                                ipv4_address: @ipv4_address,
+                                ipv4_prefix: @ipv4_prefix,
+
+                                ingress: @ingress,
+                                egress: @egress)
+    end
+
     #
     # Events:
     #
@@ -60,92 +72,59 @@ module Vnet::Openflow::Routes
       return if
         @interface_id.nil? ||
         @network_id.nil? ||
-        @route_link_id.nil? ||
-        @route_link_mac_address.nil?
+        @route_link_id.nil?
 
       flows = []
 
       subnet_dst = match_ipv4_subnet_dst(@ipv4_address, @ipv4_prefix)
       subnet_src = match_ipv4_subnet_src(@ipv4_address, @ipv4_prefix)
 
-      if @use_datapath_id.nil?
+      # Currently create these two flows even if the interface isn't
+      # on this datapath. Should not cause any issues as the interface
+      # id will never be matched.
+      flows << flow_create(:routing,
+                           table: TABLE_INTERFACE_EGRESS_ROUTES,
+                           goto_table: TABLE_INTERFACE_EGRESS_MAC,
+
+                           match: subnet_dst,
+                           match_interface: @interface_id,
+
+                           default_route: self.is_default_route,
+
+                           write_network: @network_id)
+
+      if @ingress == true
         flows << flow_create(:routing,
-                             table: TABLE_INTERFACE_EGRESS_ROUTES,
-                             goto_table: TABLE_INTERFACE_EGRESS_MAC,
+                             table: TABLE_ROUTER_INGRESS,
+                             goto_table: TABLE_ROUTER_CLASSIFIER,
 
-                             match: subnet_dst,
+                             match: subnet_src,
                              match_interface: @interface_id,
-                             write_network: @network_id,
+
                              default_route: self.is_default_route,
-                             cookie: cookie)
 
-        if @ingress == true
-          flows << flow_create(:routing,
-                               table: TABLE_ROUTE_LINK_INGRESS,
-                               goto_table: TABLE_ROUTE_LINK_EGRESS,
+                             write_route_link: @route_link_id,
+                             write_reflection: true)
+      end
 
-                               match: subnet_src,
-                               match_interface: @interface_id,
-                               write_route_link: @route_link_id,
-                               default_route: self.is_default_route,
-                               write_reflection: true,
-                               cookie: cookie)
-        end
-
+      # In order to know what interface to egress from this flow needs
+      # to be created even on datapaths where the interface is remote.
+      [true, false].each { |reflection|
         if @egress == true
           flows << flow_create(:routing,
-                               table: TABLE_ROUTE_LINK_EGRESS,
-                               goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
+                               table: TABLE_ROUTER_EGRESS,
+                               goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
 
                                match: subnet_dst,
                                match_route_link: @route_link_id,
-                               write_interface: @interface_id,
+
                                default_route: self.is_default_route,
-                               cookie: cookie)
+
+                               write_value_pair_flag: reflection,
+                               write_value_pair_first: @interface_id,
+                               write_value_pair_second: @route_link_id)
         end
-
-      else
-        if @egress == true
-          [true, false].each { |reflection|
-
-            # TODO: Instead use the interface ID as the second value,
-            # and have a datapath:interface -> dp route link lookup
-            # table.
-            #
-            # Add that table as a goto_table at the end where it jumps
-            # to TABLE_LOOKUP_DP_ROUTE_LINK_IF, with mac set to rl mac.
-
-            flows << flow_create(:routing,
-                                 table: TABLE_ROUTE_LINK_EGRESS,
-                                 goto_table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
-
-                                 match: subnet_dst,
-                                 match_reflection: reflection,
-                                 match_route_link: @route_link_id,
-
-                                 write_value_pair_flag: reflection,
-                                 write_value_pair_first: @use_datapath_id,
-                                 write_value_pair_second: @route_link_id,
-
-                                 default_route: self.is_default_route,
-                                 cookie: cookie)
-          }
-
-          # flows << flow_create(:routing,
-          #                      table: TABLE_ROUTE_LINK_EGRESS,
-          #                      goto_table: TABLE_ROUTE_EGRESS_INTERFACE,
-
-          #                      match: subnet_dst,
-          #                      match_route_link: @route_link_id,
-
-          #                      actions: {
-          #                        :eth_dst => @route_link_mac_address
-          #                      },
-          #                      write_interface: @interface_id,
-          #                      default_route: self.is_default_route,
-          #                      cookie: cookie)
-        end
-      end
+      }
 
       @dp_info.add_flows(flows)
     end

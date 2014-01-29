@@ -47,6 +47,8 @@ module Vnet
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
+        autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
+        autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
@@ -64,6 +66,8 @@ module Vnet
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLinkCollection, 'vnet/endpoints/1.0/responses/datapath_route_link'
+        autoload :DnsServiceCollection, 'vnet/endpoints/1.0/responses/dns_service'
+        autoload :DnsRecordCollection, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
@@ -93,6 +97,8 @@ module Vnet
     autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'
     autoload :DcSegment, 'vnet/models/dc_segment'
     autoload :DhcpRange, 'vnet/models/dhcp_range'
+    autoload :DnsService, 'vnet/models/dns_service'
+    autoload :DnsRecord, 'vnet/models/dns_record'
     autoload :Interface, 'vnet/models/interface'
     autoload :InterfaceSecurityGroup, 'vnet/models/interface_security_group'
     autoload :IpAddress, 'vnet/models/ip_address'
@@ -118,6 +124,8 @@ module Vnet
     autoload :DatapathRouteLink, 'vnet/model_wrappers/datapath_route_link'
     autoload :DcSegment, 'vnet/model_wrappers/dc_segment'
     autoload :DhcpRange, 'vnet/model_wrappers/dhcp_range'
+    autoload :DnsService, 'vnet/model_wrappers/dns_service'
+    autoload :DnsRecord, 'vnet/model_wrappers/dns_record'
     autoload :Helpers, 'vnet/model_wrappers/helpers'
     autoload :Interface, 'vnet/model_wrappers/interface'
     autoload :InterfaceSecurityGroup, 'vnet/model_wrappers/interface_security_group'
@@ -146,6 +154,8 @@ module Vnet
     autoload :DatapathRouteLink, 'vnet/node_api/models.rb'
     autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DhcpRange, 'vnet/node_api/models.rb'
+    autoload :DnsService, 'vnet/node_api/dns_service'
+    autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
@@ -179,6 +189,7 @@ module Vnet
     autoload :DatapathManager, 'vnet/openflow/datapath_manager'
     autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :DpInfo, 'vnet/openflow/dp_info'
+    autoload :FilterManager, 'vnet/openflow/filter_manager'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'
@@ -189,8 +200,10 @@ module Vnet
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :PortManager, 'vnet/openflow/port_manager'
+    autoload :Route, 'vnet/openflow/route'
     autoload :RouteManager, 'vnet/openflow/route_manager'
-    autoload :FilterManager, 'vnet/openflow/filter_manager'
+    autoload :Router, 'vnet/openflow/router'
+    autoload :RouterManager, 'vnet/openflow/router_manager'
     autoload :Service, 'vnet/openflow/service'
     autoload :ServiceManager, 'vnet/openflow/service_manager'
     autoload :Switch, 'vnet/openflow/switch'
@@ -242,6 +255,7 @@ module Vnet
     end
 
     module Routers
+      autoload :Base, 'vnet/openflow/routers/base'
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
     end
 
@@ -256,6 +270,7 @@ module Vnet
     module Services
       autoload :Base, 'vnet/openflow/services/base'
       autoload :Dhcp, 'vnet/openflow/services/dhcp'
+      autoload :Dns, 'vnet/openflow/services/dns'
       autoload :Router, 'vnet/openflow/services/router'
     end
 

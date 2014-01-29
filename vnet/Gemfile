@@ -10,6 +10,7 @@ gem "ipaddress"
 gem "json"
 gem "mysql2"
 gem "net-dhcp", ">= 1.1.1"
+gem "net-dns"
 gem "rack"
 gem "rack-cors"
 gem "racket", ">= 1.0.12", :git => 'https://github.com/axsh/racket.git'

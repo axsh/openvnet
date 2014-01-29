@@ -18,6 +18,7 @@ module Vnet::Openflow
       network
       port
       route
+      router
       filter
       service
       tunnel
