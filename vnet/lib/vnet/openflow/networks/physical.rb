@@ -8,21 +8,18 @@ module Vnet::Openflow::Networks
       :physical
     end
 
-    def flow_options
-      @flow_options ||= {:cookie => @cookie}
-    end
-
     def install
-      network_md = md_create(:network => @id)
-      fo_network_md = flow_options.merge(network_md)
-
       flows = []
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 30,
-                           network_md, nil,
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_SRC))
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 30,
-                           network_md, nil,
-                           flow_options.merge(:goto_table => TABLE_PHYSICAL_DST))
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
+                           priority: 30,
+                           match_network: @id)
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_DST_CLASSIFIER,
+                           goto_table: TABLE_PHYSICAL_DST,
+                           priority: 30,
+                           match_network: @id)
 
       @dp_info.add_flows(flows)
     end

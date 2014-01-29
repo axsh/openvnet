@@ -21,14 +21,24 @@ module Vnet::Openflow::Networks
                              :tunnel_id => @id | TUNNEL_FLAG_MASK
                            }, nil,
                            fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 40,
-                           network_md,
-                           nil,
-                           flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 40,
-                           network_md,
-                           nil,
-                           flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
+                           priority: 30,
+                           match_local: true,
+                           match_network: @id)
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           goto_table: TABLE_VIRTUAL_SRC,
+                           priority: 30,
+                           match_remote: true,
+                           match_network: @id)
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_DST_CLASSIFIER,
+                           goto_table: TABLE_VIRTUAL_DST,
+                           priority: 30,
+                           match_network: @id)
 
       @dp_info.add_flows(flows)
 
@@ -67,7 +77,7 @@ module Vnet::Openflow::Networks
 
       flow_learn_arp << learn_options
 
-      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_ROUTE_INGRESS_INTERFACE
+      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_NETWORK_DST_CLASSIFIER
       flow_learn_arp
     end
   end
