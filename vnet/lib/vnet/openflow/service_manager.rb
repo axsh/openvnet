@@ -10,6 +10,11 @@ module Vnet::Openflow
     subscribe_event ADDED_SERVICE, :item
     subscribe_event REMOVED_SERVICE, :unload
     subscribe_event INITIALIZED_SERVICE, :create_item
+    subscribe_event ADDED_DNS_SERVICE, :set_dns_service
+    subscribe_event REMOVED_DNS_SERVICE, :clear_dns_service
+    subscribe_event UPDATED_DNS_SERVICE, :update_dns_service
+    subscribe_event ADDED_DNS_RECORD, :add_dns_record
+    subscribe_event REMOVED_DNS_RECORD, :remove_dns_record
 
     def update_item(params)
       select(params).map do |item_hash|
@@ -27,6 +32,27 @@ module Vnet::Openflow
       end
     end
 
+    def dns_server_for(network_id)
+      @items.each do |_, item|
+        next unless item.type == "dns" && item.networks[network_id]
+        return item.dns_server_for(network_id)
+      end
+      nil
+    end
+
+    def add_dns_server(network_id, dns_server)
+      @items.each do |_, item|
+        next unless item.type == "dhcp" && item.networks[network_id]
+        item.add_dns_server(network_id, dns_server)
+      end
+    end
+
+    def remove_dns_server(network_id)
+      @items.each do |_, item|
+        next unless item.type == "dhcp" && item.networks[network_id]
+        item.remove_dns_server(network_id)
+      end
+    end
     #
     # Internal methods:
     #
@@ -47,6 +73,7 @@ module Vnet::Openflow
 
       case mode
       when :dhcp       then Vnet::Openflow::Services::Dhcp.new(params)
+      when :dns        then Vnet::Openflow::Services::Dns.new(params)
       when :router     then Vnet::Openflow::Services::Router.new(params)
       else
         nil
@@ -87,6 +114,12 @@ module Vnet::Openflow
         item.add_network_unless_exists(ip_info[:network_id], ip_info[:cookie_id])
       end
 
+      if item.type == "dns"
+        if dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
+          publish(ADDED_DNS_SERVICE, id: item.id, dns_service_map: dns_service_map)
+        end
+      end
+
       item
     end    
 
@@ -99,6 +132,62 @@ module Vnet::Openflow
       item.uninstall
 
       item
+    end
+
+    def set_dns_service(params)
+      return unless params[:id]
+
+      dns_service_map = params[:dns_service_map] || MW::DnsService.batch.find(id: params[:dns_service_id]).commit(fill: :dns_records)
+      return unless dns_service_map
+
+      item = @items[params[:id]]
+      return unless item
+
+      item.set_dns_service(dns_service_map)
+
+      dns_service_map.dns_records.each do |dns_record_map|
+        publish(ADDED_DNS_RECORD, id: item.id, dns_record_map: dns_record_map)
+      end
+    end
+
+    def update_dns_service(params)
+      dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
+      return unless dns_service_map
+
+      item = @items[params[:id]]
+      return unless item
+
+      item.update_dns_service(dns_service_map)
+    end
+
+    def clear_dns_service(params)
+      dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
+      return unless dns_service_map
+
+      item = @items[params[:id]]
+      return unless item
+
+      item.clear_dns_service
+    end
+
+    def add_dns_record(params)
+      dns_record_map = params[:dns_record_map] || MW::DnsRecord.find(id: params[:dns_record_id])
+      return unless dns_record_map
+
+      item = @items[params[:id]]
+      return unless item
+
+      item.add_dns_record(dns_record_map)
+    end
+
+    def remove_dns_record(params)
+      dns_record_map = MW::DnsRecord.batch.with_deleted.first(id: params[:dns_record_id]).commit
+      return unless dns_record_map
+
+      item = @items[params[:id]]
+      return unless item
+
+      item.remove_dns_record(dns_record_map)
     end
 
     def match_item?(item, params)

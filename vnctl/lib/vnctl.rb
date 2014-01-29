@@ -13,6 +13,7 @@ module Vnctl
   module Cli
     autoload :Base, 'vnctl/cli/base'
     autoload :Datapath, 'vnctl/cli/datapath'
+    autoload :DnsService, 'vnctl/cli/dns_service'
     autoload :IpLease, 'vnctl/cli/ip_lease'
     autoload :MacLease, 'vnctl/cli/mac_lease'
     autoload :Network, 'vnctl/cli/network'

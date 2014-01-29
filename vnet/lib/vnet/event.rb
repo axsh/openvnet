@@ -79,5 +79,18 @@ module Vnet
     #
     INITIALIZED_PORT = "initialized_port"
     FINALIZED_PORT = "finalized_port"
+
+    #
+    # dns service
+    #
+    ADDED_DNS_SERVICE = "added_dns_service"
+    REMOVED_DNS_SERVICE = "removed_dns_service"
+    UPDATED_DNS_SERVICE = "updated_dns_service"
+
+    #
+    # dns record
+    #
+    ADDED_DNS_RECORD = "added_dns_record"
+    REMOVED_DNS_RECORD = "removed_dns_record"
   end
 end

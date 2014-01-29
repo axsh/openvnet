@@ -135,6 +135,7 @@ module Vnet::Endpoints::V10
     respond_to :json, :yml
 
     load_namespace('datapaths')
+    load_namespace('dns_services')
     load_namespace('interfaces')
     load_namespace('ip_leases')
     load_namespace('mac_leases')

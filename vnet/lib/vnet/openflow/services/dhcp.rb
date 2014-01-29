@@ -7,6 +7,11 @@ module Vnet::Openflow::Services
 
   class Dhcp < Base
 
+    def initialize(params)
+      super
+      @dns_servers = {}
+    end
+
     def install
       flows = []
       flows << flow_create(:controller,
@@ -61,6 +66,7 @@ module Vnet::Openflow::Services
         debug log_format('DHCP send: DHCP_MSG_ACK')
         params[:dhcp_class] = DHCP::ACK
         params[:message_type] = $DHCP_MSG_ACK
+        params[:dns_server] = @dns_servers[ipv4_info[:network_id]]
       else
         debug log_format('DHCP send: no handler')
         return
@@ -82,6 +88,10 @@ module Vnet::Openflow::Services
     end
 
     def add_network(network_id, cookie_id)
+      if dns_server = @dp_info.service_manager.dns_server_for(network_id)
+        add_dns_server(network_id, dns_server)
+      end
+
       flows = []
       flows << flow_create(:default,
                            table: TABLE_FLOOD_SIMULATED,
@@ -99,6 +109,18 @@ module Vnet::Openflow::Services
                            match_network: network_id,
                            write_interface: @interface_id)
       @dp_info.add_flows(flows)
+    end
+
+    def remove_network(network_id)
+      remove_dns_server(network_id)
+    end
+
+    def add_dns_server(network_id, dns_server)
+      @dns_servers[network_id] = dns_server
+    end
+
+    def remove_dns_server(network_id)
+      @dns_servers.delete(network_id)
     end
 
     #
@@ -212,6 +234,10 @@ module Vnet::Openflow::Services
       # end
 
       # TODO, check packet size does not exceed any known limits
+      dhcp_out.options << DHCP::DomainNameServerOption.new.tap do |option|
+        option.payload = (params[:dns_server] || "127.0.0.1").split(/[.,]/).map(&:to_i)
+      end
+
       dhcp_out
 
     end

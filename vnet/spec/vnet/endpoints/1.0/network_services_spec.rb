@@ -11,7 +11,7 @@ end
 describe "/network_services" do
   before(:each) { use_mock_event_handler }
   let(:api_suffix)  { "network_services" }
-  let(:fabricator)  { :network_service }
+  let(:fabricator)  { :network_service_dhcp }
   let(:model_class) { Vnet::Models::NetworkService }
 
   include_examples "GET /"

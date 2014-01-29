@@ -10,6 +10,7 @@ module Vnctl::Cli
     }
 
     vnctl_register(C::Datapath, "datapaths")
+    vnctl_register(C::DnsService, "dns_services")
     vnctl_register(C::IpLease, "ip leases")
     vnctl_register(C::MacLease, "mac leases")
     vnctl_register(C::Network, "networks")
