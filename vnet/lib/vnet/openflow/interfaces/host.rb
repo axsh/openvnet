@@ -103,7 +103,7 @@ module Vnet::Openflow::Interfaces
 
         flows << flow_create(:default,
                              table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                              priority: 20,
 
                              match: {
@@ -116,7 +116,7 @@ module Vnet::Openflow::Interfaces
                              cookie: cookie)
         flows << flow_create(:default,
                              table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                              priority: 20,
 
                              match: {
