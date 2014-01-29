@@ -32,13 +32,13 @@ describe Vnet::Openflow::Networks::Virtual do
         fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
       expect(flows).to include Vnet::Openflow::Flow.create(
         TABLE_NETWORK_SRC_CLASSIFIER,
-        40,
+        30,
         network_md,
         nil,
-        flow_options.merge(:goto_table => TABLE_VIRTUAL_SRC))
+        flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
       expect(flows).to include Vnet::Openflow::Flow.create(
         TABLE_NETWORK_DST_CLASSIFIER,
-        40,
+        30,
         network_md,
         nil,
         flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
