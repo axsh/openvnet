@@ -4,14 +4,12 @@ module Vnet::Openflow
 
   class RouteManager < Manager
 
-    ROUTE_COMMIT = {:fill => [:route_link]}
-
-    def initialize(dp_info)
-      super
-
-      @route_links = {}
-      @interfaces = {}
-    end
+    #
+    # Events:
+    #
+    subscribe_event ADDED_ROUTE, :create_item
+    subscribe_event REMOVED_ROUTE, :delete_item
+    subscribe_event INITIALIZED_ROUTE, :install_item
 
     #
     # Specialize Manager:
@@ -31,44 +29,14 @@ module Vnet::Openflow
     # Refactor:
     #
 
-    def insert(route_map)
-      route_link = prepare_link(route_map.route_link)
-
-      return if route_link.nil?
-      return if route_link.routes.has_key? route_map.id
-
-      info log_format("insert #{route_map.uuid}/#{route_map.id}", "interface_id:#{route_map.interface_id}")
-
-      route = Routes::Base.new(dp_info: @dp_info,
-                               manager: self,
-                               map: route_map,
-                               route_link_mac_address: route_link.mac_address)
-
-      @items[route.id] = route
-
-      route_link.routes[route.id] = route
-
-      interface = prepare_interface(route_map.interface_id)
-
-      if interface.nil?
-        warn log_format('couldn\'t prepare router interface', "#{route_map.uuid}")
-        return
-      end
-
-      route.use_datapath_id = interface[:use_datapath_id]
-      route.install
-    end
-
     def prepare_network(network_map, dp_map)
-      network_map.batch.routes.commit(ROUTE_COMMIT).each { |route_map|
-        if !@route_links.has_key?(route_map.route_link.id)
-          route_map.batch.on_other_networks(network_map.id).commit(ROUTE_COMMIT).each { |other_route_map|
-            # Replace with a lightweight methods.
-            self.insert(other_route_map)
-          }
-        end
+      routes = network_map.batch.routes.commit
+      return if routes.nil?
 
-        self.insert(route_map)
+      routes.uniq { |route_map|
+        route_map.route_link_id
+      }.each { |route_map|
+        @dp_info.router_manager.async.retrieve(id: route_map.route_link_id)
       }
     end
 
@@ -78,96 +46,76 @@ module Vnet::Openflow
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} route_manager: #{message}" + (values ? " (#{values})" : '')
-    end
-
     #
     # Specialize Manager:
     #
 
-    def datapath_route_link(rl_map)
-      @datapath_info.datapath_map.batch.datapath_route_links_dataset.where(:route_link_id => rl_map.id).all.commit
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+
+      true
     end
 
-    def dp_rl_on_segment(rl_map)
-      rl_map.batch.datapath_route_links_dataset.on_segment(@datapath_info.datapath_map).all.commit
+    def select_filter_from_params(params)
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+
+      create_batch(MW::Route.batch, params[:uuid], filters)
     end
 
-    def prepare_link(rl_map)
-      link = @route_links[rl_map.id]
-      return link if link
-
-      route_link = Routers::RouteLink.new(dp_info: @dp_info, map: rl_map)
-      @route_links[route_link.id] = route_link
-
-      datapath_route_link(rl_map).each { |dp_rl_map|
-        route_link.set_dp_route_link(dp_rl_map)
-      }
-
-      dp_rl_on_segment(rl_map).each { |dp_rl_map|
-        route_link.add_datapath_on_segment(dp_rl_map)
-      }
-
-      @dp_info.datapath_manager.async.update_item(event: :activate_route_link,
-                                                  route_link_id: route_link.id)
-
-      route_link.install
-      route_link
+    def select_item(filter)
+      filter.commit
     end
 
-    def prepare_interface(interface_id)
-      interface_item = @dp_info.interface_manager.item(id: interface_id)
-      return nil if interface_item.nil?
+    def item_initialize(item_map, params)
+      Routes::Base.new(dp_info: @dp_info,
+                       manager: self,
+                       map: item_map)
+    end
 
-      info log_format('from interface_manager' , "#{interface_item.uuid}/#{interface_id} mode:#{interface_item.mode}")
+    def initialized_item_event
+      INITIALIZED_ROUTE
+    end
 
-      interface = interface_item && @interfaces[interface_item.id]
-      return interface if interface
+    #
+    # Create / Delete interfaces:
+    #
 
-      if interface_item.mode != :simulated && interface_item.mode != :remote
-        info log_format('only interfaces with mode \'simulated\' or \'remote\' are supported',
-                        "uuid:#{interface_item.uuid} mode:#{interface_item.mode}")
-        return
-      end
+    def create_item(params)
+      return if @items[params[:id]]
 
-      interface = {
-        :id => interface_item.id,
-        :use_datapath_id => nil,
+      item = self.item(params)
+      return unless item
 
-        :mode => interface_item.mode,
-      }
+      item
+    end
 
-      @interfaces[interface_item.id] = interface
+    def install_item(params)
+      item_map = params[:item_map]
+      item = @items[item_map.id]
+      return nil if item.nil?
 
-      if interface_item.mode == :remote
-        interface[:use_datapath_id] = interface_item.owner_datapath_ids && interface_item.owner_datapath_ids.first
+      debug log_format("install #{item.uuid}/#{item.id}")
 
-        # if interface[:use_datapath_id]
-          # @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
-          #                                              id: interface[:id])
-          @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
-                                                       id: interface[:id])
-        # end
+      item.install
 
-        return interface
-      end
+      @dp_info.interface_manager.async.retrieve(id: item.interface_id)
+      @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
+                                                   id: item.interface_id)
 
-      datapath_id = @datapath_info.datapath_map.id
+      item
+    end
+    
+    def delete_item(params)
+      item = @items.delete(params[:id])
 
-      if interface_item.active_datapath_ids &&
-          !interface_item.active_datapath_ids.include?(datapath_id)
-        interface[:use_datapath_id] = interface_item.active_datapath_ids.first
-      end
+      debug log_format("delete #{item.uuid}/#{item.id}")
 
-      if interface[:use_datapath_id].nil?
-        @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
-                                                     id: interface[:id])
-        @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
-                                                     id: interface[:id])
-      end
-
-      interface
+      item.uninstall
+      item
     end
 
   end

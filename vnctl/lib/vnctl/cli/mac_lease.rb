@@ -2,10 +2,11 @@
 
 module Vnctl::Cli
   class MacLease < Base
-    namespace :mac_lease
+    namespace :mac_leases
     api_suffix "/api/mac_leases"
 
     add_modify_shared_options {
+      option_uuid
       option :interface_uuid, :type => :string, :desc => "The uuid of the interface that this mac lease is tried to."
       option :mac_address, :type => :string, :desc => "The mac address to lease"
     }

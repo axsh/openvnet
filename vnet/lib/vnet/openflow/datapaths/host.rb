@@ -96,6 +96,18 @@ module Vnet::Openflow::Datapaths
       # associations usable for output to the proper port.
 
       flows << flow_create(:default,
+                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           priority: 30,
+                           match: {
+                             :eth_dst => dp_rl[:mac_address]
+                           },
+                           match_interface: dp_rl[:interface_id],
+                           write_route_link: @id,
+
+                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
+      flows << flow_create(:default,
                            table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
@@ -104,6 +116,10 @@ module Vnet::Openflow::Datapaths
                            write_value_pair_first: dp_rl[:interface_id],
 
                            cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
+      flows_for_filtering_mac_address(flows,
+                                      dp_rl[:mac_address],
+                                      dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
     end
 
   end

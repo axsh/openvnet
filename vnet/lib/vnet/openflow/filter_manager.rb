@@ -49,6 +49,7 @@ module Vnet::Openflow
     end
 
     private
+
     def initialize_filter(params)
       interface_id = params[:interface_id]
 

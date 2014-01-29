@@ -4,7 +4,7 @@ require 'ostruct'
 
 module Vnet::Openflow
 
-  class Route < OpenStruct
+  class Router < OpenStruct
   end
 
 end

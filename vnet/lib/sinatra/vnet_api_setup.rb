@@ -84,6 +84,11 @@ module Sinatra
       app.configure :development do
         require 'sinatra/reloader'
         app.register Sinatra::Reloader
+
+        app.before do
+          #logger.info "header: #{request.inspect}"
+          logger.info "params: #{@params.inspect}"
+        end
       end
     end
   end
