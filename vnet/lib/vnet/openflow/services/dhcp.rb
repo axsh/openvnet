@@ -7,6 +7,11 @@ module Vnet::Openflow::Services
 
   class Dhcp < Base
 
+    def initialize(params)
+      super
+      @dns_servers = {}
+    end
+
     def install
       flows = []
       flows << flow_create(:controller,
@@ -57,6 +62,7 @@ module Vnet::Openflow::Services
         debug log_format('DHCP send: DHCP_MSG_ACK')
         params[:dhcp_class] = DHCP::ACK
         params[:message_type] = $DHCP_MSG_ACK
+        params[:dns_server] = @dns_servers[ipv4_info[:network_id]]
       else
         debug log_format('DHCP send: no handler')
         return
@@ -78,6 +84,10 @@ module Vnet::Openflow::Services
     end
 
     def add_network(network_id, cookie_id)
+      if dns_server = @dp_info.service_manager.dns_server_for(network_id)
+        add_dns_server(network_id, dns_server)
+      end
+
       flows = []
       flows << flow_create(:default,
                            table: TABLE_FLOOD_SIMULATED,
@@ -97,6 +107,18 @@ module Vnet::Openflow::Services
       @dp_info.add_flows(flows)
     end
 
+    def remove_network(network_id)
+      remove_dns_server(network_id)
+    end
+
+    def add_dns_server(network_id, dns_server)
+      @dns_servers[network_id] = dns_server
+    end
+
+    def remove_dns_server(network_id)
+      @dns_servers.delete(network_id)
+    end
+
     #
     # Internal methods:
     #
@@ -105,20 +127,6 @@ module Vnet::Openflow::Services
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
-    end
-
-    def find_client_infos(port_number, server_mac_info, server_ipv4_info)
-      interface = @dp_info.interface_manager.item(port_number: port_number)
-      return [] if interface.nil?
-
-      client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
-      
-      # info log_format("find_client_info", "#{interface.inspect}")
-      # info log_format("find_client_info", "server_mac_info:#{server_mac_info.inspect}")
-      # info log_format("find_client_info", "server_ipv4_info:#{server_ipv4_info.inspect}")
-      # info log_format("find_client_info", "client_infos:#{client_infos.inspect}")
-
-      client_infos
     end
 
     def parse_dhcp_packet(message)
@@ -162,6 +170,10 @@ module Vnet::Openflow::Services
       #   dhcp_out.options << DHCP::DomainNameOption.new(:payload => nw_services[:dns].domain_name.unpack('C*')) if nw_services[:dns].domain_name
       #   dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns].ip
       # end
+
+      dhcp_out.options << DHCP::DomainNameServerOption.new.tap do |option|
+        option.payload = (params[:dns_server] || "127.0.0.1").split(/[.,]/).map(&:to_i)
+      end
 
       dhcp_out
     end
