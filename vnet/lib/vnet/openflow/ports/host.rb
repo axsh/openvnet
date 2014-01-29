@@ -38,20 +38,6 @@ module Vnet::Openflow::Ports
                              :in_port => self.port_number
                            }, nil,
                            flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
-                             :in_port => self.port_number,
-                             :eth_type => 0x0800
-                           }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 41, {
-                             :in_port => self.port_number,
-                             :eth_type => 0x0806
-                           }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
-      flows << Flow.create(TABLE_PHYSICAL_SRC, 31, {
-                             :in_port => self.port_number
-                           }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
 
       if @interface_id && @dp_info.datapath.datapath_info.node_id != 'edge'
         flows << flow_create(:default,

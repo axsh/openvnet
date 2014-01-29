@@ -79,15 +79,6 @@ module Vnet::Openflow
       end
     end
 
-    def table_network_src(network_type)
-      case network_type
-      when :physical then TABLE_PHYSICAL_SRC
-      when :virtual  then TABLE_VIRTUAL_SRC
-      else
-        raise "Invalid network type value."
-      end
-    end
-
     def flow_create(type, params)
       match = {}
       match_metadata = {}
@@ -144,8 +135,6 @@ module Vnet::Openflow
 
       if params.has_key?(:table_network_dst)
         table = table_network_dst(params[:table_network_dst])
-      elsif params.has_key?(:table_network_src)
-        table = table_network_src(params[:table_network_src])
       end
 
       #

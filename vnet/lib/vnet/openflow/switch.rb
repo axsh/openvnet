@@ -55,7 +55,6 @@ module Vnet::Openflow
        TABLE_NETWORK_SRC_CLASSIFIER,
        TABLE_NETWORK_DST_CLASSIFIER,
        TABLE_VIRTUAL_SRC,
-       TABLE_PHYSICAL_SRC,
 
        TABLE_ROUTE_INGRESS_INTERFACE,
        TABLE_ROUTER_INGRESS,
@@ -96,8 +95,6 @@ module Vnet::Openflow
        [TABLE_VIRTUAL_SRC, 84, :match_local, { :eth_type => 0x0806 }],
        [TABLE_VIRTUAL_SRC, 82, nil, { :eth_type => 0x0806, :tunnel_id => 0 }],
        [TABLE_VIRTUAL_SRC, 80, nil, { :eth_type => 0x0806 }],
-       [TABLE_PHYSICAL_SRC, 40, nil, { :eth_type => 0x0800 }],
-       [TABLE_PHYSICAL_SRC, 40, nil, { :eth_type => 0x0806 }],
        [TABLE_FLOOD_SEGMENT, 10, :match_remote, nil],
        [TABLE_OUTPUT_DP_NETWORK_DST, 2, nil, { :eth_dst => MAC_BROADCAST }],
       ].each { |table, priority, flag, match|
@@ -130,7 +127,6 @@ module Vnet::Openflow
 
       [[TABLE_CLASSIFIER, TABLE_TUNNEL_PORTS, 0, :write_remote, nil],
        [TABLE_VIRTUAL_SRC, TABLE_ROUTE_INGRESS_INTERFACE, 90, :match_local, nil],
-       [TABLE_PHYSICAL_SRC, TABLE_ROUTE_INGRESS_INTERFACE, 90, :match_local, nil],
        [TABLE_VIRTUAL_DST, TABLE_FLOOD_SIMULATED, 30, nil, { :eth_dst => MAC_BROADCAST }],
        [TABLE_PHYSICAL_DST, TABLE_FLOOD_SIMULATED, 30, nil, { :eth_dst => MAC_BROADCAST }],
        [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC, 1, nil, {

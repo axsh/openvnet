@@ -54,8 +54,6 @@ module Vnet
       TABLE_NETWORK_SRC_CLASSIFIER = 20
 
       TABLE_VIRTUAL_SRC       = 21
-      TABLE_PHYSICAL_SRC      = 22
-
 
       # In the transition from TABLE_ROUTER_EGRESS to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.
