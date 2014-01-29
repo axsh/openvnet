@@ -26,12 +26,14 @@ module Vnet::Openflow::Networks
                            table: TABLE_NETWORK_SRC_CLASSIFIER,
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
                            priority: 30,
-                           match_local: true,
                            match_network: @id)
       flows << flow_create(:default,
                            table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           goto_table: TABLE_VIRTUAL_SRC,
-                           priority: 30,
+                           goto_table: TABLE_NETWORK_MAC_LEARNING,
+                           priority: 40,
+                           match: {
+                             :eth_type => 0x0806
+                           },
                            match_remote: true,
                            match_network: @id)
       flows << flow_create(:default,
@@ -43,8 +45,8 @@ module Vnet::Openflow::Networks
       @dp_info.add_flows(flows)
 
       ovs_flows = []
-      ovs_flows << create_ovs_flow_learn_arp(83, "tun_id=0,")
-      ovs_flows << create_ovs_flow_learn_arp(81, "", "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\],")
+      ovs_flows << create_ovs_flow_learn_arp(3, "tun_id=0,")
+      ovs_flows << create_ovs_flow_learn_arp(1, "", "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\],")
       ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
     end
 
@@ -70,7 +72,7 @@ module Vnet::Openflow::Networks
       match_md = md_create(network: @id, remote: nil)
       learn_md = md_create(network: @id, local: nil)
 
-      flow_learn_arp = "table=#{TABLE_VIRTUAL_SRC},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
+      flow_learn_arp = "table=#{TABLE_NETWORK_MAC_LEARNING},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
         [@cookie, match_md[:metadata], match_md[:metadata_mask]]
       flow_learn_arp << "learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
         [TABLE_VIRTUAL_DST, cookie, learn_md[:metadata]]

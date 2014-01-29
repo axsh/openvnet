@@ -34,11 +34,6 @@ module Vnet::Openflow::Ports
                              write_remote: true)
       end
 
-      flows << Flow.create(TABLE_VIRTUAL_SRC, 30, {
-                             :in_port => self.port_number
-                           }, nil,
-                           flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
-
       if @interface_id && @dp_info.datapath.datapath_info.node_id != 'edge'
         flows << flow_create(:default,
                              table: TABLE_CLASSIFIER,
