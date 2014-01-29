@@ -186,7 +186,9 @@ module Vnet::Openflow
 
     def load_addresses(item_map)
       item_map.mac_leases.each do |mac_lease|
+        eif = item_map.enable_ingress_filtering
         publish(LEASED_MAC_ADDRESS, id: item_map.id,
+                                    enable_ingress_filtering: eif,
                                     mac_lease_id: mac_lease.id,
                                     mac_address: mac_lease.mac_address)
 

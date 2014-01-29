@@ -8,7 +8,9 @@ module Vnet::NodeApi
           model_class.create(options)
         end
 
+        eif = mac_lease.interface.enable_ingress_filtering
         dispatch_event(LEASED_MAC_ADDRESS, id: mac_lease.interface_id,
+                                           enable_ingress_filtering: eif,
                                            mac_lease_id: mac_lease.id,
                                            mac_address: mac_lease.mac_address)
 
@@ -37,7 +39,9 @@ module Vnet::NodeApi
           dispatch_event(RELEASED_MAC_ADDRESS, id: mac_lease.interface_id,
                                                mac_lease_id: mac_lease.id)
 
+          eif = mac_lease.interface.enable_ingress_filtering
           dispatch_event(LEASED_MAC_ADDRESS, id: mac_lease.interface_id,
+                                             enable_ingress_filtering: eif,
                                              mac_lease_id: mac_lease.id,
                                              mac_address: mac_lease.mac_address)
         end

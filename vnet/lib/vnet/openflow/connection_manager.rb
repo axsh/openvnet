@@ -22,11 +22,8 @@ module Vnet::Openflow
 
     def catch_new_egress(interface_mac_lease)
       interface_id = interface_mac_lease[:id]
-      interface = MW::Interface.batch[interface_id].commit
 
-      unless interface.batch.security_groups.commit.empty?
-        debug log_format("Catching new egress connections", interface.uuid)
-
+      if interface_mac_lease[:enable_ingress_filtering]
         flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
           flow_create(:default,
                       table: TABLE_INTERFACE_EGRESS_FILTER,
@@ -49,7 +46,6 @@ module Vnet::Openflow
     end
 
     def close_connections(interface_hash)
-      # debug log_format("Closing all connections for interface '#{interface.uuid}'")
       @dp_info.del_cookie Connections::Base.cookie(interface_hash[:id])
     end
 
