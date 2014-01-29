@@ -71,8 +71,10 @@ module Vnet::Openflow::Interfaces
          :arp_sha => mac_info[:mac_address],
        }
       ].each { |match|
+        # Currently add to ingress classifier table since we do not
+        # yet support segments.
         flows << flow_create(:default,
-                             table: TABLE_INTERFACE_INGRESS_MAC,
+                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                              priority: 90,
                              match: match,
                              #match_segment: mac_info[:segment_id],
@@ -185,7 +187,6 @@ module Vnet::Openflow::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_type => 0x0800,
                              :eth_dst => mac_info[:mac_address]
                            },
 
