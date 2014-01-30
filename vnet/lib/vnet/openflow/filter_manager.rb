@@ -4,55 +4,71 @@ module Vnet::Openflow
   class FilterManager < Manager
     include Vnet::Openflow::FlowHelpers
 
-    F = Vnet::Openflow::Filters
-
-    subscribe_event INITIALIZED_INTERFACE, :new_interface
-    subscribe_event ENABLED_FILTERING, :enable_filtering
-    subscribe_event DISABLED_FILTERING, :disable_filtering
-    subscribe_event REMOVED_INTERFACE, :remove_filters
-    subscribe_event UPDATED_FILTER, :update_item
-
-    GLOBAL_FILTERS_KEY = 'global'
+    subscribe_event INITIALIZED_INTERFACE, :initialized_interface
+    subscribe_event REMOVED_INTERFACE, :removed_interface
+    subscribe_event ENABLED_FILTERING, :enabled_filtering
+    subscribe_event DISABLED_FILTERING, :disabled_filtering
+    subscribe_event UPDATED_FILTER, :updated_filter
 
     def initialize(*args)
       super(*args)
 
-      accept_ingress_arp
+      accept_ingress_arp.install
     end
 
-    def initialized_item_event
-      INITIALIZED_FILTER
-    end
+    #
+    # Event handling
+    #
 
-    def new_interface(interface_hash)
-      interface = interface_hash[:item_map]
-      return if is_remote?(interface)
+    def initialized_interface(params)
+      interface = params[:item_map]
+      return if is_remote?(interface.owner_datapath_id)
 
       if interface.enable_ingress_filtering
         apply_filters(interface)
       else
-        F::AcceptAllTraffic.new(interface.id, @dp_info).install
+        accept_all_traffic(interface.id).install
       end
     end
 
-    def enable_filtering(interface_hash)
-      interface = MW::Interface.batch[interface_hash[:id]].commit
-      return if is_remote?(interface)
+    def removed_interface(params)
+      accept_all_traffic(params[:id]).uninstall
+      remove_filters(params[:id])
+    end
+
+    def enabled_filtering(params)
+      interface = MW::Interface.batch[params[:id]].commit
+      return if is_remote?(interface.owner_datapath_id)
 
       debug log_format("filtering enabled for interface '%s'" % interface.uuid)
 
-      F::AcceptAllTraffic.new(interface.id, @dp_info).uninstall
+      accept_all_traffic(interface.id).uninstall
       apply_filters(interface)
     end
 
-    def disable_filtering(interface_hash)
-      interface = MW::Interface.batch[interface_hash[:id]].commit
-      return if is_remote?(interface)
+    def disabled_filtering(params)
+      return if is_remote?(params[:owner_datapath_id])
 
-      debug log_format("filtering disabled for interface '%s'" % interface.uuid)
+      debug log_format("filtering disabled for interface '%s'" % params[:uuid])
 
-      remove_filters(interface_hash)
-      F::AcceptAllTraffic.new(interface.id, @dp_info).install
+      remove_filters(params[:id])
+      accept_all_traffic(params[:id]).install
+    end
+
+    def updated_filter(params)
+      item = internal_detect(id: params[:id])
+      return if item.nil?
+
+      debug log_format("Updating rules for security group '#{item.uuid}'")
+      item.update_rules(params[:rules])
+    end
+
+    #
+    # The rest
+    #
+
+    def initialized_item_event
+      INITIALIZED_FILTER
     end
 
     def apply_filters(interface)
@@ -70,41 +86,23 @@ module Vnet::Openflow
       end
     end
 
-    def is_remote?(interface)
-      interface.owner_datapath_id && interface.owner_datapath_id != @datapath_info.id
-    end
-
-    def select_item(filter)
-      MW::SecurityGroup.batch[filter].commit
-    end
-
-    def update_item(params)
-      item = internal_detect(id: params[:id])
-      return nil if item.nil?
-
-      case params[:event]
-      when :update_rules
-        debug log_format("Updating rules for security group '#{item.uuid}'")
-        item.update_rules(params[:rules])
-        #TODO: Update reference as well
-      when :update_isolation
-        item.update_isolation(params[:isolation_ips])
-      when :update_reference
-        item.update_reference(params[:reference_ips])
-      end
-    end
-
-    def remove_filters(interface_hash)
-      interface_id = interface_hash[:id]
-
+    def remove_filters(interface_id)
       items_for_interface(interface_id).each { |item|
         item.uninstall(interface_id)
         item.remove_interface(interface_id)
       }
     end
 
+    def is_remote?(owner_datapath_id)
+      return owner_datapath_id && owner_datapath_id != @datapath_info.id
+    end
+
+    def select_item(filter)
+      MW::SecurityGroup.batch[filter].commit
+    end
+
     private
-    def item_initialize(item_map)
+    def item_initialize(item_map, params)
       Filters::SecurityGroup.new(item_map)
     end
 
@@ -112,8 +110,12 @@ module Vnet::Openflow
       @items.values.select { |item| item.has_interface?(interface_id) }
     end
 
+    def accept_all_traffic(interface_id)
+      Filters::AcceptAllTraffic.new(interface_id, @dp_info)
+    end
+
     def accept_ingress_arp
-      Filters::AcceptIngressArp.new.tap {|i| i.dp_info = @dp_info}.install
+      Filters::AcceptIngressArp.new.tap {|i| i.dp_info = @dp_info}
     end
   end
 end

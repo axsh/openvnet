@@ -16,7 +16,6 @@ module Vnet::NodeApi
 
         if rules
           dispatch_event(UPDATED_FILTER,
-            event: :update_rules,
             id: secg.id,
             rules: rules
           )

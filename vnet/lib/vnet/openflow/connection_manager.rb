@@ -11,8 +11,8 @@ module Vnet::Openflow
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event REMOVED_INTERFACE, :removed_interface
-    subscribe_event ENABLED_FILTERING, :enable_filtering
-    subscribe_event DISABLED_FILTERING, :disable_filtering
+    subscribe_event ENABLED_FILTERING, :enabled_filtering
+    subscribe_event DISABLED_FILTERING, :disabled_filtering
 
     def packet_in(message)
       open_connection(message)
@@ -37,13 +37,13 @@ module Vnet::Openflow
       close_connections(params[:id])
     end
 
-    def enable_filtering(params)
+    def enabled_filtering(params)
       params[:mac_leases].each { |ml|
         catch_new_egress(params[:id], ml[:mac_address])
       }
     end
 
-    def disable_filtering(params)
+    def disabled_filtering(params)
       remove_catch_new_egress(params[:id])
       close_connections(params[:id])
     end

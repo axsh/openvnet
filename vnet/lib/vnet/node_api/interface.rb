@@ -56,10 +56,16 @@ module Vnet::NodeApi
 
             dispatch_event(ENABLED_FILTERING,
               id: interface.id,
+              uuid: interface.uuid,
+              owner_datapath_id: interface.owner_datapath_id,
               mac_leases: ml
             )
           when "false"
-            dispatch_event(DISABLED_FILTERING, id: interface.id)
+            dispatch_event(DISABLED_FILTERING,
+              id: interface.id,
+              uuid: interface.uuid,
+              owner_datapath_id: interface.owner_datapath_id
+            )
           end
 
         end
