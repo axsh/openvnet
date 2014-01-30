@@ -37,8 +37,8 @@ module Vnet::Openflow
     end
 
     def enabled_filtering(params)
+      return if is_remote?(params[:owner_datapath_id], params[:active_datapath_id])
       interface = MW::Interface.batch[params[:id]].commit
-      return if is_remote?(interface.owner_datapath_id)
 
       debug log_format("filtering enabled for interface '%s'" % interface.uuid)
 
@@ -47,7 +47,7 @@ module Vnet::Openflow
     end
 
     def disabled_filtering(params)
-      return if is_remote?(params[:owner_datapath_id])
+      return if is_remote?(params[:owner_datapath_id], params[:active_datapath_id])
 
       debug log_format("filtering disabled for interface '%s'" % params[:uuid])
 
@@ -91,10 +91,6 @@ module Vnet::Openflow
         item.uninstall(interface_id)
         item.remove_interface(interface_id)
       }
-    end
-
-    def is_remote?(owner_datapath_id)
-      return owner_datapath_id && owner_datapath_id != @datapath_info.id
     end
 
     def select_item(filter)

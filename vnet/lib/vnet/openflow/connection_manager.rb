@@ -38,6 +38,7 @@ module Vnet::Openflow
     end
 
     def enabled_filtering(params)
+      return if is_remote?(params[:owner_datapath_id], params[:active_datapath_id])
       params[:mac_leases].each { |ml|
         catch_new_egress(params[:id], ml[:mac_address])
       }
