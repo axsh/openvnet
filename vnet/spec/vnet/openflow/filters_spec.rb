@@ -27,8 +27,8 @@ describe Vnet::Openflow::FilterManager do
     end
   end
 
-  describe "#new_interface" do
-    before(:each) { subject.new_interface({item_map: wrapper(interface)}) }
+  describe "#initialized_interface" do
+    before(:each) { subject.initialized_interface({item_map: wrapper(interface)}) }
 
     context "with an interface that's in a single security group" do
       let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
@@ -127,7 +127,7 @@ describe Vnet::Openflow::FilterManager do
         }
       end
 
-      before(:each) { subject.new_interface({item_map: wrapper(interface2)}) }
+      before(:each) { subject.initialized_interface({item_map: wrapper(interface2)}) }
 
       it "applies the group's flows for both interfaces" do
         expect(flows).to include rule_flow(
@@ -144,7 +144,7 @@ describe Vnet::Openflow::FilterManager do
     end
   end
 
-  describe "#remove_filters" do
+  describe "#removed_interface" do
     let(:group) do
       rules = "tcp:22:0.0.0.0/0"
       Fabricate(:security_group, rules: rules)
@@ -156,10 +156,10 @@ describe Vnet::Openflow::FilterManager do
       }
     end
 
-    before(:each) { subject.new_interface({item_map: wrapper(interface)}) }
+    before(:each) { subject.initialized_interface({item_map: wrapper(interface)}) }
 
     it "Removes filter related flows for a single interface" do
-      subject.remove_filters({id: interface.id})
+      subject.removed_interface({id: interface.id})
 
       expect(flows).not_to include rule_flow(
         cookie: cookie_id(group),
@@ -168,7 +168,7 @@ describe Vnet::Openflow::FilterManager do
     end
   end
 
-  describe "#update_item" do
+  describe "#updated_filter" do
     let(:group) do
       rules = "tcp:22:0.0.0.0/0"
       Fabricate(:security_group, rules: rules)
@@ -180,12 +180,11 @@ describe Vnet::Openflow::FilterManager do
       }
     end
 
-    before(:each) { subject.new_interface({item_map: wrapper(interface)}) }
+    before(:each) { subject.initialized_interface({item_map: wrapper(interface)}) }
 
-    context "with {event: :update_rules} in the parameters" do
+    context "with new rules in the parameters" do
       before(:each) do
-        subject.update_item({
-          event: :update_rules,
+        subject.updated_filter({
           id: group.id,
           rules: "tcp:234:192.168.3.34"
         })
