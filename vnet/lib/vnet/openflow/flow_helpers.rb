@@ -70,22 +70,11 @@ module Vnet::Openflow
       end
     end
 
+    # TODO: Remove type parameter.
     def flow_create(type, params)
       match = {}
       match_metadata = {}
       write_metadata = {}
-
-      case type
-      when :default
-      when :controller_classifier
-        table = TABLE_CONTROLLER_PORT
-        write_metadata = { :interface => params[:write_interface_id] }
-        goto_table = TABLE_INTERFACE_EGRESS_CLASSIFIER
-      when :routing
-        priority = params[:default_route] ? 20 : 30
-      else
-        return nil
-      end
 
       #
       # Generic:
