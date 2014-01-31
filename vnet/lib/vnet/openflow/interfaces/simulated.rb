@@ -183,7 +183,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def flows_for_base(flows)
-      flows << flow_create(:controller,
+      flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
@@ -191,8 +191,11 @@ module Vnet::Openflow::Interfaces
                              :arp_op => 1,
                            },
                            match_interface: @id,
+                           actions: {
+                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                           },
                            cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
-      flows << flow_create(:controller,
+      flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
@@ -201,6 +204,9 @@ module Vnet::Openflow::Interfaces
                              :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
                            },
                            match_interface: @id,
+                           actions: {
+                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                           },
                            cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
     end
 

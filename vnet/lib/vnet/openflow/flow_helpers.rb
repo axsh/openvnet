@@ -77,8 +77,6 @@ module Vnet::Openflow
 
       case type
       when :default
-      when :controller
-        actions = { :output => Controller::OFPP_CONTROLLER }
       when :controller_classifier
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }

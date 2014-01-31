@@ -17,7 +17,7 @@ module Vnet::Openflow
     end
 
     def arp_lookup_base_flows(flows)
-      flows << flow_create(:controller,
+      flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
@@ -25,11 +25,14 @@ module Vnet::Openflow
                              :arp_op => 2,
                            },
                            match_interface: @arp_lookup[:interface_id],
+                           actions: {
+                             :output => Controller::OFPP_CONTROLLER
+                           },
                            cookie: @arp_lookup[:reply_cookie])
     end
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
-      flows << flow_create(:controller,
+      flows << flow_create(:default,
                            table: TABLE_ARP_LOOKUP,
                            priority: 20,
                            match: {
@@ -38,6 +41,9 @@ module Vnet::Openflow
                            },
                            match_network: ipv4_info[:network_id],
                            match_not_no_controller: true,
+                           actions: {
+                             :output => Controller::OFPP_CONTROLLER
+                           },
                            cookie: @arp_lookup[:lookup_cookie])
     end
 
