@@ -41,7 +41,7 @@ describe Vnet::Openflow::Networks::Virtual do
         30,
         network_md,
         nil,
-        flow_options.merge(:goto_table => TABLE_VIRTUAL_DST))
+        flow_options.merge(:goto_table => TABLE_NETWORK_DST_MAC_LOOKUP))
     end
   end
 end
