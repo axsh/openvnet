@@ -76,15 +76,6 @@ module Vnet::Openflow
       write_metadata = {}
 
       case type
-      when :router_dst_match
-        table = TABLE_ARP_TABLE
-        priority = 40
-        match_metadata = { :network => params[:network_id] }
-        goto_table = TABLE_NETWORK_DST_CLASSIFIER
-
-      #
-      # Refactored:
-      #
       when :default
       when :drop
         priority = 90
@@ -94,11 +85,6 @@ module Vnet::Openflow
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }
         goto_table = TABLE_INTERFACE_EGRESS_CLASSIFIER
-      when :interface_classifier
-        table = TABLE_INTERFACE_EGRESS_CLASSIFIER
-        match_metadata = { :interface => params[:interface_id] }
-        write_metadata = { :network => params[:write_network_id] }
-        goto_table = TABLE_INTERFACE_EGRESS_FILTER
       when :router_classifier
         table = TABLE_ROUTE_INGRESS_INTERFACE
         match_metadata = { :network => params[:network_id] }

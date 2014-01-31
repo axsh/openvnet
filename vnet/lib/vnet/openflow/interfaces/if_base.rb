@@ -88,51 +88,44 @@ module Vnet::Openflow::Interfaces
       #
       # Classifier
       #
-      flows << flow_create(:interface_classifier,
-                           priority: 40,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_src => mac_info[:mac_address],
-                             :ipv4_src => IPV4_ZERO
-                           },
-                           interface_id: @id,
-                           write_network_id: ipv4_info[:network_id],
-                           cookie: cookie)
-      flows << flow_create(:interface_classifier,
-                           priority: 40,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_src => mac_info[:mac_address],
-                             :ipv4_src => ipv4_info[:ipv4_address]
-                           },
-                           interface_id: @id,
-                           write_network_id: ipv4_info[:network_id],
-                           cookie: cookie)
-      flows << flow_create(:interface_classifier,
-                           priority: 40,
-                           match: {
-                             :eth_type => 0x0806,
-                             :eth_src => mac_info[:mac_address],
-                             :arp_sha => mac_info[:mac_address],
-                             :arp_spa => ipv4_info[:ipv4_address]
-                           },
-                           interface_id: @id,
-                           write_network_id: ipv4_info[:network_id],
-                           cookie: cookie)
+      [{ :eth_type => 0x0800,
+         :eth_src => mac_info[:mac_address],
+         :ipv4_src => IPV4_ZERO
+       }, {
+         :eth_type => 0x0800,
+         :eth_src => mac_info[:mac_address],
+         :ipv4_src => ipv4_info[:ipv4_address]
+       }, {
+         :eth_type => 0x0806,
+         :eth_src => mac_info[:mac_address],
+         :arp_sha => mac_info[:mac_address],
+         :arp_spa => ipv4_info[:ipv4_address]
+       }].each { |match|
+        flows << flow_create(:default,
+                             table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_EGRESS_FILTER,
+                             priority: 30,
+                             match: match,
+                             match_interface: @id,
+                             write_network: ipv4_info[:network_id],
+                             cookie: cookie)
+      }
 
       #
       # IPv4 
       #
-      flows << flow_create(:router_dst_match,
+      flows << flow_create(:default,
+                           table: TABLE_ARP_TABLE,
+                           goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                            priority: 40,
                            match: {
                              :eth_type => 0x0800,
                              :ipv4_dst => ipv4_info[:ipv4_address],
                            },
+                           match_network: ipv4_info[:network_id],
                            actions: {
                              :eth_dst => mac_info[:mac_address],
                            },
-                           network_id: ipv4_info[:network_id],
                            cookie: cookie)
       flows << flow_create(:default,
                            table: TABLE_NETWORK_DST_MAC_LOOKUP,
