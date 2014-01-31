@@ -106,7 +106,7 @@ module Vnet::Openflow
     end
 
     def select_item(filter)
-      MW::SecurityGroup.batch[filter].commit
+      MW::SecurityGroup.batch[filter].commit(fill: :ip_addresses)
     end
 
     private

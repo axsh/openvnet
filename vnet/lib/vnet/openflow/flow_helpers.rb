@@ -49,9 +49,9 @@ module Vnet::Openflow
 
     def match_ipv4_subnet_dst(address, prefix)
       if is_ipv4_broadcast(address, prefix)
-        { :eth_type => 0x0800 }
+        { :eth_type => ETH_TYPE_IPV4 }
       else
-        { :eth_type => 0x0800,
+        { :eth_type => ETH_TYPE_IPV4,
           :ipv4_dst => address,
           :ipv4_dst_mask => IPV4_BROADCAST << (32 - prefix)
         }
@@ -60,9 +60,9 @@ module Vnet::Openflow
 
     def match_ipv4_subnet_src(address, prefix)
       if is_ipv4_broadcast(address, prefix)
-        { :eth_type => 0x0800 }
+        { :eth_type => ETH_TYPE_IPV4 }
       else
-        { :eth_type => 0x0800,
+        { :eth_type => ETH_TYPE_IPV4,
           :ipv4_src => address,
           :ipv4_src_mask => IPV4_BROADCAST << (32 - prefix)
         }
