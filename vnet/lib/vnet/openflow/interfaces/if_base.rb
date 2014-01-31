@@ -134,6 +134,16 @@ module Vnet::Openflow::Interfaces
                            },
                            network_id: ipv4_info[:network_id],
                            cookie: cookie)
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                           goto_table: TABLE_INTERFACE_INGRESS_FILTER,
+                           priority: 60,
+                           match: {
+                             :eth_dst => mac_info[:mac_address],
+                           },
+                           match_network: ipv4_info[:network_id],
+                           write_interface: @id,
+                           cookie: cookie)
 
       #
       # Anti-spoof:

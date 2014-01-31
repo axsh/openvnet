@@ -70,15 +70,6 @@ module Vnet::Openflow
       end
     end
 
-    def table_network_dst(network_type)
-      case network_type
-      when :physical then TABLE_PHYSICAL_DST
-      when :virtual  then TABLE_VIRTUAL_DST
-      else
-        raise "Invalid network type value."
-      end
-    end
-
     def flow_create(type, params)
       match = {}
       match_metadata = {}
@@ -132,10 +123,6 @@ module Vnet::Openflow
       actions = params[:actions] if params[:actions]
       priority = params[:priority] if params[:priority]
       goto_table = params[:goto_table] if params[:goto_table]
-
-      if params.has_key?(:table_network_dst)
-        table = table_network_dst(params[:table_network_dst])
-      end
 
       #
       # Match/Write Metadata options:

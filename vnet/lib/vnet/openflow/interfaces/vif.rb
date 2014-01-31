@@ -92,19 +92,6 @@ module Vnet::Openflow::Interfaces
     end
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)
-      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
-
-      flows << flow_create(:default,
-                           table_network_dst: ipv4_info[:network_type],
-                           goto_table: TABLE_INTERFACE_INGRESS_FILTER,
-                           priority: 60,
-
-                           match: {
-                             :eth_dst => mac_info[:mac_address],
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie)
     end
 
   end

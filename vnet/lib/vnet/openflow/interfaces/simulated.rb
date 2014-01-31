@@ -223,30 +223,6 @@ module Vnet::Openflow::Interfaces
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       flows << flow_create(:default,
-                           table_network_dst: ipv4_info[:network_type],
-                           priority: 80,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_dst => mac_info[:mac_address],
-                             :ipv4_dst => ipv4_info[:ipv4_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_INTERFACE_INGRESS_FILTER)
-      flows << flow_create(:default,
-                           table_network_dst: ipv4_info[:network_type],
-                           priority: 80,
-                           match: {
-                             :eth_type => 0x0806,
-                             :eth_dst => mac_info[:mac_address],
-                             :arp_tpa => ipv4_info[:ipv4_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
-      flows << flow_create(:default,
                            table: TABLE_FLOOD_SIMULATED,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,

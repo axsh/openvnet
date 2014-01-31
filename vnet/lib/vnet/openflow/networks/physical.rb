@@ -17,7 +17,7 @@ module Vnet::Openflow::Networks
                            match_network: @id)
       flows << flow_create(:default,
                            table: TABLE_NETWORK_DST_CLASSIFIER,
-                           goto_table: TABLE_PHYSICAL_DST,
+                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP,
                            priority: 30,
                            match_network: @id)
 
