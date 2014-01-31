@@ -26,11 +26,9 @@ module Vnet::Openflow::Datapaths
       @dp_info.tunnel_manager.async.prepare_network(active_network[:id])
 
       flows = []
-      flows_for_broadcast_mac_address(
-        flows,
-        active_network[:broadcast_mac_address],
-        active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK
-      )
+      flows_for_filtering_mac_address(flows,
+                                      active_network[:broadcast_mac_address],
+                                      active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       @dp_info.add_flows(flows)
     end
 

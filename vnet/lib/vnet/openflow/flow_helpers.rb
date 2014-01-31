@@ -77,25 +77,12 @@ module Vnet::Openflow
 
       case type
       when :default
-      when :drop
-        priority = 90
       when :controller
         actions = { :output => Controller::OFPP_CONTROLLER }
       when :controller_classifier
         table = TABLE_CONTROLLER_PORT
         write_metadata = { :interface => params[:write_interface_id] }
         goto_table = TABLE_INTERFACE_EGRESS_CLASSIFIER
-      when :router_classifier
-        table = TABLE_ROUTE_INGRESS_INTERFACE
-        match_metadata = { :network => params[:network_id] }
-        if params[:ingress_interface_id]
-          priority = 10
-          write_metadata = { :interface => params[:ingress_interface_id] }
-          goto_table = TABLE_ROUTE_INGRESS_TRANSLATION
-        else
-          priority = 20
-          goto_table = TABLE_NETWORK_DST_CLASSIFIER
-        end
       when :routing
         priority = params[:default_route] ? 20 : 30
       else
@@ -147,30 +134,17 @@ module Vnet::Openflow
     end
 
     def flows_for_filtering_mac_address(flows, mac_address, use_cookie = self.cookie)
-      flows << flow_create(:drop,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           match: {
-                             :eth_dst => mac_address
-                           },
-                           cookie: use_cookie)
-      flows << flow_create(:drop,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           match: {
-                             :eth_src => mac_address
-                           },
-                           cookie: use_cookie)
-      flows << flow_create(:drop,
-                           table: TABLE_NETWORK_DST_CLASSIFIER,
-                           match: {
-                             :eth_dst => mac_address
-                           },
-                           cookie: use_cookie)
-      flows << flow_create(:drop,
-                           table: TABLE_NETWORK_DST_CLASSIFIER,
-                           match: {
-                             :eth_src => mac_address
-                           },
-                           cookie: use_cookie)
+      [[TABLE_NETWORK_SRC_CLASSIFIER, { :eth_src => mac_address }],
+       [TABLE_NETWORK_SRC_CLASSIFIER, { :eth_dst => mac_address }],
+       [TABLE_NETWORK_DST_CLASSIFIER, { :eth_src => mac_address }],
+       [TABLE_NETWORK_DST_CLASSIFIER, { :eth_dst => mac_address }],
+      ].each { |table, match|
+        flows << flow_create(:default,
+                             table: table,
+                             priority: 90,
+                             match: match,
+                             cookie: use_cookie)
+      }
     end
 
   end
