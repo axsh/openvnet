@@ -8,7 +8,7 @@ Data Center Level Virtual Network Toolkit
 Getting Started
 ---------------
 
-- [Installation Guide](https://github.com/axsh/openvnet/blob/master/InstallGuide.md)
+- [Installation Guide](https://github.com/axsh/openvnet/blob/master/docs/InstallGuide.md)
 
 Contributors
 ------------
