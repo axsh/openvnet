@@ -157,6 +157,7 @@ module Vnet
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'
+    autoload :InterfaceSecurityGroup, 'vnet/node_api/interface_security_group'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :MacAddress, 'vnet/node_api/models.rb'

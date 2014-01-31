@@ -8,7 +8,8 @@ module Vnet::Openflow
     subscribe_event REMOVED_INTERFACE, :removed_interface
     subscribe_event ENABLED_FILTERING, :enabled_filtering
     subscribe_event DISABLED_FILTERING, :disabled_filtering
-    subscribe_event UPDATED_FILTER, :updated_filter
+    subscribe_event UPDATED_SG_RULES, :updated_filter
+    subscribe_event UPDATED_SG_ISOLATION, :updated_isolation
 
     def initialize(*args)
       super(*args)
@@ -27,6 +28,7 @@ module Vnet::Openflow
       if interface.enable_ingress_filtering
         apply_filters(interface)
       else
+        #TODO: Bypass filtering table instead?
         accept_all_traffic(interface.id).install
       end
     end
@@ -61,6 +63,16 @@ module Vnet::Openflow
 
       debug log_format("Updating rules for security group '#{item.uuid}'")
       item.update_rules(params[:rules])
+    end
+
+    def updated_isolation(params)
+      item = internal_detect(id: params[:id])
+      return if item.nil?
+
+      log_ips = params[:ip_addresses].map { |i| IPAddress::IPv4.parse_u32(i).to_s }
+      debug log_format("Updating isolation for security group: '#{params[:uuid]}'", log_ips)
+
+      item.update_isolation(params[:ip_addresses])
     end
 
     #

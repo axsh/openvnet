@@ -17,7 +17,6 @@ module Vnet::Openflow::Filters
       # { interface_id => interface_cookie_id }
       @interfaces = {}
       #TODO: Create reference rules
-      #TODO: Create isolation
     end
 
     def self.cookie(group_id, interface_cookie_id, type)
@@ -73,7 +72,7 @@ module Vnet::Openflow::Filters
       #TODO: Implement
     end
 
-    def update_isolation
+    def update_isolation(ip_addresses)
       #TODO: Implement
     end
 

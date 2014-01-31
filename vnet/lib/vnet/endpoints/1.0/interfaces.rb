@@ -81,7 +81,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).all.commit
 
-    relations.each { |r| r.batch.destroy.commit }
+    # We call the destroy class method so we go trough NodeApi and send an
+    # update isolation event
+    relations.each { |r| M::InterfaceSecurityGroup.destroy(r.id) }
     respond_with(R::Interface.security_groups(interface))
   end
 end

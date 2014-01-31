@@ -24,5 +24,11 @@ module Vnet::Models
       InterfaceSecurityGroup.with_deleted.where(
         :security_group_id => self.id).where("id <= #{row_id}").count
     end
+
+    def ip_addresses
+      interfaces.map { |i|
+        i.ip_leases.map { |il| il.ip_address.ipv4_address }
+      }.flatten
+    end
   end
 end
