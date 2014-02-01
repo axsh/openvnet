@@ -9,8 +9,11 @@ module Vnet::Openflow::Interfaces
 
       flows = []
       flows_for_interface_mac(flows, mac_info)
-      flows_for_router_ingress_mac(flows, mac_info) if @router_ingress == true
-      flows_for_router_egress_mac(flows, mac_info) if @router_egress == true
+
+      if @enable_routing
+        flows_for_router_ingress_mac(flows, mac_info)
+        flows_for_router_egress_mac(flows, mac_info)
+      end
 
       @dp_info.add_flows(flows)
     end
@@ -29,9 +32,12 @@ module Vnet::Openflow::Interfaces
       flows_for_ipv4(flows, mac_info, ipv4_info)
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
       flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)
-      flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
-      flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
-      flows_for_router_egress_ipv4(flows, mac_info, ipv4_info) if @router_egress == true
+
+      if @enable_routing
+        flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
+        flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
+        flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
+      end
 
       @dp_info.add_flows(flows)
     end

@@ -7,53 +7,6 @@ module Vnet::Openflow::Interfaces
   class IfBase < Base
     
     #
-    # Router ingress/egress:
-    #
-
-    def enable_router_ingress
-      return if @router_ingress != false
-      @router_ingress = true
-
-      flows = []
-
-      @mac_addresses.each { |mac_lease_id, mac_info|
-        flows_for_router_ingress_mac(flows, mac_info)
-
-        mac_info[:ipv4_addresses].each { |ipv4_info|
-          flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
-          flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
-        }
-      }
-
-      @dp_info.add_flows(flows)
-    end
-
-    def disable_router_ingress
-      # Not supported atm.
-    end
-
-    def enable_router_egress
-      return if @router_egress != false
-      @router_egress = true
-
-      flows = []
-
-      @mac_addresses.each { |mac_lease_id, mac_info|
-        flows_for_router_egress_mac(flows, mac_info)
-
-        mac_info[:ipv4_addresses].each { |ipv4_info|
-          flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
-        }
-      }
-
-      @dp_info.add_flows(flows)
-    end
-
-    def disable_router_egress
-      # Not supported atm.
-    end
-
-    #
     # Internal methods:
     #
 
@@ -263,6 +216,18 @@ module Vnet::Openflow::Interfaces
                            write_network: ipv4_info[:network_id],
                            cookie: cookie)
     end    
+
+    def flows_for_route_translation(flows)
+      [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS],
+       [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
+      ].each { |table, goto_table|
+        flows << flow_create(:default,
+                             table: table,
+                             goto_table: goto_table,
+                             priority: 90,
+                             match_interface: @id)
+      }
+    end
 
     def flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
