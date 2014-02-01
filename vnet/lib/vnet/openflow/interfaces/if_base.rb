@@ -146,6 +146,7 @@ module Vnet::Openflow::Interfaces
 
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_INGRESS_MAC,
+                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 20,
 
                            match: {
@@ -156,8 +157,7 @@ module Vnet::Openflow::Interfaces
                            write_value_pair_first: ipv4_info[:network_id],
                            # write_value_pair_second: <- host interface id, already set.
 
-                           cookie: cookie,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF)
+                           cookie: cookie)
     end
 
     def flows_for_router_egress_mac(flows, mac_info)
@@ -184,13 +184,13 @@ module Vnet::Openflow::Interfaces
       # TODO: Currently only one mac address / network is supported.
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_EGRESS_MAC,
+                           goto_table: TABLE_ARP_TABLE,
                            priority: 20,
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
                            match_network: ipv4_info[:network_id],
-                           cookie: cookie,
-                           goto_table: TABLE_ARP_TABLE)
+                           cookie: cookie)
       flows << flow_create(:default,
                            table: TABLE_ROUTE_EGRESS_LOOKUP,
                            goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,

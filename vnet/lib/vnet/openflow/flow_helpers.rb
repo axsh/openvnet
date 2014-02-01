@@ -72,7 +72,6 @@ module Vnet::Openflow
 
     # TODO: Remove type parameter.
     def flow_create(type, params)
-      match = {}
       match_metadata = {}
       write_metadata = {}
 
@@ -100,6 +99,7 @@ module Vnet::Openflow
       match_metadata = match_metadata.merge!(params[:match_metadata]) if params[:match_metadata]
       write_metadata = write_metadata.merge!(params[:write_metadata]) if params[:write_metadata]
 
+      match = {}
       match = match.merge!(params[:match]) if params[:match]
       match = match.merge!(md_create(match_metadata)) if !match_metadata.empty?
 
@@ -113,9 +113,6 @@ module Vnet::Openflow
       instructions.merge!(md_create(write_metadata)) if !write_metadata.empty?
 
       raise "Missing cookie." if instructions[:cookie].nil?
-
-      instructions[:idle_timeout] = params[:idle_timeout] if params[:idle_timeout]
-      instructions[:hard_timeout] = params[:hard_timeout] if params[:hard_timeout]
 
       Flow.create(table, priority, match, actions, instructions)
     end
