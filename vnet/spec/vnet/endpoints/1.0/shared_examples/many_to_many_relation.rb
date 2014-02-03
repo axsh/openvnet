@@ -101,7 +101,7 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
           "uuid" => base_object.canonical_uuid
         })
 
-        (JSON.parse(last_response.body)[relation_suffix].size).to eq 3
+        expect(JSON.parse(last_response.body)[relation_suffix].size).to eq 3
       end
     end
   end
