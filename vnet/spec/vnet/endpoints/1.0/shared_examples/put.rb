@@ -19,9 +19,9 @@ shared_examples "PUT /:uuid" do |accepted_params, uuid_params = []|
         let(:request_params) { { k => v } }
 
         it "only that parameter should be updated" do
-          last_response.should succeed.with_body_containing(request_params)
+          expect(last_response).to succeed.with_body_containing(request_params)
           unless accepted_params == request_params
-            last_response.should_not succeed.with_body_containing(accepted_params)
+            expect(last_response).not_to succeed.with_body_containing(accepted_params)
           end
         end
       end
@@ -29,7 +29,7 @@ shared_examples "PUT /:uuid" do |accepted_params, uuid_params = []|
 
     context "with all correct parameters" do
       it "should update all parameters" do
-        last_response.should succeed.with_body_containing(
+        expect(last_response).to succeed.with_body_containing(
           accepted_params.merge({:uuid => object.canonical_uuid})
         )
       end

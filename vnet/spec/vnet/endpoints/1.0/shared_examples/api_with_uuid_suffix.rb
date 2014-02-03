@@ -5,7 +5,7 @@ shared_examples "api_with_uuid_in_suffix" do
     let(:api_suffix_with_uuid) { "#{api_suffix}/#{model_class.uuid_prefix}-notfound" }
 
     it "should return a 404 error (UnknownUUIDResource)" do
-      last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+      expect(last_response).to fail.with_code(404).with_error("UnknownUUIDResource",
         /#{model_class.uuid_prefix}-notfound$/)
     end
   end

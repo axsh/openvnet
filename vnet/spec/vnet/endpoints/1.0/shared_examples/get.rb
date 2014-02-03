@@ -5,7 +5,7 @@ def test_with_db_entries(size)
     let(:entries) { size }
 
     it "should return #{size} entries" do
-      last_response.should succeed.with_body_size(size)
+      expect(last_response).to succeed.with_body_size(size)
     end
   end
 end
@@ -21,7 +21,7 @@ shared_examples "GET /" do
       let(:entries) { 0 }
 
       it "should return empty json" do
-        last_response.should succeed.with_empty_body
+        expect(last_response).to succeed.with_empty_body
       end
     end
 
@@ -42,7 +42,7 @@ shared_examples "GET /:uuid" do
       let(:api_suffix_with_uuid) { "#{api_suffix}/#{object.canonical_uuid}" }
 
       it "should return one entry" do
-        last_response.should succeed.with_body_containing({:uuid => object.canonical_uuid})
+        expect(last_response).to succeed.with_body_containing({:uuid => object.canonical_uuid})
       end
     end
   end
