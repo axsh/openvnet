@@ -76,14 +76,6 @@ module Vnet::Openflow
       write_metadata = {}
 
       #
-      # Generic:
-      #
-      table = params[:table] if params[:table]
-      actions = params[:actions] if params[:actions]
-      priority = params[:priority] if params[:priority]
-      goto_table = params[:goto_table] if params[:goto_table]
-
-      #
       # Match/Write Metadata options:
       #
       FLOW_MATCH_METADATA_PARAMS.each { |type|
@@ -105,7 +97,7 @@ module Vnet::Openflow
 
       instructions = {}
       instructions[:cookie] = params[:cookie] || self.cookie
-      instructions[:goto_table] = goto_table if goto_table
+      instructions[:goto_table] = params[:goto_table] if params[:goto_table]
 
       instructions[:hard_timeout] = params[:hard_timeout] if params[:hard_timeout]
       instructions[:idle_timeout] = params[:idle_timeout] if params[:idle_timeout]
@@ -114,7 +106,11 @@ module Vnet::Openflow
 
       raise "Missing cookie." if instructions[:cookie].nil?
 
-      Flow.create(table, priority, match, actions, instructions)
+      Flow.create(params[:table],
+                  params[:priority],
+                  match,
+                  params[:actions],
+                  instructions)
     end
 
     def flows_for_filtering_mac_address(flows, mac_address, use_cookie = self.cookie)
