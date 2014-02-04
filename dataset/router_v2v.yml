@@ -69,18 +69,21 @@ interfaces:
     mac_address: "02:00:00:00:02:01"
     ipv4_address: 10.101.0.1
     mode: simulated
+    enable_routing: true
 
   - uuid: if-router2
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:02:02"
     ipv4_address: 10.102.0.1
     mode: simulated
+    enable_routing: true
 
   - uuid: if-routerpub
     network_uuid: nw-public
     mac_address: "02:00:00:00:02:11"
     ipv4_address: <%= public_router_ipv4_address  %>
     mode: simulated
+    enable_routing: true
 
 network_services:
 
