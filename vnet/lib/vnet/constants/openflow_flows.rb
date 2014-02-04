@@ -82,10 +82,11 @@ module Vnet
       # non-action instructions such as 'write_metadata'.
       TABLE_OUTPUT_CONTROLLER  = 60
 
-      TABLE_LOOKUP_IF_NW_TO_DP_NW         = 70
-      TABLE_LOOKUP_IF_RL_TO_DP_RL         = 71
-      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 72
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 73
+      TABLE_LOOKUP_IF_NW_TO_DP_NW            = 70
+      TABLE_LOOKUP_IF_RL_TO_DP_RL            = 71
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK       = 72
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 73
+      TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS = 74
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source

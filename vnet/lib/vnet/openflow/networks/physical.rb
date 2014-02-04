@@ -20,6 +20,11 @@ module Vnet::Openflow::Networks
                            goto_table: TABLE_NETWORK_DST_MAC_LOOKUP,
                            priority: 30,
                            match_network: @id)
+      flows << flow_create(:default,
+                           table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                           goto_table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+                           priority: 20,
+                           match_network: @id)
 
       @dp_info.add_flows(flows)
     end

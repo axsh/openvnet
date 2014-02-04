@@ -74,6 +74,15 @@ module Vnet::Openflow::Datapaths
 
                            cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
       flows << flow_create(:default,
+                           table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+                           priority: 1,
+
+                           match_network: dp_nw[:network_id],
+                           write_interface: dp_nw[:interface_id],
+
+                           cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
+      flows << flow_create(:default,
                            table: TABLE_OUTPUT_DP_NETWORK_SRC,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
