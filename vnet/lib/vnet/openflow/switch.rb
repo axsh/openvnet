@@ -47,6 +47,7 @@ module Vnet::Openflow
        TABLE_INTERFACE_INGRESS_CLASSIFIER,
        TABLE_INTERFACE_INGRESS_MAC,
        TABLE_INTERFACE_INGRESS_NW_IF,
+       TABLE_INTERFACE_INGRESS_RL_IF,
        TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
        TABLE_INTERFACE_EGRESS_CLASSIFIER,
        TABLE_INTERFACE_EGRESS_ROUTES,
@@ -127,7 +128,9 @@ module Vnet::Openflow
           :eth_type => 0x0806,
           :tunnel_id => 0
         }],
-       [TABLE_NETWORK_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, { :eth_dst => MAC_BROADCAST }],
+       [TABLE_NETWORK_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
+          :eth_dst => MAC_BROADCAST
+        }],
        [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC, 1, nil, {
           :tunnel_id => TUNNEL_ROUTE_LINK
         }],

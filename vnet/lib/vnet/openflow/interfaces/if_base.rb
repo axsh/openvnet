@@ -24,11 +24,11 @@ module Vnet::Openflow::Interfaces
          :arp_sha => mac_info[:mac_address],
        }
       ].each { |match|
-        # Currently add to ingress classifier table since we do not
+        # Currently add to ingress_nw_if table since we do not
         # yet support segments.
         flows << flow_create(:default,
-                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                             priority: 90,
+                             table: TABLE_INTERFACE_INGRESS_MAC,
+                             priority: 50,
                              match: match,
                              #match_segment: mac_info[:segment_id],
                              cookie: cookie)
@@ -141,6 +141,7 @@ module Vnet::Openflow::Interfaces
                            cookie: cookie)
     end
 
+    # TODO: Rename:
     def flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
@@ -155,7 +156,25 @@ module Vnet::Openflow::Interfaces
 
                            write_value_pair_flag: true,
                            write_value_pair_first: ipv4_info[:network_id],
-                           # write_value_pair_second: <- host interface id, already set.
+
+                           cookie: cookie)
+
+      # Handle packets from simulated interfaces that can be on
+      # multiple datapaths.
+      #
+      # Should be improved to use unique mac addresses in the case of
+      # mac2mac.
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_INGRESS_MAC,
+                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           priority: 60,
+
+                           match: {
+                             :eth_src => mac_info[:mac_address]
+                           },
+
+                           write_value_pair_flag: true,
+                           write_value_pair_first: ipv4_info[:network_id],
 
                            cookie: cookie)
     end
