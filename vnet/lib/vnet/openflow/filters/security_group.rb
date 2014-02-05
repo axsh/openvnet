@@ -7,7 +7,7 @@ module Vnet::Openflow::Filters
     RULE_PRIORITY = 10
     ISOLATION_PRIORITY = 20
 
-    attr_reader :id, :uuid
+    attr_reader :id, :uuid, :interfaces
 
     def initialize(item_map)
       @id = item_map.id

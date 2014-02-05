@@ -88,6 +88,8 @@ module Vnet
     DISABLED_FILTERING = "disabled_filtering"
     UPDATED_SG_RULES = "updated_rules"
     UPDATED_SG_ISOLATION = "updated_isolation"
+    ADDED_INTERFACE_TO_SG = "added_interface_to_sg"
+    REMOVED_INTERFACE_FROM_SG = "removed_interface_from_sg"
 
     #
     # dns service

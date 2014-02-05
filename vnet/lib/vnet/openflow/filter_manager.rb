@@ -10,6 +10,8 @@ module Vnet::Openflow
     subscribe_event DISABLED_FILTERING, :disabled_filtering
     subscribe_event UPDATED_SG_RULES, :updated_filter
     subscribe_event UPDATED_SG_ISOLATION, :updated_isolation
+    subscribe_event ADDED_INTERFACE_TO_SG, :added_interface_to_sg
+    subscribe_event REMOVED_INTERFACE_FROM_SG, :removed_interface_from_sg
 
     def initialize(*args)
       super(*args)
@@ -70,9 +72,28 @@ module Vnet::Openflow
       return if item.nil?
 
       log_ips = params[:ip_addresses].map { |i| IPAddress::IPv4.parse_u32(i).to_s }
-      debug log_format("Updating isolation for security group: '#{params[:uuid]}'", log_ips)
+      debug log_format("Updating isolation for security group '#{params[:uuid]}'", log_ips)
 
       item.update_isolation(params[:ip_addresses])
+    end
+
+    def removed_interface_from_sg(params)
+      item = internal_detect(id: params[:id]) || return
+
+      debug log_format("Removing interface '%s' from security group '%s'" %
+        [params[:interface_id], item.uuid])
+
+      item.uninstall(params[:interface_id])
+      item.remove_interface(params[:interface_id])
+
+      @items.delete(item.id) if item.interfaces.empty?
+    end
+
+    def added_interface_to_sg(params)
+      item = item_by_params(id: params[:id])
+      log_interface_added(params[:interface_id], item.uuid)
+      item.add_interface(params[:interface_id], params[:interface_cookie_id])
+      item.install(params[:interface_id])
     end
 
     #
@@ -83,14 +104,17 @@ module Vnet::Openflow
       INITIALIZED_FILTER
     end
 
+    def log_interface_added(if_uuid, sg_uuid)
+      debug log_format("Adding interface '%s' to security group '%s'" %
+        [if_uuid, sg_uuid])
+    end
+
     def apply_filters(interface)
       groups = interface.batch.security_groups.commit
       groups.each do |group|
         item = item_by_params(id: group.id)
-        item.dp_info = @dp_info
 
-        debug log_format("Adding interface '%s' to security group '%s'" %
-          [interface.uuid, item.uuid])
+        log_interface_added(interface.uuid, item.uuid)
 
         cookie_id = group.batch.interface_cookie_id(interface.id).commit
         item.add_interface(interface.id, cookie_id)
@@ -111,7 +135,9 @@ module Vnet::Openflow
 
     private
     def item_initialize(item_map, params)
-      Filters::SecurityGroup.new(item_map)
+      Filters::SecurityGroup.new(item_map).tap { |item|
+        item.dp_info = @dp_info
+      }
     end
 
     def items_for_interface(interface_id)
