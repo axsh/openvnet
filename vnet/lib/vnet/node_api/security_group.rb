@@ -15,7 +15,7 @@ module Vnet::NodeApi
         end
 
         if rules
-          dispatch_event(UPDATED_FILTER,
+          dispatch_event(UPDATED_SG_RULES,
             id: secg.id,
             rules: rules
           )
