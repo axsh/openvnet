@@ -36,7 +36,7 @@ module Vnet
       TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
       TABLE_INTERFACE_INGRESS_MAC        = 11
       TABLE_INTERFACE_INGRESS_NW_IF      = 12
-      TABLE_INTERFACE_INGRESS_RL_IF      = 13
+      TABLE_INTERFACE_INGRESS_ROUTE_LINK = 13
 
       # Handle egress packets from trusted interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15

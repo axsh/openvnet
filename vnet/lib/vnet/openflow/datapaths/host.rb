@@ -105,7 +105,7 @@ module Vnet::Openflow::Datapaths
 
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
                            priority: 30,
                            match: {
                              :eth_dst => dp_rl[:mac_address]

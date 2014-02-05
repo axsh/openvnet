@@ -83,6 +83,20 @@ module Vnet::Openflow::Datapaths
     end
 
     def flows_for_dp_route_link(flows, dp_rl)
+      # The source mac address of route link packets is required to
+      # match a remote dp_rl mac address.
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
+                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           priority: 1,
+
+                           match: {
+                             :eth_src => dp_rl[:mac_address]
+                           },
+                           match_route_link: dp_rl[:route_link_id],
+
+                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
       [true, false].each { |reflection|
 
         flows << flow_create(:default,
