@@ -4,7 +4,7 @@ def cookie_id(group, interface = interface)
   Vnet::Openflow::Filters::SecurityGroup.cookie(
     group.id,
     group.interface_cookie_id(interface.id),
-    :rule
+    Vnet::Openflow::Filters::Base::COOKIE_TYPE_RULE
   )
 end
 
