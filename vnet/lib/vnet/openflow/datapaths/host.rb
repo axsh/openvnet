@@ -94,14 +94,14 @@ module Vnet::Openflow::Datapaths
     end
 
     def flows_for_dp_route_link(flows, dp_rl)
-      # We match the route link id stored in the first value field to
-      # the one associated with this host's datapath, and then prepare
-      # for the next table by storing in the first value field the
-      # source interface.
+      # We match the route link id stored in the first value field
+      # with the dp_rl associated with this datapath, and then prepare
+      # for the next table by storing the source host interface in the
+      # first value field.
       #
       # We now have both source and destination interfaces on the host
       # and remote datapaths, which have either tunnel or MAC2MAC
-      # associations usable for output to the proper port.
+      # flows usable for output to the proper port.
 
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
@@ -115,6 +115,9 @@ module Vnet::Openflow::Datapaths
 
                            cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
 
+      # The source mac address is set to this datapath's dp_rl's mac
+      # address in order to uniquely identify the packets as being
+      # from this datapath.
       flows << flow_create(:default,
                            table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
@@ -122,6 +125,10 @@ module Vnet::Openflow::Datapaths
 
                            match_value_pair_first: dp_rl[:route_link_id],
                            write_value_pair_first: dp_rl[:interface_id],
+
+                           actions: {
+                             :eth_src => dp_rl[:mac_address]
+                           },
 
                            cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
 
