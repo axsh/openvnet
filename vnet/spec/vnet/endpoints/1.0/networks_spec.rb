@@ -63,20 +63,18 @@ describe "/networks" do
       post api_suffix_with_uuid, request_params
     end
 
-    # let(:accepted_params) do
     accepted_params = {
         :uuid => "dr-newrange",
         :range_begin => "192.168.2.2",
         :range_end => "192.168.2.100"
       }
-    # end
     let(:request_params) { accepted_params }
 
     context "with a nonexistant network_uuid" do
       let(:api_suffix_with_uuid) { "#{api_suffix}/nw-notfound/dhcp_ranges" }
 
       it "should return a 404 error (UnknownUUIDResource)" do
-        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+        expect(last_response).to fail.with_code(404).with_error("UnknownUUIDResource",
           /nw-notfound$/)
       end
     end
@@ -93,8 +91,8 @@ describe "/networks" do
 
       context "with all accepted parameters" do
         it "should create a new dhcp range" do
-          last_response.should succeed
-          JSON.parse(last_response.body)["dhcp_ranges"].size.should eq 1
+          expect(last_response).to succeed
+          expect(JSON.parse(last_response.body)["dhcp_ranges"].size).to eq 1
         end
       end
 

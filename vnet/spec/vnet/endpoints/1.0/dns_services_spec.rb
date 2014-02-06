@@ -57,7 +57,7 @@ describe "/dns_services" do
       let(:api_suffix_with_uuid) { "#{api_suffix}/dnss-notfound/dns_records" }
 
       it "should return a 404 error (UnknownUUIDResource)" do
-        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+        expect(last_response).to fail.with_code(404).with_error("UnknownUUIDResource",
           /dnss-notfound$/)
       end
     end
@@ -74,8 +74,8 @@ describe "/dns_services" do
 
       context "with all accepted parameters" do
         it "should create a new dns record" do
-          last_response.should succeed
-          JSON.parse(last_response.body)["dns_records"].size.should eq 1
+          expect(last_response).to succeed
+          expect(JSON.parse(last_response.body)["dns_records"].size).to eq 1
         end
       end
 
