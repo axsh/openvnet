@@ -149,21 +149,6 @@ module Vnet::Openflow::Datapaths
       "#{@dp_info.dpid_s} datapaths/base: #{message}" + (values ? " (#{values})" : '')
     end
 
-    def flows_for_broadcast_mac_address(flows, broadcast_mac_address, cookie)
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_dst => broadcast_mac_address
-                           }, {}, cookie: cookie)
-      flows << Flow.create(TABLE_NETWORK_SRC_CLASSIFIER, 90, {
-                             :eth_src => broadcast_mac_address
-                           }, {}, cookie: cookie)
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_dst => broadcast_mac_address
-                           }, {}, cookie: cookie)
-      flows << Flow.create(TABLE_NETWORK_DST_CLASSIFIER, 90, {
-                             :eth_src => broadcast_mac_address
-                           }, {}, cookie: cookie)
-    end
-
     def flows_for_dp_route_link(flows, dp_rl)
     end
 

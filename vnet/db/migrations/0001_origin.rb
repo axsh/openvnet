@@ -89,6 +89,9 @@ Sequel.migration do
       Integer :active_datapath_id, :index => true
       Integer :owner_datapath_id, :index => true
 
+      FalseClass :enable_routing, :null=>false
+      FalseClass :enable_route_translation, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end

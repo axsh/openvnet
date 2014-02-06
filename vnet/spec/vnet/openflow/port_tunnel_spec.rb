@@ -21,7 +21,7 @@ describe Vnet::Openflow::Ports::Tunnel do
       port.install
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq(2 + DATAPATH_IDLE_FLOWCOUNT)
+      expect(datapath.added_flows.size).to eq(1 + DATAPATH_IDLE_FLOWCOUNT)
 
       expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
                                               TABLE_TUNNEL_PORTS,
@@ -30,13 +30,6 @@ describe Vnet::Openflow::Ports::Tunnel do
                                               nil,
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
                                                :goto_table => TABLE_TUNNEL_NETWORK_IDS})
-      expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
-                                              TABLE_VIRTUAL_SRC,
-                                              30,
-                                              {:in_port => 10},
-                                              nil,
-                                              {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
-                                               :goto_table => TABLE_ROUTE_INGRESS_INTERFACE})
     end
 
   end
