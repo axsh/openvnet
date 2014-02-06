@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
 
-def local_interface(groups = [])
-  Fabricate(:interface, owner_datapath_id: 1, enable_ingress_filtering: true).tap { |i|
-    groups.each { |group| i.add_security_group(group) }
-  }
-end
-
 def cookie_id(group, interface = interface)
   Vnet::Openflow::Filters::SecurityGroup.cookie(
     group.id,
