@@ -43,6 +43,8 @@ module Vnet::Openflow
       return unless datapath_network
 
       options = {
+        mode: 'gre',
+
         src_datapath_id: @datapath_info.id,
         dst_datapath_id: datapath_network[:datapath_id],
         src_interface_id: @host_datapath_networks[datapath_network[:network_id]][:interface_id],
@@ -118,7 +120,7 @@ module Vnet::Openflow
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:display_name] && params[:display_name] != item.display_name
+      return false if params[:mode] && params[:mode] != item.mode
       return false if params[:port_name] && params[:port_name] != item.display_name
       return false if params[:dst_id] && params[:dst_id] != item.dst_id
       return false if params[:dst_datapath_id] && params[:dst_datapath_id] != item.dst_id
@@ -138,7 +140,7 @@ module Vnet::Openflow
         case
         when params[:id]              then options[:id] = params[:id]
         when params[:uuid]            then options[:uuid] = params[:uuid]
-        when params[:display_name]    then options[:display_name] = params[:display_name]
+        when params[:mode]            then options[:mode] = params[:mode]
         when params[:port_name]       then options[:display_name] = params[:port_name]
         when params[:dst_id]          then options[:dst_datapath_id] = params[:dst_id]
 
@@ -159,11 +161,15 @@ module Vnet::Openflow
     #
 
     def item_initialize(item_map, params)
-      Tunnels::Base.new(
-        dp_info: @dp_info,
-        manager: self,
-        map: item_map
-      )
+      params = { dp_info: @dp_info,
+                 manager: self,
+                 map: item_map }
+
+      case item_map.mode
+      when 'gre' then Tunnels::Gre.new(params)
+      else
+        nil
+      end
     end
 
     def initialized_item_event
