@@ -9,13 +9,15 @@ module Vnet::Openflow::Tunnels
     attr_reader :id
     attr_reader :uuid
     attr_reader :mode
-    attr_reader :dst_id
     attr_reader :dst_dpid
     attr_reader :dst_ipv4_address
     attr_reader :datapath_networks
+
+    attr_reader :dst_datapath_id
+    attr_reader :dst_interface_id
+    attr_reader :src_interface_id
+
     attr_accessor :port_number
-    attr_accessor :src_interface_id
-    attr_accessor :dst_interface_id
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -27,17 +29,17 @@ module Vnet::Openflow::Tunnels
       @uuid = map.uuid
       @mode = map.mode
 
-      @dst_id = map.dst_datapath_id
-
       if map.dst_datapath
         @dst_dpid = map.dst_datapath.dpid
       end
 
+      @dst_datapath_id = map.dst_datapath_id
+
       @dst_interface = map.dst_interface
       @src_interface = map.src_interface
 
-      @src_interface_id = map.src_interface_id
       @dst_interface_id = map.dst_interface_id
+      @src_interface_id = map.src_interface_id
 
       @datapath_networks = []
     end
@@ -52,7 +54,7 @@ module Vnet::Openflow::Tunnels
                                  uuid: @uuid,
                                  port_name: @display_name,
 
-                                 dst_id: @dst_id,
+                                 dst_datapath_id: @dst_datapath_id,
                                  dst_dpid: @dst_dpid,
                                  dst_ipv4_address: @dst_ipv4_address,
                                  src_ipv4_address: @src_ipv4_address,

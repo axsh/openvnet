@@ -122,9 +122,8 @@ module Vnet::Openflow
       return false if params[:uuid] && params[:uuid] != item.uuid
       return false if params[:mode] && params[:mode] != item.mode
       return false if params[:port_name] && params[:port_name] != item.display_name
-      return false if params[:dst_id] && params[:dst_id] != item.dst_id
-      return false if params[:dst_datapath_id] && params[:dst_datapath_id] != item.dst_id
       return false if params[:dst_dpid] && params[:dst_dpid] != item.dst_dpid
+      return false if params[:dst_datapath_id] && params[:dst_datapath_id] != item.dst_datapath_id
       return false if params[:src_interface_id] && params[:src_interface_id] != item.src_interface_id
       return false if params[:dst_interface_id] && params[:dst_interface_id] != item.dst_interface_id
       true
@@ -142,7 +141,6 @@ module Vnet::Openflow
         when params[:uuid]            then options[:uuid] = params[:uuid]
         when params[:mode]            then options[:mode] = params[:mode]
         when params[:port_name]       then options[:display_name] = params[:port_name]
-        when params[:dst_id]          then options[:dst_datapath_id] = params[:dst_id]
 
         when params[:dst_datapath_id]  then options[:dst_datapath_id] = params[:dst_datapath_id]
         when params[:dst_interface_id] then options[:dst_interface_id] = params[:dst_interface_id]

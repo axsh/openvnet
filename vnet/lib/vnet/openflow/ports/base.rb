@@ -22,7 +22,7 @@ module Vnet::Openflow::Ports
     attr_accessor :interface_id
 
     # Work-around...
-    attr_accessor :dst_id
+    attr_accessor :dst_datapath_id
     attr_accessor :tunnel_id
 
     def extend(m)

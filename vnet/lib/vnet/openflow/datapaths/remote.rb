@@ -8,7 +8,7 @@ module Vnet::Openflow::Datapaths
       if same_segment?
         @dp_info.dc_segment_manager.async.remove_datapath(id)
       else
-        @dp_info.tunnel_manager.async.unload(dst_id: id)
+        @dp_info.tunnel_manager.async.unload(dst_datapath_id: id)
       end
     end
 
