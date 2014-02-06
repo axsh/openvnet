@@ -11,6 +11,7 @@ describe Vnet::Openflow::FilterManager do
 
   subject do
     Vnet::Openflow::FilterManager.new(datapath.dp_info).tap { |fm|
+      # We do this to simulate a datapath with id 1
       fm.set_datapath_info OpenStruct.new({id: 1})
     }
   end
@@ -32,11 +33,7 @@ describe Vnet::Openflow::FilterManager do
 
     context "with an interface that's in a single security group" do
       let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
-      let(:interface) do
-        Fabricate(:interface, owner_datapath_id: 1, enable_ingress_filtering: true).tap { |i|
-          i.add_security_group(group)
-        }
-      end
+      let(:interface) { local_interface([group]) }
 
       it "applies the flows for that group" do
         expect(flows).to include rule_flow(
@@ -68,12 +65,7 @@ describe Vnet::Openflow::FilterManager do
         Fabricate(:security_group, rules: rules)
       end
       let(:group2) { Fabricate(:security_group, rules: "icmp:-1:10.5.4.3") }
-      let(:interface) do
-        Fabricate(:interface, owner_datapath_id: 1, enable_ingress_filtering: true).tap { |i|
-          i.add_security_group(group1)
-          i.add_security_group(group2)
-        }
-      end
+      let(:interface) { local_interface([group1, group2]) }
 
       it "applies flows for all groups" do
         expect(flows).to include rule_flow(
@@ -96,17 +88,8 @@ describe Vnet::Openflow::FilterManager do
     context "with a security group that has two interfaces in it" do
       let(:group) { Fabricate(:security_group, rules: "tcp:456:10.10.10.10") }
 
-      let(:interface) do
-        Fabricate(:interface, owner_datapath_id: 1, enable_ingress_filtering: true).tap { |i|
-          i.add_security_group(group)
-        }
-      end
-
-      let(:interface2) do
-        Fabricate(:interface, owner_datapath_id: 1, enable_ingress_filtering: true).tap { |i|
-          i.add_security_group(group)
-        }
-      end
+      let(:interface) { local_interface([group]) }
+      let(:interface2) { local_interface([group]) }
 
       before(:each) { subject.initialized_interface({item_map: wrapper(interface2)}) }
 
@@ -131,11 +114,7 @@ describe Vnet::Openflow::FilterManager do
       Fabricate(:security_group, rules: rules)
     end
 
-    let(:interface) do
-      Fabricate(:interface, owner_datapath_id: 1, enable_ingress_filtering: true).tap { |i|
-        i.add_security_group(group)
-      }
-    end
+    let(:interface) { local_interface([group]) }
 
     before(:each) { subject.initialized_interface({item_map: wrapper(interface)}) }
 
@@ -155,11 +134,7 @@ describe Vnet::Openflow::FilterManager do
       Fabricate(:security_group, rules: rules)
     end
 
-    let(:interface) do
-      Fabricate(:interface, owner_datapath_id: 1, enable_ingress_filtering: true).tap { |i|
-        i.add_security_group(group)
-      }
-    end
+    let(:interface) { local_interface([group]) }
 
     before(:each) { subject.initialized_interface({item_map: wrapper(interface)}) }
 
@@ -189,11 +164,7 @@ describe Vnet::Openflow::FilterManager do
 
   describe "#disabled_filtering" do
       let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
-      let(:interface) do
-        Fabricate(:interface, owner_datapath_id: 1, enable_ingress_filtering: true).tap { |i|
-          i.add_security_group(group)
-        }
-      end
+      let(:interface) { local_interface([group]) }
 
       context "with the id of an interface in params" do
         before(:each) do
