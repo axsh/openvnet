@@ -9,7 +9,6 @@ module Vnet::Openflow::Tunnels
     attr_reader :id
     attr_reader :uuid
     attr_reader :mode
-    attr_reader :dst_dpid
     attr_reader :dst_ipv4_address
     attr_reader :datapath_networks
 
@@ -28,10 +27,6 @@ module Vnet::Openflow::Tunnels
       @id = map.id
       @uuid = map.uuid
       @mode = map.mode
-
-      if map.dst_datapath
-        @dst_dpid = map.dst_datapath.dpid
-      end
 
       @dst_datapath_id = map.dst_datapath_id
 
@@ -55,7 +50,6 @@ module Vnet::Openflow::Tunnels
                                  port_name: @display_name,
 
                                  dst_datapath_id: @dst_datapath_id,
-                                 dst_dpid: @dst_dpid,
                                  dst_ipv4_address: @dst_ipv4_address,
                                  src_ipv4_address: @src_ipv4_address,
 

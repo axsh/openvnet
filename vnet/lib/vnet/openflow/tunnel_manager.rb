@@ -122,7 +122,6 @@ module Vnet::Openflow
       return false if params[:uuid] && params[:uuid] != item.uuid
       return false if params[:mode] && params[:mode] != item.mode
       return false if params[:port_name] && params[:port_name] != item.display_name
-      return false if params[:dst_dpid] && params[:dst_dpid] != item.dst_dpid
       return false if params[:dst_datapath_id] && params[:dst_datapath_id] != item.dst_datapath_id
       return false if params[:src_interface_id] && params[:src_interface_id] != item.src_interface_id
       return false if params[:dst_interface_id] && params[:dst_interface_id] != item.dst_interface_id
@@ -132,7 +131,8 @@ module Vnet::Openflow
     def select_filter_from_params(params)
       return nil if @datapath_info.nil?
 
-      return params if params.keys == [:src_datapath_id, :dst_datapath_id, :src_interface_id, :dst_interface_id]
+      return params if params.keys == [:src_datapath_id, :dst_datapath_id,
+                                       :src_interface_id, :dst_interface_id]
 
       # Ensure to update tunnel items only belonging to this
       { src_datapath_id: @datapath_info.id }.tap do |options|
@@ -179,7 +179,6 @@ module Vnet::Openflow
       # proper event barrier.
       MW::Tunnel.batch[filter].commit(
         fill: [
-          :dst_datapath,
           { :dst_interface => :ipv4_address },
           { :src_interface => :ipv4_address },
         ]
