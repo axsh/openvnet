@@ -49,7 +49,7 @@ module Vnet::Openflow::Datapaths
 
         flows << flow_create(:default,
                              table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
-                             goto_table: TABLE_OUTPUT_DP_NETWORK_DST,
+                             goto_table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
                              priority: 1,
 
                              match_value_pair_flag: reflection,
@@ -63,8 +63,8 @@ module Vnet::Openflow::Datapaths
                              cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
 
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_NETWORK_DST,
-                             goto_table: TABLE_OUTPUT_DP_NETWORK_SRC,
+                             table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
+                             goto_table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
                              priority: 1,
 
                              match_reflection: reflection,
@@ -101,7 +101,7 @@ module Vnet::Openflow::Datapaths
 
         flows << flow_create(:default,
                              table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
-                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST,
+                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
                              priority: 1,
 
                              match_value_pair_flag: reflection,
@@ -134,8 +134,8 @@ module Vnet::Openflow::Datapaths
         # interface id is set using the host's datapath route link
         # entry.
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_ROUTE_LINK_DST,
-                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
+                             table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
+                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
                              priority: 1,
 
                              match_reflection: reflection,

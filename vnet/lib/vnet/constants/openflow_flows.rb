@@ -99,16 +99,16 @@ module Vnet
       # network or route link, while for tunnels the output port needs
       # to be selected from pre-created tunnels.
 
-      TABLE_OUTPUT_DP_NETWORK_DST        = 80
-      TABLE_OUTPUT_DP_NETWORK_SRC        = 81
+      TABLE_OUTPUT_DP_NETWORK_DST_IF         = 80
+      TABLE_OUTPUT_DP_NETWORK_SRC_IF         = 81
 
-      TABLE_OUTPUT_DP_ROUTE_LINK_DST     = 82
-      TABLE_OUTPUT_DP_ROUTE_LINK_SRC     = 84
+      TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF      = 82
+      TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF      = 84
 
-      TABLE_OUTPUT_DP_OVER_MAC2MAC       = 85 # Match src/dst if id, output if present.
-      TABLE_OUTPUT_DP_NETWORK_SET_MAC    = 86 # If broadcast -> set MAC2MAC or drop. default goto next
-      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
-      TABLE_OUTPUT_DP_OVER_TUNNEL        = 88 # Use tun_id to determine type for goto_table.
+      TABLE_OUTPUT_DP_OVER_MAC2MAC           = 85 # Match src/dst if id, output if present.
+      TABLE_OUTPUT_DP_NETWORK_SET_MAC        = 86 # If broadcast -> set MAC2MAC or drop. default goto next
+      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC     = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
+      TABLE_OUTPUT_DP_OVER_TUNNEL            = 88 # Use tun_id to determine type for goto_table.
 
       #
       # Output ports tables:

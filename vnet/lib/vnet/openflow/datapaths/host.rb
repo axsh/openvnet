@@ -83,7 +83,7 @@ module Vnet::Openflow::Datapaths
 
                            cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
       flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DP_NETWORK_SRC,
+                           table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 
@@ -119,7 +119,7 @@ module Vnet::Openflow::Datapaths
       # address in order to uniquely identify the packets as being
       # from this datapath.
       flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
+                           table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 

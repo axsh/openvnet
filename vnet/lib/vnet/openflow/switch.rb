@@ -76,10 +76,10 @@ module Vnet::Openflow
        TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
        TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
 
-       TABLE_OUTPUT_DP_NETWORK_DST,
-       TABLE_OUTPUT_DP_NETWORK_SRC,
-       TABLE_OUTPUT_DP_ROUTE_LINK_DST,
-       TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
+       TABLE_OUTPUT_DP_NETWORK_DST_IF,
+       TABLE_OUTPUT_DP_NETWORK_SRC_IF,
+       TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
+       TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
 
        TABLE_OUTPUT_DP_OVER_MAC2MAC,
        TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
@@ -95,7 +95,7 @@ module Vnet::Openflow
 
       [[TABLE_CLASSIFIER, 1, nil, { :tunnel_id => 0 }],
        [TABLE_FLOOD_SEGMENT, 10, :match_remote, nil],
-       [TABLE_OUTPUT_DP_NETWORK_DST, 2, nil, { :eth_dst => MAC_BROADCAST }],
+       [TABLE_OUTPUT_DP_NETWORK_DST_IF, 2, nil, { :eth_dst => MAC_BROADCAST }],
       ].each { |table, priority, flag, match|
         flows << flow_create(:default, {
                                table: table,
