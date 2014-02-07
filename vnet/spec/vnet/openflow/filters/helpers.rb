@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-def cookie_id(group, interface = interface)
+def cookie_id(group, interface = interface, type = Vnet::Openflow::Filters::Base::COOKIE_TYPE_RULE)
   Vnet::Openflow::Filters::SecurityGroup.cookie(
     group.id,
     group.interface_cookie_id(interface.id),
-    Vnet::Openflow::Filters::Base::COOKIE_TYPE_RULE
+    type
   )
 end
 
 def wrapper(interface)
-  Vnet::ModelWrappers::Interface[interface.id]
+  Vnet::ModelWrappers::Interface.batch[interface.id].commit
 end
 
 def match_rule(source_ip)
