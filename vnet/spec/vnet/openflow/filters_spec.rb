@@ -94,7 +94,7 @@ describe Vnet::Openflow::FilterManager do
 
       before(:each) { subject.initialized_interface({item_map: wrapper(interface2)}) }
 
-      it "applies the group's flows for both interfaces" do
+      it "applies the group's rule flows for both interfaces" do
         expect(flows).to include rule_flow(
           cookie: cookie_id(group),
           match: match_tcp_rule("10.10.10.10", 456)
@@ -183,6 +183,16 @@ describe Vnet::Openflow::FilterManager do
             match: match_icmp_rule("0.0.0.0/0")
           )
         end
+
+        it "creates a flow that accepts all ingress traffic on the interface" do
+          expect(flows).to include flow_create(:default,
+            table: TABLE_INTERFACE_INGRESS_FILTER,
+            priority: 90,
+            cookie: Vnet::Openflow::Filters::AcceptAllTraffic.cookie(interface.id),
+            match_metadata: { interface: interface.id },
+            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+          )
+        end
       end
   end
 
@@ -207,6 +217,17 @@ describe Vnet::Openflow::FilterManager do
             match: match_icmp_rule("0.0.0.0/0")
           )
         end
+
+        it "removes the flow that accepts all ingress traffic on the interface" do
+          expect(flows).not_to include flow_create(:default,
+            table: TABLE_INTERFACE_INGRESS_FILTER,
+            priority: 90,
+            cookie: Vnet::Openflow::Filters::AcceptAllTraffic.cookie(interface.id),
+            match_metadata: { interface: interface.id },
+            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+          )
+        end
+
       end
   end
 
