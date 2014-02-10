@@ -224,8 +224,6 @@ describe Vnet::Openflow::FilterManager do
   end
 
   describe "#added_interface_to_sg" do
-    let(:interface2) { Fabricate(:filter_interface) }
-
     before(:each) do
       subject.initialized_interface({item_map: wrapper(interface)})
       subject.initialized_interface({item_map: wrapper(interface2)})
@@ -242,13 +240,19 @@ describe Vnet::Openflow::FilterManager do
       )
     end
 
-    it "updates isolation rules for the interface that was in the group already" do
-      (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-        expect(flows).to include iso_flow(group, interface, ip_lease.ipv4_address)
+    shared_examples "update isolation for old interfaces" do
+      it "updates isolation rules for the interface that was in the group already" do
+        (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
+          expect(flows).to include iso_flow(group, interface, ip_lease.ipv4_address)
+        end
       end
     end
 
     context "with a local interface" do
+      let(:interface2) { Fabricate(:filter_interface) }
+
+      include_examples "update isolation for old interfaces"
+
       it "applies the rule flows for the new interface" do
        expect(flows).to include rule_flow({
          cookie: cookie_id(group, interface2),
@@ -266,6 +270,8 @@ describe Vnet::Openflow::FilterManager do
 
     context "with a remote interface" do
       let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
+
+      include_examples "update isolation for old interfaces"
 
       it "doesn't apply the rule flows for the new interface" do
        expect(flows).not_to include rule_flow({
