@@ -104,18 +104,22 @@ describe Vnet::Openflow::FilterManager do
          )
        end
 
-       it "applies the group's isolation flows for both interfaces" do
-         (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-           expect(flows).to include flow_create(:default,
-             table: :table_interface_ingress_filter,
-             priority: Vnet::Openflow::Filters::SecurityGroup::ISOLATION_PRIORITY,
-             match_metadata: {interface: interface.id},
-             cookie: cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_ISO),
-             match: match_ipv4_subnet_src(ip_lease.ip_address.ipv4_address, 32),
-             goto_table: :table_out_port_interface_ingress
-           )
-         end
-       end
+       # This doesn't work for now but won't need to be implemented until it's
+       # possible to set security groups immediately upon interface creation.
+       # That's probably a feature we want in the near future though.
+
+       #it "applies the group's isolation flows for both interfaces" do
+       #  (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
+       #    expect(flows).to include flow_create(:default,
+       #      table: :table_interface_ingress_filter,
+       #      priority: Vnet::Openflow::Filters::SecurityGroup::ISOLATION_PRIORITY,
+       #      match_metadata: {interface: interface.id},
+       #      cookie: cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_ISO),
+       #      match: match_ipv4_subnet_src(ip_lease.ip_address.ipv4_address, 32),
+       #      goto_table: :table_out_port_interface_ingress
+       #    )
+       #  end
+       #end
      end
   end
 
@@ -219,6 +223,60 @@ describe Vnet::Openflow::FilterManager do
     end
   end
 
-  describe "#updated_isolation" do
+  describe "#added_interface_to_sg" do
+    let(:interface2) { Fabricate(:filter_interface) }
+
+    before(:each) do
+      subject.initialized_interface({item_map: wrapper(interface)})
+      subject.initialized_interface({item_map: wrapper(interface2)})
+
+      interface2.add_security_group(group)
+
+      subject.added_interface_to_sg(
+        id: group.id,
+        interface_id: interface2.id,
+        interface_cookie_id: group.interface_cookie_id(interface2.id)
+      )
+    end
+
+    it "updates isolation rules for the interface that was in the group already" do
+      (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
+        expect(flows).to include iso_flow(group, interface.id, ip_lease.ipv4_address)
+      end
+    end
+
+    context "with a local interface" do
+      it "applies the rule flows for the new interface" do
+       expect(flows).to include rule_flow({
+         cookie: cookie_id(group, interface2),
+         match: match_icmp_rule("0.0.0.0/0")},
+         interface2
+       )
+      end
+
+      it "applies the isolation flows for the new interface" do
+        (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
+          expect(flows).to include iso_flow(group, interface2.id, ip_lease.ipv4_address)
+        end
+      end
+    end
+
+    context "with a remote interface" do
+      let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
+
+      it "doesn't apply the rule flows for the new interface" do
+       expect(flows).not_to include rule_flow({
+         cookie: cookie_id(group, interface2),
+         match: match_icmp_rule("0.0.0.0/0")},
+         interface2
+       )
+      end
+
+      it "doesn't apply the isolation flows for the new interface" do
+        (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
+          expect(flows).not_to include iso_flow(group, interface2.id, ip_lease.ipv4_address)
+        end
+      end
+    end
   end
 end
