@@ -10,7 +10,7 @@ describe Vnet::Openflow::Ports::Tunnel do
       datapath = MockDatapath.new(double, 10)
       port = Vnet::Openflow::Ports::Base.new(datapath.dp_info, double(port_no: 10, name: 't-a'))
       port.extend(Vnet::Openflow::Ports::Tunnel)
-      port.dst_id = 5
+      port.dst_datapath_id = 5
 
       tunnel_manager = double(:tunnel_manager)
 
