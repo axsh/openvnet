@@ -9,6 +9,9 @@ describe Vnet::Openflow::FilterManager do
   let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
   let(:flows) { datapath.current_flows }
 
+  let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
+  let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
+
   subject do
     Vnet::Openflow::FilterManager.new(datapath.dp_info).tap { |fm|
       # We do this to simulate a datapath with id 1
@@ -32,9 +35,6 @@ describe Vnet::Openflow::FilterManager do
     before(:each) { subject.initialized_interface({item_map: wrapper(interface)}) }
 
     context "with an interface that's in a single security group" do
-      let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
-      let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
-
       it "applies the flows for that group" do
         expect(flows).to include rule_flow(
           cookie: cookie_id(group),
@@ -44,7 +44,6 @@ describe Vnet::Openflow::FilterManager do
     end
 
     context "with a remote interface" do
-      let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
       let(:interface) do
         Fabricate(:filter_interface,
           security_groups: [group],
@@ -65,6 +64,7 @@ describe Vnet::Openflow::FilterManager do
         rules = "tcp:22:0.0.0.0/0\nudp:52:10.1.0.1/24"
         Fabricate(:security_group, rules: rules)
       end
+
       let(:group2) { Fabricate(:security_group, rules: "icmp:-1:10.5.4.3") }
       let(:interface) { Fabricate(:filter_interface, security_groups: [group1, group2]) }
 
@@ -86,41 +86,40 @@ describe Vnet::Openflow::FilterManager do
       end
     end
 
-    context "with a security group that has two interfaces in it" do
-      let(:group) { Fabricate(:security_group, rules: "tcp:456:10.10.10.10") }
+     context "with a security group that has two interfaces in it" do
+       before(:each) { subject.initialized_interface({item_map: wrapper(interface2)}) }
 
-      let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
-      let(:interface2) { Fabricate(:filter_interface, security_groups: [group]) }
+       let(:interface2) { Fabricate(:filter_interface, security_groups: [group]) }
 
-      before(:each) { subject.initialized_interface({item_map: wrapper(interface2)}) }
+       it "applies the group's rule flows for both interfaces" do
+         expect(flows).to include rule_flow(
+           cookie: cookie_id(group),
+           match: match_icmp_rule("0.0.0.0/0")
+         )
 
-      it "applies the group's rule flows for both interfaces" do
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_tcp_rule("10.10.10.10", 456)
-        )
+         expect(flows).to include rule_flow({
+           cookie: cookie_id(group, interface2),
+           match: match_icmp_rule("0.0.0.0/0")},
+           interface2
+         )
+       end
 
-        expect(flows).to include rule_flow({
-          cookie: cookie_id(group, interface2),
-          match: match_tcp_rule("10.10.10.10", 456)},
-          interface2
-        )
-      end
-
-      it "applies isolation flows for both interfaces" do
-        # raise NotImplementedError
-      end
-    end
+       it "applies the group's isolation flows for both interfaces" do
+         (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
+           expect(flows).to include flow_create(:default,
+             table: :table_interface_ingress_filter,
+             priority: Vnet::Openflow::Filters::SecurityGroup::ISOLATION_PRIORITY,
+             match_metadata: {interface: interface.id},
+             cookie: cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_ISO),
+             match: match_ipv4_subnet_src(ip_lease.ip_address.ipv4_address, 32),
+             goto_table: :table_out_port_interface_ingress
+           )
+         end
+       end
+     end
   end
 
   describe "#removed_interface" do
-    let(:group) do
-      rules = "tcp:22:0.0.0.0/0"
-      Fabricate(:security_group, rules: rules)
-    end
-
-    let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
-
     before(:each) { subject.initialized_interface({item_map: wrapper(interface)}) }
 
     it "Removes filter related flows for a single interface" do
@@ -128,19 +127,12 @@ describe Vnet::Openflow::FilterManager do
 
       expect(flows).not_to include rule_flow(
         cookie: cookie_id(group),
-        match: match_tcp_rule("0.0.0.0/0", 22),
+        match: match_icmp_rule("0.0.0.0/0")
       )
     end
   end
 
   describe "#updated_filter" do
-    let(:group) do
-      rules = "tcp:22:0.0.0.0/0"
-      Fabricate(:security_group, rules: rules)
-    end
-
-    let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
-
     before(:each) { subject.initialized_interface({item_map: wrapper(interface)}) }
 
     context "with new rules in the parameters" do
@@ -154,11 +146,11 @@ describe Vnet::Openflow::FilterManager do
       it "Removes the old rules for a security group" do
         expect(flows).not_to include rule_flow(
           cookie: cookie_id(group),
-          match: match_tcp_rule("0.0.0.0/0", 22)
+          match: match_icmp_rule("0.0.0.0/0")
         )
       end
 
-      it "install the new rules for a security_group" do
+      it "installs the new rules for a security_group" do
         expect(flows).to include rule_flow(
           cookie: cookie_id(group),
           match: match_tcp_rule("192.168.3.34", 234)
@@ -168,67 +160,63 @@ describe Vnet::Openflow::FilterManager do
   end
 
   describe "#disabled_filtering" do
-      let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
-      let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
-
-      context "with the id of an interface in params" do
-        before(:each) do
-          subject.initialized_interface({item_map: wrapper(interface)})
-          subject.disabled_filtering({id: interface.id})
-        end
-
-        it "removes all security_group rules for the interface" do
-          expect(flows).not_to include rule_flow(
-            cookie: cookie_id(group),
-            match: match_icmp_rule("0.0.0.0/0")
-          )
-        end
-
-        it "creates a flow that accepts all ingress traffic on the interface" do
-          expect(flows).to include flow_create(:default,
-            table: TABLE_INTERFACE_INGRESS_FILTER,
-            priority: 90,
-            cookie: Vnet::Openflow::Filters::AcceptAllTraffic.cookie(interface.id),
-            match_metadata: { interface: interface.id },
-            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-          )
-        end
+    context "with the id of an interface in params" do
+      before(:each) do
+        subject.initialized_interface({item_map: wrapper(interface)})
+        subject.disabled_filtering({id: interface.id})
       end
-  end
 
-  describe "#enabled_filtering" do
-      let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
-      let(:interface) do
-        Fabricate(:filter_interface,
-          security_groups: [group],
-          enable_ingress_filtering: false
+      it "removes all security_group rules for the interface" do
+        expect(flows).not_to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_icmp_rule("0.0.0.0/0")
         )
       end
 
-      context "with the id of an interface in params" do
-        before(:each) do
-          subject.initialized_interface({item_map: wrapper(interface)})
-          subject.enabled_filtering({id: interface.id})
-        end
-
-        it "applies all security_group rules for the interface" do
-          expect(flows).to include rule_flow(
-            cookie: cookie_id(group),
-            match: match_icmp_rule("0.0.0.0/0")
-          )
-        end
-
-        it "removes the flow that accepts all ingress traffic on the interface" do
-          expect(flows).not_to include flow_create(:default,
-            table: TABLE_INTERFACE_INGRESS_FILTER,
-            priority: 90,
-            cookie: Vnet::Openflow::Filters::AcceptAllTraffic.cookie(interface.id),
-            match_metadata: { interface: interface.id },
-            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-          )
-        end
-
+      it "creates a flow that accepts all ingress traffic on the interface" do
+        expect(flows).to include flow_create(:default,
+          table: TABLE_INTERFACE_INGRESS_FILTER,
+          priority: 90,
+          cookie: Vnet::Openflow::Filters::AcceptAllTraffic.cookie(interface.id),
+          match_metadata: { interface: interface.id },
+          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+        )
       end
+    end
+  end
+
+  describe "#enabled_filtering" do
+    let(:interface) do
+      Fabricate(:filter_interface,
+        security_groups: [group],
+        enable_ingress_filtering: false
+      )
+    end
+
+    context "with the id of an interface in params" do
+      before(:each) do
+        subject.initialized_interface({item_map: wrapper(interface)})
+        subject.enabled_filtering({id: interface.id})
+      end
+
+      it "applies all security_group rules for the interface" do
+        expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_icmp_rule("0.0.0.0/0")
+        )
+      end
+
+      it "removes the flow that accepts all ingress traffic on the interface" do
+        expect(flows).not_to include flow_create(:default,
+          table: TABLE_INTERFACE_INGRESS_FILTER,
+          priority: 90,
+          cookie: Vnet::Openflow::Filters::AcceptAllTraffic.cookie(interface.id),
+          match_metadata: { interface: interface.id },
+          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+        )
+      end
+
+    end
   end
 
   describe "#updated_isolation" do
