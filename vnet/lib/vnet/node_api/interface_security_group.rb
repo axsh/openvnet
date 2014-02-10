@@ -5,14 +5,17 @@ module Vnet::NodeApi
       def create(options)
         ifsecg = super(options)
         group = ifsecg.security_group
+        interface = ifsecg.interface
 
         #TODO: Only dispatch this event if this interface has filtering enabled
         dispatch_event(ADDED_INTERFACE_TO_SG,
           id: group.id,
           interface_id: ifsecg.interface_id,
           interface_cookie_id: group.interface_cookie_id(ifsecg.interface_id)
+          interface_owner_datapath_id: interface.owner_datapath_id,
+          interface_active_datapath_id: interface.active_datapath_id,
+          isolation_ip_addresses: group.ip_addresses
         )
-        dispatch_update_isolation group
       end
 
       def destroy(id)
@@ -22,18 +25,9 @@ module Vnet::NodeApi
         dispatch_event(REMOVED_INTERFACE_FROM_SG,
           id: group.id,
           interface_id: ifsecg.interface_id
+          isolation_ip_addresses: group.ip_addresses
         )
 
-        dispatch_update_isolation group
-      end
-
-      private
-      def dispatch_update_isolation(group)
-        dispatch_event(UPDATED_SG_ISOLATION,
-          id: group.id,
-          uuid: group.canonical_uuid,
-          ip_addresses: group.ip_addresses
-        )
       end
     end
   end

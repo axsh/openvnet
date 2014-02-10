@@ -9,7 +9,7 @@ module Vnet::Openflow
     subscribe_event ENABLED_FILTERING, :enabled_filtering
     subscribe_event DISABLED_FILTERING, :disabled_filtering
     subscribe_event UPDATED_SG_RULES, :updated_filter
-    subscribe_event UPDATED_SG_ISOLATION, :updated_isolation
+    #subscribe_event UPDATED_SG_ISOLATION, :updated_isolation
     subscribe_event ADDED_INTERFACE_TO_SG, :added_interface_to_sg
     subscribe_event REMOVED_INTERFACE_FROM_SG, :removed_interface_from_sg
 
@@ -30,7 +30,6 @@ module Vnet::Openflow
       if interface.enable_ingress_filtering
         apply_filters(interface)
       else
-        #TODO: Bypass filtering table instead?
         accept_all_traffic(interface.id).install
       end
     end
@@ -67,16 +66,6 @@ module Vnet::Openflow
       item.update_rules(params[:rules])
     end
 
-    def updated_isolation(params)
-      item = internal_detect(id: params[:id])
-      return if item.nil?
-
-      log_ips = params[:ip_addresses].map { |i| IPAddress::IPv4.parse_u32(i).to_s }
-      debug log_format("Updating isolation for security group '#{params[:uuid]}'", log_ips)
-
-      item.update_isolation(params[:ip_addresses])
-    end
-
     def removed_interface_from_sg(params)
       item = internal_detect(id: params[:id]) || return
 
@@ -91,14 +80,28 @@ module Vnet::Openflow
 
     def added_interface_to_sg(params)
       item = item_by_params(id: params[:id])
-      log_interface_added(params[:interface_id], item.uuid)
-      item.add_interface(params[:interface_id], params[:interface_cookie_id])
-      item.install(params[:interface_id])
+      return if item.nil?
+
+      updated_isolation(item, params[:isolation_ip_addresses])
+
+      unless is_remote?(params[:interface_owner_datapath_id], params[:interface_active_datapath_id])
+        log_interface_added(params[:interface_id], item.uuid)
+
+        item.add_interface(params[:interface_id], params[:interface_cookie_id])
+        item.install(params[:interface_id])
+      end
     end
 
     #
     # The rest
     #
+
+    def updated_isolation(item, ip_list)
+      log_ips = ip_list.map { |i| IPAddress::IPv4.parse_u32(i).to_s }
+      debug log_format("Updating isolation for security group '#{item.uuid}", log_ips)
+
+      item.update_isolation(ip_list)
+    end
 
     def initialized_item_event
       INITIALIZED_FILTER

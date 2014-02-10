@@ -235,13 +235,16 @@ describe Vnet::Openflow::FilterManager do
       subject.added_interface_to_sg(
         id: group.id,
         interface_id: interface2.id,
-        interface_cookie_id: group.interface_cookie_id(interface2.id)
+        interface_cookie_id: group.interface_cookie_id(interface2.id),
+        interface_owner_datapath_id: interface2.owner_datapath_id,
+        interface_active_datapath_id: interface2.active_datapath_id,
+        isolation_ip_addresses: group.ip_addresses
       )
     end
 
     it "updates isolation rules for the interface that was in the group already" do
       (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-        expect(flows).to include iso_flow(group, interface.id, ip_lease.ipv4_address)
+        expect(flows).to include iso_flow(group, interface, ip_lease.ipv4_address)
       end
     end
 
@@ -256,7 +259,7 @@ describe Vnet::Openflow::FilterManager do
 
       it "applies the isolation flows for the new interface" do
         (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-          expect(flows).to include iso_flow(group, interface2.id, ip_lease.ipv4_address)
+          expect(flows).to include iso_flow(group, interface2, ip_lease.ipv4_address)
         end
       end
     end
@@ -274,7 +277,7 @@ describe Vnet::Openflow::FilterManager do
 
       it "doesn't apply the isolation flows for the new interface" do
         (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-          expect(flows).not_to include iso_flow(group, interface2.id, ip_lease.ipv4_address)
+          expect(flows).not_to include iso_flow(group, interface2, ip_lease.ipv4_address)
         end
       end
     end

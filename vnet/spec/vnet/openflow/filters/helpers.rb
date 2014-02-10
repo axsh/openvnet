@@ -46,11 +46,11 @@ def rule_flow(rule_hash, interface = interface)
   flow_create(:default, flow_hash)
 end
 
-def iso_flow(group, interface_id, ipv4_address)
+def iso_flow(group, interface, ipv4_address)
   flow_create(:default,
     table: TABLE_INTERFACE_INGRESS_FILTER,
     priority: Vnet::Openflow::Filters::SecurityGroup::ISOLATION_PRIORITY,
-    match_metadata: {interface: interface_id},
+    match_metadata: {interface: interface.id},
     cookie: cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_ISO),
     match: match_ipv4_subnet_src(ipv4_address, 32),
     goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
