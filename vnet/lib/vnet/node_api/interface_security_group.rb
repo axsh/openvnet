@@ -2,7 +2,6 @@
 module Vnet::NodeApi
   class InterfaceSecurityGroup < Base
     class << self
-      #TODO: Dispatch events for vnics leaving and join secgs
       def create(options)
         ifsecg = super(options)
         group = ifsecg.security_group
