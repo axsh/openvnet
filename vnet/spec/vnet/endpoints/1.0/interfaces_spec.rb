@@ -42,7 +42,7 @@ describe "/interfaces" do
 
       it "handles a single event" do
         expect(last_response).to succeed
-        MockEventHandler.handled_events.size.should eq 1
+        expect(MockEventHandler.handled_events.size).to eq 1
       end
     end
   end
@@ -63,7 +63,7 @@ describe "/interfaces" do
 
       it "handles a single event" do
         expect(last_response).to succeed
-        MockEventHandler.handled_events.size.should eq 1
+        expect(MockEventHandler.handled_events.size).to eq 1
       end
     end
   end

@@ -7,6 +7,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     "owner_datapath_uuid",
     "enable_ingress_filtering",
     "display_name",
+    "enable_routing",
+    "enable_route_translation",
   ]
 
   fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]

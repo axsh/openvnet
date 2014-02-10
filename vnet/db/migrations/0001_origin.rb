@@ -90,6 +90,8 @@ Sequel.migration do
       Integer :owner_datapath_id, :index => true
 
       Boolean :enable_ingress_filtering, :default => false, :null => false
+      FalseClass :enable_routing, :null=>false
+      FalseClass :enable_route_translation, :null=>false
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false

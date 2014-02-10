@@ -13,9 +13,9 @@ shared_examples "DELETE /:uuid" do
       let(:api_suffix_with_uuid) { "#{api_suffix}/#{object.canonical_uuid}" }
 
       it "should delete one database entry" do
-        last_response.should succeed.with_body([object.canonical_uuid])
+        expect(last_response).to succeed.with_body([object.canonical_uuid])
 
-        model_class[object.canonical_uuid].should eq(nil)
+        expect(model_class[object.canonical_uuid]).to eq(nil)
       end
     end
   end

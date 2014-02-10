@@ -36,6 +36,7 @@ module Vnet
       TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
       TABLE_INTERFACE_INGRESS_MAC        = 11
       TABLE_INTERFACE_INGRESS_NW_IF      = 12
+      TABLE_INTERFACE_INGRESS_ROUTE_LINK = 13
 
       # Handle egress packets from trusted interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15
@@ -51,11 +52,8 @@ module Vnet
       # currently known as the 'physical' network.
       #
       # Later we will always require a network number to be supplied.
-      TABLE_NETWORK_SRC_CLASSIFIER = 20
-
-      TABLE_VIRTUAL_SRC       = 21
-      TABLE_PHYSICAL_SRC      = 22
-
+      TABLE_NETWORK_SRC_CLASSIFIER    = 20
+      TABLE_NETWORK_SRC_MAC_LEARNING  = 21
 
       # In the transition from TABLE_ROUTER_EGRESS to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.
@@ -70,26 +68,26 @@ module Vnet
       TABLE_ARP_TABLE                 = 38
       TABLE_ARP_LOOKUP                = 39
 
-      TABLE_NETWORK_DST_CLASSIFIER = 40
-      TABLE_VIRTUAL_DST            = 41
-      TABLE_PHYSICAL_DST           = 42
+      TABLE_NETWORK_DST_CLASSIFIER    = 40
+      TABLE_NETWORK_DST_MAC_LOOKUP    = 41
 
-      TABLE_INTERFACE_INGRESS_FILTER = 43
+      TABLE_INTERFACE_INGRESS_FILTER        = 43
       TABLE_INTERFACE_INGRESS_FILTER_LOOKUP = 44
 
-      TABLE_FLOOD_SIMULATED = 50
-      TABLE_FLOOD_LOCAL     = 51
-      TABLE_FLOOD_SEGMENT   = 52
-      TABLE_FLOOD_TUNNELS   = 53
+      TABLE_FLOOD_SIMULATED                  = 50
+      TABLE_FLOOD_LOCAL                      = 51
+      TABLE_FLOOD_SEGMENT                    = 52
+      TABLE_FLOOD_TUNNELS                    = 53
 
       # A table for sending packets to the controller after applying
       # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER  = 60
+      TABLE_OUTPUT_CONTROLLER                = 60
 
-      TABLE_LOOKUP_IF_NW_TO_DP_NW         = 70
-      TABLE_LOOKUP_IF_RL_TO_DP_RL         = 71
-      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK    = 72
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK = 73
+      TABLE_LOOKUP_IF_NW_TO_DP_NW            = 70
+      TABLE_LOOKUP_IF_RL_TO_DP_RL            = 71
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK       = 72
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 73
+      TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS = 74
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source
@@ -101,16 +99,16 @@ module Vnet
       # network or route link, while for tunnels the output port needs
       # to be selected from pre-created tunnels.
 
-      TABLE_OUTPUT_DP_NETWORK_DST        = 80
-      TABLE_OUTPUT_DP_NETWORK_SRC        = 81
+      TABLE_OUTPUT_DP_NETWORK_DST_IF         = 80
+      TABLE_OUTPUT_DP_NETWORK_SRC_IF         = 81
 
-      TABLE_OUTPUT_DP_ROUTE_LINK_DST     = 82
-      TABLE_OUTPUT_DP_ROUTE_LINK_SRC     = 84
+      TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF      = 82
+      TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF      = 84
 
-      TABLE_OUTPUT_DP_OVER_MAC2MAC       = 85 # Match src/dst if id, output if present.
-      TABLE_OUTPUT_DP_NETWORK_SET_MAC    = 86 # If broadcast -> set MAC2MAC or drop. default goto next
-      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
-      TABLE_OUTPUT_DP_OVER_TUNNEL        = 88 # Use tun_id to determine type for goto_table.
+      TABLE_OUTPUT_DP_OVER_MAC2MAC           = 85 # Match src/dst if id, output if present.
+      TABLE_OUTPUT_DP_NETWORK_SET_MAC        = 86 # If broadcast -> set MAC2MAC or drop. default goto next
+      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC     = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
+      TABLE_OUTPUT_DP_OVER_TUNNEL            = 88 # Use tun_id to determine type for goto_table.
 
       #
       # Output ports tables:

@@ -24,6 +24,12 @@ module Vnet::Openflow::Datapaths
       else
         @dp_info.tunnel_manager.async.insert(active_network[:dpn_id])
       end
+
+      flows = []
+      flows_for_filtering_mac_address(flows,
+                                      active_network[:broadcast_mac_address],
+                                      active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+      @dp_info.add_flows(flows)
     end
 
     def after_remove_active_network(active_network)
@@ -43,7 +49,7 @@ module Vnet::Openflow::Datapaths
 
         flows << flow_create(:default,
                              table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
-                             goto_table: TABLE_OUTPUT_DP_NETWORK_DST,
+                             goto_table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
                              priority: 1,
 
                              match_value_pair_flag: reflection,
@@ -57,8 +63,8 @@ module Vnet::Openflow::Datapaths
                              cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
 
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_NETWORK_DST,
-                             goto_table: TABLE_OUTPUT_DP_NETWORK_SRC,
+                             table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
+                             goto_table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
                              priority: 1,
 
                              match_reflection: reflection,
@@ -77,11 +83,25 @@ module Vnet::Openflow::Datapaths
     end
 
     def flows_for_dp_route_link(flows, dp_rl)
+      # The source mac address of route link packets is required to
+      # match a remote dp_rl mac address.
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
+                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           priority: 1,
+
+                           match: {
+                             :eth_src => dp_rl[:mac_address]
+                           },
+                           match_route_link: dp_rl[:route_link_id],
+
+                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
       [true, false].each { |reflection|
 
         flows << flow_create(:default,
                              table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
-                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST,
+                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
                              priority: 1,
 
                              match_value_pair_flag: reflection,
@@ -114,8 +134,8 @@ module Vnet::Openflow::Datapaths
         # interface id is set using the host's datapath route link
         # entry.
         flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_ROUTE_LINK_DST,
-                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC,
+                             table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
+                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
                              priority: 1,
 
                              match_reflection: reflection,
