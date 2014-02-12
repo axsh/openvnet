@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 module Vnet::NodeApi
   class InterfaceSecurityGroup < Base
     class << self
@@ -27,7 +28,6 @@ module Vnet::NodeApi
           interface_id: ifsecg.interface_id
           isolation_ip_addresses: group.ip_addresses
         )
-
       end
     end
   end

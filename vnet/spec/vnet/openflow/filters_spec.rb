@@ -288,4 +288,76 @@ describe Vnet::Openflow::FilterManager do
       end
     end
   end
+
+  describe "#removed_interface_from_sg" do
+    let(:group2) do
+      rules = "tcp:22:0.0.0.0/0\nudp:52:10.1.0.1/24"
+      Fabricate(:security_group, rules: rules)
+    end
+
+    before(:each) do
+      subject.initialized_interface({item_map: wrapper(interface)})
+      subject.initialized_interface({item_map: wrapper(interface2)})
+
+      interface2.remove_security_group(group)
+
+      subject.removed_interface_from_sg(
+        id: group.id,
+        interface_id: interface2.id,
+        isolation_ip_addresses: group.ip_addresses
+      )
+    end
+
+    shared_examples "update isolation for old interfaces" do
+      it "updates isolation rules for the interface that was in the group already" do
+        (interface.ip_leases).each do |ip_lease|
+          expect(flows).to include iso_flow(group, interface, ip_lease.ipv4_address)
+        end
+
+        (interface2.ip_leases).each do |ip_lease|
+          expect(flows).not_to include iso_flow(group, interface, ip_lease.ipv4_address)
+        end
+      end
+    end
+
+    context "with a local interface in two security groups" do
+      let(:interface2) { Fabricate(:filter_interface, security_groups: [group, group2]) }
+
+      it "removes the security group's rule flows for the removed interface" do
+        expect(flows).not_to include rule_flow({
+          cookie: cookie_id(group, interface2),
+          match: match_icmp_rule("0.0.0.0/0")},
+          interface2
+        )
+      end
+
+      it "removes the security group's isolation rules for the removed interface" do
+        (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
+          expect(flows).to include iso_flow(group, interface2, ip_lease.ipv4_address)
+        end
+      end
+
+      it "leaves the other security group's rule flows in place" do
+        expect(flows).to include rule_flow({
+          cookie: cookie_id(group2, interface2),
+          match: match_tcp_rule("0.0.0.0/2", 22)},
+          interface2
+        )
+
+        expect(flows).to include rule_flow({
+          cookie: cookie_id(group2, interface2),
+          match: match_udp_rule("10.1.0.1/24", 52)},
+          interface2
+        )
+      end
+
+      include_examples "update isolation for old interfaces"
+    end
+
+    context "with a remote interface" do
+      let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
+
+      include_examples "update isolation for old interfaces"
+    end
+  end
 end
