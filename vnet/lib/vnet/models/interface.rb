@@ -34,6 +34,11 @@ module Vnet::Models
       ds.where(interface_id: self.id).select_all(:security_groups)
     end
 
+    # We override this method for the same reason
+    def remove_security_group(sg)
+      InterfaceSecurityGroup.filter(interface_id: id, security_group_id: sg.id).destroy
+    end
+
     def port_name
       self[:port_name] || canonical_uuid
     end

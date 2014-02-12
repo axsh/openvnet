@@ -15,6 +15,14 @@ module Vnet::Models
       ds.where(security_group_id: self.id).select_all(:interfaces)
     end
 
+    # We override this method for the same reason
+    def remove_interface(interface)
+      InterfaceSecurityGroup.filter(
+        interface_id: interface.id,
+        security_group_id: id
+      ).destroy
+    end
+
     def interface_cookie_id(interface_id)
       row_id = InterfaceSecurityGroup.with_deleted.where(:security_group_id => self.id,
         :interface_id => interface_id).first.id
