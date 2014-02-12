@@ -2,11 +2,10 @@
 
 module Vnet::Openflow::Tunnels
 
-  class Base
+  class Base < Vnet::Openflow::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :id
     attr_reader :uuid
     attr_reader :mode
     attr_reader :dst_ipv4_address
@@ -18,9 +17,10 @@ module Vnet::Openflow::Tunnels
 
     attr_accessor :port_number
 
+    LOG_TYPE = 'tunnels/base'
+
     def initialize(params)
-      @dp_info = params[:dp_info]
-      @manager = params[:manager]
+      super
 
       map = params[:map]
 
@@ -83,16 +83,6 @@ module Vnet::Openflow::Tunnels
 
     def unused?
       @datapath_networks.empty?
-    end
-
-    #
-    # Internal methods:
-    #
-
-    private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} tunnels/base: #{message}" + (values ? " (#{values})" : '')
     end
 
   end

@@ -9,7 +9,7 @@ module Vnet::Openflow::Ports
     end
   end
 
-  class Base
+  class Base < Vnet::Openflow::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -32,7 +32,9 @@ module Vnet::Openflow::Ports
     end
 
     def initialize(dp_info, port_info)
-      @dp_info = dp_info
+      # TODO: Support proper params initialization:
+      super(dp_info: dp_info)
+
       @port_info = port_info
 
       @cookie = self.port_number | COOKIE_TYPE_PORT

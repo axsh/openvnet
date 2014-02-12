@@ -194,6 +194,7 @@ module Vnet
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
+    autoload :ItemBase, 'vnet/openflow/item_base'
     autoload :Manager, 'vnet/openflow/manager'
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :NetworkManager, 'vnet/openflow/network_manager'

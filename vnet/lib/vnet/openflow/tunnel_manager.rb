@@ -43,8 +43,6 @@ module Vnet::Openflow
       return unless datapath_network
 
       options = {
-        mode: 'gre',
-
         src_datapath_id: @datapath_info.id,
         dst_datapath_id: datapath_network[:datapath_id],
         src_interface_id: @host_datapath_networks[datapath_network[:network_id]][:interface_id],
@@ -57,10 +55,10 @@ module Vnet::Openflow
         info log_format("creating tunnel entry",
                         options.map { |k, v| "#{k}: #{v}" }.join(" "))
 
-        tunnel = MW::Tunnel.create(options)
+        tunnel = MW::Tunnel.create(options.merge(mode: 'gre'))
         item = item_by_params(options)
 
-        if item.nil? || !item.instance_of?(Tunnels::Base)
+        if item.nil?
           warn log_format('could not create tunnel',
                           options.map { |k, v| "#{k}: #{v}" }.join(" "))
           return

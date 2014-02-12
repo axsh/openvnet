@@ -4,6 +4,8 @@ module Vnet::Openflow::Tunnels
 
   class Gre < Base
 
+    LOG_TYPE = 'tunnels/gre'
+
     def install
       if @dst_interface.nil?
         error log_format("no valid destination interface loaded for #{@uuid}")

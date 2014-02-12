@@ -2,16 +2,15 @@
 
 module Vnet::Openflow::Routers
 
-  class Base
+  class Base < Vnet::Openflow::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :id
     attr_reader :uuid
     attr_reader :mac_address
 
     def initialize(params)
-      @dp_info = params[:dp_info]
+      super
 
       map = params[:map]
 

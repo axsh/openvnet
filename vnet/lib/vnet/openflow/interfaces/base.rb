@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Interfaces
 
-  class Base
+  class Base < Vnet::Openflow::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::AddressHelpers
     include Vnet::Openflow::FlowHelpers
@@ -25,7 +25,6 @@ module Vnet::Openflow::Interfaces
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
 
-    attr_accessor :id
     attr_accessor :uuid
     attr_accessor :mode
     attr_accessor :port_name
@@ -37,8 +36,7 @@ module Vnet::Openflow::Interfaces
     attr_reader :mac_addresses
 
     def initialize(params)
-      @dp_info = params[:dp_info]
-      @manager = params[:manager]
+      super
 
       map = params[:map]
 

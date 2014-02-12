@@ -2,16 +2,14 @@
 
 module Vnet::Openflow::Datapaths
 
-  class Base
+  class Base < Vnet::Openflow::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :id
     attr_reader :uuid
 
     def initialize(params)
-      @dp_info = params[:dp_info]
-      @manager = params[:manager]
+      super
 
       map = params[:map]
 

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Openflow::Connections
-  class Base
+
+  class Base < Vnet::Openflow::ItemBase
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 
@@ -9,6 +10,11 @@ module Vnet::Openflow::Connections
 
     EGRESS_IDLE_TIMEOUT  = 550
     INGRESS_IDLE_TIMEOUT = 600
+
+    def initialize
+      # TODO: Support proper params initialization:
+      super {}
+    end
 
     def self.cookie(interface_id)
       COOKIE_TYPE_CONNECTION | CM::COOKIE_TAG_INGRESS_CONNECTION | interface_id
