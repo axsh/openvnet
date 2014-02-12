@@ -342,7 +342,7 @@ describe Vnet::Openflow::FilterManager do
       it "leaves the other security group's rule flows in place" do
         expect(flows).to include rule_flow({
           cookie: cookie_id(group2, interface2),
-          match: match_tcp_rule("0.0.0.0/2", 22)},
+          match: match_tcp_rule("0.0.0.0/0", 22)},
           interface2
         )
 
