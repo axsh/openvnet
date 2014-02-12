@@ -13,6 +13,7 @@ module Vnet::Openflow
     def initialize(*args)
       super
       @host_datapath_networks = {}
+      @interfaces = {}
     end
 
     def update_item(params)
@@ -33,10 +34,16 @@ module Vnet::Openflow
       case params[:event]
       when :update_network
         update_network_id(params[:network_id]) if params[:network_id]
+      when :updated_interface
+        updated_interface(params)
       end
 
       nil
     end
+
+    #
+    # Refactor:
+    #
 
     def insert(dpn_id)
       datapath_network = create_datapath_network(dpn_id)
@@ -51,7 +58,11 @@ module Vnet::Openflow
 
       item = item_by_params(options)
 
+      # Check tunnel mode here...
+
       unless item
+        options[:mode] = 'gre'
+
         info log_format("creating tunnel entry",
                         options.map { |k, v| "#{k}: #{v}" }.join(" "))
 
@@ -173,14 +184,7 @@ module Vnet::Openflow
     end
 
     def select_item(filter)
-      # Using fill for ip_leases/ip_addresses isn't going to give us a
-      # proper event barrier.
-      MW::Tunnel.batch[filter].commit(
-        fill: [
-          { :dst_interface => :ipv4_address },
-          { :src_interface => :ipv4_address },
-        ]
-      )
+      MW::Tunnel.batch[filter].commit
     end
     
     def install_item(params)
@@ -190,6 +194,13 @@ module Vnet::Openflow
       debug log_format("install #{item.uuid}/#{item.id}")
 
       item.install
+
+      dst_interface = @interfaces[item.dst_interface_id]
+      src_interface = @interfaces[item.src_interface_id]
+      item.set_dst_ipv4_address(dst_interface[:network_id], dst_interface[:ipv4_address]) if dst_interface
+      item.set_src_ipv4_address(src_interface[:network_id], src_interface[:ipv4_address]) if src_interface
+
+      @dp_info.interface_manager.async.retrieve(id: item.dst_interface_id)
     end
 
     def delete_item(item)
@@ -246,6 +257,8 @@ module Vnet::Openflow
     end
 
     def create_datapath_network(dpn_id)
+      # TODO: Fix this...
+
       dpn_map = MW::DatapathNetwork.batch[dpn_id].commit(fill: :datapath)
       return unless  dpn_map
 
@@ -254,10 +267,71 @@ module Vnet::Openflow
         dpid: dpn_map.datapath.dpid,
         ipv4_address: dpn_map.datapath.ipv4_address,
         datapath_id: dpn_map.datapath_id,
-        network_id: dpn_map.network_id,
         interface_id: dpn_map.interface_id,
+        network_id: dpn_map.network_id,
         broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
       }
+    end
+
+    #
+    # Interface events:
+    #
+
+    def updated_interface(params)
+      interface_event = params[:interface_event]
+      return if interface_event.nil?
+
+      case interface_event
+      when :added_ipv4_address then interface_added_ipv4_address(params)
+      when :removed_ipv4_address
+        interface = @interfaces.delete(interface_id)
+
+        return if interface.nil?
+        
+        # Do stuff/event...
+      else
+        error log_format("unknown updated_interface event '#{interface_event}'")
+      end
+    end
+
+    def interface_added_ipv4_address(params)
+      interface_id = params[:interface_id]
+      interface_mode = params[:interface_mode]
+      return if interface_id.nil?
+
+      if interface_mode != :host && interface_mode != :remote
+        error log_format("updated_interface received unknown interface_mode '#{interface_mode}'")
+        return
+      end
+
+      # If already exists, clean up instead.
+      interface = @interfaces[interface_id] ||= {
+        :mode => interface_mode,
+        :ipv4_address => nil,
+      }
+
+      # Check if interface mode matches...
+      interface[:network_id] = params[:network_id]
+      interface[:ipv4_address] = params[:ipv4_address]
+
+      case interface_mode
+      when :host
+        @items.select { |id, item|
+          item.src_interface_id == interface_id
+        }.each { |id, item|
+          # Register this as an event instead, and use the values in
+          # '@interfaces' when handling the event.
+          item.set_src_ipv4_address(interface[:network_id], interface[:ipv4_address])
+        }
+      when :remote
+        @items.select { |id, item|
+          item.dst_interface_id == interface_id
+        }.each { |id, item|
+          # Register this as an event instead, and use the values in
+          # '@interfaces' when handling the event.
+          item.set_dst_ipv4_address(interface[:network_id], interface[:ipv4_address])
+        }
+      end
     end
 
   end

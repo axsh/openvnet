@@ -6,44 +6,38 @@ module Vnet::Openflow::Tunnels
 
     LOG_TYPE = 'tunnels/gre'
 
-    def install
-      if @dst_interface.nil?
-        error log_format("no valid destination interface loaded for #{@uuid}")
+    def create_tunnel
+      return if @tunnel_created == true
+
+      if @dst_interface_id.nil?
+        error log_format("no valid destination interface id for #{@uuid}")
         return
       end
 
-      if @src_interface.nil?
-        error log_format("no valid source interface loaded for #{@uuid}")
+      if @src_interface_id.nil?
+        error log_format("no valid source interface id for #{@uuid}")
         return
       end
 
-      @dst_ipv4_address = IPAddr.new(@dst_interface.ipv4_address, Socket::AF_INET)
-      @src_ipv4_address = IPAddr.new(@src_interface.ipv4_address, Socket::AF_INET)
-
-      if !@dst_ipv4_address.ipv4?
+      if @dst_ipv4_address.nil? || !@dst_ipv4_address.ipv4?
         error log_format("no valid remote IPv4 address for #{@uuid}",
-                         "ip_address:#{@dst_ipv4_address.to_s}")
+                         "ipv4_address:#{@dst_ipv4_address.to_s}")
         return
       end
 
-      if !@src_ipv4_address.ipv4?
+      if @src_ipv4_address.nil? || !@src_ipv4_address.ipv4?
         error log_format("no valid local IPv4 address for #{@uuid}",
-                         "ip_address:#{@src_ipv4_address.to_s}")
+                         "ipv4_address:#{@src_ipv4_address.to_s}")
         return
       end
 
-      if !(@src_interface_id && @src_interface_id > 0) ||
-          !(@dst_interface_id && @dst_interface_id > 0)
-        error log_format("no valid src/dst interface id's found for #{@uuid}")
-        return
-      end
+      @tunnel_created = true
 
       @dp_info.add_tunnel(@uuid,
                           remote_ip: @dst_ipv4_address.to_s,
                           local_ip: @src_ipv4_address.to_s)
 
       flows = []
-
       [true, false].each { |reflection|
         flows << flow_create(:default,
                              table: TABLE_OUTPUT_DP_OVER_TUNNEL,
@@ -61,7 +55,23 @@ module Vnet::Openflow::Tunnels
 
       @dp_info.add_flows(flows)
 
-      info log_format("install #{@display_name}", "ip_address:#{@dst_ipv4_address.to_s}")
+      info log_format("installed",
+                      "src_ipv4_address:#{@src_ipv4_address.to_s} dst_ipv4_address:#{@dst_ipv4_address.to_s}")
+    end
+
+    def delete_tunnel
+      debug log_format("removing flows")
+
+      return if @tunnel_created == false
+
+      @dp_info.delete_tunnel(@uuid)
+
+      @tunnel_created = false
+
+      # cookie_value = self.cookie
+      # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
+
+      # @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
     #

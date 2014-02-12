@@ -28,11 +28,9 @@ module Vnet::Openflow::Tunnels
       @uuid = map.uuid
       @mode = map.mode
 
+      @tunnel_created = false
+
       @dst_datapath_id = map.dst_datapath_id
-
-      @dst_interface = map.dst_interface
-      @src_interface = map.src_interface
-
       @dst_interface_id = map.dst_interface_id
       @src_interface_id = map.src_interface_id
 
@@ -56,20 +54,35 @@ module Vnet::Openflow::Tunnels
                                  datapath_networks_size: @datapath_networks.size)
     end
 
+    def unused?
+      @datapath_networks.empty?
+    end
+
+    #
+    # Specialization:
+    #
+
     def install
+      if @dst_network_id && @dst_ipv4_address &&
+          @src_network_id && @src_ipv4_address
+        #create_tunnel
+      end
     end
 
     def uninstall
-      debug log_format("removing flows")
-
-      @dp_info.delete_tunnel(@uuid)
-
-      # cookie_value = self.cookie
-      # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
-
-      # @dp_info.del_cookie(cookie_value, cookie_mask)
+      delete_tunnel
     end
 
+    def create_tunnel
+    end
+
+    def delete_tunnel
+    end
+
+    #
+    # Events:
+    #
+    
     def add_datapath_network(datapath_network)
       return if @datapath_networks.detect { |d| d[:id] == datapath_network[:id] }
       @datapath_networks << datapath_network
@@ -81,8 +94,34 @@ module Vnet::Openflow::Tunnels
       end
     end
 
-    def unused?
-      @datapath_networks.empty?
+    def set_dst_ipv4_address(network_id, ipv4_address)
+      warn "dstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdst"
+
+      # Properly handle these case:
+      return if @dst_network_id || @dst_ipv4_address
+      return if network_id.nil? || ipv4_address.nil?
+
+      @dst_network_id = network_id
+      @dst_ipv4_address = ipv4_address
+
+      # Return if not installed or tunnel already created, and add a
+      # 'tunnel created' flag.
+      create_tunnel if @src_network_id && @src_ipv4_address # && installed?
+    end
+
+    def set_src_ipv4_address(network_id, ipv4_address)
+      warn "srcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrc"
+
+      # Properly handle these case:
+      return if @src_network_id || @src_ipv4_address
+      return if network_id.nil? || ipv4_address.nil?
+
+      @src_network_id = network_id
+      @src_ipv4_address = ipv4_address
+
+      # Return if not installed or tunnel already created, and add a
+      # 'tunnel created' flag.
+      create_tunnel if @dst_network_id && @dst_ipv4_address # && installed?
     end
 
   end
