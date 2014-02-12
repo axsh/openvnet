@@ -335,7 +335,7 @@ describe Vnet::Openflow::FilterManager do
 
       it "removes the security group's isolation rules for the removed interface" do
         (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-          expect(flows).to include iso_flow(group, interface2, ip_lease.ipv4_address)
+          expect(flows).not_to include iso_flow(group, interface2, ip_lease.ipv4_address)
         end
       end
 
