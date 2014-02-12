@@ -16,7 +16,7 @@ module Vnet::Models
     end
 
     def interface_cookie_id(interface_id)
-      row_id = InterfaceSecurityGroup.where(:security_group_id => self.id,
+      row_id = InterfaceSecurityGroup.with_deleted.where(:security_group_id => self.id,
         :interface_id => interface_id).first.id
 
       #TODO: raise error when row not found
