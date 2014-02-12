@@ -304,6 +304,8 @@ describe Vnet::Openflow::FilterManager do
       subject.removed_interface_from_sg(
         id: group.id,
         interface_id: interface2.id,
+        interface_owner_datapath_id: interface2.owner_datapath_id,
+        interface_active_datapath_id: interface2.active_datapath_id,
         isolation_ip_addresses: group.ip_addresses
       )
     end

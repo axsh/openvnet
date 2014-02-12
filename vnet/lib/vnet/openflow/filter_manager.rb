@@ -72,15 +72,18 @@ module Vnet::Openflow
       debug log_format("Removing interface '%s' from security group '%s'" %
         [params[:interface_id], item.uuid])
 
-      item.uninstall(params[:interface_id])
-      item.remove_interface(params[:interface_id])
+      unless is_remote?(params[:interface_owner_datapath_id], params[:interface_active_datapath_id])
+        item.uninstall(params[:interface_id])
+        item.remove_interface(params[:interface_id])
 
-      @items.delete(item.id) if item.interfaces.empty?
+        @items.delete(item.id) if item.interfaces.empty?
+      end
+
+      updated_isolation(item, params[:isolation_ip_addresses])
     end
 
     def added_interface_to_sg(params)
-      item = item_by_params(id: params[:id])
-      return if item.nil?
+      item = item_by_params(id: params[:id]) || return
 
       updated_isolation(item, params[:isolation_ip_addresses])
 
