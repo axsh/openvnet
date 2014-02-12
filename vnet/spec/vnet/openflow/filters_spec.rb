@@ -242,9 +242,11 @@ describe Vnet::Openflow::FilterManager do
 
     shared_examples "update isolation for old interfaces" do
       it "updates isolation rules for the interface that was in the group already" do
-        (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-          expect(flows).to include iso_flow(group, interface, ip_lease.ipv4_address)
-        end
+        expect(flows).to include *iso_flows_for_interfaces(
+          group,
+          interface,
+          [interface, interface2]
+        )
       end
     end
 
@@ -262,9 +264,11 @@ describe Vnet::Openflow::FilterManager do
       end
 
       it "applies the isolation flows for the new interface" do
-        (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-          expect(flows).to include iso_flow(group, interface2, ip_lease.ipv4_address)
-        end
+        expect(flows).to include *iso_flows_for_interfaces(
+          group,
+          interface2,
+          [interface, interface2]
+        )
       end
     end
 
@@ -282,9 +286,11 @@ describe Vnet::Openflow::FilterManager do
       end
 
       it "doesn't apply the isolation flows for the new interface" do
-        (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-          expect(flows).not_to include iso_flow(group, interface2, ip_lease.ipv4_address)
-        end
+        expect(flows).not_to include *iso_flows_for_interfaces(
+          group,
+          interface2,
+          [interface, interface2]
+        )
       end
     end
   end
@@ -294,6 +300,10 @@ describe Vnet::Openflow::FilterManager do
       rules = "tcp:22:0.0.0.0/0\nudp:52:10.1.0.1/24"
       Fabricate(:security_group, rules: rules)
     end
+
+    # We use this guy to make sure isolation rules aren't removed when they
+    # shouldn't be.
+    let(:interface3) { Fabricate(:filter_interface, security_groups: [group2])}
 
     before(:each) do
       subject.initialized_interface({item_map: wrapper(interface)})
@@ -312,13 +322,8 @@ describe Vnet::Openflow::FilterManager do
 
     shared_examples "update isolation for old interfaces" do
       it "updates isolation rules for the interface that was in the group already" do
-        (interface.ip_leases).each do |ip_lease|
-          expect(flows).to include iso_flow(group, interface, ip_lease.ipv4_address)
-        end
-
-        (interface2.ip_leases).each do |ip_lease|
-          expect(flows).not_to include iso_flow(group, interface, ip_lease.ipv4_address)
-        end
+        expect(flows).to include *iso_flows_for_interfaces(group, interface, [interface])
+        expect(flows).not_to include *iso_flows_for_interfaces(group, interface, [interface2])
       end
     end
 
@@ -334,12 +339,14 @@ describe Vnet::Openflow::FilterManager do
       end
 
       it "removes the security group's isolation rules for the removed interface" do
-        (interface.ip_leases + interface2.ip_leases).each do |ip_lease|
-          expect(flows).not_to include iso_flow(group, interface2, ip_lease.ipv4_address)
-        end
+        expect(flows).not_to include *iso_flows_for_interfaces(
+          group,
+          interface2,
+          [interface, interface2]
+        )
       end
 
-      it "leaves the other security group's rule flows in place" do
+      it "leaves other security groups' rule flows in place" do
         expect(flows).to include rule_flow({
           cookie: cookie_id(group2, interface2),
           match: match_tcp_rule("0.0.0.0/0", 22)},
@@ -351,6 +358,10 @@ describe Vnet::Openflow::FilterManager do
           match: match_udp_rule("10.1.0.1/24", 52)},
           interface2
         )
+      end
+
+      it "leaves other security groups' isolation flows in place" do
+        expect(flows).not_to include *iso_flows_for_interfaces(group, interface2, [interface3])
       end
 
       include_examples "update isolation for old interfaces"

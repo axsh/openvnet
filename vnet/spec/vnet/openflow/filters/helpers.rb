@@ -56,3 +56,10 @@ def iso_flow(group, interface, ipv4_address)
     goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
   )
 end
+
+def iso_flows_for_interfaces(group, main_interface, iso_interfaces)
+  ip_leases = iso_interfaces.map { |iif| iif.ip_leases }.flatten
+  ip_leases.map do |ip_lease|
+    iso_flow(group, main_interface, ip_lease.ipv4_address)
+  end
+end
