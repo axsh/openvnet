@@ -27,8 +27,6 @@ module Vnet::Models
       row_id = InterfaceSecurityGroup.with_deleted.where(:security_group_id => self.id,
         :interface_id => interface_id).first.id
 
-      #TODO: raise error when row not found
-
       InterfaceSecurityGroup.with_deleted.where(
         :security_group_id => self.id).where("id <= #{row_id}").count
     end
