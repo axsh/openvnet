@@ -4,10 +4,12 @@ module Vnet::Openflow::Tunnels
 
   class Gre < Base
 
-    LOG_TYPE = 'tunnels/gre'
-
     def mode
       :gre
+    end
+
+    def log_type
+      'tunnels/gre'
     end
 
     def create_tunnel
@@ -83,10 +85,6 @@ module Vnet::Openflow::Tunnels
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} tunnels/gre: #{message}" + (values ? " (#{values})" : '')
-    end
 
   end
 

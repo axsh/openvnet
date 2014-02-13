@@ -20,7 +20,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} #{LOG_TYPE}: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} #{log_type}: #{message}" + (values ? " (#{values})" : '')
     end
 
   end

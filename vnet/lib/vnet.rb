@@ -288,6 +288,7 @@ module Vnet
     module Tunnels
       autoload :Base, 'vnet/openflow/tunnels/base'
       autoload :Gre, 'vnet/openflow/tunnels/gre'
+      autoload :Mac2Mac, 'vnet/openflow/tunnels/mac2mac'
     end
 
   end

@@ -16,8 +16,6 @@ module Vnet::Openflow::Tunnels
 
     attr_accessor :port_number
 
-    LOG_TYPE = 'tunnels/base'
-
     def initialize(params)
       super
 
@@ -37,6 +35,10 @@ module Vnet::Openflow::Tunnels
     
     def mode
       :base
+    end
+
+    def log_type
+      'tunnels/base'
     end
 
     def cookie(tag = nil)

@@ -171,7 +171,8 @@ module Vnet::Openflow
                  map: item_map }
 
       case item_map.mode
-      when 'gre' then Tunnels::Gre.new(params)
+      when 'gre'     then Tunnels::Gre.new(params)
+      when 'mac2mac' then Tunnels::Mac2Mac.new(params)
       else
         nil
       end
@@ -256,14 +257,13 @@ module Vnet::Openflow
 
     def create_datapath_network(dpn_id)
       # TODO: Fix this...
+      #
+      # We should only use the dpn data we get from DatapathManager...
 
-      dpn_map = MW::DatapathNetwork.batch[dpn_id].commit(fill: :datapath)
-      return unless  dpn_map
+      dpn_map = MW::DatapathNetwork.batch[dpn_id].commit
+      return unless dpn_map
 
-      {
-        id: dpn_map.id,
-        dpid: dpn_map.datapath.dpid,
-        ipv4_address: dpn_map.datapath.ipv4_address,
+      { id: dpn_map.id,
         datapath_id: dpn_map.datapath_id,
         interface_id: dpn_map.interface_id,
         network_id: dpn_map.network_id,
