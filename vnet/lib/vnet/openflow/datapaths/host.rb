@@ -23,7 +23,8 @@ module Vnet::Openflow::Datapaths
 
     def after_add_active_network(active_network)
       @dp_info.dc_segment_manager.async.prepare_network(active_network[:id])
-      @dp_info.tunnel_manager.async.prepare_network(active_network[:id])
+      @dp_info.tunnel_manager.async.update(event: :added_host_datapath_network,
+                                           dpn: active_network)
 
       flows = []
       flows_for_filtering_mac_address(flows,

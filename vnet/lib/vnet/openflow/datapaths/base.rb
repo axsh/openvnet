@@ -62,12 +62,12 @@ module Vnet::Openflow::Datapaths
       return if @active_networks.has_key? dpn_map.network_id
 
       active_network = {
-        id: dpn_map.id,
+        id: dpn_map.id, # remove
         dpn_id: dpn_map.id,
         datapath_id: dpn_map.datapath_id,
         interface_id: dpn_map.interface_id,
         network_id: dpn_map.network_id,
-        mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
+        mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address), # remove
         broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
       }
 

@@ -92,12 +92,12 @@ module Vnet::Openflow::Tunnels
     #
     
     def add_datapath_network(datapath_network)
-      return if @datapath_networks.detect { |d| d[:id] == datapath_network[:id] }
+      return if @datapath_networks.detect { |d| d[:dpn_id] == datapath_network[:dpn_id] }
       @datapath_networks << datapath_network
     end
 
     def remove_datapath_network(dpn_id)
-      @datapath_networks.find { |d| d[:id] == dpn_id }.tap do |datapath_network|
+      @datapath_networks.find { |d| d[:dpn_id] == dpn_id }.tap do |datapath_network|
         @datapath_networks.delete(datapath_network) if datapath_network
       end
     end
