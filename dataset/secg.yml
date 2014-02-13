@@ -19,31 +19,37 @@ interfaces:
   - uuid: if-v1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:01"
+    enabled_ingress_filtering: true
     ipv4_address: 10.101.0.10
 
   - uuid: if-v2
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:02"
+    enabled_ingress_filtering: true
     ipv4_address: 10.101.0.10
 
   - uuid: if-v3
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:03"
+    enabled_ingress_filtering: true
     ipv4_address: 10.101.0.11
 
   - uuid: if-v4
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:04"
+    enabled_ingress_filtering: true
     ipv4_address: 10.101.0.11
 
   - uuid: if-v5
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:05"
+    enabled_ingress_filtering: true
     ipv4_address: 10.101.0.12
 
   - uuid: if-v6
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:06"
+    enabled_ingress_filtering: true
     ipv4_address: 10.101.0.12
 
   - uuid: if-dhcppub
