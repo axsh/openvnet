@@ -4,14 +4,6 @@ require 'trema'
 
 include Vnet::Constants::Openflow
 
-module Vnet::Event
-  Dispatchable.module_eval do
-    def dispatch_event(event, options = {})
-      # Empty...
-    end
-  end
-end
-
 describe Vnet::Openflow::TunnelManager do
 
   describe "update_virtual_network" do
