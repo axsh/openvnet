@@ -7,7 +7,6 @@ module Vnet::Openflow::Tunnels
     include Vnet::Openflow::FlowHelpers
 
     attr_reader :uuid
-    attr_reader :mode
     attr_reader :dst_ipv4_address
     attr_reader :datapath_networks
 
@@ -26,17 +25,20 @@ module Vnet::Openflow::Tunnels
 
       @id = map.id
       @uuid = map.uuid
-      @mode = map.mode
-
-      @tunnel_created = false
 
       @dst_datapath_id = map.dst_datapath_id
       @dst_interface_id = map.dst_interface_id
       @src_interface_id = map.src_interface_id
 
+      @tunnel_created = false
+
       @datapath_networks = []
     end
     
+    def mode
+      :base
+    end
+
     def cookie(tag = nil)
       value = @id | COOKIE_TYPE_TUNNEL
       tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
@@ -48,6 +50,10 @@ module Vnet::Openflow::Tunnels
                                  port_name: @display_name,
 
                                  dst_datapath_id: @dst_datapath_id,
+                                 dst_interface_id: @dst_interface_id,
+                                 src_interface_id: @src_interface_id,
+                                 dst_network_id: @dst_network_id,
+                                 src_network_id: @src_network_id,
                                  dst_ipv4_address: @dst_ipv4_address,
                                  src_ipv4_address: @src_ipv4_address,
 
@@ -95,8 +101,6 @@ module Vnet::Openflow::Tunnels
     end
 
     def set_dst_ipv4_address(network_id, ipv4_address)
-      warn "dstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdstdst"
-
       # Properly handle these case:
       return if @dst_network_id || @dst_ipv4_address
       return if network_id.nil? || ipv4_address.nil?
@@ -110,8 +114,6 @@ module Vnet::Openflow::Tunnels
     end
 
     def set_src_ipv4_address(network_id, ipv4_address)
-      warn "srcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrcsrc"
-
       # Properly handle these case:
       return if @src_network_id || @src_ipv4_address
       return if network_id.nil? || ipv4_address.nil?

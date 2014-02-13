@@ -52,11 +52,19 @@ module Vnet::Openflow
     end
 
     def select(params = {})
-      @items.select { |id, item|
-        match_item?(item, params)
-      }.map { |id, item|
-        item_to_hash(item)
-      }
+      begin
+        @items.select { |id, item|
+          match_item?(item, params)
+        }.map { |id, item|
+          item_to_hash(item)
+        }
+      rescue Celluloid::Task::TerminatedError => e
+        raise e
+      rescue Exception => e
+        info log_format(e.message, e.class.name)
+        e.backtrace.each { |str| info log_format(str) }
+        raise e
+      end
     end
 
     #

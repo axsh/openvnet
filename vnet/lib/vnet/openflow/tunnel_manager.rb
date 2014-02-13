@@ -61,12 +61,10 @@ module Vnet::Openflow
       # Check tunnel mode here...
 
       unless item
-        options[:mode] = 'gre'
-
         info log_format("creating tunnel entry",
                         options.map { |k, v| "#{k}: #{v}" }.join(" "))
 
-        tunnel = MW::Tunnel.create(options.merge(mode: 'gre'))
+        tunnel = MW::Tunnel.create(options.merge(mode: :gre))
         item = item_by_params(options)
 
         if item.nil?
@@ -129,7 +127,7 @@ module Vnet::Openflow
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:mode] && params[:mode] != item.mode
+      # return false if params[:mode] && params[:mode] != item.mode
       return false if params[:port_name] && params[:port_name] != item.display_name
       return false if params[:dst_datapath_id] && params[:dst_datapath_id] != item.dst_datapath_id
       return false if params[:src_interface_id] && params[:src_interface_id] != item.src_interface_id
@@ -148,7 +146,7 @@ module Vnet::Openflow
         case
         when params[:id]              then options[:id] = params[:id]
         when params[:uuid]            then options[:uuid] = params[:uuid]
-        when params[:mode]            then options[:mode] = params[:mode]
+        # when params[:mode]            then options[:mode] = params[:mode]
         when params[:port_name]       then options[:display_name] = params[:port_name]
 
         when params[:dst_datapath_id]  then options[:dst_datapath_id] = params[:dst_datapath_id]
@@ -303,6 +301,9 @@ module Vnet::Openflow
         error log_format("updated_interface received unknown interface_mode '#{interface_mode}'")
         return
       end
+
+      debug log_format("#{interface_mode} interface #{interface_id} added ipv4 address",
+                       "network_id:#{params[:network_id]} ipv4_address:#{params[:ipv4_address]}")
 
       # If already exists, clean up instead.
       interface = @interfaces[interface_id] ||= {

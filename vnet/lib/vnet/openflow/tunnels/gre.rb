@@ -6,6 +6,10 @@ module Vnet::Openflow::Tunnels
 
     LOG_TYPE = 'tunnels/gre'
 
+    def mode
+      :gre
+    end
+
     def create_tunnel
       return if @tunnel_created == true
 

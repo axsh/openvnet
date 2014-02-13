@@ -4,6 +4,14 @@ require 'trema'
 
 include Vnet::Constants::Openflow
 
+module Vnet::Event
+  Dispatchable.module_eval do
+    def dispatch_event(event, options = {})
+      # Empty...
+    end
+  end
+end
+
 describe Vnet::Openflow::TunnelManager do
 
   describe "update_virtual_network" do
@@ -38,13 +46,19 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     let(:datapath) do
-      MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16)).tap do |datapath|
-        datapath.create_mock_datapath_map
+      MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16)).tap do |dp|
+        dp.create_mock_datapath_map
 
-        # datapath.switch = double(:cookie_manager => Vnet::Openflow::CookieManager.new)
-        # datapath.switch.cookie_manager.create_category(:tunnel, 0x6, 48)
+        # dp.switch = double(:cookie_manager => Vnet::Openflow::CookieManager.new)
+        # dp.switch.cookie_manager.create_category(:tunnel, 0x6, 48)
         #
-        # datapath.cookie_manager = Vnet::Openflow::CookieManager.new
+        # dp.cookie_manager = Vnet::Openflow::CookieManager.new
+
+        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0')
+        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0')
+        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        sleep(0.5)
+        dp.added_flows.clear
       end
     end
 
@@ -61,10 +75,17 @@ describe Vnet::Openflow::TunnelManager do
     it "should only add broadcast mac addressess flows at start" do
       tunnel_manager
 
+      # datapath.dp_info.interface_manager.select({}).each { |interface|
+      #   pp interface.inspect
+      # }
+
       flows = datapath.added_flows
 
+      # flows.each { |flow| pp flow.inspect }
+      # datapath.added_tunnels.each { |tunnel| pp tunnel.inspect }
+
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq 8
+      expect(flows.size).to eq 7
     end
 
     it "should add flood flow network 1" do
@@ -164,6 +185,12 @@ describe Vnet::Openflow::TunnelManager do
     let(:datapath) {
       MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16), ofctl).tap { |dp|
         dp.create_mock_datapath_map
+
+        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0')
+        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0')
+        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        sleep(0.5)
+        dp.added_flows.clear
       }
     }
 

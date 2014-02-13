@@ -203,7 +203,7 @@ module Vnet::Openflow::Interfaces
 
       dispatch_event(UPDATED_INTERFACE,
                      event: :remote_datapath_id,
-                     id: id,
+                     id: @id,
                      datapath_id: @active_datapath_ids.first,
                      ipv4_addresses: addresses)
     end
