@@ -5,12 +5,12 @@ describe "security groups" do
   before(:all) { vms.peach { |vm| vm.close_all_listening_ports } }
 
   describe "rule" do
-    describe "tcp:22:10.101.0.11" do
+    describe "tcp:22:10.101.0.12" do
       # No need to listen on tcp port 22 since SSH is already up there
       before(:all) { vm1.tcp_listen(222) }
       after(:all) { vm1.tcp_close(222) }
 
-      it "accepts incoming tcp packets on port 22 from '10.101.0.11/32'" do
+      it "accepts incoming tcp packets on port 22 from '10.101.0.12/32'" do
         expect(vm3).to be_reachable_to(vm1)
       end
 
@@ -23,8 +23,8 @@ describe "security groups" do
       end
     end
 
-    describe "icmp:-1:10.101.0.11" do
-      it "accepts incoming icmp from '10.101.0.11/32'" do
+    describe "icmp:-1:10.101.0.12" do
+      it "accepts incoming icmp from '10.101.0.12/32'" do
         expect(vm3).to be_able_to_ping(vm1)
       end
 
@@ -33,7 +33,7 @@ describe "security groups" do
       end
     end
 
-    describe "udp:344:10.101.0.11" do
+    describe "udp:344:10.101.0.12" do
       # Using before each instead of before all because netcat binds its
       # UDP process to the source ip/port of the first datagram it receives.
       before(:each) { vm1.udp_listen(344) }
@@ -43,7 +43,7 @@ describe "security groups" do
       before(:all) { vm1.udp_listen(345) }
       after(:all) { vm1.udp_close(345) }
 
-      it "accepts incoming udp packets on port 344 from '10.101.0.11/32'" do
+      it "accepts incoming udp packets on port 344 from '10.101.0.12/32'" do
         expect(vm3).to be_able_to_send_udp(vm1, 344)
       end
 
@@ -107,6 +107,28 @@ describe "security groups" do
   describe "connection tracking" do
     it "accepts incoming packets on ports that outgoing tcp packets passed through" do
       expect(vm1).to be_reachable_to(vm3)
+    end
+  end
+
+  describe "isolation" do
+    context "on the same vna" do
+      it "accepts all traffic between interfaces in the same security group" do
+        expect(vm3).to be_reachable_to(vm4)
+      end
+
+      it "doesn't allow other interfaces to do the same" do
+        expect(vm5).not_to be_reachable_to(vm6)
+      end
+    end
+
+    context "on different vna's" do
+      it "accepts all traffic between interfaces in the same security group" do
+        expect(vm3).to be_reachable_to(vm6)
+      end
+
+      it "doesn't allow other interfaces to do the same" do
+        expect(vm1).not_to be_reachable_to(vm6)
+      end
     end
   end
 end
