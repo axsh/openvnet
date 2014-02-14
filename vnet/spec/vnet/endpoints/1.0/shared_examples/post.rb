@@ -24,7 +24,7 @@ shared_examples "POST /" do | accepted_params, required_params, uuid_params = []
     end
 
     it "should create a database entry the required parameters set" do
-      last_response.should succeed.with_body_containing(request_params)
+      expect(last_response).to succeed.with_body_containing(request_params)
     end
   end
 
@@ -32,7 +32,7 @@ shared_examples "POST /" do | accepted_params, required_params, uuid_params = []
     let(:request_params) { accepted_params }
 
     it "should create a database entry with all parameters set" do
-      last_response.should succeed.with_body_containing(expected_response)
+      expect(last_response).to succeed.with_body_containing(expected_response)
     end
   end
 

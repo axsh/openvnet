@@ -33,6 +33,7 @@ module Vnet::Openflow
                                   :write_local,
                                   :write_mac2mac,
                                   :write_network,
+                                  :write_no_controller,
                                   :write_not_no_controller,
                                   :write_reflection,
                                   :write_remote,
@@ -69,83 +70,10 @@ module Vnet::Openflow
       end
     end
 
-    def table_network_dst(network_type)
-      case network_type
-      when :physical then TABLE_PHYSICAL_DST
-      when :virtual  then TABLE_VIRTUAL_DST
-      else
-        raise "Invalid network type value."
-      end
-    end
-
-    def table_network_src(network_type)
-      case network_type
-      when :physical then TABLE_PHYSICAL_SRC
-      when :virtual  then TABLE_VIRTUAL_SRC
-      else
-        raise "Invalid network type value."
-      end
-    end
-
+    # TODO: Remove type parameter.
     def flow_create(type, params)
-      match = {}
       match_metadata = {}
       write_metadata = {}
-
-      case type
-      when :router_dst_match
-        table = TABLE_ARP_TABLE
-        priority = 40
-        match_metadata = { :network => params[:network_id] }
-        goto_table = TABLE_NETWORK_DST_CLASSIFIER
-
-      #
-      # Refactored:
-      #
-      when :default
-      when :drop
-        priority = 90
-      when :controller
-        actions = { :output => Controller::OFPP_CONTROLLER }
-      when :controller_classifier
-        table = TABLE_CONTROLLER_PORT
-        write_metadata = { :interface => params[:write_interface_id] }
-        goto_table = TABLE_INTERFACE_EGRESS_CLASSIFIER
-      when :interface_classifier
-        table = TABLE_INTERFACE_EGRESS_CLASSIFIER
-        match_metadata = { :interface => params[:interface_id] }
-        write_metadata = { :network => params[:write_network_id] }
-        goto_table = TABLE_INTERFACE_EGRESS_FILTER
-      when :router_classifier
-        table = TABLE_ROUTE_INGRESS_INTERFACE
-        match_metadata = { :network => params[:network_id] }
-        if params[:ingress_interface_id]
-          priority = 10
-          write_metadata = { :interface => params[:ingress_interface_id] }
-          goto_table = TABLE_ROUTE_INGRESS_TRANSLATION
-        else
-          priority = 20
-          goto_table = TABLE_NETWORK_DST_CLASSIFIER
-        end
-      when :routing
-        priority = params[:default_route] ? 20 : 30
-      else
-        return nil
-      end
-
-      #
-      # Generic:
-      #
-      table = params[:table] if params[:table]
-      actions = params[:actions] if params[:actions]
-      priority = params[:priority] if params[:priority]
-      goto_table = params[:goto_table] if params[:goto_table]
-
-      if params.has_key?(:table_network_dst)
-        table = table_network_dst(params[:table_network_dst])
-      elsif params.has_key?(:table_network_src)
-        table = table_network_src(params[:table_network_src])
-      end
 
       #
       # Match/Write Metadata options:
@@ -163,12 +91,13 @@ module Vnet::Openflow
       match_metadata = match_metadata.merge!(params[:match_metadata]) if params[:match_metadata]
       write_metadata = write_metadata.merge!(params[:write_metadata]) if params[:write_metadata]
 
+      match = {}
       match = match.merge!(params[:match]) if params[:match]
       match = match.merge!(md_create(match_metadata)) if !match_metadata.empty?
 
       instructions = {}
       instructions[:cookie] = params[:cookie] || self.cookie
-      instructions[:goto_table] = goto_table if goto_table
+      instructions[:goto_table] = params[:goto_table] if params[:goto_table]
 
       instructions[:hard_timeout] = params[:hard_timeout] if params[:hard_timeout]
       instructions[:idle_timeout] = params[:idle_timeout] if params[:idle_timeout]
@@ -177,37 +106,25 @@ module Vnet::Openflow
 
       raise "Missing cookie." if instructions[:cookie].nil?
 
-      instructions[:idle_timeout] = params[:idle_timeout] if params[:idle_timeout]
-      instructions[:hard_timeout] = params[:hard_timeout] if params[:hard_timeout]
-
-      Flow.create(table, priority, match, actions, instructions)
+      Flow.create(params[:table],
+                  params[:priority],
+                  match,
+                  params[:actions],
+                  instructions)
     end
 
     def flows_for_filtering_mac_address(flows, mac_address, use_cookie = self.cookie)
-      flows << flow_create(:drop,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           match: {
-                             :eth_dst => mac_address
-                           },
-                           cookie: use_cookie)
-      flows << flow_create(:drop,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           match: {
-                             :eth_src => mac_address
-                           },
-                           cookie: use_cookie)
-      flows << flow_create(:drop,
-                           table: TABLE_NETWORK_DST_CLASSIFIER,
-                           match: {
-                             :eth_dst => mac_address
-                           },
-                           cookie: use_cookie)
-      flows << flow_create(:drop,
-                           table: TABLE_NETWORK_DST_CLASSIFIER,
-                           match: {
-                             :eth_src => mac_address
-                           },
-                           cookie: use_cookie)
+      [[TABLE_NETWORK_SRC_CLASSIFIER, { :eth_src => mac_address }],
+       [TABLE_NETWORK_SRC_CLASSIFIER, { :eth_dst => mac_address }],
+       [TABLE_NETWORK_DST_CLASSIFIER, { :eth_src => mac_address }],
+       [TABLE_NETWORK_DST_CLASSIFIER, { :eth_dst => mac_address }],
+      ].each { |table, match|
+        flows << flow_create(:default,
+                             table: table,
+                             priority: 90,
+                             match: match,
+                             cookie: use_cookie)
+      }
     end
 
   end
