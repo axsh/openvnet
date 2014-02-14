@@ -23,11 +23,13 @@ module Vnspec
     end
 
     attr_reader :name
+    attr_reader :hostname
     attr_reader :ssh_ip
     attr_reader :ipv4_address
 
     def initialize(name)
       @name = name.to_sym
+      @hostname = config[:legacy_machines][name][:hostname] || @name
       @ssh_ip = config[:legacy_machines][name][:ssh_ip]
       @ipv4_address = config[:legacy_machines][name][:ipv4_address]
     end
@@ -41,7 +43,7 @@ module Vnspec
         "ConnectTimeout" => options[:timeout] || 30
       )
       ret = ssh(ssh_ip, "ssh #{options} #{address} hostname", {})
-      ret[:stdout].chomp == vm.name.to_s
+      ret[:stdout].chomp == vm.hostname.to_s
     end
   end
 end

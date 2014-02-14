@@ -100,10 +100,11 @@ module Vnspec
       end
     end
 
-    attr_reader :name, :host_ip, :ssh_ip, :interfaces, :vm_config
+    attr_reader :name, :hostname, :host_ip, :ssh_ip, :interfaces, :vm_config
     def initialize(name)
       @vm_config = config[:vms][name.to_sym].dup
       @name = vm_config[:name].to_sym
+      @hostname = vm_config[:hostname] || @name
       @ssh_ip = vm_config[:ssh_ip]
       @host_ip = config[:nodes][:vna][vm_config[:vna] - 1]
       @interfaces = vm_config[:interfaces].map do |interface|
@@ -160,7 +161,7 @@ module Vnspec
 
     def reachable_to?(vm, options = {})
       via = options.delete(:via) || :ipv4_address
-      hostname_for(vm.__send__(via), options) == vm.name.to_s
+      hostname_for(vm.__send__(via), options) == vm.hostname.to_s
     end
 
     def resolvable?(name)
