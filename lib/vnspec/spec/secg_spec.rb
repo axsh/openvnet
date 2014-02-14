@@ -106,29 +106,18 @@ describe "security groups" do
 
   describe "connection tracking" do
     it "accepts incoming packets on ports that outgoing tcp packets passed through" do
-      expect(vm1).to be_reachable_to(vm3)
+      expect(vm1).to be_reachable_to(vm6)
     end
   end
 
   describe "isolation" do
-    context "on the same vna" do
-      it "accepts all traffic between interfaces in the same security group" do
-        expect(vm3).to be_reachable_to(vm4)
-      end
-
-      it "doesn't allow other interfaces to do the same" do
-        expect(vm5).not_to be_reachable_to(vm6)
-      end
+    it "accepts all traffic between interfaces in the same security group" do
+      expect(vm3).to be_reachable_to(vm4)
     end
 
-    context "on different vna's" do
-      it "accepts all traffic between interfaces in the same security group" do
-        expect(vm3).to be_reachable_to(vm6)
-      end
-
-      it "doesn't allow other interfaces to do the same" do
-        expect(vm1).not_to be_reachable_to(vm6)
-      end
+    it "doesn't allow other interfaces to do the same" do
+      expect(vm5).not_to be_reachable_to(vm4)
     end
   end
+
 end
