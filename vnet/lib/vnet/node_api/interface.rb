@@ -48,25 +48,27 @@ module Vnet::NodeApi
                          port_name: interface.port_name,
                          changed_columns: options)
 
-          case options[:enable_ingress_filtering]
+
+          filtering_event = case options[:enable_ingress_filtering]
           when "true"
+            ENABLED_FILTERING
+          when "false"
+            DISABLED_FILTERING
+          else
+            nil
+          end
+
+          if filtering_event
             ml = interface.mac_leases.map do |l|
               { id: l.id, mac_address: l.mac_address}
             end
 
-            dispatch_event(ENABLED_FILTERING,
+            dispatch_event(filtering_event,
               id: interface.id,
               uuid: interface.uuid,
               owner_datapath_id: interface.owner_datapath_id,
               active_datapath_id: interface.active_datapath_id,
               mac_leases: ml
-            )
-          when "false"
-            dispatch_event(DISABLED_FILTERING,
-              id: interface.id,
-              uuid: interface.uuid,
-              owner_datapath_id: interface.owner_datapath_id,
-              active_datapath_id: interface.active_datapath_id,
             )
           end
 

@@ -10,7 +10,6 @@ module Vnet::Openflow
 
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
-    subscribe_event REMOVED_INTERFACE, :removed_interface
     subscribe_event ENABLED_FILTERING, :enabled_filtering
     subscribe_event DISABLED_FILTERING, :disabled_filtering
 
@@ -25,39 +24,37 @@ module Vnet::Openflow
     def leased_mac_address(params)
       return unless params[:enable_ingress_filtering]
 
-      catch_new_egress(params[:id], params[:mac_address])
+      catch_new_egress(params[:mac_lease_id], params[:mac_address])
     end
 
     def released_mac_address(params)
-      remove_catch_new_egress(params[:id], params[:mac_address])
-    end
-
-    def removed_interface(params)
-      remove_catch_new_egress(params[:id])
-      close_connections(params[:id])
+      remove_catch_new_egress(params[:mac_lease_id])
+      close_connections(params[:mac_lease_id])
     end
 
     def enabled_filtering(params)
       return if is_remote?(params[:owner_datapath_id], params[:active_datapath_id])
       params[:mac_leases].each { |ml|
-        catch_new_egress(params[:id], ml[:mac_address])
+        catch_new_egress(ml[:id], ml[:mac_address])
       }
     end
 
     def disabled_filtering(params)
-      remove_catch_new_egress(params[:id])
-      close_connections(params[:id])
+      params[:mac_leases].each { |ml|
+        remove_catch_new_egress(ml[:id])
+        close_connections(ml[:id])
+      }
     end
 
     #
     # The actual connection related stuff
     #
 
-    def catch_flow_cookie(interface_id)
-      COOKIE_TYPE_CONNECTION | COOKIE_TAG_CATCH_FLOW | interface_id
+    def catch_flow_cookie(mac_lease_id)
+      COOKIE_TYPE_CONNECTION | COOKIE_TAG_CATCH_FLOW | mac_lease_id
     end
 
-    def catch_new_egress(interface_id, mac_address)
+    def catch_new_egress(mac_lease_id, mac_address)
       flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
         flow_create(:default,
                     table: TABLE_INTERFACE_EGRESS_FILTER,
@@ -67,19 +64,19 @@ module Vnet::Openflow
                       eth_type: ETH_TYPE_IPV4,
                       ip_proto: protocol
                     },
-                    cookie: catch_flow_cookie(interface_id),
+                    cookie: catch_flow_cookie(mac_lease_id),
                     actions: { output: Controller::OFPP_CONTROLLER })
       }
 
       @dp_info.add_flows(flows)
     end
 
-    def remove_catch_new_egress(interface_id)
-      @dp_info.del_cookie catch_flow_cookie(interface_id)
+    def remove_catch_new_egress(mac_lease_id)
+      @dp_info.del_cookie catch_flow_cookie(mac_lease_id)
     end
 
-    def close_connections(interface_id)
-      @dp_info.del_cookie Connections::Base.cookie(interface_id)
+    def close_connections(mac_lease_id)
+      @dp_info.del_cookie Connections::Base.cookie(mac_lease_id)
     end
 
     def open_connection(message)
