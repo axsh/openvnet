@@ -7,11 +7,6 @@ module Vnet::Openflow::Services
   class Router < Base
 
     def install
-      @dp_info.interface_manager.async.update_item(event: :enable_router_ingress,
-                                                   id: @interface_id)
-      @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
-                                                   id: @interface_id)
-
       debug log_format('install', "interface_id:#{@interface_id}")
     end
 

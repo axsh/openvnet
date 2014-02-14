@@ -6,6 +6,15 @@ module Vnet::Models
     plugin :paranoia
     many_to_many :interfaces, :join_table => :interface_security_groups
 
+    # We're using paranoia on the join table for the interface <=> security
+    # group relation and that's throwing a wrench in Sequel's inner workings.
+    # We override the relation accessors to remedy that.
+    def interfaces_dataset
+      ds = Interface.join(:interface_security_groups, interface_id: :id)
+      ds = ds.where(interface_security_groups__deleted_at: nil)
+      ds.where(security_group_id: self.id).select_all(:interfaces)
+    end
+
     def interface_cookie_id(interface_id)
       row_id = InterfaceSecurityGroup.where(:security_group_id => self.id,
         :interface_id => interface_id).first.id

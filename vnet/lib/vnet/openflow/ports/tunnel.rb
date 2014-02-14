@@ -18,13 +18,6 @@ module Vnet::Openflow::Ports
                              :in_port => self.port_number
                            },
                            goto_table: TABLE_TUNNEL_NETWORK_IDS)
-      flows << flow_create(:default,
-                           table: TABLE_VIRTUAL_SRC,
-                           priority: 30,
-                           match: {
-                             :in_port => self.port_number
-                           },
-                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE)
 
       if @tunnel_id && @tunnel_id > 0
         flows << flow_create(:default,

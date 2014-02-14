@@ -10,8 +10,11 @@ module Vnet::Openflow::Interfaces
       flows = []
       flows_for_mac(flows, mac_info)
       flows_for_interface_mac(flows, mac_info)
-      flows_for_router_ingress_mac(flows, mac_info) if @router_ingress == true
-      flows_for_router_egress_mac(flows, mac_info) if @router_egress == true
+
+      if @enable_routing
+        flows_for_router_ingress_mac(flows, mac_info)
+        flows_for_router_egress_mac(flows, mac_info)
+      end
 
       @dp_info.add_flows(flows)
     end
@@ -19,33 +22,16 @@ module Vnet::Openflow::Interfaces
     def add_ipv4_address(params)
       mac_info, ipv4_info = super
 
-      @dp_info.network_manager.update_interface(event: :insert,
-                                                 id: ipv4_info[:network_id],
-                                                 interface_id: @id,
-                                                 mode: :host,
-                                                 port_number: @port_number)
-
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
-      flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
-      flows_for_router_egress_ipv4(flows, mac_info, ipv4_info) if @router_egress == true
+
+      if @enable_routing
+        flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
+        flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
+      end
 
       @dp_info.add_flows(flows)
-    end
-
-    def remove_ipv4_address(params)
-      debug "interfaces: removing ipv4 flows..."
-
-      mac_info, ipv4_info = super
-
-      return unless ipv4_info
-
-      @dp_info.network_manager.update_interface(event: :remove,
-                                                id: ipv4_info[:network_id],
-                                                interface_id: @id,
-                                                mode: :host,
-                                                port_number: @port_number)
     end
 
     def install
@@ -103,47 +89,32 @@ module Vnet::Openflow::Interfaces
 
         flows << flow_create(:default,
                              table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                              priority: 20,
 
                              match: {
                                :eth_dst => mac_info[:mac_address],
                              },
                              match_interface: @id,
-                             write_network: ipv4_info[:network_id],
+                             write_value_pair_flag: true,
+                             write_value_pair_first: ipv4_info[:network_id],
 
-                             cookie: cookie,
-                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+                             cookie: cookie)
         flows << flow_create(:default,
                              table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                              priority: 20,
 
                              match: {
                                :eth_dst => MAC_BROADCAST
                              },
                              match_interface: @id,
-                             write_network: ipv4_info[:network_id],
+                             write_value_pair_flag: true,
+                             write_value_pair_first: ipv4_info[:network_id],
 
-                             cookie: cookie,
-                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER)
+                             cookie: cookie)
       end
 
-      flows << flow_create(:default,
-                           table_network_dst: ipv4_info[:network_type],
-                           priority: 60,
-                           match: {
-                             :eth_dst => mac_info[:mac_address],
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
-      flows << flow_create(:default,
-                           table_network_dst: ipv4_info[:network_type],
-                           priority: 20,
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS)
       flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 10,

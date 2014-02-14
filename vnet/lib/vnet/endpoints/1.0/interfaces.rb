@@ -6,6 +6,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   put_post_shared_params = [
     "owner_datapath_uuid",
     "display_name",
+    "enable_routing",
+    "enable_route_translation",
   ]
 
   fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]

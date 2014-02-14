@@ -327,10 +327,6 @@ module Vnet::Openflow
         #
         # Capability events:
         #
-      when :enable_router_ingress
-        item.enable_router_ingress
-      when :enable_router_egress
-        item.enable_router_egress
       when :updated
         # api event
         item.update
