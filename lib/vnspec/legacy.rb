@@ -40,7 +40,7 @@ module Vnspec
         "StrictHostKeyChecking" => "no",
         "UserKnownHostsFile" => "/dev/null",
         "LogLevel" => "ERROR",
-        "ConnectTimeout" => options[:timeout] || 30
+        "ConnectTimeout" => options[:timeout] || 2
       )
       ret = ssh(ssh_ip, "ssh #{options} #{address} hostname", {})
       ret[:stdout].chomp == vm.hostname.to_s

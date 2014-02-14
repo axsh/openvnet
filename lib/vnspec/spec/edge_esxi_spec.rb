@@ -8,7 +8,7 @@ describe "edge" do
 
   describe "mac2mac" do
     it "reachable to vnet1" do
-      expect(legacy_esxi).to be_reachable_to(vm1)
+      expect(legacy_esxi).to be_reachable_to(vm1, :timeout => 20)
     end
 
     it "not reachable to vnet2" do
