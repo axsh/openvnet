@@ -49,17 +49,6 @@ shared_examples_for "vm(unreachable)" do |vm|
 end
 
 describe "event" do
-  before(:all) do
-    # add routes
-    [vm1, vm3, vm5].each do |vm|
-      vm.ssh_on_guest("ip route add default via 10.101.0.1")
-    end
-
-    [vm2, vm4, vm6].each do |vm|
-      vm.ssh_on_guest("ip route add default via 10.102.0.1")
-    end
-  end
-
   describe "ip_lease" do
     describe "release" do
       before(:all) do
@@ -74,7 +63,6 @@ describe "event" do
         # change to vnet2
         vm1.interfaces.first.mac_leases.first.add_ip_lease(network_uuid: "nw-vnet2", ipv4_address: "10.102.0.20")
         vm1.restart_network
-        vm1.ssh_on_guest("ip route add default via 10.102.0.1")
       end
 
       it_behaves_like "vm(reachable)", vm1
@@ -98,7 +86,6 @@ describe "event" do
         # change to vnet1
         vm1.interfaces.first.mac_leases.first.add_ip_lease(network_uuid: "nw-vnet1", ipv4_address: "10.101.0.10")
         vm1.restart_network
-        vm1.ssh_on_guest("ip route add default via 10.101.0.1")
       end
 
       it_behaves_like "vm(reachable)", vm1
@@ -127,7 +114,6 @@ describe "event" do
         sleep(3)
 
         vm1.restart_network
-        vm1.ssh_on_guest("ip route add default via 10.101.0.1")
       end
 
       it_behaves_like "vm(reachable)", vm1
@@ -185,8 +171,6 @@ describe "event" do
         Vnspec::Models::Interface.find("if-dp1eth0").update(owner_datapath_uuid: "dp-new")
 
         vm1.restart_network
-
-        vm1.ssh_on_guest("ip route add default via 10.101.0.1")
 
         sleep(1)
       end
