@@ -89,6 +89,7 @@ module Vnspec
             _exec("start#{command}")
           else
             VM[name].__send__("stop#{command}")
+            sleep(1)
             VM[name].__send__("start#{command}")
           end
         end)
