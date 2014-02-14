@@ -54,5 +54,5 @@ vms:
 
 legacy_networks:
   n1:
-    ipv4: 192.168.0.0
-    prefix: 16
+    ipv4: 192.168.100.0
+    prefix: 24
