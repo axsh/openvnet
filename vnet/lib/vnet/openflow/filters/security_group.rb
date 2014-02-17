@@ -84,13 +84,13 @@ module Vnet::Openflow::Filters
       port = port.to_i
 
       match_ipv4_subnet_src(ipv4.u32, ipv4.prefix.to_i).merge case protocol
-        when 'icmp'
-          { ip_proto: IPV4_PROTOCOL_ICMP }
-        when 'tcp'
-          { ip_proto: IPV4_PROTOCOL_TCP, tcp_dst: port }
-        when 'udp'
-          { ip_proto: IPV4_PROTOCOL_UDP, udp_dst: port }
-        end
+      when 'icmp'
+        { ip_proto: IPV4_PROTOCOL_ICMP }
+      when 'tcp'
+        { ip_proto: IPV4_PROTOCOL_TCP, tcp_dst: port }
+      when 'udp'
+        { ip_proto: IPV4_PROTOCOL_UDP, udp_dst: port }
+      end
     end
 
     def install_rules(interface_id = nil)

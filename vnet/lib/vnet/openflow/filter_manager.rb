@@ -9,7 +9,6 @@ module Vnet::Openflow
     subscribe_event ENABLED_FILTERING, :enabled_filtering
     subscribe_event DISABLED_FILTERING, :disabled_filtering
     subscribe_event UPDATED_SG_RULES, :updated_filter
-    #subscribe_event UPDATED_SG_ISOLATION, :updated_isolation
     subscribe_event ADDED_INTERFACE_TO_SG, :added_interface_to_sg
     subscribe_event REMOVED_INTERFACE_FROM_SG, :removed_interface_from_sg
 
