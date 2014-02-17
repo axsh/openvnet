@@ -105,7 +105,7 @@ module Vnet::Openflow::Filters
           flow_create(:default,
             table: TABLE_INTERFACE_INGRESS_FILTER,
             priority: RULE_PRIORITY,
-            match_metadata: {interface: interface_id},
+            match_interface: interface_id,
             cookie: cookie(COOKIE_TYPE_RULE, interface_id),
             match: rule_to_match(rule),
             goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
@@ -141,7 +141,7 @@ module Vnet::Openflow::Filters
           flow_create(:default,
             table: TABLE_INTERFACE_INGRESS_FILTER,
             priority: ISOLATION_PRIORITY,
-            match_metadata: {interface: interface_id},
+            match_interface: interface_id,
             cookie: cookie(COOKIE_TYPE_ISO, interface_id),
             match: match_ipv4_subnet_src(ip, 32),
             goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
