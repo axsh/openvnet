@@ -14,8 +14,8 @@ describe Vnet::Openflow::FilterManager do
 
   subject do
     Vnet::Openflow::FilterManager.new(datapath.dp_info).tap { |fm|
-      # We do this to simulate a datapath with id 1
-      fm.set_datapath_info OpenStruct.new({id: 1})
+      # We do this to simulate a datapath with id 1 so we can use is_remote?
+      fm.set_datapath_info Vnet::Openflow::DatapathInfo.new(Fabricate(:datapath, id: 1))
     }
   end
 

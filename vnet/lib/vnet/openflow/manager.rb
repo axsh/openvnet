@@ -92,9 +92,9 @@ module Vnet::Openflow
 
     private
 
+    # Little shortcut method
     def is_remote?(owner_datapath_id, active_datapath_id = nil)
-      (owner_datapath_id && owner_datapath_id != @datapath_info.id) ||
-      (active_datapath_id && active_datapath_id != @datapath_info.id)
+      @datapath_info.is_remote?(owner_datapath_id, active_datapath_id)
     end
 
     def log_format(message, values = nil)
