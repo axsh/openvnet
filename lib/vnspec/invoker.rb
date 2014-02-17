@@ -1,9 +1,19 @@
 # -*- coding: utf-8 -*-
+
+require "fileutils"
+
 module Vnspec
   class Invoker
     include SSH
     include Logger
     include Config
+
+    TMP_DIR = File.expand_path("../../../tmp", __FILE__)
+    PID_FILE = File.join(TMP_DIR, "vnspec.pid")
+
+    def invoke(*args)
+      lock { __send__(*args) }
+    end
 
     def vm(command, name)
       VM.__send__(command, name)
@@ -75,6 +85,34 @@ module Vnspec
 
     def vnet_hosts
       config[:nodes].values.flatten.uniq
+    end
+
+    private
+
+    def lock(&block)
+      FileUtils.mkdir_p(TMP_DIR)
+      FileUtils.touch(PID_FILE)
+      File.open(PID_FILE, "r+") do |file|
+        pid = file.read.chomp!.to_i
+        if !running_process?(pid) && file.flock(File::LOCK_EX | File::LOCK_NB)
+          file.rewind
+          file.puts($$)
+        else
+          logger.info("process(pid: #{pid}) still running")
+          return false
+        end
+      end
+      yield
+    end
+
+    def running_process?(pid)
+      return false unless pid.to_i > 0
+      begin
+        Process.kill(0, pid)
+      rescue Errno::ESRCH
+        return false
+      end
+      return true
     end
   end
 end
