@@ -6,7 +6,7 @@ module Vnet::Openflow::Connections
   # tracking here. When we send out a packet, we just open up the source port
   # so we can receive a reply.
   class UDP < Base
-    def match_egress(message)
+    def self.match_egress(message)
       {
         ip_proto: IPV4_PROTOCOL_UDP,
         udp_src:  message.udp_src,
@@ -14,7 +14,7 @@ module Vnet::Openflow::Connections
       }
     end
 
-    def match_ingress(message)
+    def self.match_ingress(message)
       {
         ip_proto: IPV4_PROTOCOL_UDP,
         udp_src:  message.udp_dst,

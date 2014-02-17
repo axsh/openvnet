@@ -14,11 +14,7 @@ module Vnet::Openflow::Connections
       COOKIE_TYPE_CONNECTION | CM::COOKIE_TAG_INGRESS_CONNECTION | mac_lease_id
     end
 
-    def cookie(mac_lease_id)
-      self.class.cookie(mac_lease_id)
-    end
-
-    def open(message)
+    def self.open(message)
       interface_id = message.cookie & COOKIE_ID_MASK
 
       [
@@ -50,11 +46,11 @@ module Vnet::Openflow::Connections
       ]
     end
 
-    def match_egress(message)
+    def self.match_egress(message)
       raise NotImplementedError, "match_egress"
     end
 
-    def match_ingress(message)
+    def self.match_ingress(message)
       raise NotImplementedError, "match_ingress"
     end
   end
