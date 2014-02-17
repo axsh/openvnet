@@ -16,6 +16,8 @@ module Vnet::Openflow
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
+    subscribe_event ENABLED_FILTERING, :enabled_filtering
+    subscribe_event DISABLED_FILTERING, :disabled_filtering
 
     def update_item(params)
       case params[:event]
@@ -157,6 +159,8 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :install_interface,
                                                   interface_id: item.id)
+        item.enable_ingress_filtering &&
+          @dp_info.filter_manager.async.apply_filters(item_map)
       end
 
       item # Return nil if interface has been uninstalled.
@@ -181,6 +185,8 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :remove_interface,
                                                   interface_id: item.id)
+
+        @dp_info.filter_manager.async.removed_interface(item.id)
       end
 
       item
@@ -284,6 +290,32 @@ module Vnet::Openflow
       return if ip_lease && ip_lease.interface_id == item.id
 
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
+    end
+
+    def enabled_filtering(params)
+      item = @items[params[:id]]
+      #TODO: Check if this item.mode can be trusted to be correct.
+      return unless item && !item.enable_ingress_filtering && !item.mode == :remote
+
+      info log_format("enabled filtering on interface: '#{item.uuid}'")
+
+      item.enable_ingress_filtering = true
+      @dp_info.filter_manager.async.apply_filters(item.id)
+      #TODO: Remove flow that accepts all traffic
+      #TODO: Remove connection flows
+    end
+
+    def disabled_filtering(params)
+      item = @items[params[:id]]
+      #TODO: Check if this item.mode can be trusted to be correct.
+      return unless item && item.enable_ingress_filtering && !item.mode == :remote
+
+      info log_format("disabled filtering on interface: '#{item.uuid}'")
+
+      item.enable_ingress_filtering = false
+      @dp_info.filter_manager.async.remove_filters(item.id)
+      #TODO: Install flow that accepts all traffic
+      #TODO: Install connection flows
     end
 
     def update_item_exclusively(params)
