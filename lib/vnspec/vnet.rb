@@ -51,6 +51,17 @@ module Vnspec
         end
       end
 
+      def downgrade
+        # only support rpm
+        case config[:update_vnet_via].to_sym
+        when :rpm
+          multi_ssh(config[:nodes][:vna],
+            "yum clean metadata --disablerepo=* --enablerepo=wakame-vnet*",
+            "yum downgrade -y --disablerepo=* --enablerepo=wakame-vnet* wakame-vnet*"
+          )
+        end
+      end
+
       def delete_tunnels(brige_name = "br0")
         multi_ssh(config[:nodes][:vna], "ovs-vsctl list-ports #{brige_name} | egrep '^t-' | xargs -n1 ovs-vsctl del-port #{brige_name}", exit_on_error: false)
       end
