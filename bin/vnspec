@@ -7,7 +7,7 @@ require 'vnspec'
 invoker = Vnspec::Invoker.new
 args = ARGV
 args << "run" if args.empty?
-invoker.__send__(*args).tap do |success|
+invoker.invoke(*args).tap do |success|
   puts
   if success
     puts "result: success"
