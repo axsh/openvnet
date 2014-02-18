@@ -26,8 +26,10 @@ DCell.start :id => conf.node.id, :addr => conf.node.addr_string,
 
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
+Vnet::NodeModules::DatabaseMediator.supervise_as :database_mediator
 
 DCell::Global[:rpc] = Celluloid::Actor[:rpc]
 DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
+DCell::Global[:database_mediator] = Celluloid::Actor[:database_mediator]
 
 sleep
