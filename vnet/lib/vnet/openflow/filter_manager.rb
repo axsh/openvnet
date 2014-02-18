@@ -103,13 +103,25 @@ module Vnet::Openflow
         item.add_interface(interface.id, cookie_id)
         item.install(interface.id)
       end
+
+      filter_traffic(interface.id)
     end
 
     def remove_filters(interface_id)
+      accept_all_traffic(interface_id)
+
       items_for_interface(interface_id).each { |item|
         item.uninstall(interface_id)
         item.remove_interface(interface_id)
       }
+    end
+
+    def accept_all_traffic(interface_id)
+      Filters::AcceptAllTraffic.new(interface_id, @dp_info).install
+    end
+
+    def filter_traffic(interface_id)
+      Filters::AcceptAllTraffic.new(interface_id, @dp_info).uninstall
     end
 
     private
@@ -125,10 +137,6 @@ module Vnet::Openflow
 
     def items_for_interface(interface_id)
       @items.values.select { |item| item.has_interface?(interface_id) }
-    end
-
-    def accept_all_traffic(interface_id)
-      Filters::AcceptAllTraffic.new(interface_id, @dp_info)
     end
 
     def accept_ingress_arp

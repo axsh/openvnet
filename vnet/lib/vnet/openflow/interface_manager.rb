@@ -159,8 +159,11 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :install_interface,
                                                   interface_id: item.id)
-        item.enable_ingress_filtering &&
+        if item.enable_ingress_filtering
           @dp_info.filter_manager.async.apply_filters(item_map)
+        else
+          @dp_info.filter_manager.async.accept_all_traffic(item.id)
+        end
       end
 
       item # Return nil if interface has been uninstalled.
@@ -314,7 +317,6 @@ module Vnet::Openflow
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
       }
-      #TODO: Remove flow that accepts all traffic
     end
 
     def disabled_filtering(params)
@@ -334,8 +336,6 @@ module Vnet::Openflow
         # this gets executed before filter manager's remove_filters.
         # We just allow the open connections to expire naturally.
       }
-
-      #TODO: Install flow that accepts all traffic
     end
 
     def update_item_exclusively(params)
