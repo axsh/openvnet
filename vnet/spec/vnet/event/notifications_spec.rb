@@ -219,7 +219,7 @@ describe Vnet::Event::Notifications do
       expect(item_manager.executed_methods.size).to eq 5
     end
 
-    it "enqueue event to a list identified by params[:id]", :focus => true do
+    it "enqueue event to a list identified by params[:id]" do
       manager_class.class_eval do
         def fetch_queued_events(id)
           "do nothing"
