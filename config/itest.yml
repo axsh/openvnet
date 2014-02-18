@@ -1,7 +1,7 @@
 nodes:
   webapi: [192.168.2.91]
   vnmgr: [192.168.2.91]
-  vna: [192.168.2.91, 192.168.2.92, 192.168.2.93, 192.168.2.90]
+  vna: [192.168.2.91, 192.168.2.92, 192.168.2.93, 192.168.2.90, 192.168.2.95]
 
 webapi:
   host: 192.168.2.91
@@ -13,6 +13,7 @@ update_vnet_via: rpm
 
 dataset_options:
   edge_ipv4_address: 172.16.90.9
+  edge_esxi_ipv4_address: 172.16.90.12
   dp1_ipv4_address: 172.16.90.10
   dp2_ipv4_address: 172.16.90.11
   dp3_ipv4_address: 172.16.91.10
@@ -27,3 +28,7 @@ legacy_machines:
   legacy1:
     ssh_ip: 192.168.2.94
     ipv4_address: 192.168.100.100
+  legacy_esxi:
+    hostname: legacy-esxi
+    ssh_ip: 192.168.2.96
+    ipv4_address: 192.168.100.101
