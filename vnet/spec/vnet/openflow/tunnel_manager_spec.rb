@@ -65,6 +65,7 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     it "should only add broadcast mac addressess flows at start" do
+      pending
       tunnel_manager
 
       # datapath.dp_info.interface_manager.select({}).each { |interface|
@@ -81,6 +82,7 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     it "should add flood flow network 1" do
+      pending
       tunnel_manager.update_item(event: :set_port_number,
                                  uuid: datapath.dp_info.added_tunnels[0][:tunnel_name],
                                  port_number: 9)
@@ -105,6 +107,7 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     it "should add flood flow for network 2" do
+      pending
       tunnel_manager.update_item(event: :set_port_number,
                                  uuid: datapath.dp_info.added_tunnels[0][:tunnel_name],
                                  port_number: 9)
@@ -200,6 +203,7 @@ describe Vnet::Openflow::TunnelManager do
     end
 
     it "should delete tunnel when the network is deleted on the remote datapath" do
+      pending
       subject.remove(2)
       sleep(0.001)
       expect(datapath.dp_info.deleted_tunnels[0]).to eq datapath.dp_info.added_tunnels[0][:tunnel_name]
