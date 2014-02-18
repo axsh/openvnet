@@ -74,6 +74,9 @@ module Vnet
     REMOVED_TUNNEL = "removed_tunnel"
     INITIALIZED_TUNNEL = "initialized_tunnel"
 
+    ADDED_HOST_DATAPATH_NETWORK = "added_host_datapath_network"
+    ADDED_REMOTE_DATAPATH_NETWORK = "added_remote_datapath_network"
+
     #
     # port event
     #

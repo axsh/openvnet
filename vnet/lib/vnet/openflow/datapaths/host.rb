@@ -22,15 +22,15 @@ module Vnet::Openflow::Datapaths
     private
 
     def after_add_active_network(active_network)
-      @dp_info.dc_segment_manager.async.prepare_network(active_network[:id])
-      @dp_info.tunnel_manager.async.update(event: :added_host_datapath_network,
-                                           dpn: active_network)
-
       flows = []
       flows_for_filtering_mac_address(flows,
                                       active_network[:broadcast_mac_address],
                                       active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
       @dp_info.add_flows(flows)
+
+      @dp_info.dc_segment_manager.async.prepare_network(active_network[:id])
+      @dp_info.tunnel_manager.update(event: :added_host_datapath_network,
+                                     dpn: active_network)
     end
 
     def after_remove_active_network(active_network)

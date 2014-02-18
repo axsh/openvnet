@@ -10,6 +10,9 @@ module Vnet::Openflow
     subscribe_event REMOVED_TUNNEL, :unload
     subscribe_event INITIALIZED_TUNNEL, :install_item
 
+    subscribe_event ADDED_HOST_DATAPATH_NETWORK, :added_host_datapath_network
+    subscribe_event ADDED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
+
     def initialize(*args)
       super
       @host_networks = {}
@@ -38,9 +41,13 @@ module Vnet::Openflow
       when :updated_interface
         updated_interface(params)
       when :added_host_datapath_network
-        added_host_datapath_network(params[:dpn]) if params[:dpn]
+        publish(ADDED_HOST_DATAPATH_NETWORK,
+                id: :datapath_network,
+                host_dpn: params[:dpn])
       when :added_remote_datapath_network
-        added_remote_datapath_network(params[:dpn]) if params[:dpn]
+        publish(ADDED_REMOTE_DATAPATH_NETWORK,
+                id: :datapath_network,
+                remote_dpn: params[:dpn])
       end
 
       nil
@@ -208,7 +215,25 @@ module Vnet::Openflow
       item.set_dst_ipv4_address(dst_interface[:network_id], dst_interface[:ipv4_address]) if dst_interface
       item.set_src_ipv4_address(src_interface[:network_id], src_interface[:ipv4_address]) if src_interface
 
+      # Should be an event that is exclusive for dpn updates (?):
+      remote_dpns = @remote_datapath_networks.select { |id, remote_dpn|
+        remote_dpn[:datapath_id] == item.dst_datapath_id && remote_dpn[:interface_id] == item.dst_interface_id
+      }
+      remote_dpns.each { |id, remote_dpn|
+        item.add_datapath_network(remote_dpn)
+      }
+
+      # Make sure we have the remote host interface loaded.
       @dp_info.interface_manager.async.retrieve(id: item.dst_interface_id)
+
+      # Update networks:
+      updated_networks = remote_dpns.map { |id, remote_dpns|
+        remote_dpns[:network_id]
+      }
+      updated_networks.uniq!
+      updated_networks.each { |network_id|
+        update_network_id(network_id)
+      }
     end
 
     def delete_item(item)
@@ -239,6 +264,7 @@ module Vnet::Openflow
       }
     end
 
+    # Move this into GRE...
     def update_network_id(network_id)
       actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
 
@@ -349,26 +375,27 @@ module Vnet::Openflow
     #
 
     def added_host_datapath_network(params)
-      dpn_id = params[:dpn_id]
-      datapath_id = params[:datapath_id]
-      network_id = params[:network_id]
-      interface_id = params[:interface_id]
-      broadcast_mac_address = params[:broadcast_mac_address]
+      param_dpn = params[:host_dpn]
+      return if param_dpn.nil?
+
+      dpn_id = param_dpn[:dpn_id]
+      datapath_id = param_dpn[:datapath_id]
+      network_id = param_dpn[:network_id]
+      interface_id = param_dpn[:interface_id]
+      broadcast_mac_address = param_dpn[:broadcast_mac_address]
       return if dpn_id.nil?
       return if datapath_id.nil?
       return if network_id.nil?
       return if interface_id.nil?
       return if broadcast_mac_address.nil?
       
-      sleep(1)
-
       if @host_networks[network_id]
         error log_format("host datapath network #{dpn_id} already added",
                          "network_id:#{network_id} interface_id:#{interface_id} broadcast_mac_address:#{broadcast_mac_address}")
         return
       end
 
-      @host_networks[network_id] = {
+      host_dpn = @host_networks[network_id] = {
         :dpn_id => dpn_id,
         :datapath_id => datapath_id, # Not needed
         :network_id => network_id,
@@ -376,41 +403,35 @@ module Vnet::Openflow
         :broadcast_mac_address => broadcast_mac_address
       }
 
-      # Internal detect, if loaded do event or else just load an let
-      # install_item handle dpn. 
-      #
-      # Add parameters to allow us to first detect internal, retrieve,
-      # and lastly create db entry if all fails.
-
-      modified_dpns = @remote_datapath_networks.select { |id, dpn|
-        dpn[:network_id] == network_id
-      }
-      modified_dpns.each { |id, dpn|
-        activate_remote_datapath_network(id)
-      }
-
       debug log_format("host datapath network #{dpn_id} added for datapath #{datapath_id}",
                        "network_id:#{network_id} interface_id:#{interface_id} broadcast_mac_address:#{broadcast_mac_address}")
+
+      # Reorder so that we activate in the order of loading
+      # internally, database and then create.
+      remote_dpns = @remote_datapath_networks.select { |id, remote_dpn|
+        remote_dpn[:network_id] == network_id
+      }
+      remote_dpns.each { |id, remote_dpn|
+        activate_tunnel(host_dpn, remote_dpn, network_id)
+      }
     end
 
     def added_remote_datapath_network(params)
-      dpn_id = params[:dpn_id]
-      datapath_id = params[:datapath_id]
-      network_id = params[:network_id]
-      interface_id = params[:interface_id]
-      broadcast_mac_address = params[:broadcast_mac_address]
-      return if dpn_id.nil?
-      return if datapath_id.nil?
-      return if network_id.nil?
-      return if interface_id.nil?
-      return if broadcast_mac_address.nil?
+      param_dpn = params[:remote_dpn]
+      return if param_dpn.nil?
+
+      dpn_id = param_dpn[:dpn_id]
+      datapath_id = param_dpn[:datapath_id]
+      network_id = param_dpn[:network_id]
+      interface_id = param_dpn[:interface_id]
+      broadcast_mac_address = param_dpn[:broadcast_mac_address]
       
       if @remote_datapath_networks[dpn_id]
         error log_format("remote datapath network #{dpn_id} already added")
         return
       end
 
-      @remote_datapath_networks[dpn_id] = {
+      remote_dpn = @remote_datapath_networks[dpn_id] = {
         :dpn_id => dpn_id,
         :datapath_id => datapath_id,
         :network_id => network_id,
@@ -418,69 +439,62 @@ module Vnet::Openflow
         :broadcast_mac_address => broadcast_mac_address
       }
 
-      activate_remote_datapath_network(dpn_id)
-
       debug log_format("remote datapath network #{dpn_id} added for datapath #{datapath_id}",
                        "network_id:#{network_id} interface_id:#{interface_id} broadcast_mac_address:#{broadcast_mac_address}")
+
+      host_dpn = @host_networks[network_id]
+
+      activate_tunnel(host_dpn, remote_dpn, network_id) if host_dpn
     end
 
     # Load or create the tunnel item if we have both host and remote
     # datapath networks.
-    #
-    # TODO: Turn into an event, look into allowing event ordering and
-    # exclusivity for dpn updates similar to item.id.
-    #
-    # Or make it non-blocking by building up a list of load/create actions?
-    def activate_remote_datapath_network(remote_dpn_id)
-      remote_dpn = @remote_datapath_networks[remote_dpn_id]
-      return if remote_dpn.nil?
-
-      network_id = remote_dpn[:network_id]
-      return if network_id.nil?
-
-      host_dpn = @host_networks[network_id]
-      return if host_dpn.nil?
-
+    def activate_tunnel(host_dpn, remote_dpn, network_id)
       options = {
         src_datapath_id: @datapath_info.id,
         dst_datapath_id: remote_dpn[:datapath_id],
         src_interface_id: host_dpn[:interface_id],
-        dst_interface_id: remote_dpn[:interface_id]
+        dst_interface_id: remote_dpn[:interface_id],
       }
 
-      # Internal detect, if loaded do event or else just load an let
-      # install_item handle dpn. 
-
-      # Refactor:
-
-      item = item_by_params(options)
-
-      # Check tunnel mode here...
-
-      unless item
-        info log_format("creating tunnel entry",
-                        options.map { |k, v| "#{k}: #{v}" }.join(" "))
-
-        tunnel = MW::Tunnel.create(options.merge(mode: :gre))
-        item = item_by_params(options)
-
-        if item.nil?
-          warn log_format('could not create tunnel',
-                          options.map { |k, v| "#{k}: #{v}" }.join(" "))
-          return
-        end
-      end
-
-      # Do this in item install:
-      item.add_datapath_network(remote_dpn)
-      update_network_id(network_id)
-
+      # TODO: Update log output:
       info log_format(
         "activated remote datapath network",
         "datapath_id:#{remote_dpn[:datapath_id]} " +
         "network_id:#{remote_dpn[:network_id]} " +
         "interface_id:#{remote_dpn[:interface_id]}"
       )
+
+      
+
+      item = item_by_params(options)
+
+      # Create separate method...
+      #
+      # Consider adding an event for doing create?
+      if item.nil?
+        info log_format("creating tunnel entry",
+                        options.map { |k, v| "#{k}:#{v}" }.join(" "))
+
+        tunnel = MW::Tunnel.create(options.merge(mode: :gre))
+        item = item_by_params(options)
+
+        if item.nil?
+          warn log_format('could not create tunnel',
+                          options.map { |k, v| "#{k}:#{v}" }.join(" "))
+        end
+
+        return
+      end
+
+      # Check tunnel mode here...
+
+      # We make sure not to yield before the dpn has been added to
+      # item.
+      item.add_datapath_network(remote_dpn)
+
+      # TODO: Consider making this an event?
+      update_network_id(network_id)
     end
 
   end
