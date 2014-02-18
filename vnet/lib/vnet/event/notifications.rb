@@ -36,8 +36,8 @@ module Vnet::Event::Notifications
 
   def handle_event(event_name, params)
     #debug "handle event: #{event_name} params: #{params.inspect}}"
-    queue_id = queue_id || :defualt
-    event_queue = (@event_queues[queue_id] || []).dup
+    queue_id = params[:id] || :default
+    event_queue = @event_queues[queue_id] || []
     event_queue << { event_name: event_name, params: params.dup }
     @event_queues[queue_id] = event_queue
     unless @queue_statuses[queue_id]
@@ -50,8 +50,6 @@ module Vnet::Event::Notifications
     while @event_queues[id].present?
       event_queue = @event_queues[id]
       event = event_queue.shift
-      @event_queues[id] = event_queue
-
       event_definition = event_definitions[event[:event_name]]
       next unless event_definition[:method]
 
