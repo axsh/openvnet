@@ -36,8 +36,6 @@ module Vnet::Openflow
 
     def update(params)
       case params[:event]
-      when :update_network
-        update_network_id(params[:network_id]) if params[:network_id]
       when :updated_interface
         updated_interface(params)
       when :added_host_datapath_network
@@ -56,48 +54,6 @@ module Vnet::Openflow
     #
     # Refactor:
     #
-
-    def insert_foo(datapath_network)
-      if @host_networks[datapath_network[:network_id]].nil?
-        error "XXXXXXXXXXXXXXXXXXXXXXX #{datapath_network.inspect}"
-        return
-      end
-
-      options = {
-        src_datapath_id: @datapath_info.id,
-        dst_datapath_id: datapath_network[:datapath_id],
-        src_interface_id: @host_networks[datapath_network[:network_id]][:interface_id],
-        dst_interface_id: datapath_network[:interface_id],
-      }
-
-      item = item_by_params(options)
-
-      # Check tunnel mode here...
-
-      unless item
-        info log_format("creating tunnel entry",
-                        options.map { |k, v| "#{k}: #{v}" }.join(" "))
-
-        tunnel = MW::Tunnel.create(options.merge(mode: :gre))
-        item = item_by_params(options)
-
-        if item.nil?
-          warn log_format('could not create tunnel',
-                          options.map { |k, v| "#{k}: #{v}" }.join(" "))
-          return
-        end
-      end
-
-      item.add_datapath_network(datapath_network)
-      update_network_id(datapath_network[:network_id])
-
-      info log_format(
-        "insert datapath network",
-        "datapath_id:#{datapath_network[:datapath_id]} " +
-        "network_id:#{datapath_network[:network_id]} " +
-        "interface_id:#{datapath_network[:interface_id]}"
-      )
-    end
 
     def remove(dpn_id)
       @items.values.find { |item|
@@ -371,7 +327,7 @@ module Vnet::Openflow
     end
 
     #
-    # Update datapath states:
+    # Datapath network events:
     #
 
     def added_host_datapath_network(params)
