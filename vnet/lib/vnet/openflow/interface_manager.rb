@@ -313,6 +313,7 @@ module Vnet::Openflow
 
       item.enable_ingress_filtering = true
       @dp_info.filter_manager.async.apply_filters(item.id)
+      @dp_info.filter_manager.async.filter_traffic(item.id)
 
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
@@ -327,6 +328,7 @@ module Vnet::Openflow
       info log_format("disabled filtering on interface", item.uuid)
 
       item.enable_ingress_filtering = false
+      @dp_info.filter_manager.async.accept_all_traffic(item.id)
       @dp_info.filter_manager.async.remove_filters(item.id)
 
       item.mac_addresses.each { |id, mac_address|
