@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Connections
   class TCP < Base
-    def self.match_egress(message)
+    def match_egress(message)
       {
         ip_proto: IPV4_PROTOCOL_TCP,
         tcp_src:  message.tcp_src,
@@ -10,7 +10,7 @@ module Vnet::Openflow::Connections
       }
     end
 
-    def self.match_ingress(message)
+    def match_ingress(message)
       {
         ip_proto: IPV4_PROTOCOL_TCP,
         tcp_src:  message.tcp_dst,

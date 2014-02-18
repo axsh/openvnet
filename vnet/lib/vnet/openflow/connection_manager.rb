@@ -44,10 +44,10 @@ module Vnet::Openflow
     def open_connection(message)
       flows = if message.tcp?
         log_new_connection("tcp", message)
-        Connections::TCP.open(message)
+        Connections::TCP.new.open(message)
       elsif message.udp?
         log_new_connection("udp", message)
-        Connections::UDP.open(message)
+        Connections::UDP.new.open(message)
       end
 
       @dp_info.add_flows(flows)
