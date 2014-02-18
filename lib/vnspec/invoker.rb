@@ -109,7 +109,7 @@ module Vnspec
       return false unless pid.to_i > 0
       begin
         Process.kill(0, pid)
-      rescue Errno::ESRCH
+      rescue Errno::ESRCH, Errno::EPERM
         return false
       end
       return true
