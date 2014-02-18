@@ -195,19 +195,19 @@ describe Vnet::Event::Notifications do
       end
 
       item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1, actual: true)
+      notifier.publish("item_created", id: 1)
       sleep 0.01
       item_manager.db_items.push({ id: 2, name: :bar })
-      notifier.publish("item_created", id: 2, actual: true)
+      notifier.publish("item_created", id: 2)
       sleep 0.01
       item_manager.db_items.push({ id: 3, name: :baz })
-      notifier.publish("item_created", id: 3, actual: true)
+      notifier.publish("item_created", id: 3)
       sleep 0.01
       item_manager.db_items.find{|i| i[:id] == 2}[:name] = :boo
-      notifier.publish("item_updated", id: 2, actual: true)
+      notifier.publish("item_updated", id: 2)
       sleep 0.01
       item_manager.db_items.delete_if{|i| i[:id] == 3}
-      notifier.publish("item_deleted", id: 3, actual: true)
+      notifier.publish("item_deleted", id: 3)
 
       t.exit
 
@@ -217,6 +217,32 @@ describe Vnet::Event::Notifications do
       expect(item_manager.items[1]).to eq({ id: 1, name: :foo })
       expect(item_manager.items[2]).to eq({ id: 2, name: :boo })
       expect(item_manager.executed_methods.size).to eq 5
+    end
+
+    it "enqueue event to a list identified by params[:id]", :focus => true do
+      manager_class.class_eval do
+        def fetch_queued_events(id)
+          "do nothing"
+        end
+      end
+
+      item_manager = manager_class.new
+
+      item_manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish("item_created", id: 1)
+      sleep 0.01
+      item_manager.db_items.push({ id: 2, name: :bar })
+      notifier.publish("item_created", id: 2)
+      sleep 0.01
+      item_manager.db_items.find{|i| i[:id] == 2}[:name] = :baz
+      notifier.publish("item_updated", id: 2)
+      sleep 0.01
+
+      event_queues = item_manager.instance_variable_get(:@event_queues)
+
+      expect(event_queues[1].size).to eq 1
+      expect(event_queues[2].size).to eq 2
+      expect(event_queues[:default]).to be_nil
     end
   end
 end
