@@ -27,9 +27,6 @@ module Vnet::NodeApi
         dispatch_event(REMOVED_INTERFACE_FROM_SG,
           id: group.id,
           interface_id: ifsecg.interface_id,
-          isolation_ip_addresses: group.ip_addresses,
-          interface_owner_datapath_id: interface.owner_datapath_id,
-          interface_active_datapath_id: interface.active_datapath_id,
           isolation_ip_addresses: group.ip_addresses
         )
       end

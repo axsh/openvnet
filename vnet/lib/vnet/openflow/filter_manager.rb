@@ -32,7 +32,7 @@ module Vnet::Openflow
       info log_format("Removing interface '%s' from security group '%s'" %
         [params[:interface_id], item.uuid])
 
-      unless is_remote?(params[:interface_owner_datapath_id], params[:interface_active_datapath_id])
+      if item.has_interface?(params[:interface_id])
         item.uninstall(params[:interface_id])
         item.remove_interface(params[:interface_id])
 

@@ -79,6 +79,10 @@ module Vnet::NodeApi
                                                mac_lease_id: mac_lease.id)
         end
 
+        interface.interface_security_groups.each do |isg|
+          InterfaceSecurityGroup.destroy(isg.id)
+        end
+
         nil
       end
     end
