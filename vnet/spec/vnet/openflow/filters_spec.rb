@@ -130,66 +130,6 @@ describe Vnet::Openflow::FilterManager do
     end
   end
 
-  #describe "#disabled_filtering" do
-  #  context "with the id of an interface in params" do
-  #    before(:each) do
-  #      subject.initialized_interface({item_map: wrapper(interface)})
-  #      subject.disabled_filtering({id: interface.id})
-  #    end
-
-  #    it "removes all security_group rules for the interface" do
-  #      expect(flows).not_to include rule_flow(
-  #        cookie: cookie_id(group),
-  #        match: match_icmp_rule("0.0.0.0/0")
-  #      )
-  #    end
-
-  #    it "creates a flow that accepts all ingress traffic on the interface" do
-  #      expect(flows).to include flow_create(:default,
-  #        table: TABLE_INTERFACE_INGRESS_FILTER,
-  #        priority: 90,
-  #        cookie: Vnet::Openflow::Filters::AcceptAllTraffic.cookie(interface.id),
-  #        match_metadata: { interface: interface.id },
-  #        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-  #      )
-  #    end
-  #  end
-  #end
-
-  #describe "#enabled_filtering" do
-  #  let(:interface) do
-  #    Fabricate(:filter_interface,
-  #      security_groups: [group],
-  #      enable_ingress_filtering: false
-  #    )
-  #  end
-
-  #  context "with the id of an interface in params" do
-  #    before(:each) do
-  #      subject.initialized_interface({item_map: wrapper(interface)})
-  #      subject.enabled_filtering({id: interface.id})
-  #    end
-
-  #    it "applies all security_group rules for the interface" do
-  #      expect(flows).to include rule_flow(
-  #        cookie: cookie_id(group),
-  #        match: match_icmp_rule("0.0.0.0/0")
-  #      )
-  #    end
-
-  #    it "removes the flow that accepts all ingress traffic on the interface" do
-  #      expect(flows).not_to include flow_create(:default,
-  #        table: TABLE_INTERFACE_INGRESS_FILTER,
-  #        priority: 90,
-  #        cookie: Vnet::Openflow::Filters::AcceptAllTraffic.cookie(interface.id),
-  #        match_metadata: { interface: interface.id },
-  #        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-  #      )
-  #    end
-
-  #  end
-  #end
-
   describe "#added_interface_to_sg" do
     before(:each) do
       subject.apply_filters wrapper(interface)
