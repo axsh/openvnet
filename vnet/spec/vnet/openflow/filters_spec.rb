@@ -90,11 +90,11 @@ describe Vnet::Openflow::FilterManager do
      end
   end
 
-  describe "#removed_interface" do
+  describe "#remove_filters" do
     before(:each) { subject.apply_filters wrapper(interface) }
 
     it "Removes filter related flows for a single interface" do
-      subject.removed_interface(interface.id)
+      subject.remove_filters(interface.id)
 
       expect(flows).not_to include rule_flow(
         cookie: cookie_id(group),

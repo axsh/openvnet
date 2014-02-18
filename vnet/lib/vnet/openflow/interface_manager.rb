@@ -189,7 +189,7 @@ module Vnet::Openflow
         @dp_info.translation_manager.async.update(event: :remove_interface,
                                                   interface_id: item.id)
 
-        @dp_info.filter_manager.async.removed_interface(item.id)
+        @dp_info.filter_manager.async.remove_filters(item.id)
 
         item.mac_addresses.each { |id, mac|
           @dp_info.connection_manager.async.remove_catch_new_egress(id)

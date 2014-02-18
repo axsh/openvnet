@@ -59,11 +59,6 @@ module Vnet::Openflow
     # The rest
     #
 
-    def removed_interface(interface_id)
-      accept_all_traffic(interface_id).uninstall
-      remove_filters(interface_id)
-    end
-
     def updated_isolation(item, ip_list)
       log_ips = ip_list.map { |i| IPAddress::IPv4.parse_u32(i).to_s }
       debug log_format("Updating isolation for security group '#{item.uuid}", log_ips)
