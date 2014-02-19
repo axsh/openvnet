@@ -260,8 +260,8 @@ module Vnet::Openflow
 
       item.remove_mac_address(mac_lease_id: params[:mac_lease_id])
 
-      @dp_info.connection_manager.async.remove_catch_new_egress(mac_lease.id)
-      @dp_info.connection_manager.async.close_connections(mac_lease.id)
+      @dp_info.connection_manager.async.remove_catch_new_egress(params[:mac_lease_id])
+      @dp_info.connection_manager.async.close_connections(params[:mac_lease_id])
     end
 
     def leased_ipv4_address(params)
