@@ -116,19 +116,6 @@ module Vnet::Openflow::Filters
       @dp_info.add_flows(flows)
     end
 
-    def uninstall_rules(interface_id = nil)
-      #TODO: Use a proper cookie mask instead
-      interface_ids = if interface_id
-        [interface_id]
-      else
-        @interfaces.keys
-      end
-
-      interface_ids.each do |id|
-        @dp_info.del_cookie cookie(COOKIE_TYPE_RULE, id)
-      end
-    end
-
     def install_isolation(interface_id = nil)
       interface_ids = if interface_id
         [interface_id]
@@ -152,17 +139,17 @@ module Vnet::Openflow::Filters
       @dp_info.add_flows(flows)
     end
 
-    def uninstall_isolation(interface_id = nil)
-      #TODO: Use a proper cookie mask instead
-      interface_ids = if interface_id
-        [interface_id]
-      else
-        @interfaces.keys
-      end
-
-      interface_ids.each do |id|
-        @dp_info.del_cookie cookie(COOKIE_TYPE_ISO, id)
-      end
+    { isolation: COOKIE_TYPE_ISO, rules: COOKIE_TYPE_RULE }.each do |name, cookie_type|
+      define_method("uninstall_#{name}") { |interface_id = nil|
+        if interface_id
+          @dp_info.del_cookie cookie(cookie_type, interface_id)
+        else
+          @dp_info.del_cookie(
+            COOKIE_TYPE_FILTER | cookie_type      | @id,
+            COOKIE_PREFIX_MASK | COOKIE_TYPE_MASK | COOKIE_ID_MASK
+          )
+        end
+      }
     end
   end
 
