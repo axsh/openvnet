@@ -306,7 +306,6 @@ module Vnet::Openflow
 
     def enabled_filtering(params)
       item = @items[params[:id]]
-      #TODO: Check if this item.mode can be trusted to be correct.
       return if !item || item.enable_ingress_filtering || item.mode == :remote
 
       info log_format("enabled filtering on interface", item.uuid)
@@ -322,7 +321,6 @@ module Vnet::Openflow
 
     def disabled_filtering(params)
       item = @items[params[:id]]
-      #TODO: Check if this item.mode can be trusted to be correct.
       return if !item || !item.enable_ingress_filtering || item.mode == :remote
 
       info log_format("disabled filtering on interface", item.uuid)

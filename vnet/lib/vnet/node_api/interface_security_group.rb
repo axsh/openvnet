@@ -8,7 +8,6 @@ module Vnet::NodeApi
         group = ifsecg.security_group
         interface = ifsecg.interface
 
-        #TODO: Only dispatch this event if this interface has filtering enabled
         dispatch_event(ADDED_INTERFACE_TO_SG,
           id: group.id,
           interface_id: ifsecg.interface_id,
@@ -22,7 +21,6 @@ module Vnet::NodeApi
       def destroy(id)
         ifsecg = super(id)
         group = ifsecg.security_group
-        interface = ifsecg.interface
 
         dispatch_event(REMOVED_INTERFACE_FROM_SG,
           id: group.id,
