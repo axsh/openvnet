@@ -47,7 +47,7 @@ describe Vnet::Openflow::ServiceManager do
       it "should create a network service with a dns service" do
         service_manager.publish(Vnet::Event::ADDED_SERVICE, id: 1)
 
-        sleep(0.7)
+        sleep(1)
 
         service_manager.send(:internal_detect, id: network_service.id).tap do |item|
           expect(item.dns_service[:public_dns]).to eq "8.8.8.8,8.8.4.4"
