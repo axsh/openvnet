@@ -66,6 +66,10 @@ module Vnet::Openflow::Tunnels
       @datapath_networks.empty?
     end
 
+    def has_network_id?(network_id)
+      @datapath_networks.any? { |dpn| dpn[:network_id] == network_id }
+    end
+
     #
     # Specialization:
     #
@@ -85,6 +89,9 @@ module Vnet::Openflow::Tunnels
     end
 
     def delete_tunnel
+    end
+
+    def actions_append_flood(tunnel_actions, mac2mac_actions)
     end
 
     #

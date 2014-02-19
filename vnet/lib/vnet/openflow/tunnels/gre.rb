@@ -80,6 +80,12 @@ module Vnet::Openflow::Tunnels
       # @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
+    def actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
+      return if @port_number.nil? || !has_network_id?(network_id)
+      
+      tunnel_actions << { :output => @port_number }
+    end
+
     #
     # Internal methods:
     #

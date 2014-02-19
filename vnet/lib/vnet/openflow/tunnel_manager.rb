@@ -220,28 +220,20 @@ module Vnet::Openflow
       }
     end
 
-    # Move this into GRE...
     def update_network_id(network_id)
-      actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
+      tunnel_actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
 
-      @items.select { |item_id, item|
-        next false if item.port_number.nil?
-
-        item.datapath_networks.any? { |dpn| dpn[:network_id] == network_id }
-
-      }.each { |item_id, item|
-        actions << {:output => item.port_number}
+      @items.each { |item_id, item|
+        item.actions_append_flood(network_id, tunnel_actions, nil)
       }
-
-      cookie = network_id | COOKIE_TYPE_NETWORK
 
       flows = []
       flows << flow_create(:default,
                            table: TABLE_FLOOD_TUNNELS,
                            priority: 1,
                            match_network: network_id,
-                           actions: actions,
-                           cookie: cookie)
+                           actions: tunnel_actions,
+                           cookie: network_id | COOKIE_TYPE_NETWORK)
 
       @dp_info.add_flows(flows)
     end
