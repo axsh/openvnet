@@ -16,8 +16,8 @@ module Vnet::Openflow
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
-    subscribe_event ENABLED_FILTERING, :enabled_filtering
-    subscribe_event DISABLED_FILTERING, :disabled_filtering
+    subscribe_event ENABLED_INTERFACE_FILTERING, :enabled_filtering
+    subscribe_event DISABLED_INTERFACE_FILTERING, :disabled_filtering
 
     def update_item(params)
       case params[:event]
