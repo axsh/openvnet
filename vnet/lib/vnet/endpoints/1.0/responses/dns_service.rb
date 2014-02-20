@@ -10,10 +10,7 @@ module Vnet::Endpoints::V10::Responses
 
     def self.dns_records(model)
       argument_type_check(model, Vnet::ModelWrappers::DnsService)
-      {
-        :uuid => model.uuid,
-        :dns_records => DnsRecordCollection.generate(model.batch.dns_records.commit)
-      }
+      DnsRecordCollection.generate(model.batch.dns_records.commit)
     end
   end
 

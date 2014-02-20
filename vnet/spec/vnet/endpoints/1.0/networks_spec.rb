@@ -92,7 +92,7 @@ describe "/networks" do
       context "with all accepted parameters" do
         it "should create a new dhcp range" do
           expect(last_response).to succeed
-          expect(JSON.parse(last_response.body)["dhcp_ranges"].size).to eq 1
+          expect(JSON.parse(last_response.body).size).to eq 1
         end
       end
 
@@ -107,6 +107,16 @@ describe "/networks" do
         [:range_begin, :range_end]
 
     end
+  end
+
+  describe "One to many relation calls for dhcp_ranges" do
+    let(:relation_fabricator) { :dhcp_range }
+
+    include_examples "one_to_many_relation", "dhcp_ranges", {
+      :uuid => "dr-newrange",
+      :range_begin => "192.168.2.2",
+      :range_end => "192.168.2.100"
+    }
   end
 
 end

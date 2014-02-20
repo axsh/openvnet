@@ -31,12 +31,7 @@ module Vnet::Endpoints::V10::Responses
 
     def self.security_groups(interface)
       argument_type_check(interface, Vnet::ModelWrappers::Interface)
-      {
-        :uuid => interface.uuid,
-        :security_groups => SecurityGroupCollection.generate(
-          interface.batch.security_groups.commit
-        )
-      }
+      SecurityGroupCollection.generate(interface.batch.security_groups.commit)
     end
   end
 

@@ -74,6 +74,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
 
     range.batch.destroy.commit
 
-    respond_with R::Network.dhcp_ranges(network)
+    respond_with([range.uuid])
   end
 end

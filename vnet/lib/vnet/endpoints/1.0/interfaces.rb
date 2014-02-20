@@ -83,6 +83,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
       :security_group_id => security_group.id).all.commit
 
     relations.each { |r| r.batch.destroy.commit }
-    respond_with(R::Interface.security_groups(interface))
+    respond_with([security_group.uuid])
   end
 end

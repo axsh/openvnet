@@ -10,22 +10,12 @@ module Vnet::Endpoints::V10::Responses
 
     def self.networks(datapath)
       argument_type_check(datapath,Vnet::ModelWrappers::Datapath)
-      {
-        :uuid => datapath.uuid,
-        :networks => DatapathNetworkCollection.generate(
-          datapath.batch.datapath_networks.commit
-        )
-      }
+      DatapathNetworkCollection.generate(datapath.batch.datapath_networks.commit)
     end
 
     def self.route_links(datapath)
       argument_type_check(datapath,Vnet::ModelWrappers::Datapath)
-      {
-        :uuid => datapath.uuid,
-        :route_links => DatapathRouteLinkCollection.generate(
-          datapath.batch.datapath_route_links.commit
-        )
-      }
+      DatapathRouteLinkCollection.generate(datapath.batch.datapath_route_links.commit)
     end
   end
 
