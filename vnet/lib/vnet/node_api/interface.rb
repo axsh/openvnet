@@ -49,7 +49,7 @@ module Vnet::NodeApi
                          changed_columns: options)
 
 
-          case options[:enable_ingress_filtering]
+          case options[:ingress_filtering_enabled]
           when "true"
             dispatch_event(ENABLED_INTERFACE_FILTERING, id: interface.id)
           when "false"

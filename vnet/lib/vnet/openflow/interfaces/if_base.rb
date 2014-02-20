@@ -7,7 +7,7 @@ module Vnet::Openflow::Interfaces
   class IfBase < Base
 
     def enable_filtering
-      @enable_ingress_filtering = true
+      @ingress_filtering_enabled = true
       @dp_info.filter_manager.async.apply_filters(@id)
       del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
 
@@ -17,7 +17,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def disable_filtering
-      @enable_ingress_filtering = false
+      @ingress_filtering_enabled = false
       @dp_info.add_flows flows_for_disabled_filtering
       @dp_info.filter_manager.async.remove_filters(@id)
 

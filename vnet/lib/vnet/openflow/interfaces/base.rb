@@ -34,7 +34,7 @@ module Vnet::Openflow::Interfaces
     attr_accessor :owner_datapath_ids
     attr_accessor :display_name
 
-    attr_accessor :enable_ingress_filtering
+    attr_accessor :ingress_filtering_enabled
 
     attr_reader :port_number
     attr_reader :mac_addresses
@@ -56,7 +56,7 @@ module Vnet::Openflow::Interfaces
 
       @enable_routing = map.enable_routing
       @enable_route_translation = map.enable_route_translation
-      @enable_ingress_filtering = map.enable_ingress_filtering
+      @ingress_filtering_enabled = map.ingress_filtering_enabled
 
       # The 'owner_datapath_ids' set has two possible states; the set
       # can contain zero or more datapaths that can activate this

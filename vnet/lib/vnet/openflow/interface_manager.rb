@@ -159,7 +159,7 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :install_interface,
                                                   interface_id: item.id)
-        item.enable_ingress_filtering &&
+        item.ingress_filtering_enabled &&
           @dp_info.filter_manager.async.apply_filters(item_map)
       end
 
@@ -243,7 +243,7 @@ module Vnet::Openflow
                            mac_address: mac_address,
                            cookie_id: mac_lease.cookie_id)
 
-      item.enable_ingress_filtering &&
+      item.ingress_filtering_enabled &&
         @dp_info.connection_manager.async.catch_new_egress(mac_lease.id, mac_address)
     end
 
@@ -303,7 +303,7 @@ module Vnet::Openflow
 
     def enabled_filtering(params)
       item = @items[params[:id]]
-      return if !item || item.enable_ingress_filtering
+      return if !item || item.ingress_filtering_enabled
 
       info log_format("enabled filtering on interface", item.uuid)
       item.enable_filtering
@@ -311,7 +311,7 @@ module Vnet::Openflow
 
     def disabled_filtering(params)
       item = @items[params[:id]]
-      return if !item || !item.enable_ingress_filtering
+      return if !item || !item.ingress_filtering_enabled
 
       info log_format("disabled filtering on interface", item.uuid)
       item.disable_filtering
