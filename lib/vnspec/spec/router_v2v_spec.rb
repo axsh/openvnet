@@ -2,17 +2,6 @@
 require_relative "spec_helper"
 
 describe "router_v2v" do
-  before(:all) do
-    # add routes
-    [vm1, vm3, vm5].each do |vm|
-      vm.ssh_on_guest("ip route add default via 10.101.0.1")
-    end
-
-    [vm2, vm4, vm6].each do |vm|
-      vm.ssh_on_guest("ip route add default via 10.102.0.1")
-    end
-  end
-
   describe "vnet1" do
     context "mac2mac" do
       it "reachable to vnet1" do

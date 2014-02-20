@@ -2,21 +2,6 @@
 require_relative "spec_helper"
 
 describe "router_p2v" do
-  before(:all) do
-    # add routes
-    [vm1, vm3].each do |vm|
-      vm.ssh_on_guest("ip route add default via #{config[:dataset_options][:public_router_ipv4_address]}")
-    end
-
-    [vm5].each do |vm|
-      vm5.ssh_on_guest("ip route add default via 10.101.0.1")
-    end
-
-    [vm2, vm4, vm6].each do |vm|
-      vm.ssh_on_guest("ip route add default via 10.102.0.1")
-    end
-  end
-
   describe "pnet" do
     context "mac2mac" do
       it "reachable to pnet" do
