@@ -33,7 +33,8 @@ module Vnspec
 
     def run(name = :all)
       if name.to_sym == :all
-        statuses = config[:specs].map do |name|
+        specs = config[:specs] + config[:specs_ext]
+        statuses = specs.map do |name|
           [name, run(name)]
         end
 
@@ -109,7 +110,7 @@ module Vnspec
       return false unless pid.to_i > 0
       begin
         Process.kill(0, pid)
-      rescue Errno::ESRCH
+      rescue Errno::ESRCH, Errno::EPERM
         return false
       end
       return true
