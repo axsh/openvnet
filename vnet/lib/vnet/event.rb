@@ -11,6 +11,8 @@ module Vnet
     REMOVED_INTERFACE = "removed_interface"
     INITIALIZED_INTERFACE = "initialized_interface"
     UPDATED_INTERFACE = "updated_interface"
+    ENABLED_INTERFACE_FILTERING = "enabled_interface_filtering"
+    DISABLED_INTERFACE_FILTERING = "disabled_interface_filtering"
 
     # ipv4 address
     LEASED_IPV4_ADDRESS = "leased_ipv4_address"
@@ -84,8 +86,6 @@ module Vnet
     # filter event
     #
     INITIALIZED_FILTER = "initialized_filter"
-    ENABLED_FILTERING = "enabled_filtering"
-    DISABLED_FILTERING = "disabled_filtering"
     UPDATED_SG_RULES = "updated_rules"
     UPDATED_SG_ISOLATION = "updated_isolation"
     ADDED_INTERFACE_TO_SG = "added_interface_to_sg"

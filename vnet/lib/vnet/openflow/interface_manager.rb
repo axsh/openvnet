@@ -16,8 +16,8 @@ module Vnet::Openflow
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
-    subscribe_event ENABLED_FILTERING, :enabled_filtering
-    subscribe_event DISABLED_FILTERING, :disabled_filtering
+    subscribe_event ENABLED_INTERFACE_FILTERING, :enabled_filtering
+    subscribe_event DISABLED_INTERFACE_FILTERING, :disabled_filtering
 
     def update_item(params)
       case params[:event]
@@ -159,11 +159,8 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :install_interface,
                                                   interface_id: item.id)
-        if item.enable_ingress_filtering
+        item.ingress_filtering_enabled &&
           @dp_info.filter_manager.async.apply_filters(item_map)
-        else
-          @dp_info.filter_manager.async.accept_all_traffic(item.id)
-        end
       end
 
       item # Return nil if interface has been uninstalled.
@@ -246,7 +243,7 @@ module Vnet::Openflow
                            mac_address: mac_address,
                            cookie_id: mac_lease.cookie_id)
 
-      item.enable_ingress_filtering &&
+      item.ingress_filtering_enabled &&
         @dp_info.connection_manager.async.catch_new_egress(mac_lease.id, mac_address)
     end
 
@@ -306,36 +303,18 @@ module Vnet::Openflow
 
     def enabled_filtering(params)
       item = @items[params[:id]]
-      return if !item || item.enable_ingress_filtering || item.mode == :remote
+      return if !item || item.ingress_filtering_enabled
 
       info log_format("enabled filtering on interface", item.uuid)
-
-      item.enable_ingress_filtering = true
-      @dp_info.filter_manager.async.apply_filters(item.id)
-      @dp_info.filter_manager.async.filter_traffic(item.id)
-
-      item.mac_addresses.each { |id, mac|
-        @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
-      }
+      item.enable_filtering
     end
 
     def disabled_filtering(params)
       item = @items[params[:id]]
-      return if !item || !item.enable_ingress_filtering || item.mode == :remote
+      return if !item || !item.ingress_filtering_enabled
 
       info log_format("disabled filtering on interface", item.uuid)
-
-      item.enable_ingress_filtering = false
-      @dp_info.filter_manager.async.accept_all_traffic(item.id)
-      @dp_info.filter_manager.async.remove_filters(item.id)
-
-      item.mac_addresses.each { |id, mac_address|
-        @dp_info.connection_manager.async.remove_catch_new_egress(id)
-        # We remove the connection catch flows but we don't close the connections
-        # that are still open. That's because we need those in place in case
-        # this gets executed before filter manager's remove_filters.
-        # We just allow the open connections to expire naturally.
-      }
+      item.disable_filtering
     end
 
     def update_item_exclusively(params)

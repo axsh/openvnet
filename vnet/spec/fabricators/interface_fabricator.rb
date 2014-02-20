@@ -14,7 +14,7 @@ Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
   id { sequence(:interface_ids, 1) }
 
   owner_datapath_id 1
-  enable_ingress_filtering true
+  ingress_filtering_enabled true
 
   ip_leases do |attrs|
     [

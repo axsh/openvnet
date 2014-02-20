@@ -107,14 +107,6 @@ module Vnet::Openflow
       }
     end
 
-    def accept_all_traffic(interface_id)
-      Filters::AcceptAllTraffic.new(interface_id, @dp_info).install
-    end
-
-    def filter_traffic(interface_id)
-      Filters::AcceptAllTraffic.new(interface_id, @dp_info).uninstall
-    end
-
     private
     def select_item(filter)
       MW::SecurityGroup.batch[filter].commit(fill: :ip_addresses)
