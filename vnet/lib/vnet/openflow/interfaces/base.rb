@@ -24,6 +24,7 @@ module Vnet::Openflow::Interfaces
     TAG_ARP_LOOKUP            = 0x4
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
+    TAG_DISABLED_FILTERING    = 0x7
 
     attr_accessor :id
     attr_accessor :uuid
@@ -286,6 +287,16 @@ module Vnet::Openflow::Interfaces
     # end
 
     #
+    # Filtering methods:
+    #
+
+    def enabled_filtering
+    end
+
+    def disabled_filtering
+    end
+
+    #
     # Internal methods:
     #
 
@@ -301,6 +312,9 @@ module Vnet::Openflow::Interfaces
     # those flows will never be touched.
 
     def flows_for_datapath(flows)
+    end
+
+    def flows_for_disabled_filtering(flows)
     end
 
     def flows_for_interface_mac(flows, mac_info)

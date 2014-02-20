@@ -159,11 +159,8 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :install_interface,
                                                   interface_id: item.id)
-        if item.enable_ingress_filtering
+        item.enable_ingress_filtering &&
           @dp_info.filter_manager.async.apply_filters(item_map)
-        else
-          @dp_info.filter_manager.async.accept_all_traffic(item.id)
-        end
       end
 
       item # Return nil if interface has been uninstalled.
@@ -306,36 +303,18 @@ module Vnet::Openflow
 
     def enabled_filtering(params)
       item = @items[params[:id]]
-      return if !item || item.enable_ingress_filtering || item.mode == :remote
+      return if !item || item.enable_ingress_filtering
 
       info log_format("enabled filtering on interface", item.uuid)
-
-      item.enable_ingress_filtering = true
-      @dp_info.filter_manager.async.apply_filters(item.id)
-      @dp_info.filter_manager.async.filter_traffic(item.id)
-
-      item.mac_addresses.each { |id, mac|
-        @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
-      }
+      item.enable_filtering
     end
 
     def disabled_filtering(params)
       item = @items[params[:id]]
-      return if !item || !item.enable_ingress_filtering || item.mode == :remote
+      return if !item || !item.enable_ingress_filtering
 
       info log_format("disabled filtering on interface", item.uuid)
-
-      item.enable_ingress_filtering = false
-      @dp_info.filter_manager.async.accept_all_traffic(item.id)
-      @dp_info.filter_manager.async.remove_filters(item.id)
-
-      item.mac_addresses.each { |id, mac_address|
-        @dp_info.connection_manager.async.remove_catch_new_egress(id)
-        # We remove the connection catch flows but we don't close the connections
-        # that are still open. That's because we need those in place in case
-        # this gets executed before filter manager's remove_filters.
-        # We just allow the open connections to expire naturally.
-      }
+      item.disable_filtering
     end
 
     def update_item_exclusively(params)

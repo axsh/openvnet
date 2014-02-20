@@ -58,6 +58,7 @@ module Vnet::Openflow::Interfaces
 
     def install
       flows = []
+      flows_for_disabled_filtering(flows) unless @enable_ingress_filtering
       flows_for_base(flows)
 
       @dp_info.add_flows(flows)
