@@ -157,6 +157,7 @@ module Vnet
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'
+    autoload :InterfaceSecurityGroup, 'vnet/node_api/interface_security_group'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :MacAddress, 'vnet/node_api/models.rb'
@@ -165,7 +166,7 @@ module Vnet
     autoload :NetworkService, 'vnet/node_api/network_service.rb'
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
-    autoload :SecurityGroup, 'vnet/node_api/models.rb'
+    autoload :SecurityGroup, 'vnet/node_api/security_group'
     autoload :Translation, 'vnet/node_api/models.rb'
     autoload :TranslateStaticAddress, 'vnet/node_api/models.rb'
     autoload :Tunnel, 'vnet/node_api/models.rb'
@@ -266,10 +267,6 @@ module Vnet
       autoload :Base, 'vnet/openflow/filters/base'
       autoload :Cookies, 'vnet/openflow/filters/cookies'
       autoload :SecurityGroup, 'vnet/openflow/filters/security_group'
-      autoload :Rule, 'vnet/openflow/filters/rules'
-      autoload :ICMP, 'vnet/openflow/filters/rules'
-      autoload :TCP, 'vnet/openflow/filters/rules'
-      autoload :UDP, 'vnet/openflow/filters/rules'
     end
 
     module Services

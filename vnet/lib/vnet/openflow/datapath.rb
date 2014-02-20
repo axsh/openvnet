@@ -24,6 +24,11 @@ module Vnet::Openflow
       @ipv4_address = IPAddr.new(datapath_map.ipv4_address, Socket::AF_INET)
     end
 
+    def is_remote?(owner_datapath_id, active_datapath_id = nil)
+      (owner_datapath_id && owner_datapath_id != @id) ||
+      (active_datapath_id && active_datapath_id != @id)
+    end
+
   end
 
   # OpenFlow datapath allows us to send OF messages and ovs-ofctl

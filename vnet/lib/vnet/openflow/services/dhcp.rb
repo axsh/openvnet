@@ -43,6 +43,9 @@ module Vnet::Openflow::Services
       mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
       return if network.nil?
 
+      netid_to_routes = @dp_info.route_manager.select(network_id: network[:id], ingress: true)
+      static_routes = find_static_routes(netid_to_routes.uniq { |r| r[:route_link_id] })
+
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
       return if client_info.nil?
 
@@ -53,6 +56,7 @@ module Vnet::Openflow::Services
         :ipv4_address => ipv4_info[:ipv4_address],
         :ipv4_network => network[:ipv4_network],
         :ipv4_prefix => network[:ipv4_prefix],
+        :routes_info => static_routes
       }
 
       case message_type[0].payload[0]
@@ -131,6 +135,51 @@ module Vnet::Openflow::Services
       "#{@dp_info.dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def find_static_routes(near_routes)
+      # Overview: (near)vnetroute(s).route_link -> (far)vnetroute(s)
+      static_routes = []
+      near_routes.each do |rnear|
+        router_ip_octets = nil
+        far_routes = @dp_info.route_manager.select(route_link_id: rnear[:route_link_id],
+                                                        egress: true,
+                                                        not_network_id: rnear[:network_id])
+        far_routes.each do |rfar|
+          # get router/gateway target from near router's interface
+          break unless router_ip_octets ||= get_router_octets(rnear)
+          # get subnet to route from far router
+          static_routes << [ ipaddr_to_octets(rfar[:ipv4_address]),
+                             rfar[:ipv4_prefix],
+                             router_ip_octets ]
+        end
+      end
+      static_routes
+    end
+
+    def get_router_octets(arouter)
+      near_interface = @dp_info.interface_manager.retrieve(id: arouter[:interface_id])
+      ipv4_infos = near_interface.get_ipv4_infos(network_id: arouter[:network_id]).first
+      ipaddr_to_octets(ipv4_infos[1][:ipv4_address])
+    end
+    
+    def ipaddr_to_octets(ip)
+      i = ip.to_i
+      [ (i >> 24) % 256, (i >> 16) % 256, (i >> 8) % 256, i % 256 ]
+    end
+
+    def find_client_infos(port_number, server_mac_info, server_ipv4_info)
+      interface = @dp_info.interface_manager.item(port_number: port_number)
+      return [] if interface.nil?
+
+      client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
+      
+      # info log_format("find_client_info", "#{interface.inspect}")
+      # info log_format("find_client_info", "server_mac_info:#{server_mac_info.inspect}")
+      # info log_format("find_client_info", "server_ipv4_info:#{server_ipv4_info.inspect}")
+      # info log_format("find_client_info", "client_infos:#{client_infos.inspect}")
+
+      client_infos
+    end
+
     def parse_dhcp_packet(message)
       if !message.udp?
         debug log_format('DHCP: Message is not UDP')
@@ -162,6 +211,19 @@ module Vnet::Openflow::Services
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])
       dhcp_out.options << DHCP::BroadcastAddressOption.new(:payload => (params[:ipv4_network] | ~subnet_mask).hton.unpack('C*'))
 
+      # http://tools.ietf.org/html/rfc3442  (option 121)
+      if !params[:routes_info].empty?
+        payload = params[:routes_info].collect_concat do |g|
+          dst_ip, dst_pre, router_ip = g
+          # keep only unmasked ints, following rfc3442
+          keep = (dst_pre + 7 ) / 8
+          [ dst_pre ] + dst_ip.first(keep) + router_ip
+        end
+        # TODO: subclass DHCP::Option and 121 constant, mainly so that
+        # the to_s will give better debugging output
+        dhcp_out.options << DHCP::Option.new(:type => 121, :payload => payload)
+      end
+
       # if nw_services[:gateway]
       #   dhcp_out.options << DHCP::RouterOption.new(:payload => nw_services[:gateway].ip.to_short)
       # end
@@ -173,11 +235,13 @@ module Vnet::Openflow::Services
       #   dhcp_out.options << DHCP::DomainNameServerOption.new(:payload => nw_services[:dns].ip.to_short) if nw_services[:dns].ip
       # end
 
+      # TODO, check packet size does not exceed any known limits
       dhcp_out.options << DHCP::DomainNameServerOption.new.tap do |option|
         option.payload = (params[:dns_server] || "127.0.0.1").split(/[.,]/).map(&:to_i)
       end
 
       dhcp_out
+
     end
 
   end

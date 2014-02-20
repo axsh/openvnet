@@ -16,12 +16,12 @@ module Vnet::Openflow::Connections
       super {}
     end
 
-    def self.cookie(interface_id)
-      COOKIE_TYPE_CONNECTION | CM::COOKIE_TAG_INGRESS_CONNECTION | interface_id
+    def self.cookie(mac_lease_id)
+      COOKIE_TYPE_CONNECTION | CM::COOKIE_TAG_INGRESS_CONNECTION | mac_lease_id
     end
 
-    def cookie(interface_id)
-      self.class.cookie(interface_id)
+    def cookie(mac_lease_id)
+      self.class.cookie(mac_lease_id)
     end
 
     def open(message)

@@ -5,12 +5,44 @@ module Vnet::Openflow::Interfaces
   # Base class for regular interfaces.
 
   class IfBase < Base
-    
+
+    def enable_filtering
+      @ingress_filtering_enabled = true
+      @dp_info.filter_manager.async.apply_filters(@id)
+      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
+
+      @mac_addresses.each { |id, mac|
+        @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
+      }
+    end
+
+    def disable_filtering
+      @ingress_filtering_enabled = false
+      @dp_info.add_flows flows_for_disabled_filtering
+      @dp_info.filter_manager.async.remove_filters(@id)
+
+      @mac_addresses.each { |id, mac_address|
+        @dp_info.connection_manager.async.remove_catch_new_egress(id)
+        # We remove the connection catch flows but we don't close the connections
+        # that are still open. We just allow the open connections to expire naturally.
+      }
+    end
+
     #
     # Internal methods:
     #
 
     private
+
+    def flows_for_disabled_filtering(flows = [])
+      flows << flow_create(:default,
+        table: TABLE_INTERFACE_INGRESS_FILTER,
+        priority: 90,
+        match_interface: @id,
+        cookie: cookie_for_tag(TAG_DISABLED_FILTERING),
+        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+      )
+    end
 
     def flows_for_interface_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
@@ -220,7 +252,7 @@ module Vnet::Openflow::Interfaces
                            clear_all: true,
                            write_reflection: true,
                            write_interface: @id,
-                           
+
                            cookie: cookie)
 
       flows << flow_create(:default,
@@ -234,7 +266,7 @@ module Vnet::Openflow::Interfaces
                            match_interface: @id,
                            write_network: ipv4_info[:network_id],
                            cookie: cookie)
-    end    
+    end
 
     def flows_for_route_translation(flows)
       [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS],
