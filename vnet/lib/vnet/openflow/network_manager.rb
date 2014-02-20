@@ -143,6 +143,9 @@ module Vnet::Openflow
       network.install
       network.update_flows
 
+      @dp_info.datapath_manager.async.update(event: :activate_network,
+                                             network_id: network.id)
+
       item_map.network_services.each { |service_map|
         @dp_info.service_manager.async.item(id: service_map.id)
       }
@@ -169,6 +172,9 @@ module Vnet::Openflow
       @items.delete(item.id)
 
       item.uninstall
+
+      @dp_info.datapath_manager.async.update(event: :deactivate_network,
+                                             network_id: item.id)
 
       dispatch_event("network/deleted",
                      id: item.id,

@@ -44,6 +44,16 @@ module Vnet::Openflow::Datapaths
       !!@active_networks.empty?
     end
 
+    def has_active_network?(network_id)
+      !!@active_networks.detect { |id, active_network|
+        active_network[:network_id] == network_id
+      }
+    end
+
+    #
+    # Events:
+    #
+
     def install
     end
 
@@ -69,6 +79,8 @@ module Vnet::Openflow::Datapaths
         network_id: dpn_map.network_id,
         mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address), # remove
         broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
+
+        active: false
       }
 
       @active_networks[dpn_map.network_id] = active_network
@@ -81,7 +93,7 @@ module Vnet::Openflow::Datapaths
 
       @dp_info.add_flows(flows)
 
-      after_add_active_network(active_network)
+      # after_add_active_network(active_network)
 
       debug log_format("adding to #{@uuid}/#{id} active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
 
@@ -94,7 +106,7 @@ module Vnet::Openflow::Datapaths
 
       @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
 
-      after_remove_active_network(active_network)
+      # after_remove_active_network(active_network)
 
       debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
 

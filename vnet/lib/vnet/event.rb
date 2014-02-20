@@ -24,22 +24,24 @@ module Vnet
     REMOVED_ACTIVE_DATAPATH = "removed_active_datapath"
 
     #
-    # datapath event
+    # Datapath events:
     #
-    ADDED_DATAPATH = "added_datapath"
-    REMOVED_DATAPATH = "removed_datapath"
-    INITIALIZED_DATAPATH = "initialized_datapath"
+    ADDED_DATAPATH = 'added_datapath'
+    REMOVED_DATAPATH = 'removed_datapath'
+    INITIALIZED_DATAPATH = 'initialized_datapath'
+
+    ACTIVATE_NETWORK_ON_HOST = 'activate_network_on_host'
+    DEACTIVATE_NETWORK_ON_HOST = 'deactivate_network_on_host'
+
+    ADDED_DATAPATH_NETWORK = 'added_datapath_network'
+    REMOVED_DATAPATH_NETWORK = 'removed_datapath_network'
+    ACTIVATE_DATAPATH_NETWORK = 'activate_datapath_network'
+    DEACTIVATE_DATAPATH_NETWORK = 'deactivate_datapath_network'
 
     #
     # network event
     #
     INITIALIZED_NETWORK = "initialized_network"
-
-    #
-    # datapath_network event
-    #
-    ADDED_DATAPATH_NETWORK = "added_datapath_network"
-    REMOVED_DATAPATH_NETWORK = "removed_datapath_network"
 
     #
     # route event

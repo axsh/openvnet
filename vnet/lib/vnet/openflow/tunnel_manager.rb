@@ -67,13 +67,6 @@ module Vnet::Openflow
       end
     end
 
-    # TODO: Add a way to enable/disable networks:
-    def prepare_network(dpn_id)
-      # datapath_network = create_datapath_network(dpn_id)
-      # return unless datapath_network
-      # @host_datapath_networks[datapath_network[:network_id]] = datapath_network
-    end
-
     def remove_network(network_id)
       # @host_datapath_networks.delete(network_id)
       # TODO

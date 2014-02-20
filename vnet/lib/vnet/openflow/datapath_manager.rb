@@ -11,11 +11,30 @@ module Vnet::Openflow
     subscribe_event REMOVED_DATAPATH, :unload
     subscribe_event INITIALIZED_DATAPATH, :install_item
 
-    subscribe_event ADDED_DATAPATH_NETWORK, :add_datapath_network
-    subscribe_event REMOVED_DATAPATH_NETWORK, :remove_datapath_network
+    # add activate_datapath_network_on_host?..
+    subscribe_event ACTIVATE_NETWORK_ON_HOST, :activate_network
+    subscribe_event DEACTIVATE_NETWORK_ON_HOST, :deactivate_network
 
-    def update_item(params)
+    subscribe_event ADDED_DATAPATH_NETWORK, :added_datapath_network
+    subscribe_event REMOVED_DATAPATH_NETWORK, :removed_datapath_network
+    subscribe_event ACTIVATE_DATAPATH_NETWORK, :activate_datapath_network
+    subscribe_event DEACTIVATE_DATAPATH_NETWORK, :deactivate_datapath_network
+
+    def initialize(*args)
+      super
+      @active_networks = {}
+    end
+
+    def update(params)
       case params[:event]
+      when :activate_network
+        publish(ACTIVATE_NETWORK_ON_HOST,
+                id: :network,
+                network_id: params[:network_id])
+      when :deactivate_network
+        publish(DEACTIVATE_NETWORK_ON_HOST,
+                id: :network,
+                network_id: params[:network_id])
       when :activate_route_link
         activate_route_link(params)
       when :deactivate_route_link
@@ -53,7 +72,7 @@ module Vnet::Openflow
     def select_item(filter)
       # Using fill for ip_leases/ip_addresses isn't going to give us a
       # proper event barrier.
-      MW::Datapath.batch[filter].commit(fill: [:datapath_networks, :host_interfaces])
+      MW::Datapath.batch[filter].commit(fill: [:datapath_networks, :host_interfaces]) # REMOVE BOTH...
     end
 
     def item_initialize(item_map, params)
@@ -84,10 +103,8 @@ module Vnet::Openflow
 
       debug log_format("install #{item.uuid}/#{item.id}")
 
-      if item.host?
-        item_map.datapath_networks.each do |dpn_map|
-          publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
-        end
+      item_map.datapath_networks.each do |dpn_map|
+        publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
       end
 
       item
@@ -112,52 +129,117 @@ module Vnet::Openflow
       debug log_format("deleting datapath: #{item.uuid}/#{item.id}")
 
       item.uninstall
+
+      # Remember to remove dpn's...
+
       item
     end
 
     #
-    # Events:
+    # Network events:
     #
 
-    def add_datapath_network(params)
-      dpn_map = params[:dpn_map] || MW::DatapathNetwork.find(id: params[:datapath_network_id])
-      return unless dpn_map
+    # ACTIVATE_NETWORK_ON_HOST on queue ':network'
+    def activate_network(params)
+      network_id = params[:network_id] || return
+      return if @active_networks.has_key? network_id
 
-      activate_network(dpn_map)
+      @active_networks[network_id] = {
+      }
 
-      # need to be propagated if it is newly added network
-      if dpn_map.datapath_id == @datapath_info.id
-        dpn_map.batch.datapath_networks_in_the_same_network.commit.each do |peer_dpn_map|
-          publish(ADDED_DATAPATH_NETWORK, id: peer_dpn_map.datapath_id, dpn_map: peer_dpn_map)
-        end
+      @items.select { |id, item|
+        item.has_active_network?(network_id)
+      }.each { |id, item|
+        publish(ACTIVATE_DATAPATH_NETWORK, id: item.id, network_id: network_id)
+      }
+
+      load_datapath_networks(network_id)
+    end
+
+    # DEACTIVATE_NETWORK_ON_HOST on queue ':network'
+    def deactivate_network(params)
+    end
+
+    def added_datapath_network(params)
+      item_id = params[:id] || return
+      item = @items[item_id]
+
+      if item.nil?
+        return item_by_params(id: item_id)
+      end
+
+      dpn_map = params[:dpn_map] || return
+      network_id = dpn_map.network_id || return
+
+      item.add_active_network(dpn_map)
+      item.activate_network_id(network_id) if @active_networks[network_id]
+    end
+
+    def remove_datapath_network(params)
+      # item = item_by_params(id: dpn_map.datapath_id) || return
+
+      # item = @item[params[:id]] || return
+      # dpn_map = params[:dpn_map] || return
+
+      # item.remove_active_network(dpn_map.network_id)
+      # item.deactivate_network(network_id) unless @active_networks[network_id]
+
+      # if !item.host? && item.unused?
+      #   publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
+      # end
+    end
+
+    def activate_datapath_network(params)
+      item = @items[params[:id]] || return
+      network_id = params[:network_id] || return
+      network = @active_networks[network_id]
+
+      item.activate_network_id(network_id) if network
+    end
+
+    def deactivate_datapath_network(params)
+      item = @items[params[:id]] || return
+      network_id = params[:network_id] || return
+      network = @active_networks[network_id]
+
+      item.deactivate_network_id(network_id) unless network
+
+      if !item.host? && item.unused?
+        publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
       end
     end
+
+    #
+    # Networks:
+    #
+
+    # Require queue ':network'
+    def load_datapath_networks(network_id)
+      # Load all datapath networks on other datapaths.
+
+      MW::DatapathNetwork.batch.where(network_id: network_id).all.commit.each { |dpn_map|
+        next if dpn_map.datapath_id == @datapath_info.id
+        next if @items[dpn_map.datapath_id]
+
+        self.async.item_by_params(id: dpn_map.datapath_id)
+      }
+    end
+
+    #
+    # Refactor:
+    #
 
     def remove_datapath_network(params)
       dpn_map = MW::DatapathNetwork.batch.with_deleted.first(id: params[:datapath_network_id]).commit
       return unless dpn_map.deleted_at
 
-      deactivate_network(dpn_map)
+      # need to be propagated if it is newly removed network
+
+      # Deactivate network last in order to have the very latest state
+      # of '@active_networks'. 
     end
 
-    def activate_network(dpn_map)
-      item = item_by_params(id: dpn_map.datapath_id)
-      return if item.nil?
-
-      item.add_active_network(dpn_map)
-    end
-
-    def deactivate_network(dpn_map)
-      item = item_by_params(id: dpn_map.datapath_id)
-      return if item.nil?
-
-      if item.remove_active_network(dpn_map.network_id)
-        if item.unused? && !item.host?
-          publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
-        end
-      end
-    end
-
+    # TODO: Turn this into an event.
     def activate_route_link(params)
       return if params[:route_link_id].nil?
 
@@ -169,10 +251,6 @@ module Vnet::Openflow
 
         item.add_active_route_link(dp_rl)
       }
-    end
-
-    def host
-      @items.find { |i| i.host? }
     end
 
   end

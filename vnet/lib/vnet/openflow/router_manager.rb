@@ -66,8 +66,8 @@ module Vnet::Openflow
 
       item.install
 
-      @dp_info.datapath_manager.async.update_item(event: :activate_route_link,
-                                                  route_link_id: item.id)
+      @dp_info.datapath_manager.async.update(event: :activate_route_link,
+                                             route_link_id: item.id)
 
       debug log_format("install #{item.uuid}/#{item.id}")
 

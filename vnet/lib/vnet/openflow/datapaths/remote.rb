@@ -4,6 +4,10 @@ module Vnet::Openflow::Datapaths
 
   class Remote < Base
 
+    #
+    # Events:
+    #
+
     def uninstall
       if same_segment?
         @dp_info.dc_segment_manager.async.remove_datapath(id)
@@ -12,6 +16,28 @@ module Vnet::Openflow::Datapaths
       end
     end
 
+    def activate_network_id(network_id)
+      network = @active_networks[network_id] || return
+
+      return if network[:active] == true
+      network[:active] == true
+
+      @dp_info.tunnel_manager.update(event: :added_remote_datapath_network, dpn: network)
+    end
+
+    def deactivate_network_id(network_id)
+      network = @active_networks[network_id] || return
+
+      return if network[:active] == false
+      network[:active] == false
+
+      @dp_info.tunnel_manager.update(event: :removed_remote_datapath_network, dpn: network)
+    end
+
+    #
+    # Internal methods:
+    #
+
     private
 
     def same_segment?
@@ -19,12 +45,12 @@ module Vnet::Openflow::Datapaths
     end
 
     def after_add_active_network(active_network)
-      if same_segment?
-        @dp_info.dc_segment_manager.async.insert(active_network[:dpn_id])
-      else
-        @dp_info.tunnel_manager.async.update(event: :added_remote_datapath_network,
-                                             dpn: active_network)
-      end
+      # if same_segment?
+      #   @dp_info.dc_segment_manager.async.insert(active_network[:dpn_id])
+      # else
+      #   @dp_info.tunnel_manager.async.update(event: :added_remote_datapath_network,
+      #                                        dpn: active_network)
+      # end
 
       flows = []
       flows_for_filtering_mac_address(flows,
@@ -34,11 +60,11 @@ module Vnet::Openflow::Datapaths
     end
 
     def after_remove_active_network(active_network)
-      if same_segment?
-        @dp_info.dc_segment_manager.async.remove(active_network[:dpn_id])
-      else
-        @dp_info.tunnel_manager.async.remove(active_network[:dpn_id])
-      end
+      # if same_segment?
+      #   @dp_info.dc_segment_manager.async.remove(active_network[:dpn_id])
+      # else
+      #   @dp_info.tunnel_manager.async.remove(active_network[:dpn_id])
+      # end
     end
 
     def log_format(message, values = nil)
