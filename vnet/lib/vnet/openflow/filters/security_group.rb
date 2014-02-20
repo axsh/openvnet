@@ -12,7 +12,7 @@ module Vnet::Openflow::Filters
     def initialize(item_map)
       @id = item_map.id
       @uuid = item_map.uuid
-      @rules = item_map.rules
+      @rules, @referencees = parse_rules(item_map.rules)
 
       # This is going to hold the ip addresses of all our 'friends'. All
       # interfaces in this group will accept all traffic from these addresses.
@@ -23,7 +23,6 @@ module Vnet::Openflow::Filters
       # Interfaces holds a hash of this format:
       # { interface_id => interface_cookie_id }
       @interfaces = {}
-      #TODO: Create reference rules
     end
 
     def self.cookie(group_id, interface_cookie_id, cookie_type)
@@ -93,6 +92,27 @@ module Vnet::Openflow::Filters
       end
     end
 
+    def parse_rules(rules)
+      #TODO: Throw away commented and invalid rules. Also log a warning for
+      #invalid rules
+      rules, reference = rules.split("\n").partition { |r|
+        (r =~ /sg-.{1,8}[a-z1-9]$/).nil?
+      }
+
+      ref_hash = Hash.new.tap { |rh| reference.each { |r|
+        referencee_uuid = r.split(":").last
+        referencee = Vnet::ModelWrappers::SecurityGroup.batch[referencee_uuid].commit
+
+        rh[referencee.id] = {
+          uuid: referencee.uuid,
+          rule: r,
+          ipv4s: referencee.batch.ip_addresses.commit
+        }
+      }}
+
+      [rules, ref_hash]
+    end
+
     def install_rules(interface_id = nil)
       interface_ids = if interface_id
         [interface_id]
@@ -101,7 +121,7 @@ module Vnet::Openflow::Filters
       end
 
       flows = interface_ids.map { |interface_id|
-        @rules.split("\n").map do |rule|
+        @rules.map do |rule|
           flow_create(:default,
             table: TABLE_INTERFACE_INGRESS_FILTER,
             priority: RULE_PRIORITY,
