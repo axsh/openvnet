@@ -15,14 +15,26 @@ module Vnet::Models
       ds.where(security_group_id: self.id).select_all(:interfaces)
     end
 
-    def interface_cookie_id(interface_id)
-      row_id = InterfaceSecurityGroup.where(:security_group_id => self.id,
-        :interface_id => interface_id).first.id
+    # We override this method for the same reason
+    def remove_interface(interface)
+      InterfaceSecurityGroup.filter(
+        interface_id: interface.id,
+        security_group_id: id
+      ).destroy
+    end
 
-      #TODO: raise error when row not found
+    def interface_cookie_id(interface_id)
+      row_id = InterfaceSecurityGroup.with_deleted.where(:security_group_id => self.id,
+        :interface_id => interface_id).first.id
 
       InterfaceSecurityGroup.with_deleted.where(
         :security_group_id => self.id).where("id <= #{row_id}").count
+    end
+
+    def ip_addresses
+      interfaces.map { |i|
+        i.ip_leases.map { |il| il.ip_address.ipv4_address }
+      }.flatten
     end
   end
 end

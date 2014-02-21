@@ -4,70 +4,126 @@ module Vnet::Openflow
   class FilterManager < Manager
     include Vnet::Openflow::FlowHelpers
 
-    subscribe_event INITIALIZED_INTERFACE, :apply_filters
-    subscribe_event REMOVED_INTERFACE, :remove_filters
-
-    GLOBAL_FILTERS_KEY = 'global'
+    subscribe_event UPDATED_SG_RULES, :updated_filter
+    subscribe_event ADDED_INTERFACE_TO_SG, :added_interface_to_sg
+    subscribe_event REMOVED_INTERFACE_FROM_SG, :removed_interface_from_sg
 
     def initialize(*args)
       super(*args)
 
-      @items[GLOBAL_FILTERS_KEY] = []
-      initialize_filter(type: :accept_ingress_arp)
+      accept_ingress_arp.install
+    end
+
+    #
+    # Event handling
+    #
+
+    def updated_filter(params)
+      item = internal_detect(id: params[:id])
+      return if item.nil?
+
+      info log_format("Updating rules for security group '#{item.uuid}'")
+      item.update_rules(params[:rules])
+    end
+
+    def removed_interface_from_sg(params)
+      item = internal_detect(id: params[:id]) || return
+
+      info log_format("Removing interface '%s' from security group '%s'" %
+        [params[:interface_id], item.uuid])
+
+      if item.has_interface?(params[:interface_id])
+        item.uninstall(params[:interface_id])
+        item.remove_interface(params[:interface_id])
+
+        @items.delete(item.id) if item.interfaces.empty?
+      end
+
+      updated_isolation(item, params[:isolation_ip_addresses])
+    end
+
+    def added_interface_to_sg(params)
+      item = item_by_params(id: params[:id]) || return
+
+      updated_isolation(item, params[:isolation_ip_addresses])
+
+      unless is_remote?(params[:interface_owner_datapath_id], params[:interface_active_datapath_id])
+        log_interface_added(params[:interface_id], item.uuid)
+
+        item.add_interface(params[:interface_id], params[:interface_cookie_id])
+        item.install(params[:interface_id])
+      end
+    end
+
+    #
+    # The rest
+    #
+
+    def updated_isolation(item, ip_list)
+      log_ips = ip_list.map { |i| IPAddress::IPv4.parse_u32(i).to_s }
+      debug log_format("Updating isolation for security group '#{item.uuid}", log_ips)
+
+      item.update_isolation(ip_list)
     end
 
     def initialized_item_event
       INITIALIZED_FILTER
     end
 
-    def apply_filters(interface_hash)
-      interface = interface_hash[:item_map]
-      groups = interface.batch.security_groups.commit
+    def log_interface_added(if_uuid, sg_uuid)
+      debug log_format("Adding interface '%s' to security group '%s'" %
+        [if_uuid, sg_uuid])
+    end
 
-      if groups.empty?
-        debug log_format("Accepting all ingress traffic on interface '%s'" %
-          interface.uuid)
-
-        initialize_filter(type: :accept_all_traffic,
-                          interface_id: interface.id)
+    def apply_filters(interface)
+      #TODO: Check if we can't get rid of this argument raping
+      interface = case interface
+      when MW::Interface
+        interface
+      when Numeric, String
+        interface = MW::Interface.batch[interface].commit
       else
-        groups.each do |group|
-          debug log_format("Installing security group '%s' for interface '%s'" %
-            [group.uuid, interface.uuid])
+        raise "Not an interface: #{interface.inspect}"
+      end
 
-          initialize_filter(type: :security_group,
-                            interface_id: interface.id,
-                            group_wrapper: group)
-        end
+      info log_format("applying filters for interface: '#{interface.uuid}'")
+
+      groups = interface.batch.security_groups.commit
+      groups.each do |group|
+        item = item_by_params(id: group.id)
+
+        log_interface_added(interface.uuid, item.uuid)
+
+        cookie_id = group.batch.interface_cookie_id(interface.id).commit
+        item.add_interface(interface.id, cookie_id)
+        item.install(interface.id)
       end
     end
 
-    def remove_filters(interface_hash)
-      if item = @items.delete(interface_hash[:id])
-        item.each { |item| @dp_info.del_cookie item.cookie }
-      end
+    def remove_filters(interface_id)
+      items_for_interface(interface_id).each { |item|
+        item.uninstall(interface_id)
+        item.remove_interface(interface_id)
+      }
     end
 
     private
+    def select_item(filter)
+      MW::SecurityGroup.batch[filter].commit(fill: :ip_addresses)
+    end
 
-    def initialize_filter(params)
-      interface_id = params[:interface_id]
+    def item_initialize(item_map, params)
+      Filters::SecurityGroup.new(item_map).tap { |item|
+        item.dp_info = @dp_info
+      }
+    end
 
-      item = case params[:type]
-      when :accept_ingress_arp
-        Filters::AcceptIngressArp.new.tap {|f| @items[GLOBAL_FILTERS_KEY] << f}
-      when :accept_all_traffic
-        Filters::AcceptAllTraffic.new(interface_id)
-      when :security_group
-        Filters::SecurityGroup.new(params[:group_wrapper], interface_id)
-      end
+    def items_for_interface(interface_id)
+      @items.values.select { |item| item.has_interface?(interface_id) }
+    end
 
-      if interface_id
-        @items[interface_id] ||= []
-        @items[interface_id] << item
-      end
-
-      @dp_info.add_flows item.install
+    def accept_ingress_arp
+      Filters::AcceptIngressArp.new.tap {|i| i.dp_info = @dp_info}
     end
   end
 end

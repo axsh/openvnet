@@ -8,49 +8,37 @@ module Vnet::Openflow
     COOKIE_TAG_CATCH_FLOW         = 0x1 << COOKIE_TAG_SHIFT
     COOKIE_TAG_INGRESS_CONNECTION = 0x2 << COOKIE_TAG_SHIFT
 
-    subscribe_event LEASED_MAC_ADDRESS, :catch_new_egress
-    subscribe_event RELEASED_MAC_ADDRESS, :remove_catch_new_egress
-    subscribe_event REMOVED_INTERFACE, :close_connections
-
     def packet_in(message)
       open_connection(message)
     end
 
-    def catch_flow_cookie(interface_id)
-      COOKIE_TYPE_CONNECTION | COOKIE_TAG_CATCH_FLOW | interface_id
+    def catch_flow_cookie(mac_lease_id)
+      COOKIE_TYPE_CONNECTION | COOKIE_TAG_CATCH_FLOW | mac_lease_id
     end
 
-    def catch_new_egress(interface_mac_lease)
-      interface_id = interface_mac_lease[:id]
-      interface = MW::Interface.batch[interface_id].commit
+    def catch_new_egress(mac_lease_id, mac_address)
+      flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
+        flow_create(:default,
+                    table: TABLE_INTERFACE_EGRESS_FILTER,
+                    priority: 20,
+                    match: {
+                      eth_src: mac_address,
+                      eth_type: ETH_TYPE_IPV4,
+                      ip_proto: protocol
+                    },
+                    cookie: catch_flow_cookie(mac_lease_id),
+                    actions: { output: Controller::OFPP_CONTROLLER })
+      }
 
-      unless interface.batch.security_groups.commit.empty?
-        debug log_format("Catching new egress connections", interface.uuid)
-
-        flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
-          flow_create(:default,
-                      table: TABLE_INTERFACE_EGRESS_FILTER,
-                      priority: 20,
-                      match: {
-                        eth_src: Trema::Mac.new(interface_mac_lease[:mac_address]),
-                        eth_type: ETH_TYPE_IPV4,
-                        ip_proto: protocol
-                      },
-                      cookie: catch_flow_cookie(interface_id),
-                      actions: { output: Controller::OFPP_CONTROLLER })
-        }
-
-        @dp_info.add_flows(flows)
-      end
+      @dp_info.add_flows(flows)
     end
 
-    def remove_catch_new_egress(interface_mac_lease)
-      @dp_info.del_cookie catch_flow_cookie(interface_mac_lease[:id])
+    def remove_catch_new_egress(mac_lease_id)
+      @dp_info.del_cookie catch_flow_cookie(mac_lease_id)
     end
 
-    def close_connections(interface_hash)
-      # debug log_format("Closing all connections for interface '#{interface.uuid}'")
-      @dp_info.del_cookie Connections::Base.cookie(interface_hash[:id])
+    def close_connections(mac_lease_id)
+      @dp_info.del_cookie Connections::Base.cookie(mac_lease_id)
     end
 
     def open_connection(message)
