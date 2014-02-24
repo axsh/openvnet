@@ -19,7 +19,6 @@ module Vnet::Openflow::Datapaths
       @dc_segment_id = map.dc_segment_id
 
       @active_networks = {}
-
       @active_route_links = {}
     end
 
@@ -50,6 +49,12 @@ module Vnet::Openflow::Datapaths
       }
     end
 
+    def has_active_route_link?(route_link_id)
+      !!@active_route_links.detect { |id, active_route_link|
+        active_route_link[:route_link_id] == route_link_id
+      }
+    end
+
     #
     # Events:
     #
@@ -59,8 +64,12 @@ module Vnet::Openflow::Datapaths
 
     def uninstall
       @dp_info.del_cookie(id | COOKIE_TYPE_DATAPATH)
+
       @active_networks.each do |_, active_network|
         @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+      end
+      @active_route_links.each do |_, active_route_link|
+        @dp_info.del_cookie(active_route_link[:dpn_id] | COOKIE_TYPE_DP_ROUTE_LINK)
       end
     end
 
@@ -129,6 +138,8 @@ module Vnet::Openflow::Datapaths
 
         :route_link_id => dp_rl_map.route_link_id,
         :route_link_mac_address => Trema::Mac.new(dp_rl_map.route_link.mac_address),
+
+        :active => false
       }
 
       @active_route_links[dp_rl_map.route_link_id] = dp_rl

@@ -12,12 +12,17 @@ module Vnet::Openflow
 
     subscribe_event ADDED_HOST_DATAPATH_NETWORK, :added_host_datapath_network
     subscribe_event ADDED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
+    subscribe_event ADDED_HOST_DATAPATH_ROUTE_LINK, :added_host_datapath_route_link
+    subscribe_event ADDED_REMOTE_DATAPATH_ROUTE_LINK, :added_remote_datapath_route_link
 
     def initialize(*args)
       super
-      @host_networks = {}
-      @remote_datapath_networks = {}
       @interfaces = {}
+
+      @host_networks = {}
+      @host_route_links = {}
+      @remote_datapath_networks = {}
+      @remote_datapath_route_links = {}
     end
 
     def update_item(params)
@@ -46,6 +51,14 @@ module Vnet::Openflow
         publish(ADDED_REMOTE_DATAPATH_NETWORK,
                 id: :datapath_network,
                 remote_dpn: params[:dpn])
+      when :added_host_datapath_route_link
+        publish(ADDED_HOST_DATAPATH_ROUTE_LINK,
+                id: :datapath_route_link,
+                host_dprl: params[:dprl])
+      when :added_remote_datapath_route_link
+        publish(ADDED_REMOTE_DATAPATH_ROUTE_LINK,
+                id: :datapath_route_link,
+                remote_dprl: params[:dprl])
       end
 
       nil
@@ -172,6 +185,13 @@ module Vnet::Openflow
         item.add_datapath_network(remote_dpn)
       }
 
+      remote_dprls = @remote_datapath_route_links.select { |id, remote_dprl|
+        remote_dprl[:datapath_id] == item.dst_datapath_id && remote_dprl[:interface_id] == item.dst_interface_id
+      }
+      remote_dprls.each { |id, remote_dprl|
+        item.add_datapath_route_link(remote_dprl)
+      }
+
       # Make sure we have the remote host interface loaded.
       @dp_info.interface_manager.async.retrieve(id: item.dst_interface_id)
 
@@ -231,20 +251,52 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
-    def create_datapath_network(dpn_id)
-      # TODO: Fix this...
-      #
-      # We should only use the dpn data we get from DatapathManager...
-
-      dpn_map = MW::DatapathNetwork.batch[dpn_id].commit
-      return unless dpn_map
-
-      { id: dpn_map.id,
-        datapath_id: dpn_map.datapath_id,
-        interface_id: dpn_map.interface_id,
-        network_id: dpn_map.network_id,
-        broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
+    # Load or create the tunnel item if we have both host and remote
+    # datapath networks.
+    def activate_tunnel(host_dpn, remote_dpn, network_id)
+      options = {
+        src_datapath_id: @datapath_info.id,
+        dst_datapath_id: remote_dpn[:datapath_id],
+        src_interface_id: host_dpn[:interface_id],
+        dst_interface_id: remote_dpn[:interface_id],
       }
+
+      # TODO: Update log output:
+      info log_format(
+        "activated remote datapath network",
+        "datapath_id:#{remote_dpn[:datapath_id]} " +
+        "network_id:#{remote_dpn[:network_id]} " +
+        "interface_id:#{remote_dpn[:interface_id]}"
+      )
+
+      item = item_by_params(options)
+
+      # Create separate method...
+      #
+      # Consider adding an event for doing create?
+      if item.nil?
+        info log_format("creating tunnel entry",
+                        options.map { |k, v| "#{k}:#{v}" }.join(" "))
+
+        tunnel = MW::Tunnel.create(options.merge(mode: :gre))
+        item = item_by_params(options)
+
+        if item.nil?
+          warn log_format('could not create tunnel',
+                          options.map { |k, v| "#{k}:#{v}" }.join(" "))
+        end
+
+        return
+      end
+
+      # Check tunnel mode here...
+
+      # We make sure not to yield before the dpn has been added to
+      # item.
+      item.add_datapath_network(remote_dpn)
+
+      # TODO: Consider making this an event?
+      update_network_id(network_id)
     end
 
     #
@@ -388,54 +440,81 @@ module Vnet::Openflow
       activate_tunnel(host_dpn, remote_dpn, network_id) if host_dpn
     end
 
-    # Load or create the tunnel item if we have both host and remote
-    # datapath networks.
-    def activate_tunnel(host_dpn, remote_dpn, network_id)
-      options = {
-        src_datapath_id: @datapath_info.id,
-        dst_datapath_id: remote_dpn[:datapath_id],
-        src_interface_id: host_dpn[:interface_id],
-        dst_interface_id: remote_dpn[:interface_id],
-      }
+    #
+    # Datapath route_link events:
+    #
 
-      # TODO: Update log output:
-      info log_format(
-        "activated remote datapath network",
-        "datapath_id:#{remote_dpn[:datapath_id]} " +
-        "network_id:#{remote_dpn[:network_id]} " +
-        "interface_id:#{remote_dpn[:interface_id]}"
-      )
+    def added_host_datapath_route_link(params)
+      param_dpn = params[:host_dpn]
+      return if param_dpn.nil?
 
+      dpn_id = param_dpn[:dpn_id]
+      datapath_id = param_dpn[:datapath_id]
+      route_link_id = param_dpn[:route_link_id]
+      interface_id = param_dpn[:interface_id]
+      mac_address = param_dpn[:mac_address]
+      return if dpn_id.nil?
+      return if datapath_id.nil?
+      return if route_link_id.nil?
+      return if interface_id.nil?
+      return if mac_address.nil?
       
-
-      item = item_by_params(options)
-
-      # Create separate method...
-      #
-      # Consider adding an event for doing create?
-      if item.nil?
-        info log_format("creating tunnel entry",
-                        options.map { |k, v| "#{k}:#{v}" }.join(" "))
-
-        tunnel = MW::Tunnel.create(options.merge(mode: :gre))
-        item = item_by_params(options)
-
-        if item.nil?
-          warn log_format('could not create tunnel',
-                          options.map { |k, v| "#{k}:#{v}" }.join(" "))
-        end
-
+      if @host_route_links[route_link_id]
+        error log_format("host datapath route_link #{dpn_id} already added",
+                         "route_link_id:#{route_link_id} interface_id:#{interface_id} mac_address:#{mac_address}")
         return
       end
 
-      # Check tunnel mode here...
+      host_dpn = @host_route_links[route_link_id] = {
+        :dpn_id => dpn_id,
+        :datapath_id => datapath_id, # Not needed
+        :route_link_id => route_link_id,
+        :interface_id => interface_id,
+        :mac_address => mac_address
+      }
 
-      # We make sure not to yield before the dpn has been added to
-      # item.
-      item.add_datapath_network(remote_dpn)
+      debug log_format("host datapath route_link #{dpn_id} added for datapath #{datapath_id}",
+                       "route_link_id:#{route_link_id} interface_id:#{interface_id} mac_address:#{mac_address}")
 
-      # TODO: Consider making this an event?
-      update_network_id(network_id)
+      # Reorder so that we activate in the order of loading
+      # internally, database and then create.
+      remote_dpns = @remote_datapath_route_links.select { |id, remote_dpn|
+        remote_dpn[:route_link_id] == route_link_id
+      }
+      remote_dpns.each { |id, remote_dpn|
+        activate_tunnel(host_dpn, remote_dpn, route_link_id)
+      }
+    end
+
+    def added_remote_datapath_route_link(params)
+      param_dpn = params[:remote_dpn]
+      return if param_dpn.nil?
+
+      dpn_id = param_dpn[:dpn_id]
+      datapath_id = param_dpn[:datapath_id]
+      route_link_id = param_dpn[:route_link_id]
+      interface_id = param_dpn[:interface_id]
+      mac_address = param_dpn[:mac_address]
+      
+      if @remote_datapath_route_links[dpn_id]
+        error log_format("remote datapath route_link #{dpn_id} already added")
+        return
+      end
+
+      remote_dpn = @remote_datapath_route_links[dpn_id] = {
+        :dpn_id => dpn_id,
+        :datapath_id => datapath_id,
+        :route_link_id => route_link_id,
+        :interface_id => interface_id,
+        :mac_address => mac_address
+      }
+
+      debug log_format("remote datapath route_link #{dpn_id} added for datapath #{datapath_id}",
+                       "route_link_id:#{route_link_id} interface_id:#{interface_id} mac_address:#{mac_address}")
+
+      host_dpn = @host_route_links[route_link_id]
+
+      activate_tunnel(host_dpn, remote_dpn, route_link_id) if host_dpn
     end
 
   end

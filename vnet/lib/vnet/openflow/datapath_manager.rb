@@ -11,7 +11,6 @@ module Vnet::Openflow
     subscribe_event REMOVED_DATAPATH, :unload
     subscribe_event INITIALIZED_DATAPATH, :install_item
 
-    # add activate_datapath_network_on_host?..
     subscribe_event ACTIVATE_NETWORK_ON_HOST, :activate_network
     subscribe_event DEACTIVATE_NETWORK_ON_HOST, :deactivate_network
 
@@ -20,9 +19,18 @@ module Vnet::Openflow
     subscribe_event ACTIVATE_DATAPATH_NETWORK, :activate_datapath_network
     subscribe_event DEACTIVATE_DATAPATH_NETWORK, :deactivate_datapath_network
 
+    subscribe_event ACTIVATE_ROUTE_LINK_ON_HOST, :activate_route_link
+    subscribe_event DEACTIVATE_ROUTE_LINK_ON_HOST, :deactivate_route_link
+
+    subscribe_event ADDED_DATAPATH_ROUTE_LINK, :added_datapath_route_link
+    subscribe_event REMOVED_DATAPATH_ROUTE_LINK, :removed_datapath_route_link
+    subscribe_event ACTIVATE_DATAPATH_ROUTE_LINK, :activate_datapath_route_link
+    subscribe_event DEACTIVATE_DATAPATH_ROUTE_LINK, :deactivate_datapath_route_link
+
     def initialize(*args)
       super
       @active_networks = {}
+      @active_route_links = {}
     end
 
     def update(params)
@@ -36,9 +44,13 @@ module Vnet::Openflow
                 id: :network,
                 network_id: params[:network_id])
       when :activate_route_link
-        activate_route_link(params)
+        publish(ACTIVATE_ROUTE_LINK_ON_HOST,
+                id: :route_link,
+                route_link_id: params[:route_link_id])
       when :deactivate_route_link
-        # deactivate_route_link(params)
+        publish(DEACTIVATE_ROUTE_LINK_ON_HOST,
+                id: :route_link,
+                route_link_id: params[:route_link_id])
       end
 
       nil
@@ -105,6 +117,10 @@ module Vnet::Openflow
         publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
       end
 
+      item_map.batch.datapath_route_links.commit.each do |dpn_map|
+        publish(ADDED_DATAPATH_ROUTE_LINK, id: item.id, dpn_map: dpn_map)
+      end
+
       item
     end
 
@@ -117,6 +133,7 @@ module Vnet::Openflow
         return
       end
 
+      # TODO: move to install_item...
       @dp_info.datapath.switch_ready
     end
 
@@ -210,7 +227,7 @@ module Vnet::Openflow
     end
 
     #
-    # Networks:
+    # Network methods:
     #
 
     # Require queue ':network'
@@ -226,22 +243,114 @@ module Vnet::Openflow
     end
 
     #
-    # Refactor:
+    # Route link events:
     #
 
-    # TODO: Turn this into an event.
+    # ACTIVATE_ROUTE_LINK_ON_HOST on queue ':route_link'
     def activate_route_link(params)
-      return if params[:route_link_id].nil?
+      route_link_id = params[:route_link_id] || return
+      return if @active_route_links.has_key? route_link_id
 
-      dp_rl_items = MW::DatapathRouteLink.batch.dataset.where(route_link_id: params[:route_link_id]).all.commit(:fill => :route_link)
+      @active_route_links[route_link_id] = {
+      }
 
-      dp_rl_items.each { |dp_rl|
-        item = item_by_params(id: dp_rl.datapath_id)
-        next if item.nil?
+      @items.select { |id, item|
+        item.has_active_route_link?(route_link_id)
+      }.each { |id, item|
+        publish(ACTIVATE_DATAPATH_ROUTE_LINK, id: item.id, route_link_id: route_link_id)
+      }
 
-        item.add_active_route_link(dp_rl)
+      load_datapath_route_links(route_link_id)
+    end
+
+    # DEACTIVATE_ROUTE_LINK_ON_HOST on queue ':route_link'
+    def deactivate_route_link(params)
+    end
+
+    # ADDED_DATAPATH_ROUTE_LINK on queue 'item.id'
+    def added_datapath_route_link(params)
+      item_id = params[:id] || return
+      item = @items[item_id]
+
+      if item.nil?
+        return item_by_params(id: item_id)
+      end
+
+      dpn_map = params[:dpn_map] || return
+      route_link_id = dpn_map.route_link_id || return
+
+      item.add_active_route_link(dpn_map)
+      item.activate_route_link_id(route_link_id) if @active_route_links[route_link_id]
+    end
+
+    # REMOVED_DATAPATH_ROUTE_LINK on queue 'item.id'
+    def removed_datapath_route_link(params)
+      item = @item[params[:id]] || return
+      dpn_map = params[:dpn_map] || return
+
+      item.remove_active_route_link(dpn_map.route_link_id)
+      item.deactivate_route_link(route_link_id) unless @active_route_links[route_link_id]
+
+      if !item.host? && item.unused?
+        publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
+      end
+    end
+
+    # ACTIVATE_DATAPATH_ROUTE_LINK on queue 'item.id'
+    def activate_datapath_route_link(params)
+      item = @items[params[:id]] || return
+      route_link_id = params[:route_link_id] || return
+      route_link = @active_route_links[route_link_id]
+
+      item.activate_route_link_id(route_link_id) if route_link
+    end
+
+    # DEACTIVATE_DATAPATH_ROUTE_LINK on queue 'item.id'
+    def deactivate_datapath_route_link(params)
+      item = @items[params[:id]] || return
+      route_link_id = params[:route_link_id] || return
+      route_link = @active_route_links[route_link_id]
+
+      item.deactivate_route_link_id(route_link_id) unless route_link
+
+      if !item.host? && item.unused?
+        publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
+      end
+    end
+
+    #
+    # Route links:
+    #
+
+    # Require queue ':route_link'
+    def load_datapath_route_links(route_link_id)
+      # Load all datapath route_links on other datapaths.
+
+      MW::DatapathRouteLink.batch.where(route_link_id: route_link_id).all.commit.each { |dpn_map|
+        next if dpn_map.datapath_id == @datapath_info.id
+        next if @items[dpn_map.datapath_id]
+
+        self.async.item_by_params(id: dpn_map.datapath_id)
       }
     end
+
+    # #
+    # # Refactor:
+    # #
+
+    # # TODO: Turn this into an event.
+    # def activate_route_link(params)
+    #   return if params[:route_link_id].nil?
+
+    #   dp_rl_items = MW::DatapathRouteLink.batch.dataset.where(route_link_id: params[:route_link_id]).all.commit(:fill => :route_link)
+
+    #   dp_rl_items.each { |dp_rl|
+    #     item = item_by_params(id: dp_rl.datapath_id)
+    #     next if item.nil?
+
+    #     item.add_active_route_link(dp_rl)
+    #   }
+    # end
 
   end
 

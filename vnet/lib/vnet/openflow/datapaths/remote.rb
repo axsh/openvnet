@@ -34,6 +34,24 @@ module Vnet::Openflow::Datapaths
       @dp_info.tunnel_manager.update(event: :removed_remote_datapath_network, dpn: network)
     end
 
+    def activate_route_link_id(route_link_id)
+      route_link = @active_route_links[route_link_id] || return
+
+      return if route_link[:active] == true
+      route_link[:active] == true
+
+      @dp_info.tunnel_manager.update(event: :added_remote_datapath_route_link, dprl: route_link)
+    end
+
+    def deactivate_route_link_id(route_link_id)
+      route_link = @active_route_links[route_link_id] || return
+
+      return if route_link[:active] == false
+      route_link[:active] == false
+
+      @dp_info.tunnel_manager.update(event: :removed_remote_datapath_route_link, dprl: route_link)
+    end
+
     #
     # Internal methods:
     #
