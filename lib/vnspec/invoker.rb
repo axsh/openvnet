@@ -33,7 +33,9 @@ module Vnspec
 
     def run(name = :all)
       if name.to_sym == :all
-        specs = config[:specs] + config[:specs_ext]
+        specs = config[:specs]
+        specs += config[:specs_ext] if config[:specs_ext]
+
         statuses = specs.map do |name|
           [name, run(name)]
         end
