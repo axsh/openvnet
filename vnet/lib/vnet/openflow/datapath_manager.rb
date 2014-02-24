@@ -173,6 +173,16 @@ module Vnet::Openflow
 
     # DEACTIVATE_NETWORK_ON_HOST on queue ':network'
     def deactivate_network(params)
+      network_id = params[:network_id] || return
+      network = @active_networks.delete(network_id) || return
+
+      @items.select { |id, item|
+        item.has_active_network?(network_id)
+      }.each { |id, item|
+        publish(DEACTIVATE_DATAPATH_NETWORK, id: item.id, network_id: network_id)
+      }
+
+      # unload_datapath_networks(network_id)
     end
 
     # ADDED_DATAPATH_NETWORK on queue 'item.id'
@@ -265,6 +275,16 @@ module Vnet::Openflow
 
     # DEACTIVATE_ROUTE_LINK_ON_HOST on queue ':route_link'
     def deactivate_route_link(params)
+      route_link_id = params[:route_link_id] || return
+      route_link = @active_route_links.delete(route_link_id) || return
+
+      @items.select { |id, item|
+        item.has_active_route_link?(route_link_id)
+      }.each { |id, item|
+        publish(DEACTIVATE_DATAPATH_ROUTE_LINK, id: item.id, route_link_id: route_link_id)
+      }
+
+      # unload_datapath_route_links(route_link_id)
     end
 
     # ADDED_DATAPATH_ROUTE_LINK on queue 'item.id'
@@ -333,24 +353,6 @@ module Vnet::Openflow
         self.async.item_by_params(id: dpn_map.datapath_id)
       }
     end
-
-    # #
-    # # Refactor:
-    # #
-
-    # # TODO: Turn this into an event.
-    # def activate_route_link(params)
-    #   return if params[:route_link_id].nil?
-
-    #   dp_rl_items = MW::DatapathRouteLink.batch.dataset.where(route_link_id: params[:route_link_id]).all.commit(:fill => :route_link)
-
-    #   dp_rl_items.each { |dp_rl|
-    #     item = item_by_params(id: dp_rl.datapath_id)
-    #     next if item.nil?
-
-    #     item.add_active_route_link(dp_rl)
-    #   }
-    # end
 
   end
 
