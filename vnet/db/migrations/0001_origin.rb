@@ -254,6 +254,13 @@ Sequel.migration do
       Integer :vlan_id
       Integer :network_id
     end
+
+    create_table(:lease_policies) do
+      primary_key :id
+      String :mode, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
   end
 
   down do
