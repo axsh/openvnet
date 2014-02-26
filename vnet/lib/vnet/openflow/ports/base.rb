@@ -16,9 +16,6 @@ module Vnet::Openflow::Ports
     attr_reader :port_info
     attr_reader :cookie
 
-    attr_accessor :network_id
-    attr_accessor :mac_addresses
-
     attr_accessor :interface_id
 
     # Work-around...
@@ -64,8 +61,6 @@ module Vnet::Openflow::Ports
         :port_hw_addr => self.port_hw_addr,
         :name => self.port_name,
         :type => self.port_type,
-        :ipv4_address => @ipv4_addr,
-        :network_id => @network_id,
       }
     end
 

@@ -166,8 +166,6 @@ module Vnet::Openflow
       @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
       port.extend(Ports::Local)
-      port.ipv4_addr = @dp_info.datapath.ipv4_address
-
       port.install
     end
 

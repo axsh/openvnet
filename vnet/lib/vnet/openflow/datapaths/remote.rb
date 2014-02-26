@@ -9,11 +9,7 @@ module Vnet::Openflow::Datapaths
     #
 
     def uninstall
-      if same_segment?
-        @dp_info.dc_segment_manager.async.remove_datapath(id)
-      else
-        @dp_info.tunnel_manager.async.unload(dst_datapath_id: id)
-      end
+      @dp_info.tunnel_manager.async.unload(dst_datapath_id: id)
     end
 
     def activate_network_id(network_id)
@@ -58,18 +54,7 @@ module Vnet::Openflow::Datapaths
 
     private
 
-    def same_segment?
-      @dp_info.datapath.datapath_info.dc_segment_id == @dc_segment_id
-    end
-
     def after_add_active_network(active_network)
-      # if same_segment?
-      #   @dp_info.dc_segment_manager.async.insert(active_network[:dpn_id])
-      # else
-      #   @dp_info.tunnel_manager.async.update(event: :added_remote_datapath_network,
-      #                                        dpn: active_network)
-      # end
-
       flows = []
       flows_for_filtering_mac_address(flows,
                                       active_network[:broadcast_mac_address],
@@ -78,11 +63,6 @@ module Vnet::Openflow::Datapaths
     end
 
     def after_remove_active_network(active_network)
-      # if same_segment?
-      #   @dp_info.dc_segment_manager.async.remove(active_network[:dpn_id])
-      # else
-      #   @dp_info.tunnel_manager.async.remove(active_network[:dpn_id])
-      # end
     end
 
     def log_format(message, values = nil)

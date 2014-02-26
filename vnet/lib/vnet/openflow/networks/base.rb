@@ -9,7 +9,6 @@ module Vnet::Openflow::Networks
     Flow = Vnet::Openflow::Flow
 
     attr_reader :uuid
-    attr_reader :datapath_of_bridge
 
     attr_reader :interfaces
 
@@ -23,8 +22,6 @@ module Vnet::Openflow::Networks
 
       @id = network_map.id
       @uuid = network_map.uuid
-
-      @datapath_of_bridge = nil
 
       @interfaces = {}
 
@@ -90,17 +87,6 @@ module Vnet::Openflow::Networks
       end
 
       self
-    end
-
-    def set_datapath_of_bridge(datapath_info)
-      # info "network(#{@uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
-
-      @datapath_of_bridge = {
-        :uuid => datapath_info.uuid,
-        :display_name => datapath_info.display_name,
-        :ipv4_address => datapath_info.ipv4_address,
-        :datapath_id => datapath_info.id,
-      }
     end
 
   end

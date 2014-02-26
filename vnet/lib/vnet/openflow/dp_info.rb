@@ -13,7 +13,6 @@ module Vnet::Openflow
     MANAGER_NAMES = %w(
       connection
       datapath
-      dc_segment
       interface
       network
       port

@@ -16,7 +16,6 @@ module Vnet::Openflow::Datapaths
       @id = map.id
       @uuid = map.uuid
       @dpid = map.dpid
-      @dc_segment_id = map.dc_segment_id
 
       @active_networks = {}
       @active_route_links = {}

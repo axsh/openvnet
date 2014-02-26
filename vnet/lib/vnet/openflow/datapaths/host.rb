@@ -29,7 +29,6 @@ module Vnet::Openflow::Datapaths
       return if network[:active] == true
       network[:active] == true
 
-      @dp_info.dc_segment_manager.async.prepare_network(network[:id])
       @dp_info.tunnel_manager.update(event: :added_host_datapath_network, dpn: network)
     end
 
@@ -39,7 +38,6 @@ module Vnet::Openflow::Datapaths
       return if network[:active] == false
       network[:active] == false
 
-      @dp_info.dc_segment_manager.async.remove_network_id(network[:network_id])
       @dp_info.tunnel_manager.update(event: :removed_host_datapath_network, dpn: network)
     end
 

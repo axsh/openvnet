@@ -138,8 +138,6 @@ module Vnet::Openflow
         return network
       end
 
-      network.set_datapath_of_bridge(@datapath_info)
-
       network.install
       network.update_flows
 
