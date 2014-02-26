@@ -139,13 +139,16 @@ module Vnet::Openflow
     end
 
     def select_tunnel_mode(host_dpn, remote_dpn)
+      src_interface = @interfaces[host_dpn[:interface_id]]
+      dst_interface = @interfaces[remote_dpn[:interface_id]]
+      return nil unless src_interface && src_interface[:network_id]
+      return nil unless dst_interface && dst_interface[:network_id]
+
       case
-      when host_dpn[:network_id] != remote_dpn[:network_id]
+      when src_interface[:network_id] != dst_interface[:network_id]
         :gre
-      when host_dpn[:network_id] == remote_dpn[:network_id]
+      when src_interface[:network_id] == dst_interface[:network_id]
         :mac2mac
-      else
-        nil
       end
     end
 
