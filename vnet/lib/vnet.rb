@@ -105,6 +105,7 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/models/interface_security_group'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
+    autoload :LeasePolicy, 'vnet/models/lease_policy'
     autoload :MacAddress, 'vnet/models/mac_address'
     autoload :MacLease, 'vnet/models/mac_lease'
     autoload :Network, 'vnet/models/network'
