@@ -188,25 +188,25 @@ module Vnet::Openflow
       # MAC2MAC -> Do we need a relationship table, e.g. tunnel table
       # has a 'mode' entry?
 
-      [true, false].each { |reflection|
-        flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
-                             goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
-                             priority: 2,
+      # [true, false].each { |reflection|
+      #   flows << flow_create(:default,
+      #                        table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+      #                        goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+      #                        priority: 2,
 
-                             match_value_pair_flag: reflection,
-                             match_value_pair_first: src_interface_id,
-                             match_value_pair_second: dst_interface_id,
+      #                        match_value_pair_flag: reflection,
+      #                        match_value_pair_first: src_interface_id,
+      #                        match_value_pair_second: dst_interface_id,
 
-                             clear_all: true,
-                             write_interface: src_interface_id,
-                             write_reflection: reflection,
+      #                        clear_all: true,
+      #                        write_interface: src_interface_id,
+      #                        write_reflection: reflection,
 
-                             # Currently use the dst_interface_id
-                             # until we merge dc_segment manager and
-                             # tunnel manager.
-                             cookie: dst_interface_id | COOKIE_TYPE_INTERFACE)
-      }
+      #                        # Currently use the dst_interface_id
+      #                        # until we merge dc_segment manager and
+      #                        # tunnel manager.
+      #                        cookie: dst_interface_id | COOKIE_TYPE_INTERFACE)
+      # }
     end
 
     def remove_network_id(network_id)
@@ -226,28 +226,28 @@ module Vnet::Openflow
     end
 
     def update_network_id(network_id)
-      dpn_list = @items[network_id]
+      # dpn_list = @items[network_id]
 
-      if @port_numbers.empty? || dpn_list.nil?
-        flood_actions = []
-      else
-        flood_actions = dpn_list.collect { |dpn_id,dpn|
-          { :eth_dst => dpn[:broadcast_mac_address],
-            :output => @port_numbers.first
-          }
-        }
-        flood_actions << {:eth_dst => MAC_BROADCAST} unless flood_actions.empty?
-      end
+      # if @port_numbers.empty? || dpn_list.nil?
+      #   flood_actions = []
+      # else
+      #   flood_actions = dpn_list.collect { |dpn_id,dpn|
+      #     { :eth_dst => dpn[:broadcast_mac_address],
+      #       :output => @port_numbers.first
+      #     }
+      #   }
+      #   flood_actions << {:eth_dst => MAC_BROADCAST} unless flood_actions.empty?
+      # end
 
-      flow = flow_create(:default,
-                         table: TABLE_FLOOD_SEGMENT,
-                         priority: 1,
-                         match_network: network_id,
-                         actions: flood_actions,
-                         cookie: network_id | COOKIE_TYPE_NETWORK,
-                         goto_table: TABLE_FLOOD_TUNNELS)
+      # flow = flow_create(:default,
+      #                    table: TABLE_FLOOD_SEGMENT,
+      #                    priority: 1,
+      #                    match_network: network_id,
+      #                    actions: flood_actions,
+      #                    cookie: network_id | COOKIE_TYPE_NETWORK,
+      #                    goto_table: TABLE_FLOOD_TUNNELS)
 
-      @dp_info.add_flow(flow)
+      # @dp_info.add_flow(flow)
     end
 
     #

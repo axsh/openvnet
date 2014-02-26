@@ -40,7 +40,7 @@ module Vnet::Openflow::Datapaths
     end
 
     def unused?
-      !!@active_networks.empty?
+      !!(@active_networks.empty? && @active_route_links.empty?)
     end
 
     def has_active_network?(network_id)
@@ -77,7 +77,10 @@ module Vnet::Openflow::Datapaths
     # Networks:
     #
 
+    # TODO: RENAME from active network...
+
     def add_active_network(dpn_map)
+      return if dpn_map.network_id.nil?
       return if @active_networks.has_key? dpn_map.network_id
 
       active_network = {
@@ -104,7 +107,7 @@ module Vnet::Openflow::Datapaths
 
       # after_add_active_network(active_network)
 
-      debug log_format("adding to #{@uuid}/#{id} active datapath network #{dpn_map.datapath_id}/#{dpn_map.network_id}")
+      debug log_format("adding to #{@uuid}/#{@id} datapath network #{dpn_map.network_id}")
 
       true
     end
@@ -117,7 +120,7 @@ module Vnet::Openflow::Datapaths
 
       # after_remove_active_network(active_network)
 
-      debug log_format("removing from #{@uuid}/#{id} active datapath network #{network_id}")
+      debug log_format("removing from #{@uuid}/#{@id} datapath network #{network_id}")
 
       true
     end
@@ -126,38 +129,39 @@ module Vnet::Openflow::Datapaths
     # Route links:
     #
 
-    def add_active_route_link(dp_rl_map)
-      return if dp_rl_map.route_link.nil?
-      return if @active_route_links.has_key? dp_rl_map.route_link_id
+    def add_active_route_link(dprl_map)
+      return if dprl_map.route_link_id.nil?
+      return if @active_route_links.has_key? dprl_map.route_link_id
 
-      dp_rl = {
-        :id => dp_rl_map.id,
-        :datapath_id => dp_rl_map.datapath_id,
-        :interface_id => dp_rl_map.interface_id,
-        :mac_address => Trema::Mac.new(dp_rl_map.mac_address),
+      dp_route_link = {
+        :id => dprl_map.id,
+        :datapath_id => dprl_map.datapath_id,
+        :interface_id => dprl_map.interface_id,
+        :route_link_id => dprl_map.route_link_id,
+        :mac_address => Trema::Mac.new(dprl_map.mac_address),
 
-        :route_link_id => dp_rl_map.route_link_id,
-        :route_link_mac_address => Trema::Mac.new(dp_rl_map.route_link.mac_address),
+        # TODO: Remove:
+        :route_link_mac_address => Trema::Mac.new(dprl_map.mac_address),
 
         :active => false
       }
 
-      @active_route_links[dp_rl_map.route_link_id] = dp_rl
+      @active_route_links[dprl_map.route_link_id] = dp_route_link
 
-      return if dp_rl[:interface_id].nil?
-      return if dp_rl[:datapath_id].nil?
-      return if dp_rl[:route_link_id].nil?
-      return if dp_rl[:route_link_mac_address].nil?
+      return if dp_route_link[:interface_id].nil?
+      return if dp_route_link[:datapath_id].nil?
+      return if dp_route_link[:route_link_id].nil?
+      return if dp_route_link[:route_link_mac_address].nil?
 
       flows = []
       flows_for_filtering_mac_address(flows,
-                                      dp_rl[:mac_address],
-                                      dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
-      flows_for_dp_route_link(flows, dp_rl)
+                                      dp_route_link[:mac_address],
+                                      dp_route_link[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+      flows_for_dp_route_link(flows, dp_route_link)
 
       @dp_info.add_flows(flows)
 
-      debug log_format("adding to #{@uuid}/#{id} active datapath route link #{dp_rl_map.datapath_id}/#{dp_rl_map.route_link_id}")
+      debug log_format("adding to #{@uuid}/#{@id} datapath route link #{dprl_map.route_link_id}")
     end
 
     #

@@ -15,6 +15,7 @@ module Vnet::Openflow::Tunnels
     attr_reader :src_interface_id
 
     attr_accessor :port_number
+    attr_reader :host_port_number
 
     def initialize(params)
       super
@@ -70,6 +71,10 @@ module Vnet::Openflow::Tunnels
       @datapath_networks.any? { |dpn| dpn[:network_id] == network_id }
     end
 
+    def detect_network_id?(network_id)
+      @datapath_networks.find { |dpn| dpn[:network_id] == network_id }
+    end
+
     #
     # Specialization:
     #
@@ -91,7 +96,7 @@ module Vnet::Openflow::Tunnels
     def delete_tunnel
     end
 
-    def actions_append_flood(tunnel_actions, mac2mac_actions)
+    def actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
     end
 
     #
@@ -133,6 +138,22 @@ module Vnet::Openflow::Tunnels
       # Return if not installed or tunnel already created, and add a
       # 'tunnel created' flag.
       create_tunnel if @dst_network_id && @dst_ipv4_address # && installed?
+    end
+
+    def set_host_port_number(new_port_number, updated_networks)
+      return if new_port_number.nil?
+      return if new_port_number == @host_port_number
+
+      # foo if @host_port_number
+
+      @host_port_number = new_port_number
+
+      # add to hash of network id's if installed and mac2mac
+      #return if ...
+
+      @datapath_networks.each { |dpn|
+        updated_networks[dpn[:network_id]] = true
+      }
     end
 
   end

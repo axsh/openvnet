@@ -117,8 +117,8 @@ module Vnet::Openflow
         publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
       end
 
-      item_map.batch.datapath_route_links.commit.each do |dpn_map|
-        publish(ADDED_DATAPATH_ROUTE_LINK, id: item.id, dpn_map: dpn_map)
+      item_map.batch.datapath_route_links.commit.each do |dprl_map|
+        publish(ADDED_DATAPATH_ROUTE_LINK, id: item.id, dprl_map: dprl_map)
       end
 
       item
@@ -159,6 +159,8 @@ module Vnet::Openflow
       network_id = params[:network_id] || return
       return if @active_networks.has_key? network_id
 
+      info log_format("activating network #{network_id}")
+
       @active_networks[network_id] = {
       }
 
@@ -176,6 +178,8 @@ module Vnet::Openflow
       network_id = params[:network_id] || return
       network = @active_networks.delete(network_id) || return
 
+      info log_format("deactivating network #{network_id}")
+
       @items.select { |id, item|
         item.has_active_network?(network_id)
       }.each { |id, item|
@@ -191,6 +195,7 @@ module Vnet::Openflow
       item = @items[item_id]
 
       if item.nil?
+        # TODO: Make sure we don't look here...
         return item_by_params(id: item_id)
       end
 
@@ -261,6 +266,8 @@ module Vnet::Openflow
       route_link_id = params[:route_link_id] || return
       return if @active_route_links.has_key? route_link_id
 
+      info log_format("activating route link #{route_link_id}")
+
       @active_route_links[route_link_id] = {
       }
 
@@ -278,6 +285,8 @@ module Vnet::Openflow
       route_link_id = params[:route_link_id] || return
       route_link = @active_route_links.delete(route_link_id) || return
 
+      info log_format("deactivating route link #{route_link_id}")
+
       @items.select { |id, item|
         item.has_active_route_link?(route_link_id)
       }.each { |id, item|
@@ -293,26 +302,27 @@ module Vnet::Openflow
       item = @items[item_id]
 
       if item.nil?
+        # TODO: Make sure we don't loop here...
         return item_by_params(id: item_id)
       end
 
-      dpn_map = params[:dpn_map] || return
-      route_link_id = dpn_map.route_link_id || return
+      dprl_map = params[:dprl_map] || return
+      route_link_id = dprl_map.route_link_id || return
 
-      item.add_active_route_link(dpn_map)
+      item.add_active_route_link(dprl_map)
       item.activate_route_link_id(route_link_id) if @active_route_links[route_link_id]
     end
 
     # REMOVED_DATAPATH_ROUTE_LINK on queue 'item.id'
     def removed_datapath_route_link(params)
       item = @item[params[:id]] || return
-      dpn_map = params[:dpn_map] || return
+      dprl_map = params[:dprl_map] || return
 
-      item.remove_active_route_link(dpn_map.route_link_id)
+      item.remove_active_route_link(dprl_map.route_link_id)
       item.deactivate_route_link(route_link_id) unless @active_route_links[route_link_id]
 
       if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
+        publish(REMOVED_DATAPATH, id: dprl_map.datapath_id) # TODO FOOO...
       end
     end
 
@@ -334,7 +344,7 @@ module Vnet::Openflow
       item.deactivate_route_link_id(route_link_id) unless route_link
 
       if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
+        publish(REMOVED_DATAPATH, id: dprl_map.datapath_id) # TODO FOOOO....
       end
     end
 
@@ -346,11 +356,11 @@ module Vnet::Openflow
     def load_datapath_route_links(route_link_id)
       # Load all datapath route_links on other datapaths.
 
-      MW::DatapathRouteLink.batch.where(route_link_id: route_link_id).all.commit.each { |dpn_map|
-        next if dpn_map.datapath_id == @datapath_info.id
-        next if @items[dpn_map.datapath_id]
+      MW::DatapathRouteLink.batch.where(route_link_id: route_link_id).all.commit.each { |dprl_map|
+        next if dprl_map.datapath_id == @datapath_info.id
+        next if @items[dprl_map.datapath_id]
 
-        self.async.item_by_params(id: dpn_map.datapath_id)
+        self.async.item_by_params(id: dprl_map.datapath_id)
       }
     end
 

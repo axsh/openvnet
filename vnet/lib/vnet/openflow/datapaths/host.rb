@@ -154,7 +154,7 @@ module Vnet::Openflow::Datapaths
                              :eth_dst => dp_rl[:mac_address]
                            },
                            match_interface: dp_rl[:interface_id],
-                           write_route_link: @id,
+                           write_route_link: dp_rl[:route_link_id],
 
                            cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
 

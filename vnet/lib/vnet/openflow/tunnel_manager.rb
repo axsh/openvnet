@@ -138,6 +138,29 @@ module Vnet::Openflow
       end
     end
 
+    def select_tunnel_mode(host_dpn, remote_dpn)
+      case
+      when host_dpn[:network_id] != remote_dpn[:network_id]
+        :gre
+      when host_dpn[:network_id] == remote_dpn[:network_id]
+        :mac2mac
+      else
+        nil
+      end
+    end
+
+    def items_with_src_interface(interface_id)
+      @items.select { |id, item|
+        item.src_interface_id == interface_id
+      }
+    end
+
+    def items_with_dst_interface(interface_id)
+      @items.select { |id, item|
+        item.dst_interface_id == interface_id
+      }
+    end
+
     #
     # Create / Delete tunnels:
     #
@@ -174,8 +197,10 @@ module Vnet::Openflow
 
       dst_interface = @interfaces[item.dst_interface_id]
       src_interface = @interfaces[item.src_interface_id]
+
       item.set_dst_ipv4_address(dst_interface[:network_id], dst_interface[:ipv4_address]) if dst_interface
       item.set_src_ipv4_address(src_interface[:network_id], src_interface[:ipv4_address]) if src_interface
+      item.set_host_port_number(src_interface[:port_number], {}) if src_interface
 
       # Should be an event that is exclusive for dpn updates (?):
       remote_dpns = @remote_datapath_networks.select { |id, remote_dpn|
@@ -224,23 +249,24 @@ module Vnet::Openflow
     # Event handlers:
     #
 
-    def update_tunnel(item, port_number)
-      return if item.port_number == port_number
-      item.port_number = port_number
-
-      item.datapath_networks.each { |dpn|
-        update_network_id(dpn[:network_id])
-      }
-    end
-
     def update_network_id(network_id)
       tunnel_actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
+      mac2mac_actions = []
 
       @items.each { |item_id, item|
-        item.actions_append_flood(network_id, tunnel_actions, nil)
+        item.actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
       }
 
+      mac2mac_actions << {:eth_dst => MAC_BROADCAST} unless mac2mac_actions.empty?
+
       flows = []
+      flows << flow_create(:default,
+                           table: TABLE_FLOOD_SEGMENT,
+                           goto_table: TABLE_FLOOD_TUNNELS,
+                           priority: 1,
+                           match_network: network_id,
+                           actions: mac2mac_actions,
+                           cookie: network_id | COOKIE_TYPE_NETWORK)
       flows << flow_create(:default,
                            table: TABLE_FLOOD_TUNNELS,
                            priority: 1,
@@ -249,6 +275,22 @@ module Vnet::Openflow
                            cookie: network_id | COOKIE_TYPE_NETWORK)
 
       @dp_info.add_flows(flows)
+    end
+
+    #
+    # Tunnel events:
+    #
+
+    def create_tunnel(options, tunnel_mode)
+      # Create separate method...
+      #
+      # Consider adding an event for doing create?
+      info log_format("creating tunnel entry",
+                      options.map { |k, v| "#{k}:#{v}" }.join(" "))
+
+      tunnel = MW::Tunnel.create(options.merge(mode: tunnel_mode))
+
+      item_by_params(options)
     end
 
     # Load or create the tunnel item if we have both host and remote
@@ -269,27 +311,15 @@ module Vnet::Openflow
         "interface_id:#{remote_dpn[:interface_id]}"
       )
 
+      # debug log_format("XXXXXXXXXXXX HOST: ", "#{host_dpn.inspect}")
+      # debug log_format("XXXXXXXXXXXX REMO: ", "#{remote_dpn.inspect}")
+
       item = item_by_params(options)
+      tunnel_mode = select_tunnel_mode(host_dpn, remote_dpn) || return
 
-      # Create separate method...
-      #
-      # Consider adding an event for doing create?
-      if item.nil?
-        info log_format("creating tunnel entry",
-                        options.map { |k, v| "#{k}:#{v}" }.join(" "))
+      # Verify tunnel mode here...
 
-        tunnel = MW::Tunnel.create(options.merge(mode: :gre))
-        item = item_by_params(options)
-
-        if item.nil?
-          warn log_format('could not create tunnel',
-                          options.map { |k, v| "#{k}:#{v}" }.join(" "))
-        end
-
-        return
-      end
-
-      # Check tunnel mode here...
+      item = item || create_tunnel(options, tunnel_mode)
 
       # We make sure not to yield before the dpn has been added to
       # item.
@@ -299,31 +329,54 @@ module Vnet::Openflow
       update_network_id(network_id)
     end
 
+    def update_tunnel(item, port_number)
+      return if item.port_number == port_number
+      item.port_number = port_number
+
+      item.datapath_networks.each { |dpn|
+        update_network_id(dpn[:network_id])
+      }
+    end
+
     #
     # Interface events:
     #
 
+    # TODO: Use the :interface event queue.
+
     def updated_interface(params)
+      interface_id = params[:interface_id]
       interface_event = params[:interface_event]
-      return if interface_event.nil?
+      return if interface_id.nil? || interface_event.nil?
 
       case interface_event
-      when :added_ipv4_address then interface_added_ipv4_address(params)
+      when :added_ipv4_address
+        interface_added_ipv4_address(interface_id, params)
       when :removed_ipv4_address
         interface = @interfaces.delete(interface_id)
 
         return if interface.nil?
         
         # Do stuff/event...
+
+      when :set_host_port_number
+        interface_set_host_port_number(interface_id, params)
       else
         error log_format("unknown updated_interface event '#{interface_event}'")
       end
     end
 
-    def interface_added_ipv4_address(params)
-      interface_id = params[:interface_id]
+    def interface_prepare(interface_id, interface_mode)
+      interface = @interfaces[interface_id] ||= {
+        :mode => interface_mode,
+        :ipv4_address => nil,
+        :port_number => nil,
+      }
+      (interface[:mode] == interface_mode) ? interface : nil
+    end
+
+    def interface_added_ipv4_address(interface_id, params)
       interface_mode = params[:interface_mode]
-      return if interface_id.nil?
 
       if interface_mode != :host && interface_mode != :remote
         error log_format("updated_interface received unknown interface_mode '#{interface_mode}'")
@@ -334,33 +387,58 @@ module Vnet::Openflow
                        "network_id:#{params[:network_id]} ipv4_address:#{params[:ipv4_address]}")
 
       # If already exists, clean up instead.
-      interface = @interfaces[interface_id] ||= {
-        :mode => interface_mode,
-        :ipv4_address => nil,
-      }
+      interface = interface_prepare(interface_id, interface_mode)
 
       # Check if interface mode matches...
+      return if interface.nil?
+
       interface[:network_id] = params[:network_id]
       interface[:ipv4_address] = params[:ipv4_address]
 
       case interface_mode
       when :host
-        @items.select { |id, item|
-          item.src_interface_id == interface_id
-        }.each { |id, item|
+        items_with_src_interface(interface_id).each { |id, item|
           # Register this as an event instead, and use the values in
           # '@interfaces' when handling the event.
           item.set_src_ipv4_address(interface[:network_id], interface[:ipv4_address])
         }
       when :remote
-        @items.select { |id, item|
-          item.dst_interface_id == interface_id
-        }.each { |id, item|
+        items_with_dst_interface(interface_id).each { |id, item|
           # Register this as an event instead, and use the values in
           # '@interfaces' when handling the event.
           item.set_dst_ipv4_address(interface[:network_id], interface[:ipv4_address])
         }
       end
+    end
+
+    def interface_set_host_port_number(interface_id, params)
+      port_number = params[:port_number] || return
+      interface = interface_prepare(interface_id, :host) || return
+
+      debug log_format("interface #{interface_id} set host port number #{port_number}")
+      
+      # TODO: Instead use a hash held by manager so that we avoid
+      # unneeded calls to update.
+
+      updated_networks = {}
+
+      # A port number has already been set, handle this properly:
+      if interface[:port_number]
+      end
+
+      interface[:port_number] = port_number
+
+      items_with_src_interface(interface_id).each { |id, item|
+        # Register this as an event instead, and use the values in
+        # '@interfaces' when handling the event.
+        item.set_host_port_number(port_number, updated_networks)
+      }
+
+      # TODO: We need to gather all the network id's that need to have
+      # new flood flows.
+      updated_networks.each { |network_id, value|
+        update_network_id(network_id)
+      }
     end
 
     #
