@@ -173,6 +173,7 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/node_api/interface_security_group'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
+    autoload :LeasePolicy, 'vnet/node_api/models.rb'
     autoload :MacAddress, 'vnet/node_api/models.rb'
     autoload :MacLease, 'vnet/node_api/mac_lease.rb'
     autoload :Network, 'vnet/node_api/models.rb'
