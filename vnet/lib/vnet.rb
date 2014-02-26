@@ -134,6 +134,7 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/model_wrappers/interface_security_group'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
+    autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
     autoload :MacAddress, 'vnet/model_wrappers/mac_address'
     autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :Network, 'vnet/model_wrappers/network'
