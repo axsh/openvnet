@@ -53,6 +53,7 @@ module Vnet
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
+        autoload :LeasePolicy, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddress, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLease, 'vnet/endpoints/1.0/responses/mac_lease'
         autoload :Network, 'vnet/endpoints/1.0/responses/network'
