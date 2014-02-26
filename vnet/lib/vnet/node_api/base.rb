@@ -68,6 +68,10 @@ module Vnet::NodeApi
           data.map { |d|
             to_hash(d, options)
           }
+        when Hash
+          data.each do |k, v|
+            data[k] = to_hash(v, options)
+          end
         when Vnet::Models::Base
           data.to_hash.tap do |h|
             options_for_recursive_call = options.dup
