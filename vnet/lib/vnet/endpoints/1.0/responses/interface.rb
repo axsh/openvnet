@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Endpoints::V10::Responses
-  class Interface < Vnet::Endpoints::ResponseGenerator
+  class Interface < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::Interface)
       if object.mac_leases.first
@@ -28,14 +28,9 @@ module Vnet::Endpoints::V10::Responses
       object.owner_datapath_uuid = object.owner_datapath.uuid if object.owner_datapath
       object.to_hash
     end
-
-    def self.security_groups(interface)
-      argument_type_check(interface, Vnet::ModelWrappers::Interface)
-      SecurityGroupCollection.generate(interface.batch.security_groups.commit)
-    end
   end
 
-  class InterfaceCollection < Vnet::Endpoints::ResponseGenerator
+  class InterfaceCollection < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|

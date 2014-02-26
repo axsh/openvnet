@@ -65,7 +65,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
     M::InterfaceSecurityGroup.create(params)
-    respond_with(R::Interface.security_groups(interface))
+
+    respond_with(R::SecurityGroup.generate(security_group))
   end
 
   get '/:uuid/security_groups' do

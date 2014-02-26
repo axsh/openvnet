@@ -3,7 +3,7 @@
 require "ipaddress"
 
 module Vnet::Endpoints::V10::Responses
-  class Network < Vnet::Endpoints::ResponseGenerator
+  class Network < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(network)
       argument_type_check(network, Vnet::ModelWrappers::Network)
       res = network.to_hash
@@ -11,14 +11,9 @@ module Vnet::Endpoints::V10::Responses
       res[:ipv4_network] = network.ipv4_network_s
       res
     end
-
-    def self.dhcp_ranges(network)
-      argument_type_check(network, Vnet::ModelWrappers::Network)
-      DhcpRangeCollection.generate(network.batch.dhcp_ranges.commit)
-    end
   end
 
-  class NetworkCollection < Vnet::Endpoints::ResponseGenerator
+  class NetworkCollection < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(array)
       argument_type_check(array, Array)
       array.map { |i| Network.generate(i) }

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Endpoints::V10::Responses
-  class DhcpRange < Vnet::Endpoints::ResponseGenerator
+  class DhcpRange < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::DhcpRange)
       object.to_hash.tap do |res|
@@ -11,7 +11,7 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
-  class DhcpRangeCollection < Vnet::Endpoints::ResponseGenerator
+  class DhcpRangeCollection < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|

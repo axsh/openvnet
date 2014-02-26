@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Endpoints::V10::Responses
-  class Translation < Vnet::Endpoints::ResponseGenerator
+  class Translation < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::Translation)
       object.to_hash
@@ -19,7 +19,7 @@ module Vnet::Endpoints::V10::Responses
 
   end
 
-  class TranslationCollection < Vnet::Endpoints::ResponseGenerator
+  class TranslationCollection < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|
