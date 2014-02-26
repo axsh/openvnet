@@ -273,6 +273,7 @@ Sequel.migration do
                :interface_security_groups,
                :ip_addresses,
                :ip_leases,
+               :lease_policies,
                :mac_addresses,
                :mac_leases,
                :networks,
