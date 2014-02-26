@@ -86,6 +86,7 @@ module Vnet
         autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
+        autoload :LeasePolicyCollection, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddressCollection, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
         autoload :NetworkCollection, 'vnet/endpoints/1.0/responses/network'
