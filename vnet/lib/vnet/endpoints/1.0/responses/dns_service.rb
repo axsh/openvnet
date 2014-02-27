@@ -7,11 +7,6 @@ module Vnet::Endpoints::V10::Responses
       model.network_service_uuid = model.network_service.uuid
       model.to_hash
     end
-
-    def self.dns_records(model)
-      argument_type_check(model, Vnet::ModelWrappers::DnsService)
-      DnsRecordCollection.generate(model.batch.dns_records.commit)
-    end
   end
 
   class DnsServiceCollection < Vnet::Endpoints::CollectionResponseGenerator

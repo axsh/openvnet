@@ -56,6 +56,7 @@ shared_examples "one_to_many_relation" do |relation_suffix, post_request_params|
 
       it "should create a new entry in the join table" do
         expect(last_response).to succeed
+        expect(JSON.parse(last_response.body)["uuid"]).to eq relation_uuid
         expect(base_object.send(relation_suffix).size).to eq 1
       end
     end
