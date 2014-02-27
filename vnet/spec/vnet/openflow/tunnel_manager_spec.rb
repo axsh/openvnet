@@ -12,9 +12,12 @@ describe Vnet::Openflow::TunnelManager do
         Fabricate("pnet_public#{i}")
       }.values_at(0, 0, 1)
 
+      host_addresses = [IPAddr.new("192.168.1.1").to_i,
+                        IPAddr.new("192.168.1.2").to_i,
+                        IPAddr.new("192.168.2.1").to_i]
+
       (1..3).map { |i|
-        dp_self = Fabricate("datapath_#{i}",
-                            :dc_segment_id => [1, 2, 2][i-1])
+        dp_self = Fabricate("datapath_#{i}")
 
         interface = Fabricate("interface_dp#{i}eth0",
                               owner_datapath_id: dp_self.id)
@@ -25,9 +28,8 @@ describe Vnet::Openflow::TunnelManager do
 
         ip_lease = Fabricate(:ip_lease,
                              mac_lease: mac_lease,
-                             ipv4_address: dp_self.ipv4_address,
+                             ipv4_address: host_addresses[i-1],
                              network_id: networks[i-1].id)
-
       }
 
       Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, broadcast_mac_address: 1)
@@ -143,21 +145,16 @@ describe Vnet::Openflow::TunnelManager do
 
   describe "remove_network_id_for_dpid" do
     before do
-      #Fabricate("datapath_1", dc_segment_id: 1)
-      #Fabricate("datapath_2", dc_segment_id: 2)
-
-      # # id=1, dpid="0x"+"a"*16
-      # Fabricate("datapath_1")
-      # # id=2, dpid="0x"+"c"*16
-      # Fabricate("datapath_3")
-
       networks = (1..2).map { |i|
         Fabricate("pnet_public#{i}")
       }.values_at(0, 0, 1)
 
+      host_addresses = [IPAddr.new("192.168.1.1").to_i,
+                        IPAddr.new("192.168.1.2").to_i,
+                        IPAddr.new("192.168.2.1").to_i]
+
       (1..3).map { |i|
-        dp_self = Fabricate("datapath_#{i}",
-                            :dc_segment_id => [1, 2, 2][i-1])
+        dp_self = Fabricate("datapath_#{i}")
 
         interface = Fabricate("interface_dp#{i}eth0",
                               owner_datapath_id: dp_self.id)
@@ -168,7 +165,7 @@ describe Vnet::Openflow::TunnelManager do
 
         ip_lease = Fabricate(:ip_lease,
                              mac_lease: mac_lease,
-                             ipv4_address: dp_self.ipv4_address,
+                             ipv4_address: host_addresses[i-1],
                              network_id: networks[i-1].id)
       }
 
