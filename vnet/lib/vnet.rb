@@ -167,7 +167,7 @@ module Vnet
     autoload :SecurityGroup, 'vnet/node_api/security_group'
     autoload :Translation, 'vnet/node_api/models.rb'
     autoload :TranslateStaticAddress, 'vnet/node_api/models.rb'
-    autoload :Tunnel, 'vnet/node_api/models.rb'
+    autoload :Tunnel, 'vnet/node_api/tunnel.rb'
     autoload :VlanTranslation, 'vnet/node_api/models.rb'
   end
 
@@ -283,6 +283,7 @@ module Vnet
       autoload :Base, 'vnet/openflow/tunnels/base'
       autoload :Gre, 'vnet/openflow/tunnels/gre'
       autoload :Mac2Mac, 'vnet/openflow/tunnels/mac2mac'
+      autoload :Unknown, 'vnet/openflow/tunnels/unknown'
     end
 
   end

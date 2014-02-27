@@ -75,6 +75,10 @@ module Vnet::Openflow::Tunnels
       @datapath_networks.find { |dpn| dpn[:network_id] == network_id }
     end
 
+    def update_mode(mode)
+      MW::Tunnel.batch.update_mode(@id, mode).commit
+    end
+
     #
     # Specialization:
     #

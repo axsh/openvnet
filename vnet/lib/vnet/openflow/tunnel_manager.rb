@@ -25,20 +25,6 @@ module Vnet::Openflow
       @remote_datapath_route_links = {}
     end
 
-    def update_item(params)
-      item = internal_detect(params)
-      return nil if item.nil?
-
-      case params[:event]
-      when :set_port_number
-        update_tunnel(item, params[:port_number]) if params[:port_number]
-      when :clear_port_number
-        update_tunnel(item, nil)
-      end
-
-      item_to_hash(item)
-    end
-
     def update(params)
       case params[:event]
       when :updated_interface
@@ -138,11 +124,11 @@ module Vnet::Openflow
       end
     end
 
-    def select_tunnel_mode(host_dpn, remote_dpn)
-      src_interface = @interfaces[host_dpn[:interface_id]]
-      dst_interface = @interfaces[remote_dpn[:interface_id]]
-      return nil unless src_interface && src_interface[:network_id]
-      return nil unless dst_interface && dst_interface[:network_id]
+    def select_tunnel_mode(src_interface_id, dst_interface_id)
+      src_interface = @interfaces[src_interface_id]
+      dst_interface = @interfaces[dst_interface_id]
+      return :unknown unless src_interface && src_interface[:network_id]
+      return :unknown unless dst_interface && dst_interface[:network_id]
 
       case
       when src_interface[:network_id] != dst_interface[:network_id]
@@ -168,14 +154,24 @@ module Vnet::Openflow
     # Create / Delete tunnels:
     #
 
+    # The tunnel mode is decided by the tunnel manager based on the
+    # source and destination interfaces, and the db updated in
+    # the install event.
+    #
+    # If we cannot determine the type of tunnel to use, an unknown
+    # item type is created that will reload itself when the right
+    # tunnel mode has been determined.
     def item_initialize(item_map, params)
       params = { dp_info: @dp_info,
                  manager: self,
                  map: item_map }
 
-      case item_map.mode
-      when 'gre'     then Tunnels::Gre.new(params)
-      when 'mac2mac' then Tunnels::Mac2Mac.new(params)
+      tunnel_mode = select_tunnel_mode(item_map.src_interface_id, item_map.dst_interface_id)
+
+      case tunnel_mode
+      when :gre     then Tunnels::Gre.new(params)
+      when :mac2mac then Tunnels::Mac2Mac.new(params)
+      when :unknown then Tunnels::Unknown.new(params)
       else
         nil
       end
@@ -190,14 +186,26 @@ module Vnet::Openflow
     end
     
     def install_item(params)
-      item = @items[params[:item_map].id]
-      return unless item
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
-      debug log_format("install #{item.uuid}/#{item.id}",
+      debug log_format("install #{item.mode} #{item.uuid}/#{item.id}",
                        "src_interface_id:#{item.src_interface_id} dst_interface_id:#{item.dst_interface_id}")
+      
+      # TODO: If item_map and item.mode are different (and not unknown), update db.
+      tunnel_mode = select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
+      return reload_item(item) if tunnel_mode != item.mode
 
-      item.install
+      setup_item(item, item_map, params)
+    end
 
+    def setup_item(item, item_map, params)
+      item.update_mode(item.mode) if item_map.mode != item.mode
+      item.try_install
+
+      # TODO: If item type is unknown, trigger reload if we got interfaces:
+
+      # Make these not do anything when not installed:
       dst_interface = @interfaces[item.dst_interface_id]
       src_interface = @interfaces[item.src_interface_id]
 
@@ -239,13 +247,27 @@ module Vnet::Openflow
 
       debug log_format("delete #{item.uuid}/#{item.id}")
 
-      update_tunnel(item, nil)
-
-      item.uninstall
+      # interface_set_host_port_number(item.id, port_number: nil)
+      item.try_uninstall
 
       MW::Tunnel.batch.destroy(item.uuid).commit
+    end
 
-      item
+    def reload_item(old_item)
+      debug log_format("reloading #{old_item.mode} #{old_item.uuid}/#{old_item.id}")
+
+      # interface_set_host_port_number(old_item.id, port_number: nil)
+      old_item.try_uninstall
+
+      @items.delete(old_item.id)
+
+      item_map = MW::Tunnel.batch[old_item.id].commit || return
+      return if @items[item_map.id]
+
+      params = {}
+
+      @items[item_map.id] = new_item = item_initialize(item_map, params)
+      setup_item(new_item, item_map, params)
     end
 
     #
@@ -318,7 +340,7 @@ module Vnet::Openflow
       # debug log_format("XXXXXXXXXXXX REMO: ", "#{remote_dpn.inspect}")
 
       item = item_by_params(options)
-      tunnel_mode = select_tunnel_mode(host_dpn, remote_dpn)
+      tunnel_mode = select_tunnel_mode(host_dpn[:interface_id], remote_dpn[:interface_id])
 
       if tunnel_mode == nil
         info log_format("cannot determine tunnel mode")
@@ -343,15 +365,6 @@ module Vnet::Openflow
 
       # TODO: Consider making this an event?
       update_network_id(network_id)
-    end
-
-    def update_tunnel(item, port_number)
-      return if item.port_number == port_number
-      item.port_number = port_number
-
-      item.datapath_networks.each { |dpn|
-        update_network_id(dpn[:network_id])
-      }
     end
 
     #
@@ -417,12 +430,16 @@ module Vnet::Openflow
           # Register this as an event instead, and use the values in
           # '@interfaces' when handling the event.
           item.set_src_ipv4_address(interface[:network_id], interface[:ipv4_address])
+
+          next reload_item(item) if select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
         }
       when :remote
         items_with_dst_interface(interface_id).each { |id, item|
           # Register this as an event instead, and use the values in
           # '@interfaces' when handling the event.
           item.set_dst_ipv4_address(interface[:network_id], interface[:ipv4_address])
+
+          next reload_item(item) if select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
         }
       end
     end

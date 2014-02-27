@@ -5,12 +5,25 @@ module Vnet::Openflow
   class ItemBase
 
     attr_reader :id
+    attr_reader :installed
 
     def initialize(params)
       @dp_info = params[:dp_info]
 
       # TODO: Consider removing manager.
       @manager = params[:manager]
+
+      @installed = false
+    end
+
+    def try_install
+      (@installed == false) && install 
+      @installed = true
+    end
+
+    def try_uninstall
+      @installed, was_installed = false, @installed
+      (was_installed == true) && uninstall 
     end
 
     #
