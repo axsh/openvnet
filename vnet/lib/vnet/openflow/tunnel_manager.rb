@@ -318,11 +318,24 @@ module Vnet::Openflow
       # debug log_format("XXXXXXXXXXXX REMO: ", "#{remote_dpn.inspect}")
 
       item = item_by_params(options)
-      tunnel_mode = select_tunnel_mode(host_dpn, remote_dpn) || return
+      tunnel_mode = select_tunnel_mode(host_dpn, remote_dpn)
 
-      # Verify tunnel mode here...
+      if tunnel_mode == nil
+        info log_format("cannot determine tunnel mode")
+        @dp_info.interface_manager.async.retrieve(id: remote_dpn[:interface_id])
 
+        return
+      end
+
+      # Only do create_tunnel and return...
       item = item || create_tunnel(options, tunnel_mode)
+
+      # Verify tunnel mode here... Rather update tunnel mode as needed.
+      if tunnel_mode != item.mode
+        info log_format("changing tunnel mode to #{tunnel_mode} NOT IMPLEMENTED")
+
+        return
+      end
 
       # We make sure not to yield before the dpn has been added to
       # item.
