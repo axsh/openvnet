@@ -7,6 +7,8 @@ module Vnet::Openflow::Filters
     RULE_PRIORITY = 10
     ISOLATION_PRIORITY = 20
 
+    REF_REGEX = /sg-.{1,8}[a-z1-9]$/
+
     attr_reader :id, :uuid, :interfaces
 
     def initialize(item_map)
@@ -49,7 +51,7 @@ module Vnet::Openflow::Filters
     def install(interface_id = nil)
       install_rules(interface_id)
       install_isolation(interface_id)
-      #TODO: Install reference rules
+      install_reference(interface_id)
     end
 
     def uninstall(interface_id)
@@ -61,7 +63,7 @@ module Vnet::Openflow::Filters
 
     def update_rules(rules)
       uninstall_rules
-      @rules = rules
+      @rules = split_rules(rules)
       install_rules
     end
 
@@ -76,12 +78,8 @@ module Vnet::Openflow::Filters
     end
 
     private
-    def rule_to_match(rule)
-      protocol, port, ipv4 = rule.strip.split(":")
-      #TODO: Handle the situation when ipv4 isn't a valid ip address
-      ipv4 = IPAddress::IPv4.new(ipv4)
-      port = port.to_i
-
+    def rule_to_match(protocol, port, ipv4)
+      #TODO: Handle the situation when protocol isn't a proper protocol
       match_ipv4_subnet_src(ipv4.u32, ipv4.prefix.to_i).merge case protocol
       when 'icmp'
         { ip_proto: IPV4_PROTOCOL_ICMP }
@@ -95,8 +93,8 @@ module Vnet::Openflow::Filters
     def parse_rules(rules)
       #TODO: Throw away commented and invalid rules. Also log a warning for
       #invalid rules
-      rules, reference = rules.split("\n").partition { |r|
-        (r =~ /sg-.{1,8}[a-z1-9]$/).nil?
+      rules, reference = split_rules(rules).partition { |r|
+        (r =~ REF_REGEX).nil?
       }
 
       ref_hash = Hash.new.tap { |rh| reference.each { |r|
@@ -113,6 +111,10 @@ module Vnet::Openflow::Filters
       [rules, ref_hash]
     end
 
+    def split_rules(rules)
+      rules.split("\n")
+    end
+
     def install_rules(interface_id = nil)
       interface_ids = if interface_id
         [interface_id]
@@ -122,12 +124,17 @@ module Vnet::Openflow::Filters
 
       flows = interface_ids.map { |interface_id|
         @rules.map do |rule|
+          #TODO: Handle the situation when ipv4 isn't a valid ip address
+          protocol, port, ipv4 = rule.strip.split(":")
+          ipv4 = IPAddress::IPv4.new(ipv4)
+          port = port.to_i
+
           flow_create(:default,
             table: TABLE_INTERFACE_INGRESS_FILTER,
             priority: RULE_PRIORITY,
             match_interface: interface_id,
             cookie: cookie(COOKIE_TYPE_RULE, interface_id),
-            match: rule_to_match(rule),
+            match: rule_to_match(protocol, port, ipv4),
             goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
           )
         end
@@ -154,6 +161,40 @@ module Vnet::Openflow::Filters
             goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
           )
         }
+      }.flatten
+
+      @dp_info.add_flows(flows)
+    end
+
+    def install_reference(interface_id = nil)
+      rules = @referencees.values.map { |referencee|
+        referencee[:ipv4s].map { |ipv4|
+          referencee[:rule].gsub(REF_REGEX, ipv4.to_s)
+        }
+      }.flatten
+
+      interface_ids = if interface_id
+        [interface_id]
+      else
+        @interfaces.keys
+      end
+
+      flows = interface_ids.map { |interface_id|
+        rules.map do |rule|
+          protocol, port, ipv4 = rule.strip.split(":")
+          #TODO: Fucking improve this... you're converting an integer to string and
+          #converting it back to integer afterwards, you dumb twit! (me talking to myself)
+          ipv4 = IPAddress::IPv4.parse_u32(ipv4.to_i)
+
+          flow_create(:default,
+            table: TABLE_INTERFACE_INGRESS_FILTER,
+            priority: RULE_PRIORITY,
+            match_interface: interface_id,
+            cookie: cookie(COOKIE_TYPE_REF, interface_id),
+            match: rule_to_match(protocol, port.to_i, ipv4),
+            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+          )
+        end
       }.flatten
 
       @dp_info.add_flows(flows)
