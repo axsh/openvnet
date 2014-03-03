@@ -135,6 +135,23 @@ module Vnet::Openflow::Datapaths
     end
 
     def flows_for_dp_route_link(flows, dp_rl)
+      # The router manager does not know about the dp_rl's mac
+      # address, so we create the flow here.
+      #
+      # TODO: Add verification of the ingress host interface.
+      flows << flow_create(:default,
+                           table: TABLE_TUNNEL_NETWORK_IDS,
+                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           priority: 30,
+
+                           match: {
+                             :tunnel_id => TUNNEL_ROUTE_LINK,
+                             :eth_dst => dp_rl[:mac_address]
+                           },
+                           write_route_link: dp_rl[:route_link_id],
+
+                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
       # We match the route link id stored in the first value field
       # with the dp_rl associated with this datapath, and then prepare
       # for the next table by storing the source host interface in the
