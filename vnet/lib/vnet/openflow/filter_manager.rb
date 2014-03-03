@@ -43,7 +43,7 @@ module Vnet::Openflow
     end
 
     def added_interface_to_sg(params)
-      item = item_by_params(id: params[:id]) || return
+      item = internal_detect(id: params[:id]) || return
 
       updated_isolation(item, params[:isolation_ip_addresses])
 
