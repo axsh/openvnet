@@ -8,6 +8,7 @@ include Vnet::Openflow::FlowHelpers
 describe Vnet::Openflow::FilterManager do
   let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
   let(:flows) { datapath.current_flows }
+  let(:deleted_flows) { datapath.deleted_flows }
 
   let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
   let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
@@ -103,7 +104,15 @@ describe Vnet::Openflow::FilterManager do
        end
 
        it "applies the rule for each interface in the referenced group" do
+         #TODO: Test for interfaces with multiple ip leases
          ref_intf1.ip_addresses.each { |a|
+           expect(flows).to include rule_flow(
+             cookie: ref_cookie_id(group),
+             match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
+           )
+         }
+
+         ref_intf2.ip_addresses.each { |a|
            expect(flows).to include rule_flow(
              cookie: ref_cookie_id(group),
              match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
@@ -114,16 +123,56 @@ describe Vnet::Openflow::FilterManager do
   end
 
   describe "#remove_filters" do
-    before(:each) { subject.apply_filters wrapper(interface) }
+    before(:each) do
+      subject.apply_filters wrapper(interface)
+      subject.remove_filters(interface.id)
+    end
 
     it "Removes filter related flows for a single interface" do
-      subject.remove_filters(interface.id)
-
-      expect(flows).not_to include rule_flow(
+      expected_flow = rule_flow(
         cookie: cookie_id(group),
         match: match_icmp_rule("0.0.0.0/0")
       )
+
+      expect(flows).not_to include expected_flow
+      expect(deleted_flows).to include expected_flow
     end
+
+   context "with a security group referencing another security group" do
+     let(:reffee) { Fabricate(:security_group) }
+     let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
+
+     let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
+     let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
+
+     let(:interface) do
+       # Dirty hack to make sure the referenced interfaces are created first
+       ref_intf1;ref_intf2
+       Fabricate(:filter_interface, security_groups: [group])
+     end
+
+     it "applies the rule for each interface in the referenced group" do
+       ref_intf1.ip_addresses.each { |a|
+         expected_flow = rule_flow(
+           cookie: ref_cookie_id(group),
+           match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
+         )
+
+         expect(flows).not_to include expected_flow
+         expect(deleted_flows).to include expected_flow
+       }
+
+       ref_intf2.ip_addresses.each { |a|
+         expected_flow = rule_flow(
+           cookie: ref_cookie_id(group),
+           match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
+         )
+
+         expect(flows).not_to include expected_flow
+         expect(deleted_flows).to include expected_flow
+       }
+     end
+   end
   end
 
   describe "#updated_filter" do
