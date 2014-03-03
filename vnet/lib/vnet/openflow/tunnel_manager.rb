@@ -27,6 +27,8 @@ module Vnet::Openflow
 
     def update(params)
       case params[:event]
+      when :set_tunnel_port_number
+        set_tunnel_port_number(params)
       when :updated_interface
         updated_interface(params)
       when :added_host_datapath_network
@@ -50,32 +52,26 @@ module Vnet::Openflow
       nil
     end
 
-    #
-    # Refactor:
-    #
-
-    def remove(dpn_id)
-      @items.values.find { |item|
-        item.datapath_networks.any? { |dpn| dpn[:dpn_id] == dpn_id }
-      }.tap do |item|
-        return unless item
-
-        datapath_network = item.remove_datapath_network(dpn_id)
-        update_network_id(datapath_network[:network_id]) if datapath_network
-        publish(REMOVED_TUNNEL, id: item.id) if item.unused?
-      end
-    end
-
-    def remove_network(network_id)
-      # @host_datapath_networks.delete(network_id)
-      # TODO
-      # * remove the flow which is created by `update_network_id`
-    end
-
     def delete_all_tunnels
       @items.values.each { |item| unload(id: item.id) }
       nil
     end
+
+    #
+    # Refactor:
+    #
+
+    # def remove(dpn_id)
+    #   @items.values.find { |item|
+    #     item.datapath_networks.any? { |dpn| dpn[:dpn_id] == dpn_id }
+    #   }.tap do |item|
+    #     return unless item
+
+    #     datapath_network = item.remove_datapath_network(dpn_id)
+    #     update_network_id(datapath_network[:network_id]) if datapath_network
+    #     publish(REMOVED_TUNNEL, id: item.id) if item.unused?
+    #   end
+    # end
 
     #
     # Internal methods:
@@ -365,6 +361,29 @@ module Vnet::Openflow
 
       # TODO: Consider making this an event?
       update_network_id(network_id)
+    end
+
+    def set_tunnel_port_number(params)
+      port_name = params[:port_name] || return
+      port_number = params[:port_number] || return
+
+      item = item_by_params(uuid: port_name)
+
+      if item.nil?
+        info log_format("could not find tunnel item for port name '#{port_name}'")
+
+        # Either delete the tunnel or do something else.
+        return
+      end
+
+      # TODO: Turn into an event:
+      updated_networks = {}
+
+      item.set_tunnel_port_number(port_number, updated_networks)
+
+      updated_networks.each { |network_id, value|
+        update_network_id(network_id)
+      }
     end
 
     #

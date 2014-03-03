@@ -42,6 +42,10 @@ module Vnet::Openflow::Ports
       end
 
       @dp_info.add_flows(flows)
+
+      @dp_info.tunnel_manager.update(event: :set_tunnel_port_number,
+                                     port_name: self.port_name,
+                                     port_number: self.port_number)
     end
 
     def uninstall

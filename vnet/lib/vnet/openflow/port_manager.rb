@@ -235,12 +235,6 @@ module Vnet::Openflow
         return
       end
 
-      @dp_info.tunnel_manager.update_item(
-        event: :set_port_number,
-        id: tunnel.id,
-        port_number: port.port_number
-      )
-
       port.extend(Ports::Tunnel)
 
       port.dst_datapath_id = tunnel.dst_datapath_id

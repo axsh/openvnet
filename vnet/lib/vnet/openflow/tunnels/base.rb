@@ -14,7 +14,7 @@ module Vnet::Openflow::Tunnels
     attr_reader :dst_interface_id
     attr_reader :src_interface_id
 
-    attr_accessor :port_number
+    attr_reader :tunnel_port_number
     attr_reader :host_port_number
 
     def initialize(params)
@@ -144,16 +144,26 @@ module Vnet::Openflow::Tunnels
       create_tunnel if @dst_network_id && @dst_ipv4_address # && installed?
     end
 
+    def set_tunnel_port_number(new_port_number, updated_networks)
+      return if new_port_number.nil?
+      return if new_port_number == @tunnel_port_number
+
+      @tunnel_port_number = new_port_number
+
+      return if self.mode != :gre
+
+      @datapath_networks.each { |dpn|
+        updated_networks[dpn[:network_id]] = true
+      }
+    end
+
     def set_host_port_number(new_port_number, updated_networks)
       return if new_port_number.nil?
       return if new_port_number == @host_port_number
 
-      # foo if @host_port_number
-
       @host_port_number = new_port_number
 
-      # add to hash of network id's if installed and mac2mac
-      #return if ...
+      return if self.mode != :mac2mac
 
       @datapath_networks.each { |dpn|
         updated_networks[dpn[:network_id]] = true
