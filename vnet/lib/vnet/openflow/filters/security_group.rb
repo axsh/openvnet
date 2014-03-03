@@ -120,17 +120,8 @@ module Vnet::Openflow::Filters
         @rules.map do |rule|
           #TODO: Handle the situation when ipv4 isn't a valid ip address
           protocol, port, ipv4 = rule.strip.split(":")
-          ipv4 = IPAddress::IPv4.new(ipv4)
-          port = port.to_i
 
-          flow_create(:default,
-            table: TABLE_INTERFACE_INGRESS_FILTER,
-            priority: RULE_PRIORITY,
-            match_interface: interface_id,
-            cookie: cookie(COOKIE_TYPE_RULE, interface_id),
-            match: rule_to_match(protocol, port, ipv4),
-            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-          )
+          rule_flow(protocol, port, IPAddress::IPv4.new(ipv4), interface_id)
         end
       }.flatten
 
@@ -155,31 +146,29 @@ module Vnet::Openflow::Filters
     end
 
     def install_reference(interface_id = nil)
-      rules = @referencees.values.map { |referencee|
+      flows = @referencees.values.map { |referencee|
         referencee[:ipv4s].map { |ipv4|
-          referencee[:rule].gsub(REF_REGEX, ipv4.to_s)
+          protocol, port = referencee[:rule].split(":")
+          ip_addr = IPAddress::IPv4.parse_u32(ipv4)
+
+          interface_ids(interface_id).map { |interface_id|
+            rule_flow(protocol, port, ip_addr, interface_id, COOKIE_TYPE_REF)
+          }
         }
       }.flatten
 
-      flows = interface_ids(interface_id).map { |interface_id|
-        rules.map do |rule|
-          protocol, port, ipv4 = rule.strip.split(":")
-          #TODO: Fucking improve this... you're converting an integer to string and
-          #converting it back to integer afterwards, you dumb twit! (me talking to myself)
-          ipv4 = IPAddress::IPv4.parse_u32(ipv4.to_i)
-
-          flow_create(:default,
-            table: TABLE_INTERFACE_INGRESS_FILTER,
-            priority: RULE_PRIORITY,
-            match_interface: interface_id,
-            cookie: cookie(COOKIE_TYPE_REF, interface_id),
-            match: rule_to_match(protocol, port.to_i, ipv4),
-            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-          )
-        end
-      }.flatten
-
       @dp_info.add_flows(flows)
+    end
+
+    def rule_flow(protocol, port, ipv4, interface_id, cookie_type = COOKIE_TYPE_RULE)
+      flow_create(:default,
+        table: TABLE_INTERFACE_INGRESS_FILTER,
+        priority: RULE_PRIORITY,
+        match_interface: interface_id,
+        cookie: cookie(cookie_type, interface_id),
+        match: rule_to_match(protocol, port.to_i, ipv4),
+        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
+      )
     end
 
     def interface_ids(interface_id)
