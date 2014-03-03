@@ -116,13 +116,7 @@ module Vnet::Openflow::Filters
     end
 
     def install_rules(interface_id = nil)
-      interface_ids = if interface_id
-        [interface_id]
-      else
-        @interfaces.keys
-      end
-
-      flows = interface_ids.map { |interface_id|
+      flows = interface_ids(interface_id).map { |interface_id|
         @rules.map do |rule|
           #TODO: Handle the situation when ipv4 isn't a valid ip address
           protocol, port, ipv4 = rule.strip.split(":")
@@ -144,13 +138,7 @@ module Vnet::Openflow::Filters
     end
 
     def install_isolation(interface_id = nil)
-      interface_ids = if interface_id
-        [interface_id]
-      else
-        @interfaces.keys
-      end
-
-      flows = interface_ids.map { |interface_id|
+      flows = interface_ids(interface_id).map { |interface_id|
         @isolation_ips.map { |ip|
           flow_create(:default,
             table: TABLE_INTERFACE_INGRESS_FILTER,
@@ -173,13 +161,7 @@ module Vnet::Openflow::Filters
         }
       }.flatten
 
-      interface_ids = if interface_id
-        [interface_id]
-      else
-        @interfaces.keys
-      end
-
-      flows = interface_ids.map { |interface_id|
+      flows = interface_ids(interface_id).map { |interface_id|
         rules.map do |rule|
           protocol, port, ipv4 = rule.strip.split(":")
           #TODO: Fucking improve this... you're converting an integer to string and
@@ -198,6 +180,10 @@ module Vnet::Openflow::Filters
       }.flatten
 
       @dp_info.add_flows(flows)
+    end
+
+    def interface_ids(interface_id)
+      interface_id ? [interface_id] : @interfaces.keys
     end
 
     {isolation: COOKIE_TYPE_ISO,
