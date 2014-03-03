@@ -8,6 +8,10 @@ def cookie_id(group, interface = interface, type = Vnet::Openflow::Filters::Base
   )
 end
 
+def ref_cookie_id(group, interface = interface)
+  cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_REF)
+end
+
 def wrapper(interface)
   Vnet::ModelWrappers::Interface.batch[interface.id].commit
 end

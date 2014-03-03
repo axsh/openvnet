@@ -88,6 +88,29 @@ describe Vnet::Openflow::FilterManager do
          )
        end
      end
+
+     context "with a security group referencing another security group" do
+       let(:reffee) { Fabricate(:security_group) }
+       let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
+
+       let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
+       let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
+
+       let(:interface) do
+         # Dirty hack to make sure the referenced interfaces are created first
+         ref_intf1;ref_intf2
+         Fabricate(:filter_interface, security_groups: [group])
+       end
+
+       it "applies the rule for each interface in the referenced group" do
+         ref_intf1.ip_addresses.each { |a|
+           expect(flows).to include rule_flow(
+             cookie: ref_cookie_id(group),
+             match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
+           )
+         }
+       end
+     end
   end
 
   describe "#remove_filters" do
