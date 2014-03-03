@@ -57,7 +57,7 @@ module Vnet::Openflow::Filters
     def uninstall(interface_id)
       uninstall_rules(interface_id)
       uninstall_isolation(interface_id)
-      #TODO: Uninstall reference rules
+      uninstall_reference(interface_id)
       @interfaces.delete(interface_id)
     end
 
@@ -200,7 +200,9 @@ module Vnet::Openflow::Filters
       @dp_info.add_flows(flows)
     end
 
-    { isolation: COOKIE_TYPE_ISO, rules: COOKIE_TYPE_RULE }.each do |name, cookie_type|
+    {isolation: COOKIE_TYPE_ISO,
+    rules: COOKIE_TYPE_RULE,
+    reference: COOKIE_TYPE_REF}.each do |name, cookie_type|
       define_method("uninstall_#{name}") { |interface_id = nil|
         if interface_id
           @dp_info.del_cookie cookie(cookie_type, interface_id)
