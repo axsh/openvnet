@@ -48,10 +48,13 @@ module Vnet::Openflow::Filters
       @interfaces.delete(interface_id)
     end
 
+    # If interface_id is nil, the group will be installed for all interfaces in it
     def install(interface_id = nil)
-      install_rules(interface_id)
-      install_isolation(interface_id)
-      install_reference(interface_id)
+      @dp_info.add_flows(
+        flows_for_rules(interface_id) +
+        flows_for_isolation(interface_id) +
+        flows_for_reference(interface_id)
+      )
     end
 
     def uninstall(interface_id)
@@ -64,7 +67,7 @@ module Vnet::Openflow::Filters
     def update_rules(rules)
       uninstall_rules
       @rules = split_rules(rules)
-      install_rules
+      @dp_info.add_flows flows_for_rules
     end
 
     def update_reference
@@ -74,7 +77,7 @@ module Vnet::Openflow::Filters
     def update_isolation(ip_addresses)
       uninstall_isolation
       @isolation_ips = ip_addresses
-      install_isolation
+      @dp_info.add_flows flows_for_isolation
     end
 
     private
@@ -115,21 +118,19 @@ module Vnet::Openflow::Filters
       rules.split("\n")
     end
 
-    def install_rules(interface_id = nil)
+    def flows_for_rules(interface_id = nil)
       flows = interface_ids(interface_id).map { |interface_id|
         @rules.map do |rule|
           #TODO: Handle the situation when ipv4 isn't a valid ip address
           protocol, port, ipv4 = rule.strip.split(":")
 
-          rule_flow(protocol, port, IPAddress::IPv4.new(ipv4), interface_id)
+          build_rule_flow(protocol, port, IPAddress::IPv4.new(ipv4), interface_id)
         end
       }.flatten
-
-      @dp_info.add_flows(flows)
     end
 
-    def install_isolation(interface_id = nil)
-      flows = interface_ids(interface_id).map { |interface_id|
+    def flows_for_isolation(interface_id = nil)
+      interface_ids(interface_id).map { |interface_id|
         @isolation_ips.map { |ip|
           flow_create(:default,
             table: TABLE_INTERFACE_INGRESS_FILTER,
@@ -141,26 +142,22 @@ module Vnet::Openflow::Filters
           )
         }
       }.flatten
-
-      @dp_info.add_flows(flows)
     end
 
-    def install_reference(interface_id = nil)
-      flows = @referencees.values.map { |referencee|
+    def flows_for_reference(interface_id = nil)
+      @referencees.values.map { |referencee|
         referencee[:ipv4s].map { |ipv4|
           protocol, port = referencee[:rule].split(":")
           ip_addr = IPAddress::IPv4.parse_u32(ipv4)
 
           interface_ids(interface_id).map { |interface_id|
-            rule_flow(protocol, port, ip_addr, interface_id, COOKIE_TYPE_REF)
+            build_rule_flow(protocol, port, ip_addr, interface_id, COOKIE_TYPE_REF)
           }
         }
       }.flatten
-
-      @dp_info.add_flows(flows)
     end
 
-    def rule_flow(protocol, port, ipv4, interface_id, cookie_type = COOKIE_TYPE_RULE)
+    def build_rule_flow(protocol, port, ipv4, interface_id, cookie_type = COOKIE_TYPE_RULE)
       flow_create(:default,
         table: TABLE_INTERFACE_INGRESS_FILTER,
         priority: RULE_PRIORITY,
