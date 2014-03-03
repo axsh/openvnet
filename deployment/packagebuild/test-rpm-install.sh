@@ -16,7 +16,8 @@ centos_version=${CENTOS_VERSION:-6-5}
 function prepare_chroot_env(){
   umount_for_chroot
   rm -rf ${chroot_dir}
-  [[ -n ${clear_chroot_cache} ]] || [[ ! -d ${chroot_cache_dir} ]] && create_chroot_cache
+  echo ${clear_chroot_cache}
+  [[ ${clear_chroot_cache} = "true" ]] || [[ ! -d ${chroot_cache_dir} ]] && create_chroot_cache
   cp -a ${chroot_cache_dir} ${chroot_dir}
   mount_for_chroot
 }
