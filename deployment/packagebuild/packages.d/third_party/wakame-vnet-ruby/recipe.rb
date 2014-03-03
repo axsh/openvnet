@@ -2,10 +2,10 @@ class WakameVnetRuby < FPM::Cookery::Recipe
   description 'The Ruby virtual machine(For Wakame-VNET bundle)'
 
   name 'wakame-vnet-ruby'
-  version '2.0.0.353'
+  version '2.1.1'
   revision 0
   homepage 'http://www.ruby-lang.org/'
-  source "http://ftp.ruby-lang.org/pub/ruby/2.0/ruby-#{version.split('.')[0,3].join('.')}-p#{version.split('.')[3]}.tar.bz2"
+  source "http://ftp.ruby-lang.org/pub/ruby/2.1/ruby-#{version.split('.')[0,3].join('.')}.tar.bz2"
 
   vendor     'axsh'
   license    'The Ruby License'
