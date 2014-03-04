@@ -238,29 +238,29 @@ describe Vnet::Openflow::TunnelManager do
 
         dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0')
         dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0')
-        dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        if_dp1eth0 = dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
         sleep(0.5)
 
         dp_info.tunnel_manager.update(event: :updated_interface,
                                       interface_event: :set_host_port_number,
-                                      interface_id: dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id,
+                                      interface_id: if_dp1eth0.id,
                                       port_number: 1)
 
         [[1, 1, 1, 1, :added_host_datapath_network],
-         [2, 1, 2, 1, :added_host_datapath_network],
+         #[2, 1, 2, 1, :added_host_datapath_network],
          [3, 2, 1, 2, :added_remote_datapath_network],
-         [4, 2, 2, 2, :added_remote_datapath_network],
+         #[4, 2, 2, 2, :added_remote_datapath_network],
          [5, 3, 1, 3, :added_remote_datapath_network],
         ].each { |index, datapath_id, network_id, interface_id, event|
-          datapath.dp_info.tunnel_manager.update(event: event,
-                                                 dpn: {
-                                                   dpn_id: index,
-                                                   datapath_id: datapath_id,
-                                                   network_id: network_id,
-                                                   interface_id: interface_id,
-                                                   broadcast_mac_address: index,
-                                                   active: false
-                                                 })
+          dp_info.tunnel_manager.update(event: event,
+                                        dpn: {
+                                          dpn_id: index,
+                                          datapath_id: datapath_id,
+                                          network_id: network_id,
+                                          interface_id: interface_id,
+                                          broadcast_mac_address: index,
+                                          active: false
+                                        })
         }
 
         dp.added_flows.clear
@@ -269,13 +269,13 @@ describe Vnet::Openflow::TunnelManager do
 
     subject do
       datapath.dp_info.tunnel_manager.tap do |tm|
-        tm.prepare_network(1)
-        tm.insert(2)
+        # tm.prepare_network(1)
+        # tm.insert(2)
       end
     end
 
     it "should delete tunnel when the network is deleted on the local datapath" do
-      pending
+      # pending
       # subject.remove_network(1)
 
       pp "YYYYYYYYY"
