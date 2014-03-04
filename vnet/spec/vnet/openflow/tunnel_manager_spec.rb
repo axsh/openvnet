@@ -48,97 +48,153 @@ describe Vnet::Openflow::TunnelManager do
         #
         # dp.cookie_manager = Vnet::Openflow::CookieManager.new
 
-        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0')
-        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0')
-        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        if1_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0').id
+        if2_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0').id
+        if3_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id
         sleep(0.5)
+
         dp.added_flows.clear
       end
     end
 
+    # TODO: Make some tests fail when the tunnel port is loaded but
+    # not the host port.
+    let(:host_port_1) do
+      dp_info = datapath.dp_info
+
+      dp_info.tunnel_manager.update(event: :updated_interface,
+                                    interface_event: :set_host_port_number,
+                                    interface_id: dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id,
+                                    port_number: 1)
+    end
+
+    let(:host_datapath_networks) do
+      [[1, 1, 1, 1],
+       [2, 1, 2, 1]].each { |index, datapath_id, network_id, interface_id|
+        datapath.dp_info.tunnel_manager.update(event: :added_host_datapath_network,
+                                               dpn: {
+                                                 dpn_id: index,
+                                                 datapath_id: datapath_id,
+                                                 network_id: network_id,
+                                                 interface_id: interface_id,
+                                                 broadcast_mac_address: index,
+                                                 active: false
+                                               })
+      }
+    end
+
+    let(:remote_datapath_networks_1) do
+      [[3, 2, 1, 2],
+       [5, 3, 1, 3]].each { |index, datapath_id, network_id, interface_id|
+        datapath.dp_info.tunnel_manager.update(event: :added_remote_datapath_network,
+                                               dpn: {
+                                                 dpn_id: index,
+                                                 datapath_id: datapath_id,
+                                                 network_id: network_id,
+                                                 interface_id: interface_id,
+                                                 broadcast_mac_address: index,
+                                                 active: false
+                                               })
+      }
+    end
+
+    let(:remote_datapath_networks_2) do
+      [[4, 2, 2, 2]].each { |index, datapath_id, network_id, interface_id|
+        datapath.dp_info.tunnel_manager.update(event: :added_remote_datapath_network,
+                                               dpn: {
+                                                 dpn_id: index,
+                                                 datapath_id: datapath_id,
+                                                 network_id: network_id,
+                                                 interface_id: interface_id,
+                                                 broadcast_mac_address: index,
+                                                 active: false
+                                               })
+      }
+    end
+
     let(:tunnel_manager) do
       datapath.dp_info.tunnel_manager.tap do |tunnel_manager|
-        tunnel_manager.prepare_network(1)
-        tunnel_manager.prepare_network(2)
-        tunnel_manager.insert(3)
-        tunnel_manager.insert(4)
-        tunnel_manager.insert(5)
       end
     end
 
     it "should only add broadcast mac addressess flows at start" do
-      pending
-      tunnel_manager
+      pending "Current dpn/dprl and tunnel creation method does not fit this test."
 
-      # datapath.dp_info.interface_manager.select({}).each { |interface|
-      #   pp interface.inspect
-      # }
+      host_datapath_networks
 
-      flows = datapath.added_flows
+      # host_port_1
 
-      # flows.each { |flow| pp flow.inspect }
-      # datapath.added_tunnels.each { |tunnel| pp tunnel.inspect }
+      added_flows = datapath.added_flows.uniq
+      added_flows.each { |flow| pp flow.inspect }
+
+      datapath.added_tunnels.each { |tunnel| pp tunnel.inspect }
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(flows.size).to eq 7
+      expect(added_flows.size).to eq 7
     end
 
     it "should add flood flow network 1" do
-      pending
-      tunnel_manager.update_item(event: :set_port_number,
-                                 uuid: datapath.dp_info.added_tunnels[0][:tunnel_name],
-                                 port_number: 9)
-      tunnel_manager.update_item(event: :set_port_number,
-                                 uuid: datapath.dp_info.added_tunnels[1][:tunnel_name],
-                                 port_number: 10)
+      host_datapath_networks
+      remote_datapath_networks_1
 
       datapath.added_flows.clear
 
-      tunnel_manager.update(event: :update_network, network_id: 1)
+      host_port_1
+
+      added_flows = datapath.added_flows.uniq
+      # added_flows.each { |flow| pp flow.inspect }
+
+      expect(datapath.dp_info.added_tunnels.size).to eq 1
+      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(added_flows.size).to eq 4
+
+      # expect(added_flows[0]).to eq Vnet::Openflow::Flow.create(
+      #   TABLE_FLOOD_SEGMENT,
+      #   1,
+      #   {:metadata => 1 | METADATA_TYPE_NETWORK,
+      #    :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
+      #   [],
+      #   {:goto_table => TABLE_FLOOD_TUNNELS,
+      #    :cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
+      # expect(added_flows[1]).to eq Vnet::Openflow::Flow.create(
+      #   TABLE_FLOOD_TUNNELS,
+      #   1,
+      #   {:metadata => 1 | METADATA_TYPE_NETWORK,
+      #    :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
+      #   [{:tunnel_id => 1 | TUNNEL_FLAG_MASK}, {:output => 9}],
+      #   {:cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
+    end
+
+    it "should add flood flow for network 2" do
+      host_datapath_networks
+      remote_datapath_networks_2
+
+      datapath.added_flows.clear
+
+      tunnel_manager.update(event: :set_tunnel_port_number,
+                            port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
+                            port_number: 9)
+
+      added_flows = datapath.added_flows.uniq
 
       expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq 1
+      expect(added_flows.size).to eq 2
 
-      expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
+      expect(added_flows[0]).to eq Vnet::Openflow::Flow.create(
+        TABLE_FLOOD_SEGMENT,
+        1,
+        {:metadata => 1 | METADATA_TYPE_NETWORK,
+         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
+        [],
+        {:goto_table => TABLE_FLOOD_TUNNELS,
+         :cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
+      expect(added_flows[1]).to eq Vnet::Openflow::Flow.create(
         TABLE_FLOOD_TUNNELS,
         1,
         {:metadata => 1 | METADATA_TYPE_NETWORK,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
-        [{:tunnel_id => 1 | TUNNEL_FLAG_MASK}, {:output => 9}, {:output => 10}],
+        [{:tunnel_id => 1 | TUNNEL_FLAG_MASK}, {:output => 9}],
         {:cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
-    end
-
-    it "should add flood flow for network 2" do
-      pending
-      tunnel_manager.update_item(event: :set_port_number,
-                                 uuid: datapath.dp_info.added_tunnels[0][:tunnel_name],
-                                 port_number: 9)
-      tunnel_manager.update_item(event: :set_port_number,
-                                 uuid: datapath.dp_info.added_tunnels[1][:tunnel_name],
-                                 port_number: 10)
-
-      datapath.added_flows.clear
-
-      tunnel_manager.update(event: :update_network, network_id: 2)
-
-      expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq 1
-
-      # expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
-      #   TABLE_FLOOD_TUNNEL_PORTS,
-      #   1,
-      #   {:metadata => 2 | METADATA_TYPE_COLLECTION,
-      #    :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
-      #   [{:output => 9}],
-      #   {:cookie => 2 | (COOKIE_PREFIX_COLLECTION << COOKIE_PREFIX_SHIFT)})
-
-      expect(datapath.added_flows[0]).to eq Vnet::Openflow::Flow.create(
-        TABLE_FLOOD_TUNNELS,
-        1,
-        {:metadata => 2 | METADATA_TYPE_NETWORK,
-         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
-        [{:tunnel_id => 2 | TUNNEL_FLAG_MASK}, {:output => 9}],
-        {:cookie => 2 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
     end
 
   end
@@ -176,12 +232,37 @@ describe Vnet::Openflow::TunnelManager do
     let(:ofctl) { double(:ofctl) }
     let(:datapath) {
       MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16), ofctl).tap { |dp|
+        dp_info = dp.dp_info
+
         dp.create_mock_datapath_map
 
-        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0')
-        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0')
-        dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0')
+        dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0')
+        dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
         sleep(0.5)
+
+        dp_info.tunnel_manager.update(event: :updated_interface,
+                                      interface_event: :set_host_port_number,
+                                      interface_id: dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id,
+                                      port_number: 1)
+
+        [[1, 1, 1, 1, :added_host_datapath_network],
+         [2, 1, 2, 1, :added_host_datapath_network],
+         [3, 2, 1, 2, :added_remote_datapath_network],
+         [4, 2, 2, 2, :added_remote_datapath_network],
+         [5, 3, 1, 3, :added_remote_datapath_network],
+        ].each { |index, datapath_id, network_id, interface_id, event|
+          datapath.dp_info.tunnel_manager.update(event: event,
+                                                 dpn: {
+                                                   dpn_id: index,
+                                                   datapath_id: datapath_id,
+                                                   network_id: network_id,
+                                                   interface_id: interface_id,
+                                                   broadcast_mac_address: index,
+                                                   active: false
+                                                 })
+        }
+
         dp.added_flows.clear
       }
     }
@@ -195,7 +276,18 @@ describe Vnet::Openflow::TunnelManager do
 
     it "should delete tunnel when the network is deleted on the local datapath" do
       pending
-      subject.remove_network(1)
+      # subject.remove_network(1)
+
+      pp "YYYYYYYYY"
+
+      added_flows = datapath.added_flows.uniq
+      added_flows.each { |flow| pp flow.inspect }
+
+      pp "XXXXXX"
+
+      deleted_flows = datapath.deleted_flows # .uniq
+      deleted_flows.each { |flow| pp flow.inspect }
+
       # TODO flood flow should be deleted
     end
 
