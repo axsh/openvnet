@@ -36,6 +36,10 @@ module Vnet::Openflow::Filters
       self.class.cookie(@id, @interfaces[interface_id], type)
     end
 
+    def references?(secg_id)
+      @referencees.member? secg_id
+    end
+
     def has_interface?(interface_id)
       @interfaces.has_key?(interface_id)
     end
@@ -70,8 +74,10 @@ module Vnet::Openflow::Filters
       @dp_info.add_flows flows_for_rules
     end
 
-    def update_reference
-      #TODO: Implement
+    def update_referencee(referencee_id, ipv4s)
+      uninstall_reference
+      @referencees[referencee_id][:ipv4] = ipv4s
+      @dp_info.add_flows flows_for_reference
     end
 
     def update_isolation(ip_addresses)

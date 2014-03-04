@@ -4,7 +4,8 @@ module Vnet::Openflow
   class FilterManager < Manager
     include Vnet::Openflow::FlowHelpers
 
-    subscribe_event UPDATED_SG_RULES, :updated_filter
+    subscribe_event UPDATED_SG_RULES, :updated_sg_rules
+    subscribe_event UPDATED_SG_IP_ADDRESSES, :updated_sg_ip_addresses
     subscribe_event ADDED_INTERFACE_TO_SG, :added_interface_to_sg
     subscribe_event REMOVED_INTERFACE_FROM_SG, :removed_interface_from_sg
 
@@ -18,12 +19,24 @@ module Vnet::Openflow
     # Event handling
     #
 
-    def updated_filter(params)
+    def updated_sg_rules(params)
       item = internal_detect(id: params[:id])
       return if item.nil?
 
       info log_format("Updating rules for security group '#{item.uuid}'")
       item.update_rules(params[:rules])
+    end
+
+    def updated_sg_ip_addresses(params)
+      #@items.values.each { |item|
+      #  id = params[:id]
+      #  ips = params[:isolation_ip_addresses]
+      #  item.update_referencee(id, ips) if item.references?(id)
+      #}
+
+      item = internal_detect(id: params[:id]) || return
+
+      updated_isolation(item, params[:ip_addresses])
     end
 
     def removed_interface_from_sg(params)
@@ -38,14 +51,10 @@ module Vnet::Openflow
 
         @items.delete(item.id) if item.interfaces.empty?
       end
-
-      updated_isolation(item, params[:isolation_ip_addresses])
     end
 
     def added_interface_to_sg(params)
       item = internal_detect(id: params[:id]) || return
-
-      updated_isolation(item, params[:isolation_ip_addresses])
 
       unless is_remote?(params[:interface_owner_datapath_id], params[:interface_active_datapath_id])
         log_interface_added(params[:interface_id], item.uuid)

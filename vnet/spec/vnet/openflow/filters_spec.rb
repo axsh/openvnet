@@ -175,12 +175,12 @@ describe Vnet::Openflow::FilterManager do
    end
   end
 
-  describe "#updated_filter" do
+  describe "#updated_sg_rules" do
     before(:each) { subject.apply_filters wrapper(interface) }
 
     context "with new rules in the parameters" do
       before(:each) do
-        subject.updated_filter({
+        subject.updated_sg_rules({
           id: group.id,
           rules: "tcp:234:192.168.3.34"
         })
@@ -193,12 +193,36 @@ describe Vnet::Openflow::FilterManager do
         )
       end
 
-      it "installs the new rules for a security_group" do
+      it "installs the new rules for a security group" do
         expect(flows).to include rule_flow(
           cookie: cookie_id(group),
           match: match_tcp_rule("192.168.3.34", 234)
         )
       end
+    end
+  end
+
+  describe "#updated_sg_ip_addresses" do
+    let(:interface2) { Fabricate(:filter_interface) }
+
+    before(:each) do
+      subject.apply_filters wrapper(interface)
+      subject.apply_filters wrapper(interface2)
+
+      interface2.add_security_group(group)
+
+      subject.updated_sg_ip_addresses(
+        id: group.id,
+        ip_addresses: group.ip_addresses
+      )
+    end
+
+    it "updates isolation rules for all local interfaces in the group" do
+      expect(flows).to include *iso_flows_for_interfaces(
+        group,
+        interface,
+        [interface, interface2]
+      )
     end
   end
 
@@ -215,24 +239,12 @@ describe Vnet::Openflow::FilterManager do
         interface_cookie_id: group.interface_cookie_id(interface2.id),
         interface_owner_datapath_id: interface2.owner_datapath_id,
         interface_active_datapath_id: interface2.active_datapath_id,
-        isolation_ip_addresses: group.ip_addresses
       )
-    end
-
-    shared_examples "update isolation for old interfaces" do
-      it "updates isolation rules for the interface that was in the group already" do
-        expect(flows).to include *iso_flows_for_interfaces(
-          group,
-          interface,
-          [interface, interface2]
-        )
-      end
     end
 
     context "with a local interface" do
       let(:interface2) { Fabricate(:filter_interface) }
 
-      include_examples "update isolation for old interfaces"
 
       it "applies the rule flows for the new interface" do
        expect(flows).to include rule_flow({
@@ -241,20 +253,10 @@ describe Vnet::Openflow::FilterManager do
          interface2
        )
       end
-
-      it "applies the isolation flows for the new interface" do
-        expect(flows).to include *iso_flows_for_interfaces(
-          group,
-          interface2,
-          [interface, interface2]
-        )
-      end
     end
 
     context "with a remote interface" do
       let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
-
-      include_examples "update isolation for old interfaces"
 
       it "doesn't apply the rule flows for the new interface" do
        expect(flows).not_to include rule_flow({
@@ -295,7 +297,6 @@ describe Vnet::Openflow::FilterManager do
         interface_id: interface2.id,
         interface_owner_datapath_id: interface2.owner_datapath_id,
         interface_active_datapath_id: interface2.active_datapath_id,
-        isolation_ip_addresses: group.ip_addresses
       )
     end
 
