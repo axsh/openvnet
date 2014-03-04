@@ -177,7 +177,7 @@ module Vnet
     autoload :EventHandler, 'vnet/node_modules/event_handler'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
     autoload :SwitchManager, 'vnet/node_modules/service_openflow'
-    autoload :DatabaseMediator, 'vnet/node_modules/database_mediator'
+    autoload :VdcVnetPlugin, 'vnet/node_modules/vdc_vnet_plugin'
   end
 
   module Openflow
