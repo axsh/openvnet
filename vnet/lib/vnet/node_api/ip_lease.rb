@@ -2,6 +2,8 @@
 module Vnet::NodeApi
   class IpLease < Base
     class << self
+      include Vnet::Event::Helpers
+
       def create(options)
         options = options.dup
         ip_lease = transaction do
@@ -9,6 +11,10 @@ module Vnet::NodeApi
         end
 
         dispatch_event(LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+
+        ip_lease.interface.security_groups.each do |group|
+          dispatch_update_sg_ip_addresses(group)
+        end
 
         ip_lease
       end
@@ -36,6 +42,10 @@ module Vnet::NodeApi
           dispatch_event(LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
         end
 
+        ip_lease.interface.security_groups.each do |group|
+          dispatch_update_sg_ip_addresses(group)
+        end
+
         ip_lease
       end
 
@@ -44,6 +54,10 @@ module Vnet::NodeApi
           transaction do
             model.destroy
           end
+        end
+
+        ip_lease.interface.security_groups.each do |group|
+          dispatch_update_sg_ip_addresses(group)
         end
 
         dispatch_event(RELEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)

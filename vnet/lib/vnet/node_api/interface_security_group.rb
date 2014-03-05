@@ -3,6 +3,8 @@
 module Vnet::NodeApi
   class InterfaceSecurityGroup < Base
     class << self
+      include Vnet::Event::Helpers
+
       def create(options)
         ifsecg = super(options)
         group = ifsecg.security_group
@@ -16,10 +18,7 @@ module Vnet::NodeApi
           interface_active_datapath_id: interface.active_datapath_id,
         )
 
-        dispatch_event(UPDATED_SG_IP_ADDRESSES,
-          id: group.id,
-          ip_addresses: group.ip_addresses
-        )
+        dispatch_update_sg_ip_addresses(group)
       end
 
       def destroy(id)
@@ -31,10 +30,7 @@ module Vnet::NodeApi
           interface_id: ifsecg.interface_id,
         )
 
-        dispatch_event(UPDATED_SG_IP_ADDRESSES,
-          id: group.id,
-          ip_addresses: group.ip_addresses
-        )
+        dispatch_update_sg_ip_addresses(group)
       end
     end
   end
