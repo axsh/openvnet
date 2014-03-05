@@ -44,6 +44,33 @@ describe Vnet::Openflow::FilterManager do
       end
     end
 
+    context "with a group that has rules with faulthy syntax" do
+      let(:group) do
+        rules = %{
+          # I am a comment
+          I'm not even a rule at all
+          joske:22:0.0.0.0/0
+          tcp:i ain't no port:10.0.0.1/24
+          udp:52:no ip for you
+          tcp:22:10.1.0.0/24
+          icmp::0.0.0.0/0:something else
+        }
+        Fabricate(:security_group, rules: rules)
+      end
+
+      it "skips the faulty syntax rules and still applies the correct ones" do
+        expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_tcp_rule("10.1.0.0/24", 22)
+        )
+
+        expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_icmp_rule("0.0.0.0/0")
+        )
+      end
+    end
+
     context "with an interface that's in two security groups" do
       let(:group1) do
         rules = "tcp:22:0.0.0.0/0\nudp:52:10.1.0.1/24"

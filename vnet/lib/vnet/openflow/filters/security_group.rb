@@ -88,7 +88,6 @@ module Vnet::Openflow::Filters
 
     private
     def rule_to_match(protocol, port, ipv4)
-      #TODO: Handle the situation when protocol isn't a proper protocol
       match_ipv4_subnet_src(ipv4.u32, ipv4.prefix.to_i).merge case protocol
       when 'icmp'
         { ip_proto: IPV4_PROTOCOL_ICMP }
@@ -100,9 +99,9 @@ module Vnet::Openflow::Filters
     end
 
     def parse_rules(rules)
-      #TODO: Throw away commented and invalid rules. Also log a warning for
-      #invalid rules
-      rules, reference = split_rules(rules).partition { |r|
+      rules = split_rules(rules).delete_if { |r| !validate_rule(r) }
+
+      rules, reference = rules.partition { |r|
         (r =~ REF_REGEX).nil?
       }
 
@@ -120,15 +119,43 @@ module Vnet::Openflow::Filters
       [rules, ref_hash]
     end
 
+    def validate_rule(rule, log = true)
+      rule.strip!
+      # Skip comments and line breaks without logging
+      return false if rule.empty? || rule =~ /^#.*/
+
+      protocol, port, ipv4 = rule.split(":")
+
+      unless ['icmp', 'tcp', 'udp'].member?(protocol)
+        warn log_format("invalid protocol in rule", "#{@uuid}: #{rule}")
+        return false
+      end
+
+      unless (1..0xffff).member?(port.to_i) || protocol == 'icmp'
+        warn log_format("invalid port in rule", "#{@uuid}: #{rule}")
+        return false
+      end
+
+      unless (IPAddress(ipv4) rescue false) || ipv4 == '0.0.0.0/0' || !(ipv4 =~ REF_REGEX).nil?
+        warn log_format("invalid ipv4 address or security group uuid in rule", "#{@uuid}: #{rule}")
+        return false
+      end
+
+      true
+    end
+
     def split_rules(rules)
       rules.split("\n")
+    end
+
+    def log_format(msg, values = nil)
+      "security_group: " + msg + (values ? " (#{values})" : '')
     end
 
     def flows_for_rules(interface_id = nil)
       flows = interface_ids(interface_id).map { |interface_id|
         @rules.map do |rule|
-          #TODO: Handle the situation when ipv4 isn't a valid ip address
-          protocol, port, ipv4 = rule.strip.split(":")
+          protocol, port, ipv4 = rule.split(":")
 
           build_rule_flow(protocol, port, IPAddress::IPv4.new(ipv4), interface_id)
         end
