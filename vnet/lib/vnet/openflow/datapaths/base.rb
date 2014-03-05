@@ -137,9 +137,6 @@ module Vnet::Openflow::Datapaths
         :route_link_id => dprl_map.route_link_id,
         :mac_address => Trema::Mac.new(dprl_map.mac_address),
 
-        # TODO: Remove:
-        # :route_link_mac_address => Trema::Mac.new(dprl_map.mac_address),
-
         :active => false
       }
 
@@ -148,7 +145,6 @@ module Vnet::Openflow::Datapaths
       return if dp_route_link[:interface_id].nil?
       return if dp_route_link[:datapath_id].nil?
       return if dp_route_link[:route_link_id].nil?
-      return if dp_route_link[:route_link_mac_address].nil?
 
       flows = []
       flows_for_filtering_mac_address(flows,

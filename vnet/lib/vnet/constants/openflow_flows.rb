@@ -106,9 +106,7 @@ module Vnet
       TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF      = 84
 
       TABLE_OUTPUT_DP_OVER_MAC2MAC           = 85 # Match src/dst if id, output if present.
-      TABLE_OUTPUT_DP_NETWORK_SET_MAC        = 86 # If broadcast -> set MAC2MAC or drop. default goto next
-      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC     = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
-      TABLE_OUTPUT_DP_OVER_TUNNEL            = 88 # Use tun_id to determine type for goto_table.
+      TABLE_OUTPUT_DP_OVER_TUNNEL            = 86 # Use tun_id to determine type for goto_table.
 
       #
       # Output ports tables:
