@@ -236,9 +236,7 @@ describe Vnet::Openflow::FilterManager do
       subject.added_interface_to_sg(
         id: group.id,
         interface_id: interface2.id,
-        interface_cookie_id: group.interface_cookie_id(interface2.id),
-        interface_owner_datapath_id: interface2.owner_datapath_id,
-        interface_active_datapath_id: interface2.active_datapath_id,
+        interface_cookie_id: group.interface_cookie_id(interface2.id)
       )
     end
 

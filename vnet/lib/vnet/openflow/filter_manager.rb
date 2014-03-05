@@ -57,7 +57,8 @@ module Vnet::Openflow
     def added_interface_to_sg(params)
       item = internal_detect(id: params[:id]) || return
 
-      unless is_remote?(params[:interface_owner_datapath_id], params[:interface_active_datapath_id])
+      interface = MW::Interface.batch[params[:interface_id]].commit
+      if !is_remote?(interface) && interface.ingress_filtering_enabled
         log_interface_added(params[:interface_id], item.uuid)
 
         item.add_interface(params[:interface_id], params[:interface_cookie_id])
@@ -134,6 +135,10 @@ module Vnet::Openflow
 
     def accept_ingress_arp
       Filters::AcceptIngressArp.new.tap {|i| i.dp_info = @dp_info}
+    end
+
+    def is_remote?(interface)
+      super(interface.owner_datapath_id, interface.active_datapath_id)
     end
   end
 end
