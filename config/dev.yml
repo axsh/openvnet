@@ -1,7 +1,8 @@
+specs_ext: [edge_esxi]
 nodes:
   webapi: [192.168.2.61]
   vnmgr: [192.168.2.61]
-  vna: [192.168.2.61, 192.168.2.62, 192.168.2.63, 192.168.2.60]
+  vna: [192.168.2.61, 192.168.2.62, 192.168.2.63, 192.168.2.60, 192.168.2.65]
 
 webapi:
   host: 192.168.2.61
@@ -13,6 +14,7 @@ log_level: debug
 
 dataset_options:
   edge_ipv4_address: 172.16.20.10
+  edge_esxi_ipv4_address: 172.16.20.9
   dp1_ipv4_address: 172.16.20.11
   dp2_ipv4_address: 172.16.20.12
   dp3_ipv4_address: 172.16.30.11
@@ -27,3 +29,7 @@ legacy_machines:
   legacy1:
     ssh_ip: 192.168.2.64
     ipv4_address: 192.168.100.100
+  legacy_esxi:
+    hostname: legacy-esxi
+    ssh_ip: 192.168.2.66
+    ipv4_address: 192.168.100.101
