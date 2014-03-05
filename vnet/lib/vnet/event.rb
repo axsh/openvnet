@@ -86,6 +86,8 @@ module Vnet
     REMOVED_TUNNEL = "removed_tunnel"
     INITIALIZED_TUNNEL = "initialized_tunnel"
 
+    TUNNEL_UPDATE_NETWORKS = "tunnel_update_networks"
+
     ADDED_HOST_DATAPATH_NETWORK = "added_host_datapath_network"
     ADDED_REMOTE_DATAPATH_NETWORK = "added_remote_datapath_network"
     ADDED_HOST_DATAPATH_ROUTE_LINK = "added_host_datapath_route_link"

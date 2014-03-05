@@ -10,6 +10,8 @@ module Vnet::Openflow
     subscribe_event REMOVED_TUNNEL, :unload
     subscribe_event INITIALIZED_TUNNEL, :install_item
 
+    subscribe_event TUNNEL_UPDATE_NETWORKS, :update_networks
+
     subscribe_event ADDED_HOST_DATAPATH_NETWORK, :added_host_datapath_network
     subscribe_event ADDED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
     subscribe_event ADDED_HOST_DATAPATH_ROUTE_LINK, :added_host_datapath_route_link
@@ -22,6 +24,7 @@ module Vnet::Openflow
     def initialize(*args)
       super
       @interfaces = {}
+      @update_networks = {}
 
       @host_networks = {}
       @host_route_links = {}
@@ -151,6 +154,8 @@ module Vnet::Openflow
         :gre
       when src_interface[:network_id] == dst_interface[:network_id]
         :mac2mac
+      else
+        nil
       end
     end
 
@@ -244,17 +249,10 @@ module Vnet::Openflow
         item.add_datapath_route_link(remote_dprl)
       }
 
+      add_dpn_hash_to_updated_networks(remote_dpns)
+
       # Make sure we have the remote host interface loaded.
       @dp_info.interface_manager.async.retrieve(id: item.dst_interface_id)
-
-      # Update networks:
-      updated_networks = remote_dpns.map { |id, remote_dpns|
-        remote_dpns[:network_id]
-      }
-      updated_networks.uniq!
-      updated_networks.each { |network_id|
-        update_network_id(network_id)
-      }
     end
 
     def delete_item(item)
@@ -290,6 +288,22 @@ module Vnet::Openflow
     # Event handlers:
     #
 
+    # TUNNEL_UPDATE_NETWORKS on queue ':update_networks'
+    def update_networks(params)
+      while !@update_networks.empty?
+        network_ids = @update_networks.keys
+
+        info log_format("updating network flows", network_ids.to_s)
+
+        network_ids.each { |network_id|
+          next unless @update_networks.delete(network_id)
+
+          update_network_id(network_id)
+        }
+      end
+    end
+
+    # Require queue ':update_networks'
     def update_network_id(network_id)
       tunnel_actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
       mac2mac_actions = []
@@ -365,6 +379,8 @@ module Vnet::Openflow
         return
       end
 
+      # TODO: This needs to be turned into an event for tunnel creation.
+
       # Only do create_tunnel and return...
       item = item || create_tunnel(options, tunnel_mode)
 
@@ -379,8 +395,7 @@ module Vnet::Openflow
       # item.
       item.add_datapath_network(remote_dpn)
 
-      # TODO: Consider making this an event?
-      update_network_id(network_id)
+      add_network_id_to_updated_networks(network_id)
     end
 
     def set_tunnel_port_number(params)
@@ -396,14 +411,15 @@ module Vnet::Openflow
         return
       end
 
-      # TODO: Turn into an event:
+      # TODO: Turn into an event, and use the same update_networks
+      # list for all callers, with an event that pulls network id's to
+      # update from the list.
+
       updated_networks = {}
 
       item.set_tunnel_port_number(port_number, updated_networks)
 
-      updated_networks.each { |network_id, value|
-        update_network_id(network_id)
-      }
+      add_network_ids_to_updated_networks(updated_networks.keys)
     end
 
     #
@@ -502,17 +518,14 @@ module Vnet::Openflow
         item.set_host_port_number(port_number, updated_networks)
       }
 
-      # TODO: We need to gather all the network id's that need to have
-      # new flood flows.
-      updated_networks.each { |network_id, value|
-        update_network_id(network_id)
-      }
+      add_network_ids_to_updated_networks(updated_networks.keys)
     end
 
     #
     # Datapath network events:
     #
 
+    # ADDED_HOST_DATAPATH_NETWORK on queue ':datapath_network'
     def added_host_datapath_network(params)
       host_dpn = create_dp_obj(:host_network, params) || return
       network_id = host_dpn[:network_id]
@@ -527,6 +540,7 @@ module Vnet::Openflow
       }
     end
 
+    # ADDED_REMOTE_DATAPATH_NETWORK on queue ':datapath_network'
     def added_remote_datapath_network(params)
       remote_dpn = create_dp_obj(:remote_network, params) || return
       network_id = remote_dpn[:network_id]
@@ -540,6 +554,7 @@ module Vnet::Openflow
     # Datapath route_link events:
     #
 
+    # ADDED_HOST_DATAPATH_ROUTE_LINK on queue ':datapath_route_link'
     def added_host_datapath_route_link(params)
       host_dprl = create_dp_obj(:host_route_link, params) || return
       route_link_id = host_dprl[:route_link_id]
@@ -554,6 +569,7 @@ module Vnet::Openflow
       }
     end
 
+    # ADDED_REMOTE_DATAPATH_ROUTE_LINK on queue ':datapath_route_link'
     def added_remote_datapath_route_link(params)
       remote_dprl = create_dp_obj(:remote_route_link, params) || return
       route_link_id = remote_dprl[:route_link_id]
@@ -606,6 +622,35 @@ module Vnet::Openflow
         dst_object_type => object_id,
         :interface_id => interface_id,
         :mac_address => mac_address
+      }
+    end
+
+    def add_network_id_to_updated_networks(network_id)
+      return unless @update_networks[network_id].nil?
+      @update_networks[network_id] = true
+
+      publish(TUNNEL_UPDATE_NETWORKS,
+              id: :update_networks)
+    end
+
+    def add_network_ids_to_updated_networks(network_ids)
+      network_ids.select { |network_id|
+        @update_networks[network_id].nil?
+      }.tap { |network_ids|
+        return if network_ids.nil?
+      }.each { |network_id|
+        @update_networks[network_id] = true
+      }
+
+      publish(TUNNEL_UPDATE_NETWORKS,
+              id: :update_networks)
+    end
+
+    def add_dpn_hash_to_updated_networks(dpns)
+      dpns.map { |id, remote_dpns|
+        remote_dpns[:network_id]
+      }.tap { |network_ids|
+        add_network_ids_to_updated_networks(network_ids)
       }
     end
 

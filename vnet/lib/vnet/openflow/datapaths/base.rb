@@ -82,27 +82,25 @@ module Vnet::Openflow::Datapaths
       return if dpn_map.network_id.nil?
       return if @active_networks.has_key? dpn_map.network_id
 
-      active_network = {
-        id: dpn_map.id,
-        datapath_id: dpn_map.datapath_id,
-        interface_id: dpn_map.interface_id,
-        network_id: dpn_map.network_id,
-        mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
+      dp_network = {
+        id: dpn_map.id || return,
+        datapath_id: dpn_map.datapath_id || return,
+        interface_id: dpn_map.interface_id || return,
+        network_id: dpn_map.network_id || return,
+        mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address || return),
 
         active: false
       }
 
-      @active_networks[dpn_map.network_id] = active_network
+      @active_networks[dpn_map.network_id] = dp_network
 
       flows = []
       flows_for_filtering_mac_address(flows,
-                                      active_network[:mac_address],
-                                      active_network[:id] | COOKIE_TYPE_DP_NETWORK)
-      flows_for_dp_network(flows, active_network)
+                                      dp_network[:mac_address],
+                                      dp_network[:id] | COOKIE_TYPE_DP_NETWORK)
+      flows_for_dp_network(flows, dp_network)
 
       @dp_info.add_flows(flows)
-
-      # after_add_active_network(active_network)
 
       debug log_format("adding to #{@uuid}/#{@id} datapath network #{dpn_map.network_id}")
 
@@ -110,12 +108,10 @@ module Vnet::Openflow::Datapaths
     end
 
     def remove_active_network(network_id)
-      active_network = @active_networks.delete(network_id)
-      return false if active_network.nil?
+      dp_network = @active_networks.delete(network_id)
+      return false if dp_network.nil?
 
-      @dp_info.del_cookie(active_network[:id] | COOKIE_TYPE_DP_NETWORK)
-
-      # after_remove_active_network(active_network)
+      @dp_info.del_cookie(dp_network[:id] | COOKIE_TYPE_DP_NETWORK)
 
       debug log_format("removing from #{@uuid}/#{@id} datapath network #{network_id}")
 
@@ -131,13 +127,13 @@ module Vnet::Openflow::Datapaths
       return if @active_route_links.has_key? dprl_map.route_link_id
 
       dp_route_link = {
-        :id => dprl_map.id,
-        :datapath_id => dprl_map.datapath_id,
-        :interface_id => dprl_map.interface_id,
-        :route_link_id => dprl_map.route_link_id,
-        :mac_address => Trema::Mac.new(dprl_map.mac_address),
+        id: dprl_map.id || return,
+        datapath_id: dprl_map.datapath_id || return,
+        interface_id: dprl_map.interface_id || return,
+        route_link_id: dprl_map.route_link_id || return,
+        mac_address: Trema::Mac.new(dprl_map.mac_address || return),
 
-        :active => false
+        active: false
       }
 
       @active_route_links[dprl_map.route_link_id] = dp_route_link
@@ -155,6 +151,7 @@ module Vnet::Openflow::Datapaths
       @dp_info.add_flows(flows)
 
       debug log_format("adding to #{@uuid}/#{@id} datapath route link #{dprl_map.route_link_id}")
+      true
     end
 
     #
