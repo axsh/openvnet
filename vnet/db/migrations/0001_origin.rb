@@ -255,6 +255,7 @@ Sequel.migration do
       String :mode, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+      DateTime :deleted_at
     end
   end
 
