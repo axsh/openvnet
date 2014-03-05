@@ -101,6 +101,16 @@ module Vnspec
         multi_ssh(config[:nodes][:vna], args.join(" "))
       end
       alias_method :run_command, :run_command_on_vna_nodes
+
+      def wait_for_webapi(retry_count = 10)
+        health_check_url = "http://#{config[:webapi][:host]}:#{config[:webapi][:port]}/api/datapaths"
+        retry_count.times do
+          `curl -fsSkL #{health_check_url}`
+          return true if $? == 0
+          sleep 1
+        end
+        return false
+      end
     end
   end
 end
