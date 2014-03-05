@@ -65,10 +65,10 @@ module Vnet::Openflow::Datapaths
       @dp_info.del_cookie(id | COOKIE_TYPE_DATAPATH)
 
       @active_networks.each do |_, active_network|
-        @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+        @dp_info.del_cookie(active_network[:id] | COOKIE_TYPE_DP_NETWORK)
       end
       @active_route_links.each do |_, active_route_link|
-        @dp_info.del_cookie(active_route_link[:dpn_id] | COOKIE_TYPE_DP_ROUTE_LINK)
+        @dp_info.del_cookie(active_route_link[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
       end
     end
 
@@ -83,13 +83,11 @@ module Vnet::Openflow::Datapaths
       return if @active_networks.has_key? dpn_map.network_id
 
       active_network = {
-        id: dpn_map.id, # remove
-        dpn_id: dpn_map.id,
+        id: dpn_map.id,
         datapath_id: dpn_map.datapath_id,
         interface_id: dpn_map.interface_id,
         network_id: dpn_map.network_id,
-        mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address), # remove
-        broadcast_mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
+        mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address),
 
         active: false
       }
@@ -98,8 +96,8 @@ module Vnet::Openflow::Datapaths
 
       flows = []
       flows_for_filtering_mac_address(flows,
-                                      active_network[:broadcast_mac_address],
-                                      active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+                                      active_network[:mac_address],
+                                      active_network[:id] | COOKIE_TYPE_DP_NETWORK)
       flows_for_dp_network(flows, active_network)
 
       @dp_info.add_flows(flows)
@@ -115,7 +113,7 @@ module Vnet::Openflow::Datapaths
       active_network = @active_networks.delete(network_id)
       return false if active_network.nil?
 
-      @dp_info.del_cookie(active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+      @dp_info.del_cookie(active_network[:id] | COOKIE_TYPE_DP_NETWORK)
 
       # after_remove_active_network(active_network)
 
@@ -140,7 +138,7 @@ module Vnet::Openflow::Datapaths
         :mac_address => Trema::Mac.new(dprl_map.mac_address),
 
         # TODO: Remove:
-        :route_link_mac_address => Trema::Mac.new(dprl_map.mac_address),
+        # :route_link_mac_address => Trema::Mac.new(dprl_map.mac_address),
 
         :active => false
       }

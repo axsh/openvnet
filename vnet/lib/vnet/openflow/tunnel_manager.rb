@@ -14,6 +14,10 @@ module Vnet::Openflow
     subscribe_event ADDED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
     subscribe_event ADDED_HOST_DATAPATH_ROUTE_LINK, :added_host_datapath_route_link
     subscribe_event ADDED_REMOTE_DATAPATH_ROUTE_LINK, :added_remote_datapath_route_link
+    # subscribe_event REMOVED_HOST_DATAPATH_NETWORK, :added_host_datapath_network
+    # subscribe_event REMOVED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
+    # subscribe_event REMOVED_HOST_DATAPATH_ROUTE_LINK, :added_host_datapath_route_link
+    # subscribe_event REMOVED_REMOTE_DATAPATH_ROUTE_LINK, :added_remote_datapath_route_link
 
     def initialize(*args)
       super
@@ -34,19 +38,35 @@ module Vnet::Openflow
       when :added_host_datapath_network
         publish(ADDED_HOST_DATAPATH_NETWORK,
                 id: :datapath_network,
-                host_dpn: params[:dpn])
+                dp_obj: params[:dpn])
       when :added_remote_datapath_network
         publish(ADDED_REMOTE_DATAPATH_NETWORK,
                 id: :datapath_network,
-                remote_dpn: params[:dpn])
+                dp_obj: params[:dpn])
       when :added_host_datapath_route_link
         publish(ADDED_HOST_DATAPATH_ROUTE_LINK,
                 id: :datapath_route_link,
-                host_dprl: params[:dprl])
+                dp_obj: params[:dprl])
       when :added_remote_datapath_route_link
         publish(ADDED_REMOTE_DATAPATH_ROUTE_LINK,
                 id: :datapath_route_link,
-                remote_dprl: params[:dprl])
+                dp_obj: params[:dprl])
+      # when :removed_host_datapath_network
+      #   publish(REMOVED_HOST_DATAPATH_NETWORK,
+      #           id: :datapath_network,
+      #           host_dpn: params[:dpn])
+      # when :removed_remote_datapath_network
+      #   publish(REMOVED_REMOTE_DATAPATH_NETWORK,
+      #           id: :datapath_network,
+      #           remote_dpn: params[:dpn])
+      # when :removed_host_datapath_route_link
+      #   publish(REMOVED_HOST_DATAPATH_ROUTE_LINK,
+      #           id: :datapath_route_link,
+      #           host_dprl: params[:dprl])
+      # when :removed_remote_datapath_route_link
+      #   publish(REMOVED_REMOTE_DATAPATH_ROUTE_LINK,
+      #           id: :datapath_route_link,
+      #           remote_dprl: params[:dprl])
       end
 
       nil
@@ -393,9 +413,8 @@ module Vnet::Openflow
     # TODO: Use the :interface event queue.
 
     def updated_interface(params)
-      interface_id = params[:interface_id]
-      interface_event = params[:interface_event]
-      return if interface_id.nil? || interface_event.nil?
+      interface_id = params[:interface_id] || return
+      interface_event = params[:interface_event] || return
 
       case interface_event
       when :added_ipv4_address
@@ -435,10 +454,9 @@ module Vnet::Openflow
                        "network_id:#{params[:network_id]} ipv4_address:#{params[:ipv4_address]}")
 
       # If already exists, clean up instead.
-      interface = interface_prepare(interface_id, interface_mode)
+      interface = interface_prepare(interface_id, interface_mode) || return
 
       # Check if interface mode matches...
-      return if interface.nil?
 
       interface[:network_id] = params[:network_id]
       interface[:ipv4_address] = params[:ipv4_address]
@@ -449,16 +467,14 @@ module Vnet::Openflow
           # Register this as an event instead, and use the values in
           # '@interfaces' when handling the event.
           item.set_src_ipv4_address(interface[:network_id], interface[:ipv4_address])
-
-          next reload_item(item) if select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
+          reload_item(item) if select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
         }
       when :remote
         items_with_dst_interface(interface_id).each { |id, item|
           # Register this as an event instead, and use the values in
           # '@interfaces' when handling the event.
           item.set_dst_ipv4_address(interface[:network_id], interface[:ipv4_address])
-
-          next reload_item(item) if select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
+          reload_item(item) if select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
         }
       end
     end
@@ -498,36 +514,8 @@ module Vnet::Openflow
     #
 
     def added_host_datapath_network(params)
-      param_dpn = params[:host_dpn]
-      return if param_dpn.nil?
-
-      dpn_id = param_dpn[:dpn_id]
-      datapath_id = param_dpn[:datapath_id]
-      network_id = param_dpn[:network_id]
-      interface_id = param_dpn[:interface_id]
-      broadcast_mac_address = param_dpn[:broadcast_mac_address]
-      return if dpn_id.nil?
-      return if datapath_id.nil?
-      return if network_id.nil?
-      return if interface_id.nil?
-      return if broadcast_mac_address.nil?
-      
-      if @host_networks[network_id]
-        error log_format("host datapath network #{dpn_id} already added",
-                         "network_id:#{network_id} interface_id:#{interface_id} broadcast_mac_address:#{broadcast_mac_address}")
-        return
-      end
-
-      host_dpn = @host_networks[network_id] = {
-        :dpn_id => dpn_id,
-        :datapath_id => datapath_id, # Not needed
-        :network_id => network_id,
-        :interface_id => interface_id,
-        :broadcast_mac_address => broadcast_mac_address
-      }
-
-      debug log_format("host datapath network #{dpn_id} added for datapath #{datapath_id}",
-                       "network_id:#{network_id} interface_id:#{interface_id} broadcast_mac_address:#{broadcast_mac_address}")
+      host_dpn = create_dp_obj(:host_network, params) || return
+      network_id = host_dpn[:network_id]
 
       # Reorder so that we activate in the order of loading
       # internally, database and then create.
@@ -540,30 +528,8 @@ module Vnet::Openflow
     end
 
     def added_remote_datapath_network(params)
-      param_dpn = params[:remote_dpn]
-      return if param_dpn.nil?
-
-      dpn_id = param_dpn[:dpn_id]
-      datapath_id = param_dpn[:datapath_id]
-      network_id = param_dpn[:network_id]
-      interface_id = param_dpn[:interface_id]
-      broadcast_mac_address = param_dpn[:broadcast_mac_address]
-      
-      if @remote_datapath_networks[dpn_id]
-        error log_format("remote datapath network #{dpn_id} already added")
-        return
-      end
-
-      remote_dpn = @remote_datapath_networks[dpn_id] = {
-        :dpn_id => dpn_id,
-        :datapath_id => datapath_id,
-        :network_id => network_id,
-        :interface_id => interface_id,
-        :broadcast_mac_address => broadcast_mac_address
-      }
-
-      debug log_format("remote datapath network #{dpn_id} added for datapath #{datapath_id}",
-                       "network_id:#{network_id} interface_id:#{interface_id} broadcast_mac_address:#{broadcast_mac_address}")
+      remote_dpn = create_dp_obj(:remote_network, params) || return
+      network_id = remote_dpn[:network_id]
 
       host_dpn = @host_networks[network_id]
 
@@ -575,76 +541,72 @@ module Vnet::Openflow
     #
 
     def added_host_datapath_route_link(params)
-      param_dpn = params[:host_dpn]
-      return if param_dpn.nil?
-
-      dpn_id = param_dpn[:dpn_id]
-      datapath_id = param_dpn[:datapath_id]
-      route_link_id = param_dpn[:route_link_id]
-      interface_id = param_dpn[:interface_id]
-      mac_address = param_dpn[:mac_address]
-      return if dpn_id.nil?
-      return if datapath_id.nil?
-      return if route_link_id.nil?
-      return if interface_id.nil?
-      return if mac_address.nil?
-      
-      if @host_route_links[route_link_id]
-        error log_format("host datapath route_link #{dpn_id} already added",
-                         "route_link_id:#{route_link_id} interface_id:#{interface_id} mac_address:#{mac_address}")
-        return
-      end
-
-      host_dpn = @host_route_links[route_link_id] = {
-        :dpn_id => dpn_id,
-        :datapath_id => datapath_id, # Not needed
-        :route_link_id => route_link_id,
-        :interface_id => interface_id,
-        :mac_address => mac_address
-      }
-
-      debug log_format("host datapath route_link #{dpn_id} added for datapath #{datapath_id}",
-                       "route_link_id:#{route_link_id} interface_id:#{interface_id} mac_address:#{mac_address}")
+      host_dprl = create_dp_obj(:host_route_link, params) || return
+      route_link_id = host_dprl[:route_link_id]
 
       # Reorder so that we activate in the order of loading
       # internally, database and then create.
-      remote_dpns = @remote_datapath_route_links.select { |id, remote_dpn|
-        remote_dpn[:route_link_id] == route_link_id
+      remote_dprls = @remote_datapath_route_links.select { |id, remote_dprl|
+        remote_dprl[:route_link_id] == route_link_id
       }
-      remote_dpns.each { |id, remote_dpn|
-        activate_tunnel(host_dpn, remote_dpn, route_link_id)
+      remote_dprls.each { |id, remote_dprl|
+        activate_tunnel(host_dprl, remote_dprl, route_link_id)
       }
     end
 
     def added_remote_datapath_route_link(params)
-      param_dpn = params[:remote_dpn]
-      return if param_dpn.nil?
+      remote_dprl = create_dp_obj(:remote_route_link, params) || return
+      route_link_id = remote_dprl[:route_link_id]
 
-      dpn_id = param_dpn[:dpn_id]
-      datapath_id = param_dpn[:datapath_id]
-      route_link_id = param_dpn[:route_link_id]
-      interface_id = param_dpn[:interface_id]
-      mac_address = param_dpn[:mac_address]
-      
-      if @remote_datapath_route_links[dpn_id]
-        error log_format("remote datapath route_link #{dpn_id} already added")
+      host_dprl = @host_route_links[route_link_id]
+
+      activate_tunnel(host_dprl, remote_dprl, route_link_id) if host_dprl
+    end
+
+    #
+    # Helper methods:
+    #
+
+    def create_dp_obj(type, params)
+      case type
+      when :host_network
+        dst_list, dst_log_prefix = @host_networks, "host datapath network"
+        dst_key_type = dst_object_type = :network_id
+      when :remote_network
+        dst_list, dst_log_prefix = @remote_datapath_networks, "remote datapath network"
+        dst_key_type, dst_object_type = :id, :network_id
+      when :host_route_link
+        dst_list, dst_log_prefix = @host_route_links, "host datapath route link"
+        dst_key_type = dst_object_type = :route_link_id
+      when :remote_route_link
+        dst_list, dst_log_prefix = @remote_datapath_route_links, "remote datapath route link"
+        dst_key_type, dst_object_type = :id, :route_link_id
+      end
+
+      param_obj = params[:dp_obj] || return
+      key_id = param_obj[dst_key_type] || return
+
+      id = param_obj[:id] || return
+      object_id = param_obj[dst_object_type] || return
+      datapath_id = param_obj[:datapath_id] || return
+      interface_id = param_obj[:interface_id] || return
+      mac_address = param_obj[:mac_address] || return
+
+      if dst_list[key_id]
+        error log_format("#{dst_log_prefix} #{key_id} already added")
         return
       end
 
-      remote_dpn = @remote_datapath_route_links[dpn_id] = {
-        :dpn_id => dpn_id,
+      debug log_format("#{dst_log_prefix} #{key_id} added for datapath #{datapath_id}",
+                       "#{dst_object_type}:#{object_id} interface_id:#{interface_id} mac_address:#{mac_address}")
+
+      dst_list[key_id] = {
+        :id => id,
         :datapath_id => datapath_id,
-        :route_link_id => route_link_id,
+        dst_object_type => object_id,
         :interface_id => interface_id,
         :mac_address => mac_address
       }
-
-      debug log_format("remote datapath route_link #{dpn_id} added for datapath #{datapath_id}",
-                       "route_link_id:#{route_link_id} interface_id:#{interface_id} mac_address:#{mac_address}")
-
-      host_dpn = @host_route_links[route_link_id]
-
-      activate_tunnel(host_dpn, remote_dpn, route_link_id) if host_dpn
     end
 
   end

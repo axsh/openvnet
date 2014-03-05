@@ -69,7 +69,7 @@ module Vnet::Openflow::Datapaths
     #   flows = []
     #   flows_for_filtering_mac_address(flows,
     #                                   active_network[:broadcast_mac_address],
-    #                                   active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+    #                                   active_network[:id] | COOKIE_TYPE_DP_NETWORK)
     #   @dp_info.add_flows(flows)
     # end
 

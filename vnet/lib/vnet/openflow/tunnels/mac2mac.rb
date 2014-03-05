@@ -71,7 +71,7 @@ module Vnet::Openflow::Tunnels
       dpn = detect_network_id?(network_id) || return
       
       mac2mac_actions << {
-        :eth_dst => dpn[:broadcast_mac_address],
+        :eth_dst => dpn[:mac_address],
         :output => @host_port_number
       }
     end
