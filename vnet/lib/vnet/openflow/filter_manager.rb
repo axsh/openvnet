@@ -28,11 +28,12 @@ module Vnet::Openflow
     end
 
     def updated_sg_ip_addresses(params)
-      #@items.values.each { |item|
-      #  id = params[:id]
-      #  ips = params[:isolation_ip_addresses]
-      #  item.update_referencee(id, ips) if item.references?(id)
-      #}
+      #TODO: Write this more efficiently
+      @items.values.each { |item|
+        id = params[:id]
+        ips = params[:isolation_ip_addresses]
+        item.update_referencee(id, ips) if item.references?(id)
+      }
 
       item = internal_detect(id: params[:id]) || return
 
