@@ -242,12 +242,25 @@ describe Vnet::Openflow::FilterManager do
       )
     end
 
-    context "with a local interface" do
+    context "with a local interface with filtering enabled" do
       let(:interface2) { Fabricate(:filter_interface) }
-
 
       it "applies the rule flows for the new interface" do
        expect(flows).to include rule_flow({
+         cookie: cookie_id(group, interface2),
+         match: match_icmp_rule("0.0.0.0/0")},
+         interface2
+       )
+      end
+    end
+
+    context "with a local interface with filtering disabled" do
+      let(:interface2) do
+        Fabricate(:filter_interface, ingress_filtering_enabled: false)
+      end
+
+      it "doesn't apply the rules for the new interface" do
+       expect(flows).not_to include rule_flow({
          cookie: cookie_id(group, interface2),
          match: match_icmp_rule("0.0.0.0/0")},
          interface2
