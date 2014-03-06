@@ -263,7 +263,15 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
     end
-  end
+
+    create_table(:lease_policy_base_networks) do
+      primary_key :id
+      Integer :network_id
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+end
 
   down do
     drop_table(:datapaths,
