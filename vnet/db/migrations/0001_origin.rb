@@ -249,6 +249,7 @@ Sequel.migration do
 
     create_table(:vlan_translations) do
       primary_key :id
+      String :uuid, :unique => true, :null => false
       Integer :translation_id, :index => true
       Bignum :mac_address
       Integer :vlan_id
