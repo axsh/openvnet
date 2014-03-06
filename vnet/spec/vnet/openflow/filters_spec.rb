@@ -178,26 +178,14 @@ describe Vnet::Openflow::FilterManager do
        Fabricate(:filter_interface, security_groups: [group])
      end
 
-     it "applies the rule for each interface in the referenced group" do
-       ref_intf1.ip_addresses.each { |a|
-         expected_flow = rule_flow(
-           cookie: ref_cookie_id(group),
-           match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
-         )
+     it "removes the rule for each interface in the referenced group" do
+       intf1_flows = reference_flows_for("tcp:22", ref_intf1)
+       expect(flows).not_to include *intf1_flows
+       expect(deleted_flows).to include *intf1_flows
 
-         expect(flows).not_to include expected_flow
-         expect(deleted_flows).to include expected_flow
-       }
-
-       ref_intf2.ip_addresses.each { |a|
-         expected_flow = rule_flow(
-           cookie: ref_cookie_id(group),
-           match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
-         )
-
-         expect(flows).not_to include expected_flow
-         expect(deleted_flows).to include expected_flow
-       }
+       intf2_flows = reference_flows_for("tcp:22", ref_intf2)
+       expect(flows).not_to include *intf2_flows
+       expect(deleted_flows).to include *intf2_flows
      end
    end
   end

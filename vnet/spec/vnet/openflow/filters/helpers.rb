@@ -50,6 +50,23 @@ def rule_flow(rule_hash, interface = interface)
   flow_create(:default, flow_hash)
 end
 
+def reference_flows_for(rule, interface)
+  protocol, port = rule.split(':')
+
+  interface.ip_addresses.map { |a|
+    match = if protocol == 'icmp'
+      match_icmp_rule("#{a.ipv4_address_s}/32")
+    else
+      send("match_#{protocol}_rule", "#{a.ipv4_address_s}/32", port.to_i)
+    end
+
+    rule_flow(
+      cookie: ref_cookie_id(group),
+      match: match
+    )
+  }
+end
+
 def iso_flow(group, interface, ipv4_address)
   flow_create(:default,
     table: TABLE_INTERFACE_INGRESS_FILTER,
