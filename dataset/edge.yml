@@ -170,7 +170,8 @@ translations:
     mode: vnet_edge
 
 vlan_translations:
-  - vlan_id: 100
+  - uuid: vt-edge
+    vlan_id: 100
     network_id: 2
     translation_uuid: tr-edge
 
