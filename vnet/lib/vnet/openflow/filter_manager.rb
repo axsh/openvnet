@@ -59,7 +59,7 @@ module Vnet::Openflow
 
       interface = MW::Interface.batch[params[:interface_id]].commit
       if !is_remote?(interface) && interface.ingress_filtering_enabled
-        log_interface_added(params[:interface_id], item.uuid)
+        log_interface_added(interface.uuid, item.uuid)
 
         item.add_interface(params[:interface_id], params[:interface_cookie_id])
         item.install(params[:interface_id])
