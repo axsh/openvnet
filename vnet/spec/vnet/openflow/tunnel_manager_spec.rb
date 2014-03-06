@@ -51,7 +51,7 @@ describe Vnet::Openflow::TunnelManager do
         if1_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0').id
         if2_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0').id
         if3_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id
-        sleep(0.1)
+        sleep(0.3)
 
         dp.added_flows.clear
       end
@@ -140,7 +140,7 @@ describe Vnet::Openflow::TunnelManager do
 
       host_port_1
 
-      sleep(0.1)
+      sleep(0.3)
 
       added_flows = datapath.added_flows.uniq
       # added_flows.each { |flow| pp flow.inspect }
@@ -170,7 +170,7 @@ describe Vnet::Openflow::TunnelManager do
       host_datapath_networks
       remote_datapath_networks_2
 
-      sleep(0.1)
+      sleep(0.3)
 
       datapath.added_flows.clear
 
@@ -178,7 +178,7 @@ describe Vnet::Openflow::TunnelManager do
                             port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
                             port_number: 9)
 
-      sleep(0.1)
+      sleep(0.3)
 
       added_flows = datapath.added_flows.uniq
       # added_flows.each { |flow| pp flow.inspect }
@@ -276,7 +276,7 @@ describe Vnet::Openflow::TunnelManager do
                                         })
         }
 
-        sleep(0.1)
+        sleep(0.3)
         datapath.added_flows.clear
         datapath.deleted_flows.clear
       end
@@ -303,7 +303,7 @@ describe Vnet::Openflow::TunnelManager do
                                                })
       }
 
-      sleep(0.1)
+      sleep(0.3)
 
       added_flows = datapath.added_flows.uniq
       # added_flows.each { |flow| pp flow.inspect }
@@ -336,7 +336,7 @@ describe Vnet::Openflow::TunnelManager do
                                                })
       }
 
-      sleep(0.1)
+      sleep(0.3)
       datapath.added_flows.clear
       datapath.deleted_flows.clear
 
@@ -353,7 +353,7 @@ describe Vnet::Openflow::TunnelManager do
                                                })
       }
 
-      sleep(0.1)
+      sleep(0.3)
 
       added_flows = datapath.added_flows.uniq
       # added_flows.each { |flow| pp flow.inspect }
