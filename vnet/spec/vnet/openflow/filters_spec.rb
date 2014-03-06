@@ -250,6 +250,11 @@ describe Vnet::Openflow::FilterManager do
         interface,
         [interface, interface2]
       )
+
+      # Isolation hasn't been updated for interface2 because we haven't called
+      # apply_filters or added_interface_to_sg for interface2. In the real
+      # world this will be called and it doesn't matter if it happens before
+      # or after updated_sg_ip_addresses
     end
   end
 
@@ -277,6 +282,17 @@ describe Vnet::Openflow::FilterManager do
          interface2
        )
       end
+
+      it "applies the isolation flows for the new interface" do
+        expect(flows).to include *iso_flows_for_interfaces(
+          group,
+          interface2,
+          [interface]
+        )
+      end
+
+      # it doesn't update isolation rules for the interfaces that already were
+      # in the group. updated_sg_ip_addresses does that.
     end
 
     context "with a local interface with filtering disabled" do
@@ -284,12 +300,18 @@ describe Vnet::Openflow::FilterManager do
         Fabricate(:filter_interface, ingress_filtering_enabled: false)
       end
 
-      it "doesn't apply the rules for the new interface" do
-       expect(flows).not_to include rule_flow({
-         cookie: cookie_id(group, interface2),
-         match: match_icmp_rule("0.0.0.0/0")},
-         interface2
-       )
+      it "doesn't apply any flows for the new interface" do
+        expect(flows).not_to include rule_flow({
+          cookie: cookie_id(group, interface2),
+          match: match_icmp_rule("0.0.0.0/0")},
+          interface2
+        )
+
+        expect(flows).not_to include *iso_flows_for_interfaces(
+          group,
+          interface2,
+          [interface]
+         )
       end
     end
 
@@ -320,10 +342,6 @@ describe Vnet::Openflow::FilterManager do
       Fabricate(:security_group, rules: rules)
     end
 
-    # We use this guy to make sure isolation rules aren't removed when they
-    # shouldn't be.
-    let(:interface3) { Fabricate(:filter_interface, security_groups: [group2])}
-
     before(:each) do
       subject.apply_filters wrapper(interface)
       subject.apply_filters wrapper(interface2)
@@ -336,13 +354,6 @@ describe Vnet::Openflow::FilterManager do
         interface_owner_datapath_id: interface2.owner_datapath_id,
         interface_active_datapath_id: interface2.active_datapath_id,
       )
-    end
-
-    shared_examples "update isolation for old interfaces" do
-      it "updates isolation rules for the interface that was in the group already" do
-        expect(flows).to include *iso_flows_for_interfaces(group, interface, [interface])
-        expect(flows).not_to include *iso_flows_for_interfaces(group, interface, [interface2])
-      end
     end
 
     context "with a local interface in two security groups" do
@@ -377,18 +388,6 @@ describe Vnet::Openflow::FilterManager do
           interface2
         )
       end
-
-      it "leaves other security groups' isolation flows in place" do
-        expect(flows).not_to include *iso_flows_for_interfaces(group, interface2, [interface3])
-      end
-
-      include_examples "update isolation for old interfaces"
-    end
-
-    context "with a remote interface" do
-      let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
-
-      include_examples "update isolation for old interfaces"
     end
   end
 end
