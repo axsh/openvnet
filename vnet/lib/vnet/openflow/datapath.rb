@@ -105,7 +105,7 @@ module Vnet::Openflow
     end
 
     # Use dp_info.
-    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
+    def del_cookie(cookie, cookie_mask = COOKIE_MASK)
       options = {
         :command => Controller::OFPFC_DELETE,
         :table_id => Controller::OFPTT_ALL,

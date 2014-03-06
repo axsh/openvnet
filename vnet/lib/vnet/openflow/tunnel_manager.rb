@@ -16,10 +16,10 @@ module Vnet::Openflow
     subscribe_event ADDED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
     subscribe_event ADDED_HOST_DATAPATH_ROUTE_LINK, :added_host_datapath_route_link
     subscribe_event ADDED_REMOTE_DATAPATH_ROUTE_LINK, :added_remote_datapath_route_link
-    # subscribe_event REMOVED_HOST_DATAPATH_NETWORK, :added_host_datapath_network
-    # subscribe_event REMOVED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
-    # subscribe_event REMOVED_HOST_DATAPATH_ROUTE_LINK, :added_host_datapath_route_link
-    # subscribe_event REMOVED_REMOTE_DATAPATH_ROUTE_LINK, :added_remote_datapath_route_link
+    subscribe_event REMOVED_HOST_DATAPATH_NETWORK, :removed_host_datapath_network
+    subscribe_event REMOVED_REMOTE_DATAPATH_NETWORK, :removed_remote_datapath_network
+    subscribe_event REMOVED_HOST_DATAPATH_ROUTE_LINK, :removed_host_datapath_route_link
+    subscribe_event REMOVED_REMOTE_DATAPATH_ROUTE_LINK, :removed_remote_datapath_route_link
 
     def initialize(*args)
       super
@@ -54,22 +54,22 @@ module Vnet::Openflow
         publish(ADDED_REMOTE_DATAPATH_ROUTE_LINK,
                 id: :datapath_route_link,
                 dp_obj: params[:dprl])
-      # when :removed_host_datapath_network
-      #   publish(REMOVED_HOST_DATAPATH_NETWORK,
-      #           id: :datapath_network,
-      #           host_dpn: params[:dpn])
-      # when :removed_remote_datapath_network
-      #   publish(REMOVED_REMOTE_DATAPATH_NETWORK,
-      #           id: :datapath_network,
-      #           remote_dpn: params[:dpn])
-      # when :removed_host_datapath_route_link
-      #   publish(REMOVED_HOST_DATAPATH_ROUTE_LINK,
-      #           id: :datapath_route_link,
-      #           host_dprl: params[:dprl])
-      # when :removed_remote_datapath_route_link
-      #   publish(REMOVED_REMOTE_DATAPATH_ROUTE_LINK,
-      #           id: :datapath_route_link,
-      #           remote_dprl: params[:dprl])
+      when :removed_host_datapath_network
+        publish(REMOVED_HOST_DATAPATH_NETWORK,
+                id: :datapath_network,
+                dp_obj: params[:dpn])
+      when :removed_remote_datapath_network
+        publish(REMOVED_REMOTE_DATAPATH_NETWORK,
+                id: :datapath_network,
+                dp_obj: params[:dpn])
+      when :removed_host_datapath_route_link
+        publish(REMOVED_HOST_DATAPATH_ROUTE_LINK,
+                id: :datapath_route_link,
+                dp_obj: params[:dprl])
+      when :removed_remote_datapath_route_link
+        publish(REMOVED_REMOTE_DATAPATH_ROUTE_LINK,
+                id: :datapath_route_link,
+                dp_obj: params[:dprl])
       end
 
       nil
@@ -285,7 +285,7 @@ module Vnet::Openflow
     end
 
     #
-    # Event handlers:
+    # Network events:
     #
 
     # TUNNEL_UPDATE_NETWORKS on queue ':update_networks'
@@ -312,22 +312,38 @@ module Vnet::Openflow
         item.actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
       }
 
-      mac2mac_actions << {:eth_dst => MAC_BROADCAST} unless mac2mac_actions.empty?
-
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_FLOOD_SEGMENT,
-                           goto_table: TABLE_FLOOD_TUNNELS,
-                           priority: 1,
-                           match_network: network_id,
-                           actions: mac2mac_actions,
-                           cookie: network_id | COOKIE_TYPE_NETWORK)
-      flows << flow_create(:default,
-                           table: TABLE_FLOOD_TUNNELS,
-                           priority: 1,
-                           match_network: network_id,
-                           actions: tunnel_actions,
-                           cookie: network_id | COOKIE_TYPE_NETWORK)
+      
+      # TODO: Change this into using a specific method to remove a network id?
+      
+      if !mac2mac_actions.empty?
+        mac2mac_actions << {:eth_dst => MAC_BROADCAST}
+
+        flows << flow_create(:default,
+                             table: TABLE_FLOOD_SEGMENT,
+                             goto_table: TABLE_FLOOD_TUNNELS,
+                             priority: 1,
+                             match_network: network_id,
+                             actions: mac2mac_actions,
+                             cookie: network_id | COOKIE_TYPE_NETWORK)
+      else
+        @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
+                           cookie: network_id | COOKIE_TYPE_NETWORK,
+                           cookie_mask: COOKIE_MASK)
+      end
+
+      if tunnel_actions.size > 1
+        flows << flow_create(:default,
+                             table: TABLE_FLOOD_TUNNELS,
+                             priority: 1,
+                             match_network: network_id,
+                             actions: tunnel_actions,
+                             cookie: network_id | COOKIE_TYPE_NETWORK)
+      else
+        @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS,
+                           cookie: network_id | COOKIE_TYPE_NETWORK,
+                           cookie_mask: COOKIE_MASK)
+      end
 
       @dp_info.add_flows(flows)
     end
@@ -350,7 +366,7 @@ module Vnet::Openflow
 
     # Load or create the tunnel item if we have both host and remote
     # datapath networks.
-    def activate_tunnel(host_dpn, remote_dpn, network_id)
+    def activate_link(host_dpn, remote_dpn, network_id)
       options = {
         src_datapath_id: @datapath_info.id,
         dst_datapath_id: remote_dpn[:datapath_id],
@@ -360,7 +376,7 @@ module Vnet::Openflow
 
       # TODO: Update log output:
       info log_format(
-        "activated remote datapath network",
+        "activated link",
         "datapath_id:#{remote_dpn[:datapath_id]} " +
         "network_id:#{remote_dpn[:network_id]} " +
         "interface_id:#{remote_dpn[:interface_id]}"
@@ -396,6 +412,30 @@ module Vnet::Openflow
       item.add_datapath_network(remote_dpn)
 
       add_network_id_to_updated_networks(network_id)
+    end
+
+    def deactivate_link(host_dpn, remote_dpn, network_id)
+      options = {
+        src_datapath_id: @datapath_info.id,
+        dst_datapath_id: remote_dpn[:datapath_id],
+        src_interface_id: host_dpn[:interface_id],
+        dst_interface_id: remote_dpn[:interface_id],
+      }
+
+      item = internal_detect(options) || return
+
+      info log_format(
+        "deactivated link",
+        "datapath_id:#{remote_dpn[:datapath_id]}" +
+        "network_id:#{remote_dpn[:network_id]} " +
+        "interface_id:#{remote_dpn[:interface_id]}"
+      )
+
+      item.remove_datapath_network(remote_dpn[:id])
+
+      add_network_id_to_updated_networks(network_id)
+
+      # TODO: Add event to check if item should be unloaded.
     end
 
     def set_tunnel_port_number(params)
@@ -536,7 +576,7 @@ module Vnet::Openflow
         remote_dpn[:network_id] == network_id
       }
       remote_dpns.each { |id, remote_dpn|
-        activate_tunnel(host_dpn, remote_dpn, network_id)
+        activate_link(host_dpn, remote_dpn, network_id)
       }
     end
 
@@ -547,7 +587,40 @@ module Vnet::Openflow
 
       host_dpn = @host_networks[network_id]
 
-      activate_tunnel(host_dpn, remote_dpn, network_id) if host_dpn
+      activate_link(host_dpn, remote_dpn, network_id) if host_dpn
+    end
+
+    # REMOVED_HOST_DATAPATH_NETWORK on queue ':datapath_network'
+    def removed_host_datapath_network(params)
+      dpn_obj = params[:dp_obj] || return
+      network_id = dpn_obj[:network_id] || return
+
+      host_dpn = @host_networks.delete(network_id) || return
+
+      debug log_format("host datapath network #{host_dpn[:id]} removed for datapath #{host_dpn[:datapath_id]}")
+
+      # Reorder so that we activate in the order of loading
+      # internally, database and then create.
+      remote_dpns = @remote_datapath_networks.select { |id, remote_dpn|
+        remote_dpn[:network_id] == network_id
+      }
+      remote_dpns.each { |id, remote_dpn|
+        deactivate_link(host_dpn, remote_dpn, network_id)
+      }
+    end
+
+    # REMOVED_REMOTE_DATAPATH_NETWORK on queue ':datapath_network'
+    def removed_remote_datapath_network(params)
+      dpn_obj = params[:dp_obj] || return
+      dpn_id = dpn_obj[:id] || return
+      network_id = dpn_obj[:network_id] || return
+
+      host_dpn = @host_networks[network_id]
+      remote_dpn = @remote_datapath_networks.delete(dpn_id) || return
+
+      debug log_format("remote datapath network #{dpn_id} removed for datapath #{remote_dpn[:datapath_id]}")
+
+      deactivate_link(host_dpn, remote_dpn, network_id) if host_dpn
     end
 
     #
@@ -565,7 +638,7 @@ module Vnet::Openflow
         remote_dprl[:route_link_id] == route_link_id
       }
       remote_dprls.each { |id, remote_dprl|
-        activate_tunnel(host_dprl, remote_dprl, route_link_id)
+        activate_link(host_dprl, remote_dprl, route_link_id)
       }
     end
 
@@ -576,7 +649,7 @@ module Vnet::Openflow
 
       host_dprl = @host_route_links[route_link_id]
 
-      activate_tunnel(host_dprl, remote_dprl, route_link_id) if host_dprl
+      activate_link(host_dprl, remote_dprl, route_link_id) if host_dprl
     end
 
     #
@@ -627,13 +700,16 @@ module Vnet::Openflow
 
     def add_network_id_to_updated_networks(network_id)
       return unless @update_networks[network_id].nil?
+      should_publish = @update_networks.empty?
       @update_networks[network_id] = true
 
-      publish(TUNNEL_UPDATE_NETWORKS,
-              id: :update_networks)
+      should_publish && publish(TUNNEL_UPDATE_NETWORKS,
+                                id: :update_networks)
     end
 
     def add_network_ids_to_updated_networks(network_ids)
+      should_publish = @update_networks.empty?
+
       network_ids.select { |network_id|
         @update_networks[network_id].nil?
       }.tap { |network_ids|
@@ -642,8 +718,8 @@ module Vnet::Openflow
         @update_networks[network_id] = true
       }
 
-      publish(TUNNEL_UPDATE_NETWORKS,
-              id: :update_networks)
+      should_publish && publish(TUNNEL_UPDATE_NETWORKS,
+                                id: :update_networks)
     end
 
     def add_dpn_hash_to_updated_networks(dpns)

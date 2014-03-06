@@ -123,6 +123,8 @@ module Vnet
       # Cookie constants:
       #
 
+      COOKIE_MASK = 0xffffffffffffffff
+
       COOKIE_ID_MASK = (0x7fffffff)
       COOKIE_DYNAMIC_LOAD_MASK = (0x1 << 31)
 

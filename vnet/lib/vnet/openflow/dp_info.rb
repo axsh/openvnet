@@ -73,7 +73,7 @@ module Vnet::Openflow
       @ovs_ofctl.add_ovs_10_flow(flow_str)
     end
 
-    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
+    def del_cookie(cookie, cookie_mask = Vnet::Constants::OpenflowFlows::COOKIE_MASK)
       options = {
         :command => Controller::OFPFC_DELETE,
         :table_id => Controller::OFPTT_ALL,
