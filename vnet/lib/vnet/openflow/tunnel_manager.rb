@@ -306,10 +306,10 @@ module Vnet::Openflow
     # Require queue ':update_networks'
     def update_network_id(network_id)
       tunnel_actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
-      mac2mac_actions = []
+      segment_actions = []
 
       @items.each { |item_id, item|
-        item.actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
+        item.actions_append_flood(network_id, tunnel_actions, segment_actions)
       }
 
       flows = []
@@ -330,12 +330,12 @@ module Vnet::Openflow
                            cookie_mask: COOKIE_MASK)
       end
 
-      if !mac2mac_actions.empty?
+      if !segment_actions.empty?
         flows << flow_create(:default,
                              table: TABLE_FLOOD_SEGMENT,
                              priority: 1,
                              match_network: network_id,
-                             actions: mac2mac_actions,
+                             actions: segment_actions,
                              cookie: network_id | COOKIE_TYPE_NETWORK)
       else
         @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
@@ -364,6 +364,8 @@ module Vnet::Openflow
 
     # Load or create the tunnel item if we have both host and remote
     # datapath networks.
+    #
+    #
     def activate_link(host_dpn, remote_dpn, network_id)
       options = {
         src_datapath_id: @datapath_info.id,
@@ -375,6 +377,7 @@ module Vnet::Openflow
       # TODO: Update log output:
       info log_format(
         "activated link",
+        "remote_dpn:#{remote_dpn[:id]} " +
         "datapath_id:#{remote_dpn[:datapath_id]} " +
         "network_id:#{remote_dpn[:network_id]} " +
         "interface_id:#{remote_dpn[:interface_id]}"
@@ -424,7 +427,8 @@ module Vnet::Openflow
 
       info log_format(
         "deactivated link",
-        "datapath_id:#{remote_dpn[:datapath_id]}" +
+        "remote_dpn:#{remote_dpn[:id]} " +
+        "datapath_id:#{remote_dpn[:datapath_id]} " +
         "network_id:#{remote_dpn[:network_id]} " +
         "interface_id:#{remote_dpn[:interface_id]}"
       )
@@ -433,7 +437,9 @@ module Vnet::Openflow
 
       add_network_id_to_updated_networks(network_id)
 
-      # TODO: Add event to check if item should be unloaded.
+      # TODO: Add event to check if item should be unloaded. Currently
+      # done here:
+      item.unused? && publish(REMOVED_TUNNEL, id: item.id)
     end
 
     def set_tunnel_port_number(params)

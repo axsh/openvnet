@@ -65,7 +65,7 @@ module Vnet::Openflow::Tunnels
     end
 
     def unused?
-      @datapath_networks.empty?
+      @datapath_networks.empty? && @datapath_route_links.empty?
     end
 
     def has_network_id?(network_id)
@@ -114,9 +114,7 @@ module Vnet::Openflow::Tunnels
     end
 
     def remove_datapath_network(dpn_id)
-      @datapath_networks.find { |d| d[:id] == dpn_id }.tap do |datapath_network|
-        @datapath_networks.delete(datapath_network) if datapath_network
-      end
+      @datapath_networks.delete_if { |d| d[:id] == dpn_id }
     end
 
     def add_datapath_route_link(datapath_route_link)
@@ -125,9 +123,7 @@ module Vnet::Openflow::Tunnels
     end
 
     def remove_datapath_route_link(dprl_id)
-      @datapath_route_links.find { |d| d[:id] == dprl_id }.tap do |datapath_route_link|
-        @datapath_route_links.delete(datapath_route_link) if datapath_route_link
-      end
+      @datapath_route_links.delete_if { |d| d[:id] == dprl_id }
     end
 
     def set_dst_ipv4_address(network_id, ipv4_address)
