@@ -316,31 +316,29 @@ module Vnet::Openflow
       
       # TODO: Change this into using a specific method to remove a network id?
       
-      if !mac2mac_actions.empty?
-        mac2mac_actions << {:eth_dst => MAC_BROADCAST}
-
-        flows << flow_create(:default,
-                             table: TABLE_FLOOD_SEGMENT,
-                             goto_table: TABLE_FLOOD_TUNNELS,
-                             priority: 1,
-                             match_network: network_id,
-                             actions: mac2mac_actions,
-                             cookie: network_id | COOKIE_TYPE_NETWORK)
-      else
-        @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
-                           cookie: network_id | COOKIE_TYPE_NETWORK,
-                           cookie_mask: COOKIE_MASK)
-      end
-
       if tunnel_actions.size > 1
         flows << flow_create(:default,
                              table: TABLE_FLOOD_TUNNELS,
+                             goto_table: TABLE_FLOOD_SEGMENT,
                              priority: 1,
                              match_network: network_id,
                              actions: tunnel_actions,
                              cookie: network_id | COOKIE_TYPE_NETWORK)
       else
         @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS,
+                           cookie: network_id | COOKIE_TYPE_NETWORK,
+                           cookie_mask: COOKIE_MASK)
+      end
+
+      if !mac2mac_actions.empty?
+        flows << flow_create(:default,
+                             table: TABLE_FLOOD_SEGMENT,
+                             priority: 1,
+                             match_network: network_id,
+                             actions: mac2mac_actions,
+                             cookie: network_id | COOKIE_TYPE_NETWORK)
+      else
+        @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
                            cookie: network_id | COOKIE_TYPE_NETWORK,
                            cookie_mask: COOKIE_MASK)
       end
