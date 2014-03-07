@@ -8,6 +8,7 @@ module Vnet::Models
     one_to_many :dhcp_ranges
     one_to_many :ip_addresses
     one_to_many :tunnels
+    one_to_many :ip_leases
 
     many_to_many :network_services do |ds|
       NetworkService.join_table(

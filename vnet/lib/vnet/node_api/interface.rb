@@ -47,6 +47,15 @@ module Vnet::NodeApi
                          id: interface.id,
                          port_name: interface.port_name,
                          changed_columns: options)
+
+
+          case options[:ingress_filtering_enabled]
+          when "true"
+            dispatch_event(ENABLED_INTERFACE_FILTERING, id: interface.id)
+          when "false"
+            dispatch_event(DISABLED_INTERFACE_FILTERING, id: interface.id)
+          end
+
         end
       end
 
@@ -68,6 +77,10 @@ module Vnet::NodeApi
         model_class(:mac_lease).with_deleted.where(interface_id: interface.id).each do |mac_lease|
           dispatch_event(RELEASED_MAC_ADDRESS, id: interface.id,
                                                mac_lease_id: mac_lease.id)
+        end
+
+        interface.interface_security_groups.each do |isg|
+          InterfaceSecurityGroup.destroy(isg.id)
         end
 
         nil

@@ -15,6 +15,7 @@ module Vnet::Models
     many_to_one :owner_datapath, :class => Datapath
     many_to_one :active_datapath, :class => Datapath
 
+    one_to_many :interface_security_groups
     many_to_many :security_groups, :join_table => :interface_security_groups
 
     plugin :association_dependencies,
@@ -32,6 +33,11 @@ module Vnet::Models
       ds = SecurityGroup.join(:interface_security_groups, security_group_id: :id)
       ds = ds.where(interface_security_groups__deleted_at: nil)
       ds.where(interface_id: self.id).select_all(:security_groups)
+    end
+
+    # We override this method for the same reason
+    def remove_security_group(sg)
+      InterfaceSecurityGroup.filter(interface_id: id, security_group_id: sg.id).destroy
     end
 
     def port_name

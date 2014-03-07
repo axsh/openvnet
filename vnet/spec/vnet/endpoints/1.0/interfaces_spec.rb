@@ -27,6 +27,7 @@ describe "/interfaces" do
       :uuid => "if-test",
       :network_uuid => "nw-testnet",
       :ipv4_address => "192.168.1.10",
+      :ingress_filtering_enabled => true,
       :mac_address => "11:11:11:11:11:11",
       :owner_datapath_uuid => "dp-owner",
       :mode => "simulated"
@@ -51,6 +52,7 @@ describe "/interfaces" do
 
     accepted_params = {
       :display_name => "updated interface",
+      :ingress_filtering_enabled => true,
       :owner_datapath_uuid => "dp-new",
     }
 

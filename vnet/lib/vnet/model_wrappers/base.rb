@@ -57,24 +57,20 @@ module Vnet::ModelWrappers
         when Array
           data.map{|d| wrap(d, options) }
         when Hash
-          if class_name = data.delete(:class_name)
-            ::Vnet::ModelWrappers.const_get(class_name).new(data).tap do |wrapper|
-              options_for_recursive_call = options.dup
-              fill = options_for_recursive_call.delete(:fill)
-              [fill].flatten.compact.each do |f|
-                if f.is_a?(Hash)
-                  key = f.keys.first
-                  value = f.values.first
-                  options_for_recursive_call.merge!(:fill => value)
-                else
-                  key = f
-                end
-                wrapper.__send__("#{key}=", wrap(data[key], options_for_recursive_call))
+          return data if data.delete(:nowrap)
+
+          ::Vnet::ModelWrappers.const_get(data.delete(:class_name)).new(data).tap do |wrapper|
+            options_for_recursive_call = options.dup
+            fill = options_for_recursive_call.delete(:fill)
+            [fill].flatten.compact.each do |f|
+              if f.is_a?(Hash)
+                key = f.keys.first
+                value = f.values.first
+                options_for_recursive_call.merge!(:fill => value)
+              else
+                key = f
               end
-            end
-          else
-            data.each do |k, v|
-              data[k] = wrap(v, options)
+              wrapper.__send__("#{key}=", wrap(data[key], options_for_recursive_call))
             end
           end
         else
