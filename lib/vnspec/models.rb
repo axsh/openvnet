@@ -9,9 +9,6 @@ module Vnspec
 
     class Base
       attr_reader :uuid
-      def ==(other)
-        self.uuid == other.uuid
-      end
 
       class << self
         def inherited(klass)
@@ -21,6 +18,15 @@ module Vnspec
               klass.class_eval do
                 prepend(BaseModule)
               end
+            end
+          end
+        end
+
+        def all
+          API.request(:get, api_name, limit: 1000) do |response|
+            response[:items].map do |r|
+              self.new(r)
+              # TODO associations
             end
           end
         end
@@ -41,6 +47,14 @@ module Vnspec
         end
         alias_method :[], :find
       end
+
+      def ==(other)
+        self.uuid == other.uuid
+      end
+
+      def api_name
+        self.class.api_name
+      end
     end
 
     class Interface < Base
@@ -49,13 +63,8 @@ module Vnspec
       attr_writer :enabled
 
       class << self
-        def all
-          API.request(:get, "interfaces") do |response|
-            response.map do |r|
-              self.new(r)
-              # TODO associations
-            end
-          end
+        def api_name
+          "interfaces"
         end
 
         def create(options)
@@ -174,12 +183,8 @@ module Vnspec
       attr_accessor :name
 
       class << self
-        def all
-          API.request(:get, "datapaths") do |response|
-            response.map do |r|
-              self.new(r)
-            end
-          end
+        def api_name
+          "datapaths"
         end
 
         def create(options)
@@ -206,13 +211,13 @@ module Vnspec
 
       def add_datapath_network(network_uuid, options)
         API.request(:post, "datapaths/#{uuid}/networks/#{network_uuid}", options) do |response|
-          @datapath_networks = response[:networks].map { |n| OpenStruct.new(n) }
+          @datapath_networks << OpenStruct.new(response)
         end
       end
 
       def remove_datapath_network(network_uuid)
         API.request(:delete, "datapaths/#{uuid}/networks/#{network_uuid}") do |response|
-          @datapath_networks = response[:networks].map { |n| OpenStruct.new(n) }
+          @datapath_networks.delete_if { |record| record.uuid == network_uuid }
         end
       end
     end
@@ -220,19 +225,14 @@ module Vnspec
     class DnsService < Base
       attr_accessor :public_dns
       attr_accessor :network_servie_uuid
-      API_NAME = "dns_services"
 
       class << self
-        def all
-          API.request(:get, API_NAME) do |response|
-            response.map do |r|
-              self.new(r)
-            end
-          end
+        def api_name
+          "dns_services"
         end
 
         def create(options)
-          API.request(:post, API_NAME, options) do |response|
+          API.request(:post, api_name, options) do |response|
             return self.new(options.merge(uuid: response[:uuid]))
           end
         end
@@ -245,23 +245,24 @@ module Vnspec
       end
 
       def update_public_dns(public_dns)
-        API.request(:put, "#{API_NAME}/#{uuid}", public_dns: public_dns)
+        API.request(:put, "#{api_name}/#{uuid}", public_dns: public_dns)
         @public_dns = public_dns
       end
 
       def destroy
-        API.request(:delete, "#{API_NAME}/#{uuid}")
+        API.request(:delete, "#{api_name}/#{uuid}")
       end
 
       def add_dns_record(options)
-        API.request(:post, "#{API_NAME}/#{uuid}/dns_records", options) do |response|
-          @dns_records = response[:dns_records].map { |n| OpenStruct.new(n) }
+        API.request(:post, "#{api_name}/#{uuid}/dns_records", options) do |response|
+          @dns_records << OpenStruct.new(response)
         end
       end
 
       def remove_dns_record(dns_record_uuid)
-        API.request(:delete, "#{API_NAME}/#{uuid}/dns_records/#{dns_record_uuid}") do |response|
-          @dns_records = response[:dns_records].map { |n| OpenStruct.new(n) }
+        API.request(:delete, "#{api_name}/#{uuid}/dns_records/#{dns_record_uuid}") do |response|
+
+          @dns_records.delete_if { |record| record.uuid == dns_record_uuid }
         end
       end
     end
