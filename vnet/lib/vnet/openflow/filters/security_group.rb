@@ -70,8 +70,9 @@ module Vnet::Openflow::Filters
 
     def update_rules(rules)
       uninstall_rules
-      @rules = split_rules(rules)
-      @dp_info.add_flows flows_for_rules
+      uninstall_reference
+      @rules, @referencees = parse_rules(rules)
+      @dp_info.add_flows(flows_for_rules + flows_for_reference)
     end
 
     def update_referencee(referencee_id, ipv4s)

@@ -181,13 +181,15 @@ describe Vnet::Openflow::FilterManager do
   describe "#updated_sg_rules" do
     before(:each) { subject.apply_filters wrapper(interface) }
 
+    before(:each) do
+      subject.updated_sg_rules({
+        id: group.id,
+        rules: new_rules
+      })
+    end
+
     context "with new rules in the parameters" do
-      before(:each) do
-        subject.updated_sg_rules({
-          id: group.id,
-          rules: "tcp:234:192.168.3.34"
-        })
-      end
+      let(:new_rules) { "tcp:234:192.168.3.34" }
 
       it "Removes the old rules for a security group" do
         expect(flows).not_to include rule_flow(
@@ -205,12 +207,32 @@ describe Vnet::Openflow::FilterManager do
     end
 
     context "with reference rules" do
+      let(:reffee) { Fabricate(:security_group) }
+      let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
+
+      let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
+      let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
+
+      let(:interface) do
+        # Dirty hack to make sure the referenced interfaces are created first
+        ref_intf1;ref_intf2
+        Fabricate(:filter_interface, security_groups: [group])
+      end
+
+      let(:new_reffee) { Fabricate(:security_group) }
+
+      let(:new_rules) { "tcp:555:#{new_reffee.canonical_uuid}" }
+      let(:ref_intf3) { Fabricate(:filter_interface, security_groups: [new_reffee]) }
+      let(:ref_intf4) { Fabricate(:filter_interface, security_groups: [new_reffee]) }
+
       it "removes all old reference rules" do
-        raise NotImplementedError
+        expect(flows).not_to include *reference_flows_for("tcp:22", ref_intf1)
+        expect(flows).not_to include *reference_flows_for("tcp:22", ref_intf2)
       end
 
       it "adds the new reference rules" do
-        raise NotImplementedError
+        expect(flows).not_to include *reference_flows_for("tcp:555", ref_intf3)
+        expect(flows).not_to include *reference_flows_for("tcp:555", ref_intf4)
       end
     end
   end
