@@ -18,7 +18,7 @@ module Vnspec
         all.each do |vm|
           vm.interfaces.each do |interface|
             next unless interface.enabled?
-            API.request(:get, "interfaces/#{interface.uuid}") do |response|
+            API.request(:get, "interfaces/#{interface.uuid}", limit:1000) do |response|
               response[:mac_leases].each do |mac_lease|
                 interface.mac_leases << Models::MacLease.new(uuid: mac_lease[:uuid], interface: interface,  mac_address: mac_lease[:mac_address]).tap do |m|
                   mac_lease[:ip_leases].select do |ip_lease|
