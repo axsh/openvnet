@@ -26,10 +26,12 @@ DCell.start :id => conf.node.id, :addr => conf.node.addr_string,
 
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
-Vnet::NodeModules::VdcVnetPlugin.supervise_as :vdc_vnet_plugin
 
 DCell::Global[:rpc] = Celluloid::Actor[:rpc]
 DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
-DCell::Global[:vdc_vnet_plugin] = Celluloid::Actor[:vdc_vnet_plugin]
+
+conf.node.plugins.each do |plugin|
+  require File.join(::Vnet::ROOT, "lib/vnet/plugins/#{plugin}.rb")
+end
 
 sleep

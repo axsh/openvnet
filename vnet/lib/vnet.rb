@@ -177,7 +177,6 @@ module Vnet
     autoload :EventHandler, 'vnet/node_modules/event_handler'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
     autoload :SwitchManager, 'vnet/node_modules/service_openflow'
-    autoload :VdcVnetPlugin, 'vnet/node_modules/vdc_vnet_plugin'
   end
 
   module Openflow
@@ -289,6 +288,10 @@ module Vnet
       autoload :Base, 'vnet/openflow/tunnels/base'
     end
 
+  end
+
+  module Plugins
+    autoload :VdcVnetPlugin, 'vnet/plugins/vdc_vnet_plugin'
   end
 
 end

@@ -3,7 +3,7 @@
 require 'ipaddr'
 require 'trema'
 
-module Vnet::NodeModules
+module Vnet::Plugins
   class VdcVnetPlugin
     include Celluloid
     include Celluloid::Logger
@@ -18,7 +18,7 @@ module Vnet::NodeModules
         :NetworkService => :NetworkService
       }
 
-      info "Database mediator initialized..."
+      info "vdc_vnet_plugin initialized..."
     end
 
     def create_entry(vdc_model_class, vnet_params)
@@ -74,3 +74,6 @@ module Vnet::NodeModules
     end
   end
 end
+
+Vnet::Plugins::VdcVnetPlugin.supervise_as :vdc_vnet_plugin
+DCell::Global[:vdc_vnet_plugin] = Celluloid::Actor[:vdc_vnet_plugin]
