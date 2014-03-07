@@ -16,6 +16,8 @@ module Vnet::NodeApi
           interface_active_datapath_id: interface.active_datapath_id,
           isolation_ip_addresses: group.ip_addresses
         )
+
+        group
       end
 
       def destroy(id)
@@ -27,6 +29,8 @@ module Vnet::NodeApi
           interface_id: ifsecg.interface_id,
           isolation_ip_addresses: group.ip_addresses
         )
+
+        group
       end
     end
   end

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Endpoints::V10::Responses
-  class VlanTranslation < Vnet::Endpoints::ResponseGenerator
+  class VlanTranslation < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::VlanTranslation)
       object.to_hash
     end
   end
 
-  class VlanTranslationCollection < Vnet::Endpoints::ResponseGenerator
+  class VlanTranslationCollection < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|

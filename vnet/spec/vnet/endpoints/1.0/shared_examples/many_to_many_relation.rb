@@ -85,11 +85,14 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
       let(:entries) { 0 }
 
       it "should return a json with empty relations" do
-        expect(last_response).to succeed.with_body_containing({
-          "uuid" => base_object.canonical_uuid
+        expect(last_response).to succeed.with_body({
+          "total_count" => 0,
+          "offset" =>  0,
+          "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
+          "items" => [],
         })
 
-        expect(JSON.parse(last_response.body)[relation_suffix].size).to eq 0
+        expect(JSON.parse(last_response.body)["items"].size).to eq 0
       end
     end
 
@@ -98,10 +101,12 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
 
       it "should return a json with 3 relations in it" do
         expect(last_response).to succeed.with_body_containing({
-          "uuid" => base_object.canonical_uuid
+          "total_count" => 3,
+          "offset" =>  0,
+          "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
         })
 
-        expect(JSON.parse(last_response.body)[relation_suffix].size).to eq 3
+        expect(JSON.parse(last_response.body)["items"].size).to eq 3
       end
     end
   end

@@ -66,7 +66,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
                                 :broadcast_mac_address => broadcast_mac_address,
                               })
 
-    respond_with(R::Datapath.networks(datapath))
+    respond_with(R::Network.generate(network))
   end
 
   get '/:uuid/networks' do
@@ -82,7 +82,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
       :network_id => network.id
     )
 
-    respond_with(R::Datapath.networks(datapath))
+    respond_with([network.uuid])
   end
 
   post '/:uuid/route_links/:route_link_uuid' do
@@ -99,7 +99,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
                                   :route_link_id => route_link.id,
                                   :mac_address => mac_address,
                                 })
-    respond_with(R::Datapath.route_links(datapath))
+    respond_with(R::RouteLink.generate(route_link))
   end
 
   get '/:uuid/route_links' do
@@ -115,7 +115,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
 
     relations.each { |r| r.destroy }
 
-    respond_with(R::Datapath.route_links(datapath))
+    respond_with([route_link.uuid])
   end
 
 end
