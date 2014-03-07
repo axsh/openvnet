@@ -76,7 +76,7 @@ module Vnet::Openflow::Filters
 
     def update_referencee(referencee_id, ipv4s)
       uninstall_reference
-      @referencees[referencee_id][:ipv4] = ipv4s
+      @referencees[referencee_id][:ipv4s] = ipv4s
       @dp_info.add_flows flows_for_reference
     end
 

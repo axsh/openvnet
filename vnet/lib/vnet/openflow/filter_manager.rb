@@ -31,7 +31,7 @@ module Vnet::Openflow
       #TODO: Write this more efficiently
       @items.values.each { |item|
         id = params[:id]
-        ips = params[:isolation_ip_addresses]
+        ips = params[:ip_addresses]
         item.update_referencee(id, ips) if item.references?(id)
       }
 

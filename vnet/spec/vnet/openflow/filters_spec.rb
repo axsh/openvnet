@@ -131,20 +131,8 @@ describe Vnet::Openflow::FilterManager do
        end
 
        it "applies the rule for each interface in the referenced group" do
-         #TODO: Test for interfaces with multiple ip leases
-         ref_intf1.ip_addresses.each { |a|
-           expect(flows).to include rule_flow(
-             cookie: ref_cookie_id(group),
-             match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
-           )
-         }
-
-         ref_intf2.ip_addresses.each { |a|
-           expect(flows).to include rule_flow(
-             cookie: ref_cookie_id(group),
-             match: match_tcp_rule("#{a.ipv4_address_s}/32", 22)
-           )
-         }
+         expect(flows).to include *reference_flows_for("tcp:22", ref_intf1)
+         expect(flows).to include *reference_flows_for("tcp:22", ref_intf2)
        end
      end
   end
@@ -215,34 +203,67 @@ describe Vnet::Openflow::FilterManager do
         )
       end
     end
+
+    context "with reference rules" do
+      it "removes all old reference rules" do
+        raise NotImplementedError
+      end
+
+      it "adds the new reference rules" do
+        raise NotImplementedError
+      end
+    end
   end
 
   describe "#updated_sg_ip_addresses" do
     let(:interface2) { Fabricate(:filter_interface) }
 
-    before(:each) do
-      subject.apply_filters wrapper(interface)
-      subject.apply_filters wrapper(interface2)
+    context "with a local security group" do
+      before(:each) do
+        subject.apply_filters wrapper(interface)
+        subject.apply_filters wrapper(interface2)
 
-      interface2.add_security_group(group)
+        interface2.add_security_group(group)
 
-      subject.updated_sg_ip_addresses(
-        id: group.id,
-        ip_addresses: group.ip_addresses
-      )
+        subject.updated_sg_ip_addresses(
+          id: group.id,
+          ip_addresses: group.ip_addresses
+        )
+      end
+
+      it "updates isolation rules for all local interfaces in the group" do
+        expect(flows).to include *iso_flows_for_interfaces(
+          group,
+          interface,
+          [interface, interface2]
+        )
+
+        # Isolation hasn't been updated for interface2 because we haven't called
+        # apply_filters or added_interface_to_sg for interface2. In the real
+        # world this will be called and it doesn't matter if it happens before
+        # or after updated_sg_ip_addresses
+      end
     end
 
-    it "updates isolation rules for all local interfaces in the group" do
-      expect(flows).to include *iso_flows_for_interfaces(
-        group,
-        interface,
-        [interface, interface2]
-      )
+    context "when the updated group is a referencee" do
+      let(:group) { Fabricate(:security_group, rules: "icmp::#{reffee.canonical_uuid}") }
+      let(:reffee) { Fabricate(:security_group) }
 
-      # Isolation hasn't been updated for interface2 because we haven't called
-      # apply_filters or added_interface_to_sg for interface2. In the real
-      # world this will be called and it doesn't matter if it happens before
-      # or after updated_sg_ip_addresses
+      before(:each) do
+        subject.apply_filters wrapper(interface)
+        subject.apply_filters wrapper(interface2)
+
+        interface2.add_security_group(reffee)
+
+        subject.updated_sg_ip_addresses(
+          id: reffee.id,
+          ip_addresses: reffee.ip_addresses
+        )
+      end
+
+      it "refreshes all reference rules" do
+        expect(flows).to include *reference_flows_for("icmp::", interface2)
+      end
     end
   end
 
