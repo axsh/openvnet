@@ -66,7 +66,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
     M::InterfaceSecurityGroup.create(params)
-    respond_with(R::Interface.security_groups(interface))
+
+    respond_with(R::SecurityGroup.generate(security_group))
   end
 
   get '/:uuid/security_groups' do
@@ -86,6 +87,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     # We call the destroy class method so we go trough NodeApi and send an
     # update isolation event
     relations.each { |r| M::InterfaceSecurityGroup.destroy(r.id) }
-    respond_with(R::Interface.security_groups(interface))
+    respond_with([security_group.uuid])
   end
 end

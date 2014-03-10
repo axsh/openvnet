@@ -41,6 +41,7 @@ module Vnet
   module Endpoints
     autoload :Errors, 'vnet/endpoints/errors'
     autoload :ResponseGenerator, 'vnet/endpoints/response_generator'
+    autoload :CollectionResponseGenerator, 'vnet/endpoints/response_generator'
     module V10
       autoload :Helpers, 'vnet/endpoints/1.0/helpers'
       autoload :VnetAPI, 'vnet/endpoints/1.0/vnet_api'
@@ -48,6 +49,7 @@ module Vnet
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
+        autoload :DhcpRange, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
@@ -67,6 +69,7 @@ module Vnet
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLinkCollection, 'vnet/endpoints/1.0/responses/datapath_route_link'
+        autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :DnsServiceCollection, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecordCollection, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'

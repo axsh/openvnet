@@ -40,7 +40,7 @@ RSpec::Matchers.define :succeed do
     response.ok? &&
     (@contains.nil? || expect_body_to_contain) &&
     (@check_body_empty.nil? || @body.empty?) &&
-    (@body_size.nil? || @body.size == @body_size) &&
+    (@body_size.nil? || @body["items"].size == @body_size) &&
     (@expected_body.nil? || @body == @expected_body)
   end
 

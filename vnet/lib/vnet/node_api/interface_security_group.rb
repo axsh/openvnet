@@ -16,6 +16,8 @@ module Vnet::NodeApi
         )
 
         dispatch_update_sg_ip_addresses(group)
+
+        group
       end
 
       def destroy(id)
@@ -28,6 +30,8 @@ module Vnet::NodeApi
         )
 
         dispatch_update_sg_ip_addresses(group)
+
+        group
       end
     end
   end
