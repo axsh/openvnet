@@ -76,4 +76,3 @@ module Vnet::Plugins
 end
 
 Vnet::Plugins::VdcVnetPlugin.supervise_as :vdc_vnet_plugin
-DCell::Global[:vdc_vnet_plugin] = Celluloid::Actor[:vdc_vnet_plugin]
