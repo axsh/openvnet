@@ -266,7 +266,8 @@ Sequel.migration do
 
     create_table(:lease_policy_base_networks) do
       primary_key :id
-      Integer :network_id
+      Integer :network_id, :index => true, :null => false
+      Integer :lease_policy_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at

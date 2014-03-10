@@ -22,6 +22,9 @@ module Vnet::NodeApi
   class LeasePolicy < Base
   end
 
+  class LeasePolicyBaseNetwork < Base
+  end
+
   class MacAddress < Base
   end
 
