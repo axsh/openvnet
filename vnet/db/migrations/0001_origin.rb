@@ -260,13 +260,22 @@ Sequel.migration do
 
     create_table(:lease_policy_base_networks) do
       primary_key :id
-      Integer :network_id, :index => true, :null => false
       Integer :lease_policy_id, :index => true, :null => false
+      Integer :network_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
     end
-end
+
+    create_table(:lease_policy_base_interfaces) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :interface_id, :index => true, :null => false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+  end
 
   down do
     drop_table(:datapaths,

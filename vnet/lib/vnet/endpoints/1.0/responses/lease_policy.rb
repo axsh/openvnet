@@ -15,6 +15,15 @@ module Vnet::Endpoints::V10::Responses
         :uuid => object.uuid,
       }
     end
+
+    def self.lease_policy_interface(object)
+      argument_type_check(object,Vnet::ModelWrappers::LeasePolicy)
+      {
+        # TODO: currently just following example in responses/translation.rb,
+        # so verify how this is used and if it is OK
+        :uuid => object.uuid,
+      }
+    end
   end
 
   class LeasePolicyCollection < Vnet::Endpoints::ResponseGenerator

@@ -8,4 +8,8 @@ module Vnet::ModelWrappers
   class LeasePolicyBaseNetwork < Base
 
   end
+
+  class LeasePolicyBaseInterface < Base
+
+  end
 end
