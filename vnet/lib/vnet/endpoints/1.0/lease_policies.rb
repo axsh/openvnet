@@ -59,4 +59,33 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
                                      })
     respond_with(R::LeasePolicy.lease_policy_network(lease_policy))
   end
+
+  put '/:uuid/associate_interface' do
+    # TODO: it is now possible to associate twice....probably should not allow that.
+    params = parse_params(@params, ['uuid', 'interface_uuid'])
+    check_required_params(params, ['interface_uuid'])
+
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
+    # TODO: verify this next line is not just a hack (that does work, so far)
+    interface = check_syntax_and_pop_uuid(M::Interface, { "uuid" => params[:interface_uuid] } )
+
+    M::LeasePolicyBaseInterface.create({ :interface_id => interface.id,
+                                       :lease_policy_id => lease_policy.id
+                                     })
+    respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
+  end
+
+  put '/:uuid/disassociate_interface' do
+    params = parse_params(@params, ['uuid', 'interface_uuid'])
+    check_required_params(params, ['interface_uuid'])
+
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
+    interface = check_syntax_and_pop_uuid(M::Interface, { "uuid" => params[:interface_uuid] } )
+
+    # TODO: why does the following work without overloading node_api??
+    M::LeasePolicyBaseInterface.destroy({ :interface_id => interface.id,
+                                       :lease_policy_id => lease_policy.id
+                                     })
+    respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
+  end
 end
