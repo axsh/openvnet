@@ -20,7 +20,7 @@ def connect(config)
 end
 
 def load_config(config_dir)
-  Dir.exists?(config_dir) ? Vnet::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf")) : Vnet::Configurations::Vnmgr.load
+  Dir.exists?(config_dir) ? Vnet::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf")) : nil
 end
 
 def migrate(config, to = nil)
@@ -48,7 +48,7 @@ def mysql_opts(config)
 end
 
 namespace :db do
-  config = load_config("/etc/openvnet/")
+  config = Vnet::Configurations::Vnmgr.load rescue nil
   # deprecated
   task :init => [] do
     migrate(config)
@@ -83,7 +83,8 @@ namespace :db do
 end
 
 namespace :test do
-  config = load_config("spec/config/")
+  config_dir = "spec/config/"
+  config = Vnet::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf")) rescue nil
   namespace :db do
     # deprecated
     task :init => [] do
