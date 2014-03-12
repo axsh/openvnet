@@ -1,4 +1,4 @@
-[ -f /etc/default/wakame-vnet ] && . /etc/default/wakame-vnet
+[ -f /etc/default/openvnet ] && . /etc/default/openvnet
 BIND_ADDR=0.0.0.0
 PORT=9090
 RACK_ENV=production
