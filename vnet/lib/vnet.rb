@@ -14,7 +14,7 @@ require 'json'
 module Vnet
 
   ROOT = ENV['VNET_ROOT'] || File.expand_path('../../', __FILE__)
-  CONFIG_PATH = ENV['VNET_CONFIG_PATH'] || "/etc/wakame-vnet"
+  CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
 
   module Configurations
