@@ -3,23 +3,17 @@ datapaths:
   - uuid: dp-1
     node_id: vna1
     display_name: node1
-    ipv4_address: <%= dp1_ipv4_address %>
     dpid: "0x0000aaaaaaaaaaaa"
-    dc_segment_uuid: ds-1
 
   - uuid: dp-2
     node_id: vna2
     display_name: node2
-    ipv4_address: <%= dp2_ipv4_address %>
     dpid: "0x0000bbbbbbbbbbbb"
-    dc_segment_uuid: ds-1
 
   - uuid: dp-3
     node_id: vna3
     display_name: node3
-    ipv4_address: <%= dp3_ipv4_address %>
     dpid: "0x0000cccccccccccc"
-    dc_segment_uuid: ds-2
 
 networks:
 

@@ -19,9 +19,7 @@ datapaths:
   - uuid: dp-edgeesxi
     node_id: edge-esxi
     display_name: edge-esxi
-    ipv4_address: <%= edge_esxi_ipv4_address %>
     dpid: "0x0000eeeeeeeeeeee"
-    dc_segment_uuid: ds-1
 
 interfaces:
 

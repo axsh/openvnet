@@ -19,9 +19,7 @@ datapaths:
   - uuid: dp-edge
     node_id: edge
     display_name: edge
-    ipv4_address: <%= edge_ipv4_address %>
     dpid: "0x0000dddddddddddd"
-    dc_segment_uuid: ds-1
 
 interfaces:
 
