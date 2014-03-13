@@ -38,6 +38,10 @@ module Vnet
     autoload :Notifications, 'vnet/event/notifications'
   end
 
+  module Helpers
+    autoload :SecurityGroup, 'vnet/helpers/security_group'
+  end
+
   module Endpoints
     autoload :Errors, 'vnet/endpoints/errors'
     autoload :ResponseGenerator, 'vnet/endpoints/response_generator'

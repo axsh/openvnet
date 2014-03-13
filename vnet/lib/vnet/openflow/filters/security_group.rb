@@ -3,11 +3,10 @@
 module Vnet::Openflow::Filters
   class SecurityGroup < Base
     include Celluloid::Logger
+    include Vnet::Helpers::SecurityGroup
 
     RULE_PRIORITY = 10
     ISOLATION_PRIORITY = 20
-
-    REF_REGEX = /sg-.{1,8}[a-z1-9]$/
 
     attr_reader :id, :uuid, :interfaces
 
@@ -100,14 +99,28 @@ module Vnet::Openflow::Filters
     end
 
     def parse_rules(rules)
-      rules = split_rules(rules).delete_if { |r| !validate_rule(r) }
+      rules = split_rule_collection(rules).map { |r|
+        r.strip!
+        next if is_comment?(r)
+
+        # The model class doesn't allow broken rules to be saved but we check
+        # here again in case somebody put them in the database without going
+        # through the model class' validation hooks
+        rule_is_valid, error_msg = validate_rule(r)
+        unless rule_is_valid
+          warn log_format(error_msg, " #{@uuid}: '#{r}'")
+          next
+        end
+
+        r
+      }.compact
 
       rules, reference = rules.partition { |r|
         (r =~ REF_REGEX).nil?
       }
 
       ref_hash = Hash.new.tap { |rh| reference.each { |r|
-        referencee_uuid = r.split(":").last
+        referencee_uuid = split_rule(r).last
         referencee = Vnet::ModelWrappers::SecurityGroup.batch[referencee_uuid].commit
 
         rh[referencee.id] = {
@@ -120,35 +133,6 @@ module Vnet::Openflow::Filters
       [rules, ref_hash]
     end
 
-    def validate_rule(rule, log = true)
-      rule.strip!
-      # Skip comments and line breaks without logging
-      return false if rule.empty? || rule =~ /^#.*/
-
-      protocol, port, ipv4 = rule.split(":")
-
-      unless ['icmp', 'tcp', 'udp'].member?(protocol)
-        warn log_format("invalid protocol in rule", "#{@uuid}: #{rule}")
-        return false
-      end
-
-      unless (1..0xffff).member?(port.to_i) || protocol == 'icmp'
-        warn log_format("invalid port in rule", "#{@uuid}: #{rule}")
-        return false
-      end
-
-      unless (IPAddress(ipv4) rescue false) || ipv4 == '0.0.0.0/0' || !(ipv4 =~ REF_REGEX).nil?
-        warn log_format("invalid ipv4 address or security group uuid in rule", "#{@uuid}: #{rule}")
-        return false
-      end
-
-      true
-    end
-
-    def split_rules(rules)
-      rules.split("\n")
-    end
-
     def log_format(msg, values = nil)
       "security_group: " + msg + (values ? " (#{values})" : '')
     end
@@ -156,7 +140,7 @@ module Vnet::Openflow::Filters
     def flows_for_rules(interface_id = nil)
       flows = interface_ids(interface_id).map { |interface_id|
         @rules.map do |rule|
-          protocol, port, ipv4 = rule.split(":")
+          protocol, port, ipv4 = split_rule(rule)
 
           build_rule_flow(protocol, port, IPAddress::IPv4.new(ipv4), interface_id)
         end
