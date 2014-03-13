@@ -81,7 +81,7 @@ module Vnspec
           logger.info "#" * 50
           logger.info "# dump_flows: vna#{i + 1}"
           logger.info "#" * 50
-          output = ssh(ip, config[:vnflows_cmd], debug: false)
+          output = ssh(ip, "bash -l -c 'cd #{config[:vnet_path]}/vnet; bundle exec bin/vnflows-monitor'", debug: false)
           logger.info output[:stdout]
           logger.info
         end
