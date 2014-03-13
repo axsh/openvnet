@@ -2,7 +2,7 @@
 module Vnet::NodeApi
   class IpLease < Base
     class << self
-      include Vnet::Event::Helpers
+      include Vnet::Helpers::Event
 
       def create(options)
         options = options.dup

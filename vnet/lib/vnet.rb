@@ -34,12 +34,12 @@ module Vnet
   autoload :Event, 'vnet/event'
   module Event
     autoload :Dispatchable, 'vnet/event/dispatchable'
-    autoload :Helpers, 'vnet/event/helpers'
     autoload :Notifications, 'vnet/event/notifications'
   end
 
   module Helpers
     autoload :SecurityGroup, 'vnet/helpers/security_group'
+    autoload :Event, 'vnet/helpers/event'
   end
 
   module Endpoints

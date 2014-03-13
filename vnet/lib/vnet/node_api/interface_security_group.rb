@@ -3,7 +3,7 @@
 module Vnet::NodeApi
   class InterfaceSecurityGroup < Base
     class << self
-      include Vnet::Event::Helpers
+      include Vnet::Helpers::Event
 
       def create(options)
         ifsecg = super(options)
