@@ -1,7 +1,7 @@
 module Vnspec
   module Config
     DEFAULT_CONFIG = {
-      vnet_path: "/opt/axsh/wakame-vnet",
+      vnet_path: "/opt/axsh/openvnet",
       vnet_branch: "master",
       update_vnet_via: "git",
       ssh_user: "root",
