@@ -25,6 +25,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
 
     required_params = []
 
+    # Consider deprecating this:
+    if params['port_name'].nil? && params['uuid']
+      params['port_name'] = params['uuid']
+    end
+
     post_new(:Interface, accepted_params, required_params, fill) { |params|
       check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
