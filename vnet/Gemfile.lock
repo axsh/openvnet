@@ -13,7 +13,7 @@ GIT
 
 GIT
   remote: https://github.com/axsh/trema.git
-  revision: 9d97f0bb25b6708cfaf3de6fa2dd14d8955ec63e
+  revision: 4f82057b5988a1d8e297402847ee46ae8dd17404
   branch: wakame-edge
   specs:
     trema (0.1.0)
