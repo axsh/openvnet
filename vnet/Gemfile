@@ -1,6 +1,7 @@
 
 source "http://rubygems.org"
 
+gem 'ffi-rzmq', "1.0.3"
 gem "bit-struct", ">= 0.13.7"
 gem "celluloid"
 gem "celluloid-io"
