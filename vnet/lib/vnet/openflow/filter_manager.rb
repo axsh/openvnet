@@ -28,15 +28,9 @@ module Vnet::Openflow
     end
 
     def updated_sg_ip_addresses(params)
-      #TODO: Write this more efficiently
-      @items.values.each { |item|
-        id = params[:id]
-        ips = params[:ip_addresses]
-        item.update_referencee(id, ips) if item.references?(id)
-      }
+      update_referencees(params[:id], params[:ip_addresses])
 
       item = internal_detect(id: params[:id]) || return
-
       updated_isolation(item, params[:ip_addresses])
     end
 
@@ -70,6 +64,10 @@ module Vnet::Openflow
     # The rest
     #
 
+    def update_referencees(id, ip_addresses)
+      @items.values.each {|i| i.update_referencee(id, ips) if i.references?(id)}
+    end
+
     def updated_isolation(item, ip_list)
       log_ips = ip_list.map { |i| IPAddress::IPv4.parse_u32(i).to_s }
       debug log_format("Updating isolation for security group '#{item.uuid}", log_ips)
@@ -87,7 +85,6 @@ module Vnet::Openflow
     end
 
     def apply_filters(interface)
-      #TODO: Check if we can't get rid of this argument raping
       interface = case interface
       when MW::Interface
         interface
