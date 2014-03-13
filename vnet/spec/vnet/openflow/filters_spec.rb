@@ -44,7 +44,7 @@ describe Vnet::Openflow::FilterManager do
       end
     end
 
-    context "with a group that has rules with faulthy syntax" do
+    context "with a group that has rules with faulty syntax" do
       let(:group) do
         rules = %{
           # I am a comment
@@ -55,7 +55,9 @@ describe Vnet::Openflow::FilterManager do
           tcp:22:10.1.0.0/24
           icmp::0.0.0.0/0:something else
         }
-        Fabricate(:security_group, rules: rules)
+
+        # We don't use the fabricator here so we can skip sequel validation
+        Vnet::Models::SecurityGroup.new(rules: rules).save(validate: false)
       end
 
       it "skips the faulty syntax rules and still applies the correct ones" do
