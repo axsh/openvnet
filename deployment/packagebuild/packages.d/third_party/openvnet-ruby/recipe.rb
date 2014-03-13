@@ -1,4 +1,4 @@
-class WakameVnetRuby < FPM::Cookery::Recipe
+class OpenvnetRuby < FPM::Cookery::Recipe
   description 'The Ruby virtual machine(For OpenVNet bundle)'
 
   name 'openvnet-ruby'

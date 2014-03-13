@@ -1,4 +1,4 @@
-class WakameVnetCommon < FPM::Cookery::Recipe
+class OpenvnetCommon < FPM::Cookery::Recipe
   name     'openvnet-common'
   description 'Common files for OpenVNet'
   homepage 'https://github.com/axsh/openvnet/'

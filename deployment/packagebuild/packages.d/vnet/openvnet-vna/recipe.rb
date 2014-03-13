@@ -1,4 +1,4 @@
-class WakameVnetVna < FPM::Cookery::Recipe
+class OpenvnetVna < FPM::Cookery::Recipe
   name     'openvnet-vna'
   description "Virtual network agent for OpenVNet"
   homepage 'https://github.com/axsh/openvnet/'
