@@ -14,6 +14,7 @@ Vnctl.class_eval do
   paths = [
     File.expand_path("~/.vnctlrc"),
     File.expand_path("~/.vnctl.conf"),
+    "/etc/openvnet/vnctl.conf"
     "/etc/wakame-vnet/vnctl.conf"
   ]
 
