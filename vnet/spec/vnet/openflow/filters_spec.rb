@@ -426,19 +426,47 @@ describe Vnet::Openflow::FilterManager do
   end
 
   describe "#removed_security_group" do
-    before(:each) {
+    before(:each) do
       subject.apply_filters(wrapper(interface))
-      subject.removed_security_group(id: group.id)
-    }
+      subject.removed_security_group(id: deleted_group.id)
+    end
 
-    it "removes the flows for all interfaces in the security group" do
-      expected_flow = rule_flow(
-        cookie: cookie_id(group),
-        match: match_icmp_rule("0.0.0.0/0")
-      )
+    context "when the group is applied locally" do
+      let(:deleted_group) { group }
 
-      expect(flows).not_to include expected_flow
-      expect(deleted_flows).to include expected_flow
+      it "removes the flows for all interfaces in the security group" do
+        expected_flow = rule_flow(
+          cookie: cookie_id(group),
+          match: match_icmp_rule("0.0.0.0/0")
+        )
+
+        expect(flows).not_to include expected_flow
+        expect(deleted_flows).to include expected_flow
+      end
+    end
+
+    context "when the group is referenced" do
+      let(:group) do
+        Fabricate(:security_group, rules: "icmp::#{deleted_group.canonical_uuid}")
+      end
+      let(:deleted_group) { Fabricate(:security_group) }
+
+      let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [deleted_group]) }
+      let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [deleted_group]) }
+
+      let(:interface) do
+        # Dirty hack to make sure the referenced interfaces are created first
+        ref_intf1;ref_intf2
+        Fabricate(:filter_interface, security_groups: [group])
+      end
+
+      it "removes all reference flows for the deleted group" do
+        expect(deleted_flows).to include *reference_flows_for("icmp::", ref_intf1)
+        expect(flows).not_to include *reference_flows_for("icmp::", ref_intf1)
+
+        expect(deleted_flows).to include *reference_flows_for("icmp::", ref_intf2)
+        expect(flows).not_to include *reference_flows_for("icmp::", ref_intf2)
+      end
     end
   end
 end
