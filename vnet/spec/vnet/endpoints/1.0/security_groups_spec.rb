@@ -25,13 +25,21 @@ describe "/security_groups" do
       :rules => "
         tcp:22:0.0.0.0
         udp:53:0.0.0.0
-        icmp:-1:sg-group
       "
     }
     required_params = [:display_name]
     uuid_params = [:uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
+
+    context "with an existing security group uuid in the rules" do
+      let(:group) { Fabricate(:security_group) }
+      let(:request_params) { accepted_params.merge(rules: "icmp::#{group.canonical_uuid}") }
+
+       it "should successfully create a security group referencing it" do
+        expect(last_response).to succeed.with_body_containing(request_params)
+      end
+    end
 
     context "with a faulty protocol in the rules" do
       let(:request_params) { accepted_params.merge(rules: "broken") }
@@ -70,6 +78,16 @@ describe "/security_groups" do
         500,
         "Sequel::ValidationFailed",
         "invalid ipv4 address or security group uuid in rule 'tcp:22:sg-i'm_illegal'"
+      )
+    end
+
+    context "with a correct but non existant security group uuid in the rules" do
+      let(:request_params) { accepted_params.merge(rules: "tcp:22:sg-noexists") }
+
+      it_should_return_error(
+        500,
+        "Sequel::ValidationFailed",
+        "Unknown security group uuid in rule 'tcp:22:sg-noexists'"
       )
     end
   end

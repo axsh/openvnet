@@ -54,6 +54,7 @@ describe Vnet::Openflow::FilterManager do
           udp:52:no ip for you
           tcp:22:10.1.0.0/24
           icmp::0.0.0.0/0:something else
+          udp:666:sg-nothere
         }
 
         # We don't use the fabricator here so we can skip sequel validation

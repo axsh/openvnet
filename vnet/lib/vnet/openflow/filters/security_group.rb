@@ -123,6 +123,11 @@ module Vnet::Openflow::Filters
         referencee_uuid = split_rule(r).last
         referencee = Vnet::ModelWrappers::SecurityGroup.batch[referencee_uuid].commit
 
+        if referencee.nil?
+          warn log_format("'#{@uuid}': Unknown security group uuid in rule: '#{r}'")
+          next
+        end
+
         rh[referencee.id] = {
           uuid: referencee.uuid,
           rule: r,

@@ -43,8 +43,14 @@ module Vnet::Models
       rules && split_rule_collection(rules).each { |r|
         r.strip!
         next if is_comment?(r)
+
         valid, error_msg = validate_rule(r)
         errors.add(error_msg, "'#{r}'") unless valid
+
+        if is_reference_rule?(r)
+          self.class[split_rule(r)[2]] ||
+            errors.add("Unknown security group uuid in rule", "'#{r}'")
+        end
       }
     end
   end
