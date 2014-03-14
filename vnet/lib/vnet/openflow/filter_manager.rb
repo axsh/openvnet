@@ -64,7 +64,7 @@ module Vnet::Openflow
     # The rest
     #
 
-    def update_referencees(id, ip_addresses)
+    def update_referencees(id, ips)
       @items.values.each {|i| i.update_referencee(id, ips) if i.references?(id)}
     end
 
