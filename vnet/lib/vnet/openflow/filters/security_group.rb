@@ -51,6 +51,13 @@ module Vnet::Openflow::Filters
       @interfaces.delete(interface_id)
     end
 
+    def remove_referencee(id)
+      @referencees.delete(id) || return
+
+      uninstall_reference
+      @dp_info.add_flows flows_for_reference
+    end
+
     # If interface_id is nil, the group will be installed for all interfaces in it
     def install(interface_id = nil)
       @dp_info.add_flows(

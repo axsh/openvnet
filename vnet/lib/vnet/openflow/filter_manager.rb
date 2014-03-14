@@ -62,6 +62,8 @@ module Vnet::Openflow
     end
 
     def removed_security_group(params)
+      remove_referencee(params[:id])
+
       item = @items.delete(params[:id]) || return
 
       info log_format("removing security group", item.uuid)
@@ -71,6 +73,10 @@ module Vnet::Openflow
     #
     # The rest
     #
+
+    def remove_referencee(id)
+      @items.values.each { |i| i.remove_referencee(id) if i.references?(id) }
+    end
 
     def update_referencees(id, ips)
       @items.values.each {|i| i.update_referencee(id, ips) if i.references?(id)}
