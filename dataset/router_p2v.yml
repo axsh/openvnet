@@ -172,6 +172,6 @@ routes:
 
   - uuid: r-p
     interface_uuid: if-routerp2v
-    network_uuid: nw-public
+    network_uuid: nw-public1
     route_link_uuid: rl-1
     ipv4_network: <%= public_ipv4_network  %>
