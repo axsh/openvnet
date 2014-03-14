@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-describe Vnet::NodeModules::VdcVnetPlugin do
+describe Vnet::Plugins::VdcVnetPlugin do
   before do
     use_mock_event_handler
   end
 
-  subject { Vnet::NodeModules::VdcVnetPlugin.new }
+  subject { Vnet::Plugins::VdcVnetPlugin.new }
 
   def deep_copy(h)
     Marshal.load( Marshal.dump(h) )
@@ -68,6 +68,11 @@ describe Vnet::NodeModules::VdcVnetPlugin do
     end
 
     describe "destroy_entry" do
+      it "deletes an entry of Interface" do
+        subject.create_entry(model_class, deep_copy(params))
+        subject.destroy_entry(model_class, deep_copy(params)[:uuid])
+        expect(Vnet::Models::Interface[params[:uuid]]).to eq nil
+      end
     end
   end
 end
