@@ -424,4 +424,21 @@ describe Vnet::Openflow::FilterManager do
       end
     end
   end
+
+  describe "#removed_security_group" do
+    before(:each) {
+      subject.apply_filters(wrapper(interface))
+      subject.removed_security_group(id: group.id)
+    }
+
+    it "removes the flows for all interfaces in the security group" do
+      expected_flow = rule_flow(
+        cookie: cookie_id(group),
+        match: match_icmp_rule("0.0.0.0/0")
+      )
+
+      expect(flows).not_to include expected_flow
+      expect(deleted_flows).to include expected_flow
+    end
+  end
 end
