@@ -8,6 +8,7 @@ module Vnet::Openflow
     subscribe_event UPDATED_SG_IP_ADDRESSES, :updated_sg_ip_addresses
     subscribe_event ADDED_INTERFACE_TO_SG, :added_interface_to_sg
     subscribe_event REMOVED_INTERFACE_FROM_SG, :removed_interface_from_sg
+    subscribe_event REMOVED_SECURITY_GROUP, :removed_security_group
 
     def initialize(*args)
       super(*args)
@@ -58,6 +59,13 @@ module Vnet::Openflow
         item.add_interface(params[:interface_id], params[:interface_cookie_id])
         item.install(params[:interface_id])
       end
+    end
+
+    def removed_security_group(params)
+      item = @items.delete(params[:id]) || return
+
+      info log_format("removing security group", item.uuid)
+      item.uninstall
     end
 
     #

@@ -19,10 +19,15 @@ module Vnet::NodeApi
             id: secg.id,
             rules: rules
           )
-          #TODO: Update reference as well
         end
 
         secg
+      end
+
+      def destroy(id)
+        group = super(id)
+
+        dispatch_event(REMOVED_SECURITY_GROUP, id: group.id)
       end
     end
   end

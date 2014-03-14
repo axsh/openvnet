@@ -60,7 +60,7 @@ module Vnet::Openflow::Filters
       )
     end
 
-    def uninstall(interface_id)
+    def uninstall(interface_id = nil)
       uninstall_rules(interface_id)
       uninstall_isolation(interface_id)
       uninstall_reference(interface_id)
