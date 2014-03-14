@@ -17,8 +17,15 @@ datapaths:
 
 networks:
 
-  - uuid: nw-public
-    display_name: public
+  - uuid: nw-public1
+    display_name: public1
+    ipv4_network: <%= public_ipv4_network %>
+    ipv4_prefix: <%= public_ipv4_prefix %>
+    domain_name: public
+    network_mode: physical
+
+  - uuid: nw-public2
+    display_name: public2
     ipv4_network: <%= public_ipv4_network %>
     ipv4_prefix: <%= public_ipv4_prefix %>
     domain_name: public
@@ -30,7 +37,7 @@ interfaces:
     mode: host
     port_name: eth0
     owner_datapath_uuid: dp-1
-    network_uuid: nw-public
+    network_uuid: nw-public1
     mac_address: "02:01:00:00:00:01"
     ipv4_address: <%= dp1_ipv4_address %>
 
@@ -38,7 +45,7 @@ interfaces:
     mode: host
     port_name: eth0
     owner_datapath_uuid: dp-2
-    network_uuid: nw-public
+    network_uuid: nw-public1
     mac_address: "02:01:00:00:00:02"
     ipv4_address: <%= dp2_ipv4_address %>
 
@@ -46,6 +53,45 @@ interfaces:
     mode: host
     port_name: eth0
     owner_datapath_uuid: dp-3
-    network_uuid: nw-public
+    network_uuid: nw-public2
     mac_address: "02:01:00:00:00:03"
     ipv4_address: <%= dp3_ipv4_address %>
+
+  - uuid: if-dhcppub1
+    network_uuid: nw-public1
+    mac_address: "02:00:00:00:01:11"
+    ipv4_address: <%= public_dhcp_ipv4_address %>
+    mode: simulated
+
+  - uuid: if-dhcppub2
+    network_uuid: nw-public2
+    mac_address: "02:00:00:00:01:22"
+    ipv4_address: <%= public_dhcp_ipv4_address %>
+    mode: simulated
+
+network_services:
+
+  - uuid: ns-dhcppub1
+    interface_uuid: if-dhcppub1
+    type: dhcp
+
+  - uuid: ns-dhcppub2
+    interface_uuid: if-dhcppub2
+    type: dhcp
+
+datapath_networks:
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-public1
+    interface_uuid: if-dp1eth0
+    broadcast_mac_address: "02:00:01:aa:01:01"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-public1
+    interface_uuid: if-dp2eth0
+    broadcast_mac_address: "02:00:01:bb:01:01"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-public2
+    interface_uuid: if-dp3eth0
+    broadcast_mac_address: "02:00:01:cc:01:01"
