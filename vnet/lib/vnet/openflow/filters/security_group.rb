@@ -10,6 +10,18 @@ module Vnet::Openflow::Filters
 
     attr_reader :id, :uuid, :interfaces
 
+    #TODO:
+    # Currently we are rebuilding ALL reference rules when ips are updated,
+    # even the ones from groups that didn't have their ips updated. This is
+    # because I haven't found a good way to separate referencees in the cookie
+    # yet. Would be nice if we could optimize that.
+    # Same goes for the #remove_referencee method
+
+    #TODO:
+    # Currently isolation creates the same flows for every interface in a group.
+    # It would be a lot better if we could combine those together somehow.
+    # Perhaps using metadata?
+
     def initialize(item_map)
       @id = item_map.id
       @uuid = item_map.uuid
