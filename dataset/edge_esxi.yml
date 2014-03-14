@@ -138,11 +138,13 @@ datapath_networks:
     broadcast_mac_address: "02:00:00:dd:00:02"
 
 translations:
+
   - uuid: tr-edge
     interface_uuid: if-edge
     mode: vnet_edge
 
 vlan_translations:
+
   - vlan_id: 100
     network_id: 2
     translation_uuid: tr-edge

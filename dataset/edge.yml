@@ -82,14 +82,6 @@ interfaces:
 
 network_services:
 
-  - uuid: ns-dhcppub1
-    interface_uuid: if-dhcppub1
-    type: dhcp
-
-  - uuid: ns-dhcppub2
-    interface_uuid: if-dhcppub2
-    type: dhcp
-
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
     type: dhcp
@@ -146,11 +138,13 @@ datapath_networks:
     broadcast_mac_address: "02:00:00:dd:00:02"
 
 translations:
+
   - uuid: tr-edge
     interface_uuid: if-edge
     mode: vnet_edge
 
 vlan_translations:
+
   - uuid: vt-edge
     vlan_id: 100
     network_id: 2
