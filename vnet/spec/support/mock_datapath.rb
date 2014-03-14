@@ -131,7 +131,9 @@ class MockDatapath < Vnet::Openflow::Datapath
   end
 
   def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
-    @added_flows.select { |f| f.to_trema_hash[:cookie] == cookie }.tap do |deleted_flows|
+    @added_flows.select { |f|
+      (f.to_trema_hash[:cookie] & cookie_mask) == (cookie & cookie_mask)
+    }.tap do |deleted_flows|
       @current_flows -= deleted_flows
       @deleted_flows += deleted_flows
       @deleted_flows.uniq!

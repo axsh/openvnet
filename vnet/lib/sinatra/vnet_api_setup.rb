@@ -34,6 +34,8 @@ module Sinatra
       register Sinatra::Namespace
       register Sinatra::Hashfix
 
+      set :show_exceptions, false
+
       # avoid using Sinatra::JSON builtin encoder.
       set :json_encoder, ::JSON
 
@@ -75,6 +77,11 @@ module Sinatra
         logger.error("API Error: #{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
         status(boom.http_status)
         respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code})
+      end
+
+      error do |boom|
+        logger.error("API Error: #{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+        respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>500})
       end
     }
 

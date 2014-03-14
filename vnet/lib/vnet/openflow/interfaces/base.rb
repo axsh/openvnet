@@ -24,6 +24,7 @@ module Vnet::Openflow::Interfaces
     TAG_ARP_LOOKUP            = 0x4
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
+    TAG_DISABLED_FILTERING    = 0x7
 
     attr_accessor :id
     attr_accessor :uuid
@@ -32,6 +33,8 @@ module Vnet::Openflow::Interfaces
     attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
     attr_accessor :display_name
+
+    attr_accessor :ingress_filtering_enabled
 
     attr_reader :port_number
     attr_reader :mac_addresses
@@ -51,8 +54,9 @@ module Vnet::Openflow::Interfaces
 
       @mac_addresses = {}
 
-      @router_ingress = false
-      @router_egress = false
+      @enable_routing = map.enable_routing
+      @enable_route_translation = map.enable_route_translation
+      @ingress_filtering_enabled = map.ingress_filtering_enabled
 
       # The 'owner_datapath_ids' set has two possible states; the set
       # can contain zero or more datapaths that can activate this
@@ -146,18 +150,6 @@ module Vnet::Openflow::Interfaces
     def uninstall
       debug log_format("interfaces: removing flows...")
       del_cookie
-    end
-
-    def enable_router_ingress
-    end
-
-    def disable_router_ingress
-    end
-
-    def enable_router_egress
-    end
-
-    def disable_router_egress
     end
 
     def update
@@ -273,6 +265,38 @@ module Vnet::Openflow::Interfaces
     end
 
     #
+    # Router ingress/egress:
+    #
+
+    # def enable_router
+    #   return if @enable_router != false
+    #   @enable_router = true
+    #
+    #   flows = []
+    #
+    #   @mac_addresses.each { |mac_lease_id, mac_info|
+    #     flows_for_router_ingress_mac(flows, mac_info)
+    #
+    #     mac_info[:ipv4_addresses].each { |ipv4_info|
+    #       flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
+    #       flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
+    #     }
+    #   }
+    #
+    #   @dp_info.add_flows(flows)
+    # end
+
+    #
+    # Filtering methods:
+    #
+
+    def enabled_filtering
+    end
+
+    def disabled_filtering
+    end
+
+    #
     # Internal methods:
     #
 
@@ -288,6 +312,9 @@ module Vnet::Openflow::Interfaces
     # those flows will never be touched.
 
     def flows_for_datapath(flows)
+    end
+
+    def flows_for_disabled_filtering(flows)
     end
 
     def flows_for_interface_mac(flows, mac_info)

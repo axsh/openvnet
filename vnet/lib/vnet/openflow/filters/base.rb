@@ -4,6 +4,8 @@ module Vnet::Openflow::Filters
   class Base
     include Vnet::Openflow::FlowHelpers
 
+    attr_accessor :dp_info
+
     COOKIE_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
 
     COOKIE_TYPE_TAG  = 0x1 << COOKIE_TAG_SHIFT
@@ -15,7 +17,6 @@ module Vnet::Openflow::Filters
     COOKIE_TYPE_VALUE_MASK  = 0xfffff << COOKIE_TYPE_VALUE_SHIFT
 
     COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
-    COOKIE_TAG_INGRESS_ACCEPT_ALL = 0x2 << COOKIE_TYPE_VALUE_SHIFT
 
     # We make a class method out of cookie so we can access
     # it easily in unit tests.
@@ -29,6 +30,10 @@ module Vnet::Openflow::Filters
 
     def install
       raise NotImplementedError
+    end
+
+    def uninstall
+      @dp_info.del_cookie(cookie)
     end
 
   end

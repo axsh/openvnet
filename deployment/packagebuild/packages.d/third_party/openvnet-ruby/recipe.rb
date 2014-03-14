@@ -1,7 +1,7 @@
-class WakameVnetRuby < FPM::Cookery::Recipe
-  description 'The Ruby virtual machine(For Wakame-VNET bundle)'
+class OpenvnetRuby < FPM::Cookery::Recipe
+  description 'The Ruby virtual machine(For OpenVNet bundle)'
 
-  name 'wakame-vnet-ruby'
+  name 'openvnet-ruby'
   version '2.0.0.353'
   revision 0
   homepage 'http://www.ruby-lang.org/'
@@ -44,21 +44,21 @@ class WakameVnetRuby < FPM::Cookery::Recipe
     safesystem 'bash', '-c', <<EOF
 for i in $(find #{destdir} -type f -and -executable); do
   if file -b "$i" | grep -q '^ELF ' > /dev/null; then
-    chrpath --replace /opt/axsh/wakame-vnet/ruby/lib "$i" || :
+    chrpath --replace /opt/axsh/openvnet/ruby/lib "$i" || :
   fi
 done
 EOF
     # rewrite shebang.
     Dir["#{destprefixdir}/bin/**"].each { |path|
       if `file -b #{path}` =~ /script text executable$/
-        inline_replace(path, /^#!#{destdir}.*/, "#!/opt/axsh/wakame-vnet/ruby/bin/ruby")
+        inline_replace(path, /^#!#{destdir}.*/, "#!/opt/axsh/openvnet/ruby/bin/ruby")
       end
     }
   end
 
   private
   def prefixdir
-    '/opt/axsh/wakame-vnet/ruby'
+    '/opt/axsh/openvnet/ruby'
   end
 
   def destprefixdir

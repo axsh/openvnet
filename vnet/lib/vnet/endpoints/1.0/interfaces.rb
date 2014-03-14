@@ -5,7 +5,10 @@ require 'trema/mac'
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   put_post_shared_params = [
     "owner_datapath_uuid",
+    "ingress_filtering_enabled",
     "display_name",
+    "enable_routing",
+    "enable_route_translation",
   ]
 
   fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
@@ -63,7 +66,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
     M::InterfaceSecurityGroup.create(params)
-    respond_with(R::Interface.security_groups(interface))
+
+    respond_with(R::SecurityGroup.generate(security_group))
   end
 
   get '/:uuid/security_groups' do
@@ -80,7 +84,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).all.commit
 
-    relations.each { |r| r.batch.destroy.commit }
-    respond_with(R::Interface.security_groups(interface))
+    # We call the destroy class method so we go trough NodeApi and send an
+    # update isolation event
+    relations.each { |r| M::InterfaceSecurityGroup.destroy(r.id) }
+    respond_with([security_group.uuid])
   end
 end

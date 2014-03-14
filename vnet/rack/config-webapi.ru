@@ -6,12 +6,9 @@ require 'vnet'
 require 'rack/cors'
 require 'dcell'
 
+Vnet::Initializers::Logger.run("webapi.log")
+
 conf = Vnet::Configurations::Webapi.conf
-
-#Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
-Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "webapi.log"))
-
-Vnet::NodeApi.logger = Celluloid.logger
 
 Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 

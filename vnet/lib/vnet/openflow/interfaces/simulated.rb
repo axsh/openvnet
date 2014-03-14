@@ -9,8 +9,6 @@ module Vnet::Openflow::Interfaces
     include Vnet::Openflow::ArpLookup
 
     def initialize(params)
-      @router_ingress = false
-
       super
 
       arp_lookup_initialize(interface_id: @id,
@@ -24,8 +22,11 @@ module Vnet::Openflow::Interfaces
       flows = []
       flows_for_mac(flows, mac_info)
       flows_for_interface_mac(flows, mac_info)
-      flows_for_router_ingress_mac(flows, mac_info) if @router_ingress == true
-      flows_for_router_egress_mac(flows, mac_info) if @router_egress == true
+
+      if @enable_routing
+        flows_for_router_ingress_mac(flows, mac_info)
+        flows_for_router_egress_mac(flows, mac_info)
+      end
 
       @dp_info.add_flows(flows)
     end
@@ -38,9 +39,12 @@ module Vnet::Openflow::Interfaces
       flows_for_ipv4(flows, mac_info, ipv4_info)
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
       flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)
-      flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
-      flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info) if @router_ingress == true
-      flows_for_router_egress_ipv4(flows, mac_info, ipv4_info) if @router_egress == true
+
+      if @enable_routing
+        flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
+        flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
+        flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
+      end
 
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
 
@@ -78,8 +82,13 @@ module Vnet::Openflow::Interfaces
     def install
       flows = []
 
+      flows_for_disabled_filtering(flows) unless @ingress_filtering_enabled
       flows_for_base(flows)
       arp_lookup_base_flows(flows)
+
+      if @enable_routing && !@enable_route_translation
+        flows_for_route_translation(flows)
+      end
 
       @dp_info.add_flows(flows)
     end
@@ -183,7 +192,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def flows_for_base(flows)
-      flows << flow_create(:controller,
+      flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
@@ -191,8 +200,11 @@ module Vnet::Openflow::Interfaces
                              :arp_op => 1,
                            },
                            match_interface: @id,
+                           actions: {
+                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                           },
                            cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
-      flows << flow_create(:controller,
+      flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
@@ -201,6 +213,9 @@ module Vnet::Openflow::Interfaces
                              :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
                            },
                            match_interface: @id,
+                           actions: {
+                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                           },
                            cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
     end
 
@@ -210,77 +225,21 @@ module Vnet::Openflow::Interfaces
       #
       # Classifiers:
       #
-      flows << flow_create(:controller_classifier,
+      flows << flow_create(:default,
+                           table: TABLE_CONTROLLER_PORT,
+                           goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                            priority: 30,
+
                            match: {
                              :eth_src => mac_info[:mac_address],
                            },
-                           write_interface_id: @id,
+                           write_interface: @id,
                            cookie: cookie)
     end
 
-    # TODO: Separate the mac-only flows and add those when
-    # add_mac_address is called.
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      #
-      # ARP:
-      #
-      # TODO: Fix this so it is more secure...
-      flows << flow_create(:default,
-                           table_network_src: ipv4_info[:network_type],
-                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
-                           priority: 86,
-                           match: {
-                             :eth_type => 0x0806,
-                             :eth_src => mac_info[:mac_address],
-                             :arp_spa => ipv4_info[:ipv4_address],
-                             :arp_sha => mac_info[:mac_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           match_local: true,
-                           cookie: cookie)
-      #
-      # IPv4:
-      #
-      # TODO: Fix this so it is more secure...
-      flows << flow_create(:default,
-                           table_network_src: ipv4_info[:network_type],
-                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
-                           priority: 45,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_src => mac_info[:mac_address],
-                             # :ipv4_src => ipv4_info[:ipv4_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           cookie: cookie)
-
-      flows << flow_create(:default,
-                           table_network_dst: ipv4_info[:network_type],
-                           priority: 80,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_dst => mac_info[:mac_address],
-                             :ipv4_dst => ipv4_info[:ipv4_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_INTERFACE_INGRESS_FILTER)
-      flows << flow_create(:default,
-                           table_network_dst: ipv4_info[:network_type],
-                           priority: 80,
-                           match: {
-                             :eth_type => 0x0806,
-                             :eth_dst => mac_info[:mac_address],
-                             :arp_tpa => ipv4_info[:ipv4_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS)
       flows << flow_create(:default,
                            table: TABLE_FLOOD_SIMULATED,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,

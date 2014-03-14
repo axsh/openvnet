@@ -1,5 +1,0 @@
-# Wakame VNet common variables
-VNET_ROOT=/opt/axsh/wakame-vnet
-RUBY_PATH=/opt/axsh/wakame-vnet/ruby/bin
-PATH=${RUBY_PATH}:$PATH
-LOG_DIRECTORY=/var/log/wakame-vnet/

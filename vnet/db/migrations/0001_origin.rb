@@ -89,6 +89,10 @@ Sequel.migration do
       Integer :active_datapath_id, :index => true
       Integer :owner_datapath_id, :index => true
 
+      FalseClass :ingress_filtering_enabled, :null => false
+      FalseClass :enable_routing, :null=>false
+      FalseClass :enable_route_translation, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -222,7 +226,7 @@ Sequel.migration do
       primary_key :id
 
       Integer :translation_id, :index => true, :null => false
-      
+
       Bignum :ingress_ipv4_address, :index => true, :null => false
       Bignum :egress_ipv4_address, :index => true, :null => false
     end
@@ -245,6 +249,7 @@ Sequel.migration do
 
     create_table(:vlan_translations) do
       primary_key :id
+      String :uuid, :unique => true, :null => false
       Integer :translation_id, :index => true
       Bignum :mac_address
       Integer :vlan_id

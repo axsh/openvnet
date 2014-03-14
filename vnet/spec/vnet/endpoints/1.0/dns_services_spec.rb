@@ -39,57 +39,14 @@ describe "/dns_services" do
     include_examples "PUT /:uuid", accepted_params
   end
 
-  describe "POST /:uuid/dns_records" do
-    before(:each) do
-      post api_suffix_with_uuid, request_params
-    end
+  describe "One to many relation calls for dns_records" do
+    let(:relation_fabricator) { :dns_record }
+    let(:relation_uuid) { "dnsr-new" }
 
-    # let(:accepted_params) do
-    accepted_params = {
-        uuid: "dnsr-new",
-        name: "test-server",
-        ipv4_address: "192.168.1.10",
-      }
-    # end
-    let(:request_params) { accepted_params }
-
-    context "with a nonexistant uuid" do
-      let(:api_suffix_with_uuid) { "#{api_suffix}/dnss-notfound/dns_records" }
-
-      it "should return a 404 error (UnknownUUIDResource)" do
-        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
-          /dnss-notfound$/)
-      end
-    end
-
-    context "with a uuid parameter with a faulty syntax" do
-      let(:api_suffix_with_uuid) { "#{api_suffix}/this_aint_no_uuid/dns_records" }
-
-      it_should_return_error(400, "InvalidUUID", /this_aint_no_uuid$/)
-    end
-
-    context "with an existing uuid" do
-      let!(:dns_service) { Fabricate(:dns_service) }
-      let(:api_suffix_with_uuid) { "#{api_suffix}/#{dns_service.canonical_uuid}/dns_records" }
-
-      context "with all accepted parameters" do
-        it "should create a new dns record" do
-          last_response.should succeed
-          JSON.parse(last_response.body)["dns_records"].size.should eq 1
-        end
-      end
-
-      context "with a dns record uuid that already exists" do
-        # A second call to bring forth the error
-        before(:each) { post api_suffix_with_uuid, request_params }
-
-        it_should_return_error(400, "DuplicateUUID", /dnsr-new$/)
-      end
-
-      include_examples "required parameters", accepted_params,
-        [:name, :ipv4_address]
-
-    end
+    include_examples "one_to_many_relation", "dns_records", {
+      uuid: "dnsr-new",
+      name: "test-server",
+      ipv4_address: "192.168.1.10",
+    }
   end
-
 end

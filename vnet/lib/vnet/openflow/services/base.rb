@@ -61,8 +61,8 @@ module Vnet::Openflow::Services
       cookie(OPTIONAL_TYPE_NETWORK, value)
     end
 
-    def del_cookie_for_network(value, options = {})
-      del_cookie(OPTIONAL_TYPE_NETWORK, value, options)
+    def del_cookie_for_network(value)
+      del_cookie(OPTIONAL_TYPE_NETWORK, value)
     end
 
     def log_format(message, values = nil)

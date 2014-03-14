@@ -29,9 +29,6 @@ module Vnet::Openflow
         when :network, :match_network, :write_network
           metadata = metadata | value | METADATA_TYPE_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
-        when :no_controller, :match_no_controller, :write_no_controller
-          metadata = metadata | METADATA_FLAG_NO_CONTROLLER
-          metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
         when :not_no_controller, :match_not_no_controller, :write_not_no_controller
           metadata = metadata
           metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
@@ -66,7 +63,9 @@ module Vnet::Openflow
         when :match_ignore_mac2mac, :write_ignore_mac2mac
           metadata = metadata | METADATA_FLAG_IGNORE_MAC2MAC if value == true
           metadata_mask = metadata_mask | METADATA_FLAG_IGNORE_MAC2MAC
-
+        when :match_no_controller, :write_no_controller
+          metadata = metadata | METADATA_FLAG_NO_CONTROLLER if value == true
+          metadata_mask = metadata_mask | METADATA_FLAG_NO_CONTROLLER
         when :match_reflection, :write_reflection
           metadata = metadata | METADATA_FLAG_REFLECTION if value == true
           metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION

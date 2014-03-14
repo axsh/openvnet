@@ -13,9 +13,6 @@ module Vnet::NodeApi
   class DhcpRange < Base
   end
 
-  class InterfaceSecurityGroup < Base
-  end
-
   class IpAddress < Base
   end
 
@@ -35,9 +32,6 @@ module Vnet::NodeApi
   end
 
   class RouteLink < Base
-  end
-
-  class SecurityGroup < Base
   end
 
   class Translation < Base

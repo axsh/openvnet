@@ -7,7 +7,7 @@ shared_examples "relation_uuid_checks" do |relation_suffix, relation_uuid_label|
       }
 
       it "should return a 404 error (UnknownUUIDResource)" do
-        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+        expect(last_response).to fail.with_code(404).with_error("UnknownUUIDResource",
           /#{model_class.uuid_prefix}-notfound$/)
       end
     end
@@ -18,7 +18,7 @@ shared_examples "relation_uuid_checks" do |relation_suffix, relation_uuid_label|
       }
 
       it "should return a 404 error (UnknownUUIDResource)" do
-        last_response.should fail.with_code(404).with_error("UnknownUUIDResource",
+        expect(last_response).to fail.with_code(404).with_error("UnknownUUIDResource",
           /#{related_object.uuid_prefix}-notfound$/)
       end
     end
@@ -61,8 +61,8 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
       }
 
       it "should create a new entry in the join table" do
-        last_response.should succeed
-        base_object.send(relation_suffix).should eq [related_object]
+        expect(last_response).to succeed
+        expect(base_object.send(relation_suffix)).to eq [related_object]
       end
     end
   end
@@ -85,11 +85,14 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
       let(:entries) { 0 }
 
       it "should return a json with empty relations" do
-        last_response.should succeed.with_body_containing({
-          "uuid" => base_object.canonical_uuid
+        expect(last_response).to succeed.with_body({
+          "total_count" => 0,
+          "offset" =>  0,
+          "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
+          "items" => [],
         })
 
-        JSON.parse(last_response.body)[relation_suffix].size.should eq 0
+        expect(JSON.parse(last_response.body)["items"].size).to eq 0
       end
     end
 
@@ -97,11 +100,13 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
       let(:entries) { 3 }
 
       it "should return a json with 3 relations in it" do
-        last_response.should succeed.with_body_containing({
-          "uuid" => base_object.canonical_uuid
+        expect(last_response).to succeed.with_body_containing({
+          "total_count" => 3,
+          "offset" =>  0,
+          "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
         })
 
-        JSON.parse(last_response.body)[relation_suffix].size.should eq 3
+        expect(JSON.parse(last_response.body)["items"].size).to eq 3
       end
     end
   end

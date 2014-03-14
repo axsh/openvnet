@@ -53,9 +53,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     params['range_begin'] = parse_ipv4(params['range_begin'])
     params['range_end'] = parse_ipv4(params['range_end'])
 
-    M::DhcpRange.create(params)
+    dhcp_range = M::DhcpRange.create(params)
 
-    respond_with(R::Network.dhcp_ranges(network))
+    respond_with(R::DhcpRange.generate(dhcp_range))
   end
 
   get '/:uuid/dhcp_ranges' do
@@ -74,6 +74,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
 
     range.batch.destroy.commit
 
-    respond_with R::Network.dhcp_ranges(network)
+    respond_with([range.uuid])
   end
 end

@@ -27,6 +27,7 @@ describe "/interfaces" do
       :uuid => "if-test",
       :network_uuid => "nw-testnet",
       :ipv4_address => "192.168.1.10",
+      :ingress_filtering_enabled => true,
       :mac_address => "11:11:11:11:11:11",
       :owner_datapath_uuid => "dp-owner",
       :mode => "simulated"
@@ -41,7 +42,7 @@ describe "/interfaces" do
 
       it "handles a single event" do
         expect(last_response).to succeed
-        MockEventHandler.handled_events.size.should eq 1
+        expect(MockEventHandler.handled_events.size).to eq 1
       end
     end
   end
@@ -51,6 +52,7 @@ describe "/interfaces" do
 
     accepted_params = {
       :display_name => "updated interface",
+      :ingress_filtering_enabled => true,
       :owner_datapath_uuid => "dp-new",
     }
 
@@ -61,8 +63,16 @@ describe "/interfaces" do
 
       it "handles a single event" do
         expect(last_response).to succeed
-        MockEventHandler.handled_events.size.should eq 1
+        expect(MockEventHandler.handled_events.size).to eq 1
       end
     end
+  end
+
+  describe "Many to many relation calls for route links" do
+    let(:relation_fabricator) { :security_group }
+
+    let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+
+    include_examples "many_to_many_relation", "security_groups", {}
   end
 end

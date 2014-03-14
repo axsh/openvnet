@@ -17,7 +17,7 @@ module Vnet::Openflow::Services
 
     def install
       flows = []
-      flows << flow_create(:controller,
+      flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
 
@@ -27,7 +27,10 @@ module Vnet::Openflow::Services
                              :udp_dst => 53,
                            },
                            match_interface: @interface_id,
-                           cookie: self.cookie)
+
+                           actions: {
+                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                           })
 
       @dp_info.add_flows(flows)
     end

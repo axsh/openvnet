@@ -10,10 +10,9 @@ require 'celluloid'
 require 'celluloid/autostart'
 require 'dcell'
 
-conf = Vnet::Configurations::Vna.conf
+Vnet::Initializers::Logger.run("vna.log")
 
-#Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
-Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "vna.log"))
+conf = Vnet::Configurations::Vna.conf
 
 # Start the switch manager before any celluloid services in order to
 # avoid cloned file descriptors to e.g. zmq remaining open.
@@ -25,7 +24,6 @@ switch_manager_new.start
 
 Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 Vnet::NodeApi.raise_on_error = false # dont raise any errors
-Vnet::NodeApi.logger = Celluloid.logger
 
 case conf.node_api_proxy
 when :rpc

@@ -16,6 +16,8 @@ module Vnet::Openflow
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
+    subscribe_event ENABLED_INTERFACE_FILTERING, :enabled_filtering
+    subscribe_event DISABLED_INTERFACE_FILTERING, :disabled_filtering
 
     def update_item(params)
       case params[:event]
@@ -157,6 +159,8 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :install_interface,
                                                   interface_id: item.id)
+        item.ingress_filtering_enabled &&
+          @dp_info.filter_manager.async.apply_filters(item_map)
       end
 
       item # Return nil if interface has been uninstalled.
@@ -181,6 +185,13 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.translation_manager.async.update(event: :remove_interface,
                                                   interface_id: item.id)
+
+        @dp_info.filter_manager.async.remove_filters(item.id)
+
+        item.mac_addresses.each { |id, mac|
+          @dp_info.connection_manager.async.remove_catch_new_egress(id)
+          @dp_info.connection_manager.async.close_connections(id)
+        }
       end
 
       item
@@ -231,6 +242,9 @@ module Vnet::Openflow
       item.add_mac_address(mac_lease_id: mac_lease.id,
                            mac_address: mac_address,
                            cookie_id: mac_lease.cookie_id)
+
+      item.ingress_filtering_enabled &&
+        @dp_info.connection_manager.async.catch_new_egress(mac_lease.id, mac_address)
     end
 
     def released_mac_address(params)
@@ -242,6 +256,9 @@ module Vnet::Openflow
       return if mac_lease && mac_lease.interface_id == item.id
 
       item.remove_mac_address(mac_lease_id: params[:mac_lease_id])
+
+      @dp_info.connection_manager.async.remove_catch_new_egress(params[:mac_lease_id])
+      @dp_info.connection_manager.async.close_connections(params[:mac_lease_id])
     end
 
     def leased_ipv4_address(params)
@@ -282,6 +299,22 @@ module Vnet::Openflow
       return if ip_lease && ip_lease.interface_id == item.id
 
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
+    end
+
+    def enabled_filtering(params)
+      item = @items[params[:id]]
+      return if !item || item.ingress_filtering_enabled
+
+      info log_format("enabled filtering on interface", item.uuid)
+      item.enable_filtering
+    end
+
+    def disabled_filtering(params)
+      item = @items[params[:id]]
+      return if !item || !item.ingress_filtering_enabled
+
+      info log_format("disabled filtering on interface", item.uuid)
+      item.disable_filtering
     end
 
     def update_item_exclusively(params)
@@ -327,10 +360,6 @@ module Vnet::Openflow
         #
         # Capability events:
         #
-      when :enable_router_ingress
-        item.enable_router_ingress
-      when :enable_router_egress
-        item.enable_router_egress
       when :updated
         # api event
         item.update

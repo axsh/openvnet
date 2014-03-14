@@ -14,5 +14,7 @@ module Vnctl::Cli
     set_required_options [:display_name]
 
     define_standard_crud_commands
+
+    define_relation :interfaces
   end
 end

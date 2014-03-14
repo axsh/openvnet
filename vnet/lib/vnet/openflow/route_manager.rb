@@ -39,7 +39,10 @@ module Vnet::Openflow
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
-
+      return false if params[:network_id] && params[:network_id] != item.network_id
+      return false if params[:not_network_id] && params[:not_network_id] == item.network_id
+      return false if params[:egress] && params[:egress] != item.egress
+      return false if params[:ingress] && params[:ingress] != item.ingress
       true
     end
 

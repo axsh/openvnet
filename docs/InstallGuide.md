@@ -37,14 +37,14 @@ OpenVNet installation
 
 Install OpenVNet.
 
-    # yum install -y wakame-vnet
+    # yum install -y openvnet
 
 Initial Configuration
 ---------------------
 
 ### Setup vnmgr
 
-Modify the following section in /etc/wakame-vnet/vnmgr.conf on the vnmgr node.
+Modify the following section in /etc/openvnet/vnmgr.conf on the vnmgr node.
 
     node {
       id "vnmgr"
@@ -61,7 +61,7 @@ Modify the following section in /etc/wakame-vnet/vnmgr.conf on the vnmgr node.
 
 ### Setup vna
 
-Modify the following section in /etc/wakame-vnet/vna.conf on the node.
+Modify the following section in /etc/openvnet/vna.conf on the node.
 
     node {
       id "vna"
@@ -78,7 +78,7 @@ Modify the following section in /etc/wakame-vnet/vna.conf on the node.
 
 ### Setup webapi
 
-Modify the following section in /etc/wakame-vnet/webapi.conf on the webapi node.
+Modify the following section in /etc/openvnet/webapi.conf on the webapi node.
 
     node {
       id "webapi"
@@ -96,7 +96,7 @@ Modify the following section in /etc/wakame-vnet/webapi.conf on the webapi node.
 Configuring Database
 --------------------
 
-Modify the following section in /etc/wakame-vnet/common.conf on all nodes.
+Modify the following section in /etc/openvnet/common.conf on all nodes.
 
     db {
       adapter "mysql2"
@@ -127,7 +127,7 @@ To automatically launch the mysql server, execute the following command.
 Create Database
 
     # mysqladmin -uroot create vnet
-    # cd /opt/axsh/wakame-vnet/vnet
+    # cd /opt/axsh/openvnet/vnet
     # bundle exec rake db:init
 
 
@@ -138,7 +138,7 @@ Start the OpenVNet services
     # initctl start vnet-webapi
     # initctl start vnet-vna
 
-OpenVNet writes its logs in the /var/log/wakame-vnet directory. If there's a problem starting any of the services, you can find its log files there.
+OpenVNet writes its logs in the /var/log/openvnet directory. If there's a problem starting any of the services, you can find its log files there.
 
 
 
@@ -193,7 +193,7 @@ We're going to enslave eth0 to openvswitch so OpenVNet can use it. You will no l
 
 Please install OpenVNet according to the "Pre-setup" and "OpenVNet installation" sections of "Preliminary Operations and Installation".
 
-The config files (vnmgr.conf, vna.conf and webapi.conf) in the /etc/wakame-vnet directory do not need to be edited. They're set up for a single node installation by default.
+The config files (vnmgr.conf, vna.conf and webapi.conf) in the /etc/openvnet directory do not need to be edited. They're set up for a single node installation by default.
 
 ### Other package installation
 
@@ -250,7 +250,7 @@ Create Database
 Create the database and enter the sample data.
 
     # vi ~/.bash_profile
-    PATH=$PATH:$HOME/bin -> PATH=$PATH:$HOME/bin:/opt/axsh/wakame-vnet/ruby/bin
+    PATH=$PATH:$HOME/bin -> PATH=$PATH:$HOME/bin:/opt/axsh/openvnet/ruby/bin
     # source ~/.bash_profile
     # cd /root/vnet-test-kvm
     # ./db.sh

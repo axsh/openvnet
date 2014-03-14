@@ -178,7 +178,7 @@ module Vnet::Openflow::Translations
                            :metadata => METADATA_TYPE_EDGE_TO_VIRTUAL,
                            :metadata_mask => METADATA_TYPE_MASK
                           }, {}, {
-                           :goto_table => TABLE_VIRTUAL_DST,
+                           :goto_table => TABLE_NETWORK_DST_MAC_LOOKUP,
                            :metadata => md[:metadata],
                            :metadata_mask => md[:metadata_mask]
                           })
