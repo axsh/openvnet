@@ -154,9 +154,9 @@ module Vnet::Openflow
 
       load_addresses(item_map)
 
-      @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
-
       if item.mode != :remote
+        @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
+
         @dp_info.translation_manager.async.update(event: :install_interface,
                                                   interface_id: item.id)
         item.ingress_filtering_enabled &&
