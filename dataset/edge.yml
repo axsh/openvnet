@@ -76,7 +76,7 @@ interfaces:
     mode: host
     port_name: eth0
     owner_datapath_uuid: dp-edge
-    network_uuid: nw-public1
+    network_uuid: nw-public2
     mac_address: "02:01:00:00:00:04"
     ipv4_address: <%= edge_ipv4_address %>
 
@@ -123,7 +123,7 @@ datapath_networks:
     broadcast_mac_address: "02:00:00:cc:00:02"
 
   - datapath_uuid: dp-edge
-    network_uuid: nw-public1
+    network_uuid: nw-public2
     interface_uuid: if-edgeeth0
     broadcast_mac_address: "02:00:01:dd:01:01"
 
