@@ -13,7 +13,7 @@ module Vnet::Openflow::Connections
 
     def initialize
       # TODO: Support proper params initialization:
-      super {}
+      super({})
     end
 
     def self.cookie(mac_lease_id)
