@@ -1,1 +1,1 @@
-[ -f /etc/default/wakame-vnet ] && . /etc/default/wakame-vnet
+[ -f /etc/default/openvnet ] && . /etc/default/openvnet
