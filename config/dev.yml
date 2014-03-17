@@ -9,6 +9,7 @@ webapi:
   port: 9090
 
 vnet_branch: master
+vnet_path: /opt/axsh/wakame-vnet
 
 log_level: debug
 

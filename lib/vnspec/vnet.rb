@@ -40,8 +40,8 @@ module Vnspec
         case config[:update_vnet_via].to_sym
         when :rpm
           multi_ssh(config[:nodes][:vna],
-            "yum clean metadata --disablerepo=* --enablerepo=wakame-vnet*",
-            "yum update -y      --disablerepo=* --enablerepo=wakame-vnet*"
+            "yum clean metadata --disablerepo=* --enablerepo=openvnet*",
+            "yum update -y      --disablerepo=* --enablerepo=openvnet*"
           )
         when :git
           multi_ssh(config[:nodes][:vna],
@@ -56,8 +56,8 @@ module Vnspec
         case config[:update_vnet_via].to_sym
         when :rpm
           multi_ssh(config[:nodes][:vna],
-            "yum clean metadata --disablerepo=* --enablerepo=wakame-vnet*",
-            "yum downgrade -y --disablerepo=* --enablerepo=wakame-vnet* wakame-vnet*"
+            "yum clean metadata --disablerepo=* --enablerepo=openvnet*",
+            "yum downgrade -y --disablerepo=* --enablerepo=openvnet* openvnet*"
           )
         end
       end
@@ -71,7 +71,7 @@ module Vnspec
       end
 
       def reset_db
-        multi_ssh(config[:nodes][:vnmgr], "bash -l -c 'cd /opt/axsh/wakame-vnet/vnet; bundle exec rake db:reset'")
+        multi_ssh(config[:nodes][:vnmgr], "bash -l -c 'cd #{config[:vnet_path]}/vnet; bundle exec rake db:reset'")
       end
 
       def dump_flows(vna_index = nil)
@@ -81,7 +81,7 @@ module Vnspec
           logger.info "#" * 50
           logger.info "# dump_flows: vna#{i + 1}"
           logger.info "#" * 50
-          output = ssh(ip, config[:vnflows_cmd], debug: false)
+          output = ssh(ip, "bash -l -c 'cd #{config[:vnet_path]}/vnet; bundle exec bin/vnflows-monitor'", debug: false)
           logger.info output[:stdout]
           logger.info
         end
