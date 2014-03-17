@@ -145,9 +145,7 @@ describe "event" do
           uuid: "dp-new",
           node_id: "vna1",
           display_name: "node1",
-          ipv4_address: config[:dataset_options][:dp1_ipv4_address],
           dpid: "0x0000aaaaaaaaaaaa",
-          dc_segment_uuid: "ds-1"
         )
 
         datapath.add_datapath_network(
