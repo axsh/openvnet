@@ -44,6 +44,25 @@ describe Vnet::Openflow::FilterManager do
       end
     end
 
+    context "with a group that separates rules by commas" do
+      let(:group) do
+        rules = 'tcp:22:0.0.0.0/0,udp:53:0.0.0.0/0'
+        Fabricate(:security_group, rules: rules)
+      end
+
+      it "applies the flows for that group" do
+        expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_tcp_rule('0.0.0.0/0', 22)
+        )
+
+        expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_udp_rule('0.0.0.0/0', 53)
+        )
+      end
+    end
+
     context "with a group that has rules with faulty syntax" do
       let(:group) do
         rules = %{
