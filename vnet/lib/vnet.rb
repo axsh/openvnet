@@ -291,4 +291,8 @@ module Vnet
 
   end
 
+  module Plugins
+    autoload :VdcVnetPlugin, 'vnet/plugins/vdc_vnet_plugin'
+  end
+
 end

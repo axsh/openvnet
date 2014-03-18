@@ -27,4 +27,8 @@ Vnet::NodeModules::EventHandler.supervise_as :event_handler
 DCell::Global[:rpc] = Celluloid::Actor[:rpc]
 DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
 
+conf.node.plugins.each do |plugin|
+  require File.join(::Vnet::ROOT, "lib/vnet/plugins/#{plugin}.rb")
+end
+
 sleep
