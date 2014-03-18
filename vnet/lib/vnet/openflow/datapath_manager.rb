@@ -208,7 +208,7 @@ module Vnet::Openflow
 
     # REMOVED_DATAPATH_NETWORK on queue 'item.id'
     def removed_datapath_network(params)
-      item = @item[params[:id]] || return
+      item = @items[params[:id]] || return
       dpn_map = params[:dpn_map] || return
 
       item.remove_active_network(dpn_map.network_id)
