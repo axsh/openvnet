@@ -83,11 +83,7 @@ module Vnspec
 
     def install_ssh_keys
       key = File.open(File.expand_path("~/.ssh/id_rsa.pub")){|f| f.read }
-      multi_ssh(vnet_hosts, "echo '#{key}' >> ~/.ssh/authorized_keys")
-    end
-
-    def vnet_hosts
-      config[:nodes].values.flatten.uniq
+      multi_ssh(Vnet.hosts, "echo '#{key}' >> ~/.ssh/authorized_keys")
     end
 
     private

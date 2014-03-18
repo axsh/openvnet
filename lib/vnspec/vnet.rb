@@ -6,6 +6,10 @@ module Vnspec
       include Logger
       include Config
 
+      def hosts
+        config[:nodes].values.flatten.uniq
+      end
+
       def start(node_name = nil)
         if node_name
           config[:nodes][node_name.to_sym].peach do |ip|
