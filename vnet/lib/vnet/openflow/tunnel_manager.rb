@@ -460,10 +460,23 @@ module Vnet::Openflow
       # update from the list.
 
       updated_networks = {}
-
       item.set_tunnel_port_number(port_number, updated_networks)
-
       add_network_ids_to_updated_networks(updated_networks.keys)
+    end
+
+    def clear_tunnel_port_number(params)
+      port_name = params[:port_name] || return
+      item = item_by_params(uuid: port_name) || return
+
+      # TODO: Turn into an event, and use the same update_networks
+      # list for all callers, with an event that pulls network id's to
+      # update from the list.
+
+      updated_networks = {}
+      item.set_tunnel_port_number(updated_networks)
+      add_network_ids_to_updated_networks(updated_networks.keys)
+
+      # TODO: Consider deleting here?
     end
 
     #

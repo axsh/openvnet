@@ -165,6 +165,17 @@ module Vnet::Openflow::Tunnels
       }
     end
 
+    def clear_tunnel_port_number(updated_networks)
+      return if @tunnel_port_number.nil?
+      @tunnel_port_number = nil
+
+      return if self.mode != :gre
+
+      @datapath_networks.each { |dpn|
+        updated_networks[dpn[:network_id]] = true
+      }
+    end
+
     def set_host_port_number(new_port_number, updated_networks)
       return if new_port_number.nil?
       return if new_port_number == @host_port_number
