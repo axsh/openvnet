@@ -28,6 +28,8 @@ module Vnet::NodeApi
         group = super(id)
 
         dispatch_event(REMOVED_SECURITY_GROUP, id: group.id)
+
+        nil
       end
     end
   end
