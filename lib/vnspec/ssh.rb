@@ -27,19 +27,21 @@ module Vnspec
           channel.exec(command) do |ch, success|
             abort "Failed to execute [#{host}] #{command}" unless success
 
-            channel.on_data { |ch, data| stdout += data.to_s }
-            channel.on_extended_data { |ch, type, data| data; stderr += data.to_s }
+            channel.on_data do |ch, data|
+              print data.to_s if options[:debug]
+              stdout += data.to_s
+            end
+
+            channel.on_extended_data do |ch, type, data|
+              print data.to_s if options[:debug]
+              stderr += data.to_s
+            end
+
             channel.on_request("exit-status") { |ch, data| exit_code = data.read_long }
             channel.on_request("exit-signal") { |ch, data| exit_code = data.read_long }
           end
         end
         ssh.loop
-      end
-
-      if options[:debug]
-        stdout.split(/\r[\n]?|\n/).map do |line|
-          logger.info("[#{host}] #{line}")
-        end
       end
 
       {stdout: stdout, stderr: stderr, exit_code: exit_code, exit_signal: exit_signal}
