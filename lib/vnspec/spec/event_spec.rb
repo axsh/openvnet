@@ -149,7 +149,7 @@ describe "event" do
         )
 
         datapath.add_datapath_network(
-          "nw-public",
+          "nw-public1",
           interface_uuid: "if-dp1eth0",
           broadcast_mac_address: "02:00:00:aa:01:01"
         )
