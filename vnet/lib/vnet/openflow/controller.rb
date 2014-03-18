@@ -130,7 +130,6 @@ module Vnet::Openflow
       datapath = @datapaths.delete(dpid)
       return unless datapath
 
-      datapath[:datapath].del_all_flows
       datapath[:datapath].terminate
     end
 

@@ -101,6 +101,19 @@ module Vnet::Openflow
       }
     end
 
+    def del_all_flows
+      options = {
+        :command => Controller::OFPFC_DELETE,
+        :table_id => Controller::OFPTT_ALL,
+        :out_port => Controller::OFPP_ANY,
+        :out_group => Controller::OFPG_ANY,
+      }
+
+      @controller.pass_task {
+        @controller.public_send_flow_mod(@dp_info.dpid, options)
+      }
+    end
+
     #
     # Port modification methods:
     #

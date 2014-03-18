@@ -315,7 +315,7 @@ module Vnet::Openflow
 
     # REMOVED_DATAPATH_ROUTE_LINK on queue 'item.id'
     def removed_datapath_route_link(params)
-      item = @item[params[:id]] || return
+      item = @items[params[:id]] || return
       dprl_map = params[:dprl_map] || return
 
       item.remove_active_route_link(dprl_map.route_link_id)

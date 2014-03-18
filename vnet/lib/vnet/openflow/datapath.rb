@@ -85,6 +85,21 @@ module Vnet::Openflow
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
+    def terminate
+      begin
+        info log_format('terminating datapath')
+
+        # Do something...
+        @dp_info.del_all_flows
+      rescue Celluloid::Task::TerminatedError => e
+        raise e
+      rescue Exception => e
+        info log_format(e.message, e.class.name)
+        e.backtrace.each { |str| info log_format(str) }
+        raise e
+      end
+    end
+
     #
     # Flow modification methods:
     #
@@ -127,19 +142,6 @@ module Vnet::Openflow
         flows.each { |flow|
           @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
         }
-      }
-    end
-
-    def del_all_flows
-      options = {
-        :command => Controller::OFPFC_DELETE,
-        :table_id => Controller::OFPTT_ALL,
-        :out_port => Controller::OFPP_ANY,
-        :out_group => Controller::OFPG_ANY,
-      }
-
-      @controller.pass_task {
-        @controller.public_send_flow_mod(@dp_info.dpid, options)
       }
     end
 
