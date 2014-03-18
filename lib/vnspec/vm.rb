@@ -188,7 +188,7 @@ module Vnspec
     end
 
     def udp_listen(port)
-      cmd = "'nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!'" %
+      cmd = "nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!" %
         [port, "#{UDP_OUTPUT_DIR}/#{port}"]
 
       pid = ssh_on_guest(cmd)[:stdout].chomp

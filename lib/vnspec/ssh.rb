@@ -5,6 +5,7 @@ module Vnspec
       user: "root",
       debug: true,
       exit_on_error: true,
+      use_sudo: true,
     }
 
     def ssh_options
@@ -13,7 +14,8 @@ module Vnspec
 
     def ssh(host, command, options = {})
       options = ssh_options.merge(options)
-      logger.info "[#{host}] #{command}" if options[:debug]
+      command = wrap_command(command, options)
+      logger.info "[#{host}] #{command}"
 
       stdout = ""
       stderr = ""
@@ -52,8 +54,9 @@ module Vnspec
           session.use(host, user: options[:user])
         end
         commands.each do |command|
+          command = wrap_command(command, options)
           hosts.each do |host|
-            logger.debug "[#{host}] #{command}" if options[:debug]
+            logger.info "[#{host}] #{command}"
           end
           channel = session.exec(command)
           channel.wait
@@ -67,6 +70,12 @@ module Vnspec
 
     def to_ssh_option_string(options = {})
       options.map{|k,v| "-o #{k}=#{v}"}.join(" ")
+    end
+
+    def wrap_command(command, options)
+      "bash -l -c '#{command}'".tap do |c|
+        c.prepend "sudo " if options[:use_sudo]
+      end
     end
   end
 end

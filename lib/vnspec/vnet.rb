@@ -71,7 +71,7 @@ module Vnspec
       end
 
       def reset_db
-        multi_ssh(config[:nodes][:vnmgr], "bash -l -c 'cd #{config[:vnet_path]}/vnet; bundle exec rake db:reset'")
+        multi_ssh(config[:nodes][:vnmgr], "cd #{config[:vnet_path]}/vnet; bundle exec rake db:reset")
       end
 
       def dump_flows(vna_index = nil)
@@ -81,7 +81,7 @@ module Vnspec
           logger.info "#" * 50
           logger.info "# dump_flows: vna#{i + 1}"
           logger.info "#" * 50
-          output = ssh(ip, "bash -l -c 'cd #{config[:vnet_path]}/vnet; bundle exec bin/vnflows-monitor'", debug: false)
+          output = ssh(ip, "cd #{config[:vnet_path]}/vnet; bundle exec bin/vnflows-monitor", debug: false)
           logger.info output[:stdout]
           logger.info
         end
