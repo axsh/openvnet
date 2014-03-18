@@ -10,6 +10,7 @@ webapi:
 
 vnet_branch: master
 vnet_path: /opt/axsh/wakame-vnet
+update_vnet_via: "git",
 
 log_level: debug
 

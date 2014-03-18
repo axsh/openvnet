@@ -40,29 +40,49 @@ module Vnspec
       end
 
       def update(branch = nil)
+        ssh_method = config[:use_rsync] ? :ssh : :multi_ssh
+        host = config[:use_rsync] ? config[:nodes][:vna][0] : config[:nodes][:vna]
         branch ||= config[:vnet_branch]
         case config[:update_vnet_via].to_sym
         when :rpm
-          multi_ssh(config[:nodes][:vna],
+          multi_ssh(hosts,
             "yum clean metadata --disablerepo=* --enablerepo=openvnet*",
             "yum update -y      --disablerepo=* --enablerepo=openvnet*"
           )
         when :git
-          multi_ssh(config[:nodes][:vna],
-            "cd #{config[:vnet_path]}; git fetch --prune origin; git fetch --tags origin; git clean -f -d; git rev-parse #{branch} | xargs git reset --hard; git checkout #{branch};",
-            "bash -l -c 'cd #{File.join(config[:vnet_path], "vnet")}; bundle install --path vendor/bundle;'",
-            "bash -l -c 'cd #{File.join(config[:vnet_path], "vnctl")}; bundle install --path vendor/bundle;'")
+          multi_ssh(hosts,
+            "cd #{config[:vnet_path]}; git fetch --prune origin; git fetch --tags origin; git clean -f -d; git rev-parse #{branch} | xargs git reset --hard; git checkout #{branch};"
+          )
+        when :rsync
+          raise NotImplementedError.new("please update yourself!")
+        end
+        bundle_install
+      end
+
+      def bundle_install
+        hosts = case config[:update_vnet_via].to_sym
+        when :rpm
+          raise NotImplementedError.new("please update gems via rpm.")
+        when :git
+          self.hosts
+        when :rsync
+          config[:nodes][:vnmgr]
+        end
+
+        %w(vnet vnctl).each do |dir|
+          ssh_multi(hosts, "cd #{File.join(config[:vnet_path], dir)}; bundle clean; bundle install --path vendor/bundle;")
         end
       end
 
       def downgrade
-        # only support rpm
         case config[:update_vnet_via].to_sym
         when :rpm
-          multi_ssh(config[:nodes][:vna],
+          multi_ssh(hosts,
             "yum clean metadata --disablerepo=* --enablerepo=openvnet*",
             "yum downgrade -y --disablerepo=* --enablerepo=openvnet* openvnet*"
           )
+        when :git, :rsync
+          raise NotImplementedError.new("please downgrade yourself!")
         end
       end
 
