@@ -4,6 +4,7 @@ module Vnet::Configurations
   class Vnmgr < Common
     class Node < Fuguta::Configuration
       param :id, :default => "vnmgr"
+      param :plugins, :default => []
 
       class Addr < Fuguta::Configuration
         param :protocol, :default => "tcp"
