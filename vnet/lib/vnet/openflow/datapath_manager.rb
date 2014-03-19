@@ -205,7 +205,7 @@ module Vnet::Openflow
         network_id = dpn_map.network_id
       when params[:network_id]
         network_id = params[:network_id]
-        dpn_map = M::DatapathNetwork.batch[datapath_id: item_id, network_id: network_id].commit
+        dpn_map = MW::DatapathNetwork.batch[datapath_id: item_id, network_id: network_id].commit
       end
 
       (dpn_map && network_id) || return
@@ -320,7 +320,7 @@ module Vnet::Openflow
         route_link_id = dprl_map.route_link_id
       when params[:route_link_id]
         route_link_id = params[:route_link_id]
-        dprl_map = M::DatapathRouteLink.batch[datapath_id: item_id, route_link_id: route_link_id].commit
+        dprl_map = MW::DatapathRouteLink.batch[datapath_id: item_id, route_link_id: route_link_id].commit
       end
 
       (dprl_map && route_link_id) || return
