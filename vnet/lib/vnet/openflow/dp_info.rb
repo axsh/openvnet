@@ -110,7 +110,7 @@ module Vnet::Openflow
       }
 
       @controller.pass_task {
-        @controller.public_send_flow_mod(@dp_info.dpid, options)
+        @controller.public_send_flow_mod(@dpid, options)
       }
     end
 
