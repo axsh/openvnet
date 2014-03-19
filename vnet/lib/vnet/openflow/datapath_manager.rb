@@ -199,8 +199,16 @@ module Vnet::Openflow
         return item_by_params(id: item_id)
       end
 
-      dpn_map = params[:dpn_map] || return
-      network_id = dpn_map.network_id || return
+      case 
+      when params[:dpn_map]
+        dpn_map = params[:dpn_map]
+        network_id = dpn_map.network_id
+      when params[:network_id]
+        network_id = params[:network_id]
+        dpn_map = M::DatapathNetwork.batch[datapath_id: item_id, network_id: network_id].commit
+      end
+
+      (dpn_map && network_id) || return
 
       item.add_active_network(dpn_map)
       item.activate_network_id(network_id) if @active_networks[network_id]
@@ -306,8 +314,16 @@ module Vnet::Openflow
         return item_by_params(id: item_id)
       end
 
-      dprl_map = params[:dprl_map] || return
-      route_link_id = dprl_map.route_link_id || return
+      case 
+      when params[:dprl_map]
+        dprl_map = params[:dprl_map]
+        route_link_id = dprl_map.route_link_id
+      when params[:route_link_id]
+        route_link_id = params[:route_link_id]
+        dprl_map = M::DatapathRouteLink.batch[datapath_id: item_id, route_link_id: route_link_id].commit
+      end
+
+      (dprl_map && route_link_id) || return
 
       item.add_active_route_link(dprl_map)
       item.activate_route_link_id(route_link_id) if @active_route_links[route_link_id]
