@@ -10,6 +10,9 @@ module Vnet::Models
     one_to_many :tunnels
     one_to_many :ip_leases
 
+    many_to_many :lease_policies, :join_table => :lease_policy_base_networks
+    one_to_many :lease_policy_base_networks
+
     many_to_many :network_services do |ds|
       NetworkService.join_table(
         :inner, :interfaces,
