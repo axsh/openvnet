@@ -62,7 +62,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
   put '/:uuid/associate_interface' do
     # TODO: it is now possible to associate twice....probably should not allow that.
-    params = parse_params(@params, ['uuid', 'interface_uuid'])
+    params = parse_params(@params, ['uuid', 'interface_uuid', 'immediate'])
     check_required_params(params, ['interface_uuid'])
 
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
@@ -71,10 +71,44 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
     M::LeasePolicyBaseInterface.create({ :interface_id => interface.id,
                                        :lease_policy_id => lease_policy.id
-                                     })
-    respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
+                                       })
+
+    if params.has_key? :immediate
+      p "IMMEDIATE start"
+      net_array = lease_policy.batch.networks.commit
+      if net_array && ! net_array.empty?
+        first_net = net_array.first
+        p first_net.ipv4_network
+        p first_net.ipv4_prefix
+        response = incremental_ip_allocation(first_net)
+      end
+      p "IMMEDIATE end"
+    else
+        response = nil
+      p "NOT IMMEDIATE"
+    end
+
+    # tmp response for debugging:
+    respond_with({ :allocated_address => response })
+    # TODO, what is a good response in the vnet style of doing things?
+    # respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
   end
 
+  def incremental_ip_allocation(net)
+    scan = net.ipv4_network
+    pref = net.ipv4_prefix
+    max = 2 << ( 31 - pref )
+    while ( max > 0 )
+      # TODO: find out this is worth making more efficient (i.e. there exists
+      # a realistic use case and this code is not just a temporary stub)
+      hits = M::IpAddress.batch.filter(:ipv4_address => scan ).all.commit
+      return scan if hits.empty?
+      max -= 1
+      scan += 1
+    end
+    return nil
+  end
+    
   put '/:uuid/disassociate_interface' do
     params = parse_params(@params, ['uuid', 'interface_uuid'])
     check_required_params(params, ['interface_uuid'])
