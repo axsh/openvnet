@@ -74,18 +74,27 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
                                        })
 
     if params.has_key? :immediate
-      p "IMMEDIATE start"
+      # TODO: go over code in here carefully
+      #   Should it be moved to node-api?
+      #   Should it use model instead of model class?
+      #   Check for empty ml_array?
+      #   What are the rules for what is required inside
+      #      of IpLease.create()? Why do those three
+      #      parameters work?
       net_array = lease_policy.batch.networks.commit
       if net_array && ! net_array.empty?
         first_net = net_array.first
-        p first_net.ipv4_network
-        p first_net.ipv4_prefix
         response = incremental_ip_allocation(first_net)
+        ml_array = interface.batch.mac_leases.commit
+        
+        ip_lease = M::IpLease.create({
+                                       mac_lease_id: ml_array.first.id,
+                                       network_id: first_net.id,
+                                       ipv4_address: response
+                                     })
       end
-      p "IMMEDIATE end"
     else
         response = nil
-      p "NOT IMMEDIATE"
     end
 
     # tmp response for debugging:
