@@ -15,6 +15,7 @@ module Vnet::Openflow
       datapath
       dc_segment
       interface
+      lease_policy
       network
       port
       route

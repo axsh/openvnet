@@ -44,6 +44,13 @@ module Vnet
     REMOVED_DATAPATH_NETWORK = "removed_datapath_network"
 
     #
+    # lease policy event
+    #
+    INITIALIZED_LEASE_POLICY = "initialized_lease_policy"
+    ADDED_LEASE_POLICY = "added_lease_policy"
+    REMOVED_LEASE_POLICY = "removed_lease_policy"
+
+    #
     # route event
     #
     INITIALIZED_ROUTE = "initialized_route"
