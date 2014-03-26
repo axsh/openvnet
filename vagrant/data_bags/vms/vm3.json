@@ -1,0 +1,20 @@
+{
+  "id": "vm3",
+  "host": "vna2",
+  "ip": "10.50.0.103",
+  "interfaces": [
+    {
+      "name": "eth1",
+      "bridge": "br0",
+      "port_name": "if-v3",
+      "mac_address": "02:00:00:00:00:03"
+    },
+    {
+      "name": "eth2",
+      "bridge": "br1",
+      "port_name": "if-m3",
+      "ip_address" : "10.50.0.103",
+      "mac_address": "02:00:01:00:00:03"
+    }
+  ]
+}

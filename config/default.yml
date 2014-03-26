@@ -1,0 +1,33 @@
+ssh_options:
+  user: vagrant
+  debug: true
+
+nodes:
+  webapi: [vnmgr]
+  vnmgr: [vnmgr]
+  vna: [vna1, vna2, vna3, edge]
+
+webapi:
+  host: 192.168.20.10
+  port: 9090
+
+vnet_branch: master
+
+log_level: debug
+
+dataset_options:
+  dp1_ipv4_address: 172.16.20.11
+  dp2_ipv4_address: 172.16.20.12
+  dp3_ipv4_address: 172.16.30.11
+  edge_ipv4_address: 172.16.20.21
+  public_ipv4_network: 172.16.20.0
+  public_ipv4_prefix: 24
+  public_ipv4_address1: 172.16.20.201
+  public_ipv4_address2: 172.16.20.202
+  public_router_ipv4_address: 172.16.20.102
+  public_dhcp_ipv4_address: 172.16.20.103
+
+legacy_machines:
+  legacy1:
+    ssh_ip: 192.168.20.31
+    ipv4_address: 192.168.100.100

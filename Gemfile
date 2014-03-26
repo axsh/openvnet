@@ -7,8 +7,10 @@ gem "net-scp"
 gem "faraday"
 gem "faraday_middleware"
 gem "ipaddress"
-
 gem "peach"
+
+gem "knife-solo"
+gem "berkshelf"
 
 group :development, :test do
   gem "rspec"

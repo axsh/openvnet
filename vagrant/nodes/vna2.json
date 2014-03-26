@@ -1,0 +1,23 @@
+{
+  "run_list": ["role[vna]"],
+  "vnet_common": {
+    "management_network": {
+      "ipaddr": "192.168.20.12",
+      "gateway": "192.168.20.1"
+    },
+    "config": {
+      "registry_host": "192.168.20.10"
+    }
+  },
+  "vnet_vna": {
+    "datapath": {
+      "ipaddr": "172.16.20.12",
+      "datapath_id": "0000bbbbbbbbbbbb",
+      "hwaddr": "02:01:00:00:00:02"
+    },
+    "config": {
+      "id": "vna2",
+      "host": "192.168.20.12"
+    }
+  }
+}

@@ -14,7 +14,7 @@ module Vnspec
     class << self
       def config
         unless @config
-          env = ENV["VNSPEC_ENV"] || "dev"
+          env = ENV["VNSPEC_ENV"] || "default"
           @config = DEFAULT_CONFIG.dup
           @config[:env] = env
           ["base", env].each do |n|

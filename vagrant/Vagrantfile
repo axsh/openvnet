@@ -1,0 +1,79 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+VNET_PATH = "~/work/openvnet"
+
+
+vms = [
+  {
+    name: "vnmgr",
+    box: "chef/centos-6.5",
+    networks: [ { type: :private_network, ip: "192.168.20.10" } ]
+  },
+  {
+    name: "vna1",
+    box: "chef/centos-6.5",
+    networks: [ { type: :private_network, ip: "192.168.20.11" },
+                { type: :private_network, ip: "0.0.0.0",
+                  options: { auto_config: false,
+                             virtualbox__intnet: "public_network1" } } ]
+  },
+  {
+    name: "vna2",
+    box: "chef/centos-6.5",
+    networks: [ { type: :private_network, ip: "192.168.20.12" },
+                { type: :private_network, ip: "0.0.0.0",
+                  options: { auto_config: false,
+                             virtualbox__intnet: "public_network1" } } ]
+  },
+  {
+    name: "vna3",
+    box: "chef/centos-6.5",
+    networks: [ { type: :private_network, ip: "192.168.20.13" },
+                { type: :private_network, ip: "0.0.0.0",
+                  options: { auto_config: false,
+                             virtualbox__intnet: "public_network2" } } ]
+  },
+  {
+    name: "edge",
+    box: "chef/centos-6.5",
+    networks: [ { type: :private_network, ip: "192.168.20.14" },
+                { type: :private_network, ip: "0.0.0.0",
+                  options: { auto_config: false,
+                             virtualbox__intnet: "public_network1" } } ]
+  },
+  {
+    name: "registry",
+    box: "chef/ubuntu-13.10",
+    networks: [ { type: :private_network, ip: "192.168.20.20" } ]
+  },
+]
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  vms.each do |vm|
+    config.vm.box = "chef/centos-6.5"
+
+    config.vm.synced_folder VNET_PATH, "/opt/axsh/openvnet/"
+
+    config.vm.provider :virtualbox do |vb|
+      vb.memory = 1024
+
+      # https://github.com/mitchellh/vagrant/issues/1172
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+
+      # https://github.com/jpetazzo/pipework
+      vb.customize ['modifyvm', :id, '--nicpromisc1', 'allow-all']
+    end
+
+    config.vm.define vm[:name] do |config|
+      config.vm.box = vm[:box]
+      config.vm.hostname = vm[:name]
+      vm[:networks].each do |network|
+        config.vm.network network[:type], { ip: network[:ip] }.merge(network[:options] || {})
+      end
+    end
+  end
+end
