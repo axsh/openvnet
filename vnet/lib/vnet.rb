@@ -217,6 +217,8 @@ module Vnet
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
+    autoload :LeasePolicy, 'vnet/openflow/lease_policy'
+    autoload :LeasePolicyManager, 'vnet/openflow/lease_policy_manager'
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
