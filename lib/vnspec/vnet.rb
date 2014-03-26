@@ -70,7 +70,7 @@ module Vnspec
         end
 
         %w(vnet vnctl).each do |dir|
-          ssh_multi(hosts, "cd #{File.join(config[:vnet_path], dir)}; bundle clean; bundle install --path vendor/bundle;")
+          multi_ssh(hosts, "cd #{File.join(config[:vnet_path], dir)}; bundle clean; bundle install --path vendor/bundle;")
         end
       end
 
