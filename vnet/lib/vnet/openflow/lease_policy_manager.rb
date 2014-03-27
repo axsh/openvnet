@@ -30,8 +30,7 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      ###Routers::RouteLink.new(dp_info: @dp_info, manager: self, map: item_map)
-      # TODO: What should go in here to replace the previous line???
+      LeasePolicies::Base.new(dp_info: @dp_info, manager: self, map: item_map)
     end
 
     def initialized_item_event
