@@ -49,6 +49,32 @@ module Vnet::Openflow::Services
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
       return if client_info.nil?
 
+      last_octet = client_info[1][:ipv4_address].to_i % 256
+      if last_octet == 255  # hack until interfaces is fixed to allow no ip lease
+
+        # why does it work, but only if this seemingly unrelated debugging line is
+        # included ???
+        lease_policy_test = @dp_info.lease_policy_manager.item(uuid: "lp-1")
+        
+        interface = @dp_info.interface_manager.item(port_number: message.match.in_port)
+        lease_policy = @dp_info.lease_policy_manager.item(interface_id: interface.id)
+        return if lease_policy[:networks].empty?
+
+        net = lease_policy[:networks].first
+        offering = incremental_ip_allocation(net)
+
+        iplid = interface.mac_addresses
+        MW::IpLease.destroy(iplid.keys.first)
+
+        ip_lease = MW::IpLease.batch.create(network_id: net.uuid,
+                                            mac_lease_id: interface.mac_lease_ids.first,
+                                            ipv4_address: offering).commit
+
+        # reload
+        client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
+        return if client_info.nil?
+      end
+
       params = {
         :xid => dhcp_in.xid,
         :yiaddr => client_info[1][:ipv4_address],
@@ -89,6 +115,21 @@ module Vnet::Openflow::Services
                      })
     end
 
+    def incremental_ip_allocation(net)
+      scan = net.ipv4_network
+      pref = net.ipv4_prefix
+      max = 2 << ( 31 - pref )
+      while ( max > 0 )
+        # TODO: find out this is worth making more efficient (i.e. there exists
+        # a realistic use case and this code is not just a temporary stub)
+        hits = MW::IpAddress.batch.filter(:ipv4_address => scan ).all.commit
+        return scan if hits.empty?
+        max -= 1
+        scan += 1
+      end
+      return nil
+    end
+    
     def add_network(network_id, cookie_id)
       if dns_server = @dp_info.service_manager.dns_server_for(network_id)
         add_dns_server(network_id, dns_server)
