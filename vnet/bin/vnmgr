@@ -8,12 +8,9 @@ require 'bundler/setup'
 require 'dcell'
 require 'vnet'
 
+Vnet::Initializers::Logger.run("vnmgr.log")
+
 conf = Vnet::Configurations::Vnmgr.conf
-
-#Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "#{conf.node.id}.log"))
-Celluloid.logger = ::Logger.new(File.join(Vnet::LOG_DIR, "vnmgr.log"))
-
-Vnet::NodeApi.logger = Celluloid.logger
 
 Vnet::Initializers::DB.run(conf.db_uri)
 
@@ -29,5 +26,9 @@ Vnet::NodeModules::EventHandler.supervise_as :event_handler
 
 DCell::Global[:rpc] = Celluloid::Actor[:rpc]
 DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
+
+conf.node.plugins.each do |plugin|
+  require File.join(::Vnet::ROOT, "lib/vnet/plugins/#{plugin}.rb")
+end
 
 sleep

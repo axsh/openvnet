@@ -2,6 +2,8 @@
 
 module Vnet::Models
   class SecurityGroup < Base
+    include Vnet::Helpers::SecurityGroup
+
     taggable 'sg'
     plugin :paranoia
     many_to_many :interfaces, :join_table => :interface_security_groups
@@ -35,6 +37,21 @@ module Vnet::Models
       interfaces.map { |i|
         i.ip_leases.map { |il| il.ip_address.ipv4_address }
       }.flatten
+    end
+
+    def validate
+      rules && split_rule_collection(rules).each { |r|
+        r.strip!
+        next if is_comment?(r)
+
+        valid, error_msg = validate_rule(r)
+        errors.add(error_msg, "'#{r}'") unless valid
+
+        if is_reference_rule?(r)
+          self.class[split_rule(r)[2]] ||
+            errors.add("Unknown security group uuid in rule", "'#{r}'")
+        end
+      }
     end
   end
 end

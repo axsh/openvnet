@@ -2,7 +2,7 @@
 module Vnet::Configurations
   class Common < Fuguta::Configuration
     cattr_accessor :paths
-    self.paths = [::Vnet::CONFIG_PATH]
+    self.paths = ::Vnet::CONFIG_PATH
 
     class << self
       def conf

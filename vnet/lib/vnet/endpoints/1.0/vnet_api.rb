@@ -12,6 +12,12 @@ module Vnet::Endpoints::V10
     E = Vnet::Endpoints::Errors
     R = Vnet::Endpoints::V10::Responses
 
+    DEFAULT_PAGINATION_LIMIT = 30
+
+    def config
+      Vnet::Configurations::Webapi.conf
+    end
+
     def pop_uuid(model, params, key = "uuid", fill = {})
       uuid = params.delete(key)
       model.batch[uuid].commit(:fill => fill) || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
@@ -84,12 +90,20 @@ module Vnet::Endpoints::V10
       respond_with([uuid])
     end
 
+    # TODO remove fill
     def get_all(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get("#{class_name}Collection")
-      respond_with(
-        response.generate(model_wrapper.batch.all.commit(:fill => fill))
-      )
+      limit = @params[:limit] || config.pagination_limit
+      offset = @params[:offset] || 0
+      total_count = model_wrapper.batch.count.commit
+      items = model_wrapper.batch.dataset.offset(offset).limit(limit).all.commit(fill: fill)
+      pagination = {
+        "total_count" => total_count,
+        "offset" => offset,
+        "limit" => limit,
+      }
+      respond_with(response.generate_with_pagination(pagination, items))
     end
 
     def get_by_uuid(class_name, fill = {})
@@ -128,8 +142,19 @@ module Vnet::Endpoints::V10
     end
 
     def show_relations(class_name, response_method)
+      limit = @params[:limit] || config.pagination_limit
+      offset = @params[:offset] || 0
       object = check_syntax_and_pop_uuid(M.const_get(class_name), @params)
-      respond_with(R.const_get(class_name).send(response_method, object))
+      total_count = object.batch.send(response_method).count.commit
+      items = object.batch.send("#{response_method}_dataset").offset(offset).limit(limit).all.commit
+      pagination = {
+        "total_count" => total_count,
+        "offset" => offset,
+        "limit" => limit,
+      }
+
+      response = R.const_get("#{response_method.to_s.classify}Collection")
+      respond_with(response.generate_with_pagination(pagination, items))
     end
 
     respond_to :json, :yml

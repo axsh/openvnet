@@ -14,8 +14,8 @@ require 'json'
 module Vnet
 
   ROOT = ENV['VNET_ROOT'] || File.expand_path('../../', __FILE__)
-  CONFIG_PATH = ENV['VNET_CONFIG_PATH'] || "/etc/wakame-vnet"
-  LOG_DIR = ENV['VNET_LOG_DIR'] || "/var/log/wakame-vnet"
+  CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
+  LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'
@@ -37,9 +37,15 @@ module Vnet
     autoload :Notifications, 'vnet/event/notifications'
   end
 
+  module Helpers
+    autoload :SecurityGroup, 'vnet/helpers/security_group'
+    autoload :Event, 'vnet/helpers/event'
+  end
+
   module Endpoints
     autoload :Errors, 'vnet/endpoints/errors'
     autoload :ResponseGenerator, 'vnet/endpoints/response_generator'
+    autoload :CollectionResponseGenerator, 'vnet/endpoints/response_generator'
     module V10
       autoload :Helpers, 'vnet/endpoints/1.0/helpers'
       autoload :VnetAPI, 'vnet/endpoints/1.0/vnet_api'
@@ -47,6 +53,7 @@ module Vnet
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
+        autoload :DhcpRange, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
@@ -67,6 +74,7 @@ module Vnet
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
         autoload :DatapathRouteLinkCollection, 'vnet/endpoints/1.0/responses/datapath_route_link'
+        autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
         autoload :DnsServiceCollection, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecordCollection, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :DhcpRangeCollection, 'vnet/endpoints/1.0/responses/dhcp_range'
@@ -89,6 +97,7 @@ module Vnet
 
   module Initializers
     autoload :DB, 'vnet/initializers/db'
+    autoload :Logger, 'vnet/initializers/logger'
   end
 
   module Models
@@ -302,6 +311,10 @@ module Vnet
       autoload :Base, 'vnet/openflow/tunnels/base'
     end
 
+  end
+
+  module Plugins
+    autoload :VdcVnetPlugin, 'vnet/plugins/vdc_vnet_plugin'
   end
 
 end
