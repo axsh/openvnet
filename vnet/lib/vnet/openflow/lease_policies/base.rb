@@ -8,6 +8,8 @@ module Vnet::Openflow::LeasePolicies
     attr_reader :id
     attr_reader :uuid
     attr_reader :mode
+    attr_reader :networks
+    attr_reader :interfaces
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -17,13 +19,17 @@ module Vnet::Openflow::LeasePolicies
       @id = map.id
       @uuid = map.uuid
       @mode = map.mode
+      @networks = map.networks
+      @interfaces = map.interfaces
     end
 
     def to_hash
       {
         :id => self.id,
         :uuid => self.uuid,
-        :mode => self.mode
+        :mode => self.mode,
+        :networks => self.networks,
+        :interfaces => self.interfaces
       }
     end
 
