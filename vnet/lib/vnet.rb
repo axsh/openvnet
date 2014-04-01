@@ -249,6 +249,10 @@ module Vnet
       autoload :Vif, 'vnet/openflow/interfaces/vif'
     end
 
+    module LeasePolicies
+      autoload :Base, 'vnet/openflow/lease_policies/base'
+    end
+
     module Networks
       autoload :Base, 'vnet/openflow/networks/base'
       autoload :Physical, 'vnet/openflow/networks/physical'
