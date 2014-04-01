@@ -25,8 +25,18 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      if params[:interface_id]
+        return false if item.interfaces.empty?
+        return false if params[:interface_id] != item.interfaces.first.id
+      end
+      true
+    end
+
     def select_item(filter)
-      MW::LeasePolicy.batch[filter].commit
+      MW::LeasePolicy.batch[filter].commit(fill: [:interfaces, :networks])
     end
 
     def item_initialize(item_map, params)
