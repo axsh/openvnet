@@ -12,5 +12,11 @@ module Vnet::Models
 
     plugin :paranoia
 
+    def self.find_by_interface(id)
+      dataset.join_table(
+        :left, :lease_policy_base_interfaces,
+        {lease_policy_base_interfaces__lease_policy_id: :lease_policies__id}
+      ).where(lease_policy_base_interfaces__interface_id: id).select_all(:lease_policies).all
+    end
   end
 end

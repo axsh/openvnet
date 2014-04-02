@@ -51,11 +51,6 @@ module Vnet::Openflow::Services
 
       last_octet = client_info[1][:ipv4_address].to_i % 256
       if last_octet == 255  # hack until interfaces is fixed to allow no ip lease
-
-        # why does it work, but only if this seemingly unrelated debugging line is
-        # included ???
-        lease_policy_test = @dp_info.lease_policy_manager.item(uuid: "lp-1")
-        
         interface = @dp_info.interface_manager.item(port_number: message.match.in_port)
         lease_policy = @dp_info.lease_policy_manager.item(interface_id: interface.id)
         return if lease_policy[:networks].empty?
