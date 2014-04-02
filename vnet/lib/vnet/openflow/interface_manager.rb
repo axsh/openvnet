@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class InterfaceManager < Manager
+  class InterfaceManager < Vnet::Manager
 
     #
     # Events:

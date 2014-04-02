@@ -17,6 +17,10 @@ module Vnet
   CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
 
+  autoload :Event,    'vnet/event'
+  autoload :ItemBase, 'vnet/item_base'
+  autoload :Manager,  'vnet/manager'
+
   module Configurations
     autoload :Base,   'vnet/configurations/base'
     autoload :Common, 'vnet/configurations/common'
@@ -31,7 +35,6 @@ module Vnet
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
-  autoload :Event, 'vnet/event'
   module Event
     autoload :Dispatchable, 'vnet/event/dispatchable'
     autoload :Notifications, 'vnet/event/notifications'
@@ -201,8 +204,6 @@ module Vnet
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
-    autoload :ItemBase, 'vnet/openflow/item_base'
-    autoload :Manager, 'vnet/openflow/manager'
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'

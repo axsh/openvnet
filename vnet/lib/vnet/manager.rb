@@ -3,12 +3,12 @@
 require 'sequel/core'
 require 'sequel/sql'
 
-module Vnet::Openflow
+module Vnet
 
   class Manager
     include Celluloid
     include Celluloid::Logger
-    include FlowHelpers
+    include Vnet::Constants::Openflow
     include Vnet::Event::Notifications
 
     def initialize(dp_info)

@@ -9,7 +9,7 @@ module Vnet::Openflow::Ports
     end
   end
 
-  class Base < Vnet::Openflow::ItemBase
+  class Base < Vnet::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 

@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class RouterManager < Manager
+  class RouterManager < Vnet::Manager
 
     #
     # Events:

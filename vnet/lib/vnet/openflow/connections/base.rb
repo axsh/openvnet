@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Connections
 
-  class Base < Vnet::Openflow::ItemBase
+  class Base < Vnet::ItemBase
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 

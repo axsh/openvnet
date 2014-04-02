@@ -4,7 +4,7 @@ require 'celluloid'
 
 module Vnet::Openflow
 
-  class NetworkManager < Manager
+  class NetworkManager < Vnet::Manager
     include Celluloid::Logger
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable

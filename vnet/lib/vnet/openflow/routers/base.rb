@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Routers
 
-  class Base < Vnet::Openflow::ItemBase
+  class Base < Vnet::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 

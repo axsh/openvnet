@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class PortManager < Manager
+  class PortManager < Vnet::Manager
 
     #
     # Events:

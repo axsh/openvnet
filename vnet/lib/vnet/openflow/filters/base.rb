@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Filters
 
-  class Base < Vnet::Openflow::ItemBase
+  class Base < Vnet::ItemBase
     include Vnet::Openflow::FlowHelpers
 
     attr_accessor :dp_info

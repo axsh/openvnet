@@ -2,7 +2,8 @@
 
 module Vnet::Openflow
 
-  class TunnelManager < Manager
+  class TunnelManager < Vnet::Manager
+    include Vnet::Openflow::FlowHelpers
 
     #
     # Events:

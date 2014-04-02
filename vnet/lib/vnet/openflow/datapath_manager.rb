@@ -2,7 +2,8 @@
 
 module Vnet::Openflow
 
-  class DatapathManager < Manager
+  class DatapathManager < Vnet::Manager
+    include Vnet::Openflow::FlowHelpers
 
     #
     # Events:
