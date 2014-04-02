@@ -12,7 +12,16 @@ module Vnet::Openflow
     subscribe_event INITIALIZED_LEASE_POLICY, :install_item
 
     def update(params)
+      debug log_format('update(params)',"#{params}")
       nil
+    end
+
+    # Basing this on code from network_manager.rb in a section marked
+    # "Obsolete".  Is there a better non-obsolete way to do this?
+    def find_by_interface(id)
+      r = MW::LeasePolicy.batch.find_by_interface(id).commit(fill: [:interfaces, :networks])
+      return r.first if r.kind_of? Array 
+      return nil
     end
 
     #
@@ -25,7 +34,20 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def select_filter_from_params(params)
+      case
+      when params[:id]   then {:id => params[:id]}
+      when params[:uuid] then params[:uuid]
+      when params[:interface_id] then params
+      else
+        # Any invalid params that should cause an exception needs to
+        # be caught by the item_by_params_direct method.
+        return nil
+      end
+    end
+
     def match_item?(item, params)
+      debug log_format('match_item?(item, params)',"#{params}")
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
       if params[:interface_id]
@@ -36,18 +58,26 @@ module Vnet::Openflow
     end
 
     def select_item(filter)
-      MW::LeasePolicy.batch[filter].commit(fill: [:interfaces, :networks])
+      debug log_format('select_item(filter)',"#{filter}")
+      if filter[:interface_id]
+        find_by_interface(filter[:interface_id])
+      else
+        MW::LeasePolicy.batch[filter].commit(fill: [:interfaces, :networks])
+      end
     end
 
     def item_initialize(item_map, params)
+      debug log_format('item_initialize(item_map, params)',"#{params}")
       LeasePolicies::Base.new(dp_info: @dp_info, manager: self, map: item_map)
     end
 
     def initialized_item_event
+      debug log_format('initialized_item_event',"")
       INITIALIZED_LEASE_POLICY
     end
 
     def create_item(params)
+      debug log_format('create_item(params)',"#{params}")
       item = @items[params[:item_map].id]
       return unless item
 
@@ -56,6 +86,7 @@ module Vnet::Openflow
     end
 
     def install_item(params)
+      debug log_format('install_item(params)',"#{params}")
       item = @items[params[:item_map].id]
       return nil if item.nil?
 
@@ -66,6 +97,7 @@ module Vnet::Openflow
     end
 
     def delete_item(item)
+      debug log_format('delete_item(item)',"")
       @items.delete(item.id)
 
       item.uninstall
