@@ -13,7 +13,6 @@ file "/home/vagrant/.ssh/id_rsa" do
   group "vagrant"
   mode "0600"
   content ::File.open("/vagrant/vm/ssh/id_rsa").read
-  action :create_if_missing
 end
 
 # yum
@@ -74,7 +73,7 @@ end
 
 execute "make update-config" do
   cwd node["vnet_common"]["vnet_path"]
-end.run_action(:run)
+end
 
 execute "replace RUBY_PATH" do
   command "sudo sed -i-e 's,RUBY_PATH=.*,RUBY_PATH=/opt/rbenv/shims,' /etc/default/openvnet"

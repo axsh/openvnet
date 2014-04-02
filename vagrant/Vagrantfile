@@ -9,11 +9,13 @@ VNET_PATH = "~/work/openvnet"
 vms = [
   {
     name: "vnmgr",
+    memory: 2048,
     box: "chef/centos-6.5",
     networks: [ { type: :private_network, ip: "192.168.20.10" } ]
   },
   {
     name: "vna1",
+    memory: 2048,
     box: "chef/centos-6.5",
     networks: [ { type: :private_network, ip: "192.168.20.11" },
                 { type: :private_network, ip: "0.0.0.0",
@@ -22,6 +24,7 @@ vms = [
   },
   {
     name: "vna2",
+    memory: 2048,
     box: "chef/centos-6.5",
     networks: [ { type: :private_network, ip: "192.168.20.12" },
                 { type: :private_network, ip: "0.0.0.0",
@@ -30,6 +33,7 @@ vms = [
   },
   {
     name: "vna3",
+    memory: 2048,
     box: "chef/centos-6.5",
     networks: [ { type: :private_network, ip: "192.168.20.13" },
                 { type: :private_network, ip: "0.0.0.0",
@@ -38,6 +42,7 @@ vms = [
   },
   {
     name: "edge",
+    memory: 2048,
     box: "chef/centos-6.5",
     networks: [ { type: :private_network, ip: "192.168.20.14" },
                 { type: :private_network, ip: "0.0.0.0",
@@ -45,9 +50,14 @@ vms = [
                              virtualbox__intnet: "public_network1" } } ]
   },
   {
+    name: "legacy",
+    box: "chef/centos-6.5",
+    networks: [ { type: :private_network, ip: "192.168.20.21" } ]
+  },
+  {
     name: "registry",
     box: "chef/ubuntu-13.10",
-    networks: [ { type: :private_network, ip: "192.168.20.20" } ]
+    networks: [ { type: :private_network, ip: "192.168.20.101" } ]
   },
 ]
 
@@ -58,7 +68,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.synced_folder VNET_PATH, "/opt/axsh/openvnet/"
 
     config.vm.provider :virtualbox do |vb|
-      vb.memory = 1024
+      vb.memory = vm[:memory] || 1024
 
       # https://github.com/mitchellh/vagrant/issues/1172
       vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]

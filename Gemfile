@@ -15,4 +15,5 @@ gem "berkshelf"
 group :development, :test do
   gem "rspec"
   gem "pry-nav"
+  gem "rb-readline", :require => false
 end

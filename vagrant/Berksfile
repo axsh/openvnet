@@ -1,7 +1,6 @@
 site :opscode
 
 cookbook "yum"
-#cookbook "yum-epel"
 
 cookbook "ntp"
 cookbook "rbenv"

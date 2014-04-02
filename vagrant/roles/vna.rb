@@ -3,5 +3,5 @@ recipe[vnet_vna]
 ))
 
 override_attributes(
-  vnet_vna: { docker: { cleanup: true } }
+  { docker: { version: "0.9.0-3.el6" } }
 )

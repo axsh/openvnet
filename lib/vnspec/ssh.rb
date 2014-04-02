@@ -1,11 +1,21 @@
 # -*- coding: utf-8 -*-
 module Vnspec
   module SSH
+    class Response < Hash
+      def initialize(hash)
+        super().merge!(hash)
+      end
+
+      def success?
+        self[:exit_code] == 0
+      end
+    end
+
     DEFAULT_OPTIONS = {
       user: "root",
       debug: true,
       exit_on_error: true,
-      use_sudo: true,
+      use_sudo: false,
     }
 
     def ssh_options
@@ -44,7 +54,7 @@ module Vnspec
         ssh.loop
       end
 
-      {stdout: stdout, stderr: stderr, exit_code: exit_code, exit_signal: exit_signal}
+      Response.new({stdout: stdout, stderr: stderr, exit_code: exit_code, exit_signal: exit_signal})
     end
 
     def multi_ssh(hosts, *commands)
@@ -74,9 +84,17 @@ module Vnspec
       options.map{|k,v| "-o #{k}=#{v}"}.join(" ")
     end
 
+    def ssh_options_for_quiet_mode(options = {})
+      {
+        "StrictHostKeyChecking" => "no",
+        "UserKnownHostsFile" => "/dev/null",
+        "LogLevel" => "ERROR",
+      }
+    end
+
     def wrap_command(command, options)
       "bash -l -c '#{command}'".tap do |c|
-        c.prepend "sudo " if options[:use_sudo]
+        c.prepend "sudo " if options[:user] != "root" && options[:use_sudo]
       end
     end
   end

@@ -18,6 +18,34 @@
     "config": {
       "id": "vna1",
       "host": "192.168.20.11"
-    }
+    },
+    "vms": [
+      {
+        "name": "vm1",
+        "host": "vna1",
+        "ssh_port": 2221,
+        "interfaces": [ 
+          {
+            "name": "eth1",
+            "bridge": "br0",
+            "port_name": "if-v1",
+            "mac_address": "02:00:00:00:00:01"
+          }
+        ]
+      },
+      {
+        "name": "vm2",
+        "host": "vna1",
+        "ssh_port": 2222,
+        "interfaces": [ 
+          {
+            "name": "eth1",
+            "bridge": "br0",
+            "port_name": "if-v2",
+            "mac_address": "02:00:00:00:00:02"
+          }
+        ]
+      }
+    ]
   }
 }

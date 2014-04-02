@@ -4,7 +4,7 @@ module Vnspec
       vnet_path: "/opt/axsh/openvnet",
       vnet_branch: "master",
       update_vnet_via: "rsync",
-      ssh_user: "root",
+      vm_ssh_user: "root",
       exit_on_error: true,
       test_ready_check_interval: 10,
       test_retry_count: 30,

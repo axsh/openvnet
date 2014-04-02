@@ -1,3 +1,4 @@
+vm_type: :kvm
 specs: [simple, router_v2v, router_p2v, event, service, secg]
 vnet_branch: master
 log_level: info

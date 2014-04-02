@@ -48,23 +48,6 @@ EOS
   })
 end
 
-template "/etc/sysconfig/network-scripts/ifcfg-br1" do
-  cookbook "vnet_common"
-  source "ifcfg.erb"
-  owner "root"
-  group "root"
-  variables({
-    device: "br1",
-    onboot: "yes",
-    device_type: "ovs",
-    type: "OVSBridge",
-    bootproto: "static",
-    target: "10.50.0.2",
-    mask: "255.255.255.0",
-  })
-  notifies :run, "execute[restart_network]", :immediately
-end
-
 template "/etc/sysconfig/network-scripts/ifcfg-eth2" do
   cookbook "vnet_common"
   source "ifcfg.erb"
@@ -78,7 +61,6 @@ template "/etc/sysconfig/network-scripts/ifcfg-eth2" do
     ovs_bridge: "br0",
     bootproto: "none",
   })
-  notifies :run, "execute[restart_network]", :immediately
 end
 
 execute "restart_network" do
@@ -102,77 +84,94 @@ template "/etc/openvnet/vna.conf" do
   })
 end
 
-# docker
+## upgrade docker to 0.9
+#execute "yum install -y http://dl.fedoraproject.org/pub/epel/testing/6/x86_64/docker-io-0.9.0-3.el6.x86_64.rpm || :"
 
-include_recipe "docker"
-
-# pipework
+# upgrade iproute2
 execute "yum install -y http://rdo.fedorapeople.org/openstack/openstack-havana/rdo-release-havana.rpm || :"
-
 package "iproute" do
   action :upgrade
 end
 
+# docker
+package "docker-io" do
+  action ["install"]
+end
+
+#file "/var/run/docker.pid" do
+#  action :delete
+#end
+
+service 'docker' do
+  supports :status => true, :restart => true, :reload => true
+  action [:start, :enable]
+end
+
+group "docker" do
+  members %w(vagrant)
+  action [:create, :manage]
+end
+
+# pipework
 #directory "/opt/jpetazzo"
 #git "/opt/jpetazzo/pipework" do
 #  repository "https://github.com/jpetazzo/pipework.git"
 #end
 
-image_name = "#{node[:vnet_vna][:docker][:registry]}/vmbase"
+# udhcpc
+link "/sbin/udhcpc" do
+  to "/vagrant/vm/bin/udhcpc"
+end
 
-vms = data_bag('vms').map { |id| data_bag_item('vms', id) }.select do |vm|
+vms = node[:vnet_vna][:vms].select do |vm|
   vm["host"] == node.name
 end
 
-if node[:vnet_vna][:docker][:cleanup]
-  vms.each do |vm|
-    bash "rm_vm" do
+unless vms.empty?
+  if node[:vnet_vna][:docker][:registry]
+    base_name = "#{node[:vnet_vna][:docker][:registry]}/centos"
+  
+    bash "create_image" do
       code <<-EOS
-        docker stop #{vm["id"]} > /dev/null 2>&1 || :
-        docker rm #{vm["id"]} > /dev/null 2>&1 || :
+        docker pull #{base_name}
+        docker tag #{base_name} centos
       EOS
     end
   end
-
-  bash "rmi_vm_image" do
+end
+  
+vms.each do |vm|
+  bash "rm_vm" do
     code <<-EOS
-      docker rmi #{image_name} > /dev/null
+      #docker stop #{vm["name"]} > /dev/null 2>&1 || :
+      #docker rm #{vm["name"]} > /dev/null 2>&1 || :
+      docker stop #{vm["name"]} || :
+      docker rm #{vm["name"]} || :
+      sudo -u vagrant ssh-keygen -R [localhost]:#{vm["ssh_port"]}
     EOS
   end
 end
-
+  
+unless vms.empty?
+  bash "build_vmbase" do
+    code <<-EOS
+      docker build -t vmbase --rm /vagrant/vm
+    EOS
+  end
+end
+  
 vms.each do |vm|
   bash "run_vm" do
     code <<-EOS
-      docker run -d --name #{vm["id"]} #{image_name}
+      docker run -d -t -dns 127.0.0.1 -h #{vm["name"]} -p #{vm["ssh_port"]}:22 --name #{vm["name"]} vmbase
     EOS
-    not_if "docker inspect #{vm["id"]}"
+    not_if "docker inspect #{vm["name"]}"
   end
 
   # cleanup interfaces
   bash "restart_vm" do
     code <<-EOS
-      docker restart #{vm["id"]}
+      docker restart #{vm["name"]}
     EOS
-  end
-
-  vm["interfaces"].each do |interface|
-    ip_address = interface["ip_address"]
-    mask = interface["mask"] || 24
-    unless ip_address
-      ip_address = 0
-      mask = 0
-    end
-    bash "configure_vm_network" do
-      cwd "/vagrant/vm"
-      code <<-EOS
-        ./pipework #{interface["bridge"]} \
-          -i #{interface["name"]} \
-          -p #{interface["port_name"]} \
-          #{vm["id"]} \
-          #{ip_address}/#{mask} \
-          #{interface["mac_address"]}
-      EOS
-    end
   end
 end

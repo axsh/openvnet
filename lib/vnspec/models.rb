@@ -22,23 +22,27 @@ module Vnspec
           end
         end
 
-        def all
-          API.request(:get, api_name, limit: 1000) do |response|
-            response[:items].map do |r|
-              self.new(r)
-              # TODO associations
+        def all(options = {})
+          @items ||= []
+          if @items.empty? || options[:reload]
+            API.request(:get, api_name, limit: 1000) do |response|
+              @items = response[:items].map do |r|
+                self.new(r)
+                # TODO associations
+              end
             end
           end
+          @items
         end
 
-        def find(options)
-          case options
+        def find(id, options = {})
+          case id
           when String
-            all.find { |i| i.uuid == options }
+            all(options).find { |i| i.uuid == id }
           when Integer
-            all.find { |i| i.id == options }
+            all(options).find { |i| i.id == id }
           when Hash
-            all.find do |i|
+            all(options).find do |i|
               options.all? do |k, v|
                 i.__send__(k) == v
               end
@@ -58,36 +62,37 @@ module Vnspec
     end
 
     class Interface < Base
-      attr_accessor :name
       attr_reader :mac_leases
-      attr_writer :enabled
 
       class << self
         def api_name
           "interfaces"
         end
 
-        def create(options)
-          API.request(:post, "interfaces", options) do |response|
-            return self.new(options.merge(uuid: response[:uuid])).tap do |interface|
-              if options[:mac_address] && response[:mac_leases].first
-                m = response[:mac_leases].first
-                interface.mac_leases << Models::MacLease.new(uuid: m[:uuid], interface: interface,  mac_address: m[:mac_address]).tap do |mac_lease|
-                  if options[:network_uuid] && options[:ipv4_address] && m[:ip_leases].first
-                    i = m[:ip_leases].first
-                    mac_lease.ip_leases << Models::IpLease.new(uuid: i[:uuid], mac_lease: mac_lease, ipv4_address: i[:ipv4_address], network_uuid: i[:network_uuid])
+        def all(options = {})
+          API.request(:get, api_name, limit: 1000) do |response|
+            response[:items].map do |r|
+              self.new(r).tap do |interface|
+                r[:mac_leases].each do |m|
+                  interface.mac_leases << Models::MacLease.new(uuid: m[:uuid], interface: interface,  mac_address: m[:mac_address]).tap do |mac_lease|
+                    m[:ip_leases].each do |i|
+                      mac_lease.ip_leases << Models::IpLease.new(uuid: i[:uuid], mac_lease: mac_lease, ipv4_address: i[:ipv4_address], network_uuid: i[:network_uuid])
+                    end
                   end
                 end
               end
             end
           end
         end
+
+        def create(options)
+          API.request(:post, "interfaces", options)
+          find(options[:uuid], reload: true)
+        end
       end
 
       def initialize(options)
-        @name = options[:name]
         @mac_leases = []
-        @enabled = options.key?(:enabled) ? options[:enabled] : true
       end
 
       def update(options)
@@ -99,6 +104,7 @@ module Vnspec
 
       def destroy
         API.request(:delete, "interfaces/#{uuid}")
+        find(options[:uuid], reload: true)
       end
 
       def mac_lease(uuid)
@@ -113,10 +119,6 @@ module Vnspec
 
       def remove_mac_lease(uuid)
         mac_leases(uuid).tap(&:destroy)
-      end
-
-      def enabled?
-        !! @enabled
       end
     end
 

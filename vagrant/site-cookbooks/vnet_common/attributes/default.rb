@@ -13,6 +13,7 @@ bind-utils
 zeromq-devel
 libpcap-devel
 sqlite-devel
+man
 )
 
 default["vnet_common"]["ruby_versions"] = %w(2.0.0-p353 2.1.1)

@@ -25,15 +25,11 @@ bash "run_registry" do
   eos
 end
 
-bash "create_vm_image" do
-  code <<-EOS
-    docker build -t localhost:5000/vmbase --rm /vagrant/vm
-  EOS
-end
-
-bash "push_vm_image" do
+bash "register_vm_image" do
   retries 3
   code <<-EOS
-    docker push localhost:5000/vmbase
+    docker pull centos
+    docker tag centos localhost:5000/centos
+    docker push localhost:5000/centos
   EOS
 end
