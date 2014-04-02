@@ -35,13 +35,6 @@ Sequel.migration do
       FalseClass :is_connected, :null=>false
     end
 
-    create_table(:dc_segments) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-    end
-
     create_table(:dhcp_ranges) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -259,7 +252,6 @@ Sequel.migration do
     drop_table(:datapaths,
                :datapath_networks,
                :datapath_route_links,
-               :dc_segments,
                :dhcp_ranges,
                :interfaces,
                :interface_security_groups,
