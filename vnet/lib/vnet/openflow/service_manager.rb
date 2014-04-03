@@ -60,22 +60,18 @@ module Vnet::Openflow
     private
 
     def item_initialize(item_map, params)
-      item = @items[item_map.id]
-      return item if item
+      item_class =
+        case item_map.type
+        when 'dhcp'   then Vnet::Openflow::Services::Dhcp
+        when 'dns'    then Vnet::Openflow::Services::Dns
+        when 'router' then Vnet::Openflow::Services::Router
+        else
+          return
+        end
 
-      params = {
-        dp_info: @dp_info,
-        manager: self,
-        map: item_map
-      }
-
-      case item_map.type.to_sym
-      when :dhcp       then Vnet::Openflow::Services::Dhcp.new(params)
-      when :dns        then Vnet::Openflow::Services::Dns.new(params)
-      when :router     then Vnet::Openflow::Services::Router.new(params)
-      else
-        nil
-      end
+      item_class.new(dp_info: @dp_info,
+                     manager: self,
+                     map: item_map)
     end
 
     def initialized_item_event

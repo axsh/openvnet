@@ -106,14 +106,17 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      case item_map.network_mode.to_sym
-      when :physical then Networks::Physical.new(@dp_info, item_map)
-      when :virtual then Networks::Virtual.new(@dp_info, item_map)
-      else
-        error log_format('unknown network type',
-                         "network_type:#{item_map.network_mode}")
-        return nil
-      end
+      item_class =
+        case item_map.network_mode
+        when 'physical' then Networks::Physical
+        when 'virtual'  then Networks::Virtual
+        else
+          error log_format('unknown network type',
+                           "network_type:#{item_map.network_mode}")
+          return nil
+        end
+
+      item_class.new(@dp_info, item_map)
     end
 
     def initialized_item_event

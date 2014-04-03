@@ -184,19 +184,20 @@ module Vnet::Openflow
     # item type is created that will reload itself when the right
     # tunnel mode has been determined.
     def item_initialize(item_map, params)
-      params = { dp_info: @dp_info,
-                 manager: self,
-                 map: item_map }
-
       tunnel_mode = select_tunnel_mode(item_map.src_interface_id, item_map.dst_interface_id)
 
-      case tunnel_mode
-      when :gre     then Tunnels::Gre.new(params)
-      when :mac2mac then Tunnels::Mac2Mac.new(params)
-      when :unknown then Tunnels::Unknown.new(params)
-      else
-        nil
-      end
+      item_class =
+        case tunnel_mode
+        when :gre     then Tunnels::Gre
+        when :mac2mac then Tunnels::Mac2Mac
+        when :unknown then Tunnels::Unknown
+        else
+          return
+        end
+
+      item_class.new(dp_info: @dp_info,
+                     manager: self,
+                     map: item_map)
     end
 
     def initialized_item_event

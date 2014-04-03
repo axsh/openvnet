@@ -63,20 +63,19 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      params = {
-        dp_info: @dp_info,
-        manager: self,
-        map: item_map
-      }
-
       debug log_format("item initialize", item_map.inspect)
 
-      case item_map.mode && item_map.mode.to_sym
-      when :static_address then Translations::StaticAddress.new(params)
-      when :vnet_edge      then Translations::VnetEdgeHandler.new(params)
-      else
-        nil
-      end
+      item_class =
+        case item_map.mode && item_map.mode
+        when 'static_address' then Translations::StaticAddress
+        when 'vnet_edge'      then Translations::VnetEdgeHandler
+        else
+          return
+        end
+
+      item_class.new(dp_info: @dp_info,
+                     manager: self,
+                     map: item_map)
     end
 
     def initialized_item_event

@@ -101,19 +101,22 @@ module Vnet::Openflow
         mode = (item_map.mode && item_map.mode.to_sym)
       end
 
-      params = { dp_info: @dp_info,
-                 manager: self,
-                 map: item_map }
+      item_class =
+        case mode
+        when :edge then Interfaces::Edge
+        when :host then Interfaces::Host
+        when :remote then Interfaces::Remote
+        when :simulated then Interfaces::Simulated
+        when :vif then Interfaces::Vif
+        else
+          Interfaces::Base
+        end
 
-      case mode
-      when :edge then Interfaces::Edge.new(params)
-      when :host then Interfaces::Host.new(params)
-      when :remote then Interfaces::Remote.new(params)
-      when :simulated then Interfaces::Simulated.new(params)
-      when :vif then Interfaces::Vif.new(params)
-      else
-        Interfaces::Base.new(params)
-      end
+      item_class.new(
+        dp_info: @dp_info,
+        manager: self,
+        map: item_map
+      )
     end
 
     def initialized_item_event
