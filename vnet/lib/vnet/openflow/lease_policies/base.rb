@@ -10,6 +10,7 @@ module Vnet::Openflow::LeasePolicies
     attr_reader :mode
     attr_reader :networks
     attr_reader :interfaces
+    attr_reader :lease_policy_base_networks
 
     def initialize(params)
       @dp_info = params[:dp_info]
@@ -21,6 +22,7 @@ module Vnet::Openflow::LeasePolicies
       @mode = map.mode
       @networks = map.networks
       @interfaces = map.interfaces
+      @lease_policy_base_networks = map.lease_policy_base_networks
     end
 
     def to_hash
@@ -29,7 +31,8 @@ module Vnet::Openflow::LeasePolicies
         :uuid => self.uuid,
         :mode => self.mode,
         :networks => self.networks,
-        :interfaces => self.interfaces
+        :interfaces => self.interfaces,
+        :lease_policy_base_networks => self.lease_policy_base_networks
       }
     end
 

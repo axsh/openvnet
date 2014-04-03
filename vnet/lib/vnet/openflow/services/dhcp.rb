@@ -56,7 +56,14 @@ module Vnet::Openflow::Services
         return if lease_policy[:networks].empty?
 
         net = lease_policy[:networks].first
-        offering = net.batch.incremental_ip_allocation.commit
+        lpbn = lease_policy[:lease_policy_base_networks].first
+
+        case lpbn.mmethod
+        when "incremental" then offering = net.batch.incremental_ip_allocation.commit
+        when "decremental" then offering = net.batch.decremental_ip_allocation.commit
+        else
+          return
+        end
 
         # TODO: clean up, catch errors
         ma = interface.mac_addresses
