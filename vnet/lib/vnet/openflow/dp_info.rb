@@ -13,7 +13,6 @@ module Vnet::Openflow
     MANAGER_NAMES = %w(
       connection
       datapath
-      dc_segment
       interface
       network
       port
@@ -74,7 +73,7 @@ module Vnet::Openflow
       @ovs_ofctl.add_ovs_10_flow(flow_str)
     end
 
-    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
+    def del_cookie(cookie, cookie_mask = Vnet::Constants::OpenflowFlows::COOKIE_MASK)
       options = {
         :command => Controller::OFPFC_DELETE,
         :table_id => Controller::OFPTT_ALL,
@@ -96,6 +95,19 @@ module Vnet::Openflow
         :out_port => Controller::OFPP_ANY,
         :out_group => Controller::OFPG_ANY,
       }.merge(params)
+
+      @controller.pass_task {
+        @controller.public_send_flow_mod(@dpid, options)
+      }
+    end
+
+    def del_all_flows
+      options = {
+        :command => Controller::OFPFC_DELETE,
+        :table_id => Controller::OFPTT_ALL,
+        :out_port => Controller::OFPP_ANY,
+        :out_group => Controller::OFPG_ANY,
+      }
 
       @controller.pass_task {
         @controller.public_send_flow_mod(@dpid, options)

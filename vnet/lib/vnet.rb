@@ -17,6 +17,10 @@ module Vnet
   CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
 
+  autoload :Event,    'vnet/event'
+  autoload :ItemBase, 'vnet/item_base'
+  autoload :Manager,  'vnet/manager'
+
   module Configurations
     autoload :Base,   'vnet/configurations/base'
     autoload :Common, 'vnet/configurations/common'
@@ -31,7 +35,6 @@ module Vnet
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
-  autoload :Event, 'vnet/event'
   module Event
     autoload :Dispatchable, 'vnet/event/dispatchable'
     autoload :Notifications, 'vnet/event/notifications'
@@ -104,7 +107,6 @@ module Vnet
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
     autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'
-    autoload :DcSegment, 'vnet/models/dc_segment'
     autoload :DhcpRange, 'vnet/models/dhcp_range'
     autoload :DnsService, 'vnet/models/dns_service'
     autoload :DnsRecord, 'vnet/models/dns_record'
@@ -131,7 +133,6 @@ module Vnet
     autoload :Datapath, 'vnet/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
     autoload :DatapathRouteLink, 'vnet/model_wrappers/datapath_route_link'
-    autoload :DcSegment, 'vnet/model_wrappers/dc_segment'
     autoload :DhcpRange, 'vnet/model_wrappers/dhcp_range'
     autoload :DnsService, 'vnet/model_wrappers/dns_service'
     autoload :DnsRecord, 'vnet/model_wrappers/dns_record'
@@ -178,7 +179,7 @@ module Vnet
     autoload :SecurityGroup, 'vnet/node_api/security_group'
     autoload :Translation, 'vnet/node_api/models.rb'
     autoload :TranslateStaticAddress, 'vnet/node_api/models.rb'
-    autoload :Tunnel, 'vnet/node_api/models.rb'
+    autoload :Tunnel, 'vnet/node_api/tunnel.rb'
     autoload :VlanTranslation, 'vnet/node_api/models.rb'
   end
 
@@ -197,14 +198,12 @@ module Vnet
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DatapathInfo, 'vnet/openflow/datapath'
     autoload :DatapathManager, 'vnet/openflow/datapath_manager'
-    autoload :DcSegmentManager, 'vnet/openflow/dc_segment_manager'
     autoload :DpInfo, 'vnet/openflow/dp_info'
     autoload :FilterManager, 'vnet/openflow/filter_manager'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
-    autoload :Manager, 'vnet/openflow/manager'
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
@@ -292,6 +291,9 @@ module Vnet
 
     module Tunnels
       autoload :Base, 'vnet/openflow/tunnels/base'
+      autoload :Gre, 'vnet/openflow/tunnels/gre'
+      autoload :Mac2Mac, 'vnet/openflow/tunnels/mac2mac'
+      autoload :Unknown, 'vnet/openflow/tunnels/unknown'
     end
 
   end

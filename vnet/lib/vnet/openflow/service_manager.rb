@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class ServiceManager < Manager
+  class ServiceManager < Vnet::Manager
 
     #
     # Events:

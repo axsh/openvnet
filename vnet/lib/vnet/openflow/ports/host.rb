@@ -23,18 +23,7 @@ module Vnet::Openflow::Ports
 
       flows = []
 
-      if @dp_info.datapath.datapath_info.node_id =~ /^edge/
-        flows << flow_create(:default,
-                             table: TABLE_CLASSIFIER,
-                             goto_table: TABLE_EDGE_SRC,
-                             priority: 2,
-                             match: {
-                               :in_port => self.port_number
-                             },
-                             write_remote: true)
-      end
-
-      if @interface_id && @dp_info.datapath.datapath_info.node_id !~ /^edge/
+      if @interface_id
         flows << flow_create(:default,
                              table: TABLE_CLASSIFIER,
                              goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
@@ -67,14 +56,29 @@ module Vnet::Openflow::Ports
                              })
       end
 
+      if @dp_info.datapath.datapath_info.node_id =~ /^edge/
+        flows << flow_create(:default,
+                             table: TABLE_CLASSIFIER,
+                             goto_table: TABLE_EDGE_SRC,
+                             priority: 2,
+                             match: {
+                               :in_port => self.port_number
+                             },
+                             write_remote: true)
+      end
+
       @dp_info.add_flows(flows)
-      @dp_info.dc_segment_manager.async.update(event: :insert_port_number,
-                                               port_number: self.port_number)
+      @dp_info.tunnel_manager.async.update(event: :updated_interface,
+                                           interface_event: :set_host_port_number,
+                                           interface_id: @interface_id,
+                                           port_number: self.port_number)
     end
 
     def uninstall
-      @dp_info.dc_segment_manager.async.update(event: :remove_port_number,
-                                               port_number: self.port_number)
+      @dp_info.tunnel_manager.async.update(event: :updated_interface,
+                                           interface_event: :set_host_port_number,
+                                           interface_id: @id,
+                                           port_number: nil)
     end
 
   end

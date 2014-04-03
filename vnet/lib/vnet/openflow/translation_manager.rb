@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class TranslationManager < Manager
+  class TranslationManager < Vnet::Manager
     include Vnet::Event::Dispatchable
 
     def initialize(params)

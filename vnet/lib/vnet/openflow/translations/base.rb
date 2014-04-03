@@ -2,19 +2,17 @@
 
 module Vnet::Openflow::Translations
 
-  class Base
+  class Base < Vnet::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :id
     attr_reader :uuid
     attr_reader :mode
 
     attr_reader :interface_id
 
     def initialize(params)
-      @dp_info = params[:dp_info]
-      @manager = params[:manager]
+      super
 
       map = params[:map]
 

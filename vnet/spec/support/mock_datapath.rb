@@ -49,6 +49,10 @@ class MockDpInfo < Vnet::Openflow::DpInfo
     @datapath.del_cookie(cookie, cookie_mask)
   end
 
+  def del_flows(flows)
+    @datapath.del_flows(flows)
+  end
+
   def add_ovs_flow(ovs_flow)
     @datapath.added_ovs_flows << ovs_flow
   end
@@ -138,6 +142,23 @@ class MockDatapath < Vnet::Openflow::Datapath
       @deleted_flows += deleted_flows
       @deleted_flows.uniq!
     end
+  end
+
+  def del_flows(flows)
+    # flows.each { |delete_flow|
+    #   @added_flows.select { |added_flow|
+    #     next if delete_flow.detect { |param|
+          
+    #     }
+    #   }.tap do |deleted_flows|
+    #     @current_flows -= deleted_flows
+    #     @deleted_flows += deleted_flows
+    #     @deleted_flows.uniq!
+    #   end
+    # }
+
+    @deleted_flows << flows
+    @deleted_flows.uniq!
   end
 
   def add_ovs_flow(ovs_flow)

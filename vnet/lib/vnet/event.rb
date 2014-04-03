@@ -26,22 +26,32 @@ module Vnet
     REMOVED_ACTIVE_DATAPATH = "removed_active_datapath"
 
     #
-    # datapath event
+    # Datapath events:
     #
-    ADDED_DATAPATH = "added_datapath"
-    REMOVED_DATAPATH = "removed_datapath"
-    INITIALIZED_DATAPATH = "initialized_datapath"
+    ADDED_DATAPATH = 'added_datapath'
+    REMOVED_DATAPATH = 'removed_datapath'
+    INITIALIZED_DATAPATH = 'initialized_datapath'
+
+    ACTIVATE_NETWORK_ON_HOST = 'activate_network_on_host'
+    DEACTIVATE_NETWORK_ON_HOST = 'deactivate_network_on_host'
+
+    ADDED_DATAPATH_NETWORK = 'added_datapath_network'
+    REMOVED_DATAPATH_NETWORK = 'removed_datapath_network'
+    ACTIVATE_DATAPATH_NETWORK = 'activate_datapath_network'
+    DEACTIVATE_DATAPATH_NETWORK = 'deactivate_datapath_network'
+
+    ACTIVATE_ROUTE_LINK_ON_HOST = 'activate_route_link_on_host'
+    DEACTIVATE_ROUTE_LINK_ON_HOST = 'deactivate_route_link_on_host'
+
+    ADDED_DATAPATH_ROUTE_LINK = 'added_datapath_route_link'
+    REMOVED_DATAPATH_ROUTE_LINK = 'removed_datapath_route_link'
+    ACTIVATE_DATAPATH_ROUTE_LINK = 'activate_datapath_route_link'
+    DEACTIVATE_DATAPATH_ROUTE_LINK = 'deactivate_datapath_route_link'
 
     #
     # network event
     #
     INITIALIZED_NETWORK = "initialized_network"
-
-    #
-    # datapath_network event
-    #
-    ADDED_DATAPATH_NETWORK = "added_datapath_network"
-    REMOVED_DATAPATH_NETWORK = "removed_datapath_network"
 
     #
     # route event
@@ -75,6 +85,17 @@ module Vnet
     ADDED_TUNNEL = "added_tunnel"
     REMOVED_TUNNEL = "removed_tunnel"
     INITIALIZED_TUNNEL = "initialized_tunnel"
+
+    TUNNEL_UPDATE_NETWORKS = "tunnel_update_networks"
+
+    ADDED_HOST_DATAPATH_NETWORK = "added_host_datapath_network"
+    ADDED_REMOTE_DATAPATH_NETWORK = "added_remote_datapath_network"
+    ADDED_HOST_DATAPATH_ROUTE_LINK = "added_host_datapath_route_link"
+    ADDED_REMOTE_DATAPATH_ROUTE_LINK = "added_remote_datapath_route_link"
+    REMOVED_HOST_DATAPATH_NETWORK = "removed_host_datapath_network"
+    REMOVED_REMOTE_DATAPATH_NETWORK = "removed_remote_datapath_network"
+    REMOVED_HOST_DATAPATH_ROUTE_LINK = "removed_host_datapath_route_link"
+    REMOVED_REMOTE_DATAPATH_ROUTE_LINK = "removed_remote_datapath_route_link"
 
     #
     # port event

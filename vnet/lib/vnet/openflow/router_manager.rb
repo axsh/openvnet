@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class RouterManager < Manager
+  class RouterManager < Vnet::Manager
 
     #
     # Events:
@@ -44,7 +44,9 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      Routers::RouteLink.new(dp_info: @dp_info, manager: self, map: item_map)
+      Routers::RouteLink.new(dp_info: @dp_info,
+                             manager: self,
+                             map: item_map)
     end
 
     def initialized_item_event
@@ -64,8 +66,8 @@ module Vnet::Openflow
 
       item.install
 
-      @dp_info.datapath_manager.async.update_item(event: :activate_route_link,
-                                                  route_link_id: item.id)
+      @dp_info.datapath_manager.async.update(event: :activate_route_link,
+                                             route_link_id: item.id)
 
       debug log_format("install #{item.uuid}/#{item.id}")
 

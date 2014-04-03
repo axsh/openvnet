@@ -2,15 +2,13 @@
 
 module Vnet::Openflow::Networks
 
-  class Base
+  class Base < Vnet::ItemBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
     Flow = Vnet::Openflow::Flow
 
-    attr_reader :id
     attr_reader :uuid
-    attr_reader :datapath_of_bridge
 
     attr_reader :interfaces
 
@@ -19,12 +17,11 @@ module Vnet::Openflow::Networks
     attr_reader :ipv4_prefix
 
     def initialize(dp_info, network_map)
-      @dp_info = dp_info
+      # TODO: Support proper params initialization:
+      super(dp_info: dp_info)
 
       @id = network_map.id
       @uuid = network_map.uuid
-
-      @datapath_of_bridge = nil
 
       @interfaces = {}
 
@@ -90,17 +87,6 @@ module Vnet::Openflow::Networks
       end
 
       self
-    end
-
-    def set_datapath_of_bridge(datapath_info)
-      # info "network(#{@uuid}): set_datapath_of_bridge: dpn_map:#{dpn_map.inspect}"
-
-      @datapath_of_bridge = {
-        :uuid => datapath_info.uuid,
-        :display_name => datapath_info.display_name,
-        :ipv4_address => datapath_info.ipv4_address,
-        :datapath_id => datapath_info.id,
-      }
     end
 
   end

@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class InterfaceManager < Manager
+  class InterfaceManager < Vnet::Manager
 
     #
     # Events:
@@ -154,9 +154,9 @@ module Vnet::Openflow
 
       load_addresses(item_map)
 
-      @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
-
       if item.mode != :remote
+        @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
+
         @dp_info.translation_manager.async.update(event: :install_interface,
                                                   interface_id: item.id)
         item.ingress_filtering_enabled &&
@@ -213,15 +213,15 @@ module Vnet::Openflow
       return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?
 
       if item_map.owner_datapath_id
-        return item_map.owner_datapath_id != @datapath_info.id
+        return @datapath_info.nil? || item_map.owner_datapath_id != @datapath_info.id
       end
 
       return false
     end
 
     def is_assigned_remotely?(item_map)
-      return item_map.owner_datapath_id != @datapath_info.id if item_map.owner_datapath_id
-      return item_map.active_datapath_id != @datapath_info.id if item_map.active_datapath_id
+      return @datapath_info.nil? || item_map.owner_datapath_id != @datapath_info.id if item_map.owner_datapath_id
+      return @datapath_info.nil? || item_map.active_datapath_id != @datapath_info.id if item_map.active_datapath_id
 
       false
     end

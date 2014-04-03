@@ -4,7 +4,7 @@ require 'celluloid'
 
 module Vnet::Openflow
 
-  class NetworkManager < Manager
+  class NetworkManager < Vnet::Manager
     include Celluloid::Logger
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable
@@ -138,10 +138,11 @@ module Vnet::Openflow
         return network
       end
 
-      network.set_datapath_of_bridge(@datapath_info)
-
       network.install
       network.update_flows
+
+      @dp_info.datapath_manager.async.update(event: :activate_network,
+                                             network_id: network.id)
 
       item_map.network_services.each { |service_map|
         @dp_info.service_manager.async.item(id: service_map.id)
@@ -169,6 +170,9 @@ module Vnet::Openflow
       @items.delete(item.id)
 
       item.uninstall
+
+      @dp_info.datapath_manager.async.update(event: :deactivate_network,
+                                             network_id: item.id)
 
       dispatch_event("network/deleted",
                      id: item.id,

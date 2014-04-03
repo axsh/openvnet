@@ -40,9 +40,6 @@ module Vnet::NodeApi
   class TranslateStaticAddress < Base
   end
 
-  class Tunnel < Base
-  end
-
   class VlanTranslation < Base
   end
 end
