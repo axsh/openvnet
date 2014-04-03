@@ -58,8 +58,13 @@ module Vnet::Openflow::Services
         net = lease_policy[:networks].first
         offering = incremental_ip_allocation(net)
 
-        iplid = interface.mac_addresses
-        MW::IpLease.destroy(iplid.keys.first)
+        # TODO: clean up, catch errors
+        ma = interface.mac_addresses
+        ma0 = ma.to_a[0][1]
+        ip4s = ma0[:ipv4_addresses]
+        ip4s0 = ip4s.first
+        iplid = ip4s0[:ip_lease_id]
+        MW::IpLease.destroy(iplid)
 
         ip_lease = MW::IpLease.batch.create(network_id: net.uuid,
                                             mac_lease_id: interface.mac_lease_ids.first,
