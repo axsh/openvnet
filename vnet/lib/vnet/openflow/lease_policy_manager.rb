@@ -68,7 +68,13 @@ module Vnet::Openflow
 
     def item_initialize(item_map, params)
       debug log_format('item_initialize(item_map, params)',"#{params}")
-      LeasePolicies::Base.new(dp_info: @dp_info, manager: self, map: item_map)
+
+      mode = (item_map.mode && item_map.mode.to_sym)
+      case mode
+      when :simple then LeasePolicies::Simple.new(dp_info: @dp_info, manager: self, map: item_map)
+      else
+        LeasePolicies::Base.new(dp_info: @dp_info, manager: self, map: item_map)
+      end
     end
 
     def initialized_item_event

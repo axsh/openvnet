@@ -261,6 +261,7 @@ module Vnet
 
     module LeasePolicies
       autoload :Base, 'vnet/openflow/lease_policies/base'
+      autoload :Simple, 'vnet/openflow/lease_policies/simple'
     end
 
     module Networks

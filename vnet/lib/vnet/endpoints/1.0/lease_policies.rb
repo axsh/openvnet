@@ -7,9 +7,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
   post do
     accepted_params = put_post_shared_params + ["uuid"]
-    required_params = ["mode"]
+    required_params = [ ]
 
     post_new(:LeasePolicy, accepted_params, required_params, fill_options) { |params|
+      params["mode"] = "simple" if ! params.has_key? "mode"
     }
   end
 
