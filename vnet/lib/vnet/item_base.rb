@@ -8,11 +8,6 @@ module Vnet
     attr_reader :installed
 
     def initialize(params)
-      @dp_info = params[:dp_info]
-
-      # TODO: Consider removing manager.
-      @manager = params[:manager]
-
       @installed = false
     end
 
@@ -30,6 +25,51 @@ module Vnet
     def try_uninstall
       @installed, was_installed = false, @installed
       (was_installed == true) && uninstall 
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def log_format(message, values = nil)
+      "#{log_type}: #{message}" + (values ? " (#{values})" : '')
+    end
+
+  end
+
+  class ItemDpBase < ItemBase
+
+    def initialize(params)
+      @installed = false
+      @dp_info = params[:dp_info]
+      @id = params[:id]
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def log_format(message, values = nil)
+      "#{@dp_info.dpid_s} #{log_type}: #{message}" + (values ? " (#{values})" : '')
+    end
+
+  end
+
+  class ItemDpUuid < ItemDpBase
+
+    attr_reader :uuid
+
+    def initialize(params)
+      @installed = false
+      @dp_info = params[:dp_info]
+
+      map = params[:map]
+      @id = map.id
+      @uuid = map.uuid
     end
 
     #
