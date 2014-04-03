@@ -56,7 +56,7 @@ module Vnet::Openflow::Services
         return if lease_policy[:networks].empty?
 
         net = lease_policy[:networks].first
-        offering = incremental_ip_allocation(net)
+        offering = net.batch.incremental_ip_allocation.commit
 
         # TODO: clean up, catch errors
         ma = interface.mac_addresses
@@ -115,21 +115,6 @@ module Vnet::Openflow::Services
                      })
     end
 
-    def incremental_ip_allocation(net)
-      scan = net.ipv4_network
-      pref = net.ipv4_prefix
-      max = 2 << ( 31 - pref )
-      while ( max > 0 )
-        # TODO: find out this is worth making more efficient (i.e. there exists
-        # a realistic use case and this code is not just a temporary stub)
-        hits = MW::IpAddress.batch.filter(:ipv4_address => scan ).all.commit
-        return scan if hits.empty?
-        max -= 1
-        scan += 1
-      end
-      return nil
-    end
-    
     def add_network(network_id, cookie_id)
       if dns_server = @dp_info.service_manager.dns_server_for(network_id)
         add_dns_server(network_id, dns_server)
