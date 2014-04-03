@@ -19,9 +19,7 @@ datapaths:
   - uuid: dp-edgeesxi
     node_id: edge-esxi
     display_name: edge-esxi
-    ipv4_address: <%= edge_esxi_ipv4_address %>
     dpid: "0x0000eeeeeeeeeeee"
-    dc_segment_uuid: ds-1
 
 interfaces:
 
@@ -55,12 +53,6 @@ interfaces:
     mac_address: "02:00:00:00:00:06"
     ipv4_address: 10.101.0.12
 
-  - uuid: if-dhcppub
-    network_uuid: nw-public
-    mac_address: "02:00:00:00:01:11"
-    ipv4_address: <%= public_dhcp_ipv4_address %>
-    mode: simulated
-
   - uuid: if-dhcp1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:01:01"
@@ -84,15 +76,11 @@ interfaces:
     mode: host
     port_name: eth0
     owner_datapath_uuid: dp-edgeesxi
-    network_uuid: nw-public
+    network_uuid: nw-public1
     mac_address: "02:01:00:00:00:05"
     ipv4_address: <%= edge_esxi_ipv4_address %>
 
 network_services:
-
-  - uuid: ns-dhcppub
-    interface_uuid: if-dhcppub
-    type: dhcp
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
@@ -105,11 +93,6 @@ network_services:
 datapath_networks:
 
   - datapath_uuid: dp-1
-    network_uuid: nw-public
-    interface_uuid: if-dp1eth0
-    broadcast_mac_address: "02:00:01:aa:01:01"
-
-  - datapath_uuid: dp-1
     network_uuid: nw-vnet1
     interface_uuid: if-dp1eth0
     broadcast_mac_address: "02:00:00:aa:00:01"
@@ -118,11 +101,6 @@ datapath_networks:
     network_uuid: nw-vnet2
     interface_uuid: if-dp1eth0
     broadcast_mac_address: "02:00:00:aa:00:02"
-
-  - datapath_uuid: dp-2
-    network_uuid: nw-public
-    interface_uuid: if-dp2eth0
-    broadcast_mac_address: "02:00:01:bb:01:01"
 
   - datapath_uuid: dp-2
     network_uuid: nw-vnet1
@@ -135,11 +113,6 @@ datapath_networks:
     broadcast_mac_address: "02:00:00:bb:00:02"
 
   - datapath_uuid: dp-3
-    network_uuid: nw-public
-    interface_uuid: if-dp3eth0
-    broadcast_mac_address: "02:00:01:cc:01:01"
-
-  - datapath_uuid: dp-3
     network_uuid: nw-vnet1
     interface_uuid: if-dp3eth0
     broadcast_mac_address: "02:00:00:cc:00:01"
@@ -150,7 +123,7 @@ datapath_networks:
     broadcast_mac_address: "02:00:00:cc:00:02"
 
   - datapath_uuid: dp-edgeesxi
-    network_uuid: nw-public
+    network_uuid: nw-public1
     interface_uuid: if-edgeeth0
     broadcast_mac_address: "02:00:01:dd:01:01"
 
@@ -165,12 +138,14 @@ datapath_networks:
     broadcast_mac_address: "02:00:00:dd:00:02"
 
 translations:
+
   - uuid: tr-edge
     interface_uuid: if-edge
     mode: vnet_edge
 
 vlan_translations:
+
   - vlan_id: 100
-    network_id: 2
+    network_id: 3
     translation_uuid: tr-edge
 

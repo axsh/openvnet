@@ -29,8 +29,8 @@ dataset_options:
 legacy_machines:
   legacy1:
     ssh_ip: 192.168.2.64
-    ipv4_address: 192.168.100.100
+    ipv4_address: 10.101.0.100
   legacy_esxi:
     hostname: legacy-esxi
     ssh_ip: 192.168.2.66
-    ipv4_address: 192.168.100.101
+    ipv4_address: 10.101.0.101

@@ -196,11 +196,9 @@ module Vnspec
 
       def initialize(options)
         @node_id = options.fetch(:node_id)
-        @ipv4_address = options.fetch(:ipv4_address)
         @dpid = options.fetch(:dpid)
 
         @display_name = options[:display_name]
-        @dc_segment_uuid = options[:dc_segment_uuid]
         @datapath_networks = []
         @datapath_networks_loaded = false
       end
