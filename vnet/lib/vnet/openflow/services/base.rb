@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Services
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
@@ -17,7 +17,6 @@ module Vnet::Openflow::Services
     OPTIONAL_VALUE_SHIFT    = 36
     OPTIONAL_VALUE_MASK    = 0xfffff
 
-    attr_accessor :uuid
     attr_accessor :interface_id
     attr_accessor :type
     attr_reader :networks
@@ -25,10 +24,12 @@ module Vnet::Openflow::Services
     def initialize(params)
       super
 
-      @id = params[:id]
-      @uuid = params[:uuid]
-      @type = params[:type]
-      @interface_id = params[:interface_id]
+      @manager = params[:manager]
+
+      map = params[:map]
+      @type = map.type
+      @interface_id = map.interface_id
+
       @networks = {}
     end
 

@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Networks
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -18,10 +18,8 @@ module Vnet::Openflow::Networks
 
     def initialize(dp_info, network_map)
       # TODO: Support proper params initialization:
-      super(dp_info: dp_info)
-
-      @id = network_map.id
-      @uuid = network_map.uuid
+      super(dp_info: dp_info,
+            map: network_map)
 
       @interfaces = {}
 

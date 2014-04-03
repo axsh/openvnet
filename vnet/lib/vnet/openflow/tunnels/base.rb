@@ -2,11 +2,10 @@
 
 module Vnet::Openflow::Tunnels
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :uuid
     attr_reader :dst_ipv4_address
     attr_reader :datapath_networks
 
@@ -21,9 +20,6 @@ module Vnet::Openflow::Tunnels
       super
 
       map = params[:map]
-
-      @id = map.id
-      @uuid = map.uuid
 
       @dst_datapath_id = map.dst_datapath_id
       @dst_interface_id = map.dst_interface_id

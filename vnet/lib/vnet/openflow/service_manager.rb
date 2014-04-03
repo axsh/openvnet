@@ -63,15 +63,13 @@ module Vnet::Openflow
       item = @items[item_map.id]
       return item if item
 
-      mode = item_map.type.to_sym
-      params = { dp_info: @dp_info,
-                 manager: self,
-                 id: item_map.id,
-                 uuid: item_map.uuid,
-                 type: item_map.type,
-                 interface_id: item_map.interface_id }
+      params = {
+        dp_info: @dp_info,
+        manager: self,
+        map: item_map
+      }
 
-      case mode
+      case item_map.type.to_sym
       when :dhcp       then Vnet::Openflow::Services::Dhcp.new(params)
       when :dns        then Vnet::Openflow::Services::Dns.new(params)
       when :router     then Vnet::Openflow::Services::Router.new(params)

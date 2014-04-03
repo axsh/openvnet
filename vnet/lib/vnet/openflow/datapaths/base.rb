@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Datapaths
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -12,9 +12,6 @@ module Vnet::Openflow::Datapaths
       super
 
       map = params[:map]
-
-      @id = map.id
-      @uuid = map.uuid
       @dpid = map.dpid
 
       @active_networks = {}

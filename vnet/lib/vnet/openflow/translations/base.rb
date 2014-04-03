@@ -2,13 +2,11 @@
 
 module Vnet::Openflow::Translations
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :uuid
     attr_reader :mode
-
     attr_reader :interface_id
 
     def initialize(params)
@@ -16,8 +14,6 @@ module Vnet::Openflow::Translations
 
       map = params[:map]
 
-      @id = map.id
-      @uuid = map.uuid
       @mode = map.mode.to_sym
 
       @interface_id = map.interface_id
@@ -36,12 +32,6 @@ module Vnet::Openflow::Translations
       Vnet::Openflow::Translation.new(id: @id,
                                       uuid: @uuid,
                                       mode: @mode)
-    end
-
-    def install
-    end
-
-    def uninstall
     end
 
     #

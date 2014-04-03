@@ -2,21 +2,16 @@
 
 module Vnet::Openflow::Routers
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :uuid
     attr_reader :mac_address
 
     def initialize(params)
       super
 
       map = params[:map]
-
-      @id = map.id
-      @uuid = map.uuid
-
       @mac_address = Trema::Mac.new(map.mac_address)
 
       @routes = {}

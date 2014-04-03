@@ -2,11 +2,9 @@
 
 module Vnet::Openflow::Routes
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
-
-    attr_reader :uuid
 
     attr_reader :interface_id
     attr_reader :route_link_id
@@ -22,9 +20,6 @@ module Vnet::Openflow::Routes
       super
 
       map = params[:map]
-
-      @id = map.id
-      @uuid = map.uuid
 
       @interface_id = map.interface_id
       @route_link_id = map.route_link_id
