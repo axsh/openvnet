@@ -19,7 +19,7 @@ module Vnet::Openflow
     # Basing this on code from network_manager.rb in a section marked
     # "Obsolete".  Is there a better non-obsolete way to do this?
     def find_by_interface(id)
-      r = MW::LeasePolicy.batch.find_by_interface(id).commit(fill: [:interfaces, :networks])
+      r = MW::LeasePolicy.batch.find_by_interface(id).commit(fill: [:interfaces, :networks, :lease_policy_base_networks])
       return r.first if r.kind_of? Array 
       return nil
     end
