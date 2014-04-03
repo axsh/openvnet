@@ -269,6 +269,7 @@ Sequel.migration do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
       Integer :network_id, :index => true, :null => false
+      String  :mmethod, :null=>false  # mmethod used because method conflicts
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at

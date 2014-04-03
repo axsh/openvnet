@@ -34,15 +34,17 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
   put '/:uuid/associate_network' do
     # TODO: it is now possible to associate twice....probably should not allow that.
-    params = parse_params(@params, ['uuid', 'network_uuid'])
+    params = parse_params(@params, ['uuid', 'network_uuid', 'method'])
     check_required_params(params, ['network_uuid'])
-
+    params['method'] = 'incremental' if params['method'].nil?
+    
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
     # TODO: verify this next line is not just a hack (that does work, so far)
     network = check_syntax_and_pop_uuid(M::Network, { "uuid" => params[:network_uuid] } )
 
     M::LeasePolicyBaseNetwork.create({ :network_id => network.id,
-                                       :lease_policy_id => lease_policy.id
+                                       :lease_policy_id => lease_policy.id,
+                                       :mmethod => params['method']
                                      })
     respond_with(R::LeasePolicy.lease_policy_network(lease_policy))
   end
