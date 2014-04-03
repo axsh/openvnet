@@ -12,6 +12,10 @@ module Vnet::Openflow::Services
       @dns_servers = {}
     end
 
+    def log_type
+      'service/dhcp'
+    end
+
     def install
       flows = []
       flows << flow_create(:default,
@@ -130,10 +134,6 @@ module Vnet::Openflow::Services
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} service/dhcp: #{message}" + (values ? " (#{values})" : '')
-    end
 
     def find_static_routes(near_routes)
       # Overview: (near)vnetroute(s).route_link -> (far)vnetroute(s)

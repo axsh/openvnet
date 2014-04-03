@@ -30,6 +30,10 @@ module Vnet::Openflow::Networks
       @ipv4_prefix = network_map.ipv4_prefix
     end
 
+    def log_type
+      'network/base'
+    end
+
     def to_hash
       { :id => @id,
         :uuid => @uuid,

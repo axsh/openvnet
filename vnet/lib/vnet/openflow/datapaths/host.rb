@@ -13,6 +13,10 @@ module Vnet::Openflow::Datapaths
       true
     end
 
+    def log_type
+      'datapath/host'
+    end
+
     #
     # Events:
     #

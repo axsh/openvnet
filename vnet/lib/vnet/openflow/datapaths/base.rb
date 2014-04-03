@@ -25,6 +25,10 @@ module Vnet::Openflow::Datapaths
       false
     end
 
+    def log_type
+      'datapath/base'
+    end
+
     def cookie(tag = nil)
       value = @id | COOKIE_TYPE_INTERFACE
       tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
@@ -159,10 +163,6 @@ module Vnet::Openflow::Datapaths
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} datapaths/base: #{message}" + (values ? " (#{values})" : '')
-    end
 
     def flows_for_dp_route_link(flows, dp_rl)
     end

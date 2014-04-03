@@ -5,6 +5,10 @@ module Vnet::Openflow::Ports
   module Tunnel
     include Vnet::Openflow::FlowHelpers
 
+    def log_type
+      'port/tunnel'
+    end
+
     def port_type
       :tunnel
     end

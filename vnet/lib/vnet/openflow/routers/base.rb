@@ -22,6 +22,10 @@ module Vnet::Openflow::Routers
       @routes = {}
     end
 
+    def log_type
+      'router/base'
+    end
+
     def cookie
       @id | COOKIE_TYPE_ROUTE_LINK
     end
@@ -38,12 +42,6 @@ module Vnet::Openflow::Routers
     # Events: 
     #
 
-    def install
-    end    
-
-    def uninstall
-    end    
-
     def add_active_route(route_id)
       return if @routes.has_key? route_id
 
@@ -58,10 +56,6 @@ module Vnet::Openflow::Routers
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} routers/base: #{message} (route_link:#{@uuid}/#{@id}#{values ? ' ' : ''}#{values})"
-    end
 
   end
 

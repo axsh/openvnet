@@ -129,8 +129,9 @@ module Vnet::Openflow
       debug log_format("creating datapath id: #{params[:id]}")
       return if @items[params[:id]]
 
+      # TODO: Check if we need to create the item.
       if @dp_info.dpid != params[:dpid]
-        item(id: params[:id])
+        retrieve(id: params[:id])
         return
       end
 
@@ -147,8 +148,6 @@ module Vnet::Openflow
       item.uninstall
 
       # Remember to remove dpn's...
-
-      item
     end
 
     #

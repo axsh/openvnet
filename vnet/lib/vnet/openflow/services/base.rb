@@ -32,6 +32,10 @@ module Vnet::Openflow::Services
       @networks = {}
     end
 
+    def log_type
+      'service/base'
+    end
+
     def cookie(type = 0, value = 0)
       unless type & 0xf == type
         raise "Invalid cookie optional type: %#x" % type
@@ -61,13 +65,6 @@ module Vnet::Openflow::Services
 
     def del_cookie_for_network(value)
       del_cookie(OPTIONAL_TYPE_NETWORK, value)
-    end
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} service/base: #{message}" + (values ? " (#{values})" : '')
-    end
-
-    def install
     end
 
     def uninstall

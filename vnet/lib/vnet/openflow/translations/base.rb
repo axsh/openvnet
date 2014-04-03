@@ -24,6 +24,10 @@ module Vnet::Openflow::Translations
       @passthrough = map.passthrough == 1
     end
 
+    def log_type
+      'translation/base'
+    end
+
     def cookie
       @id | COOKIE_TYPE_TRANSLATION
     end
@@ -45,10 +49,6 @@ module Vnet::Openflow::Translations
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} translation/base: #{message}" + (values ? " (#{values})" : '')
-    end
 
   end
 

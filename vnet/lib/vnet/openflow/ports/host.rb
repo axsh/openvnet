@@ -5,6 +5,10 @@ module Vnet::Openflow::Ports
   module Host
     include Vnet::Openflow::FlowHelpers
 
+    def log_type
+      'port/host'
+    end
+
     def port_type
       :host
     end

@@ -20,6 +20,10 @@ module Vnet::Openflow::Translations
       }
     end
 
+    def log_type
+      'translation/static_address'
+    end
+
     def install
       return if
         @interface_id.nil?
@@ -44,10 +48,6 @@ module Vnet::Openflow::Translations
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} translation/static_address: #{message}" + (values ? " (#{values})" : '')
-    end
 
     def flows_for_disable_passthrough(flows)
       flows << flow_create(:default,

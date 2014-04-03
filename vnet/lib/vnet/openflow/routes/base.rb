@@ -37,6 +37,10 @@ module Vnet::Openflow::Routes
       @egress = map.egress
     end    
     
+    def log_type
+      'route/base'
+    end
+
     def cookie
       @id | COOKIE_TYPE_ROUTE
     end
@@ -122,18 +126,11 @@ module Vnet::Openflow::Routes
       @dp_info.add_flows(flows)
     end
 
-    def uninstall
-    end
-
     #
     # Internal methods:
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} routes/base: #{message}" + (values ? " (#{values})" : '')
-    end
 
   end
 

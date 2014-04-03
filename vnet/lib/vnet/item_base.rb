@@ -16,6 +16,12 @@ module Vnet
       @installed = false
     end
 
+    def install
+    end    
+
+    def uninstall
+    end    
+
     def try_install
       (@installed == false) && install 
       @installed = true

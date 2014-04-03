@@ -8,6 +8,10 @@ module Vnet::Openflow::Networks
       :virtual
     end
 
+    def log_type
+      'network/virtual'
+    end
+
     def flow_options
       @flow_options ||= {:cookie => @cookie}
     end

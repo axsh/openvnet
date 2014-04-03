@@ -132,16 +132,12 @@ module Vnet::Openflow
         dynamic_load: false
       )
 
-      item = self.item(params)
-      return unless item
-
-      item
+      self.retrieve(params)
     end
 
     def install_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
-      return nil if item.nil?
+      item_map = params[:item_map] || return
+      item = @items[item_map.id] || return
 
       debug log_format("install #{item_map.uuid}/#{item_map.id}/#{item.port_name}", "mode:#{item.mode}")
 

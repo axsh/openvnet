@@ -6,6 +6,10 @@ module Vnet::Openflow::Services
 
   class Router < Base
 
+    def log_type
+      'service/router'
+    end
+
     def install
       debug log_format('install', "interface_id:#{@interface_id}")
     end
@@ -15,10 +19,6 @@ module Vnet::Openflow::Services
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} services/router: #{message}" + (values ? " (#{values})" : '')
-    end
 
   end
 

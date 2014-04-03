@@ -39,6 +39,10 @@ module Vnet::Openflow::Ports
       @installed = false
     end
 
+    def log_type
+      'port/base'
+    end
+
     def port_number
       @port_info.port_no
     end

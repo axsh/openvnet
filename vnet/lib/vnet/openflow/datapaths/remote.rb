@@ -8,6 +8,10 @@ module Vnet::Openflow::Datapaths
     # Events:
     #
 
+    def log_type
+      'datapath/remote'
+    end
+
     def uninstall
       @dp_info.tunnel_manager.async.unload(dst_datapath_id: id)
     end
@@ -63,10 +67,6 @@ module Vnet::Openflow::Datapaths
     end
 
     def after_remove_active_network(active_network)
-    end
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} datapaths/remote: #{message}" + (values ? " (#{values})" : '')
     end
 
     def flows_for_dp_network(flows, dp_nw)
