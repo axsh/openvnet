@@ -137,7 +137,7 @@ module Vnet::Openflow
 
     def install_item(params)
       item_map = params[:item_map] || return
-      item = @items[item_map.id] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
       debug log_format("install #{item_map.uuid}/#{item_map.id}/#{item.port_name}", "mode:#{item.mode}")
 

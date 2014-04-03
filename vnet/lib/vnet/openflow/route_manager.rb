@@ -83,9 +83,8 @@ module Vnet::Openflow
     end
 
     def install_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
-      return nil if item.nil?
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
       debug log_format("install #{item.uuid}/#{item.id}")
 

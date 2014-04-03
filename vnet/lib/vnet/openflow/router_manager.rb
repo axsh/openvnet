@@ -61,8 +61,8 @@ module Vnet::Openflow
     end
 
     def install_item(params)
-      item = @items[params[:item_map].id]
-      return nil if item.nil?
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
       item.install
 
@@ -74,15 +74,12 @@ module Vnet::Openflow
       params[:item_map].routes.each { |route_map|
         @dp_info.route_manager.async.retrieve(id: route_map.id)
       }
-
-      item
     end
 
     def delete_item(item)
       @items.delete(item.id)
 
       item.uninstall
-      item
     end
 
     #

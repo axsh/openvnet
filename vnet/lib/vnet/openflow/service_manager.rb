@@ -91,16 +91,9 @@ module Vnet::Openflow
     #
 
     def create_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
-      return unless item
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
-      # if service_map.vif.mode == 'simulated'
-
-      # if interface.active_datapath_id &&
-      #     interface.active_datapath_id != @datapath.datapath_id
-      #   return
-      # end
       debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.type.to_sym}")
 
       item.install
@@ -117,8 +110,6 @@ module Vnet::Openflow
           publish(ADDED_DNS_SERVICE, id: item.id, dns_service_map: dns_service_map)
         end
       end
-
-      item
     end    
 
     def delete_item(item)
@@ -128,8 +119,6 @@ module Vnet::Openflow
       debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.class.name.split("::").last.downcase}")
 
       item.uninstall
-
-      item
     end
 
     def set_dns_service(params)

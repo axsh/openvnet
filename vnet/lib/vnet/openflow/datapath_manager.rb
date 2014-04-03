@@ -106,9 +106,8 @@ module Vnet::Openflow
     end
 
     def install_item(params)
-      item_map =  params[:item_map]
-      item = @items[item_map.id]
-      return unless item
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
       item.install
 
@@ -121,8 +120,6 @@ module Vnet::Openflow
       item_map.batch.datapath_route_links.commit.each do |dprl_map|
         publish(ADDED_DATAPATH_ROUTE_LINK, id: item.id, dprl_map: dprl_map)
       end
-
-      item
     end
 
     def create_item(params)

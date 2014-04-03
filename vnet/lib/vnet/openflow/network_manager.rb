@@ -127,9 +127,8 @@ module Vnet::Openflow
     end
 
     def create_item(params)
-      item_map = params[:item_map]
-      network = @items[item_map.id]
-      return unless network
+      item_map = params[:item_map] || return
+      network = @items[item_map.id] || return
 
       debug log_format("create #{item_map.uuid}/#{item_map.id}")
 

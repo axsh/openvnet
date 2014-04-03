@@ -88,27 +88,21 @@ module Vnet::Openflow
       return unless item
 
       debug log_format("insert #{item.uuid}/#{item.id}")
-
-      item
     end
 
     def install_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
-      return nil if item.nil?
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
       debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
 
       item.install
-
-      item
     end
 
     def delete_item(item)
       @items.delete(item.id)
 
       item.uninstall
-      item
     end
 
     #
