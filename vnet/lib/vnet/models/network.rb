@@ -67,13 +67,14 @@ module Vnet::Models
 
     def incremental_ip_allocation
       net=self
+      id = net.id
       scan = net.ipv4_network
       pref = net.ipv4_prefix
       max = 2 << ( 31 - pref )
       while ( max > 0 )
         # TODO: find out this is worth making more efficient (i.e. there exists
         # a realistic use case and this code is not just a temporary stub)
-        hits = IpAddress.filter(:ipv4_address => scan ).all
+        hits = IpAddress.filter(:ipv4_address => scan, :network_id => id).all
         return scan if hits.empty?
         max -= 1
         scan += 1
@@ -84,6 +85,7 @@ module Vnet::Models
     # TODO: refactor, if not replaced entirely soon
     def decremental_ip_allocation
       net=self
+      id = net.id
       pref = net.ipv4_prefix
       max = 2 << ( 31 - pref )
       scan = net.ipv4_network + max - 1
@@ -91,7 +93,7 @@ module Vnet::Models
       while ( max > 0 )
         # TODO: find out this is worth making more efficient (i.e. there exists
         # a realistic use case and this code is not just a temporary stub)
-        hits = IpAddress.filter(:ipv4_address => scan ).all
+        hits = IpAddress.filter(:ipv4_address => scan, :network_id => id).all
         return scan if hits.empty?
         max -= 1
         scan -= 1
