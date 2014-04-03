@@ -76,7 +76,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
     if params.has_key? :immediate
       # TODO: go over code in here carefully
-      #   Should it be moved to node-api?
       #   Should it use model instead of model class?
       #   Check for empty ml_array?
       #   What are the rules for what is required inside
@@ -85,7 +84,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
       net_array = lease_policy.batch.networks.commit
       if net_array && ! net_array.empty?
         first_net = net_array.first
-        response = incremental_ip_allocation(first_net)
+        response = first_net.batch.incremental_ip_allocation.commit
         ml_array = interface.batch.mac_leases.commit
         
         ip_lease = M::IpLease.create({
@@ -104,21 +103,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     # respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
   end
 
-  def incremental_ip_allocation(net)
-    scan = net.ipv4_network
-    pref = net.ipv4_prefix
-    max = 2 << ( 31 - pref )
-    while ( max > 0 )
-      # TODO: find out this is worth making more efficient (i.e. there exists
-      # a realistic use case and this code is not just a temporary stub)
-      hits = M::IpAddress.batch.filter(:ipv4_address => scan ).all.commit
-      return scan if hits.empty?
-      max -= 1
-      scan += 1
-    end
-    return nil
-  end
-    
   put '/:uuid/disassociate_interface' do
     params = parse_params(@params, ['uuid', 'interface_uuid'])
     check_required_params(params, ['interface_uuid'])

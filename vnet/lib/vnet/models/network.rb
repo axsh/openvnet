@@ -64,5 +64,21 @@ module Vnet::Models
         end
       end
     end
+
+    def incremental_ip_allocation
+      net=self
+      scan = net.ipv4_network
+      pref = net.ipv4_prefix
+      max = 2 << ( 31 - pref )
+      while ( max > 0 )
+        # TODO: find out this is worth making more efficient (i.e. there exists
+        # a realistic use case and this code is not just a temporary stub)
+        hits = IpAddress.filter(:ipv4_address => scan ).all
+        return scan if hits.empty?
+        max -= 1
+        scan += 1
+      end
+      return nil
+    end
   end
 end
