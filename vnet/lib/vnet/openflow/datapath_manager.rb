@@ -74,16 +74,15 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
-      {}.tap do |options|
-        case
-        when params[:id]    then options[:id] = params[:id]
-        when params[:dpid]  then options[:dpid] = params[:dpid]
-        end
-      end
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+      filters << {dpid: params[:dpid]} if params.has_key? :dpid
+
+      create_batch(MW::Datapath.batch, params[:uuid], filters)
     end
 
     def select_item(filter)
-      MW::Datapath.batch[filter].commit
+      filter.commit
     end
 
     def item_initialize(item_map, params)
