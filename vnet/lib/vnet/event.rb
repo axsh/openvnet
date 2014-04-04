@@ -78,6 +78,8 @@ module Vnet
     # translation event
     #
     INITIALIZED_TRANSLATION = "initialized_translation"
+    TRANSLATION_ADDED_STATIC_ADDRESS = "translation_added_static_address"
+    TRANSLATION_REMOVED_STATIC_ADDRESS = "translation_removed_static_address"
 
     #
     # tunnel event

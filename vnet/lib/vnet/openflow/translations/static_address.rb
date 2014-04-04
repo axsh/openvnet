@@ -8,16 +8,6 @@ module Vnet::Openflow::Translations
       super
 
       @static_addresses = {}
-
-      return if params[:map].translate_static_addresses.nil?
-
-      params[:map].translate_static_addresses.each { |translate|
-        @static_addresses[translate.id] = {
-          :id => translate.id,
-          :ingress_ipv4_address => IPAddr.new(translate.ingress_ipv4_address, Socket::AF_INET),
-          :egress_ipv4_address => IPAddr.new(translate.egress_ipv4_address, Socket::AF_INET),
-        }
-      }
     end
 
     def log_type
@@ -41,6 +31,22 @@ module Vnet::Openflow::Translations
     end
 
     def uninstall
+    end
+
+    def added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+      translation = {
+        :static_address_id => static_address_id,
+        :ingress_ipv4_address => IPAddr.new(ingress_ipv4_address, Socket::AF_INET),
+        :egress_ipv4_address => IPAddr.new(egress_ipv4_address, Socket::AF_INET),
+      }
+      @static_addresses[static_address_id] = translation
+
+      return if @installed == false
+
+      flows = []
+      flows_for_translate(flows, translation)
+
+      @dp_info.add_flows(flows)
     end
 
     #

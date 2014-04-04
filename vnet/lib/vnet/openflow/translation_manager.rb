@@ -16,6 +16,9 @@ module Vnet::Openflow
     #
     subscribe_event INITIALIZED_TRANSLATION, :install_item
 
+    subscribe_event TRANSLATION_ADDED_STATIC_ADDRESS, :added_static_address
+    subscribe_event TRANSLATION_REMOVED_STATIC_ADDRESS, :removed_static_address
+
     def update(params)
       case params[:event]
       when :install_interface
@@ -63,7 +66,7 @@ module Vnet::Openflow
 
       filters = []
       filters << {id: params[:id]} if params.has_key? :id
-      filters << {id: params[:interface_id]} if params.has_key? :interface_id
+      filters << {interface_id: params[:interface_id]} if params.has_key? :interface_id
 
       create_batch(MW::Translation.batch, params[:uuid], filters)
     end
@@ -105,13 +108,17 @@ module Vnet::Openflow
 
       debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
 
-      item.install
+      case item.mode
+      when :static_address then load_static_addresses(item, item_map)
+      end
+
+      item.try_install
     end
 
     def delete_item(item)
       @items.delete(item.id)
 
-      item.uninstall
+      item.try_uninstall
     end
 
     #
@@ -138,6 +145,31 @@ module Vnet::Openflow
       item = internal_detect(interface_id: params[:interface_id])
 
       delete_item(item) if item
+    end
+
+    #
+    # Translation events:
+    #
+
+    # load static addresses on queue 'item.id'
+    def load_static_addresses(item, item_map)
+      item_map.batch.translate_static_addresses.commit.each { |translation|
+        item.added_static_address(translation.id,
+                                  translation.ingress_ipv4_address,
+                                  translation.egress_ipv4_address)
+      }
+    end
+
+    # TRANSLATION_ADDED_STATIC_ADDRESS on queue 'item.id'
+    def added_static_address(params)
+      item_id = params[:id] || return
+      item = @items[item_id] || return
+
+      static_address_id = params[:static_address_id] || return
+      ingress_ipv4_address = params[:ingress_ipv4_address] || return
+      egress_ipv4_address = params[:egress_ipv4_address] || return
+      
+      item.added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
     end
 
   end

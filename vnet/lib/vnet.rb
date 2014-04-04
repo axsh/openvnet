@@ -179,10 +179,10 @@ module Vnet
     autoload :Route, 'vnet/node_api/models.rb'
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :SecurityGroup, 'vnet/node_api/security_group'
-    autoload :Translation, 'vnet/node_api/models.rb'
-    autoload :TranslateStaticAddress, 'vnet/node_api/models.rb'
+    autoload :Translation, 'vnet/node_api/translation.rb'
+    autoload :TranslateStaticAddress, 'vnet/node_api/translation.rb'
     autoload :Tunnel, 'vnet/node_api/tunnel.rb'
-    autoload :VlanTranslation, 'vnet/node_api/models.rb'
+    autoload :VlanTranslation, 'vnet/node_api/translation.rb'
   end
 
   module NodeModules

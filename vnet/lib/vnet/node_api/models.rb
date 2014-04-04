@@ -34,12 +34,4 @@ module Vnet::NodeApi
   class RouteLink < Base
   end
 
-  class Translation < Base
-  end
-
-  class TranslateStaticAddress < Base
-  end
-
-  class VlanTranslation < Base
-  end
 end

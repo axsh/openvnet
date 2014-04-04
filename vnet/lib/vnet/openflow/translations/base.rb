@@ -34,6 +34,9 @@ module Vnet::Openflow::Translations
                                       mode: @mode)
     end
 
+    def added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+    end
+
     #
     # Internal methods:
     #
