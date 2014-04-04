@@ -158,28 +158,8 @@ module Vnet
         end
       end
 
-      select_filter = select_filter_from_params(params)
-      return nil if select_filter.nil?
-
-      # After the db query, avoid yielding method calls until the item
-      # is added to the items list and 'install' method is
-      # called. Yielding method calls are any non-async actor method
-      # calls or any other blocking methods.
-      #
-      # This is in particular important to avoid losing parameters
-      # passed duing reinitialization of interfaces that e.g. pass
-      # port number.
-      #
-      # Note that when adding events we need to ensure we subscribe to
-      # db events for the item, if the events are for changes to data
-      # we use from 'item_map'.
-      #
-      # We should try to use only static data from this query, and
-      # rely on the 'install' method call as an event barrier for
-      # dynamic data.
-
-      item_map = select_item(select_filter)
-      return nil if item_map.nil?
+      select_filter = select_filter_from_params(params) || return
+      item_map = select_item(select_filter) || return
 
       if params[:reinitialize] == true
         @items.delete(item_map.id)
@@ -197,6 +177,11 @@ module Vnet
         publish(initialized_item_event, params.merge(id: item_map.id,
                                                      item_map: item_map))
       end
+    end
+
+    # The default select call with no fill options.
+    def select_item(filter)
+      filter.commit
     end
 
     def item_initialize(item_map, params)
