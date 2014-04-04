@@ -22,7 +22,9 @@ module Vnet::Openflow::Datapaths
       return if network[:active] == true
       network[:active] == true
 
-      @dp_info.tunnel_manager.update(event: :added_remote_datapath_network, dpn: network)
+      @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_REMOTE_DATAPATH_NETWORK,
+                                      id: :datapath_network,
+                                      dp_obj: network)
     end
 
     def deactivate_network_id(network_id)
@@ -31,7 +33,9 @@ module Vnet::Openflow::Datapaths
       return if network[:active] == false
       network[:active] == false
 
-      @dp_info.tunnel_manager.update(event: :removed_remote_datapath_network, dpn: network)
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_NETWORK,
+                                      id: :datapath_network,
+                                      dp_obj: network)
     end
 
     def activate_route_link_id(route_link_id)
@@ -40,7 +44,9 @@ module Vnet::Openflow::Datapaths
       return if route_link[:active] == true
       route_link[:active] == true
 
-      @dp_info.tunnel_manager.update(event: :added_remote_datapath_route_link, dprl: route_link)
+      @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_REMOTE_DATAPATH_ROUTE_LINK,
+                                      id: :datapath_route_link,
+                                      dp_obj: route_link)
     end
 
     def deactivate_route_link_id(route_link_id)
@@ -49,7 +55,9 @@ module Vnet::Openflow::Datapaths
       return if route_link[:active] == false
       route_link[:active] == false
 
-      @dp_info.tunnel_manager.update(event: :removed_remote_datapath_route_link, dprl: route_link)
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_ROUTE_LINK,
+                                      id: :datapath_route_link,
+                                      dp_obj: route_link)
     end
 
     #

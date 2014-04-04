@@ -39,38 +39,6 @@ module Vnet::Openflow
         set_tunnel_port_number(params)
       when :updated_interface
         updated_interface(params)
-      when :added_host_datapath_network
-        publish(ADDED_HOST_DATAPATH_NETWORK,
-                id: :datapath_network,
-                dp_obj: params[:dpn])
-      when :added_remote_datapath_network
-        publish(ADDED_REMOTE_DATAPATH_NETWORK,
-                id: :datapath_network,
-                dp_obj: params[:dpn])
-      when :added_host_datapath_route_link
-        publish(ADDED_HOST_DATAPATH_ROUTE_LINK,
-                id: :datapath_route_link,
-                dp_obj: params[:dprl])
-      when :added_remote_datapath_route_link
-        publish(ADDED_REMOTE_DATAPATH_ROUTE_LINK,
-                id: :datapath_route_link,
-                dp_obj: params[:dprl])
-      when :removed_host_datapath_network
-        publish(REMOVED_HOST_DATAPATH_NETWORK,
-                id: :datapath_network,
-                dp_obj: params[:dpn])
-      when :removed_remote_datapath_network
-        publish(REMOVED_REMOTE_DATAPATH_NETWORK,
-                id: :datapath_network,
-                dp_obj: params[:dpn])
-      when :removed_host_datapath_route_link
-        publish(REMOVED_HOST_DATAPATH_ROUTE_LINK,
-                id: :datapath_route_link,
-                dp_obj: params[:dprl])
-      when :removed_remote_datapath_route_link
-        publish(REMOVED_REMOTE_DATAPATH_ROUTE_LINK,
-                id: :datapath_route_link,
-                dp_obj: params[:dprl])
       end
 
       nil
