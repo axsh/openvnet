@@ -17,9 +17,11 @@ module Vnet
   CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
 
-  autoload :Event,    'vnet/event'
-  autoload :ItemBase, 'vnet/item_base'
-  autoload :Manager,  'vnet/manager'
+  autoload :Event,      'vnet/event'
+  autoload :ItemBase,   'vnet/item_base'
+  autoload :ItemDpBase, 'vnet/item_base'
+  autoload :ItemDpUuid, 'vnet/item_base'
+  autoload :Manager,    'vnet/manager'
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'

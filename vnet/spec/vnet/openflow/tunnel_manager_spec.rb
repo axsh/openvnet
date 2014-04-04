@@ -71,44 +71,47 @@ describe Vnet::Openflow::TunnelManager do
     let(:host_datapath_networks) do
       [[1, 1, 1, 1],
        [2, 1, 2, 1]].each { |index, datapath_id, network_id, interface_id|
-        datapath.dp_info.tunnel_manager.update(event: :added_host_datapath_network,
-                                               dpn: {
-                                                 id: index,
-                                                 datapath_id: datapath_id,
-                                                 network_id: network_id,
-                                                 interface_id: interface_id,
-                                                 mac_address: index,
-                                                 active: true
-                                               })
+        datapath.dp_info.tunnel_manager.publish('added_host_datapath_network',
+                                                id: :datapath_network,
+                                                dp_obj: {
+                                                  id: index,
+                                                  datapath_id: datapath_id,
+                                                  network_id: network_id,
+                                                  interface_id: interface_id,
+                                                  mac_address: index,
+                                                  active: true
+                                                })
       }
     end
 
     let(:remote_datapath_networks_1) do
       [[3, 2, 1, 2],
        [5, 3, 1, 3]].each { |index, datapath_id, network_id, interface_id|
-        datapath.dp_info.tunnel_manager.update(event: :added_remote_datapath_network,
-                                               dpn: {
-                                                 id: index,
-                                                 datapath_id: datapath_id,
-                                                 network_id: network_id,
-                                                 interface_id: interface_id,
-                                                 mac_address: index,
-                                                 active: true
-                                               })
+        datapath.dp_info.tunnel_manager.publish('added_remote_datapath_network',
+                                                id: :datapath_network,
+                                                dp_obj: {
+                                                  id: index,
+                                                  datapath_id: datapath_id,
+                                                  network_id: network_id,
+                                                  interface_id: interface_id,
+                                                  mac_address: index,
+                                                  active: true
+                                                })
       }
     end
 
     let(:remote_datapath_networks_2) do
       [[4, 2, 2, 2]].each { |index, datapath_id, network_id, interface_id|
-        datapath.dp_info.tunnel_manager.update(event: :added_remote_datapath_network,
-                                               dpn: {
-                                                 id: index,
-                                                 datapath_id: datapath_id,
-                                                 network_id: network_id,
-                                                 interface_id: interface_id,
-                                                 mac_address: index,
-                                                 active: true
-                                               })
+        datapath.dp_info.tunnel_manager.publish('added_remote_datapath_network',
+                                                id: :datapath_network,
+                                                dp_obj: {
+                                                  id: index,
+                                                  datapath_id: datapath_id,
+                                                  network_id: network_id,
+                                                  interface_id: interface_id,
+                                                  mac_address: index,
+                                                  active: true
+                                                })
       }
     end
 
@@ -259,21 +262,22 @@ describe Vnet::Openflow::TunnelManager do
                                       interface_event: :set_host_port_number,
                                       interface_id: if_dp1eth0.id,
                                       port_number: 1)
-        [[1, 1, 1, 1, :added_host_datapath_network],
-         [2, 2, 1, 2, :removed_remote_datapath_network],
-         [3, 2, 1, 2, :added_remote_datapath_network],
-         #[4, 2, 2, 2, :added_remote_datapath_network],
-         [5, 3, 1, 3, :added_remote_datapath_network],
+        [[1, 1, 1, 1, 'added_host_datapath_network'],
+         [2, 2, 1, 2, 'removed_remote_datapath_network'],
+         [3, 2, 1, 2, 'added_remote_datapath_network'],
+         #[4, 2, 2, 2, 'added_remote_datapath_network'],
+         [5, 3, 1, 3, 'added_remote_datapath_network'],
         ].each { |index, datapath_id, network_id, interface_id, event|
-          dp_info.tunnel_manager.update(event: event,
-                                        dpn: {
-                                          id: index,
-                                          datapath_id: datapath_id,
-                                          network_id: network_id,
-                                          interface_id: interface_id,
-                                          mac_address: index,
-                                          active: true
-                                        })
+          dp_info.tunnel_manager.publish(event,
+                                         id: :datapath_network,
+                                         dp_obj: {
+                                           id: index,
+                                           datapath_id: datapath_id,
+                                           network_id: network_id,
+                                           interface_id: interface_id,
+                                           mac_address: index,
+                                           active: true
+                                         })
         }
 
         sleep(0.3)
@@ -290,17 +294,18 @@ describe Vnet::Openflow::TunnelManager do
       deleted_flows = datapath.deleted_flows
       # deleted_flows.each { |flow| pp flow.inspect }
 
-      [[1, 1, 1, 1, :removed_host_datapath_network],
+      [[1, 1, 1, 1, 'removed_host_datapath_network'],
       ].each { |index, datapath_id, network_id, interface_id, event|
-        datapath.dp_info.tunnel_manager.update(event: event,
-                                               dpn: {
-                                                 id: index,
-                                                 datapath_id: datapath_id,
-                                                 network_id: network_id,
-                                                 interface_id: interface_id,
-                                                 mac_address: index,
-                                                 active: false
-                                               })
+        datapath.dp_info.tunnel_manager.publish(event,
+                                                id: :datapath_network,
+                                                dp_obj: {
+                                                  id: index,
+                                                  datapath_id: datapath_id,
+                                                  network_id: network_id,
+                                                  interface_id: interface_id,
+                                                  mac_address: index,
+                                                  active: false
+                                                })
       }
 
       sleep(0.3)
@@ -323,34 +328,36 @@ describe Vnet::Openflow::TunnelManager do
     it "should delete tunnel when the network is deleted on the remote datapath" do
       subject
 
-      [[3, 2, 1, 2, :removed_remote_datapath_network],
+      [[3, 2, 1, 2, 'removed_remote_datapath_network'],
       ].each { |index, datapath_id, network_id, interface_id, event|
-        datapath.dp_info.tunnel_manager.update(event: event,
-                                               dpn: {
-                                                 id: index,
-                                                 datapath_id: datapath_id,
-                                                 network_id: network_id,
-                                                 interface_id: interface_id,
-                                                 mac_address: index,
-                                                 active: false
-                                               })
+        datapath.dp_info.tunnel_manager.publish(event,
+                                                id: :datapath_network,
+                                                dp_obj: {
+                                                  id: index,
+                                                  datapath_id: datapath_id,
+                                                  network_id: network_id,
+                                                  interface_id: interface_id,
+                                                  mac_address: index,
+                                                  active: false
+                                                })
       }
 
       sleep(0.3)
       datapath.added_flows.clear
       datapath.deleted_flows.clear
 
-      [[5, 3, 1, 3, :removed_remote_datapath_network],
+      [[5, 3, 1, 3, 'removed_remote_datapath_network'],
       ].each { |index, datapath_id, network_id, interface_id, event|
-        datapath.dp_info.tunnel_manager.update(event: event,
-                                               dpn: {
-                                                 id: index,
-                                                 datapath_id: datapath_id,
-                                                 network_id: network_id,
-                                                 interface_id: interface_id,
-                                                 mac_address: index,
-                                                 active: false
-                                               })
+        datapath.dp_info.tunnel_manager.publish(event,
+                                                id: :datapath_network,
+                                                dp_obj: {
+                                                  id: index,
+                                                  datapath_id: datapath_id,
+                                                  network_id: network_id,
+                                                  interface_id: interface_id,
+                                                  mac_address: index,
+                                                  active: false
+                                                })
       }
 
       sleep(0.3)
