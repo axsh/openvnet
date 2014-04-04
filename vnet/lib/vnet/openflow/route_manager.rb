@@ -70,7 +70,7 @@ module Vnet::Openflow
     #
 
     def create_item(params)
-      return if @items[params[:id]]
+      @items[params[:id]] && return
 
       self.retrieve(params)
     end

@@ -45,11 +45,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       raise(E::ArgumentError, 'Translation mode must be "static_address".')
     end
 
-    M::TranslateStaticAddress.create({ :translation_id => translation.id,
-                                       :ingress_ipv4_address => ingress_ipv4_address,
-                                       :egress_ipv4_address => egress_ipv4_address,
-                                     })
-    respond_with(R::Translation.translate_static_addresses(translation))
+    M::TranslationStaticAddress.create({ :translation_id => translation.id,
+                                         :ingress_ipv4_address => ingress_ipv4_address,
+                                         :egress_ipv4_address => egress_ipv4_address,
+                                       })
+    respond_with(R::Translation.translation_static_addresses(translation))
   end
 
 end

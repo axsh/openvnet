@@ -5,7 +5,7 @@ module Vnet::NodeApi
   class Translation < Base
   end
 
-  class TranslateStaticAddress < Base
+  class TranslationStaticAddress < Base
     class << self
       def create(options)
         super.tap do |obj|

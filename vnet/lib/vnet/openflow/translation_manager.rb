@@ -73,7 +73,7 @@ module Vnet::Openflow
 
     def select_item(filter)
       # TODO: Load static addresses using events... (use array of addresses)
-      filter.commit(fill: :translate_static_addresses)
+      filter.commit(fill: :translation_static_addresses)
     end
 
     def item_initialize(item_map, params)
@@ -153,7 +153,7 @@ module Vnet::Openflow
 
     # load static addresses on queue 'item.id'
     def load_static_addresses(item, item_map)
-      item_map.batch.translate_static_addresses.commit.each { |translation|
+      item_map.batch.translation_static_addresses.commit.each { |translation|
         item.added_static_address(translation.id,
                                   translation.ingress_ipv4_address,
                                   translation.egress_ipv4_address)

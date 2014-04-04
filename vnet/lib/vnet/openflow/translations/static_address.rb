@@ -21,10 +21,10 @@ module Vnet::Openflow::Translations
       flows = []
       flows_for_disable_passthrough(flows) if @passthrough == false
 
-      @static_addresses.each { |id, translate|
-        debug log_format('install translate flow', translate.inspect)
+      @static_addresses.each { |id, translation|
+        debug log_format('install translation flow', translation.inspect)
 
-        flows_for_translate(flows, translate)
+        flows_for_translation(flows, translation)
       }
 
       @dp_info.add_flows(flows)
@@ -44,7 +44,7 @@ module Vnet::Openflow::Translations
       return if @installed == false
 
       flows = []
-      flows_for_translate(flows, translation)
+      flows_for_translation(flows, translation)
 
       @dp_info.add_flows(flows)
     end
@@ -68,7 +68,7 @@ module Vnet::Openflow::Translations
                            match_interface: @interface_id)
     end
 
-    def flows_for_translate(flows, translate)
+    def flows_for_translation(flows, translation)
       flows << flow_create(:default,
                            table: TABLE_ROUTE_INGRESS_TRANSLATION,
                            goto_table: TABLE_ROUTER_INGRESS,
@@ -76,12 +76,12 @@ module Vnet::Openflow::Translations
 
                            match: {
                              :eth_type => ETH_TYPE_IPV4,
-                             :ipv4_dst => translate[:ingress_ipv4_address],
+                             :ipv4_dst => translation[:ingress_ipv4_address],
                            },
                            match_interface: @interface_id,
 
                            actions: {
-                             :ipv4_dst => translate[:egress_ipv4_address],
+                             :ipv4_dst => translation[:egress_ipv4_address],
                            })
       flows << flow_create(:default,
                            table: TABLE_ROUTE_EGRESS_TRANSLATION,
@@ -90,12 +90,12 @@ module Vnet::Openflow::Translations
 
                            match: {
                              :eth_type => ETH_TYPE_IPV4,
-                             :ipv4_src => translate[:egress_ipv4_address],
+                             :ipv4_src => translation[:egress_ipv4_address],
                            },
                            match_interface: @interface_id,
 
                            actions: {
-                             :ipv4_src => translate[:ingress_ipv4_address],
+                             :ipv4_src => translation[:ingress_ipv4_address],
                            })
     end
 

@@ -125,7 +125,7 @@ module Vnet
     autoload :SecurityGroup, 'vnet/models/security_group'
     autoload :Taggable, 'vnet/models/base'
     autoload :Translation, 'vnet/models/translation'
-    autoload :TranslateStaticAddress, 'vnet/models/translate_static_address'
+    autoload :TranslationStaticAddress, 'vnet/models/translation_static_address'
     autoload :Tunnel, 'vnet/models/tunnel'
     autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
@@ -151,7 +151,7 @@ module Vnet
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
     autoload :Translation, 'vnet/model_wrappers/translation'
-    autoload :TranslateStaticAddress, 'vnet/model_wrappers/translation'
+    autoload :TranslationStaticAddress, 'vnet/model_wrappers/translation'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
     autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
@@ -180,7 +180,7 @@ module Vnet
     autoload :RouteLink, 'vnet/node_api/models.rb'
     autoload :SecurityGroup, 'vnet/node_api/security_group'
     autoload :Translation, 'vnet/node_api/translation.rb'
-    autoload :TranslateStaticAddress, 'vnet/node_api/translation.rb'
+    autoload :TranslationStaticAddress, 'vnet/node_api/translation.rb'
     autoload :Tunnel, 'vnet/node_api/tunnel.rb'
     autoload :VlanTranslation, 'vnet/node_api/translation.rb'
   end
