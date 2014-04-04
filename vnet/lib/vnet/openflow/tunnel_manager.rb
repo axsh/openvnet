@@ -82,22 +82,6 @@ module Vnet::Openflow
     end
 
     #
-    # Refactor:
-    #
-
-    # def remove(dpn_id)
-    #   @items.values.find { |item|
-    #     item.datapath_networks.any? { |dpn| dpn[:dpn_id] == dpn_id }
-    #   }.tap do |item|
-    #     return unless item
-
-    #     datapath_network = item.remove_datapath_network(dpn_id)
-    #     update_network_id(datapath_network[:network_id]) if datapath_network
-    #     publish(REMOVED_TUNNEL, id: item.id) if item.unused?
-    #   end
-    # end
-
-    #
     # Internal methods:
     #
 

@@ -58,15 +58,26 @@ module Vnet::Openflow
       end
     end
 
+    def select_filter_from_params(params)
+      return if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+      filters << {id: params[:interface_id]} if params.has_key? :interface_id
+
+      create_batch(MW::Translation.batch, params[:uuid], filters)
+    end
+
     def select_item(filter)
-      MW::Translation.batch[filter].commit(fill: :translate_static_addresses)
+      # TODO: Load static addresses using events... (use array of addresses)
+      filter.commit(fill: :translate_static_addresses)
     end
 
     def item_initialize(item_map, params)
       debug log_format("item initialize", item_map.inspect)
 
       item_class =
-        case item_map.mode && item_map.mode
+        case item_map.mode
         when 'static_address' then Translations::StaticAddress
         when 'vnet_edge'      then Translations::VnetEdgeHandler
         else
@@ -83,8 +94,7 @@ module Vnet::Openflow
     end
 
     def create_item(params)
-      item = @items[params[:item_map].id]
-      return unless item
+      @items[params[:id]] && return
 
       debug log_format("insert #{item.uuid}/#{item.id}")
     end

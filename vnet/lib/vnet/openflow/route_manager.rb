@@ -47,16 +47,12 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+      return if params.has_key?(:uuid) && params[:uuid].nil?
 
       filters = []
       filters << {id: params[:id]} if params.has_key? :id
 
       create_batch(MW::Route.batch, params[:uuid], filters)
-    end
-
-    def select_item(filter)
-      filter.commit
     end
 
     def item_initialize(item_map, params)
@@ -76,10 +72,7 @@ module Vnet::Openflow
     def create_item(params)
       return if @items[params[:id]]
 
-      item = self.item(params)
-      return unless item
-
-      item
+      self.retrieve(params)
     end
 
     def install_item(params)
@@ -93,8 +86,6 @@ module Vnet::Openflow
       @dp_info.interface_manager.async.retrieve(id: item.interface_id)
       @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
                                                    id: item.interface_id)
-
-      item
     end
     
     def delete_item(params)
@@ -103,7 +94,6 @@ module Vnet::Openflow
       debug log_format("delete #{item.uuid}/#{item.id}")
 
       item.uninstall
-      item
     end
 
   end

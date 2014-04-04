@@ -54,10 +54,9 @@ module Vnet::Openflow
     end
 
     def create_item(params)
-      item = @items[params[:item_map].id]
-      return unless item
+      @items[params[:id]] && return
 
-      item
+      self.retrieve(params)
     end
 
     def install_item(params)

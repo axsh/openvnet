@@ -81,10 +81,6 @@ module Vnet::Openflow
       create_batch(MW::Datapath.batch, params[:uuid], filters)
     end
 
-    def select_item(filter)
-      filter.commit
-    end
-
     def item_initialize(item_map, params)
       item_class =
         if item_map.dpid == @dp_info.dpid

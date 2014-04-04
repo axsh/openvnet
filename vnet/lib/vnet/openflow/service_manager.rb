@@ -10,6 +10,7 @@ module Vnet::Openflow
     subscribe_event ADDED_SERVICE, :item
     subscribe_event REMOVED_SERVICE, :unload
     subscribe_event INITIALIZED_SERVICE, :create_item
+
     subscribe_event ADDED_DNS_SERVICE, :set_dns_service
     subscribe_event REMOVED_DNS_SERVICE, :clear_dns_service
     subscribe_event UPDATED_DNS_SERVICE, :update_dns_service
@@ -78,8 +79,13 @@ module Vnet::Openflow
       INITIALIZED_SERVICE
     end
 
-    def select_item(filter)
-      MW::NetworkService[filter]
+    def select_filter_from_params(params)
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+
+      create_batch(MW::NetworkService.batch, params[:uuid], filters)
     end
 
     #

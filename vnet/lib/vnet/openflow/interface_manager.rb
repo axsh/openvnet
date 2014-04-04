@@ -83,10 +83,6 @@ module Vnet::Openflow
       create_batch(MW::Interface.batch, params[:uuid], filters)
     end
 
-    def select_item(filter)
-      filter.commit
-    end
-
     def item_initialize(item_map, params)
       if params[:remote]
         return if !is_assigned_remotely?(item_map)
