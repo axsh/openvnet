@@ -296,6 +296,7 @@ module Vnet::Openflow
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
     end
 
+    # ENABLED_INTERFACE_FILTERING on queue 'item.id'
     def enabled_filtering(params)
       item = @items[params[:id]]
       return if !item || item.ingress_filtering_enabled
@@ -304,6 +305,7 @@ module Vnet::Openflow
       item.enable_filtering
     end
 
+    # DISABLED_INTERFACE_FILTERING on queue 'item.id'
     def disabled_filtering(params)
       item = @items[params[:id]]
       return if !item || !item.ingress_filtering_enabled
