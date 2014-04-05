@@ -146,6 +146,18 @@ module Vnet::Openflow
       item.added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
     end
 
+    # TRANSLATION_REMOVED_STATIC_ADDRESS on queue 'item.id'
+    def removed_static_address(params)
+      item_id = params[:id] || return
+      item = @items[item_id] || return
+
+      static_address_id = params[:static_address_id] || return
+      ingress_ipv4_address = params[:ingress_ipv4_address] || return
+      egress_ipv4_address = params[:egress_ipv4_address] || return
+      
+      item.removed_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+    end
+
   end
 
 end

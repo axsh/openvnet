@@ -49,6 +49,23 @@ module Vnet::Openflow::Translations
       @dp_info.add_flows(flows)
     end
 
+    def removed_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+      translation = @static_addresses.delete(static_address_id)
+
+      return if @installed == false
+
+      @dp_info.del_flows(table_id: TABLE_ROUTE_INGRESS_TRANSLATION,
+                         cookie: self.cookie,
+                         cookie_mask: self.cookie_mask,
+                         match: Trema::Match.new(eth_type: ETH_TYPE_IPV4,
+                                                 ipv4_dst: ingress_ipv4_address))
+      @dp_info.del_flows(table_id: TABLE_ROUTE_EGRESS_TRANSLATION,
+                         cookie: self.cookie,
+                         cookie_mask: self.cookie_mask,
+                         match: Trema::Match.new(eth_type: ETH_TYPE_IPV4,
+                                                 ipv4_src: egress_ipv4_address))
+    end
+
     #
     # Internal methods:
     #

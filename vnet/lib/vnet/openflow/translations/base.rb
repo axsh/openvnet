@@ -27,6 +27,10 @@ module Vnet::Openflow::Translations
     def cookie
       @id | COOKIE_TYPE_TRANSLATION
     end
+    
+    def cookie_mask
+      COOKIE_PREFIX_MASK | COOKIE_ID_MASK
+    end
 
     def to_hash
       Vnet::Openflow::Translation.new(id: @id,
@@ -34,7 +38,14 @@ module Vnet::Openflow::Translations
                                       mode: @mode)
     end
 
+    def uninstall
+      @dp_info.del_cookie(self.cookie, self.cookie_mask)
+    end
+
     def added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+    end
+
+    def removed_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
     end
 
     #
