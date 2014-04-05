@@ -34,6 +34,7 @@ module Vnet
     end
     alias_method :item, :retrieve
 
+    # TODO: Deprecate:
     def unload(params)
       item = internal_detect(params)
       return nil if item.nil?

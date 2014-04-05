@@ -3,34 +3,25 @@
 module Vnet::Openflow
 
   class TranslationManager < Vnet::Manager
-    include Vnet::Event::Dispatchable
 
     def initialize(params)
       super
 
-      @interfaces = {}
+      @active_interfaces = {}
     end
 
     #
     # Events:
     #
-    subscribe_event INITIALIZED_TRANSLATION, :install_item
+    subscribe_event TRANSLATION_INITIALIZED, :install_item
+    subscribe_event TRANSLATION_CREATED_ITEM, :created_item
+    subscribe_event TRANSLATION_DELETED_ITEM, :unload_item
+
+    subscribe_event TRANSLATION_ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event TRANSLATION_DEACTIVATE_INTERFACE, :deactivate_interface
 
     subscribe_event TRANSLATION_ADDED_STATIC_ADDRESS, :added_static_address
     subscribe_event TRANSLATION_REMOVED_STATIC_ADDRESS, :removed_static_address
-
-    def update(params)
-      case params[:event]
-      when :install_interface
-        install_interface(params)
-      when :remove_interface
-        remove_interface(params)
-      else
-        nil
-      end
-
-      nil
-    end
 
     #
     # Internal methods:
@@ -50,18 +41,6 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      when params[:interface_id] then {:interface_id => params[:interface_id]}
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
-        return nil
-      end
-    end
-
-    def select_filter_from_params(params)
       return if params.has_key?(:uuid) && params[:uuid].nil?
 
       filters = []
@@ -71,14 +50,7 @@ module Vnet::Openflow
       create_batch(MW::Translation.batch, params[:uuid], filters)
     end
 
-    def select_item(filter)
-      # TODO: Load static addresses using events... (use array of addresses)
-      filter.commit(fill: :translation_static_addresses)
-    end
-
     def item_initialize(item_map, params)
-      debug log_format("item initialize", item_map.inspect)
-
       item_class =
         case item_map.mode
         when 'static_address' then Translations::StaticAddress
@@ -87,19 +59,11 @@ module Vnet::Openflow
           return
         end
 
-      item_class.new(dp_info: @dp_info,
-                     manager: self,
-                     map: item_map)
+      item_class.new(dp_info: @dp_info, map: item_map)
     end
 
     def initialized_item_event
-      INITIALIZED_TRANSLATION
-    end
-
-    def create_item(params)
-      @items[params[:id]] && return
-
-      debug log_format("insert #{item.uuid}/#{item.id}")
+      TRANSLATION_INITIALIZED
     end
 
     def install_item(params)
@@ -115,32 +79,42 @@ module Vnet::Openflow
       item.try_install
     end
 
-    def delete_item(item)
+    def unload_item(item)
       @items.delete(item.id)
 
       item.try_uninstall
     end
 
+    def created_item(params)
+      @items[params[:id]] && return
+
+      debug log_format("insert #{item.uuid}/#{item.id}")
+
+      # TODO: If active interface, load.
+    end
+
+
     #
-    # Event handlers:
+    # Interface events:
     #
 
-    def install_interface(params)
+    # TRANSLATION_ACTIVATE_INTERFACE on queue ':interface'
+    def activate_interface(params)
       return if params[:interface_id].nil?
-      return if @interfaces.has_key? params[:interface_id]
+      return if @active_interfaces.has_key? params[:interface_id]
 
-      @interfaces[params[:interface_id]] = {
+      @active_interfaces[params[:interface_id]] = {
       }
 
       # Currently only support a single item with the same interface
       # id.
-      item = item_by_params(interface_id: params[:interface_id])
+      item_by_params(interface_id: params[:interface_id])
     end
 
-    def remove_interface(params)
+    # TRANSLATION_DEACTIVATE_INTERFACE on queue ':interface'
+    def deactivate_interface(params)
       return if params[:interface_id].nil?
-
-      @interfaces.delete(params[:interface_id])
+      return unless @active_interfaces.delete(params[:interface_id])
 
       item = internal_detect(interface_id: params[:interface_id])
 

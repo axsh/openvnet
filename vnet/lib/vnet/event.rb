@@ -75,9 +75,14 @@ module Vnet
     INITIALIZED_SERVICE = "initialized_service"
 
     #
-    # translation event
+    # Translation events:
     #
-    INITIALIZED_TRANSLATION = "initialized_translation"
+    TRANSLATION_INITIALIZED = "translation_initialized"
+    TRANSLATION_CREATED_ITEM = "translation_created_item"
+    TRANSLATION_DELETED_ITEM = "translation_deleted_item"
+
+    TRANSLATION_ACTIVATE_INTERFACE = "translation_activate_interface"
+    TRANSLATION_DEACTIVATE_INTERFACE = "translation_deactivate_interface"
     TRANSLATION_ADDED_STATIC_ADDRESS = "translation_added_static_address"
     TRANSLATION_REMOVED_STATIC_ADDRESS = "translation_removed_static_address"
 

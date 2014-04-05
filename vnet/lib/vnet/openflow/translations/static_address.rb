@@ -55,6 +55,8 @@ module Vnet::Openflow::Translations
 
     private
 
+    # TODO: Change this to 'enable passthrough' and add an enable
+    # translation flag to interface.
     def flows_for_disable_passthrough(flows)
       flows << flow_create(:default,
                            table: TABLE_ROUTE_INGRESS_TRANSLATION,

@@ -148,8 +148,10 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
 
-        @dp_info.translation_manager.async.update(event: :install_interface,
-                                                  interface_id: item.id)
+        @dp_info.tunnel_manager.async.publish(Vnet::Event::TRANSLATION_ACTIVATE_INTERFACE,
+                                              id: :interface,
+                                              interface_id: item.id)
+
         item.ingress_filtering_enabled &&
           @dp_info.filter_manager.async.apply_filters(item_map)
       end
@@ -171,8 +173,9 @@ module Vnet::Openflow
       end
 
       if item.mode != :remote
-        @dp_info.translation_manager.async.update(event: :remove_interface,
-                                                  interface_id: item.id)
+        @dp_info.tunnel_manager.async.publish(Vnet::Event::TRANSLATION_DEACTIVATE_INTERFACE,
+                                              id: :interface,
+                                              interface_id: item.id)
 
         @dp_info.filter_manager.async.remove_filters(item.id)
 
