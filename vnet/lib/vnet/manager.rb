@@ -164,20 +164,9 @@ module Vnet
 
       if params[:reinitialize] == true
         @items.delete(item_map.id)
-      else
-        # Currently we're not keeping tabs on what interfaces are
-        # being queried by interface manager, so check if it has been
-        # created already.
-        item = @items[item_map.id]
-        return item if item
       end
 
-      item_initialize(item_map, params).tap do |item|
-        return unless item
-        @items[item_map.id] = item
-        publish(initialized_item_event, params.merge(id: item_map.id,
-                                                     item_map: item_map))
-      end
+      internal_new_item(item_map, params)
     end
 
     # The default select call with no fill options.
@@ -193,6 +182,24 @@ module Vnet
     def initialized_item_event
       # Must be implemented by subclass
       raise NotImplementedError
+    end
+
+    #
+    # Internal methods:
+    #
+
+    # Creates a new item based from a sequel object. For use
+    # internally and by 'created_item' specialization method.
+    def internal_new_item(item_map, params)
+      item = @items[item_map.id]
+      return item if item
+
+      item_initialize(item_map, params).tap do |item|
+        return unless item
+        @items[item_map.id] = item
+        publish(initialized_item_event,
+                params.merge(id: item_map.id, item_map: item_map))
+      end
     end
 
     #

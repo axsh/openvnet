@@ -15,8 +15,7 @@ module Vnet::Openflow::Translations
     end
 
     def install
-      return if
-        @interface_id.nil?
+      return if @interface_id.nil?
 
       flows = []
       flows_for_disable_passthrough(flows) if @passthrough == false
@@ -28,9 +27,6 @@ module Vnet::Openflow::Translations
       }
 
       @dp_info.add_flows(flows)
-    end
-
-    def uninstall
     end
 
     def added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)

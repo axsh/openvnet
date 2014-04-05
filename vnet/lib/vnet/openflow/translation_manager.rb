@@ -33,6 +33,10 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def initialized_item_event
+      TRANSLATION_INITIALIZED
+    end
+
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
@@ -62,10 +66,6 @@ module Vnet::Openflow
       item_class.new(dp_info: @dp_info, map: item_map)
     end
 
-    def initialized_item_event
-      TRANSLATION_INITIALIZED
-    end
-
     def install_item(params)
       item_map = params[:item_map] || return
       item = (item_map.id && @items[item_map.id]) || return
@@ -79,20 +79,20 @@ module Vnet::Openflow
       item.try_install
     end
 
-    def unload_item(item)
-      @items.delete(item.id)
-
-      item.try_uninstall
-    end
-
     def created_item(params)
-      @items[params[:id]] && return
+      return if @items[params[:id]]
+      return unless @active_interfaces[params[:interface_id]]
 
-      debug log_format("insert #{item.uuid}/#{item.id}")
-
-      # TODO: If active interface, load.
+      internal_new_item(MW::Translation.new(params), {})
     end
 
+    # unload item on queue 'item.id'
+    def unload_item(params)
+      item = @items.delete(params[:id]) || return
+      item.try_uninstall
+
+      debug log_format("unloaded item #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+    end
 
     #
     # Interface events:
@@ -103,8 +103,7 @@ module Vnet::Openflow
       return if params[:interface_id].nil?
       return if @active_interfaces.has_key? params[:interface_id]
 
-      @active_interfaces[params[:interface_id]] = {
-      }
+      @active_interfaces[params[:interface_id]] = true
 
       # Currently only support a single item with the same interface
       # id.
