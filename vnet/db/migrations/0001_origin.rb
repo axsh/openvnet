@@ -276,7 +276,27 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
     end
-  end
+
+    create_table(:ip_ranges) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :ipv4_prefix, :default=>24, :null=>false
+      String :allocation_type, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:ip_ranges_range) do
+      primary_key :id
+      Integer :ip_ranges_id, :index => true, :null => false
+      Bignum :ipv4_address_start, :null=>false
+      Bignum :ipv4_address_end, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+end
 
   down do
     drop_table(:datapaths,
@@ -287,6 +307,8 @@ Sequel.migration do
                :interface_security_groups,
                :ip_addresses,
                :ip_leases,
+               :ip_ranges,
+               :ip_ranges_range,
                :lease_policies,
                :mac_addresses,
                :mac_leases,
