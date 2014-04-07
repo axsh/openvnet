@@ -118,6 +118,8 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/models/interface_security_group'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
+    autoload :IpRange, 'vnet/models/ip_range'
+    autoload :IpRangesRange, 'vnet/models/ip_ranges_range'
     autoload :LeasePolicy, 'vnet/models/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/models/lease_policy_base_network'
     autoload :LeasePolicyBaseInterface, 'vnet/models/lease_policy_base_interface'
