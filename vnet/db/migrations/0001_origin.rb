@@ -269,7 +269,8 @@ Sequel.migration do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
       Integer :network_id, :index => true, :null => false
-      String  :mmethod, :null=>false  # mmethod used because method conflicts
+      Integer :ip_range_id, :index => true, :null => false
+      String  :mmethod, :null=>false  # TODO: remove this (replaced by :allocation_type)
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -296,7 +297,7 @@ Sequel.migration do
 
     create_table(:ip_ranges_range) do
       primary_key :id
-      Integer :ip_ranges_id, :index => true, :null => false
+      Integer :ip_range_id, :index => true, :null => false
       Bignum :start_ipv4_address, :null=>false
       Bignum :end_ipv4_address, :null=>false
       DateTime :created_at, :null=>false
