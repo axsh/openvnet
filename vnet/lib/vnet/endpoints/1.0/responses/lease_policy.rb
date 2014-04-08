@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Endpoints::V10::Responses
-  class LeasePolicy < Vnet::Endpoints::ResponseGenerator
+  class LeasePolicy < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::LeasePolicy)
       object.to_hash
@@ -26,7 +26,7 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
-  class LeasePolicyCollection < Vnet::Endpoints::ResponseGenerator
+  class LeasePolicyCollection < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|
