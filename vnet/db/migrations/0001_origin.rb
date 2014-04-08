@@ -297,8 +297,8 @@ Sequel.migration do
     create_table(:ip_ranges_range) do
       primary_key :id
       Integer :ip_ranges_id, :index => true, :null => false
-      Bignum :ipv4_address_start, :null=>false
-      Bignum :ipv4_address_end, :null=>false
+      Bignum :start_ipv4_address, :null=>false
+      Bignum :end_ipv4_address, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
