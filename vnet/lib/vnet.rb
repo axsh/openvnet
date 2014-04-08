@@ -184,6 +184,8 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/node_api/interface_security_group'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
+    autoload :IpRange, 'vnet/node_api/models.rb'
+    autoload :IpRangesRange, 'vnet/node_api/models.rb'
     autoload :LeasePolicy, 'vnet/node_api/models.rb'
     autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models.rb'
     autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'
