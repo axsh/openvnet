@@ -147,6 +147,8 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/model_wrappers/interface_security_group'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
+    autoload :IpRange, 'vnet/model_wrappers/ip_range'
+    autoload :IpRangesRange, 'vnet/model_wrappers/ip_range'
     autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseInterface, 'vnet/model_wrappers/lease_policy'
