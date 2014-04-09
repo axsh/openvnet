@@ -7,18 +7,9 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event ADDED_ROUTER, :create_item
-    subscribe_event REMOVED_ROUTER, :delete_item
-    subscribe_event INITIALIZED_ROUTER, :install_item
-
-    def update(params)
-      case params[:event]
-      when :activate_route
-        activate_route(params)
-      end
-
-      nil
-    end
+    subscribe_event ROUTER_INITIALIZED, :install_item
+    subscribe_event ROUTER_CREATED_ITEM, :created_item
+    subscribe_event ROUTER_DELETED_ITEM, :unload_item
 
     #
     # Internal methods:
@@ -29,6 +20,10 @@ module Vnet::Openflow
     #
     # Specialize Manager:
     #
+
+    def initialized_item_event
+      ROUTER_INITIALIZED
+    end
 
     def select_filter_from_params(params)
       return nil if params.has_key?(:uuid) && params[:uuid].nil?
@@ -45,50 +40,46 @@ module Vnet::Openflow
                              map: item_map)
     end
 
-    def initialized_item_event
-      INITIALIZED_ROUTER
-    end
+    #
+    # Create / Delete events:
+    #
 
-    def create_item(params)
-      @items[params[:id]] && return
-
-      self.retrieve(params)
+    def created_item(params)
+      # Do nothing.
     end
 
     def install_item(params)
       item_map = params[:item_map] || return
       item = (item_map.id && @items[item_map.id]) || return
 
-      item.install
-
-      @dp_info.datapath_manager.async.update(event: :activate_route_link,
-                                             route_link_id: item.id)
-
       debug log_format("install #{item.uuid}/#{item.id}")
+
+      item.try_install
 
       @dp_info.route_manager.async.publish(Vnet::Event::ROUTE_ACTIVATE_ROUTE_LINK,
                                            id: :route_link,
                                            route_link_id: item.id)
+      @dp_info.datapath_manager.async.publish(Vnet::Event::ACTIVATE_ROUTE_LINK_ON_HOST,
+                                              id: :route_link,
+                                              route_link_id: item.id)
     end
 
-    def delete_item(item)
+    def unload_item(item)
       @items.delete(item.id)
 
-      item.uninstall
+      item.try_uninstall
+
+      @dp_info.route_manager.async.publish(Vnet::Event::ROUTE_DEACTIVATE_ROUTE_LINK,
+                                           id: :route_link,
+                                           route_link_id: item.id)
+      @dp_info.datapath_manager.async.publish(Vnet::Event::DEACTIVATE_ROUTE_LINK_ON_HOST,
+                                              id: :route_link,
+                                              route_link_id: item.id)
     end
 
     #
     # Events:
     #
-
-    def activate_route(params)
-      item = internal_detect(id: params[:id])
-
-      return if item.nil?
-      return if params[:route_id].nil?
-
-      item.add_active_route(params[:route_id])
-    end
 
   end
 

@@ -18,8 +18,6 @@ module Vnet::Openflow::Routers
       flows_for_route_link(flows)
 
       @dp_info.add_flows(flows)
-
-      debug log_format('install', "mac_address:#{@mac_address}")
     end
 
     #

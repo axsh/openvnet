@@ -69,9 +69,9 @@ module Vnet
     #
     # router event
     #
-    INITIALIZED_ROUTER = "initialized_router"
-    ADDED_ROUTER = "added_router"
-    REMOVED_ROUTER = "removed_router"
+    ROUTER_INITIALIZED = "router_initialized"
+    ROUTER_CREATED_ITEM = "router_created_item"
+    ROUTER_DELETED_ITEM = "router_deleted_item"
 
     #
     # service event
