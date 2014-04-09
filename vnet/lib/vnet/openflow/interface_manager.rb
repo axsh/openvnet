@@ -95,11 +95,12 @@ module Vnet::Openflow
 
       item_class =
         case mode
-        when :edge then Interfaces::Edge
-        when :host then Interfaces::Host
-        when :remote then Interfaces::Remote
+        when :edge      then Interfaces::Edge
+        when :host      then Interfaces::Host
+        when :remote    then Interfaces::Remote
+        when :patch     then Interfaces::Patch
         when :simulated then Interfaces::Simulated
-        when :vif then Interfaces::Vif
+        when :vif       then Interfaces::Vif
         else
           Interfaces::Base
         end

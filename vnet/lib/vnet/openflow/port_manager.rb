@@ -96,7 +96,7 @@ module Vnet::Openflow
 
       if interface
         case interface.mode
-        when :host, :edge
+        when :host, :edge, :patch
           prepare_port_eth(port, interface)
         when :vif
           prepare_port_vif(port, interface)
@@ -177,13 +177,7 @@ module Vnet::Openflow
         return
       end
 
-      params = {
-        :owner_datapath_id => @dp_info.datapath.datapath_info.id,
-        :port_name => port.port_name,
-        :reinitialize => true
-      }
-
-      if interface.mode == :host
+      if interface.mode == :host || interface.mode == :patch
         port.extend(Ports::Host)
         port.interface_id = interface.id
 

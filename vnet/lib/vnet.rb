@@ -242,6 +242,7 @@ module Vnet
       autoload :Host, 'vnet/openflow/interfaces/host'
       autoload :IfBase, 'vnet/openflow/interfaces/if_base'
       autoload :Remote, 'vnet/openflow/interfaces/remote'
+      autoload :Patch, 'vnet/openflow/interfaces/patch'
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
     end
