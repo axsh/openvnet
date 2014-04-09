@@ -10,6 +10,7 @@ module Vnet::Openflow
     subscribe_event ADDED_SERVICE, :item
     subscribe_event REMOVED_SERVICE, :unload
     subscribe_event INITIALIZED_SERVICE, :create_item
+
     subscribe_event ADDED_DNS_SERVICE, :set_dns_service
     subscribe_event REMOVED_DNS_SERVICE, :clear_dns_service
     subscribe_event UPDATED_DNS_SERVICE, :update_dns_service
@@ -60,32 +61,31 @@ module Vnet::Openflow
     private
 
     def item_initialize(item_map, params)
-      item = @items[item_map.id]
-      return item if item
+      item_class =
+        case item_map.type
+        when 'dhcp'   then Vnet::Openflow::Services::Dhcp
+        when 'dns'    then Vnet::Openflow::Services::Dns
+        when 'router' then Vnet::Openflow::Services::Router
+        else
+          return
+        end
 
-      mode = item_map.type.to_sym
-      params = { dp_info: @dp_info,
-                 manager: self,
-                 id: item_map.id,
-                 uuid: item_map.uuid,
-                 type: item_map.type,
-                 interface_id: item_map.interface_id }
-
-      case mode
-      when :dhcp       then Vnet::Openflow::Services::Dhcp.new(params)
-      when :dns        then Vnet::Openflow::Services::Dns.new(params)
-      when :router     then Vnet::Openflow::Services::Router.new(params)
-      else
-        nil
-      end
+      item_class.new(dp_info: @dp_info,
+                     manager: self,
+                     map: item_map)
     end
 
     def initialized_item_event
       INITIALIZED_SERVICE
     end
 
-    def select_item(filter)
-      MW::NetworkService[filter]
+    def select_filter_from_params(params)
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+
+      create_batch(MW::NetworkService.batch, params[:uuid], filters)
     end
 
     #
@@ -93,16 +93,9 @@ module Vnet::Openflow
     #
 
     def create_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
-      return unless item
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
-      # if service_map.vif.mode == 'simulated'
-
-      # if interface.active_datapath_id &&
-      #     interface.active_datapath_id != @datapath.datapath_id
-      #   return
-      # end
       debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.type.to_sym}")
 
       item.install
@@ -119,8 +112,6 @@ module Vnet::Openflow
           publish(ADDED_DNS_SERVICE, id: item.id, dns_service_map: dns_service_map)
         end
       end
-
-      item
     end    
 
     def delete_item(item)
@@ -130,8 +121,6 @@ module Vnet::Openflow
       debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.class.name.split("::").last.downcase}")
 
       item.uninstall
-
-      item
     end
 
     def set_dns_service(params)

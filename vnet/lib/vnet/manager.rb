@@ -34,6 +34,7 @@ module Vnet
     end
     alias_method :item, :retrieve
 
+    # TODO: Deprecate:
     def unload(params)
       item = internal_detect(params)
       return nil if item.nil?
@@ -158,45 +159,19 @@ module Vnet
         end
       end
 
-      select_filter = select_filter_from_params(params)
-      return nil if select_filter.nil?
-
-      # After the db query, avoid yielding method calls until the item
-      # is added to the items list and 'install' method is
-      # called. Yielding method calls are any non-async actor method
-      # calls or any other blocking methods.
-      #
-      # This is in particular important to avoid losing parameters
-      # passed duing reinitialization of interfaces that e.g. pass
-      # port number.
-      #
-      # Note that when adding events we need to ensure we subscribe to
-      # db events for the item, if the events are for changes to data
-      # we use from 'item_map'.
-      #
-      # We should try to use only static data from this query, and
-      # rely on the 'install' method call as an event barrier for
-      # dynamic data.
-
-      item_map = select_item(select_filter)
-      return nil if item_map.nil?
+      select_filter = select_filter_from_params(params) || return
+      item_map = select_item(select_filter) || return
 
       if params[:reinitialize] == true
         @items.delete(item_map.id)
-      else
-        # Currently we're not keeping tabs on what interfaces are
-        # being queried by interface manager, so check if it has been
-        # created already.
-        item = @items[item_map.id]
-        return item if item
       end
 
-      item_initialize(item_map, params).tap do |item|
-        return unless item
-        @items[item_map.id] = item
-        publish(initialized_item_event, params.merge(id: item_map.id,
-                                                     item_map: item_map))
-      end
+      internal_new_item(item_map, params)
+    end
+
+    # The default select call with no fill options.
+    def select_item(filter)
+      filter.commit
     end
 
     def item_initialize(item_map, params)
@@ -208,6 +183,28 @@ module Vnet
       # Must be implemented by subclass
       raise NotImplementedError
     end
+
+    #
+    # Internal methods:
+    #
+
+    # Creates a new item based from a sequel object. For use
+    # internally and by 'created_item' specialization method.
+    def internal_new_item(item_map, params)
+      item = @items[item_map.id]
+      return item if item
+
+      item_initialize(item_map, params).tap do |item|
+        return unless item
+        @items[item_map.id] = item
+        publish(initialized_item_event,
+                params.merge(id: item_map.id, item_map: item_map))
+      end
+    end
+
+    # TODO: Create an internal delete item method that 'delete item'
+    # events are not missed if they happen between a select query and
+    # an initialize_item event.
 
     #
     # Internal enumerators:

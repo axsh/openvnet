@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Interfaces
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::AddressHelpers
     include Vnet::Openflow::FlowHelpers
@@ -26,7 +26,6 @@ module Vnet::Openflow::Interfaces
     TAG_ICMP_REQUEST          = 0x6
     TAG_DISABLED_FILTERING    = 0x7
 
-    attr_accessor :uuid
     attr_accessor :mode
     attr_accessor :port_name
     attr_accessor :active_datapath_ids
@@ -41,13 +40,11 @@ module Vnet::Openflow::Interfaces
     def initialize(params)
       super
 
-      map = params[:map]
+      @manager = params[:manager]
 
-      @id = map.id
-      @uuid = map.uuid
+      map = params[:map]
       @mode = map.mode.to_sym
       @port_name = map.port_name
-
       @display_name = map.display_name
 
       @mac_addresses = {}

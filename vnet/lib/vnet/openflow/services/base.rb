@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Services
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
@@ -17,7 +17,6 @@ module Vnet::Openflow::Services
     OPTIONAL_VALUE_SHIFT    = 36
     OPTIONAL_VALUE_MASK    = 0xfffff
 
-    attr_accessor :uuid
     attr_accessor :interface_id
     attr_accessor :type
     attr_reader :networks
@@ -25,11 +24,17 @@ module Vnet::Openflow::Services
     def initialize(params)
       super
 
-      @id = params[:id]
-      @uuid = params[:uuid]
-      @type = params[:type]
-      @interface_id = params[:interface_id]
+      @manager = params[:manager]
+
+      map = params[:map]
+      @type = map.type
+      @interface_id = map.interface_id
+
       @networks = {}
+    end
+
+    def log_type
+      'service/base'
     end
 
     def cookie(type = 0, value = 0)
@@ -61,13 +66,6 @@ module Vnet::Openflow::Services
 
     def del_cookie_for_network(value)
       del_cookie(OPTIONAL_TYPE_NETWORK, value)
-    end
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} service/base: #{message}" + (values ? " (#{values})" : '')
-    end
-
-    def install
     end
 
     def uninstall

@@ -39,38 +39,6 @@ module Vnet::Openflow
         set_tunnel_port_number(params)
       when :updated_interface
         updated_interface(params)
-      when :added_host_datapath_network
-        publish(ADDED_HOST_DATAPATH_NETWORK,
-                id: :datapath_network,
-                dp_obj: params[:dpn])
-      when :added_remote_datapath_network
-        publish(ADDED_REMOTE_DATAPATH_NETWORK,
-                id: :datapath_network,
-                dp_obj: params[:dpn])
-      when :added_host_datapath_route_link
-        publish(ADDED_HOST_DATAPATH_ROUTE_LINK,
-                id: :datapath_route_link,
-                dp_obj: params[:dprl])
-      when :added_remote_datapath_route_link
-        publish(ADDED_REMOTE_DATAPATH_ROUTE_LINK,
-                id: :datapath_route_link,
-                dp_obj: params[:dprl])
-      when :removed_host_datapath_network
-        publish(REMOVED_HOST_DATAPATH_NETWORK,
-                id: :datapath_network,
-                dp_obj: params[:dpn])
-      when :removed_remote_datapath_network
-        publish(REMOVED_REMOTE_DATAPATH_NETWORK,
-                id: :datapath_network,
-                dp_obj: params[:dpn])
-      when :removed_host_datapath_route_link
-        publish(REMOVED_HOST_DATAPATH_ROUTE_LINK,
-                id: :datapath_route_link,
-                dp_obj: params[:dprl])
-      when :removed_remote_datapath_route_link
-        publish(REMOVED_REMOTE_DATAPATH_ROUTE_LINK,
-                id: :datapath_route_link,
-                dp_obj: params[:dprl])
       end
 
       nil
@@ -80,22 +48,6 @@ module Vnet::Openflow
       @items.values.each { |item| unload(id: item.id) }
       nil
     end
-
-    #
-    # Refactor:
-    #
-
-    # def remove(dpn_id)
-    #   @items.values.find { |item|
-    #     item.datapath_networks.any? { |dpn| dpn[:dpn_id] == dpn_id }
-    #   }.tap do |item|
-    #     return unless item
-
-    #     datapath_network = item.remove_datapath_network(dpn_id)
-    #     update_network_id(datapath_network[:network_id]) if datapath_network
-    #     publish(REMOVED_TUNNEL, id: item.id) if item.unused?
-    #   end
-    # end
 
     #
     # Internal methods:
@@ -184,19 +136,20 @@ module Vnet::Openflow
     # item type is created that will reload itself when the right
     # tunnel mode has been determined.
     def item_initialize(item_map, params)
-      params = { dp_info: @dp_info,
-                 manager: self,
-                 map: item_map }
-
       tunnel_mode = select_tunnel_mode(item_map.src_interface_id, item_map.dst_interface_id)
 
-      case tunnel_mode
-      when :gre     then Tunnels::Gre.new(params)
-      when :mac2mac then Tunnels::Mac2Mac.new(params)
-      when :unknown then Tunnels::Unknown.new(params)
-      else
-        nil
-      end
+      item_class =
+        case tunnel_mode
+        when :gre     then Tunnels::Gre
+        when :mac2mac then Tunnels::Mac2Mac
+        when :unknown then Tunnels::Unknown
+        else
+          return
+        end
+
+      item_class.new(dp_info: @dp_info,
+                     manager: self,
+                     map: item_map)
     end
 
     def initialized_item_event

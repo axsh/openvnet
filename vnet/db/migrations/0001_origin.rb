@@ -213,13 +213,15 @@ Sequel.migration do
       DateTime :deleted_at
     end
 
-    create_table(:translate_static_addresses) do
+    create_table(:translation_static_addresses) do
       primary_key :id
 
       Integer :translation_id, :index => true, :null => false
 
       Bignum :ingress_ipv4_address, :index => true, :null => false
       Bignum :egress_ipv4_address, :index => true, :null => false
+
+      unique [:translation_id, :ingress_ipv4_address, :egress_ipv4_address]
     end
 
     create_table(:tunnels) do
@@ -264,6 +266,8 @@ Sequel.migration do
                :routes,
                :route_links,
                :security_groups,
+               :translation,
+               :translation_static_addresses,
                :tunnels,
                :vlan_translations
                )

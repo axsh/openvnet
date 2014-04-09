@@ -74,16 +74,11 @@ module Vnet::Openflow
     end
 
     def select_filter_from_params(params)
-      {}.tap do |options|
-        case
-        when params[:id]    then options[:id] = params[:id]
-        when params[:dpid]  then options[:dpid] = params[:dpid]
-        end
-      end
-    end
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+      filters << {dpid: params[:dpid]} if params.has_key? :dpid
 
-    def select_item(filter)
-      MW::Datapath.batch[filter].commit
+      create_batch(MW::Datapath.batch, params[:uuid], filters)
     end
 
     def item_initialize(item_map, params)
@@ -106,9 +101,8 @@ module Vnet::Openflow
     end
 
     def install_item(params)
-      item_map =  params[:item_map]
-      item = @items[item_map.id]
-      return unless item
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
       item.install
 
@@ -121,16 +115,15 @@ module Vnet::Openflow
       item_map.batch.datapath_route_links.commit.each do |dprl_map|
         publish(ADDED_DATAPATH_ROUTE_LINK, id: item.id, dprl_map: dprl_map)
       end
-
-      item
     end
 
     def create_item(params)
       debug log_format("creating datapath id: #{params[:id]}")
       return if @items[params[:id]]
 
+      # TODO: Check if we need to create the item.
       if @dp_info.dpid != params[:dpid]
-        item(id: params[:id])
+        retrieve(id: params[:id])
         return
       end
 
@@ -147,8 +140,6 @@ module Vnet::Openflow
       item.uninstall
 
       # Remember to remove dpn's...
-
-      item
     end
 
     #

@@ -2,24 +2,23 @@
 
 module Vnet::Openflow::Routers
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :uuid
     attr_reader :mac_address
 
     def initialize(params)
       super
 
       map = params[:map]
-
-      @id = map.id
-      @uuid = map.uuid
-
       @mac_address = Trema::Mac.new(map.mac_address)
 
       @routes = {}
+    end
+
+    def log_type
+      'router/base'
     end
 
     def cookie
@@ -38,12 +37,6 @@ module Vnet::Openflow::Routers
     # Events: 
     #
 
-    def install
-    end    
-
-    def uninstall
-    end    
-
     def add_active_route(route_id)
       return if @routes.has_key? route_id
 
@@ -58,10 +51,6 @@ module Vnet::Openflow::Routers
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} routers/base: #{message} (route_link:#{@uuid}/#{@id}#{values ? ' ' : ''}#{values})"
-    end
 
   end
 

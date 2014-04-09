@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Networks
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -18,16 +18,18 @@ module Vnet::Openflow::Networks
 
     def initialize(dp_info, network_map)
       # TODO: Support proper params initialization:
-      super(dp_info: dp_info)
-
-      @id = network_map.id
-      @uuid = network_map.uuid
+      super(dp_info: dp_info,
+            map: network_map)
 
       @interfaces = {}
 
       @cookie = @id | COOKIE_TYPE_NETWORK
       @ipv4_network = IPAddr.new(network_map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = network_map.ipv4_prefix
+    end
+
+    def log_type
+      'network/base'
     end
 
     def to_hash

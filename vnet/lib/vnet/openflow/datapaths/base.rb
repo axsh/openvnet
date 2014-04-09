@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Datapaths
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -12,9 +12,6 @@ module Vnet::Openflow::Datapaths
       super
 
       map = params[:map]
-
-      @id = map.id
-      @uuid = map.uuid
       @dpid = map.dpid
 
       @active_networks = {}
@@ -23,6 +20,10 @@ module Vnet::Openflow::Datapaths
 
     def host?
       false
+    end
+
+    def log_type
+      'datapath/base'
     end
 
     def cookie(tag = nil)
@@ -159,10 +160,6 @@ module Vnet::Openflow::Datapaths
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} datapaths/base: #{message}" + (values ? " (#{values})" : '')
-    end
 
     def flows_for_dp_route_link(flows, dp_rl)
     end

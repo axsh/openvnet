@@ -54,11 +54,17 @@ module Vnet
     INITIALIZED_NETWORK = "initialized_network"
 
     #
-    # route event
+    # Route events:
     #
-    INITIALIZED_ROUTE = "initialized_route"
-    ADDED_ROUTE = "added_route"
-    REMOVED_ROUTE = "removed_route"
+    ROUTE_INITIALIZED = "route_initialized"
+    ROUTE_CREATED_ITEM = "route_created_item"
+    ROUTE_DELETED_ITEM = "route_deleted_item"
+
+    ROUTE_ACTIVATE_NETWORK = "route_activate_network"
+    ROUTE_DEACTIVATE_NETWORK = "route_deactivate_network"
+
+    ROUTE_ACTIVATE_ROUTE_LINK = "route_activate_route_link"
+    ROUTE_DEACTIVATE_ROUTE_LINK = "route_deactivate_route_link"
 
     #
     # router event
@@ -75,9 +81,16 @@ module Vnet
     INITIALIZED_SERVICE = "initialized_service"
 
     #
-    # translation event
+    # Translation events:
     #
-    INITIALIZED_TRANSLATION = "initialized_translation"
+    TRANSLATION_INITIALIZED = "translation_initialized"
+    TRANSLATION_CREATED_ITEM = "translation_created_item"
+    TRANSLATION_DELETED_ITEM = "translation_deleted_item"
+
+    TRANSLATION_ACTIVATE_INTERFACE = "translation_activate_interface"
+    TRANSLATION_DEACTIVATE_INTERFACE = "translation_deactivate_interface"
+    TRANSLATION_ADDED_STATIC_ADDRESS = "translation_added_static_address"
+    TRANSLATION_REMOVED_STATIC_ADDRESS = "translation_removed_static_address"
 
     #
     # tunnel event

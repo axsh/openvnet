@@ -4,6 +4,10 @@ module Vnet::Openflow::Routers
 
   class RouteLink < Base
 
+    def log_type
+      'router/route_link'
+    end
+
     #
     # Events: 
     #
@@ -23,10 +27,6 @@ module Vnet::Openflow::Routers
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} routers/router_link: #{message} (route_link:#{@uuid}/#{@id}#{values ? ' ' : ''}#{values})"
-    end
 
     def flows_for_dynamic_load(flows)
       flows << flow_create(:default,

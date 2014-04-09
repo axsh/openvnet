@@ -2,11 +2,9 @@
 
 module Vnet::Openflow::Routes
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
-
-    attr_reader :uuid
 
     attr_reader :interface_id
     attr_reader :route_link_id
@@ -18,13 +16,13 @@ module Vnet::Openflow::Routes
     attr_reader :ingress
     attr_reader :egress
 
+    attr_accessor :active_network
+    attr_accessor :active_route_link
+
     def initialize(params)
       super
 
       map = params[:map]
-
-      @id = map.id
-      @uuid = map.uuid
 
       @interface_id = map.interface_id
       @route_link_id = map.route_link_id
@@ -35,8 +33,15 @@ module Vnet::Openflow::Routes
 
       @ingress = map.ingress
       @egress = map.egress
+
+      @active_network = false
+      @active_route_link = false
     end    
     
+    def log_type
+      'route/base'
+    end
+
     def cookie
       @id | COOKIE_TYPE_ROUTE
     end
@@ -122,18 +127,11 @@ module Vnet::Openflow::Routes
       @dp_info.add_flows(flows)
     end
 
-    def uninstall
-    end
-
     #
     # Internal methods:
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} routes/base: #{message}" + (values ? " (#{values})" : '')
-    end
 
   end
 

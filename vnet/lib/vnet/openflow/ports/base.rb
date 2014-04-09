@@ -9,7 +9,7 @@ module Vnet::Openflow::Ports
     end
   end
 
-  class Base < Vnet::ItemBase
+  class Base < Vnet::ItemDpBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -22,6 +22,8 @@ module Vnet::Openflow::Ports
     attr_accessor :dst_datapath_id
     attr_accessor :tunnel_id
 
+    alias_method :port_number, :id
+
     def extend(m)
       # `install` method will set true to @installed automatically
       m.class_eval { prepend Install }
@@ -30,19 +32,17 @@ module Vnet::Openflow::Ports
 
     def initialize(dp_info, port_info)
       # TODO: Support proper params initialization:
-      super(dp_info: dp_info)
+      super(dp_info: dp_info,
+            id: port_info.port_no)
 
       @port_info = port_info
 
       @cookie = self.port_number | COOKIE_TYPE_PORT
-
-      @installed = false
     end
 
-    def port_number
-      @port_info.port_no
+    def log_type
+      'port/base'
     end
-    alias_method :id, :port_number
 
     def port_name
       @port_info.name
