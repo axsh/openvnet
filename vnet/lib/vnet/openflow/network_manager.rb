@@ -150,7 +150,9 @@ module Vnet::Openflow
         @dp_info.service_manager.async.item(id: service_map.id)
       }
 
-      @dp_info.route_manager.async.prepare_network(item_map, @datapath_info)
+      @dp_info.route_manager.async.publish(Vnet::Event::ROUTE_ACTIVATE_NETWORK,
+                                           id: :network,
+                                           network_id: network.id)
 
       network
     end

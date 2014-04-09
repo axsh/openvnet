@@ -202,6 +202,10 @@ module Vnet
       end
     end
 
+    # TODO: Create an internal delete item method that 'delete item'
+    # events are not missed if they happen between a select query and
+    # an initialize_item event.
+
     #
     # Internal enumerators:
     #

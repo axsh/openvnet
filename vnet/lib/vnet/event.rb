@@ -54,11 +54,17 @@ module Vnet
     INITIALIZED_NETWORK = "initialized_network"
 
     #
-    # route event
+    # Route events:
     #
-    INITIALIZED_ROUTE = "initialized_route"
-    ADDED_ROUTE = "added_route"
-    REMOVED_ROUTE = "removed_route"
+    ROUTE_INITIALIZED = "route_initialized"
+    ROUTE_CREATED_ITEM = "route_created_item"
+    ROUTE_DELETED_ITEM = "route_deleted_item"
+
+    ROUTE_ACTIVATE_NETWORK = "route_activate_network"
+    ROUTE_DEACTIVATE_NETWORK = "route_deactivate_network"
+
+    ROUTE_ACTIVATE_ROUTE_LINK = "route_activate_route_link"
+    ROUTE_DEACTIVATE_ROUTE_LINK = "route_deactivate_route_link"
 
     #
     # router event

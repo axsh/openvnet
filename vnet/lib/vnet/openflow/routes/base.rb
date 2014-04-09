@@ -16,6 +16,9 @@ module Vnet::Openflow::Routes
     attr_reader :ingress
     attr_reader :egress
 
+    attr_accessor :active_network
+    attr_accessor :active_route_link
+
     def initialize(params)
       super
 
@@ -30,6 +33,9 @@ module Vnet::Openflow::Routes
 
       @ingress = map.ingress
       @egress = map.egress
+
+      @active_network = false
+      @active_route_link = false
     end    
     
     def log_type

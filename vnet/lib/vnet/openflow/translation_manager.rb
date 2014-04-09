@@ -66,6 +66,10 @@ module Vnet::Openflow
       item_class.new(dp_info: @dp_info, map: item_map)
     end
 
+    #
+    # Create / Delete events:
+    #
+
     def install_item(params)
       item_map = params[:item_map] || return
       item = (item_map.id && @items[item_map.id]) || return
