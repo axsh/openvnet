@@ -1,7 +1,6 @@
 specs: [simple, router_v2v, router_p2v, event, service, secg, secg_reference]
 vnet_branch: master
 log_level: info
-vnflows_cmd: /opt/axsh/wakame-vnet/vnet/bin/vnflows-monitor
 vm_http_proxy: http://10.50.0.2:3128
 dump_flows: true
 
@@ -54,5 +53,5 @@ vms:
 
 legacy_networks:
   n1:
-    ipv4: 192.168.100.0
+    ipv4: 10.101.0.0
     prefix: 24
