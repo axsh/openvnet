@@ -34,7 +34,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
   put '/:uuid/associate_network' do
     # TODO: it is now possible to associate twice....probably should not allow that.
-    params = parse_params(@params, ['uuid', 'network_uuid', 'method'])
+    params = parse_params(@params, ['uuid', 'network_uuid', 'method', 'ip_range_uuid'])
     check_required_params(params, ['network_uuid', 'ip_range_uuid'])
     params['method'] = 'incremental' if params['method'].nil?  # TODO: remove
     
