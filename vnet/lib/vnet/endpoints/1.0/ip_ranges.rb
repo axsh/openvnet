@@ -33,28 +33,28 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
   end
 
   put '/:uuid/add_range' do
-    params = parse_params(@params, ['uuid', "start_ipv4_address", "end_ipv4_address"])
+    params = parse_params(@params, ['uuid', "begin_ipv4_address", "end_ipv4_address"])
 
     ip_range = check_syntax_and_pop_uuid(M::IpRange, params)
-    start_ipv4_address = parse_ipv4(params['start_ipv4_address'])
+    begin_ipv4_address = parse_ipv4(params['begin_ipv4_address'])
     end_ipv4_address = parse_ipv4(params['end_ipv4_address'])
 
     M::IpRangesRange.create({ :ip_range_id => ip_range.id,
-                              :start_ipv4_address => start_ipv4_address,
+                              :begin_ipv4_address => begin_ipv4_address,
                               :end_ipv4_address => end_ipv4_address,
                             })
     respond_with(R::IpRange.ip_ranges_ranges(ip_range))
   end
 
   put '/:uuid/delete_range' do
-    params = parse_params(@params, ['uuid', "start_ipv4_address", "end_ipv4_address"])
+    params = parse_params(@params, ['uuid', "begin_ipv4_address", "end_ipv4_address"])
 
     ip_range = check_syntax_and_pop_uuid(M::IpRange, params)
-    start_ipv4_address = parse_ipv4(params['start_ipv4_address'])
+    begin_ipv4_address = parse_ipv4(params['begin_ipv4_address'])
     end_ipv4_address = parse_ipv4(params['end_ipv4_address'])
 
     M::IpRangesRange.destroy({ :ip_range_id => ip_range.id,
-                              :start_ipv4_address => start_ipv4_address,
+                              :begin_ipv4_address => begin_ipv4_address,
                               :end_ipv4_address => end_ipv4_address,
                             })
     respond_with(R::IpRange.ip_ranges_ranges(ip_range))
