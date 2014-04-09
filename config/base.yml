@@ -1,4 +1,4 @@
-specs: [simple, router_v2v, router_p2v, event, service, secg]
+specs: [simple, router_v2v, router_p2v, event, service, secg, secg_reference]
 vnet_branch: master
 log_level: info
 vm_http_proxy: http://10.50.0.2:3128

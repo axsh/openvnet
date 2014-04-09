@@ -282,6 +282,14 @@ module Vnspec
       end
     end
 
+    def add_security_group(uuid)
+      @interfaces.each { |i| i.add_security_group(uuid) }
+    end
+
+    def remove_security_group(uuid)
+      @interfaces.each { |i| i.remove_security_group(uuid) }
+    end
+
     def clear_arp_cache
       logger.debug("clear arp cahe: #{name}")
       ssh_on_guest("ip -s -s neigh flush all")

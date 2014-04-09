@@ -115,6 +115,14 @@ module Vnspec
         mac_leases(uuid).tap(&:destroy)
       end
 
+      def add_security_group(uuid)
+        Vnspec::API.request(:post, "interfaces/#{@uuid}/security_groups/#{uuid}")
+      end
+
+      def remove_security_group(uuid)
+        Vnspec::API.request(:delete, "interfaces/#{@uuid}/security_groups/#{uuid}")
+      end
+
       def enabled?
         !! @enabled
       end
