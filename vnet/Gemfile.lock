@@ -34,8 +34,6 @@ GEM
       Platform (>= 0.4.0)
       open4
     Platform (0.4.0)
-    active_support (3.0.0)
-      activesupport (= 3.0.0)
     activesupport (3.0.0)
     backports (3.6.0)
     bit-struct (0.15.0)
@@ -163,7 +161,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  active_support
+  activesupport
   bit-struct (>= 0.13.7)
   celluloid
   celluloid-io

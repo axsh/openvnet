@@ -9,13 +9,15 @@ vnet_repo_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/vnet/current
 third_party_repo_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/third_party/current
 chroot_dir=${work_dir}/chroot
 chroot_cache_dir=${work_dir}/chroot_cache
+clear_chroot_cache=${CLEAR_CHROOT_CACHE}
 
 centos_version=${CENTOS_VERSION:-6-5}
 
 function prepare_chroot_env(){
   umount_for_chroot
   rm -rf ${chroot_dir}
-  [[ -d ${chroot_cache_dir} ]] && { find ${chroot_cache_dir} -maxdepth 0 -mtime -7 | grep ${chroot_cache_dir}; } || create_chroot_cache
+  echo ${clear_chroot_cache}
+  [[ ${clear_chroot_cache} = "true" ]] || [[ ! -d ${chroot_cache_dir} ]] && create_chroot_cache
   cp -a ${chroot_cache_dir} ${chroot_dir}
   mount_for_chroot
 }
