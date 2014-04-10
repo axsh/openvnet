@@ -21,14 +21,6 @@ module Vnet::Openflow
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
 
-    # Deprecate this...
-    def get_ipv4_address(params)
-      interface = internal_detect(params)
-      return nil if interface.nil?
-
-      interface.get_ipv4_address(params)
-    end
-
     #
     # Internal methods:
     #

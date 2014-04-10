@@ -85,10 +85,12 @@ module Vnet::Openflow::Services
     def find_ipv4_and_network(message, ipv4_address)
       ipv4_address = ipv4_address != IPV4_BROADCAST ? ipv4_address : nil
 
-      mac_info, ipv4_info = @dp_info.interface_manager.get_ipv4_address(id: @interface_id,
-                                                                        any_md: message.match.metadata,
-                                                                        ipv4_address: ipv4_address)
-      return nil if ipv4_info.nil?
+      interface = @dp_info.interface_manager.retrieve(id: @interface_id)
+      return unless interface
+
+      mac_info, ipv4_info = interface.get_ipv4_infos(any_md: message.match.metadata,
+                                                     ipv4_address: ipv4_address).first
+      return unless ipv4_info
 
       [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
     end
