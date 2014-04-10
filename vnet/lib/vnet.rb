@@ -187,7 +187,7 @@ module Vnet
     autoload :IpRangesRange, 'vnet/node_api/models.rb'
     autoload :LeasePolicy, 'vnet/node_api/models.rb'
     autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models.rb'
-    autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'
+    autoload :LeasePolicyBaseInterface, 'vnet/node_api/lease_policy_base_interface.rb'
     autoload :MacAddress, 'vnet/node_api/models.rb'
     autoload :MacLease, 'vnet/node_api/mac_lease.rb'
     autoload :Network, 'vnet/node_api/models.rb'

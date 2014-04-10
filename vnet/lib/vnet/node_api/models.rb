@@ -31,9 +31,6 @@ module Vnet::NodeApi
   class LeasePolicyBaseNetwork < Base
   end
 
-  class LeasePolicyBaseInterface < Base
-  end
-
   class MacAddress < Base
   end
 
