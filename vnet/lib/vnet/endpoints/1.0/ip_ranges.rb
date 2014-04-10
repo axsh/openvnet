@@ -27,9 +27,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
   end
 
   put '/:uuid' do
-    update_by_uuid(:IpRange, put_post_shared_params, fill_options) { |params|
-
-    }
+    update_by_uuid(:IpRange, put_post_shared_params, fill_options)
   end
 
   put '/:uuid/add_range' do
