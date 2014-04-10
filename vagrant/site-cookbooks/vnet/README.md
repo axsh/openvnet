@@ -1,5 +1,5 @@
-vnet_webapi Cookbook
-====================
+vnet Cookbook
+=============
 TODO: Enter the cookbook description here.
 
 e.g.
@@ -11,14 +11,14 @@ TODO: List your cookbook requirements. Be sure to include any requirements this 
 
 e.g.
 #### packages
-- `toaster` - vnet_webapi needs toaster to brown your bagel.
+- `toaster` - vnet needs toaster to brown your bagel.
 
 Attributes
 ----------
 TODO: List your cookbook attributes here.
 
 e.g.
-#### vnet_webapi::default
+#### vnet::default
 <table>
   <tr>
     <th>Key</th>
@@ -27,7 +27,7 @@ e.g.
     <th>Default</th>
   </tr>
   <tr>
-    <td><tt>['vnet_webapi']['bacon']</tt></td>
+    <td><tt>['vnet']['bacon']</tt></td>
     <td>Boolean</td>
     <td>whether to include bacon</td>
     <td><tt>true</tt></td>
@@ -36,17 +36,17 @@ e.g.
 
 Usage
 -----
-#### vnet_webapi::default
+#### vnet::default
 TODO: Write usage instructions for each cookbook.
 
 e.g.
-Just include `vnet_webapi` in your node's `run_list`:
+Just include `vnet` in your node's `run_list`:
 
 ```json
 {
   "name":"my_node",
   "run_list": [
-    "recipe[vnet_webapi]"
+    "recipe[vnet]"
   ]
 }
 ```

@@ -1,23 +1,20 @@
 {
   "run_list": ["role[vna]"],
-  "vnet_common": {
-    "management_network": {
-      "ipaddr": "192.168.20.21",
-      "gateway": "192.168.20.1"
-    },
+  "vnet": {
     "config": {
-      "registry_host": "192.168.20.10"
-    }
-  },
-  "vnet_vna": {
-    "datapath": {
-      "ipaddr": "172.16.20.21",
-      "datapath_id": "0000dddddddddddd",
-      "hwaddr": "02:01:00:00:00:04"
+      "common": { "registry_host": "192.168.20.10" },
+      "vna": { "id": "edge", "host": "192.168.20.21" }
     },
-    "config": {
-      "id": "edge",
-      "host": "192.168.20.21"
+    "vna": {
+      "datapath": {
+        "ipaddr": "172.16.20.21",
+        "datapath_id": "0000dddddddddddd",
+        "hwaddr": "02:01:00:00:00:04"
+      },
+      "ovs_ports": ["eth2", "eth3"],
+      "routes": [
+        { "target": "172.16.30.0/24", "gateway": "172.16.20.1", "device": "br0" }
+      ]
     }
   }
 }

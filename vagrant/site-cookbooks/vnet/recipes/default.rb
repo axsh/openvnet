@@ -1,9 +1,8 @@
 #
-# Cookbook Name:: vnet_config
+# Cookbook Name:: vnet
 # Recipe:: default
 #
 # Copyright 2014, YOUR_COMPANY_NAME
 #
 # All rights reserved - Do Not Redistribute
 #
-

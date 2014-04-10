@@ -68,7 +68,6 @@ module Vnspec
 
       Vnet.start(:vnmgr)
       Vnet.start(:webapi)
-      Vnet.wait_for_webapi
 
       Dataset.setup(name)
 

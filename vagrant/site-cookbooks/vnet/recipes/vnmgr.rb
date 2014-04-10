@@ -7,9 +7,9 @@
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe "vnet_common"
+include_recipe "vnet::common"
 
-node["vnet_vnmgr"]["packages"].each do |pkg|
+node[:vnet][:packages][:vnmgr].each do |pkg|
   package pkg
 end
 
@@ -33,7 +33,7 @@ template "/etc/openvnet/vnmgr.conf" do
   owner "root"
   group "root"
   variables({
-    host: node["vnet_vnmgr"]["config"]["host"],
-    port: node["vnet_vnmgr"]["config"]["port"],
+    host: node[:vnet][:config][:vnmgr][:host],
+    port: node[:vnet][:config][:vnmgr][:port],
   })
 end

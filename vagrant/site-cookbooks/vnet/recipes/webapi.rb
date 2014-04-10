@@ -7,12 +7,14 @@
 # All rights reserved - Do Not Redistribute
 #
 
+include_recipe "vnet::common"
+
 template "/etc/openvnet/webapi.conf" do
   source "vnet.webapi.conf.erb"
   owner "root"
   group "root"
   variables({
-    host: node["vnet_webapi"]["config"]["host"],
-    port: node["vnet_webapi"]["config"]["port"],
+    host: node[:vnet][:config][:webapi][:host],
+    port: node[:vnet][:config][:webapi][:port],
   })
 end

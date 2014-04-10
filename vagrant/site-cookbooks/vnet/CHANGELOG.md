@@ -1,11 +1,11 @@
-vnet_webapi CHANGELOG
-=====================
+vnet CHANGELOG
+==============
 
-This file is used to list changes made in each version of the vnet_webapi cookbook.
+This file is used to list changes made in each version of the vnet cookbook.
 
 0.1.0
 -----
-- [your_name] - Initial release of vnet_webapi
+- [your_name] - Initial release of vnet
 
 - - -
 Check the [Markdown Syntax Guide](http://daringfireball.net/projects/markdown/syntax) for help with Markdown.

@@ -14,6 +14,7 @@ module Vnspec
         if node_name
           config[:nodes][node_name.to_sym].peach do |ip|
             ssh(ip, "initctl start vnet-#{node_name.to_s}", use_sudo: true)
+            send(:wait_for, node_name)
           end
         else
           %w(vnmgr vna webapi).each do |n|
@@ -40,7 +41,6 @@ module Vnspec
       end
 
       def update(branch = nil)
-        host = config[:use_rsync] ? config[:nodes][:vna][0] : config[:nodes][:vna]
         branch ||= config[:vnet_branch]
         case config[:update_vnet_via].to_sym
         when :rpm
@@ -63,10 +63,8 @@ module Vnspec
         hosts = case config[:update_vnet_via].to_sym
         when :rpm
           raise NotImplementedError.new("please update gems via rpm.")
-        when :git
+        when :git, :rsync
           self.hosts
-        when :rsync
-          config[:nodes][:vnmgr]
         end
 
         %w(vnet vnctl).each do |dir|
@@ -136,14 +134,25 @@ module Vnspec
       end
       alias_method :run_command, :run_command_on_vna_nodes
 
-      def wait_for_webapi(retry_count = 20)
+      def wait_for(name)
+        logger.info "waiting for #{name}..."
+        method_name = "wait_for_#{name}"
+        send method_name if respond_to?(method_name)
+      end
+
+      def wait_for_webapi
+        retry_count = 20
         health_check_url = "http://#{config[:webapi][:host]}:#{config[:webapi][:port]}/api/datapaths"
         retry_count.times do
-          `curl -fsSkL #{health_check_url}`
+          system("curl -fsSkL #{health_check_url}")
           return true if $? == 0
           sleep 1
         end
         return false
+      end
+
+      def wait_for_vna
+        sleep(config[:vna_waittime])
       end
     end
   end

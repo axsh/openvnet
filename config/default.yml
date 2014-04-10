@@ -21,6 +21,8 @@ log_level: info
 dump_flows: false
 
 dataset_options:
+  physical_port: eth2
+  edge_port: eth3
   dp1_ipv4_address: 172.16.20.11
   dp2_ipv4_address: 172.16.20.12
   dp3_ipv4_address: 172.16.30.11

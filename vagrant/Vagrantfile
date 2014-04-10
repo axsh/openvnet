@@ -4,68 +4,78 @@
 VAGRANTFILE_API_VERSION = "2"
 
 VNET_PATH = "~/work/openvnet"
-
+VAGRANT_BOX = "hansode/centos-6.5-x86_64"
 
 vms = [
+  #{
+  #  name: "registry",
+  #  box: "chef/ubuntu-13.10",
+  #  networks: [ { type: :private_network, ip: "192.168.20.101" } ]
+  #},
   {
     name: "vnmgr",
-    memory: 2048,
-    box: "chef/centos-6.5",
-    networks: [ { type: :private_network, ip: "192.168.20.10" } ]
+    memory: 1024,
+    networks: [ { type: :private_network, ip: "192.168.20.10" } ],
+    sync_vnet: true,
   },
   {
     name: "vna1",
-    memory: 2048,
-    box: "chef/centos-6.5",
-    networks: [ { type: :private_network, ip: "192.168.20.11" },
-                { type: :private_network, ip: "0.0.0.0",
-                  options: { auto_config: false,
-                             virtualbox__intnet: "public_network1" } } ]
+    memory: 1024,
+    networks: [
+      { type: :private_network, ip: "192.168.20.11" },
+      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network1" } }
+    ],
+    sync_vnet: true,
   },
   {
     name: "vna2",
-    memory: 2048,
-    box: "chef/centos-6.5",
-    networks: [ { type: :private_network, ip: "192.168.20.12" },
-                { type: :private_network, ip: "0.0.0.0",
-                  options: { auto_config: false,
-                             virtualbox__intnet: "public_network1" } } ]
+    memory: 1024,
+    networks: [
+      { type: :private_network, ip: "192.168.20.12" },
+      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network1" } }
+    ],
+    sync_vnet: true,
   },
   {
     name: "vna3",
-    memory: 2048,
-    box: "chef/centos-6.5",
-    networks: [ { type: :private_network, ip: "192.168.20.13" },
-                { type: :private_network, ip: "0.0.0.0",
-                  options: { auto_config: false,
-                             virtualbox__intnet: "public_network2" } } ]
+    memory: 1024,
+    networks: [
+      { type: :private_network, ip: "192.168.20.13" },
+      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network2" } }
+    ],
+    sync_vnet: true,
   },
   {
     name: "edge",
-    memory: 2048,
-    box: "chef/centos-6.5",
-    networks: [ { type: :private_network, ip: "192.168.20.14" },
-                { type: :private_network, ip: "0.0.0.0",
-                  options: { auto_config: false,
-                             virtualbox__intnet: "public_network1" } } ]
+    memory: 1024,
+    networks: [
+      { type: :private_network, ip: "192.168.20.21" },
+      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network1" } },
+      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network3" } }
+    ],
+    sync_vnet: true,
   },
   {
     name: "legacy",
-    box: "chef/centos-6.5",
-    networks: [ { type: :private_network, ip: "192.168.20.21" } ]
+    networks: [
+      { type: :private_network, ip: "192.168.20.31" },
+      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network3" } }
+    ]
   },
   {
-    name: "registry",
-    box: "chef/ubuntu-13.10",
-    networks: [ { type: :private_network, ip: "192.168.20.101" } ]
+    name: "router",
+    networks: [
+      { type: :private_network, ip: "192.168.20.2" },
+      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network1" } },
+      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network2" } },
+
+      #{ type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network3" } }
+    ]
   },
 ]
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vms.each do |vm|
-    config.vm.box = "chef/centos-6.5"
-
-    config.vm.synced_folder VNET_PATH, "/opt/axsh/openvnet/"
 
     config.vm.provider :virtualbox do |vb|
       vb.memory = vm[:memory] || 1024
@@ -74,12 +84,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
 
-      # https://github.com/jpetazzo/pipework
-      vb.customize ['modifyvm', :id, '--nicpromisc1', 'allow-all']
+      vb.customize ['modifyvm', :id, '--nicpromisc2', 'allow-all']
+      vb.customize ['modifyvm', :id, '--nicpromisc3', 'allow-all']
     end
 
     config.vm.define vm[:name] do |config|
-      config.vm.box = vm[:box]
+      config.vm.box = vm[:box] || VAGRANT_BOX
+
+      if vm[:sync_vnet]
+        config.vm.synced_folder VNET_PATH, "/opt/axsh/openvnet/",
+          type: "rsync", rsync__exclude: %w(.git/ vnet/.bundle vnet/vendor)
+      end
+
       config.vm.hostname = vm[:name]
       vm[:networks].each do |network|
         config.vm.network network[:type], { ip: network[:ip] }.merge(network[:options] || {})

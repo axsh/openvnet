@@ -34,7 +34,7 @@ interfaces:
 
   - uuid: if-dp1eth0
     mode: host
-    port_name: eth0
+    port_name: <%= physical_port %>
     owner_datapath_uuid: dp-1
     network_uuid: nw-public
     mac_address: "02:01:00:00:00:01"
@@ -42,7 +42,7 @@ interfaces:
 
   - uuid: if-dp2eth0
     mode: host
-    port_name: eth0
+    port_name: <%= physical_port %>
     owner_datapath_uuid: dp-2
     network_uuid: nw-public
     mac_address: "02:01:00:00:00:02"
@@ -50,7 +50,7 @@ interfaces:
 
   - uuid: if-dp3eth0
     mode: host
-    port_name: eth0
+    port_name: <%= physical_port %>
     owner_datapath_uuid: dp-3
     network_uuid: nw-public
     mac_address: "02:01:00:00:00:03"

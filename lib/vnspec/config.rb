@@ -9,6 +9,7 @@ module Vnspec
       test_ready_check_interval: 10,
       test_retry_count: 30,
       log_level: :info,
+      vna_waittime: 0,
     }
 
     class << self

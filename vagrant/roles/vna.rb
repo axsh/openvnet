@@ -1,5 +1,5 @@
 run_list(%w(
-recipe[vnet_vna]
+recipe[vnet::vna]
 ))
 
 override_attributes(

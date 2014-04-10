@@ -89,7 +89,7 @@ module Vnspec
         "StrictHostKeyChecking" => "no",
         "UserKnownHostsFile" => "/dev/null",
         "LogLevel" => "ERROR",
-      }
+      }.merge(options)
     end
 
     def wrap_command(command, options)

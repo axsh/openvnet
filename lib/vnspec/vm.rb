@@ -307,7 +307,9 @@ module Vnspec
     class Docker < Base
       def start
         logger.info "start: #{name}"
-        ssh_on_host("docker start #{name}").success?.tap { start_network }
+        if ssh_on_host("docker start #{name}").success?
+          _start_network
+        end
       end
 
       def stop
@@ -321,6 +323,10 @@ module Vnspec
       end
 
       def start_network
+        restart
+      end
+
+      def _start_network
         vm_config[:interfaces].each do |interface|
           ip_address = if interface[:ipv4_address]
             "#{interface[:ip_v4address]}/#{interface[:mask] || 24}"
@@ -346,10 +352,12 @@ module Vnspec
 
       def stop_network
         # nothing to do
+        true
       end
 
       def restart_network
-        restart
+        stop_network
+        start_network
       end
 
       def ready?(timeout = 600)

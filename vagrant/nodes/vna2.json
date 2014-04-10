@@ -1,23 +1,19 @@
 {
   "run_list": ["role[vna]"],
-  "vnet_common": {
-    "management_network": {
-      "ipaddr": "192.168.20.12",
-      "gateway": "192.168.20.1"
-    },
+  "vnet": {
     "config": {
-      "registry_host": "192.168.20.10"
-    }
-  },
-  "vnet_vna": {
-    "datapath": {
-      "ipaddr": "172.16.20.12",
-      "datapath_id": "0000bbbbbbbbbbbb",
-      "hwaddr": "02:01:00:00:00:02"
+      "common": { "registry_host": "192.168.20.10" },
+      "vna": { "id": "vna2", "host": "192.168.20.12" }
     },
-    "config": {
-      "id": "vna2",
-      "host": "192.168.20.12"
+    "vna": {
+      "datapath": {
+        "ipaddr": "172.16.20.12",
+        "datapath_id": "0000bbbbbbbbbbbb",
+        "hwaddr": "02:01:00:00:00:02"
+      },
+      "routes": [
+        { "target": "172.16.30.0/24", "gateway": "172.16.20.1", "device": "br0" }
+      ]
     },
     "vms": [
       {
@@ -25,6 +21,10 @@
         "host": "vna2",
         "ssh_port": 2223,
         "interfaces": [ 
+          {
+            "name": "eth0",
+            "ipv4_address": "10.50.0.103"
+          },
           {
             "name": "eth1",
             "bridge": "br0",
@@ -38,6 +38,10 @@
         "host": "vna2",
         "ssh_port": 2224,
         "interfaces": [ 
+          {
+            "name": "eth0",
+            "ipv4_address": "10.50.0.104"
+          },
           {
             "name": "eth1",
             "bridge": "br0",

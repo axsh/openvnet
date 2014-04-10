@@ -1,19 +1,12 @@
 {
-  "run_list": ["role[vnmgr]"],
-  "vnet_common": {
-    "management_network": {
-      "ipaddr": "192.168.20.10",
-      "gateway": "192.168.20.1"
-    }
-  },
-  "vnet_vnmgr": {
+  "run_list": [
+    "role[vnmgr]"
+  ],
+  "vnet": {
+    "repositry_server": true,
     "config": {
-      "host": "192.168.20.10"
-    }
-  },
-  "vnet_webapi": {
-    "config": {
-      "host": "192.168.20.10"
+      "vnmgr": { "host": "192.168.20.10" },
+      "webapi": { "host": "192.168.20.10" }
     }
   }
 }

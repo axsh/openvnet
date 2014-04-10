@@ -3,8 +3,17 @@
     "yum": {
       "locked_version": "3.1.2"
     },
+    "yum-epel": {
+      "locked_version": "0.3.4"
+    },
+    "yum-repoforge": {
+      "locked_version": "0.2.0"
+    },
     "ntp": {
       "locked_version": "1.6.0"
+    },
+    "sysctl": {
+      "locked_version": "0.3.5"
     },
     "rbenv": {
       "locked_version": "1.7.1"
@@ -30,9 +39,6 @@
     "runit": {
       "locked_version": "1.5.10"
     },
-    "yum-epel": {
-      "locked_version": "0.3.4"
-    },
     "apt": {
       "locked_version": "2.3.8"
     },
@@ -53,9 +59,6 @@
     },
     "modules": {
       "locked_version": "0.2.0"
-    },
-    "sysctl": {
-      "locked_version": "0.3.5"
     }
   }
 }

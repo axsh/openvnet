@@ -1,0 +1,11 @@
+{
+  "run_list": ["recipe[vnet::router]"],
+  "vnet": {
+    "router": {
+      "ifconfig": [
+        { "device": "eth2", "target": "172.16.20.1" },
+        { "device": "eth3", "target": "172.16.30.1" }
+      ]
+    }
+  }
+}
