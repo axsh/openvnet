@@ -19,6 +19,7 @@ module Vnet::Models
       end
     end
 
+    # TODO: Is this really safe if interface_id is changed?
     def cookie_id
       self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count
     end

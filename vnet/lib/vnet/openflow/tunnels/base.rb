@@ -2,46 +2,43 @@
 
 module Vnet::Openflow::Tunnels
 
-  class Base
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :id
-    attr_reader :uuid
-    attr_reader :display_name
-    attr_reader :dst_id
-    attr_reader :dst_dpid
     attr_reader :dst_ipv4_address
     attr_reader :datapath_networks
-    attr_accessor :port_number
-    attr_accessor :src_interface_id
-    attr_accessor :dst_interface_id
+
+    attr_reader :dst_datapath_id
+    attr_reader :dst_interface_id
+    attr_reader :src_interface_id
+
+    attr_reader :tunnel_port_number
+    attr_reader :host_port_number
 
     def initialize(params)
-      @dp_info = params[:dp_info]
-      @manager = params[:manager]
+      super
 
       map = params[:map]
 
-      @id = map.id
-      @uuid = map.uuid
-      @display_name = map.display_name
-
-      @dst_id = map.dst_datapath_id
-
-      if map.dst_datapath
-        @dst_dpid = map.dst_datapath.dpid
-      end
-
-      @dst_interface = map.dst_interface
-      @src_interface = map.src_interface
-
-      @src_interface_id = map.src_interface_id
+      @dst_datapath_id = map.dst_datapath_id
       @dst_interface_id = map.dst_interface_id
+      @src_interface_id = map.src_interface_id
+
+      @tunnel_created = false
 
       @datapath_networks = []
+      @datapath_route_links = []
     end
     
+    def mode
+      :base
+    end
+
+    def log_type
+      'tunnels/base'
+    end
+
     def cookie(tag = nil)
       value = @id | COOKIE_TYPE_TUNNEL
       tag.nil? ? value : (value | (tag << COOKIE_TAG_SHIFT))
@@ -52,107 +49,140 @@ module Vnet::Openflow::Tunnels
                                  uuid: @uuid,
                                  port_name: @display_name,
 
-                                 dst_id: @dst_id,
-                                 dst_dpid: @dst_dpid,
+                                 dst_datapath_id: @dst_datapath_id,
+                                 dst_interface_id: @dst_interface_id,
+                                 src_interface_id: @src_interface_id,
+                                 dst_network_id: @dst_network_id,
+                                 src_network_id: @src_network_id,
                                  dst_ipv4_address: @dst_ipv4_address,
                                  src_ipv4_address: @src_ipv4_address,
 
-                                 datapath_networks_size: @datapath_networks.size,
-                                 )
+                                 datapath_networks_size: @datapath_networks.size)
     end
 
+    def unused?
+      @datapath_networks.empty? && @datapath_route_links.empty?
+    end
+
+    def has_network_id?(network_id)
+      @datapath_networks.any? { |dpn| dpn[:network_id] == network_id }
+    end
+
+    def detect_network_id?(network_id)
+      @datapath_networks.find { |dpn| dpn[:network_id] == network_id }
+    end
+
+    def update_mode(mode)
+      MW::Tunnel.batch.update_mode(@id, mode).commit
+    end
+
+    #
+    # Specialization:
+    #
+
     def install
-      if @dst_interface.nil?
-        error log_format("no valid destination interface loaded for #{@uuid}")
-        return
+      if @dst_network_id && @dst_ipv4_address &&
+          @src_network_id && @src_ipv4_address
+        #create_tunnel
       end
-
-      if @src_interface.nil?
-        error log_format("no valid source interface loaded for #{@uuid}")
-        return
-      end
-
-      @dst_ipv4_address = IPAddr.new(@dst_interface.ipv4_address, Socket::AF_INET)
-      @src_ipv4_address = IPAddr.new(@src_interface.ipv4_address, Socket::AF_INET)
-
-      if !@dst_ipv4_address.ipv4?
-        error log_format("no valid remote IPv4 address for #{@uuid}",
-                         "ip_address:#{@dst_ipv4_address.to_s}")
-        return
-      end
-
-      if !@src_ipv4_address.ipv4?
-        error log_format("no valid local IPv4 address for #{@uuid}",
-                         "ip_address:#{@src_ipv4_address.to_s}")
-        return
-      end
-
-      if !(@src_interface_id && @src_interface_id > 0) ||
-          !(@dst_interface_id && @dst_interface_id > 0)
-        error log_format("no valid src/dst interface id's found for #{@uuid}")
-        return
-      end
-
-      @dp_info.add_tunnel(@uuid,
-                          remote_ip: @dst_ipv4_address.to_s,
-                          local_ip: @src_ipv4_address.to_s)
-
-      flows = []
-
-      [true, false].each { |reflection|
-        flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_OVER_TUNNEL,
-                             goto_table: TABLE_OUT_PORT_TUNNEL,
-                             priority: 1,
-
-                             match_value_pair_flag: reflection,
-                             match_value_pair_first: @src_interface_id,
-                             match_value_pair_second: @dst_interface_id,
-
-                             clear_all: true,
-                             write_tunnel: @id,
-                             write_reflection: reflection)
-      }
-
-      @dp_info.add_flows(flows)
-
-      info log_format("install #{@display_name}", "ip_address:#{@dst_ipv4_address.to_s}")
     end
 
     def uninstall
-      debug log_format("removing flows")
-
-      @dp_info.delete_tunnel(@uuid)
-
-      # cookie_value = self.cookie
-      # cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
-
-      # @dp_info.del_cookie(cookie_value, cookie_mask)
+      delete_tunnel
     end
 
+    def create_tunnel
+    end
+
+    def delete_tunnel
+    end
+
+    def actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
+    end
+
+    #
+    # Events:
+    #
+    
     def add_datapath_network(datapath_network)
       return if @datapath_networks.detect { |d| d[:id] == datapath_network[:id] }
       @datapath_networks << datapath_network
     end
 
     def remove_datapath_network(dpn_id)
-      @datapath_networks.find { |d| d[:id] == dpn_id }.tap do |datapath_network|
-        @datapath_networks.delete(datapath_network) if datapath_network
-      end
+      @datapath_networks.delete_if { |d| d[:id] == dpn_id }
     end
 
-    def unused?
-      @datapath_networks.empty?
+    def add_datapath_route_link(datapath_route_link)
+      return if @datapath_route_links.detect { |d| d[:id] == datapath_route_link[:id] }
+      @datapath_route_links << datapath_route_link
     end
 
-    #
-    # Internal methods:
-    #
+    def remove_datapath_route_link(dprl_id)
+      @datapath_route_links.delete_if { |d| d[:id] == dprl_id }
+    end
 
-    private
+    def set_dst_ipv4_address(network_id, ipv4_address)
+      # Properly handle these case:
+      return if @dst_network_id || @dst_ipv4_address
+      return if network_id.nil? || ipv4_address.nil?
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} tunnels/base: #{message}" + (values ? " (#{values})" : '')
+      @dst_network_id = network_id
+      @dst_ipv4_address = ipv4_address
+
+      # Return if not installed or tunnel already created, and add a
+      # 'tunnel created' flag.
+      create_tunnel if @src_network_id && @src_ipv4_address # && installed?
+    end
+
+    def set_src_ipv4_address(network_id, ipv4_address)
+      # Properly handle these case:
+      return if @src_network_id || @src_ipv4_address
+      return if network_id.nil? || ipv4_address.nil?
+
+      @src_network_id = network_id
+      @src_ipv4_address = ipv4_address
+
+      # Return if not installed or tunnel already created, and add a
+      # 'tunnel created' flag.
+      create_tunnel if @dst_network_id && @dst_ipv4_address # && installed?
+    end
+
+    def set_tunnel_port_number(new_port_number, updated_networks)
+      return if new_port_number.nil?
+      return if new_port_number == @tunnel_port_number
+
+      @tunnel_port_number = new_port_number
+
+      return if self.mode != :gre
+
+      @datapath_networks.each { |dpn|
+        updated_networks[dpn[:network_id]] = true
+      }
+    end
+
+    def clear_tunnel_port_number(updated_networks)
+      return if @tunnel_port_number.nil?
+      @tunnel_port_number = nil
+
+      return if self.mode != :gre
+
+      @datapath_networks.each { |dpn|
+        updated_networks[dpn[:network_id]] = true
+      }
+    end
+
+    def set_host_port_number(new_port_number, updated_networks)
+      return if new_port_number.nil?
+      return if new_port_number == @host_port_number
+
+      @host_port_number = new_port_number
+
+      return if self.mode != :mac2mac
+
+      @datapath_networks.each { |dpn|
+        updated_networks[dpn[:network_id]] = true
+      }
     end
 
   end

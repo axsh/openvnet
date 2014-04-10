@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Openflow
-  class FilterManager < Manager
+  class FilterManager < Vnet::Manager
     include Vnet::Openflow::FlowHelpers
 
-    subscribe_event UPDATED_SG_RULES, :updated_filter
+    subscribe_event UPDATED_SG_RULES, :updated_sg_rules
+    subscribe_event UPDATED_SG_IP_ADDRESSES, :updated_sg_ip_addresses
     subscribe_event ADDED_INTERFACE_TO_SG, :added_interface_to_sg
     subscribe_event REMOVED_INTERFACE_FROM_SG, :removed_interface_from_sg
+    subscribe_event REMOVED_SECURITY_GROUP, :removed_security_group
 
     def initialize(*args)
       super(*args)
@@ -18,12 +20,19 @@ module Vnet::Openflow
     # Event handling
     #
 
-    def updated_filter(params)
+    def updated_sg_rules(params)
       item = internal_detect(id: params[:id])
       return if item.nil?
 
       info log_format("Updating rules for security group '#{item.uuid}'")
       item.update_rules(params[:rules])
+    end
+
+    def updated_sg_ip_addresses(params)
+      update_referencees(params[:id], params[:ip_addresses])
+
+      item = internal_detect(id: params[:id]) || return
+      updated_isolation(item, params[:ip_addresses])
     end
 
     def removed_interface_from_sg(params)
@@ -38,26 +47,40 @@ module Vnet::Openflow
 
         @items.delete(item.id) if item.interfaces.empty?
       end
-
-      updated_isolation(item, params[:isolation_ip_addresses])
     end
 
     def added_interface_to_sg(params)
-      item = item_by_params(id: params[:id]) || return
+      item = internal_detect(id: params[:id]) || return
 
-      updated_isolation(item, params[:isolation_ip_addresses])
-
-      unless is_remote?(params[:interface_owner_datapath_id], params[:interface_active_datapath_id])
-        log_interface_added(params[:interface_id], item.uuid)
+      interface = MW::Interface.batch[params[:interface_id]].commit
+      if !is_remote?(interface) && interface.ingress_filtering_enabled
+        log_interface_added(interface.uuid, item.uuid)
 
         item.add_interface(params[:interface_id], params[:interface_cookie_id])
         item.install(params[:interface_id])
       end
     end
 
+    def removed_security_group(params)
+      remove_referencee(params[:id])
+
+      item = @items.delete(params[:id]) || return
+
+      info log_format("removing security group", item.uuid)
+      item.uninstall
+    end
+
     #
     # The rest
     #
+
+    def remove_referencee(id)
+      @items.values.each { |i| i.remove_referencee(id) if i.references?(id) }
+    end
+
+    def update_referencees(id, ips)
+      @items.values.each {|i| i.update_referencee(id, ips) if i.references?(id)}
+    end
 
     def updated_isolation(item, ip_list)
       log_ips = ip_list.map { |i| IPAddress::IPv4.parse_u32(i).to_s }
@@ -76,7 +99,6 @@ module Vnet::Openflow
     end
 
     def apply_filters(interface)
-      #TODO: Check if we can't get rid of this argument raping
       interface = case interface
       when MW::Interface
         interface
@@ -124,6 +146,10 @@ module Vnet::Openflow
 
     def accept_ingress_arp
       Filters::AcceptIngressArp.new.tap {|i| i.dp_info = @dp_info}
+    end
+
+    def is_remote?(interface)
+      super(interface.owner_datapath_id, interface.active_datapath_id)
     end
   end
 end

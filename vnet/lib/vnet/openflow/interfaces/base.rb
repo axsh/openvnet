@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Interfaces
 
-  class Base
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::AddressHelpers
     include Vnet::Openflow::FlowHelpers
@@ -26,8 +26,6 @@ module Vnet::Openflow::Interfaces
     TAG_ICMP_REQUEST          = 0x6
     TAG_DISABLED_FILTERING    = 0x7
 
-    attr_accessor :id
-    attr_accessor :uuid
     attr_accessor :mode
     attr_accessor :port_name
     attr_accessor :active_datapath_ids
@@ -40,16 +38,13 @@ module Vnet::Openflow::Interfaces
     attr_reader :mac_addresses
 
     def initialize(params)
-      @dp_info = params[:dp_info]
+      super
+
       @manager = params[:manager]
 
       map = params[:map]
-
-      @id = map.id
-      @uuid = map.uuid
       @mode = map.mode.to_sym
       @port_name = map.port_name
-
       @display_name = map.display_name
 
       @mac_addresses = {}
@@ -209,7 +204,7 @@ module Vnet::Openflow::Interfaces
 
       dispatch_event(UPDATED_INTERFACE,
                      event: :remote_datapath_id,
-                     id: id,
+                     id: @id,
                      datapath_id: @active_datapath_ids.first,
                      ipv4_addresses: addresses)
     end

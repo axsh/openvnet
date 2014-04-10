@@ -25,6 +25,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
 
     required_params = []
 
+    # Consider deprecating this:
+    if params['port_name'].nil? && params['uuid']
+      params['port_name'] = params['uuid']
+    end
+
     post_new(:Interface, accepted_params, required_params, fill) { |params|
       check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
       check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
@@ -66,7 +71,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
     M::InterfaceSecurityGroup.create(params)
-    respond_with(R::Interface.security_groups(interface))
+
+    respond_with(R::SecurityGroup.generate(security_group))
   end
 
   get '/:uuid/security_groups' do
@@ -86,6 +92,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     # We call the destroy class method so we go trough NodeApi and send an
     # update isolation event
     relations.each { |r| M::InterfaceSecurityGroup.destroy(r.id) }
-    respond_with(R::Interface.security_groups(interface))
+    respond_with([security_group.uuid])
   end
 end

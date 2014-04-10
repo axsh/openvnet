@@ -20,8 +20,13 @@ shared_examples "GET /" do
     context "with no entries in the database" do
       let(:entries) { 0 }
 
-      it "should return empty json" do
-        expect(last_response).to succeed.with_empty_body
+      it "should return json with empty items" do
+        expect(last_response).to succeed.with_body({
+          "total_count" => 0,
+          "offset" =>  0,
+          "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
+          "items" => [],
+        })
       end
     end
 

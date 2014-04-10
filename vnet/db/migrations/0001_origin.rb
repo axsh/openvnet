@@ -8,8 +8,6 @@ Sequel.migration do
       String :display_name, :null=>false
       FalseClass :is_connected, :null=>false, :default => false
       Bignum :dpid, :null=>false
-      Integer :dc_segment_id, :index => true
-      Bignum :ipv4_address, :null=>false
       String :node_id, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
@@ -35,13 +33,6 @@ Sequel.migration do
       Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
       FalseClass :is_connected, :null=>false
-    end
-
-    create_table(:dc_segments) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
     end
 
     create_table(:dhcp_ranges) do
@@ -222,19 +213,21 @@ Sequel.migration do
       DateTime :deleted_at
     end
 
-    create_table(:translate_static_addresses) do
+    create_table(:translation_static_addresses) do
       primary_key :id
 
       Integer :translation_id, :index => true, :null => false
 
       Bignum :ingress_ipv4_address, :index => true, :null => false
       Bignum :egress_ipv4_address, :index => true, :null => false
+
+      unique [:translation_id, :ingress_ipv4_address, :egress_ipv4_address]
     end
 
     create_table(:tunnels) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      String :display_name, :index => true
+      String :mode, :null=>false
 
       Integer :src_datapath_id, :index => true, :null => false
       Integer :dst_datapath_id, :index => true, :null => false
@@ -249,6 +242,7 @@ Sequel.migration do
 
     create_table(:vlan_translations) do
       primary_key :id
+      String :uuid, :unique => true, :null => false
       Integer :translation_id, :index => true
       Bignum :mac_address
       Integer :vlan_id
@@ -260,7 +254,6 @@ Sequel.migration do
     drop_table(:datapaths,
                :datapath_networks,
                :datapath_route_links,
-               :dc_segments,
                :dhcp_ranges,
                :interfaces,
                :interface_security_groups,
@@ -273,6 +266,8 @@ Sequel.migration do
                :routes,
                :route_links,
                :security_groups,
+               :translation,
+               :translation_static_addresses,
                :tunnels,
                :vlan_translations
                )

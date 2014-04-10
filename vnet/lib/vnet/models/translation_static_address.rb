@@ -2,7 +2,7 @@
 
 module Vnet::Models
 
-  class TranslateStaticAddress < Base
+  class TranslationStaticAddress < Base
 
     many_to_one :translation
 

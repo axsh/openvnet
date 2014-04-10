@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Endpoints::V10::Responses
-  class Translation < Vnet::Endpoints::ResponseGenerator
+  class Translation < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::Translation)
       object.to_hash
     end
 
-    def self.translate_static_addresses(object)
+    def self.translation_static_addresses(object)
       argument_type_check(object,Vnet::ModelWrappers::Translation)
       {
         :uuid => object.uuid,
-        # :translate_static_addresses => DatapathNetworkCollection.generate(
+        # :translation_static_addresses => DatapathNetworkCollection.generate(
         #   datapath.batch.datapath_networks.commit
         # )
       }
@@ -19,7 +19,7 @@ module Vnet::Endpoints::V10::Responses
 
   end
 
-  class TranslationCollection < Vnet::Endpoints::ResponseGenerator
+  class TranslationCollection < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|

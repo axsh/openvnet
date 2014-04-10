@@ -8,7 +8,7 @@ class MacAddr
       @addr_i = addr
     when String
       @addr_s = addr
-      @addr_i = addr.delete(":").to_i
+      @addr_i = addr.delete(":").hex
     end
   end
 

@@ -8,7 +8,7 @@ set -e
 ovs_version="1.10.0"
 
 work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
-package_work_dir=${work_dir}/packages.d/third_party/wakame-vnet-openvswitch
+package_work_dir=${work_dir}/packages.d/third_party/openvnet-openvswitch
 possible_archs="i386 noarch x86_64"
 
 rpmdev-setuptree

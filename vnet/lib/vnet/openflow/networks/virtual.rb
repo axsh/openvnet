@@ -8,6 +8,10 @@ module Vnet::Openflow::Networks
       :virtual
     end
 
+    def log_type
+      'network/virtual'
+    end
+
     def flow_options
       @flow_options ||= {:cookie => @cookie}
     end
@@ -60,7 +64,7 @@ module Vnet::Openflow::Networks
       flows = []
       flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
                            md_create(:network => @id),
-                           flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_SEGMENT))
+                           flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
 
       @dp_info.add_flows(flows)
     end

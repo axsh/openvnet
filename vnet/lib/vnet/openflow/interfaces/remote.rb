@@ -26,6 +26,15 @@ module Vnet::Openflow::Interfaces
 
       # flows = []
       # @dp_info.add_flows(flows)
+
+      if @remote_mode == :host
+        @dp_info.tunnel_manager.async.update(event: :updated_interface,
+                                             interface_event: :added_ipv4_address,
+                                             interface_mode: :remote,
+                                             interface_id: @id,
+                                             network_id: ipv4_info[:network_id],
+                                             ipv4_address: ipv4_info[:ipv4_address])
+      end
     end
 
     def enable_router_egress

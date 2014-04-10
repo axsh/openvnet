@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Openflow::Filters
-  class Base
+
+  class Base < Vnet::ItemBase
     include Vnet::Openflow::FlowHelpers
 
     attr_accessor :dp_info
@@ -17,6 +18,11 @@ module Vnet::Openflow::Filters
     COOKIE_TYPE_VALUE_MASK  = 0xfffff << COOKIE_TYPE_VALUE_SHIFT
 
     COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
+
+    def initialize
+      # TODO: Support proper params initialization:
+      super({})
+    end
 
     # We make a class method out of cookie so we can access
     # it easily in unit tests.

@@ -13,33 +13,69 @@ module Vnet::Openflow::Datapaths
       true
     end
 
+    def log_type
+      'datapath/host'
+    end
+
+    #
+    # Events:
+    #
+
     def uninstall
       super
       @dp_info.interface_manager.update_item(event: :remove_all_active_datapath)
       @dp_info.datapath.reset
     end
 
+    def activate_network_id(network_id)
+      network = @active_networks[network_id] || return
+
+      return if network[:active] == true
+      network[:active] == true
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_NETWORK,
+                                      id: :datapath_network,
+                                      dp_obj: network)
+    end
+
+    def deactivate_network_id(network_id)
+      network = @active_networks[network_id] || return
+
+      return if network[:active] == false
+      network[:active] == false
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_NETWORK,
+                                      id: :datapath_network,
+                                      dp_obj: network)
+    end
+
+    def activate_route_link_id(route_link_id)
+      route_link = @active_route_links[route_link_id] || return
+
+      return if route_link[:active] == true
+      route_link[:active] == true
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_ROUTE_LINK,
+                                      id: :datapath_route_link,
+                                      dp_obj: route_link)
+    end
+
+    def deactivate_route_link_id(route_link_id)
+      route_link = @active_route_links[route_link_id] || return
+
+      return if route_link[:active] == false
+      route_link[:active] == false
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_ROUTE_LINK,
+                                      id: :datapath_route_link,
+                                      dp_obj: route_link)
+    end
+
+    #
+    # Internal methods:
+    #
+
     private
-
-    def after_add_active_network(active_network)
-      @dp_info.dc_segment_manager.async.prepare_network(active_network[:id])
-      @dp_info.tunnel_manager.async.prepare_network(active_network[:id])
-
-      flows = []
-      flows_for_filtering_mac_address(flows,
-                                      active_network[:broadcast_mac_address],
-                                      active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
-      @dp_info.add_flows(flows)
-    end
-
-    def after_remove_active_network(active_network)
-      @dp_info.dc_segment_manager.async.remove_network_id(active_network[:network_id])
-      @dp_info.tunnel_manager.async.remove_network(active_network[:network_id])
-    end
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} datapaths/host: #{message}" + (values ? " (#{values})" : '')
-    end
 
     def flows_for_dp_network(flows, dp_nw)
       flows << flow_create(:default,
@@ -94,6 +130,23 @@ module Vnet::Openflow::Datapaths
     end
 
     def flows_for_dp_route_link(flows, dp_rl)
+      # The router manager does not know about the dp_rl's mac
+      # address, so we create the flow here.
+      #
+      # TODO: Add verification of the ingress host interface.
+      flows << flow_create(:default,
+                           table: TABLE_TUNNEL_NETWORK_IDS,
+                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           priority: 30,
+
+                           match: {
+                             :tunnel_id => TUNNEL_ROUTE_LINK,
+                             :eth_dst => dp_rl[:mac_address]
+                           },
+                           write_route_link: dp_rl[:route_link_id],
+
+                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
       # We match the route link id stored in the first value field
       # with the dp_rl associated with this datapath, and then prepare
       # for the next table by storing the source host interface in the
@@ -111,7 +164,7 @@ module Vnet::Openflow::Datapaths
                              :eth_dst => dp_rl[:mac_address]
                            },
                            match_interface: dp_rl[:interface_id],
-                           write_route_link: @id,
+                           write_route_link: dp_rl[:route_link_id],
 
                            cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
 

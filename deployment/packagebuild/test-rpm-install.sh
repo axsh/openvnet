@@ -57,16 +57,16 @@ function create_chroot_cache(){
   cp ${chroot_cache_dir}/etc/skel/.??* ${chroot_cache_dir}/root/
   cp /etc/resolv.conf ${chroot_cache_dir}/etc/
   cp /etc/hosts ${chroot_cache_dir}/etc/
-  cat <<EOS > ${chroot_cache_dir}/etc/yum.repos.d/wakame-vnet.repo
-[wakame-vnet]
-name=Wakame-Vnet
+  cat <<EOS > ${chroot_cache_dir}/etc/yum.repos.d/openvnet.repo
+[openvnet]
+name=OpenVNet
 baseurl=file:///repo/vnet/
 enabled=1
 gpgcheck=0
 EOS
-  cat <<EOS > ${chroot_cache_dir}/etc/yum.repos.d/wakame-vnet-third-party.repo
-[wakame-vnet-third-party]
-name=Wakame-Vnet-Third-Party
+  cat <<EOS > ${chroot_cache_dir}/etc/yum.repos.d/openvnet-third-party.repo
+[openvnet-third-party]
+name=OpenVNet-Third-Party
 baseurl=file:///repo/third_party/
 enabled=1
 gpgcheck=0
@@ -74,7 +74,7 @@ EOS
 }
 
 function install_rpm(){
-  chroot ${chroot_dir}/ yum install -y wakame-vnet
+  chroot ${chroot_dir}/ yum install -y openvnet
 }
 
 #trap "umount_for_chroot" ERR

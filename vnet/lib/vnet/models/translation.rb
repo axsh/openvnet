@@ -7,7 +7,7 @@ module Vnet::Models
 
     many_to_one :interface
 
-    one_to_many :translate_static_addresses
+    one_to_many :translation_static_addresses
 
     subset(:alives, {})
 

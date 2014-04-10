@@ -4,6 +4,10 @@ module Vnet::Openflow::Ports
   module Generic
     include Vnet::Openflow::FlowHelpers
 
+    def log_type
+      'port/generic'
+    end
+
     def port_type
       :generic
     end

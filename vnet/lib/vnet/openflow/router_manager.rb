@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class RouterManager < Manager
+  class RouterManager < Vnet::Manager
 
     #
     # Events:
@@ -39,12 +39,10 @@ module Vnet::Openflow
       create_batch(MW::RouteLink.batch, params[:uuid], filters)
     end
 
-    def select_item(filter)
-      filter.commit(fill: :routes)
-    end
-
     def item_initialize(item_map, params)
-      Routers::RouteLink.new(dp_info: @dp_info, manager: self, map: item_map)
+      Routers::RouteLink.new(dp_info: @dp_info,
+                             manager: self,
+                             map: item_map)
     end
 
     def initialized_item_event
@@ -52,35 +50,31 @@ module Vnet::Openflow
     end
 
     def create_item(params)
-      item = @items[params[:item_map].id]
-      return unless item
+      @items[params[:id]] && return
 
-      item
+      self.retrieve(params)
     end
 
     def install_item(params)
-      item = @items[params[:item_map].id]
-      return nil if item.nil?
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
       item.install
 
-      @dp_info.datapath_manager.async.update_item(event: :activate_route_link,
-                                                  route_link_id: item.id)
+      @dp_info.datapath_manager.async.update(event: :activate_route_link,
+                                             route_link_id: item.id)
 
       debug log_format("install #{item.uuid}/#{item.id}")
 
-      params[:item_map].routes.each { |route_map|
-        @dp_info.route_manager.async.retrieve(id: route_map.id)
-      }
-
-      item
+      @dp_info.route_manager.async.publish(Vnet::Event::ROUTE_ACTIVATE_ROUTE_LINK,
+                                           id: :route_link,
+                                           route_link_id: item.id)
     end
 
     def delete_item(item)
       @items.delete(item.id)
 
       item.uninstall
-      item
     end
 
     #

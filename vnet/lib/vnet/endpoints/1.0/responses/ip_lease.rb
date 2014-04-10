@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Endpoints::V10::Responses
-  class IpLease < Vnet::Endpoints::ResponseGenerator
+  class IpLease < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::IpLease)
       object.interface_uuid ||= object.interface.uuid
@@ -12,7 +12,7 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
-  class IpLeaseCollection < Vnet::Endpoints::ResponseGenerator
+  class IpLeaseCollection < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i|

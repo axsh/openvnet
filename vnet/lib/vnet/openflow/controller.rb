@@ -125,12 +125,15 @@ module Vnet::Openflow
     end
 
     def terminate_datapath(dpid)
+      datapath = @datapaths.delete(dpid)
+
+      if datapath.nil?
+        info "could not terminate datapath actor, not found. dpid: 0x%016x" % dpid
+        return
+      end
+
       info "terminate datapath actor. dpid: 0x%016x" % dpid
 
-      datapath = @datapaths.delete(dpid)
-      return unless datapath
-
-      datapath[:datapath].del_all_flows
       datapath[:datapath].terminate
     end
 

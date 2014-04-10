@@ -16,7 +16,9 @@ RSpec::Matchers.define :fail do
   def expect_error
     @error_details.nil? || (
       body = JSON.parse(last_response.body)
-      body["error"] == "Vnet::Endpoints::Errors::#{@error_details[:name]}" &&
+
+      (body["error"] == @error_details[:name] ||
+      body["error"] == "Vnet::Endpoints::Errors::#{@error_details[:name]}") &&
       verify_message(@error_details[:message], body["message"])
     )
   end

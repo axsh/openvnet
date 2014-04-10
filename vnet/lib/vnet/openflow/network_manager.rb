@@ -4,7 +4,7 @@ require 'celluloid'
 
 module Vnet::Openflow
 
-  class NetworkManager < Manager
+  class NetworkManager < Vnet::Manager
     include Celluloid::Logger
     include Vnet::Constants::Openflow
     include Vnet::Event::Dispatchable
@@ -106,14 +106,17 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      case item_map.network_mode.to_sym
-      when :physical then Networks::Physical.new(@dp_info, item_map)
-      when :virtual then Networks::Virtual.new(@dp_info, item_map)
-      else
-        error log_format('unknown network type',
-                         "network_type:#{item_map.network_mode}")
-        return nil
-      end
+      item_class =
+        case item_map.network_mode
+        when 'physical' then Networks::Physical
+        when 'virtual'  then Networks::Virtual
+        else
+          error log_format('unknown network type',
+                           "network_type:#{item_map.network_mode}")
+          return nil
+        end
+
+      item_class.new(@dp_info, item_map)
     end
 
     def initialized_item_event
@@ -127,9 +130,8 @@ module Vnet::Openflow
     end
 
     def create_item(params)
-      item_map = params[:item_map]
-      network = @items[item_map.id]
-      return unless network
+      item_map = params[:item_map] || return
+      network = @items[item_map.id] || return
 
       debug log_format("create #{item_map.uuid}/#{item_map.id}")
 
@@ -138,16 +140,19 @@ module Vnet::Openflow
         return network
       end
 
-      network.set_datapath_of_bridge(@datapath_info)
-
       network.install
       network.update_flows
+
+      @dp_info.datapath_manager.async.update(event: :activate_network,
+                                             network_id: network.id)
 
       item_map.network_services.each { |service_map|
         @dp_info.service_manager.async.item(id: service_map.id)
       }
 
-      @dp_info.route_manager.async.prepare_network(item_map, @datapath_info)
+      @dp_info.route_manager.async.publish(Vnet::Event::ROUTE_ACTIVATE_NETWORK,
+                                           id: :network,
+                                           network_id: network.id)
 
       network
     end
@@ -169,6 +174,9 @@ module Vnet::Openflow
       @items.delete(item.id)
 
       item.uninstall
+
+      @dp_info.datapath_manager.async.update(event: :deactivate_network,
+                                             network_id: item.id)
 
       dispatch_event("network/deleted",
                      id: item.id,

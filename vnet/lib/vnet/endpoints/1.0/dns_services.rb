@@ -46,9 +46,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
     params[:ipv4_address] = parse_ipv4(params[:ipv4_address])
     params[:dns_service_id] = dns_service.id
 
-    M::DnsRecord.create(params)
+    dns_record = M::DnsRecord.create(params)
 
-    respond_with(R::DnsService.dns_records(dns_service))
+    respond_with(R::DnsRecord.generate(dns_record))
   end
 
   get '/:uuid/dns_records' do
@@ -63,6 +63,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
 
     M::DnsRecord.destroy(dns_record.uuid)
 
-    respond_with R::DnsService.dns_records(dns_service)
+    respond_with([dns_record.uuid])
   end
 end

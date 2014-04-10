@@ -5,7 +5,9 @@ module Vnet::Openflow::Ports
   module Local
     include Vnet::Openflow::FlowHelpers
 
-    attr_accessor :ipv4_addr
+    def log_type
+      'port/local'
+    end
 
     def port_type
       :local

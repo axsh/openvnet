@@ -15,6 +15,10 @@ module Vnet::Openflow::Services
       @dns_service = {}
     end
 
+    def log_type
+      'service/dns'
+    end
+
     def install
       flows = []
       flows << flow_create(:default,

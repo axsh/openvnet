@@ -5,8 +5,6 @@ module Vnet::Models
     taggable 'if'
 
     one_to_many :ip_leases
-    one_to_many :ip_addresses, :join_table => :ip_leases
-    one_to_many :networks, :join_table => :ip_addresses
     one_to_many :mac_leases
     one_to_many :network_services
     one_to_many :routes
@@ -38,6 +36,14 @@ module Vnet::Models
     # We override this method for the same reason
     def remove_security_group(sg)
       InterfaceSecurityGroup.filter(interface_id: id, security_group_id: sg.id).destroy
+    end
+
+    def ip_addresses_dataset
+      IpAddress.where(ip_lease: self.ip_leases_dataset)
+    end
+
+    def ip_addresses
+      ip_addresses_dataset.all
     end
 
     def port_name
