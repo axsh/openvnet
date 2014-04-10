@@ -3,27 +3,24 @@ module Vnet
   module Event
 
     #
-    # interface event
+    # Interface events:
     #
 
     # interface
-    ADDED_INTERFACE = "added_interface"
-    REMOVED_INTERFACE = "removed_interface"
-    INITIALIZED_INTERFACE = "initialized_interface"
-    UPDATED_INTERFACE = "updated_interface"
-    ENABLED_INTERFACE_FILTERING = "enabled_interface_filtering"
-    DISABLED_INTERFACE_FILTERING = "disabled_interface_filtering"
+    INTERFACE_INITIALIZED = "interface_initialized"
+    INTERFACE_CREATED_ITEM = "interface_created_item"
+    INTERFACE_DELETED_ITEM = "interface_deleted_item"
 
-    # ipv4 address
-    LEASED_IPV4_ADDRESS = "leased_ipv4_address"
-    RELEASED_IPV4_ADDRESS = "released_ipv4_address"
+    INTERFACE_UPDATED = "interface_updated"
+    INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
+    INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
+    INTERFACE_REMOVED_ACTIVE_DATAPATH = "interface_removed_active_datapath"
 
-    # mac address
-    LEASED_MAC_ADDRESS = "leased_mac_address"
-    RELEASED_MAC_ADDRESS = "released_mac_address"
-
-    # active_datapath
-    REMOVED_ACTIVE_DATAPATH = "removed_active_datapath"
+    # MAC and IPv4 addresses:
+    INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
+    INTERFACE_RELEASED_MAC_ADDRESS = "interface_released_mac_address"
+    INTERFACE_LEASED_IPV4_ADDRESS = "interface_leased_ipv4_address"
+    INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
 
     #
     # Datapath events:

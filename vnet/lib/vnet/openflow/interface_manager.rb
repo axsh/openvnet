@@ -7,28 +7,28 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event ADDED_INTERFACE, :create_item
-    subscribe_event REMOVED_INTERFACE, :unload
-    subscribe_event INITIALIZED_INTERFACE, :install_item
-    subscribe_event UPDATED_INTERFACE, :update_item_exclusively
+    subscribe_event INTERFACE_CREATED_ITEM, :create_item
+    subscribe_event INTERFACE_DELETED_ITEM, :unload
+    subscribe_event INTERFACE_INITIALIZED, :install_item
 
-    subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
-    subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
-    subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
-    subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
+    subscribe_event INTERFACE_UPDATED, :update_item_exclusively
+    subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
+    subscribe_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
+    subscribe_event INTERFACE_REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
 
-    subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
-    subscribe_event ENABLED_INTERFACE_FILTERING, :enabled_filtering
-    subscribe_event DISABLED_INTERFACE_FILTERING, :disabled_filtering
+    subscribe_event INTERFACE_LEASED_MAC_ADDRESS, :leased_mac_address
+    subscribe_event INTERFACE_RELEASED_MAC_ADDRESS, :released_mac_address
+    subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
+    subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
 
     def update_item(params)
       case params[:event]
       when :remove_all_active_datapath
         @items.each do |_, item|
-          publish(UPDATED_INTERFACE, event: :active_datapath_id, id: item.id, datapath_id: nil)
+          publish(INTERFACE_UPDATED, event: :active_datapath_id, id: item.id, datapath_id: nil)
         end
       else
-        publish(UPDATED_INTERFACE, params)
+        publish(INTERFACE_UPDATED, params)
       end
     end
 
@@ -113,7 +113,7 @@ module Vnet::Openflow
     end
 
     def initialized_item_event
-      INITIALIZED_INTERFACE
+      INTERFACE_INITIALIZED
     end
 
     #
@@ -218,17 +218,17 @@ module Vnet::Openflow
       mac_leases = item_map.batch.mac_leases.commit(fill: [:cookie_id, :ip_leases => [:cookie_id, :ip_address]])
 
       mac_leases.each do |mac_lease|
-        publish(LEASED_MAC_ADDRESS, id: item_map.id,
+        publish(INTERFACE_LEASED_MAC_ADDRESS, id: item_map.id,
                                     mac_lease_id: mac_lease.id,
                                     mac_address: mac_lease.mac_address)
 
         mac_lease.ip_leases.each do |ip_lease|
-          publish(LEASED_IPV4_ADDRESS, id: item_map.id, ip_lease_id: ip_lease.id)
+          publish(INTERFACE_LEASED_IPV4_ADDRESS, id: item_map.id, ip_lease_id: ip_lease.id)
         end
       end
     end
 
-    # LEASED_MAC_ADDRESS on queue 'item.id'
+    # INTERFACE_LEASED_MAC_ADDRESS on queue 'item.id'
     def leased_mac_address(params)
       item = @items[params[:id]] || return
 
@@ -245,7 +245,7 @@ module Vnet::Openflow
         @dp_info.connection_manager.async.catch_new_egress(mac_lease.id, mac_address)
     end
 
-    # RELEASED_MAC_ADDRESS on queue 'item.id'
+    # INTERFACE_RELEASED_MAC_ADDRESS on queue 'item.id'
     def released_mac_address(params)
       item = @items[params[:id]] || return
 
@@ -259,7 +259,7 @@ module Vnet::Openflow
       @dp_info.connection_manager.async.close_connections(params[:mac_lease_id])
     end
 
-    # LEASED_IPV4_ADDRESS on queue 'item.id'
+    # INTERFACE_LEASED_IPV4_ADDRESS on queue 'item.id'
     def leased_ipv4_address(params)
       ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address, :cookie_id])
       return unless ip_lease
@@ -289,7 +289,7 @@ module Vnet::Openflow
                             ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
     end
 
-    # RELEASED_IPV4_ADDRESS on queue 'item.id'
+    # INTERFACE_RELEASED_IPV4_ADDRESS on queue 'item.id'
     def released_ipv4_address(params)
       item = @items[params[:id]] || return
 
@@ -300,7 +300,7 @@ module Vnet::Openflow
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
     end
 
-    # ENABLED_INTERFACE_FILTERING on queue 'item.id'
+    # INTERFACE_ENABLED_FILTERING on queue 'item.id'
     def enabled_filtering(params)
       item = @items[params[:id]]
       return if !item || item.ingress_filtering_enabled
@@ -309,7 +309,7 @@ module Vnet::Openflow
       item.enable_filtering
     end
 
-    # DISABLED_INTERFACE_FILTERING on queue 'item.id'
+    # INTERFACE_DISABLED_FILTERING on queue 'item.id'
     def disabled_filtering(params)
       item = @items[params[:id]]
       return if !item || !item.ingress_filtering_enabled

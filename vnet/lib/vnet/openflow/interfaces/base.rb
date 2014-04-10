@@ -156,7 +156,7 @@ module Vnet::Openflow::Interfaces
           (@owner_datapath_ids && interface.owner_datapath_id.nil?)
         # update_owner_datapath(interface.owner_datapath_id)
 
-        @manager.publish(UPDATED_INTERFACE,
+        @manager.publish(INTERFACE_UPDATED,
                          event: :owner_datapath_id,
                          id: @id,
                          owner_datapath_id: interface.owner_datapath_id,
@@ -202,7 +202,7 @@ module Vnet::Openflow::Interfaces
         { network_id: i[:network_id], ipv4_address: i[:ipv4_address].to_i }
       }
 
-      dispatch_event(UPDATED_INTERFACE,
+      dispatch_event(INTERFACE_UPDATED,
                      event: :remote_datapath_id,
                      id: @id,
                      datapath_id: @active_datapath_ids.first,
