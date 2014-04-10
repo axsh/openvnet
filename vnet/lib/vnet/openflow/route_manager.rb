@@ -97,8 +97,9 @@ module Vnet::Openflow
       @dp_info.interface_manager.async.retrieve(id: item.interface_id)
 
       # TODO: Router egress is a property of the interface...(?)
-      @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
-                                                   id: item.interface_id)
+      @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
+                                         event: :enable_router_egress,
+                                         id: item.interface_id)
     end
     
     def created_item(params)

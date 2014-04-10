@@ -6,7 +6,6 @@ module Vnet
     # Interface events:
     #
 
-    # interface
     INTERFACE_INITIALIZED = "interface_initialized"
     INTERFACE_CREATED_ITEM = "interface_created_item"
     INTERFACE_DELETED_ITEM = "interface_deleted_item"
@@ -14,7 +13,7 @@ module Vnet
     INTERFACE_UPDATED = "interface_updated"
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
-    INTERFACE_REMOVED_ACTIVE_DATAPATH = "interface_removed_active_datapath"
+    INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS = "interface_remove_all_active_datapaths"
 
     # MAC and IPv4 addresses:
     INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"

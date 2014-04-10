@@ -14,23 +14,12 @@ module Vnet::Openflow
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
     subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
     subscribe_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
-    subscribe_event INTERFACE_REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
+    subscribe_event INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS, :remove_all_active_datapaths
 
     subscribe_event INTERFACE_LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event INTERFACE_RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
-
-    def update_item(params)
-      case params[:event]
-      when :remove_all_active_datapath
-        @items.each do |_, item|
-          publish(INTERFACE_UPDATED, event: :active_datapath_id, id: item.id, datapath_id: nil)
-        end
-      else
-        publish(INTERFACE_UPDATED, params)
-      end
-    end
 
     # Deprecate this...
     def get_ipv4_address(params)
@@ -38,12 +27,6 @@ module Vnet::Openflow
       return nil if interface.nil?
 
       interface.get_ipv4_address(params)
-    end
-
-    def del_flows_for_active_datapath(params)
-      @items.values.each do |item|
-        item.del_flows_for_active_datapath(params[:ipv4_addresses])
-      end
     end
 
     #
@@ -205,7 +188,7 @@ module Vnet::Openflow
     end
 
     #
-    # Event handlers:
+    # Address events:
     #
 
     # load addresses on queue 'item.id'
@@ -318,6 +301,19 @@ module Vnet::Openflow
       item.disable_filtering
     end
 
+    #
+    # Update events:
+    #
+
+    # INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS on queue '???'
+    def remove_all_active_datapaths
+      # TODO: Make sure we don't set active datapath for items
+      # installed after this call.
+      @items.keys.each do |item_id|
+        publish(INTERFACE_UPDATED, event: :active_datapath_id, id: item_id, datapath_id: nil)
+      end
+    end
+
     def update_item_exclusively(params)
       id = params.fetch(:id) || return
       event = params[:event] || return
@@ -336,7 +332,12 @@ module Vnet::Openflow
 
       when :remote_datapath_id
         item.update_remote_datapath(params)
-        del_flows_for_active_datapath(params) if params[:datapath_id].nil?
+
+        if params[:datapath_id].nil?
+          @items.values.each do |item|
+            item.del_flows_for_active_datapath(params[:ipv4_addresses])
+          end
+        end
 
       when :owner_datapath_id
         delete_item(item)
