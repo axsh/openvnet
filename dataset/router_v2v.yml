@@ -46,12 +46,6 @@ interfaces:
     mac_address: "02:00:00:00:00:06"
     ipv4_address: 10.102.0.12
 
-  - uuid: if-dhcppub
-    network_uuid: nw-public
-    mac_address: "02:00:00:00:01:11"
-    ipv4_address: <%= public_dhcp_ipv4_address %>
-    mode: simulated
-
   - uuid: if-dhcp1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:01:01"
@@ -79,17 +73,13 @@ interfaces:
     enable_routing: true
 
   - uuid: if-routerpub
-    network_uuid: nw-public
+    network_uuid: nw-public1
     mac_address: "02:00:00:00:02:11"
     ipv4_address: <%= public_router_ipv4_address  %>
     mode: simulated
     enable_routing: true
 
 network_services:
-
-  - uuid: ns-dhcppub
-    interface_uuid: if-dhcppub
-    type: dhcp
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
@@ -110,11 +100,6 @@ network_services:
 datapath_networks:
 
   - datapath_uuid: dp-1
-    network_uuid: nw-public
-    interface_uuid: if-dp1eth0
-    broadcast_mac_address: "02:00:00:aa:01:01"
-
-  - datapath_uuid: dp-1
     network_uuid: nw-vnet1
     interface_uuid: if-dp1eth0
     broadcast_mac_address: "02:00:00:aa:00:01"
@@ -125,11 +110,6 @@ datapath_networks:
     broadcast_mac_address: "02:00:00:aa:00:02"
 
   - datapath_uuid: dp-2
-    network_uuid: nw-public
-    interface_uuid: if-dp2eth0
-    broadcast_mac_address: "02:00:00:bb:01:01"
-
-  - datapath_uuid: dp-2
     network_uuid: nw-vnet1
     interface_uuid: if-dp2eth0
     broadcast_mac_address: "02:00:00:bb:00:01"
@@ -138,11 +118,6 @@ datapath_networks:
     network_uuid: nw-vnet2
     interface_uuid: if-dp2eth0
     broadcast_mac_address: "02:00:00:bb:00:02"
-
-  - datapath_uuid: dp-3
-    network_uuid: nw-public
-    interface_uuid: if-dp3eth0
-    broadcast_mac_address: "02:00:00:cc:01:01"
 
   - datapath_uuid: dp-3
     network_uuid: nw-vnet1
@@ -160,6 +135,7 @@ route_links:
     mac_address: "02:00:10:00:00:01"
 
 datapath_route_links:
+
   - datapath_uuid: dp-1
     route_link_uuid: rl-1
     interface_uuid: if-dp1eth0

@@ -93,4 +93,4 @@ vms:
 legacy_machines:
   legacy1:
     ssh_ip: 192.168.20.31
-    ipv4_address: 192.168.100.100
+    ipv4_address: 10.101.0.100

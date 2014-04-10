@@ -120,6 +120,18 @@ module Vnspec
       def remove_mac_lease(uuid)
         mac_leases(uuid).tap(&:destroy)
       end
+
+      def add_security_group(uuid)
+        Vnspec::API.request(:post, "interfaces/#{@uuid}/security_groups/#{uuid}")
+      end
+
+      def remove_security_group(uuid)
+        Vnspec::API.request(:delete, "interfaces/#{@uuid}/security_groups/#{uuid}")
+      end
+
+      def enabled?
+        !! @enabled
+      end
     end
 
     class MacLease < Base
@@ -198,11 +210,9 @@ module Vnspec
 
       def initialize(options)
         @node_id = options.fetch(:node_id)
-        @ipv4_address = options.fetch(:ipv4_address)
         @dpid = options.fetch(:dpid)
 
         @display_name = options[:display_name]
-        @dc_segment_uuid = options[:dc_segment_uuid]
         @datapath_networks = []
         @datapath_networks_loaded = false
       end

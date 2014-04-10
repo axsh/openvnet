@@ -14,10 +14,10 @@ module Vnspec
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
           end
 
-          config[:legacy_networks].each do |k,v|
-            command = "ssh #{vm.ssh_ip} -p #{vm.ssh_port} ip route add #{v[:ipv4]}/#{v[:prefix]} dev eth0"
-            ssh(vm.host_ip, command, {})
-          end
+          # Disabled as edge should always use a proper virtual network.
+          # config[:legacy_networks].each do |k,v|
+          #   ssh(vm.host_ip, "ssh #{vm.ssh_ip} route add -net #{v[:ipv4]}/#{v[:prefix]} dev eth0", {})
+          # end
         end
       end
 
@@ -299,6 +299,19 @@ module Vnspec
           ssh_on_guest("#{ifcmd} #{interface[:name]}", use_sudo: true)
         end
       end
+    end
+
+    def add_security_group(uuid)
+      @interfaces.each { |i| i.add_security_group(uuid) }
+    end
+
+    def remove_security_group(uuid)
+      @interfaces.each { |i| i.remove_security_group(uuid) }
+    end
+
+    def clear_arp_cache
+      logger.debug("clear arp cahe: #{name}")
+      ssh_on_guest("ip -s -s neigh flush all")
     end
 
     class KVM < Base
