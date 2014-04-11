@@ -26,6 +26,7 @@ module Vnet
   end
 
   module Constants
+    autoload :LeasePolicy, 'vnet/constants/lease_policy'
     autoload :Openflow, 'vnet/constants/openflow'
     autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
