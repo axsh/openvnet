@@ -53,39 +53,6 @@ module Vnet::Openflow::Services
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
       return if client_info.nil?
 
-      last_octet = client_info[1][:ipv4_address].to_i % 256
-      if last_octet == 255  # hack until interfaces is fixed to allow no ip lease
-        interface = @dp_info.interface_manager.item(port_number: message.match.in_port)
-        lease_policy = @dp_info.lease_policy_manager.item(interface_id: interface.id)
-        return if lease_policy[:networks].empty?
-
-        net = lease_policy[:networks].first
-        lpbn = lease_policy[:lease_policy_base_networks].first
-
-        case lpbn.mmethod
-        when "incremental" then offering = net.batch.incremental_ip_allocation.commit
-        when "decremental" then offering = net.batch.decremental_ip_allocation.commit
-        else
-          return
-        end
-
-        # TODO: clean up, catch errors
-        ma = interface.mac_addresses
-        ma0 = ma.to_a[0][1]
-        ip4s = ma0[:ipv4_addresses]
-        ip4s0 = ip4s.first
-        iplid = ip4s0[:ip_lease_id]
-        MW::IpLease.destroy(iplid)
-
-        ip_lease = MW::IpLease.batch.create(network_id: net.uuid,
-                                            mac_lease_id: interface.mac_lease_ids.first,
-                                            ipv4_address: offering).commit
-
-        # reload
-        client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
-        return if client_info.nil?
-      end
-
       params = {
         :xid => dhcp_in.xid,
         :yiaddr => client_info[1][:ipv4_address],

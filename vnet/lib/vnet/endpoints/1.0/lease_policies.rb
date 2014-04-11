@@ -67,7 +67,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
   put '/:uuid/associate_interface' do
     # TODO: it is now possible to associate twice....probably should not allow that.
-    params = parse_params(@params, ['uuid', 'interface_uuid', 'immediate'])
+    params = parse_params(@params, ['uuid', 'interface_uuid'])
     check_required_params(params, ['interface_uuid'])
 
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
@@ -78,33 +78,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
                                        :lease_policy_id => lease_policy.id
                                        })
 
-    if params.has_key? :immediate
-      # TODO: go over code in here carefully
-      #   Should it use model instead of model class?
-      #   Check for empty ml_array?
-      #   What are the rules for what is required inside
-      #      of IpLease.create()? Why do those three
-      #      parameters work?
-      net_array = lease_policy.batch.networks.commit
-      if net_array && ! net_array.empty?
-        first_net = net_array.first
-        response = first_net.batch.incremental_ip_allocation.commit
-        ml_array = interface.batch.mac_leases.commit
-        
-        ip_lease = M::IpLease.create({
-                                       mac_lease_id: ml_array.first.id,
-                                       network_id: first_net.id,
-                                       ipv4_address: response
-                                     })
-      end
-    else
-        response = nil
-    end
-
-    # tmp response for debugging:
-    respond_with({ :allocated_address => response })
-    # TODO, what is a good response in the vnet style of doing things?
-    # respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
+    respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
   end
 
   put '/:uuid/disassociate_interface' do
