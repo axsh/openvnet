@@ -7,6 +7,23 @@ module Vnet::NodeApi
     class << self
       def create(options)
         p ",,,in create(#{options.inspect})"
+
+        base_networks = model_class(:lease_policy)[options[:lease_policy_id]].lease_policy_base_networks
+        raise "No network associated with lease policy" if base_networks.empty?
+
+        network_id = base_networks.first.network_id
+        ip_range_id = base_networks.first.ip_range_id
+        p "network_id = #{network_id}, ip_range_id = #{ip_range_id}"
+
+        ip_r = base_networks.first.ip_range
+
+        p net = base_networks.first.network
+
+        begip = net.ipv4_network
+        pref = net.ipv4_prefix
+        max = 2 << ( 31 - pref )
+        
+        p get_lease_address(net, ip_r, begip, begip+max, :asc)
         super
       end
 
