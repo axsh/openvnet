@@ -14,6 +14,13 @@ update_resolv_conf() {
   done
 }
 
+set_static_routes() {
+  while [ -n "$1" -a -n "$2" ]; do
+    ip route add $1 dev "$interface" via $2
+    shift 2
+  done
+}
+
 [ -z "$1" ] && echo 'Error: should be called from udhcpc' && exit 1
 
 set -x
@@ -51,6 +58,7 @@ case "$1" in
     ip addr flush dev $interface
     ip addr add ${ip}/${mask} dev $interface
     [ -n "$router" ] && ip route add default via ${router%% *} dev $interface
+    [ -n "$staticroutes" ] && set_static_routes $staticroutes
     # save pre-dhcp config files and generate new ones:
     if [ "$interface" == "$PEERDNS_IF" ] ; then
       update_resolv_conf
@@ -88,6 +96,7 @@ case "$1" in
       ip addr flush dev $interface
       ip addr add ${ip}/${mask} dev $interface
       [ -n "$router" ] && ip route add default via ${router%% *} dev $interface
+      [ -n "$staticroutes" ] && set_static_routes $staticroutes
     fi
     if [ -n "$REDO_DNS" -a "$interface" == "$PEERDNS_IF" ] ; then
       update_resolv_conf
