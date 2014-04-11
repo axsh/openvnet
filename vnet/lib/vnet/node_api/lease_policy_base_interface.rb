@@ -32,6 +32,59 @@ module Vnet::NodeApi
         super
       end
 
+      def schedule(options)
+        if options.is_a?(NetworkVif)
+          options = {
+            :network_vif => options,
+            :network => options.network,
+          }
+        end
+
+        raise ArgumentError unless options.is_a?(Hash)
+        raise ArgumentError unless options[:network].is_a?(Network)
+        raise ArgumentError unless options[:network_vif].nil? || options[:network_vif].is_a?(NetworkVif)
+        raise ArgumentError unless options[:ip_pool].nil? || options[:ip_pool].is_a?(IpPool)
+        raise ArgumentError unless options[:ip_pool] || options[:network_vif]
+
+        # find latest ip
+        network = options[:network]
+        ip_lease_alives = network.network_vif_ip_lease_dataset.alives
+
+        latest_ip = ip_lease_alives.filter(:alloc_type =>NetworkVifIpLease::TYPE_AUTO).order(:updated_at.desc).first
+        ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_i
+        leaseaddr = case network[:ip_assignment]
+                    when "asc"
+                      ip = get_lease_address(network, ipaddr, nil, :asc)
+                      ip = get_lease_address(network, nil, ipaddr, :asc) if ip.nil?
+                      ip
+                    when "desc"
+                      ip = get_lease_address(network, nil, ipaddr, :desc)
+                      ip = get_lease_address(network, ipaddr, nil, :desc) if ip.nil?
+                      ip
+                    else
+                      raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
+                    end
+        raise OutOfIpRange, "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if leaseaddr.nil?
+
+        leaseaddr = IPAddress::IPv4.parse_u32(leaseaddr)
+
+        fields = {
+          :ipv4 => leaseaddr.to_i,
+          :network_id => network.id,
+          :description => leaseaddr.to_s
+        }
+        fields[:network_vif_id] = options[:network_vif].id if options[:network_vif]
+
+        if options[:ip_pool]
+          ip_handle = IpHandle.create({ :ip_pool_id => options[:ip_pool].id,
+                                        :display_name => ""
+                                      }) || raise("Could not create IpHandle.")
+          fields[:ip_handle_id] = ip_handle.id
+        end
+
+        NetworkVifIpLease.create(fields)
+      end
+
       def get_lease_address(network, ip_r, from_ipaddr, to_ipaddr, order)
         from_ipaddr = 0 if from_ipaddr.nil?
         to_ipaddr = 0xFFFFFFFF if to_ipaddr.nil?
