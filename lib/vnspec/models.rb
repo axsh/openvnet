@@ -100,11 +100,12 @@ module Vnspec
           @display_name = response[:display_name]
           @owner_datapath_uuid = response[:owner_datapath_uuid]
         end
+        self.class.find(uuid, reload: true)
       end
 
       def destroy
         API.request(:delete, "interfaces/#{uuid}")
-        find(options[:uuid], reload: true)
+        self.class.find(uuid, reload: true)
       end
 
       def mac_lease(uuid)
