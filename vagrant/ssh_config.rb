@@ -4,7 +4,7 @@ require 'optparse'
 
 params = ARGV.getopts("y")
 config_file = File.join(Dir.home, ".ssh/config")
-nodes = %w(vnmgr vna1 vna2 vna3 edge legacy router registry)
+nodes = %w(vnmgr vna1 vna2 vna3 edge legacy router)
 str_begin = "### vnet vagrant config begin ###"
 str_end = "### vnet vagrant config end ###"
 regexp = /#{str_begin}.*#{str_end}/m

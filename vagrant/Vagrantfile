@@ -7,11 +7,6 @@ VNET_PATH = "~/work/openvnet"
 VAGRANT_BOX = "hansode/centos-6.5-x86_64"
 
 vms = [
-  #{
-  #  name: "registry",
-  #  box: "chef/ubuntu-13.10",
-  #  networks: [ { type: :private_network, ip: "192.168.20.101" } ]
-  #},
   {
     name: "vnmgr",
     memory: 1024,
