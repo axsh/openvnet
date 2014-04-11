@@ -62,6 +62,7 @@ describe "event" do
       before(:all) do
         # change to vnet2
         vm1.interfaces.first.mac_leases.first.add_ip_lease(network_uuid: "nw-vnet2", ipv4_address: "10.102.0.20")
+        sleep(1)
         vm1.restart_network
       end
 
