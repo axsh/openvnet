@@ -7,8 +7,9 @@
 # All rights reserved - Do Not Redistribute
 #
 
+include_recipe "vnet::base"
+
 # yum
-include_recipe "yum"
 include_recipe "yum-epel"
 
 node[:vnet][:packages][:common].each do |pkg|

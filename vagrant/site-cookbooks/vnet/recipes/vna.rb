@@ -43,6 +43,12 @@ group "docker" do
   action [:create, :manage]
 end
 
+service 'docker' do
+  supports :status => true, :restart => true, :reload => true
+  action [:start]
+end
+
+
 # openvswitch
 package "openvswitch" do
   action :upgrade
@@ -51,20 +57,22 @@ end
 
 service "openvswitch" do
   supports :enable => true, :status => true, :start => true
-  action [:restart]
+  action [:start]
 end
 
 # network settings
-template "/etc/sysconfig/network-scripts/ifcfg-br0" do
+bridge_name = node[:vnet][:vna][:ovs_bridge]
+
+template "/etc/sysconfig/network-scripts/ifcfg-#{bridge_name}" do
   source "ifcfg.erb"
   owner "root"
   group "root"
   variables({
-    device: "br0",
+    device: bridge_name,
     onboot: "yes",
     device_type: "ovs",
     type: "OVSBridge",
-    bootproto: "static",
+    bootproto: "none",
     target: node[:vnet][:vna][:datapath][:ipaddr],
     mask: node[:vnet][:vna][:datapath][:mask],
     ovs_extra: <<EOS
@@ -93,7 +101,7 @@ node[:vnet][:vna][:ovs_ports].each do |port|
       onboot: "yes",
       device_type: "ovs",
       type: "OVSPort",
-      ovs_bridge: "br0",
+      ovs_bridge: bridge_name,
       bootproto: "none",
     })
   end
@@ -104,9 +112,17 @@ end
 #  action [:restart]
 #end
 
-execute "restart_network" do
-  ignore_failure true
-  command "service network restart"
+#execute "restart_network" do
+#  ignore_failure true
+#  command "service network restart"
+#end
+
+bash "restart_network" do
+  code [
+    "ifdown #{bridge_name}",
+    *node[:vnet][:vna][:ovs_ports].map {|port| "ifdown #{port}" },
+    *node[:vnet][:vna][:ovs_ports].map {|port| "ifup #{port}" },
+  ].join("\n")
 end
 
 node[:vnet][:vna][:routes].each do |r|
@@ -114,11 +130,6 @@ node[:vnet][:vna][:routes].each do |r|
     gateway r[:gateway]
     device r[:device]
   end
-end
-
-service 'docker' do
-  supports :status => true, :restart => true, :reload => true
-  action [:restart]
 end
 
 template "/etc/openvnet/vna.conf" do
@@ -130,6 +141,13 @@ template "/etc/openvnet/vna.conf" do
     host: node[:vnet][:config][:vna][:host],
     port: node[:vnet][:config][:vna][:port],
   })
+end
+
+file "/etc/sudoers.d/vagrant" do
+  content <<-EOS
+Defaults !secure_path
+Defaults env_keep += "PATH RBENV_ROOT"
+  EOS
 end
 
 # pipework

@@ -61,12 +61,13 @@ default[:vnet][:vna][:datapath][:ipaddr] = nil
 default[:vnet][:vna][:datapath][:mask] = "255.255.255.0"
 default[:vnet][:vna][:datapath][:datapath_id] = nil
 default[:vnet][:vna][:datapath][:hwaddr] = nil
+default[:vnet][:vna][:ovs_bridge] = "br0"
 default[:vnet][:vna][:ovs_ports] = ["eth2"]
 default[:vnet][:vna][:routes] = []
 
 default[:vnet][:vna][:docker][:registry] = nil
 #default[:vnet][:vna][:docker][:registry] = "192.168.20.101:5000"
-default[:vnet][:vna][:vms] = []
+default[:vnet][:vms] = []
 
 # router
 default[:vnet][:router][:ifconfig] = []
