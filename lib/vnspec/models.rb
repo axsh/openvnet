@@ -50,6 +50,10 @@ module Vnspec
           end
         end
         alias_method :[], :find
+
+        def reload
+          all(reload: true)
+        end
       end
 
       def ==(other)
@@ -58,6 +62,10 @@ module Vnspec
 
       def api_name
         self.class.api_name
+      end
+
+      def reload
+        self.class.reload
       end
     end
 
@@ -87,7 +95,7 @@ module Vnspec
 
         def create(options)
           API.request(:post, "interfaces", options)
-          find(options[:uuid], reload: true)
+          reload
         end
       end
 
@@ -100,12 +108,12 @@ module Vnspec
           @display_name = response[:display_name]
           @owner_datapath_uuid = response[:owner_datapath_uuid]
         end
-        self.class.find(uuid, reload: true)
+        reload
       end
 
       def destroy
         API.request(:delete, "interfaces/#{uuid}")
-        self.class.find(uuid, reload: true)
+        reload
       end
 
       def mac_lease(uuid)
@@ -142,9 +150,8 @@ module Vnspec
 
       class << self
         def create(interface, options)
-          API.request(:post, "mac_leases", options.merge(interface_uuid: interface.uuid)) do |response|
-            return self.new(options.merge(uuid: response[:uuid], interface: interface))
-          end
+          API.request(:post, "mac_leases", options.merge(interface_uuid: interface.uuid))
+          reload
         end
       end
 
@@ -157,6 +164,7 @@ module Vnspec
       def destroy
         API.request(:delete, "mac_leases/#{uuid}")
         self.interface.mac_leases.delete_if{|m| m.uuid == uuid}
+        reload
       end
 
       def add_ip_lease(options)
@@ -175,10 +183,8 @@ module Vnspec
 
       class << self
         def create(mac_lease, options)
-          API.request(:post, "ip_leases", options.merge(mac_lease_uuid: mac_lease.uuid)) do |response|
-            return self.new(options.merge(uuid: response[:uuid], mac_lease: mac_lease)).tap do |instance|
-            end
-          end
+          API.request(:post, "ip_leases", options.merge(mac_lease_uuid: mac_lease.uuid))
+          reload
         end
       end
 
@@ -191,6 +197,7 @@ module Vnspec
       def destroy
         API.request(:delete, "ip_leases/#{uuid}")
         self.mac_lease.ip_leases.delete_if{|i| i.uuid == uuid}
+        reload
       end
     end
 
@@ -203,9 +210,8 @@ module Vnspec
         end
 
         def create(options)
-          API.request(:post, "datapaths", options) do |response|
-            return self.new(options.merge(uuid: response[:uuid]))
-          end
+          API.request(:post, "datapaths", options)
+          reload
         end
       end
 
@@ -220,6 +226,7 @@ module Vnspec
 
       def destroy
         API.request(:delete, "datapaths/#{uuid}")
+        reload
       end
 
       def add_datapath_network(network_uuid, options)
@@ -245,9 +252,8 @@ module Vnspec
         end
 
         def create(options)
-          API.request(:post, api_name, options) do |response|
-            return self.new(options.merge(uuid: response[:uuid]))
-          end
+          API.request(:post, api_name, options)
+          reload
         end
       end
 
@@ -264,6 +270,7 @@ module Vnspec
 
       def destroy
         API.request(:delete, "#{api_name}/#{uuid}")
+        reload
       end
 
       def add_dns_record(options)
