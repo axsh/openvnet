@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
-  put_post_shared_params = ["mode"]
+  put_post_shared_params = ["mode", "timing"]
 
   fill_options = [ ]
 
@@ -11,6 +11,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
     post_new(:LeasePolicy, accepted_params, required_params, fill_options) { |params|
       params["mode"] = "simple" if ! params.has_key? "mode"
+      params["timing"] = "immediate" if ! params.has_key? "timing"
     }
   end
 

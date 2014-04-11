@@ -253,6 +253,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       String :mode, :null=>false
+      String :timing, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
