@@ -1,6 +1,7 @@
 vm_ssh_user: vagrant
 vm_type: :docker
 pipework_path: /vagrant/vm/bin
+specs_ext: [edge]
 
 ssh_options:
   user: vagrant
@@ -92,5 +93,5 @@ vms:
 
 legacy_machines:
   legacy1:
-    ssh_ip: 192.168.20.31
+    ssh_ip: legacy
     ipv4_address: 10.101.0.100
