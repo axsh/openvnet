@@ -5,6 +5,8 @@ require "ipaddress"
 module Vnet::NodeApi
   class LeasePolicyBaseInterface < Base
     class << self
+      include Vnet::Constants::LeasePolicy
+
       def create(options)
         p ",,,in create(#{options.inspect})"
 
@@ -19,11 +21,7 @@ module Vnet::NodeApi
 
         p net = base_networks.first.network
 
-        begip = net.ipv4_network
-        pref = net.ipv4_prefix
-        max = 2 << ( 31 - pref )
-        
-        p get_lease_address(net, ip_r, begip, begip+max, :asc)
+        p schedule(net,ip_r)
         super
       end
 
@@ -32,57 +30,26 @@ module Vnet::NodeApi
         super
       end
 
-      def schedule(options)
-        if options.is_a?(NetworkVif)
-          options = {
-            :network_vif => options,
-            :network => options.network,
-          }
-        end
-
-        raise ArgumentError unless options.is_a?(Hash)
-        raise ArgumentError unless options[:network].is_a?(Network)
-        raise ArgumentError unless options[:network_vif].nil? || options[:network_vif].is_a?(NetworkVif)
-        raise ArgumentError unless options[:ip_pool].nil? || options[:ip_pool].is_a?(IpPool)
-        raise ArgumentError unless options[:ip_pool] || options[:network_vif]
-
-        # find latest ip
-        network = options[:network]
-        ip_lease_alives = network.network_vif_ip_lease_dataset.alives
-
-        latest_ip = ip_lease_alives.filter(:alloc_type =>NetworkVifIpLease::TYPE_AUTO).order(:updated_at.desc).first
-        ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_i
-        leaseaddr = case network[:ip_assignment]
-                    when "asc"
-                      ip = get_lease_address(network, ipaddr, nil, :asc)
-                      ip = get_lease_address(network, nil, ipaddr, :asc) if ip.nil?
+      def schedule(network, ip_range)
+        # TODO: consider how to filter for addresses dynamically assigned
+        latest_ip = model_class(:ip_address).order(:updated_at.desc).first
+        ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_address
+        leaseaddr = case ip_range.allocation_type
+                    when ALLOCATION_TYPE_INCREMENTAL
+                      ip = get_lease_address(network, ip_range, ipaddr, nil, :asc)
+                      ip = get_lease_address(network, ip_range, nil, ipaddr, :asc) if ip.nil?
                       ip
-                    when "desc"
-                      ip = get_lease_address(network, nil, ipaddr, :desc)
-                      ip = get_lease_address(network, ipaddr, nil, :desc) if ip.nil?
+                    when ALLOCATION_TYPE_DECREMENTAL
+                      ip = get_lease_address(network, ip_range, nil, ipaddr, :desc)
+                      ip = get_lease_address(network, ip_range, ipaddr, nil, :desc) if ip.nil?
                       ip
                     else
-                      raise "Unsupported IP address assignment: #{network[:ip_assignment]}"
+                      raise "Unsupported IP address assignment: #{ip_range.allocation_type}"
                     end
-        raise OutOfIpRange, "Run out of dynamic IP addresses from the network segment: #{network.ipv4_network.to_s}/#{network.prefix}" if leaseaddr.nil?
-
-        leaseaddr = IPAddress::IPv4.parse_u32(leaseaddr)
-
-        fields = {
-          :ipv4 => leaseaddr.to_i,
-          :network_id => network.id,
-          :description => leaseaddr.to_s
-        }
-        fields[:network_vif_id] = options[:network_vif].id if options[:network_vif]
-
-        if options[:ip_pool]
-          ip_handle = IpHandle.create({ :ip_pool_id => options[:ip_pool].id,
-                                        :display_name => ""
-                                      }) || raise("Could not create IpHandle.")
-          fields[:ip_handle_id] = ip_handle.id
-        end
-
-        NetworkVifIpLease.create(fields)
+        raise "Run out of dynamic IP addresses from the network segment: #{network.uuid}" if leaseaddr.nil?
+        # TODO: also show ip subnet info in error message
+        
+        leaseaddr
       end
 
       def get_lease_address(network, ip_r, from_ipaddr, to_ipaddr, order)
@@ -99,7 +66,6 @@ module Vnet::NodeApi
         }[order]
 
         ip_r.ip_ranges_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
-          p "doing #{i.inspect}"
           start_range = i.begin_ipv4_address.to_i
           end_range = i.end_ipv4_address.to_i
 
