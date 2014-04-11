@@ -65,9 +65,12 @@ module Vnet::NodeApi
           :desc => :end_ipv4_address.desc,
         }[order]
 
+        net_start = network.ipv4_network
+        net_prefix = network.ipv4_prefix
+        suffix_mask = 0xFFFFFFFF >> net_prefix
         ip_r.ip_ranges_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
-          start_range = i.begin_ipv4_address.to_i
-          end_range = i.end_ipv4_address.to_i
+          start_range = net_start + ( suffix_mask & i.begin_ipv4_address.to_i )
+          end_range   = net_start + ( suffix_mask & i.end_ipv4_address.to_i )
 
           raise "Got from_ipaddr > end_range: #{from_ipaddr} > #{end_range}" if from_ipaddr > end_range
           f = (from_ipaddr > start_range) ? from_ipaddr : start_range
@@ -79,7 +82,7 @@ module Vnet::NodeApi
 
             leaseaddr = i.available_ip(network.id, f, t, order)
             break if leaseaddr.nil?
-            check_ip = IPAddress::IPv4.parse_u32(leaseaddr, network[:ipv4_prefix])
+            check_ip = IPAddress::IPv4.parse_u32(leaseaddr, net_prefix)
             # To check the IP address that can not be used.
             # TODO No longer needed in the future.
 ##            if network.reserved_ip?(check_ip)
