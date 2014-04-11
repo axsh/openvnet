@@ -10,14 +10,24 @@ module Vnet::NodeApi
       def create(options)
         p ",,,in create(#{options.inspect})"
 
-        base_networks = model_class(:lease_policy)[options[:lease_policy_id]].lease_policy_base_networks
+        lease_policy = model_class(:lease_policy)[options[:lease_policy_id]]
+        base_networks = lease_policy.lease_policy_base_networks
         raise "No network associated with lease policy" if base_networks.empty?
 
         ip_r = base_networks.first.ip_range
         net = base_networks.first.network
 
-        p adr = schedule(net,ip_r)
-        p IPAddress::IPv4.parse_u32(adr, net.ipv4_prefix).to_string
+        if lease_policy.timing == "immediate"
+          adr = schedule(net,ip_r)
+          # TODO: race condition between here and the allocation?
+          interface = model_class(:interface)[options[:interface_id]]
+          ml_array = interface.mac_leases
+          ip_lease = model_class(:ip_lease).create({
+                                                     mac_lease_id: ml_array.first.id,
+                                                     network_id: net.id,
+                                                     ipv4_address: adr
+                                                   })
+        end
         super
       end
 
