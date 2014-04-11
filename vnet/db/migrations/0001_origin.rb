@@ -288,7 +288,6 @@ Sequel.migration do
     create_table(:ip_ranges) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :ipv4_prefix, :default=>24, :null=>false #TODO: remove this
       String :allocation_type, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false

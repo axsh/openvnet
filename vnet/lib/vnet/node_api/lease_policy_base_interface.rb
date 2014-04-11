@@ -13,15 +13,11 @@ module Vnet::NodeApi
         base_networks = model_class(:lease_policy)[options[:lease_policy_id]].lease_policy_base_networks
         raise "No network associated with lease policy" if base_networks.empty?
 
-        network_id = base_networks.first.network_id
-        ip_range_id = base_networks.first.ip_range_id
-        p "network_id = #{network_id}, ip_range_id = #{ip_range_id}"
-
         ip_r = base_networks.first.ip_range
+        net = base_networks.first.network
 
-        p net = base_networks.first.network
-
-        p schedule(net,ip_r)
+        p adr = schedule(net,ip_r)
+        p IPAddress::IPv4.parse_u32(adr, net.ipv4_prefix).to_string
         super
       end
 
@@ -46,9 +42,10 @@ module Vnet::NodeApi
                     else
                       raise "Unsupported IP address assignment: #{ip_range.allocation_type}"
                     end
-        raise "Run out of dynamic IP addresses from the network segment: #{network.uuid}" if leaseaddr.nil?
-        # TODO: also show ip subnet info in error message
-        
+        if leaseaddr.nil?
+          netstr = IPAddress::IPv4.parse_u32(network.ipv4_network, network.ipv4_prefix).to_string
+          raise "Run out of dynamic IP addresses from the network segment: #{network.uuid}, #{netstr}"
+        end
         leaseaddr
       end
 
