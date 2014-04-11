@@ -16,12 +16,6 @@ default[:vnet][:openvnet_third_party_repository_url] = "file:///vagrant/repos/pa
 
 # packages
 default[:vnet][:packages][:common] = %w(
-vim-enhanced
-tcpdump
-telnet
-nc
-bind-utils
-man
 zeromq-devel
 libpcap-devel
 sqlite-devel
@@ -37,7 +31,7 @@ default[:vnet][:packages][:vna] = %w(
 busybox
 )
 
-default[:vnet][:packages][:router] = %w(
+default[:vnet][:packages][:base] = %w(
 vim-enhanced
 tcpdump
 telnet

@@ -1,15 +1,4 @@
-#
-# Cookbook Name:: vnet_router
-# Recipe:: default
-#
-# Copyright 2014, YOUR_COMPANY_NAME
-#
-# All rights reserved - Do Not Redistribute
-#
-
-node[:vnet][:packages][:router].each do |pkg|
-  package pkg
-end
+include_recipe "vnet::base"
 
 #sysctl_param 'net.ipv4.ip_forward' do
 #  value 1
