@@ -33,7 +33,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     }
   end
 
-  put '/:uuid/associate_network' do
+  post '/:uuid/networks/:network_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
     params = parse_params(@params, ['uuid', 'network_uuid', 'ip_range_uuid'])
     check_required_params(params, ['network_uuid', 'ip_range_uuid'])
@@ -50,7 +50,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     respond_with(R::LeasePolicy.lease_policy_network(lease_policy))
   end
 
-  put '/:uuid/disassociate_network' do
+  get '/:uuid/networks' do
+    show_relations(:LeasePolicy, :networks)
+  end
+
+  delete '/:uuid/networks/:network_uuid' do
     params = parse_params(@params, ['uuid', 'network_uuid'])
     check_required_params(params, ['network_uuid'])
 
