@@ -28,4 +28,14 @@ describe "/lease_policies" do
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
+
+  describe "Many to many relation calls for networks" do
+    let(:relation_fabricator) { :network }
+
+    let!(:ip_range) { Fabricate(:ip_range) { uuid "ipr-test" } }
+
+    include_examples "many_to_many_relation", "networks", {
+                       :ip_range_uuid => 'ipr-test'
+                     }
+  end
 end
