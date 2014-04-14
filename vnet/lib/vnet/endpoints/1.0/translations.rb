@@ -33,7 +33,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     end
   end
 
-  put '/:uuid/add_static_address' do
+  post '/:uuid/static_address' do
     params = parse_params(@params, ['uuid', 'ingress_ipv4_address', 'egress_ipv4_address'])
     check_required_params(params, ['ingress_ipv4_address', 'egress_ipv4_address'])
 
@@ -51,7 +51,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     respond_with(R::Translation.translation_static_addresses(translation))
   end
 
-  put '/:uuid/remove_static_address' do
+  delete '/:uuid/static_address' do
     params = parse_params(@params, ['uuid', 'ingress_ipv4_address', 'egress_ipv4_address'])
     check_required_params(params, ['ingress_ipv4_address', 'egress_ipv4_address'])
 
