@@ -31,6 +31,10 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def initialized_item_event
+      INTERFACE_INITIALIZED
+    end
+
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
@@ -80,15 +84,7 @@ module Vnet::Openflow
           Interfaces::Base
         end
 
-      item_class.new(
-        dp_info: @dp_info,
-        manager: self,
-        map: item_map
-      )
-    end
-
-    def initialized_item_event
-      INTERFACE_INITIALIZED
+      item_class.new(dp_info: @dp_info, manager: self, map: item_map)
     end
 
     #
@@ -192,16 +188,22 @@ module Vnet::Openflow
       # load_addresses, we load the network here.
       mac_leases = item_map.batch.mac_leases.commit(fill: [:cookie_id, :ip_leases => [:cookie_id, :ip_address]])
 
-      mac_leases.each do |mac_lease|
-        publish(INTERFACE_LEASED_MAC_ADDRESS, id: item_map.id,
-                                    mac_lease_id: mac_lease.id,
-                                    mac_address: mac_lease.mac_address)
+      mac_leases && mac_leases.each do |mac_lease|
+        publish(INTERFACE_LEASED_MAC_ADDRESS,
+                id: item_map.id,
+                mac_lease_id: mac_lease.id,
+                mac_address: mac_lease.mac_address)
 
         mac_lease.ip_leases.each do |ip_lease|
-          publish(INTERFACE_LEASED_IPV4_ADDRESS, id: item_map.id, ip_lease_id: ip_lease.id)
+          publish(INTERFACE_LEASED_IPV4_ADDRESS,
+                  id: item_map.id,
+                  ip_lease_id: ip_lease.id)
         end
       end
     end
+
+    # TODO: Use event params for lease info instead of querying the
+    # db.
 
     # INTERFACE_LEASED_MAC_ADDRESS on queue 'item.id'
     def leased_mac_address(params)
@@ -259,6 +261,7 @@ module Vnet::Openflow
       item.add_ipv4_address(mac_lease_id: ip_lease.mac_lease_id,
                             network_id: network[:id],
                             network_type: network[:type],
+                            network_prefix: network[:ipv4_prefix],
                             ip_lease_id: ip_lease.id,
                             cookie_id: ip_lease.cookie_id,
                             ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))

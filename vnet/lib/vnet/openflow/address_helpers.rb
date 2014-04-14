@@ -65,6 +65,7 @@ module Vnet::Openflow
       ipv4_info = {
         :network_id => params[:network_id],
         :network_type => params[:network_type],
+        :network_prefix => params[:network_prefix],
         :ipv4_address => params[:ipv4_address],
         :ip_lease_id => params[:ip_lease_id],
         :cookie_id => params[:cookie_id],

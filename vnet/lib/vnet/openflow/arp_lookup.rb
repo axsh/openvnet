@@ -32,19 +32,28 @@ module Vnet::Openflow
     end
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
-      flows << flow_create(:default,
-                           table: TABLE_ARP_LOOKUP,
-                           priority: 20,
-                           match: {
-                             :eth_src => mac_info[:mac_address],
-                             :eth_type => 0x0800
-                           },
-                           match_network: ipv4_info[:network_id],
-                           match_not_no_controller: true,
-                           actions: {
-                             :output => Controller::OFPP_CONTROLLER
-                           },
-                           cookie: @arp_lookup[:lookup_cookie])
+      [[20, {
+          :eth_src => mac_info[:mac_address],
+          :eth_type => 0x0800
+        }],
+       [30, {
+          :eth_src => mac_info[:mac_address],
+          :eth_type => 0x0800,
+          :ipv4_dst => ipv4_info[:ipv4_address],
+          :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info[:network_prefix])
+        }]
+      ].each { |priority, match|
+        flows << flow_create(:default,
+                             table: TABLE_ARP_LOOKUP,
+                             priority: priority,
+                             match: match,
+                             match_network: ipv4_info[:network_id],
+                             match_not_no_controller: true,
+                             actions: {
+                               :output => Controller::OFPP_CONTROLLER
+                             },
+                             cookie: @arp_lookup[:lookup_cookie])
+      }
     end
 
     def arp_lookup_lookup_packet_in(message)
@@ -65,10 +74,23 @@ module Vnet::Openflow
       mac_info, ipv4_info, network = find_ipv4_and_network(message, nil)
       return if network.nil?
 
+      network_address = network[:ipv4_network].dup.mask(network[:ipv4_prefix])
+
+      if network_address.include?(request_ipv4)
+        destination_ipv4 = nil
+        destination_prefix = nil
+      else
+        request_ipv4 = network_address.mask(32) | IPAddr.new('0.0.0.1')
+        destination_ipv4 = IPV4_BROADCAST
+        destination_prefix = 0
+      end
+
       messages = @arp_lookup[:requests][request_ipv4] ||= []
       messages << {
         :message => message,
-        :timestamp => Time.now
+        :timestamp => Time.now,
+        :destination_ipv4 => destination_ipv4,
+        :destination_prefix => destination_prefix
       }
 
       if messages.size == 1
@@ -108,7 +130,7 @@ module Vnet::Openflow
 
         cookie = ipv4_info[:network_id] | COOKIE_TYPE_NETWORK
 
-        flow = Flow.create(TABLE_ARP_LOOKUP, 25,
+        flow = Flow.create(TABLE_ARP_LOOKUP, 35,
                            match_md.merge({ :eth_type => 0x0800,
                                             :ipv4_dst => message.arp_spa
                                           }), {
@@ -118,10 +140,26 @@ module Vnet::Openflow
                                                   :idle_timeout => 3600,
                                                   :goto_table => TABLE_NETWORK_DST_CLASSIFIER
                                                 }))
-
         @dp_info.add_flow(flow)
 
-        arp_lookup_send_packets(@arp_lookup[:requests].delete(message.arp_spa))
+        messages = @arp_lookup[:requests].delete(message.arp_spa) || return
+
+        if messages.first && messages.first[:destination_ipv4]
+          flow = Flow.create(TABLE_ARP_LOOKUP, 25,
+                             match_md.merge({ :eth_type => 0x0800,
+                                              :ipv4_dst => messages.first[:destination_ipv4],
+                                              :ipv4_dst_mask => messages.first[:destination_ipv4].mask(messages.first[:destination_prefix]),
+                                            }), {
+                               :eth_dst => message.arp_sha
+                             },
+                             reflection_md.merge!({ :cookie => cookie,
+                                                    :idle_timeout => 3600,
+                                                    :goto_table => TABLE_NETWORK_DST_CLASSIFIER
+                                                  }))
+          @dp_info.add_flow(flow)
+        end
+
+        arp_lookup_send_packets(messages)
       end
     end
 
@@ -206,7 +244,7 @@ module Vnet::Openflow
       flow = flow_create(:default,
                          table: TABLE_ARP_LOOKUP,
                          goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
-                         priority: 25,
+                         priority: 35,
 
                          match: {
                            :eth_type => 0x0800,
