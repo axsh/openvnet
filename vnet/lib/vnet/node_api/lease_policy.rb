@@ -3,37 +3,29 @@
 require "ipaddress"
 
 module Vnet::NodeApi
-  class LeasePolicyBaseInterface < Base
+  class LeasePolicy < Base
     class << self
       include Vnet::Constants::LeasePolicy
 
-      def create(options)
-        p ",,,in create(#{options.inspect})"
-
+      def allocate_ip(options)
         lease_policy = model_class(:lease_policy)[options[:lease_policy_id]]
-        base_networks = lease_policy.lease_policy_base_networks
-        raise "No network associated with lease policy" if base_networks.empty?
-
-        ip_r = base_networks.first.ip_range
-        net = base_networks.first.network
-
         if lease_policy.timing == "immediate"
-          adr = schedule(net,ip_r)
+          base_networks = lease_policy.lease_policy_base_networks
+          raise "No network associated with lease policy" if base_networks.empty?
+          
+          ip_r = base_networks.first.ip_range
+          net = base_networks.first.network
+
+          new_ip = schedule(net,ip_r)
           # TODO: race condition between here and the allocation?
           interface = model_class(:interface)[options[:interface_id]]
           ml_array = interface.mac_leases
           ip_lease = model_class(:ip_lease).create({
                                                      mac_lease_id: ml_array.first.id,
                                                      network_id: net.id,
-                                                     ipv4_address: adr
+                                                     ipv4_address: new_ip
                                                    })
         end
-        super
-      end
-
-      def destroy(uuid)
-        p ",,,in destroy(#{uuid.inspect})"
-        super
       end
 
       def schedule(network, ip_range)

@@ -68,7 +68,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     respond_with(R::LeasePolicy.lease_policy_network(lease_policy))
   end
 
-  put '/:uuid/associate_interface' do
+  post '/:uuid/interfaces/:interface_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
     params = parse_params(@params, ['uuid', 'interface_uuid'])
     check_required_params(params, ['interface_uuid'])
@@ -77,6 +77,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     # TODO: verify this next line is not just a hack (that does work, so far)
     interface = check_syntax_and_pop_uuid(M::Interface, { "uuid" => params[:interface_uuid] } )
 
+    M::LeasePolicy.allocate_ip({ :interface_id => interface.id,
+                                       :lease_policy_id => lease_policy.id
+                                       })
     M::LeasePolicyBaseInterface.create({ :interface_id => interface.id,
                                        :lease_policy_id => lease_policy.id
                                        })
@@ -84,7 +87,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
   end
 
-  put '/:uuid/disassociate_interface' do
+  get '/:uuid/interfaces' do
+    show_relations(:LeasePolicy, :interfaces)
+  end
+
+  delete '/:uuid/interfaces/:interface_uuid' do
     params = parse_params(@params, ['uuid', 'interface_uuid'])
     check_required_params(params, ['interface_uuid'])
 
