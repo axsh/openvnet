@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class LeasePolicyManager < Manager
+  class LeasePolicyManager < Vnet::Manager
 
     #
     # Events:
