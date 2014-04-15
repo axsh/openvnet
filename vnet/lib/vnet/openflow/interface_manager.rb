@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class InterfaceManager < Manager
+  class InterfaceManager < Vnet::Manager
 
     #
     # Events:
@@ -11,10 +11,12 @@ module Vnet::Openflow
     subscribe_event REMOVED_INTERFACE, :unload
     subscribe_event INITIALIZED_INTERFACE, :install_item
     subscribe_event UPDATED_INTERFACE, :update_item_exclusively
-    subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
-    subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
+
     subscribe_event LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event RELEASED_MAC_ADDRESS, :released_mac_address
+    subscribe_event LEASED_IPV4_ADDRESS, :leased_ipv4_address
+    subscribe_event RELEASED_IPV4_ADDRESS, :released_ipv4_address
+
     subscribe_event REMOVED_ACTIVE_DATAPATH, :del_flows_for_active_datapath
     subscribe_event ENABLED_INTERFACE_FILTERING, :enabled_filtering
     subscribe_event DISABLED_INTERFACE_FILTERING, :disabled_filtering
@@ -81,16 +83,6 @@ module Vnet::Openflow
       create_batch(MW::Interface.batch, params[:uuid], filters)
     end
 
-    def select_item(filter)
-      # Using fill for ip_leases/ip_addresses isn't going to give us a
-      # proper event barrier.
-      #
-      # To avoid a deadlock issue when retriving network type during
-      # load_addresses, we load the network here.
-      filter.commit(fill: [:mac_leases => [:cookie_id, :ip_leases => [:cookie_id, :ip_address, :network]],
-                           :ip_leases => [:cookie_id, :ip_address, :network]])
-    end
-
     def item_initialize(item_map, params)
       if params[:remote]
         return if !is_assigned_remotely?(item_map)
@@ -101,19 +93,22 @@ module Vnet::Openflow
         mode = (item_map.mode && item_map.mode.to_sym)
       end
 
-      params = { dp_info: @dp_info,
-                 manager: self,
-                 map: item_map }
+      item_class =
+        case mode
+        when :edge then Interfaces::Edge
+        when :host then Interfaces::Host
+        when :remote then Interfaces::Remote
+        when :simulated then Interfaces::Simulated
+        when :vif then Interfaces::Vif
+        else
+          Interfaces::Base
+        end
 
-      case mode
-      when :edge then Interfaces::Edge.new(params)
-      when :host then Interfaces::Host.new(params)
-      when :remote then Interfaces::Remote.new(params)
-      when :simulated then Interfaces::Simulated.new(params)
-      when :vif then Interfaces::Vif.new(params)
-      else
-        Interfaces::Base.new(params)
-      end
+      item_class.new(
+        dp_info: @dp_info,
+        manager: self,
+        map: item_map
+      )
     end
 
     def initialized_item_event
@@ -132,16 +127,12 @@ module Vnet::Openflow
         dynamic_load: false
       )
 
-      item = self.item(params)
-      return unless item
-
-      item
+      self.retrieve(params)
     end
 
     def install_item(params)
-      item_map = params[:item_map]
-      item = @items[item_map.id]
-      return nil if item.nil?
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
 
       debug log_format("install #{item_map.uuid}/#{item_map.id}/#{item.port_name}", "mode:#{item.mode}")
 
@@ -154,21 +145,20 @@ module Vnet::Openflow
 
       load_addresses(item_map)
 
-      @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
-
       if item.mode != :remote
-        @dp_info.translation_manager.async.update(event: :install_interface,
-                                                  interface_id: item.id)
+        @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
+
+        @dp_info.tunnel_manager.async.publish(Vnet::Event::TRANSLATION_ACTIVATE_INTERFACE,
+                                              id: :interface,
+                                              interface_id: item.id)
+
         item.ingress_filtering_enabled &&
           @dp_info.filter_manager.async.apply_filters(item_map)
       end
-
-      item # Return nil if interface has been uninstalled.
     end
 
     def delete_item(item)
-      item = @items.delete(item.id)
-      return unless item
+      item = @items.delete(item.id) || return
 
       debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
@@ -183,8 +173,9 @@ module Vnet::Openflow
       end
 
       if item.mode != :remote
-        @dp_info.translation_manager.async.update(event: :remove_interface,
-                                                  interface_id: item.id)
+        @dp_info.tunnel_manager.async.publish(Vnet::Event::TRANSLATION_DEACTIVATE_INTERFACE,
+                                              id: :interface,
+                                              interface_id: item.id)
 
         @dp_info.filter_manager.async.remove_filters(item.id)
 
@@ -193,12 +184,39 @@ module Vnet::Openflow
           @dp_info.connection_manager.async.close_connections(id)
         }
       end
-
-      item
     end
 
+    def is_remote?(item_map)
+      return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?
+
+      if item_map.owner_datapath_id
+        return @datapath_info.nil? || item_map.owner_datapath_id != @datapath_info.id
+      end
+
+      return false
+    end
+
+    def is_assigned_remotely?(item_map)
+      return @datapath_info.nil? || item_map.owner_datapath_id != @datapath_info.id if item_map.owner_datapath_id
+      return @datapath_info.nil? || item_map.active_datapath_id != @datapath_info.id if item_map.active_datapath_id
+
+      false
+    end
+
+    #
+    # Event handlers:
+    #
+
+    # load addresses on queue 'item.id'
     def load_addresses(item_map)
-      item_map.mac_leases.each do |mac_lease|
+      # Using fill for ip_leases/ip_addresses isn't going to give us a
+      # proper event barrier.
+      #
+      # To avoid a deadlock issue when retriving network type during
+      # load_addresses, we load the network here.
+      mac_leases = item_map.batch.mac_leases.commit(fill: [:cookie_id, :ip_leases => [:cookie_id, :ip_address]])
+
+      mac_leases.each do |mac_lease|
         publish(LEASED_MAC_ADDRESS, id: item_map.id,
                                     mac_lease_id: mac_lease.id,
                                     mac_address: mac_lease.mac_address)
@@ -209,30 +227,9 @@ module Vnet::Openflow
       end
     end
 
-    def is_remote?(item_map)
-      return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?
-
-      if item_map.owner_datapath_id
-        return item_map.owner_datapath_id != @datapath_info.id
-      end
-
-      return false
-    end
-
-    def is_assigned_remotely?(item_map)
-      return item_map.owner_datapath_id != @datapath_info.id if item_map.owner_datapath_id
-      return item_map.active_datapath_id != @datapath_info.id if item_map.active_datapath_id
-
-      false
-    end
-
-    #
-    # Event handlers:
-    #
-
+    # LEASED_MAC_ADDRESS on queue 'item.id'
     def leased_mac_address(params)
-      item = @items[params[:id]]
-      return unless item
+      item = @items[params[:id]] || return
 
       mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(fill: [:cookie_id, :interface])
 
@@ -247,9 +244,9 @@ module Vnet::Openflow
         @dp_info.connection_manager.async.catch_new_egress(mac_lease.id, mac_address)
     end
 
+    # RELEASED_MAC_ADDRESS on queue 'item.id'
     def released_mac_address(params)
-      item = @items[params[:id]]
-      return unless item
+      item = @items[params[:id]] || return
 
       mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit
 
@@ -261,6 +258,7 @@ module Vnet::Openflow
       @dp_info.connection_manager.async.close_connections(params[:mac_lease_id])
     end
 
+    # LEASED_IPV4_ADDRESS on queue 'item.id'
     def leased_ipv4_address(params)
       ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit(:fill => [:interface, :ip_address, :cookie_id])
       return unless ip_lease
@@ -290,9 +288,9 @@ module Vnet::Openflow
                             ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
     end
 
+    # RELEASED_IPV4_ADDRESS on queue 'item.id'
     def released_ipv4_address(params)
-      item = @items[params[:id]]
-      return unless item
+      item = @items[params[:id]] || return
 
       ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit
 
@@ -301,6 +299,7 @@ module Vnet::Openflow
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
     end
 
+    # ENABLED_INTERFACE_FILTERING on queue 'item.id'
     def enabled_filtering(params)
       item = @items[params[:id]]
       return if !item || item.ingress_filtering_enabled
@@ -309,6 +308,7 @@ module Vnet::Openflow
       item.enable_filtering
     end
 
+    # DISABLED_INTERFACE_FILTERING on queue 'item.id'
     def disabled_filtering(params)
       item = @items[params[:id]]
       return if !item || !item.ingress_filtering_enabled
@@ -318,10 +318,8 @@ module Vnet::Openflow
     end
 
     def update_item_exclusively(params)
-      id = params.fetch(:id)
-      event = params[:event]
-
-      return nil if id.nil? || event.nil?
+      id = params.fetch(:id) || return
+      event = params[:event] || return
 
       # Todo: Add the possibility to use a 'filter' parameter for this.
       item = internal_detect(id: id)

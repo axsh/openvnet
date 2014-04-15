@@ -4,44 +4,77 @@ module Vnet::Openflow::Datapaths
 
   class Remote < Base
 
-    def uninstall
-      if same_segment?
-        @dp_info.dc_segment_manager.async.remove_datapath(id)
-      else
-        @dp_info.tunnel_manager.async.unload(dst_id: id)
-      end
+    #
+    # Events:
+    #
+
+    def log_type
+      'datapath/remote'
     end
+
+    def uninstall
+      @dp_info.tunnel_manager.async.unload(dst_datapath_id: id)
+    end
+
+    def activate_network_id(network_id)
+      network = @active_networks[network_id] || return
+
+      return if network[:active] == true
+      network[:active] == true
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_REMOTE_DATAPATH_NETWORK,
+                                      id: :datapath_network,
+                                      dp_obj: network)
+    end
+
+    def deactivate_network_id(network_id)
+      network = @active_networks[network_id] || return
+
+      return if network[:active] == false
+      network[:active] == false
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_NETWORK,
+                                      id: :datapath_network,
+                                      dp_obj: network)
+    end
+
+    def activate_route_link_id(route_link_id)
+      route_link = @active_route_links[route_link_id] || return
+
+      return if route_link[:active] == true
+      route_link[:active] == true
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_REMOTE_DATAPATH_ROUTE_LINK,
+                                      id: :datapath_route_link,
+                                      dp_obj: route_link)
+    end
+
+    def deactivate_route_link_id(route_link_id)
+      route_link = @active_route_links[route_link_id] || return
+
+      return if route_link[:active] == false
+      route_link[:active] == false
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_ROUTE_LINK,
+                                      id: :datapath_route_link,
+                                      dp_obj: route_link)
+    end
+
+    #
+    # Internal methods:
+    #
 
     private
 
-    def same_segment?
-      @dp_info.datapath.datapath_info.dc_segment_id == @dc_segment_id
-    end
-
     def after_add_active_network(active_network)
-      if same_segment?
-        @dp_info.dc_segment_manager.async.insert(active_network[:dpn_id])
-      else
-        @dp_info.tunnel_manager.async.insert(active_network[:dpn_id])
-      end
-
       flows = []
       flows_for_filtering_mac_address(flows,
-                                      active_network[:broadcast_mac_address],
-                                      active_network[:dpn_id] | COOKIE_TYPE_DP_NETWORK)
+                                      active_network[:mac_address],
+                                      active_network[:id] | COOKIE_TYPE_DP_NETWORK)
       @dp_info.add_flows(flows)
     end
 
     def after_remove_active_network(active_network)
-      if same_segment?
-        @dp_info.dc_segment_manager.async.remove(active_network[:dpn_id])
-      else
-        @dp_info.tunnel_manager.async.remove(active_network[:dpn_id])
-      end
-    end
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} datapaths/remote: #{message}" + (values ? " (#{values})" : '')
     end
 
     def flows_for_dp_network(flows, dp_nw)
@@ -112,18 +145,6 @@ module Vnet::Openflow::Datapaths
                              write_reflection: reflection,
                              write_dp_route_link: dp_rl[:id],
 
-                             cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
-        flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC,
-                             goto_table: TABLE_OUTPUT_DP_OVER_TUNNEL,
-                             priority: 1,
-
-                             match: {
-                               :eth_dst => dp_rl[:mac_address]
-                             },
-                             actions: {
-                               :eth_dst => dp_rl[:route_link_mac_address]
-                             },
                              cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
 
         # We write the destination interface id in the second value

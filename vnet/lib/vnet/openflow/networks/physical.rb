@@ -8,6 +8,10 @@ module Vnet::Openflow::Networks
       :physical
     end
 
+    def log_type
+      'network/physical'
+    end
+
     def install
       flows = []
       flows << flow_create(:default,

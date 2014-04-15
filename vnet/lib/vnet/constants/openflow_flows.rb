@@ -71,17 +71,13 @@ module Vnet
       TABLE_NETWORK_DST_CLASSIFIER    = 40
       TABLE_NETWORK_DST_MAC_LOOKUP    = 41
 
-      TABLE_INTERFACE_INGRESS_FILTER        = 43
-      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP = 44
+      TABLE_INTERFACE_INGRESS_FILTER         = 43
+      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP  = 44
 
       TABLE_FLOOD_SIMULATED                  = 50
       TABLE_FLOOD_LOCAL                      = 51
-      TABLE_FLOOD_SEGMENT                    = 52
-      TABLE_FLOOD_TUNNELS                    = 53
-
-      # A table for sending packets to the controller after applying
-      # non-action instructions such as 'write_metadata'.
-      TABLE_OUTPUT_CONTROLLER                = 60
+      TABLE_FLOOD_TUNNELS                    = 52
+      TABLE_FLOOD_SEGMENT                    = 53
 
       TABLE_LOOKUP_IF_NW_TO_DP_NW            = 70
       TABLE_LOOKUP_IF_RL_TO_DP_RL            = 71
@@ -106,9 +102,7 @@ module Vnet
       TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF      = 84
 
       TABLE_OUTPUT_DP_OVER_MAC2MAC           = 85 # Match src/dst if id, output if present.
-      TABLE_OUTPUT_DP_NETWORK_SET_MAC        = 86 # If broadcast -> set MAC2MAC or drop. default goto next
-      TABLE_OUTPUT_DP_ROUTE_LINK_SET_MAC     = 87 # MAC is route link mac and matches src/dst if id -> set route link mac and goto next.
-      TABLE_OUTPUT_DP_OVER_TUNNEL            = 88 # Use tun_id to determine type for goto_table.
+      TABLE_OUTPUT_DP_OVER_TUNNEL            = 86 # Use tun_id to determine type for goto_table.
 
       #
       # Output ports tables:
@@ -124,6 +118,8 @@ module Vnet
       #
       # Cookie constants:
       #
+
+      COOKIE_MASK = 0xffffffffffffffff
 
       COOKIE_ID_MASK = (0x7fffffff)
       COOKIE_DYNAMIC_LOAD_MASK = (0x1 << 31)

@@ -7,11 +7,11 @@ module Vnet::Endpoints::V10::Responses
       object.to_hash
     end
 
-    def self.translate_static_addresses(object)
+    def self.translation_static_addresses(object)
       argument_type_check(object,Vnet::ModelWrappers::Translation)
       {
         :uuid => object.uuid,
-        # :translate_static_addresses => DatapathNetworkCollection.generate(
+        # :translation_static_addresses => DatapathNetworkCollection.generate(
         #   datapath.batch.datapath_networks.commit
         # )
       }

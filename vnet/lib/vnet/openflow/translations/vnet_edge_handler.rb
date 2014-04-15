@@ -8,6 +8,10 @@ module Vnet::Openflow::Translations
       super
     end
 
+    def log_type
+      'translation/vnet_edge_handler'
+    end
+
     def network_to_vlan(network_id)
       entry = @translation_map.find { |t| t.network_id == network_id }
       entry && entry.vlan_id
@@ -196,10 +200,6 @@ module Vnet::Openflow::Translations
       network = @dp_info.network_manager.item(id: network_id)
 
       @dp_info.send_packet_out(message, OFPP_TABLE)
-    end
-
-    def log_format(message, values = nil)
-      "#{@dpid_s} translation_handler: #{message}" + (values ? " (#{values})" : '')
     end
 
     def dump_packet_in(message)

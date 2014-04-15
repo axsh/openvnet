@@ -11,17 +11,11 @@ module Vnet::Openflow
     attr_reader :display_name
     attr_reader :node_id
 
-    attr_reader :dc_segment_id
-    attr_reader :ipv4_address
-
     def initialize(datapath_map)
       @id = datapath_map.id
       @uuid = datapath_map.uuid
       @display_name = datapath_map.display_name
       @node_id = datapath_map.node_id
-
-      @dc_segment_id = datapath_map.dc_segment_id
-      @ipv4_address = IPAddr.new(datapath_map.ipv4_address, Socket::AF_INET)
     end
 
     def is_remote?(owner_datapath_id, active_datapath_id = nil)
@@ -68,11 +62,6 @@ module Vnet::Openflow
       "<##{self.class.name} dpid:#{@dpid}>"
     end
 
-    def ipv4_address
-      ipv4_value = @datapath_info.ipv4_address
-      ipv4_value && IPAddr.new(ipv4_value, Socket::AF_INET)
-    end
-
     def create_switch
       @switch = Switch.new(self)
       @switch.create_default_flows
@@ -96,6 +85,21 @@ module Vnet::Openflow
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
+    def terminate
+      begin
+        info log_format('terminating datapath')
+
+        # Do something...
+        @dp_info.del_all_flows
+      rescue Celluloid::Task::TerminatedError => e
+        raise e
+      rescue Exception => e
+        info log_format(e.message, e.class.name)
+        e.backtrace.each { |str| info log_format(str) }
+        raise e
+      end
+    end
+
     #
     # Flow modification methods:
     #
@@ -116,7 +120,7 @@ module Vnet::Openflow
     end
 
     # Use dp_info.
-    def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
+    def del_cookie(cookie, cookie_mask = COOKIE_MASK)
       options = {
         :command => Controller::OFPFC_DELETE,
         :table_id => Controller::OFPTT_ALL,
@@ -138,19 +142,6 @@ module Vnet::Openflow
         flows.each { |flow|
           @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
         }
-      }
-    end
-
-    def del_all_flows
-      options = {
-        :command => Controller::OFPFC_DELETE,
-        :table_id => Controller::OFPTT_ALL,
-        :out_port => Controller::OFPP_ANY,
-        :out_group => Controller::OFPG_ANY,
-      }
-
-      @controller.pass_task {
-        @controller.public_send_flow_mod(@dp_info.dpid, options)
       }
     end
 

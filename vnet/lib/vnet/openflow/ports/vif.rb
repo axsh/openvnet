@@ -5,6 +5,10 @@ module Vnet::Openflow::Ports
   module Vif
     include Vnet::Openflow::FlowHelpers
 
+    def log_type
+      'port/vif'
+    end
+
     def port_type
       :vif
     end

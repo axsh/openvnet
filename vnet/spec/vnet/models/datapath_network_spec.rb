@@ -22,20 +22,6 @@ describe Vnet::Models::DatapathNetwork do
     Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 2, :mac_address => mac_address_3_2)
   end
 
-  describe "datapath_networks_on_segment" do
-    subject { Vnet::Models::DatapathNetwork.on_segment(datapath_1).where(:network_id => 1).all }
-    it { expect(subject.size).to eq 1 }
-    it { expect(subject.first).to be_a Vnet::Models::DatapathNetwork }
-    it { expect(subject.first.datapath.id).to eq datapath_2.id }
-  end
-
-  describe "datapath_networks_on_other_segment" do
-    subject { Vnet::Models::DatapathNetwork.on_other_segment(datapath_1).where(:network_id => 1).all }
-    it { expect(subject.size).to eq 1 }
-    it { expect(subject.first).to be_a Vnet::Models::DatapathNetwork }
-    it { expect(subject.first.datapath.id).to eq datapath_3.id }
-  end
-
   describe "datapath_networks_on_specific_datapath" do
     subject { Vnet::Models::DatapathNetwork.on_specific_datapath(datapath_1).all }
     it { expect(subject.size).to eq 2 }

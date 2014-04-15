@@ -8,35 +8,58 @@ module Vnet::Openflow::Translations
       super
 
       @static_addresses = {}
+    end
 
-      return if params[:map].translate_static_addresses.nil?
-
-      params[:map].translate_static_addresses.each { |translate|
-        @static_addresses[translate.id] = {
-          :id => translate.id,
-          :ingress_ipv4_address => IPAddr.new(translate.ingress_ipv4_address, Socket::AF_INET),
-          :egress_ipv4_address => IPAddr.new(translate.egress_ipv4_address, Socket::AF_INET),
-        }
-      }
+    def log_type
+      'translation/static_address'
     end
 
     def install
-      return if
-        @interface_id.nil?
+      return if @interface_id.nil?
 
       flows = []
       flows_for_disable_passthrough(flows) if @passthrough == false
 
-      @static_addresses.each { |id, translate|
-        debug log_format('install translate flow', translate.inspect)
+      @static_addresses.each { |id, translation|
+        debug log_format('install translation flow', translation.inspect)
 
-        flows_for_translate(flows, translate)
+        flows_for_translation(flows, translation)
       }
 
       @dp_info.add_flows(flows)
     end
 
-    def uninstall
+    def added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+      translation = {
+        :static_address_id => static_address_id,
+        :ingress_ipv4_address => IPAddr.new(ingress_ipv4_address, Socket::AF_INET),
+        :egress_ipv4_address => IPAddr.new(egress_ipv4_address, Socket::AF_INET),
+      }
+      @static_addresses[static_address_id] = translation
+
+      return if @installed == false
+
+      flows = []
+      flows_for_translation(flows, translation)
+
+      @dp_info.add_flows(flows)
+    end
+
+    def removed_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+      translation = @static_addresses.delete(static_address_id)
+
+      return if @installed == false
+
+      @dp_info.del_flows(table_id: TABLE_ROUTE_INGRESS_TRANSLATION,
+                         cookie: self.cookie,
+                         cookie_mask: self.cookie_mask,
+                         match: Trema::Match.new(eth_type: ETH_TYPE_IPV4,
+                                                 ipv4_dst: ingress_ipv4_address))
+      @dp_info.del_flows(table_id: TABLE_ROUTE_EGRESS_TRANSLATION,
+                         cookie: self.cookie,
+                         cookie_mask: self.cookie_mask,
+                         match: Trema::Match.new(eth_type: ETH_TYPE_IPV4,
+                                                 ipv4_src: egress_ipv4_address))
     end
 
     #
@@ -45,10 +68,8 @@ module Vnet::Openflow::Translations
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} translation/static_address: #{message}" + (values ? " (#{values})" : '')
-    end
-
+    # TODO: Change this to 'enable passthrough' and add an enable
+    # translation flag to interface.
     def flows_for_disable_passthrough(flows)
       flows << flow_create(:default,
                            table: TABLE_ROUTE_INGRESS_TRANSLATION,
@@ -62,7 +83,7 @@ module Vnet::Openflow::Translations
                            match_interface: @interface_id)
     end
 
-    def flows_for_translate(flows, translate)
+    def flows_for_translation(flows, translation)
       flows << flow_create(:default,
                            table: TABLE_ROUTE_INGRESS_TRANSLATION,
                            goto_table: TABLE_ROUTER_INGRESS,
@@ -70,12 +91,12 @@ module Vnet::Openflow::Translations
 
                            match: {
                              :eth_type => ETH_TYPE_IPV4,
-                             :ipv4_dst => translate[:ingress_ipv4_address],
+                             :ipv4_dst => translation[:ingress_ipv4_address],
                            },
                            match_interface: @interface_id,
 
                            actions: {
-                             :ipv4_dst => translate[:egress_ipv4_address],
+                             :ipv4_dst => translation[:egress_ipv4_address],
                            })
       flows << flow_create(:default,
                            table: TABLE_ROUTE_EGRESS_TRANSLATION,
@@ -84,12 +105,12 @@ module Vnet::Openflow::Translations
 
                            match: {
                              :eth_type => ETH_TYPE_IPV4,
-                             :ipv4_src => translate[:egress_ipv4_address],
+                             :ipv4_src => translation[:egress_ipv4_address],
                            },
                            match_interface: @interface_id,
 
                            actions: {
-                             :ipv4_src => translate[:ingress_ipv4_address],
+                             :ipv4_src => translation[:ingress_ipv4_address],
                            })
     end
 
