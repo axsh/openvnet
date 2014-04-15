@@ -208,7 +208,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null => false
 
       Integer :interface_id, :index => true
-      String :mode, :index => true, :null => false
+      String :mode, :null => false
 
       Boolean :passthrough, :default => false, :null => false
 
@@ -221,9 +221,10 @@ Sequel.migration do
       primary_key :id
 
       Integer :translation_id, :index => true, :null => false
+      Integer :route_link_id
 
-      Bignum :ingress_ipv4_address, :index => true, :null => false
-      Bignum :egress_ipv4_address, :index => true, :null => false
+      Bignum :ingress_ipv4_address, :null => false
+      Bignum :egress_ipv4_address, :null => false
 
       unique [:translation_id, :ingress_ipv4_address, :egress_ipv4_address]
     end

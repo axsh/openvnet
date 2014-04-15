@@ -247,7 +247,7 @@ module Vnet::Openflow::Interfaces
       flows << flow_create(:default,
                            table: TABLE_ROUTE_EGRESS_LOOKUP,
                            goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
-                           priority: 1,
+                           priority: 20,
 
                            match_value_pair_first: @id,
 
@@ -271,7 +271,7 @@ module Vnet::Openflow::Interfaces
     end
 
     def flows_for_route_translation(flows)
-      [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS],
+      [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS_LOOKUP],
        [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
       ].each { |table, goto_table|
         flows << flow_create(:default,

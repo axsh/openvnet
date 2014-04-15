@@ -132,6 +132,7 @@ module Vnet::Openflow
     def load_static_addresses(item, item_map)
       item_map.batch.translation_static_addresses.commit.each { |translation|
         item.added_static_address(translation.id,
+                                  translation.route_link_id,
                                   translation.ingress_ipv4_address,
                                   translation.egress_ipv4_address)
       }
@@ -146,7 +147,10 @@ module Vnet::Openflow
       ingress_ipv4_address = params[:ingress_ipv4_address] || return
       egress_ipv4_address = params[:egress_ipv4_address] || return
       
-      item.added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+      item.added_static_address(static_address_id,
+                                params[:route_link_id],
+                                ingress_ipv4_address,
+                                egress_ipv4_address)
     end
 
     # TRANSLATION_REMOVED_STATIC_ADDRESS on queue 'item.id'

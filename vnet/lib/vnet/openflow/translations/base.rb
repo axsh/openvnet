@@ -42,7 +42,7 @@ module Vnet::Openflow::Translations
       @dp_info.del_cookie(self.cookie, self.cookie_mask)
     end
 
-    def added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+    def added_static_address(static_address_id, route_link_id, ingress_ipv4_address, egress_ipv4_address)
     end
 
     def removed_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)

@@ -25,6 +25,7 @@ module Vnet::NodeApi
           dispatch_event(TRANSLATION_ADDED_STATIC_ADDRESS,
                          id: obj.translation_id,
                          static_address_id: obj.id,
+                         route_link_id: obj.route_link_id,
                          ingress_ipv4_address: obj.ingress_ipv4_address,
                          egress_ipv4_address: obj.egress_ipv4_address)
         end

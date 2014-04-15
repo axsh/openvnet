@@ -55,24 +55,25 @@ module Vnet
       TABLE_NETWORK_SRC_CLASSIFIER    = 20
       TABLE_NETWORK_SRC_MAC_LEARNING  = 21
 
-      # In the transition from TABLE_ROUTER_EGRESS to
+      # In the transition from TABLE_ROUTER_EGRESS_LOOKUP to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.
-      TABLE_ROUTE_INGRESS_INTERFACE   = 30
-      TABLE_ROUTE_INGRESS_TRANSLATION = 31
-      TABLE_ROUTER_INGRESS            = 32
-      TABLE_ROUTER_CLASSIFIER         = 33
-      TABLE_ROUTER_EGRESS             = 34
-      TABLE_ROUTE_EGRESS_LOOKUP       = 35
-      TABLE_ROUTE_EGRESS_TRANSLATION  = 36
-      TABLE_ROUTE_EGRESS_INTERFACE    = 37
-      TABLE_ARP_TABLE                 = 38
-      TABLE_ARP_LOOKUP                = 39
+      TABLE_ROUTE_INGRESS_INTERFACE          = 30
+      TABLE_ROUTE_INGRESS_TRANSLATION        = 31
+      TABLE_ROUTER_INGRESS_LOOKUP            = 32
+      TABLE_ROUTER_CLASSIFIER                = 33
+      TABLE_ROUTER_EGRESS_LOOKUP             = 34
+      TABLE_ROUTE_EGRESS_LOOKUP              = 35
+      TABLE_ROUTE_EGRESS_TRANSLATION         = 36
+      TABLE_ROUTE_EGRESS_INTERFACE           = 37
 
-      TABLE_NETWORK_DST_CLASSIFIER    = 40
-      TABLE_NETWORK_DST_MAC_LOOKUP    = 41
+      TABLE_ARP_TABLE                        = 40
+      TABLE_ARP_LOOKUP                       = 41
 
-      TABLE_INTERFACE_INGRESS_FILTER         = 43
-      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP  = 44
+      TABLE_NETWORK_DST_CLASSIFIER           = 42
+      TABLE_NETWORK_DST_MAC_LOOKUP           = 43
+
+      TABLE_INTERFACE_INGRESS_FILTER         = 45
+      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP  = 46
 
       TABLE_FLOOD_SIMULATED                  = 50
       TABLE_FLOOD_LOCAL                      = 51

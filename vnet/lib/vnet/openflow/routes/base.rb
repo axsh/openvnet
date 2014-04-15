@@ -96,7 +96,7 @@ module Vnet::Openflow::Routes
 
       if @ingress == true
         flows << flow_create(:default,
-                             table: TABLE_ROUTER_INGRESS,
+                             table: TABLE_ROUTER_INGRESS_LOOKUP,
                              goto_table: TABLE_ROUTER_CLASSIFIER,
                              priority: self.is_default_route ? 20 : 30,
 
@@ -111,7 +111,7 @@ module Vnet::Openflow::Routes
       [true, false].each { |reflection|
         if @egress == true
           flows << flow_create(:default,
-                               table: TABLE_ROUTER_EGRESS,
+                               table: TABLE_ROUTER_EGRESS_LOOKUP,
                                goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
                                priority: self.is_default_route ? 20 : 30,
 

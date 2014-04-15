@@ -78,7 +78,7 @@ module Vnet::Openflow::Interfaces
       flows << flow_create(:default,
                            table: TABLE_ROUTE_EGRESS_LOOKUP,
                            goto_table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
-                           priority: 1,
+                           priority: 90,
 
                            match_value_pair_first: @id)
     end

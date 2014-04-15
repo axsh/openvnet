@@ -34,18 +34,21 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   end
 
   post '/:uuid/static_address' do
-    params = parse_params(@params, ['uuid', 'ingress_ipv4_address', 'egress_ipv4_address'])
+    params = parse_params(@params, ['uuid', 'ingress_ipv4_address', 'egress_ipv4_address', 'route_link_uuid'])
     check_required_params(params, ['ingress_ipv4_address', 'egress_ipv4_address'])
 
     ingress_ipv4_address = parse_ipv4(params['ingress_ipv4_address'])
     egress_ipv4_address = parse_ipv4(params['egress_ipv4_address'])
+
     translation = check_syntax_and_pop_uuid(M::Translation, params)
+    route_link_id = params['route_link_uuid'] && check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid').id
 
     if translation.mode != 'static_address'
       raise(E::ArgumentError, 'Translation mode must be "static_address".')
     end
 
     M::TranslationStaticAddress.create(translation_id: translation.id,
+                                       route_link_id: route_link_id,
                                        ingress_ipv4_address: ingress_ipv4_address,
                                        egress_ipv4_address: egress_ipv4_address)
     respond_with(R::Translation.translation_static_addresses(translation))
