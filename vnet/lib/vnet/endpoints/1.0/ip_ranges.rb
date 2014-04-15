@@ -30,7 +30,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
     update_by_uuid(:IpRange, put_post_shared_params, fill_options)
   end
 
-  put '/:uuid/add_range' do
+  post '/:uuid/ranges' do
     params = parse_params(@params, ['uuid', "begin_ipv4_address", "end_ipv4_address"])
 
     ip_range = check_syntax_and_pop_uuid(M::IpRange, params)
@@ -44,7 +44,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
     respond_with(R::IpRange.ip_ranges_ranges(ip_range))
   end
 
-  put '/:uuid/delete_range' do
+  get '/:uuid/ranges' do
+    show_relations(:IpRange, :ip_ranges_ranges)
+  end
+
+  delete '/:uuid/ranges' do
     params = parse_params(@params, ['uuid', "begin_ipv4_address", "end_ipv4_address"])
 
     ip_range = check_syntax_and_pop_uuid(M::IpRange, params)
