@@ -148,17 +148,19 @@ module Vnet::Openflow::Interfaces
     def flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_INGRESS_INTERFACE,
-                           goto_table: TABLE_NETWORK_DST_CLASSIFIER,
-                           priority: 20,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_dst => mac_info[:mac_address],
-                             :ipv4_dst => ipv4_info[:ipv4_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           cookie: cookie)
+      if ipv4_info[:enable_routing] != true
+        flows << flow_create(:default,
+                             table: TABLE_ROUTE_INGRESS_INTERFACE,
+                             goto_table: TABLE_NETWORK_DST_CLASSIFIER,
+                             priority: 20,
+                             match: {
+                               :eth_type => 0x0800,
+                               :eth_dst => mac_info[:mac_address],
+                               :ipv4_dst => ipv4_info[:ipv4_address]
+                             },
+                             match_network: ipv4_info[:network_id],
+                             cookie: cookie)
+      end
 
       flows << flow_create(:default,
                            table: TABLE_ROUTE_INGRESS_INTERFACE,

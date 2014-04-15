@@ -258,13 +258,15 @@ module Vnet::Openflow
 
       network = @dp_info.network_manager.item(id: ip_lease.ip_address.network_id)
 
+      # TODO: Pass the ip_lease object.
       item.add_ipv4_address(mac_lease_id: ip_lease.mac_lease_id,
+                            ip_lease_id: ip_lease.id,
                             network_id: network[:id],
                             network_type: network[:type],
                             network_prefix: network[:ipv4_prefix],
-                            ip_lease_id: ip_lease.id,
                             cookie_id: ip_lease.cookie_id,
-                            ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET))
+                            ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET),
+                            enable_routing: ip_lease.enable_routing)
     end
 
     # INTERFACE_RELEASED_IPV4_ADDRESS on queue 'item.id'

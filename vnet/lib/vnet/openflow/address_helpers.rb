@@ -69,6 +69,7 @@ module Vnet::Openflow
         :ipv4_address => params[:ipv4_address],
         :ip_lease_id => params[:ip_lease_id],
         :cookie_id => params[:cookie_id],
+        :enable_routing => params[:enable_routing],
       }
 
       ipv4_addresses = mac_info[:ipv4_addresses].dup
