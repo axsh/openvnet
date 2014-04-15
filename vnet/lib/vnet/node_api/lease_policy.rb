@@ -8,6 +8,7 @@ module Vnet::NodeApi
       include Vnet::Constants::LeasePolicy
 
       def allocate_ip(options)
+        # TODO: consider checks for nil values in here
         lease_policy = model_class(:lease_policy)[options[:lease_policy_id]]
         if lease_policy.timing == "immediate"
           base_networks = lease_policy.lease_policy_base_networks
@@ -82,12 +83,6 @@ module Vnet::NodeApi
             leaseaddr = i.available_ip(network.id, f, t, order)
             break if leaseaddr.nil?
             check_ip = IPAddress::IPv4.parse_u32(leaseaddr, net_prefix)
-            # To check the IP address that can not be used.
-            # TODO No longer needed in the future.
-##            if network.reserved_ip?(check_ip)
-##              network.network_vif_ip_lease_dataset.add_reserved(check_ip.to_s)
-##              is_loop = true
-##            end
             case order
             when :asc
               f = check_ip.to_i

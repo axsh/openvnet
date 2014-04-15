@@ -8,8 +8,6 @@ module Vnet::Models
     many_to_one :network
     many_to_one :ip_range
 
-    subset(:alives, {})  # TODO, understand this
-
   end
 
 end

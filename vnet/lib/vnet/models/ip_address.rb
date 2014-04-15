@@ -16,9 +16,7 @@ module Vnet::Models
       select_statement = IpAddress.select(:ip_addresses__ipv4_address, :prev__ipv4_address___prev, :follow__ipv4_address___follow).filter(filter_join_main)
       select_statement = select_statement.join_table(:left, :ip_addresses___prev, filter_join_prev)
       select_statement = select_statement.join_table(:left, :ip_addresses___follow, filter_join_follow)
-      d = select_statement.filter({:prev__ipv4_address=>nil} | {:follow__ipv4_address=>nil})
-      p d.sql
-      d
+      select_statement.filter({:prev__ipv4_address=>nil} | {:follow__ipv4_address=>nil})
     }
   end
 end
