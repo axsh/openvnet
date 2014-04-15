@@ -53,8 +53,6 @@ module Vnet::Openflow::Interfaces
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
 
-      @mac_lease_ids = map.mac_leases.map { | ml | ml.id }
-
       # The 'owner_datapath_ids' set has two possible states; the set
       # can contain zero or more datapaths that can activate this
       # interface, or if nil it can either be activated by any
@@ -131,7 +129,6 @@ module Vnet::Openflow::Interfaces
                                     port_number: @port_number,
                                     port_name: @port_name,
                                     display_name: @display_name,
-                                    mac_lease_ids: @mac_lease_ids,
                                     mac_addresses: @mac_addresses,
 
                                     active_datapath_ids: @active_datapath_ids,
