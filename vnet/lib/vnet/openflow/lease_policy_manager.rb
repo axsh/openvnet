@@ -2,6 +2,8 @@
 
 module Vnet::Openflow
 
+  # TODO: This class is currently not used.  Make sure we have plans to extend and
+  # use it, otherwise delete.
   class LeasePolicyManager < Vnet::Manager
 
     #
@@ -44,17 +46,6 @@ module Vnet::Openflow
         # be caught by the item_by_params_direct method.
         return nil
       end
-    end
-
-    def match_item?(item, params)
-      debug log_format('match_item?(item, params)',"#{params}")
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      if params[:interface_id]
-        return false if item.interfaces.empty?
-        return false if params[:interface_id] != item.interfaces.first.id
-      end
-      true
     end
 
     def select_item(filter)
