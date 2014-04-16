@@ -1,24 +1,28 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+require 'yaml'
 
 VAGRANTFILE_API_VERSION = "2"
 
-VNET_PATH = "~/work/openvnet"
+myconfig = YAML.load_file(File.expand_path("./config.yml", File.dirname(__FILE__)))
+
 VAGRANT_BOX = "hansode/centos-6.5-x86_64"
 
 vms = [
   {
     name: "vnmgr",
     memory: 1024,
-    networks: [ { type: :private_network, ip: "192.168.20.10" } ],
+    networks: [
+      { type: "hostonly", ip: "192.168.20.10" },
+    ],
     sync_vnet: true,
   },
   {
     name: "vna1",
     memory: 1024,
     networks: [
-      { type: :private_network, ip: "192.168.20.11" },
-      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network1" } }
+      { type: "hostonly", ip: "192.168.20.11" },
+      { type: "intnet", name: "public_network1" },
     ],
     sync_vnet: true,
   },
@@ -26,8 +30,8 @@ vms = [
     name: "vna2",
     memory: 1024,
     networks: [
-      { type: :private_network, ip: "192.168.20.12" },
-      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network1" } }
+      { type: "hostonly", ip: "192.168.20.12" },
+      { type: "intnet", name: "public_network1" },
     ],
     sync_vnet: true,
   },
@@ -35,8 +39,8 @@ vms = [
     name: "vna3",
     memory: 1024,
     networks: [
-      { type: :private_network, ip: "192.168.20.13" },
-      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network2" } }
+      { type: "hostonly", ip: "192.168.20.13" },
+      { type: "intnet", name: "public_network2" },
     ],
     sync_vnet: true,
   },
@@ -44,27 +48,26 @@ vms = [
     name: "edge",
     memory: 1024,
     networks: [
-      { type: :private_network, ip: "192.168.20.21" },
-      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network1" } },
-      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network3" } }
+      { type: "hostonly", ip: "192.168.20.21" },
+      { type: "intnet", name: "public_network1" },
+      { type: "intnet", name: "public_network3" },
     ],
     sync_vnet: true,
   },
   {
     name: "legacy",
     networks: [
-      { type: :private_network, ip: "192.168.20.31" },
-      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network3" } }
+      { type: "hostonly", ip: "192.168.20.31" },
+      { type: "intnet", name: "public_network3" },
     ]
   },
   {
     name: "router",
     networks: [
-      { type: :private_network, ip: "192.168.20.2" },
-      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network1" } },
-      { type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network2" } },
-
-      #{ type: :private_network, ip: "0.0.0.0", options: { auto_config: false, virtualbox__intnet: "public_network3" } }
+      { type: "hostonly", ip: "192.168.20.2" },
+      { type: "intnet", name: "public_network1" },
+      { type: "intnet", name: "public_network2" },
+      { type: "intnet", name: "public_network3" },
     ]
   },
 ]
@@ -72,28 +75,42 @@ vms = [
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vms.each do |vm|
 
+    # only suuport virtualbox atm.
     config.vm.provider :virtualbox do |vb|
       vb.memory = vm[:memory] || 1024
 
       # https://github.com/mitchellh/vagrant/issues/1172
       vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
-
-      vb.customize ['modifyvm', :id, '--nicpromisc2', 'allow-all']
-      vb.customize ['modifyvm', :id, '--nicpromisc3', 'allow-all']
     end
 
     config.vm.define vm[:name] do |config|
       config.vm.box = vm[:box] || VAGRANT_BOX
 
       if vm[:sync_vnet]
-        config.vm.synced_folder VNET_PATH, "/opt/axsh/openvnet/",
+        config.vm.synced_folder myconfig["vnet_path"], "/opt/axsh/openvnet/",
           type: "rsync", rsync__exclude: %w(.git/ vnet/.bundle vnet/vendor)
       end
 
       config.vm.hostname = vm[:name]
-      vm[:networks].each do |network|
-        config.vm.network network[:type], { ip: network[:ip] }.merge(network[:options] || {})
+      vm[:networks].each.with_index do |network, index|
+
+        nic_index = index + 2
+        case network[:type]
+        when "hostonly"
+          config.vm.network :private_network, ip: network[:ip]
+        when "intnet"
+          config.vm.provider :virtualbox do |vb|
+            vb.customize ["modifyvm", :id, "--nic#{nic_index}", network[:type]]
+            vb.customize ["modifyvm", :id, "--intnet#{nic_index}", network[:name]]
+          end
+        end
+
+        config.vm.provider :virtualbox do |vb|
+          vb.customize ["modifyvm", :id, "--nicpromisc#{nic_index}", "allow-all"]
+          # http://humbledown.org/virtualbox-intel-vlan-tag-stripping.xhtml
+          vb.customize ["modifyvm", :id, "--nictype#{nic_index}", "Am79C973"]
+        end
       end
     end
   end
