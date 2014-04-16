@@ -220,16 +220,19 @@ module Vnspec
       end
 
       def hostname_for(address, options = {})
-        option_string = to_ssh_option_string(ssh_options_for_quiet_mode("ConnectTimeout" => options[:timeout] || 2))
+        options = { "ConnectTimeout" => options[:timeout] || 2 }
+        options = ssh_options_for_quiet_mode(options) if config[:ssh_quiet_mode]
+        option_string = to_ssh_option_string(options)
         ssh_on_guest("ssh #{option_string} #{address} hostname")[:stdout].chomp
       end
 
-      def ssh_on_guest(command, options = {}, host_options = {})
+      def ssh_on_guest(command, options = {})
         use_sudo = options.delete(:use_sudo)
-        option_string = to_ssh_option_string(ssh_options_for_quiet_mode(options))
+        options = ssh_options_for_quiet_mode(options) if config[:ssh_quiet_mode]
+        option_string = to_ssh_option_string(options)
         command = "sudo #{command}" if config[:vm_ssh_user] != "root" && use_sudo
         command = "ssh #{option_string} #{config[:vm_ssh_user]}@#{ssh_ip} -p #{ssh_port} #{command}"
-        ssh_on_host(command, host_options)
+        ssh_on_host(command)
       end
 
       def ssh_on_host(command, options = {})
@@ -369,14 +372,25 @@ module Vnspec
       end
 
       def ready?(timeout = 600)
-        restart.tap { super }
+        true
+      end
+
+      def ssh_on_guest(command, options = {})
+        ssh(name.to_s, command, options)
+      end
+
+      def clear_arp_cache
+        # TODO
+        # does not work atm.
+        #logger.debug("clear arp cahe: #{name}")
+        #ssh_on_host("ip netns exec #{nspid} ip -s -s neigh flush all", use_sudo: true)
       end
 
       private
       def update_dns
         if ssh_on_host("[ -f /var/run/resolv.conf.#{name} ]").success?
             
-          ssh_on_host("scp #{to_ssh_option_string(ssh_options_for_quiet_mode)} -P #{ssh_port} /var/run/resolv.conf.#{name} localhost:/tmp/resolv.dnsmasq.conf")
+          ssh_on_host("scp -P #{ssh_port} /var/run/resolv.conf.#{name} localhost:/tmp/resolv.dnsmasq.conf")
           ssh_on_guest("mv /tmp/resolv.dnsmasq.conf /etc/resolv.dnsmasq.conf", use_sudo: true)
           ssh_on_host("rm /var/run/resolv.conf.#{name}", use_sudo: true)
         end

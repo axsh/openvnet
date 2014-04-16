@@ -10,6 +10,7 @@ module Vnspec
       test_retry_count: 30,
       log_level: :info,
       vna_waittime: 0,
+      ssh_quiet_mode: false,
     }
 
     class << self
