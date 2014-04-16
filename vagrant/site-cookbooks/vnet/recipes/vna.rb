@@ -205,5 +205,3 @@ node[:vnet][:vms].select { |vm| vm["host"] == node.name }.tap do |vms|
     end
   end
 end
-log `ps awwwx|grep docker`
-execute "sleep 10"

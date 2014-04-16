@@ -9,31 +9,8 @@
 
 include_recipe "vnet::base"
 
-# yum
-include_recipe "yum-epel"
-
 node[:vnet][:packages][:common].each do |pkg|
   package pkg
-end
-
-# ntp
-node.default[:ntp][:servers] = node[:vnet][:ntp_servers]
-include_recipe "ntp"
-
-# ssh
-file "/home/vagrant/.ssh/id_rsa" do
-  owner "vagrant"
-  group "vagrant"
-  mode "0600"
-  content ::File.open("/vagrant/vm/ssh/id_rsa").read
-end
-
-# timezone
-file "/etc/localtime" do
-  owner "root"
-  group "root"
-  content ::File.open("/usr/share/zoneinfo/Japan").read
-  action :create
 end
 
 # build openvswitch rpm
