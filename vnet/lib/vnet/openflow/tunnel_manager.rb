@@ -308,7 +308,7 @@ module Vnet::Openflow
       # Create separate method...
       #
       # Consider adding an event for doing create?
-      info log_format("creating tunnel entry",
+      info log_format("creating tunnel entry mode '#{tunnel_mode}'",
                       options.map { |k, v| "#{k}:#{v}" }.join(" "))
 
       tunnel = MW::Tunnel.create(options.merge(mode: tunnel_mode))

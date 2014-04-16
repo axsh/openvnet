@@ -303,7 +303,7 @@ module Vnet::Openflow
     #
 
     # INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS on queue '???'
-    def remove_all_active_datapaths
+    def remove_all_active_datapaths(params)
       # TODO: Make sure we don't set active datapath for items
       # installed after this call.
       @items.keys.each do |item_id|
