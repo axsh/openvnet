@@ -307,7 +307,7 @@ module Vnspec
             raise "unknown command: #{command}"
           end
         vm_config[:interfaces].each do |i|
-          ssh_on_guest("#{ifcmd} #{interface[:name]}", use_sudo: true)
+          ssh_on_guest("#{ifcmd} #{i[:name]}", use_sudo: true)
         end
       end
     end

@@ -10,7 +10,7 @@ webapi:
 
 vnet_branch: master
 vnet_path: /opt/axsh/wakame-vnet
-update_vnet_via: "git",
+update_vnet_via: "git"
 
 ssh_quiet_mode: true
 
