@@ -51,8 +51,19 @@ module Vnspec
         end
         alias_method :[], :find
 
-        def reload
-          all(reload: true)
+        def reload(id = nil)
+          options = { reload: true }
+          if id
+            find(id, options)
+          else
+            all(options)
+          end
+        end
+
+        def create(options)
+          API.request(:post, api_name, options) do |response|
+            return reload(response[:uuid])
+          end
         end
       end
 
@@ -65,7 +76,7 @@ module Vnspec
       end
 
       def reload
-        self.class.reload
+        self.class.reload(self.uuid)
       end
     end
 
@@ -91,11 +102,6 @@ module Vnspec
               end
             end
           end
-        end
-
-        def create(options)
-          API.request(:post, "interfaces", options)
-          reload
         end
       end
 
@@ -149,9 +155,12 @@ module Vnspec
       attr_reader :ip_leases
 
       class << self
+        def api_name
+          "mac_leases"
+        end
+
         def create(interface, options)
-          API.request(:post, "mac_leases", options.merge(interface_uuid: interface.uuid))
-          reload
+          super(options.merge(interface_uuid: interface.uuid))
         end
       end
 
@@ -182,9 +191,12 @@ module Vnspec
       attr_reader :network_uuid
 
       class << self
+        def api_name
+          "ip_leases"
+        end
+
         def create(mac_lease, options)
-          API.request(:post, "ip_leases", options.merge(mac_lease_uuid: mac_lease.uuid))
-          reload
+          super(options.merge(mac_lease_uuid: mac_lease.uuid))
         end
       end
 
@@ -207,11 +219,6 @@ module Vnspec
       class << self
         def api_name
           "datapaths"
-        end
-
-        def create(options)
-          API.request(:post, "datapaths", options)
-          reload
         end
       end
 
@@ -249,11 +256,6 @@ module Vnspec
       class << self
         def api_name
           "dns_services"
-        end
-
-        def create(options)
-          API.request(:post, api_name, options)
-          reload
         end
       end
 
