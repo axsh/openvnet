@@ -3,6 +3,12 @@ vm_type: :docker
 pipework_path: /vagrant/vm/bin
 specs_ext: [edge]
 
+vna_waittime: 3
+vnet_branch: master
+
+log_level: info
+dump_flows: false
+
 ssh_options:
   user: vagrant
   debug: true
@@ -15,11 +21,6 @@ nodes:
 webapi:
   host: 192.168.20.10
   port: 9090
-
-vnet_branch: master
-
-log_level: info
-dump_flows: false
 
 dataset_options:
   physical_port: eth2
