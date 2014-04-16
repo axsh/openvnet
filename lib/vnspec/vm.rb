@@ -349,7 +349,7 @@ module Vnspec
             "#{config[:pipework_path]}/pipework",
             interface[:bridge],
             "-i", interface[:name],
-            "-p", interface[:uuid],
+            "-l", interface[:uuid],
             self.name,
             ip_address,
             interface[:mac_address],
