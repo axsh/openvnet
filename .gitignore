@@ -5,3 +5,4 @@ vendor
 tmp
 .ruby-version
 !.gitkeep
+config.yml
