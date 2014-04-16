@@ -8,7 +8,7 @@ describe "edge" do
 
   describe "mac2mac" do
     it "reachable to vnet1" do
-      expect(legacy1).to be_reachable_to(vm1)
+      expect(legacy1).to be_reachable_to(vm1, timeout: 20)
     end
 
     it "not reachable to vnet2" do

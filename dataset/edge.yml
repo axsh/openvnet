@@ -66,7 +66,7 @@ interfaces:
     mode: simulated
 
   - uuid: if-edge
-    port_name: <%= physical_port %>
+    port_name: <%= edge_port %>
     mode: "edge"
     mac_address: "02:01:00:00:00:00"
     ipv4_address: "0.0.0.0"
@@ -74,7 +74,7 @@ interfaces:
 
   - uuid: if-edgeeth0
     mode: host
-    port_name: <%= edge_port %>
+    port_name: <%= physical_port %>
     owner_datapath_uuid: dp-edge
     network_uuid: nw-public1
     mac_address: "02:01:00:00:00:04"
