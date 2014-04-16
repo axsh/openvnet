@@ -81,6 +81,19 @@ module Vnet::Endpoints::V10
       end
     end
 
+    def parse_port(param)
+      return nil if param.nil? || param.empty?
+
+      begin
+        port_number = param.to_i
+        return port_number if port_number > 0 && port_number < (1 << 16)
+
+        raise(E::ArgumentError, 'Invalid port number.')
+      rescue ArgumentError
+        raise(E::ArgumentError, 'Could not parse port number.')
+      end
+    end
+
     def delete_by_uuid(class_name)
       model_wrapper = M.const_get(class_name)
       uuid = @params[:uuid]

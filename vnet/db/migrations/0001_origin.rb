@@ -226,7 +226,17 @@ Sequel.migration do
       Bignum :ingress_ipv4_address, :null => false
       Bignum :egress_ipv4_address, :null => false
 
-      unique [:translation_id, :ingress_ipv4_address, :egress_ipv4_address]
+      Integer :ingress_port_number
+      Integer :egress_port_number
+
+      # We depend on SQL handling of null elements in unique to ensure
+      # that equival addresses with non-null port numbers cannot be
+      # added if an entry with null port numbers already exists.
+      unique [:translation_id,
+              :ingress_ipv4_address,
+              :egress_ipv4_address,
+              :ingress_port_number,
+              :egress_port_number]
     end
 
     create_table(:tunnels) do
