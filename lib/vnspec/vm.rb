@@ -280,6 +280,14 @@ module Vnspec
         ssh_on_guest("ip -s -s neigh flush all", use_sudo: true)
       end
 
+      def add_security_group(uuid)
+        @interfaces.each { |i| i.add_security_group(uuid) }
+      end
+
+      def remove_security_group(uuid)
+        @interfaces.each { |i| i.remove_security_group(uuid) }
+      end
+
       def install_package(name)
         ssh_on_guest("http_proxy=#{config[:vm_http_proxy]} yum install -y #{name}", use_sudo: true)
       end
@@ -299,19 +307,6 @@ module Vnspec
           ssh_on_guest("#{ifcmd} #{interface[:name]}", use_sudo: true)
         end
       end
-    end
-
-    def add_security_group(uuid)
-      @interfaces.each { |i| i.add_security_group(uuid) }
-    end
-
-    def remove_security_group(uuid)
-      @interfaces.each { |i| i.remove_security_group(uuid) }
-    end
-
-    def clear_arp_cache
-      logger.debug("clear arp cahe: #{name}")
-      ssh_on_guest("ip -s -s neigh flush all")
     end
 
     class KVM < Base

@@ -116,11 +116,11 @@ security_groups:
     rules: |
       tcp:22:10.101.0.12
       icmp:-1:10.101.0.12
-      udp:344:10.101.0.12
+      udp:1344:10.101.0.12
 
   - uuid: sg-udpvnet1
     display_name: "accept udp from vnet1"
-    rules: "udp:678:10.101.0.0/24"
+    rules: "udp:1678:10.101.0.0/24"
 
   # We give the isolation group an icmp rule so the same interfaces can be
   # used to test pinging in other examples. These wouldn't work if the ping
