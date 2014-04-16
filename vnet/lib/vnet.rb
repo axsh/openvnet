@@ -32,6 +32,7 @@ module Vnet
   end
 
   module Constants
+    autoload :LeasePolicy, 'vnet/constants/lease_policy'
     autoload :Openflow, 'vnet/constants/openflow'
     autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
@@ -65,6 +66,8 @@ module Vnet
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
+        autoload :IpRange, 'vnet/endpoints/1.0/responses/ip_range'
+        autoload :LeasePolicy, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddress, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLease, 'vnet/endpoints/1.0/responses/mac_lease'
         autoload :Network, 'vnet/endpoints/1.0/responses/network'
@@ -85,6 +88,8 @@ module Vnet
         autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
+        autoload :IpRangeCollection, 'vnet/endpoints/1.0/responses/ip_range'
+        autoload :LeasePolicyCollection, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddressCollection, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
         autoload :NetworkCollection, 'vnet/endpoints/1.0/responses/network'
@@ -116,6 +121,11 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/models/interface_security_group'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
+    autoload :IpRange, 'vnet/models/ip_range'
+    autoload :IpRangesRange, 'vnet/models/ip_ranges_range'
+    autoload :LeasePolicy, 'vnet/models/lease_policy'
+    autoload :LeasePolicyBaseNetwork, 'vnet/models/lease_policy_base_network'
+    autoload :LeasePolicyBaseInterface, 'vnet/models/lease_policy_base_interface'
     autoload :MacAddress, 'vnet/models/mac_address'
     autoload :MacLease, 'vnet/models/mac_lease'
     autoload :Network, 'vnet/models/network'
@@ -143,6 +153,11 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/model_wrappers/interface_security_group'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
+    autoload :IpRange, 'vnet/model_wrappers/ip_range'
+    autoload :IpRangesRange, 'vnet/model_wrappers/ip_range'
+    autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
+    autoload :LeasePolicyBaseNetwork, 'vnet/model_wrappers/lease_policy'
+    autoload :LeasePolicyBaseInterface, 'vnet/model_wrappers/lease_policy'
     autoload :MacAddress, 'vnet/model_wrappers/mac_address'
     autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :Network, 'vnet/model_wrappers/network'
@@ -172,6 +187,11 @@ module Vnet
     autoload :InterfaceSecurityGroup, 'vnet/node_api/interface_security_group'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
+    autoload :IpRange, 'vnet/node_api/models.rb'
+    autoload :IpRangesRange, 'vnet/node_api/models.rb'
+    autoload :LeasePolicy, 'vnet/node_api/lease_policy.rb'
+    autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'
+    autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models.rb'
     autoload :MacAddress, 'vnet/node_api/models.rb'
     autoload :MacLease, 'vnet/node_api/mac_lease.rb'
     autoload :Network, 'vnet/node_api/models.rb'
@@ -206,6 +226,8 @@ module Vnet
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
     autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
+    autoload :LeasePolicy, 'vnet/openflow/lease_policy'
+    autoload :LeasePolicyManager, 'vnet/openflow/lease_policy_manager'
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
@@ -244,6 +266,11 @@ module Vnet
       autoload :Remote, 'vnet/openflow/interfaces/remote'
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
+    end
+
+    module LeasePolicies
+      autoload :Base, 'vnet/openflow/lease_policies/base'
+      autoload :Simple, 'vnet/openflow/lease_policies/simple'
     end
 
     module Networks

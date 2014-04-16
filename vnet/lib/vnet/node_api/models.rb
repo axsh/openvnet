@@ -19,6 +19,18 @@ module Vnet::NodeApi
   class IpLease < Base
   end
 
+  class IpRange < Base
+  end
+
+  class IpRangesRange < Base
+  end
+
+  class LeasePolicyBaseInterface < Base
+  end
+
+  class LeasePolicyBaseNetwork < Base
+  end
+
   class MacAddress < Base
   end
 

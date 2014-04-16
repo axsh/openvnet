@@ -248,7 +248,55 @@ Sequel.migration do
       Integer :vlan_id
       Integer :network_id
     end
-  end
+
+    create_table(:lease_policies) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      String :mode, :null=>false
+      String :timing, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:lease_policy_base_networks) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :network_id, :index => true, :null => false
+      Integer :ip_range_id, :index => true, :null => false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:lease_policy_base_interfaces) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :interface_id, :index => true, :null => false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:ip_ranges) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      String :allocation_type, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:ip_ranges_ranges) do
+      primary_key :id
+      Integer :ip_range_id, :index => true, :null => false
+      Bignum :begin_ipv4_address, :null=>false
+      Bignum :end_ipv4_address, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+end
 
   down do
     drop_table(:datapaths,
@@ -259,6 +307,9 @@ Sequel.migration do
                :interface_security_groups,
                :ip_addresses,
                :ip_leases,
+               :ip_ranges,
+               :ip_ranges_range,
+               :lease_policies,
                :mac_addresses,
                :mac_leases,
                :networks,
