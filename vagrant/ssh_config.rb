@@ -1,26 +1,83 @@
 #!/usr/bin/env ruby
-
 require 'optparse'
+require 'fileutils'
+require 'json'
 
-params = ARGV.getopts("y")
+default_options = {
+  assume_yes: false,
+}
+
+options = default_options.dup
+
+OptionParser.new.tap do |opt|
+  opt.on("-y") {|v| options[:assume_yes] = true }
+  opt.parse!(ARGV)
+end
+
 config_file = File.join(Dir.home, ".ssh/config")
-nodes = %w(vnmgr vna1 vna2 vna3 edge legacy router)
+ssh_dir = File.expand_path("./vm/ssh", File.dirname(__FILE__))
+identity_file = File.expand_path("./vm/ssh/id_rsa", File.dirname(__FILE__))
+node_dir = File.expand_path("./nodes", File.dirname(__FILE__))
+
+File.open("#{ssh_dir}/config", "w+") do |file|
+  file.puts <<-EOS
+UserKnownHostsFile /dev/null
+StrictHostKeyChecking no
+PasswordAuthentication no
+LogLevel FATAL
+  EOS
+end
+
+hosts = []
+
+Dir.glob("#{node_dir}/*.json") do |filename|
+  name = filename.sub(%r!.*/nodes/(.*)\.json!, '\1')
+  node = JSON.parse(File.read(filename))
+
+  hosts << {
+    name: name,
+    hostname: node["vnet"]["interfaces"].first["target"],
+  }
+
+  (node["vnet"]["vms"] || []).each do |vm|
+    hosts << {
+      name: vm["name"],
+      hostname: node["vnet"]["interfaces"].first["target"], # host ip
+      port: vm["ssh_port"],
+    }
+  end
+end
+
 str_begin = "### vnet vagrant config begin ###"
 str_end = "### vnet vagrant config end ###"
+
 regexp = /#{str_begin}.*#{str_end}/m
 
 config = [].tap { |str|
   str << str_begin
-  str << ""
-  nodes.each do |node|
-    str << %x(vagrant ssh-config #{node})
+
+  hosts.sort_by { |h| h[:name] }.each do |host|
+    str << ""
+    str << <<-EOS
+Host #{host[:name]}
+  HostName #{host[:hostname]}
+  Port #{host[:port] || 22}
+  User vagrant
+  IdentityFile #{identity_file}
+  IdentitiesOnly yes
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  LogLevel FATAL
+    EOS
   end
+
   str << str_end
 }.join("\n")
 
 puts config
 
-unless params["y"]
+unless options[:assume_yes]
   print "overwrite ssh config?[Y/n]"
   
   gets.chomp.tap do |ans|
