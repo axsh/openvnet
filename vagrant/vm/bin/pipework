@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 case "$1" in
     --wait)
@@ -15,8 +16,8 @@ else
   CONTAINER_IFNAME=eth1
 fi
 
-if [ "$2" == "-p" ]; then
-  PORTNAME=$3
+if [ "$2" == "-l" ]; then
+  LOCAL_IFNAME=$3
   shift 2
 fi
 
@@ -33,8 +34,8 @@ MACADDR=$4
 
 [ "$IPADDR" ] || {
     echo "Syntax:"
-    echo "pipework <hostinterface> [-i containerinterface] [-p portname ] <guest> <ipaddr>/<subnet>[@default_gateway] [macaddr]"
-    echo "pipework <hostinterface> [-i containerinterface] [-p portname ] <guest> dhcp [macaddr]"
+    echo "pipework <hostinterface> [-i containerinterface] [-l localifname] <guest> <ipaddr>/<subnet>[@default_gateway] [macaddr]"
+    echo "pipework <hostinterface> [-i containerinterface] [-l localifname] <guest> dhcp [macaddr]"
     echo "pipework --wait"
     exit 1
 }
@@ -161,9 +162,9 @@ ln -s /proc/$NSPID/ns/net /var/run/netns/$NSPID
 
 # If it's a bridge, we need to create a veth pair
 [ $IFTYPE = bridge ] && {
-    LOCAL_IFNAME=${PORTNAME:-pl$NSPID$CONTAINER_IFNAME}
+    LOCAL_IFNAME=${LOCAL_IFNAME:-pl$NSPID$CONTAINER_IFNAME}
     GUEST_IFNAME=pg$NSPID$CONTAINER_IFNAME
-    ip link add name $LOCAL_IFNAME type veth peer name $GUEST_IFNAME > /dev/null 2>&1
+    ip link add name $LOCAL_IFNAME type veth peer name $GUEST_IFNAME > /dev/null 2>&1 
     case "$BRTYPE" in
         linux)
             (ip link set $LOCAL_IFNAME master $IFNAME > /dev/null 2>&1) || (brctl addif $IFNAME $LOCAL_IFNAME)
