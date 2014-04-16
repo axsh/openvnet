@@ -24,9 +24,9 @@ module Vnet::Openflow::Datapaths
     def uninstall
       super
 
-      @dp_info.interface_manager.async.publish(Vnet::Event::INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS,
-                                               id: :datapath)
-      @dp_info.datapath.async.reset
+      @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS,
+                                         id: :datapath)
+      @dp_info.datapath.reset
     end
 
     def activate_network_id(network_id)
