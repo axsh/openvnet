@@ -54,7 +54,7 @@ module Vnspec
             "cd #{config[:vnet_path]}; git fetch --prune origin; git fetch --tags origin; git clean -f -d; git rev-parse #{branch} | xargs git reset --hard; git checkout #{branch};"
           )
         when :rsync
-          raise NotImplementedError.new("please update yourself!")
+          # do nothing
         end
         bundle_install
       end

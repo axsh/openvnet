@@ -74,7 +74,6 @@ module Vnspec
       Vnet.start(:vna)
 
       VM.start_network
-      sleep(1)
       Vnet.dump_flows
 
       true

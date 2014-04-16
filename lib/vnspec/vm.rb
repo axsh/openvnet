@@ -148,7 +148,7 @@ module Vnspec
       def ready?(timeout = 600)
         logger.info("waiting for ready: #{self.name}")
         expires_at = Time.now.to_i + timeout
-        while ssh_on_guest("hostname", { "ConnectTimeout" => 2 }, {debug: true})[:stdout].chomp != name.to_s
+        while ssh_on_guest("hostname", { "ConnectTimeout" => 2 })[:stdout].chomp != name.to_s
           if Time.now.to_i >= expires_at
             logger.info("#{self.name} is down")
             return false
