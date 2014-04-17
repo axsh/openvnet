@@ -4,8 +4,6 @@ require 'yaml'
 
 VAGRANTFILE_API_VERSION = "2"
 
-myconfig = YAML.load_file(File.expand_path("./config.yml", File.dirname(__FILE__)))
-
 VAGRANT_BOX = "hansode/centos-6.5-x86_64"
 
 vms = [
