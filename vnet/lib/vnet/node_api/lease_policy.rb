@@ -8,7 +8,6 @@ module Vnet::NodeApi
       include Vnet::Constants::LeasePolicy
 
       def allocate_ip(options)
-        # TODO: consider checks for nil values in here
         lease_policy = model_class(:lease_policy)[options[:lease_policy_id]]
         if lease_policy.timing == "immediate"
           base_networks = lease_policy.lease_policy_base_networks
@@ -20,7 +19,9 @@ module Vnet::NodeApi
           new_ip = schedule(net,ip_r)
           # TODO: race condition between here and the allocation?
           interface = model_class(:interface)[options[:interface_id]]
-          ml_array = interface.mac_leases
+          if (ml_array = interface.mac_leases).empty?
+            raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
+          end
           ip_lease = model_class(:ip_lease).create({
                                                      mac_lease_id: ml_array.first.id,
                                                      network_id: net.id,
