@@ -45,7 +45,7 @@ describe "/lease_policies" do
   end
 
   describe "Many to many relation calls for interfaces" do
-    let!(:base_object) { Fabricate(fabricator).tap { |ee| p ee.inspect } }
+    let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :interface_w_mac_lease }
 
     let!(:network) { Fabricate(:network) {

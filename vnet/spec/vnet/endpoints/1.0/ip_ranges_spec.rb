@@ -26,4 +26,14 @@ describe "/ip_ranges" do
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
+
+  describe "One to many relation calls for ip_ranges_ranges" do
+    pending "TODO, this does not work because url route is different from table name and this table does not have a uuid"
+#    let(:relation_fabricator) { :ip_ranges_range }
+
+#    include_examples "one_to_many_relation", "ranges", {
+#                       :begin_ipv4_address => "0.0.0.40",
+#                       :end_ipv4_address => "0.0.0.50"
+#    }
+  end
 end
