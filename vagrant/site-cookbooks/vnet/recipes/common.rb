@@ -41,6 +41,11 @@ end
 
 # openvnet
 
+directory "/opt/axsh"
+git "/opt/axsh/openvnet" do
+  repository "https://github.com/axsh/openvnet.git"
+end
+
 execute "make update-config" do
   cwd node[:vnet][:source_path]
 end

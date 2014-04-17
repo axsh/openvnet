@@ -14,7 +14,6 @@ vms = [
     networks: [
       { type: "hostonly", ip: "192.168.20.10" },
     ],
-    sync_vnet: true,
   },
   {
     name: "vna1",
@@ -22,7 +21,6 @@ vms = [
       { type: "hostonly", ip: "192.168.20.11" },
       { type: "intnet", name: "public_network1" },
     ],
-    sync_vnet: true,
   },
   {
     name: "vna2",
@@ -30,7 +28,6 @@ vms = [
       { type: "hostonly", ip: "192.168.20.12" },
       { type: "intnet", name: "public_network1" },
     ],
-    sync_vnet: true,
   },
   {
     name: "vna3",
@@ -38,7 +35,6 @@ vms = [
       { type: "hostonly", ip: "192.168.20.13" },
       { type: "intnet", name: "public_network2" },
     ],
-    sync_vnet: true,
   },
   {
     name: "edge",
@@ -47,7 +43,6 @@ vms = [
       { type: "intnet", name: "public_network1" },
       { type: "intnet", name: "public_network3" },
     ],
-    sync_vnet: true,
   },
   {
     name: "legacy",
@@ -81,11 +76,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     config.vm.define vm[:name] do |config|
       config.vm.box = vm[:box] || VAGRANT_BOX
-
-      if vm[:sync_vnet]
-        config.vm.synced_folder myconfig["vnet_path"], "/opt/axsh/openvnet/",
-          type: "rsync", rsync__exclude: %w(.git/ vnet/.bundle vnet/vendor)
-      end
 
       config.vm.hostname = vm[:name]
       vm[:networks].each.with_index do |network, index|
