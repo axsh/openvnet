@@ -47,7 +47,7 @@ git "/opt/axsh/openvnet" do
 end
 
 execute "make update-config" do
-  cwd "/opt/axsh/openvnet" do
+  cwd "/opt/axsh/openvnet"
 end
 
 execute "replace RUBY_PATH" do
