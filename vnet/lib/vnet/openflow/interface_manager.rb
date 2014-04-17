@@ -21,6 +21,18 @@ module Vnet::Openflow
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
 
+    def load_simulated_on_network_id(network_id)
+      # TODO: Add list of active network id's for which we should have
+      # simulated interfaces loaded.
+
+      batch = MW::IpLease.batch.dataset.where_network_id(network_id)
+      batch = batch.where_interface_mode('simulated')
+
+      batch.all_interface_ids.commit.each { |item_id|
+        item_by_params(id: item_id)
+      }
+    end
+
     #
     # Internal methods:
     #
@@ -120,12 +132,18 @@ module Vnet::Openflow
       if item.mode != :remote
         @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
 
-        @dp_info.tunnel_manager.async.publish(Vnet::Event::TRANSLATION_ACTIVATE_INTERFACE,
+        @dp_info.tunnel_manager.async.publish(TRANSLATION_ACTIVATE_INTERFACE,
                                               id: :interface,
                                               interface_id: item.id)
 
         item.ingress_filtering_enabled &&
           @dp_info.filter_manager.async.apply_filters(item_map)
+      end
+
+      if item.mode == :simulated
+        # @dp_info.service_manager.async.publish(SERVICE_ACTIVATE_INTERFACE,
+        #                                        id: :interface,
+        #                                        interface_id: item.id)
       end
     end
 

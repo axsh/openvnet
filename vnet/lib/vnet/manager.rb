@@ -121,6 +121,7 @@ module Vnet
       true
     end
 
+    # TODO: Cleanup...
     def select_filter_from_params(params)
       case
       when params[:id]   then {:id => params[:id]}

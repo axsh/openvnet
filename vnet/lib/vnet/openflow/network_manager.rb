@@ -104,6 +104,15 @@ module Vnet::Openflow
       true
     end
 
+    def select_filter_from_params(params)
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+
+      create_batch(MW::Network.batch, params[:uuid], filters)
+    end
+
     def item_initialize(item_map, params)
       item_class =
         case item_map.network_mode
@@ -116,12 +125,6 @@ module Vnet::Openflow
         end
 
       item_class.new(@dp_info, item_map)
-    end
-
-    def select_item(filter)
-      # Using fill for ip_leases/ip_addresses isn't going to give us a
-      # proper event barrier.
-      MW::Network.batch[filter].commit(fill: :network_services)
     end
 
     #
@@ -146,10 +149,7 @@ module Vnet::Openflow
                                      id: :network,
                                      network_id: item.id)
 
-      # TODO: Load simulated interfaces instead, use those to load up services.
-      item_map.network_services.each { |service_map|
-        @dp_info.service_manager.async.item(id: service_map.id)
-      }
+      @dp_info.interface_manager.load_simulated_on_network_id(item.id)
     end
 
     # unload item on queue 'item.id'
