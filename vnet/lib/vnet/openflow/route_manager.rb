@@ -74,6 +74,7 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
+    # ROUTE_INITIALIZED on queue 'item.id'
     def install_item(params)
       item_map = params[:item_map] || return
       item = (item_map.id && @items[item_map.id]) || return
@@ -102,6 +103,7 @@ module Vnet::Openflow
                                          id: item.interface_id)
     end
     
+    # item created in db on queue 'item.id'
     def created_item(params)
       return if @items[params[:id]]
       return unless @active_route_links[params[:route_link_id]]
@@ -114,7 +116,7 @@ module Vnet::Openflow
       item = @items.delete(params[:id]) || return
       item.try_uninstall
 
-      debug log_format("unloaded item #{item.uuid}/#{item.id}")
+      debug log_format("unloaded route #{item.uuid}/#{item.id}")
     end
 
     #

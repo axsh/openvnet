@@ -5,17 +5,18 @@ require 'celluloid'
 module Vnet::Openflow
 
   class NetworkManager < Vnet::Manager
-    include Celluloid::Logger
-    include Vnet::Constants::Openflow
-    include Vnet::Event::Dispatchable
 
     #
     # Events:
     #
-    subscribe_event :added_network # TODO Check if needed.
-    subscribe_event :removed_network # TODO Check if needed.
-    subscribe_event INITIALIZED_NETWORK, :create_item
+    
+    # Networks have no created item event as they always get loaded
+    # when used by other managers.
 
+    subscribe_event NETWORK_INITIALIZED, :install_item
+    subscribe_event NETWORK_DELETED_ITEM, :unload_item
+
+    # DEPRECATE
     def networks(params = {})
       @items.select { |key,nw|
         result = true
@@ -95,6 +96,10 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def initialized_item_event
+      NETWORK_INITIALIZED
+    end
+
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
@@ -112,15 +117,11 @@ module Vnet::Openflow
         when 'virtual'  then Networks::Virtual
         else
           error log_format('unknown network type',
-                           "network_type:#{item_map.network_mode}")
+                           "network_mode:#{item_map.network_mode}")
           return nil
         end
 
       item_class.new(@dp_info, item_map)
-    end
-
-    def initialized_item_event
-      INITIALIZED_NETWORK
     end
 
     def select_item(filter)
@@ -129,60 +130,47 @@ module Vnet::Openflow
       MW::Network.batch[filter].commit(fill: :network_services)
     end
 
-    def create_item(params)
+    #
+    # Create / Delete events:
+    #
+
+    # NETWORK_INITIALIZED on queue 'item.id'
+    def install_item(params)
       item_map = params[:item_map] || return
-      network = @items[item_map.id] || return
+      item = @items[item_map.id] || return
 
-      debug log_format("create #{item_map.uuid}/#{item_map.id}")
+      debug log_format("install #{item_map.uuid}/#{item_map.id}")
 
-      if @datapath_info.nil?
-        error log_format('datapath information not loaded')
-        return network
-      end
+      item.try_install
+      item.update_flows
 
-      network.install
-      network.update_flows
+      # TODO: Publish...
+      @dp_info.datapath_manager.update(event: :activate_network,
+                                       network_id: item.id)
 
-      @dp_info.datapath_manager.async.update(event: :activate_network,
-                                             network_id: network.id)
-
+      # TODO: Load simulated interfaces instead, use those to load up services.
       item_map.network_services.each { |service_map|
         @dp_info.service_manager.async.item(id: service_map.id)
       }
 
-      @dp_info.route_manager.async.publish(Vnet::Event::ROUTE_ACTIVATE_NETWORK,
-                                           id: :network,
-                                           network_id: network.id)
-
-      network
+      @dp_info.route_manager.publish(Vnet::Event::ROUTE_ACTIVATE_NETWORK,
+                                     id: :network,
+                                     network_id: item.id)
     end
 
-    def delete_item(item)
-      debug log_format("deleting network #{item.uuid}/#{item.id}")
+    # unload item on queue 'item.id'
+    def unload_item(params)
+      item = @items.delete(item[:id]) || return
+      item.try_uninstall
 
-      if_port = item.interfaces.detect { |id, interface|
-        interface.port_number
-      }
+      @dp_info.datapath_manager.update(event: :deactivate_network,
+                                       network_id: item.id)
 
-      if if_port
-        # TODO: Fix this so it sets remaining ports to unknown mode.
-        info log_format('network still has active ports, and can\'t be removed',
-                        "#{network.uuid}/#{network.id}")
-        return item
-      end
+      @dp_info.route_manager.publish(Vnet::Event::ROUTE_DEACTIVATE_NETWORK,
+                                     id: :network,
+                                     network_id: item.id)
 
-      @items.delete(item.id)
-
-      item.uninstall
-
-      @dp_info.datapath_manager.async.update(event: :deactivate_network,
-                                             network_id: item.id)
-
-      dispatch_event("network/deleted",
-                     id: item.id,
-                     dpid: @dpid)
-
-      item
+      debug log_format("unloaded network #{item.uuid}/#{item.id}")
     end
 
     #

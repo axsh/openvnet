@@ -2,6 +2,22 @@
 module Vnet
   module Event
 
+    # *_INITIALIZED
+    #
+    # First event queued after the non-yielding and non-blocking
+    # initialization of an item query from the database.
+    #
+    # *_CREATED_ITEM
+    #
+    # The item was added to the database and basic information of
+    # the item sent to relevant nodes. The manager should decide if it
+    # should initialize the item or not.
+    #
+    # *_DELETED_ITEM
+    #
+    # The item was deleted from the database and should be unloaded
+    # from all nodes.
+
     #
     # Interface events:
     #
@@ -45,9 +61,10 @@ module Vnet
     DEACTIVATE_DATAPATH_ROUTE_LINK = 'deactivate_datapath_route_link'
 
     #
-    # network event
+    # Network event:
     #
-    INITIALIZED_NETWORK = "initialized_network"
+    NETWORK_INITIALIZED = "network_initialized"
+    NETWORK_DELETED_ITEM = "network_deleted_item"
 
     #
     # Route events:
