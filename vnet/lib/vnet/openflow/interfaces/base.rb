@@ -107,8 +107,7 @@ module Vnet::Openflow::Interfaces
         cookie_mask |= COOKIE_TAG_MASK
       end
 
-      @dp_info.network_manager.async.update_interface(event: :remove_all,
-                                                      interface_id: @id)
+      @dp_info.network_manager.remove_interface_from_all(@id)
       @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
@@ -182,9 +181,11 @@ module Vnet::Openflow::Interfaces
 
       @port_number = new_number
 
-      @dp_info.network_manager.async.update_interface(event: :update_all,
-                                                      interface_id: @id,
-                                                      port_number: @port_number)
+      if @port_number
+        @dp_info.network_manager.set_interface_port(@id, @port_number)
+      else
+        @dp_info.network_manager.clear_interface_port(@id)
+      end
     end
 
     def update_active_datapath(params)

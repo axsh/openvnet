@@ -670,12 +670,10 @@ module Vnet::Openflow
     end
 
     def add_network_id_to_updated_networks(network_id)
-      return unless @update_networks[network_id].nil?
       should_publish = @update_networks.empty?
       @update_networks[network_id] = true
 
-      should_publish && publish(TUNNEL_UPDATE_NETWORKS,
-                                id: :update_networks)
+      should_publish && publish(TUNNEL_UPDATE_NETWORKS, id: :update_networks)
     end
 
     def add_network_ids_to_updated_networks(network_ids)
@@ -683,14 +681,11 @@ module Vnet::Openflow
 
       network_ids.select { |network_id|
         @update_networks[network_id].nil?
-      }.tap { |network_ids|
-        return if network_ids.nil?
       }.each { |network_id|
         @update_networks[network_id] = true
       }
 
-      should_publish && publish(TUNNEL_UPDATE_NETWORKS,
-                                id: :update_networks)
+      should_publish && publish(TUNNEL_UPDATE_NETWORKS, id: :update_networks)
     end
 
     def add_dpn_hash_to_updated_networks(dpns)

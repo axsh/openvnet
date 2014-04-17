@@ -16,68 +16,62 @@ module Vnet::Openflow
     subscribe_event NETWORK_INITIALIZED, :install_item
     subscribe_event NETWORK_DELETED_ITEM, :unload_item
 
-    # DEPRECATE
-    def networks(params = {})
-      @items.select { |key,nw|
-        result = true
-        result = result && (nw.network_type == params[:network_type]) if params[:network_type]
-      }.map { |key,nw|
-        item_to_hash(nw)
-      }
+    subscribe_event NETWORK_UPDATE_NETWORKS, :update_networks
+
+    def initialize(*args)
+      super
+      @interface_ports = {}
+      @interface_networks = {}
+
+      @update_networks = {}
     end
 
     #
     # Interfaces:
     #
 
-    def update_interface(params)
-      case params[:event]
-      when :remove_all
-        params = params.merge(no_update: true)
-        @items.values.select do |item|
-          item.remove_interface(params)
-        end.each do |item|
-          item.update_flows
-        end
-        return nil
-      when :update_all
-        params = params.merge(no_update: true)
-        @items.values.select do |item|
-          item.update_interface(params)
-        end.each do |item|
-          item.update_flows
-        end
-        return nil
-      end
+    def set_interface_port(interface_id, port)
+      @interface_ports[interface_id] = port
+      networks = @interface_networks[interface_id]
 
-      item = item_by_params(params)
+      add_network_ids_to_update_networks(networks) if networks
+    end
 
-      return nil if item.nil?
-      return nil if params[:interface_id].nil?
+    def clear_interface_port(interface_id)
+      port = @interface_ports.delete(interface_id) || return
+      networks = @interface_networks[interface_id]
 
-      case params[:event]
-      when :insert then item.insert_interface(params)
-      when :remove then item.remove_interface(params)
-      when :update then item.update_interface(params)
-      end
+      add_network_ids_to_update_networks(networks) if networks
+    end
 
-      #   if network.ports.empty?
-      #   end
+    def insert_interface_network(interface_id, network_id)
+      networks = @interface_networks[interface_id] ||= []
+      return if networks.include? network_id
 
-      nil
+      networks << network_id
+      add_network_id_to_update_networks(network_id) if @interface_ports[interface_id]
+    end
+
+    def remove_interface_network(interface_id, network_id)
+      networks = @interface_networks[interface_id] || return
+      return unless networks.delete(network_id)
+
+      add_network_id_to_update_networks(network_id) if @interface_ports[interface_id]
+    end
+
+    # TODO: Clear port from port manager.
+    def remove_interface_from_all(interface_id)
+      networks = @interface_networks.delete(interface_id)
+      port = @interface_ports.delete(interface_id)
+
+      return unless networks && port
+
+      add_network_ids_to_update_networks(networks)
     end
 
     #
     # Obsolete:
     #
-
-    def update_all_flows
-      @items.dup.each { |key, item|
-        debug log_format("updating flows for #{item.uuid}/#{item.id}")
-        item.update_flows
-      }
-      nil
-    end
 
     def network_id_by_mac(mac_address)
       network_map = MW::Network.batch.find_by_mac_address(mac_address).commit
@@ -142,7 +136,8 @@ module Vnet::Openflow
       debug log_format("install #{item_map.uuid}/#{item_map.id}")
 
       item.try_install
-      item.update_flows
+
+      add_network_id_to_update_networks(item.id)
 
       @dp_info.datapath_manager.publish(ACTIVATE_NETWORK_ON_HOST,
                                         id: :network,
@@ -175,6 +170,68 @@ module Vnet::Openflow
     #
     # Event handlers:
     #
+
+    # NETWORK_UPDATE_NETWORKS on queue ':update_networks'
+    def update_networks(params)
+      while !@update_networks.empty?
+        network_ids = @update_networks.keys
+
+        info log_format("updating network flows", network_ids.to_s)
+
+        network_ids.each { |network_id|
+          next unless @update_networks.delete(network_id)
+
+          update_network_id(network_id)
+        }
+
+        # Sleep for 10 msec in order to poll up more potential changes
+        # to the same networks.
+        sleep(0.01)
+      end
+    end
+
+    # Requires queue ':update_networks'
+    def update_network_id(network_id)
+      item = @items[network_id] || return
+      return unless item.installed
+
+      item.update_flows(port_numbers_on_network(network_id))
+    end
+
+    #
+    # Helper methods:
+    #
+
+    def add_network_id_to_update_networks(network_id)
+      should_publish = @update_networks.empty?
+      @update_networks[network_id] = true
+
+      should_publish && publish(NETWORK_UPDATE_NETWORKS, id: :update_networks)
+    end
+
+    def add_network_ids_to_update_networks(network_ids)
+      should_publish = @update_networks.empty?
+
+      network_ids.select { |network_id|
+        @update_networks[network_id].nil?
+      }.each { |network_id|
+        @update_networks[network_id] = true
+      }
+
+      should_publish && publish(NETWORK_UPDATE_NETWORKS, id: :update_networks)
+    end
+
+    def port_numbers_on_network(network_id)
+      port_numbers = []
+
+      @interface_networks.each { |interface_id, networks|
+        next unless networks.include? network_id
+        
+        port_numbers << (@interface_ports[interface_id] || next)
+      }
+
+      port_numbers
+    end
 
   end
 

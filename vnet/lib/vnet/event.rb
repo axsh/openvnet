@@ -66,6 +66,8 @@ module Vnet
     NETWORK_INITIALIZED = "network_initialized"
     NETWORK_DELETED_ITEM = "network_deleted_item"
 
+    NETWORK_UPDATE_NETWORKS = "network_update_networks"
+
     #
     # Route events:
     #

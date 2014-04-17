@@ -54,11 +54,9 @@ module Vnet::Openflow::Networks
       ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
     end
 
-    def update_flows
-      flood_actions = @interfaces.select { |interface_id, interface|
-        interface[:port_number]
-      }.collect { |interface_id, interface|
-        { :output => interface[:port_number] }
+    def update_flows(port_numbers)
+      flood_actions = port_numbers.collect { |port_number|
+        { :output => port_number }
       }
 
       flows = []

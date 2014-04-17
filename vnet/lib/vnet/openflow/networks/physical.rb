@@ -33,11 +33,9 @@ module Vnet::Openflow::Networks
       @dp_info.add_flows(flows)
     end
 
-    def update_flows
-      local_actions = @interfaces.select { |interface_id, interface|
-        interface[:port_number]
-      }.collect { |interface_id, interface|
-        { :output => interface[:port_number] }
+    def update_flows(port_numbers)
+      local_actions = port_numbers.collect { |port_number|
+        { :output => port_number }
       }
 
       # Include port LOCAL until we implement interfaces for local eth
