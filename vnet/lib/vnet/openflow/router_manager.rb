@@ -56,12 +56,12 @@ module Vnet::Openflow
 
       item.try_install
 
-      @dp_info.route_manager.async.publish(Vnet::Event::ROUTE_ACTIVATE_ROUTE_LINK,
-                                           id: :route_link,
-                                           route_link_id: item.id)
-      @dp_info.datapath_manager.async.publish(Vnet::Event::ACTIVATE_ROUTE_LINK_ON_HOST,
-                                              id: :route_link,
-                                              route_link_id: item.id)
+      @dp_info.route_manager.publish(ROUTE_ACTIVATE_ROUTE_LINK,
+                                     id: :route_link,
+                                     route_link_id: item.id)
+      @dp_info.datapath_manager.publish(ACTIVATE_ROUTE_LINK_ON_HOST,
+                                        id: :route_link,
+                                        route_link_id: item.id)
     end
 
     def unload_item(item)
@@ -69,12 +69,12 @@ module Vnet::Openflow
 
       item.try_uninstall
 
-      @dp_info.route_manager.async.publish(Vnet::Event::ROUTE_DEACTIVATE_ROUTE_LINK,
-                                           id: :route_link,
-                                           route_link_id: item.id)
-      @dp_info.datapath_manager.async.publish(Vnet::Event::DEACTIVATE_ROUTE_LINK_ON_HOST,
-                                              id: :route_link,
-                                              route_link_id: item.id)
+      @dp_info.route_manager.publish(ROUTE_DEACTIVATE_ROUTE_LINK,
+                                     id: :route_link,
+                                     route_link_id: item.id)
+      @dp_info.datapath_manager.publish(DEACTIVATE_ROUTE_LINK_ON_HOST,
+                                        id: :route_link,
+                                        route_link_id: item.id)
     end
 
     #

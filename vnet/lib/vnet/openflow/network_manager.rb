@@ -144,18 +144,17 @@ module Vnet::Openflow
       item.try_install
       item.update_flows
 
-      # TODO: Publish...
-      @dp_info.datapath_manager.update(event: :activate_network,
-                                       network_id: item.id)
+      @dp_info.datapath_manager.publish(ACTIVATE_NETWORK_ON_HOST,
+                                        id: :network,
+                                        network_id: item.id)
+      @dp_info.route_manager.publish(ROUTE_ACTIVATE_NETWORK,
+                                     id: :network,
+                                     network_id: item.id)
 
       # TODO: Load simulated interfaces instead, use those to load up services.
       item_map.network_services.each { |service_map|
         @dp_info.service_manager.async.item(id: service_map.id)
       }
-
-      @dp_info.route_manager.publish(Vnet::Event::ROUTE_ACTIVATE_NETWORK,
-                                     id: :network,
-                                     network_id: item.id)
     end
 
     # unload item on queue 'item.id'
@@ -163,10 +162,10 @@ module Vnet::Openflow
       item = @items.delete(item[:id]) || return
       item.try_uninstall
 
-      @dp_info.datapath_manager.update(event: :deactivate_network,
-                                       network_id: item.id)
-
-      @dp_info.route_manager.publish(Vnet::Event::ROUTE_DEACTIVATE_NETWORK,
+      @dp_info.datapath_manager.publish(DEACTIVATE_NETWORK_ON_HOST,
+                                        id: :network,
+                                        network_id: item.id)
+      @dp_info.route_manager.publish(ROUTE_DEACTIVATE_NETWORK,
                                      id: :network,
                                      network_id: item.id)
 
