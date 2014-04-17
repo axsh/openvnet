@@ -1,8 +1,8 @@
 ### Requirements
 
-* Vagrant
+* Ruby(2.0 or later)
 * Virtualbox
-* Ruby
+* Vagrant(1.5 or later)
 
 ### Usage
 
