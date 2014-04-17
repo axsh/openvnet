@@ -4,8 +4,6 @@ ntp2.jst.mfeed.ad.jp
 ntp3.jst.mfeed.ad.jp
 )
 
-default[:vnet][:source_path] = "/opt/axsh/openvnet"
-
 default[:vnet][:repositry_server] = false
 
 default[:vnet][:ruby_versions] = %w(2.1.1)

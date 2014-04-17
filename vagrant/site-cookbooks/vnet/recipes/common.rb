@@ -18,7 +18,7 @@ if node[:vnet][:repositry_server]
   bash "build_openvswitch_rpm" do
     code <<-EOS
       yum install -y make git gcc gcc-c++ rpm-build redhat-rpm-config rpmdevtools yum-utils python-devel openssl-devel kernel-devel-$(uname -r) kernel-debug-devel-$(uname -r) createrepo
-      REPO_BASE_DIR=/vagrant/repos #{node[:vnet][:source_path]}/deployment/packagebuild/build_packages_third_party.sh openvnet-openvswitch
+      REPO_BASE_DIR=/vagrant/repos /opt/axsh/openvnet/deployment/packagebuild/build_packages_third_party.sh openvnet-openvswitch
     EOS
 
     not_if { File.exists?("/vagrant/repos/packages/rhel/6/third_party/current/") }
@@ -47,7 +47,7 @@ git "/opt/axsh/openvnet" do
 end
 
 execute "make update-config" do
-  cwd node[:vnet][:source_path]
+  cwd "/opt/axsh/openvnet" do
 end
 
 execute "replace RUBY_PATH" do
