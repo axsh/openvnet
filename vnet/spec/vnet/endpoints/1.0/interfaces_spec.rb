@@ -69,6 +69,7 @@ describe "/interfaces" do
   end
 
   describe "Many to many relation calls for route links" do
+    let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :security_group }
 
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
