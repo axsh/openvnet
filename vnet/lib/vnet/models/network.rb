@@ -5,7 +5,6 @@ module Vnet::Models
     taggable 'nw'
 
     one_to_many :datapath_networks
-    one_to_many :dhcp_ranges
     one_to_many :ip_addresses
     one_to_many :tunnels
     one_to_many :ip_leases
@@ -58,7 +57,7 @@ module Vnet::Models
     subset(:alives, {})
 
     def before_destroy
-      [DatapathNetwork, DhcpRange, IpAddress, Route, VlanTranslation].each do |klass|
+      [DatapathNetwork, IpAddress, Route, VlanTranslation].each do |klass|
         if klass[network_id: id]
           raise DeleteRestrictionError, "cannot delete network(id: #{id}) if any dependency still exists. dependency: #{klass}"
         end

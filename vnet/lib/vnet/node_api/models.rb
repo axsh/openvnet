@@ -10,9 +10,6 @@ module Vnet::NodeApi
   class DcSegment < Base
   end
 
-  class DhcpRange < Base
-  end
-
   class IpAddress < Base
   end
 

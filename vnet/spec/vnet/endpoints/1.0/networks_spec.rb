@@ -57,15 +57,4 @@ describe "/networks" do
 
     include_examples "PUT /:uuid", accepted_params
   end
-
-  describe "One to many relation calls for dhcp_ranges" do
-    let(:relation_fabricator) { :dhcp_range }
-
-    include_examples "one_to_many_relation", "dhcp_ranges", {
-      :uuid => "dr-newrange",
-      :range_begin => "192.168.2.2",
-      :range_end => "192.168.2.100"
-    }
-  end
-
 end
