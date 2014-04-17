@@ -23,8 +23,6 @@ update() {
   for node in $vnet_vms ; do
     bundle exec knife solo cook ${node}
   done
-
-  vagrant rsync-auto
 }
 
 prepare_ssh_key() {
