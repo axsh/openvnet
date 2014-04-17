@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 
 case "$1" in
     --wait)
