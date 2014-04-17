@@ -89,11 +89,14 @@ module Vnet
     ROUTER_DELETED_ITEM = "router_deleted_item"
 
     #
-    # service event
+    # Service events:
     #
-    ADDED_SERVICE = "added_service"
-    REMOVED_SERVICE = "removed_service"
-    INITIALIZED_SERVICE = "initialized_service"
+    SERVICE_INITIALIZED = "service_initialized"
+    SERVICE_CREATED_ITEM = "service_created_item"
+    SERVICE_DELETED_ITEM = "service_deleted_item"
+
+    SERVICE_ACTIVATE_INTERFACE = "service_activate_interface"
+    SERVICE_DEACTIVATE_INTERFACE = "service_deactivate_interface"
 
     #
     # Translation events:
@@ -144,9 +147,9 @@ module Vnet
     #
     # dns service
     #
-    ADDED_DNS_SERVICE = "added_dns_service"
-    REMOVED_DNS_SERVICE = "removed_dns_service"
-    UPDATED_DNS_SERVICE = "updated_dns_service"
+    SERVICE_ADDED_DNS = "added_dns_service"
+    SERVICE_REMOVED_DNS = "removed_dns_service"
+    SERVICE_UPDATED_DNS = "updated_dns_service"
 
     #
     # dns record

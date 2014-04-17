@@ -6,7 +6,7 @@ module Vnet::NodeApi
       def create(options)
         super.tap do |model|
           dispatch_event(
-            ADDED_DNS_SERVICE,
+            SERVICE_ADDED_DNS,
             id: model.network_service_id,
             dns_service_id: model.id
           )
@@ -22,7 +22,7 @@ module Vnet::NodeApi
           end
         }.tap do |model|
           dispatch_event(
-            UPDATED_DNS_SERVICE,
+            SERVICE_UPDATED_DNS,
             id: model.network_service_id,
             dns_service_id: model.id
           )
@@ -33,7 +33,7 @@ module Vnet::NodeApi
       def destroy(uuid)
         super.tap do |model|
           dispatch_event(
-            REMOVED_DNS_SERVICE,
+            SERVICE_REMOVED_DNS,
             id: model.network_service_id,
             dns_service_id: model.id
           )

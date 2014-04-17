@@ -7,30 +7,24 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event ADDED_SERVICE, :item
-    subscribe_event REMOVED_SERVICE, :unload
-    subscribe_event INITIALIZED_SERVICE, :create_item
+    subscribe_event SERVICE_INITIALIZED, :install_item
+    subscribe_event SERVICE_CREATED_ITEM, :created_item
+    subscribe_event SERVICE_DELETED_ITEM, :unload_item
 
-    subscribe_event ADDED_DNS_SERVICE, :set_dns_service
-    subscribe_event REMOVED_DNS_SERVICE, :clear_dns_service
-    subscribe_event UPDATED_DNS_SERVICE, :update_dns_service
+    subscribe_event SERVICE_ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event SERVICE_DEACTIVATE_INTERFACE, :deactivate_interface
+
+    subscribe_event SERVICE_ADDED_DNS, :set_dns_service
+    subscribe_event SERVICE_REMOVED_DNS, :clear_dns_service
+    subscribe_event SERVICE_UPDATED_DNS, :update_dns_service
+
     subscribe_event ADDED_DNS_RECORD, :add_dns_record
     subscribe_event REMOVED_DNS_RECORD, :remove_dns_record
 
-    def update_item(params)
-      select(params).map do |item_hash|
-        item = internal_detect(params)
-        next unless item
+    def initialize(*args)
+      super
 
-        case params[:event]
-        when :add_network
-          item.add_network_unless_exists(params[:network_id], params[:cookie_id])
-        when :remove_network
-          item.remove_network_if_exists(params[:network_id])
-        when :remove_all_networks
-          item.remove_all_networks
-        end
-      end
+      @active_interfaces = {}
     end
 
     def dns_server_for(network_id)
@@ -54,11 +48,38 @@ module Vnet::Openflow
         item.remove_dns_server(network_id)
       end
     end
+
     #
     # Internal methods:
     #
 
     private
+
+    #
+    # Specialize Manager:
+    #
+
+    def initialized_item_event
+      SERVICE_INITIALIZED
+    end
+
+    def match_item?(item, params)
+      return false if params[:id] && params[:id] != item.id
+      return false if params[:uuid] && params[:uuid] != item.uuid
+      return false if params[:interface_id] && params[:interface_id] != item.interface_id
+
+      super
+    end
+
+    def select_filter_from_params(params)
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      filters = []
+      filters << {id: params[:id]} if params.has_key? :id
+      filters << {interface_id: params[:interface_id]} if params.has_key? :interface_id
+
+      create_batch(MW::NetworkService.batch, params[:uuid], filters)
+    end
 
     def item_initialize(item_map, params)
       item_class =
@@ -75,53 +96,45 @@ module Vnet::Openflow
                      map: item_map)
     end
 
-    def initialized_item_event
-      INITIALIZED_SERVICE
+    #
+    # Create / Delete events:
+    #
+
+    # SERVICE_INITIALIZED on queue 'item.id'
+    def install_item(params)
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
+
+      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.type.to_sym}")
+
+      item.try_install
+
+      if item.type == "dns"
+        if dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
+          publish(SERVICE_ADDED_DNS, id: item.id, dns_service_map: dns_service_map)
+        end
+      end
+    end    
+
+    # item created in db on queue 'item.id'
+    def created_item(params)
+      return if @items[params[:id]]
+      return unless @active_interfaces[params[:interface_id]]
+
+      internal_new_item(MW::NetworkService.new(params), {})
     end
 
-    def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+    # unload item on queue 'item.id'
+    def unload_item(params)
+      item = @items.delete(params[:id]) || return
+      item.try_uninstall
 
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
-
-      create_batch(MW::NetworkService.batch, params[:uuid], filters)
+      debug log_format("unloaded service #{item.uuid}/#{item.id}")
     end
 
     #
     # Event handlers:
     #
-
-    def create_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
-      debug log_format("create #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.type.to_sym}")
-
-      item.install
-
-      interface_item = @dp_info.interface_manager.item(id: item_map.interface_id)
-      return item if interface_item.nil?
-
-      interface_item.mac_addresses.map { |_, mac_info|  mac_info[:ipv4_addresses] }.flatten(1).compact.each do |ip_info|
-        item.add_network_unless_exists(ip_info[:network_id], ip_info[:cookie_id])
-      end
-
-      if item.type == "dns"
-        if dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
-          publish(ADDED_DNS_SERVICE, id: item.id, dns_service_map: dns_service_map)
-        end
-      end
-    end    
-
-    def delete_item(item)
-      item = @items.delete(item.id)
-      return unless item
-
-      debug log_format("delete #{item.uuid}/#{item.id}", "mode:#{item.class.name.split("::").last.downcase}")
-
-      item.uninstall
-    end
 
     def set_dns_service(params)
       return unless params[:id]
@@ -179,10 +192,28 @@ module Vnet::Openflow
       item.remove_dns_record(dns_record_map)
     end
 
-    def match_item?(item, params)
-      return false if params[:interface_id] && params[:interface_id] != item.interface_id
-      super
+    #
+    # Interface events:
+    #
+
+    # SERVICE_ACTIVATE_INTERFACE on queue ':interface'
+    def activate_interface(params)
+      interface_id = params[:interface_id] || return
+      return if @active_interfaces[interface_id]
+
+      @active_interfaces[interface_id] = true
+
+      item_maps = MW::NetworkService.batch.where(interface_id: interface_id).all.commit
+      item_maps.each { |item_map| internal_new_item(item_map, {}) }
     end
+
+    # SERVICE_DEACTIVATE_INTERFACE on queue ':interface'
+    def deactivate_interface(params)
+      # return if params[:interface_id].nil?
+      # routes = @active_interfaces.delete(params[:interface_id]) || return
+
+    end
+
   end
 
 end

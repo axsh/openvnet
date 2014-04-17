@@ -139,12 +139,6 @@ module Vnet::Openflow
         item.ingress_filtering_enabled &&
           @dp_info.filter_manager.async.apply_filters(item_map)
       end
-
-      if item.mode == :simulated
-        # @dp_info.service_manager.async.publish(SERVICE_ACTIVATE_INTERFACE,
-        #                                        id: :interface,
-        #                                        interface_id: item.id)
-      end
     end
 
     def delete_item(item)
