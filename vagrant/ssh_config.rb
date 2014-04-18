@@ -19,14 +19,9 @@ ssh_dir = File.expand_path("./vm/ssh", File.dirname(__FILE__))
 identity_file = File.expand_path("./vm/ssh/id_rsa", File.dirname(__FILE__))
 node_dir = File.expand_path("./nodes", File.dirname(__FILE__))
 
-File.open("#{ssh_dir}/config", "w+") do |file|
-  file.puts <<-EOS
-UserKnownHostsFile /dev/null
-StrictHostKeyChecking no
-PasswordAuthentication no
-LogLevel FATAL
-  EOS
-end
+str_begin = "### vnet vagrant config begin ###"
+str_end = "### vnet vagrant config end ###"
+regexp = /#{str_begin}.*#{str_end}/m
 
 hosts = []
 
@@ -48,17 +43,32 @@ Dir.glob("#{node_dir}/*.json") do |filename|
   end
 end
 
-str_begin = "### vnet vagrant config begin ###"
-str_end = "### vnet vagrant config end ###"
-
-regexp = /#{str_begin}.*#{str_end}/m
-
-config = [].tap { |str|
-  str << str_begin
+File.open("#{ssh_dir}/config", "w+") do |file|
+  config = <<-EOS
+UserKnownHostsFile /dev/null
+StrictHostKeyChecking no
+PasswordAuthentication no
+LogLevel FATAL
+  EOS
 
   hosts.sort_by { |h| h[:name] }.each do |host|
-    str << ""
+    config += <<-EOS
+
+Host #{host[:name]}
+  HostName #{host[:hostname]}
+  Port #{host[:port] || 22}
+  User vagrant
+    EOS
+  end
+
+  file.puts config
+end
+
+host_config = [].tap { |str|
+  str << str_begin
+  hosts.sort_by { |h| h[:name] }.each do |host|
     str << <<-EOS
+
 Host #{host[:name]}
   HostName #{host[:hostname]}
   Port #{host[:port] || 22}
@@ -71,11 +81,11 @@ Host #{host[:name]}
   LogLevel FATAL
     EOS
   end
-
   str << str_end
 }.join("\n")
 
-puts config
+
+puts host_config
 
 unless options[:assume_yes]
   print "overwrite ssh config?[Y/n]"
@@ -88,12 +98,12 @@ end
 File.open(config_file, "r+") do |file|
   body = file.read
   if body =~ regexp
-    body.sub!(regexp, config)
+    body.sub!(regexp, host_config)
     file.rewind
     file.puts body
     file.truncate(file.tell)
   else
     file.puts
-    file.puts config
+    file.puts host_config
   end
 end
