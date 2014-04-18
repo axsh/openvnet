@@ -3,8 +3,11 @@
 set -e
 
 local_dir=${1:-/opt/axsh/openvnet/}
+# append trailing slash
+local_dir=$(echo ${local_dir}/ | sed 's,/*$,/,')
+
 remote_dir=/opt/axsh/openvnet/
-exclude="--exclude '.git' --exclude 'vnet/.bundle' --exclude 'vnet/vendor'"
+exclude="--exclude *.swp --exclude *.swo --exclude .git --exclude vnet/.bundle --exclude vnet/vendor"
 
 servers="
 vnmgr
