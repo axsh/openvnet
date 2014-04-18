@@ -151,7 +151,7 @@ end
 
 # udhcpc
 link "/sbin/udhcpc" do
-  to "/vagrant/vm/bin/udhcpc"
+  to "/vagrant/share/bin/udhcpc"
 end
 
 node[:vnet][:vms].select { |vm| vm["host"] == node.name }.tap do |vms|
@@ -184,7 +184,7 @@ node[:vnet][:vms].select { |vm| vm["host"] == node.name }.tap do |vms|
     bash "build_vmbase" do
       code <<-EOS
         #service docker restart # workaround
-        docker build -t vmbase --rm /vagrant/vm
+        docker build -t vmbase --rm /vagrant/share
       EOS
     end
   end

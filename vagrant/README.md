@@ -28,10 +28,10 @@ rsync vnet source code
 
 src: host
 ```
-./vm/bin/vnet-sync-auto ${path_to_openvnet}
+./share/bin/vnet-sync-auto ${path_to_openvnet}
 ```
 
 src: vm(vnmgr)
 ```
-ssh vnmgr nohup /vagrant/vm/bin/vnet-sync-auto &
+ssh vnmgr nohup /vagrant/share/bin/vnet-sync-auto &
 ```

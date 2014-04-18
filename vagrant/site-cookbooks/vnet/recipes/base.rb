@@ -14,14 +14,14 @@ file "/home/vagrant/.ssh/id_rsa" do
   owner "vagrant"
   group "vagrant"
   mode "0600"
-  content ::File.open("/vagrant/vm/ssh/id_rsa").read
+  content ::File.open("/vagrant/share/ssh/id_rsa").read
 end
 
 file "/home/vagrant/.ssh/config" do
   owner "vagrant"
   group "vagrant"
   mode "0600"
-  content ::File.open("/vagrant/vm/ssh/config").read
+  content ::File.open("/vagrant/share/ssh_config").read
 end
 
 # timezone

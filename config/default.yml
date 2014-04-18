@@ -1,6 +1,6 @@
 vm_ssh_user: vagrant
 vm_type: :docker
-pipework_path: /vagrant/vm/bin
+pipework_path: /vagrant/share/bin
 specs_ext: [edge]
 
 vna_waittime: 3

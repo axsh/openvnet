@@ -15,8 +15,9 @@ OptionParser.new.tap do |opt|
 end
 
 config_file = File.join(Dir.home, ".ssh/config")
-ssh_dir = File.expand_path("./vm/ssh", File.dirname(__FILE__))
-identity_file = File.expand_path("./vm/ssh/id_rsa", File.dirname(__FILE__))
+share_dir = File.expand_path("./share", File.dirname(__FILE__))
+ssh_dir = File.expand_path("./share/ssh", File.dirname(__FILE__))
+identity_file = File.expand_path("./share/ssh/id_rsa", File.dirname(__FILE__))
 node_dir = File.expand_path("./nodes", File.dirname(__FILE__))
 
 str_begin = "### vnet vagrant config begin ###"

@@ -1,4 +1,4 @@
 #!/bin/bash
 
-script=/vagrant/vm/udhcpc.default.script
+script=/vagrant/share/udhcpc.default.script
 busybox udhcpc -n -t 3 -s $script $*

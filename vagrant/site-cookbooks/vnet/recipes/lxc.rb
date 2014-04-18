@@ -120,7 +120,7 @@ end script
 
     # configure ssh
     mkdir -p #{template_dir}/home/vagrant/.ssh
-    cp -a /vagrant/vm/ssh #{template_dir}/home/vagrant/.ssh/
+    cp -a /vagrant/share/ssh #{template_dir}/home/vagrant/.ssh/
     chown -R vagrant:vagrant #{template_dir}/home/vagrant/.ssh
     chmod 700 #{template_dir}/home/vagrant/.ssh;
 
