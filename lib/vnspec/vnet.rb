@@ -59,7 +59,7 @@ module Vnspec
         bundle_install
       end
 
-      def bundle_install
+      def bundle(*command)
         hosts = case config[:update_vnet_via].to_sym
         when :rpm
           raise NotImplementedError.new("please update gems via rpm.")
@@ -68,8 +68,12 @@ module Vnspec
         end
 
         %w(vnet vnctl).each do |dir|
-          multi_ssh(hosts, "cd #{File.join(config[:vnet_path], dir)}; bundle clean; bundle install --path vendor/bundle;")
+          multi_ssh(hosts, "cd #{File.join(config[:vnet_path], dir)}; bundle clean; bundle #{command.join(' ')};")
         end
+      end
+
+      def bundle_install
+        bundle("install")
       end
 
       def downgrade
