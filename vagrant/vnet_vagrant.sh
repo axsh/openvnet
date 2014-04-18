@@ -33,6 +33,8 @@ prepare_ssh_key() {
   ssh-keygen -y -f ${ssh_dir}/id_rsa > ${ssh_dir}/authorized_keys
 }
 
+cd $(dirname ${BASH_SOURCE[0]})
+
 ssh_dir=$(dirname $0)/vm/ssh
 ssh_key=${ssh_dir}/id_rsa
 
