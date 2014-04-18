@@ -68,7 +68,7 @@ module Vnspec
         end
 
         %w(vnet vnctl).each do |dir|
-          multi_ssh(hosts, "cd #{File.join(config[:vnet_path], dir)}; bundle clean; bundle #{command.join(' ')};")
+          multi_ssh(hosts, "cd #{File.join(config[:vnet_path], dir)}; bundle #{command.join(' ')};")
         end
       end
 
