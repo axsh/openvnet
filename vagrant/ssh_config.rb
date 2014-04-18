@@ -44,13 +44,20 @@ Dir.glob("#{node_dir}/*.json") do |filename|
   end
 end
 
-File.open("#{ssh_dir}/config", "w+") do |file|
-  config = <<-EOS
+base_config = <<-EOS
 UserKnownHostsFile /dev/null
 StrictHostKeyChecking no
 PasswordAuthentication no
 LogLevel FATAL
-  EOS
+EOS
+
+File.open("#{ssh_dir}/config", "w+") do |file|
+  file.puts(base_config)
+end
+
+File.open("#{share_dir}/ssh_config", "w+") do |file|
+
+  config = base_config
 
   hosts.sort_by { |h| h[:name] }.each do |host|
     config += <<-EOS

@@ -1,5 +1,6 @@
 cookbooks
 /cookbooks/
 .vagrant
-vm/ssh/*
+share/ssh/*
+ssh_config
 repos/*
