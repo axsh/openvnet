@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'resolv'
+require 'shellwords'
 
 module Vnspec
   class VM
@@ -231,6 +232,7 @@ module Vnspec
         options = ssh_options_for_quiet_mode(options) if config[:ssh_quiet_mode]
         option_string = to_ssh_option_string(options)
         command = "sudo #{command}" if config[:vm_ssh_user] != "root" && use_sudo
+        command = Shellwords.shellescape(command)
         command = "ssh #{option_string} #{config[:vm_ssh_user]}@#{ssh_ip} -p #{ssh_port} #{command}"
         ssh_on_host(command)
       end
