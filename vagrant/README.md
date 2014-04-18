@@ -18,12 +18,6 @@ setup vms
 ./vnet_vagrant.sh install
 ```
 
-bundle install
-
-```
-cd ../; ./bin/vnspec vnet bundle_install
-```
-
 run specs
 
 ```

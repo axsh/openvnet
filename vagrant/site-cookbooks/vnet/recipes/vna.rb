@@ -143,13 +143,6 @@ template "/etc/openvnet/vna.conf" do
   })
 end
 
-file "/etc/sudoers.d/vagrant" do
-  content <<-EOS
-Defaults !secure_path
-Defaults env_keep += "PATH RBENV_ROOT"
-  EOS
-end
-
 # pipework
 #directory "/opt/jpetazzo"
 #git "/opt/jpetazzo/pipework" do

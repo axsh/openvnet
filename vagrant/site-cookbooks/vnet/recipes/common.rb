@@ -39,11 +39,25 @@ node[:vnet][:ruby_versions].each do |version|
   end
 end
 
+file "/etc/sudoers.d/vagrant" do
+  content <<-EOS
+Defaults !secure_path
+Defaults env_keep += "PATH RBENV_ROOT"
+  EOS
+end
+
 # openvnet
 
 directory "/opt/axsh"
 git "/opt/axsh/openvnet" do
   repository "https://github.com/axsh/openvnet.git"
+end
+
+execute "chown -R vagrant:vagrant /opt/axsh/openvnet"
+
+execute "make install-bundle-dev" do
+  user "vagrant"
+  cwd "/opt/axsh/openvnet"
 end
 
 execute "make update-config" do
