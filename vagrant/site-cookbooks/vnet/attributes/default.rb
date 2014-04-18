@@ -36,6 +36,7 @@ telnet
 nc
 bind-utils
 man
+inotify-tools
 )
 
 # config

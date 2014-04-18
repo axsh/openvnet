@@ -23,3 +23,15 @@ run specs
 ```
 cd ../; ./bin/vnspec run
 ```
+
+rsync vnet source code
+
+src: host
+```
+./vm/bin/vnet-sync-auto ${path_to_openvnet}
+```
+
+src: vm(vnmgr)
+```
+ssh vnmgr nohup /vagrant/vm/bin/vnet-sync-auto &
+```
