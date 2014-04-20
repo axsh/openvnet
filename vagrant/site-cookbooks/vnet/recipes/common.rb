@@ -27,7 +27,7 @@ node[:vnet][:ruby_versions].each do |version|
   end
 end
 
-file "/etc/sudoers.d/vagrant" do
+file "/etc/sudoers.d/rbenv" do
   content <<-EOS
 Defaults !secure_path
 Defaults env_keep += "PATH RBENV_ROOT"
