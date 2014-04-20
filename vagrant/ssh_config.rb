@@ -54,10 +54,11 @@ ForwardAgent yes
       Dir.glob("#{@base_dir}/data_bags/vms/*.json") do |filename|
         name = filename.sub(%r!.*/nodes/(.*)\.json!, '\1')
         vm = JSON.parse(File.read(filename))
+        hostname = hosts.find { |h| h[:name] == vm["host"] }[:hostname]
 
         hosts << {
           name: vm["id"],
-          hostname: vm["host"],
+          hostname: hostname,
           port: vm["ssh_port"],
         }
       end
@@ -71,10 +72,10 @@ ForwardAgent yes
       @ssh_hosts.sort_by { |h| h[:id] }.each do |host|
         config += <<-EOS
 
-  Host #{host[:name]}
-    HostName #{host[:hostname]}
-    Port #{host[:port] || 22}
-    User vagrant
+Host #{host[:name]}
+  HostName #{host[:hostname]}
+  Port #{host[:port] || 22}
+  User vagrant
         EOS
       end
 
@@ -94,17 +95,17 @@ ForwardAgent yes
       @ssh_hosts.sort_by { |h| h[:name] }.each do |host|
         str << <<-EOS
 
-  Host #{host[:name]}
-    HostName #{host[:hostname]}
-    Port #{host[:port] || 22}
-    User vagrant
-    IdentityFile #{@options[:identity_file]}
-    IdentitiesOnly yes
-    UserKnownHostsFile /dev/null
-    StrictHostKeyChecking no
-    PasswordAuthentication no
-    LogLevel FATAL
-    ForwardAgent yes
+Host #{host[:name]}
+  HostName #{host[:hostname]}
+  Port #{host[:port] || 22}
+  User vagrant
+  IdentityFile #{@options[:identity_file]}
+  IdentitiesOnly yes
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  LogLevel FATAL
+  ForwardAgent yes
         EOS
       end
       str << @str_end
