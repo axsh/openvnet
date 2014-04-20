@@ -36,6 +36,12 @@ setup vms
 vagrant up
 ```
 
+if `vagrant up` failed on provisioning, run following command.
+
+```
+vagrant provision
+```
+
 run specs
 
 ```
