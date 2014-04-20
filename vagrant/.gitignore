@@ -2,5 +2,4 @@ cookbooks
 /cookbooks/
 .vagrant
 share/ssh/*
-ssh_config
 repos/*

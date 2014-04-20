@@ -21,7 +21,7 @@ file "/home/vagrant/.ssh/config" do
   owner "vagrant"
   group "vagrant"
   mode "0600"
-  content ::File.open("/vagrant/share/ssh_config").read
+  content ::File.open("/vagrant/share/ssh/vnet_config").read
 end
 
 # timezone

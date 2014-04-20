@@ -51,12 +51,11 @@ PasswordAuthentication no
 LogLevel FATAL
 EOS
 
-File.open("#{ssh_dir}/config", "w+") do |file|
+File.open("#{ssh_dir}/vm_config", "w+") do |file|
   file.puts(base_config)
 end
 
-File.open("#{share_dir}/ssh_config", "w+") do |file|
-
+File.open("#{ssh_dir}/vnet_config", "w+") do |file|
   config = base_config
 
   hosts.sort_by { |h| h[:name] }.each do |host|
