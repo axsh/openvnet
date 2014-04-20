@@ -1,6 +1,5 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-require 'yaml'
 
 VAGRANTFILE_API_VERSION = "2"
 
@@ -60,6 +59,14 @@ vms = [
   },
 ]
 
+nodes = {}.tap do |nodes|
+  nodes_dir = File.expand_path("./nodes", File.dirname(__FILE__))
+  Dir.glob("#{nodes_dir}/*.json") do |filename|
+    name = filename.sub(%r!.*/nodes/(.*)\.json!, '\1')
+    nodes[name] = JSON.parse(File.read(filename))
+  end
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   vms.each do |vm|
 
@@ -93,6 +100,25 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           vb.customize ["modifyvm", :id, "--nicpromisc#{nic_index}", "allow-all"]
           # http://humbledown.org/virtualbox-intel-vlan-tag-stripping.xhtml
           vb.customize ["modifyvm", :id, "--nictype#{nic_index}", "Am79C973"]
+        end
+      end
+
+      # provision
+      config.vm.provision "chef_solo" do |chef|
+        chef.cookbooks_path = %w(cookbooks site-cookbooks)
+        chef.data_bags_path = "data_bags"
+        chef.roles_path = "roles"
+
+        nodes[vm[:name]].tap do |node|
+          node.delete("run_list").each do |recipe|
+            case recipe
+            when /recipe\[(.*)\]/
+              chef.add_recipe($1)
+            when /role\[(.*)\]/
+              chef.add_role($1)
+            end
+          end
+          chef.json = node
         end
       end
     end
