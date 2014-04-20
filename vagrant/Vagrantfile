@@ -83,6 +83,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       config.vm.box = vm[:box] || VAGRANT_BOX
 
       config.vm.hostname = vm[:name]
+      config.ssh.forward_agent = true
+
       vm[:networks].each.with_index do |network, index|
 
         nic_index = index + 2

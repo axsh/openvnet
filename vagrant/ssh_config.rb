@@ -49,6 +49,7 @@ UserKnownHostsFile /dev/null
 StrictHostKeyChecking no
 PasswordAuthentication no
 LogLevel FATAL
+ForwardAgent yes
 EOS
 
 File.open("#{ssh_dir}/vm_config", "w+") do |file|
@@ -86,6 +87,7 @@ Host #{host[:name]}
   StrictHostKeyChecking no
   PasswordAuthentication no
   LogLevel FATAL
+  ForwardAgent yes
     EOS
   end
   str << str_end
