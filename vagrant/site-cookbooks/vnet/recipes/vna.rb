@@ -9,12 +9,6 @@
 
 include_recipe "vnet::common"
 
-# openvnet third party repository
-yum_repository "openvnet_third_party" do
-  baseurl node[:vnet][:openvnet_third_party_repository_url]
-  gpgcheck false
-end
-
 # rdo repository
 execute "yum install -y http://rdo.fedorapeople.org/openstack/openstack-havana/rdo-release-havana.rpm || :"
 

@@ -9,9 +9,6 @@ default[:vnet][:repositry_server] = false
 default[:vnet][:ruby_versions] = %w(2.1.1)
 default[:vnet][:ruby_global] = "2.1.1"
 
-default[:vnet][:openvnet_third_party_repository_url] = "file:///vagrant/repos/packages/rhel/6/third_party/current/"
-#default[:vnet][:openvnet_third_party_repository_url] = "http://192.168.2.51/repos/packages/rhel/6/third_party/current/"
-
 # packages
 default[:vnet][:packages][:common] = %w(
 zeromq-devel

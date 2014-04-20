@@ -13,18 +13,6 @@ node[:vnet][:packages][:common].each do |pkg|
   package pkg
 end
 
-# build openvswitch rpm
-if node[:vnet][:repositry_server]
-  bash "build_openvswitch_rpm" do
-    code <<-EOS
-      yum install -y make git gcc gcc-c++ rpm-build redhat-rpm-config rpmdevtools yum-utils python-devel openssl-devel kernel-devel-$(uname -r) kernel-debug-devel-$(uname -r) createrepo
-      REPO_BASE_DIR=/vagrant/repos /opt/axsh/openvnet/deployment/packagebuild/build_packages_third_party.sh openvnet-openvswitch
-    EOS
-
-    not_if { File.exists?("/vagrant/repos/packages/rhel/6/third_party/current/") }
-  end
-end
-
 # rbenv
 include_recipe "rbenv::default"
 include_recipe "rbenv::ruby_build"
