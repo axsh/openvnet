@@ -31,6 +31,9 @@ hosts = []
 # create authorized_keys
 %x(ssh-keygen -y -f #{options[:identity_file]} > #{ssh_dir}/authorized_keys)
 
+# forward agent
+%x(ssh-add #{options[:identity_file]})
+
 Dir.glob("#{node_dir}/*.json") do |filename|
   name = filename.sub(%r!.*/nodes/(.*)\.json!, '\1')
   node = JSON.parse(File.read(filename))
