@@ -180,7 +180,6 @@ data_bag(:vms).map { |id| data_bag_item(:vms, id) }.select { |vm|
   unless vms.empty?
     bash "build_vmbase" do
       code <<-EOS
-        #service docker restart # workaround
         docker build -t vmbase --rm /vagrant/share
       EOS
     end
