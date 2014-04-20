@@ -154,7 +154,10 @@ link "/sbin/udhcpc" do
   to "/vagrant/share/bin/udhcpc"
 end
 
-node[:vnet][:vms].select { |vm| vm["host"] == node.name }.tap do |vms|
+data_bag(:vms).map { |id| data_bag_item(:vms, id) }.select { |vm|
+  vm["host"] == node.name
+}.tap do |vms|
+
   unless vms.empty?
     if node[:vnet][:vna][:docker][:registry]
       base_name = "#{node[:vnet][:vna][:docker][:registry]}/centos"
@@ -171,10 +174,10 @@ node[:vnet][:vms].select { |vm| vm["host"] == node.name }.tap do |vms|
   vms.each do |vm|
     bash "rm_vm" do
       code <<-EOS
-        #docker stop #{vm["name"]} > /dev/null 2>&1 || :
-        #docker rm #{vm["name"]} > /dev/null 2>&1 || :
-        docker stop #{vm["name"]} || :
-        docker rm #{vm["name"]} || :
+        #docker stop #{vm["id"]} > /dev/null 2>&1 || :
+        #docker rm #{vm["id"]} > /dev/null 2>&1 || :
+        docker stop #{vm["id"]} || :
+        docker rm #{vm["id"]} || :
         sudo -u vagrant ssh-keygen -R [localhost]:#{vm["ssh_port"]} 2>&1 ||:
       EOS
     end
@@ -192,8 +195,8 @@ node[:vnet][:vms].select { |vm| vm["host"] == node.name }.tap do |vms|
   vms.each do |vm|
     bash "run_vm" do
       code <<-EOS
-        docker run -d -t --dns 127.0.0.1 -h #{vm["name"]} -p #{vm["ssh_port"]}:22 --name #{vm["name"]} vmbase
-        docker stop #{vm["name"]}
+        docker run -d -t --dns 127.0.0.1 -h #{vm["id"]} -p #{vm["ssh_port"]}:22 --name #{vm["id"]} vmbase
+        docker stop #{vm["id"]}
       EOS
     end
   end

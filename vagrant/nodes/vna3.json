@@ -23,42 +23,6 @@
       "routes": [
         { "target": "172.16.20.0/24", "gateway": "172.16.30.1", "device": "br0" }
       ]
-    },
-    "vms": [
-      {
-        "name": "vm5",
-        "host": "vna3",
-        "ssh_port": 2225,
-        "interfaces": [ 
-          {
-            "name": "eth0",
-            "ipv4_address": "10.50.0.105"
-          },
-          {
-            "name": "eth1",
-            "bridge": "br0",
-            "port_name": "if-v5",
-            "mac_address": "02:00:00:00:00:05"
-          }
-        ]
-      },
-      {
-        "name": "vm6",
-        "host": "vna3",
-        "ssh_port": 2226,
-        "interfaces": [ 
-          {
-            "name": "eth0",
-            "ipv4_address": "10.50.0.106"
-          },
-          {
-            "name": "eth1",
-            "bridge": "br0",
-            "port_name": "if-v6",
-            "mac_address": "02:00:00:00:00:06"
-          }
-        ]
-      }
-    ]
+    }
   }
 }
