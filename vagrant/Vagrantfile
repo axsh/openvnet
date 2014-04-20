@@ -106,6 +106,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
 
       # provision
+      config.omnibus.chef_version = :latest
+
       config.vm.provision "chef_solo" do |chef|
         chef.cookbooks_path = %w(cookbooks site-cookbooks)
         chef.data_bags_path = "data_bags"
