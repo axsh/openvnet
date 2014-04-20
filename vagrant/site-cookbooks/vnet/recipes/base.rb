@@ -9,14 +9,6 @@ node[:vnet][:packages][:base].each do |pkg|
   package pkg
 end
 
-# ssh
-file "/home/vagrant/.ssh/id_rsa" do
-  owner "vagrant"
-  group "vagrant"
-  mode "0600"
-  content ::File.open("/vagrant/share/ssh/id_rsa").read
-end
-
 file "/home/vagrant/.ssh/config" do
   owner "vagrant"
   group "vagrant"
