@@ -3,7 +3,7 @@
 
 VAGRANTFILE_API_VERSION = "2"
 
-VAGRANT_BOX = "hansode/centos-6.5-x86_64"
+VAGRANT_BOX = "chef/centos-6.5"
 
 vms = [
   {
