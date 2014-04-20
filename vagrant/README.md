@@ -12,10 +12,22 @@ install gems
 bundle install
 ```
 
+configure ssh
+
+```
+./ssh_config [IDENTIFY_FILE]
+```
+
+install cookbooks
+
+```
+bundle exec berks vendor cookbooks
+```
+
 setup vms
 
 ```
-./vnet_vagrant.sh install
+vagrant up
 ```
 
 run specs
@@ -28,10 +40,10 @@ rsync vnet source code
 
 src: host
 ```
-./share/bin/vnet-sync-auto ${path_to_openvnet}
+./share/bin/vnet-sync-auto PATH_TO_OPENVNET
 ```
 
 src: vm(vnmgr)
 ```
-ssh vnmgr nohup /vagrant/share/bin/vnet-sync-auto &
+ssh vnmgr nohup ./share/bin/vnet-sync-auto PATH_TO_OPENVNET &
 ```
