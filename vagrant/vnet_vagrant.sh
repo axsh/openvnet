@@ -35,7 +35,7 @@ prepare_ssh_key() {
 
 cd $(dirname ${BASH_SOURCE[0]})
 
-ssh_dir=$(dirname $0)/vm/ssh
+ssh_dir=$(dirname $0)/share/ssh
 ssh_key=${ssh_dir}/id_rsa
 
 command=$1

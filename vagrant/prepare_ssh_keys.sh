@@ -5,7 +5,7 @@
 
 private_key=${1-~/.vagrant.d/insecure_private_key}
 
-ssh_dir=$(dirname $0)/vm/ssh
+ssh_dir=$(dirname $0)/share/ssh
 
 mkdir -p ${ssh_dir}
 cp ${private_key} ${ssh_dir}/id_rsa
