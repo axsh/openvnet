@@ -5,26 +5,31 @@ require 'json'
 
 default_options = {
   assume_yes: false,
+  identity_file: File.join(Dir.home, ".vagrant.d/insecure_private_key")
 }
 
 options = default_options.dup
 
 OptionParser.new.tap do |opt|
   opt.on("-y") {|v| options[:assume_yes] = true }
+  opt.on("-i IDENTITY_FILE") {|v| options[:identity_file] = v }
   opt.parse!(ARGV)
 end
 
 config_file = File.join(Dir.home, ".ssh/config")
 share_dir = File.expand_path("./share", File.dirname(__FILE__))
 ssh_dir = File.expand_path("./share/ssh", File.dirname(__FILE__))
-identity_file = File.expand_path("./share/ssh/id_rsa", File.dirname(__FILE__))
 node_dir = File.expand_path("./nodes", File.dirname(__FILE__))
+data_bag_dir = File.expand_path("./data_bags", File.dirname(__FILE__))
 
 str_begin = "### vnet vagrant config begin ###"
 str_end = "### vnet vagrant config end ###"
 regexp = /#{str_begin}.*#{str_end}/m
 
 hosts = []
+
+# create authorized_keys
+%x(ssh-keygen -y -f #{options[:identity_file]} > #{ssh_dir}/authorized_keys)
 
 Dir.glob("#{node_dir}/*.json") do |filename|
   name = filename.sub(%r!.*/nodes/(.*)\.json!, '\1')
@@ -34,14 +39,17 @@ Dir.glob("#{node_dir}/*.json") do |filename|
     name: name,
     hostname: node["vnet"]["interfaces"].first["target"],
   }
+end
 
-  (node["vnet"]["vms"] || []).each do |vm|
-    hosts << {
-      name: vm["name"],
-      hostname: node["vnet"]["interfaces"].first["target"], # host ip
-      port: vm["ssh_port"],
-    }
-  end
+Dir.glob("#{data_bag_dir}/vms/*.json") do |filename|
+  name = filename.sub(%r!.*/nodes/(.*)\.json!, '\1')
+  vm = JSON.parse(File.read(filename))
+
+  hosts << {
+    name: vm["id"],
+    hostname: vm["host"],
+    port: vm["ssh_port"],
+  }
 end
 
 base_config = <<-EOS
@@ -59,7 +67,7 @@ end
 File.open("#{ssh_dir}/vnet_config", "w+") do |file|
   config = base_config
 
-  hosts.sort_by { |h| h[:name] }.each do |host|
+  hosts.sort_by { |h| h[:id] }.each do |host|
     config += <<-EOS
 
 Host #{host[:name]}
@@ -81,7 +89,7 @@ Host #{host[:name]}
   HostName #{host[:hostname]}
   Port #{host[:port] || 22}
   User vagrant
-  IdentityFile #{identity_file}
+  IdentityFile #{options[:identity_file]}
   IdentitiesOnly yes
   UserKnownHostsFile /dev/null
   StrictHostKeyChecking no
