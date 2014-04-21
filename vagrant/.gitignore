@@ -2,4 +2,3 @@ cookbooks
 /cookbooks/
 .vagrant
 share/ssh/*
-repos/*
