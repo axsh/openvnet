@@ -143,8 +143,8 @@ module Vnet::Openflow::Translations
       else
         [[{ eth_type: ETH_TYPE_IPV4,
             ipv4_src: translation[:egress_ipv4_address]
-          }],
-         [{ ipv4_src: translation[:ingress_ipv4_address]
+          }, {
+            ipv4_src: translation[:ingress_ipv4_address]
           }]]
       end
     end
