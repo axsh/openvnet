@@ -17,9 +17,6 @@ install-bundle-dev:
 
 install: update-config
 	mkdir -p $(DSTDIR)/opt/axsh/openvnet
-	mkdir -p $(DSTDIR)/var/run/openvnet/log
-	mkdir -p $(DSTDIR)/var/run/openvnet/pid
-	mkdir -p $(DSTDIR)/var/run/openvnet/sock
 	cp -r vnet vnctl deployment $(DSTDIR)/opt/axsh/openvnet
 
 
