@@ -102,6 +102,7 @@ module Vnet
     # Translation events:
     #
     TRANSLATION_INITIALIZED = "translation_initialized"
+    TRANSLATION_UNLOAD_ITEM = "translation_unload_item"
     TRANSLATION_CREATED_ITEM = "translation_created_item"
     TRANSLATION_DELETED_ITEM = "translation_deleted_item"
 
