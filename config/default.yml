@@ -3,7 +3,7 @@ vm_type: :docker
 pipework_path: /vagrant/share/bin
 specs_ext: [edge]
 
-vna_waittime: 3
+vna_waittime: 5
 vnet_branch: master
 
 log_level: info
