@@ -9,6 +9,21 @@ node[:vnet][:packages][:base].each do |pkg|
   package pkg
 end
 
+file "/home/vagrant/.ssh/vnet_private_key" do
+  owner "vagrant"
+  group "vagrant"
+  mode "0600"
+  content ::File.open("/vagrant/share/ssh/vnet_private_key").read
+end
+
+bash "add_private_key_to_authorized_keys" do
+  code <<-EOS
+    cat /vagrant/share/ssh/vnet_private_key.pub >> /home/vagrant/.ssh/authorized_keys 
+  EOS
+
+  not_if 'grep "$(cat /vagrant/share/ssh/vnet_private_key.pub)" /home/vagrant/.ssh/authorized_keys'
+end
+
 file "/home/vagrant/.ssh/config" do
   owner "vagrant"
   group "vagrant"

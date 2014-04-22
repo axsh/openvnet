@@ -5,7 +5,6 @@ require 'json'
 
 class SshConfig
   def initialize(options)
-    @options = options
     @base_dir = File.expand_path(File.dirname(__FILE__))
     @ssh_dir = "#{@base_dir}/share/ssh"
     @ssh_hosts = ssh_hosts
@@ -17,14 +16,26 @@ class SshConfig
     @str_begin = "### vnet vagrant config begin ###"
     @str_end = "### vnet vagrant config end ###"
     @regexp = /#{@str_begin}.*#{@str_end}/m
+
+    @identity_file = "#{@ssh_dir}/vnet_private_key"
+    create_identify_file_unless_exists
+
+    @assume_yes = !!options[:assume_yes]
+  end
+
+  def create_identify_file_unless_exists
+    unless File.exists?(@identity_file)
+      %x(ssh-keygen -q -P "" -f #{@identity_file})
+      raise "ssh-keygen failed" unless $?.success?
+    end
   end
 
   def create_authorized_keys
-    %x(ssh-keygen -y -f #{@options[:identity_file]} > #{@ssh_dir}/authorized_keys)
+    %x(ssh-keygen -y -f #{@identity_file} > #{@ssh_dir}/authorized_keys)
   end
 
   def add_identify_file_to_agent
-    %x(ssh-add #{@options[:identity_file]})
+    %x(ssh-add #{@identity_file})
   end
 
   def base_config
@@ -99,7 +110,7 @@ Host #{host[:name]}
   HostName #{host[:hostname]}
   Port #{host[:port] || 22}
   User vagrant
-  IdentityFile #{@options[:identity_file]}
+  IdentityFile #{@identity_file}
   IdentitiesOnly yes
   UserKnownHostsFile /dev/null
   StrictHostKeyChecking no
@@ -114,7 +125,7 @@ Host #{host[:name]}
 
     puts host_config
 
-    unless @options[:assume_yes]
+    unless @assume_yes
       print "overwrite ssh config?[Y/n]"
 
       gets.chomp.tap do |ans|
@@ -137,16 +148,10 @@ Host #{host[:name]}
   end
 end
 
-default_options = {
-  assume_yes: false,
-  identity_file: File.join(Dir.home, ".vagrant.d/insecure_private_key")
-}
-
-options = default_options.dup
+options = {}
 
 OptionParser.new.tap do |opt|
   opt.on("-y") {|v| options[:assume_yes] = true }
-  opt.on("-i IDENTITY_FILE") {|v| options[:identity_file] = v }
   opt.parse!(ARGV)
 end
 

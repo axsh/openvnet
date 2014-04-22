@@ -14,6 +14,7 @@ RUN sed -i "s/session *required *pam_loginuid.so/session    optional     pam_log
 # vagrant user
 RUN useradd vagrant
 RUN echo vagrant:vagrant | chpasswd
+ADD ./ssh/vnet_private_key /home/vagrant/.ssh/vnet_private_key
 ADD ./ssh/vm_config /home/vagrant/.ssh/config
 ADD ./ssh/authorized_keys /home/vagrant/.ssh/authorized_keys
 RUN mkdir -p /home/vagrant/.ssh; chown -R vagrant:vagrant /home/vagrant/.ssh; chmod 700 /home/vagrant/.ssh;

@@ -24,10 +24,10 @@ install cookbooks
 bundle exec berks vendor cookbooks
 ```
 
-configure ssh(default identity_file is ~/.vagrant.d/insecure_private_key)
+configure ssh
 
 ```
-./ssh_config [IDENTIFY_FILE]
+./ssh_config
 ```
 
 setup vms
