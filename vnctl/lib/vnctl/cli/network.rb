@@ -18,37 +18,5 @@ module Vnctl::Cli
     set_required_options [:display_name, :ipv4_network]
 
     define_standard_crud_commands
-
-    class DhcpRanges < Base
-      namespace :dhcp_ranges
-      api_suffix "/api/networks"
-
-      desc "add NETWORK_UUID RANGE_BEGIN RANGE_END", "Adds a new dhcp range to a network."
-      option_uuid
-      def add(network_uuid, range_begin, range_end)
-        params = options.merge({
-          :network_uuid => network_uuid,
-          :range_begin => range_begin,
-          :range_end => range_end
-        })
-        puts post("#{suffix}/#{network_uuid}/dhcp_ranges", :query => params)
-      end
-
-      desc "show NETWORK_UUID", "Shows all dhcp ranges in a network."
-      def show(network_uuid)
-        puts get("#{suffix}/#{network_uuid}/dhcp_ranges")
-      end
-
-      desc "del NETWORK_UUID DHCP_RANGE_UUID(S)",
-        "Removes dhcp ranges from a network."
-      def del(base_uuid, *rel_uuids)
-        rel_uuids.map { |rel_uuid|
-          puts delete("#{suffix}/#{base_uuid}/dhcp_ranges/#{rel_uuid}")
-        }.join("\n")
-      end
-    end
-
-    register(DhcpRanges, :dhcp_ranges, "dhcp_ranges OPTIONS",
-      "subcommand to manage dhcp ranges for a network")
   end
 end

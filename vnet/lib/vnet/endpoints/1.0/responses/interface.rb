@@ -4,6 +4,7 @@ module Vnet::Endpoints::V10::Responses
   class Interface < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::Interface)
+      object.mac_leases = [] unless object.mac_leases
       if object.mac_leases.first
         object.mac_address = object.mac_leases.first.mac_address_s
       end

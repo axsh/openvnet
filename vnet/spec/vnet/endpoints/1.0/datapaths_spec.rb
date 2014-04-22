@@ -45,6 +45,7 @@ describe "/datapaths" do
   end
 
   describe "Many to many relation calls for networks" do
+    let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :network }
 
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
@@ -56,6 +57,7 @@ describe "/datapaths" do
   end
 
   describe "Many to many relation calls for route links" do
+    let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :route_link }
 
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }

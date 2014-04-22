@@ -2,6 +2,16 @@
 Fabricator(:interface, class_name: Vnet::Models::Interface) do
 end
 
+Fabricator(:interface_w_mac_lease, class_name: Vnet::Models::Interface) do
+  mac_leases do
+    [
+      Fabricate(:mac_lease,
+                mac_address: sequence(:mac_address)
+               )
+    ]
+  end
+end
+
 Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
   # We need to set id manually here so we can create ip leases and mac leases
   # This is because of that fucked up relation in the database.

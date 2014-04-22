@@ -8,13 +8,15 @@ module Vnet::Models
     one_to_many :mac_leases
     one_to_many :network_services
     one_to_many :routes
-    one_to_many :mac_leases
 
     many_to_one :owner_datapath, :class => Datapath
     many_to_one :active_datapath, :class => Datapath
 
     one_to_many :interface_security_groups
     many_to_many :security_groups, :join_table => :interface_security_groups
+
+    many_to_many :lease_policies, :join_table => :lease_policy_base_interfaces
+    one_to_many :lease_policy_base_interfaces
 
     plugin :association_dependencies,
       :ip_leases => :destroy,
