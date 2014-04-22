@@ -33,7 +33,7 @@ configure ssh
 setup vms
 
 ```
-vagrant up --parallel
+vagrant up
 ```
 
 
