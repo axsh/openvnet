@@ -4,10 +4,13 @@ module Vnet::Openflow
 
   class ServiceManager < Vnet::Manager
 
+    include ActiveInterfaces
+
     #
     # Events:
     #
     subscribe_event SERVICE_INITIALIZED, :install_item
+    subscribe_event SERVICE_UNLOAD_ITEM, :unload_item
     subscribe_event SERVICE_CREATED_ITEM, :created_item
     subscribe_event SERVICE_DELETED_ITEM, :unload_item
 
@@ -20,12 +23,6 @@ module Vnet::Openflow
 
     subscribe_event ADDED_DNS_RECORD, :add_dns_record
     subscribe_event REMOVED_DNS_RECORD, :remove_dns_record
-
-    def initialize(*args)
-      super
-
-      @active_interfaces = {}
-    end
 
     def dns_server_for(network_id)
       @items.each do |_, item|
@@ -59,8 +56,16 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def mw_class
+      MW::NetworkService
+    end
+
     def initialized_item_event
       SERVICE_INITIALIZED
+    end
+
+    def item_unload_event
+      SERVICE_UNLOAD_ITEM
     end
 
     def match_item?(item, params)
@@ -71,14 +76,17 @@ module Vnet::Openflow
       super
     end
 
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
+      filter
+    end
+
     def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+      return if params.has_key?(:uuid) && params[:uuid].nil?
 
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
-      filters << {interface_id: params[:interface_id]} if params.has_key? :interface_id
-
-      create_batch(MW::NetworkService.batch, params[:uuid], filters)
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)
@@ -109,6 +117,13 @@ module Vnet::Openflow
 
       item.try_install
 
+      @active_interfaces[item.interface_id].tap { |network_ids|
+        next unless network_ids
+        network_ids.each { |network_id|
+          item.add_network_unless_exists(network_id, network_id)
+        }
+      }
+      
       if item.type == "dns"
         if dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
           publish(SERVICE_ADDED_DNS, id: item.id, dns_service_map: dns_service_map)
@@ -130,6 +145,27 @@ module Vnet::Openflow
       item.try_uninstall
 
       debug log_format("unloaded service #{item.uuid}/#{item.id}")
+    end
+
+    #
+    # Overload helper methods:
+    #
+
+    def activate_interface_value(interface_id, params)
+      params[:network_id_list] || return
+    end
+
+    def activate_interface_update_item_proc(interface_id, params)
+      network_id_list = params[:network_id_list] || return
+
+      # TODO: Queue an event instead...
+      #
+      # TODO: We can't use network_id or cookie id for the cookie id parameter.
+      Proc.new { |id, item|
+        network_id_list.each { |network_id|
+          item.add_network_unless_exists(network_id, network_id)
+        }
+      }
     end
 
     #
@@ -190,28 +226,6 @@ module Vnet::Openflow
       return unless item
 
       item.remove_dns_record(dns_record_map)
-    end
-
-    #
-    # Interface events:
-    #
-
-    # SERVICE_ACTIVATE_INTERFACE on queue ':interface'
-    def activate_interface(params)
-      interface_id = params[:interface_id] || return
-      return if @active_interfaces[interface_id]
-
-      @active_interfaces[interface_id] = true
-
-      item_maps = MW::NetworkService.batch.where(interface_id: interface_id).all.commit
-      item_maps.each { |item_map| internal_new_item(item_map, {}) }
-    end
-
-    # SERVICE_DEACTIVATE_INTERFACE on queue ':interface'
-    def deactivate_interface(params)
-      # return if params[:interface_id].nil?
-      # routes = @active_interfaces.delete(params[:interface_id]) || return
-
     end
 
   end

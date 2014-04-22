@@ -49,6 +49,17 @@ module Vnet::Openflow::Interfaces
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
 
       @dp_info.add_flows(flows)
+
+      if self.installed?
+        # Ugly hack to load up new set of network id's.
+        @dp_info.service_manager.publish(SERVICE_DEACTIVATE_INTERFACE,
+                                         id: :interface,
+                                         interface_id: @id)
+        @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
+                                         id: :interface,
+                                         interface_id: @id,
+                                         network_id_list: all_network_ids)
+      end
     end
 
     #
@@ -68,9 +79,12 @@ module Vnet::Openflow::Interfaces
 
       @dp_info.add_flows(flows)
 
-      @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: @id)
+      if !all_network_ids.empty?
+        @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
+                                         id: :interface,
+                                         interface_id: @id,
+                                         network_id_list: all_network_ids)
+      end
     end
 
     def uninstall

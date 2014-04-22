@@ -113,6 +113,11 @@ module Vnet::Openflow
     def has_network?(network_id)
       ipv4_addresses.any?{ |i| i[:network_id] == network_id }
     end
+
+    def all_network_ids
+      ipv4_addresses.collect { |ipv4_info| ipv4_info[:network_id] }.uniq
+    end
+
   end
 
 end

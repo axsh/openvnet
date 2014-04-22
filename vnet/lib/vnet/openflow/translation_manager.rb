@@ -4,7 +4,7 @@ module Vnet::Openflow
 
   class TranslationManager < Vnet::Manager
 
-    include ActiveInterface
+    include ActiveInterfaces
 
     #
     # Events:

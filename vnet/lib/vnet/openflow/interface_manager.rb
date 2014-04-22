@@ -120,7 +120,7 @@ module Vnet::Openflow
 
       debug log_format("install #{item_map.uuid}/#{item_map.id}/#{item.port_name}", "mode:#{item.mode}")
 
-      item.install
+      item.try_install
 
       if item.owner_datapath_ids &&
           item.owner_datapath_ids.include?(@datapath_info.id)
@@ -146,7 +146,7 @@ module Vnet::Openflow
 
       debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
 
-      item.uninstall
+      item.try_uninstall
 
       if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
         item.update_active_datapath(datapath_id: nil)

@@ -38,10 +38,10 @@ module Vnet::Openflow::Services
     end
 
     def cookie(type = 0, value = 0)
-      unless type & 0xf == type
+      unless (type & 0xf) == type
         raise "Invalid cookie optional type: %#x" % type
       end
-      unless value & OPTIONAL_VALUE_MASK == value
+      unless (value & OPTIONAL_VALUE_MASK) == value
         raise "Invalid cookie optional value: %#x" % value
       end
       @id |

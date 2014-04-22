@@ -11,6 +11,10 @@ module Vnet
       @installed = false
     end
 
+    def installed?
+      @installed == true
+    end
+
     def install
     end    
 
@@ -47,6 +51,10 @@ module Vnet
       @id = params[:id]
     end
 
+    def installed?
+      @installed == true
+    end
+
     #
     # Internal methods:
     #
@@ -70,6 +78,10 @@ module Vnet
       map = params[:map]
       @id = map.id
       @uuid = map.uuid
+    end
+
+    def installed?
+      @installed == true
     end
 
     #

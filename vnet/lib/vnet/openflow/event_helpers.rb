@@ -3,10 +3,10 @@
 module Vnet::Openflow
 
   #
-  # Active interface:
+  # Active interfaces:
   #
 
-  module ActiveInterface
+  module ActiveInterfaces
 
     # subscribe_event FOO_ACTIVATE_INTERFACE, :activate_interface
     # subscribe_event FOO_DEACTIVATE_INTERFACE, :deactivate_interface
@@ -18,11 +18,6 @@ module Vnet::Openflow
 
     private
 
-    # Return value must not be nil or false.
-    def activate_interface_value(interface_id)
-      true
-    end
-
     def activate_interface_query(interface_id)
       { interface_id: interface_id }
     end
@@ -31,12 +26,29 @@ module Vnet::Openflow
       Proc.new { |id, item| item.interface_id == interface_id }
     end
 
+    # Return an 'update_item(item, interface_id, params)' proc or nil.
+    def activate_interface_update_item_proc(interface_id, params)
+      nil
+    end
+
+    # Return value must not be nil or false.
+    def activate_interface_value(interface_id, params)
+      true
+    end
+
     # FOO_ACTIVATE_INTERFACE on queue ':interface'
     def activate_interface(params)
       interface_id = params[:interface_id] || return
       return if @active_interfaces.has_key? params[:interface_id]
 
-      @active_interfaces[interface_id] = activate_interface_value(interface_id)
+      value = activate_interface_value(interface_id, params) || return
+      @active_interfaces[interface_id] = value
+
+      activate_interface_update_item_proc(interface_id, params).tap { |proc|
+        next unless proc
+
+        @items.select(&activate_interface_match_proc(interface_id)).each(&proc)
+      }
 
       internal_load_where(activate_interface_query(interface_id))
     end

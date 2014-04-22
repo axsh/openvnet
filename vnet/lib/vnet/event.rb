@@ -92,6 +92,7 @@ module Vnet
     # Service events:
     #
     SERVICE_INITIALIZED = "service_initialized"
+    SERVICE_UNLOAD_ITEM = "service_unload_item"
     SERVICE_CREATED_ITEM = "service_created_item"
     SERVICE_DELETED_ITEM = "service_deleted_item"
 
