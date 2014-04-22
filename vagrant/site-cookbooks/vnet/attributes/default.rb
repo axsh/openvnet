@@ -11,7 +11,7 @@ default[:vnet][:ruby_global] = "2.1.1"
 
 # packages
 default[:vnet][:packages][:common] = %w(
-zeromq-devel
+zeromq3-devel
 libpcap-devel
 sqlite-devel
 mysql-devel
