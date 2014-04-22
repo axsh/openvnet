@@ -43,6 +43,12 @@ end
 
 execute "chown -R vagrant:vagrant /opt/axsh/openvnet"
 
+file "/home/vagrant/.gemrc" do
+  owner "vagrant"
+  group "vagrant"
+  content "gem: --no-ri --no-rdoc"
+end
+
 execute "make install-bundle-dev" do
   user "vagrant"
   cwd "/opt/axsh/openvnet"
