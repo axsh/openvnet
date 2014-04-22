@@ -33,13 +33,20 @@ configure ssh
 setup vms
 
 ```
-vagrant up
+vagrant up --parallel
 ```
 
-if `vagrant up` failed on provisioning, run following command.
+
+if provisioning hangs on 'build_vmbase', login to the vm and pull docker image manually
 
 ```
-vagrant provision
+docker pull centos
+```
+
+then run
+
+```
+vagrant provision NAME
 ```
 
 run specs
