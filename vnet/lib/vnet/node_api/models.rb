@@ -10,13 +10,22 @@ module Vnet::NodeApi
   class DcSegment < Base
   end
 
-  class DhcpRange < Base
-  end
-
   class IpAddress < Base
   end
 
   class IpLease < Base
+  end
+
+  class IpRange < Base
+  end
+
+  class IpRangesRange < Base
+  end
+
+  class LeasePolicyBaseInterface < Base
+  end
+
+  class LeasePolicyBaseNetwork < Base
   end
 
   class MacAddress < Base

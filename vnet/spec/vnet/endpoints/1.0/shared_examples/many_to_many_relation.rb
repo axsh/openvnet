@@ -41,7 +41,6 @@ shared_examples "relation_uuid_checks" do |relation_suffix, relation_uuid_label|
 end
 
 shared_examples "many_to_many_relation" do |relation_suffix, post_request_params|
-  let!(:base_object) { Fabricate(fabricator) }
   let!(:related_object) { Fabricate(relation_fabricator) }
 
   relation_uuid_label = ":#{relation_suffix.chomp("s")}_uuid"
