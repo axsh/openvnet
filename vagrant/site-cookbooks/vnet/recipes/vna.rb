@@ -101,19 +101,8 @@ node[:vnet][:vna][:ovs_ports].each do |port|
   end
 end
 
-#service "network" do
-#  supports :status => true, :restart => true
-#  action [:restart]
-#end
-
-#execute "restart_network" do
-#  ignore_failure true
-#  command "service network restart"
-#end
-
-bash "restart_network" do
+bash "restart_ovs_ports" do
   code [
-    "ifdown #{bridge_name}",
     *node[:vnet][:vna][:ovs_ports].map {|port| "ifdown #{port}" },
     *node[:vnet][:vna][:ovs_ports].map {|port| "ifup #{port}" },
   ].join("\n")
@@ -182,6 +171,7 @@ data_bag(:vms).map { |id| data_bag_item(:vms, id) }.select { |vm|
       code <<-EOS
         docker build -t vmbase --rm /vagrant/share
       EOS
+      timeout 7200
     end
   end
     
