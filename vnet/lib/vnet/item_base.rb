@@ -3,7 +3,6 @@
 module Vnet
 
   class ItemBase
-
     attr_reader :id
     attr_reader :installed
 
@@ -59,10 +58,6 @@ module Vnet
       @id = params[:id]
     end
 
-    def installed?
-      @installed == true
-    end
-
     #
     # Internal methods:
     #
@@ -76,7 +71,6 @@ module Vnet
   end
 
   class ItemDpUuid < ItemDpBase
-
     attr_reader :uuid
 
     def initialize(params)
@@ -88,22 +82,27 @@ module Vnet
       @uuid = map.uuid
     end
 
-    def installed?
-      @installed == true
-    end
-
     def pretty_id
       "#{@uuid}/#{@id}"
     end
 
-    #
-    # Internal methods:
-    #
+  end
 
-    private
+  class ItemDpUuidMode < ItemDpUuid
+    attr_reader :mode
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} #{log_type}: #{message}" + (values ? " (#{values})" : '')
+    def initialize(params)
+      @installed = false
+      @dp_info = params[:dp_info]
+
+      map = params[:map]
+      @id = map.id
+      @uuid = map.uuid
+      @mode = map.mode.to_sym
+    end
+
+    def pretty_properties
+      "mode:#{@mode}"
     end
 
   end
