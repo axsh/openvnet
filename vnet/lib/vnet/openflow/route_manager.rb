@@ -7,6 +7,7 @@ module Vnet::Openflow
     def initialize(params)
       super
 
+      # TODO: Use ActiveNetwork/RouteLink.
       @active_networks = {}
       @active_route_links = {}
     end
