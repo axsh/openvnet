@@ -73,7 +73,7 @@ module Vnet::Openflow::Translations
       src_mac = message.eth_src
       dst_mac = message.eth_dst
 
-      src_network_id = @dp_info.network_manager.network_id_by_mac(src_mac.value)
+      src_network_id = network_id_by_mac(src_mac.value)
 
       if src_network_id.nil?
         error log_format("no corresponded translation entry has been found", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
