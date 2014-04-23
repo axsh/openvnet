@@ -12,8 +12,8 @@ module Vnet::Openflow
     
     # Networks have no created item event as they always get loaded
     # when used by other managers.
-
     subscribe_event NETWORK_INITIALIZED, :install_item
+    subscribe_event NETWORK_UNLOAD_ITEM, :unload_item
     subscribe_event NETWORK_DELETED_ITEM, :unload_item
 
     subscribe_event NETWORK_UPDATE_NETWORKS, :update_networks
@@ -73,6 +73,7 @@ module Vnet::Openflow
     # Obsolete:
     #
 
+    # TODO: Move to vnet_edge handler.
     def network_id_by_mac(mac_address)
       network_map = MW::Network.batch.find_by_mac_address(mac_address).commit
       debug log_format("network_id_by_mac : mac_address => #{Trema::Mac.new(mac_address)}")
@@ -90,8 +91,16 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def mw_class
+      MW::Network
+    end
+
     def initialized_item_event
       NETWORK_INITIALIZED
+    end
+
+    def item_unload_event
+      NETWORK_UNLOAD_ITEM
     end
 
     def match_item?(item, params)
@@ -104,13 +113,16 @@ module Vnet::Openflow
       true
     end
 
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter
+    end
+
     def select_filter_from_params(params)
       return nil if params.has_key?(:uuid) && params[:uuid].nil?
 
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
-
-      create_batch(MW::Network.batch, params[:uuid], filters)
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)
@@ -124,14 +136,14 @@ module Vnet::Openflow
           return nil
         end
 
-      item_class.new(@dp_info, item_map)
+      item_class.new(dp_info: @dp_info, map: item_map)
     end
 
     #
     # Create / Delete events:
     #
 
-    # NETWORK_INITIALIZED on queue 'item.id'
+    # NETWORK_INITIALIZED on queue 'item.id'.
     def install_item(params)
       item_map = params[:item_map] || return
       item = @items[item_map.id] || return
@@ -152,10 +164,12 @@ module Vnet::Openflow
       @dp_info.interface_manager.load_simulated_on_network_id(item.id)
     end
 
-    # unload item on queue 'item.id'
+    # NETWORK_CREATED_ITEM is not needed.
+
+    # NETWORK_UNLOAD_ITEM on queue 'item.id'.
+    # NETWORK_DELETED_ITEM on queue 'item.id'.
     def unload_item(params)
       item = @items.delete(item[:id]) || return
-      item.try_uninstall
 
       @dp_info.datapath_manager.publish(DEACTIVATE_NETWORK_ON_HOST,
                                         id: :network,
@@ -163,6 +177,8 @@ module Vnet::Openflow
       @dp_info.route_manager.publish(ROUTE_DEACTIVATE_NETWORK,
                                      id: :network,
                                      network_id: item.id)
+
+      item.try_uninstall
 
       debug log_format("unloaded network #{item.uuid}/#{item.id}")
     end
@@ -202,6 +218,7 @@ module Vnet::Openflow
     # Helper methods:
     #
 
+    # TODO: Make generic.
     def add_network_id_to_update_networks(network_id)
       should_publish = @update_networks.empty?
       @update_networks[network_id] = true
