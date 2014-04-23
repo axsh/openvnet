@@ -74,6 +74,7 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
+    # ROUTE_INITIALIZED on queue 'item.id'
     def install_item(params)
       item_map = params[:item_map] || return
       item = (item_map.id && @items[item_map.id]) || return
@@ -97,10 +98,12 @@ module Vnet::Openflow
       @dp_info.interface_manager.async.retrieve(id: item.interface_id)
 
       # TODO: Router egress is a property of the interface...(?)
-      @dp_info.interface_manager.async.update_item(event: :enable_router_egress,
-                                                   id: item.interface_id)
+      @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
+                                         event: :enable_router_egress,
+                                         id: item.interface_id)
     end
     
+    # item created in db on queue 'item.id'
     def created_item(params)
       return if @items[params[:id]]
       return unless @active_route_links[params[:route_link_id]]
@@ -113,7 +116,7 @@ module Vnet::Openflow
       item = @items.delete(params[:id]) || return
       item.try_uninstall
 
-      debug log_format("unloaded item #{item.uuid}/#{item.id}")
+      debug log_format("unloaded route #{item.uuid}/#{item.id}")
     end
 
     #
@@ -125,7 +128,7 @@ module Vnet::Openflow
     #
     # Note: Replace by active segment once implemented.
 
-    # TRANSLATION_ACTIVATE_NETWORK on queue ':network'
+    # ROUTE_ACTIVATE_NETWORK on queue ':network'
     def activate_network(params)
       network_id = params[:network_id] || return
       return if @active_networks.has_key? network_id
@@ -144,7 +147,7 @@ module Vnet::Openflow
       item_maps.each { |item_map| internal_new_item(item_map, {}) }
     end
 
-    # TRANSLATION_DEACTIVATE_NETWORK on queue ':network'
+    # ROUTE_DEACTIVATE_NETWORK on queue ':network'
     def deactivate_network(params)
       # return if params[:network_id].nil?
       # routes = @active_networks.delete(params[:network_id]) || return
@@ -158,7 +161,7 @@ module Vnet::Openflow
     # Activating route links causes associated routes to be loaded,
     # however these are marked as having inactive networks.
 
-    # TRANSLATION_ACTIVATE_ROUTE_LINK on queue ':route_link'
+    # ROUTE_ACTIVATE_ROUTE_LINK on queue ':route_link'
     def activate_route_link(params)
       route_link_id = params[:route_link_id] || return
       return if @active_route_links.has_key? route_link_id
@@ -177,7 +180,7 @@ module Vnet::Openflow
       item_maps.each { |item_map| internal_new_item(item_map, {}) }
     end
 
-    # TRANSLATION_DEACTIVATE_ROUTE_LINK on queue ':route_link'
+    # ROUTE_DEACTIVATE_ROUTE_LINK on queue ':route_link'
     def deactivate_route_link(params)
       # return if params[:route_link_id].nil?
       # routes = @active_route_links.delete(params[:route_link_id]) || return

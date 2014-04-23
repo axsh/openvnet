@@ -24,7 +24,7 @@ module Vnet::NodeApi
         end
 
         dispatch_event(
-          ADDED_INTERFACE,
+          INTERFACE_CREATED_ITEM,
           id: interface.id,
           port_name: interface.port_name
         )
@@ -42,7 +42,7 @@ module Vnet::NodeApi
             i.update(options)
           end
         }.tap do |interface|
-          dispatch_event(UPDATED_INTERFACE,
+          dispatch_event(INTERFACE_UPDATED,
                          event: :updated,
                          id: interface.id,
                          port_name: interface.port_name,
@@ -51,9 +51,9 @@ module Vnet::NodeApi
 
           case options[:ingress_filtering_enabled]
           when "true"
-            dispatch_event(ENABLED_INTERFACE_FILTERING, id: interface.id)
+            dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
           when "false"
-            dispatch_event(DISABLED_INTERFACE_FILTERING, id: interface.id)
+            dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
           end
 
         end
@@ -72,10 +72,10 @@ module Vnet::NodeApi
       def destroy(uuid)
         interface = super
 
-        dispatch_event(REMOVED_INTERFACE, id: interface.id)
+        dispatch_event(INTERFACE_DELETED_ITEM, id: interface.id)
 
         model_class(:mac_lease).with_deleted.where(interface_id: interface.id).each do |mac_lease|
-          dispatch_event(RELEASED_MAC_ADDRESS, id: interface.id,
+          dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, id: interface.id,
                                                mac_lease_id: mac_lease.id)
         end
 

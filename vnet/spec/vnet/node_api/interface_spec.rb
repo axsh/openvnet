@@ -28,7 +28,7 @@ describe Vnet::NodeApi::Interface do
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
-      expect(events.first[:event]).to eq Vnet::Event::ADDED_INTERFACE
+      expect(events.first[:event]).to eq Vnet::Event::INTERFACE_CREATED_ITEM
       expect(events.first[:options][:id]).to eq interface[:id]
       expect(events.first[:options][:port_name]).to eq interface[:port_name]
     end
@@ -62,7 +62,7 @@ describe Vnet::NodeApi::Interface do
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
-      expect(events.first[:event]).to eq Vnet::Event::UPDATED_INTERFACE
+      expect(events.first[:event]).to eq Vnet::Event::INTERFACE_UPDATED
       expect(events.first[:options][:id]).to eq interface[:id]
     end
   end
@@ -123,9 +123,9 @@ describe Vnet::NodeApi::Interface do
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 2
-      expect(events.first[:event]).to eq Vnet::Event::REMOVED_INTERFACE
+      expect(events.first[:event]).to eq Vnet::Event::INTERFACE_DELETED_ITEM
       expect(events.first[:options][:id]).to eq interface[:id]
-      expect(events.last[:event]).to eq Vnet::Event::RELEASED_MAC_ADDRESS
+      expect(events.last[:event]).to eq Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS
       expect(events.last[:options][:id]).to eq interface[:id]
     end
   end

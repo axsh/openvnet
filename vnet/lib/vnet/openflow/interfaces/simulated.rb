@@ -48,31 +48,18 @@ module Vnet::Openflow::Interfaces
 
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
 
-      @mac_addresses.values.any? do |m|
-        m[:ipv4_addresses].any? do |i|
-          i[:ip_lease_id] != ipv4_info[:ip_lease_id] &&
-            i[:network_id] == ipv4_info[:network_id]
-        end
-      end || @dp_info.service_manager.async.update_item(event: :add_network,
-                                                        interface_id: @id,
-                                                        network_id: ipv4_info[:network_id],
-                                                        cookie_id: ipv4_info[:cookie_id])
-
       @dp_info.add_flows(flows)
-    end
 
-    def remove_ipv4_address(params)
-      mac_info, ipv4_info = super
-      return unless ipv4_info
-
-      @mac_addresses.values.any? do |m|
-        m[:ipv4_addresses].any? do |i|
-          i[:ip_lease_id] != ipv4_info[:ip_lease_id] &&
-            i[:network_id] == ipv4_info[:network_id]
-        end
-      end || @dp_info.service_manager.async.update_item(event: :remove_network,
-                                                        interface_id: @id,
-                                                        network_id: ipv4_info[:network_id])
+      if self.installed?
+        # Ugly hack to load up new set of network id's.
+        @dp_info.service_manager.publish(SERVICE_DEACTIVATE_INTERFACE,
+                                         id: :interface,
+                                         interface_id: @id)
+        @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
+                                         id: :interface,
+                                         interface_id: @id,
+                                         network_id_list: all_network_ids)
+      end
     end
 
     #
@@ -91,11 +78,19 @@ module Vnet::Openflow::Interfaces
       end
 
       @dp_info.add_flows(flows)
+
+      if !all_network_ids.empty?
+        @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
+                                         id: :interface,
+                                         interface_id: @id,
+                                         network_id_list: all_network_ids)
+      end
     end
 
     def uninstall
-      @dp_info.service_manager.update_item(event: :remove_all_networks,
-                                           interface_id: @id)
+      @dp_info.service_manager.publish(SERVICE_DEACTIVATE_INTERFACE,
+                                       id: :interface,
+                                       interface_id: @id)
     end
 
     def packet_in(message)

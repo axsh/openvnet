@@ -74,12 +74,18 @@ module Vnet::Openflow
       result
     end
 
+    # TODO: SetField needs to consolidate actions.
     def to_action(tag, arg)
       case tag
       when :eth_dst  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
       when :eth_src  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])
       when :ipv4_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::Ipv4DstAddr.new(:ip_addr => arg)])
       when :ipv4_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::Ipv4SrcAddr.new(:ip_addr => arg)])
+
+      when :tcp_dst  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TcpDstPort.new(:transport_port => arg)])
+      when :tcp_src  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TcpSrcPort.new(:transport_port => arg)])
+      when :udp_dst  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::UdpDstPort.new(:transport_port => arg)])
+      when :udp_src  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::UdpSrcPort.new(:transport_port => arg)])
 
       when :normal then Trema::Actions::SendOutPort.new(:port_number => OFPP_NORMAL)
       when :output then Trema::Actions::SendOutPort.new(:port_number => arg)

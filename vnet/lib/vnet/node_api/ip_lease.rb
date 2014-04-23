@@ -10,7 +10,7 @@ module Vnet::NodeApi
           model_class.create(options)
         end
 
-        dispatch_event(LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+        dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
 
         ip_lease.interface.security_groups.each do |group|
           dispatch_update_sg_ip_addresses(group)
@@ -38,8 +38,8 @@ module Vnet::NodeApi
         end
 
         if deleted_ip_address
-          dispatch_event(RELEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
-          dispatch_event(LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+          dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+          dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
         end
 
         ip_lease.interface.security_groups.each do |group|
@@ -60,7 +60,7 @@ module Vnet::NodeApi
           dispatch_update_sg_ip_addresses(group)
         end
 
-        dispatch_event(RELEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+        dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
 
         ip_lease
       end

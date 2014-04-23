@@ -96,7 +96,7 @@ module Vnet::Openflow
 
       if interface
         case interface.mode
-        when :host, :edge
+        when :host, :edge, :patch
           prepare_port_eth(port, interface)
         when :vif
           prepare_port_vif(port, interface)
@@ -138,13 +138,10 @@ module Vnet::Openflow
       )
 
       if interface
-        @dp_info.interface_manager.update_item(
-          event: :clear_port_number,
-          id: interface.id
-        )
+        @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
+                                           event: :clear_port_number,
+                                           id: interface.id)
       end
-
-      nil
     end
 
     #
@@ -177,21 +174,16 @@ module Vnet::Openflow
         return
       end
 
-      params = {
-        :owner_datapath_id => @dp_info.datapath.datapath_info.id,
-        :port_name => port.port_name,
-        :reinitialize => true
-      }
-
-      if interface.mode == :host
+      if interface.mode == :host || interface.mode == :patch
         port.extend(Ports::Host)
         port.interface_id = interface.id
 
         # We don't need to query the interface before updating it, so do
         # this directly instead of the item request.
-        interface = @dp_info.interface_manager.update_item(event: :set_port_number,
-                                                           id: interface.id,
-                                                           port_number: port.port_number)
+        @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
+                                           event: :set_port_number,
+                                           id: interface.id,
+                                           port_number: port.port_number)
       elsif interface.mode == :edge
         port.extend(Ports::Generic)
         port.interface_id = interface.id
@@ -220,9 +212,10 @@ module Vnet::Openflow
 
       # We don't need to query the interface before updating it, so do
       # this directly instead of the item request.
-      interface = @dp_info.interface_manager.update_item(event: :set_port_number,
-                                                         id: interface.id,
-                                                         port_number: port.port_number)
+      @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
+                                         event: :set_port_number,
+                                         id: interface.id,
+                                         port_number: port.port_number)
     end
 
     def prepare_port_tunnel(port)

@@ -2,9 +2,11 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   put_post_shared_params = [
+    "interface_uuid",
     "network_uuid",
     "mac_lease_uuid",
     "ipv4_address",
+    "enable_routing",
   ]
 
   fill_options = [:mac_lease, :interface, { :ip_address => :network }]

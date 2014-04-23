@@ -2,28 +2,40 @@
 module Vnet
   module Event
 
+    # *_INITIALIZED
     #
-    # interface event
+    # First event queued after the non-yielding and non-blocking
+    # initialization of an item query from the database.
+    #
+    # *_CREATED_ITEM
+    #
+    # The item was added to the database and basic information of
+    # the item sent to relevant nodes. The manager should decide if it
+    # should initialize the item or not.
+    #
+    # *_DELETED_ITEM
+    #
+    # The item was deleted from the database and should be unloaded
+    # from all nodes.
+
+    #
+    # Interface events:
     #
 
-    # interface
-    ADDED_INTERFACE = "added_interface"
-    REMOVED_INTERFACE = "removed_interface"
-    INITIALIZED_INTERFACE = "initialized_interface"
-    UPDATED_INTERFACE = "updated_interface"
-    ENABLED_INTERFACE_FILTERING = "enabled_interface_filtering"
-    DISABLED_INTERFACE_FILTERING = "disabled_interface_filtering"
+    INTERFACE_INITIALIZED = "interface_initialized"
+    INTERFACE_CREATED_ITEM = "interface_created_item"
+    INTERFACE_DELETED_ITEM = "interface_deleted_item"
 
-    # ipv4 address
-    LEASED_IPV4_ADDRESS = "leased_ipv4_address"
-    RELEASED_IPV4_ADDRESS = "released_ipv4_address"
+    INTERFACE_UPDATED = "interface_updated"
+    INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
+    INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
+    INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS = "interface_remove_all_active_datapaths"
 
-    # mac address
-    LEASED_MAC_ADDRESS = "leased_mac_address"
-    RELEASED_MAC_ADDRESS = "released_mac_address"
-
-    # active_datapath
-    REMOVED_ACTIVE_DATAPATH = "removed_active_datapath"
+    # MAC and IPv4 addresses:
+    INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
+    INTERFACE_RELEASED_MAC_ADDRESS = "interface_released_mac_address"
+    INTERFACE_LEASED_IPV4_ADDRESS = "interface_leased_ipv4_address"
+    INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
 
     #
     # Datapath events:
@@ -49,9 +61,12 @@ module Vnet
     DEACTIVATE_DATAPATH_ROUTE_LINK = 'deactivate_datapath_route_link'
 
     #
-    # network event
+    # Network event:
     #
-    INITIALIZED_NETWORK = "initialized_network"
+    NETWORK_INITIALIZED = "network_initialized"
+    NETWORK_DELETED_ITEM = "network_deleted_item"
+
+    NETWORK_UPDATE_NETWORKS = "network_update_networks"
 
     #
     # lease policy event
@@ -76,21 +91,26 @@ module Vnet
     #
     # router event
     #
-    INITIALIZED_ROUTER = "initialized_router"
-    ADDED_ROUTER = "added_router"
-    REMOVED_ROUTER = "removed_router"
+    ROUTER_INITIALIZED = "router_initialized"
+    ROUTER_CREATED_ITEM = "router_created_item"
+    ROUTER_DELETED_ITEM = "router_deleted_item"
 
     #
-    # service event
+    # Service events:
     #
-    ADDED_SERVICE = "added_service"
-    REMOVED_SERVICE = "removed_service"
-    INITIALIZED_SERVICE = "initialized_service"
+    SERVICE_INITIALIZED = "service_initialized"
+    SERVICE_UNLOAD_ITEM = "service_unload_item"
+    SERVICE_CREATED_ITEM = "service_created_item"
+    SERVICE_DELETED_ITEM = "service_deleted_item"
+
+    SERVICE_ACTIVATE_INTERFACE = "service_activate_interface"
+    SERVICE_DEACTIVATE_INTERFACE = "service_deactivate_interface"
 
     #
     # Translation events:
     #
     TRANSLATION_INITIALIZED = "translation_initialized"
+    TRANSLATION_UNLOAD_ITEM = "translation_unload_item"
     TRANSLATION_CREATED_ITEM = "translation_created_item"
     TRANSLATION_DELETED_ITEM = "translation_deleted_item"
 
@@ -136,9 +156,9 @@ module Vnet
     #
     # dns service
     #
-    ADDED_DNS_SERVICE = "added_dns_service"
-    REMOVED_DNS_SERVICE = "removed_dns_service"
-    UPDATED_DNS_SERVICE = "updated_dns_service"
+    SERVICE_ADDED_DNS = "added_dns_service"
+    SERVICE_REMOVED_DNS = "removed_dns_service"
+    SERVICE_UPDATED_DNS = "updated_dns_service"
 
     #
     # dns record
