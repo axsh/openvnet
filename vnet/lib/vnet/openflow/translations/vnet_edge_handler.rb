@@ -58,6 +58,13 @@ module Vnet::Openflow::Translations
 
     private
 
+    def network_id_by_mac(mac_address)
+      network_map = Vnet::ModelWrappers::Network.batch.find_by_mac_address(mac_address).commit
+      debug log_format("network_id_by_mac : mac_address => #{Trema::Mac.new(mac_address)}")
+      debug log_format("network_id_by_mac : network_map => #{network_map.inspect}")
+      return network_map && network_map.id
+    end
+
     def handle_packet_from_host_port(message)
       info log_format("handle_packet_from_host_port")
       flows = []

@@ -70,18 +70,6 @@ module Vnet::Openflow
     end
 
     #
-    # Obsolete:
-    #
-
-    # TODO: Move to vnet_edge handler.
-    def network_id_by_mac(mac_address)
-      network_map = MW::Network.batch.find_by_mac_address(mac_address).commit
-      debug log_format("network_id_by_mac : mac_address => #{Trema::Mac.new(mac_address)}")
-      debug log_format("network_id_by_mac : network_map => #{network_map.inspect}")
-      return network_map && network_map.id
-    end
-
-    #
     # Internal methods:
     #
 
