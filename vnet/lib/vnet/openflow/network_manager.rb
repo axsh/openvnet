@@ -13,7 +13,7 @@ module Vnet::Openflow
     
     # Networks have no created item event as they always get loaded
     # when used by other managers.
-    subscribe_event NETWORK_INITIALIZED, :install_item
+    subscribe_event NETWORK_INITIALIZED, :load_item
     subscribe_event NETWORK_UNLOAD_ITEM, :unload_item
     subscribe_event NETWORK_DELETED_ITEM, :unload_item
 
@@ -134,15 +134,7 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
-    # NETWORK_INITIALIZED on queue 'item.id'.
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = @items[item_map.id] || return
-
-      debug log_format("install #{item_map.uuid}/#{item_map.id}")
-
-      item.try_install
-
+    def item_post_install(item, item_map)
       add_item_id_to_update_queue(item.id)
 
       @dp_info.datapath_manager.publish(ACTIVATE_NETWORK_ON_HOST,
@@ -155,23 +147,13 @@ module Vnet::Openflow
       @dp_info.interface_manager.load_simulated_on_network_id(item.id)
     end
 
-    # NETWORK_CREATED_ITEM is not needed.
-
-    # NETWORK_UNLOAD_ITEM on queue 'item.id'.
-    # NETWORK_DELETED_ITEM on queue 'item.id'.
-    def unload_item(params)
-      item = @items.delete(item[:id]) || return
-
+    def item_pre_uninstall(item)
       @dp_info.datapath_manager.publish(DEACTIVATE_NETWORK_ON_HOST,
                                         id: :network,
                                         network_id: item.id)
       @dp_info.route_manager.publish(ROUTE_DEACTIVATE_NETWORK,
                                      id: :network,
                                      network_id: item.id)
-
-      item.try_uninstall
-
-      debug log_format("unloaded network #{item.uuid}/#{item.id}")
     end
 
     #

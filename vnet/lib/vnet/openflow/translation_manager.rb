@@ -9,7 +9,7 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event TRANSLATION_INITIALIZED, :install_item
+    subscribe_event TRANSLATION_INITIALIZED, :load_item
     subscribe_event TRANSLATION_UNLOAD_ITEM, :unload_item
     subscribe_event TRANSLATION_CREATED_ITEM, :created_item
     subscribe_event TRANSLATION_DELETED_ITEM, :unload_item
@@ -89,16 +89,7 @@ module Vnet::Openflow
       return if @items[params[:id]]
       return unless @active_interfaces[params[:interface_id]]
 
-      internal_new_item(MW::Translation.new(params), {})
-    end
-
-    # TRANSLATION_UNLOAD_ITEM on queue 'item.id'.
-    # TRANSLATION_DELETED_ITEM on queue 'item.id'.
-    def unload_item(params)
-      item = @items.delete(params[:id]) || return
-      item.try_uninstall
-
-      debug log_format("unloaded translation #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+      internal_new_item(mw_class.new(params), {})
     end
 
     #
