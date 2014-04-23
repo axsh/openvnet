@@ -7,11 +7,6 @@ module Vnet
     # First event queued after the non-yielding and non-blocking
     # initialization of an item query from the database.
     #
-    # *_UNLOAD_ITEM
-    #
-    # When the node wants to unload it's own loaded items the
-    # 'unload_item' event should be used instead of 'deleted_item'.
-    #
     # *_CREATED_ITEM
     #
     # The item was added to the database and basic information of
@@ -69,7 +64,6 @@ module Vnet
     # Network event:
     #
     NETWORK_INITIALIZED = "network_initialized"
-    NETWORK_UNLOAD_ITEM = "network_unload_item"
     NETWORK_DELETED_ITEM = "network_deleted_item"
 
     NETWORK_UPDATE_NETWORKS = "network_update_networks"
