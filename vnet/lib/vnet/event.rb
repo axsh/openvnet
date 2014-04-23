@@ -24,25 +24,6 @@ module Vnet
     # from all nodes.
 
     #
-    # Interface events:
-    #
-
-    INTERFACE_INITIALIZED = "interface_initialized"
-    INTERFACE_CREATED_ITEM = "interface_created_item"
-    INTERFACE_DELETED_ITEM = "interface_deleted_item"
-
-    INTERFACE_UPDATED = "interface_updated"
-    INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
-    INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
-    INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS = "interface_remove_all_active_datapaths"
-
-    # MAC and IPv4 addresses:
-    INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
-    INTERFACE_RELEASED_MAC_ADDRESS = "interface_released_mac_address"
-    INTERFACE_LEASED_IPV4_ADDRESS = "interface_leased_ipv4_address"
-    INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
-
-    #
     # Datapath events:
     #
     ADDED_DATAPATH = 'added_datapath'
@@ -64,6 +45,26 @@ module Vnet
     REMOVED_DATAPATH_ROUTE_LINK = 'removed_datapath_route_link'
     ACTIVATE_DATAPATH_ROUTE_LINK = 'activate_datapath_route_link'
     DEACTIVATE_DATAPATH_ROUTE_LINK = 'deactivate_datapath_route_link'
+
+    #
+    # Interface events:
+    #
+
+    INTERFACE_INITIALIZED = "interface_initialized"
+    INTERFACE_UNLOAD_ITEM = "interface_unload_item"
+    INTERFACE_CREATED_ITEM = "interface_created_item"
+    INTERFACE_DELETED_ITEM = "interface_deleted_item"
+
+    INTERFACE_UPDATED = "interface_updated"
+    INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
+    INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
+    INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS = "interface_remove_all_active_datapaths"
+
+    # MAC and IPv4 addresses:
+    INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
+    INTERFACE_RELEASED_MAC_ADDRESS = "interface_released_mac_address"
+    INTERFACE_LEASED_IPV4_ADDRESS = "interface_leased_ipv4_address"
+    INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
 
     #
     # Network event:

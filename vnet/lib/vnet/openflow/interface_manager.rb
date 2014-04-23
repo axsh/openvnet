@@ -7,9 +7,10 @@ module Vnet::Openflow
     #
     # Events:
     #
+    subscribe_event INTERFACE_INITIALIZED, :load_item
+    subscribe_event INTERFACE_UNLOAD_ITEM, :unload_item
     subscribe_event INTERFACE_CREATED_ITEM, :create_item
-    subscribe_event INTERFACE_DELETED_ITEM, :unload
-    subscribe_event INTERFACE_INITIALIZED, :install_item
+    subscribe_event INTERFACE_DELETED_ITEM, :unload_item
 
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
     subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
@@ -43,8 +44,16 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def mw_class
+      MW::Interface
+    end
+
     def initialized_item_event
       INTERFACE_INITIALIZED
+    end
+
+    def item_unload_event
+      INTERFACE_UNLOAD_ITEM
     end
 
     def match_item?(item, params)
@@ -63,15 +72,18 @@ module Vnet::Openflow
       true
     end
 
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
+      filter << {port_name: params[:port_name]} if params.has_key? :port_name
+      filter
+    end
+
     def select_filter_from_params(params)
       return nil if params.has_key?(:uuid) && params[:uuid].nil?
 
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
-      filters << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
-      filters << {port_name: params[:port_name]} if params.has_key? :port_name
-
-      create_batch(MW::Interface.batch, params[:uuid], filters)
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)
@@ -103,25 +115,7 @@ module Vnet::Openflow
     # Create / Delete interfaces:
     #
 
-    def create_item(params)
-      return if @items[params[:id]]
-
-      return unless @dp_info.port_manager.item(
-        port_name: params[:port_name],
-        dynamic_load: false
-      )
-
-      self.retrieve(params)
-    end
-
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
-      debug log_format("install #{item_map.uuid}/#{item_map.id}/#{item.port_name}", "mode:#{item.mode}")
-
-      item.try_install
-
+    def item_post_install(item, item_map)
       if item.owner_datapath_ids &&
           item.owner_datapath_ids.include?(@datapath_info.id)
         item.update_active_datapath(datapath_id: @datapath_info.id)
@@ -141,13 +135,7 @@ module Vnet::Openflow
       end
     end
 
-    def delete_item(item)
-      item = @items.delete(item.id) || return
-
-      debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
-
-      item.try_uninstall
-
+    def item_post_uninstall(item)
       if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
         item.update_active_datapath(datapath_id: nil)
       end
@@ -169,6 +157,21 @@ module Vnet::Openflow
         }
       end
     end
+
+    def create_item(params)
+      return if @items[params[:id]]
+
+      return unless @dp_info.port_manager.item(
+        port_name: params[:port_name],
+        dynamic_load: false
+      )
+
+      self.retrieve(params)
+    end
+
+    #
+    # Helper methods:
+    #
 
     def is_remote?(item_map)
       return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?

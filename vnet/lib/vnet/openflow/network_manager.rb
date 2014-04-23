@@ -156,10 +156,6 @@ module Vnet::Openflow
                                      network_id: item.id)
     end
 
-    #
-    # Event handlers:
-    #
-
     # Requires queue ':update_item_states'
     def update_item_state(item)
       item.update_flows(port_numbers_on_network(item.id))
