@@ -5,7 +5,7 @@ require 'celluloid'
 module Vnet::Openflow
 
   class NetworkManager < Vnet::Manager
-    include UpdateItemStates
+    include Vnet::UpdateItemStates
 
     #
     # Events:

@@ -22,6 +22,8 @@ module Vnet
   autoload :ItemDpBase, 'vnet/item_base'
   autoload :ItemDpUuid, 'vnet/item_base'
   autoload :Manager,    'vnet/manager'
+  autoload :UpdateItemStates,     'vnet/manager_modules'
+  autoload :UpdatePropertyStates, 'vnet/manager_modules'
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'
@@ -210,6 +212,7 @@ module Vnet
 
   module Openflow
 
+    autoload :ActiveInterfaces, 'vnet/openflow/event_helpers'
     autoload :AddressHelpers, 'vnet/openflow/address_helpers'
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :Controller, 'vnet/openflow/controller'
@@ -245,11 +248,6 @@ module Vnet
     autoload :TranslationManager, 'vnet/openflow/translation_manager'
     autoload :Tunnel, 'vnet/openflow/tunnel'
     autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
-
-    # Manager modules:
-    autoload :ActiveInterfaces, 'vnet/openflow/event_helpers'
-    autoload :UpdateItemStates, 'vnet/openflow/event_helpers'
-    autoload :UpdatePropertyStates, 'vnet/openflow/event_helpers'
 
     module Connections
       autoload :Base, 'vnet/openflow/connections/base'

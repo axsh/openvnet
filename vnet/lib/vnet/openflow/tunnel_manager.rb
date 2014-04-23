@@ -4,7 +4,7 @@ module Vnet::Openflow
 
   class TunnelManager < Vnet::Manager
     include Vnet::Openflow::FlowHelpers
-    include UpdatePropertyStates
+    include Vnet::UpdatePropertyStates
 
     #
     # Events:
