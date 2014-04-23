@@ -15,7 +15,8 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event ROUTE_INITIALIZED, :install_item
+    subscribe_event ROUTE_INITIALIZED, :load_item
+    subscribe_event ROUTE_UNLOAD_ITEM, :unload_item
     subscribe_event ROUTE_CREATED_ITEM, :created_item
     subscribe_event ROUTE_DELETED_ITEM, :unload_item
 
@@ -35,8 +36,16 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def mw_class
+      MW::Route
+    end
+
     def initialized_item_event
       ROUTE_INITIALIZED
+    end
+
+    def item_unload_event
+      ROUTE_UNLOAD_ITEM
     end
 
     def match_item?(item, params)
@@ -49,13 +58,16 @@ module Vnet::Openflow
       true
     end
 
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter
+    end
+
     def select_filter_from_params(params)
       return if params.has_key?(:uuid) && params[:uuid].nil?
 
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
-
-      create_batch(MW::Route.batch, params[:uuid], filters)
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)
@@ -75,11 +87,7 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
-    # ROUTE_INITIALIZED on queue 'item.id'
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
+    def item_pre_install(item, item_map)
       case
       when !item.active_network && !item.active_route_link
         # The state changed since item_initialize so we skip install,
@@ -90,11 +98,9 @@ module Vnet::Openflow
         # TODO: Use event...
         @dp_info.router_manager.async.retrieve(id: item.route_link_id)
       end
+    end
 
-      debug log_format("install #{item.uuid}/#{item.id}")
-
-      item.try_install
-
+    def item_post_install(item, item_map)
       # TODO: Refactor...
       @dp_info.interface_manager.async.retrieve(id: item.interface_id)
 
@@ -109,15 +115,7 @@ module Vnet::Openflow
       return if @items[params[:id]]
       return unless @active_route_links[params[:route_link_id]]
 
-      internal_new_item(MW::Route.new(params), {})
-    end
-
-    # unload item on queue 'item.id'
-    def unload_item(params)
-      item = @items.delete(params[:id]) || return
-      item.try_uninstall
-
-      debug log_format("unloaded route #{item.uuid}/#{item.id}")
+      internal_new_item(mw_class.new(params), {})
     end
 
     #
@@ -144,7 +142,7 @@ module Vnet::Openflow
       }
       @active_networks[network_id] = routes
 
-      item_maps = MW::Route.batch.where(network_id: network_id).all.commit
+      item_maps = mw_class.batch.where(network_id: network_id).all.commit
       item_maps.each { |item_map| internal_new_item(item_map, {}) }
     end
 
@@ -177,7 +175,7 @@ module Vnet::Openflow
       }
       @active_route_links[route_link_id] = routes
 
-      item_maps = MW::Route.batch.where(route_link_id: route_link_id).all.commit
+      item_maps = mw_class.batch.where(route_link_id: route_link_id).all.commit
       item_maps.each { |item_map| internal_new_item(item_map, {}) }
     end
 

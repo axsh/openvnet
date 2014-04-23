@@ -86,6 +86,7 @@ module Vnet
     # Route events:
     #
     ROUTE_INITIALIZED = "route_initialized"
+    ROUTE_UNLOAD_ITEM = "route_unload_item"
     ROUTE_CREATED_ITEM = "route_created_item"
     ROUTE_DELETED_ITEM = "route_deleted_item"
 
