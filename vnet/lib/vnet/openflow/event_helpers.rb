@@ -93,7 +93,7 @@ module Vnet::Openflow
       raise NotImplementedError
     end
 
-    def add_item_id_to_update_item_states(item_id)
+    def add_item_id_to_update_queue(item_id)
       should_publish = @update_item_states.empty?
       @update_item_states[item_id] = true
 
@@ -101,7 +101,7 @@ module Vnet::Openflow
         publish(update_item_states_event, id: :update_item_states)
     end
 
-    def add_item_ids_to_update_item_states(item_ids)
+    def add_item_ids_to_update_queue(item_ids)
       should_publish = @update_item_states.empty?
 
       item_ids.select { |item_id|
@@ -167,7 +167,7 @@ module Vnet::Openflow
       raise NotImplementedError
     end
 
-    def add_property_id_to_update_property_states(property_type, property_id)
+    def add_property_id_to_update_queue(property_type, property_id)
       update_states = (@update_property_states[property_type] ||= {})
 
       should_publish = update_states.empty?
@@ -177,7 +177,7 @@ module Vnet::Openflow
         publish(update_property_states_event, id: property_type)
     end
 
-    def add_property_ids_to_update_property_states(property_type, property_ids)
+    def add_property_ids_to_update_queue(property_type, property_ids)
       update_states = (@update_property_states[property_type] ||= {})
 
       should_publish = update_states.empty?

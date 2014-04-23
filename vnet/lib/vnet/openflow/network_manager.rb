@@ -33,14 +33,14 @@ module Vnet::Openflow
       @interface_ports[interface_id] = port
       networks = @interface_networks[interface_id]
 
-      add_item_ids_to_update_item_states(networks) if networks
+      add_item_ids_to_update_queue(networks) if networks
     end
 
     def clear_interface_port(interface_id)
       port = @interface_ports.delete(interface_id) || return
       networks = @interface_networks[interface_id]
 
-      add_item_ids_to_update_item_states(networks) if networks
+      add_item_ids_to_update_queue(networks) if networks
     end
 
     def insert_interface_network(interface_id, network_id)
@@ -48,14 +48,14 @@ module Vnet::Openflow
       return if networks.include? network_id
 
       networks << network_id
-      add_item_id_to_update_item_states(network_id) if @interface_ports[interface_id]
+      add_item_id_to_update_queue(network_id) if @interface_ports[interface_id]
     end
 
     def remove_interface_network(interface_id, network_id)
       networks = @interface_networks[interface_id] || return
       return unless networks.delete(network_id)
 
-      add_item_id_to_update_item_states(network_id) if @interface_ports[interface_id]
+      add_item_id_to_update_queue(network_id) if @interface_ports[interface_id]
     end
 
     # TODO: Clear port from port manager.
@@ -65,7 +65,7 @@ module Vnet::Openflow
 
       return unless networks && port
 
-      add_item_ids_to_update_item_states(networks)
+      add_item_ids_to_update_queue(networks)
     end
 
     #
@@ -143,7 +143,7 @@ module Vnet::Openflow
 
       item.try_install
 
-      add_item_id_to_update_item_states(item.id)
+      add_item_id_to_update_queue(item.id)
 
       @dp_info.datapath_manager.publish(ACTIVATE_NETWORK_ON_HOST,
                                         id: :network,

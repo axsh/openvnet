@@ -357,7 +357,7 @@ module Vnet::Openflow
       # item.
       item.add_datapath_network(remote_dpn)
 
-      add_property_id_to_update_property_states(:update_networks, network_id)
+      add_property_id_to_update_queue(:update_networks, network_id)
     end
 
     def deactivate_link(host_dpn, remote_dpn, network_id)
@@ -380,7 +380,7 @@ module Vnet::Openflow
 
       item.remove_datapath_network(remote_dpn[:id])
 
-      add_property_id_to_update_property_states(:update_networks, network_id)
+      add_property_id_to_update_queue(:update_networks, network_id)
 
       # TODO: Add event to check if item should be unloaded. Currently
       # done here:
@@ -407,7 +407,7 @@ module Vnet::Openflow
       updated_networks = {}
       item.set_tunnel_port_number(port_number, updated_networks)
 
-      add_property_ids_to_update_property_states(:update_networks, updated_networks.keys)
+      add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
     end
 
     def clear_tunnel_port_number(params)
@@ -421,7 +421,7 @@ module Vnet::Openflow
       updated_networks = {}
       item.set_tunnel_port_number(updated_networks)
 
-      add_property_ids_to_update_property_states(:update_networks, updated_networks.keys)
+      add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
 
       # TODO: Consider deleting here?
     end
@@ -522,7 +522,7 @@ module Vnet::Openflow
         item.set_host_port_number(port_number, updated_networks)
       }
 
-      add_property_ids_to_update_property_states(:update_networks, updated_networks.keys)
+      add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
     end
 
     #
@@ -666,7 +666,7 @@ module Vnet::Openflow
       dpns.map { |id, remote_dpns|
         remote_dpns[:network_id]
       }.tap { |network_ids|
-        add_property_ids_to_update_property_states(:update_networks, network_ids)
+        add_property_ids_to_update_queue(:update_networks, network_ids)
       }
     end
 
