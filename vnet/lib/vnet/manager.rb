@@ -116,6 +116,26 @@ module Vnet
     # Override these method to support additional parameters.
     #
 
+    def mw_class
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
+    def item_initialize(item_map, params)
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
+    def initialized_item_event
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
+    def item_unload_event
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
     # Optimize this by returning a proc block.
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
@@ -182,26 +202,6 @@ module Vnet
     # The default select call with no fill options.
     def select_item(batch)
       batch.commit
-    end
-
-    def item_initialize(item_map, params)
-      # Must be implemented by subclass
-      raise NotImplementedError
-    end
-
-    def initialized_item_event
-      # Must be implemented by subclass
-      raise NotImplementedError
-    end
-
-    def item_unload_event
-      # Must be implemented by subclass
-      raise NotImplementedError
-    end
-
-    def mw_class
-      # Must be implemented by subclass
-      raise NotImplementedError
     end
 
     #

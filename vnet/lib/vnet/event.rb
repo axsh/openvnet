@@ -72,7 +72,7 @@ module Vnet
     NETWORK_UNLOAD_ITEM = "network_unload_item"
     NETWORK_DELETED_ITEM = "network_deleted_item"
 
-    NETWORK_UPDATE_NETWORKS = "network_update_networks"
+    NETWORK_UPDATE_ITEM_STATES = "network_update_item_states"
 
     #
     # lease policy event
@@ -132,7 +132,7 @@ module Vnet
     REMOVED_TUNNEL = "removed_tunnel"
     INITIALIZED_TUNNEL = "initialized_tunnel"
 
-    TUNNEL_UPDATE_NETWORKS = "tunnel_update_networks"
+    TUNNEL_UPDATE_PROPERTY_STATES = "tunnel_update_property_states"
 
     ADDED_HOST_DATAPATH_NETWORK = "added_host_datapath_network"
     ADDED_REMOTE_DATAPATH_NETWORK = "added_remote_datapath_network"

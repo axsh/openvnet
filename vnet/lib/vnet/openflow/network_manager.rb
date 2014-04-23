@@ -5,6 +5,7 @@ require 'celluloid'
 module Vnet::Openflow
 
   class NetworkManager < Vnet::Manager
+    include UpdateItemStates
 
     #
     # Events:
@@ -16,14 +17,12 @@ module Vnet::Openflow
     subscribe_event NETWORK_UNLOAD_ITEM, :unload_item
     subscribe_event NETWORK_DELETED_ITEM, :unload_item
 
-    subscribe_event NETWORK_UPDATE_NETWORKS, :update_networks
+    subscribe_event NETWORK_UPDATE_ITEM_STATES, :update_item_states
 
     def initialize(*args)
       super
       @interface_ports = {}
       @interface_networks = {}
-
-      @update_networks = {}
     end
 
     #
@@ -34,14 +33,14 @@ module Vnet::Openflow
       @interface_ports[interface_id] = port
       networks = @interface_networks[interface_id]
 
-      add_network_ids_to_update_networks(networks) if networks
+      add_item_ids_to_update_item_states(networks) if networks
     end
 
     def clear_interface_port(interface_id)
       port = @interface_ports.delete(interface_id) || return
       networks = @interface_networks[interface_id]
 
-      add_network_ids_to_update_networks(networks) if networks
+      add_item_ids_to_update_item_states(networks) if networks
     end
 
     def insert_interface_network(interface_id, network_id)
@@ -49,14 +48,14 @@ module Vnet::Openflow
       return if networks.include? network_id
 
       networks << network_id
-      add_network_id_to_update_networks(network_id) if @interface_ports[interface_id]
+      add_item_id_to_update_item_states(network_id) if @interface_ports[interface_id]
     end
 
     def remove_interface_network(interface_id, network_id)
       networks = @interface_networks[interface_id] || return
       return unless networks.delete(network_id)
 
-      add_network_id_to_update_networks(network_id) if @interface_ports[interface_id]
+      add_item_id_to_update_item_states(network_id) if @interface_ports[interface_id]
     end
 
     # TODO: Clear port from port manager.
@@ -66,7 +65,7 @@ module Vnet::Openflow
 
       return unless networks && port
 
-      add_network_ids_to_update_networks(networks)
+      add_item_ids_to_update_item_states(networks)
     end
 
     #
@@ -89,6 +88,10 @@ module Vnet::Openflow
 
     def item_unload_event
       NETWORK_UNLOAD_ITEM
+    end
+
+    def update_item_states_event
+      NETWORK_UPDATE_ITEM_STATES
     end
 
     def match_item?(item, params)
@@ -140,7 +143,7 @@ module Vnet::Openflow
 
       item.try_install
 
-      add_network_id_to_update_networks(item.id)
+      add_item_id_to_update_item_states(item.id)
 
       @dp_info.datapath_manager.publish(ACTIVATE_NETWORK_ON_HOST,
                                         id: :network,
@@ -175,56 +178,14 @@ module Vnet::Openflow
     # Event handlers:
     #
 
-    # NETWORK_UPDATE_NETWORKS on queue ':update_networks'
-    def update_networks(params)
-      while !@update_networks.empty?
-        network_ids = @update_networks.keys
-
-        info log_format("updating network flows", network_ids.to_s)
-
-        network_ids.each { |network_id|
-          next unless @update_networks.delete(network_id)
-
-          update_network_id(network_id)
-        }
-
-        # Sleep for 10 msec in order to poll up more potential changes
-        # to the same networks.
-        sleep(0.01)
-      end
-    end
-
-    # Requires queue ':update_networks'
-    def update_network_id(network_id)
-      item = @items[network_id] || return
-      return unless item.installed
-
-      item.update_flows(port_numbers_on_network(network_id))
+    # Requires queue ':update_item_states'
+    def update_item_state(item)
+      item.update_flows(port_numbers_on_network(item.id))
     end
 
     #
     # Helper methods:
     #
-
-    # TODO: Make generic.
-    def add_network_id_to_update_networks(network_id)
-      should_publish = @update_networks.empty?
-      @update_networks[network_id] = true
-
-      should_publish && publish(NETWORK_UPDATE_NETWORKS, id: :update_networks)
-    end
-
-    def add_network_ids_to_update_networks(network_ids)
-      should_publish = @update_networks.empty?
-
-      network_ids.select { |network_id|
-        @update_networks[network_id].nil?
-      }.each { |network_id|
-        @update_networks[network_id] = true
-      }
-
-      should_publish && publish(NETWORK_UPDATE_NETWORKS, id: :update_networks)
-    end
 
     def port_numbers_on_network(network_id)
       port_numbers = []
