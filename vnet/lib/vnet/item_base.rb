@@ -31,6 +31,14 @@ module Vnet
       (was_installed == true) && uninstall 
     end
 
+    def pretty_id
+      "#{@id}"
+    end
+
+    def pretty_properties
+      nil
+    end
+
     #
     # Internal methods:
     #
@@ -82,6 +90,10 @@ module Vnet
 
     def installed?
       @installed == true
+    end
+
+    def pretty_id
+      "#{@uuid}/#{@id}"
     end
 
     #

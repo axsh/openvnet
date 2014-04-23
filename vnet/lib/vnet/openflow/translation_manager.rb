@@ -78,18 +78,10 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
-    # TRANSLATION_INITIALIZED on queue 'item.id'.
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
-      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
-
+    def item_pre_install(item, item_map)
       case item.mode
       when :static_address then load_static_addresses(item, item_map)
       end
-
-      item.try_install
     end
 
     # TRANSLATION_CREATED_ITEM on queue 'item.id'.

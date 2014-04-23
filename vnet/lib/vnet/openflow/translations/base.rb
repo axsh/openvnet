@@ -24,6 +24,10 @@ module Vnet::Openflow::Translations
       'translation/base'
     end
 
+    def pretty_properties
+      "mode:#{@mode}"
+    end
+
     def cookie
       @id | COOKIE_TYPE_TRANSLATION
     end
