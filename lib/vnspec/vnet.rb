@@ -56,7 +56,6 @@ module Vnspec
         when :rsync
           # do nothing
         end
-        bundle_install
       end
 
       def bundle(*command)
