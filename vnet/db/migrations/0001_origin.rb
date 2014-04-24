@@ -242,8 +242,8 @@ Sequel.migration do
     create_table(:lease_policies) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      String :mode, :null=>false
-      String :timing, :null=>false
+      String :mode, :null=>false, :default => "simple"
+      String :timing, :null=>false, :default => "immediate"
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -271,7 +271,7 @@ Sequel.migration do
     create_table(:ip_ranges) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      String :allocation_type, :null=>false
+      String :allocation_type, :null=>false, :default => "incremental"
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
