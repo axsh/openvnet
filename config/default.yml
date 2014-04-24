@@ -1,0 +1,99 @@
+vm_ssh_user: vagrant
+vm_type: :docker
+pipework_path: /vagrant/share/bin
+specs_ext: [edge]
+
+vna_waittime: 5
+vnet_branch: master
+
+log_level: info
+dump_flows: false
+
+ssh_options:
+  user: vagrant
+  debug: true
+
+nodes:
+  webapi: [vnmgr]
+  vnmgr: [vnmgr]
+  vna: [vna1, vna2, vna3, edge]
+
+webapi:
+  host: 192.168.20.10
+  port: 9090
+
+dataset_options:
+  physical_port: eth2
+  edge_port: eth3
+  dp1_ipv4_address: 172.16.20.11
+  dp2_ipv4_address: 172.16.20.12
+  dp3_ipv4_address: 172.16.30.11
+  edge_ipv4_address: 172.16.20.21
+  public_ipv4_network: 172.16.20.0
+  public_ipv4_prefix: 24
+  public_ipv4_address1: 172.16.20.201
+  public_ipv4_address2: 172.16.20.202
+  public_router_ipv4_address: 172.16.20.102
+  public_dhcp_ipv4_address: 172.16.20.103
+
+vms:
+  vm1:
+    name: vm1
+    vna: 1
+    ssh_port: 2221
+    interfaces:
+      - uuid: if-v1
+        name: eth1
+        bridge: br0
+        mac_address: "02:00:00:00:00:01"
+  vm2:
+    name: vm2
+    vna: 1
+    ssh_port: 2222
+    interfaces:
+      - uuid: if-v2
+        name: eth1
+        bridge: br0
+        mac_address: "02:00:00:00:00:02"
+  vm3:
+    name: vm3
+    vna: 2
+    ssh_port: 2223
+    interfaces:
+      - uuid: if-v3
+        name: eth1
+        bridge: br0
+        mac_address: "02:00:00:00:00:03"
+  vm4:
+    name: vm4
+    vna: 2
+    ssh_port: 2224
+    interfaces:
+      - uuid: if-v4
+        name: eth1
+        bridge: br0
+        mac_address: "02:00:00:00:00:04"
+  vm5:
+    name: vm5
+    vna: 3
+    ssh_port: 2225
+    interfaces:
+      - uuid: if-v5
+        name: eth1
+        bridge: br0
+        mac_address: "02:00:00:00:00:05"
+  vm6:
+    name: vm6
+    vna: 3
+    ssh_port: 2226
+    interfaces:
+      - uuid: if-v6
+        name: eth1
+        bridge: br0
+        mac_address: "02:00:00:00:00:06"
+
+legacy_machines:
+  legacy1:
+    hostname: legacy
+    ssh_ip: legacy
+    ipv4_address: 10.101.0.100

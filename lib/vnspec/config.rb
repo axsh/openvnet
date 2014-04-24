@@ -3,18 +3,20 @@ module Vnspec
     DEFAULT_CONFIG = {
       vnet_path: "/opt/axsh/openvnet",
       vnet_branch: "master",
-      update_vnet_via: "git",
-      ssh_user: "root",
+      update_vnet_via: "rsync",
+      vm_ssh_user: "root",
       exit_on_error: true,
       test_ready_check_interval: 10,
       test_retry_count: 30,
       log_level: :info,
+      vna_waittime: 0,
+      ssh_quiet_mode: false,
     }
 
     class << self
       def config
         unless @config
-          env = ENV["VNSPEC_ENV"] || "dev"
+          env = ENV["VNSPEC_ENV"] || "default"
           @config = DEFAULT_CONFIG.dup
           @config[:env] = env
           ["base", env].each do |n|

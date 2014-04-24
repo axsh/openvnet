@@ -1,10 +1,21 @@
 # -*- coding: utf-8 -*-
 module Vnspec
   module SSH
+    class Response < Hash
+      def initialize(hash)
+        super().merge!(hash)
+      end
+
+      def success?
+        self[:exit_code] == 0
+      end
+    end
+
     DEFAULT_OPTIONS = {
       user: "root",
       debug: true,
       exit_on_error: true,
+      use_sudo: false,
     }
 
     def ssh_options
@@ -13,7 +24,8 @@ module Vnspec
 
     def ssh(host, command, options = {})
       options = ssh_options.merge(options)
-      logger.info "[#{host}] #{command}" if options[:debug]
+      command = wrap_command(command, options)
+      logger.info "[#{host}] #{command}"
 
       stdout = ""
       stderr = ""
@@ -25,8 +37,16 @@ module Vnspec
           channel.exec(command) do |ch, success|
             abort "Failed to execute [#{host}] #{command}" unless success
 
-            channel.on_data { |ch, data| stdout += data.to_s }
-            channel.on_extended_data { |ch, type, data| data; stderr += data.to_s }
+            channel.on_data do |ch, data|
+              print data.to_s if options[:debug]
+              stdout += data.to_s
+            end
+
+            channel.on_extended_data do |ch, type, data|
+              print data.to_s if options[:debug]
+              stderr += data.to_s
+            end
+
             channel.on_request("exit-status") { |ch, data| exit_code = data.read_long }
             channel.on_request("exit-signal") { |ch, data| exit_code = data.read_long }
           end
@@ -34,13 +54,7 @@ module Vnspec
         ssh.loop
       end
 
-      if options[:debug]
-        stdout.split(/\r[\n]?|\n/).map do |line|
-          logger.info("[#{host}] #{line}")
-        end
-      end
-
-      {stdout: stdout, stderr: stderr, exit_code: exit_code, exit_signal: exit_signal}
+      Response.new({stdout: stdout, stderr: stderr, exit_code: exit_code, exit_signal: exit_signal})
     end
 
     def multi_ssh(hosts, *commands)
@@ -52,8 +66,9 @@ module Vnspec
           session.use(host, user: options[:user])
         end
         commands.each do |command|
+          command = wrap_command(command, options)
           hosts.each do |host|
-            logger.debug "[#{host}] #{command}" if options[:debug]
+            logger.info "[#{host}] #{command}"
           end
           channel = session.exec(command)
           channel.wait
@@ -67,6 +82,20 @@ module Vnspec
 
     def to_ssh_option_string(options = {})
       options.map{|k,v| "-o #{k}=#{v}"}.join(" ")
+    end
+
+    def ssh_options_for_quiet_mode(options = {})
+      {
+        "StrictHostKeyChecking" => "no",
+        "UserKnownHostsFile" => "/dev/null",
+        "LogLevel" => "ERROR",
+      }.merge(options)
+    end
+
+    def wrap_command(command, options)
+      "bash -l -c '#{command}'".tap do |c|
+        c.prepend "sudo " if options[:user] != "root" && options[:use_sudo]
+      end
     end
   end
 end

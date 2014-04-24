@@ -3,3 +3,5 @@
 .bundle
 vendor
 tmp
+.ruby-version
+!.gitkeep

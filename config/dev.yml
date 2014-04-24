@@ -10,10 +10,15 @@ webapi:
 
 vnet_branch: master
 vnet_path: /opt/axsh/wakame-vnet
+update_vnet_via: "git"
+
+ssh_quiet_mode: true
 
 log_level: debug
 
 dataset_options:
+  physical_port: eth0
+  edge_port: eth2
   edge_ipv4_address: 172.16.20.10
   edge_esxi_ipv4_address: 172.16.20.9
   dp1_ipv4_address: 172.16.20.11

@@ -12,7 +12,11 @@ vnet_branch: master
 
 update_vnet_via: rpm
 
+ssh_quiet_mode: true
+
 dataset_options:
+  physical_port: eth0
+  edge_port: eth2
   edge_ipv4_address: 172.16.90.9
   edge_esxi_ipv4_address: 172.16.90.12
   dp1_ipv4_address: 172.16.90.10

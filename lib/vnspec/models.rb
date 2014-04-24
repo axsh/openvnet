@@ -22,23 +22,27 @@ module Vnspec
           end
         end
 
-        def all
-          API.request(:get, api_name, limit: 1000) do |response|
-            response[:items].map do |r|
-              self.new(r)
-              # TODO associations
+        def all(options = {})
+          @items ||= []
+          if @items.empty? || options[:reload]
+            API.request(:get, api_name, limit: 1000) do |response|
+              @items = response[:items].map do |r|
+                self.new(r)
+                # TODO associations
+              end
             end
           end
+          @items
         end
 
-        def find(options)
-          case options
+        def find(id, options = {})
+          case id
           when String
-            all.find { |i| i.uuid == options }
+            all(options).find { |i| i.uuid == id }
           when Integer
-            all.find { |i| i.id == options }
+            all(options).find { |i| i.id == id }
           when Hash
-            all.find do |i|
+            all(options).find do |i|
               options.all? do |k, v|
                 i.__send__(k) == v
               end
@@ -46,6 +50,21 @@ module Vnspec
           end
         end
         alias_method :[], :find
+
+        def reload(id = nil)
+          options = { reload: true }
+          if id
+            find(id, options)
+          else
+            all(options)
+          end
+        end
+
+        def create(options)
+          API.request(:post, api_name, options) do |response|
+            return reload(response[:uuid])
+          end
+        end
       end
 
       def ==(other)
@@ -55,27 +74,29 @@ module Vnspec
       def api_name
         self.class.api_name
       end
+
+      def reload
+        self.class.reload(self.uuid)
+      end
     end
 
     class Interface < Base
-      attr_accessor :name
       attr_reader :mac_leases
-      attr_writer :enabled
 
       class << self
         def api_name
           "interfaces"
         end
 
-        def create(options)
-          API.request(:post, "interfaces", options) do |response|
-            return self.new(options.merge(uuid: response[:uuid])).tap do |interface|
-              if options[:mac_address] && response[:mac_leases].first
-                m = response[:mac_leases].first
-                interface.mac_leases << Models::MacLease.new(uuid: m[:uuid], interface: interface,  mac_address: m[:mac_address]).tap do |mac_lease|
-                  if options[:network_uuid] && options[:ipv4_address] && m[:ip_leases].first
-                    i = m[:ip_leases].first
-                    mac_lease.ip_leases << Models::IpLease.new(uuid: i[:uuid], mac_lease: mac_lease, ipv4_address: i[:ipv4_address], network_uuid: i[:network_uuid])
+        def all(options = {})
+          API.request(:get, api_name, limit: 1000) do |response|
+            response[:items].map do |r|
+              self.new(r).tap do |interface|
+                r[:mac_leases].each do |m|
+                  interface.mac_leases << Models::MacLease.new(uuid: m[:uuid], interface: interface,  mac_address: m[:mac_address]).tap do |mac_lease|
+                    m[:ip_leases].each do |i|
+                      mac_lease.ip_leases << Models::IpLease.new(uuid: i[:uuid], mac_lease: mac_lease, ipv4_address: i[:ipv4_address], network_uuid: i[:network_uuid])
+                    end
                   end
                 end
               end
@@ -85,9 +106,7 @@ module Vnspec
       end
 
       def initialize(options)
-        @name = options[:name]
         @mac_leases = []
-        @enabled = options.key?(:enabled) ? options[:enabled] : true
       end
 
       def update(options)
@@ -95,10 +114,12 @@ module Vnspec
           @display_name = response[:display_name]
           @owner_datapath_uuid = response[:owner_datapath_uuid]
         end
+        reload
       end
 
       def destroy
         API.request(:delete, "interfaces/#{uuid}")
+        reload
       end
 
       def mac_lease(uuid)
@@ -134,10 +155,12 @@ module Vnspec
       attr_reader :ip_leases
 
       class << self
+        def api_name
+          "mac_leases"
+        end
+
         def create(interface, options)
-          API.request(:post, "mac_leases", options.merge(interface_uuid: interface.uuid)) do |response|
-            return self.new(options.merge(uuid: response[:uuid], interface: interface))
-          end
+          super(options.merge(interface_uuid: interface.uuid))
         end
       end
 
@@ -150,6 +173,7 @@ module Vnspec
       def destroy
         API.request(:delete, "mac_leases/#{uuid}")
         self.interface.mac_leases.delete_if{|m| m.uuid == uuid}
+        reload
       end
 
       def add_ip_lease(options)
@@ -167,11 +191,12 @@ module Vnspec
       attr_reader :network_uuid
 
       class << self
+        def api_name
+          "ip_leases"
+        end
+
         def create(mac_lease, options)
-          API.request(:post, "ip_leases", options.merge(mac_lease_uuid: mac_lease.uuid)) do |response|
-            return self.new(options.merge(uuid: response[:uuid], mac_lease: mac_lease)).tap do |instance|
-            end
-          end
+          super(options.merge(mac_lease_uuid: mac_lease.uuid))
         end
       end
 
@@ -184,6 +209,7 @@ module Vnspec
       def destroy
         API.request(:delete, "ip_leases/#{uuid}")
         self.mac_lease.ip_leases.delete_if{|i| i.uuid == uuid}
+        reload
       end
     end
 
@@ -193,12 +219,6 @@ module Vnspec
       class << self
         def api_name
           "datapaths"
-        end
-
-        def create(options)
-          API.request(:post, "datapaths", options) do |response|
-            return self.new(options.merge(uuid: response[:uuid]))
-          end
         end
       end
 
@@ -213,6 +233,7 @@ module Vnspec
 
       def destroy
         API.request(:delete, "datapaths/#{uuid}")
+        reload
       end
 
       def add_datapath_network(network_uuid, options)
@@ -236,12 +257,6 @@ module Vnspec
         def api_name
           "dns_services"
         end
-
-        def create(options)
-          API.request(:post, api_name, options) do |response|
-            return self.new(options.merge(uuid: response[:uuid]))
-          end
-        end
       end
 
       def initialize(options)
@@ -257,6 +272,7 @@ module Vnspec
 
       def destroy
         API.request(:delete, "#{api_name}/#{uuid}")
+        reload
       end
 
       def add_dns_record(options)

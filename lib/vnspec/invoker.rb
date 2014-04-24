@@ -68,14 +68,12 @@ module Vnspec
 
       Vnet.start(:vnmgr)
       Vnet.start(:webapi)
-      Vnet.wait_for_webapi
 
       Dataset.setup(name)
 
       Vnet.start(:vna)
 
       VM.start_network
-      sleep(1)
       Vnet.dump_flows
 
       true
@@ -83,11 +81,7 @@ module Vnspec
 
     def install_ssh_keys
       key = File.open(File.expand_path("~/.ssh/id_rsa.pub")){|f| f.read }
-      multi_ssh(vnet_hosts, "echo '#{key}' >> ~/.ssh/authorized_keys")
-    end
-
-    def vnet_hosts
-      config[:nodes].values.flatten.uniq
+      multi_ssh(Vnet.hosts, "echo '#{key}' >> ~/.ssh/authorized_keys")
     end
 
     private
