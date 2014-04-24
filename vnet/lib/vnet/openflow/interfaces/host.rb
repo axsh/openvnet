@@ -45,6 +45,10 @@ module Vnet::Openflow::Interfaces
       flows_for_disabled_filtering(flows) unless @ingress_filtering_enabled
       flows_for_base(flows)
 
+      if @enable_routing && !@enable_route_translation
+        flows_for_route_translation(flows)
+      end
+
       @dp_info.add_flows(flows)
     end
 

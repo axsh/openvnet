@@ -34,29 +34,6 @@ module Vnet::Openflow
       @active_route_links = {}
     end
 
-    def update(params)
-      case params[:event]
-      when :activate_network
-        publish(ACTIVATE_NETWORK_ON_HOST,
-                id: :network,
-                network_id: params[:network_id])
-      when :deactivate_network
-        publish(DEACTIVATE_NETWORK_ON_HOST,
-                id: :network,
-                network_id: params[:network_id])
-      when :activate_route_link
-        publish(ACTIVATE_ROUTE_LINK_ON_HOST,
-                id: :route_link,
-                route_link_id: params[:route_link_id])
-      when :deactivate_route_link
-        publish(DEACTIVATE_ROUTE_LINK_ON_HOST,
-                id: :route_link,
-                route_link_id: params[:route_link_id])
-      end
-
-      nil
-    end
-
     #
     # Internal methods:
     #

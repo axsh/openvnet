@@ -4,16 +4,13 @@ module Vnet::Openflow
 
   class TranslationManager < Vnet::Manager
 
-    def initialize(params)
-      super
-
-      @active_interfaces = {}
-    end
+    include ActiveInterfaces
 
     #
     # Events:
     #
     subscribe_event TRANSLATION_INITIALIZED, :install_item
+    subscribe_event TRANSLATION_UNLOAD_ITEM, :unload_item
     subscribe_event TRANSLATION_CREATED_ITEM, :created_item
     subscribe_event TRANSLATION_DELETED_ITEM, :unload_item
 
@@ -33,8 +30,16 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def mw_class
+      MW::Translation
+    end
+
     def initialized_item_event
       TRANSLATION_INITIALIZED
+    end
+
+    def item_unload_event
+      TRANSLATION_UNLOAD_ITEM
     end
 
     def match_item?(item, params)
@@ -44,14 +49,17 @@ module Vnet::Openflow
       true
     end
 
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
+      filter
+    end
+
     def select_filter_from_params(params)
       return if params.has_key?(:uuid) && params[:uuid].nil?
 
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
-      filters << {interface_id: params[:interface_id]} if params.has_key? :interface_id
-
-      create_batch(MW::Translation.batch, params[:uuid], filters)
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)
@@ -99,32 +107,6 @@ module Vnet::Openflow
     end
 
     #
-    # Interface events:
-    #
-
-    # TRANSLATION_ACTIVATE_INTERFACE on queue ':interface'
-    def activate_interface(params)
-      return if params[:interface_id].nil?
-      return if @active_interfaces.has_key? params[:interface_id]
-
-      @active_interfaces[params[:interface_id]] = true
-
-      # Currently only support a single item with the same interface
-      # id.
-      item_by_params(interface_id: params[:interface_id])
-    end
-
-    # TRANSLATION_DEACTIVATE_INTERFACE on queue ':interface'
-    def deactivate_interface(params)
-      return if params[:interface_id].nil?
-      return unless @active_interfaces.delete(params[:interface_id])
-
-      item = internal_detect(interface_id: params[:interface_id])
-
-      delete_item(item) if item
-    end
-
-    #
     # Translation events:
     #
 
@@ -132,8 +114,11 @@ module Vnet::Openflow
     def load_static_addresses(item, item_map)
       item_map.batch.translation_static_addresses.commit.each { |translation|
         item.added_static_address(translation.id,
+                                  translation.route_link_id,
                                   translation.ingress_ipv4_address,
-                                  translation.egress_ipv4_address)
+                                  translation.egress_ipv4_address,
+                                  translation.ingress_port_number,
+                                  translation.egress_port_number)
       }
     end
 
@@ -145,8 +130,15 @@ module Vnet::Openflow
       static_address_id = params[:static_address_id] || return
       ingress_ipv4_address = params[:ingress_ipv4_address] || return
       egress_ipv4_address = params[:egress_ipv4_address] || return
-      
-      item.added_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+      ingress_port_number = params[:ingress_port_number] || return
+      egress_port_number = params[:egress_port_number] || return
+
+      item.added_static_address(static_address_id,
+                                params[:route_link_id],
+                                ingress_ipv4_address,
+                                egress_ipv4_address,
+                                ingress_port_number,
+                                egress_port_number)
     end
 
     # TRANSLATION_REMOVED_STATIC_ADDRESS on queue 'item.id'
@@ -155,10 +147,8 @@ module Vnet::Openflow
       item = @items[item_id] || return
 
       static_address_id = params[:static_address_id] || return
-      ingress_ipv4_address = params[:ingress_ipv4_address] || return
-      egress_ipv4_address = params[:egress_ipv4_address] || return
       
-      item.removed_static_address(static_address_id, ingress_ipv4_address, egress_ipv4_address)
+      item.removed_static_address(static_address_id)
     end
 
   end

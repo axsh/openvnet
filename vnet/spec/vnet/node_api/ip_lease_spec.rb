@@ -28,7 +28,7 @@ describe Vnet::NodeApi::IpLease do
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
-      expect(events[0][:event]).to eq Vnet::Event::LEASED_IPV4_ADDRESS
+      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
       expect(events[0][:options][:id]).to eq interface.id
       expect(events[0][:options][:ip_lease_id]).to eq ip_lease[:id]
     end
@@ -48,7 +48,7 @@ describe Vnet::NodeApi::IpLease do
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
-      expect(events[0][:event]).to eq Vnet::Event::RELEASED_IPV4_ADDRESS
+      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
       expect(events[0][:options][:id]).to eq ip_lease.interface_id
       expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
     end

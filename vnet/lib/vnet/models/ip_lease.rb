@@ -10,6 +10,10 @@ module Vnet::Models
     plugin :ip_address
 
     dataset_module do
+      def all_interface_ids
+        self.select_all(:interfaces).distinct(:id).map(:id)
+      end
+
       def join_interfaces
         self.join_table(:inner, :interfaces, interfaces__id: :ip_leases__interface_id)
       end
@@ -17,6 +21,15 @@ module Vnet::Models
       def join_ip_addresses
         self.join(:ip_addresses, ip_addresses__id: :ip_leases__ip_address_id)
       end
+
+      def where_interface_mode(interface_mode)
+        self.join_interfaces.where(mode: 'simulated')
+      end
+
+      def where_network_id(network_id)
+        self.join_ip_addresses.where(ip_addresses__network_id: network_id)
+      end
+
     end
 
     # TODO: Is this really safe if interface_id is changed?

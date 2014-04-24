@@ -97,9 +97,13 @@ Sequel.migration do
     create_table(:ip_leases) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
+
       Integer :interface_id, :index => true, :null => false
       Integer :mac_lease_id, :index => true, :null => false
       Integer :ip_address_id, :index => true, :null=>false
+
+      FalseClass :enable_routing, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -194,7 +198,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null => false
 
       Integer :interface_id, :index => true
-      String :mode, :index => true, :null => false
+      String :mode, :null => false
 
       Boolean :passthrough, :default => false, :null => false
 
@@ -207,11 +211,22 @@ Sequel.migration do
       primary_key :id
 
       Integer :translation_id, :index => true, :null => false
+      Integer :route_link_id
 
-      Bignum :ingress_ipv4_address, :index => true, :null => false
-      Bignum :egress_ipv4_address, :index => true, :null => false
+      Bignum :ingress_ipv4_address, :null => false
+      Bignum :egress_ipv4_address, :null => false
 
-      unique [:translation_id, :ingress_ipv4_address, :egress_ipv4_address]
+      Integer :ingress_port_number
+      Integer :egress_port_number
+
+      # We depend on SQL handling of null elements in unique to ensure
+      # that equival addresses with non-null port numbers cannot be
+      # added if an entry with null port numbers already exists.
+      unique [:translation_id,
+              :ingress_ipv4_address,
+              :egress_ipv4_address,
+              :ingress_port_number,
+              :egress_port_number]
     end
 
     create_table(:tunnels) do

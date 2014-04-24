@@ -65,9 +65,11 @@ module Vnet::Openflow
       ipv4_info = {
         :network_id => params[:network_id],
         :network_type => params[:network_type],
+        :network_prefix => params[:network_prefix],
         :ipv4_address => params[:ipv4_address],
         :ip_lease_id => params[:ip_lease_id],
         :cookie_id => params[:cookie_id],
+        :enable_routing => params[:enable_routing],
       }
 
       ipv4_addresses = mac_info[:ipv4_addresses].dup
@@ -111,6 +113,11 @@ module Vnet::Openflow
     def has_network?(network_id)
       ipv4_addresses.any?{ |i| i[:network_id] == network_id }
     end
+
+    def all_network_ids
+      ipv4_addresses.collect { |ipv4_info| ipv4_info[:network_id] }.uniq
+    end
+
   end
 
 end

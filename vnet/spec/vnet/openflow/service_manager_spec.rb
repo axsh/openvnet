@@ -11,6 +11,10 @@ describe Vnet::Openflow::ServiceManager do
     datapath.dp_info.service_manager
   end
 
+  let(:interface_manager) do
+    datapath.dp_info.interface_manager
+  end
+
   describe "dns" do
     let!(:network_service) do
       interface = Fabricate(:interface, mode: "simulated")
@@ -45,7 +49,11 @@ describe Vnet::Openflow::ServiceManager do
 
     describe "when ADDED_SERVICE is published" do
       it "should create a network service with a dns service" do
-        service_manager.publish(Vnet::Event::ADDED_SERVICE, id: 1)
+        interface_manager.item(id: 1)
+        service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
+                                id: 1,
+                                interface_id: 1,
+                                type: 'dns')
 
         sleep(2.0)
 
@@ -75,12 +83,16 @@ describe Vnet::Openflow::ServiceManager do
 
     describe "when REMOVED_SERVICE is published" do
       it "should remove a network service" do
-        service_manager.publish(Vnet::Event::ADDED_SERVICE, id: 1)
+        interface_manager.item(id: 1)
+        service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
+                                id: 1,
+                                interface_id: 1,
+                                type: 'dns')
         sleep(0.5)
         expect(service_manager.item(id: network_service.id)).not_to be_nil
 
         network_service.destroy
-        service_manager.publish(Vnet::Event::REMOVED_SERVICE, id: 1)
+        service_manager.publish(Vnet::Event::SERVICE_DELETED_ITEM, id: 1)
         sleep(0.5)
 
         expect(service_manager.item(id: network_service.id)).to be_nil

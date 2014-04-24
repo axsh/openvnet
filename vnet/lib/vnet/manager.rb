@@ -11,6 +11,8 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::Notifications
 
+    # MW_CLASS = MW::Foo
+
     def initialize(dp_info)
       @dp_info = dp_info
 
@@ -121,6 +123,7 @@ module Vnet
       true
     end
 
+    # TODO: Cleanup...
     def select_filter_from_params(params)
       case
       when params[:id]   then {:id => params[:id]}
@@ -130,6 +133,13 @@ module Vnet
         # be caught by the item_by_params_direct method.
         return nil
       end
+    end
+
+    # Creates a batch object for querying a set of item to load,
+    # excluding the 'uuid' parameter.
+    def query_filter_from_params(params)
+      # Must be implemented by subclass
+      raise NotImplementedError
     end
 
     def create_batch(batch, uuid, filters)
@@ -170,8 +180,8 @@ module Vnet
     end
 
     # The default select call with no fill options.
-    def select_item(filter)
-      filter.commit
+    def select_item(batch)
+      batch.commit
     end
 
     def item_initialize(item_map, params)
@@ -184,12 +194,24 @@ module Vnet
       raise NotImplementedError
     end
 
+    def item_unload_event
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
+    def mw_class
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
     #
     # Internal methods:
     #
 
     # Creates a new item based from a sequel object. For use
     # internally and by 'created_item' specialization method.
+    #
+    # TODO: Rename internal_load_item
     def internal_new_item(item_map, params)
       item = @items[item_map.id]
       return item if item
@@ -200,6 +222,28 @@ module Vnet
         publish(initialized_item_event,
                 params.merge(id: item_map.id, item_map: item_map))
       end
+    end
+
+    def internal_unload_id_item_list(items)
+      items.each { |item_id,item|
+        publish(item_unload_event, id: item_id)
+      }
+    end
+
+    # TODO: Use an array of deleted item id's from events, which will
+    # only be called once this method completes. Concurrent load
+    # messages should use a counter to know when it is safe to clear
+    # the list of deleted item id's.
+
+    # Load all items that match the supplied query parameter
+    def internal_load_where(params)
+      return if params.empty?
+
+      filter = query_filter_from_params(params) || return
+      expression = ((filter.size > 1) ? Sequel.&(*filter) : filter.first) || return
+
+      item_maps = select_item(mw_class.batch.where(filter).all) || return
+      item_maps.each { |item_map| internal_new_item(item_map, {}) }
     end
 
     # TODO: Create an internal delete item method that 'delete item'

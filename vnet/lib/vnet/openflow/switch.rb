@@ -57,9 +57,9 @@ module Vnet::Openflow
 
        TABLE_ROUTE_INGRESS_INTERFACE,
        TABLE_ROUTE_INGRESS_TRANSLATION,
-       TABLE_ROUTER_INGRESS,
+       TABLE_ROUTER_INGRESS_LOOKUP,
        TABLE_ROUTER_CLASSIFIER,
-       TABLE_ROUTER_EGRESS,
+       TABLE_ROUTER_EGRESS_LOOKUP,
        TABLE_ROUTE_EGRESS_LOOKUP,
        TABLE_ROUTE_EGRESS_TRANSLATION,
        TABLE_ROUTE_EGRESS_INTERFACE,
@@ -182,9 +182,6 @@ module Vnet::Openflow
       #
       @datapath.send_message(Trema::Messages::FeaturesRequest.new)
       @datapath.send_message(Trema::Messages::PortDescMultipartRequest.new)
-
-      # Temporary hack to load the public network.
-      @dp_info.network_manager.async.item(uuid: 'nw-public')
     end
 
     def features_reply(message)

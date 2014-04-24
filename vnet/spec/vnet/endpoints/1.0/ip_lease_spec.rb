@@ -43,6 +43,7 @@ describe "/ip_leases" do
       :network_uuid => "nw-test",
       :mac_lease_uuid => "ml-test",
       :ipv4_address => "192.168.1.10",
+      :enable_routing => true,
     }
     required_params = [:mac_lease_uuid, :network_uuid, :ipv4_address]
     uuid_params = [:uuid, :mac_lease_uuid, :network_uuid]
