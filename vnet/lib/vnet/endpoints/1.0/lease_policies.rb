@@ -9,10 +9,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     accepted_params = put_post_shared_params + ["uuid"]
     required_params = [ ]
 
-    post_new(:LeasePolicy, accepted_params, required_params, fill_options) { |params|
-      params["mode"] = "simple" if ! params.has_key? "mode"
-      params["timing"] = "immediate" if ! params.has_key? "timing"
-    }
+    post_new(:LeasePolicy, accepted_params, required_params, fill_options)
   end
 
   get do
@@ -78,9 +75,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     interface = check_syntax_and_pop_uuid(M::Interface, { "uuid" => params[:interface_uuid] } )
 
     M::LeasePolicy.allocate_ip({ :interface_id => interface.id,
-                                       :lease_policy_id => lease_policy.id
-                                       })
-    M::LeasePolicyBaseInterface.create({ :interface_id => interface.id,
                                        :lease_policy_id => lease_policy.id
                                        })
 

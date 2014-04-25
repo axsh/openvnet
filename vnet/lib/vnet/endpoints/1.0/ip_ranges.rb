@@ -9,9 +9,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
     accepted_params = put_post_shared_params + ["uuid"]
     required_params = [ ]
 
-    post_new(:IpRange, accepted_params, required_params, fill_options) { |params|
-      params["allocation_type"] = "incremental" if ! params.has_key? "allocation_type"
-    }
+    post_new(:IpRange, accepted_params, required_params, fill_options)
   end
 
   get do
@@ -37,15 +35,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
     begin_ipv4_address = parse_ipv4(params['begin_ipv4_address'])
     end_ipv4_address = parse_ipv4(params['end_ipv4_address'])
 
-    M::IpRangesRange.create({ :ip_range_id => ip_range.id,
+    M::IpRangeRange.create({ :ip_range_id => ip_range.id,
                               :begin_ipv4_address => begin_ipv4_address,
                               :end_ipv4_address => end_ipv4_address,
                             })
-    respond_with(R::IpRange.ip_ranges_ranges(ip_range))
+    respond_with(R::IpRange.ip_range_ranges(ip_range))
   end
 
   get '/:uuid/ranges' do
-    show_relations(:IpRange, :ip_ranges_ranges)
+    show_relations(:IpRange, :ip_range_ranges)
   end
 
   delete '/:uuid/ranges' do
@@ -55,10 +53,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
     begin_ipv4_address = parse_ipv4(params['begin_ipv4_address'])
     end_ipv4_address = parse_ipv4(params['end_ipv4_address'])
 
-    M::IpRangesRange.destroy({ :ip_range_id => ip_range.id,
+    M::IpRangeRange.destroy({ :ip_range_id => ip_range.id,
                               :begin_ipv4_address => begin_ipv4_address,
                               :end_ipv4_address => end_ipv4_address,
                             })
-    respond_with(R::IpRange.ip_ranges_ranges(ip_range))
+    respond_with(R::IpRange.ip_range_ranges(ip_range))
   end
 end
