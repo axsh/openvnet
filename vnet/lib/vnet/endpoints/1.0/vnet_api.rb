@@ -2,11 +2,13 @@
 
 require "sinatra"
 require "sinatra/vnet_api_setup"
+require "sinatra/browse"
 
 module Vnet::Endpoints::V10
   class VnetAPI < Sinatra::Base
     include Vnet::Endpoints::V10::Helpers
     register Sinatra::VnetAPISetup
+    register Sinatra::Browse
 
     M = Vnet::ModelWrappers
     E = Vnet::Endpoints::Errors
@@ -16,6 +18,12 @@ module Vnet::Endpoints::V10
 
     def config
       Vnet::Configurations::Webapi.conf
+    end
+
+    def self.param_uuid(prefix, name = :uuid)
+      param name, :String, format: /^#{prefix}-[a-z]{1,8}$/, on_error: proc { |uuid|
+        raise(E::InvalidUUID, "Invalid format for #{name}: #{uuid[:value]}")
+      }
     end
 
     def pop_uuid(model, params, key = "uuid", fill = {})
@@ -28,9 +36,7 @@ module Vnet::Endpoints::V10
     end
 
     def check_and_trim_uuid(model, params)
-      check_uuid_syntax(model, params["uuid"])
       raise E::DuplicateUUID, params["uuid"] unless model[params["uuid"]].nil?
-
       params["uuid"] = model.trim_uuid(params["uuid"])
     end
 
@@ -140,12 +146,10 @@ module Vnet::Endpoints::V10
       respond_with(response.generate(updated_object))
     end
 
-    def post_new(class_name, accepted_params, required_params, fill = {})
+    def post_new(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
 
-      params = parse_params(@params, accepted_params)
-      check_required_params(params, required_params)
       check_and_trim_uuid(model_wrapper, params) if params["uuid"]
 
       # This yield is for extra argument validation

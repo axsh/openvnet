@@ -1,41 +1,29 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
-  put_post_shared_params = [
-    "display_name",
-    "description",
-    "rules"
-  ]
-
-  post do
-    accepted_params = put_post_shared_params + ["uuid"]
-    required_params = ["display_name"]
-
-    #TODO: Check rules syntax. Possibly in the model and catch the exception
-    #here to turn it into a proper api error.
-    post_new(:SecurityGroup, accepted_params, required_params)
+  def self.put_post_shared_params
+    param :display_name, :String
+    param :description, :String
+    param :rules, :String #TODO: Check rule syntax
   end
 
-  get do
-    get_all :SecurityGroup
-  end
+  put_post_shared_params
+  param_options :display_name, required: true
+  param_uuid :sg
+  post { post_new :SecurityGroup }
 
-  get '/:uuid' do
-    get_by_uuid :SecurityGroup
-  end
+  get { get_all :SecurityGroup }
 
-  delete '/:uuid' do
-    delete_by_uuid :SecurityGroup
-  end
+  get('/:uuid') { get_by_uuid :SecurityGroup }
 
+  delete('/:uuid') { delete_by_uuid :SecurityGroup }
+
+  put_post_shared_params
   put '/:uuid' do
     update_by_uuid(:SecurityGroup, put_post_shared_params)
   end
 
   post '/:uuid/interfaces/:interface_uuid' do
-    params = parse_params(@params, ['uuid', 'interface_uuid'])
-    check_required_params(params, ['uuid', 'interface_uuid'])
-
     interface = check_syntax_and_get_id(M::Interface, params, 'interface_uuid', 'interface_id')
     security_group = check_syntax_and_get_id(M::SecurityGroup, params, 'uuid', 'security_group_id')
 
