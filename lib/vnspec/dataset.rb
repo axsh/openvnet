@@ -34,6 +34,12 @@ module Vnspec
             "interfaces/#{v.delete(:interface_uuid)}/security_groups/#{v.delete(:security_group_uuid)}"
           when :dns_records
             "dns_services/#{v.delete(:dns_service_uuid)}/dns_records"
+          when :ip_range_ranges
+            "ip_ranges/#{v.delete(:ip_range_uuid)}/ranges"
+          when :lease_policy_base_networks
+            "lease_policies/#{v.delete(:lease_policy_uuid)}/networks/#{v.delete(:network_uuid)}"
+          when :lease_policy_base_interfaces
+            "lease_policies/#{v.delete(:lease_policy_uuid)}/interfaces/#{v.delete(:interface_uuid)}"
           else
             key.to_s
           end

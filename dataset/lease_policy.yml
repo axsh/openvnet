@@ -1,0 +1,136 @@
+networks:
+
+  - uuid: nw-vnet1
+    display_name: vnet1
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet1
+    network_mode: virtual
+
+  - uuid: nw-vnet2
+    display_name: vnet2
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet2
+    network_mode: virtual
+
+interfaces:
+
+  - uuid: if-v1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:01"
+
+  - uuid: if-v2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:02"
+
+  - uuid: if-v3
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:03"
+
+  - uuid: if-v4
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:04"
+    ipv4_address: 10.101.0.11
+
+  - uuid: if-v5
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:05"
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-v6
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:06"
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-dhcp1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:01:01"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+  - uuid: if-dhcp2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:01:02"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+  - uuid: if-dns1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:02:01"
+    ipv4_address: 10.101.0.3
+    mode: simulated
+
+  - uuid: if-dns2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:02:02"
+    ipv4_address: 10.101.0.3
+    mode: simulated
+
+network_services:
+
+  - uuid: ns-dhcp1
+    interface_uuid: if-dhcp1
+    type: dhcp
+
+  - uuid: ns-dhcp2
+    interface_uuid: if-dhcp2
+    type: dhcp
+
+datapath_networks:
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp1eth0
+    broadcast_mac_address: "02:00:00:aa:00:01"
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp1eth0
+    broadcast_mac_address: "02:00:00:aa:00:02"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp2eth0
+    broadcast_mac_address: "02:00:00:bb:00:01"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp2eth0
+    broadcast_mac_address: "02:00:00:bb:00:02"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp3eth0
+    broadcast_mac_address: "02:00:00:cc:00:01"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp3eth0
+    broadcast_mac_address: "02:00:00:cc:00:02"
+
+lease_policies:
+  - uuid: lp-1
+
+ip_ranges:
+  - uuid: ipr-1
+
+ip_range_ranges:
+  - ip_range_uuid: ipr-1
+    begin_ipv4_address: 10.101.0.10
+    end_ipv4_address: 10.101.0.20
+ 
+lease_policy_base_networks:
+  - lease_policy_uuid: lp-1
+    network_uuid: nw-vnet1
+    ip_range_uuid: ipr-1
+
+lease_policy_base_interfaces:
+  - lease_policy_uuid: lp-1
+    interface_uuid: if-v1
+
+  - lease_policy_uuid: lp-1
+    interface_uuid: if-v2
+
+  - lease_policy_uuid: lp-1
+    interface_uuid: if-v3

@@ -288,5 +288,32 @@ module Vnspec
         end
       end
     end
+
+    class LeasePolicy < Base
+      attr_accessor :interfaces
+
+      class << self
+        def api_name
+          "lease_policies"
+        end
+      end
+
+      def initialize(options)
+        @interfaces = []
+      end
+
+      def add_interface(interface_uuid, options = {})
+        API.request(:post, "#{api_name}/#{uuid}/interfaces/#{interface_uuid}", options) do |response|
+          @interfaces << OpenStruct.new(response)
+        end
+      end
+
+      def remove_interface(interface_uuid)
+        API.request(:delete, "#{api_name}/#{uuid}/interfaces/#{interface_uuid}") do |response|
+
+          @interfaces.delete_if { |record| record.uuid == interface_uuid }
+        end
+      end
+    end
   end
 end
