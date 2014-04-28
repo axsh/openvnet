@@ -80,9 +80,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     M::LeasePolicy.allocate_ip({ :interface_id => interface.id,
                                        :lease_policy_id => lease_policy.id
                                        })
-    M::LeasePolicyBaseInterface.create({ :interface_id => interface.id,
-                                       :lease_policy_id => lease_policy.id
-                                       })
 
     respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
   end
