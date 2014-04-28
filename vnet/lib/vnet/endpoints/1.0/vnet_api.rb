@@ -23,6 +23,19 @@ module Vnet::Endpoints::V10
       Vnet::Configurations::Webapi.conf
     end
 
+    default_on_error do |error_hash|
+      if error_hash[:reason] == :required
+        raise E::MissingArgument, error_hash[:parameter]
+      else
+        raise E::ArgumentError, {
+          error: "parameter validation failed",
+          parameter: error_hash[:parameter],
+          value: error_hash[:value],
+          reason: error_hash[:reason]
+        }
+      end
+    end
+
     def self.param_uuid(prefix, name = :uuid)
       #TODO: Make sure that the InvalidUUID error here is the same one as the check_uuid_syntax method
       param name, :String, format: /^#{prefix}-[a-z]{1,8}$/, on_error: proc { |uuid|
