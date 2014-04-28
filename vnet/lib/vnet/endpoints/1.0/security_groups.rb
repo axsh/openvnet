@@ -35,11 +35,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
     interface = check_syntax_and_get_id(M::Interface, params, 'interface_uuid', 'interface_id')
     security_group = check_syntax_and_get_id(M::SecurityGroup, params, 'uuid', 'security_group_id')
 
-    M::InterfaceSecurityGroup.filter(:interface_id => interface.id,
-      :security_group_id => security_group.id).empty? ||
-    raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
+    filter = { :interface_id => interface.id, :security_group_id => security_group.id }
+    M::InterfaceSecurityGroup.filter(filter).empty? ||
+      raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
-    M::InterfaceSecurityGroup.create(params)
+    M::InterfaceSecurityGroup.create(
+      :interface_id => interface.id,
+      :security_group_id => security_group.id
+    )
+
     respond_with(R::SecurityGroup.interfaces(security_group))
   end
 
@@ -48,9 +52,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   end
 
   delete '/:uuid/interfaces/:interface_uuid' do
-    params = parse_params(@params, ['uuid', 'interface_uuid'])
-    check_required_params(params, ['uuid', 'interface_uuid'])
-
     security_group = check_syntax_and_pop_uuid(M::SecurityGroup, params)
     interface = check_syntax_and_pop_uuid(M::Interface, params, 'interface_uuid')
 
