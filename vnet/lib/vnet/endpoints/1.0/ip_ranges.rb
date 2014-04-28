@@ -9,9 +9,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
     accepted_params = put_post_shared_params + ["uuid"]
     required_params = [ ]
 
-    post_new(:IpRange, accepted_params, required_params, fill_options) { |params|
-      params["allocation_type"] = "incremental" if ! params.has_key? "allocation_type"
-    }
+    post_new(:IpRange, accepted_params, required_params, fill_options)
   end
 
   get do
