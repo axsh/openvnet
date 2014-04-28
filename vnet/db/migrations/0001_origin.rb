@@ -292,7 +292,7 @@ Sequel.migration do
       DateTime :deleted_at
     end
 
-    create_table(:ip_ranges_ranges) do
+    create_table(:ip_range_ranges) do
       primary_key :id
       Integer :ip_range_id, :index => true, :null => false
       Bignum :begin_ipv4_address, :null=>false

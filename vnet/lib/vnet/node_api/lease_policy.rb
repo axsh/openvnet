@@ -71,7 +71,7 @@ module Vnet::NodeApi
         net_prefix = network.ipv4_prefix
         suffix_mask = 0xFFFFFFFF >> net_prefix
         net_start = network.ipv4_network & 0xFFFFFFFF << (32 - net_prefix)
-        ip_range.ip_ranges_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
+        ip_range.ip_range_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
           start_range = net_start + ( suffix_mask & i.begin_ipv4_address.to_i )
           end_range   = net_start + ( suffix_mask & i.end_ipv4_address.to_i )
 

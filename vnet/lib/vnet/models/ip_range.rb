@@ -5,7 +5,7 @@ module Vnet::Models
     taggable 'ipr'
 
     one_to_many :lease_policy_base_networks
-    one_to_many :ip_ranges_ranges
+    one_to_many :ip_range_ranges
 
     plugin :paranoia
   end

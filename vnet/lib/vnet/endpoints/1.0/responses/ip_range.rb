@@ -7,7 +7,7 @@ module Vnet::Endpoints::V10::Responses
       object.to_hash
     end
 
-    def self.ip_ranges_ranges(object)
+    def self.ip_range_ranges(object)
       argument_type_check(object,Vnet::ModelWrappers::IpRange)
       {
         # TODO: based on translate.rb. Do more here?

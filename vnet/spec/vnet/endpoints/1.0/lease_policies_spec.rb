@@ -57,8 +57,8 @@ describe "/lease_policies" do
                         uuid "ipr-test"
                         allocation_type "incremental"
                       } }
-    let!(:ip_ranges_range) {
-      Fabricate(:ip_ranges_range,
+    let!(:ip_range_range) {
+      Fabricate(:ip_range_range,
                 ip_range_id: ip_range.id,
                 begin_ipv4_address: 40,
                 end_ipv4_address: 50 )

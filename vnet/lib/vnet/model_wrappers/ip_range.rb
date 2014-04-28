@@ -5,7 +5,7 @@ module Vnet::ModelWrappers
 
   end
 
-  class IpRangesRange < Base
+  class IpRangeRange < Base
 
   end
 end
