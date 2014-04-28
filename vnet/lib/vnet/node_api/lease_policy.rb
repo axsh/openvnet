@@ -22,11 +22,17 @@ module Vnet::NodeApi
           if (ml_array = interface.mac_leases).empty?
             raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
           end
-          ip_lease = model_class(:ip_lease).create({
-                                                     mac_lease_id: ml_array.first.id,
-                                                     network_id: net.id,
-                                                     ipv4_address: new_ip
-                                                   })
+
+          model_class(:lease_policy_base_interface).create(
+            :lease_policy_id => lease_policy.id,
+            :interface_id => interface.id
+          )
+
+          IpLease.create(
+            mac_lease_id: ml_array.first.id,
+            network_id: net.id,
+            ipv4_address: new_ip
+          )
         end
       end
 
@@ -36,13 +42,13 @@ module Vnet::NodeApi
         ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_address
         leaseaddr = case ip_range.allocation_type
                     when ALLOCATION_TYPE_INCREMENTAL
-                      ip = get_lease_address(network, ip_range, ipaddr, nil, :asc)
-                      ip = get_lease_address(network, ip_range, nil, ipaddr, :asc) if ip.nil?
-                      ip
+                      get_lease_address(network, ip_range, from_ipaddr: ipaddr) ||
+                        get_lease_address(network, ip_range, to_ipaddr: ipaddr)
                     when ALLOCATION_TYPE_DECREMENTAL
-                      ip = get_lease_address(network, ip_range, nil, ipaddr, :desc)
-                      ip = get_lease_address(network, ip_range, ipaddr, nil, :desc) if ip.nil?
-                      ip
+                      get_lease_address(network, ip_range, to_ipaddr: ipaddr, order: :desc) ||
+                        get_lease_address(network, ip_range, from_ipaddr: ipaddr, order: :desc)
+                    when ALLOCATION_TYPE_RANDOM
+                      raise NotImplementedError
                     else
                       raise "Unsupported IP address assignment: #{ip_range.allocation_type}"
                     end
@@ -53,9 +59,10 @@ module Vnet::NodeApi
         leaseaddr
       end
 
-      def get_lease_address(network, ip_r, from_ipaddr, to_ipaddr, order)
-        from_ipaddr = 0 if from_ipaddr.nil?
-        to_ipaddr = 0xFFFFFFFF if to_ipaddr.nil?
+      def get_lease_address(network, ip_range, options = {})
+        from_ipaddr = options[:from_ipaddr] || 0
+        to_ipaddr = options[:to_ipaddr] || 0xFFFFFFFF
+        order = options[:order] || :asc
         raise ArgumentError unless from_ipaddr.is_a?(Integer)
         raise ArgumentError unless to_ipaddr.is_a?(Integer)
 
@@ -66,10 +73,10 @@ module Vnet::NodeApi
           :desc => :end_ipv4_address.desc,
         }[order]
 
-        net_start = network.ipv4_network
         net_prefix = network.ipv4_prefix
         suffix_mask = 0xFFFFFFFF >> net_prefix
-        ip_r.ip_ranges_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
+        net_start = network.ipv4_network & 0xFFFFFFFF << (32 - net_prefix)
+        ip_range.ip_range_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
           start_range = net_start + ( suffix_mask & i.begin_ipv4_address.to_i )
           end_range   = net_start + ( suffix_mask & i.end_ipv4_address.to_i )
 
@@ -89,8 +96,6 @@ module Vnet::NodeApi
               f = check_ip.to_i
             when :desc
               t = check_ip.to_i
-            else
-              raise "Unsupported IP address assignment: #{order.to_s}"
             end
           end while is_loop
           break unless leaseaddr.nil?

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-  class IpRangesRange < Base
+  class IpRangeRange < Base
 
     many_to_one :ip_range
 
