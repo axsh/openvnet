@@ -26,9 +26,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
       params['port_name'] = params['uuid']
     end
 
-    #TODO: No reason to check syntax here
-    check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
-    check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+    uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
+    uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
 
     params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
     params['mac_address'] = parse_mac(params['mac_address'])

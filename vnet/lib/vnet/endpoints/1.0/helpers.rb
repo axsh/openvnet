@@ -37,8 +37,12 @@ module Vnet::Endpoints::V10::Helpers
 
     def check_syntax_and_get_id(model, params, uuid_key = "uuid", id_key = "id", fill = {})
       check_uuid_syntax(model, params[uuid_key])
-      model = pop_uuid(model, params, uuid_key, fill)
-      params[id_key] = model.id
+      uuid_to_id(model, uuid_key, id_key, fill)
+    end
+
+    def uuid_to_id(model, uuid_key = "uuid", id_key = "id", fill = {})
+      model = pop_uuid(model, @params, uuid_key, fill)
+      @params[id_key] = model.id
 
       model
     end
