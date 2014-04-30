@@ -109,7 +109,6 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
-      FalseClass :is_deleted, :null=>false
     end
 
     create_table(:mac_addresses) do
