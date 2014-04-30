@@ -91,7 +91,9 @@ Sequel.migration do
       Bignum :ipv4_address, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
-      unique [:network_id, :ipv4_address]
+      DateTime :deleted_at, :index => true
+      Integer :deleted, :default => 0, :null => false
+      unique [:network_id, :ipv4_address, :deleted]
     end
 
     create_table(:ip_leases) do
@@ -139,8 +141,9 @@ Sequel.migration do
       FalseClass :editable
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
-
-      index [:ipv4_network, :ipv4_prefix]
+      DateTime :deleted_at, :index => true
+      Integer :deleted, :default => 0, :null => false
+      index [:ipv4_network, :ipv4_prefix, :deleted]
     end
 
     create_table(:network_services) do
