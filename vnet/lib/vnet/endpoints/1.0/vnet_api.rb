@@ -45,8 +45,21 @@ module Vnet::Endpoints::V10
 
     def self.param_uuid(prefix, name = :uuid, options = {})
       #TODO: Make sure that the InvalidUUID error here is the same one as the check_uuid_syntax method
-      error_handler = proc { |uuid|
-        raise(E::InvalidUUID, "Invalid format for #{name}: #{uuid[:value]}")
+      #TODO: Allow access to default_on_error in here
+      error_handler = proc { |result|
+        case result[:reason]
+        when :format
+          raise(E::InvalidUUID, "Invalid format for #{name}: #{result[:value]}")
+        when :required
+          raise E::MissingArgument, result[:parameter]
+        else
+          raise E::ArgumentError, {
+            error: "parameter validation failed",
+            parameter: result[:parameter],
+            value: result[:value],
+            reason: result[:reason]
+          }
+        end
       }
 
       final_options = {
