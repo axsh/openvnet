@@ -23,6 +23,13 @@ module Vnet::Endpoints::V10
       Vnet::Configurations::Webapi.conf
     end
 
+    # Remove the splat and captures parameters so we can pass @params directly
+    # to the model classes
+    def remove_system_parameters
+      @params.delete("splat")
+      @params.delete("captures")
+    end
+
     default_on_error do |error_hash|
       if error_hash[:reason] == :required
         raise E::MissingArgument, error_hash[:parameter]
@@ -36,11 +43,20 @@ module Vnet::Endpoints::V10
       end
     end
 
-    def self.param_uuid(prefix, name = :uuid)
+    def self.param_uuid(prefix, name = :uuid, options = {})
       #TODO: Make sure that the InvalidUUID error here is the same one as the check_uuid_syntax method
-      param name, :String, format: /^#{prefix}-[a-z]{1,8}$/, on_error: proc { |uuid|
+      error_handler = proc { |uuid|
         raise(E::InvalidUUID, "Invalid format for #{name}: #{uuid[:value]}")
       }
+
+      final_options = {
+        format: /^#{prefix}-[a-z]{1,8}$/,
+        on_error: error_handler
+      }
+
+      final_options.merge!(options)
+
+      param name, :String, final_options
     end
 
     def delete_by_uuid(class_name)
@@ -75,17 +91,18 @@ module Vnet::Endpoints::V10
       respond_with(response.generate(object))
     end
 
-    def update_by_uuid(class_name, accepted_params, fill = {})
+    def update_by_uuid(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
 
-      params = parse_params(@params, accepted_params + ["uuid"])
-      # TODO don't need to find model here
-      check_syntax_and_pop_uuid(model_wrapper, params)
+      model = check_syntax_and_pop_uuid(model_wrapper, params)
+
       # This yield is for extra argument validation
       yield(params) if block_given?
 
-      updated_object = model_wrapper.batch.update(@params["uuid"], params).commit(:fill => fill)
+      remove_system_parameters
+
+      updated_object = model_wrapper.batch.update(model.uuid, params).commit(:fill => fill)
       respond_with(response.generate(updated_object))
     end
 

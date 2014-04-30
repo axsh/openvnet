@@ -28,7 +28,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
 
   put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:SecurityGroup, put_post_shared_params)
+    update_by_uuid(:SecurityGroup)
   end
 
   post '/:uuid/interfaces/:interface_uuid' do
