@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
-  put_post_shared_params = ["allocation_type"]
+  def self.put_post_shared_params
+    param :allocation_type, :String, in: ["incremental"], default: "incremental"
+  end
 
   fill_options = [ ]
 
+  put_post_shared_params
+  param_uuid M::IpRange
   post do
-    accepted_params = put_post_shared_params + ["uuid"]
-    required_params = [ ]
-
-    post_new(:IpRange, accepted_params, required_params, fill_options) { |params|
-      params["allocation_type"] = "incremental" if ! params.has_key? "allocation_type"
-    }
+    post_new(:IpRange, fill_options)
   end
 
   get do
@@ -26,21 +25,21 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
     delete_by_uuid(:IpRange)
   end
 
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:IpRange, put_post_shared_params, fill_options)
+    update_by_uuid(:IpRange, fill_options)
   end
 
+  param :begin_ipv4_address, :String, transform: PARSE_IPV4
+  param :end_ipv4_address, :String, transform: PARSE_IPV4
   post '/:uuid/ranges' do
-    params = parse_params(@params, ['uuid', "begin_ipv4_address", "end_ipv4_address"])
-
     ip_range = check_syntax_and_pop_uuid(M::IpRange, params)
-    begin_ipv4_address = parse_ipv4(params['begin_ipv4_address'])
-    end_ipv4_address = parse_ipv4(params['end_ipv4_address'])
 
     M::IpRangesRange.create({ :ip_range_id => ip_range.id,
-                              :begin_ipv4_address => begin_ipv4_address,
-                              :end_ipv4_address => end_ipv4_address,
+                              :begin_ipv4_address => params["begin_ipv4_address"],
+                              :end_ipv4_address => params["end_ipv4_address"]
                             })
+
     respond_with(R::IpRange.ip_ranges_ranges(ip_range))
   end
 
@@ -48,16 +47,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
     show_relations(:IpRange, :ip_ranges_ranges)
   end
 
+  param :begin_ipv4_address, :String, transform: PARSE_IPV4
+  param :end_ipv4_address, :String, transform: PARSE_IPV4
   delete '/:uuid/ranges' do
-    params = parse_params(@params, ['uuid', "begin_ipv4_address", "end_ipv4_address"])
-
     ip_range = check_syntax_and_pop_uuid(M::IpRange, params)
-    begin_ipv4_address = parse_ipv4(params['begin_ipv4_address'])
-    end_ipv4_address = parse_ipv4(params['end_ipv4_address'])
 
     M::IpRangesRange.destroy({ :ip_range_id => ip_range.id,
-                              :begin_ipv4_address => begin_ipv4_address,
-                              :end_ipv4_address => end_ipv4_address,
+                              :begin_ipv4_address => params["begin_ipv4_address"],
+                              :end_ipv4_address => params["end_ipv4_address"],
                             })
     respond_with(R::IpRange.ip_ranges_ranges(ip_range))
   end
