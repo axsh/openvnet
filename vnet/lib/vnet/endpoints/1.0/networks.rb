@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'ipaddr'
-
 Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   def self.put_post_shared_params
     param :display_name, :String
