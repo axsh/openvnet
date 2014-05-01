@@ -8,7 +8,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     param :ipv4_network, :String, transform: PARSE_IPV4
     param :ipv4_prefix, :Integer, in: 1..32
     param :domain_name, :String
-    param :network_mode, :String #TODO: Check possibilities
+    param :network_mode, :String, in: C::Network::MODES
     param :editable, :Boolean
   end
 
