@@ -4,7 +4,7 @@ require 'trema/mac'
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   def self.put_post_shared_params
-    param_uuid :dp, :owner_datapath_uuid
+    param_uuid M::Datapath, :owner_datapath_uuid
     param :ingress_filtering_enabled, :Boolean
     param :display_name, :String
     param :enable_routing, :Boolean
@@ -14,8 +14,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
 
   put_post_shared_params
-  param_uuid :if
-  param_uuid :nw, :network_uuid
+  param_uuid M::Interface
+  param_uuid M::Network, :network_uuid
   param :ipv4_address, :String, transform: PARSE_IPV4
   param :mac_address, :String, transform: PARSE_MAC
   param :port_name, :String
