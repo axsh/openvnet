@@ -2,7 +2,9 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
   def self.put_post_shared_params
-    param :allocation_type, :String, in: ["incremental"], default: "incremental"
+    param :allocation_type, :String,
+      in: C::LeasePolicy::ALLOCATION_TYPES,
+      default: C::LeasePolicy::ALLOCATION_TYPE_INCREMENTAL
   end
 
   fill_options = [ ]
