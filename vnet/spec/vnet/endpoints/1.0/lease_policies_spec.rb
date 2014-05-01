@@ -37,10 +37,10 @@ describe "/lease_policies" do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :network }
 
-    let!(:ip_range) { Fabricate(:ip_range) { uuid "ipr-test" } }
+    let!(:ip_range_group) { Fabricate(:ip_range_group) { uuid "iprg-test" } }
 
     include_examples "many_to_many_relation", "networks", {
-                       :ip_range_uuid => 'ipr-test'
+                       :ip_range_group_uuid => 'iprg-test'
                      }
   end
 
@@ -53,13 +53,13 @@ describe "/lease_policies" do
                        ipv4_network 167772416
                        ipv4_prefix 24
                      } }
-    let!(:ip_range) { Fabricate(:ip_range) {
-                        uuid "ipr-test"
+    let!(:ip_range_group) { Fabricate(:ip_range_group) {
+                        uuid "iprg-test"
                         allocation_type "incremental"
                       } }
-    let!(:ip_range_range) {
-      Fabricate(:ip_range_range,
-                ip_range_id: ip_range.id,
+    let!(:ip_range) {
+      Fabricate(:ip_range,
+                ip_range_group_id: ip_range_group.id,
                 begin_ipv4_address: 40,
                 end_ipv4_address: 50 )
     }
@@ -67,7 +67,7 @@ describe "/lease_policies" do
       Fabricate(:lease_policy_base_network,
         lease_policy_id: base_object.id,
         network_id: network.id,
-        ip_range_id: ip_range.id )
+        ip_range_group_id: ip_range_group.id )
     }
 
     include_examples "many_to_many_relation", "interfaces", {}
