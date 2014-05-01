@@ -6,6 +6,8 @@ module Vnet::Openflow
 
   class NetworkManager < Vnet::Manager
 
+    include Vnet::Constants::Network
+
     #
     # Events:
     #
