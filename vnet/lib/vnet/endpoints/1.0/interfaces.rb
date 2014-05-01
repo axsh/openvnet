@@ -16,21 +16,16 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   put_post_shared_params
   param_uuid :if
   param_uuid :nw, :network_uuid
-  param :ipv4_address, :String #TODO: Transform here
-  param :mac_address, :String #TODO: Transform here
-  param :port_name, :String#, default: proc { params["uuid"] }
+  param :ipv4_address, :String, transform: PARSE_IPV4
+  param :mac_address, :String, transform: PARSE_MAC
+  param :port_name, :String
   param :mode, :String, in: ['vif', 'simulated', 'patch', 'remote', 'host', 'edge']
   post do
     # Consider deprecating this:
-    if params['port_name'].nil? && params['uuid']
-      params['port_name'] = params['uuid']
-    end
+    params['port_name'] = params['uuid'] if !params['port_name'] && params['uuid']
 
     uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
-
-    params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
-    params['mac_address'] = parse_mac(params['mac_address'])
 
     post_new(:Interface, fill)
   end

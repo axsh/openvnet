@@ -49,13 +49,7 @@ module Vnet::Endpoints::V10::Helpers
   end
 
   module Parsers
-    def parse_params(params, mask)
-      mask.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |key, h|
-        h[key] = params[key] if params.key?(key)
-      end
-    end
-
-    def parse_ipv4(param)
+    PARSE_IPV4 = proc do |param|
       return nil if param.nil? || param.empty?
 
       begin
@@ -67,7 +61,7 @@ module Vnet::Endpoints::V10::Helpers
       end
     end
 
-    def parse_mac(param)
+    PARSE_MAC = proc do |param|
       return nil if param.nil? || param.empty?
 
       begin
