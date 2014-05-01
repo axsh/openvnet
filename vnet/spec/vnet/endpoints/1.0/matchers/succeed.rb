@@ -54,11 +54,11 @@ RSpec::Matchers.define :succeed do
     print_response(response)
   end
 
-  failure_message_when_negated do |response|
+  failure_message do |response|
     "We expected the last api call to succeed " + print_result(response)
   end
 
-  failure_message do |response|
+  failure_message_when_negated do |response|
     "We expected the last api call not to succeed " + print_result(response)
   end
 end
