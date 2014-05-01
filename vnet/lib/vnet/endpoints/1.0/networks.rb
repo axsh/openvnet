@@ -3,22 +3,21 @@
 require 'ipaddr'
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
-  put_post_shared_params = [
-    "display_name",
-    "ipv4_network",
-    "ipv4_prefix",
-    "domain_name",
-    "network_mode",
-    "editable"
-  ]
+  def self.put_post_shared_params
+    param :display_name, :String
+    param :ipv4_network, :String, transform: PARSE_IPV4
+    param :ipv4_prefix, :Integer, in: 1..32
+    param :domain_name, :String
+    param :network_mode, :String #TODO: Check possibilities
+    param :editable, :Boolean
+  end
 
+  put_post_shared_params
+  param_options :display_name, required: true
+  param_options :ipv4_network, required: true
+  param_uuid M::Network
   post do
-    accepted_params = put_post_shared_params + ["uuid"]
-    required_params = ["display_name", "ipv4_network"]
-
-    post_new(:Network, accepted_params, required_params) { |params|
-      params["ipv4_network"] = parse_ipv4(params["ipv4_network"]) if params.has_key?("ipv4_network")
-    }
+    post_new(:Network)
   end
 
   get do
@@ -37,9 +36,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     end
   end
 
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:Network, put_post_shared_params) { |params|
-      params["ipv4_network"] = parse_ipv4(params["ipv4_network"]) if params.has_key?("ipv4_network")
-    }
+    update_by_uuid(:Network)
   end
 end
