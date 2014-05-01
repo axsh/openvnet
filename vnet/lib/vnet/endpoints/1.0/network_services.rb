@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
-  put_post_shared_params = [
-    "interface_uuid",
-    "incoming_port",
-    "outgoing_port"
-  ]
+  def self.put_post_shared_params
+    param_uuid M::Interface, :interface_uuid
+    param :incoming_port, :Integer
+    param :outgoing_port, :Integer
+    param :display_name, :String
+  end
 
   fill_options = [ :interface ]
 
+  put_post_shared_params
+  param :type, :String, required: true, in: C::NetworkService::TYPES
+  param_uuid M::NetworkService
   post do
-    accepted_params = put_post_shared_params + [:uuid, :type]
-    required_params = [:type]
+    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
-    # TODO remove me
-    # this is only for compatibility
-    params[:type] = params[:display_name] if params[:display_name] && !params[:type]
-
-    post_new(:NetworkService, accepted_params, required_params, fill_options) { |params|
-      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
-    }
+    post_new(:NetworkService, fill_options)
   end
 
   get do
@@ -34,9 +31,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
     delete_by_uuid(:NetworkService)
   end
 
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:NetworkService, put_post_shared_params, fill_options) { |params|
-      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
-    }
+    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
+
+    update_by_uuid(:NetworkService, fill_options)
   end
 end
