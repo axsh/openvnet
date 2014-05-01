@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
-  put_post_shared_params = ["mode", "timing"]
+  CLP = Vnet::Constants::LeasePolicy
+  def self.put_post_shared_params
+   param :mode, :String, in: CLP::MODES, default: CLP::MODE_SIMPLE
+   param :timing, :String, in: CLP::TIMINGS, default: CLP::TIMING_IMMEDIATE
+  end
 
   fill_options = [ ]
 
+  put_post_shared_params
+  param_uuid M::LeasePolicy
   post do
-    accepted_params = put_post_shared_params + ["uuid"]
-    required_params = [ ]
-
-    post_new(:LeasePolicy, accepted_params, required_params, fill_options) { |params|
-      params["mode"] = "simple" if ! params.has_key? "mode"
-      params["timing"] = "immediate" if ! params.has_key? "timing"
-    }
+    post_new(:LeasePolicy, fill_options)
   end
 
   get do
@@ -27,26 +27,25 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     delete_by_uuid(:LeasePolicy)
   end
 
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:LeasePolicy, put_post_shared_params, fill_options) { |params|
-
-    }
+    update_by_uuid(:LeasePolicy, put_post_shared_params, fill_options)
   end
 
+  param_uuid M::IpRange, :ip_range_uuid, required: true
   post '/:uuid/networks/:network_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
-    params = parse_params(@params, ['uuid', 'network_uuid', 'ip_range_uuid'])
-    check_required_params(params, ['network_uuid', 'ip_range_uuid'])
     
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
-    # TODO: verify this next line is not just a hack (that does work, so far)
-    network = check_syntax_and_pop_uuid(M::Network, { "uuid" => params[:network_uuid] } )
-    ip_range = check_syntax_and_pop_uuid(M::IpRange, { "uuid" => params[:ip_range_uuid] } )
+    network = check_syntax_and_pop_uuid(M::Network, params, "network_uuid")
+
+    uuid_to_id(M::IpRange, "ip_range_uuid", "ip_range_id")
 
     M::LeasePolicyBaseNetwork.create({ :network_id => network.id,
                                        :lease_policy_id => lease_policy.id,
-                                       :ip_range_id => ip_range.id
+                                       :ip_range_id => params["ip_range_id"]
                                      })
+
     respond_with(R::LeasePolicy.lease_policy_network(lease_policy))
   end
 
@@ -55,33 +54,28 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   end
 
   delete '/:uuid/networks/:network_uuid' do
-    params = parse_params(@params, ['uuid', 'network_uuid'])
-    check_required_params(params, ['network_uuid'])
-
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
-    network = check_syntax_and_pop_uuid(M::Network, { "uuid" => params[:network_uuid] } )
+    network = check_syntax_and_pop_uuid(M::Network, params, "network_uuid")
 
-    # TODO: why does the following work without overloading node_api??
     M::LeasePolicyBaseNetwork.destroy({ :network_id => network.id,
-                                       :lease_policy_id => lease_policy.id
-                                     })
+                                        :lease_policy_id => lease_policy.id
+                                      })
+
     respond_with(R::LeasePolicy.lease_policy_network(lease_policy))
   end
 
   post '/:uuid/interfaces/:interface_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
-    params = parse_params(@params, ['uuid', 'interface_uuid'])
-    check_required_params(params, ['interface_uuid'])
 
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
-    # TODO: verify this next line is not just a hack (that does work, so far)
-    interface = check_syntax_and_pop_uuid(M::Interface, { "uuid" => params[:interface_uuid] } )
+    interface = check_syntax_and_pop_uuid(M::Interface, params, "interface_uuid")
 
     M::LeasePolicy.allocate_ip({ :interface_id => interface.id,
-                                       :lease_policy_id => lease_policy.id
-                                       })
+                                 :lease_policy_id => lease_policy.id
+                               })
+
     M::LeasePolicyBaseInterface.create({ :interface_id => interface.id,
-                                       :lease_policy_id => lease_policy.id
+                                         :lease_policy_id => lease_policy.id
                                        })
 
     respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
@@ -92,16 +86,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   end
 
   delete '/:uuid/interfaces/:interface_uuid' do
-    params = parse_params(@params, ['uuid', 'interface_uuid'])
-    check_required_params(params, ['interface_uuid'])
-
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
-    interface = check_syntax_and_pop_uuid(M::Interface, { "uuid" => params[:interface_uuid] } )
+    interface = check_syntax_and_pop_uuid(M::Interface, params, "interface_uuid")
 
-    # TODO: why does the following work without overloading node_api??
     M::LeasePolicyBaseInterface.destroy({ :interface_id => interface.id,
-                                       :lease_policy_id => lease_policy.id
-                                     })
+                                          :lease_policy_id => lease_policy.id
+                                       })
+
     respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
   end
 end
