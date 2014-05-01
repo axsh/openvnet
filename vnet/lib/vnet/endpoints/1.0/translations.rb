@@ -2,11 +2,11 @@
 
 #TODO: Write some FREAKING tests for this
 Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
-  include C::Translation
+  CT = C::Translation
 
   def self.put_post_shared_params
     param_uuid M::Interface, :interface_uuid
-    param :mode, :String, in: C::Translation::MODES
+    param :mode, :String, in: CT::MODES
     param :passthrough, :Boolean
   end
 
@@ -39,10 +39,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     update_by_uuid(:Translation)
   end
 
-  param :ingress_ipv4_address, :String, transform: PARSE_IPV4, required: true
-  param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
-  param :ingress_port_number, :Integer, transform: PARSE_PORT
-  param :egress_port_number, :Integer, transform: PARSE_PORT
+  def self.static_address_shared_params
+    param :ingress_ipv4_address, :String, transform: PARSE_IPV4, required: true
+    param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
+    param :ingress_port_number, :Integer, in: 0..65536
+    param :egress_port_number, :Integer, in: 0..65536
+  end
+
+  static_address_shared_params
   param_uuid M::RouteLink, :route_link_uuid
   post '/:uuid/static_address' do
     translation = check_syntax_and_pop_uuid(M::Translation, params)
@@ -51,11 +55,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid').id
     end
 
-    if translation.mode != MODE_STATIC_ADDRESS
-      raise(E::ArgumentError, "Translation mode must be '#{MODE_STATIC_ADDRESS}'.")
+    if translation.mode != CT::MODE_STATIC_ADDRESS
+      raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")
     end
 
-    M::TranslationStaticAddress.create(
+    tsa = M::TranslationStaticAddress.create(
       translation_id: translation.id,
       route_link_id: route_link_id,
       ingress_ipv4_address: params["ingress_ipv4_address"],
@@ -64,18 +68,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       egress_port_number: params["egress_port_number"]
     )
 
-    respond_with(R::Translation.translation_static_addresses(translation))
+    respond_with(R::TranslationStaticAddress.generate(tsa))
   end
 
-  param :ingress_ipv4_address, :String, transform: PARSE_IPV4, required: true
-  param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
-  param :ingress_port_number, :Integer, transform: PARSE_PORT
-  param :egress_port_number, :Integer, transform: PARSE_PORT
+  static_address_shared_params
   delete '/:uuid/static_address' do
     translation = check_syntax_and_pop_uuid(M::Translation, params)
 
-    if translation.mode != MODE_STATIC_ADDRESS
-      raise(E::ArgumentError, "Translation mode must be '#{MODE_STATIC_ADDRESS}'.")
+    if translation.mode != CT::MODE_STATIC_ADDRESS
+      raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")
     end
 
     M::TranslationStaticAddress.destroy(

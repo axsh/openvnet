@@ -31,4 +31,29 @@ describe "/translations" do
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
+
+  describe "/:uuid/static_address" do
+    let!(:translation) { Fabricate(:translation, mode: "static_address") }
+
+    let(:api_suffix) { "translations/#{translation.canonical_uuid}/static_address" }
+    let(:fabricator) { :translation_static_address }
+    let(:model_class) { Vnet::Models::TranslationStaticAddress }
+
+    describe "POST" do
+      let!(:route_link) { Fabricate(:route_link, uuid: "rl-jefke") }
+
+      accepted_params = {
+        ingress_ipv4_address: "192.168.2.10",
+        egress_ipv4_address: "192.168.2.30",
+        ingress_port_number: 1,
+        egress_port_number: 3,
+        route_link_uuid: "rl-jefke"
+      }
+
+      required_params = [:ingress_ipv4_address, :egress_ipv4_address]
+      uuid_params = [:route_link_uuid]
+
+      include_examples "POST /", accepted_params, required_params, uuid_params
+    end
+  end
 end

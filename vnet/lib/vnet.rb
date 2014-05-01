@@ -79,6 +79,7 @@ module Vnet
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
         autoload :Translation, 'vnet/endpoints/1.0/responses/translation'
+        autoload :TranslationStaticAddress, 'vnet/endpoints/1.0/responses/translation_static_address'
         autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
