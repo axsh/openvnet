@@ -167,7 +167,11 @@ describe "event" do
           broadcast_mac_address: "02:00:00:aa:00:02"
         )
 
+        sleep(1)
+
         Vnspec::Models::Interface.find("if-dp1eth0").update(owner_datapath_uuid: "dp-new")
+
+        sleep(1)
 
         vm1.restart_network
 
