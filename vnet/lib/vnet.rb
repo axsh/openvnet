@@ -33,6 +33,7 @@ module Vnet
 
   module Constants
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
+    autoload :Network, 'vnet/constants/network'
     autoload :NetworkService, 'vnet/constants/network_service'
     autoload :Openflow, 'vnet/constants/openflow'
     autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
