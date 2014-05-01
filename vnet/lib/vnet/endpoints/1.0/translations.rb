@@ -42,8 +42,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   def self.static_address_shared_params
     param :ingress_ipv4_address, :String, transform: PARSE_IPV4, required: true
     param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
-    param :ingress_port_number, :Integer, in: 0..65536
-    param :egress_port_number, :Integer, in: 0..65536
+    param :ingress_port_number, :Integer, in: 1..65536
+    param :egress_port_number, :Integer, in: 1..65536
   end
 
   static_address_shared_params
