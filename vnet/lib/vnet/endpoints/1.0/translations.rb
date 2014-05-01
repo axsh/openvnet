@@ -6,7 +6,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
 
   def self.put_post_shared_params
     param_uuid M::Interface, :interface_uuid
-    param :mode, :String, in: MODES
+    param :mode, :String, in: C::Translation::MODES
     param :passthrough, :Boolean
   end
 
@@ -17,7 +17,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
-    post_new(:Translation, accepted_params, required_params)
+    post_new(:Translation)
   end
 
   get do
@@ -36,7 +36,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   put '/:uuid' do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
-    update_by_uuid(:Translation, put_post_shared_params)
+    update_by_uuid(:Translation)
   end
 
   param :ingress_ipv4_address, :String, transform: PARSE_IPV4, required: true
@@ -83,7 +83,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       ingress_ipv4_address: params["ingress_ipv4_address"],
       egress_ipv4_address: params["egress_ipv4_address"],
       ingress_port_number: params["ingress_port_number"],
-      egress_port_number: params["egress_port_number"])
+      egress_port_number: params["egress_port_number"]
     )
 
     respond_with(R::Translation.translation_static_addresses(translation))

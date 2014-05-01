@@ -37,7 +37,7 @@ module Vnet
     autoload :NetworkService, 'vnet/constants/network_service'
     autoload :Openflow, 'vnet/constants/openflow'
     autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
-    autoload :Translation 'vnet/constants/translation'
+    autoload :Translation, 'vnet/constants/translation'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
