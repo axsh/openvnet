@@ -9,6 +9,7 @@ def app
 end
 
 describe "/lease_policies" do
+  before(:each) { use_mock_event_handler }
   let(:api_suffix)  { "lease_policies" }
   let(:fabricator)  { :lease_policy }
   let(:model_class) { Vnet::Models::LeasePolicy }
@@ -60,8 +61,8 @@ describe "/lease_policies" do
     let!(:ip_range) {
       Fabricate(:ip_range,
                 ip_range_group_id: ip_range_group.id,
-                begin_ipv4_address: 40,
-                end_ipv4_address: 50 )
+                begin_ipv4_address: 167772417,
+                end_ipv4_address: 167772426 )
     }
     let!(:lease_policy_base_network) {
       Fabricate(:lease_policy_base_network,

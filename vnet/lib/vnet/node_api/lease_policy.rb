@@ -66,41 +66,24 @@ module Vnet::NodeApi
         raise ArgumentError unless from_ipaddr.is_a?(Integer)
         raise ArgumentError unless to_ipaddr.is_a?(Integer)
 
-        leaseaddr = nil
-
         range_order = {
           :asc => :begin_ipv4_address.asc,
           :desc => :end_ipv4_address.desc,
         }[order]
 
-        net_prefix = network.ipv4_prefix
-        suffix_mask = 0xFFFFFFFF >> net_prefix
-        net_start = network.ipv4_network & 0xFFFFFFFF << (32 - net_prefix)
-        ip_range_group.ip_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
-          start_range = net_start + ( suffix_mask & i.begin_ipv4_address.to_i )
-          end_range   = net_start + ( suffix_mask & i.end_ipv4_address.to_i )
+        network_ip_address = IPAddress::IPv4::parse_u32(network.ipv4_network, network.ipv4_prefix)
+        ip_range_group.ip_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each do |i|
+          from = [from_ipaddr, network_ip_address.first.to_i, i.begin_ipv4_address].max
+          to = [to_ipaddr, network_ip_address.last.to_i, i.end_ipv4_address].min
 
-          raise "Got from_ipaddr > end_range: #{from_ipaddr} > #{end_range}" if from_ipaddr > end_range
-          f = (from_ipaddr > start_range) ? from_ipaddr : start_range
-          raise "Got to_ipaddr < start_range: #{to_ipaddr} < #{start_range}" if to_ipaddr < start_range
-          t = (to_ipaddr < end_range) ? to_ipaddr : end_range
+          raise "Invalid ip address range: from: #{from} to: #{to}" if from > to
 
-          begin
-            is_loop = false
+          i.available_ip(network.id, from, to, order).tap do |leaseaddr|
+            return leaseaddr if leaseaddr
+          end
+        end
 
-            leaseaddr = i.available_ip(network.id, f, t, order)
-            break if leaseaddr.nil?
-            check_ip = IPAddress::IPv4.parse_u32(leaseaddr, net_prefix)
-            case order
-            when :asc
-              f = check_ip.to_i
-            when :desc
-              t = check_ip.to_i
-            end
-          end while is_loop
-          break unless leaseaddr.nil?
-        }
-        leaseaddr
+        return nil
       end
     end
   end
