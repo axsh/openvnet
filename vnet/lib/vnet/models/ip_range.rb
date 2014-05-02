@@ -2,6 +2,7 @@
 
 module Vnet::Models
   class IpRange < Base
+    taggable 'ipr'
 
     many_to_one :ip_range_group
 
