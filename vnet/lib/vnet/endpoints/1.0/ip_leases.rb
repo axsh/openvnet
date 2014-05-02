@@ -19,6 +19,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   post do
     uuid_to_id(M::Network, "network_uuid", "network_id")
     uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id")
+    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
     post_new(:IpLease, fill_options)
   end
@@ -39,6 +40,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   put '/:uuid' do
     uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
     uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id") if params["mac_lease_uuid"]
+    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
     update_by_uuid(:IpLease, fill_options)
   end
