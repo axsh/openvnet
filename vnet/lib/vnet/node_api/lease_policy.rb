@@ -13,7 +13,7 @@ module Vnet::NodeApi
           base_networks = lease_policy.lease_policy_base_networks
           raise "No network associated with lease policy" if base_networks.empty?
           
-          ip_r = base_networks.first.ip_range
+          ip_r = base_networks.first.ip_range_group
           net = base_networks.first.network
 
           new_ip = schedule(net,ip_r)
@@ -36,21 +36,21 @@ module Vnet::NodeApi
         end
       end
 
-      def schedule(network, ip_range)
+      def schedule(network, ip_range_group)
         # TODO: consider how to filter for addresses dynamically assigned
         latest_ip = model_class(:ip_address).order(:updated_at.desc).first
         ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_address
-        leaseaddr = case ip_range.allocation_type
+        leaseaddr = case ip_range_group.allocation_type
                     when ALLOCATION_TYPE_INCREMENTAL
-                      get_lease_address(network, ip_range, from_ipaddr: ipaddr) ||
-                        get_lease_address(network, ip_range, to_ipaddr: ipaddr)
+                      get_lease_address(network, ip_range_group, from_ipaddr: ipaddr) ||
+                        get_lease_address(network, ip_range_group, to_ipaddr: ipaddr)
                     when ALLOCATION_TYPE_DECREMENTAL
-                      get_lease_address(network, ip_range, to_ipaddr: ipaddr, order: :desc) ||
-                        get_lease_address(network, ip_range, from_ipaddr: ipaddr, order: :desc)
+                      get_lease_address(network, ip_range_group, to_ipaddr: ipaddr, order: :desc) ||
+                        get_lease_address(network, ip_range_group, from_ipaddr: ipaddr, order: :desc)
                     when ALLOCATION_TYPE_RANDOM
                       raise NotImplementedError
                     else
-                      raise "Unsupported IP address assignment: #{ip_range.allocation_type}"
+                      raise "Unsupported IP address assignment: #{ip_range_group.allocation_type}"
                     end
         if leaseaddr.nil?
           netstr = IPAddress::IPv4.parse_u32(network.ipv4_network, network.ipv4_prefix).to_string
@@ -59,7 +59,7 @@ module Vnet::NodeApi
         leaseaddr
       end
 
-      def get_lease_address(network, ip_range, options = {})
+      def get_lease_address(network, ip_range_group, options = {})
         from_ipaddr = options[:from_ipaddr] || 0
         to_ipaddr = options[:to_ipaddr] || 0xFFFFFFFF
         order = options[:order] || :asc
@@ -76,7 +76,7 @@ module Vnet::NodeApi
         net_prefix = network.ipv4_prefix
         suffix_mask = 0xFFFFFFFF >> net_prefix
         net_start = network.ipv4_network & 0xFFFFFFFF << (32 - net_prefix)
-        ip_range.ip_range_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
+        ip_range_group.ip_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each {|i|
           start_range = net_start + ( suffix_mask & i.begin_ipv4_address.to_i )
           end_range   = net_start + ( suffix_mask & i.end_ipv4_address.to_i )
 

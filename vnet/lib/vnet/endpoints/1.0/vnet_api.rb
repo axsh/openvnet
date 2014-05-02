@@ -176,7 +176,7 @@ module Vnet::Endpoints::V10
     load_namespace('dns_services')
     load_namespace('interfaces')
     load_namespace('ip_leases')
-    load_namespace('ip_ranges')
+    load_namespace('ip_range_groups')
     load_namespace('lease_policies')
     load_namespace('mac_leases')
     load_namespace('networks')

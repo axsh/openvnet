@@ -10,51 +10,51 @@ describe Vnet::NodeApi::LeasePolicy do
     let(:network) { Fabricate(:network_for_range) }
 
     context "when running out of ip addresses" do
-      let(:ip_range) do
-        Fabricate(:ip_range_with_range) { allocation_type "incremental" }
+      let(:ip_range_group) do
+        Fabricate(:ip_range_group_with_range) { allocation_type "incremental" }
       end
 
       before do
         3.times { 
-          ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range)
+          ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group)
           Vnet::Models::IpAddress.create(network: network, ipv4_address: ipv4_address)
         }
       end
 
       it "raise 'Run out of dynamic IP addresses' error" do
-        expect { Vnet::NodeApi::LeasePolicy.schedule(network, ip_range) }.to raise_error(/Run out of dynamic IP addresses/)
+        expect { Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group) }.to raise_error(/Run out of dynamic IP addresses/)
       end
     end
 
     context "when allocation_type is :incremental" do
-      let(:ip_range) do
-        Fabricate(:ip_range_with_range) { allocation_type "incremental" }
+      let(:ip_range_group) do
+        Fabricate(:ip_range_group_with_range) { allocation_type "incremental" }
       end
 
       it "returns an ipv4 address by incremental order" do
-        ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range)
+        ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group)
         expect(IPAddr.new(ipv4_address, Socket::AF_INET).to_s).to eq "10.102.0.100"
       end
     end
 
     context "when allocation_type is :decremental" do
-      let(:ip_range) do
-        Fabricate(:ip_range_with_range) { allocation_type "decremental" }
+      let(:ip_range_group) do
+        Fabricate(:ip_range_group_with_range) { allocation_type "decremental" }
       end
 
       it "returns an ipv4 address by decremental order" do
-        ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range)
+        ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group)
         expect(IPAddr.new(ipv4_address, Socket::AF_INET).to_s).to eq "10.102.0.102"
       end
     end
 
     context "when allocation_type is :random" do
-      let(:ip_range) do
-        Fabricate(:ip_range_with_range) { allocation_type "random" }
+      let(:ip_range_group) do
+        Fabricate(:ip_range_group_with_range) { allocation_type "random" }
       end
 
       it "raise NotImplementedError" do
-        expect { Vnet::NodeApi::LeasePolicy.schedule(network, ip_range) }.to raise_error(NotImplementedError)
+        expect { Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group) }.to raise_error(NotImplementedError)
       end
     end
   end
