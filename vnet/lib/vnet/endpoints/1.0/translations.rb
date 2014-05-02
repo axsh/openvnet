@@ -79,13 +79,19 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")
     end
 
-    M::TranslationStaticAddress.destroy(
-      translation_id: translation.id,
-      ingress_ipv4_address: params["ingress_ipv4_address"],
-      egress_ipv4_address: params["egress_ipv4_address"],
-      ingress_port_number: params["ingress_port_number"],
-      egress_port_number: params["egress_port_number"]
-    )
+    remove_system_parameters
+
+    # Sequel expects symbols in its filter hash. Symbolise the string keys in params
+    filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
+    params[:translation_id] = translation.id
+    tsa = M::TranslationStaticAddress.batch[filter_params].commit
+
+    if !tsa
+      rp = request.params.to_json
+      raise E::UnknownResource, "Couldn't find resource with parameters: #{rp}"
+    end
+
+    M::TranslationStaticAddress.destroy(id: tsa.id)
 
     respond_with(R::Translation.translation_static_addresses(translation))
   end
