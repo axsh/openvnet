@@ -52,11 +52,11 @@ module Vnet::Endpoints::V10::Helpers
     PARSE_IPV4 = proc do |param|
       begin
         #TODO: Change to ipaddress
-        address = IPAddr.new(param)
+        address = IPAddress::IPv4.new(param)
         raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
         address.to_i
       rescue ArgumentError
-        raise(E::ArgumentError, 'Could not parse IPv4 address.')
+        raise(E::ArgumentError, "Could not parse IPv4 address: #{param}")
       end
     end
 
@@ -64,7 +64,7 @@ module Vnet::Endpoints::V10::Helpers
       begin
         Trema::Mac.new(param).value
       rescue ArgumentError
-        raise(E::ArgumentError, 'Could not parse MAC address.')
+        raise(E::ArgumentError, "Could not parse MAC address: #{param}")
       end
     end
   end
