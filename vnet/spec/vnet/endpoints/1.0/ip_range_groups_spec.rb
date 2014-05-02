@@ -28,12 +28,14 @@ describe "/ip_range_groups" do
   end
 
   describe "One to many relation calls for ip_ranges" do
-    pending "TODO, this does not work because url route is different from table name and this table does not have a uuid"
-#    let(:relation_fabricator) { :ip_range }
+    let(:relation_fabricator) { :ip_range }
+    let(:relation_uuid) { "ipr-new" }
 
-#    include_examples "one_to_many_relation", "ranges", {
-#                       :begin_ipv4_address => "0.0.0.40",
-#                       :end_ipv4_address => "0.0.0.50"
-#    }
+    include_examples "one_to_many_relation",
+      "ip_ranges", {
+      :uuid => "ipr-new",
+      :begin_ipv4_address => "0.0.0.40",
+      :end_ipv4_address => "0.0.0.50"
+    }
   end
 end
