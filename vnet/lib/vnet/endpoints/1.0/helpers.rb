@@ -50,9 +50,8 @@ module Vnet::Endpoints::V10::Helpers
 
   module Parsers
     PARSE_IPV4 = proc do |param|
-      return nil if param.nil? || param.empty?
-
       begin
+        #TODO: Change to ipaddress
         address = IPAddr.new(param)
         raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
         address.to_i
@@ -62,25 +61,10 @@ module Vnet::Endpoints::V10::Helpers
     end
 
     PARSE_MAC = proc do |param|
-      return nil if param.nil? || param.empty?
-
       begin
         Trema::Mac.new(param).value
       rescue ArgumentError
         raise(E::ArgumentError, 'Could not parse MAC address.')
-      end
-    end
-
-    def parse_port(param)
-      return nil if param.nil? || param.empty?
-
-      begin
-        port_number = param.to_i
-        return port_number if port_number > 0 && port_number < (1 << 16)
-
-        raise(E::ArgumentError, 'Invalid port number.')
-      rescue ArgumentError
-        raise(E::ArgumentError, 'Could not parse port number.')
       end
     end
   end
