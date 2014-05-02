@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'ipaddr'
+require 'ipaddress'
 
 describe Vnet::NodeApi::LeasePolicy do
   before do
@@ -15,7 +15,7 @@ describe Vnet::NodeApi::LeasePolicy do
       end
 
       before do
-        3.times { 
+        10.times {
           ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group)
           Vnet::Models::IpAddress.create(network: network, ipv4_address: ipv4_address)
         }
@@ -33,7 +33,7 @@ describe Vnet::NodeApi::LeasePolicy do
 
       it "returns an ipv4 address by incremental order" do
         ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group)
-        expect(IPAddr.new(ipv4_address, Socket::AF_INET).to_s).to eq "10.102.0.100"
+        expect(IPAddress::IPv4.parse_u32(ipv4_address).to_s).to eq "10.102.0.101"
       end
     end
 
@@ -44,7 +44,7 @@ describe Vnet::NodeApi::LeasePolicy do
 
       it "returns an ipv4 address by decremental order" do
         ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group)
-        expect(IPAddr.new(ipv4_address, Socket::AF_INET).to_s).to eq "10.102.0.102"
+        expect(IPAddress::IPv4.parse_u32(ipv4_address).to_s).to eq "10.102.0.110"
       end
     end
 
@@ -55,6 +55,39 @@ describe Vnet::NodeApi::LeasePolicy do
 
       it "raise NotImplementedError" do
         expect { Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group) }.to raise_error(NotImplementedError)
+      end
+    end
+
+    # network:
+    #   ipv4_address: 10.102.0.100
+    #   prefix 3
+    #   begin: 10.102.0.101
+    #   end:   10.102.0.102
+    #
+    # ip_range:
+    #   prefix: 24
+    #   begin: 10.102.0.100
+    #   end: 10.102.0.110
+    #
+    context "when ip_range's ipv4_prefix is different from network's ipv4_prefix" do
+      let(:network) { Fabricate(:network_with_prefix_30) }
+      let(:ip_range_group) do
+        Fabricate(:ip_range_group_with_range) { allocation_type "incremental" }
+      end
+
+      it "returns the ip addresses within the network's subnet" do
+
+        Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group).tap do |ipv4_address|
+          expect(IPAddress::IPv4.parse_u32(ipv4_address).to_s).to eq "10.102.0.101"
+          Vnet::Models::IpAddress.create(network: network, ipv4_address: ipv4_address)
+        end
+
+        Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group).tap do |ipv4_address|
+          expect(IPAddress::IPv4.parse_u32(ipv4_address).to_s).to eq "10.102.0.102"
+          Vnet::Models::IpAddress.create(network: network, ipv4_address: ipv4_address)
+        end
+
+        expect { Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group) }.to raise_error(/Run out of dynamic IP addresses/)
       end
     end
   end
@@ -70,7 +103,7 @@ describe Vnet::NodeApi::LeasePolicy do
       )
 
       ip_lease = interface.ip_leases.first
-      expect(IPAddr.new(ip_lease.ipv4_address, Socket::AF_INET).to_s).to eq "10.102.0.100"
+      expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
 
       event = MockEventHandler.handled_events.first
       expect(event[:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS

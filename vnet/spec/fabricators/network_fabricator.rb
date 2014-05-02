@@ -57,3 +57,9 @@ Fabricator(:vnet_2, class_name: Vnet::Models::Network) do
   network_mode 'virtual'
   #editable true
 end
+
+Fabricator(:network_with_prefix_30, class_name: Vnet::Models::Network) do
+  ipv4_network IPAddr.new("10.102.0.100").to_i
+  ipv4_prefix 30
+  network_mode 'virtual'
+end
