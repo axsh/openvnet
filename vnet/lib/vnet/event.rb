@@ -100,6 +100,7 @@ module Vnet
     # router event
     #
     ROUTER_INITIALIZED = "router_initialized"
+    ROUTER_UNLOAD_ITEM = "router_unload_item"
     ROUTER_CREATED_ITEM = "router_created_item"
     ROUTER_DELETED_ITEM = "router_deleted_item"
 

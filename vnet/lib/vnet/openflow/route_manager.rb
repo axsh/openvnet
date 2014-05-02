@@ -3,18 +3,13 @@
 module Vnet::Openflow
 
   class RouteManager < Vnet::Manager
-
-    def initialize(params)
-      super
-
-      # TODO: Use ActiveNetwork/RouteLink.
-      @active_networks = {}
-      @active_route_links = {}
-    end
+    include ActiveNetworks
+    include ActiveRouteLinks
 
     #
     # Events:
     #
+
     subscribe_event ROUTE_INITIALIZED, :load_item
     subscribe_event ROUTE_UNLOAD_ITEM, :unload_item
     subscribe_event ROUTE_CREATED_ITEM, :created_item
@@ -61,6 +56,9 @@ module Vnet::Openflow
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
+      filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
+      filter << {network_id: params[:network_id]} if params.has_key? :network_id
+      filter << {route_link_id: params[:route_link_id]} if params.has_key? :route_link_id
       filter
     end
 
@@ -71,7 +69,9 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      item = Routes::Base.new(dp_info: @dp_info, map: item_map)
+      item_class = Routes::Base
+
+      item = item_class.new(dp_info: @dp_info, map: item_map)
 
       item.active_network = @active_networks.has_key? item.network_id
       item.active_route_link = @active_route_links.has_key? item.route_link_id
@@ -119,7 +119,7 @@ module Vnet::Openflow
     end
 
     #
-    # Network events:
+    # Overload helper methods:
     #
 
     # We should only active networks on this datapath that have
@@ -127,63 +127,30 @@ module Vnet::Openflow
     #
     # Note: Replace by active segment once implemented.
 
-    # ROUTE_ACTIVATE_NETWORK on queue ':network'
-    def activate_network(params)
-      network_id = params[:network_id] || return
-      return if @active_networks.has_key? network_id
+    def activate_network_value(network_id, params)
+      params[:route_id_list] = {}
+    end
 
-      routes = []
+    def activate_network_update_item_proc(network_id, params)
+      route_id_list = params[:route_id_list] || return
 
-      @items.each { |id, item|
-        next unless item.network_id == network_id
-
+      Proc.new { |id, item|
         item.active_network = true
-        routes << item.id
+        route_id_list[item.id] = true
       }
-      @active_networks[network_id] = routes
-
-      item_maps = mw_class.batch.where(network_id: network_id).all.commit
-      item_maps.each { |item_map| internal_new_item(item_map, {}) }
     end
 
-    # ROUTE_DEACTIVATE_NETWORK on queue ':network'
-    def deactivate_network(params)
-      # return if params[:network_id].nil?
-      # routes = @active_networks.delete(params[:network_id]) || return
-
+    def activate_route_link_value(route_link_id, params)
+      params[:route_id_list] = {}
     end
 
-    #
-    # Route Link events:
-    #
+    def activate_route_link_update_item_proc(route_link_id, params)
+      route_id_list = params[:route_id_list] || return
 
-    # Activating route links causes associated routes to be loaded,
-    # however these are marked as having inactive networks.
-
-    # ROUTE_ACTIVATE_ROUTE_LINK on queue ':route_link'
-    def activate_route_link(params)
-      route_link_id = params[:route_link_id] || return
-      return if @active_route_links.has_key? route_link_id
-
-      routes = []
-
-      @items.each { |id, item|
-        next unless item.route_link_id == route_link_id
-
+      Proc.new { |id, item|
         item.active_route_link = true
-        routes << item.id
+        route_id_list[item.id] = true
       }
-      @active_route_links[route_link_id] = routes
-
-      item_maps = mw_class.batch.where(route_link_id: route_link_id).all.commit
-      item_maps.each { |item_map| internal_new_item(item_map, {}) }
-    end
-
-    # ROUTE_DEACTIVATE_ROUTE_LINK on queue ':route_link'
-    def deactivate_route_link(params)
-      # return if params[:route_link_id].nil?
-      # routes = @active_route_links.delete(params[:route_link_id]) || return
-
     end
 
   end

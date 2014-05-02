@@ -213,6 +213,8 @@ module Vnet
   module Openflow
 
     autoload :ActiveInterfaces, 'vnet/openflow/event_helpers'
+    autoload :ActiveNetworks, 'vnet/openflow/event_helpers'
+    autoload :ActiveRouteLinks, 'vnet/openflow/event_helpers'
     autoload :AddressHelpers, 'vnet/openflow/address_helpers'
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :Controller, 'vnet/openflow/controller'

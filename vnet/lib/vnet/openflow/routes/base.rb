@@ -8,8 +8,8 @@ module Vnet::Openflow::Routes
 
     attr_reader :interface_id
     attr_reader :route_link_id
-
     attr_reader :network_id
+
     attr_reader :ipv4_address
     attr_reader :ipv4_prefix
 
