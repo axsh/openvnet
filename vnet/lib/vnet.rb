@@ -32,6 +32,7 @@ module Vnet
   end
 
   module Constants
+    autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
     autoload :Network, 'vnet/constants/network'
     autoload :NetworkService, 'vnet/constants/network_service'

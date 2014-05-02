@@ -19,8 +19,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param :ipv4_address, :String, transform: PARSE_IPV4
   param :mac_address, :String, transform: PARSE_MAC
   param :port_name, :String
-  #TODO: Write this in a constant
-  param :mode, :String, in: ['vif', 'simulated', 'patch', 'remote', 'host', 'edge']
+  param :mode, :String, in: C::Interface::MODES
   post do
     # Consider deprecating this:
     params['port_name'] = params['uuid'] if !params['port_name'] && params['uuid']
