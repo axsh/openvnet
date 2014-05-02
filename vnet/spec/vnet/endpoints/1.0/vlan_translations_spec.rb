@@ -35,13 +35,20 @@ describe "/vlan_translations" do
       :network_id => 1
     }
 
-    required_params = [:network_id, :translation_uuid]
+    required_params = []
     uuid_params = [:uuid, :translation_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
   describe "PUT /:uuid" do
+    let!(:translation) do
+      Fabricate(:translation,
+        uuid: 'tr-test2',
+        mode: Vnet::Constants::Translation::MODE_VNET_EDGE
+      )
+    end
+
     accepted_params = {
       :translation_uuid => "tr-test2",
       :mac_address => "fe:e5:06:64:a6:c2",
