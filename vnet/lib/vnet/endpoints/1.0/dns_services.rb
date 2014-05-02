@@ -36,12 +36,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
 
   param :name, :String, required: true
   param :ipv4_address, :String, transform: PARSE_IPV4
-  param_uuid M::DnsRecord, :uuid, required: true
+  param_uuid M::DnsRecord, :uuid, required: true, transform: proc { |u| M::DnsRecord.trim_uuid(u) }
   post '/:dns_service_uuid/dns_records' do
     dns_service = check_syntax_and_pop_uuid(M::DnsService, :dns_service_uuid)
-
-    #TODO: No need to check syntax here and we can trim using transform
-    check_and_trim_uuid(M::DnsRecord) if params[:uuid]
 
     params[:dns_service_id] = dns_service.id
 
