@@ -76,7 +76,7 @@ module Vnet::Endpoints::V10
       model_wrapper = M.const_get(class_name)
       uuid = @params[:uuid]
       # TODO don't need to find model here
-      check_syntax_and_pop_uuid(model_wrapper, @params)
+      check_syntax_and_pop_uuid(model_wrapper)
       model_wrapper.destroy(uuid)
       respond_with([uuid])
     end
@@ -100,7 +100,7 @@ module Vnet::Endpoints::V10
     def get_by_uuid(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
-      object = check_syntax_and_pop_uuid(model_wrapper, @params, "uuid", fill)
+      object = check_syntax_and_pop_uuid(model_wrapper, "uuid", fill)
       respond_with(response.generate(object))
     end
 
@@ -108,7 +108,7 @@ module Vnet::Endpoints::V10
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
 
-      model = check_syntax_and_pop_uuid(model_wrapper, params)
+      model = check_syntax_and_pop_uuid(model_wrapper)
 
       # This yield is for extra argument validation
       yield(params) if block_given?
@@ -123,7 +123,7 @@ module Vnet::Endpoints::V10
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
 
-      check_and_trim_uuid(model_wrapper, params) if params["uuid"]
+      check_and_trim_uuid(model_wrapper) if params["uuid"]
 
       # This yield is for extra argument validation
       yield(params) if block_given?
@@ -134,7 +134,7 @@ module Vnet::Endpoints::V10
     def show_relations(class_name, response_method)
       limit = @params[:limit] || config.pagination_limit
       offset = @params[:offset] || 0
-      object = check_syntax_and_pop_uuid(M.const_get(class_name), @params)
+      object = check_syntax_and_pop_uuid(M.const_get(class_name))
       total_count = object.batch.send(response_method).count.commit
       items = object.batch.send("#{response_method}_dataset").offset(offset).limit(limit).all.commit
       pagination = {

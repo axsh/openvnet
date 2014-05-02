@@ -12,7 +12,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
   param_uuid M::NetworkService, :network_service_uuid, required: true
   post do
     #TODO: No need to check syntax since we do that in param_uuid
-    check_syntax_and_get_id(M::NetworkService, params, :network_service_uuid, :network_service_id)
+    check_syntax_and_get_id(M::NetworkService, :network_service_uuid, :network_service_id)
 
     post_new(:DnsService, fill_options)
   end
@@ -38,9 +38,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
   param :ipv4_address, :String, transform: PARSE_IPV4
   param_uuid M::DnsRecord, :uuid, required: true
   post '/:dns_service_uuid/dns_records' do
-    dns_service = check_syntax_and_pop_uuid(M::DnsService, params, :dns_service_uuid)
+    dns_service = check_syntax_and_pop_uuid(M::DnsService, :dns_service_uuid)
 
-    check_and_trim_uuid(M::DnsRecord, params) if params[:uuid]
+    #TODO: No need to check syntax here and we can trim using transform
+    check_and_trim_uuid(M::DnsRecord) if params[:uuid]
 
     params[:dns_service_id] = dns_service.id
 
@@ -55,8 +56,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
   end
 
   delete '/:uuid/dns_records/:dns_record_uuid' do
-    dns_service = check_syntax_and_pop_uuid(M::DnsService, @params)
-    dns_record = check_syntax_and_pop_uuid(M::DnsRecord, @params, :dns_record_uuid)
+    dns_service = check_syntax_and_pop_uuid(M::DnsService)
+    dns_record = check_syntax_and_pop_uuid(M::DnsRecord, :dns_record_uuid)
 
     raise E::UnknownUUIDResource, dns_record.uuid unless dns_record.dns_service_id == dns_service.id
 

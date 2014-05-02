@@ -37,9 +37,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   param :broadcast_mac_address, :String, required: true, transform: PARSE_MAC
   param_uuid M::Interface, :interface_uuid, required: true
   post '/:uuid/networks/:network_uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath, params)
-    interface = check_syntax_and_pop_uuid(M::Interface, params, 'interface_uuid')
-    network = check_syntax_and_pop_uuid(M::Network, params, 'network_uuid')
+    datapath = check_syntax_and_pop_uuid(M::Datapath)
+    interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
+    network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
 
     M::DatapathNetwork.create({ :datapath_id => datapath.id,
                                 :interface_id => interface.id,
@@ -55,8 +55,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   delete '/:uuid/networks/:network_uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath, params)
-    network = check_syntax_and_pop_uuid(M::Network, params, 'network_uuid')
+    datapath = check_syntax_and_pop_uuid(M::Datapath)
+    network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
 
     M::DatapathNetwork.destroy(
       :datapath_id => datapath.id,
@@ -69,9 +69,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   param :mac_address, :String, required: true, transform: PARSE_MAC
   param_uuid M::Interface, :interface_uuid, required: true
   post '/:uuid/route_links/:route_link_uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath, params)
-    interface = check_syntax_and_pop_uuid(M::Interface, params, 'interface_uuid')
-    route_link = check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid')
+    datapath = check_syntax_and_pop_uuid(M::Datapath)
+    interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
+    route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
 
     M::DatapathRouteLink.create({ :datapath_id => datapath.id,
                                   :interface_id => interface.id,
@@ -87,8 +87,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   delete '/:uuid/route_links/:route_link_uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath, params)
-    route_link = check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid')
+    datapath = check_syntax_and_pop_uuid(M::Datapath)
+    route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
 
     relations = M::DatapathRouteLink.filter({
       :datapath_id => datapath.id,

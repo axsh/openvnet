@@ -35,7 +35,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
   param :begin_ipv4_address, :String, transform: PARSE_IPV4
   param :end_ipv4_address, :String, transform: PARSE_IPV4
   post '/:uuid/ranges' do
-    ip_range = check_syntax_and_pop_uuid(M::IpRange, params)
+    ip_range = check_syntax_and_pop_uuid(M::IpRange)
 
     M::IpRangesRange.create({ :ip_range_id => ip_range.id,
                               :begin_ipv4_address => params["begin_ipv4_address"],
@@ -52,7 +52,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_ranges' do
   param :begin_ipv4_address, :String, transform: PARSE_IPV4
   param :end_ipv4_address, :String, transform: PARSE_IPV4
   delete '/:uuid/ranges' do
-    ip_range = check_syntax_and_pop_uuid(M::IpRange, params)
+    ip_range = check_syntax_and_pop_uuid(M::IpRange)
+
+    #TODO: Raise error when this range wasn't found
 
     M::IpRangesRange.destroy({ :ip_range_id => ip_range.id,
                               :begin_ipv4_address => params["begin_ipv4_address"],

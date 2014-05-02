@@ -38,9 +38,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
 
   put_post_shared_params
   put '/:uuid' do
-    check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
-    check_syntax_and_get_id(M::Network,   params, "network_uuid", "network_id") if params["network_uuid"]
-    check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid", "route_link_id") if params["route_link_uuid"]
+    check_syntax_and_get_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
+    check_syntax_and_get_id(M::Network,   "network_uuid", "network_id") if params["network_uuid"]
+    check_syntax_and_get_id(M::RouteLink, "route_link_uuid", "route_link_id") if params["route_link_uuid"]
     update_by_uuid(:Route)
   end
 end

@@ -49,10 +49,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   static_address_shared_params
   param_uuid M::RouteLink, :route_link_uuid
   post '/:uuid/static_address' do
-    translation = check_syntax_and_pop_uuid(M::Translation, params)
+    translation = check_syntax_and_pop_uuid(M::Translation)
 
     route_link_id = if params['route_link_uuid']
-      check_syntax_and_pop_uuid(M::RouteLink, params, 'route_link_uuid').id
+      check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid').id
     end
 
     if translation.mode != CT::MODE_STATIC_ADDRESS
@@ -73,7 +73,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
 
   static_address_shared_params
   delete '/:uuid/static_address' do
-    translation = check_syntax_and_pop_uuid(M::Translation, params)
+    translation = check_syntax_and_pop_uuid(M::Translation)
 
     if translation.mode != CT::MODE_STATIC_ADDRESS
       raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")

@@ -36,8 +36,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   post '/:uuid/networks/:network_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
     
-    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
-    network = check_syntax_and_pop_uuid(M::Network, params, "network_uuid")
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
+    network = check_syntax_and_pop_uuid(M::Network, "network_uuid")
 
     uuid_to_id(M::IpRange, "ip_range_uuid", "ip_range_id")
 
@@ -54,8 +54,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   end
 
   delete '/:uuid/networks/:network_uuid' do
-    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
-    network = check_syntax_and_pop_uuid(M::Network, params, "network_uuid")
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
+    network = check_syntax_and_pop_uuid(M::Network, "network_uuid")
 
     M::LeasePolicyBaseNetwork.destroy({ :network_id => network.id,
                                         :lease_policy_id => lease_policy.id
@@ -67,8 +67,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   post '/:uuid/interfaces/:interface_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
 
-    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
-    interface = check_syntax_and_pop_uuid(M::Interface, params, "interface_uuid")
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
+    interface = check_syntax_and_pop_uuid(M::Interface, "interface_uuid")
 
     M::LeasePolicy.allocate_ip({ :interface_id => interface.id,
                                  :lease_policy_id => lease_policy.id
@@ -86,8 +86,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   end
 
   delete '/:uuid/interfaces/:interface_uuid' do
-    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy, params)
-    interface = check_syntax_and_pop_uuid(M::Interface, params, "interface_uuid")
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
+    interface = check_syntax_and_pop_uuid(M::Interface, "interface_uuid")
 
     M::LeasePolicyBaseInterface.destroy({ :interface_id => interface.id,
                                           :lease_policy_id => lease_policy.id

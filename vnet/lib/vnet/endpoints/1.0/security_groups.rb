@@ -32,8 +32,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   end
 
   post '/:uuid/interfaces/:interface_uuid' do
-    interface = check_syntax_and_get_id(M::Interface, params, 'interface_uuid', 'interface_id')
-    security_group = check_syntax_and_get_id(M::SecurityGroup, params, 'uuid', 'security_group_id')
+    interface = check_syntax_and_get_id(M::Interface, 'interface_uuid', 'interface_id')
+    security_group = check_syntax_and_get_id(M::SecurityGroup, 'uuid', 'security_group_id')
 
     filter = { :interface_id => interface.id, :security_group_id => security_group.id }
     M::InterfaceSecurityGroup.filter(filter).empty? ||
@@ -52,8 +52,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   end
 
   delete '/:uuid/interfaces/:interface_uuid' do
-    security_group = check_syntax_and_pop_uuid(M::SecurityGroup, params)
-    interface = check_syntax_and_pop_uuid(M::Interface, params, 'interface_uuid')
+    security_group = check_syntax_and_pop_uuid(M::SecurityGroup)
+    interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
 
     relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).all.commit

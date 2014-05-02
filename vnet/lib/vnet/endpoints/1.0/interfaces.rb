@@ -19,6 +19,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param :ipv4_address, :String, transform: PARSE_IPV4
   param :mac_address, :String, transform: PARSE_MAC
   param :port_name, :String
+  #TODO: Write this in a constant
   param :mode, :String, in: ['vif', 'simulated', 'patch', 'remote', 'host', 'edge']
   post do
     # Consider deprecating this:
@@ -44,13 +45,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
 
   put_post_shared_params
   put '/:uuid' do
-    check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+    check_syntax_and_get_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     update_by_uuid(:Interface, fill)
   end
 
   post '/:uuid/security_groups/:security_group_uuid' do
-    security_group = check_syntax_and_get_id(M::SecurityGroup, params, 'security_group_uuid', 'security_group_id')
-    interface = check_syntax_and_get_id(M::Interface, params, 'uuid', 'interface_id')
+    security_group = check_syntax_and_get_id(M::SecurityGroup, 'security_group_uuid', 'security_group_id')
+    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
 
     M::InterfaceSecurityGroup.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).empty? ||
@@ -68,8 +69,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   end
 
   delete '/:uuid/security_groups/:security_group_uuid' do
-    interface = check_syntax_and_pop_uuid(M::Interface, params)
-    security_group = check_syntax_and_pop_uuid(M::SecurityGroup, params, 'security_group_uuid')
+    interface = check_syntax_and_pop_uuid(M::Interface)
+    security_group = check_syntax_and_pop_uuid(M::SecurityGroup, 'security_group_uuid')
 
     relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).all.commit
