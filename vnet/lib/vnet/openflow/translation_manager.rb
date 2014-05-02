@@ -4,6 +4,7 @@ module Vnet::Openflow
 
   class TranslationManager < Vnet::Manager
 
+    include Vnet::Constants::Translation
     include ActiveInterfaces
 
     #
@@ -65,8 +66,8 @@ module Vnet::Openflow
     def item_initialize(item_map, params)
       item_class =
         case item_map.mode
-        when 'static_address' then Translations::StaticAddress
-        when 'vnet_edge'      then Translations::VnetEdgeHandler
+        when MODE_STATIC_ADDRESS then Translations::StaticAddress
+        when MODE_VNET_EDGE      then Translations::VnetEdgeHandler
         else
           return
         end
