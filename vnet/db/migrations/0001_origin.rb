@@ -268,7 +268,7 @@ Sequel.migration do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
       Integer :network_id, :index => true, :null => false
-      Integer :ip_range_id, :index => true, :null => false
+      Integer :ip_range_group_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -283,7 +283,7 @@ Sequel.migration do
       DateTime :deleted_at
     end
 
-    create_table(:ip_ranges) do
+    create_table(:ip_range_groups) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       String :allocation_type, :null=>false, :default => "incremental"
@@ -292,11 +292,13 @@ Sequel.migration do
       DateTime :deleted_at
     end
 
-    create_table(:ip_range_ranges) do
+    create_table(:ip_ranges) do
       primary_key :id
-      Integer :ip_range_id, :index => true, :null => false
+      String :uuid, :unique => true, :null=>false
+      Integer :ip_range_group_id, :index => true, :null => false
       Bignum :begin_ipv4_address, :null=>false
       Bignum :end_ipv4_address, :null=>false
+      Integer :ipv4_prefix, :default=>24, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -311,8 +313,8 @@ end
                :interface_security_groups,
                :ip_addresses,
                :ip_leases,
+               :ip_range_groups,
                :ip_ranges,
-               :ip_ranges_range,
                :lease_policies,
                :mac_addresses,
                :mac_leases,
