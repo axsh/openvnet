@@ -76,14 +76,15 @@ module Vnet::NodeApi
           from = [from_ipaddr, network_ip_address.first.to_i, i.begin_ipv4_address].max
           to = [to_ipaddr, network_ip_address.last.to_i, i.end_ipv4_address].min
 
-          raise "Invalid ip address range: from: #{from} to: #{to}" if from > to
+          # no ip address is assigined
+          return if from > to
 
           i.available_ip(network.id, from, to, order).tap do |leaseaddr|
             return leaseaddr if leaseaddr
           end
         end
 
-        return nil
+        return
       end
     end
   end
