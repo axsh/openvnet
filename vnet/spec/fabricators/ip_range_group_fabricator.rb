@@ -8,3 +8,8 @@ Fabricator(:ip_range_group_with_range, class_name: Vnet::Models::IpRangeGroup) d
   allocation_type "incremental"
   ip_ranges(count: 1) { Fabricate(:ip_range_with_range) }
 end
+
+Fabricator(:ip_range_group_with_range2, class_name: Vnet::Models::IpRangeGroup) do
+  allocation_type "incremental"
+  ip_ranges(count: 1) { Fabricate(:ip_range_with_range2) }
+end
