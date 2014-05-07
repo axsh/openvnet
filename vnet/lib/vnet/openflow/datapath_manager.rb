@@ -113,7 +113,7 @@ module Vnet::Openflow
       end
 
       # TODO: move to install_item...
-      @dp_info.datapath.async.switch_ready
+      @dp_info.datapath.switch_ready
     end
 
     #
