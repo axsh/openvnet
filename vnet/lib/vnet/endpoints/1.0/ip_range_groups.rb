@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
-  put_post_shared_params = ["allocation_type"]
+  put_post_shared_params = [:allocation_type]
 
   fill_options = [ ]
 
@@ -28,35 +28,35 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
     update_by_uuid(:IpRangeGroup, put_post_shared_params, fill_options)
   end
 
-  post '/:uuid/ip_ranges' do
-    params = parse_params(@params, ['uuid', "begin_ipv4_address", "end_ipv4_address"])
+  post '/:ip_range_group_uuid/ip_ranges' do
+    params = parse_params(@params, [:ip_range_group_uuid, :uuid, :begin_ipv4_address, :end_ipv4_address])
 
-    ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup, params)
-    begin_ipv4_address = parse_ipv4(params['begin_ipv4_address'])
-    end_ipv4_address = parse_ipv4(params['end_ipv4_address'])
+    ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup, params, :ip_range_group_uuid)
+    check_and_trim_uuid(M::IpRange, params) if params[:uuid]
 
-    M::IpRange.create({ :ip_range_group_id => ip_range_group.id,
-                        :begin_ipv4_address => begin_ipv4_address,
-                        :end_ipv4_address => end_ipv4_address,
-                      })
-    respond_with(R::IpRangeGroup.ip_ranges(ip_range_group))
+    params[:ip_range_group_id] = ip_range_group.id
+    params[:begin_ipv4_address] = parse_ipv4(params[:begin_ipv4_address])
+    params[:end_ipv4_address] = parse_ipv4(params[:end_ipv4_address])
+
+    ip_range = M::IpRange.create(params)
+
+    respond_with(R::IpRange.generate(ip_range))
   end
 
   get '/:uuid/ip_ranges' do
     show_relations(:IpRangeGroup, :ip_ranges)
   end
 
-  delete '/:uuid/ip_ranges' do
-    params = parse_params(@params, ['uuid', "begin_ipv4_address", "end_ipv4_address"])
+  delete '/:uuid/ip_ranges/:ip_range_uuid' do
+    params = parse_params(@params, [:uuid, :ip_range_uuid])
 
     ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup, params)
-    begin_ipv4_address = parse_ipv4(params['begin_ipv4_address'])
-    end_ipv4_address = parse_ipv4(params['end_ipv4_address'])
+    ip_range = check_syntax_and_pop_uuid(M::IpRange, params, :ip_range_uuid)
 
-    M::IpRange.destroy({ :ip_range_group_id => ip_range_group.id,
-                              :begin_ipv4_address => begin_ipv4_address,
-                              :end_ipv4_address => end_ipv4_address,
-                            })
-    respond_with(R::IpRangeGroup.ip_ranges(ip_range_group))
+    raise E::UnknownUUIDResource, ip_range.uuid unless ip_range.ip_range_group_id == ip_range_group.id
+
+    M::IpRange.destroy(ip_range.uuid)
+
+    respond_with([ip_range.uuid])
   end
 end
