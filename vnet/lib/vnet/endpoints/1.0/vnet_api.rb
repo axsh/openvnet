@@ -31,7 +31,7 @@ module Vnet::Endpoints::V10
       @params.delete("captures")
     end
 
-    default_on_error do |error_hash|
+    def vnet_default_on_error(error_hash)
       if error_hash[:reason] == :required
         raise E::MissingArgument, error_hash[:parameter]
       else
@@ -44,21 +44,16 @@ module Vnet::Endpoints::V10
       end
     end
 
+    default_on_error { |error_hash| vnet_default_on_error(error_hash) }
+
     def self.param_uuid(model, name = :uuid, options = {})
       #TODO: Allow access to default_on_error in here
       error_handler = proc { |result|
         case result[:reason]
         when :format
           raise(E::InvalidUUID, "#{model.name.split("::").last}#uuid: #{result[:value]}")
-        when :required
-          raise E::MissingArgument, result[:parameter]
         else
-          raise E::ArgumentError, {
-            error: "parameter validation failed",
-            parameter: result[:parameter],
-            value: result[:value],
-            reason: result[:reason]
-          }
+          vnet_default_on_error(result)
         end
       }
 
