@@ -32,18 +32,18 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     update_by_uuid(:LeasePolicy, put_post_shared_params, fill_options)
   end
 
-  param_uuid M::IpRange, :ip_range_group_uuid, required: true
+  param_uuid M::IpRangeGroup, :ip_range_group_uuid, required: true
   post '/:uuid/networks/:network_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
     
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
     network = check_syntax_and_pop_uuid(M::Network, "network_uuid")
 
-    uuid_to_id(M::IpRange, "ip_range_group_uuid", "ip_range_group_id")
+    uuid_to_id(M::IpRangeGroup, "ip_range_group_uuid", "ip_range_group_id")
 
     M::LeasePolicyBaseNetwork.create({ :network_id => network.id,
                                        :lease_policy_id => lease_policy.id,
-                                       :ip_range_id => params["ip_range_id"]
+                                       :ip_range_group_id => params["ip_range_group_id"]
                                      })
 
     respond_with(R::LeasePolicy.lease_policy_network(lease_policy))
