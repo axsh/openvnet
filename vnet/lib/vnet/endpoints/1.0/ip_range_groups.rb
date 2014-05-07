@@ -41,25 +41,21 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
                         :begin_ipv4_address => params["begin_ipv4_address"],
                         :end_ipv4_address => params["end_ipv4_address"],
                       })
-    respond_with(R::IpRangeGroup.ip_ranges(ip_range_group))
+    respond_with(R::IpRange.ip_ranges(ip_range_group))
   end
 
   get '/:uuid/ip_ranges' do
     show_relations(:IpRangeGroup, :ip_ranges)
   end
 
-  param :begin_ipv4_address, :String, transform: PARSE_IPV4
-  param :end_ipv4_address, :String, transform: PARSE_IPV4
-  delete '/:uuid/ip_ranges' do
+  delete '/:uuid/ip_ranges/:ip_range_uuid' do
     ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup, params)
+    ip_range = check_syntax_and_pop_uuid(M::IpRange, params, :ip_range_uuid)
 
-    #TODO: Raise error when this range wasn't found
+    raise E::UnknownUUIDResource, ip_range.uuid unless ip_range.ip_range_group_id == ip_range_group.id
 
-    M::IpRange.destroy({ :ip_range_group_id => ip_range_group.id,
-                         :begin_ipv4_address => params["begin_ipv4_address"],
-                         :end_ipv4_address => params["end_ipv4_address"],
-                       })
+    M::IpRange.destroy(ip_range.uuid)
 
-    respond_with(R::IpRangeGroup.ip_ranges(ip_range_group))
+    respond_with([ip_range.uuid])
   end
 end
