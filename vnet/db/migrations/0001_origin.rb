@@ -297,7 +297,6 @@ Sequel.migration do
       Integer :ip_range_group_id, :index => true, :null => false
       Bignum :begin_ipv4_address, :null=>false
       Bignum :end_ipv4_address, :null=>false
-      Integer :ipv4_prefix, :default=>24, :null=>false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
