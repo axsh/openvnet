@@ -26,9 +26,10 @@ module Vnet
     #
     # Datapath events:
     #
-    ADDED_DATAPATH = 'added_datapath'
-    REMOVED_DATAPATH = 'removed_datapath'
-    INITIALIZED_DATAPATH = 'initialized_datapath'
+    DATAPATH_INITIALIZED = 'datapath_initialized'
+    DATAPATH_UNLOAD_ITEM = 'datapath_unload_item'
+    DATAPATH_CREATED_ITEM = 'datapath_created_item'
+    DATAPATH_DELETED_ITEM = 'datapath_deleted_item'
 
     ACTIVATE_NETWORK_ON_HOST = 'activate_network_on_host'
     DEACTIVATE_NETWORK_ON_HOST = 'deactivate_network_on_host'
