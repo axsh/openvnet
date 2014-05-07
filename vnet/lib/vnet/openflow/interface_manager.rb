@@ -352,7 +352,7 @@ module Vnet::Openflow
         end
 
       when :owner_datapath_id
-        delete_item(item)
+        unload_item(id: item.id)
         self.async.retrieve(id: item.id)
 
         #
