@@ -34,14 +34,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
 
   param :begin_ipv4_address, :String, transform: PARSE_IPV4
   param :end_ipv4_address, :String, transform: PARSE_IPV4
-  post '/:uuid/ip_ranges' do
-    ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup, params)
+  param_uuid M::IpRange, :uuid, transform: proc { |u| M::IpRange.trim_uuid(u) }
+  post '/:ip_range_group_uuid/ip_ranges' do
+    check_syntax_and_get_id(M::IpRangeGroup, "ip_range_group_uuid", "ip_range_group_id")
 
-    M::IpRange.create({ :ip_range_group_id => ip_range_group.id,
-                        :begin_ipv4_address => params["begin_ipv4_address"],
-                        :end_ipv4_address => params["end_ipv4_address"],
-                      })
-    respond_with(R::IpRange.ip_ranges(ip_range_group))
+    remove_system_parameters
+
+    ip_range = M::IpRange.create(params)
+    respond_with(R::IpRange.generate(ip_range))
   end
 
   get '/:uuid/ip_ranges' do
@@ -49,8 +49,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
   end
 
   delete '/:uuid/ip_ranges/:ip_range_uuid' do
-    ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup, params)
-    ip_range = check_syntax_and_pop_uuid(M::IpRange, params, :ip_range_uuid)
+    ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup)
+    ip_range = check_syntax_and_pop_uuid(M::IpRange, "ip_range_uuid")
 
     raise E::UnknownUUIDResource, ip_range.uuid unless ip_range.ip_range_group_id == ip_range_group.id
 
