@@ -5,13 +5,13 @@ module Vnet::NodeApi
     class << self
       def create(options)
         super.tap do |datapath|
-          dispatch_event(ADDED_DATAPATH, id: datapath.id, dpid: datapath.dpid)
+          dispatch_event(DATAPATH_CREATED_ITEM, id: datapath.id, dpid: datapath.dpid)
         end
       end
 
       def destroy(uuid)
         super.tap do |datapath|
-          dispatch_event(REMOVED_DATAPATH, id: datapath.id)
+          dispatch_event(DATAPATH_DELETED_ITEM, id: datapath.id)
         end
       end
     end

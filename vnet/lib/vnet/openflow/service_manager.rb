@@ -3,13 +3,12 @@
 module Vnet::Openflow
 
   class ServiceManager < Vnet::Manager
-
     include ActiveInterfaces
 
     #
     # Events:
     #
-    subscribe_event SERVICE_INITIALIZED, :install_item
+    subscribe_event SERVICE_INITIALIZED, :load_item
     subscribe_event SERVICE_UNLOAD_ITEM, :unload_item
     subscribe_event SERVICE_CREATED_ITEM, :created_item
     subscribe_event SERVICE_DELETED_ITEM, :unload_item
@@ -108,15 +107,7 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
-    # SERVICE_INITIALIZED on queue 'item.id'
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
-      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.type.to_sym}")
-
-      item.try_install
-
+    def item_post_install(item, item_map)
       @active_interfaces[item.interface_id].tap { |network_ids|
         next unless network_ids
         network_ids.each { |network_id|
@@ -136,15 +127,7 @@ module Vnet::Openflow
       return if @items[params[:id]]
       return unless @active_interfaces[params[:interface_id]]
 
-      internal_new_item(MW::NetworkService.new(params), {})
-    end
-
-    # unload item on queue 'item.id'
-    def unload_item(params)
-      item = @items.delete(params[:id]) || return
-      item.try_uninstall
-
-      debug log_format("unloaded service #{item.uuid}/#{item.id}")
+      internal_new_item(mw_class.new(params), {})
     end
 
     #
@@ -158,11 +141,12 @@ module Vnet::Openflow
     def activate_interface_update_item_proc(interface_id, params)
       network_id_list = params[:network_id_list] || return
 
-      # TODO: Queue an event instead...
-      #
-      # TODO: We can't use network_id or cookie id for the cookie id parameter.
       Proc.new { |id, item|
         network_id_list.each { |network_id|
+          # TODO: Queue an event instead...
+          #
+          # TODO: We can't use network_id or cookie id for the cookie
+          # id parameter.
           item.add_network_unless_exists(network_id, network_id)
         }
       }
@@ -178,9 +162,7 @@ module Vnet::Openflow
       dns_service_map = params[:dns_service_map] || MW::DnsService.batch.find(id: params[:dns_service_id]).commit(fill: :dns_records)
       return unless dns_service_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.set_dns_service(dns_service_map)
 
       dns_service_map.dns_records.each do |dns_record_map|
@@ -192,9 +174,7 @@ module Vnet::Openflow
       dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
       return unless dns_service_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.update_dns_service(dns_service_map)
     end
 
@@ -202,9 +182,7 @@ module Vnet::Openflow
       dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
       return unless dns_service_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.clear_dns_service
     end
 
@@ -212,9 +190,7 @@ module Vnet::Openflow
       dns_record_map = params[:dns_record_map] || MW::DnsRecord.find(id: params[:dns_record_id])
       return unless dns_record_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.add_dns_record(dns_record_map)
     end
 
@@ -222,9 +198,7 @@ module Vnet::Openflow
       dns_record_map = MW::DnsRecord.batch.with_deleted.first(id: params[:dns_record_id]).commit
       return unless dns_record_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.remove_dns_record(dns_record_map)
     end
 

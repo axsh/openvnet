@@ -20,7 +20,7 @@ describe Vnet::Openflow::Networks::Virtual do
     let(:fo_network_md) { flow_options.merge(network_md) }
     let(:flows) { datapath.added_flows }
 
-    subject { Vnet::Openflow::Networks::Virtual.new(datapath, vnet_map) }
+    subject { Vnet::Openflow::Networks::Virtual.new(dp_info: datapath, map: vnet_map) }
 
     it "has flows for destination filtering" do
       subject.install
