@@ -72,7 +72,7 @@ interfaces:
     mode: simulated
     enable_routing: true
 
-  - uuid: if-routerpub
+  - uuid: if-routerpb
     network_uuid: nw-public1
     mac_address: "02:00:00:00:02:11"
     ipv4_address: <%= public_router_ipv4_address  %>
