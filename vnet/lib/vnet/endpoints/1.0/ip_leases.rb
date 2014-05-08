@@ -2,7 +2,6 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   def self.put_post_shared_params
-    param_uuid M::Interface, :interface_uuid
     param_uuid M::Network, :network_uuid
     param_uuid M::MacLease, :mac_lease_uuid
     param :ipv4_address, :String, transform: PARSE_IPV4
@@ -15,6 +14,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   param_options :network_uuid, required: true
   param_options :mac_lease_uuid, required: true
   param_options :ipv4_address, required: true
+  param_uuid M::Interface, :interface_uuid
   param_uuid M::IpLease
   post do
     uuid_to_id(M::Network, "network_uuid", "network_id")
@@ -40,7 +40,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   put '/:uuid' do
     uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
     uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id") if params["mac_lease_uuid"]
-    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
     update_by_uuid(:IpLease, fill_options)
   end
