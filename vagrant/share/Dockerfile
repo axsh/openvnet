@@ -22,6 +22,7 @@ RUN mkdir -p /home/vagrant/.ssh; chown -R vagrant:vagrant /home/vagrant/.ssh; ch
 # sudo
 RUN sed "s/Defaults *requiretty/#Defaults    requiretty/" -i /etc/sudoers
 RUN echo "vagrant	ALL=(ALL)	NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
+RUN chmod 440 /etc/sudoers.d/vagrant
 
 # dnsmasq
 RUN echo "NETWORKING=yes" > /etc/sysconfig/network
