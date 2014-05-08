@@ -27,7 +27,7 @@ describe "/ip_range_groups" do
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
-  describe "PUT /" do
+  describe "PUT /:uuid" do
     accepted_params = {
       :allocation_type => "incremental"
     }
