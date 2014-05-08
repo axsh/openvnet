@@ -193,8 +193,7 @@ module Vnet::Openflow
         begin
           link(manager)
         rescue => e
-          error e
-          error "#{name}"
+          error "Fail to link with #{manager.class.name}: #{e}"
           raise e
         end
       end
