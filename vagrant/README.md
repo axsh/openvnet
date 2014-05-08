@@ -27,7 +27,7 @@ bundle exec berks vendor cookbooks
 configure ssh
 
 ```
-./ssh_config
+./ssh_config.rb
 ```
 
 setup vms
