@@ -8,9 +8,10 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event ADDED_DATAPATH, :create_item
-    subscribe_event REMOVED_DATAPATH, :unload
-    subscribe_event INITIALIZED_DATAPATH, :install_item
+    subscribe_event DATAPATH_INITIALIZED, :load_item
+    subscribe_event DATAPATH_UNLOAD_ITEM, :unload_item
+    subscribe_event DATAPATH_CREATED_ITEM, :created_item
+    subscribe_event DATAPATH_DELETED_ITEM, :unload_item
 
     subscribe_event ACTIVATE_NETWORK_ON_HOST, :activate_network
     subscribe_event DEACTIVATE_NETWORK_ON_HOST, :deactivate_network
@@ -44,18 +45,35 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def mw_class
+      MW::Datapath
+    end
+
+    def initialized_item_event
+      DATAPATH_INITIALIZED
+    end
+
+    def item_unload_event
+      DATAPATH_UNLOAD_ITEM
+    end
+
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
       true
     end
 
-    def select_filter_from_params(params)
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
-      filters << {dpid: params[:dpid]} if params.has_key? :dpid
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter << {dpid: params[:dpid]} if params.has_key? :dpid
+      filter
+    end
 
-      create_batch(MW::Datapath.batch, params[:uuid], filters)
+    def select_filter_from_params(params)
+      return if params.has_key?(:uuid) && params[:uuid].nil?
+
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)
@@ -66,25 +84,14 @@ module Vnet::Openflow
           Datapaths::Remote
         end
 
-      item_class.new(
-        dp_info: @dp_info,
-        manager: self,
-        map: item_map
-      )
+      item_class.new(dp_info: @dp_info, map: item_map)
     end
 
-    def initialized_item_event
-      INITIALIZED_DATAPATH
-    end
+    #
+    # Create / Delete events:
+    #
 
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
-      item.install
-
-      debug log_format("install #{item.uuid}/#{item.id}")
-
+    def item_post_install(item, item_map)
       item_map.batch.datapath_networks.commit.each do |dpn_map|
         publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
       end
@@ -94,8 +101,9 @@ module Vnet::Openflow
       end
     end
 
-    def create_item(params)
-      debug log_format("creating datapath id: #{params[:id]}")
+    # Remove dpn and dprl events.
+
+    def created_item(params)
       return if @items[params[:id]]
 
       # TODO: Check if we need to create the item.
@@ -106,17 +114,6 @@ module Vnet::Openflow
 
       # TODO: move to install_item...
       @dp_info.datapath.switch_ready
-    end
-
-    def delete_item(item)
-      item = @items.delete(item.id)
-      return unless item
-
-      debug log_format("deleting datapath: #{item.uuid}/#{item.id}")
-
-      item.uninstall
-
-      # Remember to remove dpn's...
     end
 
     #

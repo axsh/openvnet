@@ -60,16 +60,17 @@ describe Vnet::NodeApi::LeasePolicy do
 
     # network:
     #   ipv4_address: 10.102.0.100
-    #   prefix 3
-    #   begin: 10.102.0.101
-    #   end:   10.102.0.102
+    #   prefix 30
     #
     # ip_range:
-    #   prefix: 24
     #   begin: 10.102.0.100
     #   end: 10.102.0.110
     #
-    context "when ip_range's ipv4_prefix is different from network's ipv4_prefix" do
+    # result:
+    #   begin: 10.102.0.101
+    #   end: 10.102.0.102
+    #
+    context "when ip_range's range includes network's range" do
       let(:network) { Fabricate(:network_with_prefix_30) }
       let(:ip_range_group) do
         Fabricate(:ip_range_group_with_range) { allocation_type "incremental" }
@@ -87,6 +88,26 @@ describe Vnet::NodeApi::LeasePolicy do
           Vnet::Models::IpAddress.create(network: network, ipv4_address: ipv4_address)
         end
 
+        expect { Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group) }.to raise_error(/Run out of dynamic IP addresses/)
+      end
+    end
+
+    # network:
+    #   ipv4_address: 10.102.0.100
+    #   prefix 30
+    #   begin: 10.102.0.101
+    #   end:   10.102.0.102
+    #
+    # ip_range:
+    #   begin: 192.168.100.10
+    #   end:   192.168.100.200
+    #
+    # result: raise error
+    context "when ip_range's range doesn't match ip_range's range" do
+      let(:network) { Fabricate(:network_with_prefix_30) }
+      let(:ip_range_group) { Fabricate(:ip_range_group_with_range2) }
+
+      it "raise Run out of dynamic IP addresses" do
         expect { Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group) }.to raise_error(/Run out of dynamic IP addresses/)
       end
     end

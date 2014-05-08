@@ -37,6 +37,10 @@ module Vnet::Openflow::Services
       'service/base'
     end
 
+    def pretty_properties
+      "mode:#{@type.to_sym}"
+    end
+
     def cookie(type = 0, value = 0)
       unless (type & 0xf) == type
         raise "Invalid cookie optional type: %#x" % type

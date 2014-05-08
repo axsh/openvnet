@@ -4,6 +4,7 @@ module Vnet::Openflow
 
   class TunnelManager < Vnet::Manager
     include Vnet::Openflow::FlowHelpers
+    include Vnet::UpdatePropertyStates
 
     #
     # Events:
@@ -11,7 +12,7 @@ module Vnet::Openflow
     subscribe_event REMOVED_TUNNEL, :unload
     subscribe_event INITIALIZED_TUNNEL, :install_item
 
-    subscribe_event TUNNEL_UPDATE_NETWORKS, :update_networks
+    subscribe_event TUNNEL_UPDATE_PROPERTY_STATES, :update_property_states
 
     subscribe_event ADDED_HOST_DATAPATH_NETWORK, :added_host_datapath_network
     subscribe_event ADDED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
@@ -25,7 +26,6 @@ module Vnet::Openflow
     def initialize(*args)
       super
       @interfaces = {}
-      @update_networks = {}
 
       @host_networks = {}
       @host_route_links = {}
@@ -156,6 +156,10 @@ module Vnet::Openflow
       INITIALIZED_TUNNEL
     end
 
+    def update_property_states_event
+      TUNNEL_UPDATE_PROPERTY_STATES
+    end
+
     def select_item(filter)
       MW::Tunnel.batch[filter].commit
     end
@@ -242,23 +246,10 @@ module Vnet::Openflow
     # Network events:
     #
 
-    # TUNNEL_UPDATE_NETWORKS on queue ':update_networks'
-    def update_networks(params)
-      while !@update_networks.empty?
-        network_ids = @update_networks.keys
+    # Requires queue ':update_networks'.
+    def update_property_state(property_type, network_id)
+      return unless property_type == :update_networks
 
-        info log_format("updating network flows", network_ids.to_s)
-
-        network_ids.each { |network_id|
-          next unless @update_networks.delete(network_id)
-
-          update_network_id(network_id)
-        }
-      end
-    end
-
-    # Require queue ':update_networks'
-    def update_network_id(network_id)
       tunnel_actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
       segment_actions = []
 
@@ -366,7 +357,7 @@ module Vnet::Openflow
       # item.
       item.add_datapath_network(remote_dpn)
 
-      add_network_id_to_updated_networks(network_id)
+      add_property_id_to_update_queue(:update_networks, network_id)
     end
 
     def deactivate_link(host_dpn, remote_dpn, network_id)
@@ -389,7 +380,7 @@ module Vnet::Openflow
 
       item.remove_datapath_network(remote_dpn[:id])
 
-      add_network_id_to_updated_networks(network_id)
+      add_property_id_to_update_queue(:update_networks, network_id)
 
       # TODO: Add event to check if item should be unloaded. Currently
       # done here:
@@ -415,7 +406,8 @@ module Vnet::Openflow
 
       updated_networks = {}
       item.set_tunnel_port_number(port_number, updated_networks)
-      add_network_ids_to_updated_networks(updated_networks.keys)
+
+      add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
     end
 
     def clear_tunnel_port_number(params)
@@ -428,7 +420,8 @@ module Vnet::Openflow
 
       updated_networks = {}
       item.set_tunnel_port_number(updated_networks)
-      add_network_ids_to_updated_networks(updated_networks.keys)
+
+      add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
 
       # TODO: Consider deleting here?
     end
@@ -529,7 +522,7 @@ module Vnet::Openflow
         item.set_host_port_number(port_number, updated_networks)
       }
 
-      add_network_ids_to_updated_networks(updated_networks.keys)
+      add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
     end
 
     #
@@ -669,30 +662,11 @@ module Vnet::Openflow
       }
     end
 
-    def add_network_id_to_updated_networks(network_id)
-      should_publish = @update_networks.empty?
-      @update_networks[network_id] = true
-
-      should_publish && publish(TUNNEL_UPDATE_NETWORKS, id: :update_networks)
-    end
-
-    def add_network_ids_to_updated_networks(network_ids)
-      should_publish = @update_networks.empty?
-
-      network_ids.select { |network_id|
-        @update_networks[network_id].nil?
-      }.each { |network_id|
-        @update_networks[network_id] = true
-      }
-
-      should_publish && publish(TUNNEL_UPDATE_NETWORKS, id: :update_networks)
-    end
-
     def add_dpn_hash_to_updated_networks(dpns)
       dpns.map { |id, remote_dpns|
         remote_dpns[:network_id]
       }.tap { |network_ids|
-        add_network_ids_to_updated_networks(network_ids)
+        add_property_ids_to_update_queue(:update_networks, network_ids)
       }
     end
 

@@ -116,6 +116,26 @@ module Vnet
     # Override these method to support additional parameters.
     #
 
+    def mw_class
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
+    def item_initialize(item_map, params)
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
+    def initialized_item_event
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
+    def item_unload_event
+      # Must be implemented by subclass
+      raise NotImplementedError
+    end
+
     # Optimize this by returning a proc block.
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
@@ -184,24 +204,42 @@ module Vnet
       batch.commit
     end
 
-    def item_initialize(item_map, params)
-      # Must be implemented by subclass
-      raise NotImplementedError
+    #
+    # Default install/uninstall methods:
+    #
+
+    def load_item(params)
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
+
+      debug log_format("installing " + item.pretty_id, item.pretty_properties)
+
+      item_pre_install(item, item_map)
+      item.try_install
+      item_post_install(item, item_map)
     end
 
-    def initialized_item_event
-      # Must be implemented by subclass
-      raise NotImplementedError
+    def item_pre_install(item, item_map)
     end
 
-    def item_unload_event
-      # Must be implemented by subclass
-      raise NotImplementedError
+    def item_post_install(item, item_map)
     end
 
-    def mw_class
-      # Must be implemented by subclass
-      raise NotImplementedError
+    def unload_item(params)
+      item_id = params[:id] || return
+      item = @items.delete(item_id) || return
+
+      item_pre_uninstall(item)
+      item.try_uninstall
+      item_post_uninstall(item)
+
+      debug log_format("uninstalled " + item.pretty_id, item.pretty_properties)
+    end
+
+    def item_pre_uninstall(item)
+    end
+
+    def item_post_uninstall(item)
     end
 
     #
@@ -274,6 +312,8 @@ module Vnet
     #
     # Packet handling:
     #
+
+    # TODO: Move to a module.
 
     def handle_dynamic_load(params)
       item_id = params[:id]
