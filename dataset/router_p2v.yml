@@ -72,7 +72,7 @@ interfaces:
     mode: simulated
     enable_routing: true
 
-  - uuid: if-routerp2v
+  - uuid: if-routerpv
     network_uuid: nw-public1
     mac_address: "02:00:00:00:02:11"
     ipv4_address: <%= public_router_ipv4_address  %>
@@ -98,8 +98,8 @@ network_services:
     interface_uuid: if-router2
     type: router
 
-  - uuid: ns-routerp2v
-    interface_uuid: if-routerp2v
+  - uuid: ns-routerpv
+    interface_uuid: if-routerpv
     type: router
 
 datapath_networks:
@@ -171,7 +171,7 @@ routes:
     ipv4_network: 10.102.0.0
 
   - uuid: r-p
-    interface_uuid: if-routerp2v
+    interface_uuid: if-routerpv
     network_uuid: nw-public1
     route_link_uuid: rl-1
     ipv4_network: <%= public_ipv4_network  %>
