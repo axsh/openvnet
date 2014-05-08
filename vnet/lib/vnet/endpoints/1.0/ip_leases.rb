@@ -14,12 +14,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   param_options :network_uuid, required: true
   param_options :mac_lease_uuid, required: true
   param_options :ipv4_address, required: true
-  param_uuid M::Interface, :interface_uuid
   param_uuid M::IpLease
   post do
     uuid_to_id(M::Network, "network_uuid", "network_id")
     uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id")
-    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
     post_new(:IpLease, fill_options)
   end

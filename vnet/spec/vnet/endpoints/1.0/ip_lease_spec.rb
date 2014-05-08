@@ -49,19 +49,17 @@ describe "/ip_leases" do
 
   describe "POST /" do
     let!(:network) { Fabricate(:network) { uuid "nw-test" } }
-    let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
-    let!(:mac_lease) { Fabricate(:mac_lease, uuid: "ml-test", interface: interface) }
+    let!(:mac_lease) { Fabricate(:mac_lease, uuid: "ml-test") }
 
     accepted_params = {
       :uuid => "il-lease",
       :network_uuid => "nw-test",
-      :interface_uuid => "if-test",
       :mac_lease_uuid => "ml-test",
       :ipv4_address => "192.168.1.10",
       :enable_routing => true,
     }
     required_params = [:mac_lease_uuid, :network_uuid, :ipv4_address]
-    uuid_params = [:uuid, :mac_lease_uuid, :network_uuid, :interface_uuid]
+    uuid_params = [:uuid, :mac_lease_uuid, :network_uuid,]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
 
