@@ -13,8 +13,8 @@ module Vnet::NodeApi
       end
 
       def update(uuid, options)
-        transaction do
-          model_class[uuid].update(options)
+        model_class[uuid].tap do |model|
+          transaction { model.update(options) }
         end
       end
 

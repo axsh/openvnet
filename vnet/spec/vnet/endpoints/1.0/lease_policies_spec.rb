@@ -34,6 +34,15 @@ describe "/lease_policies" do
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
+  describe "PUT /:uuid" do
+    accepted_params = {
+      :mode => "simple",
+      :timing => "immediate"
+    }
+
+    include_examples "PUT /:uuid", accepted_params
+  end
+
   describe "Many to many relation calls for networks" do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :network }
