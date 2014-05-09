@@ -134,6 +134,7 @@ module Vnet::Openflow
     #
 
     def match_item?(item, params)
+      return true if params[:id] && params[:id] == item.port_name
       return true if params[:port_name] && params[:port_name] == item.port_name
       return true if params[:port_number] && params[:port_number] == item.port_number
       return true if params[:port_type] && params[:port_type] == item.port_type
