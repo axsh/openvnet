@@ -7,8 +7,11 @@ module Vnet::Openflow
     #
     # Events:
     #
-    subscribe_event INITIALIZED_PORT, :install_item
-    subscribe_event FINALIZED_PORT, :uninstall_item
+    subscribe_event PORT_INITIALIZED, :install_item
+    subscribe_event PORT_FINALIZED, :uninstall_item
+
+    subscribe_event PORT_ATTACH_INTERFACE, :attach_interface
+    subscribe_event PORT_DETACH_INTERFACE, :detach_interface
 
     def insert(port_desc)
       debug log_format("insert port #{port_desc.name}",
@@ -28,7 +31,7 @@ module Vnet::Openflow
       port = Ports::Base.new(@dp_info, port_desc)
       @items[port.port_number] = port
 
-      publish(INITIALIZED_PORT, id: port.id)
+      publish(PORT_INITIALIZED, id: port.id)
     end
 
     def remove(port_desc)
@@ -43,26 +46,9 @@ module Vnet::Openflow
         return nil
       end
 
-      publish(FINALIZED_PORT, id: port.id)
+      publish(PORT_FINALIZED, id: port.id)
 
       item_to_hash(port)
-    end
-
-    def attach_interface(params)
-      port = internal_detect(params)
-      return unless port
-
-      # reinitialize
-      if port.installed?
-        publish(FINALIZED_PORT, id: port.id)
-      end
-
-      publish(INITIALIZED_PORT, id: port.id)
-    end
-
-    def detach_interface(params)
-      # currently attach_interface and detach_interface is tha same thing.
-      attach_interface(params)
     end
 
     #
@@ -80,68 +66,70 @@ module Vnet::Openflow
       return unless port
       return if port.installed?
 
-      if port.port_number == OFPP_LOCAL
+      case
+      when port.port_number == OFPP_LOCAL
         prepare_port_local(port)
-        return item_to_hash(port)
-      end
-
-      interface = @dp_info.interface_manager.item(port_name: port.port_name,
-                                                  port_number: port.port_number,
-                                                  owner_datapath_id: @dp_info.datapath.datapath_info.id)
-
-      # Request twice since we're lacking the proper search parameter.
-      interface = interface || @dp_info.interface_manager.item(port_name: port.port_name,
-                                                               port_number: port.port_number,
-                                                               owner_datapath_id: nil)
-
-      if interface
-        case interface.mode
-        when :host, :edge, :patch
-          prepare_port_eth(port, interface)
-        when :vif
-          prepare_port_vif(port, interface)
-        else
-          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
-          error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
-        end
+      when port.port_info.name =~ /^t-/
+        prepare_port_tunnel(port)
       else
-        case
-        when port.port_info.name =~ /^t-/
-          prepare_port_tunnel(port)
-        else
-          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
-          error log_format('unknown interface type', "name:#{port.port_name}")
-        end
+        @dp_info.interface_manager.publish(INTERFACE_ACTIVATE_PORT,
+                                           id: :port,
+                                           port_name: port.port_name,
+                                           port_number: port.port_number)
       end
-
-      item_to_hash(port)
     end
 
-    def uninstall_item(params)
+    # TODO: Make sure to verify we don't have duplicate port names, don't trust OVS.
+
+    def attach_interface(params)
       port = @items[params[:id]]
-      return unless port && port.installed?
+      return unless port
+      return if port.installed?
 
-      @items.delete(params[:id])
+      interface = params[:interface] || return      
 
-      # reinitialize port
+      case interface.mode
+      when :host, :edge, :patch
+        prepare_port_eth(port, interface)
+      when :vif
+        prepare_port_vif(port, interface)
+      else
+        @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+
+        error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
+      end
+    end
+
+    def detach_interface(params)
+      port = @items[params[:id]]
+      return unless port
+      return unless port.installed?
+
       @items[port.port_number] = Ports::Base.new(@dp_info, port.port_info)
 
       port.uninstall
 
       debug log_format("uninstall #{port.port_name}/#{port.id}")
+    end
 
-      interface = @dp_info.interface_manager.item(
-        port_number: port.port_number,
-        dynamic_load: false
-      )
+    def uninstall_item(params)
+      port = @items[params[:id]]
+      return unless port
 
-      if interface
-        @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
-                                           event: :clear_port_number,
-                                           id: interface.id)
-      end
+      @items.delete(params[:id])
+
+      port.uninstall if port.installed?
+
+      # We always trigger the deactivate event even if interface_id is
+      # not set, as there might otherwise be a race-condition with
+      # activation events.
+      @dp_info.interface_manager.publish(INTERFACE_DEACTIVATE_PORT,
+                                         id: :port,
+                                         interface_id: port.interface_id,
+                                         port_name: port.port_name,
+                                         port_number: port.port_number)
+
+      debug log_format("uninstall #{port.port_name}/#{port.id}")
     end
 
     #
@@ -178,12 +166,6 @@ module Vnet::Openflow
         port.extend(Ports::Host)
         port.interface_id = interface.id
 
-        # We don't need to query the interface before updating it, so do
-        # this directly instead of the item request.
-        @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
-                                           event: :set_port_number,
-                                           id: interface.id,
-                                           port_number: port.port_number)
       elsif interface.mode == :edge
         port.extend(Ports::Generic)
         port.interface_id = interface.id
@@ -209,13 +191,6 @@ module Vnet::Openflow
 
       port.interface_id = interface.id
       port.install
-
-      # We don't need to query the interface before updating it, so do
-      # this directly instead of the item request.
-      @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
-                                         event: :set_port_number,
-                                         id: interface.id,
-                                         port_number: port.port_number)
     end
 
     def prepare_port_tunnel(port)

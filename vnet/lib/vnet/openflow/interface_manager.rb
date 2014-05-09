@@ -3,6 +3,7 @@
 module Vnet::Openflow
 
   class InterfaceManager < Vnet::Manager
+    include ActivePorts
 
     #
     # Events:
@@ -11,6 +12,9 @@ module Vnet::Openflow
     subscribe_event INTERFACE_UNLOAD_ITEM, :unload_item
     subscribe_event INTERFACE_CREATED_ITEM, :create_item
     subscribe_event INTERFACE_DELETED_ITEM, :unload_item
+
+    subscribe_event INTERFACE_ACTIVATE_PORT, :activate_port
+    subscribe_event INTERFACE_DEACTIVATE_PORT, :deactivate_port
 
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
     subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
@@ -64,9 +68,18 @@ module Vnet::Openflow
       return false if params[:port_name] && params[:port_name] != item.port_name
 
       if params.has_key? :owner_datapath_id
-        return false if params[:owner_datapath_id].nil? && item.owner_datapath_ids
-        return false if params[:owner_datapath_id] && item.owner_datapath_ids.nil?
-        return false if params[:owner_datapath_id] && item.owner_datapath_ids.find_index(params[:owner_datapath_id]).nil?
+        owner_datapath_id = params[:owner_datapath_id]
+
+        return false if owner_datapath_id.nil? && item.owner_datapath_ids
+        return false if owner_datapath_id && item.owner_datapath_ids.nil?
+        return false if owner_datapath_id && item.owner_datapath_ids.find_index(owner_datapath_id).nil?
+      end
+
+      if params.has_key? :allowed_datapath_id
+        allowed_datapath_id = params[:allowed_datapath_id]
+
+        return false if allowed_datapath_id.nil?
+        return false if item.owner_datapath_ids && item.owner_datapath_ids.find_index(allowed_datapath_id).nil?
       end
 
       true
@@ -75,8 +88,14 @@ module Vnet::Openflow
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
-      filter << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
       filter << {port_name: params[:port_name]} if params.has_key? :port_name
+      filter << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
+
+      if params.has_key? :allowed_datapath_id
+        filter << Sequel.|({ owner_datapath_id: nil },
+                           { owner_datapath_id: params[:allowed_datapath_id] })
+      end
+
       filter
     end
 
@@ -115,6 +134,18 @@ module Vnet::Openflow
     # Create / Delete interfaces:
     #
 
+    def item_pre_install(item, item_map)
+      if item.port_name
+        @active_ports.detect { |port_number, active_port|
+          item.port_name == active_port[:port_name]
+        }.tap { |port_number, active_port|
+          next unless port_number && active_port
+
+          item.update_port_number(port_number)
+        }
+      end
+    end
+
     def item_post_install(item, item_map)
       if item.owner_datapath_ids &&
           item.owner_datapath_ids.include?(@datapath_info.id)
@@ -124,11 +155,14 @@ module Vnet::Openflow
       load_addresses(item_map)
 
       if item.mode != :remote
-        @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
+        item.port_number &&
+          @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+                                        id: item.port_number,
+                                        interface: item_to_hash(item))
 
-        @dp_info.tunnel_manager.async.publish(TRANSLATION_ACTIVATE_INTERFACE,
-                                              id: :interface,
-                                              interface_id: item.id)
+        @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
+                                        id: :interface,
+                                        interface_id: item.id)
 
         item.ingress_filtering_enabled &&
           @dp_info.filter_manager.async.apply_filters(item_map)
@@ -140,14 +174,15 @@ module Vnet::Openflow
         item.update_active_datapath(datapath_id: nil)
       end
 
-      if item.port_number
-        @dp_info.port_manager.async.detach_interface(port_number: item.port_number)
-      end
-
       if item.mode != :remote
-        @dp_info.tunnel_manager.async.publish(Vnet::Event::TRANSLATION_DEACTIVATE_INTERFACE,
-                                              id: :interface,
-                                              interface_id: item.id)
+        item.port_number &&
+          @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
+                                        id: item.port_number,
+                                        interface_id: item.id)
+
+        @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
+                                        id: :interface,
+                                        interface_id: item.id)
 
         @dp_info.filter_manager.async.remove_filters(item.id)
 
@@ -360,9 +395,10 @@ module Vnet::Openflow
         #
       when :set_port_number
         debug log_format("update_item", params)
-        # Check if not nil...
+
         item.update_port_number(params[:port_number])
         item.update_active_datapath(datapath_id: @datapath_info.id)
+
       when :clear_port_number
         debug log_format("update_item", params)
         # Check if nil... (use param :port_number to verify)
@@ -376,8 +412,6 @@ module Vnet::Openflow
         # api event
         item.update
       end
-
-      item_to_hash(item)
     end
 
     def update_item_not_found(event, id, params)
@@ -394,6 +428,45 @@ module Vnet::Openflow
 
       nil
     end
+
+    #
+    # Overload helper methods:
+    #
+
+    def activate_port_query(state_id, params)
+      { port_name: params[:port_name],
+        allowed_datapath_id: @datapath_info.id
+      }
+    end
+
+    def activate_port_match_proc(state_id, params)
+      port_name = params[:port_name]
+
+      Proc.new { |id, item|
+        item.mode != :remote &&
+        item.port_name == port_name
+      }
+    end
+
+    def activate_port_value(port_number, params)
+      port_name = params[:port_name] || return
+
+      { port_name: port_name }
+    end
+
+    def activate_port_update_item_proc(port_number, params)
+      # port_name = params[:port_name] || return
+
+      Proc.new { |id, item|
+        # item.port_name = port_name
+
+        publish(INTERFACE_UPDATED,
+                event: :set_port_number,
+                id: id,
+                port_number: port_number)
+      }
+    end
+    
 
   end
 

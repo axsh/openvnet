@@ -56,6 +56,9 @@ module Vnet
     INTERFACE_CREATED_ITEM = "interface_created_item"
     INTERFACE_DELETED_ITEM = "interface_deleted_item"
 
+    INTERFACE_ACTIVATE_PORT = "interface_activate_port"
+    INTERFACE_DEACTIVATE_PORT = "interface_deactivate_port"
+
     INTERFACE_UPDATED = "interface_updated"
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
@@ -70,6 +73,7 @@ module Vnet
     #
     # Network event:
     #
+
     NETWORK_INITIALIZED = "network_initialized"
     NETWORK_UNLOAD_ITEM = "network_unload_item"
     NETWORK_DELETED_ITEM = "network_deleted_item"
@@ -82,6 +86,16 @@ module Vnet
     INITIALIZED_LEASE_POLICY = "initialized_lease_policy"
     ADDED_LEASE_POLICY = "added_lease_policy"
     REMOVED_LEASE_POLICY = "removed_lease_policy"
+
+    #
+    # Port events:
+    #
+
+    PORT_INITIALIZED = "port_initialized"
+    PORT_FINALIZED = "port_finalized"
+
+    PORT_ATTACH_INTERFACE = "port_attach_interface"
+    PORT_DETACH_INTERFACE = "port_detach_interface"
 
     #
     # Route events:
@@ -146,12 +160,6 @@ module Vnet
     REMOVED_REMOTE_DATAPATH_NETWORK = "removed_remote_datapath_network"
     REMOVED_HOST_DATAPATH_ROUTE_LINK = "removed_host_datapath_route_link"
     REMOVED_REMOTE_DATAPATH_ROUTE_LINK = "removed_remote_datapath_route_link"
-
-    #
-    # port event
-    #
-    INITIALIZED_PORT = "initialized_port"
-    FINALIZED_PORT = "finalized_port"
 
     #
     # filter event
