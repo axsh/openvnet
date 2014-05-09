@@ -194,7 +194,7 @@ module Vnet::Openflow
     def prepare_port_tunnel(port)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
-      tunnel = @dp_info.tunnel_manager.item(uuid: port.port_name)
+      tunnel = @dp_info.tunnel_manager.retrieve(uuid: port.port_name)
 
       if tunnel.nil?
         error log_format("could not find tunnel for #{port.port_name}")

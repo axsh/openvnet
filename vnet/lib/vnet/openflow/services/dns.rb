@@ -136,7 +136,7 @@ module Vnet::Openflow::Services
     end
 
     def dns_server_for(network_id)
-      interface = @dp_info.interface_manager.item(id: @interface_id)
+      interface = @dp_info.interface_manager.retrieve(id: @interface_id)
       ipv4_info = interface.get_ipv4_infos(network_id: network_id).map(&:last).detect do |ipv4_info|
         ipv4_info[:network_id] == network_id
       end

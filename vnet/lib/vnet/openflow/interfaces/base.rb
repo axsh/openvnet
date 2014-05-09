@@ -258,7 +258,7 @@ module Vnet::Openflow::Interfaces
                                              ipv4_address: ipv4_address)
       return nil if ipv4_info.nil?
 
-      [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
+      [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
     end
 
     def del_flows_for_active_datapath(ipv4_addresses)

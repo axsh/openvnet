@@ -72,7 +72,7 @@ module Vnet::Openflow
     end
 
     def switch_ready
-      unless @dp_info.datapath_manager.item(dpid: @dp_info.dpid)
+      unless @dp_info.datapath_manager.retrieve(dpid: @dp_info.dpid)
         warn log_format('could not find dpid in database')
         return
       end

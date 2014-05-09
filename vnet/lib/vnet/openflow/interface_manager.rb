@@ -196,7 +196,7 @@ module Vnet::Openflow
     def create_item(params)
       return if @items[params[:id]]
 
-      return unless @dp_info.port_manager.item(
+      return unless @dp_info.port_manager.retrieve(
         port_name: params[:port_name],
         dynamic_load: false
       )
@@ -294,19 +294,19 @@ module Vnet::Openflow
       item = @items[params[:id]]
 
       if !item && ip_lease.interface.mode.to_sym == :simulated &&
-        @dp_info.network_manager.item(
+        @dp_info.network_manager.retrieve(
           id: ip_lease.ip_address.network_id,
           dynamic_load: false
         )
 
-        @dp_info.interface_manager.item(id: ip_lease.interface.id)
+        @dp_info.interface_manager.retrieve(id: ip_lease.interface.id)
 
         return
       end
 
       return unless item && ip_lease.interface_id == item.id
 
-      network = @dp_info.network_manager.item(id: ip_lease.ip_address.network_id)
+      network = @dp_info.network_manager.retrieve(id: ip_lease.ip_address.network_id)
 
       # TODO: Pass the ip_lease object.
       item.add_ipv4_address(mac_lease_id: ip_lease.mac_lease_id,

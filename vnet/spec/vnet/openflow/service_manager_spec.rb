@@ -49,7 +49,7 @@ describe Vnet::Openflow::ServiceManager do
 
     describe "when ADDED_SERVICE is published" do
       it "should create a network service with a dns service" do
-        interface_manager.item(id: 1)
+        interface_manager.retrieve(id: 1)
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
                                 id: 1,
                                 interface_id: 1,
@@ -83,19 +83,19 @@ describe Vnet::Openflow::ServiceManager do
 
     describe "when REMOVED_SERVICE is published" do
       it "should remove a network service" do
-        interface_manager.item(id: 1)
+        interface_manager.retrieve(id: 1)
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
                                 id: 1,
                                 interface_id: 1,
                                 type: 'dns')
         sleep(0.5)
-        expect(service_manager.item(id: network_service.id)).not_to be_nil
+        expect(service_manager.retrieve(id: network_service.id)).not_to be_nil
 
         network_service.destroy
         service_manager.publish(Vnet::Event::SERVICE_DELETED_ITEM, id: 1)
         sleep(0.5)
 
-        expect(service_manager.item(id: network_service.id)).to be_nil
+        expect(service_manager.retrieve(id: network_service.id)).to be_nil
 
         expect(datapath.deleted_flows).to be_any { |flow|
           flow.params[:table_id] == TABLE_OUT_PORT_INTERFACE_INGRESS

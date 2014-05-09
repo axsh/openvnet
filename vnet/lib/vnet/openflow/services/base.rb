@@ -96,7 +96,7 @@ module Vnet::Openflow::Services
                                                      ipv4_address: ipv4_address).first
       return unless ipv4_info
 
-      [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
+      [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
     end
 
     def add_network_unless_exists(network_id, cookie_id)
@@ -133,7 +133,7 @@ module Vnet::Openflow::Services
     protected
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
-      interface = @dp_info.interface_manager.item(port_number: port_number)
+      interface = @dp_info.interface_manager.retrieve(port_number: port_number)
       return [] if interface.nil?
 
       client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])

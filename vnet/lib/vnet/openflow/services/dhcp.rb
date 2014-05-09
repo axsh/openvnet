@@ -167,7 +167,7 @@ module Vnet::Openflow::Services
     end
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
-      interface = @dp_info.interface_manager.item(port_number: port_number)
+      interface = @dp_info.interface_manager.retrieve(port_number: port_number)
       return [] if interface.nil?
 
       client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
