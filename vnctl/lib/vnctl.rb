@@ -15,6 +15,7 @@ module Vnctl
     autoload :Datapath, 'vnctl/cli/datapath'
     autoload :DnsService, 'vnctl/cli/dns_service'
     autoload :IpLease, 'vnctl/cli/ip_lease'
+    autoload :IpRangeGroup, 'vnctl/cli/ip_range_group'
     autoload :MacLease, 'vnctl/cli/mac_lease'
     autoload :Network, 'vnctl/cli/network'
     autoload :NetworkService, 'vnctl/cli/network_service'
