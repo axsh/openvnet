@@ -17,6 +17,17 @@ describe "/security_groups" do
   include_examples "GET /:uuid"
   include_examples "DELETE /:uuid"
 
+  describe "PUT /:uuid" do
+    accepted_params = {
+      :display_name => "the new name",
+      :description => "and this is some new discription we've got",
+      :rules => "tcp:2222:192.168.3.1,icmp:-1:1.0.1.0/16"
+    }
+    uuid_params = []
+
+    include_examples "PUT /:uuid", accepted_params, uuid_params
+  end
+
   describe "POST /" do
     accepted_params = {
       :uuid => "sg-test",

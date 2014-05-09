@@ -3,39 +3,31 @@
 require 'trema/mac'
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
-  put_post_shared_params = [
-    "owner_datapath_uuid",
-    "ingress_filtering_enabled",
-    "display_name",
-    "enable_routing",
-    "enable_route_translation",
-  ]
+  def self.put_post_shared_params
+    param_uuid M::Datapath, :owner_datapath_uuid
+    param :ingress_filtering_enabled, :Boolean
+    param :display_name, :String
+    param :enable_routing, :Boolean
+    param :enable_route_translation, :Boolean
+  end
 
   fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
 
+  put_post_shared_params
+  param_uuid M::Interface
+  param_uuid M::Network, :network_uuid
+  param :ipv4_address, :String, transform: PARSE_IPV4
+  param :mac_address, :String, transform: PARSE_MAC
+  param :port_name, :String
+  param :mode, :String, in: C::Interface::MODES
   post do
-    accepted_params = put_post_shared_params + [
-      "uuid",
-      "network_uuid",
-      "ipv4_address",
-      "mac_address",
-      "port_name",
-      "mode",
-    ]
-
-    required_params = []
-
     # Consider deprecating this:
-    if params['port_name'].nil? && params['uuid']
-      params['port_name'] = params['uuid']
-    end
+    params['port_name'] = params['uuid'] if !params['port_name'] && params['uuid']
 
-    post_new(:Interface, accepted_params, required_params, fill) { |params|
-      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
-      check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
-      params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
-      params['mac_address'] = parse_mac(params['mac_address'])
-    }
+    uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
+    uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+
+    post_new(:Interface, fill)
   end
 
   get do
@@ -50,25 +42,21 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     delete_by_uuid(:Interface)
   end
 
-  # Currently only support following params
-  # * display_name
-  # * owner_datapath_uuid
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:Interface, put_post_shared_params, fill) { |params|
-      check_syntax_and_get_id(M::Datapath, params, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
-    }
+    check_syntax_and_get_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+    update_by_uuid(:Interface, fill)
   end
 
   post '/:uuid/security_groups/:security_group_uuid' do
-    params = parse_params(@params, ['uuid', 'security_group_uuid'])
-    check_required_params(params, ['uuid', 'security_group_uuid'])
-
-    security_group = check_syntax_and_get_id(M::SecurityGroup, params, 'security_group_uuid', 'security_group_id')
-    interface = check_syntax_and_get_id(M::Interface, params, 'uuid', 'interface_id')
+    security_group = check_syntax_and_get_id(M::SecurityGroup, 'security_group_uuid', 'security_group_id')
+    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
 
     M::InterfaceSecurityGroup.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).empty? ||
     raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
+
+    remove_system_parameters
 
     M::InterfaceSecurityGroup.create(params)
 
@@ -80,11 +68,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   end
 
   delete '/:uuid/security_groups/:security_group_uuid' do
-    params = parse_params(@params, ['uuid', 'security_group_uuid'])
-    check_required_params(params, ['uuid', 'security_group_uuid'])
-
-    interface = check_syntax_and_pop_uuid(M::Interface, params)
-    security_group = check_syntax_and_pop_uuid(M::SecurityGroup, params, 'security_group_uuid')
+    interface = check_syntax_and_pop_uuid(M::Interface)
+    security_group = check_syntax_and_pop_uuid(M::SecurityGroup, 'security_group_uuid')
 
     relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).all.commit

@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
-  put_post_shared_params = [:allocation_type]
+  def self.put_post_shared_params
+    param :allocation_type, :String,
+      in: C::LeasePolicy::ALLOCATION_TYPES,
+      default: C::LeasePolicy::ALLOCATION_TYPE_INCREMENTAL
+  end
 
   fill_options = [ ]
 
+  put_post_shared_params
+  param_uuid M::IpRangeGroup
   post do
-    accepted_params = put_post_shared_params + ["uuid"]
-    required_params = [ ]
-
-    post_new(:IpRangeGroup, accepted_params, required_params, fill_options)
+    post_new(:IpRangeGroup, fill_options)
   end
 
   get do
@@ -24,22 +27,20 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
     delete_by_uuid(:IpRangeGroup)
   end
 
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:IpRangeGroup, put_post_shared_params, fill_options)
+    update_by_uuid(:IpRangeGroup, fill_options)
   end
 
+  param :begin_ipv4_address, :String, transform: PARSE_IPV4
+  param :end_ipv4_address, :String, transform: PARSE_IPV4
+  param_uuid M::IpRange, :uuid, transform: proc { |u| M::IpRange.trim_uuid(u) }
   post '/:ip_range_group_uuid/ip_ranges' do
-    params = parse_params(@params, [:ip_range_group_uuid, :uuid, :begin_ipv4_address, :end_ipv4_address])
+    check_syntax_and_get_id(M::IpRangeGroup, "ip_range_group_uuid", "ip_range_group_id")
 
-    ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup, params, :ip_range_group_uuid)
-    check_and_trim_uuid(M::IpRange, params) if params[:uuid]
-
-    params[:ip_range_group_id] = ip_range_group.id
-    params[:begin_ipv4_address] = parse_ipv4(params[:begin_ipv4_address])
-    params[:end_ipv4_address] = parse_ipv4(params[:end_ipv4_address])
+    remove_system_parameters
 
     ip_range = M::IpRange.create(params)
-
     respond_with(R::IpRange.generate(ip_range))
   end
 
@@ -48,10 +49,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
   end
 
   delete '/:uuid/ip_ranges/:ip_range_uuid' do
-    params = parse_params(@params, [:uuid, :ip_range_uuid])
-
-    ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup, params)
-    ip_range = check_syntax_and_pop_uuid(M::IpRange, params, :ip_range_uuid)
+    ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup)
+    ip_range = check_syntax_and_pop_uuid(M::IpRange, "ip_range_uuid")
 
     raise E::UnknownUUIDResource, ip_range.uuid unless ip_range.ip_range_group_id == ip_range_group.id
 

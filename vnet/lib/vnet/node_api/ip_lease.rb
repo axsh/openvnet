@@ -26,7 +26,7 @@ module Vnet::NodeApi
 
         ip_lease = transaction do
           model_class[uuid].tap do |model|
-            if model.ip_address.ipv4_address != ipv4_address
+            if model.ip_address.ipv4_address != ipv4_address && ipv4_address
               model.ip_address.destroy
               deleted_ip_address = model.ip_address
               model.ip_address = model_class(:ip_address).create(ipv4_address: ipv4_address)

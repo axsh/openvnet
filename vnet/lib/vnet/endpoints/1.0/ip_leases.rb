@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
-  put_post_shared_params = [
-    "interface_uuid",
-    "network_uuid",
-    "mac_lease_uuid",
-    "ipv4_address",
-    "enable_routing",
-  ]
+  def self.put_post_shared_params
+    param_uuid M::Network, :network_uuid
+    param_uuid M::MacLease, :mac_lease_uuid
+    param :ipv4_address, :String, transform: PARSE_IPV4
+    param :enable_routing, :Boolean
+  end
 
   fill_options = [:mac_lease, :interface, { :ip_address => :network }]
 
+  put_post_shared_params
+  param_options :network_uuid, required: true
+  param_options :mac_lease_uuid, required: true
+  param_options :ipv4_address, required: true
+  param_uuid M::IpLease
   post do
-    accepted_params = put_post_shared_params + ["uuid"]
-    required_params = ["network_uuid", "mac_lease_uuid", "ipv4_address"]
+    uuid_to_id(M::Network, "network_uuid", "network_id")
+    uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id")
 
-    post_new(:IpLease, accepted_params, required_params, fill_options) { |params|
-      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id")
-      check_syntax_and_get_id(M::MacLease, params, "mac_lease_uuid", "mac_lease_id")
-      params['ipv4_address'] = parse_ipv4(params['ipv4_address'])
-    }
+    post_new(:IpLease, fill_options)
   end
 
   get do
@@ -34,11 +34,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
     delete_by_uuid(:IpLease)
   end
 
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:IpLease, put_post_shared_params, fill_options) { |params|
-      check_syntax_and_get_id(M::Network, params, "network_uuid", "network_id") if params["network_uuid"]
-      check_syntax_and_get_id(M::MacLease, params, "mac_lease_uuid", "mac_lease_id") if params["mac_lease_uuid"]
-      params['ipv4_address'] = parse_ipv4(params['ipv4_address']) if params['ipv4_address']
-    }
+    uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
+    uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id") if params["mac_lease_uuid"]
+
+    update_by_uuid(:IpLease, fill_options)
   end
 end

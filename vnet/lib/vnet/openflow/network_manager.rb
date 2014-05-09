@@ -7,6 +7,8 @@ module Vnet::Openflow
   class NetworkManager < Vnet::Manager
     include Vnet::UpdateItemStates
 
+    include Vnet::Constants::Network
+
     #
     # Events:
     #
@@ -119,8 +121,8 @@ module Vnet::Openflow
     def item_initialize(item_map, params)
       item_class =
         case item_map.network_mode
-        when 'physical' then Networks::Physical
-        when 'virtual'  then Networks::Virtual
+        when MODE_PHYSICAL then Networks::Physical
+        when MODE_VIRTUAL  then Networks::Virtual
         else
           error log_format('unknown network type',
                            "network_mode:#{item_map.network_mode}")

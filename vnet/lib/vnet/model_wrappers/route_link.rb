@@ -2,6 +2,6 @@
 
 module Vnet::ModelWrappers
   class RouteLink < Base
-    include Helpers::IPv4
+    include Helpers::MacAddr
   end
 end

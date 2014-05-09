@@ -1,29 +1,27 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
-  put_post_shared_params = [
-    "ipv4_network",
-    "ipv4_prefix",
-    "interface_uuid",
-    "network_uuid",
-    "route_link_uuid"
-  ]
+  def self.put_post_shared_params
+    param :ipv4_network, :String, transform: PARSE_IPV4
+    param :ipv4_prefix, :Integer, in: 1..32
+    param_uuid M::Interface, :interface_uuid
+    param_uuid M::Network, :network_uuid
+    param_uuid M::RouteLink, :route_link_uuid
+  end
 
+  put_post_shared_params
+  param_options :ipv4_network, required: true
+  param_options :network_uuid, required: true
+  param_options :route_link_uuid, required: true
+  param_uuid M::Route
+  param :ingress, :Boolean
+  param :egress, :Boolean
   post do
-    accepted_params = put_post_shared_params + [
-      "uuid",
-      "ingress",
-      "egress"
-    ]
-    required_params = ["ipv4_network", "network_uuid", "route_link_uuid"]
+    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
+    uuid_to_id(M::Network, "network_uuid", "network_id")
+    uuid_to_id(M::RouteLink, "route_link_uuid", "route_link_id")
 
-    post_new(:Route, accepted_params, required_params) { |params|
-      params['ipv4_network'] = parse_ipv4(params['ipv4_network'])
-      params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
-      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
-      check_syntax_and_get_id(M::Network,   params, "network_uuid", "network_id")
-      check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid", "route_link_id")
-    }
+    post_new(:Route)
   end
 
   get do
@@ -38,14 +36,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     delete_by_uuid(:Route)
   end
 
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:Route, put_post_shared_params) { |params|
-      params['ipv4_network'] = parse_ipv4(params['ipv4_network']) if params["ipv4_network"]
-      params['ipv4_prefix'] = params['ipv4_prefix'].to_i if params['ipv4_prefix']
-      check_syntax_and_get_id(M::Interface, params, "interface_uuid", "interface_id") if params["interface_uuid"]
-      check_syntax_and_get_id(M::Network,   params, "network_uuid", "network_id") if params["network_uuid"]
-      check_syntax_and_get_id(M::RouteLink, params, "route_link_uuid",
-        "route_link_id") if params["route_link_uuid"]
-    }
+    check_syntax_and_get_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
+    check_syntax_and_get_id(M::Network,   "network_uuid", "network_id") if params["network_uuid"]
+    check_syntax_and_get_id(M::RouteLink, "route_link_uuid", "route_link_id") if params["route_link_uuid"]
+    update_by_uuid(:Route)
   end
 end

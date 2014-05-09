@@ -1,25 +1,28 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
-  put_post_shared_params = [
-    "translation_uuid",
-    "mac_address",
-    "vlan_id",
-    "network_id"
-  ]
+  def self.put_post_shared_params
+    param_uuid M::Translation, :translation_uuid
+    param :mac_address, :String, transform: PARSE_MAC
+    param :vlan_id, :Integer
+    param :network_id, :Integer
+  end
 
-  post do
-    accepted_params = put_post_shared_params + ["uuid"]
-    required_params = ["network_id"]
+  def parse_translation
+    translation = uuid_to_id(M::Translation, "translation_uuid", "translation_id")
 
-    post_new(:VlanTranslation, accepted_params, required_params) do |params|
-      params['mac_address'] = parse_mac(params['mac_address'])
-      translation = check_syntax_and_get_id(M::Translation, params, "translation_uuid", "translation_id")
-
-      if translation.mode != 'vnet_edge'
-        raise(E::ArgumentError, 'Translation mode must be "vnet_edge".')
-      end
+    if translation.mode != C::Translation::MODE_VNET_EDGE
+      raise(E::ArgumentError, 'Translation mode must be "%s".') %
+        C::Translation::MODE_VNET_EDGE
     end
+  end
+
+  put_post_shared_params
+  param_uuid M::VlanTranslation
+  post do
+    parse_translation if params["translation_uuid"]
+
+    post_new(:VlanTranslation)
   end
 
   get do
@@ -34,10 +37,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
     delete_by_uuid(:VlanTranslation)
   end
 
+  put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:VlanTranslation, put_post_shared_params) do |params|
-      params['mac_address'] = parse_mac(params['mac_address']) if params["mac_address"]
-      check_syntax_and_get_id(M::Translation, params, "translation_uuid", "translation_id")
-    end
+    parse_translation if params["translation_uuid"]
+
+    update_by_uuid(:VlanTranslation)
   end
 end
