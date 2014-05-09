@@ -11,9 +11,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   end
 
   put_post_shared_params
+  param_uuid M::Translation
   param_options :mode, required: true
   param_options :interface_uuid, required: true
-  param_uuid M::Translation
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
