@@ -44,19 +44,15 @@ module Vnet::Openflow::Ports
     end
 
     def to_hash
-      { :port_number => self.port_number,
-        :port_hw_addr => self.port_hw_addr,
-        :name => self.port_name,
-        :type => self.port_type,
-      }
+      Vnet::Openflow::Network.new(id: @id,
+                                  port_number: self.port_number,
+                                  port_hw_addr: self.port_hw_addr,
+                                  name: self.port_name,
+                                  type: self.port_type)
     end
 
     def install
       error "port: No install action implemented for this port."
-    end
-
-    def installed?
-      !!@installed
     end
 
     def uninstall
