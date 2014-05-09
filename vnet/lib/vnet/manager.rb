@@ -11,8 +11,6 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::Notifications
 
-    # MW_CLASS = MW::Foo
-
     def initialize(dp_info)
       @dp_info = dp_info
 

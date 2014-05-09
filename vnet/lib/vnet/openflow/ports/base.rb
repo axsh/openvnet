@@ -2,13 +2,6 @@
 
 module Vnet::Openflow::Ports
 
-  module Install
-    def install
-      @installed = true
-      super
-    end
-  end
-
   class Base < Vnet::ItemDpBase
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
@@ -23,12 +16,6 @@ module Vnet::Openflow::Ports
     attr_accessor :tunnel_id
 
     alias_method :port_number, :id
-
-    def extend(m)
-      # `install` method will set true to @installed automatically
-      m.class_eval { prepend Install }
-      super
-    end
 
     def initialize(dp_info, port_info)
       # TODO: Support proper params initialization:
