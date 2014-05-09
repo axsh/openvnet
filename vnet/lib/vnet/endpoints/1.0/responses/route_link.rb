@@ -4,7 +4,7 @@ module Vnet::Endpoints::V10::Responses
   class RouteLink < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::RouteLink)
-      object.to_hash
+      object.to_hash.merge({ mac_address: object.mac_address_s })
     end
   end
 

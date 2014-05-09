@@ -77,4 +77,5 @@ module Vnet::Endpoints
   define_error(:MissingArgument, 400, '104')
   define_error(:RelationAlreadyExists, 400, '105')
   define_error(:DeleteRestrictionError, 400, '106')
+  define_error(:UnknownResource, 404, '107')
 end

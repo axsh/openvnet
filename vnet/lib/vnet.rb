@@ -34,9 +34,13 @@ module Vnet
   end
 
   module Constants
+    autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
+    autoload :Network, 'vnet/constants/network'
+    autoload :NetworkService, 'vnet/constants/network_service'
     autoload :Openflow, 'vnet/constants/openflow'
     autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
+    autoload :Translation, 'vnet/constants/translation'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
@@ -78,6 +82,7 @@ module Vnet
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
         autoload :Translation, 'vnet/endpoints/1.0/responses/translation'
+        autoload :TranslationStaticAddress, 'vnet/endpoints/1.0/responses/translation_static_address'
         autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'

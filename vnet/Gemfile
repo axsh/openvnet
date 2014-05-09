@@ -20,6 +20,7 @@ gem "sequel_paranoia"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "sinatra-hashfix"
+gem "sinatra-browse", '>= 0.3'
 gem "unicorn"
 gem "activesupport"
 

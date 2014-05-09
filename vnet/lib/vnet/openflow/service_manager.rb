@@ -3,6 +3,7 @@
 module Vnet::Openflow
 
   class ServiceManager < Vnet::Manager
+    include Vnet::Constants::NetworkService
     include ActiveInterfaces
 
     #
@@ -25,7 +26,7 @@ module Vnet::Openflow
 
     def dns_server_for(network_id)
       @items.each do |_, item|
-        next unless item.type == "dns" && item.networks[network_id]
+        next unless item.type == TYPE_DNS && item.networks[network_id]
         return item.dns_server_for(network_id)
       end
       nil
@@ -33,14 +34,14 @@ module Vnet::Openflow
 
     def add_dns_server(network_id, dns_server)
       @items.each do |_, item|
-        next unless item.type == "dhcp" && item.networks[network_id]
+        next unless item.type == TYPE_DHCP && item.networks[network_id]
         item.add_dns_server(network_id, dns_server)
       end
     end
 
     def remove_dns_server(network_id)
       @items.each do |_, item|
-        next unless item.type == "dhcp" && item.networks[network_id]
+        next unless item.type == TYPE_DHCP && item.networks[network_id]
         item.remove_dns_server(network_id)
       end
     end
@@ -91,9 +92,9 @@ module Vnet::Openflow
     def item_initialize(item_map, params)
       item_class =
         case item_map.type
-        when 'dhcp'   then Vnet::Openflow::Services::Dhcp
-        when 'dns'    then Vnet::Openflow::Services::Dns
-        when 'router' then Vnet::Openflow::Services::Router
+        when TYPE_DHCP   then Vnet::Openflow::Services::Dhcp
+        when TYPE_DNS    then Vnet::Openflow::Services::Dns
+        when TYPE_ROUTER then Vnet::Openflow::Services::Router
         else
           return
         end
@@ -115,7 +116,7 @@ module Vnet::Openflow
         }
       }
       
-      if item.type == "dns"
+      if item.type == TYPE_DNS
         if dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
           publish(SERVICE_ADDED_DNS, id: item.id, dns_service_map: dns_service_map)
         end
