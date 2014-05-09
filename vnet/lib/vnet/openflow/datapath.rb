@@ -12,10 +12,10 @@ module Vnet::Openflow
     attr_reader :node_id
 
     def initialize(datapath_map)
-      @id = datapath_map.id
-      @uuid = datapath_map.uuid
-      @display_name = datapath_map.display_name
-      @node_id = datapath_map.node_id
+      @id = datapath_map[:id]
+      @uuid = datapath_map[:uuid]
+      @display_name = datapath_map[:display_name]
+      @node_id = datapath_map[:node_id]
     end
 
     def is_remote?(owner_datapath_id, active_datapath_id = nil)
@@ -33,13 +33,12 @@ module Vnet::Openflow
     include FlowHelpers
 
     attr_reader :dp_info
+    attr_reader :datapath_info
 
     attr_reader :controller
     attr_reader :dpid
     attr_reader :dpid_s
     attr_reader :ovs_ofctl
-
-    attr_reader :datapath_info
 
     attr_reader :switch
 
