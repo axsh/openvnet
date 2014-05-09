@@ -57,6 +57,18 @@ module Vnet::Openflow
     private
 
     #
+    # Specialize Manager:
+    #
+
+    def match_item?(item, params)
+      return true if params[:id] && params[:id] == item.port_name
+      return true if params[:port_name] && params[:port_name] == item.port_name
+      return true if params[:port_number] && params[:port_number] == item.port_number
+      return true if params[:port_type] && params[:port_type] == item.port_type
+      false
+    end
+
+    #
     # Event handlers.
     #
 
@@ -80,9 +92,7 @@ module Vnet::Openflow
     end
 
     def uninstall_item(params)
-      port = @items[params[:id]] || return
-
-      @items.delete(params[:id])
+      port = @items.delete(params[:id]) || return
 
       port.try_uninstall
 
@@ -127,18 +137,6 @@ module Vnet::Openflow
       port.try_uninstall
 
       debug log_format("uninstall #{port.port_name}/#{port.id}")
-    end
-
-    #
-    # Specialize Manager:
-    #
-
-    def match_item?(item, params)
-      return true if params[:id] && params[:id] == item.port_name
-      return true if params[:port_name] && params[:port_name] == item.port_name
-      return true if params[:port_number] && params[:port_number] == item.port_number
-      return true if params[:port_type] && params[:port_type] == item.port_type
-      false
     end
 
     #

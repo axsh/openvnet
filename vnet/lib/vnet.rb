@@ -245,6 +245,7 @@ module Vnet
     autoload :LeasePolicyManager, 'vnet/openflow/lease_policy_manager'
     autoload :Network, 'vnet/openflow/network'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
+    autoload :Port, 'vnet/openflow/port'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :Route, 'vnet/openflow/route'
     autoload :RouteManager, 'vnet/openflow/route_manager'

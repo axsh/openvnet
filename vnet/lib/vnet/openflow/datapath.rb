@@ -101,77 +101,8 @@ module Vnet::Openflow
     end
 
     #
-    # Flow modification methods:
-    #
-
-    # Use dp_info.
-    def add_flow(flow)
-      @controller.pass_task {
-        @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
-      }
-    end
-
-    def add_ovs_flow(flow_str)
-      @ovs_ofctl.add_ovs_flow(flow_str)
-    end
-
-    def add_ovs_10_flow(flow_str)
-      @ovs_ofctl.add_ovs_10_flow(flow_str)
-    end
-
-    # Use dp_info.
-    def del_cookie(cookie, cookie_mask = COOKIE_MASK)
-      options = {
-        :command => Controller::OFPFC_DELETE,
-        :table_id => Controller::OFPTT_ALL,
-        :out_port => Controller::OFPP_ANY,
-        :out_group => Controller::OFPG_ANY,
-        :cookie => cookie,
-        :cookie_mask => cookie_mask
-      }
-
-      @controller.pass_task {
-        @controller.public_send_flow_mod(@dp_info.dpid, options)
-      }
-    end
-
-    # Use dp_info.
-    def add_flows(flows)
-      return if flows.blank?
-      @controller.pass_task {
-        flows.each { |flow|
-          @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
-        }
-      }
-    end
-
-    # Use dp_info.
-    def send_message(message)
-      @controller.pass_task {
-        @controller.public_send_message(@dp_info.dpid, message)
-      }
-    end
-
-    # Use dp_info.
-    def send_packet_out(message, port_no)
-      @controller.pass_task {
-        @controller.public_send_packet_out(@dp_info.dpid, message, port_no)
-      }
-    end
-
-    #
     # Port modification methods:
     #
-
-    # Obsolete, use DpInfo directly.
-    def add_tunnel(tunnel_name, remote_ip)
-      @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
-    end
-
-    def delete_tunnel(tunnel_name)
-      debug log_format('delete tunnel', "#{tunnel_name}")
-      @ovs_ofctl.delete_tunnel(tunnel_name)
-    end
 
     def initialize_datapath_info(datapath_map)
       @datapath_info = DatapathInfo.new(datapath_map)
