@@ -18,14 +18,14 @@ module Vnet::Openflow
                        "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
-      if @dp_info.datapath.datapath_info.nil?
+      if @datapath_info.nil?
         warn log_format('cannot initialize ports without a valid datapath database entry')
-        return nil
+        return
       end
 
       if @items[port_desc.port_no]
         info log_format('port already initialized', "port_number:#{port_desc.port_no}")
-        return item_to_hash(@items[port_desc.port_no])
+        return
       end
 
       port = Ports::Base.new(@dp_info, port_desc)
@@ -40,15 +40,14 @@ module Vnet::Openflow
                        [port_desc.advertised, port_desc.supported])
 
       port = @items[port_desc.port_no]
+
       if port.nil?
         debug log_format('port status could not delete uninitialized port',
                          "port_number:#{port_desc.port_no}")
-        return nil
+        return
       end
 
       publish(PORT_FINALIZED, id: port.id)
-
-      item_to_hash(port)
     end
 
     #
@@ -62,8 +61,7 @@ module Vnet::Openflow
     #
 
     def install_item(params)
-      port = @items[params[:id]]
-      return unless port
+      port = @items[params[:id]] || return
       return if port.installed?
 
       case
@@ -72,6 +70,8 @@ module Vnet::Openflow
       when port.port_info.name =~ /^t-/
         prepare_port_tunnel(port)
       else
+        # TODO: Set flood off.
+
         @dp_info.interface_manager.publish(INTERFACE_ACTIVATE_PORT,
                                            id: :port,
                                            port_name: port.port_name,
@@ -79,11 +79,29 @@ module Vnet::Openflow
       end
     end
 
+    def uninstall_item(params)
+      port = @items[params[:id]] || return
+
+      @items.delete(params[:id])
+
+      port.try_uninstall
+
+      # We always trigger the deactivate event even if interface_id is
+      # not set, as there might otherwise be a race-condition with
+      # activation events.
+      @dp_info.interface_manager.publish(INTERFACE_DEACTIVATE_PORT,
+                                         id: :port,
+                                         interface_id: port.interface_id,
+                                         port_name: port.port_name,
+                                         port_number: port.port_number)
+
+      debug log_format("uninstall #{port.port_name}/#{port.id}")
+    end
+
     # TODO: Make sure to verify we don't have duplicate port names, don't trust OVS.
 
     def attach_interface(params)
-      port = @items[params[:id]]
-      return unless port
+      port = @items[params[:id]] || return
       return if port.installed?
 
       interface = params[:interface] || return      
@@ -101,33 +119,12 @@ module Vnet::Openflow
     end
 
     def detach_interface(params)
-      port = @items[params[:id]]
-      return unless port
+      port = @items[params[:id]] || return
       return unless port.installed?
 
       @items[port.port_number] = Ports::Base.new(@dp_info, port.port_info)
 
-      port.uninstall
-
-      debug log_format("uninstall #{port.port_name}/#{port.id}")
-    end
-
-    def uninstall_item(params)
-      port = @items[params[:id]]
-      return unless port
-
-      @items.delete(params[:id])
-
-      port.uninstall if port.installed?
-
-      # We always trigger the deactivate event even if interface_id is
-      # not set, as there might otherwise be a race-condition with
-      # activation events.
-      @dp_info.interface_manager.publish(INTERFACE_DEACTIVATE_PORT,
-                                         id: :port,
-                                         interface_id: port.interface_id,
-                                         port_name: port.port_name,
-                                         port_number: port.port_number)
+      port.try_uninstall
 
       debug log_format("uninstall #{port.port_name}/#{port.id}")
     end
@@ -151,7 +148,7 @@ module Vnet::Openflow
       @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
 
       port.extend(Ports::Local)
-      port.install
+      port.try_install
     end
 
     def prepare_port_eth(port, interface)
@@ -174,7 +171,7 @@ module Vnet::Openflow
         error log_format("unknown port type", interface.mode)
       end
 
-      port.install
+      port.try_install
     end
 
     def prepare_port_vif(port, interface)
@@ -190,7 +187,7 @@ module Vnet::Openflow
       port.extend(Ports::Vif)
 
       port.interface_id = interface.id
-      port.install
+      port.try_install
     end
 
     def prepare_port_tunnel(port)
@@ -208,7 +205,7 @@ module Vnet::Openflow
       port.dst_datapath_id = tunnel.dst_datapath_id
       port.tunnel_id = tunnel.id
 
-      port.install
+      port.try_install
     end
 
   end
