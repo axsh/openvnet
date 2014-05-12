@@ -10,6 +10,8 @@ module Vnet::Models
     plugin :paranoia
     plugin :ip_address
 
+    plugin :association_dependencies, ip_retention: :destroy
+
     dataset_module do
       def all_interface_ids
         self.select_all(:interfaces).distinct(:id).map(:id)
