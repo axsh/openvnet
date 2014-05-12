@@ -3,8 +3,8 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   CLP = Vnet::Constants::LeasePolicy
   def self.put_post_shared_params
-   param :mode, :String, in: CLP::MODES, default: CLP::MODE_SIMPLE
-   param :timing, :String, in: CLP::TIMINGS, default: CLP::TIMING_IMMEDIATE
+    param :mode, :String, in: CLP::MODES, default: CLP::MODE_SIMPLE
+    param :timing, :String, in: CLP::TIMINGS, default: CLP::TIMING_IMMEDIATE
   end
 
   fill_options = [ ]
@@ -29,7 +29,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
   put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:LeasePolicy, put_post_shared_params, fill_options)
+    update_by_uuid(:LeasePolicy, fill_options)
   end
 
   param_uuid M::IpRangeGroup, :ip_range_group_uuid, required: true

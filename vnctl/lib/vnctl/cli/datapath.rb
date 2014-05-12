@@ -7,10 +7,8 @@ module Vnctl::Cli
 
     add_modify_shared_options {
       option_display_name
-      option :ipv4_address, :type => :string, :desc => "Ipv4 address for the datapath."
       option :is_connected, :type => :boolean, :desc => "Flag that detemines if the datapath is connected or not."
       option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
-      option :dc_segment_uuid, :type => :string, :desc => "The datapath's dc segment uuid."
       option :node_id, :type => :string, :desc => "The node id for the datapath."
     }
     set_required_options [:display_name, :dpid, :node_id]
@@ -21,14 +19,14 @@ module Vnctl::Cli
       relation.option :broadcast_mac_address, :type => :string, :required => true,
         :desc => "The broadcast mac address for mac2mac to use in this network."
       relation.option :interface_uuid, :type => :string, :required => true,
-      :desc => "The host interface uuid to use for this network."
+        :desc => "The host interface uuid to use for this network."
     end
 
     define_relation(:route_links) do |relation|
       relation.option :mac_address, :type => :string, :required => true,
         :desc => "The mac address to use for this link"
       relation.option :interface_uuid, :type => :string, :required => true,
-      :desc => "The host interface uuid to use for this route link."
+        :desc => "The host interface uuid to use for this route link."
     end
   end
 end
