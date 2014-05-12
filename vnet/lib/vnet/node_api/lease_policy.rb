@@ -32,15 +32,9 @@ module Vnet::NodeApi
             ip_lease = IpLease.create(
               mac_lease_id: ml_array.first.id,
               network_id: net.id,
-              ipv4_address: new_ip
+              ipv4_address: new_ip,
+              lease_time: lease_policy.lease_time
             )
-
-            if lease_policy.lease_time
-              model_class(:ip_retention).create(
-                ip_lease_id: ip_lease.id,
-                expired_at: Time.now + lease_policy.lease_time
-              )
-            end
           end
         end
       end
