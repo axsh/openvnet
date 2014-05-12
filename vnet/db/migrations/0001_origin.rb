@@ -259,6 +259,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       String :mode, :null=>false, :default => "simple"
       String :timing, :null=>false, :default => "immediate"
+      Integer :lease_time
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
