@@ -175,5 +175,13 @@ module Vnet
     #
     ADDED_DNS_RECORD = "added_dns_record"
     REMOVED_DNS_RECORD = "removed_dns_record"
+
+    #
+    # Ip retention events:
+    #
+    IP_RETENTION_INITIALIZED = 'ip_retention_initialized'
+    IP_RETENTION_UNLOAD_ITEM = 'ip_retention_unload_item'
+    IP_RETENTION_CREATED_ITEM = 'ip_retention_created_item'
+    IP_RETENTION_DELETED_ITEM = 'ip_retention_deleted_item'
   end
 end
