@@ -5,6 +5,7 @@ module Vnet::Models
     taggable 'il'
 
     many_to_one :network
+    one_to_one :ip_retention
 
     plugin :paranoia
     plugin :ip_address
@@ -37,9 +38,14 @@ module Vnet::Models
       self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count
     end
 
+    def expired_at
+      ip_retention ? ip_retention.expired_at : nil
+    end
+
     def to_hash
       super.merge({
-        ipv4_address: self.ipv4_address
+        ipv4_address: self.ipv4_address,
+        expired_at: self.expired_at,
       })
     end
   end
