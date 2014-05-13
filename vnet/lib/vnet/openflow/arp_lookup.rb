@@ -80,7 +80,7 @@ module Vnet::Openflow
         destination_ipv4 = nil
         destination_prefix = nil
       else
-        request_ipv4 = network_address.mask(32) | IPAddr.new('0.0.0.1')
+        request_ipv4 = arp_lookup_default_gw(network, network_address)
         destination_ipv4 = IPV4_BROADCAST
         destination_prefix = 0
       end
@@ -111,6 +111,10 @@ module Vnet::Openflow
       end
 
       messages.drop(5) if messages.size > 20
+    end
+
+    def arp_lookup_default_gw(network, network_address)
+      network_address.mask(32) | IPAddr.new('0.0.0.1')
     end
 
     def arp_lookup_reply_packet_in(message)
