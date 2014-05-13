@@ -345,4 +345,9 @@ module Vnet
     autoload :VdcVnetPlugin, 'vnet/plugins/vdc_vnet_plugin'
   end
 
+  module Services
+    autoload :Vnmgr, 'vnet/services/vnmgr'
+    autoload :VnetInfo, 'vnet/services/vnet_info'
+    autoload :IpRetentionManager, 'vnet/services/ip_retention_manager'
+  end
 end

@@ -38,6 +38,10 @@ module Vnet
       nil
     end
 
+    def to_hash
+      return NotImplementedError
+    end
+
     #
     # Internal methods:
     #
