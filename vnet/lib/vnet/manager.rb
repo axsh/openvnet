@@ -53,9 +53,7 @@ module Vnet
 
     def select(params = {})
       begin
-        @items.select { |id, item|
-          match_item?(item, params)
-        }.map { |id, item|
+        @items.select(&match_item_proc(params)).map { |id, item|
           item_to_hash(item)
         }
       rescue Celluloid::Task::TerminatedError => e
@@ -133,11 +131,50 @@ module Vnet
       raise NotImplementedError
     end
 
-    # Optimize this by returning a proc block.
+    #
+    # Filters:
+    #
+
+    # Used for combinations of filter params we do not yet have proc's
+    # for.
     def match_item?(item, params)
       return false if params[:id] && params[:id] != item.id
       return false if params[:uuid] && params[:uuid] != item.uuid
       true
+    end
+
+    def match_item_proc(params)
+      match_proc = case params.size
+                   when 1
+                     match_item_proc_part(params.first)
+                   when 2
+                     part_1 = match_item_proc_part(params.first)
+                     part_2 = match_item_proc_part(params.last)
+                     part_1 && part_2 &&
+                       proc { |id, item| part_1(id, item) && part_2(id, item) }
+                   when 3
+                     part_1, part_2, part_3 = params.to_a
+                     part_1 = match_item_proc_part(part_1)
+                     part_2 = match_item_proc_part(part_2)
+                     part_3 = match_item_proc_part(part_3)
+                     part_1 && part_2 && part_3 &&
+                       proc { |id, item| part_1(id, item) && part_2(id, item) && part_3(id, item) }
+                   when 4
+                     part_1, part_2, part_3, part_4 = params.to_a
+                     part_1 = match_item_proc_part(part_1)
+                     part_2 = match_item_proc_part(part_2)
+                     part_3 = match_item_proc_part(part_3)
+                     part_4 = match_item_proc_part(part_4)
+                     part_1 && part_2 && part_3 && part_4 &&
+                       proc { |id, item| part_1(id, item) && part_2(id, item) && part_3(id, item) && part_4(id, item) }
+                   else
+                     nil
+                   end
+
+      match_proc || proc { |id, item| match_item?(item, params) }
+    end
+
+    def match_item_proc_part(filter_part)
     end
 
     # TODO: Cleanup...
@@ -177,6 +214,7 @@ module Vnet
       item && item.to_hash
     end
 
+    # TODO: Remove the reinitialize and dynamic_load parameters.
     def item_by_params(params)
       if params[:reinitialize] != true
         item = internal_detect(params)
@@ -291,19 +329,15 @@ module Vnet
 
     def internal_detect(params)
       if params.size == 1 && params.first.first == :id
-        item = @items[params.first.last]
-        item = nil if item && !match_item?(item, params)
-        item
+        @items[params.first.last]
       else
-        item = @items.detect { |id, item|
-          match_item?(item, params)
-        }
-        item = item && item.last
+        item = @items.detect(&match_item_proc(params))
+        item && item.last
       end
     end
 
     def internal_select(params)
-      @items.values.select { |item| match_item?(item, params) }
+      @items.select(&match_item_proc(params))
     end
 
     #

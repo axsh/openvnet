@@ -61,28 +61,31 @@ module Vnet::Openflow
     end
 
     def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:mode] && params[:mode] != item.mode
-      return false if params[:port_number] && params[:port_number] != item.port_number
-      return false if params[:port_name] && params[:port_name] != item.port_name
+      raise NotImplementedError, params.inspect
+    end
 
-      if params.has_key? :owner_datapath_id
-        owner_datapath_id = params[:owner_datapath_id]
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
 
-        return false if owner_datapath_id.nil? && item.owner_datapath_ids
-        return false if owner_datapath_id && item.owner_datapath_ids.nil?
-        return false if owner_datapath_id && item.owner_datapath_ids.find_index(owner_datapath_id).nil?
+      case filter
+      when :id, :uuid, :mode, :port_name, :port_number
+        proc { |id, item| value == item.send(filter) }
+      when :owner_datapath_id
+        proc { |id, item|
+          next true if value.nil? && item.owner_datapath_ids
+          next true if value && item.owner_datapath_ids.nil?
+          next true if value && item.owner_datapath_ids.find_index(value).nil?
+          false
+        }
+      when :allowed_datapath_id
+        proc { |id, item|
+          next true if value.nil?
+          next true if item.owner_datapath_ids && item.owner_datapath_ids.find_index(value).nil?
+          false
+        }
+      else
+        raise NotImplementedError, filter
       end
-
-      if params.has_key? :allowed_datapath_id
-        allowed_datapath_id = params[:allowed_datapath_id]
-
-        return false if allowed_datapath_id.nil?
-        return false if item.owner_datapath_ids && item.owner_datapath_ids.find_index(allowed_datapath_id).nil?
-      end
-
-      true
     end
 
     def query_filter_from_params(params)

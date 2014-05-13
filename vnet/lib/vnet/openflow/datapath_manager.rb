@@ -58,9 +58,18 @@ module Vnet::Openflow
     end
 
     def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      true
+      raise NotImplementedError, params.inspect
+    end
+
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :uuid, :dpid
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     def query_filter_from_params(params)
