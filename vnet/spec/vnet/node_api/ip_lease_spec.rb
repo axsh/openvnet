@@ -32,7 +32,7 @@ describe Vnet::NodeApi::IpLease do
       expect(ip_lease[:interface_id]).to eq interface.id
 
       ip_retention_model = model.ip_retention
-      expect(ip_retention_model.expired_at.to_i).to eq (now + lease_time).to_i
+      expect(ip_retention_model.lease_time_expired_at.to_i).to eq (now + lease_time).to_i
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 2
@@ -43,7 +43,7 @@ describe Vnet::NodeApi::IpLease do
       expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CREATED_ITEM
       expect(events[1][:options][:id]).to eq ip_retention_model.id
       expect(events[1][:options][:ip_lease_id]).to eq ip_retention_model.ip_lease_id
-      expect(events[1][:options][:expired_at]).to eq ip_retention_model.expired_at
+      expect(events[1][:options][:lease_time_expired_at]).to eq ip_retention_model.lease_time_expired_at
     end
   end
 
@@ -59,13 +59,13 @@ describe Vnet::NodeApi::IpLease do
       Vnet::NodeApi::IpLease.destroy(ip_lease.canonical_uuid)
 
       expect(Vnet::Models::IpLease.count).to eq ip_lease_count - 1
-      expect(Vnet::Models::IpAddress.count).to eq ip_address_count - 1
+      expect(Vnet::Models::IpAddress.count).to eq ip_address_count
       expect(Vnet::Models::IpRetention.count).to eq ip_retention_count - 1
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 2
 
-      expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_DELETED_ITEM
+      expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_EXPIRED_ITEM
       expect(events[0][:options][:id]).to eq ip_lease.ip_retention.id
 
       expect(events[1][:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
