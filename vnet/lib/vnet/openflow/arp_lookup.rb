@@ -114,6 +114,16 @@ module Vnet::Openflow
     end
 
     def arp_lookup_default_gw(network, network_address)
+      network_conf = Vnet::Configurations::Vna.conf.network
+
+      if network_conf.uuid && network_conf.uuid == network.uuid
+        default_gw = network_conf.gateway && network_conf.gateway.address
+        
+        debug log_format("arp lookup using gateway '#{default_gw}'")
+
+        return IPAddr.new(default_gw) if default_gw
+      end
+
       network_address.mask(32) | IPAddr.new('0.0.0.1')
     end
 
