@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Openflow
-  class ConnectionManager < Vnet::Manager
+  class ConnectionManager < Vnet::Openflow::Manager
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 

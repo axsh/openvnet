@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class TunnelManager < Vnet::Manager
+  class TunnelManager < Vnet::Openflow::Manager
     include Vnet::Openflow::FlowHelpers
     include Vnet::UpdatePropertyStates
 

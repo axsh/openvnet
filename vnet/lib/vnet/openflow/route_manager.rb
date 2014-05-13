@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class RouteManager < Vnet::Manager
+  class RouteManager < Vnet::Openflow::Manager
     include ActiveNetworks
     include ActiveRouteLinks
 

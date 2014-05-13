@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class ServiceManager < Vnet::Manager
+  class ServiceManager < Vnet::Openflow::Manager
     include Vnet::Constants::NetworkService
     include ActiveInterfaces
 
