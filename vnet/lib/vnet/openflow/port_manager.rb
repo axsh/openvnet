@@ -32,6 +32,11 @@ module Vnet::Openflow
       @items[port.port_number] = port
 
       publish(PORT_INITIALIZED, id: port.id)
+
+      # The default setting is no_flood in order to ensure ovs does
+      # not attempt to send any arp requests to the port during
+      # initialization.
+      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
     end
 
     def remove(port_desc)
@@ -122,8 +127,6 @@ module Vnet::Openflow
       when :vif
         prepare_port_vif(port, interface)
       else
-        @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
         error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
       end
     end
@@ -144,8 +147,6 @@ module Vnet::Openflow
     #
 
     def prepare_port_local(port)
-      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
       port.extend(Ports::Local)
       port.try_install
     end
@@ -174,13 +175,6 @@ module Vnet::Openflow
     end
 
     def prepare_port_vif(port, interface)
-      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
-      if interface.nil?
-        error log_format("could not find interface for #{port.port_name}")
-        return
-      end
-
       debug log_format("prepare_port_vif #{interface.uuid}", "port_name:#{port.port_name}")
 
       port.extend(Ports::Vif)
@@ -190,8 +184,6 @@ module Vnet::Openflow
     end
 
     def prepare_port_tunnel(port)
-      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
       tunnel = @dp_info.tunnel_manager.retrieve(uuid: port.port_name)
 
       if tunnel.nil?
