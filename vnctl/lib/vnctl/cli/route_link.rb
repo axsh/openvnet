@@ -9,6 +9,7 @@ module Vnctl::Cli
       option :mac_address, :type => :string, :required => true,
        :desc => "The mac address for this route link."
     }
+    set_required_options [:mac_address]
 
     define_standard_crud_commands
   end

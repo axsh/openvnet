@@ -27,6 +27,14 @@ describe "/ip_range_groups" do
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
+  describe "PUT /:uuid" do
+    accepted_params = {
+      :allocation_type => "incremental"
+    }
+
+    include_examples "PUT /:uuid", accepted_params
+  end
+
   describe "One to many relation calls for ip_ranges" do
     let(:relation_fabricator) { :ip_range }
     let(:relation_uuid) { "ipr-new" }

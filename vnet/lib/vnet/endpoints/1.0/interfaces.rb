@@ -75,7 +75,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
       :security_group_id => security_group.id).all.commit
 
     # We call the destroy class method so we go trough NodeApi and send an
-    # update isolation event
+    # update isolation event. As opposed to calling the destroy instance method
     relations.each { |r| M::InterfaceSecurityGroup.destroy(r.id) }
     respond_with([security_group.uuid])
   end
