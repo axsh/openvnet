@@ -5,7 +5,6 @@ require 'sequel/plugins/mac_address'
 require 'sequel/plugins/ip_address'
 
 Sequel.extension(:core_extensions)
-Sequel::Database.extension :pagination
 
 module Vnet::Models
   class DeleteRestrictionError < StandardError; end
@@ -503,6 +502,8 @@ module Vnet::Models
   class Base < Sequel::Model
 
     plugin :validation_helpers
+
+    db.extension :pagination
 
     def to_hash()
       self.values.dup.merge({:class_name => self.class.name.demodulize})
