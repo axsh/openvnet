@@ -8,9 +8,7 @@ module Vnet::Models
     one_to_one :ip_retention
 
     plugin :paranoia
-    plugin :ip_address
-
-    plugin :association_dependencies, ip_retention: :destroy
+    plugin :ip_address, dependency: :disabled
 
     dataset_module do
       def all_interface_ids
@@ -40,15 +38,23 @@ module Vnet::Models
       self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count
     end
 
-    def expired_at
-      ip_retention ? ip_retention.expired_at : nil
+    def lease_time_expired_at
+      ip_retention ? ip_retention.lease_time_expired_at : nil
     end
 
     def to_hash
       super.merge({
         ipv4_address: self.ipv4_address,
-        expired_at: self.expired_at,
+        lease_time_expired_at: self.lease_time_expired_at,
       })
+    end
+
+    private
+
+    def after_destroy
+      unless self.ip_retention
+        self.ip_address.destroy
+      end
     end
   end
 end

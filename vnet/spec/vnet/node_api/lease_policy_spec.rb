@@ -128,7 +128,7 @@ describe Vnet::NodeApi::LeasePolicy do
 
       ip_lease = interface.ip_leases.first
       expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
-      expect(ip_lease.expired_at.to_i).to eq (now + lease_policy.lease_time).to_i
+      expect(ip_lease.lease_time_expired_at.to_i).to eq (now + lease_policy.lease_time).to_i
 
       event = MockEventHandler.handled_events.first
       expect(event[:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS

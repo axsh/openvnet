@@ -33,7 +33,8 @@ module Vnet::NodeApi
               mac_lease_id: ml_array.first.id,
               network_id: net.id,
               ipv4_address: new_ip,
-              lease_time: lease_policy.lease_time
+              lease_time: lease_policy.lease_time,
+              grace_time: lease_policy.grace_time
             )
           end
         end

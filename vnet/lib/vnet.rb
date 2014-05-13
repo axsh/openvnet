@@ -194,6 +194,7 @@ module Vnet
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :IpRange, 'vnet/node_api/models.rb'
     autoload :IpRangeGroup, 'vnet/node_api/models.rb'
+    autoload :IpRetention, 'vnet/node_api/ip_retention'
     autoload :LeasePolicy, 'vnet/node_api/lease_policy.rb'
     autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'
     autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models.rb'

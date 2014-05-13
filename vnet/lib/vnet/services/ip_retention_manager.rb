@@ -1,24 +1,27 @@
 module Vnet::Services
   class IpRetention < Vnet::ItemBase
-    attr_accessor :id, :ip_lease_id, :expired_at
+    attr_accessor :id, :ip_lease_id, :lease_time_expired_at, :grace_time, :grace_time_expired_at
     def initialize(params)
       @id = params[:id]
       @ip_lease_id = params[:ip_lease_id]
-      @expired_at = params[:expired_at]
+      @lease_time_expired_at = params[:lease_time_expired_at]
+      @grace_time = params[:grace_time]
     end
 
     def to_hash
       {
         id: id,
         ip_lease_id: ip_lease_id,
-        expired_at: expired_at,
+        lease_time_expired_at: lease_time_expired_at,
+        grace_time: grace_time,
+        grace_time_expired_at: grace_time_expired_at,
       }
     end
   end
 
   class IpRetentionManager < Vnet::Manager
     DEFAULT_OPTIONS = {
-      release_interval: 60,
+      expiration_check_interval: 60,
       run: true,
     }
 
@@ -26,15 +29,31 @@ module Vnet::Services
     subscribe_event IP_RETENTION_UNLOAD_ITEM, :unload_item
     subscribe_event IP_RETENTION_CREATED_ITEM, :create_item
     subscribe_event IP_RETENTION_DELETED_ITEM, :unload_item
+    subscribe_event IP_RETENTION_EXPIRED_ITEM, :expire_item
 
     def initialize(info, options = {})
       super
+      @log_prefix = self.class.name.to_s.demodulize.underscore
       @options = DEFAULT_OPTIONS.merge(options)
       async.run if options[:run]
     end
 
     def run
-      every(@options[:release_interval]) { release_expired }
+      load_all_items
+      every(@options[:expiration_check_interval]) { check_expiration }
+    end
+
+    def load_all_items(params)
+      i = 1
+      loop do
+        mw_class.batch.dataset.paginate(i, 1000).all.commit.tap do |ip_retentions|
+          return if ip_retentions.empty?
+          ip_retentions.each do |ip_retention|
+            publish(IP_RETENTION_CREATED_ITEM, id: ip_retention.id)
+          end
+        end
+        i += 1
+      end
     end
 
     def create_item(params)
@@ -66,14 +85,39 @@ module Vnet::Services
     end
 
     def match_item?(item, params)
-      return false if params[:expired_at] && params[:expired_at] < item.expired_at
+      return false if params[:lease_time_expired_at] && params[:lease_time_expired_at] < item.lease_time_expired_at
+      return false if params[:grace_time_expired_at] && (!item.grace_time_expired_at || params[:grace_time_expired_at] < item.grace_time_expired_at)
       return super
     end
 
-    def release_expired
-      internal_select(expired_at: Time.now).each do |item|
-        MW::IpLease.destroy(item.ip_lease_id)
-        info("Released exipred ip_lease: #{item.ip_lease_id}")
+    def expire_item(params)
+      unless params[:grace_time_expired_at]
+        error(log_format("grace_time_expired_at must be specified"))
+        return
+      end
+
+      @items[params[:id]].tap do |item|
+        return unless item
+        item.grace_time_expired_at = params[:grace_time_expired_at]
+      end
+    end
+
+    def check_expiration
+      check_lease_time_expiration
+      check_grace_time_expiration
+    end
+
+    def check_lease_time_expiration
+      select(lease_time_expired_at: Time.now).each do |item|
+        MW::IpLease.destroy(item[:ip_lease_id])
+        info("Released exipred ip_lease: #{item[:ip_lease_id]}")
+      end
+    end
+
+    def check_grace_time_expiration
+      select(grace_time_expired_at: Time.now).each do |item|
+        MW::IpRetention.destroy(item[:id])
+        info("Destroyed exipred ip_retention: #{item[:id]}")
       end
     end
   end

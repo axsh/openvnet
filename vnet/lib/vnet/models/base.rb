@@ -5,6 +5,7 @@ require 'sequel/plugins/mac_address'
 require 'sequel/plugins/ip_address'
 
 Sequel.extension(:core_extensions)
+Sequel::Database.extension :pagination
 
 module Vnet::Models
   class DeleteRestrictionError < StandardError; end

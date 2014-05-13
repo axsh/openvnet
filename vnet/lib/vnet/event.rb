@@ -183,5 +183,6 @@ module Vnet
     IP_RETENTION_UNLOAD_ITEM = 'ip_retention_unload_item'
     IP_RETENTION_CREATED_ITEM = 'ip_retention_created_item'
     IP_RETENTION_DELETED_ITEM = 'ip_retention_deleted_item'
+    IP_RETENTION_EXPIRED_ITEM = 'ip_retention_expired_item'
   end
 end
