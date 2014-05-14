@@ -7,9 +7,11 @@ module Vnet::NodeApi
       include Vnet::Event
 
       def create(options)
+        model = nil
         transaction do
-          model_class.create(options)
+          model = model_class.create(options)
         end
+        model
       end
 
       def update(uuid, options)
@@ -19,8 +21,8 @@ module Vnet::NodeApi
       end
 
       def destroy(uuid)
-        transaction do
-          model_class[uuid].tap(&:destroy)
+        model_class[uuid].tap do |model|
+          transaction { model.destroy }
         end
       end
 
