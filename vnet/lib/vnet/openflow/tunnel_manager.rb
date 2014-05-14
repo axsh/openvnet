@@ -311,32 +311,29 @@ module Vnet::Openflow
     # datapath networks.
     #
     #
-    def activate_link(host_dpn, remote_dpn, network_id)
+    def activate_link(obj_type, host_dp_obj, remote_dp_obj, dp_obj_id)
       options = {
         src_datapath_id: @datapath_info.id,
-        dst_datapath_id: remote_dpn[:datapath_id],
-        src_interface_id: host_dpn[:interface_id],
-        dst_interface_id: remote_dpn[:interface_id],
+        dst_datapath_id: remote_dp_obj[:datapath_id],
+        src_interface_id: host_dp_obj[:interface_id],
+        dst_interface_id: remote_dp_obj[:interface_id],
       }
 
-      # TODO: Update log output:
-      info log_format(
-        "activated link",
-        "remote_dpn:#{remote_dpn[:id]} " +
-        "datapath_id:#{remote_dpn[:datapath_id]} " +
-        "network_id:#{remote_dpn[:network_id]} " +
-        "interface_id:#{remote_dpn[:interface_id]}"
-      )
+      info log_format("activated #{obj_type} link",
+                      "#{obj_type}:#{remote_dp_obj[obj_type]} " +
+                      "remote_dp_obj:#{remote_dp_obj[:id]} " +
+                      "datapath_id:#{remote_dp_obj[:datapath_id]} " +
+                      "interface_id:#{remote_dp_obj[:interface_id]}")
 
-      # debug log_format("XXXXXXXXXXXX HOST: ", "#{host_dpn.inspect}")
-      # debug log_format("XXXXXXXXXXXX REMO: ", "#{remote_dpn.inspect}")
+      # debug log_format("XXXXXXXXXXXX HOST: ", "#{host_dp_obj.inspect}")
+      # debug log_format("XXXXXXXXXXXX REMO: ", "#{remote_dp_obj.inspect}")
 
       item = item_by_params(options)
-      tunnel_mode = select_tunnel_mode(host_dpn[:interface_id], remote_dpn[:interface_id])
+      tunnel_mode = select_tunnel_mode(host_dp_obj[:interface_id], remote_dp_obj[:interface_id])
 
       if tunnel_mode == nil
         info log_format("cannot determine tunnel mode")
-        @dp_info.interface_manager.async.retrieve(id: remote_dpn[:interface_id])
+        @dp_info.interface_manager.async.retrieve(id: remote_dp_obj[:interface_id])
 
         return
       end
@@ -355,32 +352,40 @@ module Vnet::Openflow
 
       # We make sure not to yield before the dpn has been added to
       # item.
-      item.add_datapath_network(remote_dpn)
-
-      add_property_id_to_update_queue(:update_networks, network_id)
+      case
+      when :network_id
+        item.add_datapath_network(remote_dp_obj)
+        add_property_id_to_update_queue(:update_networks, dp_obj_id)
+      when :route_link_id
+        item.add_datapath_route_link(remote_dp_obj)
+        add_property_id_to_update_queue(:update_route_links, dp_obj_id)
+      end
     end
 
-    def deactivate_link(host_dpn, remote_dpn, network_id)
+    def deactivate_link(obj_type, host_dp_obj, remote_dp_obj, dp_obj_id)
       options = {
         src_datapath_id: @datapath_info.id,
-        dst_datapath_id: remote_dpn[:datapath_id],
-        src_interface_id: host_dpn[:interface_id],
-        dst_interface_id: remote_dpn[:interface_id],
+        dst_datapath_id: remote_dp_obj[:datapath_id],
+        src_interface_id: host_dp_obj[:interface_id],
+        dst_interface_id: remote_dp_obj[:interface_id],
       }
 
       item = internal_detect(options) || return
 
-      info log_format(
-        "deactivated link",
-        "remote_dpn:#{remote_dpn[:id]} " +
-        "datapath_id:#{remote_dpn[:datapath_id]} " +
-        "network_id:#{remote_dpn[:network_id]} " +
-        "interface_id:#{remote_dpn[:interface_id]}"
-      )
+      info log_format("deactivated #{obj_type} link",
+                      "#{obj_type}:#{remote_dp_obj[obj_type]} " +
+                      "remote_dp_obj:#{remote_dp_obj[:id]} " +
+                      "datapath_id:#{remote_dp_obj[:datapath_id]} " +
+                      "interface_id:#{remote_dp_obj[:interface_id]}")
 
-      item.remove_datapath_network(remote_dpn[:id])
-
-      add_property_id_to_update_queue(:update_networks, network_id)
+      case
+      when :network_id
+        item.remove_datapath_network(remote_dp_obj[:id])
+        add_property_id_to_update_queue(:update_networks, dp_obj_id)
+      when :route_link_id
+        item.remove_datapath_route_link(remote_dp_obj[:id])
+        add_property_id_to_update_queue(:update_route_links, dp_obj_id)
+      end
 
       # TODO: Add event to check if item should be unloaded. Currently
       # done here:
@@ -540,7 +545,7 @@ module Vnet::Openflow
         remote_dpn[:network_id] == network_id
       }
       remote_dpns.each { |id, remote_dpn|
-        activate_link(host_dpn, remote_dpn, network_id)
+        activate_link(:network_id, host_dpn, remote_dpn, network_id)
       }
     end
 
@@ -551,7 +556,7 @@ module Vnet::Openflow
 
       host_dpn = @host_networks[network_id]
 
-      activate_link(host_dpn, remote_dpn, network_id) if host_dpn
+      activate_link(:network_id, host_dpn, remote_dpn, network_id) if host_dpn
     end
 
     # REMOVED_HOST_DATAPATH_NETWORK on queue ':datapath_network'
@@ -569,7 +574,7 @@ module Vnet::Openflow
         remote_dpn[:network_id] == network_id
       }
       remote_dpns.each { |id, remote_dpn|
-        deactivate_link(host_dpn, remote_dpn, network_id)
+        deactivate_link(:network_id, host_dpn, remote_dpn, network_id)
       }
     end
 
@@ -584,7 +589,7 @@ module Vnet::Openflow
 
       debug log_format("remote datapath network #{dpn_id} removed for datapath #{remote_dpn[:datapath_id]}")
 
-      deactivate_link(host_dpn, remote_dpn, network_id) if host_dpn
+      deactivate_link(:network_id, host_dpn, remote_dpn, network_id) if host_dpn
     end
 
     #
@@ -602,7 +607,7 @@ module Vnet::Openflow
         remote_dprl[:route_link_id] == route_link_id
       }
       remote_dprls.each { |id, remote_dprl|
-        activate_link(host_dprl, remote_dprl, route_link_id)
+        activate_link(:route_link_id, host_dprl, remote_dprl, route_link_id)
       }
     end
 
@@ -613,7 +618,7 @@ module Vnet::Openflow
 
       host_dprl = @host_route_links[route_link_id]
 
-      activate_link(host_dprl, remote_dprl, route_link_id) if host_dprl
+      activate_link(:route_link_id, host_dprl, remote_dprl, route_link_id) if host_dprl
     end
 
     #
