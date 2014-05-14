@@ -4,7 +4,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   def self.put_post_shared_params
     param :display_name, :String
     param :is_connected, :Boolean
-    param :dpid, :String, transform: :hex, format: /^(0x)?[0-9a-fA-F]{0,16}$/, on_error: proc { |error|
+    param :dpid, :String, transform: :hex, format: /^(0x)?[0-9a-f]{0,16}$/i, on_error: proc { |error|
       if error[:reason] == :format
         raise E::ArgumentError, "dpid must be a 16 byte hexadecimal number. Got: \"#{error[:value]}\""
       else
