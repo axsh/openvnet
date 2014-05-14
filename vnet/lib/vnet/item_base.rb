@@ -39,11 +39,11 @@ module Vnet
     end
 
     def to_hash
-      return NotImplementedError
+      raise NotImplementedError
     end
 
     def log_type
-      return NotImplementedError
+      raise NotImplementedError
     end
 
     #
