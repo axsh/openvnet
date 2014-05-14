@@ -11,14 +11,9 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::Notifications
 
-    def initialize(dp_info)
-      @dp_info = dp_info
-
-      @datapath_info = nil
+    def initialize(info, options = {})
       @items = {}
       @messages = {}
-
-      @log_prefix = "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: "
     end
 
     def retrieve(params)
@@ -106,7 +101,7 @@ module Vnet
     end
 
     def log_format(message, values = nil)
-      @log_prefix + message + (values ? " (#{values})" : '')
+      (@log_prefix || "") + message + (values ? " (#{values})" : '')
     end
 
     #
@@ -322,10 +317,7 @@ module Vnet
       item = item_by_params(id: item_id)
       return if item.nil?
 
-      # Flush messages should be done after install. (Make sure
-      # interfaces are loaded using sync.
-      flush_messages(item.id,
-                     item.public_method(:mac_address) && item.mac_address)
+      return item
     end
 
     # Returns true if the message queue was empty for 'item_id'.
@@ -353,28 +345,5 @@ module Vnet
                             }]
       true
     end
-
-    def flush_messages(item_id, mac_address)
-      return if item_id.nil? || item_id <= 0
-
-      messages = @messages.delete(item_id)
-
-      # The item must have a 'mac_address' attribute that will be used
-      # as the eth_src address for sending packet out messages.
-      if messages.nil? || mac_address.nil?
-        debug log_format('flush messages failed', "id:#{item_id} mac_address:#{mac_address}")
-        return
-      end
-
-      messages.each { |message|
-        packet = message[:message]
-        packet.match.in_port = OFPP_CONTROLLER
-        packet.match.eth_src = mac_address
-
-        @dp_info.send_packet_out(packet, OFPP_TABLE)
-      }
-    end
-
   end
-
 end
