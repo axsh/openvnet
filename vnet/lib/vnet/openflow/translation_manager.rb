@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class TranslationManager < Vnet::Manager
+  class TranslationManager < Vnet::Openflow::Manager
 
     include Vnet::Constants::Translation
     include ActiveInterfaces

@@ -5,11 +5,12 @@ module Vnet::Services
     attr_reader :vnet_info
 
     def initialize
+      @vnet_info = VnetInfo.new
       link_with_managers
     end
 
     def link_with_managers
-      @dp_info.managers.each do |manager|
+      @vnet_info.initialize_managers do |manager|
         begin
           link(manager)
         rescue => e

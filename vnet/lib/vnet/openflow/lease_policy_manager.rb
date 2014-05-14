@@ -4,7 +4,7 @@ module Vnet::Openflow
 
   # TODO: This class is currently not used.  Make sure we have plans to extend and
   # use it, otherwise delete.
-  class LeasePolicyManager < Vnet::Manager
+  class LeasePolicyManager < Vnet::Openflow::Manager
 
     #
     # Events:
