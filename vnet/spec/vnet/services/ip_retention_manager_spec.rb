@@ -10,9 +10,9 @@ describe Vnet::Services::IpRetentionManager do
 
       manager = Vnet::Services::IpRetentionManager.new(Vnet::Services::VnetInfo.new)
 
-      manager.create_item(id: 1, ip_lease_id: 1, lease_time_expired_at: current_time - 60)
-      manager.create_item(id: 2, ip_lease_id: 2, lease_time_expired_at: current_time)
-      manager.create_item(id: 3, ip_lease_id: 3, lease_time_expired_at: current_time + 60)
+      manager.created_item(id: 1, ip_lease_id: 1, lease_time_expired_at: current_time - 60)
+      manager.created_item(id: 2, ip_lease_id: 2, lease_time_expired_at: current_time)
+      manager.created_item(id: 3, ip_lease_id: 3, lease_time_expired_at: current_time + 60)
 
       manager.check_lease_time_expiration
     end
@@ -27,9 +27,9 @@ describe Vnet::Services::IpRetentionManager do
 
       manager = Vnet::Services::IpRetentionManager.new(Vnet::Services::VnetInfo.new)
 
-      manager.create_item(id: 1, ip_lease_id: 1, lease_time_expired_at: current_time - 60)
-      manager.create_item(id: 2, ip_lease_id: 2, lease_time_expired_at: current_time)
-      manager.create_item(id: 3, ip_lease_id: 3, lease_time_expired_at: current_time + 60)
+      manager.created_item(id: 1, ip_lease_id: 1, lease_time_expired_at: current_time - 60)
+      manager.created_item(id: 2, ip_lease_id: 2, lease_time_expired_at: current_time)
+      manager.created_item(id: 3, ip_lease_id: 3, lease_time_expired_at: current_time + 60)
       manager.expire_item(id: 1, grace_time_expired_at: current_time - 60)
       manager.expire_item(id: 2, grace_time_expired_at: current_time)
       manager.expire_item(id: 3, grace_time_expired_at: current_time + 60)

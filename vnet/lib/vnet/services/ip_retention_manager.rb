@@ -1,8 +1,8 @@
 module Vnet::Services
-  class IpRetention < Vnet::ItemBase
-    attr_accessor :id, :ip_lease_id, :lease_time_expired_at, :grace_time, :grace_time_expired_at
+  class IpRetention < Vnet::ItemVnetBase
+    attr_accessor :ip_lease_id, :lease_time_expired_at, :grace_time, :grace_time_expired_at
     def initialize(params)
-      @id = params[:id]
+      super
       @ip_lease_id = params[:ip_lease_id]
       @lease_time_expired_at = params[:lease_time_expired_at]
       @grace_time = params[:grace_time]
@@ -17,6 +17,10 @@ module Vnet::Services
         grace_time_expired_at: grace_time_expired_at,
       }
     end
+
+    def log_type
+      "ip_retention"
+    end
   end
 
   class IpRetentionManager < Vnet::Manager
@@ -27,7 +31,7 @@ module Vnet::Services
 
     subscribe_event IP_RETENTION_INITIALIZED, :load_item
     subscribe_event IP_RETENTION_UNLOAD_ITEM, :unload_item
-    subscribe_event IP_RETENTION_CREATED_ITEM, :create_item
+    subscribe_event IP_RETENTION_CREATED_ITEM, :created_item
     subscribe_event IP_RETENTION_DELETED_ITEM, :unload_item
     subscribe_event IP_RETENTION_EXPIRED_ITEM, :expire_item
 
@@ -56,7 +60,7 @@ module Vnet::Services
       end
     end
 
-    def create_item(params)
+    def created_item(params)
       return if @items[params[:id]]
 
       internal_new_item(mw_class.new(params), {})

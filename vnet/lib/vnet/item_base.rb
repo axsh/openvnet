@@ -42,6 +42,10 @@ module Vnet
       return NotImplementedError
     end
 
+    def log_type
+      return NotImplementedError
+    end
+
     #
     # Internal methods:
     #
@@ -52,6 +56,13 @@ module Vnet
       "#{log_type}: #{message}" + (values ? " (#{values})" : '')
     end
 
+  end
+
+  class ItemVnetBase < ItemBase
+    def initialize(params)
+      super
+      @id = params[:id]
+    end
   end
 
   class ItemDpBase < ItemBase
