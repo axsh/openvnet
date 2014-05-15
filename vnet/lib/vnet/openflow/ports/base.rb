@@ -16,6 +16,7 @@ module Vnet::Openflow::Ports
     attr_accessor :tunnel_id
 
     alias_method :port_number, :id
+    alias_method :port_desc, :port_info
 
     def initialize(params)
       super

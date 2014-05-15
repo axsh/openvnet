@@ -95,7 +95,7 @@ module Vnet::Openflow
       case
       when port.port_number == OFPP_LOCAL
         prepare_port_local(port)
-      when port.port_info.name =~ /^t-/
+      when port.port_desc.name =~ /^t-/
         prepare_port_tunnel(port)
       else
         # TODO: Set flood off.
@@ -143,14 +143,16 @@ module Vnet::Openflow
     end
 
     def detach_interface(params)
-      port = @items[params[:id]] || return
-      return unless port.installed?
+      item = @items[params[:id]] || return
+      return unless item.installed?
 
-      @items[port.port_number] = Ports::Base.new(@dp_info, port.port_info)
+      @items[item.id] = Ports::Base.new(dp_info: @dp_info,
+                                        id: item.id,
+                                        port_desc: item.port_desc)
 
-      port.try_uninstall
+      item.try_uninstall
 
-      debug log_format("uninstall #{port.port_name}/#{port.id}")
+      debug log_format("uninstall #{item.port_name}/#{item.id}")
     end
 
     #
