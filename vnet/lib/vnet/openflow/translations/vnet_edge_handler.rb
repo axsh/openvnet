@@ -27,9 +27,7 @@ module Vnet::Openflow::Translations
 
       return if not message.packet_info.arp
 
-      port = @dp_info.port_manager.retrieve(port_number: message.in_port,
-                                        reinitialize: false,
-                                        dynamic_load: false)
+      port = @dp_info.port_manager.detect(port_number: message.in_port)
 
       case port[:type]
       when :host
@@ -53,7 +51,7 @@ module Vnet::Openflow::Translations
                              :cookie => self.cookie
                            })
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     private
@@ -89,7 +87,7 @@ module Vnet::Openflow::Translations
         info log_format("vlan_id found", vlan_vids)
       end
 
-      edge_port = @dp_info.port_manager.retrieve(port_type: :generic, reinitialize: false, dynamic_load: false)
+      edge_port = @dp_info.port_manager.detect(port_type: :generic)
 
       if edge_port.nil?
         error log_format("Edge ports have not been found.", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
