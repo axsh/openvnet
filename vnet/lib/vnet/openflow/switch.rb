@@ -176,10 +176,10 @@ module Vnet::Openflow
       @dp_info.add_flows(flows)
     end
 
+    #
+    # Send messages that will start initializing the switch.
+    #
     def switch_ready
-      #
-      # Send messages that will start initializing the switch.
-      #
       @dp_info.send_message(Trema::Messages::FeaturesRequest.new)
       @dp_info.send_message(Trema::Messages::PortDescMultipartRequest.new)
     end

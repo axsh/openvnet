@@ -71,12 +71,11 @@ module Vnet::Openflow
     end
 
     def switch_ready
+      @switch.switch_ready
+
       unless @dp_info.datapath_manager.retrieve(dpid: @dp_info.dpid)
         warn log_format('could not find dpid in database')
-        return
       end
-
-      @switch.switch_ready
     end
 
     def reset
@@ -105,7 +104,14 @@ module Vnet::Openflow
 
     def initialize_datapath_info(datapath_map)
       @datapath_info = DatapathInfo.new(datapath_map)
-      @dp_info.managers.each { |manager| manager.set_datapath_info(@datapath_info) }
+
+      @dp_info.managers.each { |manager|
+        manager.set_datapath_info(@datapath_info)
+      }
+
+      # Until we have datapath_info loaded none of the ports can be
+      # initialized.
+      @dp_info.port_manager.initialize_ports
     end
 
     #

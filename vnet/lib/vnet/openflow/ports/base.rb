@@ -44,11 +44,11 @@ module Vnet::Openflow::Ports
     end
 
     def to_hash
-      Vnet::Openflow::Network.new(id: @id,
-                                  port_number: self.port_number,
-                                  port_hw_addr: self.port_hw_addr,
-                                  name: self.port_name,
-                                  type: self.port_type)
+      Vnet::Openflow::Port.new(id: @id,
+                               port_number: self.port_number,
+                               port_hw_addr: self.port_hw_addr,
+                               name: self.port_name,
+                               type: self.port_type)
     end
 
     def install
