@@ -23,7 +23,7 @@ module Vnet::Openflow
 
     def insert(port_desc)
       if @items[port_desc.port_no]
-        info log_format('port already added', "port_name:#{port_desc.port_name} port_number:#{port_desc.port_no}")
+        info log_format('port already added', "port_name:#{port_desc.name} port_number:#{port_desc.port_no}")
         return
       end
 
