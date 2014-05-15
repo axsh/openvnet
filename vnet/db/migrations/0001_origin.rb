@@ -110,6 +110,23 @@ Sequel.migration do
       FalseClass :is_deleted, :null=>false
     end
 
+    create_table(:ip_lease_containers) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+    end
+
+    create_table(:ip_lease_container_ip_leases) do
+      primary_key :id
+      Integer :ip_lease_container_id, :index => true, :null => false
+      Integer :ip_lease_id, :index => true, :null=>false
+    end
+
+    create_table(:ip_lease_container_interfaces) do
+      primary_key :id
+      Integer :ip_lease_container_id, :index => true, :null => false
+      Integer :interface_id, :index => true, :null=>false
+    end
+
     create_table(:mac_addresses) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -283,6 +300,14 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
+    end
+
+    create_table(:lease_policy_base_ip_leases) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :ip_lease_id, :index => true, :null => false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
     end
 
     create_table(:ip_range_groups) do
