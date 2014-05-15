@@ -27,7 +27,9 @@ module Vnet::Openflow
         return
       end
 
-      port = Ports::Base.new(@dp_info, port_desc)
+      port = Ports::Base.new(dp_info: @dp_info,
+                             id: port_desc.port_no,
+                             port_desc: port_desc)
       @items[port.port_number] = port
 
       debug log_format("insert port #{port_desc.name}",

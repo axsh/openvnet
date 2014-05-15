@@ -17,12 +17,10 @@ module Vnet::Openflow::Ports
 
     alias_method :port_number, :id
 
-    def initialize(dp_info, port_info)
-      # TODO: Support proper params initialization:
-      super(dp_info: dp_info,
-            id: port_info.port_no)
+    def initialize(params)
+      super
 
-      @port_info = port_info
+      @port_info = params[:port_desc]
 
       @cookie = self.port_number | COOKIE_TYPE_PORT
     end
