@@ -151,26 +151,23 @@ module Vnet::Openflow
     end
 
     def item_post_install(item, item_map)
-      if item.owner_datapath_ids &&
-          item.owner_datapath_ids.include?(@datapath_info.id)
-        item.update_active_datapath(datapath_id: @datapath_info.id)
-      end
-
       load_addresses(item_map)
 
-      if item.mode != :remote
-        @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
-                                        id: :interface,
-                                        interface_id: item.id)
+      return if item.mode == :remote
 
-        item.ingress_filtering_enabled &&
-          @dp_info.filter_manager.async.apply_filters(item_map)
-      end
+      @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
+                                      id: :interface,
+                                      interface_id: item.id)
+
+      item.ingress_filtering_enabled &&
+        @dp_info.filter_manager.async.apply_filters(item_map)
+
+      update_active_datapath(item, @datapath_info.id)
     end
 
     def item_post_uninstall(item)
       if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
-        item.update_active_datapath(datapath_id: nil)
+        update_active_datapath(item, nil)
       end
 
       if item.mode != :remote
@@ -374,7 +371,7 @@ module Vnet::Openflow
         #
       when :active_datapath_id
         # Reconsider this...
-        item.update_active_datapath(params)
+        update_active_datapath(item, params[:datapath_id])
 
       when :remote_datapath_id
         item.update_remote_datapath(params)
@@ -396,7 +393,7 @@ module Vnet::Openflow
         debug log_format("update_item", params)
 
         item.update_port_number(params[:port_number])
-        item.update_active_datapath(datapath_id: @datapath_info.id)
+        update_active_datapath(item, @datapath_info.id)
 
         @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
                                       id: item.port_number,
@@ -411,7 +408,7 @@ module Vnet::Openflow
 
         # Check if nil... (use param :port_number to verify)
         item.update_port_number(nil)
-        item.update_active_datapath(datapath_id: nil)
+        update_active_datapath(item, nil)
 
         #
         # Capability events:
@@ -420,6 +417,18 @@ module Vnet::Openflow
         # api event
         item.update
       end
+    end
+
+    def update_active_datapath(item, datapath_id)
+      return if item.mode == :remote
+
+      if item.owner_datapath_ids.nil?
+        return unless item.mode == :vif
+      else
+        return unless item.owner_datapath_ids.include?(@datapath_info.id)
+      end
+
+      item.update_active_datapath(@datapath_info.id)
     end
 
     def update_item_not_found(event, id, params)
