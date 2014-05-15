@@ -100,6 +100,8 @@ module Vnet
     end
 
     def add_property_id_to_update_queue(property_type, property_id)
+      raise ArgumentError if property_id.nil?
+
       update_states = (@update_property_states[property_type] ||= {})
 
       should_publish = update_states.empty?
@@ -110,6 +112,8 @@ module Vnet
     end
 
     def add_property_ids_to_update_queue(property_type, property_ids)
+      raise ArgumentError if property_ids.index(nil)
+
       update_states = (@update_property_states[property_type] ||= {})
 
       should_publish = update_states.empty?

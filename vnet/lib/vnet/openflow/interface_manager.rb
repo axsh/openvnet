@@ -142,6 +142,10 @@ module Vnet::Openflow
           next unless port_number && active_port
 
           item.update_port_number(port_number)
+
+          @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+                                        id: item.port_number,
+                                        interface: item_to_hash(item))
         }
       end
     end
@@ -155,11 +159,6 @@ module Vnet::Openflow
       load_addresses(item_map)
 
       if item.mode != :remote
-        item.port_number &&
-          @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
-                                        id: item.port_number,
-                                        interface: item_to_hash(item))
-
         @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
                                         id: :interface,
                                         interface_id: item.id)
@@ -399,8 +398,17 @@ module Vnet::Openflow
         item.update_port_number(params[:port_number])
         item.update_active_datapath(datapath_id: @datapath_info.id)
 
+        @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+                                      id: item.port_number,
+                                      interface: item_to_hash(item))
+
       when :clear_port_number
         debug log_format("update_item", params)
+
+        @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
+                                      id: item.port_number,
+                                      interface: item_to_hash(item))
+
         # Check if nil... (use param :port_number to verify)
         item.update_port_number(nil)
         item.update_active_datapath(datapath_id: nil)
@@ -455,10 +463,10 @@ module Vnet::Openflow
     end
 
     def activate_port_update_item_proc(port_number, params)
-      # port_name = params[:port_name] || return
+      port_name = params[:port_name] || return
 
       Proc.new { |id, item|
-        # item.port_name = port_name
+        item.port_name = port_name
 
         publish(INTERFACE_UPDATED,
                 event: :set_port_number,
@@ -466,7 +474,6 @@ module Vnet::Openflow
                 port_number: port_number)
       }
     end
-    
 
   end
 

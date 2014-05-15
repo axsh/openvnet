@@ -8,6 +8,7 @@ module Vnet::Openflow::Tunnels
 
     attr_reader :dst_ipv4_address
     attr_reader :datapath_networks
+    attr_reader :datapath_route_links
 
     attr_reader :dst_datapath_id
     attr_reader :dst_interface_id
@@ -105,6 +106,8 @@ module Vnet::Openflow::Tunnels
     #
     
     def add_datapath_network(datapath_network)
+      raise ArgumentError, datapath_network.inspect unless datapath_network[:network_id]
+
       return if @datapath_networks.detect { |d| d[:id] == datapath_network[:id] }
       @datapath_networks << datapath_network
     end
@@ -114,6 +117,8 @@ module Vnet::Openflow::Tunnels
     end
 
     def add_datapath_route_link(datapath_route_link)
+      raise ArgumentError, datapath_route_link.inspect unless datapath_route_link[:route_link_id]
+
       return if @datapath_route_links.detect { |d| d[:id] == datapath_route_link[:id] }
       @datapath_route_links << datapath_route_link
     end

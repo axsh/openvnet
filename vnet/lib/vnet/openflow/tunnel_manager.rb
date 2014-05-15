@@ -208,6 +208,7 @@ module Vnet::Openflow
       }
 
       add_dpn_hash_to_updated_networks(remote_dpns)
+      add_dprl_hash_to_updated_route_links(remote_dprls)
 
       # Make sure we have the remote host interface loaded.
       @dp_info.interface_manager.async.retrieve(id: item.dst_interface_id)
@@ -325,9 +326,6 @@ module Vnet::Openflow
                       "datapath_id:#{remote_dp_obj[:datapath_id]} " +
                       "interface_id:#{remote_dp_obj[:interface_id]}")
 
-      # debug log_format("XXXXXXXXXXXX HOST: ", "#{host_dp_obj.inspect}")
-      # debug log_format("XXXXXXXXXXXX REMO: ", "#{remote_dp_obj.inspect}")
-
       item = item_by_params(options)
       tunnel_mode = select_tunnel_mode(host_dp_obj[:interface_id], remote_dp_obj[:interface_id])
 
@@ -352,7 +350,7 @@ module Vnet::Openflow
 
       # We make sure not to yield before the dpn has been added to
       # item.
-      case
+      case obj_type
       when :network_id
         item.add_datapath_network(remote_dp_obj)
         add_property_id_to_update_queue(:update_networks, dp_obj_id)
@@ -378,7 +376,7 @@ module Vnet::Openflow
                       "datapath_id:#{remote_dp_obj[:datapath_id]} " +
                       "interface_id:#{remote_dp_obj[:interface_id]}")
 
-      case
+      case obj_type
       when :network_id
         item.remove_datapath_network(remote_dp_obj[:id])
         add_property_id_to_update_queue(:update_networks, dp_obj_id)
@@ -537,7 +535,7 @@ module Vnet::Openflow
     # ADDED_HOST_DATAPATH_NETWORK on queue ':datapath_network'
     def added_host_datapath_network(params)
       host_dpn = create_dp_obj(:host_network, params) || return
-      network_id = host_dpn[:network_id]
+      network_id = host_dpn[:network_id] || return
 
       # Reorder so that we activate in the order of loading
       # internally, database and then create.
@@ -552,7 +550,7 @@ module Vnet::Openflow
     # ADDED_REMOTE_DATAPATH_NETWORK on queue ':datapath_network'
     def added_remote_datapath_network(params)
       remote_dpn = create_dp_obj(:remote_network, params) || return
-      network_id = remote_dpn[:network_id]
+      network_id = remote_dpn[:network_id] || return
 
       host_dpn = @host_networks[network_id]
 
@@ -599,7 +597,7 @@ module Vnet::Openflow
     # ADDED_HOST_DATAPATH_ROUTE_LINK on queue ':datapath_route_link'
     def added_host_datapath_route_link(params)
       host_dprl = create_dp_obj(:host_route_link, params) || return
-      route_link_id = host_dprl[:route_link_id]
+      route_link_id = host_dprl[:route_link_id] || return
 
       # Reorder so that we activate in the order of loading
       # internally, database and then create.
@@ -614,7 +612,7 @@ module Vnet::Openflow
     # ADDED_REMOTE_DATAPATH_ROUTE_LINK on queue ':datapath_route_link'
     def added_remote_datapath_route_link(params)
       remote_dprl = create_dp_obj(:remote_route_link, params) || return
-      route_link_id = remote_dprl[:route_link_id]
+      route_link_id = remote_dprl[:route_link_id] || return
 
       host_dprl = @host_route_links[route_link_id]
 
@@ -672,6 +670,14 @@ module Vnet::Openflow
         remote_dpns[:network_id]
       }.tap { |network_ids|
         add_property_ids_to_update_queue(:update_networks, network_ids)
+      }
+    end
+
+    def add_dprl_hash_to_updated_route_links(dprls)
+      dprls.map { |id, remote_dprls|
+        remote_dprls[:route_link_id]
+      }.tap { |route_link_ids|
+        add_property_ids_to_update_queue(:update_route_links, route_link_ids)
       }
     end
 
