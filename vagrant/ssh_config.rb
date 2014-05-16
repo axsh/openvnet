@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+
 require 'optparse'
 require 'fileutils'
 require 'json'
@@ -125,12 +126,17 @@ Host #{host[:name]}
 
     puts host_config
 
-    unless @assume_yes
-      print "overwrite ssh config?[Y/n]"
+    if File.exists?(@host_config_file)
+      unless @assume_yes
+        print "overwrite ssh config?[Y/n]"
 
-      gets.chomp.tap do |ans|
-        exit 0 if !ans.empty? && ans !~ /^[Yy]/
+        gets.chomp.tap do |ans|
+          exit 0 if !ans.empty? && ans !~ /^[Yy]/
+        end
       end
+    else
+      puts "created #{@host_config_file}"
+      FileUtils.touch(@host_config_file)
     end
 
     File.open(@host_config_file, "r+") do |file|

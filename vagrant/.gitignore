@@ -2,3 +2,4 @@ cookbooks
 /cookbooks/
 .vagrant
 share/ssh/*
+!share/ssh/.gitkeep
