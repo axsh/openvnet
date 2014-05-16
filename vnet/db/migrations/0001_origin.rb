@@ -121,10 +121,10 @@ Sequel.migration do
       Integer :ip_lease_id, :index => true, :null => false
     end
 
-    create_table(:ip_lease_container_lease_policies) do
+    create_table(:lease_policy_ip_lease_containers) do
       primary_key :id
-      Integer :ip_lease_container_id, :index => true, :null => false
       Integer :lease_policy_id, :index => true, :null => false
+      Integer :ip_lease_container_id, :index => true, :null => false
     end
 
     create_table(:mac_addresses) do
