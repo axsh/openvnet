@@ -1,6 +1,6 @@
 ### Requirements
 
-* Ruby(2.0 or later)
+* Ruby(2.1.1 or later)
 * Virtualbox
 * Vagrant(1.5 or later)
 
@@ -27,7 +27,7 @@ bundle exec berks vendor cookbooks
 configure ssh
 
 ```
-./ssh_config
+./ssh_config.rb
 ```
 
 setup vms
