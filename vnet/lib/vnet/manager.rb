@@ -165,16 +165,10 @@ module Vnet
       raise NotImplementedError, params.inspect
     end
 
-    # TODO: Cleanup...
     def select_filter_from_params(params)
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
-        return nil
-      end
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     # Creates a batch object for querying a set of item to load,

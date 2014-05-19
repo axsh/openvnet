@@ -113,12 +113,6 @@ module Vnet::Openflow
       filter
     end
 
-    def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
-    end
-
     def item_initialize(item_map, params)
       item_class =
         case item_map.network_mode

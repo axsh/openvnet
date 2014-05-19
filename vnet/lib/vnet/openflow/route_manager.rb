@@ -47,7 +47,7 @@ module Vnet::Openflow
       filter, value = filter_part
 
       case filter
-      when :id, :uuid, :network_id, :egress, :ingress
+      when :id, :uuid, :interface_id, :network_id, :route_link_id, :egress, :ingress
         proc { |id, item| value == item.send(filter) }
       when :not_network_id
         proc { |id, item| value != item.send(filter) }
@@ -63,12 +63,6 @@ module Vnet::Openflow
       filter << {network_id: params[:network_id]} if params.has_key? :network_id
       filter << {route_link_id: params[:route_link_id]} if params.has_key? :route_link_id
       filter
-    end
-
-    def select_filter_from_params(params)
-      return if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)

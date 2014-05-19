@@ -75,12 +75,6 @@ module Vnet::Openflow
       filter
     end
 
-    def select_filter_from_params(params)
-      return if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
-    end
-
     def item_initialize(item_map, params)
       item_class =
         if item_map.dpid == @dp_info.dpid
