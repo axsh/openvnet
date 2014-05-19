@@ -343,6 +343,8 @@ Sequel.migration do
                :interface_security_groups,
                :ip_addresses,
                :ip_leases,
+               :ip_lease_containers,
+               :ip_lease_container_ip_leases,
                :ip_range_groups,
                :ip_ranges,
                :ip_retentions,
