@@ -16,13 +16,12 @@ module Vnet::Openflow::Ports
     attr_accessor :tunnel_id
 
     alias_method :port_number, :id
+    alias_method :port_desc, :port_info
 
-    def initialize(dp_info, port_info)
-      # TODO: Support proper params initialization:
-      super(dp_info: dp_info,
-            id: port_info.port_no)
+    def initialize(params)
+      super
 
-      @port_info = port_info
+      @port_info = params[:port_desc]
 
       @cookie = self.port_number | COOKIE_TYPE_PORT
     end
@@ -44,11 +43,11 @@ module Vnet::Openflow::Ports
     end
 
     def to_hash
-      Vnet::Openflow::Network.new(id: @id,
-                                  port_number: self.port_number,
-                                  port_hw_addr: self.port_hw_addr,
-                                  name: self.port_name,
-                                  type: self.port_type)
+      Vnet::Openflow::Port.new(id: @id,
+                               port_number: self.port_number,
+                               port_hw_addr: self.port_hw_addr,
+                               name: self.port_name,
+                               type: self.port_type)
     end
 
     def install

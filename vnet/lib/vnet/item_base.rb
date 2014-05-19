@@ -38,6 +38,14 @@ module Vnet
       nil
     end
 
+    def to_hash
+      raise NotImplementedError
+    end
+
+    def log_type
+      raise NotImplementedError
+    end
+
     #
     # Internal methods:
     #
@@ -48,6 +56,13 @@ module Vnet
       "#{log_type}: #{message}" + (values ? " (#{values})" : '')
     end
 
+  end
+
+  class ItemVnetBase < ItemBase
+    def initialize(params)
+      super
+      @id = params[:id]
+    end
   end
 
   class ItemDpBase < ItemBase

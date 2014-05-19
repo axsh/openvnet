@@ -17,11 +17,12 @@ module Vnet
   CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
 
-  autoload :Event,      'vnet/event'
-  autoload :ItemBase,   'vnet/item_base'
-  autoload :ItemDpBase, 'vnet/item_base'
-  autoload :ItemDpUuid, 'vnet/item_base'
-  autoload :Manager,    'vnet/manager'
+  autoload :Event,                'vnet/event'
+  autoload :ItemBase,             'vnet/item_base'
+  autoload :ItemVnetBase,         'vnet/item_base'
+  autoload :ItemDpBase,           'vnet/item_base'
+  autoload :ItemDpUuid,           'vnet/item_base'
+  autoload :Manager,              'vnet/manager'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
 
@@ -128,6 +129,7 @@ module Vnet
     autoload :IpLease, 'vnet/models/ip_lease'
     autoload :IpRange, 'vnet/models/ip_range'
     autoload :IpRangeGroup, 'vnet/models/ip_range_group'
+    autoload :IpRetention, 'vnet/models/ip_retention'
     autoload :LeasePolicy, 'vnet/models/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/models/lease_policy_base_network'
     autoload :LeasePolicyBaseInterface, 'vnet/models/lease_policy_base_interface'
@@ -159,6 +161,7 @@ module Vnet
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
     autoload :IpRange, 'vnet/model_wrappers/ip_range'
     autoload :IpRangeGroup, 'vnet/model_wrappers/ip_range_group'
+    autoload :IpRetention, 'vnet/model_wrappers/ip_retention'
     autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseInterface, 'vnet/model_wrappers/lease_policy'
@@ -192,6 +195,7 @@ module Vnet
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :IpRange, 'vnet/node_api/models.rb'
     autoload :IpRangeGroup, 'vnet/node_api/models.rb'
+    autoload :IpRetention, 'vnet/node_api/ip_retention'
     autoload :LeasePolicy, 'vnet/node_api/lease_policy.rb'
     autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'
     autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models.rb'
@@ -229,6 +233,7 @@ module Vnet
     autoload :DpInfo, 'vnet/openflow/dp_info'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
+    autoload :Manager, 'vnet/openflow/manager'
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
@@ -344,4 +349,9 @@ module Vnet
     autoload :VdcVnetPlugin, 'vnet/plugins/vdc_vnet_plugin'
   end
 
+  module Services
+    autoload :Vnmgr, 'vnet/services/vnmgr'
+    autoload :VnetInfo, 'vnet/services/vnet_info'
+    autoload :IpRetentionManager, 'vnet/services/ip_retention_manager'
+  end
 end

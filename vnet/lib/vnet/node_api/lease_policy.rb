@@ -23,16 +23,20 @@ module Vnet::NodeApi
             raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
           end
 
-          model_class(:lease_policy_base_interface).create(
-            :lease_policy_id => lease_policy.id,
-            :interface_id => interface.id
-          )
+          transaction do
+            model_class(:lease_policy_base_interface).create(
+              :lease_policy_id => lease_policy.id,
+              :interface_id => interface.id
+            )
 
-          IpLease.create(
-            mac_lease_id: ml_array.first.id,
-            network_id: net.id,
-            ipv4_address: new_ip
-          )
+            ip_lease = IpLease.create(
+              mac_lease_id: ml_array.first.id,
+              network_id: net.id,
+              ipv4_address: new_ip,
+              lease_time: lease_policy.lease_time,
+              grace_time: lease_policy.grace_time
+            )
+          end
         end
       end
 

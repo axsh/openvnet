@@ -39,5 +39,5 @@ group :development, :test do
 
   gem "coveralls"
 
-  gem "pry-nav"
+  gem "pry-byebug"
 end

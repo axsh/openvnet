@@ -8,7 +8,9 @@ describe Vnet::Openflow::Ports::Tunnel do
   describe "install" do
     it "creates tunnel specific flows" do
       datapath = MockDatapath.new(double, 10)
-      port = Vnet::Openflow::Ports::Base.new(datapath.dp_info, double(port_no: 10, name: 't-a'))
+      port = Vnet::Openflow::Ports::Base.new(dp_info: datapath.dp_info,
+                                             id: 10,
+                                             port_desc: double(port_no: 10, name: 't-a'))
       port.extend(Vnet::Openflow::Ports::Tunnel)
       port.dst_datapath_id = 5
 

@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class TunnelManager < Vnet::Manager
+  class TunnelManager < Vnet::Openflow::Manager
     include Vnet::Openflow::FlowHelpers
     include Vnet::UpdatePropertyStates
 
@@ -208,6 +208,7 @@ module Vnet::Openflow
       }
 
       add_dpn_hash_to_updated_networks(remote_dpns)
+      add_dprl_hash_to_updated_route_links(remote_dprls)
 
       # Make sure we have the remote host interface loaded.
       @dp_info.interface_manager.async.retrieve(id: item.dst_interface_id)
@@ -311,32 +312,26 @@ module Vnet::Openflow
     # datapath networks.
     #
     #
-    def activate_link(host_dpn, remote_dpn, network_id)
+    def activate_link(obj_type, host_dp_obj, remote_dp_obj, dp_obj_id)
       options = {
         src_datapath_id: @datapath_info.id,
-        dst_datapath_id: remote_dpn[:datapath_id],
-        src_interface_id: host_dpn[:interface_id],
-        dst_interface_id: remote_dpn[:interface_id],
+        dst_datapath_id: remote_dp_obj[:datapath_id],
+        src_interface_id: host_dp_obj[:interface_id],
+        dst_interface_id: remote_dp_obj[:interface_id],
       }
 
-      # TODO: Update log output:
-      info log_format(
-        "activated link",
-        "remote_dpn:#{remote_dpn[:id]} " +
-        "datapath_id:#{remote_dpn[:datapath_id]} " +
-        "network_id:#{remote_dpn[:network_id]} " +
-        "interface_id:#{remote_dpn[:interface_id]}"
-      )
-
-      # debug log_format("XXXXXXXXXXXX HOST: ", "#{host_dpn.inspect}")
-      # debug log_format("XXXXXXXXXXXX REMO: ", "#{remote_dpn.inspect}")
+      info log_format("activated #{obj_type} link",
+                      "#{obj_type}:#{remote_dp_obj[obj_type]} " +
+                      "remote_dp_obj:#{remote_dp_obj[:id]} " +
+                      "datapath_id:#{remote_dp_obj[:datapath_id]} " +
+                      "interface_id:#{remote_dp_obj[:interface_id]}")
 
       item = item_by_params(options)
-      tunnel_mode = select_tunnel_mode(host_dpn[:interface_id], remote_dpn[:interface_id])
+      tunnel_mode = select_tunnel_mode(host_dp_obj[:interface_id], remote_dp_obj[:interface_id])
 
       if tunnel_mode == nil
         info log_format("cannot determine tunnel mode")
-        @dp_info.interface_manager.async.retrieve(id: remote_dpn[:interface_id])
+        @dp_info.interface_manager.async.retrieve(id: remote_dp_obj[:interface_id])
 
         return
       end
@@ -355,32 +350,40 @@ module Vnet::Openflow
 
       # We make sure not to yield before the dpn has been added to
       # item.
-      item.add_datapath_network(remote_dpn)
-
-      add_property_id_to_update_queue(:update_networks, network_id)
+      case obj_type
+      when :network_id
+        item.add_datapath_network(remote_dp_obj)
+        add_property_id_to_update_queue(:update_networks, dp_obj_id)
+      when :route_link_id
+        item.add_datapath_route_link(remote_dp_obj)
+        add_property_id_to_update_queue(:update_route_links, dp_obj_id)
+      end
     end
 
-    def deactivate_link(host_dpn, remote_dpn, network_id)
+    def deactivate_link(obj_type, host_dp_obj, remote_dp_obj, dp_obj_id)
       options = {
         src_datapath_id: @datapath_info.id,
-        dst_datapath_id: remote_dpn[:datapath_id],
-        src_interface_id: host_dpn[:interface_id],
-        dst_interface_id: remote_dpn[:interface_id],
+        dst_datapath_id: remote_dp_obj[:datapath_id],
+        src_interface_id: host_dp_obj[:interface_id],
+        dst_interface_id: remote_dp_obj[:interface_id],
       }
 
       item = internal_detect(options) || return
 
-      info log_format(
-        "deactivated link",
-        "remote_dpn:#{remote_dpn[:id]} " +
-        "datapath_id:#{remote_dpn[:datapath_id]} " +
-        "network_id:#{remote_dpn[:network_id]} " +
-        "interface_id:#{remote_dpn[:interface_id]}"
-      )
+      info log_format("deactivated #{obj_type} link",
+                      "#{obj_type}:#{remote_dp_obj[obj_type]} " +
+                      "remote_dp_obj:#{remote_dp_obj[:id]} " +
+                      "datapath_id:#{remote_dp_obj[:datapath_id]} " +
+                      "interface_id:#{remote_dp_obj[:interface_id]}")
 
-      item.remove_datapath_network(remote_dpn[:id])
-
-      add_property_id_to_update_queue(:update_networks, network_id)
+      case obj_type
+      when :network_id
+        item.remove_datapath_network(remote_dp_obj[:id])
+        add_property_id_to_update_queue(:update_networks, dp_obj_id)
+      when :route_link_id
+        item.remove_datapath_route_link(remote_dp_obj[:id])
+        add_property_id_to_update_queue(:update_route_links, dp_obj_id)
+      end
 
       # TODO: Add event to check if item should be unloaded. Currently
       # done here:
@@ -532,7 +535,7 @@ module Vnet::Openflow
     # ADDED_HOST_DATAPATH_NETWORK on queue ':datapath_network'
     def added_host_datapath_network(params)
       host_dpn = create_dp_obj(:host_network, params) || return
-      network_id = host_dpn[:network_id]
+      network_id = host_dpn[:network_id] || return
 
       # Reorder so that we activate in the order of loading
       # internally, database and then create.
@@ -540,18 +543,18 @@ module Vnet::Openflow
         remote_dpn[:network_id] == network_id
       }
       remote_dpns.each { |id, remote_dpn|
-        activate_link(host_dpn, remote_dpn, network_id)
+        activate_link(:network_id, host_dpn, remote_dpn, network_id)
       }
     end
 
     # ADDED_REMOTE_DATAPATH_NETWORK on queue ':datapath_network'
     def added_remote_datapath_network(params)
       remote_dpn = create_dp_obj(:remote_network, params) || return
-      network_id = remote_dpn[:network_id]
+      network_id = remote_dpn[:network_id] || return
 
       host_dpn = @host_networks[network_id]
 
-      activate_link(host_dpn, remote_dpn, network_id) if host_dpn
+      activate_link(:network_id, host_dpn, remote_dpn, network_id) if host_dpn
     end
 
     # REMOVED_HOST_DATAPATH_NETWORK on queue ':datapath_network'
@@ -569,7 +572,7 @@ module Vnet::Openflow
         remote_dpn[:network_id] == network_id
       }
       remote_dpns.each { |id, remote_dpn|
-        deactivate_link(host_dpn, remote_dpn, network_id)
+        deactivate_link(:network_id, host_dpn, remote_dpn, network_id)
       }
     end
 
@@ -584,7 +587,7 @@ module Vnet::Openflow
 
       debug log_format("remote datapath network #{dpn_id} removed for datapath #{remote_dpn[:datapath_id]}")
 
-      deactivate_link(host_dpn, remote_dpn, network_id) if host_dpn
+      deactivate_link(:network_id, host_dpn, remote_dpn, network_id) if host_dpn
     end
 
     #
@@ -594,7 +597,7 @@ module Vnet::Openflow
     # ADDED_HOST_DATAPATH_ROUTE_LINK on queue ':datapath_route_link'
     def added_host_datapath_route_link(params)
       host_dprl = create_dp_obj(:host_route_link, params) || return
-      route_link_id = host_dprl[:route_link_id]
+      route_link_id = host_dprl[:route_link_id] || return
 
       # Reorder so that we activate in the order of loading
       # internally, database and then create.
@@ -602,18 +605,18 @@ module Vnet::Openflow
         remote_dprl[:route_link_id] == route_link_id
       }
       remote_dprls.each { |id, remote_dprl|
-        activate_link(host_dprl, remote_dprl, route_link_id)
+        activate_link(:route_link_id, host_dprl, remote_dprl, route_link_id)
       }
     end
 
     # ADDED_REMOTE_DATAPATH_ROUTE_LINK on queue ':datapath_route_link'
     def added_remote_datapath_route_link(params)
       remote_dprl = create_dp_obj(:remote_route_link, params) || return
-      route_link_id = remote_dprl[:route_link_id]
+      route_link_id = remote_dprl[:route_link_id] || return
 
       host_dprl = @host_route_links[route_link_id]
 
-      activate_link(host_dprl, remote_dprl, route_link_id) if host_dprl
+      activate_link(:route_link_id, host_dprl, remote_dprl, route_link_id) if host_dprl
     end
 
     #
@@ -667,6 +670,14 @@ module Vnet::Openflow
         remote_dpns[:network_id]
       }.tap { |network_ids|
         add_property_ids_to_update_queue(:update_networks, network_ids)
+      }
+    end
+
+    def add_dprl_hash_to_updated_route_links(dprls)
+      dprls.map { |id, remote_dprls|
+        remote_dprls[:route_link_id]
+      }.tap { |route_link_ids|
+        add_property_ids_to_update_queue(:update_route_links, route_link_ids)
       }
     end
 

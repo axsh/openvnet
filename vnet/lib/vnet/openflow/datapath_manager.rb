@@ -2,7 +2,7 @@
 
 module Vnet::Openflow
 
-  class DatapathManager < Vnet::Manager
+  class DatapathManager < Vnet::Openflow::Manager
     include Vnet::Openflow::FlowHelpers
 
     #

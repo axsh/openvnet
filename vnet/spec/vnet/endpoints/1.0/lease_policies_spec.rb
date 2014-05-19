@@ -24,9 +24,10 @@ describe "/lease_policies" do
       :mode => "simple",
       # making the timing not "immediate", because allocate_ip() would
       # start requiring a lot more database setup
-      :timing => "dhcp"
+      :timing => "dhcp",
       # but timing is not a required parameter, and its default is "immediate"
       # so still have to do the database setup :-(
+      :lease_time => 7200,
     }
     required_params = [ ]
     uuid_params = [:uuid]

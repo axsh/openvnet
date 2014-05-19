@@ -110,6 +110,23 @@ Sequel.migration do
       FalseClass :is_deleted, :null=>false
     end
 
+    create_table(:ip_lease_containers) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+    end
+
+    create_table(:ip_lease_container_ip_leases) do
+      primary_key :id
+      Integer :ip_lease_container_id, :index => true, :null => false
+      Integer :ip_lease_id, :index => true, :null => false
+    end
+
+    create_table(:lease_policy_ip_lease_containers) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :ip_lease_container_id, :index => true, :null => false
+    end
+
     create_table(:mac_addresses) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -259,6 +276,8 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       String :mode, :null=>false, :default => "simple"
       String :timing, :null=>false, :default => "immediate"
+      Integer :lease_time
+      Integer :grace_time
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -302,7 +321,18 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
     end
-end
+
+    create_table(:ip_retentions) do
+      primary_key :id
+      Integer :ip_lease_id, :index => true, :null => false
+      Integer :ip_address_id, :index => true, :null => false
+      DateTime :lease_time_expired_at, :null=>false
+      Integer :grace_time
+      DateTime :grace_time_expired_at
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+    end
+  end
 
   down do
     drop_table(:datapaths,
@@ -314,6 +344,7 @@ end
                :ip_leases,
                :ip_range_groups,
                :ip_ranges,
+               :ip_retentions,
                :lease_policies,
                :mac_addresses,
                :mac_leases,

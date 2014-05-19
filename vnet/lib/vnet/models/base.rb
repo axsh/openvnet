@@ -503,6 +503,8 @@ module Vnet::Models
 
     plugin :validation_helpers
 
+    db.extension :pagination
+
     def to_hash()
       self.values.dup.merge({:class_name => self.class.name.demodulize})
     end

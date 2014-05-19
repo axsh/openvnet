@@ -29,6 +29,8 @@ module Vnet
     end
 
     def add_item_id_to_update_queue(item_id)
+      raise ArgumentError, 'item id of nil not allowed' if item_id.nil?
+
       should_publish = @update_item_states.empty?
       @update_item_states[item_id] = true
 
@@ -37,6 +39,8 @@ module Vnet
     end
 
     def add_item_ids_to_update_queue(item_ids)
+      raise ArgumentError, 'item id of nil not allowed' if item_ids.index(nil)
+
       should_publish = @update_item_states.empty?
 
       item_ids.select { |item_id|
@@ -100,6 +104,8 @@ module Vnet
     end
 
     def add_property_id_to_update_queue(property_type, property_id)
+      raise ArgumentError, 'property id of nil not allowed' if property_id.nil?
+
       update_states = (@update_property_states[property_type] ||= {})
 
       should_publish = update_states.empty?
@@ -110,6 +116,8 @@ module Vnet
     end
 
     def add_property_ids_to_update_queue(property_type, property_ids)
+      raise ArgumentError, 'property id of nil not allowed' if property_ids.index(nil)
+
       update_states = (@update_property_states[property_type] ||= {})
 
       should_publish = update_states.empty?
