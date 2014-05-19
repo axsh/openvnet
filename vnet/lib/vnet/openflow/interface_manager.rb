@@ -185,10 +185,7 @@ module Vnet::Openflow
     def create_item(params)
       return if @items[params[:id]]
 
-      return unless @dp_info.port_manager.retrieve(
-        port_name: params[:port_name],
-        dynamic_load: false
-      )
+      return unless @dp_info.port_manager.detect(port_name: params[:port_name])
 
       self.retrieve(params)
     end
@@ -283,10 +280,7 @@ module Vnet::Openflow
       item = @items[params[:id]]
 
       if !item && ip_lease.interface.mode.to_sym == :simulated &&
-        @dp_info.network_manager.retrieve(
-          id: ip_lease.ip_address.network_id,
-          dynamic_load: false
-        )
+        @dp_info.network_manager.detect(id: ip_lease.ip_address.network_id)
 
         @dp_info.interface_manager.retrieve(id: ip_lease.interface.id)
 

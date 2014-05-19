@@ -89,8 +89,6 @@ module Vnet::Openflow
     end
 
     def query_filter_from_params(params)
-      return nil if @datapath_info.nil?
-
       filter = [{src_datapath_id: @datapath_info.id}]
 
       filter << {id: params[:id]} if params.has_key? :id

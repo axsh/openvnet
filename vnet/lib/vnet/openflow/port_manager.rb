@@ -200,6 +200,8 @@ module Vnet::Openflow
     end
 
     def prepare_port_tunnel(port)
+      debug log_format("prepare_port_tunnel", "port_name:#{port.port_name}")
+
       tunnel = @dp_info.tunnel_manager.retrieve(uuid: port.port_name)
 
       if tunnel.nil?

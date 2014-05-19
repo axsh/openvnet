@@ -182,7 +182,8 @@ module Vnet
       expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
 
       if expression
-        uuid ? batch[uuid].where(expression) : batch.dataset.where(expression).first
+        dataset = uuid ? batch.dataset_where_uuid(uuid) : batch.dataset
+        dataset.where(expression).first
       else
         uuid ? batch[uuid] : nil
       end
@@ -196,16 +197,7 @@ module Vnet
       item && item.to_hash
     end
 
-    # TODO: Remove the reinitialize and dynamic_load parameters.
     def item_by_params(params)
-      if params[:reinitialize] != true
-        item = internal_detect(params)
-
-        if item || params[:dynamic_load] == false
-          return item
-        end
-      end
-
       select_filter = select_filter_from_params(params) || return
       item_map = select_item(select_filter) || return
 
