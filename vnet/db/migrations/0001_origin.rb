@@ -126,6 +126,7 @@ Sequel.migration do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
       Integer :ip_lease_container_id, :index => true, :null => false
+      unique [:lease_policy_id, :ip_lease_container_id]
     end
 
     create_table(:mac_addresses) do

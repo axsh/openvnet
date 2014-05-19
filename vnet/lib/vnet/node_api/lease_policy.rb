@@ -90,6 +90,33 @@ module Vnet::NodeApi
 
         return
       end
+
+      def add_ip_lease_container(uuid, ip_lease_container_uuid)
+        lease_policy = model_class[uuid]
+        ip_lease_container = model_class(:ip_lease_container)[ip_lease_container_uuid]
+        model = nil
+        transaction do
+          model = model_class(:lease_policy_ip_lease_container).create(
+            lease_policy_id: lease_policy.id,
+            ip_lease_container_id: ip_lease_container.id
+          )
+        end
+        model
+      end
+
+      def remove_ip_lease_container(uuid, ip_lease_container_uuid)
+        lease_policy = model_class[uuid]
+        ip_lease_container = model_class(:ip_lease_container)[ip_lease_container_uuid]
+        model = nil
+        transaction do
+          model = model_class(:lease_policy_ip_lease_container).find(
+            lease_policy_id: lease_policy.id,
+            ip_lease_container_id: ip_lease_container.id
+          )
+          model.destroy
+        end
+        model
+      end
     end
   end
 end
