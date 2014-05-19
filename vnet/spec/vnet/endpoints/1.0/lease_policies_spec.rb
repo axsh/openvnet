@@ -50,6 +50,8 @@ describe "/lease_policies" do
 
     let!(:ip_range_group) { Fabricate(:ip_range_group) { uuid "iprg-test" } }
 
+    let!(:join_table_fabricator) { :lease_policy_base_network }
+
     include_examples "many_to_many_relation", "networks", {
                        :ip_range_group_uuid => 'iprg-test'
                      }
@@ -80,6 +82,8 @@ describe "/lease_policies" do
         network_id: network.id,
         ip_range_group_id: ip_range_group.id )
     }
+
+    let!(:join_table_fabricator) { :lease_policy_base_interface }
 
     include_examples "many_to_many_relation", "interfaces", {}
   end
