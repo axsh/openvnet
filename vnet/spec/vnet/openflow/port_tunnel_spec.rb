@@ -17,10 +17,10 @@ describe Vnet::Openflow::Ports::Tunnel do
       tunnel_manager = double(:tunnel_manager)
 
       # update_item is now called from port manager.
-      # tunnel_manager.should_receive(:update_item)
-      # datapath.dp_info.should_receive(:tunnel_manager).and_return(tunnel_manager)
+      tunnel_manager.should_receive(:update)
+      datapath.dp_info.should_receive(:tunnel_manager).and_return(tunnel_manager)
 
-      port.install
+      port.try_install
 
       expect(datapath.added_ovs_flows.size).to eq 0
       expect(datapath.added_flows.size).to eq(1 + DATAPATH_IDLE_FLOWCOUNT)
