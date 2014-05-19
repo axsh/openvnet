@@ -110,6 +110,23 @@ Sequel.migration do
       FalseClass :is_deleted, :null=>false
     end
 
+    create_table(:ip_lease_containers) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+    end
+
+    create_table(:ip_lease_container_ip_leases) do
+      primary_key :id
+      Integer :ip_lease_container_id, :index => true, :null => false
+      Integer :ip_lease_id, :index => true, :null => false
+    end
+
+    create_table(:lease_policy_ip_lease_containers) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :ip_lease_container_id, :index => true, :null => false
+    end
+
     create_table(:mac_addresses) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
