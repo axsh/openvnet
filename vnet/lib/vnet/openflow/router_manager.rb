@@ -34,16 +34,21 @@ module Vnet::Openflow
       ROUTER_UNLOAD_ITEM
     end
 
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :uuid
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
+    end
+
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
       filter
-    end
-
-    def select_filter_from_params(params)
-      return if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)
