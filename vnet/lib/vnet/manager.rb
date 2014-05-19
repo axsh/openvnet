@@ -181,12 +181,10 @@ module Vnet
     def create_batch(batch, uuid, filters)
       expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
 
-      if expression
-        dataset = uuid ? batch.dataset_where_uuid(uuid) : batch.dataset
-        dataset.where(expression).first
-      else
-        uuid ? batch[uuid] : nil
-      end
+      return unless expression || uuid
+
+      dataset = uuid ? batch.dataset_where_uuid(uuid) : batch.dataset
+      dataset = dataset.where(expression) if expression
     end
 
     #
@@ -199,11 +197,7 @@ module Vnet
 
     def item_by_params(params)
       select_filter = select_filter_from_params(params) || return
-      item_map = select_item(select_filter) || return
-
-      if params[:reinitialize] == true
-        @items.delete(item_map.id)
-      end
+      item_map = select_item(select_filter.first) || return
 
       internal_new_item(item_map, params)
     end
