@@ -14,7 +14,7 @@ module Vnet::Initializers
 
       if ENV['DEBUG_SQL'] || options[:debug_sql]
         require 'logger'
-        db.loggers << Logger.new(STDERR)
+        db.loggers << ::Logger.new(STDERR)
       end
       case db.adapter_scheme
       when :mysql, :mysql2

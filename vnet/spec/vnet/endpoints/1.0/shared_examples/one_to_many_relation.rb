@@ -108,6 +108,10 @@ shared_examples "one_to_many_relation" do |relation_suffix, post_request_params|
 
   describe "DELETE /:uuid/#{relation_suffix}/#{relation_uuid_label}" do
     before(:each) do
+      add_relation = "add_#{relation_suffix.singularize}"
+      relation_object = Fabricate(relation_fabricator, uuid: relation_uuid.dup)
+      base_object.send(add_relation, relation_object)
+
       delete api_relation_suffix, request_params
     end
 
@@ -132,6 +136,17 @@ shared_examples "one_to_many_relation" do |relation_suffix, post_request_params|
       }
 
       it_should_return_error(400, "InvalidUUID", /this_is_not_an_uuid$/)
+    end
+
+    context "with a related object that has already been added to the base object" do
+      let(:api_relation_suffix) {
+        "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}/#{relation_uuid}"
+      }
+
+      it "should destroy the entry in the join table" do
+        expect(last_response).to succeed
+        expect(base_object.send(relation_suffix)).to eq []
+      end
     end
   end
 end
