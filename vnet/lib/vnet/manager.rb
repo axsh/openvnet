@@ -130,46 +130,39 @@ module Vnet
     # Filters:
     #
 
-    # Used for combinations of filter params we do not yet have proc's
-    # for.
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      true
-    end
-
     def match_item_proc(params)
-      match_proc = case params.size
-                   when 1
-                     match_item_proc_part(params.first)
-                   when 2
-                     part_1 = match_item_proc_part(params.first)
-                     part_2 = match_item_proc_part(params.last)
-                     part_1 && part_2 &&
-                       proc { |id, item| part_1(id, item) && part_2(id, item) }
-                   when 3
-                     part_1, part_2, part_3 = params.to_a
-                     part_1 = match_item_proc_part(part_1)
-                     part_2 = match_item_proc_part(part_2)
-                     part_3 = match_item_proc_part(part_3)
-                     part_1 && part_2 && part_3 &&
-                       proc { |id, item| part_1(id, item) && part_2(id, item) && part_3(id, item) }
-                   when 4
-                     part_1, part_2, part_3, part_4 = params.to_a
-                     part_1 = match_item_proc_part(part_1)
-                     part_2 = match_item_proc_part(part_2)
-                     part_3 = match_item_proc_part(part_3)
-                     part_4 = match_item_proc_part(part_4)
-                     part_1 && part_2 && part_3 && part_4 &&
-                       proc { |id, item| part_1(id, item) && part_2(id, item) && part_3(id, item) && part_4(id, item) }
-                   else
-                     nil
-                   end
-
-      match_proc || proc { |id, item| match_item?(item, params) }
+      case params.size
+      when 1
+        match_item_proc_part(params.first)
+      when 2
+        part_1 = match_item_proc_part(params.first)
+        part_2 = match_item_proc_part(params.last)
+        part_1 && part_2 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) }
+      when 3
+        part_1, part_2, part_3 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
+        part_3 = match_item_proc_part(part_3)
+        part_1 && part_2 && part_3 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) }
+      when 4
+        part_1, part_2, part_3, part_4 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
+        part_3 = match_item_proc_part(part_3)
+        part_4 = match_item_proc_part(part_4)
+        part_1 && part_2 && part_3 && part_4 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) && part_4.call(id, item) }
+      when 0
+        proc { |id, item| true }
+      else
+        raise NotImplementedError, params.inspect
+      end
     end
 
     def match_item_proc_part(filter_part)
+      raise NotImplementedError, params.inspect
     end
 
     # TODO: Cleanup...

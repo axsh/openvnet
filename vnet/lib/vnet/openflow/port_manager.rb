@@ -76,10 +76,6 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
-    def match_item?(item, params)
-      raise NotImplementedError, params.inspect
-    end
-
     def match_item_proc_part(filter_part)
       filter, value = filter_part
 

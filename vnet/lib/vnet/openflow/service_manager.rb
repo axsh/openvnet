@@ -68,12 +68,15 @@ module Vnet::Openflow
       SERVICE_UNLOAD_ITEM
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:interface_id] && params[:interface_id] != item.interface_id
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
 
-      super
+      case filter
+      when :id, :uuid, :interface_id
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     def query_filter_from_params(params)

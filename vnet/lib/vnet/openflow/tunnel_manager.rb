@@ -59,15 +59,17 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      # return false if params[:mode] && params[:mode] != item.mode
-      return false if params[:port_name] && params[:port_name] != item.display_name
-      return false if params[:dst_datapath_id] && params[:dst_datapath_id] != item.dst_datapath_id
-      return false if params[:src_interface_id] && params[:src_interface_id] != item.src_interface_id
-      return false if params[:dst_interface_id] && params[:dst_interface_id] != item.dst_interface_id
-      true
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :uuid, :port_name, :dst_datapath_id, :src_interface_id, :dst_interface_id
+        proc { |id, item| value == item.send(filter) }
+      when :src_datapath_id
+        proc { |id, item| true }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     def select_filter_from_params(params)
