@@ -122,8 +122,8 @@ describe Vnet::NodeApi::LeasePolicy do
       allow(Time).to receive(:now).and_return(now)
 
       Vnet::NodeApi::LeasePolicy.allocate_ip(
-        lease_policy_id: lease_policy.id,
-        interface_id: interface.id
+        lease_policy_uuid: lease_policy.canonical_uuid,
+        interface_uuid: interface.canonical_uuid
       )
 
       ip_lease = interface.ip_leases.first

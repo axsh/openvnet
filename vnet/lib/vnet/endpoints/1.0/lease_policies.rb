@@ -72,8 +72,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
     interface = check_syntax_and_pop_uuid(M::Interface, "interface_uuid")
 
-    M::LeasePolicy.allocate_ip({ :interface_id => interface.id,
-                                 :lease_policy_id => lease_policy.id
+    M::LeasePolicy.allocate_ip({ :interface_uuid => interface.uuid,
+                                 :lease_policy_uuid => lease_policy.uuid
                                })
 
     respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))

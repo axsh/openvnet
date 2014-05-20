@@ -8,7 +8,7 @@ module Vnet::NodeApi
       include Vnet::Constants::LeasePolicy
 
       def allocate_ip(options)
-        lease_policy = model_class(:lease_policy)[options[:lease_policy_id]]
+        lease_policy = model_class(:lease_policy)[options[:lease_policy_uuid]]
         if lease_policy.timing == "immediate"
           base_networks = lease_policy.lease_policy_base_networks
           raise "No network associated with lease policy" if base_networks.empty?
@@ -17,26 +17,35 @@ module Vnet::NodeApi
           net = base_networks.first.network
 
           new_ip = schedule(net,ip_r)
-          # TODO: race condition between here and the allocation?
-          interface = model_class(:interface)[options[:interface_id]]
-          if (ml_array = interface.mac_leases).empty?
-            raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
-          end
+
+          options_for_ip_lease = {
+            network_id: net.id,
+            ipv4_address: new_ip,
+            lease_time: lease_policy.lease_time,
+            grace_time: lease_policy.grace_time
+          }
+          options_for_ip_lease[:uuid] = options[:ip_lease_uuid] if options[:ip_lease_uuid]
+
+          ip_lease = nil
 
           transaction do
-            model_class(:lease_policy_base_interface).create(
-              :lease_policy_id => lease_policy.id,
-              :interface_id => interface.id
-            )
+            if interface = model_class(:interface)[options[:interface_uuid]]
+              if (ml_array = interface.mac_leases).empty?
+                raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
+              end
 
-            ip_lease = IpLease.create(
-              mac_lease_id: ml_array.first.id,
-              network_id: net.id,
-              ipv4_address: new_ip,
-              lease_time: lease_policy.lease_time,
-              grace_time: lease_policy.grace_time
-            )
+              model_class(:lease_policy_base_interface).create(
+                :lease_policy_id => lease_policy.id,
+                :interface_id => interface.id
+              )
+
+              options_for_ip_lease[:mac_lease_id] = ml_array.first.id
+            end
+
+            ip_lease = IpLease.create(options_for_ip_lease)
           end
+
+          ip_lease
         end
       end
 
