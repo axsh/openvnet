@@ -98,8 +98,8 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
 
-      Integer :interface_id, :index => true, :null => false
-      Integer :mac_lease_id, :index => true, :null => false
+      Integer :interface_id, :index => true
+      Integer :mac_lease_id, :index => true
       Integer :ip_address_id, :index => true, :null=>false
 
       FalseClass :enable_routing, :null=>false

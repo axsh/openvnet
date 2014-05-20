@@ -50,7 +50,6 @@ module Sequel
       module InstanceMethods
         def validate
           super
-          errors.add(:mac_lease_id, 'cannot be empty') if self.mac_lease_id.blank?
           errors.add(:network_id, 'cannot be empty') if self.network_id.blank?
           errors.add(:ipv4_address, 'cannot be empty') if self.ipv4_address.blank?
         end
