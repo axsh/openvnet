@@ -223,6 +223,7 @@ module Vnet
 
     autoload :ActiveInterfaces, 'vnet/openflow/event_helpers'
     autoload :ActiveNetworks, 'vnet/openflow/event_helpers'
+    autoload :ActivePorts, 'vnet/openflow/event_helpers'
     autoload :ActiveRouteLinks, 'vnet/openflow/event_helpers'
     autoload :AddressHelpers, 'vnet/openflow/address_helpers'
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
@@ -249,6 +250,7 @@ module Vnet
     autoload :LeasePolicyManager, 'vnet/openflow/lease_policy_manager'
     autoload :Network, 'vnet/openflow/network'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
+    autoload :Port, 'vnet/openflow/port'
     autoload :PortManager, 'vnet/openflow/port_manager'
     autoload :Route, 'vnet/openflow/route'
     autoload :RouteManager, 'vnet/openflow/route_manager'

@@ -6,13 +6,18 @@ module Vnet::Openflow::Datapaths
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :uuid
+    attr_reader :display_name
+    attr_reader :dpid
+    attr_reader :node_id
 
     def initialize(params)
       super
 
       map = params[:map]
+
+      @display_name = map.display_name
       @dpid = map.dpid
+      @node_id = map.node_id
 
       @active_networks = {}
       @active_route_links = {}

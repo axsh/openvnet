@@ -8,8 +8,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   end
 
   put_post_shared_params
-  param_options :display_name, required: true
   param_uuid M::SecurityGroup
+  param_options :display_name, required: true
   post do
     post_new :SecurityGroup
   end

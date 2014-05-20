@@ -18,47 +18,47 @@ module Vnet::Openflow
 
     private
 
-    def activate_interface_query(interface_id)
-      { interface_id: interface_id }
+    def activate_interface_query(state_id, params)
+      { interface_id: state_id }
     end
 
-    def activate_interface_match_proc(interface_id)
-      Proc.new { |id, item| item.interface_id == interface_id }
+    def activate_interface_match_proc(state_id, params)
+      Proc.new { |id, item| item.interface_id == state_id }
     end
 
-    # Return an 'update_item(item, interface_id, params)' proc or nil.
-    def activate_interface_update_item_proc(interface_id, params)
+    # Return an 'update_item(item, state_id, params)' proc or nil.
+    def activate_interface_update_item_proc(state_id, params)
       nil
     end
 
     # Return value must not be nil or false.
-    def activate_interface_value(interface_id, params)
+    def activate_interface_value(state_id, params)
       true
     end
 
     # FOO_ACTIVATE_INTERFACE on queue ':interface'
     def activate_interface(params)
-      interface_id = params[:interface_id] || return
-      return if @active_interfaces.has_key? params[:interface_id]
+      state_id = params[:interface_id] || return
+      return if @active_interfaces.has_key? state_id
 
-      value = activate_interface_value(interface_id, params) || return
-      @active_interfaces[interface_id] = value
+      value = activate_interface_value(state_id, params) || return
+      @active_interfaces[state_id] = value
 
-      activate_interface_update_item_proc(interface_id, params).tap { |proc|
+      activate_interface_update_item_proc(state_id, params).tap { |proc|
         next unless proc
 
-        @items.select(&activate_interface_match_proc(interface_id)).each(&proc)
+        @items.select(&activate_interface_match_proc(state_id, params)).each(&proc)
       }
 
-      internal_load_where(activate_interface_query(interface_id))
+      internal_load_where(activate_interface_query(state_id, params))
     end
 
     # FOO_DEACTIVATE_INTERFACE on queue ':interface'
     def deactivate_interface(params)
-      interface_id = params[:interface_id] || return
-      return unless @active_interfaces.delete(interface_id)
+      state_id = params[:interface_id] || return
+      return unless @active_interfaces.delete(state_id)
 
-      items = @items.select(&activate_interface_match_proc(interface_id))
+      items = @items.select(&activate_interface_match_proc(state_id, params))
 
       internal_unload_id_item_list(items)
     end
@@ -81,47 +81,114 @@ module Vnet::Openflow
 
     private
 
-    def activate_network_query(network_id)
-      { network_id: network_id }
+    def activate_network_query(state_id, params)
+      { network_id: state_id }
     end
 
-    def activate_network_match_proc(network_id)
-      Proc.new { |id, item| item.network_id == network_id }
+    def activate_network_match_proc(state_id, params)
+      Proc.new { |id, item| item.network_id == state_id }
     end
 
-    # Return an 'update_item(item, network_id, params)' proc or nil.
-    def activate_network_update_item_proc(network_id, params)
+    # Return an 'update_item(item, state_id, params)' proc or nil.
+    def activate_network_update_item_proc(state_id, params)
       nil
     end
 
     # Return value must not be nil or false.
-    def activate_network_value(network_id, params)
+    def activate_network_value(state_id, params)
       true
     end
 
     # FOO_ACTIVATE_NETWORK on queue ':network'
     def activate_network(params)
-      network_id = params[:network_id] || return
-      return if @active_networks.has_key? params[:network_id]
+      state_id = params[:network_id] || return
+      return if @active_networks.has_key? state_id
 
-      value = activate_network_value(network_id, params) || return
-      @active_networks[network_id] = value
+      value = activate_network_value(state_id, params) || return
+      @active_networks[state_id] = value
 
-      activate_network_update_item_proc(network_id, params).tap { |proc|
+      activate_network_update_item_proc(state_id, params).tap { |proc|
         next unless proc
 
-        @items.select(&activate_network_match_proc(network_id)).each(&proc)
+        @items.select(&activate_network_match_proc(state_id, params)).each(&proc)
       }
 
-      internal_load_where(activate_network_query(network_id))
+      internal_load_where(activate_network_query(state_id, params))
     end
 
     # FOO_DEACTIVATE_NETWORK on queue ':network'
     def deactivate_network(params)
-      network_id = params[:network_id] || return
-      return unless @active_networks.delete(network_id)
+      state_id = params[:network_id] || return
+      return unless @active_networks.delete(state_id)
 
-      items = @items.select(&activate_network_match_proc(network_id))
+      items = @items.select(&activate_network_match_proc(state_id, params))
+
+      internal_unload_id_item_list(items)
+    end
+
+  end
+
+  #
+  # Active ports:
+  #
+
+  module ActivePorts
+
+    # subscribe_event FOO_ACTIVATE_PORT, :activate_port
+    # subscribe_event FOO_DEACTIVATE_PORT, :deactivate_port
+
+    def initialize(*args, &block)
+      super
+      @active_ports = {}
+    end
+
+    private
+
+    def activate_port_query(state_id, params)
+      { port_name: params[:port_name] }
+    end
+
+    def activate_port_match_proc(state_id, params)
+      port_name = params[:port_name]
+
+      Proc.new { |id, item|
+        item.port_name == port_name
+      }
+    end
+
+    # Return an 'update_item(item, state_id, params)' proc or nil.
+    def activate_port_update_item_proc(state_id, params)
+      nil
+    end
+
+    # Return value must not be nil or false.
+    def activate_port_value(state_id, params)
+      true
+    end
+
+    # FOO_ACTIVATE_PORT on queue ':port'
+    def activate_port(params)
+      state_id = params[:port_number] || return
+      return if @active_ports.has_key? state_id
+
+      value = activate_port_value(state_id, params) || return
+      @active_ports[state_id] = value
+
+      activate_port_update_item_proc(state_id, params).tap { |proc|
+        next unless proc
+
+        @items.select(&activate_port_match_proc(state_id, params)).each(&proc)
+      }
+
+      internal_load_where(activate_port_query(state_id, params))
+    end
+
+    # FOO_DEACTIVATE_PORT on queue ':port'
+    def deactivate_port(params)
+      state_id = params[:port_number] || return
+      return unless @active_ports.delete(state_id)
+
+      items = @items.select(&activate_port_match_proc(state_id, params))
 
       internal_unload_id_item_list(items)
     end
@@ -144,47 +211,47 @@ module Vnet::Openflow
 
     private
 
-    def activate_route_link_query(route_link_id)
-      { route_link_id: route_link_id }
+    def activate_route_link_query(state_id, params)
+      { route_link_id: state_id }
     end
 
-    def activate_route_link_match_proc(route_link_id)
-      Proc.new { |id, item| item.route_link_id == route_link_id }
+    def activate_route_link_match_proc(state_id, params)
+      Proc.new { |id, item| item.route_link_id == state_id }
     end
 
-    # Return an 'update_item(item, route_link_id, params)' proc or nil.
-    def activate_route_link_update_item_proc(route_link_id, params)
+    # Return an 'update_item(item, state_id, params)' proc or nil.
+    def activate_route_link_update_item_proc(state_id, params)
       nil
     end
 
     # Return value must not be nil or false.
-    def activate_route_link_value(route_link_id, params)
+    def activate_route_link_value(state_id, params)
       true
     end
 
     # FOO_ACTIVATE_ROUTE_LINK on queue ':route_link'
     def activate_route_link(params)
-      route_link_id = params[:route_link_id] || return
-      return if @active_route_links.has_key? params[:route_link_id]
+      state_id = params[:route_link_id] || return
+      return if @active_route_links.has_key? state_id
 
-      value = activate_route_link_value(route_link_id, params) || return
-      @active_route_links[route_link_id] = value
+      value = activate_route_link_value(state_id, params) || return
+      @active_route_links[state_id] = value
 
-      activate_route_link_update_item_proc(route_link_id, params).tap { |proc|
+      activate_route_link_update_item_proc(state_id, params).tap { |proc|
         next unless proc
 
-        @items.select(&activate_route_link_match_proc(route_link_id)).each(&proc)
+        @items.select(&activate_route_link_match_proc(state_id, params)).each(&proc)
       }
 
-      internal_load_where(activate_route_link_query(route_link_id))
+      internal_load_where(activate_route_link_query(state_id, params))
     end
 
     # FOO_DEACTIVATE_ROUTE_LINK on queue ':route_link'
     def deactivate_route_link(params)
-      route_link_id = params[:route_link_id] || return
-      return unless @active_route_links.delete(route_link_id)
+      state_id = params[:route_link_id] || return
+      return unless @active_route_links.delete(state_id)
 
-      items = @items.select(&activate_route_link_match_proc(route_link_id))
+      items = @items.select(&activate_route_link_match_proc(state_id, params))
 
       internal_unload_id_item_list(items)
     end

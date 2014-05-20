@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 module Vnet::Openflow
   class Manager < Vnet::Manager
+
     def initialize(info, options = {})
       super
       @dp_info = info
@@ -17,7 +20,12 @@ module Vnet::Openflow
       end
     end
 
+    #
+    # Internal methods:
+    #
+
     private
+
     def log_format(message, values = nil)
       @log_prefix + message + (values ? " (#{values})" : '')
     end

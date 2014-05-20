@@ -11,8 +11,6 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::Notifications
 
-    # MW_CLASS = MW::Foo
-
     def initialize(info, options = {})
       @items = {}
       @messages = {}
@@ -29,7 +27,6 @@ module Vnet
         raise e
       end
     end
-    alias_method :item, :retrieve
 
     # TODO: Deprecate:
     def unload(params)

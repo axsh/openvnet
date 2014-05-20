@@ -11,8 +11,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   fill_options = [ :interface ]
 
   put_post_shared_params
-  param :type, :String, required: true, in: C::NetworkService::TYPES
   param_uuid M::NetworkService
+  param :type, :String, required: true, in: C::NetworkService::TYPES
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 

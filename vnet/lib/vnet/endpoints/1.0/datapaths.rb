@@ -15,10 +15,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   put_post_shared_params
+  param_uuid M::Datapath
   param_options :display_name, required: true
   param_options :dpid, required: true
   param_options :node_id, required: true
-  param_uuid M::Datapath
   post do
     post_new(:Datapath)
   end
@@ -40,8 +40,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     update_by_uuid(:Datapath)
   end
 
-  param :broadcast_mac_address, :String, required: true, transform: PARSE_MAC
   param_uuid M::Interface, :interface_uuid, required: true
+  param :broadcast_mac_address, :String, required: true, transform: PARSE_MAC
   post '/:uuid/networks/:network_uuid' do
     datapath = check_syntax_and_pop_uuid(M::Datapath)
     interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
@@ -72,8 +72,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     respond_with([network.uuid])
   end
 
-  param :mac_address, :String, required: true, transform: PARSE_MAC
   param_uuid M::Interface, :interface_uuid, required: true
+  param :mac_address, :String, required: true, transform: PARSE_MAC
   post '/:uuid/route_links/:route_link_uuid' do
     datapath = check_syntax_and_pop_uuid(M::Datapath)
     interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')

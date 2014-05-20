@@ -192,15 +192,11 @@ module Vnet::Openflow::Interfaces
       end
     end
 
-    def update_active_datapath(params)
-      if @owner_datapath_ids.nil?
-        return if @mode != :vif
-      end
-
+    def update_active_datapath(datapath_id)
       # Currently only supports one active datapath id.
-      @active_datapath_ids = [params[:datapath_id]]
+      @active_datapath_ids = [datapath_id]
 
-      MW::Interface.batch.update_active_datapath(@id, params[:datapath_id]).commit
+      MW::Interface.batch.update_active_datapath(@id, datapath_id).commit
 
       addresses = ipv4_addresses
       addresses = addresses && addresses.map { |i|
@@ -258,7 +254,7 @@ module Vnet::Openflow::Interfaces
                                              ipv4_address: ipv4_address)
       return nil if ipv4_info.nil?
 
-      [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
+      [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
     end
 
     def del_flows_for_active_datapath(ipv4_addresses)

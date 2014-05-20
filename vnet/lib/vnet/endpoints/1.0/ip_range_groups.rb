@@ -32,9 +32,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
     update_by_uuid(:IpRangeGroup, fill_options)
   end
 
+  param_uuid M::IpRange, :uuid, transform: proc { |u| M::IpRange.trim_uuid(u) }
   param :begin_ipv4_address, :String, transform: PARSE_IPV4
   param :end_ipv4_address, :String, transform: PARSE_IPV4
-  param_uuid M::IpRange, :uuid, transform: proc { |u| M::IpRange.trim_uuid(u) }
   post '/:ip_range_group_uuid/ip_ranges' do
     check_syntax_and_get_id(M::IpRangeGroup, "ip_range_group_uuid", "ip_range_group_id")
 

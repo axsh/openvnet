@@ -34,9 +34,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
     update_by_uuid(:DnsService, fill_options)
   end
 
+  param_uuid M::DnsRecord, :uuid, required: true, transform: proc { |u| M::DnsRecord.trim_uuid(u) }
   param :name, :String, required: true
   param :ipv4_address, :String, transform: PARSE_IPV4
-  param_uuid M::DnsRecord, :uuid, required: true, transform: proc { |u| M::DnsRecord.trim_uuid(u) }
   post '/:dns_service_uuid/dns_records' do
     dns_service = check_syntax_and_pop_uuid(M::DnsService, :dns_service_uuid)
 

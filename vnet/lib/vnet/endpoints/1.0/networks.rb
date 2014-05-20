@@ -11,9 +11,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   put_post_shared_params
+  param_uuid M::Network
   param_options :display_name, required: true
   param_options :ipv4_network, required: true
-  param_uuid M::Network
   post do
     post_new(:Network)
   end

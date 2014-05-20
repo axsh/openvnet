@@ -9,9 +9,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
   fill_options = [:interface, :mac_address]
 
   put_post_shared_params
+  param_uuid M::MacLease
   param_options :interface_uuid, required: true
   param_options :mac_address, required: true
-  param_uuid M::MacLease
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
