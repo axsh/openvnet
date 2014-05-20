@@ -8,7 +8,7 @@ module Vnet::Models
 
     one_to_many :datapath_networks
     one_to_many :datapath_route_links
-    many_to_many :networks, :join_table => :datapath_networks
+    many_to_many :networks, :join_table => :datapath_networks, :conditions => "deleted_at is null"
     many_to_many :route_links, :join_table => :datapath_route_links
 
     one_to_many :interfaces_owned, :class => Interface, :key => :owner_datapath_id

@@ -4,11 +4,14 @@ module Vnet::Models
   class IpLease < Base
     taggable 'il'
 
+    plugin :paranoia
+    plugin :ip_address, dependency: :disabled
+
     many_to_one :network
     one_to_one :ip_retention
 
-    plugin :paranoia
-    plugin :ip_address, dependency: :disabled
+    one_to_many :ip_lease_container_ip_lease
+    many_to_many :ip_lease_container, join_table: :ip_lease_container_ip_lease
 
     dataset_module do
       def all_interface_ids

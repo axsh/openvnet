@@ -4,13 +4,16 @@ module Vnet::Models
   class LeasePolicy < Base
     taggable 'lp'
 
+    plugin :paranoia
+
     many_to_many :networks, :join_table => :lease_policy_base_networks
     one_to_many :lease_policy_base_networks
 
     many_to_many :interfaces, :join_table => :lease_policy_base_interfaces
     one_to_many :lease_policy_base_interfaces
 
-    plugin :paranoia
+    one_to_many :lease_policy_ip_lease_container
+    many_to_many :ip_lease_containers, :join_table => :lease_policy_ip_lease_containers
 
     def self.find_by_interface(id)
       dataset.join_table(

@@ -93,4 +93,34 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
     respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
   end
+
+  post '/:uuid/ip_lease_containers/:ip_lease_container_uuid' do
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
+    ip_lease_container = check_syntax_and_pop_uuid(M::IpLeaseContainer, "ip_lease_container_uuid")
+
+    if lease_policy.batch.ip_lease_containers(ip_lease_container: ip_lease_container).first.commit
+      raise(E::RelationAlreadyExists, "#{lease_policy.uuid} <=> #{ip_lease_container.uuid}")
+    end
+
+    M::LeasePolicy.add_ip_lease_container(lease_policy.uuid, ip_lease_container.uuid)
+
+    respond_with(R::IpLeaseContainer.generate(ip_lease_container))
+  end
+
+  get '/:uuid/ip_lease_containers' do
+    show_relations(:LeasePolicy, :ip_lease_containers)
+  end
+
+  delete '/:uuid/ip_lease_containers/:ip_lease_container_uuid' do
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
+    ip_lease_container = check_syntax_and_pop_uuid(M::IpLeaseContainer, "ip_lease_container_uuid")
+
+    unless lease_policy.batch.ip_lease_containers(ip_lease_container: ip_lease_container).first.commit
+      raise(E::UnknownUUIDResource, "LeasePolicyIpLeaseContainer #{lease_policy.uuid} <=> #{ip_lease_container.uuid}")
+    end
+
+    M::LeasePolicy.remove_ip_lease_container(lease_policy.uuid, ip_lease_container.uuid)
+
+    respond_with(R::IpLeaseContainer.generate(ip_lease_container))
+  end
 end
