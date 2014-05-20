@@ -13,5 +13,10 @@ module Vnet::Models
         destroy
       end
     end
+
+    def validate
+      super
+      errors.add(:grace_time, 'cannot be less than 0') if grace_time && grace_time < 0
+    end
   end
 end
