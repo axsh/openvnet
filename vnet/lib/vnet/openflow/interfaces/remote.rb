@@ -14,6 +14,10 @@ module Vnet::Openflow::Interfaces
       @mode = :remote
     end
 
+    def log_type
+      'interface/remote'
+    end
+
     def add_mac_address(params)
       mac_info = super
 
@@ -68,10 +72,6 @@ module Vnet::Openflow::Interfaces
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interfaces/remote: #{message}" + (values ? " (#{values})" : '')
-    end
 
     def flows_for_base(flows)
       # TODO: Only add when router egress is set.

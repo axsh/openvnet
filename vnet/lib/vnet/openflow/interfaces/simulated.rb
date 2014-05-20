@@ -16,6 +16,10 @@ module Vnet::Openflow::Interfaces
                             reply_cookie: self.cookie_for_tag(TAG_ARP_REPLY))
     end
 
+    def log_type
+      'interface/simulated'
+    end
+
     def add_mac_address(params)
       mac_info = super
 
@@ -181,10 +185,6 @@ module Vnet::Openflow::Interfaces
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
-    end
 
     def flows_for_base(flows)
       flows << flow_create(:default,

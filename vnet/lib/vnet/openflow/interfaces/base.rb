@@ -75,6 +75,10 @@ module Vnet::Openflow::Interfaces
       end
     end
 
+    def log_type
+      'interface/base'
+    end
+
     def pretty_properties
       "mode:#{@mode} port_name:#{@port_name}"
     end
@@ -297,10 +301,6 @@ module Vnet::Openflow::Interfaces
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
-    end
 
     # Some flows could be created on demand by checking if the
     # interface requires egress routing. Currently every interface
