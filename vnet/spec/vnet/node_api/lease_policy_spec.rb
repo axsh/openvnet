@@ -115,25 +115,59 @@ describe Vnet::NodeApi::LeasePolicy do
 
   describe ".allocate_ip" do
     let(:lease_policy) { Fabricate(:lease_policy_with_network) }
-    let(:interface) { Fabricate(:interface_w_mac_lease) }
 
-    it "allocate new ip to an interface" do
-      now = Time.now
-      allow(Time).to receive(:now).and_return(now)
+    it "create ip_lease" do
+      ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
 
-      Vnet::NodeApi::LeasePolicy.allocate_ip(
-        lease_policy_uuid: lease_policy.canonical_uuid,
-        interface_uuid: interface.canonical_uuid
-      )
-
-      ip_lease = interface.ip_leases.first
       expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
-      expect(ip_lease.lease_time_expired_at.to_i).to eq (now + lease_policy.lease_time).to_i
+      expect(MockEventHandler.handled_events).to be_empty
+    end
 
-      event = MockEventHandler.handled_events.first
-      expect(event[:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
-      expect(event[:options][:id]).to eq interface.id
-      expect(event[:options][:ip_lease_id]).to eq ip_lease.id
+    context "with lease_time and grace_time" do
+      let(:lease_policy) do
+        Fabricate(:lease_policy_with_network) do
+          lease_time 3600
+          grace_time 1800
+        end
+      end
+
+      it "creates an ip_lease with an ip_retention" do
+        now = Time.now
+        allow(Time).to receive(:now).and_return(now)
+
+        ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
+
+        expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+        expect(ip_lease.lease_time_expired_at.to_i).to eq (now + lease_policy.lease_time).to_i
+
+        events = MockEventHandler.handled_events
+        expect(events.size).to eq 1
+
+        expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CREATED_ITEM
+        expect(events[0][:options][:id]).to eq ip_lease.ip_retention.id
+        expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
+      end
+    end
+
+    context "with interface_uuid" do
+      let(:interface) { Fabricate(:interface_w_mac_lease) }
+
+      it "allocate new ip to an interface" do
+        Vnet::NodeApi::LeasePolicy.allocate_ip(
+          lease_policy_uuid: lease_policy.canonical_uuid,
+          interface_uuid: interface.canonical_uuid
+        )
+
+        ip_lease = interface.ip_leases.first
+        expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+
+        events = MockEventHandler.handled_events
+        expect(events.size).to eq 1
+
+        expect(events[0][:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
+        expect(events[0][:options][:id]).to eq interface.id
+        expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
+      end
     end
   end
 end
