@@ -43,6 +43,13 @@ module Vnet::NodeApi
             end
 
             ip_lease = IpLease.create(options_for_ip_lease)
+
+            lease_policy.ip_lease_containers.each do |ip_lease_container|
+              model_class(:ip_lease_container_ip_lease).create(
+                ip_lease_container_id: ip_lease_container.id,
+                ip_lease_id: ip_lease.id
+              )
+            end
           end
 
           ip_lease
