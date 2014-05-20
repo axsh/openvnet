@@ -184,7 +184,7 @@ module Vnet
       return unless expression || uuid
 
       dataset = uuid ? batch.dataset_where_uuid(uuid) : batch.dataset
-      dataset = dataset.where(expression) if expression
+      dataset = expression ? dataset.where(expression) : dataset
     end
 
     #
