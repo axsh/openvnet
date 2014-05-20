@@ -18,5 +18,11 @@ module Vnet::Models
         {lease_policy_base_interfaces__lease_policy_id: :lease_policies__id}
       ).where(lease_policy_base_interfaces__interface_id: id).select_all(:lease_policies).all
     end
+
+    def validate
+      super
+      errors.add(:lease_time, 'cannot be less than 0') if grace_time && grace_time < 0
+      errors.add(:grace_time, 'cannot be less than 0') if grace_time && grace_time < 0
+    end
   end
 end
