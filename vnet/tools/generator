@@ -1,0 +1,246 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+require "bundler/setup"
+require "optparse"
+require "fileutils"
+require "active_support/inflector"
+
+class Generator
+  LIB_DIR = File.expand_path("../../lib", __FILE__)
+  VNET_DIR = File.join(LIB_DIR, "vnet")
+  ENDPOINT_VERSION = "1.0"
+
+  attr_accessor :model_name
+  def initialize(model_name, options)
+    @model_name = model_name
+    @options = options
+    @files = []
+    @autoload_configurations = []
+  end
+
+  def generate
+    names = %w(models model_wrappers)
+    names << "node_api" if @options[:node_api]
+    names.each { |name| generate_class(name) }
+
+    if @options[:endpoint]
+      generate_endpoint
+      generate_endpoint_response
+    end
+
+    @files.each do |file|
+      puts "create: #{file}"
+    end
+
+    show_configurations
+  end
+
+  def destroy
+    names = %w(models model_wrappers)
+    names << "node_api" if @options[:node_api]
+    names.each do |name|
+      @files << filename_for(name)
+      @autoload_configurations << autoload_configuration_for(name)
+    end
+
+    if @options[:endpoint]
+      @files << filename_for(:endpoint)
+      @files << filename_for(:endpoint_respoinse)
+      @autoload_configurations << autoload_configuration_for(:endpoint)
+    end
+
+    @files.each do |file|
+      FileUtils.rm(file) if File.exists?(file)
+      puts "destroy: #{file}"
+    end
+
+    show_configurations
+  end
+
+  def generate_class(namespace)
+    @autoload_configurations << autoload_configuration_for(namespace)
+
+    filename = filename_for(namespace)
+
+    if File.exists?(filename)
+      puts("exist: #{filename}")
+      return
+    end
+
+    File.open(filename, "w+") do |file|
+      file.write <<-EOS
+module Vnet::#{namespace.camelize}
+  class #{model_name.camelize} < Base
+  end
+end
+      EOS
+    end
+
+    @files << filename
+  end
+
+  def generate_endpoint
+    endpoint_filename = filename_for(:endpoint)
+
+    if File.exists?(endpoint_filename)
+      puts("exist: #{endpoint_filename}")
+      return
+    end
+
+    File.open(endpoint_filename, "w+") do |file|
+      file.write <<-EOS
+Vnet::Endpoints::V10::VnetAPI.namespace '/#{model_name.pluralize}' do
+  def self.put_post_shared_params
+  end
+
+  put_post_shared_params
+  param_uuid M::#{model_name.camelize}
+  post do
+    post_new(:#{model_name.camelize})
+  end
+
+  get do
+    get_all(:#{model_name.camelize})
+  end
+
+  get '/:uuid' do
+    get_by_uuid(:#{model_name.camelize})
+  end
+
+  delete '/:uuid' do
+    delete_by_uuid(:#{model_name.camelize})
+  end
+
+  put_post_shared_params
+  put '/:uuid' do
+    update_by_uuid(:#{model_name.camelize})
+  end
+end
+      EOS
+    end
+
+    @files << endpoint_filename
+  end
+
+  def generate_endpoint_response
+    @autoload_configurations << autoload_configuration_for(:endpoint)
+
+    response_filename = filename_for(:endpoint_respoinse)
+    if File.exists?(response_filename)
+      puts("exist: #{response_filename}")
+      return
+    end
+
+    File.open(response_filename, "w+") do |file|
+      file.write <<-EOS
+module Vnet::Endpoints::V10::Responses
+  class #{model_name.camelize} < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(object)
+      argument_type_check(object,Vnet::ModelWrappers::#{model_name.camelize})
+      object.to_hash
+    end
+  end
+
+  class #{model_name.camelize}Collection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i| #{model_name.camelize}.generate(i) }
+    end
+  end
+end
+      EOS
+    end
+
+    @files << response_filename
+  end
+
+  def filename_for(name)
+    case name.to_sym
+    when :models, :model_wrappers, :node_api
+      File.join(VNET_DIR, "#{name}/#{model_name}.rb")
+    when :endpoint
+      File.join(VNET_DIR, "endpoints/#{ENDPOINT_VERSION}/#{model_name.pluralize}.rb")
+    when :endpoint_respoinse
+      File.join(VNET_DIR, "endpoints/#{ENDPOINT_VERSION}/responses/#{model_name}.rb")
+    else
+      raise ArgumentError
+    end
+  end
+
+  def autoload_configuration_for(name)
+    case name.to_sym
+    when :models, :model_wrappers, :node_api
+      <<-EOS
+  module #{name.camelize}
+    autoload :#{model_name.camelize}, 'vnet/#{name}/#{model_name}'
+  end
+      EOS
+    when :endpoint
+      <<-EOS
+  module Endpoints
+    module V#{ENDPOINT_VERSION.delete(".")}
+      module Responses
+        autoload :#{model_name.camelize}, 'vnet/endpoints/#{ENDPOINT_VERSION}/responses/#{model_name}'
+        autoload :#{model_name.camelize}Collection, 'vnet/endpoints/#{ENDPOINT_VERSION}/responses/#{model_name}'
+      end
+    end
+  end
+      EOS
+    else
+      raise ArgumentError
+    end
+  end
+
+  def show_configurations
+    puts <<-EOS
+
+-------------------------
+Autoload configurations
+-------------------------
+
+file: #{File.join(LIB_DIR, "vnet/lib/vnet.rb")}
+
+module Vnet
+#{@autoload_configurations.join("\n").chomp}
+end
+    EOS
+
+    if @options[:endpoint]
+      puts 
+      puts <<-EOS
+-------------------------
+Endpoint configurations
+-------------------------
+
+file: #{File.join(VNET_DIR, "endpoints/1.0/vnet_api.rb")}
+
+module Vnet::Endpoints::V10
+  class VnetAPI < Sinatra::Base
+    load_namespace('#{model_name.pluralize}')
+  end
+end
+      EOS
+    end
+  end
+end
+
+options = {}
+
+OptionParser.new.tap do |opt|
+  opt.on("-n") {|v| options[:node_api] = true }
+  opt.on("-e") {|v| options[:endpoint] = true }
+  opt.on("-d") {|v| options[:destroy] = true }
+  opt.parse!(ARGV)
+end
+
+model_name = ARGV.shift
+
+unless model_name
+  puts "Usage: #{__FILE__} <model_name> [options]"
+  exit 1
+end
+
+generator = Generator.new(model_name, options)
+
+options.delete(:destroy) ? generator.destroy : generator.generate
