@@ -11,7 +11,7 @@ module Vnet::Models
     one_to_one :ip_retention
 
     one_to_many :ip_lease_container_ip_lease
-    many_to_many :ip_lease_container, join_table: :ip_lease_container_ip_lease
+    many_to_many :ip_lease_containers, join_table: :ip_lease_container_ip_leases
 
     dataset_module do
       def all_interface_ids
