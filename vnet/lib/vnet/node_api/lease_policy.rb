@@ -12,7 +12,7 @@ module Vnet::NodeApi
         if lease_policy.timing == "immediate"
           base_networks = lease_policy.lease_policy_base_networks
           raise "No network associated with lease policy" if base_networks.empty?
-          
+
           ip_r = base_networks.first.ip_range_group
           net = base_networks.first.network
 
