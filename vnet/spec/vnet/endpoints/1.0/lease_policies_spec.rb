@@ -94,4 +94,32 @@ describe "/lease_policies" do
 
     include_examples "many_to_many_relation", "ip_lease_containers"
   end
+
+  describe "POST /:uuid/ip_leases" do
+    let(:lease_policy) do
+      Fabricate(:lease_policy_with_network) do
+        lease_time 3600
+        grace_time 1800
+
+        ip_lease_containers(count: 2) do
+          Fabricate(:ip_lease_container)
+        end
+      end
+    end
+    let(:ip_lease_container) { Fabricate(:ip_lease_container) }
+
+    it "create an ip_lease" do
+      params = {
+        ip_lease_uuid: "il-new",
+        ip_lease_container_uuid: ip_lease_container.canonical_uuid,
+      }
+
+      post "lease_policies/lp-#{lease_policy.uuid}/ip_leases", params
+
+      expect(last_response).to be_ok
+      expect(JSON.parse(last_response.body)["uuid"]).to eq "il-new"
+
+      # TODO check associations
+    end
+  end
 end

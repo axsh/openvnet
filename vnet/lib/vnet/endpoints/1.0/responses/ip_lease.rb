@@ -4,8 +4,8 @@ module Vnet::Endpoints::V10::Responses
   class IpLease < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::IpLease)
-      object.interface_uuid ||= object.interface.uuid
-      object.mac_lease_uuid ||= object.mac_lease.uuid
+      object.interface_uuid ||= object.interface.uuid if object.interface
+      object.mac_lease_uuid ||= object.mac_lease.uuid if object.mac_lease
 
       network = object.ip_address.network
       object.network_uuid =  network && network.uuid
