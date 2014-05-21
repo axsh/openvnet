@@ -9,7 +9,18 @@ module Vnet::NodeApi
 
       def allocate_ip(options)
         lease_policy = model_class(:lease_policy)[options[:lease_policy_uuid]]
-        return unless lease_policy.timing == "immediate"
+
+        interface = nil
+        if options[:interface_uuid]
+          interface = model_class(:interface)[options[:interface_uuid]]
+          if interface.mac_leases.empty?
+            raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
+          end
+
+          unless lease_policy.timing == "immediate"
+            raise "Cannot allocate ip to interface(#{options[:interface_uuid]}) because the timing of lease_policy(#{lease_policy.canonical_uuid}) is not 'immediate'"
+          end
+        end
 
         base_networks = lease_policy.lease_policy_base_networks
         raise "No network associated with lease policy" if base_networks.empty?
@@ -30,17 +41,13 @@ module Vnet::NodeApi
         ip_lease = nil
 
         transaction do
-          if interface = model_class(:interface)[options[:interface_uuid]]
-            if (ml_array = interface.mac_leases).empty?
-              raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
-            end
-
+          if interface
             model_class(:lease_policy_base_interface).create(
               :lease_policy_id => lease_policy.id,
               :interface_id => interface.id
             )
 
-            options_for_ip_lease[:mac_lease_id] = ml_array.first.id
+            options_for_ip_lease[:mac_lease_id] = interface.mac_leases.first.id
           end
 
           ip_lease = IpLease.create(options_for_ip_lease)
