@@ -12,7 +12,7 @@ module Vnet::Models
     many_to_many :interfaces, :join_table => :lease_policy_base_interfaces
     one_to_many :lease_policy_base_interfaces
 
-    one_to_many :lease_policy_ip_lease_container
+    one_to_many :lease_policy_ip_lease_containers
     many_to_many :ip_lease_containers, :join_table => :lease_policy_ip_lease_containers
 
     plugin :association_dependencies,
