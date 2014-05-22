@@ -103,6 +103,7 @@ module Vnet::Openflow
       else
         # TODO: Set flood off.
 
+        # TODO: Make sure activate port recreates previously remote ports.
         @dp_info.interface_manager.publish(INTERFACE_ACTIVATE_PORT,
                                            id: :port,
                                            port_name: port.port_name,
