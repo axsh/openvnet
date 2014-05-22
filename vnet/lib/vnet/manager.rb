@@ -135,8 +135,9 @@ module Vnet
       when 1
         match_item_proc_part(params.first)
       when 2
-        part_1 = match_item_proc_part(params.first)
-        part_2 = match_item_proc_part(params.last)
+        part_1, part_2 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
         part_1 && part_2 &&
           proc { |id, item| part_1.call(id, item) && part_2.call(id, item) }
       when 3
