@@ -75,8 +75,7 @@ module Vnet::Openflow::Interfaces
 
     def flows_for_base(flows)
       # TODO: Only add when router egress is set.
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS_LOOKUP,
+      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
                            goto_table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
                            priority: 90,
 
@@ -87,15 +86,13 @@ module Vnet::Openflow::Interfaces
       datapath_id = @active_datapath_ids && @active_datapath_ids.first
       return if datapath_id.nil?
 
-      flows << flow_create(:default,
-                           table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
+      flows << flow_create(table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
                            goto_table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
                            priority: 1,
 
                            match_value_pair_first: @id,
                            write_value_pair_first: datapath_id)
-      flows << flow_create(:default,
-                           table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
+      flows << flow_create(table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
                            goto_table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
                            priority: 1,
 

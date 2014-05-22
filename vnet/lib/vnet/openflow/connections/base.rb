@@ -28,8 +28,7 @@ module Vnet::Openflow::Connections
       interface_id = message.cookie & COOKIE_ID_MASK
 
       [
-        flow_create(:default,
-                    table: TABLE_INTERFACE_EGRESS_FILTER,
+        flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
                     priority: 21,
                     match: {
                       eth_src:   message.packet_info.eth_src,
@@ -40,8 +39,7 @@ module Vnet::Openflow::Connections
                     idle_timeout: EGRESS_IDLE_TIMEOUT,
                     cookie: cookie(interface_id),
                     goto_table: TABLE_NETWORK_SRC_CLASSIFIER),
-        flow_create(:default,
-                    table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
+        flow_create(table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
                     priority: 10,
                     match: {
                       eth_dst:   message.packet_info.eth_src,

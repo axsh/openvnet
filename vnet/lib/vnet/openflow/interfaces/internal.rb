@@ -42,8 +42,7 @@ module Vnet::Openflow::Interfaces
     private
 
     def flows_for_base(flows)
-      flows << flow_create(:default,
-                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 10,
                            match_interface: @id,
                            actions: {
@@ -57,8 +56,7 @@ module Vnet::Openflow::Interfaces
       #
       # Classifiers:
       #
-      flows << flow_create(:default,
-                           table: TABLE_LOCAL_PORT,
+      flows << flow_create(table: TABLE_LOCAL_PORT,
                            goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                            priority: 30,
 

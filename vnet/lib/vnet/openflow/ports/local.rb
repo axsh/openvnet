@@ -19,8 +19,7 @@ module Vnet::Openflow::Ports
 
     def install
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_CLASSIFIER,
+      flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_LOCAL_PORT,
                            priority: 2,
                            match: {

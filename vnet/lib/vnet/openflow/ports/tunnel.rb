@@ -15,8 +15,7 @@ module Vnet::Openflow::Ports
 
     def install
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_TUNNEL_PORTS,
+      flows << flow_create(table: TABLE_TUNNEL_PORTS,
                            priority: 30,
                            match: {
                              :in_port => self.port_number
@@ -24,15 +23,13 @@ module Vnet::Openflow::Ports
                            goto_table: TABLE_TUNNEL_NETWORK_IDS)
 
       if @tunnel_id && @tunnel_id > 0
-        flows << flow_create(:default,
-                             table: TABLE_OUT_PORT_TUNNEL,
+        flows << flow_create(table: TABLE_OUT_PORT_TUNNEL,
                              priority: 1,
                              match_tunnel: @tunnel_id,
                              actions: {
                                :output => self.port_number
                              })
-        flows << flow_create(:default,
-                             table: TABLE_OUT_PORT_TUNNEL,
+        flows << flow_create(table: TABLE_OUT_PORT_TUNNEL,
                              priority: 2,
 
                              match_tunnel: @tunnel_id,

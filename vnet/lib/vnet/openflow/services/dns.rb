@@ -21,8 +21,7 @@ module Vnet::Openflow::Services
 
     def install
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
 
                            match: {
@@ -76,8 +75,7 @@ module Vnet::Openflow::Services
       add_dns_server(network_id)
 
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_FLOOD_SIMULATED,
+      flows << flow_create(table: TABLE_FLOOD_SIMULATED,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {

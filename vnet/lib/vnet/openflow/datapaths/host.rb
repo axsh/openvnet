@@ -82,8 +82,7 @@ module Vnet::Openflow::Datapaths
     private
 
     def flows_for_dp_network(flows, dp_nw)
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 30,
 
@@ -99,8 +98,7 @@ module Vnet::Openflow::Datapaths
                            write_value_pair_first: dp_nw[:network_id],
 
                            cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_NW_IF,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
                            priority: 1,
 
@@ -113,8 +111,7 @@ module Vnet::Openflow::Datapaths
                            write_network: dp_nw[:network_id],
 
                            cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
-      flows << flow_create(:default,
-                           table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+      flows << flow_create(table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
                            goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                            priority: 1,
 
@@ -122,8 +119,7 @@ module Vnet::Openflow::Datapaths
                            write_interface: dp_nw[:interface_id],
 
                            cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
-      flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
+      flows << flow_create(table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 
@@ -138,8 +134,7 @@ module Vnet::Openflow::Datapaths
       # address, so we create the flow here.
       #
       # TODO: Add verification of the ingress host interface.
-      flows << flow_create(:default,
-                           table: TABLE_TUNNEL_NETWORK_IDS,
+      flows << flow_create(table: TABLE_TUNNEL_NETWORK_IDS,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 30,
 
@@ -160,8 +155,7 @@ module Vnet::Openflow::Datapaths
       # and remote datapaths, which have either tunnel or MAC2MAC
       # flows usable for output to the proper port.
 
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
                            priority: 30,
                            match: {
@@ -175,8 +169,7 @@ module Vnet::Openflow::Datapaths
       # The source mac address is set to this datapath's dp_rl's mac
       # address in order to uniquely identify the packets as being
       # from this datapath.
-      flows << flow_create(:default,
-                           table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
+      flows << flow_create(table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 

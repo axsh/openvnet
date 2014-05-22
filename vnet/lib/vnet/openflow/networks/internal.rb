@@ -14,13 +14,11 @@ module Vnet::Openflow::Networks
 
     def install
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+      flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
                            priority: 30,
                            match_network: @id)
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_DST_CLASSIFIER,
+      flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
                            goto_table: TABLE_NETWORK_DST_MAC_LOOKUP,
                            priority: 30,
                            match_network: @id)
@@ -40,8 +38,7 @@ module Vnet::Openflow::Networks
       # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP.
 
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_FLOOD_LOCAL,
+      flows << flow_create(table: TABLE_FLOOD_LOCAL,
                            # goto_table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
                            priority: 1,
                            match_network: @id,
