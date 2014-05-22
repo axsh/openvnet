@@ -26,6 +26,10 @@ module Vnet::Openflow
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
 
+    def load_internal_interfaces
+      
+    end
+
     def load_simulated_on_network_id(network_id)
       # TODO: Add list of active network id's for which we should have
       # simulated interfaces loaded.
