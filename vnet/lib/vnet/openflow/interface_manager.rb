@@ -99,13 +99,12 @@ module Vnet::Openflow
     end
 
     def item_initialize(item_map, params)
-      if params[:remote]
-        return if !is_assigned_remotely?(item_map)
-        mode = :remote
+      mode = (item_map.mode && item_map.mode.to_sym)
+
+      if mode == :vif
+        mode = :remote if is_assigned_remotely?(item_map)
       elsif is_remote?(item_map)
         mode = :remote
-      else
-        mode = (item_map.mode && item_map.mode.to_sym)
       end
 
       item_class =
@@ -159,7 +158,8 @@ module Vnet::Openflow
     end
 
     def item_post_uninstall(item)
-      if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
+      if (item.owner_datapath_ids &&
+          item.owner_datapath_ids.include?(@datapath_info.id)) || item.port_number
         update_active_datapath(item, nil)
       end
 
