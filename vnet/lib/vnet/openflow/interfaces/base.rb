@@ -40,8 +40,6 @@ module Vnet::Openflow::Interfaces
     def initialize(params)
       super
 
-      @manager = params[:manager]
-
       map = params[:map]
       @mode = map.mode.to_sym
       @port_name = map.port_name
@@ -163,11 +161,11 @@ module Vnet::Openflow::Interfaces
           (@owner_datapath_ids && interface.owner_datapath_id.nil?)
         # update_owner_datapath(interface.owner_datapath_id)
 
-        @manager.publish(INTERFACE_UPDATED,
-                         event: :owner_datapath_id,
-                         id: @id,
-                         owner_datapath_id: interface.owner_datapath_id,
-                         port_name: interface.port_name)
+        Celluloid::Actor.current.publish(INTERFACE_UPDATED,
+                                         event: :owner_datapath_id,
+                                         id: @id,
+                                         owner_datapath_id: interface.owner_datapath_id,
+                                         port_name: interface.port_name)
       end
     end
 
