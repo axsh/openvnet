@@ -298,6 +298,12 @@ module Vnet::Openflow
       return unless item && ip_lease.interface_id == item.id
 
       network = @dp_info.network_manager.retrieve(id: ip_lease.ip_address.network_id)
+      
+      if network.nil?
+        error log_format("could not find network for ip lease",
+                         "interface_id:#{ip_lease.interface_id} network_id:#{ip_lease.ip_address.network_id}")
+        return
+      end
 
       # TODO: Pass the ip_lease object.
       item.add_ipv4_address(mac_lease_id: ip_lease.mac_lease_id,

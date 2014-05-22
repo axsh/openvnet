@@ -22,7 +22,7 @@ module Vnet::Openflow::Interfaces
       mac_info, ipv4_info = super
 
       flows = []
-      flows_for_ipv4(flows, mac_info, ipv4_info)
+      flows_for_interface_ipv4(flows, mac_info, ipv4_info)
 
       @dp_info.add_flows(flows)
     end
@@ -42,6 +42,13 @@ module Vnet::Openflow::Interfaces
     private
 
     def flows_for_base(flows)
+      flows << flow_create(:default,
+                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 10,
+                           match_interface: @id,
+                           actions: {
+                             :output => OFPP_LOCAL
+                           })
     end
 
     def flows_for_mac(flows, mac_info)

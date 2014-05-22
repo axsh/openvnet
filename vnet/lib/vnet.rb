@@ -302,6 +302,7 @@ module Vnet
 
     module Networks
       autoload :Base, 'vnet/openflow/networks/base'
+      autoload :Internal, 'vnet/openflow/networks/internal'
       autoload :Physical, 'vnet/openflow/networks/physical'
       autoload :Virtual, 'vnet/openflow/networks/virtual'
     end

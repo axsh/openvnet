@@ -63,6 +63,13 @@ module Vnet::Openflow::Interfaces
     private
 
     def flows_for_base(flows)
+      flows << flow_create(:default,
+                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 10,
+                           match_interface: @id,
+                           actions: {
+                             :output => OFPP_LOCAL
+                           })
     end
 
     def flows_for_mac(flows, mac_info)
@@ -122,13 +129,6 @@ module Vnet::Openflow::Interfaces
                            write_value_pair_first: ipv4_info[:network_id],
 
                            cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                           priority: 10,
-                           match_interface: @id,
-                           actions: {
-                             :output => OFPP_LOCAL
-                           })
     end
 
   end
