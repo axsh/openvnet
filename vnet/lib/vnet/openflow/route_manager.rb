@@ -50,7 +50,7 @@ module Vnet::Openflow
       when :id, :uuid, :interface_id, :network_id, :route_link_id, :egress, :ingress
         proc { |id, item| value == item.send(filter) }
       when :not_network_id
-        proc { |id, item| value != item.send(filter) }
+        proc { |id, item| value != item.network_id }
       else
         raise NotImplementedError, filter
       end

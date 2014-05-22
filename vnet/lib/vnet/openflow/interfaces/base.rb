@@ -180,8 +180,9 @@ module Vnet::Openflow::Interfaces
     end
 
     def update_port_number(new_number)
-      debug log_format("update_port_number", new_number)
       return if @port_number == new_number
+
+      debug log_format("update port number to #{new_number}")
 
       @port_number = new_number
 
