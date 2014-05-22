@@ -133,7 +133,8 @@ module Vnet
     def match_item_proc(params)
       case params.size
       when 1
-        match_item_proc_part(params.first)
+        part_1 = params.to_a.first
+        match_item_proc_part(part_1)
       when 2
         part_1, part_2 = params.to_a
         part_1 = match_item_proc_part(part_1)
@@ -197,6 +198,9 @@ module Vnet
     end
 
     def item_by_params(params)
+      item = internal_detect(params)
+      return item if item
+
       select_filter = select_filter_from_params(params) || return
       item_map = select_item(select_filter.first) || return
 
