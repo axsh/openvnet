@@ -27,7 +27,9 @@ module Vnet::Openflow
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
 
     def load_internal_interfaces
-      
+      return if @datapath_info.nil?
+
+      internal_load_where(mode: 'internal', owner_datapath_id: @datapath_info.id)
     end
 
     def load_simulated_on_network_id(network_id)
@@ -91,6 +93,7 @@ module Vnet::Openflow
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
+      filter << {mode: params[:mode]} if params.has_key? :mode
       filter << {port_name: params[:port_name]} if params.has_key? :port_name
       filter << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
 
@@ -115,8 +118,9 @@ module Vnet::Openflow
         case mode
         when :edge      then Interfaces::Edge
         when :host      then Interfaces::Host
-        when :remote    then Interfaces::Remote
+        when :internal  then Interfaces::Internal
         when :patch     then Interfaces::Patch
+        when :remote    then Interfaces::Remote
         when :simulated then Interfaces::Simulated
         when :vif       then Interfaces::Vif
         else

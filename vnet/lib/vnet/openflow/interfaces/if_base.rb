@@ -36,12 +36,11 @@ module Vnet::Openflow::Interfaces
 
     def flows_for_disabled_filtering(flows = [])
       flows << flow_create(:default,
-        table: TABLE_INTERFACE_INGRESS_FILTER,
-        priority: 90,
-        match_interface: @id,
-        cookie: cookie_for_tag(TAG_DISABLED_FILTERING),
-        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-      )
+                           table: TABLE_INTERFACE_INGRESS_FILTER,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 90,
+                           match_interface: @id,
+                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING))
     end
 
     def flows_for_interface_mac(flows, mac_info)
