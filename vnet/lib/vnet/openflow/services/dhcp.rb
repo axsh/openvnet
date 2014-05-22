@@ -175,6 +175,15 @@ module Vnet::Openflow::Services
     end
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
+      case port_number
+      when OFPP_LOCAL
+        find_local_interface(port_number, server_mac_info, server_ipv4_info)
+      else
+        find_client_interface(port_number, server_mac_info, server_ipv4_info)
+      end
+    end
+
+    def find_client_interface(port_number, server_mac_info, server_ipv4_info)
       interface = @dp_info.interface_manager.detect(port_number: port_number)
 
       if interface.nil?
@@ -182,14 +191,19 @@ module Vnet::Openflow::Services
         return []
       end
 
-      client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
-      
-      # info log_format("find_client_info", "#{interface.inspect}")
-      # info log_format("find_client_info", "server_mac_info:#{server_mac_info.inspect}")
-      # info log_format("find_client_info", "server_ipv4_info:#{server_ipv4_info.inspect}")
-      # info log_format("find_client_info", "client_infos:#{client_infos.inspect}")
+      interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
+    end
 
-      client_infos
+    def find_local_interface(port_number, server_mac_info, server_ipv4_info)
+      network_id = server_ipv4_info && server_ipv4_info[:network_id]
+
+      @dp_info.interface_manager.select(mode: :internal).each { |interface|
+        client_infos = interface.get_ipv4_infos(network_id: network_id)
+
+        return client_infos unless client_infos.empty?
+      }
+
+      []
     end
 
     def parse_dhcp_packet(message)
