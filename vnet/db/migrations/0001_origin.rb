@@ -122,6 +122,16 @@ Sequel.migration do
       unique [:ip_lease_container_id, :ip_lease_id]
     end
 
+    create_table(:ip_retention_containers) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :lease_time
+      Integer :grace_time
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
     create_table(:lease_policy_ip_lease_containers) do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
