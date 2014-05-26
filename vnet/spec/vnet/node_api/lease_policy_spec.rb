@@ -170,40 +170,49 @@ describe Vnet::NodeApi::LeasePolicy do
       end
     end
 
-    context "with ip_lease_container_uuid" do
-      let(:ip_lease_container) { Fabricate(:ip_lease_container) }
-
-      it "creates an ip_lease and add it to an ip_lease_container" do
-        ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(
-          lease_policy_uuid: lease_policy.canonical_uuid,
-          ip_lease_container_uuid: ip_lease_container.canonical_uuid
-        )
-
-        expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
-        expect(ip_lease.ip_lease_containers.size).to eq 1
-        expect(ip_lease.ip_lease_containers.first).to eq ip_lease_container
-
-        expect(MockEventHandler.handled_events).to be_empty
-      end
-    end
-
     context "when lease_policy has ip_lease_containers" do
-      let(:lease_policy) do
-        Fabricate(:lease_policy_with_network) do
-          ip_lease_containers(count: 2) do
-            Fabricate(:ip_lease_container)
-          end
+      let(:lease_policy) { Fabricate(:lease_policy_with_network) }
+      let!(:lease_policy_ip_lease_container_with_label) do
+        Fabricate(
+          :lease_policy_ip_lease_container,
+          lease_policy: lease_policy,
+          ip_lease_container: Fabricate(:ip_lease_container),
+          label: "foo"
+        )
+      end
+      let!(:lease_policy_ip_lease_container_without_label) do
+        Fabricate(
+          :lease_policy_ip_lease_container,
+          lease_policy: lease_policy,
+          ip_lease_container: Fabricate(:ip_lease_container)
+        )
+      end
+
+      context "without ip_lease_container_label" do
+        it "creates an ip_lease and add it to ip_lease_containers" do
+          ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
+
+          expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+          expect(ip_lease.ip_lease_containers.size).to eq 2
+          expect(ip_lease.ip_lease_containers).to eq lease_policy.ip_lease_containers
+
+          expect(MockEventHandler.handled_events).to be_empty
         end
       end
 
-      it "creates an ip_lease and add it to ip_lease_containers" do
-        ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
+      context "with ip_lease_container_label" do
+        it "creates an ip_lease and add it to an ip_lease_container" do
+          ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(
+            lease_policy_uuid: lease_policy.canonical_uuid,
+            ip_lease_container_label: "foo"
+          )
 
-        expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
-        expect(ip_lease.ip_lease_containers.size).to eq 2
-        expect(ip_lease.ip_lease_containers).to eq lease_policy.ip_lease_containers
+          expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+          expect(ip_lease.ip_lease_containers.size).to eq 1
+          expect(ip_lease.ip_lease_containers.first).to eq lease_policy_ip_lease_container_with_label.ip_lease_container
 
-        expect(MockEventHandler.handled_events).to be_empty
+          expect(MockEventHandler.handled_events).to be_empty
+        end
       end
     end
   end

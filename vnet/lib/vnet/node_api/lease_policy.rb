@@ -52,19 +52,13 @@ module Vnet::NodeApi
 
           ip_lease = IpLease.create(options_for_ip_lease)
 
-          if options[:ip_lease_container_uuid]
-            ip_lease_container = model_class(:ip_lease_container)[options[:ip_lease_container_uuid]]
-            ip_lease_container.add_ip_lease_container_ip_lease(ip_lease_id: ip_lease.id)
-          end
-
-          lease_policy.ip_lease_containers.each do |ip_lease_container|
-            if ip_lease_container.canonical_uuid == options[:ip_lease_container_uuid]
-              logger.warn("#{to_s}.#{__method__.to_s} duplicate ip_lease_container: #{options[:ip_lease_container_uuid]}")
-              next
+          lease_policy.lease_policy_ip_lease_containers.each do |lease_policy_ip_lease_container|
+            if options[:ip_lease_container_label]
+              next unless lease_policy_ip_lease_container.label == options[:ip_lease_container_label]
             end
 
             model_class(:ip_lease_container_ip_lease).create(
-              ip_lease_container_id: ip_lease_container.id,
+              ip_lease_container_id: lease_policy_ip_lease_container.ip_lease_container_id,
               ip_lease_id: ip_lease.id
             )
           end
