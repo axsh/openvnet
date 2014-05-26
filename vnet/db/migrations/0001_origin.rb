@@ -149,6 +149,7 @@ Sequel.migration do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
       Integer :interface_id, :index => true, :null => false
+      String :label
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -157,6 +158,7 @@ Sequel.migration do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
       Integer :ip_lease_container_id, :index => true, :null => false
+      String :label
       unique [:lease_policy_id, :ip_lease_container_id]
     end
 
