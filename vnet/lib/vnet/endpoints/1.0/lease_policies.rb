@@ -125,7 +125,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   end
 
   param_uuid M::IpLease, :ip_lease_uuid
-  param :label, String
+  param :label, :String
   post '/:uuid/ip_leases' do
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
 
