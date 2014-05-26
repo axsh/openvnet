@@ -96,26 +96,21 @@ module Vnet::Openflow
       NETWORK_UPDATE_ITEM_STATES
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
 
-      # Clean up use of this parameter.
-      return false if params[:network_type] && params[:network_type] != item.network_type
-      return false if params[:network_mode] && params[:network_mode] != item.network_type
-      true
+      case filter
+      when :id, :uuid, :network_mode, :network_type
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
       filter
-    end
-
-    def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)

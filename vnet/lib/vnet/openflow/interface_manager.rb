@@ -60,29 +60,28 @@ module Vnet::Openflow
       INTERFACE_UNLOAD_ITEM
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:mode] && params[:mode] != item.mode
-      return false if params[:port_number] && params[:port_number] != item.port_number
-      return false if params[:port_name] && params[:port_name] != item.port_name
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
 
-      if params.has_key? :owner_datapath_id
-        owner_datapath_id = params[:owner_datapath_id]
-
-        return false if owner_datapath_id.nil? && item.owner_datapath_ids
-        return false if owner_datapath_id && item.owner_datapath_ids.nil?
-        return false if owner_datapath_id && item.owner_datapath_ids.find_index(owner_datapath_id).nil?
+      case filter
+      when :id, :uuid, :mode, :port_name, :port_number
+        proc { |id, item| value == item.send(filter) }
+      when :owner_datapath_id
+        proc { |id, item|
+          next true if value.nil? && item.owner_datapath_ids
+          next true if value && item.owner_datapath_ids.nil?
+          next true if value && item.owner_datapath_ids.find_index(value).nil?
+          false
+        }
+      when :allowed_datapath_id
+        proc { |id, item|
+          next true if value.nil?
+          next true if item.owner_datapath_ids && item.owner_datapath_ids.find_index(value).nil?
+          false
+        }
+      else
+        raise NotImplementedError, filter
       end
-
-      if params.has_key? :allowed_datapath_id
-        allowed_datapath_id = params[:allowed_datapath_id]
-
-        return false if allowed_datapath_id.nil?
-        return false if item.owner_datapath_ids && item.owner_datapath_ids.find_index(allowed_datapath_id).nil?
-      end
-
-      true
     end
 
     def query_filter_from_params(params)
@@ -99,20 +98,13 @@ module Vnet::Openflow
       filter
     end
 
-    def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
-    end
-
     def item_initialize(item_map, params)
-      if params[:remote]
-        return if !is_assigned_remotely?(item_map)
-        mode = :remote
+      mode = (item_map.mode && item_map.mode.to_sym)
+
+      if mode == :vif
+        mode = :remote if is_assigned_remotely?(item_map)
       elsif is_remote?(item_map)
         mode = :remote
-      else
-        mode = (item_map.mode && item_map.mode.to_sym)
       end
 
       item_class =
@@ -166,7 +158,8 @@ module Vnet::Openflow
     end
 
     def item_post_uninstall(item)
-      if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
+      if (item.owner_datapath_ids &&
+          item.owner_datapath_ids.include?(@datapath_info.id)) || item.port_number
         update_active_datapath(item, nil)
       end
 
@@ -192,10 +185,7 @@ module Vnet::Openflow
     def create_item(params)
       return if @items[params[:id]]
 
-      return unless @dp_info.port_manager.retrieve(
-        port_name: params[:port_name],
-        dynamic_load: false
-      )
+      return unless @dp_info.port_manager.detect(port_name: params[:port_name])
 
       self.retrieve(params)
     end
@@ -290,10 +280,7 @@ module Vnet::Openflow
       item = @items[params[:id]]
 
       if !item && ip_lease.interface.mode.to_sym == :simulated &&
-        @dp_info.network_manager.retrieve(
-          id: ip_lease.ip_address.network_id,
-          dynamic_load: false
-        )
+        @dp_info.network_manager.detect(id: ip_lease.ip_address.network_id)
 
         @dp_info.interface_manager.retrieve(id: ip_lease.interface.id)
 

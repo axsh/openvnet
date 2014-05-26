@@ -212,6 +212,14 @@ module Vnet::Models
         end
       end
 
+      # Returns dataset which has been selected for the uuid.
+      #
+      # @example
+      #   Account.dataset_where_uuid('a-xxxxxx')
+      def dataset_where_uuid(p_uuid)
+        dataset.where(uuid: trim_uuid(p_uuid))
+      end
+
       # Returns the uuid string which is removed prefix part: /^(:?\w+)-/.
       #
       # @example

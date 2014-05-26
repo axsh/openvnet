@@ -2,7 +2,7 @@
 
 module Vnet::Openflow::Interfaces
 
-  class Host < IfBase
+  class Internal < IfBase
 
     def add_mac_address(params)
       mac_info = super
@@ -32,12 +32,6 @@ module Vnet::Openflow::Interfaces
       end
 
       @dp_info.add_flows(flows)
-      @dp_info.tunnel_manager.async.update(event: :updated_interface,
-                                           interface_event: :added_ipv4_address,
-                                           interface_mode: :host,
-                                           interface_id: @id,
-                                           network_id: ipv4_info[:network_id],
-                                           ipv4_address: ipv4_info[:ipv4_address])
     end
 
     def install
@@ -85,17 +79,13 @@ module Vnet::Openflow::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      # We currently only support a single physical network for a
-      # host interface.
-      #
-      # Until network segments are supported this is difficult to
-      # implement.
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_MAC,
                            priority: 10,
                            match_interface: @id,
                            cookie: cookie)
+
       flows << flow_create(:default,
                            table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
@@ -122,6 +112,7 @@ module Vnet::Openflow::Interfaces
                            write_value_pair_first: ipv4_info[:network_id],
 
                            cookie: cookie)
+
       flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 10,

@@ -57,10 +57,15 @@ module Vnet::Openflow
       DATAPATH_UNLOAD_ITEM
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      true
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :uuid, :dpid
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     def query_filter_from_params(params)
@@ -68,12 +73,6 @@ module Vnet::Openflow
       filter << {id: params[:id]} if params.has_key? :id
       filter << {dpid: params[:dpid]} if params.has_key? :dpid
       filter
-    end
-
-    def select_filter_from_params(params)
-      return if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)

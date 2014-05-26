@@ -89,10 +89,6 @@ module Vnet::Openflow
       item.update_isolation(ip_list)
     end
 
-    def initialized_item_event
-      INITIALIZED_FILTER
-    end
-
     def log_interface_added(if_uuid, sg_uuid)
       debug log_format("Adding interface '%s' to security group '%s'" %
         [if_uuid, sg_uuid])
@@ -129,9 +125,46 @@ module Vnet::Openflow
       }
     end
 
+    #
+    # Internal methods:
+    #
+
     private
-    def select_item(filter)
-      MW::SecurityGroup.batch[filter].commit(fill: :ip_addresses)
+
+    #
+    # Specialize Manager:
+    #
+
+    def mw_class
+      MW::SecurityGroup
+    end
+
+    def initialized_item_event
+      INITIALIZED_FILTER
+    end
+
+    # def item_unload_event
+    # end
+
+    def select_item(batch)
+      batch.commit(fill: :ip_addresses)
+    end
+
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :uuid
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
+    end
+
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter
     end
 
     def item_initialize(item_map, params)
@@ -139,6 +172,14 @@ module Vnet::Openflow
         item.dp_info = @dp_info
       }
     end
+
+    #
+    # Create / Delete events:
+    #
+
+    #
+    # Others:
+    #
 
     def items_for_interface(interface_id)
       @items.values.select { |item| item.has_interface?(interface_id) }
@@ -151,5 +192,6 @@ module Vnet::Openflow
     def is_remote?(interface)
       super(interface.owner_datapath_id, interface.active_datapath_id)
     end
+
   end
 end

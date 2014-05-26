@@ -45,13 +45,21 @@ module Vnet::Openflow::Services
       # Verify dhcp_in values...
 
       mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
-      return if network.nil?
+
+      if network.nil?
+        debug log_format('could not find network', "mac_info:#{mac_info.inspect}")
+        return
+      end
 
       netid_to_routes = @dp_info.route_manager.select(network_id: network[:id], ingress: true)
       static_routes = find_static_routes(netid_to_routes.uniq { |r| r[:route_link_id] })
 
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
-      return if client_info.nil?
+
+      if client_info.nil?
+        debug log_format('could not find client info', "in_port:#{message.match.in_port} mac_info:#{mac_info.inspect}")
+        return
+      end
 
       params = {
         :xid => dhcp_in.xid,
@@ -167,8 +175,12 @@ module Vnet::Openflow::Services
     end
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
-      interface = @dp_info.interface_manager.retrieve(port_number: port_number)
-      return [] if interface.nil?
+      interface = @dp_info.interface_manager.detect(port_number: port_number)
+
+      if interface.nil?
+        info log_format("could not find interface for port number #{port_number}")
+        return []
+      end
 
       client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
       

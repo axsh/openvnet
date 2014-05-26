@@ -82,16 +82,25 @@ module Vnet::Services
       IP_RETENTION_UNLOAD_ITEM
     end
 
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :uuid
+        proc { |id, item| value == item.send(filter) }
+      when :lease_time_expired_at
+        proc { |id, item| value >= item.lease_time_expired_at }
+      when :grace_time_expired_at
+        proc { |id, item| item.grace_time_expired_at && value >= item.grace_time_expired_at }
+      else
+        raise NotImplementedError, filter
+      end
+    end
+
     def query_filter_from_params(params)
       [].tap do |filter|
         filter << {id: params[:id]} if params.has_key? :id
       end
-    end
-
-    def match_item?(item, params)
-      return false if params[:lease_time_expired_at] && params[:lease_time_expired_at] < item.lease_time_expired_at
-      return false if params[:grace_time_expired_at] && (!item.grace_time_expired_at || params[:grace_time_expired_at] < item.grace_time_expired_at)
-      return super
     end
 
     def expire_item(params)

@@ -76,12 +76,15 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
-    def match_item?(item, params)
-      return true if params[:id] && params[:id] == item.port_name
-      return true if params[:port_name] && params[:port_name] == item.port_name
-      return true if params[:port_number] && params[:port_number] == item.port_number
-      return true if params[:port_type] && params[:port_type] == item.port_type
-      false
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :port_name, :port_number, :port_type
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     #
@@ -100,6 +103,7 @@ module Vnet::Openflow
       else
         # TODO: Set flood off.
 
+        # TODO: Make sure activate port recreates previously remote ports.
         @dp_info.interface_manager.publish(INTERFACE_ACTIVATE_PORT,
                                            id: :port,
                                            port_name: port.port_name,
@@ -197,6 +201,8 @@ module Vnet::Openflow
     end
 
     def prepare_port_tunnel(port)
+      debug log_format("prepare_port_tunnel", "port_name:#{port.port_name}")
+
       tunnel = @dp_info.tunnel_manager.retrieve(uuid: port.port_name)
 
       if tunnel.nil?

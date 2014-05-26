@@ -48,9 +48,7 @@ module Vnet
 
     def select(params = {})
       begin
-        @items.select { |id, item|
-          match_item?(item, params)
-        }.map { |id, item|
+        @items.select(&match_item_proc(params)).map { |id, item|
           item_to_hash(item)
         }
       rescue Celluloid::Task::TerminatedError => e
@@ -128,23 +126,51 @@ module Vnet
       raise NotImplementedError
     end
 
-    # Optimize this by returning a proc block.
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      true
+    #
+    # Filters:
+    #
+
+    def match_item_proc(params)
+      case params.size
+      when 1
+        part_1 = params.to_a.first
+        match_item_proc_part(part_1)
+      when 2
+        part_1, part_2 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
+        part_1 && part_2 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) }
+      when 3
+        part_1, part_2, part_3 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
+        part_3 = match_item_proc_part(part_3)
+        part_1 && part_2 && part_3 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) }
+      when 4
+        part_1, part_2, part_3, part_4 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
+        part_3 = match_item_proc_part(part_3)
+        part_4 = match_item_proc_part(part_4)
+        part_1 && part_2 && part_3 && part_4 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) && part_4.call(id, item) }
+      when 0
+        proc { |id, item| true }
+      else
+        raise NotImplementedError, params.inspect
+      end
     end
 
-    # TODO: Cleanup...
+    def match_item_proc_part(filter_part)
+      raise NotImplementedError, params.inspect
+    end
+
     def select_filter_from_params(params)
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
-        return nil
-      end
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     # Creates a batch object for querying a set of item to load,
@@ -157,11 +183,10 @@ module Vnet
     def create_batch(batch, uuid, filters)
       expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
 
-      if expression
-        uuid ? batch[uuid].where(expression) : batch.dataset.where(expression).first
-      else
-        uuid ? batch[uuid] : nil
-      end
+      return unless expression || uuid
+
+      dataset = uuid ? batch.dataset_where_uuid(uuid) : batch.dataset
+      dataset = expression ? dataset.where(expression) : dataset
     end
 
     #
@@ -173,20 +198,11 @@ module Vnet
     end
 
     def item_by_params(params)
-      if params[:reinitialize] != true
-        item = internal_detect(params)
-
-        if item || params[:dynamic_load] == false
-          return item
-        end
-      end
+      item = internal_detect(params)
+      return item if item
 
       select_filter = select_filter_from_params(params) || return
-      item_map = select_item(select_filter) || return
-
-      if params[:reinitialize] == true
-        @items.delete(item_map.id)
-      end
+      item_map = select_item(select_filter.first) || return
 
       internal_new_item(item_map, params)
     end
@@ -286,19 +302,15 @@ module Vnet
 
     def internal_detect(params)
       if params.size == 1 && params.first.first == :id
-        item = @items[params.first.last]
-        item = nil if item && !match_item?(item, params)
-        item
+        @items[params.first.last]
       else
-        item = @items.detect { |id, item|
-          match_item?(item, params)
-        }
-        item = item && item.last
+        item = @items.detect(&match_item_proc(params))
+        item && item.last
       end
     end
 
     def internal_select(params)
-      @items.values.select { |item| match_item?(item, params) }
+      @items.select(&match_item_proc(params))
     end
 
     #

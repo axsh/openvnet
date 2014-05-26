@@ -59,41 +59,44 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      # return false if params[:mode] && params[:mode] != item.mode
-      return false if params[:port_name] && params[:port_name] != item.display_name
-      return false if params[:dst_datapath_id] && params[:dst_datapath_id] != item.dst_datapath_id
-      return false if params[:src_interface_id] && params[:src_interface_id] != item.src_interface_id
-      return false if params[:dst_interface_id] && params[:dst_interface_id] != item.dst_interface_id
-      true
+    def mw_class
+      MW::Tunnel
     end
 
-    def select_filter_from_params(params)
-      return nil if @datapath_info.nil?
+    def initialized_item_event
+      INITIALIZED_TUNNEL
+    end
 
-      return params if params.keys == [:src_datapath_id, :dst_datapath_id,
-                                       :src_interface_id, :dst_interface_id]
+    def item_unload_event
+      REMOVED_TUNNEL
+    end
 
-      # Ensure to update tunnel items only belonging to this
-      { src_datapath_id: @datapath_info.id }.tap do |options|
-        case
-        when params[:id]              then options[:id] = params[:id]
-        when params[:uuid]            then options[:uuid] = params[:uuid]
-        # when params[:mode]            then options[:mode] = params[:mode]
-        when params[:port_name]       then options[:display_name] = params[:port_name]
+    def update_property_states_event
+      TUNNEL_UPDATE_PROPERTY_STATES
+    end
 
-        when params[:dst_datapath_id]  then options[:dst_datapath_id] = params[:dst_datapath_id]
-        when params[:dst_interface_id] then options[:dst_interface_id] = params[:dst_interface_id]
-        when params[:src_interface_id] then options[:src_interface_id] = params[:src_interface_id]
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
 
-        else
-          # Any invalid params that should cause an exception needs to
-          # be caught by the item_by_params_direct method.
-          return nil
-        end
+      case filter
+      when :id, :uuid, :port_name, :dst_datapath_id, :src_interface_id, :dst_interface_id
+        proc { |id, item| value == item.send(filter) }
+      when :src_datapath_id
+        proc { |id, item| true }
+      else
+        raise NotImplementedError, filter
       end
+    end
+
+    def query_filter_from_params(params)
+      filter = [{src_datapath_id: @datapath_info.id}]
+
+      filter << {id: params[:id]} if params.has_key? :id
+      #filter << {port_name: params[:port_name]} if params.has_key? :port_name
+      filter << {dst_datapath_id: params[:dst_datapath_id]} if params.has_key? :dst_datapath_id
+      filter << {dst_interface_id: params[:dst_interface_id]} if params.has_key? :dst_interface_id
+      filter << {src_interface_id: params[:src_interface_id]} if params.has_key? :src_interface_id
+      filter
     end
 
     def select_tunnel_mode(src_interface_id, dst_interface_id)
@@ -152,18 +155,6 @@ module Vnet::Openflow
                      map: item_map)
     end
 
-    def initialized_item_event
-      INITIALIZED_TUNNEL
-    end
-
-    def update_property_states_event
-      TUNNEL_UPDATE_PROPERTY_STATES
-    end
-
-    def select_item(filter)
-      MW::Tunnel.batch[filter].commit
-    end
-    
     def install_item(params)
       item_map = params[:item_map] || return
       item = (item_map.id && @items[item_map.id]) || return

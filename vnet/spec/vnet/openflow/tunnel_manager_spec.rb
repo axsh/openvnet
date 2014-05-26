@@ -6,6 +6,8 @@ include Vnet::Constants::Openflow
 
 describe Vnet::Openflow::TunnelManager do
 
+  use_mock_event_handler
+
   describe "update_virtual_network" do
     before do
       networks = (1..2).map { |i|
@@ -42,11 +44,6 @@ describe Vnet::Openflow::TunnelManager do
     let(:datapath) do
       MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16)).tap do |dp|
         dp.create_mock_datapath_map
-
-        # dp.switch = double(:cookie_manager => Vnet::Openflow::CookieManager.new)
-        # dp.switch.cookie_manager.create_category(:tunnel, 0x6, 48)
-        #
-        # dp.cookie_manager = Vnet::Openflow::CookieManager.new
 
         if1_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0').id
         if2_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0').id

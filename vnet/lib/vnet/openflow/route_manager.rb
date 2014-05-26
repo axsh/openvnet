@@ -43,14 +43,17 @@ module Vnet::Openflow
       ROUTE_UNLOAD_ITEM
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:network_id] && params[:network_id] != item.network_id
-      return false if params[:not_network_id] && params[:not_network_id] == item.network_id
-      return false if params[:egress] && params[:egress] != item.egress
-      return false if params[:ingress] && params[:ingress] != item.ingress
-      true
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :uuid, :interface_id, :network_id, :route_link_id, :egress, :ingress
+        proc { |id, item| value == item.send(filter) }
+      when :not_network_id
+        proc { |id, item| value != item.network_id }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     def query_filter_from_params(params)
@@ -60,12 +63,6 @@ module Vnet::Openflow
       filter << {network_id: params[:network_id]} if params.has_key? :network_id
       filter << {route_link_id: params[:route_link_id]} if params.has_key? :route_link_id
       filter
-    end
-
-    def select_filter_from_params(params)
-      return if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
     end
 
     def item_initialize(item_map, params)

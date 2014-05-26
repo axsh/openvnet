@@ -180,8 +180,9 @@ module Vnet::Openflow::Interfaces
     end
 
     def update_port_number(new_number)
-      debug log_format("update_port_number", new_number)
       return if @port_number == new_number
+
+      debug log_format("update port number to #{new_number}")
 
       @port_number = new_number
 
@@ -196,12 +197,12 @@ module Vnet::Openflow::Interfaces
       # Currently only supports one active datapath id.
       @active_datapath_ids = [datapath_id]
 
-      MW::Interface.batch.update_active_datapath(@id, datapath_id).commit
-
       addresses = ipv4_addresses
       addresses = addresses && addresses.map { |i|
         { network_id: i[:network_id], ipv4_address: i[:ipv4_address].to_i }
       }
+
+      MW::Interface.batch.update_active_datapath(@id, datapath_id).commit
 
       dispatch_event(INTERFACE_UPDATED,
                      event: :remote_datapath_id,

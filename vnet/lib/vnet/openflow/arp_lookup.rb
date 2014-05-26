@@ -252,8 +252,9 @@ module Vnet::Openflow
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
       
       # Load remote interface.
-      interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id,
-                                                      remote: true)
+      interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id)
+
+      # TODO: Check if interface is remote?
 
       flow = flow_create(:default,
                          table: TABLE_ARP_LOOKUP,
