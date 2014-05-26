@@ -161,6 +161,8 @@ describe Vnet::NodeApi::LeasePolicy do
         ip_lease = interface.ip_leases.first
         expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
 
+        expect(interface.lease_policy_base_interfaces.first.label).to eq "foo"
+
         events = MockEventHandler.handled_events
         expect(events.size).to eq 1
 
@@ -188,7 +190,7 @@ describe Vnet::NodeApi::LeasePolicy do
         )
       end
 
-      context "without ip_lease_container_label" do
+      context "without label" do
         it "creates an ip_lease and add it to ip_lease_containers" do
           ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
 
@@ -200,11 +202,11 @@ describe Vnet::NodeApi::LeasePolicy do
         end
       end
 
-      context "with ip_lease_container_label" do
+      context "with label" do
         it "creates an ip_lease and add it to an ip_lease_container" do
           ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(
             lease_policy_uuid: lease_policy.canonical_uuid,
-            ip_lease_container_label: "foo"
+            label: "foo"
           )
 
           expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"

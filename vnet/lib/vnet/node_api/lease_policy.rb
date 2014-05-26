@@ -53,8 +53,8 @@ module Vnet::NodeApi
           ip_lease = IpLease.create(options_for_ip_lease)
 
           lease_policy.lease_policy_ip_lease_containers.each do |lease_policy_ip_lease_container|
-            if options[:ip_lease_container_label]
-              next unless lease_policy_ip_lease_container.label == options[:ip_lease_container_label]
+            if options[:label]
+              next unless lease_policy_ip_lease_container.label == options[:label]
             end
 
             model_class(:ip_lease_container_ip_lease).create(
