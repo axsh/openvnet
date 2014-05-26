@@ -162,6 +162,8 @@ module Vnet::Openflow
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
 
+      return unless @datapath_info
+
       update_active_datapath(item, @datapath_info.id)
     end
 
