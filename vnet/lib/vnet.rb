@@ -46,6 +46,7 @@ module Vnet
   end
 
   module Event
+    autoload :EventTasks, 'vnet/event/event_tasks'
     autoload :Dispatchable, 'vnet/event/dispatchable'
     autoload :Notifications, 'vnet/event/notifications'
   end
