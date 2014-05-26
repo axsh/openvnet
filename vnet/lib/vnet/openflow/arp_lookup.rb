@@ -223,7 +223,7 @@ module Vnet::Openflow
       # Remove old packets...
       messages.select! { |message| Time.now - message[:timestamp] < 30.0 }
 
-      @manager.after([params[:attempts], 10].min) {
+      Celluloid::Actor.current.after([params[:attempts], 10].min) {
         params[:attempts] = params[:attempts] + 1
         arp_lookup_process_timeout(params)
       }
