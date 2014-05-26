@@ -44,7 +44,8 @@ module Vnet::NodeApi
           if interface
             model_class(:lease_policy_base_interface).create(
               :lease_policy_id => lease_policy.id,
-              :interface_id => interface.id
+              :interface_id => interface.id,
+              :label => options[:label]
             )
 
             options_for_ip_lease[:mac_lease_id] = interface.mac_leases.first.id

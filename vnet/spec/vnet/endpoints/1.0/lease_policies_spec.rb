@@ -85,7 +85,7 @@ describe "/lease_policies" do
 
     let!(:join_table_fabricator) { :lease_policy_base_interface }
 
-    include_examples "many_to_many_relation", "interfaces", {}
+    include_examples "many_to_many_relation", "interfaces", { label: "foo" }
   end
 
   describe "Many to many relation calls for ip_lease_containers" do

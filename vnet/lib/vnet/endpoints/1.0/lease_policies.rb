@@ -66,6 +66,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     respond_with(R::LeasePolicy.lease_policy_network(lease_policy))
   end
 
+  param :label, :String
   post '/:uuid/interfaces/:interface_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
 
@@ -73,7 +74,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     interface = check_syntax_and_pop_uuid(M::Interface, "interface_uuid")
 
     M::LeasePolicy.allocate_ip({ :interface_uuid => interface.uuid,
-                                 :lease_policy_uuid => lease_policy.uuid
+                                 :lease_policy_uuid => lease_policy.uuid,
+                                 :label => params[:label],
                                })
 
     respond_with(R::LeasePolicy.lease_policy_interface(lease_policy))
