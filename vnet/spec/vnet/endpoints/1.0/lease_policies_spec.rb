@@ -111,7 +111,7 @@ describe "/lease_policies" do
     it "create an ip_lease" do
       params = {
         ip_lease_uuid: "il-new",
-        ip_lease_container_uuid: ip_lease_container.canonical_uuid,
+        label: "foo",
       }
 
       post "lease_policies/lp-#{lease_policy.uuid}/ip_leases", params

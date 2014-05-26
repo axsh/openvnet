@@ -125,15 +125,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   end
 
   param_uuid M::IpLease, :ip_lease_uuid
-  param_uuid M::IpLeaseContainer, :ip_lease_container_uuid
+  param :label, String
   post '/:uuid/ip_leases' do
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
-    ip_lease_container = check_syntax_and_pop_uuid(M::IpLeaseContainer, "ip_lease_container_uuid") if params[:ip_lease_container_uuid]
 
     ip_lease = M::LeasePolicy.batch.allocate_ip(
       lease_policy_uuid: lease_policy.uuid,
       ip_lease_uuid:  params[:ip_lease_uuid],
-      ip_lease_container_uuid: ip_lease_container.uuid
+      ip_lease_container_label: params[:label]
     ).commit(fill: { :ip_address => :network})
 
     respond_with(R::IpLease.generate(ip_lease))
