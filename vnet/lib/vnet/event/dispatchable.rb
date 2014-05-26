@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 module Vnet::Event
   module Dispatchable
     mattr_accessor :event_handler
