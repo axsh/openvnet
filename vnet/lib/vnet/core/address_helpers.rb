@@ -19,7 +19,6 @@ module Vnet::Core
     end
 
     def add_mac_address(params)
-      #debug log_format("add_ipv4_address", params.inspect)
       return if @mac_addresses[params[:mac_lease_id]]
 
       mac_addresses = @mac_addresses.dup
@@ -33,15 +32,13 @@ module Vnet::Core
 
       @mac_addresses = mac_addresses
 
-      #debug log_format("adding mac address to #{@uuid}/#{@id}",
-      #                 "#{params[:mac_address].to_s}")
+      debug log_format("adding mac address to #{@uuid}/#{@id}",
+                       "#{params[:mac_address].to_s}")
 
       mac_info
     end
 
     def remove_mac_address(params)
-      debug log_format("remove_mac_address", params.inspect)
-
       mac_info = @mac_addresses[params[:mac_lease_id]]
       return unless mac_info
 
@@ -55,8 +52,6 @@ module Vnet::Core
     end
 
     def add_ipv4_address(params)
-      #debug log_format("add_ipv4_address", params.inspect)
-
       mac_info = @mac_addresses[params[:mac_lease_id]]
       return unless mac_info
 
@@ -84,16 +79,16 @@ module Vnet::Core
     end
 
     def remove_ipv4_address(params)
-      # debug log_format("remove_ipv4_address", params.inspect)
-
       ipv4_info = nil
       ipv4_addresses = nil
+
       mac_info = @mac_addresses.values.find do |m|
         ipv4_info, ipv4_addresses = m[:ipv4_addresses].partition do |i|
           i[:ip_lease_id] == params[:ip_lease_id]
         end
         ipv4_info = ipv4_info.first
       end
+
       return unless mac_info
 
       mac_info[:ipv4_addresses] = ipv4_addresses

@@ -109,8 +109,6 @@ module Vnet::Core::Datapaths
       @dp_info.add_flows(flows)
 
       debug log_format("adding to #{@uuid}/#{@id} datapath network #{dpn_map.network_id}")
-
-      true
     end
 
     def remove_active_network(network_id)
@@ -120,8 +118,6 @@ module Vnet::Core::Datapaths
       @dp_info.del_cookie(dp_network[:id] | COOKIE_TYPE_DP_NETWORK)
 
       debug log_format("removing from #{@uuid}/#{@id} datapath network #{network_id}")
-
-      true
     end
 
     #
@@ -157,7 +153,6 @@ module Vnet::Core::Datapaths
       @dp_info.add_flows(flows)
 
       debug log_format("adding to #{@uuid}/#{@id} datapath route link #{dprl_map.route_link_id}")
-      true
     end
 
     #

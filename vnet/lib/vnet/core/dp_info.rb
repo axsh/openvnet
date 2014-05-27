@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
+# Thread-safe access to static information on the datapath and
+# managers. No writes are done to this instance after the creation of
+# the datapath. 
+#
+# Since this isn't an actor we avoid the need to go through Datapath's
+# thread for every time we use a manager.
+
 module Vnet::Core
 
-  # Thread-safe access to static information on the datapath and
-  # managers / actors. No writes are done to this instance after the
-  # creation of the datapath.
-  #
-  # Since this isn't an actor we avoid the need to go through
-  # Datapath's thread for every time we use a manager.
   class DpInfo
 
     # Port manager is always last in order to ensure that all other
