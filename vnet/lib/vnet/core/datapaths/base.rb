@@ -37,11 +37,9 @@ module Vnet::Core::Datapaths
     end
 
     def to_hash
-      {
-        id: @id,
-        uuid: @uuid,
-        active_networks: @active_networks.values,
-      }
+      Vnet::Core::Network.new(id: @id,
+                              uuid: @uuid,
+                              active_networks: @active_networks.values)
     end
 
     def unused?
