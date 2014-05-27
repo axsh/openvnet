@@ -98,8 +98,8 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
 
-      Integer :interface_id, :index => true, :null => false
-      Integer :mac_lease_id, :index => true, :null => false
+      Integer :interface_id, :index => true
+      Integer :mac_lease_id, :index => true
       Integer :ip_address_id, :index => true, :null=>false
 
       FalseClass :enable_routing, :null=>false
@@ -122,11 +122,75 @@ Sequel.migration do
       unique [:ip_lease_container_id, :ip_lease_id]
     end
 
+
+    create_table(:lease_policies) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      String :mode, :null=>false, :default => "simple"
+      String :timing, :null=>false, :default => "immediate"
+      Integer :lease_time
+      Integer :grace_time
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:lease_policy_base_networks) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :network_id, :index => true, :null => false
+      Integer :ip_range_group_id, :index => true, :null => false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:lease_policy_base_interfaces) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :interface_id, :index => true, :null => false
+      String :label
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
     create_table(:lease_policy_ip_lease_containers) do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
       Integer :ip_lease_container_id, :index => true, :null => false
+      String :label
       unique [:lease_policy_id, :ip_lease_container_id]
+    end
+
+    create_table(:ip_range_groups) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      String :allocation_type, :null=>false, :default => "incremental"
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:ip_ranges) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :ip_range_group_id, :index => true, :null => false
+      Bignum :begin_ipv4_address, :null=>false
+      Bignum :end_ipv4_address, :null=>false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:ip_retentions) do
+      primary_key :id
+      Integer :ip_lease_id, :index => true, :null => false
+      Integer :ip_address_id, :index => true, :null => false
+      DateTime :lease_time_expired_at, :null=>false
+      Integer :grace_time
+      DateTime :grace_time_expired_at
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
     end
 
     create_table(:mac_addresses) do
@@ -271,68 +335,6 @@ Sequel.migration do
       Bignum :mac_address
       Integer :vlan_id
       Integer :network_id
-    end
-
-    create_table(:lease_policies) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      String :mode, :null=>false, :default => "simple"
-      String :timing, :null=>false, :default => "immediate"
-      Integer :lease_time
-      Integer :grace_time
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-
-    create_table(:lease_policy_base_networks) do
-      primary_key :id
-      Integer :lease_policy_id, :index => true, :null => false
-      Integer :network_id, :index => true, :null => false
-      Integer :ip_range_group_id, :index => true, :null => false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-
-    create_table(:lease_policy_base_interfaces) do
-      primary_key :id
-      Integer :lease_policy_id, :index => true, :null => false
-      Integer :interface_id, :index => true, :null => false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-
-    create_table(:ip_range_groups) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      String :allocation_type, :null=>false, :default => "incremental"
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-
-    create_table(:ip_ranges) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      Integer :ip_range_group_id, :index => true, :null => false
-      Bignum :begin_ipv4_address, :null=>false
-      Bignum :end_ipv4_address, :null=>false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-
-    create_table(:ip_retentions) do
-      primary_key :id
-      Integer :ip_lease_id, :index => true, :null => false
-      Integer :ip_address_id, :index => true, :null => false
-      DateTime :lease_time_expired_at, :null=>false
-      Integer :grace_time
-      DateTime :grace_time_expired_at
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
     end
   end
 
