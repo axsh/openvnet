@@ -40,8 +40,6 @@ module Vnet::Openflow::Interfaces
     def initialize(params)
       super
 
-      @manager = params[:manager]
-
       map = params[:map]
       @mode = map.mode.to_sym
       @port_name = map.port_name
@@ -73,6 +71,10 @@ module Vnet::Openflow::Interfaces
         @owner_datapath_ids = nil
         @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
       end
+    end
+
+    def log_type
+      'interface/base'
     end
 
     def pretty_properties
@@ -159,11 +161,11 @@ module Vnet::Openflow::Interfaces
           (@owner_datapath_ids && interface.owner_datapath_id.nil?)
         # update_owner_datapath(interface.owner_datapath_id)
 
-        @manager.publish(INTERFACE_UPDATED,
-                         event: :owner_datapath_id,
-                         id: @id,
-                         owner_datapath_id: interface.owner_datapath_id,
-                         port_name: interface.port_name)
+        Celluloid::Actor.current.publish(INTERFACE_UPDATED,
+                                         event: :owner_datapath_id,
+                                         id: @id,
+                                         owner_datapath_id: interface.owner_datapath_id,
+                                         port_name: interface.port_name)
       end
     end
 
@@ -298,10 +300,6 @@ module Vnet::Openflow::Interfaces
     #
 
     private
-
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interfaces/base: #{message}" + (values ? " (#{values})" : '')
-    end
 
     # Some flows could be created on demand by checking if the
     # interface requires egress routing. Currently every interface

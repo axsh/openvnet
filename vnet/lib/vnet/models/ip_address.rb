@@ -4,6 +4,8 @@ module Vnet::Models
   class IpAddress < Base
     include Vnet::ModelWrappers::Helpers::IPv4
 
+    plugin :paranoia_with_unique_constraint
+
     many_to_one :network
     one_to_one :ip_lease
     one_to_one :datapath

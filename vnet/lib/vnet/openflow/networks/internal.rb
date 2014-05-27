@@ -2,14 +2,14 @@
 
 module Vnet::Openflow::Networks
 
-  class Physical < Base
+  class Internal < Base
 
     def network_type
-      :physical
+      :internal
     end
 
     def log_type
-      'network/physical'
+      'network/internal'
     end
 
     def install
@@ -21,10 +21,6 @@ module Vnet::Openflow::Networks
       flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
                            goto_table: TABLE_NETWORK_DST_MAC_LOOKUP,
                            priority: 30,
-                           match_network: @id)
-      flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
-                           goto_table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
-                           priority: 20,
                            match_network: @id)
 
       @dp_info.add_flows(flows)
@@ -39,9 +35,11 @@ module Vnet::Openflow::Networks
       # ports.
       local_actions << { :output => OFPP_LOCAL }
 
+      # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP.
+
       flows = []
       flows << flow_create(table: TABLE_FLOOD_LOCAL,
-                           goto_table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+                           # goto_table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
                            priority: 1,
                            match_network: @id,
                            actions: local_actions)

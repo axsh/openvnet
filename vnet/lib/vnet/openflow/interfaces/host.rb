@@ -4,6 +4,10 @@ module Vnet::Openflow::Interfaces
 
   class Host < IfBase
 
+    def log_type
+      'interface/host'
+    end
+
     def add_mac_address(params)
       mac_info = super
 
@@ -58,11 +62,13 @@ module Vnet::Openflow::Interfaces
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interfaces/host: #{message}" + (values ? " (#{values})" : '')
-    end
-
     def flows_for_base(flows)
+      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 10,
+                           match_interface: @id,
+                           actions: {
+                             :output => OFPP_LOCAL
+                           })
     end
 
     def flows_for_mac(flows, mac_info)
@@ -71,8 +77,7 @@ module Vnet::Openflow::Interfaces
       #
       # Classifiers:
       #
-      flows << flow_create(:default,
-                           table: TABLE_LOCAL_PORT,
+      flows << flow_create(table: TABLE_LOCAL_PORT,
                            goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                            priority: 30,
                            match: {
@@ -90,14 +95,12 @@ module Vnet::Openflow::Interfaces
       #
       # Until network segments are supported this is difficult to
       # implement.
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_MAC,
                            priority: 10,
                            match_interface: @id,
                            cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 20,
 
@@ -109,8 +112,7 @@ module Vnet::Openflow::Interfaces
                            write_value_pair_first: ipv4_info[:network_id],
 
                            cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 20,
 
@@ -122,13 +124,6 @@ module Vnet::Openflow::Interfaces
                            write_value_pair_first: ipv4_info[:network_id],
 
                            cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                           priority: 10,
-                           match_interface: @id,
-                           actions: {
-                             :output => OFPP_LOCAL
-                           })
     end
 
   end

@@ -21,14 +21,16 @@ module Vnet::NodeApi
           end
         end
 
-        dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
-
         if lease_time
           dispatch_event(IP_RETENTION_CREATED_ITEM, id: ip_lease.ip_retention.id, ip_lease_id: ip_lease.id, lease_time_expired_at: ip_lease.ip_retention.lease_time_expired_at, grace_time: grace_time)
         end
 
-        ip_lease.interface.security_groups.each do |group|
-          dispatch_update_sg_ip_addresses(group)
+        if ip_lease.interface
+          dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+
+          ip_lease.interface.security_groups.each do |group|
+            dispatch_update_sg_ip_addresses(group)
+          end
         end
 
         ip_lease

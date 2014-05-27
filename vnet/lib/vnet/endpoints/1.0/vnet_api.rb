@@ -58,7 +58,7 @@ module Vnet::Endpoints::V10
       }
 
       final_options = {
-        format: /^#{model.uuid_prefix}-[a-z0-9]{1,8}$/,
+        format: /^#{model.uuid_prefix}-[a-z0-9]{1,16}$/,
         on_error: error_handler
       }
 

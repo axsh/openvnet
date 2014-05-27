@@ -112,6 +112,7 @@ module Vnet::Openflow
       # Until we have datapath_info loaded none of the ports can be
       # initialized.
       @dp_info.port_manager.initialize_ports
+      @dp_info.interface_manager.load_internal_interfaces
     end
 
     #

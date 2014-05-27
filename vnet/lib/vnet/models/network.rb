@@ -4,6 +4,8 @@ module Vnet::Models
   class Network < Base
     taggable 'nw'
 
+    plugin :paranoia_with_unique_constraint
+
     one_to_many :datapath_networks
     many_to_many :datapaths, :join_table => :datapath_networks
     one_to_many :ip_addresses

@@ -26,6 +26,12 @@ module Vnet::Openflow
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
 
+    def load_internal_interfaces
+      return if @datapath_info.nil?
+
+      internal_load_where(mode: 'internal', owner_datapath_id: @datapath_info.id)
+    end
+
     def load_simulated_on_network_id(network_id)
       # TODO: Add list of active network id's for which we should have
       # simulated interfaces loaded.
@@ -87,6 +93,7 @@ module Vnet::Openflow
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
+      filter << {mode: params[:mode]} if params.has_key? :mode
       filter << {port_name: params[:port_name]} if params.has_key? :port_name
       filter << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
 
@@ -111,15 +118,16 @@ module Vnet::Openflow
         case mode
         when :edge      then Interfaces::Edge
         when :host      then Interfaces::Host
-        when :remote    then Interfaces::Remote
+        when :internal  then Interfaces::Internal
         when :patch     then Interfaces::Patch
+        when :remote    then Interfaces::Remote
         when :simulated then Interfaces::Simulated
         when :vif       then Interfaces::Vif
         else
           Interfaces::Base
         end
 
-      item_class.new(dp_info: @dp_info, manager: self, map: item_map)
+      item_class.new(dp_info: @dp_info, map: item_map)
     end
 
     #
@@ -153,6 +161,8 @@ module Vnet::Openflow
 
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
+
+      return unless @datapath_info
 
       update_active_datapath(item, @datapath_info.id)
     end
@@ -290,6 +300,12 @@ module Vnet::Openflow
       return unless item && ip_lease.interface_id == item.id
 
       network = @dp_info.network_manager.retrieve(id: ip_lease.ip_address.network_id)
+      
+      if network.nil?
+        error log_format("could not find network for ip lease",
+                         "interface_id:#{ip_lease.interface_id} network_id:#{ip_lease.ip_address.network_id}")
+        return
+      end
 
       # TODO: Pass the ip_lease object.
       item.add_ipv4_address(mac_lease_id: ip_lease.mac_lease_id,

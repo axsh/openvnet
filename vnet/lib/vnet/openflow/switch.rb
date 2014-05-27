@@ -89,15 +89,14 @@ module Vnet::Openflow
        TABLE_OUT_PORT_TUNNEL,
 
       ].each { |table|
-        flows << flow_create(:default, table: table, priority: 0)
+        flows << flow_create(table: table, priority: 0)
       }
 
       [[TABLE_CLASSIFIER, 1, nil, { :tunnel_id => 0 }],
        [TABLE_FLOOD_TUNNELS, 10, :match_remote, nil],
        [TABLE_OUTPUT_DP_NETWORK_DST_IF, 2, nil, { :eth_dst => MAC_BROADCAST }],
       ].each { |table, priority, flag, match|
-        flows << flow_create(:default, {
-                               table: table,
+        flows << flow_create({ table: table,
                                priority: priority,
                                match: match,
                                flag => true
@@ -115,8 +114,7 @@ module Vnet::Openflow
        [TABLE_INTERFACE_EGRESS_FILTER, TABLE_NETWORK_SRC_CLASSIFIER],
        [TABLE_INTERFACE_INGRESS_FILTER, TABLE_INTERFACE_INGRESS_FILTER_LOOKUP],
       ].each { |from_table, to_table|
-        flows << flow_create(:default,
-                             table: from_table,
+        flows << flow_create(table: from_table,
                              goto_table: to_table,
                              priority: 0)
       }
@@ -137,8 +135,7 @@ module Vnet::Openflow
           :tunnel_id_mask => TUNNEL_FLAG_MASK
         }],
       ].each { |from_table, to_table, priority, flag, match|
-        flows << flow_create(:default, {
-                               table: from_table,
+        flows << flow_create({ table: from_table,
                                goto_table: to_table,
                                priority: priority,
                                match: match,
@@ -146,8 +143,7 @@ module Vnet::Openflow
                              })
       }
 
-      flows << flow_create(:default,
-                           table: TABLE_CLASSIFIER,
+      flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_CONTROLLER_PORT,
                            priority: 2,
 
@@ -162,8 +158,7 @@ module Vnet::Openflow
       #
       [#[TABLE_ROUTER_CLASSIFIER, COOKIE_TYPE_ROUTE_LINK]
       ].each { |table, cookie_type|
-        flows << flow_create(:default,
-                             table: table,
+        flows << flow_create(table: table,
                              priority: 1,
                              
                              actions: {

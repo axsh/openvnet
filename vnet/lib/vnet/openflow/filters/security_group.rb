@@ -174,14 +174,12 @@ module Vnet::Openflow::Filters
     def flows_for_isolation(interface_id = nil)
       interface_ids(interface_id).map { |interface_id|
         @isolation_ips.map { |ip|
-          flow_create(:default,
-            table: TABLE_INTERFACE_INGRESS_FILTER,
-            priority: ISOLATION_PRIORITY,
-            match_interface: interface_id,
-            cookie: cookie(COOKIE_TYPE_ISO, interface_id),
-            match: match_ipv4_subnet_src(ip, 32),
-            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-          )
+          flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+                      goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                      priority: ISOLATION_PRIORITY,
+                      match_interface: interface_id,
+                      cookie: cookie(COOKIE_TYPE_ISO, interface_id),
+                      match: match_ipv4_subnet_src(ip, 32))
         }
       }.flatten
     end
@@ -200,14 +198,12 @@ module Vnet::Openflow::Filters
     end
 
     def build_rule_flow(protocol, port, ipv4, interface_id, cookie_type = COOKIE_TYPE_RULE)
-      flow_create(:default,
-        table: TABLE_INTERFACE_INGRESS_FILTER,
-        priority: RULE_PRIORITY,
-        match_interface: interface_id,
-        cookie: cookie(cookie_type, interface_id),
-        match: rule_to_match(protocol, port.to_i, ipv4),
-        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-      )
+      flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+                  goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                  priority: RULE_PRIORITY,
+                  match_interface: interface_id,
+                  cookie: cookie(cookie_type, interface_id),
+                  match: rule_to_match(protocol, port.to_i, ipv4))
     end
 
     def interface_ids(interface_id)

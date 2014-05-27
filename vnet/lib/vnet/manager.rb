@@ -9,6 +9,7 @@ module Vnet
     include Celluloid
     include Celluloid::Logger
     include Vnet::Constants::Openflow
+    include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
 
     def initialize(info, options = {})
@@ -38,6 +39,20 @@ module Vnet
       item_hash
     end
 
+    def wait_for_loaded(params, max_wait = 10.0)
+      item = internal_detect(params)
+      return item_to_hash(item) if item
+
+      match_proc = match_item_proc(params)
+
+      item = create_event_task(:loaded, max_wait) { |item_id|
+        item = (item_id && @items[item_id]) || next
+        match_proc.call(item_id, item) ? item : nil
+      }
+
+      item_to_hash(item)
+    end
+    
     #
     # Enumerator methods:
     #
@@ -218,13 +233,16 @@ module Vnet
 
     def load_item(params)
       item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
+      item_id = item_map.id || return
+      item = @items[item_id] || return
 
       debug log_format("installing " + item.pretty_id, item.pretty_properties)
 
       item_pre_install(item, item_map)
       item.try_install
       item_post_install(item, item_map)
+
+      resume_event_tasks(:loaded, item_id)
     end
 
     def item_pre_install(item, item_map)

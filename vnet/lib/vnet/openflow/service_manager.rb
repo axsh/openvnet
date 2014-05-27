@@ -96,9 +96,7 @@ module Vnet::Openflow
           return
         end
 
-      item_class.new(dp_info: @dp_info,
-                     manager: self,
-                     map: item_map)
+      item_class.new(dp_info: @dp_info, map: item_map)
     end
 
     #

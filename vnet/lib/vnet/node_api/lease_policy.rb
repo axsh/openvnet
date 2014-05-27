@@ -8,36 +8,64 @@ module Vnet::NodeApi
       include Vnet::Constants::LeasePolicy
 
       def allocate_ip(options)
-        lease_policy = model_class(:lease_policy)[options[:lease_policy_id]]
-        if lease_policy.timing == "immediate"
-          base_networks = lease_policy.lease_policy_base_networks
-          raise "No network associated with lease policy" if base_networks.empty?
-          
-          ip_r = base_networks.first.ip_range_group
-          net = base_networks.first.network
+        lease_policy = model_class(:lease_policy)[options[:lease_policy_uuid]]
 
-          new_ip = schedule(net,ip_r)
-          # TODO: race condition between here and the allocation?
-          interface = model_class(:interface)[options[:interface_id]]
-          if (ml_array = interface.mac_leases).empty?
+        interface = nil
+        if options[:interface_uuid]
+          interface = model_class(:interface)[options[:interface_uuid]]
+          if interface.mac_leases.empty?
             raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
           end
 
-          transaction do
+          unless lease_policy.timing == "immediate"
+            raise "Cannot allocate ip to interface(#{options[:interface_uuid]}) because the timing of lease_policy(#{lease_policy.canonical_uuid}) is not 'immediate'"
+          end
+        end
+
+        base_networks = lease_policy.lease_policy_base_networks
+        raise "No network associated with lease policy" if base_networks.empty?
+
+        ip_r = base_networks.first.ip_range_group
+        net = base_networks.first.network
+
+        new_ip = schedule(net,ip_r)
+
+        options_for_ip_lease = {
+          network_id: net.id,
+          ipv4_address: new_ip,
+          lease_time: lease_policy.lease_time,
+          grace_time: lease_policy.grace_time
+        }
+        options_for_ip_lease[:uuid] = options[:ip_lease_uuid] if options[:ip_lease_uuid]
+
+        ip_lease = nil
+
+        transaction do
+          if interface
             model_class(:lease_policy_base_interface).create(
               :lease_policy_id => lease_policy.id,
-              :interface_id => interface.id
+              :interface_id => interface.id,
+              :label => options[:label]
             )
 
-            ip_lease = IpLease.create(
-              mac_lease_id: ml_array.first.id,
-              network_id: net.id,
-              ipv4_address: new_ip,
-              lease_time: lease_policy.lease_time,
-              grace_time: lease_policy.grace_time
+            options_for_ip_lease[:mac_lease_id] = interface.mac_leases.first.id
+          end
+
+          ip_lease = IpLease.create(options_for_ip_lease)
+
+          lease_policy.lease_policy_ip_lease_containers.each do |lease_policy_ip_lease_container|
+            if options[:label]
+              next unless lease_policy_ip_lease_container.label == options[:label]
+            end
+
+            model_class(:ip_lease_container_ip_lease).create(
+              ip_lease_container_id: lease_policy_ip_lease_container.ip_lease_container_id,
+              ip_lease_id: ip_lease.id
             )
           end
         end
+
+        ip_lease
       end
 
       def schedule(network, ip_range_group)

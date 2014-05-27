@@ -27,8 +27,7 @@ module Vnet::Openflow::Routers
     private
 
     def flows_for_dynamic_load(flows)
-      flows << flow_create(:default,
-                           table: TABLE_ROUTER_CLASSIFIER,
+      flows << flow_create(table: TABLE_ROUTER_CLASSIFIER,
                            goto_table: TABLE_ROUTER_EGRESS_LOOKUP,
                            priority: 30,
 
@@ -37,8 +36,7 @@ module Vnet::Openflow::Routers
     end
 
     def flows_for_route_link(flows)
-      flows << flow_create(:default,
-                           table: TABLE_CONTROLLER_PORT,
+      flows << flow_create(table: TABLE_CONTROLLER_PORT,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 30,
 
@@ -47,8 +45,7 @@ module Vnet::Openflow::Routers
                            },
                            write_route_link: @id)
 
-      flows << flow_create(:default,
-                           table: TABLE_TUNNEL_NETWORK_IDS,
+      flows << flow_create(table: TABLE_TUNNEL_NETWORK_IDS,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 30,
 

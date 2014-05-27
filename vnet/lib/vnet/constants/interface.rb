@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Constants::Interface
-  MODE_VIF       = 'vif'
-  MODE_SIMULATED = 'simulated'
+  MODE_EDGE      = 'edge'
+  MODE_HOST      = 'host'
+  MODE_INTERNAL  = 'internal' 
   MODE_PATCH     = 'patch' 
   MODE_REMOTE    = 'remote'
-  MODE_HOST      = 'host'
-  MODE_EDGE      = 'edge'
+  MODE_SIMULATED = 'simulated'
+  MODE_VIF       = 'vif'
 
-  MODES = [MODE_VIF, MODE_SIMULATED, MODE_PATCH, MODE_REMOTE, MODE_HOST, MODE_EDGE]
+  MODES = [MODE_EDGE,
+           MODE_HOST,
+           MODE_INTERNAL,
+           MODE_PATCH,
+           MODE_REMOTE,
+           MODE_SIMULATED,
+           MODE_VIF,
+          ]
 end

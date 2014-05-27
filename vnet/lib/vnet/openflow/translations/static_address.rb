@@ -153,8 +153,7 @@ module Vnet::Openflow::Translations
       [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS_LOOKUP],
        [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE]
       ].each { |table, goto_table|
-        flows << flow_create(:default,
-                             table: table,
+        flows << flow_create(table: table,
                              goto_table: goto_table,
                              priority: 10,
 
@@ -180,7 +179,7 @@ module Vnet::Openflow::Translations
           flow_options[:goto_table] = TABLE_ROUTER_INGRESS_LOOKUP
         end
 
-        flows << flow_create(:default, flow_options)
+        flows << flow_create(flow_options)
       }
     end
 
@@ -208,7 +207,7 @@ module Vnet::Openflow::Translations
           flow_options[:match_interface] = @interface_id
         end
 
-        flows << flow_create(:default, flow_options)
+        flows << flow_create(flow_options)
       }
     end
 

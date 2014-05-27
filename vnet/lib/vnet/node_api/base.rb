@@ -3,6 +3,10 @@ module Vnet::NodeApi
   class Base
     extend Vnet::Event::Dispatchable
 
+    def self.logger
+      Vnet::NodeApi::logger
+    end
+
     class << self
       include Vnet::Event
 
