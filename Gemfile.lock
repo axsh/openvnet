@@ -107,7 +107,7 @@ GEM
       mixlib-shellout (~> 1.2)
       systemu (~> 2.5.2)
       yajl-ruby
-    peach (0.5.1)
+    parallel (1.0.0)
     pry (0.9.12.6)
       coderay (~> 1.0)
       method_source (~> 0.8)
@@ -174,7 +174,7 @@ DEPENDENCIES
   net-scp
   net-ssh
   net-ssh-multi
-  peach
+  parallel
   pry-nav
   rake
   rb-readline

@@ -12,7 +12,7 @@ module Vnspec
 
       def start(node_name = nil)
         if node_name
-          config[:nodes][node_name.to_sym].peach do |ip|
+          Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
             ssh(ip, "initctl start vnet-#{node_name.to_s}", use_sudo: true)
             send(:wait_for, node_name)
           end
@@ -25,7 +25,7 @@ module Vnspec
 
       def stop(node_name = nil)
         if node_name
-          config[:nodes][node_name.to_sym].peach do |ip|
+          Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
             ssh(ip, "initctl stop vnet-#{node_name.to_s}", use_sudo: true)
           end
         else

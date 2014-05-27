@@ -45,13 +45,13 @@ module Vnspec
         all.each{|vm| yield vm}
       end
 
-      def peach
-        all.peach{|vm| yield vm}
+      def parallel
+        Parallel.each(all) { |vm| yield vm }
       end
 
       def ready?(name = :all, timeout = 600)
         success = true
-        peach do |vm|
+        parallel do |vm|
           success = false unless vm.ready?(timeout)
         end
         if success
@@ -63,7 +63,7 @@ module Vnspec
       end
 
       def install_package(name)
-        all.peach { |vm| vm.install_package(name) }
+        parallel { |vm| vm.install_package(name) }
       end
 
       %w(start stop start_network stop_network).each do |command|
@@ -91,7 +91,7 @@ module Vnspec
 
       private
       def _exec(command)
-        all.peach(&command.to_sym)
+        parallel(&command.to_sym)
       end
     end
 
@@ -230,6 +230,7 @@ module Vnspec
       def ssh_on_guest(command, options = {})
         use_sudo = options.delete(:use_sudo)
         options = ssh_options_for_quiet_mode(options) if config[:ssh_quiet_mode]
+        options.merge("ConnectTimeout" => 2)
         option_string = to_ssh_option_string(options)
         command = "sudo #{command}" if config[:vm_ssh_user] != "root" && use_sudo
         command = Shellwords.shellescape(command)

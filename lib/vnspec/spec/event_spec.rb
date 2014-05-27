@@ -123,7 +123,7 @@ describe "event" do
 
   describe "datapath" do
     before(:each) do
-      vms.peach { |vm| vm.clear_arp_cache }
+      vms.parallel { |vm| vm.clear_arp_cache }
     end
 
     describe "remove" do
