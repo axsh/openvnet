@@ -2,6 +2,23 @@
 
 Sequel.migration do
   up do
+    # Interfaces can be active on multiple datapaths if a label is
+    # set.
+    create_table(:active_interfaces) do
+      primary_key :id
+
+      Integer :interface_id, :index => true, :null => false
+      Integer :datapath_id, :index => true, :null => false
+      Integer :port_name, :index => true
+
+      String :label
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+
+      unique [:interface_id, :label]
+    end
+
     create_table(:datapaths) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
