@@ -13,7 +13,7 @@ module Vnspec
 
     DEFAULT_OPTIONS = {
       user: "root",
-      debug: true,
+      debug: false,
       exit_on_error: true,
       use_sudo: false,
     }
