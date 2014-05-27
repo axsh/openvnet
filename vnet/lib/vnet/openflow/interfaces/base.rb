@@ -75,6 +75,10 @@ module Vnet::Openflow::Interfaces
       end
     end
 
+    def pretty_properties
+      "mode:#{@mode} port_name:#{@port_name}"
+    end
+
     def cookie(type = 0, value = 0)
       unless type & 0xf == type
         raise "Invalid cookie optional type: %#x" % type
@@ -176,8 +180,9 @@ module Vnet::Openflow::Interfaces
     end
 
     def update_port_number(new_number)
-      debug log_format("update_port_number", new_number)
       return if @port_number == new_number
+
+      debug log_format("update port number to #{new_number}")
 
       @port_number = new_number
 
@@ -188,20 +193,16 @@ module Vnet::Openflow::Interfaces
       end
     end
 
-    def update_active_datapath(params)
-      if @owner_datapath_ids.nil?
-        return if @mode != :vif
-      end
-
+    def update_active_datapath(datapath_id)
       # Currently only supports one active datapath id.
-      @active_datapath_ids = [params[:datapath_id]]
-
-      MW::Interface.batch.update_active_datapath(@id, params[:datapath_id]).commit
+      @active_datapath_ids = [datapath_id]
 
       addresses = ipv4_addresses
       addresses = addresses && addresses.map { |i|
         { network_id: i[:network_id], ipv4_address: i[:ipv4_address].to_i }
       }
+
+      MW::Interface.batch.update_active_datapath(@id, datapath_id).commit
 
       dispatch_event(INTERFACE_UPDATED,
                      event: :remote_datapath_id,
@@ -254,7 +255,7 @@ module Vnet::Openflow::Interfaces
                                              ipv4_address: ipv4_address)
       return nil if ipv4_info.nil?
 
-      [mac_info, ipv4_info, @dp_info.network_manager.item(id: ipv4_info[:network_id])]
+      [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
     end
 
     def del_flows_for_active_datapath(ipv4_addresses)

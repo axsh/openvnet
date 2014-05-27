@@ -2,19 +2,16 @@
 
 module Vnet::Openflow
 
-  class RouteManager < Vnet::Manager
-
-    def initialize(params)
-      super
-
-      @active_networks = {}
-      @active_route_links = {}
-    end
+  class RouteManager < Vnet::Openflow::Manager
+    include ActiveNetworks
+    include ActiveRouteLinks
 
     #
     # Events:
     #
-    subscribe_event ROUTE_INITIALIZED, :install_item
+
+    subscribe_event ROUTE_INITIALIZED, :load_item
+    subscribe_event ROUTE_UNLOAD_ITEM, :unload_item
     subscribe_event ROUTE_CREATED_ITEM, :created_item
     subscribe_event ROUTE_DELETED_ITEM, :unload_item
 
@@ -34,31 +31,44 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def mw_class
+      MW::Route
+    end
+
     def initialized_item_event
       ROUTE_INITIALIZED
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:network_id] && params[:network_id] != item.network_id
-      return false if params[:not_network_id] && params[:not_network_id] == item.network_id
-      return false if params[:egress] && params[:egress] != item.egress
-      return false if params[:ingress] && params[:ingress] != item.ingress
-      true
+    def item_unload_event
+      ROUTE_UNLOAD_ITEM
     end
 
-    def select_filter_from_params(params)
-      return if params.has_key?(:uuid) && params[:uuid].nil?
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
 
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
+      case filter
+      when :id, :uuid, :interface_id, :network_id, :route_link_id, :egress, :ingress
+        proc { |id, item| value == item.send(filter) }
+      when :not_network_id
+        proc { |id, item| value != item.network_id }
+      else
+        raise NotImplementedError, filter
+      end
+    end
 
-      create_batch(MW::Route.batch, params[:uuid], filters)
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
+      filter << {network_id: params[:network_id]} if params.has_key? :network_id
+      filter << {route_link_id: params[:route_link_id]} if params.has_key? :route_link_id
+      filter
     end
 
     def item_initialize(item_map, params)
-      item = Routes::Base.new(dp_info: @dp_info, map: item_map)
+      item_class = Routes::Base
+
+      item = item_class.new(dp_info: @dp_info, map: item_map)
 
       item.active_network = @active_networks.has_key? item.network_id
       item.active_route_link = @active_route_links.has_key? item.route_link_id
@@ -74,11 +84,7 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
-    # ROUTE_INITIALIZED on queue 'item.id'
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
+    def item_pre_install(item, item_map)
       case
       when !item.active_network && !item.active_route_link
         # The state changed since item_initialize so we skip install,
@@ -89,11 +95,9 @@ module Vnet::Openflow
         # TODO: Use event...
         @dp_info.router_manager.async.retrieve(id: item.route_link_id)
       end
+    end
 
-      debug log_format("install #{item.uuid}/#{item.id}")
-
-      item.try_install
-
+    def item_post_install(item, item_map)
       # TODO: Refactor...
       @dp_info.interface_manager.async.retrieve(id: item.interface_id)
 
@@ -108,19 +112,11 @@ module Vnet::Openflow
       return if @items[params[:id]]
       return unless @active_route_links[params[:route_link_id]]
 
-      internal_new_item(MW::Route.new(params), {})
-    end
-
-    # unload item on queue 'item.id'
-    def unload_item(params)
-      item = @items.delete(params[:id]) || return
-      item.try_uninstall
-
-      debug log_format("unloaded route #{item.uuid}/#{item.id}")
+      internal_new_item(mw_class.new(params), {})
     end
 
     #
-    # Network events:
+    # Overload helper methods:
     #
 
     # We should only active networks on this datapath that have
@@ -128,63 +124,30 @@ module Vnet::Openflow
     #
     # Note: Replace by active segment once implemented.
 
-    # ROUTE_ACTIVATE_NETWORK on queue ':network'
-    def activate_network(params)
-      network_id = params[:network_id] || return
-      return if @active_networks.has_key? network_id
+    def activate_network_value(network_id, params)
+      params[:route_id_list] = {}
+    end
 
-      routes = []
+    def activate_network_update_item_proc(network_id, params)
+      route_id_list = params[:route_id_list] || return
 
-      @items.each { |id, item|
-        next unless item.network_id == network_id
-
+      Proc.new { |id, item|
         item.active_network = true
-        routes << item.id
+        route_id_list[item.id] = true
       }
-      @active_networks[network_id] = routes
-
-      item_maps = MW::Route.batch.where(network_id: network_id).all.commit
-      item_maps.each { |item_map| internal_new_item(item_map, {}) }
     end
 
-    # ROUTE_DEACTIVATE_NETWORK on queue ':network'
-    def deactivate_network(params)
-      # return if params[:network_id].nil?
-      # routes = @active_networks.delete(params[:network_id]) || return
-
+    def activate_route_link_value(route_link_id, params)
+      params[:route_id_list] = {}
     end
 
-    #
-    # Route Link events:
-    #
+    def activate_route_link_update_item_proc(route_link_id, params)
+      route_id_list = params[:route_id_list] || return
 
-    # Activating route links causes associated routes to be loaded,
-    # however these are marked as having inactive networks.
-
-    # ROUTE_ACTIVATE_ROUTE_LINK on queue ':route_link'
-    def activate_route_link(params)
-      route_link_id = params[:route_link_id] || return
-      return if @active_route_links.has_key? route_link_id
-
-      routes = []
-
-      @items.each { |id, item|
-        next unless item.route_link_id == route_link_id
-
+      Proc.new { |id, item|
         item.active_route_link = true
-        routes << item.id
+        route_id_list[item.id] = true
       }
-      @active_route_links[route_link_id] = routes
-
-      item_maps = MW::Route.batch.where(route_link_id: route_link_id).all.commit
-      item_maps.each { |item_map| internal_new_item(item_map, {}) }
-    end
-
-    # ROUTE_DEACTIVATE_ROUTE_LINK on queue ':route_link'
-    def deactivate_route_link(params)
-      # return if params[:route_link_id].nil?
-      # routes = @active_route_links.delete(params[:route_link_id]) || return
-
     end
 
   end

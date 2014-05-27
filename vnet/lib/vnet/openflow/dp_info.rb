@@ -10,19 +10,21 @@ module Vnet::Openflow
   # Datapath's thread for every time we use a manager.
   class DpInfo
 
+    # Port manager is always last in order to ensure that all other
+    # managers have valid datapath_info before ports are initialized.
     MANAGER_NAMES = %w(
       connection
       datapath
       interface
       lease_policy
       network
-      port
       route
       router
       filter
       service
       tunnel
       translation
+      port
     ).freeze
 
     MANAGER_NAMES.each do |name|

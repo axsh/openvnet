@@ -4,11 +4,6 @@ module Vnet::Openflow::Datapaths
 
   class Host < Base
 
-    def initialize(params)
-      params[:dp_info].datapath.initialize_datapath_info(params[:map])
-      super
-    end
-
     def host?
       true
     end
@@ -20,6 +15,13 @@ module Vnet::Openflow::Datapaths
     #
     # Events:
     #
+
+    def install
+      @dp_info.datapath.initialize_datapath_info(id: @id,
+                                                 uuid: @uuid,
+                                                 display_name: @display_name,
+                                                 node_id: @node_id)
+    end
 
     def uninstall
       super

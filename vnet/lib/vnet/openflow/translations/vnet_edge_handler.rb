@@ -27,9 +27,7 @@ module Vnet::Openflow::Translations
 
       return if not message.packet_info.arp
 
-      port = @dp_info.port_manager.item(port_number: message.in_port,
-                                        reinitialize: false,
-                                        dynamic_load: false)
+      port = @dp_info.port_manager.detect(port_number: message.in_port)
 
       case port[:type]
       when :host
@@ -53,10 +51,17 @@ module Vnet::Openflow::Translations
                              :cookie => self.cookie
                            })
 
-      @dp_info.datapath.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     private
+
+    def network_id_by_mac(mac_address)
+      network_map = Vnet::ModelWrappers::Network.batch.find_by_mac_address(mac_address).commit
+      debug log_format("network_id_by_mac : mac_address => #{Trema::Mac.new(mac_address)}")
+      debug log_format("network_id_by_mac : network_map => #{network_map.inspect}")
+      return network_map && network_map.id
+    end
 
     def handle_packet_from_host_port(message)
       info log_format("handle_packet_from_host_port")
@@ -66,7 +71,7 @@ module Vnet::Openflow::Translations
       src_mac = message.eth_src
       dst_mac = message.eth_dst
 
-      src_network_id = @dp_info.network_manager.network_id_by_mac(src_mac.value)
+      src_network_id = network_id_by_mac(src_mac.value)
 
       if src_network_id.nil?
         error log_format("no corresponded translation entry has been found", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
@@ -82,7 +87,7 @@ module Vnet::Openflow::Translations
         info log_format("vlan_id found", vlan_vids)
       end
 
-      edge_port = @dp_info.port_manager.item(port_type: :generic, reinitialize: false, dynamic_load: false)
+      edge_port = @dp_info.port_manager.detect(port_type: :generic)
 
       if edge_port.nil?
         error log_format("Edge ports have not been found.", "in_port: #{in_port}, src: #{src_mac}, dst: #{dst_mac}")
@@ -197,7 +202,7 @@ module Vnet::Openflow::Translations
 
       @dp_info.add_flows(flows)
 
-      network = @dp_info.network_manager.item(id: network_id)
+      network = @dp_info.network_manager.retrieve(id: network_id)
 
       @dp_info.send_packet_out(message, OFPP_TABLE)
     end

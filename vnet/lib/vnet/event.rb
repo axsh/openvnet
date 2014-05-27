@@ -7,6 +7,11 @@ module Vnet
     # First event queued after the non-yielding and non-blocking
     # initialization of an item query from the database.
     #
+    # *_UNLOAD_ITEM
+    #
+    # When the node wants to unload it's own loaded items the
+    # 'unload_item' event should be used instead of 'deleted_item'.
+    #
     # *_CREATED_ITEM
     #
     # The item was added to the database and basic information of
@@ -19,30 +24,12 @@ module Vnet
     # from all nodes.
 
     #
-    # Interface events:
-    #
-
-    INTERFACE_INITIALIZED = "interface_initialized"
-    INTERFACE_CREATED_ITEM = "interface_created_item"
-    INTERFACE_DELETED_ITEM = "interface_deleted_item"
-
-    INTERFACE_UPDATED = "interface_updated"
-    INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
-    INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
-    INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS = "interface_remove_all_active_datapaths"
-
-    # MAC and IPv4 addresses:
-    INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
-    INTERFACE_RELEASED_MAC_ADDRESS = "interface_released_mac_address"
-    INTERFACE_LEASED_IPV4_ADDRESS = "interface_leased_ipv4_address"
-    INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
-
-    #
     # Datapath events:
     #
-    ADDED_DATAPATH = 'added_datapath'
-    REMOVED_DATAPATH = 'removed_datapath'
-    INITIALIZED_DATAPATH = 'initialized_datapath'
+    DATAPATH_INITIALIZED = 'datapath_initialized'
+    DATAPATH_UNLOAD_ITEM = 'datapath_unload_item'
+    DATAPATH_CREATED_ITEM = 'datapath_created_item'
+    DATAPATH_DELETED_ITEM = 'datapath_deleted_item'
 
     ACTIVATE_NETWORK_ON_HOST = 'activate_network_on_host'
     DEACTIVATE_NETWORK_ON_HOST = 'deactivate_network_on_host'
@@ -61,12 +48,37 @@ module Vnet
     DEACTIVATE_DATAPATH_ROUTE_LINK = 'deactivate_datapath_route_link'
 
     #
+    # Interface events:
+    #
+
+    INTERFACE_INITIALIZED = "interface_initialized"
+    INTERFACE_UNLOAD_ITEM = "interface_unload_item"
+    INTERFACE_CREATED_ITEM = "interface_created_item"
+    INTERFACE_DELETED_ITEM = "interface_deleted_item"
+
+    INTERFACE_ACTIVATE_PORT = "interface_activate_port"
+    INTERFACE_DEACTIVATE_PORT = "interface_deactivate_port"
+
+    INTERFACE_UPDATED = "interface_updated"
+    INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
+    INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
+    INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS = "interface_remove_all_active_datapaths"
+
+    # MAC and IPv4 addresses:
+    INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
+    INTERFACE_RELEASED_MAC_ADDRESS = "interface_released_mac_address"
+    INTERFACE_LEASED_IPV4_ADDRESS = "interface_leased_ipv4_address"
+    INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
+
+    #
     # Network event:
     #
+
     NETWORK_INITIALIZED = "network_initialized"
+    NETWORK_UNLOAD_ITEM = "network_unload_item"
     NETWORK_DELETED_ITEM = "network_deleted_item"
 
-    NETWORK_UPDATE_NETWORKS = "network_update_networks"
+    NETWORK_UPDATE_ITEM_STATES = "network_update_item_states"
 
     #
     # lease policy event
@@ -76,9 +88,20 @@ module Vnet
     REMOVED_LEASE_POLICY = "removed_lease_policy"
 
     #
+    # Port events:
+    #
+
+    PORT_INITIALIZED = "port_initialized"
+    PORT_FINALIZED = "port_finalized"
+
+    PORT_ATTACH_INTERFACE = "port_attach_interface"
+    PORT_DETACH_INTERFACE = "port_detach_interface"
+
+    #
     # Route events:
     #
     ROUTE_INITIALIZED = "route_initialized"
+    ROUTE_UNLOAD_ITEM = "route_unload_item"
     ROUTE_CREATED_ITEM = "route_created_item"
     ROUTE_DELETED_ITEM = "route_deleted_item"
 
@@ -92,6 +115,7 @@ module Vnet
     # router event
     #
     ROUTER_INITIALIZED = "router_initialized"
+    ROUTER_UNLOAD_ITEM = "router_unload_item"
     ROUTER_CREATED_ITEM = "router_created_item"
     ROUTER_DELETED_ITEM = "router_deleted_item"
 
@@ -126,7 +150,7 @@ module Vnet
     REMOVED_TUNNEL = "removed_tunnel"
     INITIALIZED_TUNNEL = "initialized_tunnel"
 
-    TUNNEL_UPDATE_NETWORKS = "tunnel_update_networks"
+    TUNNEL_UPDATE_PROPERTY_STATES = "tunnel_update_property_states"
 
     ADDED_HOST_DATAPATH_NETWORK = "added_host_datapath_network"
     ADDED_REMOTE_DATAPATH_NETWORK = "added_remote_datapath_network"
@@ -136,12 +160,6 @@ module Vnet
     REMOVED_REMOTE_DATAPATH_NETWORK = "removed_remote_datapath_network"
     REMOVED_HOST_DATAPATH_ROUTE_LINK = "removed_host_datapath_route_link"
     REMOVED_REMOTE_DATAPATH_ROUTE_LINK = "removed_remote_datapath_route_link"
-
-    #
-    # port event
-    #
-    INITIALIZED_PORT = "initialized_port"
-    FINALIZED_PORT = "finalized_port"
 
     #
     # filter event
@@ -165,5 +183,14 @@ module Vnet
     #
     ADDED_DNS_RECORD = "added_dns_record"
     REMOVED_DNS_RECORD = "removed_dns_record"
+
+    #
+    # Ip retention events:
+    #
+    IP_RETENTION_INITIALIZED = 'ip_retention_initialized'
+    IP_RETENTION_UNLOAD_ITEM = 'ip_retention_unload_item'
+    IP_RETENTION_CREATED_ITEM = 'ip_retention_created_item'
+    IP_RETENTION_DELETED_ITEM = 'ip_retention_deleted_item'
+    IP_RETENTION_EXPIRED_ITEM = 'ip_retention_expired_item'
   end
 end

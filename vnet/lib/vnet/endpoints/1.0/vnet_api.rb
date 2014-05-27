@@ -2,15 +2,21 @@
 
 require "sinatra"
 require "sinatra/vnet_api_setup"
+require "sinatra/browse"
 
 module Vnet::Endpoints::V10
   class VnetAPI < Sinatra::Base
     include Vnet::Endpoints::V10::Helpers
+    include Vnet::Endpoints::V10::Helpers::UUID
+    include Vnet::Endpoints::V10::Helpers::Parsers
+
     register Sinatra::VnetAPISetup
+    register Sinatra::Browse
 
     M = Vnet::ModelWrappers
     E = Vnet::Endpoints::Errors
     R = Vnet::Endpoints::V10::Responses
+    C = Vnet::Constants
 
     DEFAULT_PAGINATION_LIMIT = 30
 
@@ -18,87 +24,54 @@ module Vnet::Endpoints::V10
       Vnet::Configurations::Webapi.conf
     end
 
-    def pop_uuid(model, params, key = "uuid", fill = {})
-      uuid = params.delete(key)
-      model.batch[uuid].commit(:fill => fill) || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
+    # Remove the splat and captures parameters so we can pass @params directly
+    # to the model classes
+    def remove_system_parameters
+      @params.delete("splat")
+      @params.delete("captures")
     end
 
-    def check_uuid_syntax(model, uuid)
-      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, "#{model.name.split("::").last}#uuid: #{uuid}")
-    end
-
-    def check_and_trim_uuid(model, params)
-      check_uuid_syntax(model, params["uuid"])
-      raise E::DuplicateUUID, params["uuid"] unless model[params["uuid"]].nil?
-
-      params["uuid"] = model.trim_uuid(params["uuid"])
-    end
-
-    def check_syntax_and_pop_uuid(model, params, key = "uuid", fill = {})
-      check_uuid_syntax(model, params[key])
-      pop_uuid(model, params, key, fill)
-    end
-
-    def check_syntax_and_get_id(model, params, uuid_key = "uuid", id_key = "id", fill = {})
-      check_uuid_syntax(model, params[uuid_key])
-      model = pop_uuid(model, params, uuid_key, fill)
-      params[id_key] = model.id
-
-      model
-    end
-
-    def parse_params(params, mask)
-      mask.each_with_object(ActiveSupport::HashWithIndifferentAccess.new) do |key, h|
-        h[key] = params[key] if params.key?(key)
+    def vnet_default_on_error(error_hash)
+      if error_hash[:reason] == :required
+        raise E::MissingArgument, error_hash[:parameter]
+      else
+        raise E::ArgumentError, {
+          error: "parameter validation failed",
+          parameter: error_hash[:parameter],
+          value: error_hash[:value],
+          reason: error_hash[:reason]
+        }
       end
     end
 
-    def check_required_params(params, mask)
-      mask.each do |key|
-        raise E::MissingArgument, key if params[key].nil? || params[key].empty?
-      end
-    end
+    default_on_error { |error_hash| vnet_default_on_error(error_hash) }
 
-    def parse_ipv4(param)
-      return nil if param.nil? || param.empty?
+    def self.param_uuid(model, name = :uuid, options = {})
+      #TODO: Allow access to default_on_error in here
+      error_handler = proc { |result|
+        case result[:reason]
+        when :format
+          raise(E::InvalidUUID, "#{model.name.split("::").last}#uuid: #{result[:value]}")
+        else
+          vnet_default_on_error(result)
+        end
+      }
 
-      begin
-        address = IPAddr.new(param)
-        raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
-        address.to_i
-      rescue ArgumentError
-        raise(E::ArgumentError, 'Could not parse IPv4 address.')
-      end
-    end
+      final_options = {
+        format: /^#{model.uuid_prefix}-[a-z0-9]{1,8}$/,
+        on_error: error_handler
+      }
 
-    def parse_mac(param)
-      return nil if param.nil? || param.empty?
+      final_options.merge!(options)
 
-      begin
-        Trema::Mac.new(param).value
-      rescue ArgumentError
-        raise(E::ArgumentError, 'Could not parse MAC address.')
-      end
-    end
-
-    def parse_port(param)
-      return nil if param.nil? || param.empty?
-
-      begin
-        port_number = param.to_i
-        return port_number if port_number > 0 && port_number < (1 << 16)
-
-        raise(E::ArgumentError, 'Invalid port number.')
-      rescue ArgumentError
-        raise(E::ArgumentError, 'Could not parse port number.')
-      end
+      param name, :String, final_options
     end
 
     def delete_by_uuid(class_name)
       model_wrapper = M.const_get(class_name)
       uuid = @params[:uuid]
       # TODO don't need to find model here
-      check_syntax_and_pop_uuid(model_wrapper, @params)
+      check_syntax_and_pop_uuid(model_wrapper)
       model_wrapper.destroy(uuid)
       respond_with([uuid])
     end
@@ -122,31 +95,30 @@ module Vnet::Endpoints::V10
     def get_by_uuid(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
-      object = check_syntax_and_pop_uuid(model_wrapper, @params, "uuid", fill)
+      object = check_syntax_and_pop_uuid(model_wrapper, "uuid", fill)
       respond_with(response.generate(object))
     end
 
-    def update_by_uuid(class_name, accepted_params, fill = {})
+    def update_by_uuid(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
 
-      params = parse_params(@params, accepted_params + ["uuid"])
-      # TODO don't need to find model here
-      check_syntax_and_pop_uuid(model_wrapper, params)
+      model = check_syntax_and_pop_uuid(model_wrapper)
+
       # This yield is for extra argument validation
       yield(params) if block_given?
 
-      updated_object = model_wrapper.batch.update(@params["uuid"], params).commit(:fill => fill)
+      remove_system_parameters
+
+      updated_object = model_wrapper.batch.update(model.uuid, params).commit(:fill => fill)
       respond_with(response.generate(updated_object))
     end
 
-    def post_new(class_name, accepted_params, required_params, fill = {})
+    def post_new(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
 
-      params = parse_params(@params, accepted_params)
-      check_required_params(params, required_params)
-      check_and_trim_uuid(model_wrapper, params) if params["uuid"]
+      check_and_trim_uuid(model_wrapper) if params["uuid"]
 
       # This yield is for extra argument validation
       yield(params) if block_given?
@@ -157,7 +129,7 @@ module Vnet::Endpoints::V10
     def show_relations(class_name, response_method)
       limit = @params[:limit] || config.pagination_limit
       offset = @params[:offset] || 0
-      object = check_syntax_and_pop_uuid(M.const_get(class_name), @params)
+      object = check_syntax_and_pop_uuid(M.const_get(class_name))
       total_count = object.batch.send(response_method).count.commit
       items = object.batch.send("#{response_method}_dataset").offset(offset).limit(limit).all.commit
       pagination = {
@@ -176,7 +148,8 @@ module Vnet::Endpoints::V10
     load_namespace('dns_services')
     load_namespace('interfaces')
     load_namespace('ip_leases')
-    load_namespace('ip_ranges')
+    load_namespace('ip_range_groups')
+    load_namespace('ip_lease_containers')
     load_namespace('lease_policies')
     load_namespace('mac_leases')
     load_namespace('networks')

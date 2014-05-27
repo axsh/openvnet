@@ -3,24 +3,30 @@ module Vnet::NodeApi
   class Base
     extend Vnet::Event::Dispatchable
 
+    def self.logger
+      Vnet::NodeApi::logger
+    end
+
     class << self
       include Vnet::Event
 
       def create(options)
+        model = nil
         transaction do
-          model_class.create(options)
+          model = model_class.create(options)
         end
+        model
       end
 
       def update(uuid, options)
-        transaction do
-          model_class[uuid].update(options)
+        model_class[uuid].tap do |model|
+          transaction { model.update(options) }
         end
       end
 
       def destroy(uuid)
-        transaction do
-          model_class[uuid].tap(&:destroy)
+        model_class[uuid].tap do |model|
+          transaction { model.destroy }
         end
       end
 

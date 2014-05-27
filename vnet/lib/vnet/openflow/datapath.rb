@@ -12,10 +12,10 @@ module Vnet::Openflow
     attr_reader :node_id
 
     def initialize(datapath_map)
-      @id = datapath_map.id
-      @uuid = datapath_map.uuid
-      @display_name = datapath_map.display_name
-      @node_id = datapath_map.node_id
+      @id = datapath_map[:id]
+      @uuid = datapath_map[:uuid]
+      @display_name = datapath_map[:display_name]
+      @node_id = datapath_map[:node_id]
     end
 
     def is_remote?(owner_datapath_id, active_datapath_id = nil)
@@ -33,13 +33,12 @@ module Vnet::Openflow
     include FlowHelpers
 
     attr_reader :dp_info
+    attr_reader :datapath_info
 
     attr_reader :controller
     attr_reader :dpid
     attr_reader :dpid_s
     attr_reader :ovs_ofctl
-
-    attr_reader :datapath_info
 
     attr_reader :switch
 
@@ -72,12 +71,11 @@ module Vnet::Openflow
     end
 
     def switch_ready
-      unless @dp_info.datapath_manager.item(dpid: @dp_info.dpid)
-        warn log_format('could not find dpid in database')
-        return
-      end
-
       @switch.switch_ready
+
+      unless @dp_info.datapath_manager.retrieve(dpid: @dp_info.dpid)
+        warn log_format('could not find dpid in database')
+      end
     end
 
     def reset
@@ -101,81 +99,19 @@ module Vnet::Openflow
     end
 
     #
-    # Flow modification methods:
-    #
-
-    # Use dp_info.
-    def add_flow(flow)
-      @controller.pass_task {
-        @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
-      }
-    end
-
-    def add_ovs_flow(flow_str)
-      @ovs_ofctl.add_ovs_flow(flow_str)
-    end
-
-    def add_ovs_10_flow(flow_str)
-      @ovs_ofctl.add_ovs_10_flow(flow_str)
-    end
-
-    # Use dp_info.
-    def del_cookie(cookie, cookie_mask = COOKIE_MASK)
-      options = {
-        :command => Controller::OFPFC_DELETE,
-        :table_id => Controller::OFPTT_ALL,
-        :out_port => Controller::OFPP_ANY,
-        :out_group => Controller::OFPG_ANY,
-        :cookie => cookie,
-        :cookie_mask => cookie_mask
-      }
-
-      @controller.pass_task {
-        @controller.public_send_flow_mod(@dp_info.dpid, options)
-      }
-    end
-
-    # Use dp_info.
-    def add_flows(flows)
-      return if flows.blank?
-      @controller.pass_task {
-        flows.each { |flow|
-          @controller.send_flow_mod_add(@dp_info.dpid, flow.to_trema_hash)
-        }
-      }
-    end
-
-    # Use dp_info.
-    def send_message(message)
-      @controller.pass_task {
-        @controller.public_send_message(@dp_info.dpid, message)
-      }
-    end
-
-    # Use dp_info.
-    def send_packet_out(message, port_no)
-      @controller.pass_task {
-        @controller.public_send_packet_out(@dp_info.dpid, message, port_no)
-      }
-    end
-
-    #
     # Port modification methods:
     #
 
-    # Obsolete, use DpInfo directly.
-    def add_tunnel(tunnel_name, remote_ip)
-      @ovs_ofctl.add_tunnel(tunnel_name, remote_ip)
-    end
-
-    def delete_tunnel(tunnel_name)
-      debug log_format('delete tunnel', "#{tunnel_name}")
-      @ovs_ofctl.delete_tunnel(tunnel_name)
-    end
-
     def initialize_datapath_info(datapath_map)
       @datapath_info = DatapathInfo.new(datapath_map)
-      @dp_info.managers.each { |manager| manager.set_datapath_info(@datapath_info) }
+
+      @dp_info.managers.each { |manager|
+        manager.set_datapath_info(@datapath_info)
+      }
+
+      # Until we have datapath_info loaded none of the ports can be
+      # initialized.
+      @dp_info.port_manager.initialize_ports
     end
 
     #
@@ -193,8 +129,7 @@ module Vnet::Openflow
         begin
           link(manager)
         rescue => e
-          error e
-          error "#{name}"
+          error "Fail to link with #{manager.class.name}: #{e}"
           raise e
         end
       end

@@ -44,7 +44,7 @@ RSpec::Matchers.define :fail do
     ).to_s
   end
 
-  failure_message_for_should do |response|
+  failure_message do |response|
     "We expected:\n" +
     print_expectation +
     "\n\n" +
@@ -52,7 +52,7 @@ RSpec::Matchers.define :fail do
     print_response(response)
   end
 
-  failure_message_for_should_not do |response|
+  failure_message_when_negated do |response|
     "We got exactly what we didn't expect.\n" + print_expectation +
     "\nComplete response:\n" + print_response(response)
   end

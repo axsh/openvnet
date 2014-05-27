@@ -4,10 +4,17 @@ module Vnet::Models
   class IpLease < Base
     taggable 'il'
 
-    many_to_one :network
-
     plugin :paranoia
-    plugin :ip_address
+    plugin :ip_address, dependency: :disabled
+
+    many_to_one :network
+    one_to_one :ip_retention
+
+    one_to_many :ip_lease_container_ip_leases
+    many_to_many :ip_lease_containers, join_table: :ip_lease_container_ip_leases
+
+    plugin :association_dependencies,
+      ip_lease_container_ip_leases: :destroy
 
     dataset_module do
       def all_interface_ids
@@ -37,10 +44,23 @@ module Vnet::Models
       self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count
     end
 
+    def lease_time_expired_at
+      ip_retention ? ip_retention.lease_time_expired_at : nil
+    end
+
     def to_hash
       super.merge({
-        ipv4_address: self.ipv4_address
+        ipv4_address: self.ipv4_address,
+        lease_time_expired_at: self.lease_time_expired_at,
       })
+    end
+
+    private
+
+    def after_destroy
+      unless self.ip_retention
+        self.ip_address.destroy
+      end
     end
   end
 end

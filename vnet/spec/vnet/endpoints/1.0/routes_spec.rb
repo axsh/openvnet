@@ -31,8 +31,8 @@ describe "/routes" do
       :ingress => true,
       :egress => false
     }
-    required_params = [:ipv4_network, :network_uuid, :route_link_uuid]
-    uuid_params = [:interface_uuid, :network_uuid, :route_link_uuid]
+    required_params = [:ipv4_network, :interface_uuid, :network_uuid, :route_link_uuid]
+    uuid_params = [:interface_uuid, :interface_uuid, :network_uuid, :route_link_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end

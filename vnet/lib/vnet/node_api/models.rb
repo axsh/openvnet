@@ -19,7 +19,7 @@ module Vnet::NodeApi
   class IpRange < Base
   end
 
-  class IpRangeRange < Base
+  class IpRangeGroup < Base
   end
 
   class LeasePolicyBaseInterface < Base

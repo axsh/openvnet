@@ -11,16 +11,9 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::Notifications
 
-    # MW_CLASS = MW::Foo
-
-    def initialize(dp_info)
-      @dp_info = dp_info
-
-      @datapath_info = nil
+    def initialize(info, options = {})
       @items = {}
       @messages = {}
-
-      @log_prefix = "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: "
     end
 
     def retrieve(params)
@@ -34,7 +27,6 @@ module Vnet
         raise e
       end
     end
-    alias_method :item, :retrieve
 
     # TODO: Deprecate:
     def unload(params)
@@ -56,9 +48,7 @@ module Vnet
 
     def select(params = {})
       begin
-        @items.select { |id, item|
-          match_item?(item, params)
-        }.map { |id, item|
+        @items.select(&match_item_proc(params)).map { |id, item|
           item_to_hash(item)
         }
       rescue Celluloid::Task::TerminatedError => e
@@ -109,79 +99,16 @@ module Vnet
     end
 
     def log_format(message, values = nil)
-      @log_prefix + message + (values ? " (#{values})" : '')
+      (@log_prefix || "") + message + (values ? " (#{values})" : '')
     end
 
     #
     # Override these method to support additional parameters.
     #
 
-    # Optimize this by returning a proc block.
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      true
-    end
-
-    # TODO: Cleanup...
-    def select_filter_from_params(params)
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
-        return nil
-      end
-    end
-
-    # Creates a batch object for querying a set of item to load,
-    # excluding the 'uuid' parameter.
-    def query_filter_from_params(params)
+    def mw_class
       # Must be implemented by subclass
       raise NotImplementedError
-    end
-
-    def create_batch(batch, uuid, filters)
-      expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
-
-      if expression
-        uuid ? batch[uuid].where(expression) : batch.dataset.where(expression).first
-      else
-        uuid ? batch[uuid] : nil
-      end
-    end
-
-    #
-    # Item-related methods:
-    #
-
-    def item_to_hash(item)
-      item && item.to_hash
-    end
-
-    def item_by_params(params)
-      if params[:reinitialize] != true
-        item = internal_detect(params)
-
-        if item || params[:dynamic_load] == false
-          return item
-        end
-      end
-
-      select_filter = select_filter_from_params(params) || return
-      item_map = select_item(select_filter) || return
-
-      if params[:reinitialize] == true
-        @items.delete(item_map.id)
-      end
-
-      internal_new_item(item_map, params)
-    end
-
-    # The default select call with no fill options.
-    def select_item(batch)
-      batch.commit
     end
 
     def item_initialize(item_map, params)
@@ -199,9 +126,128 @@ module Vnet
       raise NotImplementedError
     end
 
-    def mw_class
+    #
+    # Filters:
+    #
+
+    def match_item_proc(params)
+      case params.size
+      when 1
+        part_1 = params.to_a.first
+        match_item_proc_part(part_1)
+      when 2
+        part_1, part_2 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
+        part_1 && part_2 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) }
+      when 3
+        part_1, part_2, part_3 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
+        part_3 = match_item_proc_part(part_3)
+        part_1 && part_2 && part_3 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) }
+      when 4
+        part_1, part_2, part_3, part_4 = params.to_a
+        part_1 = match_item_proc_part(part_1)
+        part_2 = match_item_proc_part(part_2)
+        part_3 = match_item_proc_part(part_3)
+        part_4 = match_item_proc_part(part_4)
+        part_1 && part_2 && part_3 && part_4 &&
+          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) && part_4.call(id, item) }
+      when 0
+        proc { |id, item| true }
+      else
+        raise NotImplementedError, params.inspect
+      end
+    end
+
+    def match_item_proc_part(filter_part)
+      raise NotImplementedError, params.inspect
+    end
+
+    def select_filter_from_params(params)
+      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+
+      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
+    end
+
+    # Creates a batch object for querying a set of item to load,
+    # excluding the 'uuid' parameter.
+    def query_filter_from_params(params)
       # Must be implemented by subclass
       raise NotImplementedError
+    end
+
+    def create_batch(batch, uuid, filters)
+      expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
+
+      return unless expression || uuid
+
+      dataset = uuid ? batch.dataset_where_uuid(uuid) : batch.dataset
+      dataset = expression ? dataset.where(expression) : dataset
+    end
+
+    #
+    # Item-related methods:
+    #
+
+    def item_to_hash(item)
+      item && item.to_hash
+    end
+
+    def item_by_params(params)
+      item = internal_detect(params)
+      return item if item
+
+      select_filter = select_filter_from_params(params) || return
+      item_map = select_item(select_filter.first) || return
+
+      internal_new_item(item_map, params)
+    end
+
+    # The default select call with no fill options.
+    def select_item(batch)
+      batch.commit
+    end
+
+    #
+    # Default install/uninstall methods:
+    #
+
+    def load_item(params)
+      item_map = params[:item_map] || return
+      item = (item_map.id && @items[item_map.id]) || return
+
+      debug log_format("installing " + item.pretty_id, item.pretty_properties)
+
+      item_pre_install(item, item_map)
+      item.try_install
+      item_post_install(item, item_map)
+    end
+
+    def item_pre_install(item, item_map)
+    end
+
+    def item_post_install(item, item_map)
+    end
+
+    def unload_item(params)
+      item_id = params[:id] || return
+      item = @items.delete(item_id) || return
+
+      item_pre_uninstall(item)
+      item.try_uninstall
+      item_post_uninstall(item)
+
+      debug log_format("uninstalled " + item.pretty_id, item.pretty_properties)
+    end
+
+    def item_pre_uninstall(item)
+    end
+
+    def item_post_uninstall(item)
     end
 
     #
@@ -256,24 +302,22 @@ module Vnet
 
     def internal_detect(params)
       if params.size == 1 && params.first.first == :id
-        item = @items[params.first.last]
-        item = nil if item && !match_item?(item, params)
-        item
+        @items[params.first.last]
       else
-        item = @items.detect { |id, item|
-          match_item?(item, params)
-        }
-        item = item && item.last
+        item = @items.detect(&match_item_proc(params))
+        item && item.last
       end
     end
 
     def internal_select(params)
-      @items.values.select { |item| match_item?(item, params) }
+      @items.select(&match_item_proc(params))
     end
 
     #
     # Packet handling:
     #
+
+    # TODO: Move to a module.
 
     def handle_dynamic_load(params)
       item_id = params[:id]
@@ -285,10 +329,7 @@ module Vnet
       item = item_by_params(id: item_id)
       return if item.nil?
 
-      # Flush messages should be done after install. (Make sure
-      # interfaces are loaded using sync.
-      flush_messages(item.id,
-                     item.public_method(:mac_address) && item.mac_address)
+      return item
     end
 
     # Returns true if the message queue was empty for 'item_id'.
@@ -316,28 +357,5 @@ module Vnet
                             }]
       true
     end
-
-    def flush_messages(item_id, mac_address)
-      return if item_id.nil? || item_id <= 0
-
-      messages = @messages.delete(item_id)
-
-      # The item must have a 'mac_address' attribute that will be used
-      # as the eth_src address for sending packet out messages.
-      if messages.nil? || mac_address.nil?
-        debug log_format('flush messages failed', "id:#{item_id} mac_address:#{mac_address}")
-        return
-      end
-
-      messages.each { |message|
-        packet = message[:message]
-        packet.match.in_port = OFPP_CONTROLLER
-        packet.match.eth_src = mac_address
-
-        @dp_info.send_packet_out(packet, OFPP_TABLE)
-      }
-    end
-
   end
-
 end

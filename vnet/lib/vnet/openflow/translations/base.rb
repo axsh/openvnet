@@ -2,19 +2,16 @@
 
 module Vnet::Openflow::Translations
 
-  class Base < Vnet::ItemDpUuid
+  class Base < Vnet::ItemDpUuidMode
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :mode
     attr_reader :interface_id
 
     def initialize(params)
       super
 
       map = params[:map]
-
-      @mode = map.mode.to_sym
 
       @interface_id = map.interface_id
       @passthrough = map.passthrough == 1

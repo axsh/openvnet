@@ -80,7 +80,7 @@ module Vnet::Openflow
         destination_ipv4 = nil
         destination_prefix = nil
       else
-        request_ipv4 = network_address.mask(32) | IPAddr.new('0.0.0.1')
+        request_ipv4 = arp_lookup_default_gw(network, network_address)
         destination_ipv4 = IPV4_BROADCAST
         destination_prefix = 0
       end
@@ -111,6 +111,20 @@ module Vnet::Openflow
       end
 
       messages.drop(5) if messages.size > 20
+    end
+
+    def arp_lookup_default_gw(network, network_address)
+      network_conf = Vnet::Configurations::Vna.conf.network
+
+      if network_conf.uuid && network_conf.uuid == network.uuid
+        default_gw = network_conf.gateway && network_conf.gateway.address
+        
+        debug log_format("arp lookup using gateway '#{default_gw}'")
+
+        return IPAddr.new(default_gw) if default_gw
+      end
+
+      network_address.mask(32) | IPAddr.new('0.0.0.1')
     end
 
     def arp_lookup_reply_packet_in(message)
@@ -238,8 +252,9 @@ module Vnet::Openflow
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
       
       # Load remote interface.
-      interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id,
-                                                      remote: true)
+      interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id)
+
+      # TODO: Check if interface is remote?
 
       flow = flow_create(:default,
                          table: TABLE_ARP_LOOKUP,

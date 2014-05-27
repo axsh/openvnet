@@ -112,11 +112,38 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
 
   describe "DELETE /:uuid/#{relation_suffix}/#{relation_uuid_label}" do
     before(:each) do
+      base_name = base_object.class.name.demodulize.underscore
+      relation_name = related_object.class.name.demodulize.underscore
+
+      fabricator_name =
+        if respond_to?(:join_table_fabricator)
+          join_table_fabricator
+        else
+          "#{base_name}_#{relation_name}".to_sym
+        end
+
+      Fabricate(
+        fabricator_name,
+        :"#{base_name}_id" => base_object.id,
+        :"#{relation_name}_id" => related_object.id
+      )
+
       delete api_relation_suffix, request_params
     end
 
     let(:request_params) { Hash.new }
 
     include_examples "relation_uuid_checks", relation_suffix, relation_uuid_label
+
+    context "with a related object that has already been added to the base object" do
+      let(:api_relation_suffix) {
+        "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}/#{related_object.canonical_uuid}"
+      }
+
+      it "should destroy the entry in the join table" do
+        expect(last_response).to succeed
+        expect(base_object.send(relation_suffix)).to eq []
+      end
+    end
   end
 end

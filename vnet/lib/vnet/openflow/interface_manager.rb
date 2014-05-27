@@ -2,14 +2,19 @@
 
 module Vnet::Openflow
 
-  class InterfaceManager < Vnet::Manager
+  class InterfaceManager < Vnet::Openflow::Manager
+    include ActivePorts
 
     #
     # Events:
     #
+    subscribe_event INTERFACE_INITIALIZED, :load_item
+    subscribe_event INTERFACE_UNLOAD_ITEM, :unload_item
     subscribe_event INTERFACE_CREATED_ITEM, :create_item
-    subscribe_event INTERFACE_DELETED_ITEM, :unload
-    subscribe_event INTERFACE_INITIALIZED, :install_item
+    subscribe_event INTERFACE_DELETED_ITEM, :unload_item
+
+    subscribe_event INTERFACE_ACTIVATE_PORT, :activate_port
+    subscribe_event INTERFACE_DEACTIVATE_PORT, :deactivate_port
 
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
     subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
@@ -43,45 +48,63 @@ module Vnet::Openflow
     # Specialize Manager:
     #
 
+    def mw_class
+      MW::Interface
+    end
+
     def initialized_item_event
       INTERFACE_INITIALIZED
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:mode] && params[:mode] != item.mode
-      return false if params[:port_number] && params[:port_number] != item.port_number
-      return false if params[:port_name] && params[:port_name] != item.port_name
-
-      if params.has_key? :owner_datapath_id
-        return false if params[:owner_datapath_id].nil? && item.owner_datapath_ids
-        return false if params[:owner_datapath_id] && item.owner_datapath_ids.nil?
-        return false if params[:owner_datapath_id] && item.owner_datapath_ids.find_index(params[:owner_datapath_id]).nil?
-      end
-
-      true
+    def item_unload_event
+      INTERFACE_UNLOAD_ITEM
     end
 
-    def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
 
-      filters = []
-      filters << {id: params[:id]} if params.has_key? :id
-      filters << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
-      filters << {port_name: params[:port_name]} if params.has_key? :port_name
+      case filter
+      when :id, :uuid, :mode, :port_name, :port_number
+        proc { |id, item| value == item.send(filter) }
+      when :owner_datapath_id
+        proc { |id, item|
+          next true if value.nil? && item.owner_datapath_ids
+          next true if value && item.owner_datapath_ids.nil?
+          next true if value && item.owner_datapath_ids.find_index(value).nil?
+          false
+        }
+      when :allowed_datapath_id
+        proc { |id, item|
+          next true if value.nil?
+          next true if item.owner_datapath_ids && item.owner_datapath_ids.find_index(value).nil?
+          false
+        }
+      else
+        raise NotImplementedError, filter
+      end
+    end
 
-      create_batch(MW::Interface.batch, params[:uuid], filters)
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter << {port_name: params[:port_name]} if params.has_key? :port_name
+      filter << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
+
+      if params.has_key? :allowed_datapath_id
+        filter << Sequel.|({ owner_datapath_id: nil },
+                           { owner_datapath_id: params[:allowed_datapath_id] })
+      end
+
+      filter
     end
 
     def item_initialize(item_map, params)
-      if params[:remote]
-        return if !is_assigned_remotely?(item_map)
-        mode = :remote
+      mode = (item_map.mode && item_map.mode.to_sym)
+
+      if mode == :vif
+        mode = :remote if is_assigned_remotely?(item_map)
       elsif is_remote?(item_map)
         mode = :remote
-      else
-        mode = (item_map.mode && item_map.mode.to_sym)
       end
 
       item_class =
@@ -103,63 +126,52 @@ module Vnet::Openflow
     # Create / Delete interfaces:
     #
 
-    def create_item(params)
-      return if @items[params[:id]]
+    def item_pre_install(item, item_map)
+      if item.port_name
+        @active_ports.detect { |port_number, active_port|
+          item.port_name == active_port[:port_name]
+        }.tap { |port_number, active_port|
+          next unless port_number && active_port
 
-      return unless @dp_info.port_manager.item(
-        port_name: params[:port_name],
-        dynamic_load: false
-      )
+          item.update_port_number(port_number)
 
-      self.retrieve(params)
+          @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+                                        id: item.port_number,
+                                        interface: item_to_hash(item))
+        }
+      end
     end
 
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
-      debug log_format("install #{item_map.uuid}/#{item_map.id}/#{item.port_name}", "mode:#{item.mode}")
-
-      item.try_install
-
-      if item.owner_datapath_ids &&
-          item.owner_datapath_ids.include?(@datapath_info.id)
-        item.update_active_datapath(datapath_id: @datapath_info.id)
-      end
-
+    def item_post_install(item, item_map)
       load_addresses(item_map)
 
-      if item.mode != :remote
-        @dp_info.port_manager.async.attach_interface(port_name: item.port_name)
+      return if item.mode == :remote
 
-        @dp_info.tunnel_manager.async.publish(TRANSLATION_ACTIVATE_INTERFACE,
-                                              id: :interface,
-                                              interface_id: item.id)
+      @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
+                                      id: :interface,
+                                      interface_id: item.id)
 
-        item.ingress_filtering_enabled &&
-          @dp_info.filter_manager.async.apply_filters(item_map)
-      end
+      item.ingress_filtering_enabled &&
+        @dp_info.filter_manager.async.apply_filters(item_map)
+
+      update_active_datapath(item, @datapath_info.id)
     end
 
-    def delete_item(item)
-      item = @items.delete(item.id) || return
-
-      debug log_format("delete #{item.uuid}/#{item.id}/#{item.port_name}", "mode:#{item.mode}")
-
-      item.try_uninstall
-
-      if item.owner_datapath_ids && item.owner_datapath_ids.include?(@datapath_info.id) || item.port_number
-        item.update_active_datapath(datapath_id: nil)
-      end
-
-      if item.port_number
-        @dp_info.port_manager.async.detach_interface(port_number: item.port_number)
+    def item_post_uninstall(item)
+      if (item.owner_datapath_ids &&
+          item.owner_datapath_ids.include?(@datapath_info.id)) || item.port_number
+        update_active_datapath(item, nil)
       end
 
       if item.mode != :remote
-        @dp_info.tunnel_manager.async.publish(Vnet::Event::TRANSLATION_DEACTIVATE_INTERFACE,
-                                              id: :interface,
-                                              interface_id: item.id)
+        item.port_number &&
+          @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
+                                        id: item.port_number,
+                                        interface_id: item.id)
+
+        @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
+                                        id: :interface,
+                                        interface_id: item.id)
 
         @dp_info.filter_manager.async.remove_filters(item.id)
 
@@ -169,6 +181,18 @@ module Vnet::Openflow
         }
       end
     end
+
+    def create_item(params)
+      return if @items[params[:id]]
+
+      return unless @dp_info.port_manager.detect(port_name: params[:port_name])
+
+      self.retrieve(params)
+    end
+
+    #
+    # Helper methods:
+    #
 
     def is_remote?(item_map)
       return false if item_map.active_datapath_id.nil? && item_map.owner_datapath_id.nil?
@@ -256,19 +280,16 @@ module Vnet::Openflow
       item = @items[params[:id]]
 
       if !item && ip_lease.interface.mode.to_sym == :simulated &&
-        @dp_info.network_manager.item(
-          id: ip_lease.ip_address.network_id,
-          dynamic_load: false
-        )
+        @dp_info.network_manager.detect(id: ip_lease.ip_address.network_id)
 
-        @dp_info.interface_manager.item(id: ip_lease.interface.id)
+        @dp_info.interface_manager.retrieve(id: ip_lease.interface.id)
 
         return
       end
 
       return unless item && ip_lease.interface_id == item.id
 
-      network = @dp_info.network_manager.item(id: ip_lease.ip_address.network_id)
+      network = @dp_info.network_manager.retrieve(id: ip_lease.ip_address.network_id)
 
       # TODO: Pass the ip_lease object.
       item.add_ipv4_address(mac_lease_id: ip_lease.mac_lease_id,
@@ -337,7 +358,7 @@ module Vnet::Openflow
         #
       when :active_datapath_id
         # Reconsider this...
-        item.update_active_datapath(params)
+        update_active_datapath(item, params[:datapath_id])
 
       when :remote_datapath_id
         item.update_remote_datapath(params)
@@ -349,7 +370,7 @@ module Vnet::Openflow
         end
 
       when :owner_datapath_id
-        delete_item(item)
+        unload_item(id: item.id)
         self.async.retrieve(id: item.id)
 
         #
@@ -357,14 +378,24 @@ module Vnet::Openflow
         #
       when :set_port_number
         debug log_format("update_item", params)
-        # Check if not nil...
+
         item.update_port_number(params[:port_number])
-        item.update_active_datapath(datapath_id: @datapath_info.id)
+        update_active_datapath(item, @datapath_info.id)
+
+        @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+                                      id: item.port_number,
+                                      interface: item_to_hash(item))
+
       when :clear_port_number
         debug log_format("update_item", params)
+
+        @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
+                                      id: item.port_number,
+                                      interface: item_to_hash(item))
+
         # Check if nil... (use param :port_number to verify)
         item.update_port_number(nil)
-        item.update_active_datapath(datapath_id: nil)
+        update_active_datapath(item, nil)
 
         #
         # Capability events:
@@ -373,8 +404,18 @@ module Vnet::Openflow
         # api event
         item.update
       end
+    end
 
-      item_to_hash(item)
+    def update_active_datapath(item, datapath_id)
+      return if item.mode == :remote
+
+      if item.owner_datapath_ids.nil?
+        return unless item.mode == :vif
+      else
+        return unless item.owner_datapath_ids.include?(@datapath_info.id)
+      end
+
+      item.update_active_datapath(@datapath_info.id)
     end
 
     def update_item_not_found(event, id, params)
@@ -390,6 +431,44 @@ module Vnet::Openflow
       end
 
       nil
+    end
+
+    #
+    # Overload helper methods:
+    #
+
+    def activate_port_query(state_id, params)
+      { port_name: params[:port_name],
+        allowed_datapath_id: @datapath_info.id
+      }
+    end
+
+    def activate_port_match_proc(state_id, params)
+      port_name = params[:port_name]
+
+      Proc.new { |id, item|
+        item.mode != :remote &&
+        item.port_name == port_name
+      }
+    end
+
+    def activate_port_value(port_number, params)
+      port_name = params[:port_name] || return
+
+      { port_name: port_name }
+    end
+
+    def activate_port_update_item_proc(port_number, params)
+      port_name = params[:port_name] || return
+
+      Proc.new { |id, item|
+        item.port_name = port_name
+
+        publish(INTERFACE_UPDATED,
+                event: :set_port_number,
+                id: id,
+                port_number: port_number)
+      }
     end
 
   end

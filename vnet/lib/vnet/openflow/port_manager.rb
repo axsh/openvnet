@@ -2,33 +2,52 @@
 
 module Vnet::Openflow
 
-  class PortManager < Vnet::Manager
+  class PortManager < Vnet::Openflow::Manager
 
     #
     # Events:
     #
-    subscribe_event INITIALIZED_PORT, :install_item
-    subscribe_event FINALIZED_PORT, :uninstall_item
+    subscribe_event PORT_INITIALIZED, :install_item
+    subscribe_event PORT_FINALIZED, :uninstall_item
+
+    subscribe_event PORT_ATTACH_INTERFACE, :attach_interface
+    subscribe_event PORT_DETACH_INTERFACE, :detach_interface
+
+    def initialize_ports
+      return if @datapath_info.nil?
+
+      @items.each { |id, item|
+        publish(PORT_INITIALIZED, id: item.id)
+      }
+    end
 
     def insert(port_desc)
+      if @items[port_desc.port_no]
+        info log_format('port already added', "port_name:#{port_desc.name} port_number:#{port_desc.port_no}")
+        return
+      end
+
+      port = Ports::Base.new(dp_info: @dp_info,
+                             id: port_desc.port_no,
+                             port_desc: port_desc)
+      @items[port.port_number] = port
+
       debug log_format("insert port #{port_desc.name}",
                        "port_no:#{port_desc.port_no} hw_addr:#{port_desc.hw_addr} adv/supported:0x%x/0x%x" %
                        [port_desc.advertised, port_desc.supported])
 
-      if @dp_info.datapath.datapath_info.nil?
-        warn log_format('cannot initialize ports without a valid datapath database entry')
-        return nil
+      # The default setting is no_flood in order to ensure ovs does
+      # not attempt to send any arp requests to the port during
+      # initialization.
+      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+
+      # TODO: Allow limited initialization of e.g. LOCAL and host ports.
+      if @datapath_info.nil?
+        warn log_format('datapath_info not yet set, postponing initialization')
+        return
       end
 
-      if @items[port_desc.port_no]
-        info log_format('port already initialized', "port_number:#{port_desc.port_no}")
-        return item_to_hash(@items[port_desc.port_no])
-      end
-
-      port = Ports::Base.new(@dp_info, port_desc)
-      @items[port.port_number] = port
-
-      publish(INITIALIZED_PORT, id: port.id)
+      publish(PORT_INITIALIZED, id: port.id)
     end
 
     def remove(port_desc)
@@ -37,32 +56,14 @@ module Vnet::Openflow
                        [port_desc.advertised, port_desc.supported])
 
       port = @items[port_desc.port_no]
+
       if port.nil?
         debug log_format('port status could not delete uninitialized port',
                          "port_number:#{port_desc.port_no}")
-        return nil
+        return
       end
 
-      publish(FINALIZED_PORT, id: port.id)
-
-      item_to_hash(port)
-    end
-
-    def attach_interface(params)
-      port = internal_detect(params)
-      return unless port
-
-      # reinitialize
-      if port.installed?
-        publish(FINALIZED_PORT, id: port.id)
-      end
-
-      publish(INITIALIZED_PORT, id: port.id)
-    end
-
-    def detach_interface(params)
-      # currently attach_interface and detach_interface is tha same thing.
-      attach_interface(params)
+      publish(PORT_FINALIZED, id: port.id)
     end
 
     #
@@ -72,87 +73,90 @@ module Vnet::Openflow
     private
 
     #
+    # Specialize Manager:
+    #
+
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :port_name, :port_number, :port_type
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
+    end
+
+    #
     # Event handlers.
     #
 
     def install_item(params)
-      port = @items[params[:id]]
-      return unless port
+      port = @items[params[:id]] || return
       return if port.installed?
 
-      if port.port_number == OFPP_LOCAL
+      case
+      when port.port_number == OFPP_LOCAL
         prepare_port_local(port)
-        return item_to_hash(port)
-      end
-
-      interface = @dp_info.interface_manager.item(port_name: port.port_name,
-                                                  port_number: port.port_number,
-                                                  owner_datapath_id: @dp_info.datapath.datapath_info.id)
-
-      # Request twice since we're lacking the proper search parameter.
-      interface = interface || @dp_info.interface_manager.item(port_name: port.port_name,
-                                                               port_number: port.port_number,
-                                                               owner_datapath_id: nil)
-
-      if interface
-        case interface.mode
-        when :host, :edge, :patch
-          prepare_port_eth(port, interface)
-        when :vif
-          prepare_port_vif(port, interface)
-        else
-          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
-          error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
-        end
+      when port.port_desc.name =~ /^t-/
+        prepare_port_tunnel(port)
       else
-        case
-        when port.port_info.name =~ /^t-/
-          prepare_port_tunnel(port)
-        else
-          @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+        # TODO: Set flood off.
 
-          error log_format('unknown interface type', "name:#{port.port_name}")
-        end
+        # TODO: Make sure activate port recreates previously remote ports.
+        @dp_info.interface_manager.publish(INTERFACE_ACTIVATE_PORT,
+                                           id: :port,
+                                           port_name: port.port_name,
+                                           port_number: port.port_number)
       end
-
-      item_to_hash(port)
     end
 
     def uninstall_item(params)
-      port = @items[params[:id]]
-      return unless port && port.installed?
+      port = @items.delete(params[:id]) || return
 
-      @items.delete(params[:id])
+      port.try_uninstall
 
-      # reinitialize port
-      @items[port.port_number] = Ports::Base.new(@dp_info, port.port_info)
-
-      port.uninstall
+      # We always trigger the deactivate event even if interface_id is
+      # not set, as there might otherwise be a race-condition with
+      # activation events.
+      @dp_info.interface_manager.publish(INTERFACE_DEACTIVATE_PORT,
+                                         id: :port,
+                                         interface_id: port.interface_id,
+                                         port_name: port.port_name,
+                                         port_number: port.port_number)
 
       debug log_format("uninstall #{port.port_name}/#{port.id}")
+    end
 
-      interface = @dp_info.interface_manager.item(
-        port_number: port.port_number,
-        dynamic_load: false
-      )
+    # TODO: Make sure to verify we don't have duplicate port names, don't trust OVS.
 
-      if interface
-        @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
-                                           event: :clear_port_number,
-                                           id: interface.id)
+    def attach_interface(params)
+      port = @items[params[:id]] || return
+      return if port.installed?
+
+      interface = params[:interface] || return      
+
+      case interface.mode
+      when :host, :edge, :patch
+        prepare_port_eth(port, interface)
+      when :vif
+        prepare_port_vif(port, interface)
+      else
+        error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
       end
     end
 
-    #
-    # Specialize Manager:
-    #
+    def detach_interface(params)
+      item = @items[params[:id]] || return
+      return unless item.installed?
 
-    def match_item?(item, params)
-      return true if params[:port_name] && params[:port_name] == item.port_name
-      return true if params[:port_number] && params[:port_number] == item.port_number
-      return true if params[:port_type] && params[:port_type] == item.port_type
-      false
+      @items[item.id] = Ports::Base.new(dp_info: @dp_info,
+                                        id: item.id,
+                                        port_desc: item.port_desc)
+
+      item.try_uninstall
+
+      debug log_format("uninstall #{item.port_name}/#{item.id}")
     end
 
     #
@@ -160,10 +164,8 @@ module Vnet::Openflow
     #
 
     def prepare_port_local(port)
-      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
       port.extend(Ports::Local)
-      port.install
+      port.try_install
     end
 
     def prepare_port_eth(port, interface)
@@ -178,12 +180,6 @@ module Vnet::Openflow
         port.extend(Ports::Host)
         port.interface_id = interface.id
 
-        # We don't need to query the interface before updating it, so do
-        # this directly instead of the item request.
-        @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
-                                           event: :set_port_number,
-                                           id: interface.id,
-                                           port_number: port.port_number)
       elsif interface.mode == :edge
         port.extend(Ports::Generic)
         port.interface_id = interface.id
@@ -192,36 +188,22 @@ module Vnet::Openflow
         error log_format("unknown port type", interface.mode)
       end
 
-      port.install
+      port.try_install
     end
 
     def prepare_port_vif(port, interface)
-      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
-
-      if interface.nil?
-        error log_format("could not find interface for #{port.port_name}")
-        return
-      end
-
       debug log_format("prepare_port_vif #{interface.uuid}", "port_name:#{port.port_name}")
 
       port.extend(Ports::Vif)
 
       port.interface_id = interface.id
-      port.install
-
-      # We don't need to query the interface before updating it, so do
-      # this directly instead of the item request.
-      @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,
-                                         event: :set_port_number,
-                                         id: interface.id,
-                                         port_number: port.port_number)
+      port.try_install
     end
 
     def prepare_port_tunnel(port)
-      @dp_info.ovs_ofctl.mod_port(port.port_number, :no_flood)
+      debug log_format("prepare_port_tunnel", "port_name:#{port.port_name}")
 
-      tunnel = @dp_info.tunnel_manager.item(uuid: port.port_name)
+      tunnel = @dp_info.tunnel_manager.retrieve(uuid: port.port_name)
 
       if tunnel.nil?
         error log_format("could not find tunnel for #{port.port_name}")
@@ -233,7 +215,7 @@ module Vnet::Openflow
       port.dst_datapath_id = tunnel.dst_datapath_id
       port.tunnel_id = tunnel.id
 
-      port.install
+      port.try_install
     end
 
   end

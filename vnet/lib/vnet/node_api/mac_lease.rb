@@ -17,16 +17,11 @@ module Vnet::NodeApi
 
       def update(uuid, options)
         options = options.dup
-        mac_address = options.delete(:mac_address)
-        deleted_mac_address = nil
+        deleted_mac_address = false
 
         mac_lease = transaction do
           model_class[uuid].tap do |model|
-            if model.mac_address.mac_address != mac_address
-              model.mac_address.destroy
-              deleted_mac_address = model.mac_address
-              model.mac_address = model_class(:mac_address).create(mac_address: mac_address)
-            end
+            deleted_mac_address = true if options[:mac_address]
             model.set(options)
             model.save_changes
             model

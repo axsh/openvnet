@@ -85,47 +85,43 @@ module Vnet::Openflow::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      if ipv4_info[:network_type] == :physical
-        # We currently only support a single physical network for a
-        # host interface.
-        #
-        # Until network segments are supported this is difficult to
-        # implement.
-        flows << flow_create(:default,
-                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_INGRESS_MAC,
-                             priority: 10,
-                             match_interface: @id,
-                             cookie: cookie)
+      # We currently only support a single physical network for a
+      # host interface.
+      #
+      # Until network segments are supported this is difficult to
+      # implement.
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_MAC,
+                           priority: 10,
+                           match_interface: @id,
+                           cookie: cookie)
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           priority: 20,
 
-        flows << flow_create(:default,
-                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
-                             priority: 20,
+                           match: {
+                             :eth_dst => mac_info[:mac_address],
+                           },
+                           match_interface: @id,
+                           write_value_pair_flag: true,
+                           write_value_pair_first: ipv4_info[:network_id],
 
-                             match: {
-                               :eth_dst => mac_info[:mac_address],
-                             },
-                             match_interface: @id,
-                             write_value_pair_flag: true,
-                             write_value_pair_first: ipv4_info[:network_id],
+                           cookie: cookie)
+      flows << flow_create(:default,
+                           table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           priority: 20,
 
-                             cookie: cookie)
-        flows << flow_create(:default,
-                             table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
-                             priority: 20,
+                           match: {
+                             :eth_dst => MAC_BROADCAST
+                           },
+                           match_interface: @id,
+                           write_value_pair_flag: true,
+                           write_value_pair_first: ipv4_info[:network_id],
 
-                             match: {
-                               :eth_dst => MAC_BROADCAST
-                             },
-                             match_interface: @id,
-                             write_value_pair_flag: true,
-                             write_value_pair_first: ipv4_info[:network_id],
-
-                             cookie: cookie)
-      end
-
+                           cookie: cookie)
       flows << flow_create(:default,
                            table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 10,

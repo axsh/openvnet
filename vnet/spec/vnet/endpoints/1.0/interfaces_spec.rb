@@ -37,6 +37,18 @@ describe "/interfaces" do
 
     include_examples "POST /", accepted_params, required_params, uuid_params
 
+    context "With a faulty mac address" do
+      let(:request_params) { { mac_address: "i am not a mac address" } }
+
+      it_should_return_error(400, "ArgumentError")
+    end
+
+    context "With a faulty ipv4 address" do
+      let(:request_params) { { ipv4_address: "i am not an ip address" } }
+
+      it_should_return_error(400, "ArgumentError")
+    end
+
     describe "event handler" do
       let(:request_params) { {} }
 

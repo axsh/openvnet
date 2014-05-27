@@ -19,9 +19,27 @@ module Vnet::Configurations
       end
     end
 
+    class Network < Fuguta::Configuration
+      param :uuid
+
+      class Gateway < Fuguta::Configuration
+        param :address
+      end
+
+      DSL do
+        def gateway(&block)
+          @config[:gateway] = Gateway.new.tap {|c| c.parse_dsl(&block) if block }
+        end
+      end
+    end
+
     DSL do
       def node(&block)
         @config[:node] = Node.new.tap {|node| node.parse_dsl(&block) if block }
+      end
+
+      def network(&block)
+        @config[:network] = Network.new.tap {|c| c.parse_dsl(&block) if block }
       end
     end
 

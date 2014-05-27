@@ -2,14 +2,14 @@
 
 module Vnet::Openflow
 
-  class ServiceManager < Vnet::Manager
-
+  class ServiceManager < Vnet::Openflow::Manager
+    include Vnet::Constants::NetworkService
     include ActiveInterfaces
 
     #
     # Events:
     #
-    subscribe_event SERVICE_INITIALIZED, :install_item
+    subscribe_event SERVICE_INITIALIZED, :load_item
     subscribe_event SERVICE_UNLOAD_ITEM, :unload_item
     subscribe_event SERVICE_CREATED_ITEM, :created_item
     subscribe_event SERVICE_DELETED_ITEM, :unload_item
@@ -26,7 +26,7 @@ module Vnet::Openflow
 
     def dns_server_for(network_id)
       @items.each do |_, item|
-        next unless item.type == "dns" && item.networks[network_id]
+        next unless item.type == TYPE_DNS && item.networks[network_id]
         return item.dns_server_for(network_id)
       end
       nil
@@ -34,14 +34,14 @@ module Vnet::Openflow
 
     def add_dns_server(network_id, dns_server)
       @items.each do |_, item|
-        next unless item.type == "dhcp" && item.networks[network_id]
+        next unless item.type == TYPE_DHCP && item.networks[network_id]
         item.add_dns_server(network_id, dns_server)
       end
     end
 
     def remove_dns_server(network_id)
       @items.each do |_, item|
-        next unless item.type == "dhcp" && item.networks[network_id]
+        next unless item.type == TYPE_DHCP && item.networks[network_id]
         item.remove_dns_server(network_id)
       end
     end
@@ -68,12 +68,15 @@ module Vnet::Openflow
       SERVICE_UNLOAD_ITEM
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:interface_id] && params[:interface_id] != item.interface_id
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
 
-      super
+      case filter
+      when :id, :uuid, :interface_id
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     def query_filter_from_params(params)
@@ -83,18 +86,12 @@ module Vnet::Openflow
       filter
     end
 
-    def select_filter_from_params(params)
-      return if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
-    end
-
     def item_initialize(item_map, params)
       item_class =
         case item_map.type
-        when 'dhcp'   then Vnet::Openflow::Services::Dhcp
-        when 'dns'    then Vnet::Openflow::Services::Dns
-        when 'router' then Vnet::Openflow::Services::Router
+        when TYPE_DHCP   then Vnet::Openflow::Services::Dhcp
+        when TYPE_DNS    then Vnet::Openflow::Services::Dns
+        when TYPE_ROUTER then Vnet::Openflow::Services::Router
         else
           return
         end
@@ -108,15 +105,7 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
-    # SERVICE_INITIALIZED on queue 'item.id'
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
-      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item_map.type.to_sym}")
-
-      item.try_install
-
+    def item_post_install(item, item_map)
       @active_interfaces[item.interface_id].tap { |network_ids|
         next unless network_ids
         network_ids.each { |network_id|
@@ -124,7 +113,7 @@ module Vnet::Openflow
         }
       }
       
-      if item.type == "dns"
+      if item.type == TYPE_DNS
         if dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
           publish(SERVICE_ADDED_DNS, id: item.id, dns_service_map: dns_service_map)
         end
@@ -136,15 +125,7 @@ module Vnet::Openflow
       return if @items[params[:id]]
       return unless @active_interfaces[params[:interface_id]]
 
-      internal_new_item(MW::NetworkService.new(params), {})
-    end
-
-    # unload item on queue 'item.id'
-    def unload_item(params)
-      item = @items.delete(params[:id]) || return
-      item.try_uninstall
-
-      debug log_format("unloaded service #{item.uuid}/#{item.id}")
+      internal_new_item(mw_class.new(params), {})
     end
 
     #
@@ -158,11 +139,12 @@ module Vnet::Openflow
     def activate_interface_update_item_proc(interface_id, params)
       network_id_list = params[:network_id_list] || return
 
-      # TODO: Queue an event instead...
-      #
-      # TODO: We can't use network_id or cookie id for the cookie id parameter.
       Proc.new { |id, item|
         network_id_list.each { |network_id|
+          # TODO: Queue an event instead...
+          #
+          # TODO: We can't use network_id or cookie id for the cookie
+          # id parameter.
           item.add_network_unless_exists(network_id, network_id)
         }
       }
@@ -178,9 +160,7 @@ module Vnet::Openflow
       dns_service_map = params[:dns_service_map] || MW::DnsService.batch.find(id: params[:dns_service_id]).commit(fill: :dns_records)
       return unless dns_service_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.set_dns_service(dns_service_map)
 
       dns_service_map.dns_records.each do |dns_record_map|
@@ -192,9 +172,7 @@ module Vnet::Openflow
       dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
       return unless dns_service_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.update_dns_service(dns_service_map)
     end
 
@@ -202,9 +180,7 @@ module Vnet::Openflow
       dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
       return unless dns_service_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.clear_dns_service
     end
 
@@ -212,9 +188,7 @@ module Vnet::Openflow
       dns_record_map = params[:dns_record_map] || MW::DnsRecord.find(id: params[:dns_record_id])
       return unless dns_record_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.add_dns_record(dns_record_map)
     end
 
@@ -222,9 +196,7 @@ module Vnet::Openflow
       dns_record_map = MW::DnsRecord.batch.with_deleted.first(id: params[:dns_record_id]).commit
       return unless dns_record_map
 
-      item = @items[params[:id]]
-      return unless item
-
+      item = @items[params[:id]] || return
       item.remove_dns_record(dns_record_map)
     end
 

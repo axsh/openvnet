@@ -2,14 +2,15 @@
 
 module Vnet::Openflow
 
-  class TranslationManager < Vnet::Manager
+  class TranslationManager < Vnet::Openflow::Manager
 
+    include Vnet::Constants::Translation
     include ActiveInterfaces
 
     #
     # Events:
     #
-    subscribe_event TRANSLATION_INITIALIZED, :install_item
+    subscribe_event TRANSLATION_INITIALIZED, :load_item
     subscribe_event TRANSLATION_UNLOAD_ITEM, :unload_item
     subscribe_event TRANSLATION_CREATED_ITEM, :created_item
     subscribe_event TRANSLATION_DELETED_ITEM, :unload_item
@@ -42,11 +43,15 @@ module Vnet::Openflow
       TRANSLATION_UNLOAD_ITEM
     end
 
-    def match_item?(item, params)
-      return false if params[:id] && params[:id] != item.id
-      return false if params[:uuid] && params[:uuid] != item.uuid
-      return false if params[:interface_id] && params[:interface_id] != item.interface_id
-      true
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :uuid, :interface_id
+        proc { |id, item| value == item.send(filter) }
+      else
+        raise NotImplementedError, filter
+      end
     end
 
     def query_filter_from_params(params)
@@ -56,17 +61,11 @@ module Vnet::Openflow
       filter
     end
 
-    def select_filter_from_params(params)
-      return if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
-    end
-
     def item_initialize(item_map, params)
       item_class =
         case item_map.mode
-        when 'static_address' then Translations::StaticAddress
-        when 'vnet_edge'      then Translations::VnetEdgeHandler
+        when MODE_STATIC_ADDRESS then Translations::StaticAddress
+        when MODE_VNET_EDGE      then Translations::VnetEdgeHandler
         else
           return
         end
@@ -78,39 +77,25 @@ module Vnet::Openflow
     # Create / Delete events:
     #
 
-    def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
-
-      debug log_format("install #{item_map.uuid}/#{item_map.id}", "mode:#{item.mode}")
-
+    def item_pre_install(item, item_map)
       case item.mode
       when :static_address then load_static_addresses(item, item_map)
       end
-
-      item.try_install
     end
 
+    # TRANSLATION_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
       return if @items[params[:id]]
       return unless @active_interfaces[params[:interface_id]]
 
-      internal_new_item(MW::Translation.new(params), {})
-    end
-
-    # unload item on queue 'item.id'
-    def unload_item(params)
-      item = @items.delete(params[:id]) || return
-      item.try_uninstall
-
-      debug log_format("unloaded item #{item.uuid}/#{item.id}", "mode:#{item.mode}")
+      internal_new_item(mw_class.new(params), {})
     end
 
     #
     # Translation events:
     #
 
-    # load static addresses on queue 'item.id'
+    # load static addresses on queue 'item.id'.
     def load_static_addresses(item, item_map)
       item_map.batch.translation_static_addresses.commit.each { |translation|
         item.added_static_address(translation.id,
@@ -122,7 +107,7 @@ module Vnet::Openflow
       }
     end
 
-    # TRANSLATION_ADDED_STATIC_ADDRESS on queue 'item.id'
+    # TRANSLATION_ADDED_STATIC_ADDRESS on queue 'item.id'.
     def added_static_address(params)
       item_id = params[:id] || return
       item = @items[item_id] || return
@@ -141,7 +126,7 @@ module Vnet::Openflow
                                 egress_port_number)
     end
 
-    # TRANSLATION_REMOVED_STATIC_ADDRESS on queue 'item.id'
+    # TRANSLATION_REMOVED_STATIC_ADDRESS on queue 'item.id'.
     def removed_static_address(params)
       item_id = params[:id] || return
       item = @items[item_id] || return
