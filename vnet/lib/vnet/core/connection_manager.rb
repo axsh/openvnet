@@ -27,7 +27,7 @@ module Vnet::Core
                       ip_proto: protocol
                     },
                     cookie: catch_flow_cookie(mac_lease_id),
-                    actions: { output: Controller::OFPP_CONTROLLER })
+                    actions: { output: Vnet::Openflow::Controller::OFPP_CONTROLLER })
       }
 
       @dp_info.add_flows(flows)
