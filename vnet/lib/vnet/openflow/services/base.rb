@@ -24,8 +24,6 @@ module Vnet::Openflow::Services
     def initialize(params)
       super
 
-      @manager = params[:manager]
-
       map = params[:map]
       @type = map.type
       @interface_id = map.interface_id

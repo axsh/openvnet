@@ -70,8 +70,7 @@ module Vnet::Openflow
       end
     end
 
-    # TODO: Remove type parameter.
-    def flow_create(type, params)
+    def flow_create(params)
       match_metadata = {}
       write_metadata = {}
 
@@ -119,8 +118,7 @@ module Vnet::Openflow
        [TABLE_NETWORK_DST_CLASSIFIER, { :eth_src => mac_address }],
        [TABLE_NETWORK_DST_CLASSIFIER, { :eth_dst => mac_address }],
       ].each { |table, match|
-        flows << flow_create(:default,
-                             table: table,
+        flows << flow_create(table: table,
                              priority: 90,
                              match: match,
                              cookie: use_cookie)

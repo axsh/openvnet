@@ -222,6 +222,8 @@ module Vnet::Openflow
     def load_datapath_networks(network_id)
       # Load all datapath networks on other datapaths.
 
+      return unless @datapath_info
+
       MW::DatapathNetwork.batch.where(network_id: network_id).all.commit.each { |dpn_map|
         next if dpn_map.datapath_id == @datapath_info.id
         next if @items[dpn_map.datapath_id]
@@ -336,6 +338,8 @@ module Vnet::Openflow
     # Require queue ':route_link'
     def load_datapath_route_links(route_link_id)
       # Load all datapath route_links on other datapaths.
+
+      return unless @datapath_info
 
       MW::DatapathRouteLink.batch.where(route_link_id: route_link_id).all.commit.each { |dprl_map|
         next if dprl_map.datapath_id == @datapath_info.id

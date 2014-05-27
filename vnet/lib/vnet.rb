@@ -46,6 +46,7 @@ module Vnet
   end
 
   module Event
+    autoload :EventTasks, 'vnet/event/event_tasks'
     autoload :Dispatchable, 'vnet/event/dispatchable'
     autoload :Notifications, 'vnet/event/notifications'
   end
@@ -288,8 +289,9 @@ module Vnet
       autoload :Edge, 'vnet/openflow/interfaces/edge'
       autoload :Host, 'vnet/openflow/interfaces/host'
       autoload :IfBase, 'vnet/openflow/interfaces/if_base'
-      autoload :Remote, 'vnet/openflow/interfaces/remote'
+      autoload :Internal, 'vnet/openflow/interfaces/internal'
       autoload :Patch, 'vnet/openflow/interfaces/patch'
+      autoload :Remote, 'vnet/openflow/interfaces/remote'
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
     end
@@ -301,6 +303,7 @@ module Vnet
 
     module Networks
       autoload :Base, 'vnet/openflow/networks/base'
+      autoload :Internal, 'vnet/openflow/networks/internal'
       autoload :Physical, 'vnet/openflow/networks/physical'
       autoload :Virtual, 'vnet/openflow/networks/virtual'
     end

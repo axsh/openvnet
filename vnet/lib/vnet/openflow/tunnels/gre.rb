@@ -45,8 +45,7 @@ module Vnet::Openflow::Tunnels
 
       flows = []
       [true, false].each { |reflection|
-        flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_OVER_TUNNEL,
+        flows << flow_create(table: TABLE_OUTPUT_DP_OVER_TUNNEL,
                              goto_table: TABLE_OUT_PORT_TUNNEL,
                              priority: 1,
 

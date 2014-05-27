@@ -254,8 +254,7 @@ module Vnet::Openflow
       # TODO: Change this into using a specific method to remove a network id?
       
       if tunnel_actions.size > 1
-        flows << flow_create(:default,
-                             table: TABLE_FLOOD_TUNNELS,
+        flows << flow_create(table: TABLE_FLOOD_TUNNELS,
                              goto_table: TABLE_FLOOD_SEGMENT,
                              priority: 1,
                              match_network: network_id,
@@ -268,8 +267,7 @@ module Vnet::Openflow
       end
 
       if !segment_actions.empty?
-        flows << flow_create(:default,
-                             table: TABLE_FLOOD_SEGMENT,
+        flows << flow_create(table: TABLE_FLOOD_SEGMENT,
                              priority: 1,
                              match_network: network_id,
                              actions: segment_actions,

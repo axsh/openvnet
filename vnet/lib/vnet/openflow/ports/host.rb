@@ -28,8 +28,7 @@ module Vnet::Openflow::Ports
       flows = []
 
       if @interface_id
-        flows << flow_create(:default,
-                             table: TABLE_CLASSIFIER,
+        flows << flow_create(table: TABLE_CLASSIFIER,
                              goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                              priority: 2,
 
@@ -40,8 +39,7 @@ module Vnet::Openflow::Ports
                              write_interface: @interface_id,
                              write_remote: true)
 
-        flows << flow_create(:default,
-                             table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+        flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                              priority: 2,
                              match: {
                                :in_port => self.port_number
@@ -51,8 +49,7 @@ module Vnet::Openflow::Ports
                              actions: {
                                :output => OFPP_IN_PORT
                              })
-        flows << flow_create(:default,
-                             table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+        flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                              priority: 1,
                              match_interface: @interface_id,
                              actions: {
@@ -61,8 +58,7 @@ module Vnet::Openflow::Ports
       end
 
       if @dp_info.datapath.datapath_info.node_id =~ /^edge/
-        flows << flow_create(:default,
-                             table: TABLE_CLASSIFIER,
+        flows << flow_create(table: TABLE_CLASSIFIER,
                              goto_table: TABLE_EDGE_SRC,
                              priority: 2,
                              match: {

@@ -80,8 +80,7 @@ module Vnet::Openflow::Datapaths
     def flows_for_dp_network(flows, dp_nw)
       [true, false].each { |reflection|
 
-        flows << flow_create(:default,
-                             table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
+        flows << flow_create(table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
                              goto_table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
                              priority: 1,
 
@@ -95,8 +94,7 @@ module Vnet::Openflow::Datapaths
 
                              cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
 
-        flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
+        flows << flow_create(table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
                              goto_table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
                              priority: 1,
 
@@ -118,8 +116,7 @@ module Vnet::Openflow::Datapaths
     def flows_for_dp_route_link(flows, dp_rl)
       # The source mac address of route link packets is required to
       # match a remote dp_rl mac address.
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 1,
 
@@ -132,8 +129,7 @@ module Vnet::Openflow::Datapaths
 
       [true, false].each { |reflection|
 
-        flows << flow_create(:default,
-                             table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
+        flows << flow_create(table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
                              goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
                              priority: 1,
 
@@ -154,8 +150,7 @@ module Vnet::Openflow::Datapaths
         # The route link id will then be used to identify what source
         # interface id is set using the host's datapath route link
         # entry.
-        flows << flow_create(:default,
-                             table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
+        flows << flow_create(table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
                              goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
                              priority: 1,
 

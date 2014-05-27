@@ -35,13 +35,11 @@ module Vnet::Openflow::Interfaces
     private
 
     def flows_for_disabled_filtering(flows = [])
-      flows << flow_create(:default,
-        table: TABLE_INTERFACE_INGRESS_FILTER,
-        priority: 90,
-        match_interface: @id,
-        cookie: cookie_for_tag(TAG_DISABLED_FILTERING),
-        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-      )
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 90,
+                           match_interface: @id,
+                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING))
     end
 
     def flows_for_interface_mac(flows, mac_info)
@@ -58,8 +56,7 @@ module Vnet::Openflow::Interfaces
       ].each { |match|
         # Currently add to ingress_nw_if table since we do not
         # yet support segments.
-        flows << flow_create(:default,
-                             table: TABLE_INTERFACE_INGRESS_MAC,
+        flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
                              priority: 50,
                              match: match,
                              #match_segment: mac_info[:segment_id],
@@ -86,8 +83,7 @@ module Vnet::Openflow::Interfaces
          :arp_sha => mac_info[:mac_address],
          :arp_spa => ipv4_info[:ipv4_address]
        }].each { |match|
-        flows << flow_create(:default,
-                             table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                              goto_table: TABLE_INTERFACE_EGRESS_FILTER,
                              priority: 30,
                              match: match,
@@ -99,8 +95,7 @@ module Vnet::Openflow::Interfaces
       #
       # IPv4 
       #
-      flows << flow_create(:default,
-                           table: TABLE_ARP_TABLE,
+      flows << flow_create(table: TABLE_ARP_TABLE,
                            goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                            priority: 40,
                            match: {
@@ -112,8 +107,7 @@ module Vnet::Openflow::Interfaces
                              :eth_dst => mac_info[:mac_address],
                            },
                            cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_DST_MAC_LOOKUP,
+      flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
                            goto_table: TABLE_INTERFACE_INGRESS_FILTER,
                            priority: 60,
                            match: {
@@ -133,8 +127,7 @@ module Vnet::Openflow::Interfaces
          :ipv4_src => ipv4_info[:ipv4_address],
        }
       ].each { |match|
-        flows << flow_create(:default,
-                             table: TABLE_INTERFACE_INGRESS_NW_IF,
+        flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
                              priority: 90,
                              match: match,
                              match_value_pair_first: ipv4_info[:network_id],
@@ -149,8 +142,7 @@ module Vnet::Openflow::Interfaces
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       if ipv4_info[:enable_routing] != true
-        flows << flow_create(:default,
-                             table: TABLE_ROUTE_INGRESS_INTERFACE,
+        flows << flow_create(table: TABLE_ROUTE_INGRESS_INTERFACE,
                              goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                              priority: 20,
                              match: {
@@ -162,8 +154,7 @@ module Vnet::Openflow::Interfaces
                              cookie: cookie)
       end
 
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_INGRESS_INTERFACE,
+      flows << flow_create(table: TABLE_ROUTE_INGRESS_INTERFACE,
                            goto_table: TABLE_ROUTE_INGRESS_TRANSLATION,
                            priority: 10,
                            match: {
@@ -179,8 +170,7 @@ module Vnet::Openflow::Interfaces
     def flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_MAC,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 20,
 
@@ -198,8 +188,7 @@ module Vnet::Openflow::Interfaces
       #
       # Should be improved to use unique mac addresses in the case of
       # mac2mac.
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_INGRESS_MAC,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 60,
 
@@ -216,8 +205,7 @@ module Vnet::Openflow::Interfaces
     def flows_for_router_egress_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                            priority: 20,
                            match: {
                              :eth_src => mac_info[:mac_address]
@@ -235,8 +223,7 @@ module Vnet::Openflow::Interfaces
       #
 
       # TODO: Currently only one mac address / network is supported.
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_EGRESS_MAC,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_MAC,
                            goto_table: TABLE_ARP_TABLE,
                            priority: 20,
                            match: {
@@ -244,8 +231,7 @@ module Vnet::Openflow::Interfaces
                            },
                            match_network: ipv4_info[:network_id],
                            cookie: cookie)
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS_LOOKUP,
+      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
                            goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
                            priority: 20,
 
@@ -257,8 +243,7 @@ module Vnet::Openflow::Interfaces
 
                            cookie: cookie)
 
-      flows << flow_create(:default,
-                           table: TABLE_ROUTE_EGRESS_INTERFACE,
+      flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE,
                            goto_table: TABLE_ARP_TABLE,
                            priority: 20,
 
@@ -274,8 +259,7 @@ module Vnet::Openflow::Interfaces
       [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS_LOOKUP],
        [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
       ].each { |table, goto_table|
-        flows << flow_create(:default,
-                             table: table,
+        flows << flow_create(table: table,
                              goto_table: goto_table,
                              priority: 90,
                              match_interface: @id)
@@ -293,8 +277,7 @@ module Vnet::Openflow::Interfaces
          :eth_dst => mac_info[:mac_address],
          :arp_tpa => ipv4_info[:ipv4_address]
        }].each { |match|
-        flows << flow_create(:default,
-                             table: TABLE_INTERFACE_INGRESS_MAC,
+        flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
                              priority: 30,
 
                              match: match,

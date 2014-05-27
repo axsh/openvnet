@@ -21,8 +21,7 @@ module Vnet::Openflow::Services
 
     def install
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
 
                            match: {
@@ -76,8 +75,7 @@ module Vnet::Openflow::Services
       add_dns_server(network_id)
 
       flows = []
-      flows << flow_create(:default,
-                           table: TABLE_FLOOD_SIMULATED,
+      flows << flow_create(table: TABLE_FLOOD_SIMULATED,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
@@ -145,12 +143,12 @@ module Vnet::Openflow::Services
 
     def add_dns_server(network_id)
       if dns_server = dns_server_for(network_id)
-        @manager.add_dns_server(network_id, dns_server)
+        Celluloid::Actor.current.add_dns_server(network_id, dns_server)
       end
     end
 
     def remove_dns_server(network_id)
-      @manager.remove_dns_server(network_id)
+      Celluloid::Actor.current.remove_dns_server(network_id)
     end
 
     def process_dns_request(request)

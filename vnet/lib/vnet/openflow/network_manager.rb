@@ -110,17 +110,18 @@ module Vnet::Openflow
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
+      filter << {network_mode: params[:network_mode]} if params.has_key? :network_mode
       filter
     end
 
     def item_initialize(item_map, params)
       item_class =
         case item_map.network_mode
+        when MODE_INTERNAL then Networks::Internal
         when MODE_PHYSICAL then Networks::Physical
         when MODE_VIRTUAL  then Networks::Virtual
         else
-          error log_format('unknown network type',
-                           "network_mode:#{item_map.network_mode}")
+          error log_format("unknown network mode #{item_map.network_mode}")
           return nil
         end
 

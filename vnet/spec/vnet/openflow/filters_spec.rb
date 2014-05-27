@@ -22,13 +22,13 @@ describe Vnet::Openflow::FilterManager do
 
   describe "#initialize" do
     it "applies a flow that accepts all arp traffic" do
-      expect(flows).to include flow_create(:default,
-        table: TABLE_INTERFACE_INGRESS_FILTER,
-        priority: 90,
-        cookie: Vnet::Openflow::Filters::AcceptIngressArp.cookie,
-        match: { eth_type: ETH_TYPE_ARP },
-        goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-      )
+      expect(flows).to include flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+                                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                                           priority: 90,
+                                           match: {
+                                             eth_type: ETH_TYPE_ARP
+                                           },
+                                           cookie: Vnet::Openflow::Filters::AcceptIngressArp.cookie)
     end
   end
 

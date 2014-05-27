@@ -16,6 +16,10 @@ module Vnet::Openflow::Interfaces
                             reply_cookie: self.cookie_for_tag(TAG_ARP_REPLY))
     end
 
+    def log_type
+      'interface/simulated'
+    end
+
     def add_mac_address(params)
       mac_info = super
 
@@ -182,13 +186,8 @@ module Vnet::Openflow::Interfaces
 
     private
 
-    def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} interfaces/simulated: #{message}" + (values ? " (#{values})" : '')
-    end
-
     def flows_for_base(flows)
-      flows << flow_create(:default,
-                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
                              :eth_type => 0x0806,
@@ -199,8 +198,7 @@ module Vnet::Openflow::Interfaces
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
                            },
                            cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
-      flows << flow_create(:default,
-                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
                              :eth_type => 0x0800,
@@ -220,8 +218,7 @@ module Vnet::Openflow::Interfaces
       #
       # Classifiers:
       #
-      flows << flow_create(:default,
-                           table: TABLE_CONTROLLER_PORT,
+      flows << flow_create(table: TABLE_CONTROLLER_PORT,
                            goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                            priority: 30,
 
@@ -235,8 +232,7 @@ module Vnet::Openflow::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(:default,
-                           table: TABLE_FLOOD_SIMULATED,
+      flows << flow_create(table: TABLE_FLOOD_SIMULATED,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {

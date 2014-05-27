@@ -47,7 +47,7 @@ def rule_flow(rule_hash, interface = interface)
     goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
   })
 
-  flow_create(:default, flow_hash)
+  flow_create(flow_hash)
 end
 
 def reference_flows_for(rule, interface)
@@ -68,14 +68,12 @@ def reference_flows_for(rule, interface)
 end
 
 def iso_flow(group, interface, ipv4_address)
-  flow_create(:default,
-    table: TABLE_INTERFACE_INGRESS_FILTER,
-    priority: Vnet::Openflow::Filters::SecurityGroup::ISOLATION_PRIORITY,
-    match_metadata: {interface: interface.id},
-    cookie: cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_ISO),
-    match: match_ipv4_subnet_src(ipv4_address, 32),
-    goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
-  )
+  flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+              goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+              priority: Vnet::Openflow::Filters::SecurityGroup::ISOLATION_PRIORITY,
+              match_interface: interface.id,
+              match: match_ipv4_subnet_src(ipv4_address, 32),
+              cookie: cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_ISO))
 end
 
 def iso_flows_for_interfaces(group, main_interface, iso_interfaces)

@@ -17,8 +17,7 @@ module Vnet::Openflow
     end
 
     def arp_lookup_base_flows(flows)
-      flows << flow_create(:default,
-                           table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
                            match: {
                              :eth_type => 0x0806,
@@ -43,8 +42,7 @@ module Vnet::Openflow
           :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info[:network_prefix])
         }]
       ].each { |priority, match|
-        flows << flow_create(:default,
-                             table: TABLE_ARP_LOOKUP,
+        flows << flow_create(table: TABLE_ARP_LOOKUP,
                              priority: priority,
                              match: match,
                              match_network: ipv4_info[:network_id],
@@ -192,7 +190,7 @@ module Vnet::Openflow
       # Remove old packets...
       messages.select! { |message| Time.now - message[:timestamp] < 30.0 }
 
-      @manager.after([params[:attempts], 10].min) {
+      Celluloid::Actor.current.after([params[:attempts], 10].min) {
         params[:attempts] = params[:attempts] + 1
         arp_lookup_process_timeout(params)
       }
@@ -225,7 +223,7 @@ module Vnet::Openflow
       # Remove old packets...
       messages.select! { |message| Time.now - message[:timestamp] < 30.0 }
 
-      @manager.after([params[:attempts], 10].min) {
+      Celluloid::Actor.current.after([params[:attempts], 10].min) {
         params[:attempts] = params[:attempts] + 1
         arp_lookup_process_timeout(params)
       }
@@ -256,8 +254,7 @@ module Vnet::Openflow
 
       # TODO: Check if interface is remote?
 
-      flow = flow_create(:default,
-                         table: TABLE_ARP_LOOKUP,
+      flow = flow_create(table: TABLE_ARP_LOOKUP,
                          goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
                          priority: 35,
 

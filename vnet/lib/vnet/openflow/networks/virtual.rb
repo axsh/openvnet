@@ -26,13 +26,11 @@ module Vnet::Openflow::Networks
                            }, nil,
                            fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
 
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+      flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
                            priority: 30,
                            match_network: @id)
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_SRC_CLASSIFIER,
+      flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
                            goto_table: TABLE_NETWORK_SRC_MAC_LEARNING,
                            priority: 40,
                            match: {
@@ -40,8 +38,7 @@ module Vnet::Openflow::Networks
                            },
                            match_remote: true,
                            match_network: @id)
-      flows << flow_create(:default,
-                           table: TABLE_NETWORK_DST_CLASSIFIER,
+      flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
                            goto_table: TABLE_NETWORK_DST_MAC_LOOKUP,
                            priority: 30,
                            match_network: @id)

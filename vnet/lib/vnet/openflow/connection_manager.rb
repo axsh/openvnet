@@ -18,8 +18,7 @@ module Vnet::Openflow
 
     def catch_new_egress(mac_lease_id, mac_address)
       flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
-        flow_create(:default,
-                    table: TABLE_INTERFACE_EGRESS_FILTER,
+        flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
                     priority: 20,
                     match: {
                       eth_src: mac_address,

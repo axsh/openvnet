@@ -85,8 +85,7 @@ module Vnet::Openflow::Routes
       # Currently create these two flows even if the interface isn't
       # on this datapath. Should not cause any issues as the interface
       # id will never be matched.
-      flows << flow_create(:default,
-                           table: TABLE_INTERFACE_EGRESS_ROUTES,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_ROUTES,
                            goto_table: TABLE_INTERFACE_EGRESS_MAC,
                            priority: self.is_default_route ? 20 : 30,
 
@@ -95,8 +94,7 @@ module Vnet::Openflow::Routes
                            write_network: @network_id)
 
       if @ingress == true
-        flows << flow_create(:default,
-                             table: TABLE_ROUTER_INGRESS_LOOKUP,
+        flows << flow_create(table: TABLE_ROUTER_INGRESS_LOOKUP,
                              goto_table: TABLE_ROUTER_CLASSIFIER,
                              priority: self.is_default_route ? 20 : 30,
 
@@ -110,8 +108,7 @@ module Vnet::Openflow::Routes
       # to be created even on datapaths where the interface is remote.
       [true, false].each { |reflection|
         if @egress == true
-          flows << flow_create(:default,
-                               table: TABLE_ROUTER_EGRESS_LOOKUP,
+          flows << flow_create(table: TABLE_ROUTER_EGRESS_LOOKUP,
                                goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
                                priority: self.is_default_route ? 20 : 30,
 
