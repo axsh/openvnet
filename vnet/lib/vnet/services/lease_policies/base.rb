@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::LeasePolicies
+module Vnet::Services::LeasePolicies
 
   class Base
     include Celluloid::Logger

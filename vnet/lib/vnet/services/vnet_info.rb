@@ -2,6 +2,7 @@ module Vnet::Services
   class VnetInfo
     MANAGER_NAMES = %w(
       ip_retention
+      lease_policy
     )
 
     MANAGER_NAMES.each do |name|

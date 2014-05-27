@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Services
 
   # TODO: This class is currently not used.  Make sure we have plans to extend and
   # use it, otherwise delete.
-  class LeasePolicyManager < Vnet::Openflow::Manager
+  class LeasePolicyManager < Vnet::Manager
 
     #
     # Events:

@@ -16,7 +16,6 @@ module Vnet::Openflow
       connection
       datapath
       interface
-      lease_policy
       network
       route
       router

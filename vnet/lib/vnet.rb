@@ -255,8 +255,6 @@ module Vnet
     autoload :FilterManager, 'vnet/openflow/filter_manager'
     autoload :Interface, 'vnet/openflow/interface'
     autoload :InterfaceManager, 'vnet/openflow/interface_manager'
-    autoload :LeasePolicy, 'vnet/openflow/lease_policy'
-    autoload :LeasePolicyManager, 'vnet/openflow/lease_policy_manager'
     autoload :Network, 'vnet/openflow/network'
     autoload :NetworkManager, 'vnet/openflow/network_manager'
     autoload :Port, 'vnet/openflow/port'
@@ -284,6 +282,14 @@ module Vnet
       autoload :Remote, 'vnet/openflow/datapaths/remote'
     end
 
+    module Filters
+      autoload :AcceptAllTraffic, 'vnet/openflow/filters/accept_all_traffic'
+      autoload :AcceptIngressArp, 'vnet/openflow/filters/accept_ingress_arp'
+      autoload :Base, 'vnet/openflow/filters/base'
+      autoload :Cookies, 'vnet/openflow/filters/cookies'
+      autoload :SecurityGroup, 'vnet/openflow/filters/security_group'
+    end
+
     module Interfaces
       autoload :Base, 'vnet/openflow/interfaces/base'
       autoload :Edge, 'vnet/openflow/interfaces/edge'
@@ -294,11 +300,6 @@ module Vnet
       autoload :Remote, 'vnet/openflow/interfaces/remote'
       autoload :Simulated, 'vnet/openflow/interfaces/simulated'
       autoload :Vif, 'vnet/openflow/interfaces/vif'
-    end
-
-    module LeasePolicies
-      autoload :Base, 'vnet/openflow/lease_policies/base'
-      autoload :Simple, 'vnet/openflow/lease_policies/simple'
     end
 
     module Networks
@@ -324,14 +325,6 @@ module Vnet
     module Routers
       autoload :Base, 'vnet/openflow/routers/base'
       autoload :RouteLink, 'vnet/openflow/routers/route_link'
-    end
-
-    module Filters
-      autoload :AcceptAllTraffic, 'vnet/openflow/filters/accept_all_traffic'
-      autoload :AcceptIngressArp, 'vnet/openflow/filters/accept_ingress_arp'
-      autoload :Base, 'vnet/openflow/filters/base'
-      autoload :Cookies, 'vnet/openflow/filters/cookies'
-      autoload :SecurityGroup, 'vnet/openflow/filters/security_group'
     end
 
     module Services
@@ -361,8 +354,17 @@ module Vnet
   end
 
   module Services
-    autoload :Vnmgr, 'vnet/services/vnmgr'
-    autoload :VnetInfo, 'vnet/services/vnet_info'
     autoload :IpRetentionManager, 'vnet/services/ip_retention_manager'
+    autoload :LeasePolicy, 'vnet/openflow/lease_policy'
+    autoload :LeasePolicyManager, 'vnet/openflow/lease_policy_manager'
+    autoload :VnetInfo, 'vnet/services/vnet_info'
+    autoload :Vnmgr, 'vnet/services/vnmgr'
+
+    module LeasePolicies
+      autoload :Base, 'vnet/openflow/lease_policies/base'
+      autoload :Simple, 'vnet/openflow/lease_policies/simple'
+    end
+
   end
+
 end
