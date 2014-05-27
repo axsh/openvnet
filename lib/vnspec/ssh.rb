@@ -80,6 +80,15 @@ module Vnspec
       return true
     end
 
+    def scp(upload_or_download, host, local, remote)
+      case upload_or_download.to_sym
+      when :upload
+        Net::SCP.download!(host, ssh_options[:user], local, remotel)
+      when :download
+        Net::SCP.download!(host, ssh_options[:user], remote, local)
+      end
+    end
+
     def to_ssh_option_string(options = {})
       options.map{|k,v| "-o #{k}=#{v}"}.join(" ")
     end

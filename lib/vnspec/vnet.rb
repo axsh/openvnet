@@ -28,6 +28,7 @@ module Vnspec
           Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
             ssh(ip, "initctl stop vnet-#{node_name.to_s}", use_sudo: true)
           end
+          rotate_log(node_name)
         else
           %w(webapi vna vnmgr).each do |n|
             stop(n)
@@ -156,6 +157,46 @@ module Vnspec
 
       def wait_for_vna
         sleep(config[:vna_waittime])
+      end
+
+      def aggregate_logs(job_id, name)
+        @job_id = job_id
+
+        yield.tap do
+          env_dir = "#{Vnspec::ROOT}/log/#{config[:env]}"
+          job_dir = "#{env_dir}/#{@job_id}"
+          dst_dir = "#{job_dir}/#{name}"
+          FileUtils.mkdir_p(dst_dir)
+          config[:nodes].each do |node_name, ips|
+            ips.each_with_index do |ip, i|
+              src = logfile_for(node_name)
+              dst = "#{dst_dir}/#{node_name}"
+              dst += (i + 1).to_s if node_name == :vna
+              dst += ".log"
+              scp(:download, ip, dst, src)
+            end
+          end
+          FileUtils.rm_f("#{env_dir}/current")
+          File.symlink(job_dir, "#{env_dir}/current")
+        end
+      end
+
+      private
+
+      def rotate_log(node_name)
+        return unless @job_id
+        Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
+          logfile = logfile_for(node_name)
+          timestamp = "#{Time.now.strftime("%Y%m%d%H%M%S%L")}"
+          rotated_logfile = "#{logfile}.#{timestamp}"
+          ssh(ip, "test -f #{logfile} && mv #{logfile} #{rotated_logfile}", use_sudo: true)
+          ssh(ip, "test -f #{rotated_logfile} && gzip #{rotated_logfile}", use_sudo: true)
+          ssh(ip, "touch #{logfile}", use_sudo: true)
+        end
+      end
+
+      def logfile_for(node_name)
+        File.join(config[:vnet_log_directory], "#{node_name}.log")
       end
     end
   end

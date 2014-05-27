@@ -48,9 +48,12 @@ module Vnspec
 
         return statuses.all?{|n, s| s }
       end
-      setup(name)
-      sleep(1)
-      SPec.exec(name)
+
+      Vnet.aggregate_logs(job_id, name) do
+        setup(name)
+        sleep(1)
+        SPec.exec(name)
+      end
     end
 
     def setup(name = :all)
@@ -110,6 +113,10 @@ module Vnspec
         return false
       end
       return true
+    end
+
+    def job_id
+      @job_id ||= "#{Time.now.strftime("%Y%m%d%H%M%S")}"
     end
   end
 end

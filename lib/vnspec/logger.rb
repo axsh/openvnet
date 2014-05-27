@@ -49,7 +49,7 @@ module Vnspec
         end
         @logger = ::MultiLogger.new(level: level, loggers: [
           std_logger,
-          ::Logger.new(File.expand_path("../../log/#{config[:env]}.log", File.dirname(__FILE__))),
+          ::Logger.new("#{Vnspec::ROOT}/log/#{config[:env]}.log"),
         ])
       end
       @logger
