@@ -17,7 +17,7 @@ class MockOvsOfctl
   end
 end
 
-class MockDpInfo < Vnet::Openflow::DpInfo
+class MockDpInfo < Vnet::Core::DpInfo
 
   attr_reader :added_tunnels
   attr_reader :deleted_tunnels

@@ -4,7 +4,7 @@ require 'trema'
 
 include Vnet::Constants::Openflow
 
-describe Vnet::Openflow::TunnelManager do
+describe Vnet::Core::TunnelManager do
 
   use_mock_event_handler
 
