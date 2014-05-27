@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Interfaces
+module Vnet::Core::Interfaces
 
   class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
-    include Vnet::Openflow::AddressHelpers
+    include Vnet::Core::AddressHelpers
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
     include Vnet::Event
@@ -128,16 +128,16 @@ module Vnet::Openflow::Interfaces
     # Update variables by first duplicating to avoid memory
     # consistency issues with values passed to other actors.
     def to_hash
-      Vnet::Openflow::Interface.new(id: @id,
-                                    uuid: @uuid,
-                                    mode: @mode,
-                                    port_number: @port_number,
-                                    port_name: @port_name,
-                                    display_name: @display_name,
-                                    mac_addresses: @mac_addresses,
+      Vnet::Core::Interface.new(id: @id,
+                                uuid: @uuid,
+                                mode: @mode,
+                                port_number: @port_number,
+                                port_name: @port_name,
+                                display_name: @display_name,
+                                mac_addresses: @mac_addresses,
 
-                                    active_datapath_ids: @active_datapath_ids,
-                                    owner_datapath_ids: @owner_datapath_ids)
+                                active_datapath_ids: @active_datapath_ids,
+                                owner_datapath_ids: @owner_datapath_ids)
     end
 
     #

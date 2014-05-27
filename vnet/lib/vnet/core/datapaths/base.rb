@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Datapaths
+module Vnet::Core::Datapaths
 
   class Base < Vnet::ItemDpUuid
     include Celluloid::Logger

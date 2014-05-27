@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Interfaces
+module Vnet::Core::Interfaces
 
   # Remote interface types are any type of interface that is located
   # on other datapaths.

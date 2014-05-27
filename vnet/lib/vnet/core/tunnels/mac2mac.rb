@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Tunnels
+module Vnet::Core::Tunnels
 
   class Mac2Mac < Base
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Interfaces
+module Vnet::Core::Interfaces
 
   # Simulated interfaces does all packet handling using the OpenFlow
   # controller.

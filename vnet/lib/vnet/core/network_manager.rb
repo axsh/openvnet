@@ -2,11 +2,10 @@
 
 require 'celluloid'
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class NetworkManager < Vnet::Openflow::Manager
+  class NetworkManager < Vnet::Core::Manager
     include Vnet::UpdateItemStates
-
     include Vnet::Constants::Network
 
     #

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Tunnels
+module Vnet::Core::Tunnels
 
   class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
@@ -46,19 +46,19 @@ module Vnet::Openflow::Tunnels
     end
 
     def to_hash
-      Vnet::Openflow::Tunnel.new(id: @id,
-                                 uuid: @uuid,
-                                 port_name: @display_name,
+      Vnet::Core::Tunnel.new(id: @id,
+                             uuid: @uuid,
+                             port_name: @display_name,
 
-                                 dst_datapath_id: @dst_datapath_id,
-                                 dst_interface_id: @dst_interface_id,
-                                 src_interface_id: @src_interface_id,
-                                 dst_network_id: @dst_network_id,
-                                 src_network_id: @src_network_id,
-                                 dst_ipv4_address: @dst_ipv4_address,
-                                 src_ipv4_address: @src_ipv4_address,
+                             dst_datapath_id: @dst_datapath_id,
+                             dst_interface_id: @dst_interface_id,
+                             src_interface_id: @src_interface_id,
+                             dst_network_id: @dst_network_id,
+                             src_network_id: @src_network_id,
+                             dst_ipv4_address: @dst_ipv4_address,
+                             src_ipv4_address: @src_ipv4_address,
 
-                                 datapath_networks_size: @datapath_networks.size)
+                             datapath_networks_size: @datapath_networks.size)
     end
 
     def unused?

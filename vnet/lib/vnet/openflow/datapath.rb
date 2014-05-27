@@ -46,10 +46,10 @@ module Vnet::Openflow
       @dpid = dp_id
       @dpid_s = "0x%016x" % @dpid
 
-      @dp_info = DpInfo.new(controller: ofc,
-                            datapath: self,
-                            dpid: dp_id,
-                            ovs_ofctl: ofctl)
+      @dp_info = Vnet::Core::DpInfo.new(controller: ofc,
+                                        datapath: self,
+                                        dpid: dp_id,
+                                        ovs_ofctl: ofctl)
 
       @controller = @dp_info.controller
       @ovs_ofctl = @dp_info.ovs_ofctl

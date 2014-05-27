@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Translations
+module Vnet::Core::Translations
 
   class Base < Vnet::ItemDpUuidMode
     include Celluloid::Logger
@@ -30,9 +30,9 @@ module Vnet::Openflow::Translations
     end
 
     def to_hash
-      Vnet::Openflow::Translation.new(id: @id,
-                                      uuid: @uuid,
-                                      mode: @mode)
+      Vnet::Core::Translation.new(id: @id,
+                                  uuid: @uuid,
+                                  mode: @mode)
     end
 
     def uninstall

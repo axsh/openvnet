@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Filters
+module Vnet::Core::Filters
 
   class Base < Vnet::ItemBase
     include Vnet::Openflow::FlowHelpers

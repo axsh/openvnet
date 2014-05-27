@@ -2,7 +2,7 @@
 
 require 'racket'
 
-module Vnet::Openflow::Services
+module Vnet::Core::Services
 
   class Router < Base
 

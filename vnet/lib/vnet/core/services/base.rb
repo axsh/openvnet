@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Services
+module Vnet::Core::Services
 
   class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
@@ -78,10 +78,10 @@ module Vnet::Openflow::Services
     end
 
     def to_hash
-      Vnet::Openflow::Service.new(id: @id,
-                                  uuid: @uuid,
-                                  type: @type,
-                                  interface_id: @interface_id)
+      Vnet::Core::Service.new(id: @id,
+                              uuid: @uuid,
+                              type: @type,
+                              interface_id: @interface_id)
     end
 
     def find_ipv4_and_network(message, ipv4_address)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
   # Thread-safe access to static information on the datapath and
   # managers / actors. No writes are done to this instance after the
@@ -77,10 +77,10 @@ module Vnet::Openflow
 
     def del_cookie(cookie, cookie_mask = Vnet::Constants::OpenflowFlows::COOKIE_MASK)
       options = {
-        :command => Controller::OFPFC_DELETE,
-        :table_id => Controller::OFPTT_ALL,
-        :out_port => Controller::OFPP_ANY,
-        :out_group => Controller::OFPG_ANY,
+        :command => Vnet::Openflow::Controller::OFPFC_DELETE,
+        :table_id => Vnet::Openflow::Controller::OFPTT_ALL,
+        :out_port => Vnet::Openflow::Controller::OFPP_ANY,
+        :out_group => Vnet::Openflow::Controller::OFPG_ANY,
         :cookie => cookie,
         :cookie_mask => cookie_mask
       }
@@ -92,10 +92,10 @@ module Vnet::Openflow
 
     def del_flows(params = {})
       options = {
-        :command => Controller::OFPFC_DELETE,
-        :table_id => Controller::OFPTT_ALL,
-        :out_port => Controller::OFPP_ANY,
-        :out_group => Controller::OFPG_ANY,
+        :command => Vnet::Openflow::Controller::OFPFC_DELETE,
+        :table_id => Vnet::Openflow::Controller::OFPTT_ALL,
+        :out_port => Vnet::Openflow::Controller::OFPP_ANY,
+        :out_group => Vnet::Openflow::Controller::OFPG_ANY,
       }.merge(params)
 
       @controller.pass_task {
@@ -105,10 +105,10 @@ module Vnet::Openflow
 
     def del_all_flows
       options = {
-        :command => Controller::OFPFC_DELETE,
-        :table_id => Controller::OFPTT_ALL,
-        :out_port => Controller::OFPP_ANY,
-        :out_group => Controller::OFPG_ANY,
+        :command => Vnet::Openflow::Controller::OFPFC_DELETE,
+        :table_id => Vnet::Openflow::Controller::OFPTT_ALL,
+        :out_port => Vnet::Openflow::Controller::OFPP_ANY,
+        :out_group => Vnet::Openflow::Controller::OFPG_ANY,
       }
 
       @controller.pass_task {
@@ -162,7 +162,7 @@ module Vnet::Openflow
 
     def initialize_managers
       MANAGER_NAMES.each do |name|
-        instance_variable_set("@#{name}_manager", Vnet::Openflow.const_get("#{name.to_s.camelize}Manager").new(self))
+        instance_variable_set("@#{name}_manager", Vnet::Core.const_get("#{name.to_s.camelize}Manager").new(self))
       end
     end
 

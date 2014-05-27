@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class RouterManager < Vnet::Openflow::Manager
+  class RouterManager < Vnet::Core::Manager
 
     #
     # Events:

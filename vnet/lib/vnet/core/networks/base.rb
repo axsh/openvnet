@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Networks
+module Vnet::Core::Networks
 
   class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
@@ -25,12 +25,12 @@ module Vnet::Openflow::Networks
     end
 
     def to_hash
-      Vnet::Openflow::Network.new(id: @id,
-                                  uuid: @uuid,
-                                  type: self.network_type,
+      Vnet::Core::Network.new(id: @id,
+                              uuid: @uuid,
+                              type: self.network_type,
 
-                                  ipv4_network: @ipv4_network,
-                                  ipv4_prefix: @ipv4_prefix)
+                              ipv4_network: @ipv4_network,
+                              ipv4_prefix: @ipv4_prefix)
     end
 
     def uninstall

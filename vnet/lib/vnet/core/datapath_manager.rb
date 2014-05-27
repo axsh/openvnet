@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class DatapathManager < Vnet::Openflow::Manager
+  class DatapathManager < Vnet::Core::Manager
     include Vnet::Openflow::FlowHelpers
 
     #

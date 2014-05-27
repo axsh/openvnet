@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Ports
+module Vnet::Core::Ports
 
   module Vif
     include Vnet::Openflow::FlowHelpers

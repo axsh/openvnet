@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
   class Manager < Vnet::Manager
 
     def initialize(info, options = {})

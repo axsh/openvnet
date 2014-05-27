@@ -2,7 +2,7 @@
 
 require 'ostruct'
 
-module Vnet::Openflow
+module Vnet::Core
 
   class Port < OpenStruct
   end

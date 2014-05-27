@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Filters
+module Vnet::Core::Filters
   class AcceptIngressArp < Base
     def self.cookie
       COOKIE_TYPE_FILTER |

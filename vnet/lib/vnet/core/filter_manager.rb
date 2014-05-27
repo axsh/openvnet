@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
-  class FilterManager < Vnet::Openflow::Manager
+module Vnet::Core
+
+  class FilterManager < Vnet::Core::Manager
     include Vnet::Openflow::FlowHelpers
 
     subscribe_event UPDATED_SG_RULES, :updated_sg_rules
@@ -194,4 +195,5 @@ module Vnet::Openflow
     end
 
   end
+
 end

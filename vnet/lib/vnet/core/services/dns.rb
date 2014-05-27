@@ -3,7 +3,7 @@
 require 'net/dns'
 require 'racket'
 
-module Vnet::Openflow::Services
+module Vnet::Core::Services
   class Dns < Base
     attr_reader :records
     attr_reader :dns_service

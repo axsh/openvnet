@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Filters
+module Vnet::Core::Filters
   class SecurityGroup < Base
     include Celluloid::Logger
     include Vnet::Helpers::SecurityGroup

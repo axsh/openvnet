@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class ServiceManager < Vnet::Openflow::Manager
+  class ServiceManager < Vnet::Core::Manager
     include Vnet::Constants::NetworkService
     include ActiveInterfaces
 
@@ -89,9 +89,9 @@ module Vnet::Openflow
     def item_initialize(item_map, params)
       item_class =
         case item_map.type
-        when TYPE_DHCP   then Vnet::Openflow::Services::Dhcp
-        when TYPE_DNS    then Vnet::Openflow::Services::Dns
-        when TYPE_ROUTER then Vnet::Openflow::Services::Router
+        when TYPE_DHCP   then Services::Dhcp
+        when TYPE_DNS    then Services::Dns
+        when TYPE_ROUTER then Services::Router
         else
           return
         end

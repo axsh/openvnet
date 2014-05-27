@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Connections
+module Vnet::Core::Connections
 
   class Base < Vnet::ItemBase
     include Vnet::Openflow::FlowHelpers
     include Celluloid::Logger
 
-    CM = Vnet::Openflow::ConnectionManager
+    CM = Vnet::Core::ConnectionManager
 
     EGRESS_IDLE_TIMEOUT  = 550
     INGRESS_IDLE_TIMEOUT = 600

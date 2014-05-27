@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Connections
+module Vnet::Core::Connections
   class TCP < Base
     def match_egress(message)
       {

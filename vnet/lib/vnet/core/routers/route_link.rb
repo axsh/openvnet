@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Routers
+module Vnet::Core::Routers
 
   class RouteLink < Base
 

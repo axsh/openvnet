@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class InterfaceManager < Vnet::Openflow::Manager
+  class InterfaceManager < Vnet::Core::Manager
     include ActivePorts
 
     #

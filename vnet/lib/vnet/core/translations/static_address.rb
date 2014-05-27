@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Translations
+module Vnet::Core::Translations
 
   class StaticAddress < Base
 

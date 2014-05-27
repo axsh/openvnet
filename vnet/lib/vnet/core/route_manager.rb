@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class RouteManager < Vnet::Openflow::Manager
+  class RouteManager < Vnet::Core::Manager
     include ActiveNetworks
     include ActiveRouteLinks
 

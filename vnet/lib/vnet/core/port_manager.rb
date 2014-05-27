@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class PortManager < Vnet::Openflow::Manager
+  class PortManager < Vnet::Core::Manager
 
     #
     # Events:

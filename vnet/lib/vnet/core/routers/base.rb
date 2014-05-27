@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Routers
+module Vnet::Core::Routers
 
   class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
@@ -26,11 +26,11 @@ module Vnet::Openflow::Routers
     end
 
     def to_hash
-      Vnet::Openflow::Router.new(id: @id,
-                                 uuid: @uuid,
-                                 #mode: @mode,
+      Vnet::Core::Router.new(id: @id,
+                             uuid: @uuid,
+                             #mode: @mode,
 
-                                 mac_address: @mac_address)
+                             mac_address: @mac_address)
     end
 
     #

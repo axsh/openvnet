@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Networks
+module Vnet::Core::Networks
 
   class Internal < Base
 

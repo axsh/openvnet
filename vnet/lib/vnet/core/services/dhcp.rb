@@ -3,7 +3,7 @@
 require 'net/dhcp'
 require 'racket'
 
-module Vnet::Openflow::Services
+module Vnet::Core::Services
 
   class Dhcp < Base
 

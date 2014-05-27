@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class TranslationManager < Vnet::Openflow::Manager
+  class TranslationManager < Vnet::Core::Manager
 
     include Vnet::Constants::Translation
     include ActiveInterfaces

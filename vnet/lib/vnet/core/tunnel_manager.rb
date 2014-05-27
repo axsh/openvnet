@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow
+module Vnet::Core
 
-  class TunnelManager < Vnet::Openflow::Manager
+  class TunnelManager < Vnet::Core::Manager
     include Vnet::Openflow::FlowHelpers
     include Vnet::UpdatePropertyStates
 

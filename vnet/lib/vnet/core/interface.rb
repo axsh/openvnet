@@ -2,10 +2,10 @@
 
 require 'ostruct'
 
-module Vnet::Openflow
+module Vnet::Core
 
   class Interface < OpenStruct
-    include MetadataHelpers
+    include Vnet::Openflow::MetadataHelpers
 
     def get_ipv4_infos(params)
       case

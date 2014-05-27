@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Ports
+module Vnet::Core::Ports
 
   module Tunnel
     include Vnet::Openflow::FlowHelpers

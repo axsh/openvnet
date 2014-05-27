@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-module Vnet::Openflow::Interfaces
+module Vnet::Core::Interfaces
   class Edge < Base
     def initialize(params)
       super
