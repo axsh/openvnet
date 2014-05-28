@@ -29,11 +29,11 @@ module Vnet::Services
       run: true,
     }
 
-    subscribe_event IP_RETENTION_INITIALIZED, :load_item
-    subscribe_event IP_RETENTION_UNLOAD_ITEM, :unload_item
-    subscribe_event IP_RETENTION_CREATED_ITEM, :created_item
-    subscribe_event IP_RETENTION_DELETED_ITEM, :unload_item
-    subscribe_event IP_RETENTION_EXPIRED_ITEM, :expire_item
+    #subscribe_event IP_RETENTION_INITIALIZED, :load_item
+    #subscribe_event IP_RETENTION_UNLOAD_ITEM, :unload_item
+    #subscribe_event IP_RETENTION_CREATED_ITEM, :created_item
+    #subscribe_event IP_RETENTION_DELETED_ITEM, :unload_item
+    #subscribe_event IP_RETENTION_EXPIRED_ITEM, :expire_item
 
     def initialize(info, options = {})
       super
@@ -129,7 +129,7 @@ module Vnet::Services
 
     def check_grace_time_expiration
       select(grace_time_expired_at: Time.now).each do |item|
-        MW::IpRetention.destroy(item[:id])
+        #MW::IpRetention.destroy(item[:id])
         info("Destroyed exipred ip_retention: #{item[:id]}")
       end
     end

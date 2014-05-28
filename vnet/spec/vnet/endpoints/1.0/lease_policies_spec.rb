@@ -98,9 +98,6 @@ describe "/lease_policies" do
   describe "POST /:uuid/ip_leases" do
     let(:lease_policy) do
       Fabricate(:lease_policy_with_network) do
-        lease_time 3600
-        grace_time 1800
-
         ip_lease_containers(count: 2) do
           Fabricate(:ip_lease_container)
         end

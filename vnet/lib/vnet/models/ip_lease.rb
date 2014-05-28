@@ -5,7 +5,7 @@ module Vnet::Models
     taggable 'il'
 
     plugin :paranoia
-    plugin :ip_address, dependency: :disabled
+    plugin :ip_address
 
     many_to_one :network
     one_to_one :ip_retention
@@ -14,6 +14,7 @@ module Vnet::Models
     many_to_many :ip_lease_containers, join_table: :ip_lease_container_ip_leases
 
     plugin :association_dependencies,
+      ip_retention: :destroy,
       ip_lease_container_ip_leases: :destroy
 
     dataset_module do
@@ -53,14 +54,6 @@ module Vnet::Models
         ipv4_address: self.ipv4_address,
         lease_time_expired_at: self.lease_time_expired_at,
       })
-    end
-
-    private
-
-    def after_destroy
-      unless self.ip_retention
-        self.ip_address.destroy
-      end
     end
   end
 end
