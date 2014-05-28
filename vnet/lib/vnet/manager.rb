@@ -39,20 +39,6 @@ module Vnet
       item_hash
     end
 
-    def wait_for_loaded(params, max_wait = 10.0)
-      item = internal_detect(params)
-      return item_to_hash(item) if item
-
-      match_proc = match_item_proc(params)
-
-      item = create_event_task(:loaded, max_wait) { |item_id|
-        item = (item_id && @items[item_id]) || next
-        match_proc.call(item_id, item) ? item : nil
-      }
-
-      item_to_hash(item)
-    end
-    
     #
     # Enumerator methods:
     #
@@ -75,6 +61,14 @@ module Vnet
       end
     end
 
+    #
+    # Polling methods:
+    #
+
+    def wait_for_loaded(params, max_wait = 10.0)
+      item_to_hash(internal_wait_for_loaded(params))
+    end
+    
     #
     # Other:
     #
@@ -329,6 +323,22 @@ module Vnet
 
     def internal_select(params)
       @items.select(&match_item_proc(params))
+    end
+
+    #
+    # Internal polling methods:
+    #
+
+    def internal_wait_for_loaded(params, max_wait = 10.0)
+      item = internal_detect(params)
+      return item if item
+
+      match_proc = match_item_proc(params)
+
+      create_event_task(:loaded, max_wait) { |item_id|
+        item = (item_id && @items[item_id]) || next
+        match_proc.call(item_id, item) ? item : nil
+      }
     end
 
     #
