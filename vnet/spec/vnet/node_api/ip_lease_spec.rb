@@ -68,4 +68,26 @@ describe Vnet::NodeApi::IpLease do
       expect(events[1][:options][:ip_lease_id]).to eq ip_lease.id
     end
   end
+
+  describe "expire" do
+    it "success" do
+      ip_retention = Fabricate(:ip_retention)
+      ip_lease = ip_retention.ip_lease
+      interface = ip_lease.interface
+
+      ip_lease = Vnet::NodeApi::IpLease.expire(ip_lease.canonical_uuid)
+
+      expect(ip_lease.interface_id).to be_nil
+      expect(ip_lease.mac_lease_id).to be_nil
+
+      events = MockEventHandler.handled_events
+      expect(events.size).to eq 1
+
+      events.first.tap do |event|
+        expect(event[:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
+        expect(event[:options][:id]).to eq interface.id
+        expect(event[:options][:ip_lease_id]).to eq ip_lease.id
+      end
+    end
+  end
 end

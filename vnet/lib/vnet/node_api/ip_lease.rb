@@ -69,6 +69,25 @@ module Vnet::NodeApi
 
         ip_lease
       end
+
+      def expire(uuid)
+        ip_lease = model_class[uuid]
+        interface = ip_lease.interface
+
+        ip_lease.interface_id = nil
+        ip_lease.mac_lease_id = nil
+        transaction do
+          ip_lease.save_changes
+        end
+
+        interface.security_groups.each do |group|
+          dispatch_update_sg_ip_addresses(group)
+        end
+
+        dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: interface.id, ip_lease_id: ip_lease.id)
+
+        ip_lease
+      end
     end
   end
 end
