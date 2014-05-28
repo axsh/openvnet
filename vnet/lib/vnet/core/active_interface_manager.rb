@@ -1,0 +1,86 @@
+# -*- coding: utf-8 -*-
+
+module Vnet::Core
+
+  class ActiveInterfaceManager < Vnet::Core::Manager
+
+    #
+    # Events:
+    #
+
+    subscribe_event ACTIVE_INTERFACE_INITIALIZED, :load_item
+    subscribe_event ACTIVE_INTERFACE_UNLOAD_ITEM, :unload_item
+    subscribe_event ACTIVE_INTERFACE_CREATED_ITEM, :created_item
+    subscribe_event ACTIVE_INTERFACE_DELETED_ITEM, :unload_item
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    #
+    # Specialize Manager:
+    #
+
+    def mw_class
+      MW::ActiveInterface
+    end
+
+    def initialized_item_event
+      ACTIVE_INTERFACE_INITIALIZED
+    end
+
+    def item_unload_event
+      ACTIVE_INTERFACE_UNLOAD_ITEM
+    end
+
+    # TODO: Add 'not_local/remote' filter.
+
+    def match_item_proc_part(filter_part)
+      filter, value = filter_part
+
+      case filter
+      when :id, :interface_id, :datapath_id, :port_name, :label
+        proc { |id, item| value == item.send(filter) }
+      # when :not_local
+      #   proc { |id, item| value != item.network_id }
+      else
+        raise NotImplementedError, filter
+      end
+    end
+
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
+      filter << {datapath_id: params[:datapath_id]} if params.has_key? :datapath_id
+      filter << {port_name: params[:port_name]} if params.has_key? :port_name
+      filter << {label: params[:label]} if params.has_key? :label
+      filter
+    end
+
+    def item_initialize(item_map, params)
+      item_class = ActiveInterfaces::Base
+      item = item_class.new(dp_info: @dp_info, map: item_map)
+    end
+
+    #
+    # Create / Delete events:
+    #
+
+    # item created in db on queue 'item.id'
+    def created_item(params)
+      return if @items[params[:id]]
+      return unless @active_route_links[params[:route_link_id]]
+
+      internal_new_item(mw_class.new(params), {})
+    end
+
+    #
+    # Overload helper methods:
+    #
+
+  end
+
+end

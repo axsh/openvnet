@@ -226,6 +226,8 @@ module Vnet
 
   module Models
     class InvalidUUIDError < StandardError; end
+
+    autoload :ActiveInterface, 'vnet/models/active_interface'
     autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
@@ -260,6 +262,7 @@ module Vnet
   end
 
   module ModelWrappers
+    autoload :ActiveInterface, 'vnet/model_wrappers/active_interface'
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
@@ -297,6 +300,8 @@ module Vnet
   module NodeApi
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
+
+    autoload :ActiveInterface, 'vnet/node_api/models'
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
@@ -336,7 +341,6 @@ module Vnet
   end
 
   module Openflow
-
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
@@ -348,7 +352,6 @@ module Vnet
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
-
   end
 
   module Plugins
