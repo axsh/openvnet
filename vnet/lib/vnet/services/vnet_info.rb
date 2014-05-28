@@ -1,7 +1,18 @@
+# -*- coding: utf-8 -*-
+
+# Thread-safe access to static information on the services and
+# managers.
+#
+# Since this isn't an actor we avoid the need to go through Datapath's
+# thread for every time we use a manager.
+
 module Vnet::Services
+
   class VnetInfo
+
     MANAGER_NAMES = %w(
       ip_retention
+      lease_policy
     )
 
     MANAGER_NAMES.each do |name|
@@ -20,5 +31,6 @@ module Vnet::Services
         end
       end
     end
+
   end
 end

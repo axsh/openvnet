@@ -4,7 +4,7 @@ require 'spec_helper'
 
 include Vnet::Constants::Openflow
 
-describe Vnet::Openflow::ServiceManager do
+describe Vnet::Core::ServiceManager do
   let(:datapath) { create_mock_datapath }
 
   let(:service_manager) do

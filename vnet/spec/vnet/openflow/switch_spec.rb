@@ -6,7 +6,7 @@ describe Vnet::Openflow::Switch do
   describe "switch_ready" do
     it "sends messages" do
       datapath = MockDatapath.new(double, 1)
-      Vnet::Openflow::TunnelManager.any_instance.stub(:create_all_tunnels)
+      Vnet::Core::TunnelManager.any_instance.stub(:create_all_tunnels)
       switch = Vnet::Openflow::Switch.new(datapath)
       switch.switch_ready
 
@@ -23,8 +23,8 @@ describe Vnet::Openflow::Switch do
 
         tunnel = double(:tunnel)
 
-        #Vnet::Openflow::TunnelManager.any_instance.stub(:item).and_return(tunnel)
-        allow_any_instance_of(Vnet::Openflow::TunnelManager).to receive(:retrieve).and_return(tunnel)
+        #Vnet::Core::TunnelManager.any_instance.stub(:item).and_return(tunnel)
+        allow_any_instance_of(Vnet::Core::TunnelManager).to receive(:retrieve).and_return(tunnel)
 
         dp.create_mock_port_manager
         dp.dp_info.port_manager.set_datapath_info(dp.datapath_info)
@@ -41,7 +41,7 @@ describe Vnet::Openflow::Switch do
         allow(port).to receive(:port_number).and_return(5)
         allow(port).to receive(:id).and_return(5)
 
-        allow_any_instance_of(Vnet::Openflow::Ports::Base).to receive(:new).and_return(port)
+        allow_any_instance_of(Vnet::Core::Ports::Base).to receive(:new).and_return(port)
 
         dp.dp_info.port_manager.insert(port_desc)
 
