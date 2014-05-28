@@ -361,7 +361,7 @@ module Vnet
   end
 
   module Services
-    autoload :IpRetentionManager, 'vnet/services/ip_retention_manager'
+    autoload :IpRetentionContainerManager, 'vnet/services/ip_retention_container_manager'
     autoload :LeasePolicy, 'vnet/services/lease_policy'
     autoload :LeasePolicyManager, 'vnet/services/lease_policy_manager'
     autoload :VnetInfo, 'vnet/services/vnet_info'

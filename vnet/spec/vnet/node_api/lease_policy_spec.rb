@@ -129,7 +129,7 @@ describe Vnet::NodeApi::LeasePolicy do
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
 
-      expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_CREATED_IP_RETENTION
+      expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
       expect(events[0][:options][:id]).to eq ip_lease.ip_retention.id
       expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
     end
@@ -173,7 +173,7 @@ describe Vnet::NodeApi::LeasePolicy do
           expect(events[0][:options][:id]).to eq interface.id
           expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
 
-          expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_CREATED_IP_RETENTION
+          expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
 
@@ -200,7 +200,7 @@ describe Vnet::NodeApi::LeasePolicy do
           expect(events[0][:options][:id]).to eq interface.id
           expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
 
-          expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_CREATED_IP_RETENTION
+          expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
     end
@@ -233,7 +233,7 @@ describe Vnet::NodeApi::LeasePolicy do
 
           events = MockEventHandler.handled_events
           expect(events.size).to eq 1
-          expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_CREATED_IP_RETENTION
+          expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
 
@@ -250,7 +250,7 @@ describe Vnet::NodeApi::LeasePolicy do
 
           events = MockEventHandler.handled_events
           expect(events.size).to eq 1
-          expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_CREATED_IP_RETENTION
+          expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
     end

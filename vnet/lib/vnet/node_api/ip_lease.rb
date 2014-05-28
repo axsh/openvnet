@@ -62,7 +62,7 @@ module Vnet::NodeApi
         end
 
         if ip_retention
-          dispatch_event(IP_RETENTION_CONTAINER_DELETED_IP_RETENTION, id: ip_retention.id)
+          dispatch_event(IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, id: ip_retention.ip_retention_container_id, ip_retention_id: ip_retention.id)
         end
 
         dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)

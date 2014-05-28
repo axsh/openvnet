@@ -25,7 +25,7 @@ module Vnet::NodeApi
           )
         end
 
-        dispatch_event(IP_RETENTION_CONTAINER_CREATED_IP_RETENTION, id: ip_retention.id, ip_lease_id: ip_retention.ip_lease_id, lease_time_expired_at: ip_retention.lease_time_expired_at)
+        dispatch_event(IP_RETENTION_CONTAINER_ADDED_IP_RETENTION, id: id, ip_retention_id: ip_retention.id, ip_lease_id: ip_retention.ip_lease_id, lease_time_expired_at: ip_retention.lease_time_expired_at)
 
         ip_retention
       end
@@ -40,7 +40,7 @@ module Vnet::NodeApi
           ip_retention.destroy
         end
 
-        dispatch_event(IP_RETENTION_CONTAINER_DELETED_IP_RETENTION, id: id)
+        dispatch_event(IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, id: id, ip_retention_id: ip_retention_id)
 
         ip_retention
       end
