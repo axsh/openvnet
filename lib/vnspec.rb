@@ -4,8 +4,9 @@ require 'json'
 require 'erb'
 require 'logger'
 require 'net/ssh/multi'
+require 'net/scp'
 require 'faraday_middleware'
-require 'peach'
+require 'parallel'
 require 'rspec'
 require 'pp'
 require 'ipaddress'
@@ -28,3 +29,7 @@ require_relative 'vnspec/models'
 require_relative 'vnspec/vm'
 require_relative 'vnspec/legacy'
 require_relative 'vnspec/spec'
+
+module Vnspec
+  ROOT = File.expand_path("../", File.dirname(__FILE__))
+end

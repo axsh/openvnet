@@ -13,7 +13,7 @@ module Vnspec
 
     DEFAULT_OPTIONS = {
       user: "root",
-      debug: true,
+      debug: false,
       exit_on_error: true,
       use_sudo: false,
     }
@@ -78,6 +78,15 @@ module Vnspec
         end
       end
       return true
+    end
+
+    def scp(upload_or_download, host, local, remote)
+      case upload_or_download.to_sym
+      when :upload
+        Net::SCP.download!(host, ssh_options[:user], local, remotel)
+      when :download
+        Net::SCP.download!(host, ssh_options[:user], remote, local)
+      end
     end
 
     def to_ssh_option_string(options = {})

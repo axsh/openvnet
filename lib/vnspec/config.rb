@@ -3,6 +3,7 @@ module Vnspec
     DEFAULT_CONFIG = {
       vnet_path: "/opt/axsh/openvnet",
       vnet_branch: "master",
+      vnet_log_directory: "/var/log/openvnet",
       update_vnet_via: "rsync",
       vm_ssh_user: "root",
       exit_on_error: true,
