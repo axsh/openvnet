@@ -45,6 +45,113 @@ module Vnet
     autoload :VnetAPI, 'vnet/constants/vnet_api'
   end
 
+  module Core
+    autoload :ActiveInterfaces, 'vnet/core/event_helpers'
+    autoload :ActiveNetworks, 'vnet/core/event_helpers'
+    autoload :ActivePorts, 'vnet/core/event_helpers'
+    autoload :ActiveRouteLinks, 'vnet/core/event_helpers'
+    autoload :AddressHelpers, 'vnet/core/address_helpers'
+    autoload :ConnectionManager, 'vnet/core/connection_manager'
+    autoload :DatapathManager, 'vnet/core/datapath_manager'
+    autoload :DpInfo, 'vnet/core/dp_info'
+    autoload :FilterManager, 'vnet/core/filter_manager'
+    autoload :Interface, 'vnet/core/interface'
+    autoload :InterfaceManager, 'vnet/core/interface_manager'
+    autoload :Manager, 'vnet/core/manager'
+    autoload :Network, 'vnet/core/network'
+    autoload :NetworkManager, 'vnet/core/network_manager'
+    autoload :Port, 'vnet/core/port'
+    autoload :PortManager, 'vnet/core/port_manager'
+    autoload :Route, 'vnet/core/route'
+    autoload :RouteManager, 'vnet/core/route_manager'
+    autoload :Router, 'vnet/core/router'
+    autoload :RouterManager, 'vnet/core/router_manager'
+    autoload :Service, 'vnet/core/service'
+    autoload :ServiceManager, 'vnet/core/service_manager'
+    autoload :Translation, 'vnet/core/translation'
+    autoload :TranslationManager, 'vnet/core/translation_manager'
+    autoload :Tunnel, 'vnet/core/tunnel'
+    autoload :TunnelManager, 'vnet/core/tunnel_manager'
+
+    module Connections
+      autoload :Base, 'vnet/core/connections/base'
+      autoload :TCP, 'vnet/core/connections/tcp'
+      autoload :UDP, 'vnet/core/connections/udp'
+    end
+
+    module Datapaths
+      autoload :Base, 'vnet/core/datapaths/base'
+      autoload :Host, 'vnet/core/datapaths/host'
+      autoload :Remote, 'vnet/core/datapaths/remote'
+    end
+
+    module Filters
+      autoload :AcceptAllTraffic, 'vnet/core/filters/accept_all_traffic'
+      autoload :AcceptIngressArp, 'vnet/core/filters/accept_ingress_arp'
+      autoload :Base, 'vnet/core/filters/base'
+      autoload :Cookies, 'vnet/core/filters/cookies'
+      autoload :SecurityGroup, 'vnet/core/filters/security_group'
+    end
+
+    module Interfaces
+      autoload :Base, 'vnet/core/interfaces/base'
+      autoload :Edge, 'vnet/core/interfaces/edge'
+      autoload :Host, 'vnet/core/interfaces/host'
+      autoload :IfBase, 'vnet/core/interfaces/if_base'
+      autoload :Internal, 'vnet/core/interfaces/internal'
+      autoload :Patch, 'vnet/core/interfaces/patch'
+      autoload :Remote, 'vnet/core/interfaces/remote'
+      autoload :Simulated, 'vnet/core/interfaces/simulated'
+      autoload :Vif, 'vnet/core/interfaces/vif'
+    end
+
+    module Networks
+      autoload :Base, 'vnet/core/networks/base'
+      autoload :Internal, 'vnet/core/networks/internal'
+      autoload :Physical, 'vnet/core/networks/physical'
+      autoload :Virtual, 'vnet/core/networks/virtual'
+    end
+
+    module Ports
+      autoload :Base, 'vnet/core/ports/base'
+      autoload :Generic, 'vnet/core/ports/generic'
+      autoload :Host, 'vnet/core/ports/host'
+      autoload :Local, 'vnet/core/ports/local'
+      autoload :Tunnel, 'vnet/core/ports/tunnel'
+      autoload :Vif, 'vnet/core/ports/vif'
+    end
+
+    module Routes
+      autoload :Base, 'vnet/core/routes/base'
+    end
+
+    module Routers
+      autoload :Base, 'vnet/core/routers/base'
+      autoload :RouteLink, 'vnet/core/routers/route_link'
+    end
+
+    module Services
+      autoload :Base, 'vnet/core/services/base'
+      autoload :Dhcp, 'vnet/core/services/dhcp'
+      autoload :Dns, 'vnet/core/services/dns'
+      autoload :Router, 'vnet/core/services/router'
+    end
+
+    module Translations
+      autoload :Base, 'vnet/core/translations/base'
+      autoload :StaticAddress, 'vnet/core/translations/static_address'
+      autoload :VnetEdgeHandler, 'vnet/core/translations/vnet_edge_handler'
+    end
+
+    module Tunnels
+      autoload :Base, 'vnet/core/tunnels/base'
+      autoload :Gre, 'vnet/core/tunnels/gre'
+      autoload :Mac2Mac, 'vnet/core/tunnels/mac2mac'
+      autoload :Unknown, 'vnet/core/tunnels/unknown'
+    end
+
+  end
+
   module Event
     autoload :EventTasks, 'vnet/event/event_tasks'
     autoload :Dispatchable, 'vnet/event/dispatchable'
@@ -230,129 +337,17 @@ module Vnet
 
   module Openflow
 
-    autoload :ActiveInterfaces, 'vnet/openflow/event_helpers'
-    autoload :ActiveNetworks, 'vnet/openflow/event_helpers'
-    autoload :ActivePorts, 'vnet/openflow/event_helpers'
-    autoload :ActiveRouteLinks, 'vnet/openflow/event_helpers'
-    autoload :AddressHelpers, 'vnet/openflow/address_helpers'
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DatapathInfo, 'vnet/openflow/datapath'
-    autoload :DpInfo, 'vnet/openflow/dp_info'
     autoload :Flow, 'vnet/openflow/flow'
     autoload :FlowHelpers, 'vnet/openflow/flow_helpers'
-    autoload :Manager, 'vnet/openflow/manager'
     autoload :MetadataHelpers, 'vnet/openflow/metadata_helpers'
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
-
-    # Managers:
-    autoload :ConnectionManager, 'vnet/openflow/connection_manager'
-    autoload :DatapathManager, 'vnet/openflow/datapath_manager'
-    autoload :FilterManager, 'vnet/openflow/filter_manager'
-    autoload :Interface, 'vnet/openflow/interface'
-    autoload :InterfaceManager, 'vnet/openflow/interface_manager'
-    autoload :LeasePolicy, 'vnet/openflow/lease_policy'
-    autoload :LeasePolicyManager, 'vnet/openflow/lease_policy_manager'
-    autoload :Network, 'vnet/openflow/network'
-    autoload :NetworkManager, 'vnet/openflow/network_manager'
-    autoload :Port, 'vnet/openflow/port'
-    autoload :PortManager, 'vnet/openflow/port_manager'
-    autoload :Route, 'vnet/openflow/route'
-    autoload :RouteManager, 'vnet/openflow/route_manager'
-    autoload :Router, 'vnet/openflow/router'
-    autoload :RouterManager, 'vnet/openflow/router_manager'
-    autoload :Service, 'vnet/openflow/service'
-    autoload :ServiceManager, 'vnet/openflow/service_manager'
-    autoload :Translation, 'vnet/openflow/translation'
-    autoload :TranslationManager, 'vnet/openflow/translation_manager'
-    autoload :Tunnel, 'vnet/openflow/tunnel'
-    autoload :TunnelManager, 'vnet/openflow/tunnel_manager'
-
-    module Connections
-      autoload :Base, 'vnet/openflow/connections/base'
-      autoload :TCP, 'vnet/openflow/connections/tcp'
-      autoload :UDP, 'vnet/openflow/connections/udp'
-    end
-
-    module Datapaths
-      autoload :Base, 'vnet/openflow/datapaths/base'
-      autoload :Host, 'vnet/openflow/datapaths/host'
-      autoload :Remote, 'vnet/openflow/datapaths/remote'
-    end
-
-    module Interfaces
-      autoload :Base, 'vnet/openflow/interfaces/base'
-      autoload :Edge, 'vnet/openflow/interfaces/edge'
-      autoload :Host, 'vnet/openflow/interfaces/host'
-      autoload :IfBase, 'vnet/openflow/interfaces/if_base'
-      autoload :Internal, 'vnet/openflow/interfaces/internal'
-      autoload :Patch, 'vnet/openflow/interfaces/patch'
-      autoload :Remote, 'vnet/openflow/interfaces/remote'
-      autoload :Simulated, 'vnet/openflow/interfaces/simulated'
-      autoload :Vif, 'vnet/openflow/interfaces/vif'
-    end
-
-    module LeasePolicies
-      autoload :Base, 'vnet/openflow/lease_policies/base'
-      autoload :Simple, 'vnet/openflow/lease_policies/simple'
-    end
-
-    module Networks
-      autoload :Base, 'vnet/openflow/networks/base'
-      autoload :Internal, 'vnet/openflow/networks/internal'
-      autoload :Physical, 'vnet/openflow/networks/physical'
-      autoload :Virtual, 'vnet/openflow/networks/virtual'
-    end
-
-    module Ports
-      autoload :Base, 'vnet/openflow/ports/base'
-      autoload :Generic, 'vnet/openflow/ports/generic'
-      autoload :Host, 'vnet/openflow/ports/host'
-      autoload :Local, 'vnet/openflow/ports/local'
-      autoload :Tunnel, 'vnet/openflow/ports/tunnel'
-      autoload :Vif, 'vnet/openflow/ports/vif'
-    end
-
-    module Routes
-      autoload :Base, 'vnet/openflow/routes/base'
-    end
-
-    module Routers
-      autoload :Base, 'vnet/openflow/routers/base'
-      autoload :RouteLink, 'vnet/openflow/routers/route_link'
-    end
-
-    module Filters
-      autoload :AcceptAllTraffic, 'vnet/openflow/filters/accept_all_traffic'
-      autoload :AcceptIngressArp, 'vnet/openflow/filters/accept_ingress_arp'
-      autoload :Base, 'vnet/openflow/filters/base'
-      autoload :Cookies, 'vnet/openflow/filters/cookies'
-      autoload :SecurityGroup, 'vnet/openflow/filters/security_group'
-    end
-
-    module Services
-      autoload :Base, 'vnet/openflow/services/base'
-      autoload :Dhcp, 'vnet/openflow/services/dhcp'
-      autoload :Dns, 'vnet/openflow/services/dns'
-      autoload :Router, 'vnet/openflow/services/router'
-    end
-
-    module Translations
-      autoload :Base, 'vnet/openflow/translations/base'
-      autoload :StaticAddress, 'vnet/openflow/translations/static_address'
-      autoload :VnetEdgeHandler, 'vnet/openflow/translations/vnet_edge_handler'
-    end
-
-    module Tunnels
-      autoload :Base, 'vnet/openflow/tunnels/base'
-      autoload :Gre, 'vnet/openflow/tunnels/gre'
-      autoload :Mac2Mac, 'vnet/openflow/tunnels/mac2mac'
-      autoload :Unknown, 'vnet/openflow/tunnels/unknown'
-    end
 
   end
 
@@ -361,8 +356,17 @@ module Vnet
   end
 
   module Services
-    autoload :Vnmgr, 'vnet/services/vnmgr'
-    autoload :VnetInfo, 'vnet/services/vnet_info'
     autoload :IpRetentionManager, 'vnet/services/ip_retention_manager'
+    autoload :LeasePolicy, 'vnet/services/lease_policy'
+    autoload :LeasePolicyManager, 'vnet/services/lease_policy_manager'
+    autoload :VnetInfo, 'vnet/services/vnet_info'
+    autoload :Vnmgr, 'vnet/services/vnmgr'
+
+    module LeasePolicies
+      autoload :Base, 'vnet/services/lease_policies/base'
+      autoload :Simple, 'vnet/services/lease_policies/simple'
+    end
+
   end
+
 end

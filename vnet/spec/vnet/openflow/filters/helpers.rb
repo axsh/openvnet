@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-def cookie_id(group, interface = interface, type = Vnet::Openflow::Filters::Base::COOKIE_TYPE_RULE)
-  Vnet::Openflow::Filters::SecurityGroup.cookie(
+def cookie_id(group, interface = interface, type = Vnet::Core::Filters::Base::COOKIE_TYPE_RULE)
+  Vnet::Core::Filters::SecurityGroup.cookie(
     group.id,
     group.interface_cookie_id(interface.id),
     type
@@ -9,7 +9,7 @@ def cookie_id(group, interface = interface, type = Vnet::Openflow::Filters::Base
 end
 
 def ref_cookie_id(group, interface = interface)
-  cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_REF)
+  cookie_id(group, interface, Vnet::Core::Filters::Base::COOKIE_TYPE_REF)
 end
 
 def wrapper(interface)
@@ -42,7 +42,7 @@ end
 def rule_flow(rule_hash, interface = interface)
   flow_hash = rule_hash.merge({
     table: TABLE_INTERFACE_INGRESS_FILTER,
-    priority: Vnet::Openflow::Filters::SecurityGroup::RULE_PRIORITY,
+    priority: Vnet::Core::Filters::SecurityGroup::RULE_PRIORITY,
     match_metadata: {interface: interface.id},
     goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS
   })
@@ -70,10 +70,10 @@ end
 def iso_flow(group, interface, ipv4_address)
   flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
               goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-              priority: Vnet::Openflow::Filters::SecurityGroup::ISOLATION_PRIORITY,
+              priority: Vnet::Core::Filters::SecurityGroup::ISOLATION_PRIORITY,
               match_interface: interface.id,
               match: match_ipv4_subnet_src(ipv4_address, 32),
-              cookie: cookie_id(group, interface, Vnet::Openflow::Filters::Base::COOKIE_TYPE_ISO))
+              cookie: cookie_id(group, interface, Vnet::Core::Filters::Base::COOKIE_TYPE_ISO))
 end
 
 def iso_flows_for_interfaces(group, main_interface, iso_interfaces)

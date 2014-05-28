@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-class MockPortManager < Vnet::Openflow::PortManager
+class MockPortManager < Vnet::Core::PortManager
 
   def ports
     @items

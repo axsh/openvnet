@@ -5,7 +5,7 @@ require_relative 'filters/helpers'
 include Vnet::Constants::Openflow
 include Vnet::Openflow::FlowHelpers
 
-describe Vnet::Openflow::FilterManager do
+describe Vnet::Core::FilterManager do
   let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
   let(:flows) { datapath.current_flows }
   let(:deleted_flows) { datapath.deleted_flows }
@@ -14,7 +14,7 @@ describe Vnet::Openflow::FilterManager do
   let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
 
   subject do
-    Vnet::Openflow::FilterManager.new(datapath.dp_info).tap { |fm|
+    Vnet::Core::FilterManager.new(datapath.dp_info).tap { |fm|
       # We do this to simulate a datapath with id 1 so we can use is_remote?
       fm.set_datapath_info Vnet::Openflow::DatapathInfo.new(Fabricate(:datapath, id: 1))
     }
@@ -28,7 +28,7 @@ describe Vnet::Openflow::FilterManager do
                                            match: {
                                              eth_type: ETH_TYPE_ARP
                                            },
-                                           cookie: Vnet::Openflow::Filters::AcceptIngressArp.cookie)
+                                           cookie: Vnet::Core::Filters::AcceptIngressArp.cookie)
     end
   end
 
