@@ -50,10 +50,14 @@ module Vnet
     autoload :ActiveNetworkEvents, 'vnet/core/event_helpers'
     autoload :ActivePortEvents, 'vnet/core/event_helpers'
     autoload :ActiveRouteLinkEvents, 'vnet/core/event_helpers'
+    autoload :DpInfo, 'vnet/core/dp_info'
+
+    autoload :ActiveInterface, 'vnet/core/active_interface'
+    autoload :ActiveInterfaceManager, 'vnet/core/active_interface_manager'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
+    autoload :Datapath, 'vnet/core/datapath'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
-    autoload :DpInfo, 'vnet/core/dp_info'
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Interface, 'vnet/core/interface'
     autoload :InterfaceManager, 'vnet/core/interface_manager'
@@ -72,6 +76,10 @@ module Vnet
     autoload :TranslationManager, 'vnet/core/translation_manager'
     autoload :Tunnel, 'vnet/core/tunnel'
     autoload :TunnelManager, 'vnet/core/tunnel_manager'
+
+    module ActiveInterfaces
+      autoload :Base, 'vnet/core/connections/base'
+    end
 
     module Connections
       autoload :Base, 'vnet/core/connections/base'
