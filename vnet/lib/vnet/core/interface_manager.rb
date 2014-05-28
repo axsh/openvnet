@@ -3,7 +3,7 @@
 module Vnet::Core
 
   class InterfaceManager < Vnet::Core::Manager
-    include ActivePorts
+    include ActivePortEvents
 
     #
     # Events:

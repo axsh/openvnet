@@ -5,7 +5,7 @@ module Vnet::Core
   class TranslationManager < Vnet::Core::Manager
 
     include Vnet::Constants::Translation
-    include ActiveInterfaces
+    include ActiveInterfaceEvents
 
     #
     # Events:

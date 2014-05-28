@@ -3,8 +3,8 @@
 module Vnet::Core
 
   class RouteManager < Vnet::Core::Manager
-    include ActiveNetworks
-    include ActiveRouteLinks
+    include ActiveNetworkEvents
+    include ActiveRouteLinkEvents
 
     #
     # Events:

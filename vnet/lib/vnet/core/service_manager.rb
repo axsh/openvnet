@@ -4,7 +4,7 @@ module Vnet::Core
 
   class ServiceManager < Vnet::Core::Manager
     include Vnet::Constants::NetworkService
-    include ActiveInterfaces
+    include ActiveInterfaceEvents
 
     #
     # Events:

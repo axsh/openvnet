@@ -46,10 +46,10 @@ module Vnet
   end
 
   module Core
-    autoload :ActiveInterfaces, 'vnet/core/event_helpers'
-    autoload :ActiveNetworks, 'vnet/core/event_helpers'
-    autoload :ActivePorts, 'vnet/core/event_helpers'
-    autoload :ActiveRouteLinks, 'vnet/core/event_helpers'
+    autoload :ActiveInterfaceEvents, 'vnet/core/event_helpers'
+    autoload :ActiveNetworkEvents, 'vnet/core/event_helpers'
+    autoload :ActivePortEvents, 'vnet/core/event_helpers'
+    autoload :ActiveRouteLinkEvents, 'vnet/core/event_helpers'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
