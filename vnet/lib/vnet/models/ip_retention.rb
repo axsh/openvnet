@@ -11,5 +11,10 @@ module Vnet::Models
         destroy
       end
     end
+
+    def before_create
+      # Time.now might be different from created_at
+      self.lease_time_expired_at = Time.now + self.ip_retention_container.lease_time.to_i
+    end
   end
 end
