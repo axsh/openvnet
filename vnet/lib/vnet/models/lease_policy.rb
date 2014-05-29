@@ -30,6 +30,16 @@ module Vnet::Models
       ).where(lease_policy_base_interfaces__interface_id: id).select_all(:lease_policies).all
     end
 
+    def ip_leases_count
+      self.ip_retention_container.ip_retentions_dataset.count
+    end
+
+    def ip_leases(options)
+      offset = options[:offset]
+      limit = options[:limit]
+      self.ip_retention_container.ip_retentions_dataset.eager({ ip_lease: [:mac_lease, { ip_address: :network }] }).offset(options[:offset]).limit(options[:limit]).all.map(&:ip_lease)
+    end
+
     def lease_time
       ip_retention_container ? ip_retention_container.lease_time : nil
     end
