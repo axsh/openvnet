@@ -3,8 +3,8 @@ module Vnet::Services::IpRetentionContainers
     attr_accessor :ip_lease_id, :lease_time_expired_at, :grace_time_expired_at
     def initialize(params)
       super
-      @ip_lease_id = params[:ip_lease_id]
-      @lease_time_expired_at = params[:lease_time_expired_at]
+      self.ip_lease_id = params[:ip_lease_id]
+      self.lease_time_expired_at = params[:lease_time_expired_at]
     end
 
     def to_hash
@@ -21,7 +21,9 @@ module Vnet::Services::IpRetentionContainers
     end
   end
 
-  class Base << Vnet::ItemVnetBase
+  class Base < Vnet::ItemVnetBase
+    MW = Vnet::ModelWrappers
+
     attr_accessor :lease_time, :grace_time, :ip_retentions
     def initialize(params)
       super
@@ -43,24 +45,28 @@ module Vnet::Services::IpRetentionContainers
 
       @ip_retentions.each do |_, ip_retention|
         next unless ip_retention.lease_time_expired_at
-        next if current_time < ip_retention.lease_time_expired_at
+        next if current_time.to_i < ip_retention.lease_time_expired_at.to_i
+        next if ip_retention.grace_time_expired_at
 
-        MW::IpLease.expire(ip_retention[:ip_lease_id])
+        MW::IpLease.expire(ip_retention.ip_lease_id)
 
         ip_retention.grace_time_expired_at = current_time + grace_time.to_i
 
-        info("Released exipred ip_lease: #{ip_retention[:ip_lease_id]}")
+        info("Released exipred ip_lease: #{ip_retention.ip_lease_id}")
       end
     end
 
     def check_grace_time_expiration
       current_time = Time.now 
 
-      @ip_retentions.each do |id, ip_retention|
-        next unless ip_retention.grace_time_expired_at
-        next if current_time < ip_retention.grace_time_expired_at
+      expired_ip_retetions = @ip_retentions.values.select do |ip_retention|
+        ip_retention.grace_time_expired_at && ip_retention.grace_time_expired_at.to_i <= current_time.to_i
+      end
 
-        MW::IpRetentionContainer.remove_ip_retention(id)
+      expired_ip_retetions.each do |ip_retention|
+        MW::IpRetentionContainer.remove_ip_retention(id: id, ip_retention_id: ip_retention.id)
+
+        ip_retentions.delete(ip_retention.id)
 
         info("Destroyed exipred ip_retention: #{id}")
       end

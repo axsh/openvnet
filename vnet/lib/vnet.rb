@@ -367,6 +367,11 @@ module Vnet
     autoload :VnetInfo, 'vnet/services/vnet_info'
     autoload :Vnmgr, 'vnet/services/vnmgr'
 
+    module IpRetentionContainers
+      autoload :Base, 'vnet/services/ip_retention_containers/base'
+      autoload :IpRetention, 'vnet/services/ip_retention_containers/base'
+    end
+
     module LeasePolicies
       autoload :Base, 'vnet/services/lease_policies/base'
       autoload :Simple, 'vnet/services/lease_policies/simple'

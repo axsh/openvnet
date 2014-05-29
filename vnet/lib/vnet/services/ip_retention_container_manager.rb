@@ -13,8 +13,8 @@ module Vnet::Services
     subscribe_event IP_RETENTION_CONTAINER_CHECK_LEASE_TIME_EXPIRATION, :check_lease_time_expiration
     subscribe_event IP_RETENTION_CONTAINER_CHECK_GRACE_TIME_EXPIRATION, :check_grace_time_expiration
 
-    subscribe_event IP_RETENTION_CONTAINER_ADDED_IP_RETENTION, :add_ip_retention
-    subscribe_event IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, :remove_ip_retention
+    subscribe_event IP_RETENTION_CONTAINER_ADDED_IP_RETENTION, :added_ip_retention
+    subscribe_event IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, :removed_ip_retention
 
     def initialize(info, options = {})
       super
@@ -29,12 +29,23 @@ module Vnet::Services
     end
 
     def load_all_items(params)
+      # TODO optimization
       i = 1
       loop do
-        mw_class.batch.dataset.paginate(i, 1000).all.commit.tap do |ip_retentions|
-          return if ip_retentions.empty?
-          ip_retentions.each do |ip_retention|
-            publish(IP_RETENTION_CONTAINER_CREATED_ITEM, id: ip_retention.id)
+        mw_class.batch.eager(:ip_retentions).paginate(i, 100).all.commit(fill: :ip_retentions).tap do |ip_retention_containers|
+          return if ip_retention_containers.empty?
+          ip_retention_containers.each do |ip_retention_container|
+            publish(
+              IP_RETENTION_CONTAINER_CREATED_ITEM,
+              id: ip_retention_container.id
+            )
+            ip_retention_container.ip_retentions.each do |ip_retention|
+              publish(
+                IP_RETENTION_CONTAINER_ADDED_IP_RETENTION,
+                id: ip_retention_container.id,
+                ip_retention_id: ip_retention.id
+              )
+            end
           end
         end
         i += 1
@@ -63,39 +74,25 @@ module Vnet::Services
       IP_RETENTION_CONTAINER_UNLOAD_ITEM
     end
 
-    #def match_item_proc_part(filter_part)
-    #  filter, value = filter_part
-
-    #  case filter
-    #  when :id, :uuid
-    #    proc { |id, item| value == item.send(filter) }
-    #  when :lease_time_expired_at
-    #    proc { |id, item| value >= item.lease_time_expired_at }
-    #  when :grace_time_expired_at
-    #    proc { |id, item| item.grace_time_expired_at && value >= item.grace_time_expired_at }
-    #  else
-    #    raise NotImplementedError, filter
-    #  end
-    #end
-
     def query_filter_from_params(params)
       [].tap do |filter|
         filter << {id: params[:id]} if params.has_key? :id
       end
     end
 
-    def add_ip_retention(params)
+    def added_ip_retention(params)
       item = @items[params[:id]]
       return unless item
 
       item.add_ip_retention(
         id: params[:ip_retention_id],
+        container: item,
         ip_lease_id: params[:ip_lease_id],
         lease_time_expired_at: params[:lease_time_expired_at]
       )
     end
 
-    def remove_ip_retention(params)
+    def removed_ip_retention(params)
       item = @items[params[:id]]
       return unless item
 

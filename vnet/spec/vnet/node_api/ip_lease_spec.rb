@@ -44,7 +44,8 @@ describe Vnet::NodeApi::IpLease do
 
   describe "destroy" do
     it "success" do
-      ip_retention = Fabricate(:ip_retention)
+      ip_retention_container = Fabricate(:ip_retention_container)
+      ip_retention = Fabricate(:ip_retention, ip_retention_container: ip_retention_container)
       ip_lease = ip_retention.ip_lease
 
       ip_lease_count = Vnet::Models::IpLease.count
@@ -71,7 +72,8 @@ describe Vnet::NodeApi::IpLease do
 
   describe "expire" do
     it "success" do
-      ip_retention = Fabricate(:ip_retention)
+      ip_retention_container = Fabricate(:ip_retention_container)
+      ip_retention = Fabricate(:ip_retention, ip_retention_container: ip_retention_container)
       ip_lease = ip_retention.ip_lease
       interface = ip_lease.interface
 
