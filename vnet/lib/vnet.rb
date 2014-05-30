@@ -10,12 +10,17 @@ require 'active_support/inflector'
 require 'ext/kernel'
 require 'fuguta'
 require 'json'
+require 'logger'
 
 module Vnet
 
   ROOT = ENV['VNET_ROOT'] || File.expand_path('../../', __FILE__)
   CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
+
+  class << self
+    attr_accessor :logger
+  end
 
   autoload :Event,                'vnet/event'
   autoload :ItemBase,             'vnet/item_base'
@@ -370,3 +375,5 @@ module Vnet
   end
 
 end
+
+Vnet.logger = ::Logger.new(STDOUT)
