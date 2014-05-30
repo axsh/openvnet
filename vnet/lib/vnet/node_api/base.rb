@@ -4,7 +4,7 @@ module Vnet::NodeApi
     extend Vnet::Event::Dispatchable
 
     def self.logger
-      Vnet::NodeApi::logger
+      Vnet.logger
     end
 
     class << self
