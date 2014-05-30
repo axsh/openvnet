@@ -18,6 +18,7 @@ vms = [
       { type: "hostonly", ip: "192.168.20.11" },
       { type: "intnet", name: "public_network1" },
     ],
+    use_docker: true,
   },
   {
     name: "vna2",
@@ -25,6 +26,7 @@ vms = [
       { type: "hostonly", ip: "192.168.20.12" },
       { type: "intnet", name: "public_network1" },
     ],
+    use_docker: true,
   },
   {
     name: "vna3",
@@ -32,6 +34,7 @@ vms = [
       { type: "hostonly", ip: "192.168.20.13" },
       { type: "intnet", name: "public_network2" },
     ],
+    use_docker: true,
   },
   {
     name: "edge",
@@ -105,7 +108,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end
       end
 
+      #
       # provision
+      #
+
+      # docker
+      if vm[:use_docker]
+        config.vm.provision "docker" do |docker|
+          docker.pull_images "centos"
+        end
+      end
+
+      # chef_solo
       config.omnibus.chef_version = :latest
 
       config.vm.provision "chef_solo" do |chef|

@@ -27,22 +27,6 @@ package "iproute" do
   options "--enablerepo=openstack-havana"
 end
 
-# docker
-package "docker-io" do
-  action ["install"]
-end
-
-group "docker" do
-  members %w(vagrant)
-  action [:create, :manage]
-end
-
-service 'docker' do
-  supports :status => true, :restart => true, :reload => true
-  action [:start]
-end
-
-
 # openvswitch
 package "openvswitch" do
   action :upgrade
@@ -140,19 +124,6 @@ end
 data_bag(:vms).map { |id| data_bag_item(:vms, id) }.select { |vm|
   vm["host"] == node.name
 }.tap do |vms|
-
-  unless vms.empty?
-    if node[:vnet][:vna][:docker][:registry]
-      base_name = "#{node[:vnet][:vna][:docker][:registry]}/centos"
-    
-      bash "create_image" do
-        code <<-EOS
-          docker pull #{base_name}
-          docker tag #{base_name} centos
-        EOS
-      end
-    end
-  end
 
   vms.each do |vm|
     bash "rm_vm" do
