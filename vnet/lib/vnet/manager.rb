@@ -326,6 +326,11 @@ module Vnet
       end
     end
 
+    def internal_detect_by_id(params)
+      item_id = (params && params[:id]) || return
+      @items[item_id]
+    end
+
     def internal_select(params)
       @items.select(&match_item_proc(params))
     end
