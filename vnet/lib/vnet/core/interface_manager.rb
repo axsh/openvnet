@@ -197,9 +197,8 @@ module Vnet::Core
       end
     end
 
-    def create_item(params)
-      return if @items[params[:id]]
-
+    def created_item(params)
+      return if internal_detect_by_id(params)
       return unless @dp_info.port_manager.detect(port_name: params[:port_name])
 
       self.retrieve(params)
@@ -283,7 +282,7 @@ module Vnet::Core
 
     # INTERFACE_LEASED_MAC_ADDRESS on queue 'item.id'
     def leased_mac_address(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
 
       mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(fill: [:cookie_id, :interface])
 
@@ -300,7 +299,7 @@ module Vnet::Core
 
     # INTERFACE_RELEASED_MAC_ADDRESS on queue 'item.id'
     def released_mac_address(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
 
       mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit
 
@@ -350,7 +349,7 @@ module Vnet::Core
 
     # INTERFACE_RELEASED_IPV4_ADDRESS on queue 'item.id'
     def released_ipv4_address(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
 
       ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit
 

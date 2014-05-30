@@ -120,7 +120,7 @@ module Vnet::Core
 
     # item created in db on queue 'item.id'
     def created_item(params)
-      return if @items[params[:id]]
+      return if internal_detect_by_id(params)
       return unless @active_interfaces[params[:interface_id]]
 
       internal_new_item(mw_class.new(params), {})
@@ -153,12 +153,11 @@ module Vnet::Core
     #
 
     def set_dns_service(params)
-      return unless params[:id]
+      item = internal_detect_by_id(params) || return
 
       dns_service_map = params[:dns_service_map] || MW::DnsService.batch.find(id: params[:dns_service_id]).commit(fill: :dns_records)
       return unless dns_service_map
 
-      item = @items[params[:id]] || return
       item.set_dns_service(dns_service_map)
 
       dns_service_map.dns_records.each do |dns_record_map|
@@ -170,7 +169,7 @@ module Vnet::Core
       dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
       return unless dns_service_map
 
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
       item.update_dns_service(dns_service_map)
     end
 
@@ -178,7 +177,7 @@ module Vnet::Core
       dns_service_map = MW::DnsService.batch.with_deleted.first(id: params[:dns_service_id]).commit
       return unless dns_service_map
 
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
       item.clear_dns_service
     end
 
@@ -186,7 +185,7 @@ module Vnet::Core
       dns_record_map = params[:dns_record_map] || MW::DnsRecord.find(id: params[:dns_record_id])
       return unless dns_record_map
 
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
       item.add_dns_record(dns_record_map)
     end
 
@@ -194,7 +193,7 @@ module Vnet::Core
       dns_record_map = MW::DnsRecord.batch.with_deleted.first(id: params[:dns_record_id]).commit
       return unless dns_record_map
 
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
       item.remove_dns_record(dns_record_map)
     end
 

@@ -85,7 +85,7 @@ module Vnet::Core
 
     # TRANSLATION_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-      return if @items[params[:id]]
+      return if internal_detect_by_id(params)
       return unless @active_interfaces[params[:interface_id]]
 
       internal_new_item(mw_class.new(params), {})
@@ -109,8 +109,7 @@ module Vnet::Core
 
     # TRANSLATION_ADDED_STATIC_ADDRESS on queue 'item.id'.
     def added_static_address(params)
-      item_id = params[:id] || return
-      item = @items[item_id] || return
+      item = internal_detect_by_id(params) || return
 
       static_address_id = params[:static_address_id] || return
       ingress_ipv4_address = params[:ingress_ipv4_address] || return
@@ -128,8 +127,7 @@ module Vnet::Core
 
     # TRANSLATION_REMOVED_STATIC_ADDRESS on queue 'item.id'.
     def removed_static_address(params)
-      item_id = params[:id] || return
-      item = @items[item_id] || return
+      item = internal_detect_by_id(params) || return
 
       static_address_id = params[:static_address_id] || return
       
