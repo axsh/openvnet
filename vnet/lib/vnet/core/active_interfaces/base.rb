@@ -27,6 +27,10 @@ module Vnet::Core::ActiveInterfaces
       'active_interface/base'
     end
 
+    def pretty_properties
+      "interface_id:#{@interface_id} datapath_id:#{@datapath_id} label:#{@label} port_name:#{@port_name}"
+    end
+
     def cookie
       @id | COOKIE_TYPE_ACTIVE_INTERFACE
     end
