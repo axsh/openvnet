@@ -13,6 +13,23 @@ module Vnet::Core
     subscribe_event ACTIVE_INTERFACE_CREATED_ITEM, :created_item
     subscribe_event ACTIVE_INTERFACE_DELETED_ITEM, :unload_item
 
+    def activate_local_item(params)
+      return if @datapath_info.nil? # Add error message...
+
+      create_params = params.merge(datapath_id: @datapath_info.id)
+
+      # Needs to be an event... or rather we need a way to disable an
+      # id manually. Also this requires us to be able to insert an
+      # event task in order to stay within this context and get the
+      # return value.
+
+      item_model = mw_class.create(create_params)
+      return if item_model.nil? # Add error message...
+      
+      # Wait for loaded...
+      item_model.to_hash
+    end
+
     #
     # Internal methods:
     #
@@ -62,7 +79,7 @@ module Vnet::Core
 
     def item_initialize(item_map, params)
       item_class = ActiveInterfaces::Base
-      item = item_class.new(dp_info: @dp_info, map: item_map)
+      item = item_class.new(dp_info: @dp_info, id: item_map[:id], map: item_map)
     end
 
     #
@@ -71,8 +88,8 @@ module Vnet::Core
 
     # item created in db on queue 'item.id'
     def created_item(params)
-      return if @items[params[:id]]
-      return unless @active_route_links[params[:route_link_id]]
+      item_id = params && params[:id]
+      return if @items[item_id]
 
       internal_new_item(mw_class.new(params), {})
     end

@@ -2,9 +2,6 @@
 
 module Vnet::NodeApi
 
-  class ActiveInterface < Base
-  end
-
   class DatapathNetwork < Base
   end
 

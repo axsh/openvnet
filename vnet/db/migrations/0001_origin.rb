@@ -2,21 +2,27 @@
 
 Sequel.migration do
   up do
-    # Interfaces can be active on multiple datapaths if a label is
-    # set.
+
+    # Interfaces can be active on multiple datapaths if a 'label' is
+    # set and 'singular' is NULL.
+    #
+    # Both 'label' and 'singular' should not be set to NULL.
     create_table(:active_interfaces) do
       primary_key :id
 
       Integer :interface_id, :index => true, :null => false
       Integer :datapath_id, :index => true, :null => false
-      Integer :port_name, :index => true
+      String :port_name, :index => true
 
       String :label
+      TrueClass :singular, :default => true
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
 
-      unique [:interface_id, :label]
+      index [:interface_id, :datapath_id], :unique => true
+      index [:interface_id, :label], :unique => true
+      unique [:interface_id, :singular]
     end
 
     create_table(:datapaths) do

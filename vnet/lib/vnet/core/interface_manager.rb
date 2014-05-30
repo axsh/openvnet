@@ -148,6 +148,11 @@ module Vnet::Core
                                         interface: item_to_hash(item))
         }
       end
+
+      # Temporary...
+      if item.mode != :remote
+        activate_local_interface(item)
+      end
     end
 
     def item_post_install(item, item_map)
@@ -219,6 +224,31 @@ module Vnet::Core
       return @datapath_info.nil? || item_map.active_datapath_id != @datapath_info.id if item_map.active_datapath_id
 
       false
+    end
+
+    def activate_local_interface(item)
+      case item.mode
+      when :internal
+        label = @datapath_info.uuid
+        singular = nil
+      when :simulated
+        label = @datapath_info.uuid
+        singular = item.owner_datapath_ids ? true : nil
+      else
+        label = nil
+        singular = true
+      end
+
+      params = {
+        interface_id: item.id,
+        port_name: item.port_name,
+        label: label,
+        singular: singular
+      }
+
+      active_item = @dp_info.active_interface_manager.activate_local_item(params)
+
+      info log_format("got active interface", active_item.inspect)
     end
 
     #

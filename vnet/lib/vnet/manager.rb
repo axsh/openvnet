@@ -213,6 +213,10 @@ module Vnet
       select_filter = select_filter_from_params(params) || return
       item_map = select_item(select_filter.first) || return
 
+      # TODO: Only allow one fiber at the time to make a request with
+      # the exact same select_filter. The remaining fibers should use
+      # internal_wait_for_loaded/initializing.
+
       internal_new_item(item_map, params)
     end
 
@@ -275,6 +279,7 @@ module Vnet
       return item if item
 
       item_initialize(item_map, params).tap do |item|
+        # TODO: Delete item from items if returned nil.
         return unless item
         @items[item_map.id] = item
         publish(initialized_item_event,
@@ -330,6 +335,7 @@ module Vnet
     #
 
     def internal_wait_for_loaded(params, max_wait = 10.0)
+      # TODO: Check if item was install and not being uninstalled.
       item = internal_detect(params)
       return item if item
 

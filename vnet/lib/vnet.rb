@@ -78,7 +78,7 @@ module Vnet
     autoload :TunnelManager, 'vnet/core/tunnel_manager'
 
     module ActiveInterfaces
-      autoload :Base, 'vnet/core/connections/base'
+      autoload :Base, 'vnet/core/active_interfaces/base'
     end
 
     module Connections
@@ -309,7 +309,7 @@ module Vnet
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
 
-    autoload :ActiveInterface, 'vnet/node_api/models'
+    autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
