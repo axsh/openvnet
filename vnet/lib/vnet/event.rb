@@ -32,6 +32,9 @@ module Vnet
     ACTIVE_INTERFACE_CREATED_ITEM = "active_interface_created_item"
     ACTIVE_INTERFACE_DELETED_ITEM = "active_interface_deleted_item"
 
+    ACTIVE_INTERFACE_UPDATED = "active_interface_updated"
+
+
     #
     # Datapath events:
     #

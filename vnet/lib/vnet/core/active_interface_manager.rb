@@ -13,6 +13,8 @@ module Vnet::Core
     subscribe_event ACTIVE_INTERFACE_CREATED_ITEM, :created_item
     subscribe_event ACTIVE_INTERFACE_DELETED_ITEM, :unload_item
 
+    subscribe_event ACTIVE_INTERFACE_UPDATED, :updated_item
+
     def activate_local_item(params)
       return if @datapath_info.nil? # Add error message...
 
@@ -88,10 +90,21 @@ module Vnet::Core
 
     # item created in db on queue 'item.id'
     def created_item(params)
-      item_id = params && params[:id]
-      return if @items[item_id]
+      return if internal_detect_by_id(params)
 
       internal_new_item(mw_class.new(params), {})
+    end
+
+    # item updated in db on queue 'item.id'
+    def updated_item(params)
+      item = internal_detect_by_id(params) || return
+
+      # Currently only allow updated change 'label', 'singular' and
+      # 'port_name'.  
+
+      item.port_name = params[:port_name]
+      item.label = params[:label]
+      item.singular = params[:singular]
     end
 
     #

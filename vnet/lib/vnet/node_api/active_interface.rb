@@ -11,32 +11,48 @@ module Vnet::NodeApi
         options = options.dup
 
         interface_id = options[:interface_id]
+        datapath_id = options[:datapath_id]
+        label = options[:label]
+        singular = options[:singular]
 
         transaction {
           # Assuming label == nil for now:
 
           active_models = model_class.where(interface_id: interface_id).all
-
           Celluloid::Logger.debug "active interfaces pre-prune: #{active_models.inspect}"
 
-          prune_old(active_models)
-
+          old_model = prune_old(active_models, datapath_id)
           Celluloid::Logger.debug "active interfaces post-prune: #{active_models.inspect}"
 
-          model = super(options)
-
-          Celluloid::Logger.debug "created active interface: #{model.inspect}"
+          if old_model
+            model = old_model
+            model.set(port_name: options[:port_name],
+                      label: label,
+                      singular: singular)
+            model.save_changes
+            
+          else
+            model = super(options)
+            Celluloid::Logger.debug "created active interface: #{model.inspect}"
+          end
 
           model
 
         }.tap { |model|
-          dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, model.to_hash)
+          case
+          when model.nil?
+            next
+          when model.new?
+            dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, model.to_hash)
+          else
+            dispatch_event(ACTIVE_INTERFACE_UPDATED, model.to_hash)
+          end
         }
       end
 
       def destroy(id)
         super.tap do |model|
-          next unless model
+          next if model.nil?
           dispatch_event(ACTIVE_INTERFACE_DELETED_ITEM, model.to_hash)
         end
       end
@@ -47,14 +63,23 @@ module Vnet::NodeApi
 
       private
 
-      def prune_old(active_models)
+      def prune_old(active_models, ignore_datapath_id)
+        old_model = nil
+
         active_models.delete_if { |active_model|
+          if active_model.datapath_id == ignore_datapath_id
+            old_model = active_model
+            next
+          end
+
           # TODO: Catch exceptions.
 
           # Currently default to destroying all:
 
           active_model.destroy
         }
+
+        old_model
       end
 
     end

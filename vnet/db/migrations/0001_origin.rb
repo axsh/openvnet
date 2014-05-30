@@ -15,7 +15,7 @@ Sequel.migration do
       String :port_name, :index => true
 
       String :label
-      TrueClass :singular, :default => true
+      TrueClass :singular
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
