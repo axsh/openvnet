@@ -52,7 +52,7 @@ module Vnspec
           )
         when :git
           multi_ssh(hosts,
-            "cd #{config[:vnet_path]}; git fetch --prune origin; git fetch --tags origin; git clean -f -d; git rev-parse #{branch} | xargs git reset --hard; git checkout #{branch};"
+            "cd #{config[:vnet_path]}; git fetch --prune origin; git fetch --tags origin; git clean -f -d; git rev-parse origin/#{branch} | xargs git reset --hard; git checkout #{branch};"
           )
         when :rsync
           # do nothing
