@@ -250,7 +250,8 @@ module Vnet
     end
 
     def unload_item(params)
-      item = internal_detect_by_id(params) || return
+      item_id = (params && params[:id]) || return
+      item = @items.delete(item_id) || return
 
       item_pre_uninstall(item)
       item.try_uninstall

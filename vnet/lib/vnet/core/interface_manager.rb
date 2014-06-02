@@ -226,6 +226,11 @@ module Vnet::Core
     end
 
     def activate_local_interface(item)
+      if @datapath_info.nil? || @datapath_info.uuid.nil?
+        error log_format("cannot activate local interface when datapath_info.uuid is nil")
+        return
+      end
+
       case item.mode
       when :internal
         label = @datapath_info.uuid

@@ -112,9 +112,7 @@ module Vnet::Core
       }
       
       if item.type == TYPE_DNS
-        if dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
-          publish(SERVICE_ADDED_DNS, id: item.id, dns_service_map: dns_service_map)
-        end
+        load_dns_service(item)
       end
     end    
 
@@ -149,8 +147,13 @@ module Vnet::Core
     end
 
     #
-    # Event handlers:
+    # DNS:
     #
+
+    def load_dns_service(item)
+      dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
+      dns_service_map && set_dns_service(id: item.id, dns_service_map: dns_service_map)
+    end
 
     def set_dns_service(params)
       item = internal_detect_by_id(params) || return

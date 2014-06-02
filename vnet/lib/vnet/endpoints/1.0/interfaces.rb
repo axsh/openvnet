@@ -21,7 +21,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param :port_name, :String
   param :mode, :String, in: C::Interface::MODES
   post do
-    # Consider deprecating this:
+    # TODO: Deprecate this:
     params['port_name'] = params['uuid'] if !params['port_name'] && params['uuid']
 
     uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
