@@ -95,7 +95,7 @@ describe Vnet::Core::ServiceManager do
 
         network_service.destroy
         service_manager.publish(Vnet::Event::SERVICE_DELETED_ITEM, id: network_service.id)
-        sleep(0.5)
+        expect(service_manager.wait_for_unloaded({id: network_service.id}, 3)).not_to be_nil
 
         expect(service_manager.retrieve(id: network_service.id)).to be_nil
 

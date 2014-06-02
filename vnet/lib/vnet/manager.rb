@@ -69,6 +69,10 @@ module Vnet
       item_to_hash(internal_wait_for_loaded(params))
     end
     
+    def wait_for_unloaded(params, max_wait = 10.0)
+      internal_wait_for_unloaded(params)
+    end
+    
     #
     # Other:
     #
@@ -349,6 +353,17 @@ module Vnet
       create_event_task(:loaded, max_wait) { |item_id|
         item = (item_id && @items[item_id]) || next
         match_proc.call(item_id, item) ? item : nil
+      }
+    end
+
+    def internal_wait_for_unloaded(params, max_wait = 10.0)
+      item = internal_detect(params)
+      return true if item.nil?
+
+      match_item_id = item.id
+
+      create_event_task(:unloaded, max_wait) { |item_id|
+        item_id == match_item_id ? true : nil
       }
     end
 

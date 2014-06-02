@@ -48,6 +48,11 @@ describe Vnet::Core::TunnelManager do
         if1_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp2eth0').id
         if2_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp3eth0').id
         if3_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id
+
+        # expect(dp.dp_info.interface_manager.wait_for_loaded(uuid: 'if-dp1eth0')).not_to be_nil
+        # expect(dp.dp_info.interface_manager.wait_for_loaded(uuid: 'if-dp2eth0')).not_to be_nil
+        # expect(dp.dp_info.interface_manager.wait_for_loaded(uuid: 'if-dp3eth0')).not_to be_nil
+
         sleep(0.3)
 
         dp.added_flows.clear
