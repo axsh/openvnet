@@ -231,16 +231,18 @@ module Vnet::Core
         return
       end
 
+      label = nil
+      singular = true
+
       case item.mode
       when :internal
         label = @datapath_info.uuid
         singular = nil
       when :simulated
-        label = @datapath_info.uuid
-        singular = item.owner_datapath_ids ? true : nil
-      else
-        label = nil
-        singular = true
+        if item.owner_datapath_ids.nil?
+          label = @datapath_info.uuid
+          singular = nil
+        end
       end
 
       params = {
@@ -252,7 +254,9 @@ module Vnet::Core
 
       active_item = @dp_info.active_interface_manager.activate_local_item(params)
 
-      info log_format("got active interface", active_item.inspect)
+      if active_item.nil?
+        warn log_format("could not activate interface", item.inspect)
+      end
     end
 
     #
