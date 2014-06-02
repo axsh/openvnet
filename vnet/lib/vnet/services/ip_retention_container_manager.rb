@@ -84,6 +84,7 @@ module Vnet::Services
     # Event handlers:
     #
 
+    # IP_RETENTION_CONTAINER_ADDED_IP_RETENTION on queue 'item.id'
     def added_ip_retention(params)
       item = @items[params[:id]]
       return unless item
@@ -95,6 +96,7 @@ module Vnet::Services
       )
     end
 
+    # IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION on queue 'item.id'
     def removed_ip_retention(params)
       item = @items[params[:id]]
       return unless item
@@ -102,6 +104,7 @@ module Vnet::Services
       item.remove_ip_retention(params[:ip_retention_id])
     end
 
+    # IP_RETENTION_CONTAINER_EXPIRED_IP_RETENTION on queue 'item.id'
     def expired_ip_retentions(params)
       item = @items[params[:id]]
       return unless item
