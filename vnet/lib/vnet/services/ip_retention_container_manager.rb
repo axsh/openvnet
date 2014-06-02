@@ -112,13 +112,6 @@ module Vnet::Services
       item.expire_ip_retentions(params[:ip_retention_ids])
     end
 
-    def check_expiration
-      @items.each do |item|
-        item.check_lease_time_expiration
-        item.check_grace_time_expiration
-      end
-    end
-
     #
     # Helper methods:
     #
@@ -160,6 +153,13 @@ module Vnet::Services
           end
         end
         i += 1
+      end
+    end
+
+    def check_expiration
+      @items.values.each do |item|
+        item.check_lease_time_expiration
+        item.check_grace_time_expiration
       end
     end
   end
