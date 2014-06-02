@@ -10,7 +10,7 @@ module Vnet::Core
     #
     subscribe_event INTERFACE_INITIALIZED, :load_item
     subscribe_event INTERFACE_UNLOAD_ITEM, :unload_item
-    subscribe_event INTERFACE_CREATED_ITEM, :create_item
+    subscribe_event INTERFACE_CREATED_ITEM, :created_item
     subscribe_event INTERFACE_DELETED_ITEM, :unload_item
 
     subscribe_event INTERFACE_ACTIVATE_PORT, :activate_port
