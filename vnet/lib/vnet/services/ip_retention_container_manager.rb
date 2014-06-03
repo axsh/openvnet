@@ -14,7 +14,8 @@ module Vnet::Services
     subscribe_event IP_RETENTION_CONTAINER_DELETED_ITEM, :unload_item
     subscribe_event IP_RETENTION_CONTAINER_ADDED_IP_RETENTION, :added_ip_retention
     subscribe_event IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, :removed_ip_retention
-    subscribe_event IP_RETENTION_CONTAINER_EXPIRED_IP_RETENTION, :expired_ip_retentions
+    subscribe_event IP_RETENTION_CONTAINER_LEASE_TIME_EXPIRED, :lease_time_expired
+    subscribe_event IP_RETENTION_CONTAINER_GRACE_TIME_EXPIRED, :grace_time_expired
 
     def initialize(info, options = {})
       super
@@ -104,12 +105,20 @@ module Vnet::Services
       item.remove_ip_retention(params[:ip_retention_id])
     end
 
-    # IP_RETENTION_CONTAINER_EXPIRED_IP_RETENTION on queue 'item.id'
-    def expired_ip_retentions(params)
+    # IP_RETENTION_CONTAINER_LEASE_TIME_EXPIRED on queue 'item.id'
+    def lease_time_expired(params)
       item = @items[params[:id]]
       return unless item
 
-      item.expire_ip_retentions(params[:ip_retention_ids])
+      item.lease_time_expired
+    end
+
+    # IP_RETENTION_CONTAINER_GRACE_TIME_EXPIRED on queue 'item.id'
+    def grace_time_expired(params)
+      item = @items[params[:id]]
+      return unless item
+
+      item.grace_time_expired
     end
 
     #

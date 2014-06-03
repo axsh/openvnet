@@ -25,7 +25,7 @@ describe Vnet::Services::IpRetentionContainerManager do
       expect(ip_retention_containers.size).to eq 3
 
       ip_retention_containers.values.each do |ip_retention_container|
-        expect(ip_retention_container.ip_retentions.size).to eq 3
+        expect(ip_retention_container.leased_ip_retentions.size).to eq 3
       end
     end
   end
