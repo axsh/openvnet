@@ -92,20 +92,24 @@ module Vnet::Openflow
       }
 
       if messages.size == 1
-        case ipv4_info[:network_type]
-        when :physical
+        # Remove virtual network mode's use of db lookup until arp
+        # lookup has been refactored, as the db lookups as-is won't
+        # work with the active interface refactoring.
+        
+        # case ipv4_info[:network_type]
+        # when :physical
           arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
                                      interface_ipv4: ipv4_info[:ipv4_address],
                                      interface_network_id: ipv4_info[:network_id],
                                      request_ipv4: request_ipv4,
                                      attempts: 1)
-        when :virtual
-          arp_lookup_datapath_lookup(interface_mac: mac_info[:mac_address],
-                                     interface_ipv4: ipv4_info[:ipv4_address],
-                                     interface_network_id: ipv4_info[:network_id],
-                                     request_ipv4: request_ipv4,
-                                     attempts: 1)
-        end
+        # when :virtual
+        #   arp_lookup_datapath_lookup(interface_mac: mac_info[:mac_address],
+        #                              interface_ipv4: ipv4_info[:ipv4_address],
+        #                              interface_network_id: ipv4_info[:network_id],
+        #                              request_ipv4: request_ipv4,
+        #                              attempts: 1)
+        # end
       end
 
       messages.drop(5) if messages.size > 20
