@@ -46,14 +46,18 @@ module Vnet
   end
 
   module Core
-    autoload :ActiveInterfaces, 'vnet/core/event_helpers'
-    autoload :ActiveNetworks, 'vnet/core/event_helpers'
-    autoload :ActivePorts, 'vnet/core/event_helpers'
-    autoload :ActiveRouteLinks, 'vnet/core/event_helpers'
+    autoload :ActiveInterfaceEvents, 'vnet/core/event_helpers'
+    autoload :ActiveNetworkEvents, 'vnet/core/event_helpers'
+    autoload :ActivePortEvents, 'vnet/core/event_helpers'
+    autoload :ActiveRouteLinkEvents, 'vnet/core/event_helpers'
+    autoload :DpInfo, 'vnet/core/dp_info'
+
+    autoload :ActiveInterface, 'vnet/core/active_interface'
+    autoload :ActiveInterfaceManager, 'vnet/core/active_interface_manager'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
+    autoload :Datapath, 'vnet/core/datapath'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
-    autoload :DpInfo, 'vnet/core/dp_info'
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Interface, 'vnet/core/interface'
     autoload :InterfaceManager, 'vnet/core/interface_manager'
@@ -72,6 +76,10 @@ module Vnet
     autoload :TranslationManager, 'vnet/core/translation_manager'
     autoload :Tunnel, 'vnet/core/tunnel'
     autoload :TunnelManager, 'vnet/core/tunnel_manager'
+
+    module ActiveInterfaces
+      autoload :Base, 'vnet/core/active_interfaces/base'
+    end
 
     module Connections
       autoload :Base, 'vnet/core/connections/base'
@@ -226,6 +234,8 @@ module Vnet
 
   module Models
     class InvalidUUIDError < StandardError; end
+
+    autoload :ActiveInterface, 'vnet/models/active_interface'
     autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
@@ -260,6 +270,7 @@ module Vnet
   end
 
   module ModelWrappers
+    autoload :ActiveInterface, 'vnet/model_wrappers/active_interface'
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
@@ -297,6 +308,8 @@ module Vnet
   module NodeApi
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
+
+    autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
@@ -336,7 +349,6 @@ module Vnet
   end
 
   module Openflow
-
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
@@ -348,7 +360,6 @@ module Vnet
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
-
   end
 
   module Plugins

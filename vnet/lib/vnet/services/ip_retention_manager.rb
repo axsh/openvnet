@@ -61,7 +61,7 @@ module Vnet::Services
     end
 
     def created_item(params)
-      return if @items[params[:id]]
+      return if item = internal_detect_by_id(params)
 
       internal_new_item(mw_class.new(params), {})
     end
