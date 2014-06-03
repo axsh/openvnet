@@ -1,34 +1,27 @@
 module Vnet::Services::IpRetentionContainers
   class IpRetention
-    attr_accessor :id
-    attr_accessor :ip_lease_id
-    attr_accessor :lease_time_expired_at
-    attr_accessor :grace_time_expired_at
-    attr_accessor :lease_time_expired_at_i
-    attr_accessor :grace_time_expired_at_i
+    attr_reader :id
+    attr_reader :ip_lease_id
+    attr_reader :leased_at
+    attr_reader :leased_at_i
+    attr_reader :released_at
+    attr_reader :released_at_i
 
     def initialize(params)
-      self.id = params[:id]
-      self.ip_lease_id = params[:ip_lease_id]
-      self.lease_time_expired_at = params[:lease_time_expired_at]
-      self.lease_time_expired_at_i = lease_time_expired_at.to_i if lease_time_expired_at
-    end
-
-    def expire!(grace_time)
-      self.grace_time_expired_at = lease_time_expired_at + grace_time
-      self.grace_time_expired_at_i = grace_time_expired_at.to_i
-    end
-
-    def lease_time_expired?
-      lease_time_expired_at && lease_time_expired_at_i <= Time.now.to_i
+      @id = params[:id]
+      @ip_lease_id = params[:ip_lease_id]
+      @leased_at = params[:leased_at]
+      @leased_at_i = leased_at.to_i if leased_at
+      @released_at = params[:released_at]
+      @released_at_i = released_at.to_i if released_at
     end
 
     def to_hash
       {
         id: id,
         ip_lease_id: ip_lease_id,
-        lease_time_expired_at: lease_time_expired_at,
-        grace_time_expired_at: grace_time_expired_at,
+        leased_at: leased_at,
+        released_at: released_at,
       }
     end
 
@@ -42,19 +35,18 @@ module Vnet::Services::IpRetentionContainers
 
     MW = Vnet::ModelWrappers
 
-    attr_accessor :lease_time
-    attr_accessor :grace_time
-    attr_accessor :ip_retentions
-    attr_accessor :lease_time_ip_retentions
-    attr_accessor :grace_time_ip_retentions
+    attr_reader :lease_time
+    attr_reader :grace_time
+    attr_reader :leased_ip_retentions
+    attr_reader :released_ip_retentions
 
     def initialize(params)
       super
       @lease_time = params[:lease_time]
       @grace_time = params[:grace_time]
       @ip_retentions = {}
-      @lease_time_ip_retentions = []
-      @grace_time_ip_retentions = []
+      @leased_ip_retentions = []
+      @released_ip_retentions = []
     end
 
     def add_ip_retention(params)
@@ -62,76 +54,91 @@ module Vnet::Services::IpRetentionContainers
 
       ip_retention = IpRetention.new(params)
 
-      @ip_retentions[params[:id]] = ip_retention
+      @ip_retentions[ip_retention.id] = ip_retention
 
-      if ip_retention.lease_time_expired_at
-        @lease_time_ip_retentions << ip_retention
-        @lease_time_ip_retentions.sort_by! { |i| i.lease_time_expired_at_i }
+      if ip_retention.released_at
+        @released_ip_retentions << ip_retention
+        @released_ip_retentions.sort_by! { |i| i.released_at_i }
+      else
+        @leased_ip_retentions << ip_retention
+        @leased_ip_retentions.sort_by! { |i| i.leased_at_i }
       end
 
       ip_retention
     end
 
+    # force remove an ip_retention
     def remove_ip_retention(id)
-      ip_retention = @ip_retentions.delete(id)
-      return unless ip_retention
-
-      @lease_time_ip_retentions.delete(ip_retention)
-      @grace_time_ip_retentions.delete(ip_retention)
-
-      info log_format("removed ip_retention: #{id} ip_lease: #{ip_retention.ip_lease_id}")
-
-      ip_retention
-    end
-
-    def expire_ip_retentions(ids)
-      return unless installed?
-
-      ids.each do |id|
-        ip_retention = @ip_retentions[id]
+      @ip_retentions.delete(id).tap do |ip_retention|
         return unless ip_retention
 
-        @lease_time_ip_retentions.delete(ip_retention)
+        info log_format("removed ip_retention: #{id} ip_lease: #{ip_retention.ip_lease_id}")
 
-        ip_retention.expire!(grace_time)
+        [@leased_ip_retentions, @released_ip_retentions].each do |ip_retentions|
+          index = nil
+          ip_retentions.each_with_index do |ip_retention, i|
+            if ip_retention.id == id
+              index = i
+              break
+            end
+          end
 
-        @grace_time_ip_retentions << ip_retention
-        @grace_time_ip_retentions.sort_by! { |i| i.grace_time_expired_at_i }
+          if index
+            ip_retentions.delete_at(index)
+            break
+          end
+        end
+      end
+    end
 
+    def lease_time_expired
+      return unless installed?
+
+      current_time =  Time.now.to_i
+      count = 0
+      @leased_ip_retentions.each do |ip_retention|
+        break unless ip_retention.leased_at_i + lease_time <= current_time
+        count += 1
+      end
+
+      return if count == 0
+
+      @leased_ip_retentions.shift(count).each do |ip_retention|
         MW::IpLease.expire(ip_retention.ip_lease_id)
+        info log_format("lease time expired. ip_retention: #{id} ip_lease: #{ip_retention.ip_lease_id}")
+      end
+    end
 
-        info log_format("exipred ip_retention: #{id} ip_lease: #{ip_retention.ip_lease_id}")
+    def grace_time_expired
+      return unless installed?
+
+      current_time =  Time.now.to_i
+      count = 0
+      @released_ip_retentions.each do |ip_retention|
+        break unless ip_retention.released_at_i + grace_time <= current_time
+        count += 1
+      end
+
+      return if count == 0
+
+      @released_ip_retentions.shift(count).each do |ip_retention|
+        MW::IpRetentionContainer.remove_ip_retention(id: id, ip_retention_id: ip_retention.id)
+        info log_format("grace time expired. ip_retention: #{id} ip_lease: #{ip_retention.ip_lease_id}")
       end
     end
 
     def check_lease_time_expiration
-      current_time = Time.now.to_i
+      return if @leased_ip_retentions.empty?
+      return unless @leased_ip_retentions.first.leased_at_i + lease_time <= Time.now.to_i
 
-      expired_ip_retentions = @lease_time_ip_retentions.reduce([]) do |array, ip_retention|
-        break array if current_time < ip_retention.lease_time_expired_at_i
-        array << ip_retention
-        array
-      end
-
-      publish(
-        IP_RETENTION_CONTAINER_EXPIRED_IP_RETENTION,
-        id: id,
-        ip_retention_ids: expired_ip_retentions.map(&:id)
-      )
+      publish(IP_RETENTION_CONTAINER_LEASE_TIME_EXPIRED, id: id)
     end
 
     def check_grace_time_expiration
-      current_time = Time.now.to_i
+      return if @released_ip_retentions.empty?
+      return unless @released_ip_retentions.first.released_at_i + grace_time <= Time.now.to_i
 
-      expired_ip_retentions = @grace_time_ip_retentions.reduce([]) do |array, ip_retention|
-        break array if current_time < ip_retention.grace_time_expired_at_i
-        array << ip_retention
-        array
-      end
-
-      expired_ip_retentions.each do |ip_retention|
-        MW::IpRetentionContainer.remove_ip_retention(id: id, ip_retention_id: ip_retention.id)
-      end
+      publish(IP_RETENTION_CONTAINER_GRACE_TIME_EXPIRED, id: id)
     end
 
     def to_hash

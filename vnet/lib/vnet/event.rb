@@ -193,6 +193,7 @@ module Vnet
     IP_RETENTION_CONTAINER_DELETED_ITEM = 'ip_retention_container_deleted_item'
     IP_RETENTION_CONTAINER_ADDED_IP_RETENTION = 'ip_retention_container_added_ip_retention'
     IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION = 'ip_retention_container_removed_ip_retention'
-    IP_RETENTION_CONTAINER_EXPIRED_IP_RETENTION = 'ip_retention_container_expired_ip_retention'
+    IP_RETENTION_CONTAINER_LEASE_TIME_EXPIRED = 'ip_retention_container_lease_time_expired'
+    IP_RETENTION_CONTAINER_GRACE_TIME_EXPIRED = 'ip_retention_container_grace_time_expired'
   end
 end

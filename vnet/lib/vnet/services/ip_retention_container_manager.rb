@@ -92,7 +92,7 @@ module Vnet::Services
       item.add_ip_retention(
         id: params[:ip_retention_id],
         ip_lease_id: params[:ip_lease_id],
-        lease_time_expired_at: params[:lease_time_expired_at]
+        leased_at: params[:leased_at]
       )
     end
 
@@ -148,7 +148,9 @@ module Vnet::Services
             publish(
               IP_RETENTION_CONTAINER_ADDED_IP_RETENTION,
               id: item.id,
-              ip_retention_id: ip_retention.id
+              ip_retention_id: ip_retention.id,
+              ip_lease_id: ip_retention.ip_lease_id,
+              leased_at: ip_retention.leased_at
             )
           end
         end
