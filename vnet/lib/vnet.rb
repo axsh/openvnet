@@ -79,6 +79,8 @@ module Vnet
 
     module ActiveInterfaces
       autoload :Base, 'vnet/core/active_interfaces/base'
+      autoload :Local, 'vnet/core/active_interfaces/local'
+      autoload :Remote, 'vnet/core/active_interfaces/remote'
     end
 
     module Connections

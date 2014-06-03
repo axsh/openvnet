@@ -80,7 +80,16 @@ module Vnet::Core
     end
 
     def item_initialize(item_map, params)
-      item_class = ActiveInterfaces::Base
+      return unless @datapath_info
+
+      item_class =
+        case item_map.datapath_id
+        when nil               then ActiveInterfaces::Base
+        when @datapath_info.id then ActiveInterfaces::Local
+        else
+          ActiveInterfaces::Remote
+        end
+
       item = item_class.new(dp_info: @dp_info, id: item_map[:id], map: item_map)
     end
 
