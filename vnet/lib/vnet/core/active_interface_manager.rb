@@ -60,7 +60,7 @@ module Vnet::Core
       filter, value = filter_part
 
       case filter
-      when :id, :interface_id, :datapath_id, :port_name, :label
+      when :id, :interface_id, :datapath_id, :port_name, :label, :singular
         proc { |id, item| value == item.send(filter) }
       # when :not_local
       #   proc { |id, item| value != item.network_id }
@@ -75,7 +75,9 @@ module Vnet::Core
       filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
       filter << {datapath_id: params[:datapath_id]} if params.has_key? :datapath_id
       filter << {port_name: params[:port_name]} if params.has_key? :port_name
+
       filter << {label: params[:label]} if params.has_key? :label
+      filter << {singular: params[:singular]} if params.has_key? :singular
       filter
     end
 
