@@ -17,31 +17,37 @@ networks:
 interfaces:
 
   - uuid: if-v1
+    port_name: if-v1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:01"
     ipv4_address: 10.101.0.10
 
   - uuid: if-v2
+    port_name: if-v2
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:02"
     ipv4_address: 10.102.0.10
 
   - uuid: if-v3
+    port_name: if-v3
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:03"
     ipv4_address: 10.101.0.11
 
   - uuid: if-v4
+    port_name: if-v4
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:04"
     ipv4_address: 10.102.0.11
 
   - uuid: if-v5
+    port_name: if-v5
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:05"
     ipv4_address: 10.101.0.12
 
   - uuid: if-v6
+    port_name: if-v6
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:06"
     ipv4_address: 10.102.0.12
