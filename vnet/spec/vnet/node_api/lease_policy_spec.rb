@@ -123,14 +123,14 @@ describe Vnet::NodeApi::LeasePolicy do
       ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
 
       expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
-      expect(ip_lease.ip_retention).to eq lease_policy.ip_retention_container.ip_retentions.first
-      expect(ip_lease.lease_time_expired_at.to_i).to eq (now + lease_policy.ip_retention_container.lease_time).to_i
+      expect(ip_lease.ip_retentions.first).to eq lease_policy.ip_retention_containers.first.ip_retentions.first
+      expect(ip_lease.ip_retentions.first.lease_time_expired_at.to_i).to eq (now + lease_policy.ip_retention_containers.first.lease_time).to_i
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
 
       expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
-      expect(events[0][:options][:id]).to eq ip_lease.ip_retention.id
+      expect(events[0][:options][:id]).to eq ip_lease.ip_retentions.first.id
       expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
     end
 

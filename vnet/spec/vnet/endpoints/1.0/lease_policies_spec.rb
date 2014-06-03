@@ -27,7 +27,6 @@ describe "/lease_policies" do
       :timing => "dhcp",
       # but timing is not a required parameter, and its default is "immediate"
       # so still have to do the database setup :-(
-      :lease_time => 7200,
     }
     required_params = [ ]
     uuid_params = [:uuid]
@@ -117,28 +116,6 @@ describe "/lease_policies" do
       expect(JSON.parse(last_response.body)["uuid"]).to eq "il-new"
 
       # TODO check associations
-    end
-  end
-
-  describe "GET /:uuid/ip_leases" do
-    let(:ip_retention_container) { Fabricate(:ip_retention_container) }
-    let(:lease_policy) { Fabricate(:lease_policy, ip_retention_container: ip_retention_container) }
-    let!(:ip_retentions) do
-      3.times.map do
-        Fabricate(:ip_retention_with_ip_lease, ip_retention_container: ip_retention_container)
-      end
-    end
-
-    it "returns 3 ip_leases" do
-      get "/lease_policies/#{lease_policy.canonical_uuid}/ip_leases"
-
-      expect(last_response).to succeed.with_body_containing({
-        "total_count" => 3,
-        "offset" =>  0,
-        "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
-      })
-
-      expect(JSON.parse(last_response.body)["items"].size).to eq 3
     end
   end
 end

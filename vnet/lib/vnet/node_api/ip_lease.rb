@@ -51,7 +51,7 @@ module Vnet::NodeApi
 
       def destroy(uuid)
         ip_lease = model_class[uuid]
-        ip_retention = ip_lease.ip_retention
+        ip_retentions = ip_lease.ip_retentions
 
         transaction do
           ip_lease.destroy
@@ -61,7 +61,7 @@ module Vnet::NodeApi
           dispatch_update_sg_ip_addresses(group)
         end
 
-        if ip_retention
+        ip_retentions.each do |ip_retention|
           dispatch_event(IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, id: ip_retention.ip_retention_container_id, ip_retention_id: ip_retention.id)
         end
 

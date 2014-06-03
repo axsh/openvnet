@@ -8,12 +8,31 @@ def app
 end
 
 describe "/ip_retention_containers" do
+  before(:each) { use_mock_event_handler }
   let(:api_suffix)  { "ip_retention_containers" }
   let(:fabricator)  { :ip_retention_container }
   let(:model_class) { Vnet::Models::IpRetentionContainer }
 
   include_examples "GET /"
   include_examples "GET /:uuid"
+  include_examples "DELETE /:uuid"
+
+  describe "POST /" do
+    accepted_params = {
+      lease_time: 3600,
+      grace_time: 3600
+    }
+    required_params = []
+    uuid_params = [:uuid]
+
+    include_examples "POST /", accepted_params, required_params, uuid_params
+  end
+
+  describe "PUT /:uuid" do
+    accepted_params = {}
+
+    include_examples "PUT /:uuid", accepted_params
+  end
 
   describe "GET /:uuid/ip_retentions" do
     let(:ip_retention_container) { Fabricate(:ip_retention_container) }

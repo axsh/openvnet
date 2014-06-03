@@ -166,19 +166,8 @@ Sequel.migration do
     create_table(:lease_policies) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
-      Integer :ip_retention_container_id, :index => true, null: false
       String :mode, :null=>false, :default => "simple"
       String :timing, :null=>false, :default => "immediate"
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-
-    create_table(:lease_policy_base_networks) do
-      primary_key :id
-      Integer :lease_policy_id, :index => true, :null => false
-      Integer :network_id, :index => true, :null => false
-      Integer :ip_range_group_id, :index => true, :null => false
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -194,12 +183,30 @@ Sequel.migration do
       DateTime :deleted_at
     end
 
+    create_table(:lease_policy_base_networks) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :network_id, :index => true, :null => false
+      Integer :ip_range_group_id, :index => true, :null => false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
     create_table(:lease_policy_ip_lease_containers) do
       primary_key :id
       Integer :lease_policy_id, :index => true, :null => false
       Integer :ip_lease_container_id, :index => true, :null => false
       String :label
       unique [:lease_policy_id, :ip_lease_container_id]
+    end
+
+    create_table(:lease_policy_ip_retention_containers) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :ip_retention_container_id, :null => false
+      index :ip_retention_container_id, :name => :container_id_index
+      unique [:lease_policy_id, :ip_retention_container_id]
     end
 
     create_table(:mac_addresses) do
@@ -363,6 +370,10 @@ Sequel.migration do
                :ip_retentions,
                :ip_retention_containers,
                :lease_policies,
+               :lease_policy_base_interfaces,
+               :lease_policy_base_networks,
+               :lease_policy_ip_lease_containers,
+               :lease_policy_ip_retention_containers,
                :mac_addresses,
                :mac_leases,
                :networks,

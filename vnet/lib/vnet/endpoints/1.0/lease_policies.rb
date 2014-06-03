@@ -5,8 +5,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   def self.put_post_shared_params
     param :mode, :String, in: CLP::MODES, default: CLP::MODE_SIMPLE
     param :timing, :String, in: CLP::TIMINGS, default: CLP::TIMING_IMMEDIATE
-    param :lease_time, :Integer
-    param :grace_time, :Integer
   end
 
   fill_options = [ ]
@@ -138,22 +136,5 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     ).commit(fill: { :ip_address => :network})
 
     respond_with(R::IpLease.generate(ip_lease))
-  end
-
-  get '/:uuid/ip_leases' do
-    limit = @params[:limit] || config.pagination_limit
-    offset = @params[:offset] || 0
-
-    model = M::LeasePolicy.batch[params[:uuid]].commit
-    total_count = model.batch.ip_leases_count.commit
-    items = model.batch.ip_leases(offset: offset, limit: limit).commit(fill:[:mac_lease, { ip_address: :network }])
-
-    pagination = {
-      "total_count" => items.count,
-      "offset" => offset,
-      "limit" => limit,
-    }
-
-    respond_with(R::IpLeaseCollection.generate_with_pagination(pagination, items))
   end
 end

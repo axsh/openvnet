@@ -29,8 +29,6 @@ describe Vnet::NodeApi::IpLease do
       expect(ip_lease[:ip_address_id]).to eq model.ip_address_id
       expect(ip_lease[:interface_id]).to eq interface.id
 
-      ip_retention_model = model.ip_retention
-
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
 
@@ -62,7 +60,7 @@ describe Vnet::NodeApi::IpLease do
       expect(events.size).to eq 2
 
       expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION
-      expect(events[0][:options][:id]).to eq ip_lease.ip_retention.id
+      expect(events[0][:options][:id]).to eq ip_retention.id
 
       expect(events[1][:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
       expect(events[1][:options][:id]).to eq ip_lease.interface_id

@@ -7,19 +7,6 @@ module Vnet::NodeApi
     class << self
       include Vnet::Constants::LeasePolicy
 
-      def create(options)
-        options = options.dup
-
-        ip_retention_container = IpRetentionContainer.create(
-          lease_time: options.delete(:lease_time),
-          grace_time: options.delete(:grace_time)
-        )
-
-        options[:ip_retention_container_id] = ip_retention_container.id
-
-        super(options)
-      end
-
       def allocate_ip(options)
         lease_policy = model_class(:lease_policy)[options[:lease_policy_uuid]]
 
@@ -75,7 +62,10 @@ module Vnet::NodeApi
             )
           end
 
-          IpRetentionContainer.add_ip_retention(lease_policy.ip_retention_container_id, ip_lease_id: ip_lease.id)
+          lease_policy.ip_retention_containers.each do |ip_retention_container|
+            IpRetentionContainer.add_ip_retention(ip_retention_container.id, ip_lease_id: ip_lease.id)
+          end
+
         end
 
         ip_lease
