@@ -35,7 +35,7 @@ module Vnet::NodeApi
       end
 
       def logger
-        Vnet::NodeApi.logger
+        Vnet.logger
       end
     end
   end
