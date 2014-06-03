@@ -21,7 +21,7 @@ module Vnet::NodeApi
           ip_retention = ip_retention_container.add_ip_retention(ip_lease_id: options[:ip_lease_id])
         end
 
-        dispatch_event(IP_RETENTION_CONTAINER_ADDED_IP_RETENTION, id: id, ip_retention_id: ip_retention.id, ip_lease_id: ip_retention.ip_lease_id, lease_time_expired_at: ip_retention.lease_time_expired_at)
+        dispatch_event(IP_RETENTION_CONTAINER_ADDED_IP_RETENTION, id: id, ip_retention_id: ip_retention.id, ip_lease_id: ip_retention.ip_lease_id, leased_at: ip_retention.leased_at)
 
         ip_retention
       end

@@ -147,8 +147,8 @@ Sequel.migration do
       primary_key :id
       Integer :ip_lease_id, :index => true, :null => false
       Integer :ip_retention_container_id, :index => true, :null => false
-      DateTime :lease_time_expired_at
-      DateTime :grace_time_expired_at
+      DateTime :leased_at
+      DateTime :released_at
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end

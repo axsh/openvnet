@@ -13,7 +13,6 @@ describe Vnet::NodeApi::IpRetentionContainer do
     it "adds an ip_retention to the ip_retention_container" do
       current_time = Time.now
       allow(Time).to receive(:now).and_return(current_time)
-      expected_lease_time_expired_at = current_time + ip_retention_container.lease_time
 
       ip_retention = node_api_class.add_ip_retention(
         ip_retention_container.id,
@@ -21,7 +20,7 @@ describe Vnet::NodeApi::IpRetentionContainer do
       )
 
       expect(ip_retention.ip_lease_id).to eq 1
-      expect(ip_retention.lease_time_expired_at.to_i).to eq expected_lease_time_expired_at.to_i
+      expect(ip_retention.leased_at.to_i).to eq current_time.to_i
 
       expect(ip_retention_container.ip_retentions.size).to eq 1
 
@@ -33,7 +32,7 @@ describe Vnet::NodeApi::IpRetentionContainer do
         expect(event[:options][:id]).to eq ip_retention_container.id
         expect(event[:options][:ip_retention_id]).to eq ip_retention.id
         expect(event[:options][:ip_lease_id]).to eq 1
-        expect(event[:options][:lease_time_expired_at].to_i).to eq expected_lease_time_expired_at.to_i
+        expect(event[:options][:leased_at].to_i).to eq current_time.to_i
       end
     end
   end
