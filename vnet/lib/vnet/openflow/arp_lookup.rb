@@ -139,8 +139,8 @@ module Vnet::Openflow
                                              ipv4_address: message.arp_tpa)
       return if mac_info.nil? || ipv4_info.nil?
 
-      case ipv4_info[:network_type]
-      when :physical
+      # case ipv4_info[:network_type]
+      # when :physical
         match_md = md_create(:network => ipv4_info[:network_id])
         reflection_md = md_create(:reflection => nil)
 
@@ -176,7 +176,7 @@ module Vnet::Openflow
         end
 
         arp_lookup_send_packets(messages)
-      end
+      # end
     end
 
     def arp_lookup_process_timeout(params)
