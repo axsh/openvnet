@@ -254,8 +254,6 @@ module Vnet::Openflow
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
       
       # Load remote interface.
-      # interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id)
-
       interface = @dp_info.active_interface_manager.retrieve(interface_id: ip_lease.interface_id)
 
       debug log_format('packet_in, active interface', interface.inspect)
