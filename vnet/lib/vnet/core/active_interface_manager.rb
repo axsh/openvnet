@@ -108,12 +108,13 @@ module Vnet::Core
     def updated_item(params)
       item = internal_detect_by_id(params) || return
 
-      # Currently only allow updated change 'label', 'singular' and
+      # Currently only allow updated to change 'label', 'singular' and
       # 'port_name'.  
-
       item.port_name = params[:port_name]
       item.label = params[:label]
       item.singular = params[:singular]
+
+      debug log_format("updated " + item.pretty_id, item.pretty_properties)
     end
 
     #

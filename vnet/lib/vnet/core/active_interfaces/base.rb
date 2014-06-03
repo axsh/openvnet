@@ -8,8 +8,9 @@ module Vnet::Core::ActiveInterfaces
     attr_reader :interface_id
     attr_reader :datapath_id
 
-    attr_reader :port_name
-    attr_reader :label
+    attr_accessor :port_name
+    attr_accessor :label
+    attr_accessor :singular
 
     def initialize(params)
       super
@@ -21,6 +22,7 @@ module Vnet::Core::ActiveInterfaces
 
       @port_name = map.port_name
       @label = map.label
+      @singular = map.singular
     end
 
     def mode
