@@ -96,20 +96,20 @@ module Vnet::Openflow
         # lookup has been refactored, as the db lookups as-is won't
         # work with the active interface refactoring.
         
-        # case ipv4_info[:network_type]
-        # when :physical
+        case ipv4_info[:network_type]
+        when :physical
           arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
                                      interface_ipv4: ipv4_info[:ipv4_address],
                                      interface_network_id: ipv4_info[:network_id],
                                      request_ipv4: request_ipv4,
                                      attempts: 1)
-        # when :virtual
-        #   arp_lookup_datapath_lookup(interface_mac: mac_info[:mac_address],
-        #                              interface_ipv4: ipv4_info[:ipv4_address],
-        #                              interface_network_id: ipv4_info[:network_id],
-        #                              request_ipv4: request_ipv4,
-        #                              attempts: 1)
-        # end
+        when :virtual
+          arp_lookup_datapath_lookup(interface_mac: mac_info[:mac_address],
+                                     interface_ipv4: ipv4_info[:ipv4_address],
+                                     interface_network_id: ipv4_info[:network_id],
+                                     request_ipv4: request_ipv4,
+                                     attempts: 1)
+        end
       end
 
       messages.drop(5) if messages.size > 20
@@ -139,8 +139,8 @@ module Vnet::Openflow
                                              ipv4_address: message.arp_tpa)
       return if mac_info.nil? || ipv4_info.nil?
 
-      # case ipv4_info[:network_type]
-      # when :physical
+      case ipv4_info[:network_type]
+      when :physical
         match_md = md_create(:network => ipv4_info[:network_id])
         reflection_md = md_create(:reflection => nil)
 
@@ -176,7 +176,7 @@ module Vnet::Openflow
         end
 
         arp_lookup_send_packets(messages)
-      # end
+      end
     end
 
     def arp_lookup_process_timeout(params)
@@ -254,7 +254,11 @@ module Vnet::Openflow
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
       
       # Load remote interface.
-      interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id)
+      # interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id)
+
+      interface = @dp_info.active_interface_manager.retrieve(id: ip_lease.interface_id)      
+
+      debug log_format('packet_in, active interface', interface.inspect)
 
       # TODO: Check if interface is remote?
 
