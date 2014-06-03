@@ -256,7 +256,7 @@ module Vnet::Openflow
       # Load remote interface.
       # interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id)
 
-      interface = @dp_info.active_interface_manager.retrieve(id: ip_lease.interface_id)      
+      interface = @dp_info.active_interface_manager.retrieve(interface_id: ip_lease.interface_id)
 
       debug log_format('packet_in, active interface', interface.inspect)
 
