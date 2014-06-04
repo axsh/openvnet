@@ -109,9 +109,16 @@ module Vnet::Core
       mode = (item_map.mode && item_map.mode.to_sym)
 
       if mode == :vif
-        mode = :remote if is_assigned_remotely?(item_map)
+        mode = :remote_vif if is_assigned_remotely?(item_map)
+      elsif mode == :host
+        mode = :remote if is_remote?(item_map)
       elsif is_remote?(item_map)
-        mode = :remote
+        mode = :remote_any
+      end
+
+      if mode == :remote_any || mode == :remote_vif
+        info log_format("we no longer allow remote interface mode for #{mode}", item_map.inspect)
+        return
       end
 
       item_class =
