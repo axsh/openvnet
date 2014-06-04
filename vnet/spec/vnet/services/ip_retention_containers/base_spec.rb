@@ -85,7 +85,7 @@ describe Vnet::Services::IpRetentionContainers::Base do
 
       expect(instance.leased_ip_retentions.size).to eq 1
 
-      expect(Vnet::ModelWrappers::IpLease).to receive(:expire).with(1)
+      expect(Vnet::ModelWrappers::IpLease).to receive(:release).with(1)
 
       instance.lease_time_expired
 
@@ -103,7 +103,7 @@ describe Vnet::Services::IpRetentionContainers::Base do
         released_at: current_time - 1000
       )
 
-      expect(Vnet::ModelWrappers::IpRetentionContainer).to receive(:remove_ip_retention).with(id: 1, ip_retention_id: 1)
+      expect(Vnet::ModelWrappers::IpLease).to receive(:destroy).with(1)
       instance.grace_time_expired
 
       expect(instance.leased_ip_retentions.size).to eq 0

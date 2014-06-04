@@ -43,7 +43,7 @@ describe Vnet::NodeApi::IpLease do
   describe "destroy" do
     it "success" do
       ip_retention_container = Fabricate(:ip_retention_container)
-      ip_retention = Fabricate(:ip_retention, ip_retention_container: ip_retention_container)
+      ip_retention = Fabricate(:ip_retention_with_ip_lease, ip_retention_container: ip_retention_container)
       ip_lease = ip_retention.ip_lease
 
       ip_lease_count = Vnet::Models::IpLease.count
@@ -68,25 +68,56 @@ describe Vnet::NodeApi::IpLease do
     end
   end
 
-  describe "expire" do
+  describe "release" do
     it "success" do
-      ip_retention_container = Fabricate(:ip_retention_container)
-      ip_retention = Fabricate(:ip_retention, ip_retention_container: ip_retention_container)
-      ip_lease = ip_retention.ip_lease
-      interface = ip_lease.interface
+      current_time = Time.now
+      allow(Time).to receive(:now).and_return(current_time)
 
-      ip_lease = Vnet::NodeApi::IpLease.expire(ip_lease.canonical_uuid)
+      ip_lease = Fabricate(:ip_lease)
+      interface = ip_lease.interface
+      ip_retention_global = Fabricate(
+        :ip_retention,
+        ip_retention_container: Fabricate(:ip_retention_container),
+        ip_lease: ip_lease,
+        leased_at: current_time - 1000
+      )
+      ip_retention_user = Fabricate(
+        :ip_retention,
+        ip_retention_container: Fabricate(:ip_retention_container),
+        ip_lease: ip_lease,
+        leased_at: current_time - 1000
+      )
+
+      ip_lease = Vnet::NodeApi::IpLease.release(ip_lease.canonical_uuid)
 
       expect(ip_lease.interface_id).to be_nil
       expect(ip_lease.mac_lease_id).to be_nil
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
+      expect(events.size).to eq 3
 
       events.first.tap do |event|
         expect(event[:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
         expect(event[:options][:id]).to eq interface.id
         expect(event[:options][:ip_lease_id]).to eq ip_lease.id
+      end
+
+      events[1].tap do |event|
+        expect(event[:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
+        expect(event[:options][:id]).to eq ip_retention_global.ip_retention_container_id
+        expect(event[:options][:ip_retention_id]).to eq ip_retention_global.ip_retention_container_id
+        expect(event[:options][:ip_lease_id]).to eq ip_retention_global.ip_lease_id
+        expect(event[:options][:leased_at]).to eq ip_retention_global.leased_at
+        expect(event[:options][:released_at]).to eq current_time
+      end
+
+      events[2].tap do |event|
+        expect(event[:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
+        expect(event[:options][:id]).to eq ip_retention_user.ip_retention_container_id
+        expect(event[:options][:ip_retention_id]).to eq ip_retention_user.ip_retention_container_id
+        expect(event[:options][:ip_lease_id]).to eq ip_retention_user.ip_lease_id
+        expect(event[:options][:leased_at]).to eq ip_retention_user.leased_at
+        expect(event[:options][:released_at]).to eq current_time
       end
     end
   end

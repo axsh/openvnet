@@ -70,7 +70,7 @@ module Vnet::NodeApi
         ip_lease
       end
 
-      def expire(uuid)
+      def release(uuid)
         ip_lease = model_class[uuid]
         interface = ip_lease.interface
 
@@ -78,6 +78,11 @@ module Vnet::NodeApi
         ip_lease.mac_lease_id = nil
         transaction do
           ip_lease.save_changes
+          current_time = Time.now
+          ip_lease.ip_retentions.each do |ip_retention|
+            ip_retention.released_at = current_time
+            ip_retention.save_changes
+          end
         end
 
         interface.security_groups.each do |group|
@@ -85,6 +90,17 @@ module Vnet::NodeApi
         end
 
         dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: interface.id, ip_lease_id: ip_lease.id)
+        # re-add released ip_retentions
+        ip_lease.ip_retentions.each do |ip_retention|
+          dispatch_event(
+            IP_RETENTION_CONTAINER_ADDED_IP_RETENTION,
+            id: ip_retention.ip_retention_container_id,
+            ip_retention_id: ip_retention.id,
+            ip_lease_id: ip_retention.ip_lease_id,
+            leased_at: ip_retention.leased_at,
+            released_at: ip_retention.released_at
+          )
+        end
 
         ip_lease
       end

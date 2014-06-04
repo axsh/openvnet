@@ -28,9 +28,8 @@ module Vnet::NodeApi
 
       def remove_ip_retention(id, ip_retention_id)
         ip_retention = model_class(:ip_retention)[ip_retention_id]
-        unless ip_retention.ip_retention_container_id == id
-          raise "Invalid ip_retention_container. ip_retention_container: #{id} ip_retention: #{ip_retention_id}"
-        end
+
+        return unless ip_retention.ip_retention_container_id == id
 
         transaction do
           ip_retention.destroy

@@ -104,7 +104,7 @@ module Vnet::Services::IpRetentionContainers
       return if count == 0
 
       @leased_ip_retentions.shift(count).each do |ip_retention|
-        MW::IpLease.expire(ip_retention.ip_lease_id)
+        MW::IpLease.release(ip_retention.ip_lease_id)
         info log_format("lease time expired. ip_retention: #{id} ip_lease: #{ip_retention.ip_lease_id}")
       end
     end
@@ -122,7 +122,7 @@ module Vnet::Services::IpRetentionContainers
       return if count == 0
 
       @released_ip_retentions.shift(count).each do |ip_retention|
-        MW::IpRetentionContainer.remove_ip_retention(id: id, ip_retention_id: ip_retention.id)
+        MW::IpLease.destroy(ip_retention.ip_lease_id)
         info log_format("grace time expired. ip_retention: #{id} ip_lease: #{ip_retention.ip_lease_id}")
       end
     end
