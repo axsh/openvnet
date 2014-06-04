@@ -4,7 +4,7 @@ module Vnet::Initializers
       log_dir =  Vnet::LOG_DIRECTORY
       FileUtils.mkdir_p(log_dir) unless Dir.exists?(log_dir)
       Celluloid.logger = ::Logger.new(File.join(log_dir, filename))
-      Vnet::NodeApi.logger = Celluloid.logger
+      Vnet.logger = Celluloid.logger
     end
   end
 end
