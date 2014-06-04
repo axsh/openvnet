@@ -47,6 +47,8 @@ module Vnet::Core::ActiveInterfaces
 
     def to_hash
       Vnet::Core::ActiveInterface.new(id: @id,
+                                      mode: self.mode,
+
                                       interface_id: @interface_id,
                                       datapath_id: @datapath_id,
 

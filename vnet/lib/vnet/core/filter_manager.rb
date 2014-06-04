@@ -191,7 +191,9 @@ module Vnet::Core
     end
 
     def is_remote?(interface)
-      super(interface.owner_datapath_id, interface.active_datapath_id)
+      # Need to fix this:
+      active_interface = @dp_info.active_interface_manager.retrieve(interface_id: interface.id)
+      active_interface.nil? || active_interface.mode == :remote
     end
 
   end

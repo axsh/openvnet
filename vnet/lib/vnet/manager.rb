@@ -106,11 +106,6 @@ module Vnet
 
     private
 
-    # Little shortcut method
-    def is_remote?(owner_datapath_id, active_datapath_id = nil)
-      @datapath_info.is_remote?(owner_datapath_id, active_datapath_id)
-    end
-
     def log_format(message, values = nil)
       (@log_prefix || "") + message + (values ? " (#{values})" : '')
     end

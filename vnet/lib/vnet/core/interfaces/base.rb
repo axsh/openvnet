@@ -50,19 +50,6 @@ module Vnet::Core::Interfaces
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
 
-      # The 'owner_datapath_ids' set has two possible states; the set
-      # can contain zero or more datapaths that can activate this
-      # interface, or if nil it can either be activated by any
-      # datapath or should be active on all relevant datapaths.
-      #
-      # The 'active_datapath_ids' set has several possible states,
-      # some depending on the interface type; the set can contain zero
-      # or more datapaths on which the interface is active, or if nil
-      # it is interface dependent.
-      #
-      # Note, currently we're using a single value in the db and as
-      # such the implementation below is subject to change.
-
       if map.owner_datapath_id
         @owner_datapath_ids = [map.owner_datapath_id]
       else
@@ -233,9 +220,6 @@ module Vnet::Core::Interfaces
       return nil if ipv4_info.nil?
 
       [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
-    end
-
-    def del_flows_for_active_datapath(ipv4_addresses)
     end
 
     #

@@ -18,11 +18,6 @@ module Vnet::Openflow
       @node_id = datapath_map[:node_id]
     end
 
-    def is_remote?(owner_datapath_id, active_datapath_id = nil)
-      (owner_datapath_id && owner_datapath_id != @id) ||
-      (active_datapath_id && active_datapath_id != @id)
-    end
-
   end
 
   # OpenFlow datapath allows us to send OF messages and ovs-ofctl
