@@ -320,7 +320,7 @@ module Vnet
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
-    autoload :DatapathRouteLink, 'vnet/node_api/models.rb'
+    autoload :DatapathRouteLink, 'vnet/node_api/datapath_route_link.rb'
     autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'

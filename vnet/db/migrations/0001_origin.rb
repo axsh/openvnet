@@ -41,11 +41,16 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :network_id, :index => true, :null=>false
+
       Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
+      Integer :ip_lease_id, :index => true
+
       FalseClass :is_connected, :null=>false
+
       DateTime :deleted_at, :index => true
       Integer :deleted, :default => 0, :null => false
+
       index [:datapath_id, :network_id, :deleted], :unique => true
     end
 
@@ -53,8 +58,11 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :route_link_id, :index => true, :null=>false
+
       Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
+      Integer :ip_lease_id, :index => true
+
       FalseClass :is_connected, :null=>false
     end
 
