@@ -429,12 +429,12 @@ module Vnet::Core
       interface_event = params[:interface_event] || return
 
       case interface_event
-      when :added_ipv4_address
-        interface_added_ipv4_address(interface_id, params)
-      when :removed_ipv4_address
-        interface = @interfaces.delete(interface_id)
+      # when :added_ipv4_address
+      #   interface_added_ipv4_address(interface_id, params)
+      # when :removed_ipv4_address
+      #   interface = @interfaces.delete(interface_id)
 
-        return if interface.nil?
+      #   return if interface.nil?
         
         # Do stuff/event...
 
@@ -443,6 +443,22 @@ module Vnet::Core
       else
         error log_format("unknown updated_interface event '#{interface_event}'")
       end
+    end
+
+    # Temporary method while refactoring active interfaces.
+    def interface_load_ip_lease(type, interface_id, ip_lease_id)
+      return if interface_id.nil? || ip_lease_id.nil?
+
+      ip_lease = MW::IpLease.batch[id: ip_lease_id].commit
+
+      return if ip_lease.nil?
+      return if @interfaces[interface_id] && @interfaces[interface_id][:network_id]
+
+      interface_added_ipv4_address(interface_id,
+                                   interface_mode: type,
+                                   interface_id: interface_id,
+                                   network_id: ip_lease.network_id,
+                                   ipv4_address: IPAddr.new(ip_lease.ipv4_address, Socket::AF_INET))
     end
 
     def interface_prepare(interface_id, interface_mode)
@@ -526,6 +542,8 @@ module Vnet::Core
       host_dpn = create_dp_obj(:host_network, params) || return
       network_id = host_dpn[:network_id] || return
 
+      interface_load_ip_lease(:host, host_dpn[:interface_id], host_dpn[:ip_lease_id])
+
       # Reorder so that we activate in the order of loading
       # internally, database and then create.
       remote_dpns = @remote_datapath_networks.select { |id, remote_dpn|
@@ -540,6 +558,8 @@ module Vnet::Core
     def added_remote_datapath_network(params)
       remote_dpn = create_dp_obj(:remote_network, params) || return
       network_id = remote_dpn[:network_id] || return
+
+      interface_load_ip_lease(:remote, remote_dpn[:interface_id], remote_dpn[:ip_lease_id])
 
       host_dpn = @host_networks[network_id]
 
@@ -588,6 +608,8 @@ module Vnet::Core
       host_dprl = create_dp_obj(:host_route_link, params) || return
       route_link_id = host_dprl[:route_link_id] || return
 
+      interface_load_ip_lease(:host, host_dprl[:interface_id], host_dprl[:ip_lease_id])
+
       # Reorder so that we activate in the order of loading
       # internally, database and then create.
       remote_dprls = @remote_datapath_route_links.select { |id, remote_dprl|
@@ -602,6 +624,8 @@ module Vnet::Core
     def added_remote_datapath_route_link(params)
       remote_dprl = create_dp_obj(:remote_route_link, params) || return
       route_link_id = remote_dprl[:route_link_id] || return
+
+      interface_load_ip_lease(:remote, remote_dprl[:interface_id], remote_dprl[:ip_lease_id])
 
       host_dprl = @host_route_links[route_link_id]
 
@@ -635,6 +659,7 @@ module Vnet::Core
       object_id = param_obj[dst_object_type] || return
       datapath_id = param_obj[:datapath_id] || return
       interface_id = param_obj[:interface_id] || return
+      ip_lease_id = param_obj[:ip_lease_id]
       mac_address = param_obj[:mac_address] || return
 
       if dst_list[key_id]
@@ -643,13 +668,14 @@ module Vnet::Core
       end
 
       debug log_format("#{dst_log_prefix} #{key_id} added for datapath #{datapath_id}",
-                       "#{dst_object_type}:#{object_id} interface_id:#{interface_id} mac_address:#{mac_address}")
+                       "#{dst_object_type}:#{object_id} interface_id:#{interface_id} mac_address:#{mac_address} ip_lease_id:#{ip_lease_id}")
 
       dst_list[key_id] = {
         :id => id,
         :datapath_id => datapath_id,
         dst_object_type => object_id,
         :interface_id => interface_id,
+        :ip_lease_id => ip_lease_id,
         :mac_address => mac_address
       }
     end

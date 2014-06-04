@@ -91,6 +91,7 @@ module Vnet::Core::Datapaths
         datapath_id: dpn_map.datapath_id || return,
         interface_id: dpn_map.interface_id || return,
         network_id: dpn_map.network_id || return,
+        ip_lease_id: dpn_map.ip_lease_id,
         mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address || return),
 
         active: false
@@ -131,6 +132,7 @@ module Vnet::Core::Datapaths
         datapath_id: dprl_map.datapath_id || return,
         interface_id: dprl_map.interface_id || return,
         route_link_id: dprl_map.route_link_id || return,
+        ip_lease_id: dprl_map.ip_lease_id,
         mac_address: Trema::Mac.new(dprl_map.mac_address || return),
 
         active: false

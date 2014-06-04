@@ -36,12 +36,6 @@ module Vnet::Core::Interfaces
       end
 
       @dp_info.add_flows(flows)
-      @dp_info.tunnel_manager.async.update(event: :updated_interface,
-                                           interface_event: :added_ipv4_address,
-                                           interface_mode: :host,
-                                           interface_id: @id,
-                                           network_id: ipv4_info[:network_id],
-                                           ipv4_address: ipv4_info[:ipv4_address])
     end
 
     def install
