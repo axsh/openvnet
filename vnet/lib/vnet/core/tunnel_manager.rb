@@ -202,7 +202,7 @@ module Vnet::Core
       add_dprl_hash_to_updated_route_links(remote_dprls)
 
       # Make sure we have the remote host interface loaded.
-      @dp_info.interface_manager.async.retrieve(id: item.dst_interface_id)
+      # @dp_info.interface_manager.async.retrieve(id: item.dst_interface_id)
     end
 
     def delete_item(item)
@@ -320,7 +320,7 @@ module Vnet::Core
 
       if tunnel_mode == nil
         info log_format("cannot determine tunnel mode")
-        @dp_info.interface_manager.async.retrieve(id: remote_dp_obj[:interface_id])
+        # @dp_info.interface_manager.async.retrieve(id: remote_dp_obj[:interface_id])
 
         return
       end

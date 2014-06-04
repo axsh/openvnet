@@ -108,16 +108,8 @@ module Vnet::Core
     def item_initialize(item_map, params)
       mode = (item_map.mode && item_map.mode.to_sym)
 
-      if mode == :vif
-        mode = :remote_vif if is_assigned_remotely?(item_map)
-      elsif mode == :host
-        mode = :remote if is_remote?(item_map)
-      elsif is_remote?(item_map)
-        mode = :remote_any
-      end
-
-      if mode == :remote_any || mode == :remote_vif
-        info log_format("we no longer allow remote interface mode for #{mode}", item_map.inspect)
+      if mode != :vif && is_remote?(item_map)
+        info log_format("we no longer allow remote interfaces", item_map.inspect)
         return
       end
 
@@ -127,7 +119,6 @@ module Vnet::Core
         when :host      then Interfaces::Host
         when :internal  then Interfaces::Internal
         when :patch     then Interfaces::Patch
-        when :remote    then Interfaces::Remote
         when :simulated then Interfaces::Simulated
         when :vif       then Interfaces::Vif
         else
@@ -156,16 +147,11 @@ module Vnet::Core
         }
       end
 
-      # Temporary...
-      if item.mode != :remote
-        activate_local_interface(item)
-      end
+      activate_local_interface(item)
     end
 
     def item_post_install(item, item_map)
       load_addresses(item_map)
-
-      return if item.mode == :remote
 
       @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
                                       id: :interface,
@@ -185,23 +171,21 @@ module Vnet::Core
         update_active_datapath(item, nil)
       end
 
-      if item.mode != :remote
-        item.port_number &&
-          @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
-                                        id: item.port_number,
-                                        interface_id: item.id)
+      item.port_number &&
+        @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
+                                      id: item.port_number,
+                                      interface_id: item.id)
 
-        @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
-                                        id: :interface,
-                                        interface_id: item.id)
+      @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
+                                      id: :interface,
+                                      interface_id: item.id)
 
-        @dp_info.filter_manager.async.remove_filters(item.id)
+      @dp_info.filter_manager.async.remove_filters(item.id)
 
-        item.mac_addresses.each { |id, mac|
-          @dp_info.connection_manager.async.remove_catch_new_egress(id)
-          @dp_info.connection_manager.async.close_connections(id)
-        }
-      end
+      item.mac_addresses.each { |id, mac|
+        @dp_info.connection_manager.async.remove_catch_new_egress(id)
+        @dp_info.connection_manager.async.close_connections(id)
+      }
     end
 
     def created_item(params)
@@ -468,8 +452,6 @@ module Vnet::Core
     end
 
     def update_active_datapath(item, datapath_id)
-      return if item.mode == :remote
-
       if item.owner_datapath_ids.nil?
         return unless item.mode == :vif
       else
@@ -507,10 +489,7 @@ module Vnet::Core
     def activate_port_match_proc(state_id, params)
       port_name = params[:port_name]
 
-      Proc.new { |id, item|
-        item.mode != :remote &&
-        item.port_name == port_name
-      }
+      Proc.new { |id, item| item.port_name == port_name }
     end
 
     def activate_port_value(port_number, params)
