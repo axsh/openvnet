@@ -16,6 +16,8 @@ module Vnspec
       debug: false,
       exit_on_error: true,
       use_sudo: false,
+      timeout: 300,
+      verbose: :fatal,
     }
 
     def ssh_options
@@ -32,7 +34,12 @@ module Vnspec
       exit_code = nil
       exit_signal = nil
 
-      Net::SSH.start(host, options[:user]) do |ssh|
+      ssh_command_options = {
+        timeout: options[:timeout],
+        verbose: options[:verbose]
+      }
+
+      Net::SSH.start(host, options[:user], ssh_command_options) do |ssh|
         ssh.open_channel do |channel|
           channel.exec(command) do |ch, success|
             abort "Failed to execute [#{host}] #{command}" unless success
