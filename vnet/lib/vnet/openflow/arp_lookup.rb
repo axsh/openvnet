@@ -247,10 +247,6 @@ module Vnet::Openflow
         return unreachable_ip(messages, "no interface found", :no_interface)
       end
 
-      if ip_lease.interface.active_datapath_id.nil?
-        return unreachable_ip(messages, "no active datapath for interface found", :inactive_interface)
-      end
-
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
       
       # Load remote interface.

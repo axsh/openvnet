@@ -28,7 +28,6 @@ module Vnet::Core::Interfaces
 
     attr_accessor :mode
     attr_accessor :port_name
-    attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
     attr_accessor :display_name
 
@@ -66,10 +65,8 @@ module Vnet::Core::Interfaces
 
       if map.owner_datapath_id
         @owner_datapath_ids = [map.owner_datapath_id]
-        @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : []
       else
         @owner_datapath_ids = nil
-        @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
       end
     end
 
@@ -136,7 +133,6 @@ module Vnet::Core::Interfaces
                                 display_name: @display_name,
                                 mac_addresses: @mac_addresses,
 
-                                active_datapath_ids: @active_datapath_ids,
                                 owner_datapath_ids: @owner_datapath_ids)
     end
 
@@ -173,9 +169,6 @@ module Vnet::Core::Interfaces
       if owner_datapath_id
         # add new owner_datapath_id
         @owner_datapath_ids = [owner_datapath_id]
-        if owner_datapath_id == @dp_info.datapath.datapath_info.id
-          update_active_datapath(datapath_id: @dp_info.datapath.datapath_info.id)
-        end
       else
         @owner_datapath_ids = nil
       end
@@ -193,24 +186,6 @@ module Vnet::Core::Interfaces
       else
         @dp_info.network_manager.clear_interface_port(@id)
       end
-    end
-
-    def update_active_datapath(datapath_id)
-      # Currently only supports one active datapath id.
-      @active_datapath_ids = [datapath_id]
-
-      addresses = ipv4_addresses
-      addresses = addresses && addresses.map { |i|
-        { network_id: i[:network_id], ipv4_address: i[:ipv4_address].to_i }
-      }
-
-      MW::Interface.batch.update_active_datapath(@id, datapath_id).commit
-
-      dispatch_event(INTERFACE_UPDATED,
-                     event: :remote_datapath_id,
-                     id: @id,
-                     datapath_id: @active_datapath_ids.first,
-                     ipv4_addresses: addresses)
     end
 
     def update_remote_datapath(params)
