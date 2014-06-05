@@ -64,5 +64,6 @@ src: host
 
 src: vm(vnmgr)
 ```
-ssh vnmgr nohup ./share/bin/vnet-sync-auto PATH_TO_OPENVNET &
+ssh vnmgr
+/vagrant/share/bin/vnet-sync-auto
 ```
