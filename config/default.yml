@@ -12,6 +12,7 @@ dump_flows: false
 ssh_options:
   user: vagrant
   debug: true
+  use_agent: true
 
 nodes:
   webapi: [vnmgr]
