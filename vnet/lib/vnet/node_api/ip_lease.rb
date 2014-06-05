@@ -52,13 +52,16 @@ module Vnet::NodeApi
       def destroy(uuid)
         ip_lease = model_class[uuid]
         ip_retentions = ip_lease.ip_retentions
+        interface = ip_lease.interface
 
         transaction do
           ip_lease.destroy
         end
 
-        ip_lease.interface.security_groups.each do |group|
-          dispatch_update_sg_ip_addresses(group)
+        if interface
+          interface.security_groups.each do |group|
+            dispatch_update_sg_ip_addresses(group)
+          end
         end
 
         ip_retentions.each do |ip_retention|
@@ -85,8 +88,10 @@ module Vnet::NodeApi
           end
         end
 
-        interface.security_groups.each do |group|
-          dispatch_update_sg_ip_addresses(group)
+        if interface
+          interface.security_groups.each do |group|
+            dispatch_update_sg_ip_addresses(group)
+          end
         end
 
         dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: interface.id, ip_lease_id: ip_lease.id)

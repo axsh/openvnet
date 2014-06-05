@@ -11,7 +11,7 @@ module Vnet::Services::IpRetentionContainers
       @id = params[:id]
       @ip_lease_id = params[:ip_lease_id]
       @leased_at = params[:leased_at]
-      @leased_at_i = leased_at.to_i if leased_at
+      @leased_at_i = leased_at.to_i
       @released_at = params[:released_at]
       @released_at_i = released_at.to_i if released_at
     end
@@ -93,6 +93,7 @@ module Vnet::Services::IpRetentionContainers
 
     def lease_time_expired
       return unless installed?
+      return unless lease_time
 
       current_time =  Time.now.to_i
       count = 0
@@ -111,6 +112,7 @@ module Vnet::Services::IpRetentionContainers
 
     def grace_time_expired
       return unless installed?
+      return unless grace_time
 
       current_time =  Time.now.to_i
       count = 0

@@ -19,9 +19,9 @@ module Vnet::Services
 
     def initialize(info, options = {})
       super
-      @log_prefix = self.class.name.to_s.demodulize.underscore
+      @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
       @options = DEFAULT_OPTIONS.merge(options)
-      async.run if options[:run]
+      async.run if @options[:run]
     end
 
     #
@@ -93,7 +93,8 @@ module Vnet::Services
       item.add_ip_retention(
         id: params[:ip_retention_id],
         ip_lease_id: params[:ip_lease_id],
-        leased_at: params[:leased_at]
+        leased_at: params[:leased_at],
+        released_at: params[:released_at]
       )
     end
 
@@ -159,7 +160,8 @@ module Vnet::Services
               id: item.id,
               ip_retention_id: ip_retention.id,
               ip_lease_id: ip_retention.ip_lease_id,
-              leased_at: ip_retention.leased_at
+              leased_at: ip_retention.leased_at,
+              released_at: ip_retention.released_at
             )
           end
         end
