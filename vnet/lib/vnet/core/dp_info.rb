@@ -14,6 +14,7 @@ module Vnet::Core
     # Port manager is always last in order to ensure that all other
     # managers have valid datapath_info before ports are initialized.
     MANAGER_NAMES = %w(
+      active_interface
       connection
       datapath
       interface

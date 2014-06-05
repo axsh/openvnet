@@ -3,14 +3,14 @@
 module Vnet::Core
 
   class InterfaceManager < Vnet::Core::Manager
-    include ActivePorts
+    include ActivePortEvents
 
     #
     # Events:
     #
     subscribe_event INTERFACE_INITIALIZED, :load_item
     subscribe_event INTERFACE_UNLOAD_ITEM, :unload_item
-    subscribe_event INTERFACE_CREATED_ITEM, :create_item
+    subscribe_event INTERFACE_CREATED_ITEM, :created_item
     subscribe_event INTERFACE_DELETED_ITEM, :unload_item
 
     subscribe_event INTERFACE_ACTIVATE_PORT, :activate_port
@@ -148,6 +148,11 @@ module Vnet::Core
                                         interface: item_to_hash(item))
         }
       end
+
+      # Temporary...
+      if item.mode != :remote
+        activate_local_interface(item)
+      end
     end
 
     def item_post_install(item, item_map)
@@ -192,9 +197,8 @@ module Vnet::Core
       end
     end
 
-    def create_item(params)
-      return if @items[params[:id]]
-
+    def created_item(params)
+      return if internal_detect_by_id(params)
       return unless @dp_info.port_manager.detect(port_name: params[:port_name])
 
       self.retrieve(params)
@@ -219,6 +223,40 @@ module Vnet::Core
       return @datapath_info.nil? || item_map.active_datapath_id != @datapath_info.id if item_map.active_datapath_id
 
       false
+    end
+
+    def activate_local_interface(item)
+      if @datapath_info.nil? || @datapath_info.uuid.nil?
+        error log_format("cannot activate local interface when datapath_info.uuid is nil")
+        return
+      end
+
+      label = nil
+      singular = true
+
+      case item.mode
+      when :internal
+        label = @datapath_info.uuid
+        singular = nil
+      when :simulated
+        if item.owner_datapath_ids.nil?
+          label = @datapath_info.uuid
+          singular = nil
+        end
+      end
+
+      params = {
+        interface_id: item.id,
+        port_name: item.port_name,
+        label: label,
+        singular: singular
+      }
+
+      active_item = @dp_info.active_interface_manager.activate_local_item(params)
+
+      if active_item.nil?
+        warn log_format("could not activate interface", item.inspect)
+      end
     end
 
     #
@@ -253,7 +291,7 @@ module Vnet::Core
 
     # INTERFACE_LEASED_MAC_ADDRESS on queue 'item.id'
     def leased_mac_address(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
 
       mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit(fill: [:cookie_id, :interface])
 
@@ -270,7 +308,7 @@ module Vnet::Core
 
     # INTERFACE_RELEASED_MAC_ADDRESS on queue 'item.id'
     def released_mac_address(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
 
       mac_lease = MW::MacLease.batch[params[:mac_lease_id]].commit
 
@@ -320,7 +358,7 @@ module Vnet::Core
 
     # INTERFACE_RELEASED_IPV4_ADDRESS on queue 'item.id'
     def released_ipv4_address(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
 
       ip_lease = MW::IpLease.batch[params[:ip_lease_id]].commit
 

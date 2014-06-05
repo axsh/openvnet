@@ -24,6 +24,18 @@ module Vnet
     # from all nodes.
 
     #
+    # Active Interface events:
+    #
+
+    ACTIVE_INTERFACE_INITIALIZED = "active_interface_initialized"
+    ACTIVE_INTERFACE_UNLOAD_ITEM = "active_interface_unload_item"
+    ACTIVE_INTERFACE_CREATED_ITEM = "active_interface_created_item"
+    ACTIVE_INTERFACE_DELETED_ITEM = "active_interface_deleted_item"
+
+    ACTIVE_INTERFACE_UPDATED = "active_interface_updated"
+
+
+    #
     # Datapath events:
     #
     DATAPATH_INITIALIZED = 'datapath_initialized'

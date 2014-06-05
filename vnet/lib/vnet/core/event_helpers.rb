@@ -6,7 +6,7 @@ module Vnet::Core
   # Active interfaces:
   #
 
-  module ActiveInterfaces
+  module ActiveInterfaceEvents
 
     # subscribe_event FOO_ACTIVATE_INTERFACE, :activate_interface
     # subscribe_event FOO_DEACTIVATE_INTERFACE, :deactivate_interface
@@ -69,7 +69,7 @@ module Vnet::Core
   # Active networks:
   #
 
-  module ActiveNetworks
+  module ActiveNetworkEvents
 
     # subscribe_event FOO_ACTIVATE_NETWORK, :activate_network
     # subscribe_event FOO_DEACTIVATE_NETWORK, :deactivate_network
@@ -132,7 +132,7 @@ module Vnet::Core
   # Active ports:
   #
 
-  module ActivePorts
+  module ActivePortEvents
 
     # subscribe_event FOO_ACTIVATE_PORT, :activate_port
     # subscribe_event FOO_DEACTIVATE_PORT, :deactivate_port
@@ -199,7 +199,7 @@ module Vnet::Core
   # Active route links:
   #
 
-  module ActiveRouteLinks
+  module ActiveRouteLinkEvents
 
     # subscribe_event FOO_ACTIVATE_ROUTE_LINK, :activate_route_link
     # subscribe_event FOO_DEACTIVATE_ROUTE_LINK, :deactivate_route_link
