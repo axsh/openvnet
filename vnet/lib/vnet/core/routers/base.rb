@@ -37,6 +37,10 @@ module Vnet::Core::Routers
     # Events: 
     #
 
+    def uninstall
+      @dp_info.del_cookie(self.cookie)
+    end
+
     def add_active_route(route_id)
       return if @routes.has_key? route_id
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
+
   class DatapathNetwork < Base
   end
 

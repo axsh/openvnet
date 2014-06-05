@@ -3,8 +3,8 @@
 module Vnet::Core
 
   class RouteManager < Vnet::Core::Manager
-    include ActiveNetworks
-    include ActiveRouteLinks
+    include ActiveNetworkEvents
+    include ActiveRouteLinkEvents
 
     #
     # Events:
@@ -109,7 +109,7 @@ module Vnet::Core
     
     # item created in db on queue 'item.id'
     def created_item(params)
-      return if @items[params[:id]]
+      return if internal_detect_by_id(params)
       return unless @active_route_links[params[:route_link_id]]
 
       internal_new_item(mw_class.new(params), {})

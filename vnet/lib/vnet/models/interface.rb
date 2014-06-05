@@ -48,10 +48,6 @@ module Vnet::Models
       ip_addresses_dataset.all
     end
 
-    def port_name
-      self[:port_name] || canonical_uuid
-    end
-
     def network
       ip_leases.first.try(:network)
     end
