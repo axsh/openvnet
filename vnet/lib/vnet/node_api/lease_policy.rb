@@ -148,6 +148,33 @@ module Vnet::NodeApi
         end
         model
       end
+
+      def add_ip_retention_container(uuid, ip_retention_container_uuid)
+        lease_policy = model_class[uuid]
+        ip_retention_container = model_class(:ip_retention_container)[ip_retention_container_uuid]
+        model = nil
+        transaction do
+          model = model_class(:lease_policy_ip_retention_container).create(
+            lease_policy_id: lease_policy.id,
+            ip_retention_container_id: ip_retention_container.id
+          )
+        end
+        model
+      end
+
+      def remove_ip_retention_container(uuid, ip_retention_container_uuid)
+        lease_policy = model_class[uuid]
+        ip_retention_container = model_class(:ip_retention_container)[ip_retention_container_uuid]
+        model = nil
+        transaction do
+          model = model_class(:lease_policy_ip_retention_container).find(
+            lease_policy_id: lease_policy.id,
+            ip_retention_container_id: ip_retention_container.id
+          )
+          model.destroy
+        end
+        model
+      end
     end
   end
 end

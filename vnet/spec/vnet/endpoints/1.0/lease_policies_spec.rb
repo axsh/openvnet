@@ -94,6 +94,13 @@ describe "/lease_policies" do
     include_examples "many_to_many_relation", "ip_lease_containers"
   end
 
+  describe "Many to many relation calls for ip_retention_containers" do
+    let!(:base_object) { Fabricate(fabricator) }
+    let(:relation_fabricator) { :ip_retention_container }
+
+    include_examples "many_to_many_relation", "ip_retention_containers"
+  end
+
   describe "POST /:uuid/ip_leases" do
     let(:lease_policy) do
       Fabricate(:lease_policy_with_network) do

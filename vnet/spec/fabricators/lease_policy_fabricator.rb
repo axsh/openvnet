@@ -3,7 +3,6 @@
 Fabricator(:lease_policy, class_name: Vnet::Models::LeasePolicy) do
   mode "simple"
   timing "immediate"
-  ip_retention_containers(count:1) { Fabricate(:ip_retention_container) }
 end
 
 Fabricator(:lease_policy_with_network, class_name: Vnet::Models::LeasePolicy) do
