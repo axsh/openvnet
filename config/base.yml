@@ -1,5 +1,7 @@
 vm_type: :kvm
 specs: [simple, router_v2v, router_p2v, event, service, secg, secg_reference]
+# specs not included
+# [edge, edge_esxi, vxlan, lease_policy]
 vnet_branch: master
 log_level: info
 vm_http_proxy: http://10.50.0.2:3128
