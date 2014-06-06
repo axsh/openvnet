@@ -38,6 +38,7 @@ module Vnet::Core
 
     def deactivate_local_item(interface_id)
       return if @datapath_info.nil? # Add error message...
+      return if interface_id.nil?
 
       # Do we need this?
       # item = internal_detect(interface_id: interface_id,
@@ -46,6 +47,13 @@ module Vnet::Core
 
       mw_class.destroy(interface_id: interface_id,
                        datapath_id: @datapath_info.id)
+      nil
+    end
+
+    def deactivate_all_local_items
+      return if @datapath_info.nil? # Add error message...
+
+      mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
       nil
     end
 
