@@ -196,6 +196,8 @@ module Vnet
         autoload :IpLeaseContainer, 'vnet/endpoints/1.0/responses/ip_lease_container'
         autoload :IpRange, 'vnet/endpoints/1.0/responses/ip_range'
         autoload :IpRangeGroup, 'vnet/endpoints/1.0/responses/ip_range_group'
+        autoload :IpRetention, 'vnet/endpoints/1.0/responses/ip_retention'
+        autoload :IpRetentionContainer, 'vnet/endpoints/1.0/responses/ip_retention_container'
         autoload :LeasePolicy, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddress, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLease, 'vnet/endpoints/1.0/responses/mac_lease'
@@ -219,6 +221,8 @@ module Vnet
         autoload :IpLeaseContainerCollection, 'vnet/endpoints/1.0/responses/ip_lease_container'
         autoload :IpRangeCollection, 'vnet/endpoints/1.0/responses/ip_range'
         autoload :IpRangeGroupCollection, 'vnet/endpoints/1.0/responses/ip_range_group'
+        autoload :IpRetentionCollection, 'vnet/endpoints/1.0/responses/ip_retention'
+        autoload :IpRetentionContainerCollection, 'vnet/endpoints/1.0/responses/ip_retention_container'
         autoload :LeasePolicyCollection, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddressCollection, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
@@ -257,10 +261,12 @@ module Vnet
     autoload :IpRange, 'vnet/models/ip_range'
     autoload :IpRangeGroup, 'vnet/models/ip_range_group'
     autoload :IpRetention, 'vnet/models/ip_retention'
+    autoload :IpRetentionContainer, 'vnet/models/ip_retention_container'
     autoload :LeasePolicy, 'vnet/models/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/models/lease_policy_base_network'
     autoload :LeasePolicyBaseInterface, 'vnet/models/lease_policy_base_interface'
     autoload :LeasePolicyIpLeaseContainer, 'vnet/models/lease_policy_ip_lease_container'
+    autoload :LeasePolicyIpRetentionContainer, 'vnet/models/lease_policy_ip_retention_container'
     autoload :MacAddress, 'vnet/models/mac_address'
     autoload :MacLease, 'vnet/models/mac_lease'
     autoload :Network, 'vnet/models/network'
@@ -293,10 +299,12 @@ module Vnet
     autoload :IpRange, 'vnet/model_wrappers/ip_range'
     autoload :IpRangeGroup, 'vnet/model_wrappers/ip_range_group'
     autoload :IpRetention, 'vnet/model_wrappers/ip_retention'
+    autoload :IpRetentionContainer, 'vnet/model_wrappers/ip_retention_container'
     autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseInterface, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyIpLeaseContainer, 'vnet/model_wrappers/lease_policy_ip_lease_container'
+    autoload :LeasePolicyIpRetentionContainer, 'vnet/model_wrappers/lease_policy_ip_retention_container'
     autoload :MacAddress, 'vnet/model_wrappers/mac_address'
     autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :Network, 'vnet/model_wrappers/network'
@@ -331,6 +339,7 @@ module Vnet
     autoload :IpRange, 'vnet/node_api/models.rb'
     autoload :IpRangeGroup, 'vnet/node_api/models.rb'
     autoload :IpRetention, 'vnet/node_api/ip_retention'
+    autoload :IpRetentionContainer, 'vnet/node_api/ip_retention_container'
     autoload :LeasePolicy, 'vnet/node_api/lease_policy.rb'
     autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'
     autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models.rb'
@@ -373,11 +382,16 @@ module Vnet
   end
 
   module Services
-    autoload :IpRetentionManager, 'vnet/services/ip_retention_manager'
+    autoload :IpRetentionContainerManager, 'vnet/services/ip_retention_container_manager'
     autoload :LeasePolicy, 'vnet/services/lease_policy'
     autoload :LeasePolicyManager, 'vnet/services/lease_policy_manager'
     autoload :VnetInfo, 'vnet/services/vnet_info'
     autoload :Vnmgr, 'vnet/services/vnmgr'
+
+    module IpRetentionContainers
+      autoload :Base, 'vnet/services/ip_retention_containers/base'
+      autoload :IpRetention, 'vnet/services/ip_retention_containers/base'
+    end
 
     module LeasePolicies
       autoload :Base, 'vnet/services/lease_policies/base'

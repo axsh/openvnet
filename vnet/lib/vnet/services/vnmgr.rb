@@ -2,6 +2,8 @@ module Vnet::Services
   class Vnmgr
     include Celluloid
     include Celluloid::Logger
+    include Celluloid::Notifications
+
     attr_reader :vnet_info
 
     def initialize

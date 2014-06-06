@@ -11,7 +11,7 @@ module Vnet::Services
   class VnetInfo
 
     MANAGER_NAMES = %w(
-      ip_retention
+      ip_retention_container
       lease_policy
     )
 

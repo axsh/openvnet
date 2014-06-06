@@ -116,37 +116,22 @@ describe Vnet::NodeApi::LeasePolicy do
   describe ".allocate_ip" do
     let(:lease_policy) { Fabricate(:lease_policy_with_network) }
 
-    it "create ip_lease" do
+    it "creates an ip_lease with an ip_retention" do
+      now = Time.now
+      allow(Time).to receive(:now).and_return(now)
+
       ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
 
       expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
-      expect(MockEventHandler.handled_events).to be_empty
-    end
+      expect(ip_lease.ip_retentions.first).to eq lease_policy.ip_retention_containers.first.ip_retentions.first
+      expect(ip_lease.ip_retentions.first.leased_at.to_i).to eq now.to_i
 
-    context "with lease_time and grace_time" do
-      let(:lease_policy) do
-        Fabricate(:lease_policy_with_network) do
-          lease_time 3600
-          grace_time 1800
-        end
-      end
+      events = MockEventHandler.handled_events
+      expect(events.size).to eq 1
 
-      it "creates an ip_lease with an ip_retention" do
-        now = Time.now
-        allow(Time).to receive(:now).and_return(now)
-
-        ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
-
-        expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
-        expect(ip_lease.lease_time_expired_at.to_i).to eq (now + lease_policy.lease_time).to_i
-
-        events = MockEventHandler.handled_events
-        expect(events.size).to eq 1
-
-        expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CREATED_ITEM
-        expect(events[0][:options][:id]).to eq ip_lease.ip_retention.id
-        expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
-      end
+      expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
+      expect(events[0][:options][:id]).to eq ip_lease.ip_retentions.first.id
+      expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
     end
 
     context "with interface_uuid" do
@@ -182,11 +167,13 @@ describe Vnet::NodeApi::LeasePolicy do
           expect(ip_lease.ip_lease_containers.size).to eq 2
 
           events = MockEventHandler.handled_events
-          expect(events.size).to eq 1
+          expect(events.size).to eq 2
 
           expect(events[0][:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
           expect(events[0][:options][:id]).to eq interface.id
           expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
+
+          expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
 
@@ -207,11 +194,13 @@ describe Vnet::NodeApi::LeasePolicy do
           expect(ip_lease.ip_lease_containers.first).to eq lease_policy_ip_lease_container_with_label.ip_lease_container
 
           events = MockEventHandler.handled_events
-          expect(events.size).to eq 1
+          expect(events.size).to eq 2
 
           expect(events[0][:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
           expect(events[0][:options][:id]).to eq interface.id
           expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
+
+          expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
     end
@@ -242,7 +231,9 @@ describe Vnet::NodeApi::LeasePolicy do
           expect(ip_lease.ip_lease_containers.size).to eq 2
           expect(ip_lease.ip_lease_containers).to eq lease_policy.ip_lease_containers
 
-          expect(MockEventHandler.handled_events).to be_empty
+          events = MockEventHandler.handled_events
+          expect(events.size).to eq 1
+          expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
 
@@ -257,7 +248,9 @@ describe Vnet::NodeApi::LeasePolicy do
           expect(ip_lease.ip_lease_containers.size).to eq 1
           expect(ip_lease.ip_lease_containers.first).to eq lease_policy_ip_lease_container_with_label.ip_lease_container
 
-          expect(MockEventHandler.handled_events).to be_empty
+          events = MockEventHandler.handled_events
+          expect(events.size).to eq 1
+          expect(events[0][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
     end
