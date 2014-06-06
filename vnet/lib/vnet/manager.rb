@@ -249,6 +249,8 @@ module Vnet
     end
 
     def unload_item(params)
+      debug log_format("uninstalling", params.inspect)
+
       item_id = (params && params[:id]) || return
       item = @items.delete(item_id) || return
 
@@ -273,8 +275,10 @@ module Vnet
     # internally and by 'created_item' specialization method.
     #
     # TODO: Rename internal_load_item
+    # TODO: Remove 'params'
     def internal_new_item(item_map, params)
-      item = @items[item_map.id]
+      item_id = item_map.id || return
+      item = @items[item_id]
       return item if item
 
       item_initialize(item_map, params).tap do |item|

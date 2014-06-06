@@ -133,6 +133,8 @@ module Vnet::Core
     #
 
     def item_pre_install(item, item_map)
+      activate_local_interface(item)
+
       if item.port_name
         @active_ports.detect { |port_number, active_port|
           item.port_name == active_port[:port_name]
@@ -146,8 +148,6 @@ module Vnet::Core
                                         interface: item_to_hash(item))
         }
       end
-
-      activate_local_interface(item)
     end
 
     def item_post_install(item, item_map)
@@ -177,6 +177,8 @@ module Vnet::Core
         @dp_info.connection_manager.async.remove_catch_new_egress(id)
         @dp_info.connection_manager.async.close_connections(id)
       }
+
+      deactivate_local_interface(item)
     end
 
     def created_item(params)
@@ -234,10 +236,10 @@ module Vnet::Core
       }
 
       active_item = @dp_info.active_interface_manager.activate_local_item(params)
+    end
 
-      if active_item.nil?
-        warn log_format("could not activate interface", item.inspect)
-      end
+    def deactivate_local_interface(item)
+      @dp_info.active_interface_manager.deactivate_local_item(item.id)
     end
 
     #
@@ -388,18 +390,6 @@ module Vnet::Core
       return update_item_not_found(event, id, params) if item.nil?
 
       case event
-        #
-        # Datapath events:
-        #
-      when :remote_datapath_id
-        item.update_remote_datapath(params)
-
-        if params[:datapath_id].nil?
-          @items.values.each do |item|
-            item.del_flows_for_active_datapath(params[:ipv4_addresses])
-          end
-        end
-
       when :owner_datapath_id
         unload_item(id: item.id)
         self.async.retrieve(id: item.id)

@@ -26,10 +26,27 @@ module Vnet::Core
       # return value.
 
       item_model = mw_class.create(create_params)
-      return if item_model.nil? # Add error message...
+
+      if item_model.nil?
+        warn log_format("could not activate interface", params.inspect)
+        return
+      end
       
       # Wait for loaded...
       item_model.to_hash
+    end
+
+    def deactivate_local_item(interface_id)
+      return if @datapath_info.nil? # Add error message...
+
+      # Do we need this?
+      # item = internal_detect(interface_id: interface_id,
+      #                        datapath_id: @datapath_info.id)
+      # return if item.nil?
+
+      mw_class.destroy(interface_id: interface_id,
+                       datapath_id: @datapath_info.id)
+      nil
     end
 
     #
@@ -101,6 +118,7 @@ module Vnet::Core
 
     # item created in db on queue 'item.id'
     def created_item(params)
+      return unless params_valid_item? params
       return if internal_detect_by_id(params)
 
       internal_new_item(mw_class.new(params), {})
@@ -108,7 +126,13 @@ module Vnet::Core
 
     # item updated in db on queue 'item.id'
     def updated_item(params)
-      item = internal_detect_by_id(params) || return
+      return unless params_valid_item? params
+      item = internal_detect_by_id(params)
+
+      if item.nil?
+        internal_new_item(mw_class.new(params), {}) if params_current_datapath?(params)
+        return
+      end
 
       # Currently only allow updated to change 'label', 'singular' and
       # 'port_name'.  
@@ -122,6 +146,21 @@ module Vnet::Core
     #
     # Overload helper methods:
     #
+
+    # TODO: Move to a core-specific manager class:
+    def params_valid_item?(params)
+      return @datapath_info &&
+        params[:id] &&
+        params[:interface_id]
+        params[:datapath_id]
+    end
+
+    def params_current_datapath?(params)
+      raise "params_current_datapath? assumes params[:datapath_id] is valid" unless params[:datapath_id]
+      raise "params_current_datapath? assumes @datapath_info.id is valid" unless @datapath_info && @datapath_info.id
+
+      return params[:datapath_id] == @datapath_info.id
+    end
 
   end
 
