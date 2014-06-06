@@ -65,7 +65,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       item_class = Routes::Base
 
       item = item_class.new(dp_info: @dp_info, map: item_map)
@@ -112,7 +112,7 @@ module Vnet::Core
       return if internal_detect_by_id(params)
       return unless @active_route_links[params[:route_link_id]]
 
-      internal_new_item(mw_class.new(params), {})
+      internal_new_item(mw_class.new(params))
     end
 
     #

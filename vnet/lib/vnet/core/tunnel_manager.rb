@@ -138,7 +138,7 @@ module Vnet::Core
     # If we cannot determine the type of tunnel to use, an unknown
     # item type is created that will reload itself when the right
     # tunnel mode has been determined.
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       tunnel_mode = select_tunnel_mode(item_map.src_interface_id, item_map.dst_interface_id)
 
       item_class =

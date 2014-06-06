@@ -75,7 +75,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       item_class =
         if item_map.dpid == @dp_info.dpid
           Datapaths::Host

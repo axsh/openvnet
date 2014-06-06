@@ -168,7 +168,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       Filters::SecurityGroup.new(item_map).tap { |item|
         item.dp_info = @dp_info
       }

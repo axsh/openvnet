@@ -98,7 +98,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       return unless @datapath_info
 
       item_class =
@@ -121,7 +121,7 @@ module Vnet::Core
       return unless params_valid_item? params
       return if internal_detect_by_id(params)
 
-      internal_new_item(mw_class.new(params), {})
+      internal_new_item(mw_class.new(params))
     end
 
     # item updated in db on queue 'item.id'
@@ -130,7 +130,7 @@ module Vnet::Core
       item = internal_detect_by_id(params)
 
       if item.nil?
-        internal_new_item(mw_class.new(params), {}) if params_current_datapath?(params)
+        internal_new_item(mw_class.new(params)) if params_current_datapath?(params)
         return
       end
 

@@ -119,7 +119,7 @@ module Vnet
       raise NotImplementedError
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       # Must be implemented by subclass
       raise NotImplementedError
     end
@@ -216,7 +216,7 @@ module Vnet
       # the exact same select_filter. The remaining fibers should use
       # internal_wait_for_loaded/initializing.
 
-      internal_new_item(item_map, params)
+      internal_new_item(item_map)
     end
 
     # The default select call with no fill options.
@@ -276,17 +276,18 @@ module Vnet
     #
     # TODO: Rename internal_load_item
     # TODO: Remove 'params'
-    def internal_new_item(item_map, params)
+    def internal_new_item(item_map)
       item_id = item_map.id || return
       item = @items[item_id]
       return item if item
 
-      item_initialize(item_map, params).tap do |item|
+      item_initialize(item_map).tap do |item|
         # TODO: Delete item from items if returned nil.
         return unless item
         @items[item_map.id] = item
         publish(initialized_item_event,
-                params.merge(id: item_map.id, item_map: item_map))
+                id: item_map.id,
+                item_map: item_map)
       end
     end
 
@@ -309,7 +310,7 @@ module Vnet
       expression = ((filter.size > 1) ? Sequel.&(*filter) : filter.first) || return
 
       item_maps = select_item(mw_class.batch.where(filter).all) || return
-      item_maps.each { |item_map| internal_new_item(item_map, {}) }
+      item_maps.each { |item_map| internal_new_item(item_map) }
     end
 
     # TODO: Create an internal delete item method that 'delete item'

@@ -63,14 +63,14 @@ module Vnet::Services
     def created_item(params)
       return if item = internal_detect_by_id(params)
 
-      internal_new_item(mw_class.new(params), {})
+      internal_new_item(mw_class.new(params))
     end
 
     def mw_class
       MW::IpRetention
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       IpRetention.new(item_map)
     end
 

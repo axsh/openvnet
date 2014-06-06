@@ -105,7 +105,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       mode = (item_map.mode && item_map.mode.to_sym)
 
       if mode != :vif && is_remote?(item_map)
