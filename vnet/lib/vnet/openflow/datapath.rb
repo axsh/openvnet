@@ -78,12 +78,13 @@ module Vnet::Openflow
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
+    # TODO: This never gets called...
     def terminate
       begin
         info log_format('terminating datapath')
 
-        # Do something...
-        @dp_info.del_all_flows
+        reset_datapath_info
+
       rescue Celluloid::Task::TerminatedError => e
         raise e
       rescue Exception => e
@@ -98,6 +99,8 @@ module Vnet::Openflow
     #
 
     def initialize_datapath_info(datapath_map)
+      info log_format('initializing datapath info')
+
       @datapath_info = DatapathInfo.new(datapath_map)
 
       @dp_info.managers.each { |manager|
@@ -108,6 +111,13 @@ module Vnet::Openflow
       # initialized.
       @dp_info.port_manager.initialize_ports
       @dp_info.interface_manager.load_internal_interfaces
+    end
+
+    def reset_datapath_info
+      info log_format('resetting datapath info')
+
+      @dp_info.del_all_flows
+      @dp_info.active_interface_manager.deactivate_all_local_items
     end
 
     #

@@ -23,9 +23,14 @@ module Vnet::Openflow
       info "starting OpenFlow controller."
     end
 
-    def switch_ready(dpid)
-      info "switch_ready from %#x." % dpid
-      initialize_datapath(dpid)
+    def switch_ready(datapath_id)
+      info "switch_ready from %#x." % datapath_id
+      initialize_datapath(datapath_id)
+    end
+
+    def switch_disconnected(datapath_id)
+      info "switch_disconnected from %#x." % datapath_id
+      terminate_datapath(datapath_id)
     end
 
     def features_reply(dpid, message)
@@ -105,12 +110,7 @@ module Vnet::Openflow
     def initialize_datapath(dpid)
       info "initialize datapath actor. dpid: 0x%016x" % dpid
 
-      # Sometimes ovs changes the datapath ID and reconnects.
-      old_datapath = @datapaths.delete(dpid)
-
-      if old_datapath
-        info "found old bridge: dpid:%016x" % dpid
-      end
+      terminate_datapath(dpid)
 
       # There is no need to clean up the old switch, as all the
       # previous flows are removed. Just let it rebuild everything.
@@ -125,16 +125,13 @@ module Vnet::Openflow
     end
 
     def terminate_datapath(dpid)
-      datapath = @datapaths.delete(dpid)
+      datapath_map = @datapaths.delete(dpid) || return
+      datapath = datapath_map[:datapath] || return
 
-      if datapath.nil?
-        info "could not terminate datapath actor, not found. dpid: 0x%016x" % dpid
-        return
-      end
+      info "terminating datapath actor. dpid: 0x%016x" % dpid
 
-      info "terminate datapath actor. dpid: 0x%016x" % dpid
-
-      datapath[:datapath].terminate
+      datapath.reset_datapath_info
+      datapath.terminate
     end
 
     def update_vlan_translation
