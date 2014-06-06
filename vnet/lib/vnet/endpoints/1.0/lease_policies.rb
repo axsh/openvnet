@@ -5,8 +5,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   def self.put_post_shared_params
     param :mode, :String, in: CLP::MODES, default: CLP::MODE_SIMPLE
     param :timing, :String, in: CLP::TIMINGS, default: CLP::TIMING_IMMEDIATE
-    param :lease_time, :Integer
-    param :grace_time, :Integer
   end
 
   fill_options = [ ]
@@ -124,6 +122,36 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     M::LeasePolicy.remove_ip_lease_container(lease_policy.uuid, ip_lease_container.uuid)
 
     respond_with(R::IpLeaseContainer.generate(ip_lease_container))
+  end
+
+  post '/:uuid/ip_retention_containers/:ip_retention_container_uuid' do
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
+    ip_retention_container = check_syntax_and_pop_uuid(M::IpRetentionContainer, "ip_retention_container_uuid")
+
+    if lease_policy.batch.ip_retention_containers(ip_retention_container: ip_retention_container).first.commit
+      raise(E::RelationAlreadyExists, "#{lease_policy.uuid} <=> #{ip_retention_container.uuid}")
+    end
+
+    M::LeasePolicy.add_ip_retention_container(lease_policy.uuid, ip_retention_container.uuid)
+
+    respond_with(R::IpRetentionContainer.generate(ip_retention_container))
+  end
+
+  get '/:uuid/ip_retention_containers' do
+    show_relations(:LeasePolicy, :ip_retention_containers)
+  end
+
+  delete '/:uuid/ip_retention_containers/:ip_retention_container_uuid' do
+    lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
+    ip_retention_container = check_syntax_and_pop_uuid(M::IpRetentionContainer, "ip_retention_container_uuid")
+
+    unless lease_policy.batch.ip_retention_containers(ip_retention_container: ip_retention_container).first.commit
+      raise(E::UnknownUUIDResource, "LeasePolicyIpRetentionContainer #{lease_policy.uuid} <=> #{ip_retention_container.uuid}")
+    end
+
+    M::LeasePolicy.remove_ip_retention_container(lease_policy.uuid, ip_retention_container.uuid)
+
+    respond_with(R::IpRetentionContainer.generate(ip_retention_container))
   end
 
   param_uuid M::IpLease, :ip_lease_uuid

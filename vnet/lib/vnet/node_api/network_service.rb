@@ -5,13 +5,13 @@ module Vnet::NodeApi
     class << self
       def create(options)
         super.tap do |network_service|
-          dispatch_event(SERVICE_CREATED_ITEM, network_service)
+          dispatch_event(SERVICE_CREATED_ITEM, network_service.to_hash)
         end
       end
 
       def destroy(uuid)
         super.tap do |network_service|
-          dispatch_event(SERVICE_DELETED_ITEM, network_service)
+          dispatch_event(SERVICE_DELETED_ITEM, network_service.to_hash)
         end
       end
     end
