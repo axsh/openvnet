@@ -16,6 +16,9 @@ module Vnspec
       debug: false,
       exit_on_error: true,
       use_sudo: false,
+      use_agent: false,
+      timeout: 300,
+      verbose: :fatal,
     }
 
     def ssh_options
@@ -32,7 +35,12 @@ module Vnspec
       exit_code = nil
       exit_signal = nil
 
-      Net::SSH.start(host, options[:user]) do |ssh|
+      ssh_command_options = {
+        timeout: options[:timeout],
+        verbose: options[:verbose]
+      }
+
+      Net::SSH.start(host, options[:user], ssh_command_options) do |ssh|
         ssh.open_channel do |channel|
           channel.exec(command) do |ch, success|
             abort "Failed to execute [#{host}] #{command}" unless success
@@ -104,6 +112,15 @@ module Vnspec
     def wrap_command(command, options)
       "bash -l -c '#{command}'".tap do |c|
         c.prepend "sudo " if options[:user] != "root" && options[:use_sudo]
+      end
+    end
+
+    def start_ssh_agent
+      logger.info "init ssh-agent"
+      if ssh_options[:use_agent]
+        key = ssh_options[:agent_key] || File.expand_path(File.join("../../vagrant/share/ssh/vnet_private_key"), File.dirname(__FILE__))
+        system("eval $(ssh-agent)")
+        system("ssh-add #{key}")
       end
     end
   end

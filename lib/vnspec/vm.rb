@@ -45,8 +45,8 @@ module Vnspec
         all.each{|vm| yield vm}
       end
 
-      def parallel
-        Parallel.each(all) { |vm| yield vm }
+      def parallel(&block)
+        Parallel.each(all, &block)
       end
 
       def ready?(name = :all, timeout = 600)

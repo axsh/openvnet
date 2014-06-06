@@ -12,6 +12,7 @@ module Vnspec
     PID_FILE = File.join(TMP_DIR, "vnspec.pid")
 
     def invoke(*args)
+      init
       lock { __send__(*args) }
     end
 
@@ -117,6 +118,10 @@ module Vnspec
 
     def job_id
       @job_id ||= "#{Time.now.strftime("%Y%m%d%H%M%S")}"
+    end
+
+    def init
+      start_ssh_agent
     end
   end
 end

@@ -27,7 +27,7 @@ module Vnspec
           if @items.empty? || options[:reload]
             API.request(:get, api_name, limit: 1000) do |response|
               @items = response[:items].map do |r|
-                self.new(r)
+                item = self.new(r)
                 # TODO associations
               end
             end
@@ -89,19 +89,23 @@ module Vnspec
         end
 
         def all(options = {})
-          API.request(:get, api_name, limit: 1000) do |response|
-            response[:items].map do |r|
-              self.new(r).tap do |interface|
-                r[:mac_leases].each do |m|
-                  interface.mac_leases << Models::MacLease.new(uuid: m[:uuid], interface: interface,  mac_address: m[:mac_address]).tap do |mac_lease|
-                    m[:ip_leases].each do |i|
-                      mac_lease.ip_leases << Models::IpLease.new(uuid: i[:uuid], mac_lease: mac_lease, ipv4_address: i[:ipv4_address], network_uuid: i[:network_uuid])
+          @items ||= []
+          if @items.empty? || options[:reload]
+            API.request(:get, api_name, limit: 1000) do |response|
+              @items = response[:items].map do |r|
+                self.new(r).tap do |interface|
+                  r[:mac_leases].each do |m|
+                    interface.mac_leases << Models::MacLease.new(uuid: m[:uuid], interface: interface,  mac_address: m[:mac_address]).tap do |mac_lease|
+                      m[:ip_leases].each do |i|
+                        mac_lease.ip_leases << Models::IpLease.new(uuid: i[:uuid], mac_lease: mac_lease, ipv4_address: i[:ipv4_address], network_uuid: i[:network_uuid])
+                      end
                     end
                   end
                 end
               end
             end
           end
+          @items
         end
       end
 
@@ -286,6 +290,46 @@ module Vnspec
 
           @dns_records.delete_if { |record| record.uuid == dns_record_uuid }
         end
+      end
+    end
+
+    class IpRetentionContainer < Base
+      attr_accessor :lease_time
+      attr_accessor :grace_time
+
+      class << self
+        def api_name
+          "ip_retention_containers"
+        end
+      end
+
+      def initialize(options)
+        @lease_time = options[:lease_time].to_i
+        @grace_time = options[:grace_time].to_i
+        @ip_retentions = []
+      end
+
+      def ip_retentions(options = {})
+        if @ip_retentions.empty? || options[:reload]
+          API.request(:get, "#{api_name}/#{uuid}/ip_retentions", limit: 1000) do |response|
+            @ip_retentions = response[:items].map { |i| IpRetention.new(i) }
+          end
+        end
+        @ip_retentions
+      end
+
+      def destroy
+        API.request(:delete, "#{api_name}/#{uuid}")
+        reload
+      end
+    end
+
+    class IpRetention
+      attr_accessor :leased_at
+      attr_accessor :released_at
+      def initialize(options)
+        @leased_at = Time.parse(options[:leased_at])
+        @released_at = Time.parse(options[:released_at]) if options[:released_at]
       end
     end
   end
