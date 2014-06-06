@@ -19,7 +19,6 @@ module Vnet::Core
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
     subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
     subscribe_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
-    subscribe_event INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS, :remove_all_active_datapaths
 
     subscribe_event INTERFACE_LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event INTERFACE_RELEASED_MAC_ADDRESS, :released_mac_address
@@ -371,15 +370,6 @@ module Vnet::Core
     #
     # Update events:
     #
-
-    # INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS on queue '???'
-    def remove_all_active_datapaths(params)
-      # TODO: Make sure we don't set active datapath for items
-      # installed after this call.
-      @items.keys.each do |item_id|
-        publish(INTERFACE_UPDATED, event: :active_datapath_id, id: item_id, datapath_id: nil)
-      end
-    end
 
     def update_item_exclusively(params)
       id = params.fetch(:id) || return
