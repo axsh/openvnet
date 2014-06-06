@@ -230,7 +230,7 @@ module Vnet::Core
 
       params = {}
 
-      @items[item_map.id] = new_item = item_initialize(item_map, params)
+      @items[item_map.id] = new_item = item_initialize(item_map)
       setup_item(new_item, item_map, params)
     end
 
