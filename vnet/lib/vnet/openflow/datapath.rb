@@ -78,22 +78,6 @@ module Vnet::Openflow
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
-    # TODO: This never gets called...
-    def terminate
-      begin
-        info log_format('terminating datapath')
-
-        reset_datapath_info
-
-      rescue Celluloid::Task::TerminatedError => e
-        raise e
-      rescue Exception => e
-        info log_format(e.message, e.class.name)
-        e.backtrace.each { |str| info log_format(str) }
-        raise e
-      end
-    end
-
     #
     # Port modification methods:
     #
