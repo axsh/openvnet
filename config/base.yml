@@ -52,9 +52,3 @@ vms:
     interfaces:
       - uuid: if-v6
         name: eth0
-
-
-legacy_networks:
-  n1:
-    ipv4: 10.101.0.0
-    prefix: 24

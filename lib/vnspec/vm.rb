@@ -14,11 +14,6 @@ module Vnspec
           vm.vm_config[:interfaces].each do |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
           end
-
-          # Disabled as edge should always use a proper virtual network.
-          # config[:legacy_networks].each do |k,v|
-          #   ssh(vm.host_ip, "ssh #{vm.ssh_ip} route add -net #{v[:ipv4]}/#{v[:prefix]} dev eth0", {})
-          # end
         end
       end
 
