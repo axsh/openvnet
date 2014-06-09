@@ -160,6 +160,7 @@ module Vnspec
       end
 
       def aggregate_logs(job_id, name)
+        return unless config[:aggregate_logs]
         @job_id = job_id
 
         yield.tap do
@@ -184,7 +185,9 @@ module Vnspec
       private
 
       def rotate_log(node_name)
+        return unless config[:aggregate_logs]
         return unless @job_id
+
         Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
           logfile = logfile_for(node_name)
           timestamp = "#{Time.now.strftime("%Y%m%d%H%M%S%L")}"

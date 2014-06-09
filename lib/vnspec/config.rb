@@ -12,6 +12,7 @@ module Vnspec
       log_level: :info,
       vna_waittime: 0,
       ssh_quiet_mode: false,
+      aggregate_logs: true
     }
 
     class << self

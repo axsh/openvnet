@@ -6,6 +6,7 @@ vnet_branch: master
 log_level: info
 vm_http_proxy: http://10.50.0.2:3128
 dump_flows: true
+aggregate_logs: true
 
 api_adapter: :faraday
 
