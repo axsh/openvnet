@@ -63,7 +63,7 @@ module Vnet::Services
       end
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       IpRetentionContainers::Base.new(item_map)
     end
 
@@ -74,7 +74,7 @@ module Vnet::Services
     def created_item(params)
       return if @items[params[:id]]
 
-      internal_new_item(mw_class.new(params), {})
+      internal_new_item(mw_class.new(params))
     end
 
     def item_post_install(item, item_map)
