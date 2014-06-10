@@ -83,19 +83,19 @@ describe Vnet::Plugins::VdcVnetPlugin do
     let(:outer_network) { Fabricate(:pnet_public2) }
     let(:inner_network) { Fabricate(:vnet_1) }
 
-    let(:interface_public2gw) do
-      Fabricate(:interface_public2gw,
-        network_id: outer_network.id,
-        ipv4_address: '192.168.2.1'
-      )
+    let!(:interface_public2gw) do
+      interface = Fabricate(:interface_public2gw)
+      mac_lease = Fabricate(:mac_lease_any, mac_address: 1, interface: interface)
+      ip_lease_any = Fabricate(:ip_lease_any, network_id: outer_network.id, mac_lease: mac_lease, ipv4_address: IPAddr.new("192.168.2.1").to_i)
+      interface.add_ip_lease(ip_lease_any)
+      interface
     end
 
     let(:params) do
       {
-        :interface_uuid => "if-testuuid",
         :ingress_ipv4_address => IPAddr.new("192.168.2.33").to_i,
         :egress_ipv4_address => IPAddr.new("10.102.0.10").to_i,
-        :outer_network_uuid => outer_network.canonical_uuid,
+        :outer_network_uuid => interface_public2gw.network.canonical_uuid,
         :inner_network_uuid => inner_network.canonical_uuid
       }
     end

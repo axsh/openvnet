@@ -83,7 +83,6 @@ module Vnet::Plugins
         :passthrough => true
       })
 
-      vnet_params.delete(:interface_uuid)
       vnet_params.delete(:outer_network_uuid)
       vnet_params.delete(:inner_network_uuid)
     end
