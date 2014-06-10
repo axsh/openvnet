@@ -16,7 +16,12 @@ describe Vnet::Core::FilterManager do
   subject do
     Vnet::Core::FilterManager.new(datapath.dp_info).tap { |fm|
       # We do this to simulate a datapath with id 1 so we can use is_remote?
-      fm.set_datapath_info Vnet::Openflow::DatapathInfo.new(Fabricate(:datapath, id: 1))
+
+      datapath_info = Vnet::Openflow::DatapathInfo.new(Fabricate(:datapath, id: 1))
+
+      fm.set_datapath_info datapath_info
+
+      datapath.dp_info.active_interface_manager.set_datapath_info datapath_info
     }
   end
 
@@ -326,9 +331,23 @@ describe Vnet::Core::FilterManager do
     end
 
     context "with a local interface with filtering enabled" do
-      let(:interface2) { Fabricate(:filter_interface) }
+      let(:interface2) {
+        if2 = Fabricate(:filter_interface)
+        Fabricate(:active_interface,
+                  interface_id: if2.id,
+                  datapath_id: 1,
+                  singular: 1,
+                  port_name: 'if-2')
+
+        if2
+      }
 
       it "applies the rule flows for the new interface" do
+
+        pp flows.inspect
+
+        sleep 1
+
        expect(flows).to include rule_flow({
          cookie: cookie_id(group, interface2),
          match: match_icmp_rule("0.0.0.0/0")},
@@ -405,7 +424,6 @@ describe Vnet::Core::FilterManager do
         id: group.id,
         interface_id: interface2.id,
         interface_owner_datapath_id: interface2.owner_datapath_id,
-        interface_active_datapath_id: interface2.active_datapath_id,
       )
     end
 

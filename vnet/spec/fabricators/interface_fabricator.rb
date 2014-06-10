@@ -2,6 +2,9 @@
 Fabricator(:interface, class_name: Vnet::Models::Interface) do
 end
 
+Fabricator(:active_interface, class_name: Vnet::Models::ActiveInterface) do
+end
+
 Fabricator(:interface_w_mac_lease, class_name: Vnet::Models::Interface) do
   mac_leases do
     [

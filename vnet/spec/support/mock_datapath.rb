@@ -101,7 +101,7 @@ class MockDatapath < Vnet::Openflow::Datapath
   end
 
   def create_mock_datapath_map
-    datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1)
+    datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1, uuid: 'dp-test1')
     initialize_datapath_info(datapath_map)
   end
 
