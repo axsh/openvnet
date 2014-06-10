@@ -62,3 +62,10 @@ Fabricator(:interface_dp3eth0, class_name: Vnet::Models::Interface) do
   port_name "eth0"
   mode "host"
 end
+
+Fabricator(:interface_public2gw, class_name: Vnet::Models::Interface) do
+  uuid 'if-pbl2gw'
+  display_name 'public2gw'
+  mode 'simulated'
+  enable_routing true
+end

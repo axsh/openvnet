@@ -77,9 +77,19 @@ describe Vnet::Plugins::VdcVnetPlugin do
   end
 
   context "when network_route is created" do
+
     let(:model_class) { :NetworkRoute }
+
     let(:outer_network) { Fabricate(:pnet_public2) }
     let(:inner_network) { Fabricate(:vnet_1) }
+
+    let(:interface_public2gw) do
+      Fabricate(:interface_public2gw,
+        network_id: outer_network.id,
+        ipv4_address: '192.168.2.1'
+      )
+    end
+
     let(:params) do
       {
         :interface_uuid => "if-testuuid",
