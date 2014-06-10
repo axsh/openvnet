@@ -147,8 +147,8 @@ module Vnet::Core::Services
       near_routes.each do |rnear|
         router_ip_octets = nil
         far_routes = @dp_info.route_manager.select(route_link_id: rnear[:route_link_id],
-                                                        egress: true,
-                                                        not_network_id: rnear[:network_id])
+                                                   egress: true,
+                                                   not_network_id: rnear[:network_id])
         far_routes.each do |rfar|
           # get router/gateway target from near router's interface
           break unless router_ip_octets ||= get_router_octets(rnear)
@@ -162,9 +162,13 @@ module Vnet::Core::Services
     end
 
     def get_router_octets(arouter)
-      near_interface = @dp_info.interface_manager.retrieve(id: arouter[:interface_id])
-      ipv4_infos = near_interface.get_ipv4_infos(network_id: arouter[:network_id]).first
-      ipaddr_to_octets(ipv4_infos[1][:ipv4_address])
+      filter = {
+        interface_id: arouter[:interface_id],
+        network_id: arouter[:network_id]
+      }
+
+      ip_lease = MW::IpLease.batch.dataset.join_ip_addresses.where(filter).first.commit(fill: :ipv4_address)
+      ip_lease && ipaddr_to_octets(ip_lease.ipv4_address)
     end
     
     def ipaddr_to_octets(ip)
