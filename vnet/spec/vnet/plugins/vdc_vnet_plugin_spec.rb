@@ -75,4 +75,37 @@ describe Vnet::Plugins::VdcVnetPlugin do
       end
     end
   end
+
+  context "when network_route is created" do
+    let(:model_class) { :NetworkRoute }
+    let(:outer_network) { Fabricate(:pnet_public2) }
+    let(:inner_network) { Fabricate(:vnet_1) }
+    let(:params) do
+      {
+        :interface_uuid => "if-testuuid",
+        :ingress_ipv4_address => IPAddr.new("192.168.2.33").to_i,
+        :egress_ipv4_address => IPAddr.new("10.102.0.10").to_i,
+        :outer_network_uuid => outer_network.canonical_uuid,
+        :inner_network_uuid => inner_network.canonical_uuid
+      }
+    end
+
+    describe "create_entry" do
+      it "creates translation entry" do
+        subject.create_entry(model_class, deep_copy(params))
+        translation = Vnet::Models::Translation.find({:mode => 'static_address'})
+
+        expect(translation).not_to eq nil
+        expect(translation.mode).to eq 'static_address'
+
+        tsa = Vnet::Models::TranslationStaticAddress.find({
+          :ingress_ipv4_address => params[:ingress_ipv4_address],
+          :egress_ipv4_address => params[:egress_ipv4_address]
+        })
+
+        expect(tsa).not_to eq nil
+        expect(tsa.ingress_ipv4_address).to eq params[:ingress_ipv4_address]
+      end
+    end
+  end
 end

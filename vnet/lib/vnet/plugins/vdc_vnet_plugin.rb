@@ -2,6 +2,7 @@
 
 require 'ipaddr'
 require 'trema'
+require 'active_support/inflector'
 
 module Vnet::Plugins
   class VdcVnetPlugin
@@ -17,7 +18,7 @@ module Vnet::Plugins
         :NetworkVif => [:Interface],
         :NetworkVifIpLease => [:IpLease],
         :NetworkService => [:NetworkService],
-        :NetworkRoute => [:LeasePolicy, :IpLeaseContainer, :IpLease]
+        :NetworkRoute => [:TranslationStaticAddress]
       }
 
       info "vdc_vnet_plugin initialized..."
@@ -25,7 +26,7 @@ module Vnet::Plugins
 
     def create_entry(vdc_model_class, vnet_params)
       table[vdc_model_class].each do |vnet_model_class|
-        send("#{vnet_model_class.underscore}_params", vnet_params)
+        send("#{vnet_model_class.to_s.underscore}_params", vnet_params)
         Vnet::NodeApi.const_get(vnet_model_class).create(vnet_params)
       end
     end
@@ -76,10 +77,15 @@ module Vnet::Plugins
       vnet_params[:ipv4_address] = IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i
     end
 
-    def lease_policy_params(vnet_params)
-    end
+    def translation_static_address_params(vnet_params)
+      translation = Vnet::NodeApi::Translation.create({
+        :mode => 'static_address',
+        :passthrough => true
+      })
 
-    def ip_lease_container_params(vnet_params)
+      vnet_params.delete(:interface_uuid)
+      vnet_params.delete(:outer_network_uuid)
+      vnet_params.delete(:inner_network_uuid)
     end
 
     def simulated_interface_params(vnet_params)
