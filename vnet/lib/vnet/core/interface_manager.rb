@@ -425,7 +425,7 @@ module Vnet::Core
 
         if changed_columns["owner_datapath_id"]
           return if changed_columns["owner_datapath_id"] != @datapath_info.id
-          @dp_info.port_manager.async.attach_interface(port_name: params[:port_name])
+          item_by_params(id: id)
         end
       end
 
