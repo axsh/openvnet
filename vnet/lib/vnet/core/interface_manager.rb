@@ -112,6 +112,12 @@ module Vnet::Core
         return
       end
 
+      if item_map.port_name.nil? &&
+          (mode == :host || mode == :internal || mode == :vif)
+        info log_format("interface mode requires port_name", item_map.inspect)
+        return
+      end
+
       item_class =
         case mode
         when :edge      then Interfaces::Edge
@@ -423,8 +429,13 @@ module Vnet::Core
         changed_columns = params[:changed_columns]
         return if changed_columns.nil?
 
-        if changed_columns["owner_datapath_id"]
-          return if changed_columns["owner_datapath_id"] != @datapath_info.id
+        changed_owner_dp = changed_columns["owner_datapath_id"]
+
+        if changed_owner_dp
+          return if
+            changed_owner_dp.nil? ||
+            changed_owner_dp != @datapath_info.id
+
           item_by_params(id: id)
         end
       end
