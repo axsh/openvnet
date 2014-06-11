@@ -27,8 +27,16 @@ module Vnet::Core::Datapaths
       false
     end
 
+    def mode
+      :base
+    end
+
     def log_type
       'datapath/base'
+    end
+
+    def pretty_properties
+      "mode:#{self.mode}"
     end
 
     def cookie(tag = nil)
@@ -37,9 +45,9 @@ module Vnet::Core::Datapaths
     end
 
     def to_hash
-      Vnet::Core::Network.new(id: @id,
-                              uuid: @uuid,
-                              active_networks: @active_networks.values)
+      Vnet::Core::Datapath.new(id: @id,
+                               uuid: @uuid,
+                               active_networks: @active_networks.values)
     end
 
     def unused?
@@ -61,9 +69,6 @@ module Vnet::Core::Datapaths
     #
     # Events:
     #
-
-    def install
-    end
 
     def uninstall
       @dp_info.del_cookie(id | COOKIE_TYPE_DATAPATH)

@@ -8,6 +8,10 @@ module Vnet::Core::Datapaths
       true
     end
 
+    def mode
+      :host
+    end
+
     def log_type
       'datapath/host'
     end
