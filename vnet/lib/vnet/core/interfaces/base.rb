@@ -31,6 +31,9 @@ module Vnet::Core::Interfaces
     attr_accessor :owner_datapath_ids
     attr_accessor :display_name
 
+    attr_accessor :enable_routing
+    attr_accessor :enable_route_translation
+
     attr_accessor :ingress_filtering_enabled
 
     attr_reader :port_number

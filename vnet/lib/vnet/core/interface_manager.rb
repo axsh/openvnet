@@ -231,7 +231,8 @@ module Vnet::Core
         interface_id: item.id,
         port_name: item.port_name,
         label: label,
-        singular: singular
+        singular: singular,
+        enable_routing: item.enable_routing
       }
 
       active_item = @dp_info.active_interface_manager.activate_local_item(params)

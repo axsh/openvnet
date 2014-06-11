@@ -17,6 +17,8 @@ Sequel.migration do
       String :label
       TrueClass :singular
 
+      FalseClass :enable_routing, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
 

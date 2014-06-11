@@ -99,7 +99,12 @@ module Vnet::Core
 
     def item_post_install(item, item_map)
       # TODO: Refactor...
-      @dp_info.interface_manager.async.retrieve(id: item.interface_id)
+      interface = @dp_info.interface_manager.retrieve(id: item.interface_id,
+                                                      allowed_datapath_id: @datapath_info.id)
+
+      if interface.nil?
+        @dp_info.active_interface_manager.retrieve(interface_id: item.interface_id)
+      end
 
       # TODO: Router egress is a property of the interface...(?)
       @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_UPDATED,

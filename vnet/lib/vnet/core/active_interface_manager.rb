@@ -85,7 +85,7 @@ module Vnet::Core
       filter, value = filter_part
 
       case filter
-      when :id, :interface_id, :datapath_id, :port_name, :label, :singular
+      when :id, :interface_id, :datapath_id, :port_name, :label, :singular, :enable_routing
         proc { |id, item| value == item.send(filter) }
       # when :not_local
       #   proc { |id, item| value != item.network_id }
@@ -103,6 +103,7 @@ module Vnet::Core
 
       filter << {label: params[:label]} if params.has_key? :label
       filter << {singular: params[:singular]} if params.has_key? :singular
+      filter << {enable_routing: params[:enable_routing]} if params.has_key? :enable_routing
       filter
     end
 
@@ -147,6 +148,9 @@ module Vnet::Core
       item.port_name = params[:port_name]
       item.label = params[:label]
       item.singular = params[:singular]
+
+      # TODO: Update this properly.
+      item.enable_routing = params[:enable_routing]
 
       debug log_format("updated " + item.pretty_id, item.pretty_properties)
     end
