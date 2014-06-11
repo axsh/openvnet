@@ -139,7 +139,8 @@ module Vnet::Core
       item = internal_detect_by_id(params)
 
       if item.nil?
-        internal_new_item(mw_class.new(params)) if params_current_datapath?(params)
+        # TODO: Check if we need this item.
+        internal_new_item(mw_class.new(params))
         return
       end
 
