@@ -78,6 +78,11 @@ module Vnet::Plugins
     end
 
     def translation_static_address_params(vnet_params)
+      outer_network_gateway = find_gw_interface(vnet_params[:outer_network_uuid])
+      inner_network_gateway = find_gw_interface(vnet_params[:inner_network_uuid])
+
+      route_link = find_route_link(outer_network_gateway, inner_network_gateway)
+
       translation = Vnet::NodeApi::Translation.create({
         :mode => 'static_address',
         :passthrough => true
@@ -96,6 +101,51 @@ module Vnet::Plugins
         :mode => "simulated",
         :network_id => network && network.id
       }
+    end
+
+    def find_route(gw)
+      _gws = Vnet::Models::Route.find_all { |r| r.interface_id == gw.id }
+
+      if _gws.empty?
+        warn "no route"
+        _gws << create_route(gw)
+      end
+
+      _gws.first
+    end
+
+    def create_route(gw)
+      #TODO
+      true
+    end
+
+    def find_route_link(gw_a, gw_b)
+      r_a = find_route(gw_a)
+      r_b = find_route(gw_b)
+    end
+
+    def find_gw_interface(network_uuid)
+      gateways = Vnet::Models::Interface.find_all { |i|
+        i.enable_routing == true && i.mode == 'simulated'
+      }.select{ |i|
+        i.network.canonical_uuid == network_uuid
+      }
+
+      if gateways.empty?
+        warn "no gateway interface has been found in the network(#{network_uuid})"
+        gateways << create_gw_interface(network_uuid)
+      end
+
+      if gateways.size > 1
+        warn "multiple gateway interfaces have been detected in the network(#{network_uuid})"
+      end
+
+      gateways.first
+    end
+
+    def create_gw_interface(network_uuid)
+      #TODO
+      true
     end
   end
 end
