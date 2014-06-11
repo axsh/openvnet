@@ -26,7 +26,7 @@ module Vnet::Core::Datapaths
     def uninstall
       super
 
-      @dp_info.datapath.reset_datapath
+      @dp_info.datapath.reset_datapath_info
     end
 
     def activate_network_id(network_id)

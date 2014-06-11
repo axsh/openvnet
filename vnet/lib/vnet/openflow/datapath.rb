@@ -73,14 +73,6 @@ module Vnet::Openflow
       end
     end
 
-    def reset
-      @controller.pass_task { @controller.reset_datapath(@dpid) }
-    end
-
-    #
-    # Port modification methods:
-    #
-
     def initialize_datapath_info(datapath_map)
       info log_format('initializing datapath info')
 
@@ -102,6 +94,8 @@ module Vnet::Openflow
       @dp_info.del_all_flows
       @dp_info.tunnel_manager.delete_all_tunnels
       @dp_info.active_interface_manager.deactivate_all_local_items
+
+      @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
     #
