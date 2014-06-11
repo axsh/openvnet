@@ -9,7 +9,7 @@ module Vnet::Core::Interfaces
     end
 
     def add_mac_address(params)
-      mac_info = super
+      mac_info = super || return
 
       flows = []
       flows_for_mac(flows, mac_info)
@@ -19,7 +19,7 @@ module Vnet::Core::Interfaces
     end
 
     def add_ipv4_address(params)
-      mac_info, ipv4_info = super
+      mac_info, ipv4_info = super || return
 
       flows = []
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
