@@ -175,6 +175,13 @@ class MockDatapath < Vnet::Openflow::Datapath
   def deleted_tunnels
     @dp_info.deleted_tunnels
   end
+
+  private
+
+  def do_cleanup
+    info log_format('mock cleaning up')
+  end  
+
 end
 
 def create_mock_datapath
