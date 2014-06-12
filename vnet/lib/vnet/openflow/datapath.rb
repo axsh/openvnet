@@ -35,7 +35,6 @@ module Vnet::Openflow
     attr_reader :controller
     attr_reader :dpid
     attr_reader :dpid_s
-    attr_reader :ovs_ofctl
 
     attr_reader :switch
 
@@ -54,17 +53,11 @@ module Vnet::Openflow
       link_with_managers
     end
 
-    def inspect
-      "<##{self.class.name} dpid:#{@dpid}>"
-    end
-
     def create_switch
       @switch = Switch.new(self)
       @switch.create_default_flows
 
       switch_ready
-
-      return @switch
     end
 
     def switch_ready
