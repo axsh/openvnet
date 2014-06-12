@@ -379,6 +379,8 @@ module Vnet::Core
     #
 
     def update_item_exclusively(params)
+      return if @datapath_info.nil?
+
       id = params.fetch(:id) || return
       event = params[:event] || return
 

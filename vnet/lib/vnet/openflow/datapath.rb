@@ -27,6 +27,8 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
+    finalizer :do_cleanup
+
     attr_reader :dp_info
     attr_reader :datapath_info
 
@@ -91,10 +93,6 @@ module Vnet::Openflow
     def reset_datapath_info
       info log_format('resetting datapath info')
 
-      @dp_info.del_all_flows
-      @dp_info.tunnel_manager.delete_all_tunnels
-      @dp_info.active_interface_manager.deactivate_all_local_items
-
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
@@ -106,6 +104,22 @@ module Vnet::Openflow
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def do_cleanup
+      info log_format('cleaning up')
+
+      # TODO: Move to the respective managers.
+      @dp_info.tunnel_manager.async.delete_all_tunnels
+      @dp_info.active_interface_manager.async.deactivate_all_local_items
+
+      # We terminate the managers manually rather than relying on
+      # actor's 'link' in order to ensure the managers are terminated
+      # before Datapath's 'terminate' returns.
+      @dp_info.terminate_managers
+      @dp_info.del_all_flows
+
+      info log_format('cleaned up')
     end
 
     def link_with_managers

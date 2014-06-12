@@ -36,7 +36,7 @@ module Vnet::Openflow
     def features_reply(dpid, message)
       info "features_reply from %#x." % dpid
 
-      datapath = datapath(dpid) || raise("No datapath found.")
+      datapath = datapath(dpid) || return
       datapath.switch.async.features_reply(message)
     end
 
@@ -56,8 +56,8 @@ module Vnet::Openflow
     def port_status(dpid, message)
       debug "port_status from %#x." % dpid
 
-      datapath = datapath(dpid)
-      datapath.switch.async.port_status(message) if datapath && datapath.switch
+      datapath = datapath(dpid) || return
+      datapath.switch.async.port_status(message)
     end
 
     def packet_in(dpid, message)
@@ -108,9 +108,9 @@ module Vnet::Openflow
     end
 
     def initialize_datapath(dpid)
-      info "initialize datapath actor. dpid: 0x%016x" % dpid
-
       terminate_datapath(dpid)
+
+      info "initialize datapath actor. dpid: 0x%016x" % dpid
 
       # There is no need to clean up the old switch, as all the
       # previous flows are removed. Just let it rebuild everything.
@@ -119,19 +119,26 @@ module Vnet::Openflow
       # disconnected for a short period, as Open vSwitch has the
       # ability to keep flows between sessions.
       datapath = Datapath.new(self, dpid, OvsOfctl.new(dpid))
+
+      if @datapaths[dpid]
+        info "initialize datapath actor cancelled, already intitialized after termination. dpid: 0x%016x" % dpid
+        return
+      end
+
       @datapaths[dpid] = { datapath: datapath, dp_info: datapath.dp_info }
 
-      datapath.async.create_switch
+      datapath.create_switch
     end
 
+    # TODO: We cannot allow datapaths to be initialized while the
+    # previous one is terminating, fixme.
     def terminate_datapath(dpid)
       datapath_map = @datapaths.delete(dpid) || return
       datapath = datapath_map[:datapath] || return
 
       info "terminating datapath actor. dpid: 0x%016x" % dpid
-
-      datapath.reset_datapath_info
       datapath.terminate
+      info "terminated datapath actor. dpid: 0x%016x" % dpid
     end
 
     def update_vlan_translation

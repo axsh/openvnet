@@ -111,8 +111,7 @@ module Vnet::Core
         return
       end
 
-      # TODO: move to install_item...
-      @dp_info.datapath.switch_ready
+      retrieve(id: params[:id])
     end
 
     #
