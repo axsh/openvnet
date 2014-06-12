@@ -9,6 +9,7 @@ module Vnet::Models
     one_to_many :network_services
     one_to_many :routes
 
+    one_to_many :active_interfaces
     many_to_one :owner_datapath, :class => Datapath
 
     one_to_many :interface_security_groups
@@ -21,7 +22,8 @@ module Vnet::Models
       :ip_leases => :destroy,
       :mac_leases => :destroy,
       :network_services => :destroy,
-      :routes => :destroy
+      :routes => :destroy,
+      :active_interfaces => :destroy
 
     subset(:alives, {})
 
