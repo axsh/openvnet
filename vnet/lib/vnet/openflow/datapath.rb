@@ -109,10 +109,6 @@ module Vnet::Openflow
     def do_cleanup
       info log_format('cleaning up')
 
-      # TODO: Move to the respective managers.
-      @dp_info.tunnel_manager.async.delete_all_tunnels
-      @dp_info.active_interface_manager.async.deactivate_all_local_items
-
       # We terminate the managers manually rather than relying on
       # actor's 'link' in order to ensure the managers are terminated
       # before Datapath's 'terminate' returns.

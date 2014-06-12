@@ -23,6 +23,8 @@ module Vnet::Core
     subscribe_event REMOVED_HOST_DATAPATH_ROUTE_LINK, :removed_host_datapath_route_link
     subscribe_event REMOVED_REMOTE_DATAPATH_ROUTE_LINK, :removed_remote_datapath_route_link
 
+    finalizer :do_cleanup
+
     def initialize(*args)
       super
       @interfaces = {}
@@ -44,16 +46,17 @@ module Vnet::Core
       nil
     end
 
-    def delete_all_tunnels
-      @items.values.each { |item| unload(id: item.id) }
-      nil
-    end
-
     #
     # Internal methods:
     #
 
     private
+
+    def do_cleanup
+      info log_format('cleaning up')
+      @items.values.each { |item| unload(id: item.id) }
+      info log_format('cleaned up')
+    end
 
     #
     # Specialize Manager:

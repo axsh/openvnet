@@ -15,6 +15,8 @@ module Vnet::Core
 
     subscribe_event ACTIVE_INTERFACE_UPDATED, :updated_item
 
+    finalizer :do_cleanup
+
     def activate_local_item(params)
       return if @datapath_info.nil? # Add error message...
 
@@ -50,18 +52,17 @@ module Vnet::Core
       nil
     end
 
-    def deactivate_all_local_items
-      return if @datapath_info.nil? # Add error message...
-
-      mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
-      nil
-    end
-
     #
     # Internal methods:
     #
 
     private
+
+    def do_cleanup
+      info log_format('cleaning up')
+      internal_deactivate_all_local_items
+      info log_format('cleaned up')
+    end
 
     #
     # Specialize Manager:
@@ -80,7 +81,6 @@ module Vnet::Core
     end
 
     # TODO: Add 'not_local/remote' filter.
-
     def match_item_proc_part(filter_part)
       filter, value = filter_part
 
@@ -154,6 +154,15 @@ module Vnet::Core
       item.enable_routing = params[:enable_routing]
 
       debug log_format("updated " + item.pretty_id, item.pretty_properties)
+    end
+
+    #
+    # Update local items:
+    #
+
+    def internal_deactivate_all_local_items
+      return if @datapath_info.nil?
+      mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
     end
 
     #
