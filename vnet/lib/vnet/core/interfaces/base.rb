@@ -28,9 +28,11 @@ module Vnet::Core::Interfaces
 
     attr_accessor :mode
     attr_accessor :port_name
-    attr_accessor :active_datapath_ids
     attr_accessor :owner_datapath_ids
     attr_accessor :display_name
+
+    attr_accessor :enable_routing
+    attr_accessor :enable_route_translation
 
     attr_accessor :ingress_filtering_enabled
 
@@ -51,25 +53,10 @@ module Vnet::Core::Interfaces
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
 
-      # The 'owner_datapath_ids' set has two possible states; the set
-      # can contain zero or more datapaths that can activate this
-      # interface, or if nil it can either be activated by any
-      # datapath or should be active on all relevant datapaths.
-      #
-      # The 'active_datapath_ids' set has several possible states,
-      # some depending on the interface type; the set can contain zero
-      # or more datapaths on which the interface is active, or if nil
-      # it is interface dependent.
-      #
-      # Note, currently we're using a single value in the db and as
-      # such the implementation below is subject to change.
-
       if map.owner_datapath_id
         @owner_datapath_ids = [map.owner_datapath_id]
-        @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : []
       else
         @owner_datapath_ids = nil
-        @active_datapath_ids = map.active_datapath_id ? [map.active_datapath_id] : nil
       end
     end
 
@@ -136,7 +123,6 @@ module Vnet::Core::Interfaces
                                 display_name: @display_name,
                                 mac_addresses: @mac_addresses,
 
-                                active_datapath_ids: @active_datapath_ids,
                                 owner_datapath_ids: @owner_datapath_ids)
     end
 
@@ -173,9 +159,6 @@ module Vnet::Core::Interfaces
       if owner_datapath_id
         # add new owner_datapath_id
         @owner_datapath_ids = [owner_datapath_id]
-        if owner_datapath_id == @dp_info.datapath.datapath_info.id
-          update_active_datapath(datapath_id: @dp_info.datapath.datapath_info.id)
-        end
       else
         @owner_datapath_ids = nil
       end
@@ -193,24 +176,6 @@ module Vnet::Core::Interfaces
       else
         @dp_info.network_manager.clear_interface_port(@id)
       end
-    end
-
-    def update_active_datapath(datapath_id)
-      # Currently only supports one active datapath id.
-      @active_datapath_ids = [datapath_id]
-
-      addresses = ipv4_addresses
-      addresses = addresses && addresses.map { |i|
-        { network_id: i[:network_id], ipv4_address: i[:ipv4_address].to_i }
-      }
-
-      MW::Interface.batch.update_active_datapath(@id, datapath_id).commit
-
-      dispatch_event(INTERFACE_UPDATED,
-                     event: :remote_datapath_id,
-                     id: @id,
-                     datapath_id: @active_datapath_ids.first,
-                     ipv4_addresses: addresses)
     end
 
     def update_remote_datapath(params)
@@ -258,9 +223,6 @@ module Vnet::Core::Interfaces
       return nil if ipv4_info.nil?
 
       [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
-    end
-
-    def del_flows_for_active_datapath(ipv4_addresses)
     end
 
     #

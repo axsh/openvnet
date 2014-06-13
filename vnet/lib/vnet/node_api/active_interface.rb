@@ -30,7 +30,8 @@ module Vnet::NodeApi
             model = old_model
             model.set(port_name: options[:port_name],
                       label: label,
-                      singular: singular)
+                      singular: singular,
+                      enable_routing: options[:enable_routing])
             model.save_changes
             
             Celluloid::Logger.debug "updated active interface: #{model.inspect}"

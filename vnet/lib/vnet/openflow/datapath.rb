@@ -18,11 +18,6 @@ module Vnet::Openflow
       @node_id = datapath_map[:node_id]
     end
 
-    def is_remote?(owner_datapath_id, active_datapath_id = nil)
-      (owner_datapath_id && owner_datapath_id != @id) ||
-      (active_datapath_id && active_datapath_id != @id)
-    end
-
   end
 
   # OpenFlow datapath allows us to send OF messages and ovs-ofctl
@@ -32,13 +27,14 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
+    finalizer :do_cleanup
+
     attr_reader :dp_info
     attr_reader :datapath_info
 
     attr_reader :controller
     attr_reader :dpid
     attr_reader :dpid_s
-    attr_reader :ovs_ofctl
 
     attr_reader :switch
 
@@ -57,17 +53,11 @@ module Vnet::Openflow
       link_with_managers
     end
 
-    def inspect
-      "<##{self.class.name} dpid:#{@dpid}>"
-    end
-
     def create_switch
       @switch = Switch.new(self)
       @switch.create_default_flows
 
       switch_ready
-
-      return @switch
     end
 
     def switch_ready
@@ -78,31 +68,9 @@ module Vnet::Openflow
       end
     end
 
-    def reset
-      @dp_info.tunnel_manager.delete_all_tunnels
-      @controller.pass_task { @controller.reset_datapath(@dpid) }
-    end
-
-    def terminate
-      begin
-        info log_format('terminating datapath')
-
-        # Do something...
-        @dp_info.del_all_flows
-      rescue Celluloid::Task::TerminatedError => e
-        raise e
-      rescue Exception => e
-        info log_format(e.message, e.class.name)
-        e.backtrace.each { |str| info log_format(str) }
-        raise e
-      end
-    end
-
-    #
-    # Port modification methods:
-    #
-
     def initialize_datapath_info(datapath_map)
+      info log_format('initializing datapath info')
+
       @datapath_info = DatapathInfo.new(datapath_map)
 
       @dp_info.managers.each { |manager|
@@ -115,6 +83,12 @@ module Vnet::Openflow
       @dp_info.interface_manager.load_internal_interfaces
     end
 
+    def reset_datapath_info
+      info log_format('resetting datapath info')
+
+      @controller.pass_task { @controller.reset_datapath(@dpid) }
+    end
+
     #
     # Internal methods:
     #
@@ -123,6 +97,18 @@ module Vnet::Openflow
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def do_cleanup
+      info log_format('cleaning up')
+
+      # We terminate the managers manually rather than relying on
+      # actor's 'link' in order to ensure the managers are terminated
+      # before Datapath's 'terminate' returns.
+      @dp_info.terminate_managers
+      @dp_info.del_all_flows
+
+      info log_format('cleaned up')
     end
 
     def link_with_managers

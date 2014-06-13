@@ -27,8 +27,16 @@ module Vnet::Core::Datapaths
       false
     end
 
+    def mode
+      :base
+    end
+
     def log_type
       'datapath/base'
+    end
+
+    def pretty_properties
+      "mode:#{self.mode}"
     end
 
     def cookie(tag = nil)
@@ -37,9 +45,9 @@ module Vnet::Core::Datapaths
     end
 
     def to_hash
-      Vnet::Core::Network.new(id: @id,
-                              uuid: @uuid,
-                              active_networks: @active_networks.values)
+      Vnet::Core::Datapath.new(id: @id,
+                               uuid: @uuid,
+                               active_networks: @active_networks.values)
     end
 
     def unused?
@@ -61,9 +69,6 @@ module Vnet::Core::Datapaths
     #
     # Events:
     #
-
-    def install
-    end
 
     def uninstall
       @dp_info.del_cookie(id | COOKIE_TYPE_DATAPATH)
@@ -91,6 +96,7 @@ module Vnet::Core::Datapaths
         datapath_id: dpn_map.datapath_id || return,
         interface_id: dpn_map.interface_id || return,
         network_id: dpn_map.network_id || return,
+        ip_lease_id: dpn_map.ip_lease_id,
         mac_address: Trema::Mac.new(dpn_map.broadcast_mac_address || return),
 
         active: false
@@ -131,6 +137,7 @@ module Vnet::Core::Datapaths
         datapath_id: dprl_map.datapath_id || return,
         interface_id: dprl_map.interface_id || return,
         route_link_id: dprl_map.route_link_id || return,
+        ip_lease_id: dprl_map.ip_lease_id,
         mac_address: Trema::Mac.new(dprl_map.mac_address || return),
 
         active: false

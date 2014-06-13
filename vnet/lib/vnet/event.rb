@@ -74,7 +74,6 @@ module Vnet
     INTERFACE_UPDATED = "interface_updated"
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
-    INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS = "interface_remove_all_active_datapaths"
 
     # MAC and IPv4 addresses:
     INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"

@@ -4,6 +4,10 @@ module Vnet::Core::Datapaths
 
   class Remote < Base
 
+    def mode
+      :remote
+    end
+
     #
     # Events:
     #

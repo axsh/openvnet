@@ -8,5 +8,7 @@ module Vnet::Models
     many_to_one :datapath
     many_to_one :route_link
 
+    many_to_one :ip_lease
+
   end
 end

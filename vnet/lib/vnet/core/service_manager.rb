@@ -86,7 +86,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       item_class =
         case item_map.type
         when TYPE_DHCP   then Services::Dhcp
@@ -121,7 +121,7 @@ module Vnet::Core
       return if internal_detect_by_id(params)
       return unless @active_interfaces[params[:interface_id]]
 
-      internal_new_item(mw_class.new(params), {})
+      internal_new_item(mw_class.new(params))
     end
 
     #

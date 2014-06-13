@@ -59,16 +59,6 @@ module Vnet::NodeApi
         end
       end
 
-      def update_active_datapath(uuid, datapath_id)
-        transaction do
-          model_class[uuid].tap do |i|
-            return unless i
-            i.active_datapath_id = datapath_id
-            i.save_changes
-          end
-        end
-      end
-
       def destroy(uuid)
         interface = super
 

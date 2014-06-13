@@ -11,6 +11,7 @@ module Vnet::Core::ActiveInterfaces
     attr_accessor :port_name
     attr_accessor :label
     attr_accessor :singular
+    attr_accessor :enable_routing
 
     def initialize(params)
       super
@@ -23,6 +24,7 @@ module Vnet::Core::ActiveInterfaces
       @port_name = map.port_name
       @label = map.label
       @singular = map.singular
+      @enable_routing = map.enable_routing
     end
 
     def mode
@@ -38,7 +40,11 @@ module Vnet::Core::ActiveInterfaces
     end
 
     def pretty_properties
-      "interface_id:#{@interface_id} datapath_id:#{@datapath_id} label:#{@label} port_name:#{@port_name}"
+      "interface_id:#{@interface_id} datapath_id:#{@datapath_id}" +
+        (@port_name ? ' port_name:' + @port_name : '') +
+        (@label ? ' label:' + @label : '') +
+        (@singular ? ' singular' : '') +
+        (@enable_routing ? ' routing_enabled' : '')
     end
 
     def cookie
@@ -47,11 +53,15 @@ module Vnet::Core::ActiveInterfaces
 
     def to_hash
       Vnet::Core::ActiveInterface.new(id: @id,
+                                      mode: self.mode,
+
                                       interface_id: @interface_id,
                                       datapath_id: @datapath_id,
 
                                       port_name: @port_name,
-                                      label: @label)
+                                      label: @label,
+                                      singular: @singular,
+                                      enable_routing: @enable_routing)
     end
 
   end

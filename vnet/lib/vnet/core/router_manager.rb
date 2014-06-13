@@ -51,7 +51,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       item_class = Routers::RouteLink
 
       item_class.new(dp_info: @dp_info, map: item_map)

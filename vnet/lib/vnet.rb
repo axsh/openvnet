@@ -115,7 +115,6 @@ module Vnet
       autoload :IfBase, 'vnet/core/interfaces/if_base'
       autoload :Internal, 'vnet/core/interfaces/internal'
       autoload :Patch, 'vnet/core/interfaces/patch'
-      autoload :Remote, 'vnet/core/interfaces/remote'
       autoload :Simulated, 'vnet/core/interfaces/simulated'
       autoload :Vif, 'vnet/core/interfaces/vif'
     end
@@ -328,7 +327,7 @@ module Vnet
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
-    autoload :DatapathRouteLink, 'vnet/node_api/models.rb'
+    autoload :DatapathRouteLink, 'vnet/node_api/datapath_route_link.rb'
     autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'

@@ -156,6 +156,18 @@ module Vnet::Core
       MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
+    def terminate_managers(timeout = 10.0)
+      # TODO: Fix this so it calculates the remaining timeout between each join.
+      timeout = timeout / 10
+
+      managers.each { |manager|
+        manager.terminate!
+      }
+      managers.each { |manager|
+        Celluloid::Actor.join(manager, timeout)
+      }
+    end
+
     #
     # Internal methods:
     #

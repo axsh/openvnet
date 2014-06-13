@@ -75,7 +75,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       item_class =
         if item_map.dpid == @dp_info.dpid
           Datapaths::Host
@@ -111,8 +111,7 @@ module Vnet::Core
         return
       end
 
-      # TODO: move to install_item...
-      @dp_info.datapath.switch_ready
+      retrieve(id: params[:id])
     end
 
     #

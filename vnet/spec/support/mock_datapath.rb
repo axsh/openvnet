@@ -101,7 +101,7 @@ class MockDatapath < Vnet::Openflow::Datapath
   end
 
   def create_mock_datapath_map
-    datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1)
+    datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1, uuid: 'dp-test1')
     initialize_datapath_info(datapath_map)
   end
 
@@ -175,6 +175,13 @@ class MockDatapath < Vnet::Openflow::Datapath
   def deleted_tunnels
     @dp_info.deleted_tunnels
   end
+
+  private
+
+  def do_cleanup
+    info log_format('mock cleaning up')
+  end  
+
 end
 
 def create_mock_datapath

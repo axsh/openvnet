@@ -17,6 +17,8 @@ Sequel.migration do
       String :label
       TrueClass :singular
 
+      FalseClass :enable_routing, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
 
@@ -41,11 +43,16 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :network_id, :index => true, :null=>false
+
       Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
+      Integer :ip_lease_id, :index => true
+
       FalseClass :is_connected, :null=>false
+
       DateTime :deleted_at, :index => true
       Integer :deleted, :default => 0, :null => false
+
       index [:datapath_id, :network_id, :deleted], :unique => true
     end
 
@@ -53,8 +60,11 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :route_link_id, :index => true, :null=>false
+
       Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
+      Integer :ip_lease_id, :index => true
+
       FalseClass :is_connected, :null=>false
     end
 
@@ -88,9 +98,6 @@ Sequel.migration do
 
       String :port_name, :index => true, :null => true
 
-      # Should be a relation allowing for multiple active/owner
-      # datapath ids.
-      Integer :active_datapath_id, :index => true
       Integer :owner_datapath_id, :index => true
 
       FalseClass :ingress_filtering_enabled, :null => false

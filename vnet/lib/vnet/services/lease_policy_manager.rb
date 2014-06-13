@@ -57,7 +57,7 @@ module Vnet::Services
       end
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       debug log_format('item_initialize(item_map, params)',"#{params}")
 
       mode = (item_map.mode && item_map.mode.to_sym)
