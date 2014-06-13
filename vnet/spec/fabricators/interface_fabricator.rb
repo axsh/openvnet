@@ -69,3 +69,14 @@ Fabricator(:interface_public2gw, class_name: Vnet::Models::Interface) do
   mode 'simulated'
   enable_routing true
 end
+
+Fabricator(:interface_vnet1gw, class_name: Vnet::Models::Interface) do
+  uuid 'if-vnet1gw'
+  display_name 'vnet1gw'
+  mode 'simulated'
+  enable_routing true
+end
+
+Fabricator(:host_port_any, class_name: Vnet::Models::Interface) do
+  mode 'host'
+end
