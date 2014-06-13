@@ -83,17 +83,42 @@ module Vnet::Plugins
 
       route_link = find_route_link(outer_network_gateway, inner_network_gateway)
 
+      host_ports = Vnet::NodeApi::Interface.where(:mode=>'host').all
+      host_ports.each do |host_port|
+        Vnet::NodeApi::DatapathRouteLink.create({
+          :datapath_id => host_port.active_datapath_id,
+          :interface_id => host_port.id,
+          :mac_address_id => mac_generate("99:98").id,
+          :route_link_id => route_link.id
+        })
+      end
+
       translation = Vnet::NodeApi::Translation.create({
+        :interface_id => inner_network_gateway.id,
         :mode => 'static_address',
         :passthrough => true
       })
+
+      Vnet::NodeApi::IpLease.create({
+        :mac_lease_id => outer_network_gateway.mac_leases.first.id,
+        :network_id => Vnet::NodeApi::Network[vnet_params[:outer_network_uuid]].id,
+        :ipv4_address => outer_network_gateway.ip_leases.first.ip_address.ipv4_address_s,
+        :enable_routing => true
+      })
+
+      vnet_params[:route_link_id] = route_link.id
+      
+      ing = vnet_params[:ingress_ipv4_address]
+      eg = vnet_params[:egress_ipv4_address]
+      vnet_params[:ingress_ipv4_address] = IPAddr.new(ing).to_i
+      vnet_params[:egress_ipv4_address] = IPAddr.new(eg).to_i
 
       vnet_params.delete(:outer_network_uuid)
       vnet_params.delete(:inner_network_uuid)
     end
 
     def simulated_interface_params(vnet_params)
-      network = Vnet::Models::Network[vnet_params[:network_uuid]]
+      network = Vnet::NodeApi::Network[vnet_params[:network_uuid]]
 
       {
         :ipv4_address => IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i,
@@ -104,28 +129,65 @@ module Vnet::Plugins
     end
 
     def find_route(gw)
-      _gws = Vnet::Models::Route.find_all { |r| r.interface_id == gw.id }
-
-      if _gws.empty?
-        warn "no route"
-        _gws << create_route(gw)
-      end
-
-      _gws.first
+      Vnet::NodeApi::Route.find_all { |r| r.interface_id == gw.id }
     end
 
-    def create_route(gw)
+    def create_route(route_link, gw)
       #TODO
-      true
+      params = {
+        :interface_id => gw.id,
+        :route_link_id => route_link.id,
+        :network_id => gw.network.id,
+        :ipv4_network => gw.network.ipv4_network,
+        :ipv4_prefix => gw.network.ipv4_prefix
+      }
+      Vnet::NodeApi::Route.create(params)
+    end
+
+    def x
+      "#{rand(16).to_s(16)}#{rand(16).to_s(16)}"
+    end
+
+    def mac_generate(prefix)
+      mac = "#{prefix}:#{x}:#{x}:#{x}:#{x}"
+      Vnet::NodeApi::MacAddress.create({
+        :mac_address => ::Trema::Mac.new(mac).value
+      })
+    end
+
+    def create_route_link(gw_a, gw_b)
+      route_link = Vnet::NodeApi::RouteLink.create({
+        :mac_address_id => mac_generate("99:99").id
+      })
+      create_route(route_link, gw_a)
+      create_route(route_link, gw_b)
+      route_link
     end
 
     def find_route_link(gw_a, gw_b)
       r_a = find_route(gw_a)
       r_b = find_route(gw_b)
+     
+      route_link = find_pair(r_a, r_b)
+
+      if route_link.nil?
+        route_link = create_route_link(gw_a, gw_b)
+      end
+
+      route_link
+    end
+
+    def find_pair(r_a, r_b)
+      r_a.each do |ra|
+        r_b.each do |rb|
+          return ra.route_link if ra.route_link.uuid == rb.route_link.uuid
+        end
+      end
+      nil
     end
 
     def find_gw_interface(network_uuid)
-      gateways = Vnet::Models::Interface.find_all { |i|
+      gateways = Vnet::NodeApi::Interface.find_all { |i|
         i.enable_routing == true && i.mode == 'simulated'
       }.select{ |i|
         i.network.canonical_uuid == network_uuid
@@ -144,7 +206,15 @@ module Vnet::Plugins
     end
 
     def create_gw_interface(network_uuid)
-      #TODO
+      # TODO
+      # params = {
+      #   :mode => 'simulated',
+      #   :display_name => "gw_#{network_uuid}",
+      #   :ipv4_address => "1.1.1.1",
+      #   :mac_address => "00:00:00:00:00:0A",
+      #   :enable_routing => true
+      # }
+      # Vnet::NodeApi::Interface.create(params)
       true
     end
   end
