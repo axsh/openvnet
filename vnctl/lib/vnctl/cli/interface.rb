@@ -6,10 +6,14 @@ module Vnctl::Cli
     api_suffix "/api/interfaces"
 
     add_modify_shared_options {
-      option :ingress_filtering_enabled, :type => :boolean, :desc => "Flag that decides whether or not ingress filtering (security groups) is enabled."
-      option :enable_routing, :type => :boolean, :desc => "Flag that decides whether or not routing is enabled."
-      option :enable_route_translation, :type => :boolean, :desc => "Flag that decides whether or not route translation is enabled."
-      option :owner_datapath_uuid, :type => :string, :desc => "The uuid of the datapath that owns this interface."
+      option :ingress_filtering_enabled, :type => :boolean,
+        :desc => "Flag that decides whether or not ingress filtering (security groups) is enabled."
+      option :enable_routing, :type => :boolean,
+        :desc => "Flag that decides whether or not routing is enabled."
+      option :enable_route_translation, :type => :boolean,
+        :desc => "Flag that decides whether or not route translation is enabled."
+      option :owner_datapath_uuid, :type => :string,
+        :desc => "The uuid of the datapath that owns this interface."
     }
 
     add_modify_shared_options
