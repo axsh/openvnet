@@ -27,26 +27,6 @@ Sequel.migration do
       unique [:interface_id, :singular]
     end
 
-    # ports or datapaths?...
-    create_table(:interface_ports) do
-      primary_key :id
-
-      Integer :interface_id, :index => true, :null => false
-      Integer :datapath_id, :index => true #, :null => false
-
-      String :port_name, :index => true
-
-      TrueClass :singular # ??? mode?
-
-      index [:interface_id, :datapath_id], :unique => true
-      index [:datapath_id, :port_name], :unique => true
-
-      index [:port_name, :singular], :unique => true
-
-      # index [:interface_id, :label], :unique => true
-      # unique [:interface_id, :singular]
-    end
-
     create_table(:datapaths) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -126,6 +106,30 @@ Sequel.migration do
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+    end
+
+    create_table(:interface_ports) do
+      primary_key :id
+
+      Integer :interface_id, :index => true, :null => false
+      Integer :datapath_id, :index => true #, :null => false
+
+      String :port_name, :index => true
+
+      TrueClass :singular
+
+      # Temporary work-around until we refactor port manager so that
+      # interface_port's can just include an interface_ingress/egress
+      # parameter.
+      String :interface_mode, :null => false
+
+      index [:interface_id, :datapath_id], :unique => true
+      index [:datapath_id, :port_name], :unique => true
+
+      index [:port_name, :singular], :unique => true
+
+      # index [:interface_id, :label], :unique => true
+      # unique [:interface_id, :singular]
     end
 
     create_table(:interface_security_groups) do

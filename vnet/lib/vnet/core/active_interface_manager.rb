@@ -59,8 +59,14 @@ module Vnet::Core
     private
 
     def do_cleanup
+      return if @datapath_info.nil?
+
       info log_format('cleaning up')
-      internal_deactivate_all_local_items
+      begin
+        mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
+      rescue NoMethodError => e
+        info log_format(e.message, e.class.name)
+      end
       info log_format('cleaned up')
     end
 
@@ -154,15 +160,6 @@ module Vnet::Core
       item.enable_routing = params[:enable_routing]
 
       debug log_format("updated " + item.pretty_id, item.pretty_properties)
-    end
-
-    #
-    # Update local items:
-    #
-
-    def internal_deactivate_all_local_items
-      return if @datapath_info.nil?
-      mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
     end
 
     #

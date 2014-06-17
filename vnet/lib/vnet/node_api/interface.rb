@@ -82,9 +82,10 @@ module Vnet::NodeApi
       def create_interface_port(interface, datapath_id, port_name)
         options = {
           interface_id: interface.id,
+          interface_mode: interface.mode,
           datapath_id: datapath_id,
 
-          port_name: port_name
+          port_name: port_name,
         }
 
         interface_port = model_class(:interface_port).create(options)

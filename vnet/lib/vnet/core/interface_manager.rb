@@ -148,9 +148,9 @@ module Vnet::Core
 
           item.update_port_number(port_number)
 
-          @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
-                                        id: item.port_number,
-                                        interface: item_to_hash(item))
+          # @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+          #                               id: item.port_number,
+          #                               interface: item_to_hash(item))
         }
       end
     end
@@ -167,10 +167,10 @@ module Vnet::Core
     end
 
     def item_post_uninstall(item)
-      item.port_number &&
-        @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
-                                      id: item.port_number,
-                                      interface_id: item.id)
+      # item.port_number &&
+      #   @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
+      #                                 id: item.port_number,
+      #                                 interface_id: item.id)
 
       @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
                                       id: :interface,
@@ -396,24 +396,24 @@ module Vnet::Core
         #
         # Port events:
         #
-      when :set_port_number
-        debug log_format("update_item", params)
+      # when :set_port_number
+      #   debug log_format("update_item", params)
 
-        item.update_port_number(params[:port_number])
+      #   item.update_port_number(params[:port_number])
 
-        @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
-                                      id: item.port_number,
-                                      interface: item_to_hash(item))
+      #   @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+      #                                 id: item.port_number,
+      #                                 interface: item_to_hash(item))
 
-      when :clear_port_number
-        debug log_format("update_item", params)
+      # when :clear_port_number
+      #   debug log_format("update_item", params)
 
-        @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
-                                      id: item.port_number,
-                                      interface: item_to_hash(item))
+      #   @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
+      #                                 id: item.port_number,
+      #                                 interface: item_to_hash(item))
 
-        # Check if nil... (use param :port_number to verify)
-        item.update_port_number(nil)
+      #   # Check if nil... (use param :port_number to verify)
+      #   item.update_port_number(nil)
         # update_active_datapath(item, nil)
 
         #
@@ -473,10 +473,10 @@ module Vnet::Core
       Proc.new { |id, item|
         item.port_name = port_name
 
-        publish(INTERFACE_UPDATED,
-                event: :set_port_number,
-                id: id,
-                port_number: port_number)
+        # publish(INTERFACE_UPDATED,
+        #         event: :set_port_number,
+        #         id: id,
+        #         port_number: port_number)
       }
     end
 

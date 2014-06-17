@@ -92,21 +92,32 @@ module Vnet::Core
     # Create / Delete events:
     #
 
-    def item_pre_install(item, item_map)
-      if item.port_name
-        @active_ports.detect { |port_number, active_port|
-          item.port_name == active_port[:port_name] && item.allowed_datapath?
-        }.tap { |port_number, active_port|
-          next unless port_number && active_port
+    def item_post_install(item, item_map)
+      return unless item.port_name
 
-          item.port_number = port_number
+      @active_ports.detect { |port_number, active_port|
+        item.port_name == active_port[:port_name] && item.allowed_datapath?
+      }.tap { |port_number, active_port|
+        next unless port_number && active_port
+        item.port_number = port_number
 
-          # TODO: Load local interface:
-          # @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
-          #                               id: port_number,
-          #                               interface: item_to_hash(item))
-        }
-      end
+        @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+                                      id: item.port_number,
+                                      interface_id: item.interface_id,
+                                      interface_mode: item.interface_mode)
+
+        @dp_info.interface_manager.retrieve(id: item.interface_id)
+      }
+    end
+
+    def item_post_uninstall(item)
+      return unless item.port_number
+
+      @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
+                                    id: item.port_number,
+                                    interface_id: item.id)
+
+      @dp_info.interface_manager.unload(id: item.interface_id)
     end
 
     # item created in db on queue 'item.id'
