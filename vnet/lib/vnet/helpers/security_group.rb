@@ -43,6 +43,7 @@ module Vnet::Helpers::SecurityGroup
   end
 
   def split_rule_collection(rules)
-    rules.gsub("\n", ',').split(',')
+    rules = rules.gsub(/#.*(\r\n|\r|\n)/, "").split(/,|\r\n|\r|\n/)
+    rules.map { |r| r.strip }.select { |r| !r.empty? }
   end
 end
