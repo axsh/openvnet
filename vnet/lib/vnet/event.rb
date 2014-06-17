@@ -34,7 +34,6 @@ module Vnet
 
     ACTIVE_INTERFACE_UPDATED = "active_interface_updated"
 
-
     #
     # Datapath events:
     #
@@ -80,6 +79,20 @@ module Vnet
     INTERFACE_RELEASED_MAC_ADDRESS = "interface_released_mac_address"
     INTERFACE_LEASED_IPV4_ADDRESS = "interface_leased_ipv4_address"
     INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
+
+    #
+    # Interface Port events:
+    #
+
+    INTERFACE_PORT_INITIALIZED = "interface_port_initialized"
+    INTERFACE_PORT_UNLOAD_ITEM = "interface_port_unload_item"
+    INTERFACE_PORT_CREATED_ITEM = "interface_port_created_item"
+    INTERFACE_PORT_DELETED_ITEM = "interface_port_deleted_item"
+
+    INTERFACE_PORT_UPDATED = "interface_port_updated"
+
+    INTERFACE_PORT_ACTIVATE = "interface_port_activate"
+    INTERFACE_PORT_DEACTIVATE = "interface_port_deactivate"
 
     #
     # Network event:

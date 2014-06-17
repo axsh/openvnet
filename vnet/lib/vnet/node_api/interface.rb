@@ -4,22 +4,19 @@ module Vnet::NodeApi
     class << self
       def create(options)
         options = options.dup
+
         interface = transaction do
+          datapath_id = options[:owner_datapath_id]
+          port_name = options[:port_name]
+
           network_id = options.delete(:network_id)
           ipv4_address = options.delete(:ipv4_address)
           mac_address = options.delete(:mac_address)
-          model_class.create(options).tap do |i|
-            if mac_address
-              i.add_mac_lease(model_class(:mac_lease).create(:mac_address => mac_address)).tap do |mac_lease|
-                if network_id && ipv4_address
-                  i.add_ip_lease(model_class(:ip_lease).create(
-                    mac_lease: mac_lease,
-                    network_id: network_id,
-                    ipv4_address: ipv4_address
-                  ))
-                end
-              end
-            end
+
+          model_class.create(options).tap do |interface|
+            create_interface_port(interface, datapath_id, port_name)
+
+            add_lease(interface, mac_address, network_id, ipv4_address)
           end
         end
 
@@ -75,6 +72,41 @@ module Vnet::NodeApi
 
         nil
       end
+
+      #
+      # Internal methods:
+      #
+
+      private
+
+      def create_interface_port(interface, datapath_id, port_name)
+        options = {
+          interface_id: interface.id,
+          datapath_id: datapath_id,
+
+          port_name: port_name
+        }
+
+        interface_port = model_class(:interface_port).create(options)
+      end
+
+      def add_lease(interface, mac_address, network_id, ipv4_address)
+        return if mac_address.nil?
+
+        mac_lease = model_class(:mac_lease).create(mac_address: mac_address)
+        return if mac_lease.nil?
+
+        interface.add_mac_lease(mac_lease).tap do |mac_lease|
+          next if mac_lease.nil?
+          next if network_id.nil? || ipv4_address.nil?
+
+          ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
+                                                   network_id: network_id,
+                                                   ipv4_address: ipv4_address)
+          interface.add_ip_lease(ip_lease)
+        end
+      end
+
     end
   end
 end

@@ -5,6 +5,9 @@ module Vnet::NodeApi
   class DcSegment < Base
   end
 
+  class InterfacePort < Base
+  end
+
   class IpAddress < Base
   end
 

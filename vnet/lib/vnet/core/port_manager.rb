@@ -108,6 +108,11 @@ module Vnet::Core
                                            id: :port,
                                            port_name: port.port_name,
                                            port_number: port.port_number)
+
+        @dp_info.interface_manager.publish(INTERFACE_PORT_ACTIVATE,
+                                           id: :port,
+                                           port_name: port.port_name,
+                                           port_number: port.port_number)
       end
     end
 
@@ -122,6 +127,11 @@ module Vnet::Core
       @dp_info.interface_manager.publish(INTERFACE_DEACTIVATE_PORT,
                                          id: :port,
                                          interface_id: port.interface_id,
+                                         port_name: port.port_name,
+                                         port_number: port.port_number)
+
+      @dp_info.interface_manager.publish(INTERFACE_PORT_DEACTIVATE,
+                                         id: :port,
                                          port_name: port.port_name,
                                          port_number: port.port_number)
 

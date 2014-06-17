@@ -94,10 +94,15 @@ module Vnet
         raise("Manager.set_datapath_info called twice.")
       end
 
+      if datapath_info.nil? || datapath_info.id.nil?
+        raise("Manager.set_datapath_info received invalid datapath info.")
+      end
+
       @datapath_info = datapath_info
 
       # We need to update remote interfaces in case they are now in
       # our datapath.
+      initialized_datapath_info
     end
 
     #
@@ -132,6 +137,12 @@ module Vnet
     def item_unload_event
       # Must be implemented by subclass
       raise NotImplementedError
+    end
+
+    def initialized_datapath_info
+    end
+
+    def cleared_datapath_info
     end
 
     #
