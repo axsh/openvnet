@@ -119,8 +119,6 @@ module Vnet::Core::Filters
 
     def parse_rules(rules)
       rules = split_rule_collection(rules).map { |r|
-        next if is_comment?(r)
-
         # The model class doesn't allow broken rules to be saved but we check
         # here again in case somebody put them in the database without going
         # through the model class' validation hooks

@@ -33,11 +33,6 @@ module Vnet::Helpers::SecurityGroup
     true
   end
 
-  def is_comment?(rule)
-    # We treat line breaks as comments
-    !! rule.empty? || rule =~ /^#.*/
-  end
-
   def split_rule(rule)
     rule.split(':')
   end
