@@ -16,6 +16,7 @@ module Vnctl::Cli
         :desc => "The uuid of the datapath that owns this interface."
     }
 
+    option_uuid
     add_modify_shared_options
     option :network_uuid, :type => :string, :desc => "The uuid of the network this interface is in."
     option :mac_address, :type => :string, :desc => "The mac address for this interface."
