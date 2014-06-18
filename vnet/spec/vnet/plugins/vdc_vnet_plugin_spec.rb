@@ -83,22 +83,6 @@ describe Vnet::Plugins::VdcVnetPlugin do
     let(:outer_network) { Fabricate(:pnet_public2) }
     let(:inner_network) { Fabricate(:vnet_1) }
 
-    let!(:interface_public2gw) do
-      interface = Fabricate(:interface_public2gw)
-      mac_lease = Fabricate(:mac_lease_any, mac_address: 1, interface: interface)
-      ip_lease_any = Fabricate(:ip_lease_any, network_id: outer_network.id, mac_lease: mac_lease, ipv4_address: IPAddr.new("192.168.2.1").to_i)
-      interface.add_ip_lease(ip_lease_any)
-      interface
-    end
-
-    let!(:interface_vnet1gw) do
-      interface = Fabricate(:interface_vnet1gw)
-      mac_lease = Fabricate(:mac_lease_any, mac_address: 2, interface: interface)
-      ip_lease_any = Fabricate(:ip_lease_any, network_id: inner_network.id, mac_lease: mac_lease, ipv4_address: IPAddr.new("10.102.0.1").to_i)
-      interface.add_ip_lease(ip_lease_any)
-      interface
-    end
-
     let!(:datapath1) { Fabricate(:datapath_1) }
     let!(:host_port) { Fabricate(:host_port_any, active_datapath: datapath1) }
 
@@ -106,14 +90,22 @@ describe Vnet::Plugins::VdcVnetPlugin do
       {
         :ingress_ipv4_address => "192.168.2.33",
         :egress_ipv4_address => "10.102.0.10",
-        :outer_network_uuid => interface_public2gw.network.canonical_uuid,
-        :inner_network_uuid => inner_network.canonical_uuid
+        :outer_network_uuid => outer_network.canonical_uuid,
+        :inner_network_uuid => inner_network.canonical_uuid,
+        :outer_network_gw => "192.168.2.1",
+        :inner_network_gw => "10.102.0.1"
       }
     end
 
     describe "create_entry" do
       it "creates translation entry" do
         subject.create_entry(model_class, deep_copy(params))
+
+        outer_gw = Vnet::Models::Interface.find({:display_name => "gw_#{outer_network.canonical_uuid}"})
+        inner_gw = Vnet::Models::Interface.find({:display_name => "gw_#{inner_network.canonical_uuid}"})
+
+        expect(outer_gw).not_to eq nil
+        expect(inner_gw).not_to eq nil
 
         route_inner = Vnet::Models::Route.find({:network_id => inner_network.id})
         route_outer = Vnet::Models::Route.find({:network_id => outer_network.id})
