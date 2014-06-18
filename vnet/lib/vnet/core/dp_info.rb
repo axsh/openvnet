@@ -14,6 +14,7 @@ module Vnet::Core
     # Port manager is always last in order to ensure that all other
     # managers have valid datapath_info before ports are initialized.
     MANAGER_NAMES = %w(
+      active_interface
       connection
       datapath
       interface
@@ -153,6 +154,18 @@ module Vnet::Core
 
     def managers
       MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
+    end
+
+    def terminate_managers(timeout = 10.0)
+      # TODO: Fix this so it calculates the remaining timeout between each join.
+      timeout = timeout / 10
+
+      managers.each { |manager|
+        manager.terminate!
+      }
+      managers.each { |manager|
+        Celluloid::Actor.join(manager, timeout)
+      }
     end
 
     #

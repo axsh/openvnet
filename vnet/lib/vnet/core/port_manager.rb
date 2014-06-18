@@ -147,7 +147,7 @@ module Vnet::Core
     end
 
     def detach_interface(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
       return unless item.installed?
 
       @items[item.id] = Ports::Base.new(dp_info: @dp_info,

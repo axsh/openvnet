@@ -39,20 +39,6 @@ module Vnet
       item_hash
     end
 
-    def wait_for_loaded(params, max_wait = 10.0)
-      item = internal_detect(params)
-      return item_to_hash(item) if item
-
-      match_proc = match_item_proc(params)
-
-      item = create_event_task(:loaded, max_wait) { |item_id|
-        item = (item_id && @items[item_id]) || next
-        match_proc.call(item_id, item) ? item : nil
-      }
-
-      item_to_hash(item)
-    end
-    
     #
     # Enumerator methods:
     #
@@ -75,6 +61,18 @@ module Vnet
       end
     end
 
+    #
+    # Polling methods:
+    #
+
+    def wait_for_loaded(params, max_wait = 10.0)
+      item_to_hash(internal_wait_for_loaded(params))
+    end
+    
+    def wait_for_unloaded(params, max_wait = 10.0)
+      internal_wait_for_unloaded(params)
+    end
+    
     #
     # Other:
     #
@@ -108,11 +106,6 @@ module Vnet
 
     private
 
-    # Little shortcut method
-    def is_remote?(owner_datapath_id, active_datapath_id = nil)
-      @datapath_info.is_remote?(owner_datapath_id, active_datapath_id)
-    end
-
     def log_format(message, values = nil)
       (@log_prefix || "") + message + (values ? " (#{values})" : '')
     end
@@ -126,7 +119,7 @@ module Vnet
       raise NotImplementedError
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       # Must be implemented by subclass
       raise NotImplementedError
     end
@@ -219,7 +212,11 @@ module Vnet
       select_filter = select_filter_from_params(params) || return
       item_map = select_item(select_filter.first) || return
 
-      internal_new_item(item_map, params)
+      # TODO: Only allow one fiber at the time to make a request with
+      # the exact same select_filter. The remaining fibers should use
+      # internal_wait_for_loaded/initializing.
+
+      internal_new_item(item_map)
     end
 
     # The default select call with no fill options.
@@ -252,7 +249,9 @@ module Vnet
     end
 
     def unload_item(params)
-      item_id = params[:id] || return
+      debug log_format("uninstalling", params.inspect)
+
+      item_id = (params && params[:id]) || return
       item = @items.delete(item_id) || return
 
       item_pre_uninstall(item)
@@ -276,15 +275,19 @@ module Vnet
     # internally and by 'created_item' specialization method.
     #
     # TODO: Rename internal_load_item
-    def internal_new_item(item_map, params)
-      item = @items[item_map.id]
+    # TODO: Remove 'params'
+    def internal_new_item(item_map)
+      item_id = item_map.id || return
+      item = @items[item_id]
       return item if item
 
-      item_initialize(item_map, params).tap do |item|
+      item_initialize(item_map).tap do |item|
+        # TODO: Delete item from items if returned nil.
         return unless item
         @items[item_map.id] = item
         publish(initialized_item_event,
-                params.merge(id: item_map.id, item_map: item_map))
+                id: item_map.id,
+                item_map: item_map)
       end
     end
 
@@ -307,7 +310,7 @@ module Vnet
       expression = ((filter.size > 1) ? Sequel.&(*filter) : filter.first) || return
 
       item_maps = select_item(mw_class.batch.where(filter).all) || return
-      item_maps.each { |item_map| internal_new_item(item_map, {}) }
+      item_maps.each { |item_map| internal_new_item(item_map) }
     end
 
     # TODO: Create an internal delete item method that 'delete item'
@@ -327,8 +330,41 @@ module Vnet
       end
     end
 
+    def internal_detect_by_id(params)
+      item_id = (params && params[:id]) || return
+      @items[item_id]
+    end
+
     def internal_select(params)
       @items.select(&match_item_proc(params))
+    end
+
+    #
+    # Internal polling methods:
+    #
+
+    def internal_wait_for_loaded(params, max_wait = 10.0)
+      # TODO: Check if item was install and not being uninstalled.
+      item = internal_detect(params)
+      return item if item
+
+      match_proc = match_item_proc(params)
+
+      create_event_task(:loaded, max_wait) { |item_id|
+        item = (item_id && @items[item_id]) || next
+        match_proc.call(item_id, item) ? item : nil
+      }
+    end
+
+    def internal_wait_for_unloaded(params, max_wait = 10.0)
+      item = internal_detect(params)
+      return true if item.nil?
+
+      match_item_id = item.id
+
+      create_event_task(:unloaded, max_wait) { |item_id|
+        item_id == match_item_id ? true : nil
+      }
     end
 
     #

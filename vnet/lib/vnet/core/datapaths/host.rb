@@ -8,6 +8,10 @@ module Vnet::Core::Datapaths
       true
     end
 
+    def mode
+      :host
+    end
+
     def log_type
       'datapath/host'
     end
@@ -26,9 +30,7 @@ module Vnet::Core::Datapaths
     def uninstall
       super
 
-      @dp_info.interface_manager.publish(Vnet::Event::INTERFACE_REMOVE_ALL_ACTIVE_DATAPATHS,
-                                         id: :datapath)
-      @dp_info.datapath.reset
+      @dp_info.datapath.reset_datapath_info
     end
 
     def activate_network_id(network_id)

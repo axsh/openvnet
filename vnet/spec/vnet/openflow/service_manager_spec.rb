@@ -50,12 +50,13 @@ describe Vnet::Core::ServiceManager do
     describe "when ADDED_SERVICE is published" do
       it "should create a network service with a dns service" do
         interface_manager.retrieve(id: 1)
+        expect(interface_manager.wait_for_loaded({id: 1}, 3)).not_to be_nil
+
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
                                 id: 1,
                                 interface_id: 1,
                                 type: 'dns')
-
-        sleep(2.0)
+        expect(service_manager.wait_for_loaded({id: 1}, 3)).not_to be_nil
 
         service_manager.send(:internal_detect, id: network_service.id).tap do |item|
           expect(item.dns_service[:public_dns]).to eq "8.8.8.8,8.8.4.4"
@@ -84,16 +85,17 @@ describe Vnet::Core::ServiceManager do
     describe "when REMOVED_SERVICE is published" do
       it "should remove a network service" do
         interface_manager.retrieve(id: 1)
+        expect(interface_manager.wait_for_loaded({id: 1}, 3)).not_to be_nil
+
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
                                 id: 1,
                                 interface_id: 1,
                                 type: 'dns')
-        sleep(0.5)
-        expect(service_manager.retrieve(id: network_service.id)).not_to be_nil
+        expect(service_manager.wait_for_loaded({id: network_service.id}, 3)).not_to be_nil
 
         network_service.destroy
-        service_manager.publish(Vnet::Event::SERVICE_DELETED_ITEM, id: 1)
-        sleep(0.5)
+        service_manager.publish(Vnet::Event::SERVICE_DELETED_ITEM, id: network_service.id)
+        expect(service_manager.wait_for_unloaded({id: network_service.id}, 3)).not_to be_nil
 
         expect(service_manager.retrieve(id: network_service.id)).to be_nil
 

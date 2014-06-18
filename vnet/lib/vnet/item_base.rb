@@ -3,6 +3,8 @@
 module Vnet
 
   class ItemBase
+    include Celluloid::Logger
+
     attr_reader :id
     attr_reader :installed
 

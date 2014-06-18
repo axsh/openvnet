@@ -10,12 +10,17 @@ require 'active_support/inflector'
 require 'ext/kernel'
 require 'fuguta'
 require 'json'
+require 'logger'
 
 module Vnet
 
   ROOT = ENV['VNET_ROOT'] || File.expand_path('../../', __FILE__)
   CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
+
+  class << self
+    attr_accessor :logger
+  end
 
   autoload :Event,                'vnet/event'
   autoload :ItemBase,             'vnet/item_base'
@@ -46,14 +51,18 @@ module Vnet
   end
 
   module Core
-    autoload :ActiveInterfaces, 'vnet/core/event_helpers'
-    autoload :ActiveNetworks, 'vnet/core/event_helpers'
-    autoload :ActivePorts, 'vnet/core/event_helpers'
-    autoload :ActiveRouteLinks, 'vnet/core/event_helpers'
+    autoload :ActiveInterfaceEvents, 'vnet/core/event_helpers'
+    autoload :ActiveNetworkEvents, 'vnet/core/event_helpers'
+    autoload :ActivePortEvents, 'vnet/core/event_helpers'
+    autoload :ActiveRouteLinkEvents, 'vnet/core/event_helpers'
+    autoload :DpInfo, 'vnet/core/dp_info'
+
+    autoload :ActiveInterface, 'vnet/core/active_interface'
+    autoload :ActiveInterfaceManager, 'vnet/core/active_interface_manager'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
+    autoload :Datapath, 'vnet/core/datapath'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
-    autoload :DpInfo, 'vnet/core/dp_info'
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Interface, 'vnet/core/interface'
     autoload :InterfaceManager, 'vnet/core/interface_manager'
@@ -72,6 +81,12 @@ module Vnet
     autoload :TranslationManager, 'vnet/core/translation_manager'
     autoload :Tunnel, 'vnet/core/tunnel'
     autoload :TunnelManager, 'vnet/core/tunnel_manager'
+
+    module ActiveInterfaces
+      autoload :Base, 'vnet/core/active_interfaces/base'
+      autoload :Local, 'vnet/core/active_interfaces/local'
+      autoload :Remote, 'vnet/core/active_interfaces/remote'
+    end
 
     module Connections
       autoload :Base, 'vnet/core/connections/base'
@@ -100,7 +115,6 @@ module Vnet
       autoload :IfBase, 'vnet/core/interfaces/if_base'
       autoload :Internal, 'vnet/core/interfaces/internal'
       autoload :Patch, 'vnet/core/interfaces/patch'
-      autoload :Remote, 'vnet/core/interfaces/remote'
       autoload :Simulated, 'vnet/core/interfaces/simulated'
       autoload :Vif, 'vnet/core/interfaces/vif'
     end
@@ -182,6 +196,8 @@ module Vnet
         autoload :IpLeaseContainer, 'vnet/endpoints/1.0/responses/ip_lease_container'
         autoload :IpRange, 'vnet/endpoints/1.0/responses/ip_range'
         autoload :IpRangeGroup, 'vnet/endpoints/1.0/responses/ip_range_group'
+        autoload :IpRetention, 'vnet/endpoints/1.0/responses/ip_retention'
+        autoload :IpRetentionContainer, 'vnet/endpoints/1.0/responses/ip_retention_container'
         autoload :LeasePolicy, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddress, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLease, 'vnet/endpoints/1.0/responses/mac_lease'
@@ -205,6 +221,8 @@ module Vnet
         autoload :IpLeaseContainerCollection, 'vnet/endpoints/1.0/responses/ip_lease_container'
         autoload :IpRangeCollection, 'vnet/endpoints/1.0/responses/ip_range'
         autoload :IpRangeGroupCollection, 'vnet/endpoints/1.0/responses/ip_range_group'
+        autoload :IpRetentionCollection, 'vnet/endpoints/1.0/responses/ip_retention'
+        autoload :IpRetentionContainerCollection, 'vnet/endpoints/1.0/responses/ip_retention_container'
         autoload :LeasePolicyCollection, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddressCollection, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
@@ -226,6 +244,8 @@ module Vnet
 
   module Models
     class InvalidUUIDError < StandardError; end
+
+    autoload :ActiveInterface, 'vnet/models/active_interface'
     autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
@@ -241,10 +261,12 @@ module Vnet
     autoload :IpRange, 'vnet/models/ip_range'
     autoload :IpRangeGroup, 'vnet/models/ip_range_group'
     autoload :IpRetention, 'vnet/models/ip_retention'
+    autoload :IpRetentionContainer, 'vnet/models/ip_retention_container'
     autoload :LeasePolicy, 'vnet/models/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/models/lease_policy_base_network'
     autoload :LeasePolicyBaseInterface, 'vnet/models/lease_policy_base_interface'
     autoload :LeasePolicyIpLeaseContainer, 'vnet/models/lease_policy_ip_lease_container'
+    autoload :LeasePolicyIpRetentionContainer, 'vnet/models/lease_policy_ip_retention_container'
     autoload :MacAddress, 'vnet/models/mac_address'
     autoload :MacLease, 'vnet/models/mac_lease'
     autoload :Network, 'vnet/models/network'
@@ -260,6 +282,7 @@ module Vnet
   end
 
   module ModelWrappers
+    autoload :ActiveInterface, 'vnet/model_wrappers/active_interface'
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
@@ -276,10 +299,12 @@ module Vnet
     autoload :IpRange, 'vnet/model_wrappers/ip_range'
     autoload :IpRangeGroup, 'vnet/model_wrappers/ip_range_group'
     autoload :IpRetention, 'vnet/model_wrappers/ip_retention'
+    autoload :IpRetentionContainer, 'vnet/model_wrappers/ip_retention_container'
     autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseInterface, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyIpLeaseContainer, 'vnet/model_wrappers/lease_policy_ip_lease_container'
+    autoload :LeasePolicyIpRetentionContainer, 'vnet/model_wrappers/lease_policy_ip_retention_container'
     autoload :MacAddress, 'vnet/model_wrappers/mac_address'
     autoload :MacLease, 'vnet/model_wrappers/mac_lease'
     autoload :Network, 'vnet/model_wrappers/network'
@@ -297,10 +322,12 @@ module Vnet
   module NodeApi
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
+
+    autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :Base, 'vnet/node_api/base'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
-    autoload :DatapathRouteLink, 'vnet/node_api/models.rb'
+    autoload :DatapathRouteLink, 'vnet/node_api/datapath_route_link.rb'
     autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'
@@ -312,6 +339,7 @@ module Vnet
     autoload :IpRange, 'vnet/node_api/models.rb'
     autoload :IpRangeGroup, 'vnet/node_api/models.rb'
     autoload :IpRetention, 'vnet/node_api/ip_retention'
+    autoload :IpRetentionContainer, 'vnet/node_api/ip_retention_container'
     autoload :LeasePolicy, 'vnet/node_api/lease_policy.rb'
     autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'
     autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models.rb'
@@ -336,7 +364,6 @@ module Vnet
   end
 
   module Openflow
-
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
@@ -348,7 +375,6 @@ module Vnet
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :Switch, 'vnet/openflow/switch'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
-
   end
 
   module Plugins
@@ -356,11 +382,16 @@ module Vnet
   end
 
   module Services
-    autoload :IpRetentionManager, 'vnet/services/ip_retention_manager'
+    autoload :IpRetentionContainerManager, 'vnet/services/ip_retention_container_manager'
     autoload :LeasePolicy, 'vnet/services/lease_policy'
     autoload :LeasePolicyManager, 'vnet/services/lease_policy_manager'
     autoload :VnetInfo, 'vnet/services/vnet_info'
     autoload :Vnmgr, 'vnet/services/vnmgr'
+
+    module IpRetentionContainers
+      autoload :Base, 'vnet/services/ip_retention_containers/base'
+      autoload :IpRetention, 'vnet/services/ip_retention_containers/base'
+    end
 
     module LeasePolicies
       autoload :Base, 'vnet/services/lease_policies/base'
@@ -370,3 +401,5 @@ module Vnet
   end
 
 end
+
+Vnet.logger = ::Logger.new(STDOUT)

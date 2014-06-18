@@ -75,7 +75,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       item_class =
         if item_map.dpid == @dp_info.dpid
           Datapaths::Host
@@ -103,7 +103,7 @@ module Vnet::Core
     # Remove dpn and dprl events.
 
     def created_item(params)
-      return if @items[params[:id]]
+      return if internal_detect_by_id(params)
 
       # TODO: Check if we need to create the item.
       if @dp_info.dpid != params[:dpid]
@@ -111,8 +111,7 @@ module Vnet::Core
         return
       end
 
-      # TODO: move to install_item...
-      @dp_info.datapath.switch_ready
+      retrieve(id: params[:id])
     end
 
     #
@@ -156,12 +155,11 @@ module Vnet::Core
 
     # ADDED_DATAPATH_NETWORK on queue 'item.id'
     def added_datapath_network(params)
-      item_id = params[:id] || return
-      item = @items[item_id]
+      item = internal_detect_by_id(params)
 
       if item.nil?
         # TODO: Make sure we don't look here...
-        return item_by_params(id: item_id)
+        return item_by_params(id: params[:id])
       end
 
       case 
@@ -170,7 +168,7 @@ module Vnet::Core
         network_id = dpn_map.network_id
       when params[:network_id]
         network_id = params[:network_id]
-        dpn_map = MW::DatapathNetwork.batch[datapath_id: item_id, network_id: network_id].commit
+        dpn_map = MW::DatapathNetwork.batch[datapath_id: item.id, network_id: network_id].commit
       end
 
       (dpn_map && network_id) || return
@@ -181,7 +179,7 @@ module Vnet::Core
 
     # REMOVED_DATAPATH_NETWORK on queue 'item.id'
     def removed_datapath_network(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
       dpn_map = params[:dpn_map] || return
 
       item.remove_active_network(dpn_map.network_id)
@@ -194,7 +192,8 @@ module Vnet::Core
 
     # ACTIVATE_DATAPATH_NETWORK on queue 'item.id'
     def activate_datapath_network(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
+
       network_id = params[:network_id] || return
       network = @active_networks[network_id]
 
@@ -203,7 +202,8 @@ module Vnet::Core
 
     # DEACTIVATE_DATAPATH_NETWORK on queue 'item.id'
     def deactivate_datapath_network(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
+
       network_id = params[:network_id] || return
       network = @active_networks[network_id]
 
@@ -273,12 +273,11 @@ module Vnet::Core
 
     # ADDED_DATAPATH_ROUTE_LINK on queue 'item.id'
     def added_datapath_route_link(params)
-      item_id = params[:id] || return
-      item = @items[item_id]
+      item = internal_detect_by_id(params)
 
       if item.nil?
         # TODO: Make sure we don't loop here...
-        return item_by_params(id: item_id)
+        return item_by_params(id: params[:id])
       end
 
       case 
@@ -287,7 +286,7 @@ module Vnet::Core
         route_link_id = dprl_map.route_link_id
       when params[:route_link_id]
         route_link_id = params[:route_link_id]
-        dprl_map = MW::DatapathRouteLink.batch[datapath_id: item_id, route_link_id: route_link_id].commit
+        dprl_map = MW::DatapathRouteLink.batch[datapath_id: item.id, route_link_id: route_link_id].commit
       end
 
       (dprl_map && route_link_id) || return
@@ -298,7 +297,8 @@ module Vnet::Core
 
     # REMOVED_DATAPATH_ROUTE_LINK on queue 'item.id'
     def removed_datapath_route_link(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
+
       dprl_map = params[:dprl_map] || return
 
       item.remove_active_route_link(dprl_map.route_link_id)
@@ -311,7 +311,7 @@ module Vnet::Core
 
     # ACTIVATE_DATAPATH_ROUTE_LINK on queue 'item.id'
     def activate_datapath_route_link(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
       route_link_id = params[:route_link_id] || return
       route_link = @active_route_links[route_link_id]
 
@@ -320,7 +320,7 @@ module Vnet::Core
 
     # DEACTIVATE_DATAPATH_ROUTE_LINK on queue 'item.id'
     def deactivate_datapath_route_link(params)
-      item = @items[params[:id]] || return
+      item = internal_detect_by_id(params) || return
       route_link_id = params[:route_link_id] || return
       route_link = @active_route_links[route_link_id]
 

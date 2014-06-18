@@ -67,39 +67,6 @@ describe Vnet::NodeApi::Interface do
     end
   end
 
-  describe "update_active_datapath" do
-    let(:datapath) { Fabricate(:datapath) }
-    let(:interface) do
-      Fabricate(:interface,
-        mac_leases: [
-          Fabricate(:mac_lease,
-            mac_address: 2,
-            ip_leases: [
-              Fabricate(:ip_lease,
-                ipv4_address: 1,
-                network_id: Fabricate(:network).id)
-            ])],
-        owner_datapath: datapath)
-    end
-
-    it "success" do
-      result = Vnet::NodeApi::Interface.execute(
-        :update_active_datapath,
-        interface.canonical_uuid,
-        datapath.id 
-      )
-
-      expect(result[:active_datapath_id]).to eq datapath.id
-
-      model = Vnet::Models::Interface[interface.id]
-      expect(model.active_datapath_id).to eq datapath.id
-
-      # no events
-      events = MockEventHandler.handled_events
-      expect(events.size).to eq 0
-    end
-  end
-
   describe "delete" do
     let(:network) { Fabricate(:network) }
     let(:datapath) { Fabricate(:datapath) }

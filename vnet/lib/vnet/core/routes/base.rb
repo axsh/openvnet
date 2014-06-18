@@ -124,6 +124,10 @@ module Vnet::Core::Routes
       @dp_info.add_flows(flows)
     end
 
+    def uninstall
+      @dp_info.del_cookie(self.cookie)
+    end
+
     #
     # Internal methods:
     #

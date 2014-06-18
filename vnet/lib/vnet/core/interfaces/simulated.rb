@@ -21,7 +21,7 @@ module Vnet::Core::Interfaces
     end
 
     def add_mac_address(params)
-      mac_info = super
+      mac_info = super || return
 
       flows = []
       flows_for_mac(flows, mac_info)
@@ -36,7 +36,7 @@ module Vnet::Core::Interfaces
     end
 
     def add_ipv4_address(params)
-      mac_info, ipv4_info = super
+      mac_info, ipv4_info = super || return
 
       flows = []
 
@@ -162,22 +162,6 @@ module Vnet::Core::Interfaces
 
       end
 
-    end
-
-    def del_flows_for_active_datapath(ipv4_addresses)
-      ipv4_addresses.each do |ipv4_address|
-        next unless has_network?(ipv4_address[:network_id])
-
-        options = {
-          table_id: TABLE_ARP_LOOKUP,
-          cookie: cookie_for_tag(TAG_ARP_REPLY),
-          cookie_mask: COOKIE_PREFIX_MASK | COOKIE_ID_MASK | COOKIE_TAG_MASK,
-          match: Trema::Match.new(eth_type: 0x0800,
-                                  ipv4_dst: ipv4_address[:ipv4_address]),
-        }.merge(md_create(network: ipv4_address[:network_id]))
-
-        @dp_info.del_flows(options)
-      end
     end
 
     #

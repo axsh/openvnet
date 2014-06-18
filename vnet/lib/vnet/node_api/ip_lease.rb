@@ -6,24 +6,7 @@ module Vnet::NodeApi
 
       def create(options)
         options = options.dup
-        lease_time = options.delete(:lease_time)
-        grace_time = options.delete(:grace_time)
-        ip_lease = transaction do
-          model_class.create(options).tap do |il|
-            if lease_time
-              il.ip_retention = model_class(:ip_retention).create(
-                ip_lease_id: il.id,
-                ip_address_id: il.ip_address_id,
-                lease_time_expired_at: Time.now + lease_time,
-                grace_time: grace_time
-              )
-            end
-          end
-        end
-
-        if lease_time
-          dispatch_event(IP_RETENTION_CREATED_ITEM, id: ip_lease.ip_retention.id, ip_lease_id: ip_lease.id, lease_time_expired_at: ip_lease.ip_retention.lease_time_expired_at, grace_time: grace_time)
-        end
+        ip_lease = transaction { model_class.create(options) }
 
         if ip_lease.interface
           dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
@@ -68,22 +51,61 @@ module Vnet::NodeApi
 
       def destroy(uuid)
         ip_lease = model_class[uuid]
-        ip_retention = ip_lease.ip_retention
+        ip_retentions = ip_lease.ip_retentions
+        interface = ip_lease.interface
 
         transaction do
           ip_lease.destroy
-          ip_retention.expire if ip_retention
         end
 
-        ip_lease.interface.security_groups.each do |group|
-          dispatch_update_sg_ip_addresses(group)
+        if interface
+          interface.security_groups.each do |group|
+            dispatch_update_sg_ip_addresses(group)
+          end
         end
 
-        if ip_retention
-          dispatch_event(IP_RETENTION_EXPIRED_ITEM, id: ip_retention.id, grace_time_expired_at: ip_retention.grace_time_expired_at)
+        ip_retentions.each do |ip_retention|
+          dispatch_event(IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, id: ip_retention.ip_retention_container_id, ip_retention_id: ip_retention.id)
         end
 
         dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: ip_lease.interface_id, ip_lease_id: ip_lease.id)
+
+        ip_lease
+      end
+
+      def release(uuid)
+        ip_lease = model_class[uuid]
+        interface = ip_lease.interface
+
+        ip_lease.interface_id = nil
+        ip_lease.mac_lease_id = nil
+        transaction do
+          ip_lease.save_changes
+          current_time = Time.now
+          ip_lease.ip_retentions.each do |ip_retention|
+            ip_retention.released_at = current_time
+            ip_retention.save_changes
+          end
+        end
+
+        if interface
+          interface.security_groups.each do |group|
+            dispatch_update_sg_ip_addresses(group)
+          end
+        end
+
+        dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: interface.id, ip_lease_id: ip_lease.id)
+        # re-add released ip_retentions
+        ip_lease.ip_retentions.each do |ip_retention|
+          dispatch_event(
+            IP_RETENTION_CONTAINER_ADDED_IP_RETENTION,
+            id: ip_retention.ip_retention_container_id,
+            ip_retention_id: ip_retention.id,
+            ip_lease_id: ip_retention.ip_lease_id,
+            leased_at: ip_retention.leased_at,
+            released_at: ip_retention.released_at
+          )
+        end
 
         ip_lease
       end

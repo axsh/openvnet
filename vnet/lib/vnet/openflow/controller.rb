@@ -23,15 +23,20 @@ module Vnet::Openflow
       info "starting OpenFlow controller."
     end
 
-    def switch_ready(dpid)
-      info "switch_ready from %#x." % dpid
-      initialize_datapath(dpid)
+    def switch_ready(datapath_id)
+      info "switch_ready from %#x." % datapath_id
+      initialize_datapath(datapath_id)
+    end
+
+    def switch_disconnected(datapath_id)
+      info "switch_disconnected from %#x." % datapath_id
+      terminate_datapath(datapath_id)
     end
 
     def features_reply(dpid, message)
       info "features_reply from %#x." % dpid
 
-      datapath = datapath(dpid) || raise("No datapath found.")
+      datapath = datapath(dpid) || return
       datapath.switch.async.features_reply(message)
     end
 
@@ -51,8 +56,8 @@ module Vnet::Openflow
     def port_status(dpid, message)
       debug "port_status from %#x." % dpid
 
-      datapath = datapath(dpid)
-      datapath.switch.async.port_status(message) if datapath && datapath.switch
+      datapath = datapath(dpid) || return
+      datapath.switch.async.port_status(message)
     end
 
     def packet_in(dpid, message)
@@ -103,14 +108,9 @@ module Vnet::Openflow
     end
 
     def initialize_datapath(dpid)
+      terminate_datapath(dpid)
+
       info "initialize datapath actor. dpid: 0x%016x" % dpid
-
-      # Sometimes ovs changes the datapath ID and reconnects.
-      old_datapath = @datapaths.delete(dpid)
-
-      if old_datapath
-        info "found old bridge: dpid:%016x" % dpid
-      end
 
       # There is no need to clean up the old switch, as all the
       # previous flows are removed. Just let it rebuild everything.
@@ -119,22 +119,26 @@ module Vnet::Openflow
       # disconnected for a short period, as Open vSwitch has the
       # ability to keep flows between sessions.
       datapath = Datapath.new(self, dpid, OvsOfctl.new(dpid))
-      @datapaths[dpid] = { datapath: datapath, dp_info: datapath.dp_info }
 
-      datapath.async.create_switch
-    end
-
-    def terminate_datapath(dpid)
-      datapath = @datapaths.delete(dpid)
-
-      if datapath.nil?
-        info "could not terminate datapath actor, not found. dpid: 0x%016x" % dpid
+      if @datapaths[dpid]
+        info "initialize datapath actor cancelled, already intitialized after termination. dpid: 0x%016x" % dpid
         return
       end
 
-      info "terminate datapath actor. dpid: 0x%016x" % dpid
+      @datapaths[dpid] = { datapath: datapath, dp_info: datapath.dp_info }
 
-      datapath[:datapath].terminate
+      datapath.create_switch
+    end
+
+    # TODO: We cannot allow datapaths to be initialized while the
+    # previous one is terminating, fixme.
+    def terminate_datapath(dpid)
+      datapath_map = @datapaths.delete(dpid) || return
+      datapath = datapath_map[:datapath] || return
+
+      info "terminating datapath actor. dpid: 0x%016x" % dpid
+      datapath.terminate
+      info "terminated datapath actor. dpid: 0x%016x" % dpid
     end
 
     def update_vlan_translation

@@ -9,7 +9,7 @@ module Vnet::Core::Interfaces
     end
 
     def add_mac_address(params)
-      mac_info = super
+      mac_info = super || return
 
       flows = []
       flows_for_interface_mac(flows, mac_info)
@@ -24,7 +24,7 @@ module Vnet::Core::Interfaces
 
     def add_ipv4_address(params)
       #debug log_format("interfaces: adding ipv4 flows...")
-      mac_info, ipv4_info = super
+      mac_info, ipv4_info = super || return
 
       @dp_info.network_manager.insert_interface_network(@id, ipv4_info[:network_id])
 
@@ -45,7 +45,7 @@ module Vnet::Core::Interfaces
     def remove_ipv4_address(params)
       #debug log_format("interfaces: removing ipv4 flows...")
 
-      mac_info, ipv4_info = super
+      mac_info, ipv4_info = super || return
 
       return unless ipv4_info
 

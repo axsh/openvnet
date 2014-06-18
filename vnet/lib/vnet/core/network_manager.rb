@@ -113,7 +113,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map, params)
+    def item_initialize(item_map)
       item_class =
         case item_map.network_mode
         when MODE_INTERNAL then Networks::Internal

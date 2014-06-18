@@ -2,6 +2,31 @@
 
 Sequel.migration do
   up do
+
+    # Interfaces can be active on multiple datapaths if a 'label' is
+    # set and 'singular' is NULL.
+    #
+    # Both 'label' and 'singular' should not be set to NULL.
+    create_table(:active_interfaces) do
+      primary_key :id
+
+      Integer :interface_id, :index => true, :null => false
+      Integer :datapath_id, :index => true, :null => false
+      String :port_name, :index => true
+
+      String :label
+      TrueClass :singular
+
+      FalseClass :enable_routing, :null=>false
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+
+      index [:interface_id, :datapath_id], :unique => true
+      index [:interface_id, :label], :unique => true
+      unique [:interface_id, :singular]
+    end
+
     create_table(:datapaths) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -18,11 +43,16 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :network_id, :index => true, :null=>false
+
       Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
+      Integer :ip_lease_id, :index => true
+
       FalseClass :is_connected, :null=>false
+
       DateTime :deleted_at, :index => true
       Integer :deleted, :default => 0, :null => false
+
       index [:datapath_id, :network_id, :deleted], :unique => true
     end
 
@@ -30,8 +60,11 @@ Sequel.migration do
       primary_key :id
       Integer :datapath_id, :index => true, :null=>false
       Integer :route_link_id, :index => true, :null=>false
+
       Integer :interface_id, :index => true, :null=>true
       Integer :mac_address_id, :index => true
+      Integer :ip_lease_id, :index => true
+
       FalseClass :is_connected, :null=>false
     end
 
@@ -65,9 +98,6 @@ Sequel.migration do
 
       String :port_name, :index => true, :null => true
 
-      # Should be a relation allowing for multiple active/owner
-      # datapath ids.
-      Integer :active_datapath_id, :index => true
       Integer :owner_datapath_id, :index => true
 
       FalseClass :ingress_filtering_enabled, :null => false
@@ -123,46 +153,6 @@ Sequel.migration do
       unique [:ip_lease_container_id, :ip_lease_id]
     end
 
-
-    create_table(:lease_policies) do
-      primary_key :id
-      String :uuid, :unique => true, :null=>false
-      String :mode, :null=>false, :default => "simple"
-      String :timing, :null=>false, :default => "immediate"
-      Integer :lease_time
-      Integer :grace_time
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-
-    create_table(:lease_policy_base_networks) do
-      primary_key :id
-      Integer :lease_policy_id, :index => true, :null => false
-      Integer :network_id, :index => true, :null => false
-      Integer :ip_range_group_id, :index => true, :null => false
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-
-    create_table(:lease_policy_base_interfaces) do
-      primary_key :id
-      Integer :lease_policy_id, :index => true, :null => false
-      Integer :interface_id, :index => true, :null => false
-      String :label
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at
-    end
-    create_table(:lease_policy_ip_lease_containers) do
-      primary_key :id
-      Integer :lease_policy_id, :index => true, :null => false
-      Integer :ip_lease_container_id, :index => true, :null => false
-      String :label
-      unique [:lease_policy_id, :ip_lease_container_id]
-    end
-
     create_table(:ip_range_groups) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -186,12 +176,67 @@ Sequel.migration do
     create_table(:ip_retentions) do
       primary_key :id
       Integer :ip_lease_id, :index => true, :null => false
-      Integer :ip_address_id, :index => true, :null => false
-      DateTime :lease_time_expired_at, :null=>false
-      Integer :grace_time
-      DateTime :grace_time_expired_at
+      Integer :ip_retention_container_id, :index => true, :null => false
+      DateTime :leased_at
+      DateTime :released_at
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+    end
+
+    create_table(:ip_retention_containers) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      Integer :lease_time
+      Integer :grace_time
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:lease_policies) do
+      primary_key :id
+      String :uuid, :unique => true, :null=>false
+      String :mode, :null=>false, :default => "simple"
+      String :timing, :null=>false, :default => "immediate"
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:lease_policy_base_interfaces) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :interface_id, :index => true, :null => false
+      String :label
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:lease_policy_base_networks) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :network_id, :index => true, :null => false
+      Integer :ip_range_group_id, :index => true, :null => false
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:lease_policy_ip_lease_containers) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :ip_lease_container_id, :index => true, :null => false
+      String :label
+      unique [:lease_policy_id, :ip_lease_container_id]
+    end
+
+    create_table(:lease_policy_ip_retention_containers) do
+      primary_key :id
+      Integer :lease_policy_id, :index => true, :null => false
+      Integer :ip_retention_container_id, :null => false
+      index :ip_retention_container_id, :name => :container_id_index
+      unique [:lease_policy_id, :ip_retention_container_id]
     end
 
     create_table(:mac_addresses) do
@@ -353,7 +398,12 @@ Sequel.migration do
                :ip_range_groups,
                :ip_ranges,
                :ip_retentions,
+               :ip_retention_containers,
                :lease_policies,
+               :lease_policy_base_interfaces,
+               :lease_policy_base_networks,
+               :lease_policy_ip_lease_containers,
+               :lease_policy_ip_retention_containers,
                :mac_addresses,
                :mac_leases,
                :networks,

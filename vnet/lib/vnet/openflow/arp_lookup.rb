@@ -92,6 +92,10 @@ module Vnet::Openflow
       }
 
       if messages.size == 1
+        # Remove virtual network mode's use of db lookup until arp
+        # lookup has been refactored, as the db lookups as-is won't
+        # work with the active interface refactoring.
+        
         case ipv4_info[:network_type]
         when :physical
           arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
@@ -243,14 +247,12 @@ module Vnet::Openflow
         return unreachable_ip(messages, "no interface found", :no_interface)
       end
 
-      if ip_lease.interface.active_datapath_id.nil?
-        return unreachable_ip(messages, "no active datapath for interface found", :inactive_interface)
-      end
-
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
       
       # Load remote interface.
-      interface = @dp_info.interface_manager.retrieve(id: ip_lease.interface_id)
+      interface = @dp_info.active_interface_manager.retrieve(interface_id: ip_lease.interface_id)
+
+      debug log_format('packet_in, active interface', interface.inspect)
 
       # TODO: Check if interface is remote?
 

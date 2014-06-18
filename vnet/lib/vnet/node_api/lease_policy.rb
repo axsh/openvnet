@@ -32,9 +32,7 @@ module Vnet::NodeApi
 
         options_for_ip_lease = {
           network_id: net.id,
-          ipv4_address: new_ip,
-          lease_time: lease_policy.lease_time,
-          grace_time: lease_policy.grace_time
+          ipv4_address: new_ip
         }
         options_for_ip_lease[:uuid] = options[:ip_lease_uuid] if options[:ip_lease_uuid]
 
@@ -63,6 +61,11 @@ module Vnet::NodeApi
               ip_lease_id: ip_lease.id
             )
           end
+
+          lease_policy.ip_retention_containers.each do |ip_retention_container|
+            IpRetentionContainer.add_ip_retention(ip_retention_container.id, ip_lease_id: ip_lease.id)
+          end
+
         end
 
         ip_lease
@@ -140,6 +143,33 @@ module Vnet::NodeApi
           model = model_class(:lease_policy_ip_lease_container).find(
             lease_policy_id: lease_policy.id,
             ip_lease_container_id: ip_lease_container.id
+          )
+          model.destroy
+        end
+        model
+      end
+
+      def add_ip_retention_container(uuid, ip_retention_container_uuid)
+        lease_policy = model_class[uuid]
+        ip_retention_container = model_class(:ip_retention_container)[ip_retention_container_uuid]
+        model = nil
+        transaction do
+          model = model_class(:lease_policy_ip_retention_container).create(
+            lease_policy_id: lease_policy.id,
+            ip_retention_container_id: ip_retention_container.id
+          )
+        end
+        model
+      end
+
+      def remove_ip_retention_container(uuid, ip_retention_container_uuid)
+        lease_policy = model_class[uuid]
+        ip_retention_container = model_class(:ip_retention_container)[ip_retention_container_uuid]
+        model = nil
+        transaction do
+          model = model_class(:lease_policy_ip_retention_container).find(
+            lease_policy_id: lease_policy.id,
+            ip_retention_container_id: ip_retention_container.id
           )
           model.destroy
         end

@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
-  class DatapathNetwork < Base
-  end
-
-  class DatapathRouteLink < Base
-  end
 
   class DcSegment < Base
   end

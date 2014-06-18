@@ -9,8 +9,8 @@ module Vnet::Models
     one_to_many :network_services
     one_to_many :routes
 
+    one_to_many :active_interfaces
     many_to_one :owner_datapath, :class => Datapath
-    many_to_one :active_datapath, :class => Datapath
 
     one_to_many :interface_security_groups
     many_to_many :security_groups, :join_table => :interface_security_groups
@@ -22,7 +22,8 @@ module Vnet::Models
       :ip_leases => :destroy,
       :mac_leases => :destroy,
       :network_services => :destroy,
-      :routes => :destroy
+      :routes => :destroy,
+      :active_interfaces => :destroy
 
     subset(:alives, {})
 
@@ -46,10 +47,6 @@ module Vnet::Models
 
     def ip_addresses
       ip_addresses_dataset.all
-    end
-
-    def port_name
-      self[:port_name] || canonical_uuid
     end
 
     def network
