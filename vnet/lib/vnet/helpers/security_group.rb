@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+require 'ipaddress'
 
 module Vnet::Helpers::SecurityGroup
   REF_REGEX = /sg-.{1,8}[a-z1-9]$/
