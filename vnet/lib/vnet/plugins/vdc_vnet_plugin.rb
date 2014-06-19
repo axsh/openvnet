@@ -12,10 +12,8 @@ module Vnet::Plugins
 
     def initialize
       @table = {
-        :Network => :Network,
         :NetworkVif => :Interface,
         :NetworkVifIpLease => :IpLease,
-        :NetworkService => :NetworkService
       }
 
       info "vdc_vnet_plugin initialized..."
@@ -25,10 +23,11 @@ module Vnet::Plugins
       debug "class = #{vdc_model_class}"
       debug "params = #{vnet_params}"
 
-      vnet_model_class = table[vdc_model_class]
+      vnet_model_class = table[vdc_model_class] || vdc_model_class
       debug vnet_model_class
 
-      if vnet_model_class == :NetworkService
+      case vnet_model_class
+      when :NetworkService
         simulated_interface = {}
         simulated_interface[:ipv4_address] = IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i
         simulated_interface[:mac_address] = ::Trema::Mac.new(vnet_params[:mac_address]).value
@@ -42,17 +41,12 @@ module Vnet::Plugins
         vnet_params.delete(:mac_address)
         vnet_params.delete(:network_id)
         vnet_params.delete(:network_uuid)
-      end
-
-      if vnet_model_class == :Network
+      when :Network
         vnet_params[:ipv4_network] = IPAddr.new(vnet_params[:ipv4_network], Socket::AF_INET).to_i
-      end
-
-      if vnet_model_class == :Interface
+      when :Interface
         vnet_params[:mac_address] = ::Trema::Mac.new(vnet_params[:mac_address]).value
-      end
-
-      if vnet_model_class == :IpLease
+        vnet_params[:ingress_filtering_enabled] = true
+      when :IpLease
         interface_uuid = vnet_params.delete(:interface_uuid)
         interface = Vnet::NodeApi::Interface[interface_uuid]
         vnet_params[:mac_lease_id] = interface.mac_leases.first.id
@@ -69,7 +63,7 @@ module Vnet::Plugins
     end
 
     def destroy_entry(vdc_model_class, uuid)
-      vnet_model_class = table[vdc_model_class]
+      vnet_model_class = table[vdc_model_class] || vdc_model_class
       Vnet::NodeApi.const_get(vnet_model_class).destroy(uuid)
     end
   end
