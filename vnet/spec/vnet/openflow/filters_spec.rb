@@ -47,6 +47,17 @@ describe Vnet::Core::FilterManager do
           match: match_icmp_rule("0.0.0.0/0")
         )
       end
+
+      context "when a rule does not include ipv4 prefix" do
+        let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0") }
+
+        it "applies the flows for that group" do
+          expect(flows).to include rule_flow(
+            cookie: cookie_id(group),
+            match: match_icmp_rule("0.0.0.0/0")
+          )
+        end
+      end
     end
 
     context "with a group that separates rules by commas" do
