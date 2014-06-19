@@ -7,14 +7,25 @@ describe Vnet::Helpers::SecurityGroup do
   end
 
   describe ".split_rule_collection" do
-    let(:rule) do
-      "icmp::0.0.0.0, #tcp:22,22,ip4:0.0.0.0, tcp:80:0.0.0.0 \n tcp:22:0.0.0.0"
+    it "returns 2 rules without comment" do
+      rule = "icmp::0.0.0.0, #tcp:22,22,ip4:0.0.0.0, tcp:80:0.0.0.0 \n tcp:22:0.0.0.0"
+      result = instance.split_rule_collection(rule)
+      expect(result).to contain_exactly(
+        "icmp::0.0.0.0",
+        "tcp:22:0.0.0.0"
+      )
     end
 
-    subject { instance.split_rule_collection(rule) }
+    it "returns 1 rules without comment" do
+      rule = "icmp::0.0.0.0 #tcp:22,22,ip4:0.0.0.0"
+      result = instance.split_rule_collection(rule)
+      expect(result).to contain_exactly( "icmp::0.0.0.0")
+    end
 
     it "returns 2 rules without comment" do
-      expect(subject).to contain_exactly(
+      rule = "# demo rule for demo instances\nicmp::0.0.0.0\ntcp:22:0.0.0.0"
+      result = instance.split_rule_collection(rule)
+      expect(result).to contain_exactly(
         "icmp::0.0.0.0",
         "tcp:22:0.0.0.0"
       )
