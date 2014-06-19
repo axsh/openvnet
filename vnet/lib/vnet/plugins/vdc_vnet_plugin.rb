@@ -14,6 +14,7 @@ module Vnet::Plugins
       @table = {
         :NetworkVif => :Interface,
         :NetworkVifIpLease => :IpLease,
+        :NetworkVifSecurityGroup => :InterfaceSecurityGroup
       }
 
       info "vdc_vnet_plugin initialized..."
@@ -56,6 +57,11 @@ module Vnet::Plugins
         vnet_params[:network_id] = network.id
 
         vnet_params[:ipv4_address] = IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i
+      when :InterfaceSecurityGroup
+        vnet_params = {
+          interface_id: Vnet::NodeApi::Interface[vnet_params[:interface_uuid]].id,
+          security_group_id: Vnet::NodeApi::SecurityGroup[vnet_params[:security_group_uuid]].id
+        }
       end
 
       debug vnet_params
