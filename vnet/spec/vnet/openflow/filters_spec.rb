@@ -354,11 +354,6 @@ describe Vnet::Core::FilterManager do
       }
 
       it "applies the rule flows for the new interface" do
-
-        pp flows.inspect
-
-        sleep 1
-
        expect(flows).to include rule_flow({
          cookie: cookie_id(group, interface2),
          match: match_icmp_rule("0.0.0.0/0")},
