@@ -28,7 +28,6 @@ module Vnet::Core
     def load_internal_interfaces
       return if @datapath_info.nil?
 
-      # internal_load_where(mode: 'internal', owner_datapath_id: @datapath_info.id)
       internal_load_where(mode: 'internal')
     end
 
