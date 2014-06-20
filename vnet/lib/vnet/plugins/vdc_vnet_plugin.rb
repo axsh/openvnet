@@ -44,18 +44,27 @@ module Vnet::Plugins
 
     private
 
-    def datapath_network_params(vnet_params)
-      network = Vnet::NodeApi::Network.find(vnet_params)
-      datapath_ids = Vnet::NodeApi::Datapath.all.select
-      datapath_ids.each do |datapath|
-        host_ports = Vnet::NodeApi::Interface.where({:mode=>'host', :owner_datapath_id => datapath.id}).all
 
-        host_ports = Vnet::NodeApi::Interface.find_all { |i|
-          i.mode == 'host' && i.owner_datapath_id == datapath.id
-        }.select{ |i|
-          # TODO refactor
-          i.network && i.network.canonical_uuid == 'nw-public'
+    # TODO
+    # automatic datapath_network creation fails if no host port entry is on the db.
+    # however the datapath_network is necessary entry for packet forwarding on vnet.
+    # at lease one host port should be registered in prior to launch the vnet processes.
+    def datapath_network_params(vnet_params)
+
+      # TODO refactor
+      network = if /^nw-/ =~ vnet_params[:uuid]
+                  Vnet::NodeApi::Network[vnet_params[:uuid]]
+                else
+                  Vnet::NodeApi::Network["nw-#{vnet_params[:uuid]}"]
+                end
+
+      Vnet::NodeApi::Datapath.all.each do |datapath|
+        # TODO refactor
+        host_ports = Vnet::NodeApi::Interface.where({:mode=>'host', :owner_datapath_id => datapath.id}).all.select {|h|
+          h.network.canonical_uuid == 'nw-public'
         }
+
+        return -1 if host_ports.empty?
 
         host_ports.each do |host_port|
           datapath_network_params = {
@@ -99,6 +108,12 @@ module Vnet::Plugins
     end
 
     def network_params(vnet_params)
+
+      if network = Vnet::NodeApi::Network[vnet_params[:uuid]]
+        info "network #{vnet_params[:uuid]} already exists as #{network.canonical_uuid}"
+        return -1
+      end
+
       vnet_params[:ipv4_network] = IPAddr.new(vnet_params[:ipv4_network], Socket::AF_INET).to_i
     end
 
@@ -273,7 +288,7 @@ module Vnet::Plugins
       enable_routing = case network_uuid
                        when 'nw-public' then true
                        when 'nw-glo'    then true
-                       else             then false
+                       else                  false
                        end
       params = {
         :mode => 'simulated',
