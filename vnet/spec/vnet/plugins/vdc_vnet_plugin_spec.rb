@@ -25,6 +25,16 @@ describe Vnet::Plugins::VdcVnetPlugin do
         :editable => true
       }
     end
+    let!(:datapath) { Fabricate(:datapath_1) }
+    let!(:host_port) do
+      network = Fabricate(:pnet_public1, uuid: 'nw-public')
+      interface = Fabricate(:host_port_any, owner_datapath: datapath)
+      mac_lease = Fabricate(:mac_lease_any, interface: interface)
+      ip_address = Fabricate(:ip_address, network: network)
+      ip_lease = Fabricate(:ip_lease_any, mac_lease: mac_lease, network: network, ip_address: ip_address)
+      interface.add_ip_lease(ip_lease)
+      interface
+    end
 
     describe "create_entry" do
       it "creates a record of Network on vnet" do
@@ -33,6 +43,13 @@ describe Vnet::Plugins::VdcVnetPlugin do
 
         expect(entry).not_to eq nil
         expect(entry.canonical_uuid).to eq params[:uuid]
+
+        dpn = Vnet::Models::DatapathNetwork.find({
+          :datapath_id => datapath.id,
+          :network_id => entry.id
+        })
+
+        expect(dpn).not_to eq nil
       end
     end
 
@@ -84,7 +101,7 @@ describe Vnet::Plugins::VdcVnetPlugin do
     let(:inner_network) { Fabricate(:vnet_1) }
 
     let!(:datapath1) { Fabricate(:datapath_1) }
-    let!(:host_port) { Fabricate(:host_port_any, active_datapath: datapath1) }
+    let!(:host_port) { Fabricate(:host_port_any, owner_datapath: datapath1) }
 
     let(:params) do
       {
