@@ -68,9 +68,40 @@ module Vnet::Plugins
       Vnet::NodeApi.const_get(vnet_model_class).create(vnet_params)
     end
 
-    def destroy_entry(vdc_model_class, uuid)
+    def destroy_entry(vdc_model_class, options)
+      debug("destroy_entry #{vdc_model_class} options: #{options}")
       vnet_model_class = table[vdc_model_class] || vdc_model_class
-      Vnet::NodeApi.const_get(vnet_model_class).destroy(uuid)
+
+      case vnet_model_class
+      when :IpLease
+        network = Vnet::NodeApi::Network[options[:network_uuid]]
+        ip_address = Vnet::NodeApi::IpAddress.filter(
+          network_id: network.id, 
+          ipv4_address: options[:ipv4_address]
+        ).first
+        interface = Vnet::NodeApi::Interface[options[:interface_uuid]]
+        ip_lease = Vnet::NodeApi::IpLease.filter(
+          interface_id: interface.id,
+          ip_address_id: ip_address.id
+        ).first
+        Vnet::NodeApi::IpLease.execute(:destroy, ip_lease.canonical_uuid)
+      when :InterfaceSecurityGroup  
+        security_group = Vnet::NodeApi::SecurityGroup[options[:security_group_uuid]]
+        interface = Vnet::NodeApi::Interface[options[:interface_uuid]]
+        interface_security_group = Vnet::NodeApi::InterfaceSecurityGroup.filter(
+          security_group_id: security_group.id,
+          interface_id: interface.id
+        ).first
+        Vnet::NodeApi::InterfaceSecurityGroup.execute(:destroy, interface_security_group.canonical_uuid)
+      else
+        destroy_entry_by_uuid(vnet_model_class, options)
+      end
+    end
+
+    private
+
+    def destroy_entry_by_uuid(klass, uuid)
+      Vnet::NodeApi.const_get(klass).destroy(uuid)
     end
   end
 end
