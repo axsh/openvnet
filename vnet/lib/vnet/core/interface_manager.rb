@@ -28,7 +28,8 @@ module Vnet::Core
     def load_internal_interfaces
       return if @datapath_info.nil?
 
-      internal_load_where(mode: 'internal', owner_datapath_id: @datapath_info.id)
+      # internal_load_where(mode: 'internal', owner_datapath_id: @datapath_info.id)
+      internal_load_where(mode: 'internal')
     end
 
     def load_simulated_on_network_id(network_id)
@@ -113,7 +114,7 @@ module Vnet::Core
       end
 
       if item_map.port_name.nil? &&
-          (mode == :host || mode == :internal || mode == :vif)
+          (mode == :host || mode == :vif)
         info log_format("interface mode requires port_name", item_map.inspect)
         return
       end
