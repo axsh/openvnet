@@ -25,12 +25,6 @@ module Vnet::Core
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
 
-    def load_internal_interfaces
-      return if @datapath_info.nil?
-
-      internal_load_where(mode: 'internal', owner_datapath_id: @datapath_info.id)
-    end
-
     def load_simulated_on_network_id(network_id)
       # TODO: Add list of active network id's for which we should have
       # simulated interfaces loaded.
@@ -41,6 +35,20 @@ module Vnet::Core
       batch.all_interface_ids.commit.each { |item_id|
         item_by_params(id: item_id)
       }
+    end
+
+    # Disable retrieve...
+    def retrieve(params)
+      error log_format("disabled retrieve method")
+      Thread.current.backtrace.each { |str| info log_format(str) }
+    end
+
+    def load_shared_interface(interface_id)
+      item_to_hash(item_by_params(id: interface_id))
+    end
+
+    def load_local_interface(interface_id)
+      item_to_hash(item_by_params(id: interface_id))
     end
 
     #
@@ -71,19 +79,6 @@ module Vnet::Core
       case filter
       when :id, :uuid, :mode, :port_name, :port_number
         proc { |id, item| value == item.send(filter) }
-      when :owner_datapath_id
-        proc { |id, item|
-          next true if value.nil? && item.owner_datapath_ids
-          next true if value && item.owner_datapath_ids.nil?
-          next true if value && item.owner_datapath_ids.find_index(value).nil?
-          false
-        }
-      when :allowed_datapath_id
-        proc { |id, item|
-          next true if value.nil?
-          next true if item.owner_datapath_ids && item.owner_datapath_ids.find_index(value).nil?
-          false
-        }
       else
         raise NotImplementedError, filter
       end
@@ -94,29 +89,11 @@ module Vnet::Core
       filter << {id: params[:id]} if params.has_key? :id
       filter << {mode: params[:mode]} if params.has_key? :mode
       filter << {port_name: params[:port_name]} if params.has_key? :port_name
-      filter << {owner_datapath_id: params[:owner_datapath_id]} if params.has_key? :owner_datapath_id
-
-      if params.has_key? :allowed_datapath_id
-        filter << Sequel.|({ owner_datapath_id: nil },
-                           { owner_datapath_id: params[:allowed_datapath_id] })
-      end
-
       filter
     end
 
     def item_initialize(item_map)
       mode = (item_map.mode && item_map.mode.to_sym)
-
-      if mode != :vif && is_remote?(item_map)
-        info log_format("we no longer allow remote interfaces", item_map.inspect)
-        return
-      end
-
-      if item_map.port_name.nil? &&
-          (mode == :host || mode == :internal || mode == :vif)
-        info log_format("interface mode requires port_name", item_map.inspect)
-        return
-      end
 
       item_class =
         case mode
@@ -190,29 +167,14 @@ module Vnet::Core
       return if internal_detect_by_id(params)
       return unless @dp_info.port_manager.detect(port_name: params[:port_name])
 
-      self.retrieve(params)
+      # self.retrieve(params)
     end
 
     #
     # Helper methods:
     #
 
-    def is_remote?(item_map)
-      return false if item_map.owner_datapath_id.nil?
-
-      if item_map.owner_datapath_id
-        return @datapath_info.nil? || item_map.owner_datapath_id != @datapath_info.id
-      end
-
-      return false
-    end
-
-    def is_assigned_remotely?(item_map)
-      return @datapath_info.nil? || item_map.owner_datapath_id != @datapath_info.id if item_map.owner_datapath_id
-
-      false
-    end
-
+    # Change this to depend on how the interface was loaded by interface_ports
     def activate_local_interface(item)
       if @datapath_info.nil? || @datapath_info.uuid.nil?
         error log_format("cannot activate local interface when datapath_info.uuid is nil")
@@ -227,10 +189,8 @@ module Vnet::Core
         label = @datapath_info.uuid
         singular = nil
       when :simulated
-        if item.owner_datapath_ids.nil?
-          label = @datapath_info.uuid
-          singular = nil
-        end
+        label = @datapath_info.uuid
+        singular = nil
       end
 
       params = {
@@ -319,7 +279,7 @@ module Vnet::Core
       if !item && ip_lease.interface.mode.to_sym == :simulated &&
         @dp_info.network_manager.detect(id: ip_lease.ip_address.network_id)
 
-        @dp_info.interface_manager.retrieve(id: ip_lease.interface.id)
+        @dp_info.interface_port_manager.retrieve(interface_id: ip_lease.interface.id)
 
         return
       end
@@ -389,36 +349,6 @@ module Vnet::Core
       return update_item_not_found(event, id, params) if item.nil?
 
       case event
-      when :owner_datapath_id
-        unload_item(id: item.id)
-        self.async.retrieve(id: item.id)
-
-        #
-        # Port events:
-        #
-      # when :set_port_number
-      #   debug log_format("update_item", params)
-
-      #   item.update_port_number(params[:port_number])
-
-      #   @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
-      #                                 id: item.port_number,
-      #                                 interface: item_to_hash(item))
-
-      # when :clear_port_number
-      #   debug log_format("update_item", params)
-
-      #   @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
-      #                                 id: item.port_number,
-      #                                 interface: item_to_hash(item))
-
-      #   # Check if nil... (use param :port_number to verify)
-      #   item.update_port_number(nil)
-        # update_active_datapath(item, nil)
-
-        #
-        # Capability events:
-        #
       when :updated
         # api event
         item.update
@@ -431,15 +361,15 @@ module Vnet::Core
         changed_columns = params[:changed_columns]
         return if changed_columns.nil?
 
-        changed_owner_dp = changed_columns["owner_datapath_id"]
+        # changed_owner_dp = changed_columns["owner_datapath_id"]
 
-        if changed_owner_dp
-          return if
-            changed_owner_dp.nil? ||
-            changed_owner_dp != @datapath_info.id
+        # if changed_owner_dp
+        #   return if
+        #     changed_owner_dp.nil? ||
+        #     changed_owner_dp != @datapath_info.id
 
-          item_by_params(id: id)
-        end
+        #   item_by_params(id: id)
+        # end
       end
 
       nil
@@ -449,9 +379,10 @@ module Vnet::Core
     # Overload helper methods:
     #
 
+    # TODO: Remove these:
+
     def activate_port_query(state_id, params)
-      { port_name: params[:port_name],
-        allowed_datapath_id: @datapath_info.id
+      { port_name: params[:port_name]
       }
     end
 

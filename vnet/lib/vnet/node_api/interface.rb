@@ -6,8 +6,8 @@ module Vnet::NodeApi
         options = options.dup
 
         interface = transaction do
-          datapath_id = options[:owner_datapath_id]
-          port_name = options[:port_name]
+          datapath_id = options.delete(:owner_datapath_id)
+          port_name = options.delete(:port_name)
 
           network_id = options.delete(:network_id)
           ipv4_address = options.delete(:ipv4_address)
@@ -23,7 +23,7 @@ module Vnet::NodeApi
         dispatch_event(
           INTERFACE_CREATED_ITEM,
           id: interface.id,
-          port_name: interface.port_name
+          # port_name: interface.port_name
         )
 
         interface

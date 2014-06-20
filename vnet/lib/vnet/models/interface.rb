@@ -10,7 +10,7 @@ module Vnet::Models
     one_to_many :routes
 
     one_to_many :active_interfaces
-    many_to_one :owner_datapath, :class => Datapath
+    one_to_many :interface_ports
 
     one_to_many :interface_security_groups
     many_to_many :security_groups, :join_table => :interface_security_groups
@@ -63,7 +63,6 @@ module Vnet::Models
 
     def to_hash
       super.merge({
-        port_name: port_name,
         ipv4_address: self.ipv4_address,
         mac_address: self.mac_address,
       })

@@ -26,7 +26,7 @@ module Vnet::Endpoints::V10::Responses
         mac_lease.interface_uuid = object.uuid
         MacLease.generate(mac_lease)
       end
-      object.owner_datapath_uuid = object.owner_datapath.uuid if object.owner_datapath
+
       object.to_hash
     end
   end

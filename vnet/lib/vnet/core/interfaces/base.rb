@@ -28,7 +28,6 @@ module Vnet::Core::Interfaces
 
     attr_accessor :mode
     attr_accessor :port_name
-    attr_accessor :owner_datapath_ids
     attr_accessor :display_name
 
     attr_accessor :enable_routing
@@ -52,12 +51,6 @@ module Vnet::Core::Interfaces
       @enable_routing = map.enable_routing
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
-
-      if map.owner_datapath_id
-        @owner_datapath_ids = [map.owner_datapath_id]
-      else
-        @owner_datapath_ids = nil
-      end
     end
 
     def log_type
@@ -65,7 +58,8 @@ module Vnet::Core::Interfaces
     end
 
     def pretty_properties
-      "mode:#{@mode} port_name:#{@port_name}"
+      "mode:#{@mode}" +
+        (@port_name ? " port_name:#{@port_name}" : '')
     end
 
     def cookie(type = 0, value = 0)
@@ -121,9 +115,7 @@ module Vnet::Core::Interfaces
                                 port_number: @port_number,
                                 port_name: @port_name,
                                 display_name: @display_name,
-                                mac_addresses: @mac_addresses,
-
-                                owner_datapath_ids: @owner_datapath_ids)
+                                mac_addresses: @mac_addresses)
     end
 
     #
@@ -141,27 +133,6 @@ module Vnet::Core::Interfaces
     def update
       interface = MW::Interface[@id]
       @display_name = interface.display_name
-
-      # Check for nil...
-      if @owner_datapath_ids != [interface.owner_datapath_id] ||
-          (@owner_datapath_ids && interface.owner_datapath_id.nil?)
-        # update_owner_datapath(interface.owner_datapath_id)
-
-        Celluloid::Actor.current.publish(INTERFACE_UPDATED,
-                                         event: :owner_datapath_id,
-                                         id: @id,
-                                         owner_datapath_id: interface.owner_datapath_id,
-                                         port_name: interface.port_name)
-      end
-    end
-
-    def update_owner_datapath(owner_datapath_id)
-      if owner_datapath_id
-        # add new owner_datapath_id
-        @owner_datapath_ids = [owner_datapath_id]
-      else
-        @owner_datapath_ids = nil
-      end
     end
 
     def update_port_number(new_number)

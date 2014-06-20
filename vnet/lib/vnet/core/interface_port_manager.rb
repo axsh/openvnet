@@ -20,6 +20,12 @@ module Vnet::Core
     subscribe_event INTERFACE_PORT_ACTIVATE, :activate_port
     subscribe_event INTERFACE_PORT_DEACTIVATE, :deactivate_port
 
+    def load_internal_interfaces
+      return if @datapath_info.nil?
+
+      # internal_load_where(mode: 'internal', allowed_datapath: true)
+    end
+
     #
     # Internal methods:
     #
@@ -93,10 +99,21 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
+      if !item.allowed_datapath?
+        @dp_info.active_interface_manager.retrieve(interface_id: item.interface_id)
+        return
+      end
+
+      if item.singular
+        @dp_info.interface_manager.load_local_interface(item.interface_id)
+      else
+        @dp_info.interface_manager.load_shared_interface(item.interface_id)
+      end
+
       return unless item.port_name
 
       @active_ports.detect { |port_number, active_port|
-        item.port_name == active_port[:port_name] && item.allowed_datapath?
+        item.port_name == active_port[:port_name]
       }.tap { |port_number, active_port|
         next unless port_number && active_port
         item.port_number = port_number
@@ -105,8 +122,6 @@ module Vnet::Core
                                       id: item.port_number,
                                       interface_id: item.interface_id,
                                       interface_mode: item.interface_mode)
-
-        @dp_info.interface_manager.retrieve(id: item.interface_id)
       }
     end
 

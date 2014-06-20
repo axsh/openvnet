@@ -96,10 +96,6 @@ Sequel.migration do
       String :mode, :default => 'vif',:null => false
       String :display_name
 
-      String :port_name, :index => true, :null => true
-
-      Integer :owner_datapath_id, :index => true
-
       FalseClass :ingress_filtering_enabled, :null => false
       FalseClass :enable_routing, :null=>false
       FalseClass :enable_route_translation, :null=>false

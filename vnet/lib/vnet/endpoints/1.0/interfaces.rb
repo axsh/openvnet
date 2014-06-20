@@ -11,7 +11,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     param :enable_route_translation, :Boolean
   end
 
-  fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
+  fill = [ { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
 
   put_post_shared_params
   param_uuid M::Interface
