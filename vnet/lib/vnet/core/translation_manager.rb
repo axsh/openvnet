@@ -85,8 +85,15 @@ module Vnet::Core
 
     # TRANSLATION_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-      return if internal_detect_by_id(params)
-      return unless @active_interfaces[params[:interface_id]]
+      if @items[params[:id]]
+        error log_format("item exists(id: #{params[:id]}, item: #{@items[params[:id]]})")
+        return
+      end
+
+      unless @active_interfaces[params[:interface_id]]
+        error log_format("no active_interface(id:#{params[:interface_id]})")
+        return
+      end
 
       internal_new_item(mw_class.new(params))
     end
@@ -109,13 +116,28 @@ module Vnet::Core
 
     # TRANSLATION_ADDED_STATIC_ADDRESS on queue 'item.id'.
     def added_static_address(params)
-      item = internal_detect_by_id(params) || return
+      unless item = internal_detect_by_id(params)
+        error log_format("missing item(id:#{params[:id]})")
+        return
+      end
 
-      static_address_id = params[:static_address_id] || return
-      ingress_ipv4_address = params[:ingress_ipv4_address] || return
-      egress_ipv4_address = params[:egress_ipv4_address] || return
-      ingress_port_number = params[:ingress_port_number] || return
-      egress_port_number = params[:egress_port_number] || return
+      unless static_address_id = params[:static_address_id]
+        error log_format("missing static_address_id")
+        return
+      end
+
+      unless ingress_ipv4_address = params[:ingress_ipv4_address]
+        error log_format("missing ingress_ipv4_address")
+        return
+      end
+
+      unless egress_ipv4_address = params[:egress_ipv4_address]
+        error log_format("missing egress_ipv4_address")
+        return
+      end
+
+      ingress_port_number = params[:ingress_port_number]
+      egress_port_number = params[:egress_port_number]
 
       item.added_static_address(static_address_id,
                                 params[:route_link_id],
@@ -130,7 +152,7 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
 
       static_address_id = params[:static_address_id] || return
-      
+
       item.removed_static_address(static_address_id)
     end
 
