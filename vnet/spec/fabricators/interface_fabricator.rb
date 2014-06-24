@@ -5,6 +5,9 @@ end
 Fabricator(:active_interface, class_name: Vnet::Models::ActiveInterface) do
 end
 
+Fabricator(:interface_port, class_name: Vnet::Models::InterfacePort) do
+end
+
 Fabricator(:interface_w_mac_lease, class_name: Vnet::Models::Interface) do
   mac_leases do
     [
@@ -15,7 +18,7 @@ Fabricator(:interface_w_mac_lease, class_name: Vnet::Models::Interface) do
   end
 end
 
-Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
+Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do |attrs|
   # We need to set id manually here so we can create ip leases and mac leases
   # This is because of that fucked up relation in the database.
   # ip_leases n---1 interfaces
@@ -26,7 +29,11 @@ Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
   # attrs variable. Quite the hassle isn't it?
   id { sequence(:interface_ids, 1) }
 
-  owner_datapath_id 1
+  # owner_datapath_id 1
+  Fabricate(:interface_port,
+            interface_id: attrs[:id],
+            datapath_id: 1)
+
   ingress_filtering_enabled true
 
   ip_leases do |attrs|

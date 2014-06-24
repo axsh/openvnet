@@ -42,7 +42,6 @@ module Vnet::NodeApi
           dispatch_event(INTERFACE_UPDATED,
                          event: :updated,
                          id: interface.id,
-                         port_name: interface.port_name,
                          changed_columns: options)
 
 

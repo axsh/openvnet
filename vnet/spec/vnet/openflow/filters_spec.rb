@@ -388,7 +388,8 @@ describe Vnet::Core::FilterManager do
     end
 
     context "with a remote interface" do
-      let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
+      # let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
+      let(:interface2) { Fabricate(:filter_interface) }
 
       it "doesn't apply the rule flows for the new interface" do
        expect(flows).not_to include rule_flow({

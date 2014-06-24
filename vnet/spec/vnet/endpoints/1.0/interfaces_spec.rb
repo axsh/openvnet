@@ -23,19 +23,19 @@ describe "/interfaces" do
     let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
     let!(:active) { Fabricate(:datapath) { uuid "dp-active" } }
 
-    accepted_params = {
+    expected_response = {
       :uuid => "if-test",
       :network_uuid => "nw-testnet",
       :ipv4_address => "192.168.1.10",
       :ingress_filtering_enabled => true,
       :mac_address => "11:11:11:11:11:11",
-      :owner_datapath_uuid => "dp-owner",
       :mode => "simulated"
     }
+    accepted_params = expected_response.merge(owner_datapath_uuid: "dp-owner")
     required_params = []
     uuid_params = [:network_uuid, :owner_datapath_uuid]
 
-    include_examples "POST /", accepted_params, required_params, uuid_params
+    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
 
     context "With a faulty mac address" do
       let(:request_params) { { mac_address: "i am not a mac address" } }
@@ -65,7 +65,7 @@ describe "/interfaces" do
     accepted_params = {
       :display_name => "updated interface",
       :ingress_filtering_enabled => true,
-      :owner_datapath_uuid => "dp-new",
+      # :owner_datapath_uuid => "dp-new",
     }
 
     include_examples "PUT /:uuid", accepted_params

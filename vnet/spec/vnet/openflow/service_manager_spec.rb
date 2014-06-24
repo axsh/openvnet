@@ -5,6 +5,9 @@ require 'spec_helper'
 include Vnet::Constants::Openflow
 
 describe Vnet::Core::ServiceManager do
+
+  use_mock_event_handler
+
   let(:datapath) { create_mock_datapath }
 
   let(:service_manager) do
@@ -49,7 +52,7 @@ describe Vnet::Core::ServiceManager do
 
     describe "when ADDED_SERVICE is published" do
       it "should create a network service with a dns service" do
-        interface_manager.retrieve(id: 1)
+        interface_manager.load_shared_interface(1)
         expect(interface_manager.wait_for_loaded({id: 1}, 3)).not_to be_nil
 
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
@@ -84,7 +87,7 @@ describe Vnet::Core::ServiceManager do
 
     describe "when REMOVED_SERVICE is published" do
       it "should remove a network service" do
-        interface_manager.retrieve(id: 1)
+        interface_manager.load_shared_interface(1)
         expect(interface_manager.wait_for_loaded({id: 1}, 3)).not_to be_nil
 
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
