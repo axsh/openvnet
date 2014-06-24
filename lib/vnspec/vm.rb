@@ -14,11 +14,6 @@ module Vnspec
           vm.vm_config[:interfaces].each do |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
           end
-
-          # Disabled as edge should always use a proper virtual network.
-          # config[:legacy_networks].each do |k,v|
-          #   ssh(vm.host_ip, "ssh #{vm.ssh_ip} route add -net #{v[:ipv4]}/#{v[:prefix]} dev eth0", {})
-          # end
         end
       end
 
@@ -319,10 +314,10 @@ module Vnspec
     end
 
     class Docker < Base
-      def start
+      def start(with_network = true)
         logger.info "start: #{name}"
         if ssh_on_host("docker start #{name}").success?
-          _start_network
+          start_network if with_network
         end
       end
 
@@ -337,10 +332,6 @@ module Vnspec
       end
 
       def start_network
-        restart
-      end
-
-      def _start_network
         vm_config[:interfaces].each do |interface|
           ip_address = if interface[:ipv4_address]
             "#{interface[:ip_v4address]}/#{interface[:mask] || 24}"
@@ -365,8 +356,8 @@ module Vnspec
       end
 
       def stop_network
-        # nothing to do
-        true
+        stop
+        start(false)
       end
 
       def restart_network
