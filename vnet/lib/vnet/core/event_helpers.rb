@@ -44,7 +44,7 @@ module Vnet::Core
       }
     end
 
-    def activate_interface_pre_uninstall(state_id, item)
+    def deactivate_interface_pre_uninstall(state_id, item)
       value = @active_interfaces[state_id] || return
       deactivate_interface_update_item_proc(state_id, value, item)
     end
@@ -120,7 +120,7 @@ module Vnet::Core
       }
     end
 
-    def activate_network_pre_uninstall(state_id, item)
+    def deactivate_network_pre_uninstall(state_id, item)
       value = @active_networks[state_id] || return
       deactivate_network_update_item_proc(state_id, value, item)
     end
@@ -200,7 +200,7 @@ module Vnet::Core
       }
     end
 
-    def activate_port_pre_uninstall(state_id, item)
+    def deactivate_port_pre_uninstall(state_id, item)
       value = @active_ports[state_id] || return
       deactivate_port_update_item_proc(state_id, value, item)
     end
@@ -276,7 +276,7 @@ module Vnet::Core
       }
     end
 
-    def activate_route_link_pre_uninstall(state_id, item)
+    def deactivate_route_link_pre_uninstall(state_id, item)
       value = @active_route_links[state_id] || return
       deactivate_route_link_update_item_proc(state_id, value, item)
     end

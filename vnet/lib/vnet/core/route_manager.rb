@@ -113,8 +113,8 @@ module Vnet::Core
     end
     
     def item_pre_uninstall(item)
-      activate_network_pre_uninstall(item.network_id, item)
-      activate_route_link_pre_uninstall(item.route_link_id, item)
+      deactivate_network_pre_uninstall(item.network_id, item)
+      deactivate_route_link_pre_uninstall(item.route_link_id, item)
     end
 
     # item created in db on queue 'item.id'
