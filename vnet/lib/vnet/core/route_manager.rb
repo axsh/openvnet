@@ -70,8 +70,8 @@ module Vnet::Core
 
       item = item_class.new(dp_info: @dp_info, map: item_map)
 
-      item.active_network = @active_networks.has_key? item.network_id
-      item.active_route_link = @active_route_links.has_key? item.route_link_id
+      activate_network_pre_install(item.network_id, item)
+      activate_route_link_pre_install(item.route_link_id, item)
 
       # While querying the database the active state of either network
       # or route link changed, so discard the item.
@@ -85,9 +85,6 @@ module Vnet::Core
     #
 
     def item_pre_install(item, item_map)
-      activate_network_pre_install(item.network_id, item)
-      activate_route_link_pre_install(item.route_link_id, item)
-
       case
       when !item.active_network && !item.active_route_link
         # The state changed since item_initialize so we skip install,
@@ -101,9 +98,6 @@ module Vnet::Core
     end
 
     def item_post_install(item, item_map)
-      activate_network_pre_uninstall(item.network_id, item)
-      activate_route_link_pre_uninstall(item.route_link_id, item)
-
       # TODO: Refactor...
       interface = @dp_info.interface_manager.retrieve(id: item.interface_id,
                                                       allowed_datapath_id: @datapath_info.id)
@@ -118,6 +112,11 @@ module Vnet::Core
                                          id: item.interface_id)
     end
     
+    def item_pre_uninstall(item)
+      activate_network_pre_uninstall(item.network_id, item)
+      activate_route_link_pre_uninstall(item.route_link_id, item)
+    end
+
     # item created in db on queue 'item.id'
     def created_item(params)
       return if internal_detect_by_id(params)
