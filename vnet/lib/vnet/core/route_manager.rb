@@ -85,6 +85,9 @@ module Vnet::Core
     #
 
     def item_pre_install(item, item_map)
+      activate_network_pre_install(item.network_id, item)
+      activate_route_link_pre_install(item.route_link_id, item)
+
       case
       when !item.active_network && !item.active_route_link
         # The state changed since item_initialize so we skip install,
@@ -98,6 +101,9 @@ module Vnet::Core
     end
 
     def item_post_install(item, item_map)
+      activate_network_pre_uninstall(item.network_id, item)
+      activate_route_link_pre_uninstall(item.route_link_id, item)
+
       # TODO: Refactor...
       interface = @dp_info.interface_manager.retrieve(id: item.interface_id,
                                                       allowed_datapath_id: @datapath_info.id)
@@ -115,7 +121,9 @@ module Vnet::Core
     # item created in db on queue 'item.id'
     def created_item(params)
       return if internal_detect_by_id(params)
-      return unless @active_route_links[params[:route_link_id]]
+      return if 
+        @active_networks[params[:network_id]].nil? &&
+        @active_route_links[params[:route_link_id]].nil?
 
       internal_new_item(mw_class.new(params))
     end
@@ -129,30 +137,36 @@ module Vnet::Core
     #
     # Note: Replace by active segment once implemented.
 
-    def activate_network_value(network_id, params)
-      params[:route_id_list] = {}
+    def activate_network_value(state_id, params)
+      {}
     end
 
-    def activate_network_update_item_proc(network_id, params)
-      route_id_list = params[:route_id_list] || return
-
+    def activate_network_update_item_proc(state_id, value, params)
       Proc.new { |id, item|
         item.active_network = true
-        route_id_list[item.id] = true
+        value[item.id] = true
       }
     end
 
-    def activate_route_link_value(route_link_id, params)
-      params[:route_id_list] = {}
+    def deactivate_network_update_item_proc(state_id, value, item)
+      item.active_network = false
+      value.delete(item.id)
     end
 
-    def activate_route_link_update_item_proc(route_link_id, params)
-      route_id_list = params[:route_id_list] || return
+    def activate_route_link_value(state_id, params)
+      {}
+    end
 
+    def activate_route_link_update_item_proc(state_id, value, params)
       Proc.new { |id, item|
         item.active_route_link = true
-        route_id_list[item.id] = true
+        value[item.id] = true
       }
+    end
+
+    def deactivate_route_link_update_item_proc(state_id, value, item)
+      item.active_route_link = false
+      value.delete(item.id)
     end
 
   end
