@@ -122,25 +122,60 @@ module Vnet::Plugins
     end
 
     def ip_lease_params(vnet_params)
-      interface_uuid = vnet_params.delete(:interface_uuid)
-      interface = Vnet::NodeApi::Interface[interface_uuid]
-      vnet_params[:mac_lease_id] = interface.mac_leases.first.id
+      network = Vnet::NodeApi::Network[vnet_params[:network_uuid]]
+      if network.nil?
+        error "no network #{vnet_params[:network_uuid]}"
+        return -1
+      end
 
-      network_uuid = vnet_params.delete(:network_uuid)
-      network = Vnet::NodeApi::Network[network_uuid]
-      vnet_params[:network_id] = network.id
+      interface = Vnet::NodeApi::Interface[vnet_params[:interface_uuid]]
+      if interface.nil?
+        error "no interface #{vnet_params[:interface_uuid]}"
+        return -1
+      end
 
-      vnet_params[:ipv4_address] = IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i
+      ipaddr = IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i
+      ip_address = Vnet::NodeApi::IpAddress.find({:ipv4_address => ipaddr})
+      if ip_address.nil?
+        info "no ip address found #{ipaddr}.... create ip address"
+        ip_address = Vnet::NodeApi::IpAddress.create({
+          :ipv4_address => ipaddr,
+          :network_id => network.id
+        })
+      end
+
+      params = {
+        :mac_lease_id => interface.mac_leases.first.id,
+        :ip_address_id => ip_address.id,
+        :interface_id => interface.id,
+        :enable_routing => false
+      }
+
+      ip_lease = Vnet::NodeApi::IpLease.find(params)
+
+      if ip_lease.nil?
+        Vnet::NodeApi::IpLease.create(params)
+      end
+
+      return -1
     end
 
     def translation_static_address_params(vnet_params)
       outer_network_gateway = find_gw_interface(vnet_params[:outer_network_uuid], vnet_params[:outer_network_gw])
       inner_network_gateway = find_gw_interface(vnet_params[:inner_network_uuid], vnet_params[:inner_network_gw])
 
+      ip_address = Vnet::NodeApi::IpAddress.find(:ipv4_address => IPAddr.new(vnet_params[:ingress_ipv4_address]).to_i)
+      if ip_address.nil?
+        ip_address = Vnet::NodeApi::IpAddress.create({
+          :ipv4_address => IPAddr.new(vnet_params[:ingress_ipv4_address]).to_i,
+          :network_id => outer_network_gateway.ip_leases.first.network.id
+        })
+      end
+
       ip_lease_params_for_nat_ip = {
         :mac_lease_id => outer_network_gateway.mac_leases.first.id,
-        :network_id => outer_network_gateway.network.id,
-        :ipv4_address => IPAddr.new(vnet_params[:ingress_ipv4_address]).to_i,
+        :ip_address_id => ip_address.id,
+        :interface_id => outer_network_gateway.id,
         :enable_routing => true
       }
       ip_lease_for_nat_ip = Vnet::NodeApi::IpLease.find(ip_lease_params_for_nat_ip)
@@ -273,32 +308,33 @@ module Vnet::Plugins
       }
 
       if gateways.empty?
-        warn "no gateway interface has been found in the network(#{network_uuid})"
+        info "no gateway interface has been found in the network(#{network_uuid})... create a gateway interface"
         gateways << create_gw_interface(network_uuid, ipv4_gw)
       end
 
       if gateways.size > 1
-        warn "multiple gateway interfaces have been detected in the network(#{network_uuid})"
+        info "multiple gateway interfaces have been detected in the network(#{network_uuid})"
       end
 
       gateways.first
     end
 
     def create_gw_interface(network_uuid, ipv4_gw)
-      enable_routing = case network_uuid
-                       when 'nw-public' then true
-                       when 'nw-glo'    then true
-                       else                  false
-                       end
       params = {
         :mode => 'simulated',
         :display_name => "gw_#{network_uuid}",
         :mac_address => mac_generate(gw_prefix),
-        :enable_routing => enable_routing,
-        :enable_route_translation => true
+        :enable_routing => true,
+        :enable_route_translation => false
       }
       interface = Vnet::NodeApi::Interface.create(params)
+
       network = Vnet::NodeApi::Network[network_uuid]
+      if network.nil?
+        error "network uuid #{network_uuid} not found"
+        return
+      end
+
       ip_address = Vnet::NodeApi::IpAddress.find({:network_id => network.id, :ipv4_address => IPAddr.new(ipv4_gw).to_i})
 
       if ip_address.nil?

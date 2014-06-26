@@ -2,6 +2,7 @@
 require 'spec_helper'
 
 describe Vnet::Plugins::VdcVnetPlugin do
+
   before do
     use_mock_event_handler
   end
@@ -95,13 +96,23 @@ describe Vnet::Plugins::VdcVnetPlugin do
 
   context "when network_route is created" do
 
+    let(:datapath) do
+      MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16)).tap do |dp|
+        dp.create_mock_datapath_map
+        #h = dp.dp_info.active_interface_manager.retrieve(interface_id: host_port.id)[:interface_id]
+        dp.added_flows.clear
+      end
+    end
+
+    let(:dp_info) { datapath.dp_info }
+
     let(:model_class) { :NetworkRoute }
 
     let(:outer_network) { Fabricate(:pnet_public2) }
     let(:inner_network) { Fabricate(:vnet_1) }
 
     let!(:datapath1) { Fabricate(:datapath_1) }
-    let!(:host_port) { Fabricate(:host_port_any, owner_datapath: datapath1) }
+    let!(:host_port) { Fabricate(:host_port_any, owner_datapath: datapath1, port_name: "test") }
 
     let(:params) do
       {
@@ -112,6 +123,16 @@ describe Vnet::Plugins::VdcVnetPlugin do
         :outer_network_gw => "192.168.2.1",
         :inner_network_gw => "10.102.0.1"
       }
+    end
+
+    before do
+      Vnet::NodeApi::ActiveInterface.create({
+        :interface_id => host_port.id,
+        :datapath_id => datapath1.id,
+        :label => datapath1.canonical_uuid,
+        :singular => nil,
+        :enable_routing => true
+      })
     end
 
     describe "create_entry" do
