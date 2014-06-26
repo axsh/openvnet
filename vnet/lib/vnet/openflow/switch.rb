@@ -202,7 +202,7 @@ module Vnet::Openflow
     end
 
     def update_vlan_translation
-      # TODO
+      # TODO: This should be removed.
     end
     #
     # Internal methods:
