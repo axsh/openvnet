@@ -274,12 +274,17 @@ module Vnet::Plugins
 
     def create_route(route_link, gw)
       #TODO
+      ipv4_network, ipv4_prefix = case gw.network.canonical_uuid
+                                  when 'nw-public' then [0, 0]
+                                  else
+                                    [gw.network.ipv4_network, gw.network.ipv4_prefix]
+                                  end
       params = {
         :interface_id => gw.id,
         :route_link_id => route_link.id,
         :network_id => gw.network.id,
-        :ipv4_network => gw.network.ipv4_network,
-        :ipv4_prefix => gw.network.ipv4_prefix
+        :ipv4_network => ipv4_network,
+        :ipv4_prefix => ipv4_prefix
       }
       Vnet::NodeApi::Route.create(params)
     end
