@@ -107,7 +107,8 @@ module Vnet::Core::Filters
 
     private
     def rule_to_match(protocol, port, ipv4)
-      match_ipv4_subnet_src(ipv4.u32, ipv4.prefix.to_i).merge case protocol
+      prefix = ipv4.to_i == 0 ? 0 : ipv4.prefix.to_i
+      match_ipv4_subnet_src(ipv4.u32, prefix).merge case protocol
       when 'icmp'
         { ip_proto: IPV4_PROTOCOL_ICMP }
       when 'tcp'
@@ -119,9 +120,6 @@ module Vnet::Core::Filters
 
     def parse_rules(rules)
       rules = split_rule_collection(rules).map { |r|
-        r.strip!
-        next if is_comment?(r)
-
         # The model class doesn't allow broken rules to be saved but we check
         # here again in case somebody put them in the database without going
         # through the model class' validation hooks

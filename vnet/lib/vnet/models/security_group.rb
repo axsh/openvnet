@@ -41,9 +41,6 @@ module Vnet::Models
 
     def validate
       rules && split_rule_collection(rules).each { |r|
-        r.strip!
-        next if is_comment?(r)
-
         valid, error_msg = validate_rule(r)
         errors.add(error_msg, "'#{r}'") unless valid
 

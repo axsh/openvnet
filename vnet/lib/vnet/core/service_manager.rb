@@ -132,7 +132,7 @@ module Vnet::Core
       params[:network_id_list] || return
     end
 
-    def activate_interface_update_item_proc(interface_id, params)
+    def activate_interface_update_item_proc(interface_id, value, params)
       network_id_list = params[:network_id_list] || return
 
       Proc.new { |id, item|
