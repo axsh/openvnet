@@ -19,7 +19,7 @@ module Vnet::Plugins
         :NetworkVif => [:Interface],
         :NetworkVifIpLease => [:IpLease],
         :NetworkService => [:NetworkService],
-        :NetworkRoute => [:TranslationStaticAddress]
+        :NetworkRoute => [:TranslationStaticAddress],
         :NetworkVifSecurityGroup => [:InterfaceSecurityGroup]
       }
 
