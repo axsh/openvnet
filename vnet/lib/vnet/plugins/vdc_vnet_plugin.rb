@@ -33,8 +33,8 @@ module Vnet::Plugins
 
     def create_entry(vdc_model_class, vnet_params)
       table[vdc_model_class].each do |vnet_model_class|
-        ret = send("#{vnet_model_class.to_s.underscore}_params", vnet_params)
-        Vnet::NodeApi.const_get(vnet_model_class).create(vnet_params) unless ret == -1
+        send("#{vnet_model_class.to_s.underscore}_params", vnet_params)
+        # Vnet::NodeApi.const_get(vnet_model_class).create(vnet_params) unless ret == -1
       end
     end
 
@@ -143,12 +143,15 @@ module Vnet::Plugins
 
     def network_params(vnet_params)
 
-      if network = Vnet::NodeApi::Network[vnet_params[:uuid]]
+      network = Vnet::NodeApi::Network[vnet_params[:uuid]]
+      if network
         info "network #{vnet_params[:uuid]} already exists as #{network.canonical_uuid}"
-        return -1
+        return
       end
 
-      vnet_params[:ipv4_network] = IPAddr.new(vnet_params[:ipv4_network], Socket::AF_INET).to_i
+      vnet_params.merge(:ipv4_network => IPAddr.new(vnet_params[:ipv4_network]).to_i)
+
+      Vnet::NodeApi::Network.create(vnet_params)
     end
 
     def interface_params(vnet_params)
@@ -199,6 +202,7 @@ module Vnet::Plugins
         interface_id: Vnet::NodeApi::Interface[vnet_params[:interface_uuid]].id,
         security_group_id: Vnet::NodeApi::SecurityGroup[vnet_params[:security_group_uuid]].id
       }
+      Vnet::NodeApi::InterfaceSecurityGroup.create(vnet_params)
     end
 
     def translation_static_address_params(vnet_params)
