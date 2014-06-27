@@ -98,8 +98,6 @@ module Vnet::Plugins
           h.network.canonical_uuid == 'nw-public'
         }
 
-        return -1 if host_ports.empty?
-
         host_ports.each do |host_port|
           datapath_network_params = {
             :datapath_id => datapath.id,
@@ -116,8 +114,6 @@ module Vnet::Plugins
           end
         end
       end
-
-      -1
     end
 
     def network_service_params(vnet_params)
@@ -171,30 +167,46 @@ module Vnet::Plugins
         return -1
       end
 
-      ipaddr = IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i
-      ip_address = Vnet::NodeApi::IpAddress.find({:ipv4_address => ipaddr})
-      if ip_address.nil?
-        info "no ip address found #{ipaddr}.... create ip address"
-        ip_address = Vnet::NodeApi::IpAddress.create({
-          :ipv4_address => ipaddr,
-          :network_id => network.id
-        })
-      end
+      ipaddr_address = ip_address_params(ipv4_address: vnet_params[:ipv4_address], network_id: network.id)
 
-      params = {
-        :mac_lease_id => interface.mac_leases.first.id,
-        :ip_address_id => ip_address.id,
-        :interface_id => interface.id,
-        :enable_routing => false
-      }
+      ip_lease_params(mac_lease_id: interface.mac_leases.first.id,
+                      ip_address_id: ip_address.id,
+                      interface_id: interface.id,
+                      enable_routing: false)
 
-      ip_lease = Vnet::NodeApi::IpLease.find(params)
+      return -1
+    end
+
+    def ip_lease_params(vnet_params)
+      vnet_params[:mac_lease_id] || return
+      vnet_params[:ip_address_id] || return
+      vnet_params[:interface_id] || return
+      vnet_params[:enable_routing] || return
+
+      ip_lease = Vnet::NodeApi::IpLease.find(vnet_params)
 
       if ip_lease.nil?
         Vnet::NodeApi::IpLease.create(params)
       end
 
-      return -1
+      ip_lease
+    end
+
+    def ip_address_params(vnet_params)
+      ipv4_address = vnet_params[:ipv4_address] || return
+      network_id   = vnet_params[:network_id]   || return
+
+      ipaddr = IPAddr.new(ipv4_address).to_i
+
+      ip_address = Vnet::NodeApi::IpAddress.find(:ipv4_address => ipaddr)
+      if ip_address.nil?
+        ip_address = Vnet::NodeApi::IpAddress.create({
+          :ipv4_address => ipaddr,
+          :network_id => network_id
+        })
+      end
+
+      ip_address
     end
 
     def interface_security_group_params(vnet_params)
@@ -209,25 +221,12 @@ module Vnet::Plugins
       outer_network_gateway = find_gw_interface(vnet_params[:outer_network_uuid], vnet_params[:outer_network_gw])
       inner_network_gateway = find_gw_interface(vnet_params[:inner_network_uuid], vnet_params[:inner_network_gw])
 
-      ip_address = Vnet::NodeApi::IpAddress.find(:ipv4_address => IPAddr.new(vnet_params[:ingress_ipv4_address]).to_i)
-      if ip_address.nil?
-        ip_address = Vnet::NodeApi::IpAddress.create({
-          :ipv4_address => IPAddr.new(vnet_params[:ingress_ipv4_address]).to_i,
-          :network_id => outer_network_gateway.ip_leases.first.network.id
-        })
-      end
+      ip_address = ip_address_params(ipv4_address: vnet_params[:ingress_ipv4_address], network_id: outer_network_gateway.ip_leases.first.network.id)
 
-      ip_lease_params_for_nat_ip = {
-        :mac_lease_id => outer_network_gateway.mac_leases.first.id,
-        :ip_address_id => ip_address.id,
-        :interface_id => outer_network_gateway.id,
-        :enable_routing => true
-      }
-      ip_lease_for_nat_ip = Vnet::NodeApi::IpLease.find(ip_lease_params_for_nat_ip)
-
-      if ip_lease_for_nat_ip.nil?
-        ip_lease_for_nat_ip = Vnet::NodeApi::IpLease.create(ip_lease_params_for_nat_ip)
-      end
+      ip_lease_for_nat_ip = ip_lease_params(mac_lease_id: outer_network_gateway.mac_leases.first.id
+                                            ip_address_id: ip_address.id,
+                                            interface_id: outer_network_gateway.id,
+                                            enable_routing: true)
 
       route_link = find_route_link(outer_network_gateway, inner_network_gateway)
 
@@ -385,20 +384,13 @@ module Vnet::Plugins
         return
       end
 
-      ip_address = Vnet::NodeApi::IpAddress.find({:network_id => network.id, :ipv4_address => IPAddr.new(ipv4_gw).to_i})
+      ip_address = ip_address_params(ipv4_address: ipv4_gw, network_id: network.id)
 
-      if ip_address.nil?
-        ip_address = Vnet::NodeApi::IpAddress.create({:network_id => network.id, :ipv4_address => IPAddr.new(ipv4_gw).to_i})
-      end
-
-      ip_lease_params = {
-        :ip_address_id => ip_address.id,
-        :mac_lease_id => interface.mac_leases.first.id,
-        :interface_id => interface.id,
-        :enable_routing => false
-      }
-      Vnet::NodeApi::IpLease.create(ip_lease_params)
-
+      ip_lease_params(ip_address_id: ip_address.id,
+                      mac_lease_id: interface.mac_leases.first.id,
+                      interface_id: interface.id,
+                      enable_routing: false)
+      
       interface
     end
 
