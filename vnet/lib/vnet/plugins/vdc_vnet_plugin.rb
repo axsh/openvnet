@@ -64,8 +64,14 @@ module Vnet::Plugins
             interface_id: interface.id
           ).first
           Vnet::NodeApi::InterfaceSecurityGroup.execute(:destroy, interface_security_group.canonical_uuid)
+        when :Network
+          network = Vnet::NodeApi::Network[options[:uuid]]
+          Vnet::NodeApi::DatapathNetwork.filter(network_id: network.id).map { |dpn| dpn.destroy }
+          network.destroy
+        when :DatapathNetwork
+          # Do nothing.
         else
-          destroy_entry_by_uuid(vnet_model_class, options)
+          destroy_entry_by_uuid(vnet_model_class, options[:uuid])
         end
       end
     end

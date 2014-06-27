@@ -57,7 +57,7 @@ describe Vnet::Plugins::VdcVnetPlugin do
     describe "destroy_entry" do
       it "deletes a record of Network on vnet" do
         subject.create_entry(model_class, deep_copy(params))
-        subject.destroy_entry(model_class, deep_copy(params)[:uuid])
+        subject.destroy_entry(model_class, deep_copy(params))
 
         expect(Vnet::Models::Network[params[:uuid]]).to eq nil
       end
@@ -88,7 +88,7 @@ describe Vnet::Plugins::VdcVnetPlugin do
     describe "destroy_entry" do
       it "deletes an entry of Interface" do
         subject.create_entry(model_class, deep_copy(params))
-        subject.destroy_entry(model_class, deep_copy(params)[:uuid])
+        subject.destroy_entry(model_class, deep_copy(params))
         expect(Vnet::Models::Interface[params[:uuid]]).to eq nil
       end
     end
@@ -99,7 +99,6 @@ describe Vnet::Plugins::VdcVnetPlugin do
     let(:datapath) do
       MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16)).tap do |dp|
         dp.create_mock_datapath_map
-        #h = dp.dp_info.active_interface_manager.retrieve(interface_id: host_port.id)[:interface_id]
         dp.added_flows.clear
       end
     end
