@@ -27,13 +27,26 @@ module Vnet::Core
     end
 
     # Return an 'update_item(item, state_id, params)' proc or nil.
-    def activate_interface_update_item_proc(state_id, params)
+    def activate_interface_update_item_proc(state_id, value, params)
       nil
     end
 
     # Return value must not be nil or false.
     def activate_interface_value(state_id, params)
       true
+    end
+
+    def activate_interface_pre_install(state_id, item)
+      value = @active_interfaces[state_id] || return
+      
+      activate_interface_update_item_proc(state_id, value, {}).tap { |proc|
+        proc && proc.call(item.id, item)
+      }
+    end
+
+    def deactivate_interface_pre_uninstall(state_id, item)
+      value = @active_interfaces[state_id] || return
+      deactivate_interface_update_item_proc(state_id, value, item)
     end
 
     # FOO_ACTIVATE_INTERFACE on queue ':interface'
@@ -44,7 +57,7 @@ module Vnet::Core
       value = activate_interface_value(state_id, params) || return
       @active_interfaces[state_id] = value
 
-      activate_interface_update_item_proc(state_id, params).tap { |proc|
+      activate_interface_update_item_proc(state_id, value, params).tap { |proc|
         next unless proc
 
         @items.select(&activate_interface_match_proc(state_id, params)).each(&proc)
@@ -90,13 +103,26 @@ module Vnet::Core
     end
 
     # Return an 'update_item(item, state_id, params)' proc or nil.
-    def activate_network_update_item_proc(state_id, params)
+    def activate_network_update_item_proc(state_id, value, params)
       nil
     end
 
     # Return value must not be nil or false.
     def activate_network_value(state_id, params)
       true
+    end
+
+    def activate_network_pre_install(state_id, item)
+      value = @active_networks[state_id] || return
+      
+      activate_network_update_item_proc(state_id, value, {}).tap { |proc|
+        proc && proc.call(item.id, item)
+      }
+    end
+
+    def deactivate_network_pre_uninstall(state_id, item)
+      value = @active_networks[state_id] || return
+      deactivate_network_update_item_proc(state_id, value, item)
     end
 
     # FOO_ACTIVATE_NETWORK on queue ':network'
@@ -107,7 +133,7 @@ module Vnet::Core
       value = activate_network_value(state_id, params) || return
       @active_networks[state_id] = value
 
-      activate_network_update_item_proc(state_id, params).tap { |proc|
+      activate_network_update_item_proc(state_id, value, params).tap { |proc|
         next unless proc
 
         @items.select(&activate_network_match_proc(state_id, params)).each(&proc)
@@ -157,13 +183,26 @@ module Vnet::Core
     end
 
     # Return an 'update_item(item, state_id, params)' proc or nil.
-    def activate_port_update_item_proc(state_id, params)
+    def activate_port_update_item_proc(state_id, value, params)
       nil
     end
 
     # Return value must not be nil or false.
     def activate_port_value(state_id, params)
       true
+    end
+
+    def activate_port_pre_install(state_id, item)
+      value = @active_ports[state_id] || return
+      
+      activate_port_update_item_proc(state_id, value, {}).tap { |proc|
+        proc && proc.call(item.id, item)
+      }
+    end
+
+    def deactivate_port_pre_uninstall(state_id, item)
+      value = @active_ports[state_id] || return
+      deactivate_port_update_item_proc(state_id, value, item)
     end
 
     # FOO_ACTIVATE_PORT on queue ':port'
@@ -174,7 +213,7 @@ module Vnet::Core
       value = activate_port_value(state_id, params) || return
       @active_ports[state_id] = value
 
-      activate_port_update_item_proc(state_id, params).tap { |proc|
+      activate_port_update_item_proc(state_id, value, params).tap { |proc|
         next unless proc
 
         @items.select(&activate_port_match_proc(state_id, params)).each(&proc)
@@ -220,13 +259,26 @@ module Vnet::Core
     end
 
     # Return an 'update_item(item, state_id, params)' proc or nil.
-    def activate_route_link_update_item_proc(state_id, params)
+    def activate_route_link_update_item_proc(state_id, value, params)
       nil
     end
 
     # Return value must not be nil or false.
     def activate_route_link_value(state_id, params)
       true
+    end
+
+    def activate_route_link_pre_install(state_id, item)
+      value = @active_route_links[state_id] || return
+      
+      activate_route_link_update_item_proc(state_id, value, {}).tap { |proc|
+        proc && proc.call(item.id, item)
+      }
+    end
+
+    def deactivate_route_link_pre_uninstall(state_id, item)
+      value = @active_route_links[state_id] || return
+      deactivate_route_link_update_item_proc(state_id, value, item)
     end
 
     # FOO_ACTIVATE_ROUTE_LINK on queue ':route_link'
@@ -237,7 +289,7 @@ module Vnet::Core
       value = activate_route_link_value(state_id, params) || return
       @active_route_links[state_id] = value
 
-      activate_route_link_update_item_proc(state_id, params).tap { |proc|
+      activate_route_link_update_item_proc(state_id, value, params).tap { |proc|
         next unless proc
 
         @items.select(&activate_route_link_match_proc(state_id, params)).each(&proc)

@@ -252,7 +252,7 @@ module Vnet::Core
                            cookie_id: mac_lease.cookie_id)
 
       item.ingress_filtering_enabled &&
-        @dp_info.connection_manager.async.catch_new_egress(mac_lease.id, mac_address)
+        @dp_info.connection_manager.async.catch_new_egress(item.id, mac_address)
     end
 
     # INTERFACE_RELEASED_MAC_ADDRESS on queue 'item.id'
@@ -398,7 +398,7 @@ module Vnet::Core
       { port_name: port_name }
     end
 
-    def activate_port_update_item_proc(port_number, params)
+    def activate_port_update_item_proc(port_number, value, params)
       port_name = params[:port_name] || return
 
       Proc.new { |id, item|
