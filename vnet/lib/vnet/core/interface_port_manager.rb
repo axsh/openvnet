@@ -207,8 +207,8 @@ module Vnet::Core
       { port_name: port_name }
     end
 
-    def activate_port_update_item_proc(port_number, params)
-      port_name = params[:port_name] || return
+    def activate_port_update_item_proc(port_number, value, params)
+      # port_name = params[:port_name] || return
 
       Proc.new { |id, item|
         # publish(INTERFACE_PORT_UPDATE_PORT_NUMBER,

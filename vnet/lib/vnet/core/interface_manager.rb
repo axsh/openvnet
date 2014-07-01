@@ -41,6 +41,7 @@ module Vnet::Core
     def retrieve(params)
       error log_format("disabled retrieve method")
       Thread.current.backtrace.each { |str| info log_format(str) }
+      nil
     end
 
     def load_shared_interface(interface_id)

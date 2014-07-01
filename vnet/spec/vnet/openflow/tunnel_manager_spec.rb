@@ -21,8 +21,10 @@ describe Vnet::Core::TunnelManager do
       (1..3).map { |i|
         dp_self = Fabricate("datapath_#{i}")
 
-        interface = Fabricate("interface_dp#{i}eth0",
-                              owner_datapath_id: dp_self.id)
+        interface = Fabricate("interface_dp#{i}eth0")
+        Fabricate(:interface_port_eth0,
+                  interface_id: interface.id,
+                  datapath_id: dp_self.id)
 
         if i != 1
           active_interface = Fabricate(:active_interface,
@@ -55,7 +57,7 @@ describe Vnet::Core::TunnelManager do
 
         if2_id = dp.dp_info.active_interface_manager.retrieve(interface_id: 2)[:interface_id]
         if3_id = dp.dp_info.active_interface_manager.retrieve(interface_id: 3)[:interface_id]
-        if1_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id
+        if1_id = dp.dp_info.interface_manager.load_local_interface(1).id
 
         sleep(0.3)
 
@@ -70,7 +72,7 @@ describe Vnet::Core::TunnelManager do
 
       dp_info.tunnel_manager.update(event: :updated_interface,
                                     interface_event: :set_host_port_number,
-                                    interface_id: dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id,
+                                    interface_id: 1,
                                     port_number: 1)
     end
 
@@ -230,8 +232,10 @@ describe Vnet::Core::TunnelManager do
       (1..3).map { |i|
         dp_self = Fabricate("datapath_#{i}")
 
-        interface = Fabricate("interface_dp#{i}eth0",
-                              owner_datapath_id: dp_self.id)
+        interface = Fabricate("interface_dp#{i}eth0")
+        Fabricate(:interface_port_eth0,
+                  interface_id: interface.id,
+                  datapath_id: dp_self.id)
 
         mac_lease = Fabricate(:mac_lease,
                               interface: interface,
@@ -262,9 +266,9 @@ describe Vnet::Core::TunnelManager do
 
         dp.create_mock_datapath_map
 
-        dp.dp_info.active_interface_manager.retrieve(interface_id: 2)[:interface_id]
-        dp.dp_info.active_interface_manager.retrieve(interface_id: 3)[:interface_id]
-        dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        dp_info.active_interface_manager.retrieve(interface_id: 2)[:interface_id]
+        dp_info.active_interface_manager.retrieve(interface_id: 3)[:interface_id]
+        dp_info.interface_manager.load_local_interface(1).id
       }
     }
 
@@ -272,7 +276,7 @@ describe Vnet::Core::TunnelManager do
       datapath.dp_info.tunnel_manager.tap do |tm|
         dp_info = datapath.dp_info
 
-        if_dp1eth0 = dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        if_dp1eth0 = dp_info.interface_manager.detect(uuid: 'if-dp1eth0')
         expect(if_dp1eth0)
 
         dp_info.tunnel_manager.update(event: :updated_interface,

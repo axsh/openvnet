@@ -430,7 +430,7 @@ describe Vnet::Core::FilterManager do
       subject.removed_interface_from_sg(
         id: group.id,
         interface_id: interface2.id,
-        interface_owner_datapath_id: interface2.owner_datapath_id,
+        #interface_owner_datapath_id: interface2.owner_datapath_id,
       )
     end
 
