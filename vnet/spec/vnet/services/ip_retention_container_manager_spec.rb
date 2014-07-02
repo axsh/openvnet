@@ -20,9 +20,6 @@ describe Vnet::Services::IpRetentionContainerManager do
         manager.wait_for_loaded({ id: i + 1 }, 1.0)
       end
 
-      # Test...
-      sleep 1.0
-
       ip_retention_containers = manager.instance_variable_get(:@items)
 
       expect(ip_retention_containers.size).to eq 3
