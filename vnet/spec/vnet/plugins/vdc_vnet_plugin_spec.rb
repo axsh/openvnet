@@ -112,6 +112,25 @@ describe Vnet::Plugins::VdcVnetPlugin do
 
     let!(:datapath1) { Fabricate(:datapath_1) }
     let!(:host_port) { Fabricate(:host_port_any, owner_datapath: datapath1, port_name: "test") }
+    let!(:gw_interface) do
+      interface = Fabricate(:interface)
+      interface.mode = 'simulated'
+      interface.enable_routing = true
+      interface.enable_route_translation = true
+      interface.display_name = "gw_#{outer_network.canonical_uuid}"
+      interface.owner_datapath_id = datapath1.id
+
+      mac_lease = Fabricate(:mac_lease_any) do
+        mac_address 1
+        interface_id interface.id
+      end
+
+      ip_lease = Fabricate(:ip_lease_any, interface: interface, mac_lease: mac_lease, network: outer_network, ipv4_address: 1)
+
+      interface.add_ip_lease(ip_lease)
+      interface.save
+      interface
+    end
 
     let(:params) do
       {
@@ -126,7 +145,7 @@ describe Vnet::Plugins::VdcVnetPlugin do
 
     before do
       Vnet::NodeApi::ActiveInterface.create({
-        :interface_id => host_port.id,
+       :interface_id => host_port.id,
         :datapath_id => datapath1.id,
         :label => datapath1.canonical_uuid,
         :singular => nil,
@@ -142,7 +161,14 @@ describe Vnet::Plugins::VdcVnetPlugin do
         inner_gw = Vnet::Models::Interface.find({:display_name => "gw_#{inner_network.canonical_uuid}"})
 
         expect(outer_gw).not_to eq nil
+        expect(outer_gw.owner_datapath_id).to eq datapath1.id
+        expect(outer_gw.enable_routing).to eq true
+        expect(outer_gw.enable_route_translation).to eq true
+
         expect(inner_gw).not_to eq nil
+        expect(inner_gw.owner_datapath_id).to eq nil
+        expect(inner_gw.enable_routing).to eq true
+        expect(inner_gw.enable_route_translation).to eq false
 
         route_inner = Vnet::Models::Route.find({:network_id => inner_network.id})
         route_outer = Vnet::Models::Route.find({:network_id => outer_network.id})

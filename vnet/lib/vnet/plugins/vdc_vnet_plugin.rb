@@ -17,7 +17,7 @@ module Vnet::Plugins
         # :vdc_model => :vnet_model
         :Network => [:Network, :DatapathNetwork],
         :NetworkVif => [:Interface],
-        :NetworkVifIpLease => [:IpLease],
+        :NetworkVifIpLease => [:IpAddress, :IpLease],
         :NetworkService => [:NetworkService],
         :NetworkRoute => [:TranslationStaticAddress],
         :NetworkVifSecurityGroup => [:InterfaceSecurityGroup]
@@ -117,28 +117,25 @@ module Vnet::Plugins
     end
 
     def network_service_params(vnet_params)
-      si_params = simulated_interface_params(vnet_params)
+      return unless ['dns', 'dhcp'].include? vnet_params[:name]
 
-      return -1 unless ['dns', 'dhcp'].include? vnet_params[:name]
+      simulated_interface = interface_params(ipv4_address: IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i,
+                                            mac_address: vnet_params[:mac_address],
+                                            mode: "simulated",
+                                            network_id: Vnet::NodeApi::Network[vnet_params[:network_uuid]].id)
 
-      if si_params[:network_id].nil?
-        info "#{vnet_params[:network_uuid]} does not exist on vnet"
-        return
+      params = {
+        :interface_id => simulated_interface.id,
+        :type => vnet_params[:name]
+      }
+      ns = Vnet::NodeApi::NetworkService.find(params)
+      if ns.nil?
+        Vnet::NodeApi::NetworkService.create(params)
       end
-
-      interface = Vnet::NodeApi.const_get(:Interface).create(si_params)
-
-      vnet_params[:interface_id] = interface.id
-      vnet_params[:type] = vnet_params.delete(:name)
-
-      vnet_params.delete(:ipv4_address)
-      vnet_params.delete(:mac_address)
-      vnet_params.delete(:network_id)
-      vnet_params.delete(:network_uuid)
+      ns
     end
 
     def network_params(vnet_params)
-
       network = Vnet::NodeApi::Network[vnet_params[:uuid]]
       if network
         info "network #{vnet_params[:uuid]} already exists as #{network.canonical_uuid}"
@@ -151,40 +148,66 @@ module Vnet::Plugins
     end
 
     def interface_params(vnet_params)
-      vnet_params[:mac_address] = ::Trema::Mac.new(vnet_params[:mac_address]).value
-    end
+      vnet_params[:mac_address] = ::Trema::Mac.new(vnet_params[:mac_address]).value if vnet_params[:mac_adddress]
 
-    def ip_lease_params(vnet_params)
-      network = Vnet::NodeApi::Network[vnet_params[:network_uuid]]
-      if network.nil?
-        error "no network #{vnet_params[:network_uuid]}"
-        return -1
-      end
+      interface = if vnet_params[:ipv4_address] && vnet_params[:mac_address]
+                    Vnet::NodeApi::Interface.find_all {|i|
+                      i.ipv4_address == vnet_params[:ipv4_address] &&
+                      i.mac_address == vnet_params[:mac_address]
+                    }
+                  elsif vnet_params[:uuid]
+                    Vnet::NodeApi::Interface[vnet_params[:uuid]]
+                  else
+                    Vnet::NodeApi::Interface.find(vnet_params)
+                  end
 
-      interface = Vnet::NodeApi::Interface[vnet_params[:interface_uuid]]
       if interface.nil?
-        error "no interface #{vnet_params[:interface_uuid]}"
-        return -1
+        interface = Vnet::NodeApi::Interface.create(vnet_params)
       end
-
-      ipaddr_address = ip_address_params(ipv4_address: vnet_params[:ipv4_address], network_id: network.id)
-
-      ip_lease_params(mac_lease_id: interface.mac_leases.first.id,
-                      ip_address_id: ip_address.id,
-                      interface_id: interface.id,
-                      enable_routing: false)
-
-      return -1
+      interface
     end
 
     def ip_lease_params(vnet_params)
-      vnet_params[:mac_lease_id] || return
-      vnet_params[:ip_address_id] || return
-      vnet_params[:interface_id] || return
-      vnet_params[:enable_routing] || return
+      if vnet_params.has_key? :mac_lease_id
+        mac_lease_id = vnet_params[:mac_lease_id]
+      elsif vnet_params.has_key? :interface_uuid
+        mac_lease_id = Vnet::NodeApi::Interface[vnet_params[:interface_uuid]].mac_leases.first.id
+      else
+        return
+      end
 
-      ip_lease = Vnet::NodeApi::IpLease.find(vnet_params)
+      if vnet_params.has_key? :ip_address_id
+        ip_address_id = vnet_params[:ip_address_id]
+      elsif vnet_params.has_key? :ipv4_address
+        ip_address_id = ip_address_params(
+          ipv4_address: vnet_params[:ipv4_address],
+          network_id: Vnet::NodeApi::Network[vnet_params[:network_uuid]].id).id
+      else
+        return
+      end
 
+      if vnet_params.has_key? :interface_id
+        interface_id = vnet_params[:interface_id]
+      elsif vnet_params.has_key? :interface_uuid
+        interface_id = Vnet::NodeApi::Interface[vnet_params[:interface_uuid]].id
+      else
+        return
+      end
+
+      enable_routing = if vnet_params.has_key? :enable_routing
+                         vnet_params[:enable_routing]
+                       else
+                         false
+                       end
+
+      params = {
+        :mac_lease_id => mac_lease_id,
+        :ip_address_id => ip_address_id,
+        :interface_id => interface_id,
+        :enable_routing => enable_routing
+      }
+
+      ip_lease = Vnet::NodeApi::IpLease.find(params)
       if ip_lease.nil?
         Vnet::NodeApi::IpLease.create(params)
       end
@@ -194,11 +217,17 @@ module Vnet::Plugins
 
     def ip_address_params(vnet_params)
       ipv4_address = vnet_params[:ipv4_address] || return
-      network_id   = vnet_params[:network_id]   || return
+      if vnet_params.has_key? :network_id
+        network_id = vnet_params[:network_id]
+      elsif vnet_params.has_key? :network_uuid
+        network_id = Vnet::NodeApi::Network[vnet_params[:network_uuid]].id
+      else
+        return
+      end
 
       ipaddr = IPAddr.new(ipv4_address).to_i
 
-      ip_address = Vnet::NodeApi::IpAddress.find(:ipv4_address => ipaddr)
+      ip_address = Vnet::NodeApi::IpAddress.find(:ipv4_address => ipaddr, :network_id => network_id)
       if ip_address.nil?
         ip_address = Vnet::NodeApi::IpAddress.create({
           :ipv4_address => ipaddr,
@@ -223,7 +252,7 @@ module Vnet::Plugins
 
       ip_address = ip_address_params(ipv4_address: vnet_params[:ingress_ipv4_address], network_id: outer_network_gateway.ip_leases.first.network.id)
 
-      ip_lease_for_nat_ip = ip_lease_params(mac_lease_id: outer_network_gateway.mac_leases.first.id
+      ip_lease_for_nat_ip = ip_lease_params(mac_lease_id: outer_network_gateway.mac_leases.first.id,
                                             ip_address_id: ip_address.id,
                                             interface_id: outer_network_gateway.id,
                                             enable_routing: true)
@@ -264,17 +293,8 @@ module Vnet::Plugins
       vnet_params.delete(:inner_network_uuid)
       vnet_params.delete(:outer_network_gw)
       vnet_params.delete(:inner_network_gw)
-    end
 
-    def simulated_interface_params(vnet_params)
-      network = Vnet::NodeApi::Network[vnet_params[:network_uuid]]
-
-      {
-        :ipv4_address => IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i,
-        :mac_address => ::Trema::Mac.new(vnet_params[:mac_address]).value,
-        :mode => "simulated",
-        :network_id => network && network.id
-      }
+      Vnet::NodeApi::TranslationStaticAddress.create(vnet_params)
     end
 
     def find_route(gw)
@@ -390,7 +410,7 @@ module Vnet::Plugins
                       mac_lease_id: interface.mac_leases.first.id,
                       interface_id: interface.id,
                       enable_routing: false)
-      
+
       interface
     end
 
