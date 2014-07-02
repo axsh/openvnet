@@ -13,12 +13,15 @@ describe Vnet::Services::IpRetentionContainerManager do
       end
     end
 
-    it "laod all database records into items" do
+    it "load all database records into items" do
       manager.async.send(:load_all_items)
 
       3.times do |i|
         manager.wait_for_loaded({ id: i + 1 }, 1.0)
       end
+
+      # Test...
+      sleep 1.0
 
       ip_retention_containers = manager.instance_variable_get(:@items)
 
