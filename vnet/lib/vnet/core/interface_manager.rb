@@ -181,16 +181,13 @@ module Vnet::Core
         return
       end
 
-      label = nil
-      singular = true
-
       case item.mode
-      when :internal
+      when :internal, :simulated
         label = @datapath_info.uuid
         singular = nil
-      when :simulated
-        label = @datapath_info.uuid
-        singular = nil
+      else
+        label = nil
+        singular = true
       end
 
       params = {
@@ -347,33 +344,13 @@ module Vnet::Core
 
       # Todo: Add the possibility to use a 'filter' parameter for this.
       item = internal_detect(id: id)
-      return update_item_not_found(event, id, params) if item.nil?
+      return if item.nil?
 
       case event
       when :updated
         # api event
         item.update
       end
-    end
-
-    def update_item_not_found(event, id, params)
-      case event
-      when :updated
-        changed_columns = params[:changed_columns]
-        return if changed_columns.nil?
-
-        # changed_owner_dp = changed_columns["owner_datapath_id"]
-
-        # if changed_owner_dp
-        #   return if
-        #     changed_owner_dp.nil? ||
-        #     changed_owner_dp != @datapath_info.id
-
-        #   item_by_params(id: id)
-        # end
-      end
-
-      nil
     end
 
     #
