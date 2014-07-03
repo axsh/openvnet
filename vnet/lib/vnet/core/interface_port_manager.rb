@@ -106,22 +106,17 @@ module Vnet::Core
 
       # TODO: Clean up.
       if item.port_name
-        @active_ports.detect { |port_number, active_port|
-          item.port_name == active_port[:port_name]
-        }.tap { |port_number, active_port|
-          next unless port_number && active_port
-          item.port_number = port_number
-
-          @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
-                                        id: item.port_number,
-                                        interface_id: item.interface_id,
-                                        interface_mode: item.interface_mode)
-
-          @dp_info.network_manager.set_interface_port(item.interface_id, port_number)
-        }
+        update_active_port(item)
 
         # TODO: Fail if not found, not singular, not port_number?
+        return if item.port_number.nil?
 
+        @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+                                      id: item.port_number,
+                                      interface_id: item.interface_id,
+                                      interface_mode: item.interface_mode)
+
+        @dp_info.network_manager.set_interface_port(item.interface_id, item.port_number)
         @dp_info.interface_manager.load_local_port(item.interface_id, item.port_name, item.port_number)
 
       else
@@ -190,8 +185,17 @@ module Vnet::Core
       return params[:datapath_id] == @datapath_info.id
     end
 
+    def update_active_port(item)
+      @active_ports.detect { |port_number, active_port|
+        item.port_name == active_port[:port_name]
+      }.tap { |port_number, active_port|
+        next unless port_number && active_port
+        item.port_number = port_number
+      }
+    end
+
     #
-    # Overload helper methods:
+    # Active port methods:
     #
 
     def activate_port_query(state_id, params)
