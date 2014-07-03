@@ -28,7 +28,7 @@ module Vnet::Openflow
     def get_bridge_name(datapath_id)
       command = "#{@ovs_vsctl} --no-heading -- --columns=name find bridge datapath_id=%016x" % datapath_id
       debug log_format('get bridge name', command) if verbose
-      /^"(.*)"/.match(`#{command}`)[1]
+      `#{command}`.gsub(/"/, "").strip
     end
 
     def add_flow(flow)
