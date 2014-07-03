@@ -13,6 +13,7 @@ Sequel.migration do
       Integer :interface_id, :index => true, :null => false
       Integer :datapath_id, :index => true, :null => false
       String :port_name, :index => true
+      String :port_number, :index => true
 
       String :label
       TrueClass :singular

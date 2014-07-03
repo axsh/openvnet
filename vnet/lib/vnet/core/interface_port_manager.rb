@@ -122,6 +122,8 @@ module Vnet::Core
                                       id: item.port_number,
                                       interface_id: item.interface_id,
                                       interface_mode: item.interface_mode)
+
+        @dp_info.network_manager.set_interface_port(item.interface_id, port_number)
       }
     end
 
@@ -132,6 +134,7 @@ module Vnet::Core
                                     id: item.port_number,
                                     interface_id: item.id)
 
+      @dp_info.network_manager.clear_interface_port(item.interface_id)
       @dp_info.interface_manager.unload(id: item.interface_id)
     end
 

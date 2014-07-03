@@ -41,7 +41,8 @@ module Vnet::Core::InterfacePorts
     end
 
     def pretty_properties
-      "interface_id:#{@interface_id} datapath_id:#{@datapath_id} interface_mode:#{@interface_mode}" +
+      "interface_id:#{@interface_id} interface_mode:#{@interface_mode}" +
+        (@datapath_id ? " datapath_id:#{@datapath_id}" : '') +
         (@port_name ? ' port_name:' + @port_name : '') +
         (@singular ? ' singular' : '')
     end

@@ -3,7 +3,6 @@
 module Vnet::Core
 
   class InterfaceManager < Vnet::Core::Manager
-    include ActivePortEvents
 
     #
     # Events:
@@ -13,9 +12,6 @@ module Vnet::Core
     subscribe_event INTERFACE_CREATED_ITEM, :created_item
     subscribe_event INTERFACE_DELETED_ITEM, :unload_item
 
-    subscribe_event INTERFACE_ACTIVATE_PORT, :activate_port
-    subscribe_event INTERFACE_DEACTIVATE_PORT, :deactivate_port
-
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
     subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
     subscribe_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
@@ -24,6 +20,11 @@ module Vnet::Core
     subscribe_event INTERFACE_RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
+
+    def initialize(*args)
+      super
+      @interface_ports = {}
+    end
 
     def load_simulated_on_network_id(network_id)
       # TODO: Add list of active network id's for which we should have
@@ -52,6 +53,16 @@ module Vnet::Core
       item_to_hash(item_by_params(id: interface_id))
     end
 
+    def load_local_port(interface_id, port_name, port_number)
+      # TODO: Check if interface_id/port_number exists.
+      @interface_ports[interface_id] = {
+        port_name: port_name,
+        port_number: port_number
+      }
+
+      item_to_hash(item_by_params(id: interface_id))
+    end
+
     #
     # Internal methods:
     #
@@ -74,6 +85,8 @@ module Vnet::Core
       INTERFACE_UNLOAD_ITEM
     end
 
+    # The port_name and port_number filter arguments only applies to
+    # already loaded items.
     def match_item_proc_part(filter_part)
       filter, value = filter_part
 
@@ -89,7 +102,6 @@ module Vnet::Core
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
       filter << {mode: params[:mode]} if params.has_key? :mode
-      filter << {port_name: params[:port_name]} if params.has_key? :port_name
       filter
     end
 
@@ -108,7 +120,12 @@ module Vnet::Core
           Interfaces::Base
         end
 
-      item_class.new(dp_info: @dp_info, map: item_map)
+      port = @interface_ports[item_map.id]
+
+      item_class.new(dp_info: @dp_info,
+                     map: item_map,
+                     port_name: port && port[:port_name],
+                     port_number: port && port[:port_number])
     end
 
     #
@@ -117,20 +134,6 @@ module Vnet::Core
 
     def item_pre_install(item, item_map)
       activate_local_interface(item)
-
-      if item.port_name
-        @active_ports.detect { |port_number, active_port|
-          item.port_name == active_port[:port_name]
-        }.tap { |port_number, active_port|
-          next unless port_number && active_port
-
-          item.update_port_number(port_number)
-
-          # @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
-          #                               id: item.port_number,
-          #                               interface: item_to_hash(item))
-        }
-      end
     end
 
     def item_post_install(item, item_map)
@@ -145,11 +148,6 @@ module Vnet::Core
     end
 
     def item_post_uninstall(item)
-      # item.port_number &&
-      #   @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
-      #                                 id: item.port_number,
-      #                                 interface_id: item.id)
-
       @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
                                       id: :interface,
                                       interface_id: item.id)
@@ -168,14 +166,15 @@ module Vnet::Core
       return if internal_detect_by_id(params)
       return unless @dp_info.port_manager.detect(port_name: params[:port_name])
 
-      # self.retrieve(params)
+      # Do nothing for now.
     end
 
     #
     # Helper methods:
     #
 
-    # Change this to depend on how the interface was loaded by interface_ports
+    # TODO: Change this to depend on how the interface was loaded by
+    # interface_ports (or rather, move to interface_port_manager).
     def activate_local_interface(item)
       if @datapath_info.nil? || @datapath_info.uuid.nil?
         error log_format("cannot activate local interface when datapath_info.uuid is nil")
@@ -197,6 +196,7 @@ module Vnet::Core
       params = {
         interface_id: item.id,
         port_name: item.port_name,
+        port_number: item.port_number,
         label: label,
         singular: singular,
         enable_routing: item.enable_routing
@@ -379,38 +379,6 @@ module Vnet::Core
     #
     # Overload helper methods:
     #
-
-    # TODO: Remove these:
-
-    def activate_port_query(state_id, params)
-      { port_name: params[:port_name]
-      }
-    end
-
-    def activate_port_match_proc(state_id, params)
-      port_name = params[:port_name]
-
-      Proc.new { |id, item| item.port_name == port_name }
-    end
-
-    def activate_port_value(port_number, params)
-      port_name = params[:port_name] || return
-
-      { port_name: port_name }
-    end
-
-    def activate_port_update_item_proc(port_number, value, params)
-      port_name = params[:port_name] || return
-
-      Proc.new { |id, item|
-        item.port_name = port_name
-
-        # publish(INTERFACE_UPDATED,
-        #         event: :set_port_number,
-        #         id: id,
-        #         port_number: port_number)
-      }
-    end
 
   end
 

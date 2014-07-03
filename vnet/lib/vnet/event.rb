@@ -67,9 +67,6 @@ module Vnet
     INTERFACE_CREATED_ITEM = "interface_created_item"
     INTERFACE_DELETED_ITEM = "interface_deleted_item"
 
-    INTERFACE_ACTIVATE_PORT = "interface_activate_port"
-    INTERFACE_DEACTIVATE_PORT = "interface_deactivate_port"
-
     INTERFACE_UPDATED = "interface_updated"
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
