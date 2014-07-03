@@ -45,6 +45,8 @@ module Vnet::Core
       nil
     end
 
+    # Disable unload... (?)
+
     def load_shared_interface(interface_id)
       item_to_hash(item_by_params(id: interface_id))
     end
@@ -61,6 +63,10 @@ module Vnet::Core
       }
 
       item_to_hash(item_by_params(id: interface_id))
+    end
+
+    def unload_local_port(interface_id, port_name, port_number)
+      
     end
 
     #

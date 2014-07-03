@@ -104,27 +104,33 @@ module Vnet::Core
         return
       end
 
-      if item.singular
-        @dp_info.interface_manager.load_local_interface(item.interface_id)
+      # TODO: Clean up.
+      if item.port_name
+        @active_ports.detect { |port_number, active_port|
+          item.port_name == active_port[:port_name]
+        }.tap { |port_number, active_port|
+          next unless port_number && active_port
+          item.port_number = port_number
+
+          @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
+                                        id: item.port_number,
+                                        interface_id: item.interface_id,
+                                        interface_mode: item.interface_mode)
+
+          @dp_info.network_manager.set_interface_port(item.interface_id, port_number)
+        }
+
+        # TODO: Fail if not found, not singular, not port_number?
+
+        @dp_info.interface_manager.load_local_port(item.interface_id, item.port_name, item.port_number)
+
       else
-        @dp_info.interface_manager.load_shared_interface(item.interface_id)
+        if item.singular
+          @dp_info.interface_manager.load_local_interface(item.interface_id)
+        elsif 
+          @dp_info.interface_manager.load_shared_interface(item.interface_id)
+        end
       end
-
-      return unless item.port_name
-
-      @active_ports.detect { |port_number, active_port|
-        item.port_name == active_port[:port_name]
-      }.tap { |port_number, active_port|
-        next unless port_number && active_port
-        item.port_number = port_number
-
-        @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
-                                      id: item.port_number,
-                                      interface_id: item.interface_id,
-                                      interface_mode: item.interface_mode)
-
-        @dp_info.network_manager.set_interface_port(item.interface_id, port_number)
-      }
     end
 
     def item_post_uninstall(item)
