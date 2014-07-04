@@ -83,8 +83,14 @@ module Vnet::Core
       filter
     end
 
+    # We only initialize interface ports that are allowed on this
+    # datapath.
+    #
+    # If the interface port has a port name, then we require port
+    # manager to have provided an associated port number.
     def item_initialize(item_map)
-      return unless @datapath_info
+      return if @datapath_info.nil?
+      return if item_map.datapath_id && item_map.datapath_id != @datapath_info.id
 
       item_class = InterfacePorts::Base
 
@@ -92,6 +98,19 @@ module Vnet::Core
                             datapath_info: @datapath_info,
                             id: item_map[:id],
                             map: item_map)
+
+      if item.port_name
+        update_active_port(item)
+        return if item.port_number.nil?
+      end
+
+      if item_map.datapath_id && item_map.singular.nil?
+        warn log_format('could not initialize interface port, must be singular if datapath_id is set',
+                        item.pretty_properties)
+        return
+      end
+
+      item
     end
 
     #
@@ -106,10 +125,10 @@ module Vnet::Core
 
       # TODO: Clean up.
       if item.port_name
-        update_active_port(item)
+        # update_active_port(item)
 
         # TODO: Fail if not found, not singular, not port_number?
-        return if item.port_number.nil?
+        # return if item.port_number.nil?
 
         @dp_info.port_manager.publish(PORT_ATTACH_INTERFACE,
                                       id: item.port_number,
@@ -143,6 +162,8 @@ module Vnet::Core
     def created_item(params)
       return unless params_valid_item? params
       return if internal_detect_by_id(params)
+
+      # TODO: Check if we need this item.
 
       internal_new_item(mw_class.new(params))
     end
