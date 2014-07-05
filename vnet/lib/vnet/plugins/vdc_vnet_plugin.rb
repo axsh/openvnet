@@ -34,7 +34,6 @@ module Vnet::Plugins
     def create_entry(vdc_model_class, vnet_params)
       table[vdc_model_class].each do |vnet_model_class|
         send("#{vnet_model_class.to_s.underscore}_params", vnet_params)
-        # Vnet::NodeApi.const_get(vnet_model_class).create(vnet_params) unless ret == -1
       end
     end
 
