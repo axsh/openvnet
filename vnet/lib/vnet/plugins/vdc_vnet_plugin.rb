@@ -142,7 +142,7 @@ module Vnet::Plugins
         return
       end
 
-      vnet_params.merge(:ipv4_network => IPAddr.new(vnet_params[:ipv4_network]).to_i)
+      vnet_params[:ipv4_network] = IPAddr.new(vnet_params[:ipv4_network], Socket::AF_INET).to_i
 
       Vnet::NodeApi::Network.create(vnet_params)
     end
