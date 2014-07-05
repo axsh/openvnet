@@ -85,18 +85,9 @@ module Vnet::Core
 
     # TRANSLATION_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-      if @items[params[:id]]
-        info log_format("item exists(id: #{params[:id]}, item: #{@items[params[:id]]})")
-        return
-      end
-
-      interface_id = params[:interface_id] || return
-
-      @dp_info.active_interface_manager.wait_for_loaded(interface_id: interface_id)
-      unless @active_interfaces[interface_id]
-        error log_format("no active_interface", "interface_id:#{interface_id}")
-        return
-      end
+      return if internal_detect_by_id(params)
+      return if params[:interface_id].nil?
+      return if @active_interfaces[params[:interface_id]].nil?
 
       internal_new_item(mw_class.new(params))
     end
