@@ -23,10 +23,12 @@ class MockDpInfo < Vnet::Core::DpInfo
   attr_reader :deleted_tunnels
 
   def initialize(params)
-    super
-
     @added_tunnels = []
     @deleted_tunnels = []
+
+    @lock = Mutex.new
+
+    super
   end
 
   def create_mock_port_manager
@@ -34,36 +36,37 @@ class MockDpInfo < Vnet::Core::DpInfo
   end
 
   def send_message(message)
-    @datapath.sent_messages << message
+    @lock.synchronize { @datapath.sent_messages << message }
   end
 
   def add_flow(flow)
-    @datapath.add_flow(flow)
+    @lock.synchronize { @datapath.add_flow(flow) }
   end
 
   def add_flows(flows)
-    @datapath.add_flows(flows)
+    @lock.synchronize { @datapath.add_flows(flows) }
   end
 
   def del_cookie(cookie, cookie_mask = 0xffffffffffffffff)
-    @datapath.del_cookie(cookie, cookie_mask)
+    @lock.synchronize { @datapath.del_cookie(cookie, cookie_mask) }
   end
 
   def del_flows(flows)
-    @datapath.del_flows(flows)
+    @lock.synchronize { @datapath.del_flows(flows) }
   end
 
   def add_ovs_flow(ovs_flow)
-    @datapath.added_ovs_flows << ovs_flow
+    @lock.synchronize { @datapath.added_ovs_flows << ovs_flow }
   end
 
   def add_tunnel(tunnel_name, params = {})
-    @added_tunnels << params.merge(tunnel_name: tunnel_name)
+    @lock.synchronize { @added_tunnels << params.merge(tunnel_name: tunnel_name) }
   end
 
   def delete_tunnel(tunnel_name)
-    @deleted_tunnels << tunnel_name
+    @lock.synchronize { @deleted_tunnels << tunnel_name }
   end
+
 end
 
 class MockDatapath < Vnet::Openflow::Datapath

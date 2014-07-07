@@ -150,6 +150,8 @@ describe Vnet::Core::TunnelManager do
       host_datapath_networks
       remote_datapath_networks_1
 
+      sleep(0.3)
+
       datapath.added_flows.clear
 
       host_port_1
