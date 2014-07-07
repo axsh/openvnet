@@ -23,7 +23,19 @@ module Vnet::Core
     def load_internal_interfaces
       return if @datapath_info.nil?
 
-      # internal_load_where(mode: 'internal', allowed_datapath: true)
+      internal_load_where(mode: 'internal', allowed_datapath: true)
+    end
+
+    def load_simulated_on_network_id(network_id)
+      # TODO: Add list of active network id's for which we should have
+      # simulated interfaces loaded.
+
+      batch = MW::IpLease.batch.dataset.where_network_id(network_id)
+      batch = batch.where_interface_mode('simulated')
+
+      batch.all_interface_ids.commit.each { |item_id|
+        internal_retrieve(id: item_id, allowed_datapath: true)
+      }
     end
 
     #

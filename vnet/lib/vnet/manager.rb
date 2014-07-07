@@ -229,6 +229,7 @@ module Vnet
 
       internal_new_item(item_map)
     end
+    alias_method :internal_retrieve, :item_by_params
 
     # The default select call with no fill options.
     def select_item(batch)

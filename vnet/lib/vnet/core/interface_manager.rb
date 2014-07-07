@@ -26,18 +26,6 @@ module Vnet::Core
       @interface_ports = {}
     end
 
-    def load_simulated_on_network_id(network_id)
-      # TODO: Add list of active network id's for which we should have
-      # simulated interfaces loaded.
-
-      batch = MW::IpLease.batch.dataset.where_network_id(network_id)
-      batch = batch.where_interface_mode('simulated')
-
-      batch.all_interface_ids.commit.each { |item_id|
-        item_by_params(id: item_id)
-      }
-    end
-
     # Disable retrieve...
     def retrieve(params)
       error log_format("disabled retrieve method")
