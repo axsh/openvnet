@@ -19,7 +19,7 @@ module Vnet
 
     def retrieve(params)
       begin
-        item_to_hash(item_by_params(params))
+        item_to_hash(internal_retrieve(params))
       rescue Celluloid::Task::TerminatedError => e
         raise e
       rescue Exception => e
@@ -216,7 +216,7 @@ module Vnet
       item && item.to_hash
     end
 
-    def item_by_params(params)
+    def internal_retrieve(params)
       item = internal_detect(params)
       return item if item
 
@@ -229,7 +229,7 @@ module Vnet
 
       internal_new_item(item_map)
     end
-    alias_method :internal_retrieve, :item_by_params
+    alias_method :item_by_params, :internal_retrieve
 
     # The default select call with no fill options.
     def select_item(batch)
@@ -392,7 +392,7 @@ module Vnet
 
       return if !push_message(item_id, params[:message])
 
-      item = item_by_params(id: item_id)
+      item = internal_retrieve(id: item_id)
       return if item.nil?
 
       return item
