@@ -7,8 +7,9 @@ include Vnet::Openflow::FlowHelpers
 
 describe Vnet::Core::FilterManager do
   let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
-  let(:flows) { datapath.current_flows }
-  let(:deleted_flows) { datapath.deleted_flows }
+  let(:dp_info) { datapath.dp_info }
+  let(:flows) { dp_info.current_flows }
+  let(:deleted_flows) { dp_info.deleted_flows }
 
   let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
   let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }

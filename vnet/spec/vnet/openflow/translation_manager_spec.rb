@@ -14,6 +14,7 @@ describe Vnet::Core::TranslationManager do
       end
     end
     let(:datapath) { MockDatapath.new(double, ("a"*16).to_i(16)) }
+    let(:dp_info) { datapath.dp_info }
 
     subject { Vnet::Core::TranslationManager.new(datapath) }
 

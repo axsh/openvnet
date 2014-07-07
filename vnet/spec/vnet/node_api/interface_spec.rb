@@ -36,6 +36,7 @@ describe Vnet::NodeApi::Interface do
 
   describe "update" do
     let(:datapath) { Fabricate(:datapath) }
+    let(:dp_info) { datapath.dp_info }
     let(:interface) do
       Fabricate(:interface,
         mac_leases: [
@@ -69,6 +70,7 @@ describe Vnet::NodeApi::Interface do
   describe "delete" do
     let(:network) { Fabricate(:network) }
     let(:datapath) { Fabricate(:datapath) }
+    let(:dp_info) { datapath.dp_info }
     let(:interface) do
       Fabricate(:interface,
         mac_leases: [

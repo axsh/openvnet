@@ -15,12 +15,13 @@ describe Vnet::Core::Networks::Virtual do
   describe "install vnet_1 without broadcast_mac_address" do
     let(:vnet_map) { Vnet::ModelWrappers::Network['nw-aaaaaaaa'] }
     let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
+    let(:dp_info) { datapath.dp_info }
     let(:flow_options) { {:cookie => vnet_map.id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)} }
     let(:network_md) { subject.md_create(:network => vnet_map.id) }
     let(:fo_network_md) { flow_options.merge(network_md) }
-    let(:flows) { datapath.added_flows }
+    let(:flows) { dp_info.added_flows }
 
-    subject { Vnet::Core::Networks::Virtual.new(dp_info: datapath, map: vnet_map) }
+    subject { Vnet::Core::Networks::Virtual.new(dp_info: dp_info, map: vnet_map) }
 
     it "has flows for destination filtering" do
       subject.install

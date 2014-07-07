@@ -61,8 +61,12 @@ describe Vnet::Core::TunnelManager do
 
         sleep(0.3)
 
-        dp.added_flows.clear
+        dp.dp_info.added_flows.clear
       end
+    end
+
+    let(:dp_info) do
+      datapath.dp_info
     end
 
     # TODO: Make some tests fail when the tunnel port is loaded but
@@ -137,12 +141,12 @@ describe Vnet::Core::TunnelManager do
       host_datapath_networks
       # host_port_1
 
-      added_flows = datapath.added_flows.uniq
+      added_flows = dp_info.added_flows.uniq
       # added_flows.each { |flow| pp flow.inspect }
 
-      datapath.added_tunnels.each { |tunnel| pp tunnel.inspect }
+      dp_info.added_tunnels.each { |tunnel| pp tunnel.inspect }
 
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       expect(added_flows.size).to eq 7
     end
 
@@ -152,17 +156,17 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      datapath.added_flows.clear
+      dp_info.added_flows.clear
 
       host_port_1
 
       sleep(0.3)
 
-      added_flows = datapath.added_flows.uniq
+      added_flows = dp_info.added_flows.uniq
       added_flows.each { |flow| pp flow.inspect }
 
       expect(datapath.dp_info.added_tunnels.size).to eq 1
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       expect(added_flows.size).to eq 1
 
       # expect(added_flows[0]).to eq Vnet::Openflow::Flow.create(
@@ -188,7 +192,7 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      datapath.added_flows.clear
+      dp_info.added_flows.clear
 
       tunnel_manager.update(event: :set_tunnel_port_number,
                             port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
@@ -196,10 +200,10 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      added_flows = datapath.added_flows.uniq
+      added_flows = dp_info.added_flows.uniq
       # added_flows.each { |flow| pp flow.inspect }
 
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       expect(added_flows.size).to eq 1
 
       # expect(added_flows[0]).to eq Vnet::Openflow::Flow.create(
@@ -274,6 +278,10 @@ describe Vnet::Core::TunnelManager do
       }
     }
 
+    let(:dp_info) do
+      datapath.dp_info
+    end
+
     subject do
       datapath.dp_info.tunnel_manager.tap do |tm|
         dp_info = datapath.dp_info
@@ -305,16 +313,16 @@ describe Vnet::Core::TunnelManager do
         }
 
         sleep(0.3)
-        datapath.added_flows.clear
-        datapath.deleted_flows.clear
+        dp_info.added_flows.clear
+        dp_info.deleted_flows.clear
       end
     end
 
     it "should delete tunnel when the network is deleted on the local datapath" do
       subject
 
-      added_flows = datapath.added_flows.uniq
-      deleted_flows = datapath.deleted_flows
+      added_flows = dp_info.added_flows.uniq
+      deleted_flows = dp_info.deleted_flows
       # added_flows.each { |flow| pp flow.inspect }
       # deleted_flows.each { |flow| pp flow.inspect }
 
@@ -335,12 +343,12 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      added_flows = datapath.added_flows.uniq
-      deleted_flows = datapath.deleted_flows
+      added_flows = dp_info.added_flows.uniq
+      deleted_flows = dp_info.deleted_flows
       # added_flows.each { |flow| pp flow.inspect }
       # deleted_flows.each { |flow| pp flow.inspect }
 
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       # expect(added_flows.size).to eq 0
       expect(deleted_flows.size).to eq 2
 
@@ -369,8 +377,8 @@ describe Vnet::Core::TunnelManager do
       }
 
       sleep(0.3)
-      datapath.added_flows.clear
-      datapath.deleted_flows.clear
+      dp_info.added_flows.clear
+      dp_info.deleted_flows.clear
 
       [[5, 3, 1, 3, 3, 'removed_remote_datapath_network'],
       ].each { |index, datapath_id, network_id, interface_id, ip_lease_id, event|
@@ -389,12 +397,12 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      added_flows = datapath.added_flows.uniq
-      deleted_flows = datapath.deleted_flows
+      added_flows = dp_info.added_flows.uniq
+      deleted_flows = dp_info.deleted_flows
       added_flows.each { |flow| pp flow.inspect }
       deleted_flows.each { |flow| pp flow.inspect }
 
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       # expect(added_flows.size).to eq 0
       # expect(deleted_flows.size).to eq 2
 
