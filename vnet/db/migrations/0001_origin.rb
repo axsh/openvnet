@@ -121,12 +121,7 @@ Sequel.migration do
       String :interface_mode, :null => false
 
       index [:interface_id, :datapath_id], :unique => true
-      index [:datapath_id, :port_name], :unique => true
-
-      index [:port_name, :singular], :unique => true
-
-      # index [:interface_id, :label], :unique => true
-      # unique [:interface_id, :singular]
+      index [:port_name, :datapath_id, :singular], :unique => true
     end
 
     create_table(:interface_security_groups) do
