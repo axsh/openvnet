@@ -109,7 +109,7 @@ Sequel.migration do
       primary_key :id
 
       Integer :interface_id, :index => true, :null => false
-      Integer :datapath_id, :index => true #, :null => false
+      Integer :datapath_id, :index => true
 
       String :port_name, :index => true
 

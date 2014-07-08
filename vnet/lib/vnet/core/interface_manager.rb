@@ -4,6 +4,8 @@ module Vnet::Core
 
   class InterfaceManager < Vnet::Core::Manager
 
+    include Vnet::Constants::Interface
+
     #
     # Events:
     #
@@ -103,18 +105,16 @@ module Vnet::Core
     end
 
     def item_initialize(item_map)
-      mode = (item_map.mode && item_map.mode.to_sym)
-
       item_class =
-        case mode
-        when :edge      then Interfaces::Edge
-        when :host      then Interfaces::Host
-        when :internal  then Interfaces::Internal
-        when :patch     then Interfaces::Patch
-        when :simulated then Interfaces::Simulated
-        when :vif       then Interfaces::Vif
+        case item_map.mode
+        when MODE_EDGE      then Interfaces::Edge
+        when MODE_HOST      then Interfaces::Host
+        when MODE_INTERNAL  then Interfaces::Internal
+        when MODE_PATCH     then Interfaces::Patch
+        when MODE_SIMULATED then Interfaces::Simulated
+        when MODE_VIF       then Interfaces::Vif
         else
-          Interfaces::Base
+          return nil
         end
 
       port = @interface_ports[item_map.id]
