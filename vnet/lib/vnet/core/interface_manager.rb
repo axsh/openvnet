@@ -54,7 +54,10 @@ module Vnet::Core
     end
 
     def unload_local_port(interface_id, port_name, port_number)
-      
+      interface_port = @interface_ports.delete(interface_id)
+
+      # TODO: Check if port_name/port_number matches.
+      publish(INTERFACE_UNLOAD_ITEM, interface_id: interface_id)
     end
 
     #

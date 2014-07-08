@@ -136,7 +136,7 @@ module Vnet::Core
       end
 
       # TODO: Clean up.
-      if item.port_name
+      if item.port_number
         # update_active_port(item)
 
         # TODO: Fail if not found, not singular, not port_number?
@@ -167,7 +167,7 @@ module Vnet::Core
                                     interface_id: item.id)
 
       @dp_info.network_manager.clear_interface_port(item.interface_id)
-      @dp_info.interface_manager.unload(id: item.interface_id)
+      @dp_info.interface_manager.unload_local_port(item.interface_id, item.port_name, item.port_number)
     end
 
     # item created in db on queue 'item.id'
