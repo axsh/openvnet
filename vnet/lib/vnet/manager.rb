@@ -240,6 +240,18 @@ module Vnet
     # Default install/uninstall methods:
     #
 
+    def item_pre_install(item, item_map)
+    end
+
+    def item_post_install(item, item_map)
+    end
+
+    def item_pre_uninstall(item)
+    end
+
+    def item_post_uninstall(item)
+    end
+
     def load_item(params)
       item_map = params[:item_map] || return
       item_id = item_map.id || return
@@ -254,12 +266,6 @@ module Vnet
       resume_event_tasks(:loaded, item_id)
     end
 
-    def item_pre_install(item, item_map)
-    end
-
-    def item_post_install(item, item_map)
-    end
-
     def unload_item(params)
       debug log_format("uninstalling", params.inspect)
 
@@ -271,12 +277,6 @@ module Vnet
       item_post_uninstall(item)
 
       debug log_format("uninstalled " + item.pretty_id, item.pretty_properties)
-    end
-
-    def item_pre_uninstall(item)
-    end
-
-    def item_post_uninstall(item)
     end
 
     #
