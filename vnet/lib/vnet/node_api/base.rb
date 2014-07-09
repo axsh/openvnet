@@ -34,6 +34,7 @@ module Vnet::NodeApi
         Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
       end
 
+      # Events added during the transaction are guaranteed to not be dispatched until the transaction has finished.
       def execute(method_name, *args, &block)
         result = event_transaction do
           self.__send__(method_name, *args, &block)
@@ -41,6 +42,7 @@ module Vnet::NodeApi
         to_hash(result)
       end
 
+      # Events added during the transaction are guaranteed to not be dispatched until the transaction has finished.
       def execute_batch(*args)
         methods = args.dup
         options = methods.last.is_a?(Hash) ? methods.pop : {}
