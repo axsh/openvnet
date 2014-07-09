@@ -30,10 +30,6 @@ module Vnet::NodeApi
         end
       end
 
-      def model_class(name = nil)
-        Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
-      end
-
       # Events added during the transaction are guaranteed to not be dispatched until the transaction has finished.
       def execute(method_name, *args, &block)
         result = event_transaction do
@@ -63,6 +59,12 @@ module Vnet::NodeApi
         else
           dispatch_event_without_transaction(event, options)
         end
+      end
+
+      protected
+
+      def model_class(name = nil)
+        Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
       end
 
       def event_transaction(&block)
