@@ -71,15 +71,15 @@ describe Vnet::NodeApi::Base do
   describe "event transaction" do
     let(:api) do
       NestedApi = Class.new(base_class) do
-        def self.execute_somehting
+        def self.execute_something
           dispatch_event(:some_event, id: 1)
         end
       end
 
       Class.new(base_class) do
-        def self.execute_somehting
-          NestedApi.execute_somehting
-          execute_somehting_raise_error
+        def self.execute_something
+          NestedApi.execute_something
+          execute_something_raise_error
           dispatch_event(:some_event, id: 2)
         end
       end
@@ -90,7 +90,7 @@ describe Vnet::NodeApi::Base do
     end
 
     it "does not dispatch any events" do
-      expect { api.execute(:execute_somehting) }.to raise_error
+      expect { api.execute(:execute_something) }.to raise_error
       expect(MockEventHandler.handled_events.size).to eq 0
     end
   end
