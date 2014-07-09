@@ -4,14 +4,16 @@ module Vnet::Models
   class Interface < Base
     taggable 'if'
 
+    one_to_many :active_interfaces
+    one_to_many :interface_ports
     one_to_many :ip_leases
     one_to_many :mac_leases
     one_to_many :network_services
     one_to_many :routes
+    one_to_many :translations
 
-    one_to_many :active_interfaces
-    one_to_many :interface_ports
-
+    # TODO: Rename to security_group_interfaces, and move associations
+    # and helper methods to security group models. Same goes for lease policies.
     one_to_many :interface_security_groups
     many_to_many :security_groups, :join_table => :interface_security_groups
 
@@ -19,11 +21,13 @@ module Vnet::Models
     one_to_many :lease_policy_base_interfaces
 
     plugin :association_dependencies,
+      :active_interfaces => :destroy,
+      :interface_ports => :destroy,
       :ip_leases => :destroy,
       :mac_leases => :destroy,
       :network_services => :destroy,
       :routes => :destroy,
-      :active_interfaces => :destroy
+      :translations => :destroy
 
     subset(:alives, {})
 
