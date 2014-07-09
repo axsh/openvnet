@@ -72,7 +72,7 @@ describe Vnet::NodeApi::Base do
     let(:api) do
       NestedApi = Class.new(base_class) do
         def self.execute_something
-          dispatch_event(:some_event, id: 1)
+          dispatch_event(:foo, id: 1)
         end
       end
 
@@ -80,7 +80,7 @@ describe Vnet::NodeApi::Base do
         def self.execute_something
           NestedApi.execute_something
           execute_something_raise_error
-          dispatch_event(:some_event, id: 2)
+          dispatch_event(:bar, id: 2)
         end
       end
     end
