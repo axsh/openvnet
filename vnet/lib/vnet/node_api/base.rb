@@ -81,7 +81,7 @@ module Vnet::NodeApi
             end
           ensure
             Thread.current[:event_transaction] = false
-            Thread.current[:event_queue] = []
+            Thread.current[:event_queue].clear
           end
         end
       end
