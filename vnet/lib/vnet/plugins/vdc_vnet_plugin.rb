@@ -8,6 +8,7 @@ module Vnet::Plugins
   class VdcVnetPlugin
     include Celluloid
     include Celluloid::Logger
+    include Vnet::Constants::Interface
     include Vnet::Constants::MacAddressPrefix
 
     attr_reader :table
@@ -115,7 +116,7 @@ module Vnet::Plugins
 
       simulated_interface = interface_params(ipv4_address: IPAddr.new(vnet_params[:ipv4_address], Socket::AF_INET).to_i,
                                             mac_address: vnet_params[:mac_address],
-                                            mode: "simulated",
+                                            mode: MODE_SIMULATED,
                                             network_id: Vnet::NodeApi::Network[vnet_params[:network_uuid]].id)
 
       params = {
@@ -365,7 +366,7 @@ module Vnet::Plugins
 
     def find_gw_interface(network_uuid, ipv4_gw)
       gateways = Vnet::NodeApi::Interface.find_all { |i|
-        i.enable_routing == true && i.mode == 'simulated'
+        i.enable_routing == true && i.mode == MODE_SIMULATED
       }.select{ |i|
         i.network && i.network.canonical_uuid == network_uuid
       }
@@ -384,7 +385,7 @@ module Vnet::Plugins
 
     def create_gw_interface(network_uuid, ipv4_gw)
       params = {
-        :mode => 'simulated',
+        :mode => MODE_SIMULATED,
         :display_name => "gw_#{network_uuid}",
         :mac_address => mac_generate(MAC_ADDRESS_PREFIX_GW),
         :enable_routing => true,
