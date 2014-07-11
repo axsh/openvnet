@@ -89,9 +89,7 @@ module Vnet::Plugins
 
       Vnet::NodeApi::Datapath.all.each do |datapath|
         # TODO refactor
-        host_ports = Vnet::NodeApi::Interface.where({:mode=>'host', :owner_datapath_id => datapath.id}).all.select {|h|
-          h.network.canonical_uuid == 'nw-public'
-        }
+        host_ports = Vnet::NodeApi::Interface.where({:mode => MODE_HOST, :owner_datapath_id => datapath.id}).all
 
         host_ports.each do |host_port|
           datapath_network_params = {
@@ -254,7 +252,7 @@ module Vnet::Plugins
 
       route_link = find_route_link(outer_network_gateway, inner_network_gateway)
 
-      host_ports = Vnet::NodeApi::Interface.where(:mode=>'host').all
+      host_ports = Vnet::NodeApi::Interface.where(:mode => MODE_HOST).all
       host_ports.each do |host_port|
         dprl_params = {
           :datapath_id => Vnet::NodeApi::ActiveInterface.find({:interface_id => host_port.id}).datapath_id,
