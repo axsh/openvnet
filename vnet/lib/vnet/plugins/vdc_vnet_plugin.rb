@@ -8,9 +8,9 @@ module Vnet::Plugins
   class VdcVnetPlugin
     include Celluloid
     include Celluloid::Logger
+    include Vnet::Constants::MacAddressPrefix
 
     attr_reader :table
-    attr_reader :gw_prefix, :datapath_route_link_prefix, :route_link_prefix, :datapath_network_prefix
 
     def initialize
       @table = {
@@ -22,11 +22,6 @@ module Vnet::Plugins
         :NetworkRoute => [:TranslationStaticAddress],
         :NetworkVifSecurityGroup => [:InterfaceSecurityGroup]
       }
-
-      @gw_prefix = "00:99:99"
-      @datapath_route_link_prefix = "00:99:98"
-      @route_link_prefix = "00:99:97"
-      @datapath_network_prefix = "00:99:96"
 
       info "vdc_vnet_plugin initialized..."
     end
@@ -108,7 +103,7 @@ module Vnet::Plugins
 
           if datapath_network.nil?
             Vnet::NodeApi::DatapathNetwork.create(datapath_network_params.merge({
-              :broadcast_mac_address => mac_generate(datapath_network_prefix)
+              :broadcast_mac_address => mac_generate(MAC_ADDRESS_PREFIX_DATAPATH_NETWORK)
             }))
           end
         end
@@ -263,7 +258,7 @@ module Vnet::Plugins
         dprl_params = {
           :datapath_id => Vnet::NodeApi::ActiveInterface.find({:interface_id => host_port.id}).datapath_id,
           :interface_id => host_port.id,
-          :mac_address_id => mac_model_generate(datapath_route_link_prefix).id,
+          :mac_address_id => mac_model_generate(MAC_ADDRESS_PREFIX_DATAPATH_ROUTE_LINK).id,
           :route_link_id => route_link.id
         }
         unless Vnet::NodeApi::DatapathRouteLink.find(dprl_params)
@@ -339,7 +334,7 @@ module Vnet::Plugins
 
     def create_route_link(gw_a, gw_b)
       route_link = Vnet::NodeApi::RouteLink.create({
-        :mac_address_id => mac_model_generate(route_link_prefix).id
+        :mac_address_id => mac_model_generate(MAC_ADDRESS_PREFIX_ROUTE_LINK).id
       })
       create_route(route_link, gw_a)
       create_route(route_link, gw_b)
@@ -391,7 +386,7 @@ module Vnet::Plugins
       params = {
         :mode => 'simulated',
         :display_name => "gw_#{network_uuid}",
-        :mac_address => mac_generate(gw_prefix),
+        :mac_address => mac_generate(MAC_ADDRESS_PREFIX_GW),
         :enable_routing => true,
         :enable_route_translation => false
       }

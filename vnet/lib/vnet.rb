@@ -42,6 +42,7 @@ module Vnet
   module Constants
     autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
+    autoload :MacAddressPrefix, 'vnet/constants/mac_address_prefix'
     autoload :Network, 'vnet/constants/network'
     autoload :NetworkService, 'vnet/constants/network_service'
     autoload :Openflow, 'vnet/constants/openflow'
