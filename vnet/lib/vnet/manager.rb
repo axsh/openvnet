@@ -335,8 +335,30 @@ module Vnet
       @items[item_id]
     end
 
+    def internal_detect_by_id_with_error(params)
+      item = internal_detect_by_id(params)
+      if item.nil?
+        log_format("invalid item id", "id:#{params[:id]}")
+        return
+      end
+      item
+    end
+
     def internal_select(params)
       @items.select(&match_item_proc(params))
+    end
+
+    def internal_detect_params(params, key)
+      (params && params[key]) || return
+    end
+
+    def internal_detect_params_with_error(params, key)
+      param = internal_detect_params(params, key)
+      if param.nil?
+        log_format("invalid key for params", "key:#{key}")
+        return
+      end
+      param
     end
 
     #

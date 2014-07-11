@@ -110,31 +110,19 @@ module Vnet::Core
 
     # TRANSLATION_ADDED_STATIC_ADDRESS on queue 'item.id'.
     def added_static_address(params)
-      unless item = internal_detect_by_id(params)
-        error log_format("missing item(id:#{params[:id]})")
-        return
-      end
+      item = internal_detect_by_id_with_error(params) || return
 
-      unless static_address_id = params[:static_address_id]
-        error log_format("missing static_address_id")
-        return
-      end
+      static_address_id = internal_detect_params_with_error(params, :static_address_id) || return
+      route_link_id = internal_detect_params_with_error(params, :route_link_id) || return
 
-      unless ingress_ipv4_address = params[:ingress_ipv4_address]
-        error log_format("missing ingress_ipv4_address")
-        return
-      end
+      ingress_ipv4_address = internal_detect_params_with_error(params, :ingress_ipv4_address) || return
+      egress_ipv4_address = internal_detect_params_with_error(params, :egress_ipv4_address) || return
 
-      unless egress_ipv4_address = params[:egress_ipv4_address]
-        error log_format("missing egress_ipv4_address")
-        return
-      end
-
-      ingress_port_number = params[:ingress_port_number]
-      egress_port_number = params[:egress_port_number]
+      ingress_port_number = internal_detect_params_with_error(params, :ingress_port_number) || return
+      egress_port_number = internal_detect_params_with_error(params, :egress_port_number) || return
 
       item.added_static_address(static_address_id,
-                                params[:route_link_id],
+                                route_link_id,
                                 ingress_ipv4_address,
                                 egress_ipv4_address,
                                 ingress_port_number,
