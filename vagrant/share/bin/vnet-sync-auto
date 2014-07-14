@@ -11,7 +11,7 @@ local_dir=$(echo ${local_dir}/ | sed 's,/*$,/,')
 
 case ${OSTYPE} in
   darwin*)
-    fswatch ${local_dir} "${sync_command} ${local_dir}"
+    fswatch -o ${local_dir} | xargs -n1 -I{} ${sync_command} ${local_dir}
     ;;
   linux*)
     while inotifywait -e modify -e create -e move -e delete --exclude "\..*\.sw[pox].*" -r ${local_dir}; do
