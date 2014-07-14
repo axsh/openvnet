@@ -336,11 +336,20 @@ module Vnet
     end
 
     def internal_detect_by_id_with_error(params)
-      item = internal_detect_by_id(params)
-      if item.nil?
-        log_format("invalid item id", "id:#{params[:id]}")
+      item_id = (params && params[:id])
+
+      if item_id.nil?
+        log_format("missing id")
         return
       end
+
+      item = @items[item_id]
+
+      if item.nil?
+        log_format("missing item", "id:#{item_id}")
+        return
+      end
+
       item
     end
 
