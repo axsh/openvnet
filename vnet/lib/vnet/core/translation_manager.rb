@@ -112,11 +112,11 @@ module Vnet::Core
     def added_static_address(params)
       item = internal_detect_by_id_with_error(params) || return
 
-      static_address_id = get_param_id(params, :static_address_id, false) || return
-      route_link_id = get_param_id(params, :route_link_id, false) || return
+      static_address_id = get_param_id(params, :static_address_id) || return
+      route_link_id = get_param_id(params, :route_link_id) || return
 
-      ingress_ipv4_address = get_param_ip_addr(params, :ingress_ipv4_address, false) || return
-      egress_ipv4_address = get_param_ip_addr(params, :egress_ipv4_address, false) || return
+      ingress_ipv4_address = get_param_ipv4_address(params, :ingress_ipv4_address) || return
+      egress_ipv4_address = get_param_ipv4_address(params, :egress_ipv4_address) || return
 
       ingress_port_number = get_param_port_number(params, :ingress_port_number, false)
       egress_port_number = get_param_port_number(params, :egress_port_number, false)

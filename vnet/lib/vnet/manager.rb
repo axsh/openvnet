@@ -358,15 +358,6 @@ module Vnet
       @items.select(&match_item_proc(params))
     end
 
-    def get_param(params, key, required = true)
-      param = (params && params[key])
-
-      if param.nil?
-        log_format("missing param", "key:#{key}") if required
-        return
-      end
-    end
-
     #
     # Internal polling methods:
     #
