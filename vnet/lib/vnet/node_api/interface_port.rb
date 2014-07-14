@@ -10,7 +10,7 @@ module Vnet::NodeApi
         end
       end
 
-      def destroy(uuid)
+      def destroy(id)
         super.tap do |obj|
           # dispatch_event(INTERFACE_PORT_DELETED_ITEM, id: obj.id)
         end

@@ -42,6 +42,8 @@ module Vnet::Endpoints::V10::Helpers
 
     def uuid_to_id(model, uuid_key = "uuid", id_key = "id", fill = {})
       model = pop_uuid(model, uuid_key, fill)
+      model.id || raise(E::InvalidID, "#{model.name.split("::").last}#uuid: #{uuid}")
+
       @params[id_key] = model.id
 
       model

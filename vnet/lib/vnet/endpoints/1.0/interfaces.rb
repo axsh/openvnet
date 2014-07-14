@@ -80,6 +80,26 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     show_relations(:Interface, :interface_ports)
   end
 
+  port_put_post_shared_params
+  delete '/:uuid/ports' do
+    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
+    datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
+
+    remove_system_parameters
+
+    filter = {
+      interface_id: interface.id,
+    }
+    filter[:datapath_id] = datapath.id if datapath
+    filter[:port_name] = params['port_name'] if params.has_key?('port_name')
+    filter[:singular] = params['singular'] if params.has_key?('singular')
+
+    ports = M::InterfacePort.batch.where(filter).all.commit
+    ports.each { |r| M::InterfacePort.destroy(r.id) }
+
+    respond_with(ports)
+  end
+
   #
   # Security Groups:
   #
