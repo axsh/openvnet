@@ -5,28 +5,30 @@ module Vnet::NodeApi
       def create(options)
         options = options.dup
 
-        interface = transaction do
-          datapath_id = options.delete(:owner_datapath_id)
-          port_name = options.delete(:port_name)
+        datapath_id = options.delete(:owner_datapath_id)
+        port_name = options.delete(:port_name)
 
-          network_id = options.delete(:network_id)
-          ipv4_address = options.delete(:ipv4_address)
-          mac_address = options.delete(:mac_address)
+        network_id = options.delete(:network_id)
+        ipv4_address = options.delete(:ipv4_address)
+        mac_address = options.delete(:mac_address)
 
-          model_class.create(options).tap do |interface|
-            create_interface_port(interface, datapath_id, port_name)
+        interface_port = nil
 
-            add_lease(interface, mac_address, network_id, ipv4_address)
-          end
-        end
+        transaction {
+          interface = model_class.create(options)
+          interface_port = create_interface_port(interface, datapath_id, port_name)
 
-        dispatch_event(
-          INTERFACE_CREATED_ITEM,
-          id: interface.id,
-          # port_name: interface.port_name
-        )
+          add_lease(interface, mac_address, network_id, ipv4_address)
 
-        interface
+          interface
+
+        }.tap { |interface|
+          next if interface.nil?
+
+          # TODO: Send has not just id.
+          dispatch_event(INTERFACE_CREATED_ITEM, id: interface.id)
+          dispatch_event(INTERFACE_PORT_CREATED_ITEM, interface.to_hash) if interface_port
+        }
       end
 
       # TODO dispatch_event
