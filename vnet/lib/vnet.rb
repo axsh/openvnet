@@ -187,9 +187,11 @@ module Vnet
     autoload :Errors, 'vnet/endpoints/errors'
     autoload :ResponseGenerator, 'vnet/endpoints/response_generator'
     autoload :CollectionResponseGenerator, 'vnet/endpoints/response_generator'
+
     module V10
       autoload :Helpers, 'vnet/endpoints/1.0/helpers'
       autoload :VnetAPI, 'vnet/endpoints/1.0/vnet_api'
+
       module Responses
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
@@ -197,6 +199,7 @@ module Vnet
         autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfacePort, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :IpLeaseContainer, 'vnet/endpoints/1.0/responses/ip_lease_container'
@@ -222,6 +225,7 @@ module Vnet
         autoload :DnsServiceCollection, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecordCollection, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfacePortCollection, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :IpLeaseContainerCollection, 'vnet/endpoints/1.0/responses/ip_lease_container'
@@ -340,7 +344,7 @@ module Vnet
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'
-    autoload :InterfacePort, 'vnet/node_api/models.rb'
+    autoload :InterfacePort, 'vnet/node_api/interface_port.rb'
     autoload :InterfaceSecurityGroup, 'vnet/node_api/interface_security_group'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
