@@ -5,14 +5,14 @@ module Vnet::NodeApi
   class InterfacePort < Base
     class << self
       def create(options)
-        super.tap do |obj|
-          # dispatch_event(INTERFACE_PORT_CREATED_ITEM, obj.values)
+        super.tap do |model|
+          dispatch_event(INTERFACE_PORT_CREATED_ITEM, model.to_hash)
         end
       end
 
       def destroy(id)
-        super.tap do |obj|
-          # dispatch_event(INTERFACE_PORT_DELETED_ITEM, id: obj.id)
+        super.tap do |model|
+          dispatch_event(INTERFACE_PORT_DELETED_ITEM, model.to_hash)
         end
       end
     end
