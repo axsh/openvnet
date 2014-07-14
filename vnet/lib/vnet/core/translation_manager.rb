@@ -112,14 +112,21 @@ module Vnet::Core
     def added_static_address(params)
       item = internal_detect_by_id_with_error(params) || return
 
-      static_address_id = internal_detect_params_with_error(params, :static_address_id) || return
-      route_link_id = internal_detect_params_with_error(params, :route_link_id) || return
+      static_address_id = get_param_id(params, :static_address_id, false) || return
+      route_link_id = get_param_id(params, :route_link_id, false) || return
 
-      ingress_ipv4_address = internal_detect_params_with_error(params, :ingress_ipv4_address) || return
-      egress_ipv4_address = internal_detect_params_with_error(params, :egress_ipv4_address) || return
+      ingress_ipv4_address = get_param_ip_addr(params, :ingress_ipv4_address, false) || return
+      egress_ipv4_address = get_param_ip_addr(params, :egress_ipv4_address, false) || return
 
-      ingress_port_number = internal_detect_params_with_error(params, :ingress_port_number) || return
-      egress_port_number = internal_detect_params_with_error(params, :egress_port_number) || return
+      ingress_port_number = get_param_port_number(params, :ingress_port_number, false)
+      egress_port_number = get_param_port_number(params, :egress_port_number, false)
+
+      if (params.has_key?(:ingress_port_number) || params.has_key?(:egress_port_number)) &&
+         (ingress_port_number.nil? || egress_port_number.nil?)
+         log_format("invalid port numbers", "ingress_port_number:#{params[:ingress_port_number]} egress_port_number:#{params[:egress_port_number]}")
+        return
+      end
+
 
       item.added_static_address(static_address_id,
                                 route_link_id,

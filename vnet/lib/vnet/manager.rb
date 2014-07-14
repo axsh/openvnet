@@ -11,6 +11,7 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
+    include Vnet::LookupParams
 
     def initialize(info, options = {})
       @items = {}
@@ -357,17 +358,13 @@ module Vnet
       @items.select(&match_item_proc(params))
     end
 
-    def internal_detect_params(params, key)
-      (params && params[key]) || return
-    end
+    def get_param(params, key, required = true)
+      param = (params && params[key])
 
-    def internal_detect_params_with_error(params, key)
-      param = internal_detect_params(params, key)
       if param.nil?
-        log_format("invalid key for params", "key:#{key}")
+        log_format("missing param", "key:#{key}") if required
         return
       end
-      param
     end
 
     #
