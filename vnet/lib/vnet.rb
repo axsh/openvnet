@@ -379,7 +379,7 @@ module Vnet
   end
 
   module Plugins
-    autoload :VdcVnetPlugin, 'vnet/plugins/vdc_vnet_plugin'
+    autoload :VdcVnetPlugin, 'plugins/vdc_vnet_plugin'
   end
 
   module Services
