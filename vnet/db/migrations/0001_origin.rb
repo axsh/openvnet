@@ -24,9 +24,9 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
 
-      index [:interface_id, :datapath_id], :unique => true
-      index [:interface_id, :label], :unique => true
-      unique [:interface_id, :singular]
+      index [:interface_id, :datapath_id, :deleted_at], :unique => true
+      index [:interface_id, :label, :deleted_at], :unique => true
+      unique [:interface_id, :singular, :deleted_at]
     end
 
     create_table(:datapaths) do
@@ -129,8 +129,8 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
 
-      index [:interface_id, :datapath_id], :unique => true
-      index [:port_name, :datapath_id, :singular], :unique => true
+      index [:interface_id, :datapath_id, :deleted_at], :unique => true
+      index [:port_name, :datapath_id, :singular, :deleted_at], :unique => true
     end
 
     create_table(:interface_security_groups) do
