@@ -3,6 +3,9 @@
 module Vnet::Models
 
   class ActiveInterface < Base
+
+    plugin :paranoia
+
     many_to_one :interface
     many_to_one :datapath
 

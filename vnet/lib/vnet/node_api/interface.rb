@@ -47,6 +47,7 @@ module Vnet::NodeApi
                          changed_columns: options)
 
 
+          # TODO: Checking for 'true' or 'false' is insufficient.
           case options[:ingress_filtering_enabled]
           when "true"
             dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
@@ -62,11 +63,14 @@ module Vnet::NodeApi
 
         dispatch_event(INTERFACE_DELETED_ITEM, id: interface.id)
 
+        # Does this not result in an event for _all_ mac_leases?
+
         model_class(:mac_lease).with_deleted.where(interface_id: interface.id).each do |mac_lease|
           dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, id: interface.id,
                                                mac_lease_id: mac_lease.id)
         end
 
+        # TODO: Use with_deleted.
         interface.interface_security_groups.each do |isg|
           InterfaceSecurityGroup.destroy(isg.id)
         end
