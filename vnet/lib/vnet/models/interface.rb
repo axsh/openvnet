@@ -4,6 +4,8 @@ module Vnet::Models
   class Interface < Base
     taggable 'if'
 
+    plugin :paranoia
+
     one_to_many :active_interfaces
     one_to_many :interface_ports
     one_to_many :ip_leases
@@ -28,8 +30,6 @@ module Vnet::Models
       :network_services => :destroy,
       :routes => :destroy,
       :translations => :destroy
-
-    subset(:alives, {})
 
     # We're using paranoia on the join table for the interface <=> security
     # group relation and that's throwing a wrench in Sequel's inner workings.
