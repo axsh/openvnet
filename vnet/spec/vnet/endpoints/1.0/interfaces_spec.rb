@@ -54,7 +54,7 @@ describe "/interfaces" do
 
       it "handles a single event" do
         expect(last_response).to succeed
-        expect(MockEventHandler.handled_events.size).to eq 1
+        expect(MockEventHandler.handled_events.size).to eq 2
       end
     end
   end

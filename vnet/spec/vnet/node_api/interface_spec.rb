@@ -27,7 +27,7 @@ describe Vnet::NodeApi::Interface do
       # expect(model.owner_datapath.id).to eq datapath.id
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
+      expect(events.size).to eq 2
       expect(events.first[:event]).to eq Vnet::Event::INTERFACE_CREATED_ITEM
       expect(events.first[:options][:id]).to eq interface[:id]
       expect(events.first[:options][:port_name]).to eq interface[:port_name]
