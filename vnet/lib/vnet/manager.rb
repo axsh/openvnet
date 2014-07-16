@@ -267,16 +267,14 @@ module Vnet
     end
 
     def unload_item(params)
-      debug log_format("uninstalling", params.inspect)
-
       item_id = (params && params[:id]) || return
       item = @items.delete(item_id) || return
+
+      debug log_format("uninstalling " + item.pretty_id, item.pretty_properties)
 
       item_pre_uninstall(item)
       item.try_uninstall
       item_post_uninstall(item)
-
-      debug log_format("uninstalled " + item.pretty_id, item.pretty_properties)
     end
 
     #
