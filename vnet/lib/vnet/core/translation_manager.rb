@@ -86,7 +86,8 @@ module Vnet::Core
     # TRANSLATION_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
       return if internal_detect_by_id(params)
-      return unless @active_interfaces[params[:interface_id]]
+      return if params[:interface_id].nil?
+      return if @active_interfaces[params[:interface_id]].nil?
 
       internal_new_item(mw_class.new(params))
     end
@@ -109,16 +110,26 @@ module Vnet::Core
 
     # TRANSLATION_ADDED_STATIC_ADDRESS on queue 'item.id'.
     def added_static_address(params)
-      item = internal_detect_by_id(params) || return
+      item = internal_detect_by_id_with_error(params) || return
 
-      static_address_id = params[:static_address_id] || return
-      ingress_ipv4_address = params[:ingress_ipv4_address] || return
-      egress_ipv4_address = params[:egress_ipv4_address] || return
-      ingress_port_number = params[:ingress_port_number] || return
-      egress_port_number = params[:egress_port_number] || return
+      static_address_id = get_param_id(params, :static_address_id) || return
+      route_link_id = get_param_id(params, :route_link_id) || return
+
+      ingress_ipv4_address = get_param_ipv4_address(params, :ingress_ipv4_address) || return
+      egress_ipv4_address = get_param_ipv4_address(params, :egress_ipv4_address) || return
+
+      ingress_port_number = get_param_port_number(params, :ingress_port_number, false)
+      egress_port_number = get_param_port_number(params, :egress_port_number, false)
+
+      if (params.has_key?(:ingress_port_number) || params.has_key?(:egress_port_number)) &&
+         (ingress_port_number.nil? || egress_port_number.nil?)
+         log_format("invalid port numbers", "ingress_port_number:#{params[:ingress_port_number]} egress_port_number:#{params[:egress_port_number]}")
+        return
+      end
+
 
       item.added_static_address(static_address_id,
-                                params[:route_link_id],
+                                route_link_id,
                                 ingress_ipv4_address,
                                 egress_ipv4_address,
                                 ingress_port_number,
@@ -130,7 +141,7 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
 
       static_address_id = params[:static_address_id] || return
-      
+
       item.removed_static_address(static_address_id)
     end
 

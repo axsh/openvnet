@@ -11,6 +11,7 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
+    include Vnet::LookupParams
 
     def initialize(info, options = {})
       @items = {}
@@ -333,6 +334,24 @@ module Vnet
     def internal_detect_by_id(params)
       item_id = (params && params[:id]) || return
       @items[item_id]
+    end
+
+    def internal_detect_by_id_with_error(params)
+      item_id = (params && params[:id])
+
+      if item_id.nil?
+        log_format("missing id")
+        return
+      end
+
+      item = @items[item_id]
+
+      if item.nil?
+        log_format("missing item", "id:#{item_id}")
+        return
+      end
+
+      item
     end
 
     def internal_select(params)

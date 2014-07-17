@@ -65,3 +65,7 @@ Fabricator(:interface_dp3eth0, class_name: Vnet::Models::Interface) do
   port_name "eth0"
   mode "host"
 end
+
+Fabricator(:host_port_any, class_name: Vnet::Models::Interface) do
+  mode 'host'
+end
