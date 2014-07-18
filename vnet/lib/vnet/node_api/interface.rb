@@ -61,9 +61,6 @@ module Vnet::NodeApi
       def destroy(uuid)
         interface = super
 
-        Celluloid.logger.info "XXXXXXXXXXXX #{interface.inspect}"
-        Celluloid.logger.info "XXXXXXXXXXXX #{interface.deleted_at.class}"        
-
         dispatch_event(INTERFACE_DELETED_ITEM, id: interface.id)
 
         return if interface.deleted_at.nil?
