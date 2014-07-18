@@ -28,6 +28,7 @@ module Vnet
   autoload :ItemDpBase,           'vnet/item_base'
   autoload :ItemDpUuid,           'vnet/item_base'
   autoload :Manager,              'vnet/manager'
+  autoload :LookupParams,         'vnet/manager_modules'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
 
@@ -42,6 +43,7 @@ module Vnet
   module Constants
     autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
+    autoload :MacAddressPrefix, 'vnet/constants/mac_address_prefix'
     autoload :Network, 'vnet/constants/network'
     autoload :NetworkService, 'vnet/constants/network_service'
     autoload :Openflow, 'vnet/constants/openflow'
@@ -391,7 +393,7 @@ module Vnet
   end
 
   module Plugins
-    autoload :VdcVnetPlugin, 'vnet/plugins/vdc_vnet_plugin'
+    autoload :VdcVnetPlugin, 'plugins/vdc_vnet_plugin'
   end
 
   module Services
