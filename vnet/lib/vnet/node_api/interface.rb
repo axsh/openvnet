@@ -61,10 +61,17 @@ module Vnet::NodeApi
       def destroy(uuid)
         interface = super
 
+        Celluloid.logger.info "XXXXXXXXXXXX #{interface.inspect}"
+        Celluloid.logger.info "XXXXXXXXXXXX #{interface.deleted_at.class}"        
+
         dispatch_event(INTERFACE_DELETED_ITEM, id: interface.id)
 
-        # Does this not result in an event for _all_ mac_leases?
+        return if interface.deleted_at.nil?
 
+        dispatch_deleted_events(:active_interface, :interface_id, interface, ACTIVE_INTERFACE_DELETED_ITEM)
+        dispatch_deleted_events(:interface_port, :interface_id, interface, INTERFACE_PORT_DELETED_ITEM)
+
+        # TODO: Clean up.
         model_class(:mac_lease).with_deleted.where(interface_id: interface.id).each do |mac_lease|
           dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, id: interface.id,
                                                mac_lease_id: mac_lease.id)
