@@ -82,6 +82,18 @@ module Vnet::NodeApi
         nil
       end
 
+      def rename_uuid(old_uuid, new_uuid)
+        old_trimmed = Interface.trim_uuid(old_uuid)
+        new_trimmed = Interface.trim_uuid(new_uuid)
+
+        update_count = model_class(:interface).with_deleted.where(uuid: old_trimmed).update(uuid: new_trimmed)
+
+        # TODO: Send event if not deleted.
+        # TODO: Error if count is not 1.
+
+        (update_count == 1) ? new_uuid : ''
+      end
+
       #
       # Internal methods:
       #
