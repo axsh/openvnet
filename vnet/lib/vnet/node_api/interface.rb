@@ -27,7 +27,7 @@ module Vnet::NodeApi
 
           # TODO: Send has not just id.
           dispatch_event(INTERFACE_CREATED_ITEM, id: interface.id)
-          dispatch_event(INTERFACE_PORT_CREATED_ITEM, interface.to_hash) if interface_port
+          dispatch_event(INTERFACE_PORT_CREATED_ITEM, interface_port.to_hash) if interface_port
         }
       end
 
