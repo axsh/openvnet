@@ -121,6 +121,19 @@ module Vnspec
         reload
       end
 
+      def update_host_interface(datapath_uuid, port_name)
+        options = {
+          datapath_uuid: datapath_uuid,
+          singular: true,
+          port_name: port_name
+        }
+
+        API.request(:post, "interfaces/#{uuid}/ports", options) do |response|
+          @owner_datapath_uuid = datapath_uuid
+        end
+        reload
+      end
+
       def destroy
         API.request(:delete, "interfaces/#{uuid}")
         reload

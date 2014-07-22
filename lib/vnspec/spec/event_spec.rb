@@ -169,7 +169,7 @@ describe "event" do
 
         sleep(1)
 
-        Vnspec::Models::Interface.find("if-dp1eth0").update(owner_datapath_uuid: "dp-new")
+        Vnspec::Models::Interface.find("if-dp1eth0").update_host_interface("dp-new", "eth0")
 
         sleep(1)
 
