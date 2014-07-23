@@ -14,6 +14,10 @@ describe "/interfaces" do
   let(:fabricator)  { :interface }
   let(:model_class) { Vnet::Models::Interface }
 
+  #
+  # Base:
+  #
+
   include_examples "GET /"
   include_examples "GET /:uuid"
   include_examples "DELETE /:uuid"
@@ -80,7 +84,35 @@ describe "/interfaces" do
     end
   end
 
-  describe "Many to many relation calls for route links" do
+  #
+  # Ports:
+  #
+
+  # TODO: Write shared example for this:
+
+  # describe "POST /:uuid/ports" do
+  #   let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
+  #   #let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+
+  #   expected_response = {
+  #     interface_uuid: 'if-test',
+  #     datapath_uuid: 'dp-owner',
+  #     port_name: 'vif-foo',
+  #     singular: 1
+  #   }
+
+  #   accepted_params = expected_response #.merge( datapath_uuid: "dp-owner")
+  #   required_params = []
+  #   uuid_params = [:datapath_uuid]
+
+  #   include_examples "POST /:uuid/ports", accepted_params, required_params, uuid_params, expected_response
+  # end
+
+  #
+  # Security groups:
+  #
+
+  describe "Many to many relation calls for security groups" do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :security_group }
 
@@ -88,4 +120,5 @@ describe "/interfaces" do
 
     include_examples "many_to_many_relation", "security_groups", {}
   end
+
 end
