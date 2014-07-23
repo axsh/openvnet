@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
+
 Fabricator(:interface, class_name: Vnet::Models::Interface) do
 end
 
 Fabricator(:active_interface, class_name: Vnet::Models::ActiveInterface) do
-end
-
-Fabricator(:interface_port, class_name: Vnet::Models::InterfacePort) do
-end
-
-
-Fabricator(:interface_port_eth0, class_name: Vnet::Models::InterfacePort) do
-  port_name 'eth0'
 end
 
 Fabricator(:interface_w_mac_lease, class_name: Vnet::Models::Interface) do
@@ -73,6 +66,22 @@ Fabricator(:interface_dp3eth0, class_name: Vnet::Models::Interface) do
   uuid 'if-dp3eth0'
   display_name "test-dp3eth0"
   mode "host"
+end
+
+Fabricator(:interface_port, class_name: Vnet::Models::InterfacePort) do
+end
+
+Fabricator(:interface_port_host, class_name: Vnet::Models::InterfacePort) do
+  singular 1
+end
+
+Fabricator(:interface_port_eth0, class_name: Vnet::Models::InterfacePort) do
+  singular 1
+  port_name 'eth0'
+end
+
+Fabricator(:interface_port_wanedge, class_name: Vnet::Models::InterfacePort) do
+  singular 1
 end
 
 Fabricator(:host_port_any, class_name: Vnet::Models::Interface) do
