@@ -5,7 +5,7 @@ module Vnet::Models
   # TODO: Refactor.
   class DatapathRouteLink < Base
 
-    plugin :paranoia_with_unique_constraint
+    plugin :paranoia
     plugin :mac_address
 
     many_to_one :datapath
