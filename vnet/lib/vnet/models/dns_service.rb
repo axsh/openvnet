@@ -3,6 +3,8 @@
 require "ipaddress"
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class DnsService < Base
     taggable "dnss"
 

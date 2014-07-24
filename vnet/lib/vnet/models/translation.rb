@@ -2,6 +2,8 @@
 
 module Vnet::Models
 
+  # TODO: Refactor.
+
   class Translation < Base
     taggable 'tr'
 

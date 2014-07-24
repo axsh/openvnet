@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class Datapath < Base
     taggable 'dp'
 
@@ -8,6 +10,7 @@ module Vnet::Models
 
     one_to_many :datapath_networks
     one_to_many :datapath_route_links
+
     many_to_many :networks, :join_table => :datapath_networks, :conditions => "datapath_networks.deleted_at is null"
     many_to_many :route_links, :join_table => :datapath_route_links, :conditions => "datapath_route_links.deleted_at is null"
 
@@ -28,7 +31,11 @@ module Vnet::Models
 
     def peers
       # deleted datapath's datapath_networks should also be deleted
-      network_ids = (self.deleted_at ? datapath_networks_dataset.unfiltered.where(datapath_id: self.id) : datapath_networks).map(&:network_id)
+      if self.deleted_at
+        network_ids = datapath_networks_dataset.unfiltered.where(datapath_id: self.id).map(&:network_id)
+      else
+        network_ids = datapath_networks.map(&:network_id)
+      end
 
       self.class
       .graph(DatapathNetwork.dataset, datapath_id: :id)

@@ -2,6 +2,8 @@
 
 module Vnet::Models
 
+  # TODO: Refactor.
+
   class ActiveInterface < Base
 
     plugin :paranoia

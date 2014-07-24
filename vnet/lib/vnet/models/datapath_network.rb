@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class DatapathNetwork < Base
+
     plugin :paranoia_with_unique_constraint
+    # TODO: Rename to mac_address.
     plugin :mac_address, :attr_name => :broadcast_mac_address
 
     many_to_one :datapath
     many_to_one :network
 
+    many_to_one :interface
     many_to_one :ip_lease
 
     dataset_module do

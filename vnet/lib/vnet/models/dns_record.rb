@@ -1,4 +1,6 @@
 module Vnet::Models
+
+  # TODO: Refactor.
   class DnsRecord < Base
     taggable "dnsr"
 

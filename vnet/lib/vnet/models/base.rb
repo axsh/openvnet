@@ -8,6 +8,8 @@ require 'sequel/plugins/paranoia_with_unique_constraint'
 Sequel.extension(:core_extensions)
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class DeleteRestrictionError < StandardError; end
 
   # Sequal::Model plugin to inject the Taggable feature to the model

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class Tunnel < Base
     taggable 't'
     plugin :paranoia_with_unique_constraint

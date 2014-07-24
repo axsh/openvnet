@@ -1,4 +1,6 @@
 module Vnet::Models
+
+  # TODO: Refactor.
   class IpRetention < Base
     many_to_one :ip_lease
     many_to_one :ip_retention_container

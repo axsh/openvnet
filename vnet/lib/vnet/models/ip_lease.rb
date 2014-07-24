@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class IpLease < Base
     taggable 'il'
 

@@ -2,6 +2,8 @@
 
 module Vnet::Models
 
+  # TODO: Refactor.
+
   class TranslationStaticAddress < Base
 
     many_to_one :translation

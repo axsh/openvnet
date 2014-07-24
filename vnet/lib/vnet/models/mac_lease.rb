@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class MacLease < Base
     taggable 'ml'
 
