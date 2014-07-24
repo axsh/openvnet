@@ -2,7 +2,9 @@
 
 module Vnet::Models
 
-  # TODO: Refactor.
+  # TODO: Refactor partial, fix conditions and add comments. Verify
+  # dependencies, and refactor node_api.
+
   class Datapath < Base
     taggable 'dp'
 
@@ -27,12 +29,6 @@ module Vnet::Models
 
     def dpid_s
       "0x%016x" % dpid
-    end
-
-    dataset_module do
-      def find_all_by_network_id(network_id)
-        left_join(:datapath_networks, :datapath_id => :id).where(:datapath_networks__network_id => network_id).all
-      end
     end
 
   end

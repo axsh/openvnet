@@ -113,7 +113,10 @@ module Vnet::NodeApi
       # are mismatched.
       #
       # Note: Investigate if parent's deleted_at always gets written
-      # last, if so remote the 3 second grace time.
+      # last, if so remove the 3 second grace time.
+
+      # TODO: Fix. Make this call a method in the model's node_api so
+      # that we can follow sub-dependencies.
 
       def dispatch_deleted_events(model_sym, id_sym, item, event)
         filter_id = { id_sym => item.id }
