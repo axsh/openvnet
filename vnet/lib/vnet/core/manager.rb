@@ -26,10 +26,6 @@ module Vnet::Core
 
     private
 
-    def log_format(message, values = nil)
-      @log_prefix + message + (values ? " (#{values})" : '')
-    end
-
     def flush_messages(item_id, mac_address)
       return if item_id.nil? || item_id <= 0
 
