@@ -45,8 +45,12 @@ module Vnet::Core::Datapaths
     end
 
     def to_hash
+      # TODO: Remove active_networks?
       Vnet::Core::Datapath.new(id: @id,
                                uuid: @uuid,
+                               display_name: @display_name,
+                               node_id: @node_id,
+
                                active_networks: @active_networks.values)
     end
 
