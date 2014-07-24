@@ -76,6 +76,8 @@ module Vnet::Core
     end
 
     def item_initialize(item_map)
+      # TODO: Make sure there is only one host.
+
       item_class =
         if item_map.dpid == @dp_info.dpid
           Datapaths::Host

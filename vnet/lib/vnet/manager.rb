@@ -262,6 +262,13 @@ module Vnet
 
       item_pre_install(item, item_map)
       item.try_install
+
+      if item.invalid?
+        debug log_format("installation failed, marked invalid " + item.pretty_id, item.pretty_properties)
+        # TODO: Do some more cleanup here.
+        return
+      end
+
       item_post_install(item, item_map)
 
       resume_event_tasks(:loaded, item_id)

@@ -21,12 +21,16 @@ module Vnet::Core::Datapaths
     #
 
     def install
-      super
+      datapath_info = {
+        id: @id,
+        uuid: @uuid,
+        display_name: @display_name,
+        node_id: @node_id
+      }
 
-      @dp_info.datapath.initialize_datapath_info(id: @id,
-                                                 uuid: @uuid,
-                                                 display_name: @display_name,
-                                                 node_id: @node_id)
+      if !@dp_info.datapath.initialize_datapath_info(datapath_info)
+        @invalid = true
+      end
     end
 
     def uninstall

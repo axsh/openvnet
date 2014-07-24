@@ -78,7 +78,7 @@ module Vnet::Openflow
       if @datapath_info
         info log_format('tried to reinitialize an already initialized datapath, resetting')
         reset_datapath_info
-        return
+        return false
       end
 
       @datapath_info = DatapathInfo.new(datapath_map)
@@ -92,7 +92,7 @@ module Vnet::Openflow
       @dp_info.port_manager.initialize_ports
       @dp_info.interface_port_manager.load_internal_interfaces
 
-      return
+      return true
     end
 
     def reset_datapath_info
