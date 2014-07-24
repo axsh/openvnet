@@ -21,6 +21,8 @@ module Vnet::Core::Datapaths
     #
 
     def install
+      super
+
       @dp_info.datapath.initialize_datapath_info(id: @id,
                                                  uuid: @uuid,
                                                  display_name: @display_name,

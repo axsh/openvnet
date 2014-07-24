@@ -91,6 +91,7 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
+      # TODO: Make events.
       item_map.batch.datapath_networks.commit.each do |dpn_map|
         publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
       end

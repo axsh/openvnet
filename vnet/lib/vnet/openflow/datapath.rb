@@ -58,6 +58,8 @@ module Vnet::Openflow
       @switch.create_default_flows
 
       switch_ready
+
+      return
     end
 
     def switch_ready
@@ -66,10 +68,18 @@ module Vnet::Openflow
       unless @dp_info.datapath_manager.retrieve(dpid: @dp_info.dpid)
         warn log_format('could not find dpid in database')
       end
+
+      return
     end
 
     def initialize_datapath_info(datapath_map)
       info log_format('initializing datapath info')
+
+      if @datapath_info
+        info log_format('tried to reinitialize an already initialized datapath, resetting')
+        reset_datapath_info
+        return
+      end
 
       @datapath_info = DatapathInfo.new(datapath_map)
 
@@ -81,12 +91,16 @@ module Vnet::Openflow
       # initialized.
       @dp_info.port_manager.initialize_ports
       @dp_info.interface_port_manager.load_internal_interfaces
+
+      return
     end
 
     def reset_datapath_info
       info log_format('resetting datapath info')
 
       @controller.pass_task { @controller.reset_datapath(@dpid) }
+
+      return
     end
 
     #
