@@ -283,6 +283,8 @@ module Vnet
       item_pre_uninstall(item)
       item.try_uninstall
       item_post_uninstall(item)
+
+      resume_event_tasks(:unloaded, item_id)
     end
 
     #
@@ -399,7 +401,7 @@ module Vnet
       match_item_id = item.id
 
       create_event_task(:unloaded, max_wait) { |item_id|
-        item_id == match_item_id ? true : nil
+        (item_id == match_item_id) ? true : nil
       }
     end
 
