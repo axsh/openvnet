@@ -16,8 +16,11 @@ module Vnet::Models
     many_to_one :interface
     many_to_one :ip_lease
 
+    # TODO: Remove this.
     def datapath_networks_in_the_same_network
       self.class.eager_graph(:datapath).where(network_id: self.network_id).exclude(datapath_networks__id: self.id).all
     end
+
   end
+
 end
