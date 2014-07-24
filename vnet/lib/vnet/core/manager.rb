@@ -4,10 +4,14 @@ module Vnet::Core
   class Manager < Vnet::Manager
 
     def initialize(info, options = {})
-      super
       @dp_info = info
       @datapath_info = nil
       @log_prefix = "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: "
+
+      # Call super last in order to ensure that the celluloid actor is
+      # not activated before we have initialized the required
+      # variables.
+      super
     end
 
     def handle_dynamic_load(params)
