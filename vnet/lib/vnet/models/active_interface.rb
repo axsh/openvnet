@@ -2,7 +2,7 @@
 
 module Vnet::Models
 
-  # TODO: Refactor.
+  # TODO: Refactor partial. Verify node_api.
 
   class ActiveInterface < Base
 

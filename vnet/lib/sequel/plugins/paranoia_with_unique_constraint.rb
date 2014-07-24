@@ -1,3 +1,5 @@
+# TODO: Remove this.
+
 module Sequel
   module Plugins
     module ParanoiaWithUniqueConstraint
