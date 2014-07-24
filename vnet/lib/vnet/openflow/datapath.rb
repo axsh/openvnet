@@ -39,67 +39,64 @@ module Vnet::Openflow
     attr_reader :switch
 
     def initialize(ofc, dp_id, ofctl = nil)
-      @dpid = dp_id
-      @dpid_s = "0x%016x" % @dpid
+      @lock = Mutex.new
 
-      @dp_info = Vnet::Core::DpInfo.new(controller: ofc,
-                                        datapath: self,
-                                        dpid: dp_id,
-                                        ovs_ofctl: ofctl)
+      @lock.synchronize {
+        @dpid = dp_id
+        @dpid_s = "0x%016x" % @dpid
+        @controller = ofc
 
-      @controller = @dp_info.controller
-      @ovs_ofctl = @dp_info.ovs_ofctl
+        @dp_info = Vnet::Core::DpInfo.new(controller: @controller,
+                                          datapath: self,
+                                          dpid: @dpid,
+                                          ovs_ofctl: ofctl)
 
-      link_with_managers
+        @ovs_ofctl = @dp_info.ovs_ofctl
+
+        link_with_managers
+      }
     end
 
     def create_switch
-      @switch = Switch.new(self)
-      @switch.create_default_flows
+      @lock.synchronize {
+        @switch = Switch.new(self)
+        @switch.create_default_flows
 
-      switch_ready
+        @switch.switch_ready
+      }
 
-      return
-    end
-
-    def switch_ready
-      @switch.switch_ready
-
-      unless @dp_info.datapath_manager.retrieve(dpid: @dp_info.dpid)
+      if @dp_info.datapath_manager.retrieve(dpid: @dpid).nil?
         warn log_format('could not find dpid in database')
       end
 
       return
     end
 
+    # We use a lock to avoid datapath_manager from from initializing
+    # datapath_info before the Datapath has finished initializing.
     def initialize_datapath_info(datapath_map)
-      info log_format('initializing datapath info')
+      @lock.synchronize {
+        info log_format('initializing datapath info')
 
-      if @datapath_info
-        info log_format('tried to reinitialize an already initialized datapath, resetting')
-        reset_datapath_info
-        return false
-      end
+        if @datapath_info
+          info log_format('tried to reinitialize an already initialized datapath, resetting')
+          @controller.pass_task { @controller.reset_datapath(@dpid) }
+          next false
+        end
 
-      @datapath_info = DatapathInfo.new(datapath_map)
+        @datapath_info = DatapathInfo.new(datapath_map)
 
-      @dp_info.managers.each { |manager|
-        manager.set_datapath_info(@datapath_info)
+        initialize_managers
+        next true
       }
-
-      # Until we have datapath_info loaded none of the ports can be
-      # initialized.
-      @dp_info.port_manager.initialize_ports
-      @dp_info.interface_port_manager.load_internal_interfaces
-
-      return true
     end
 
     def reset_datapath_info
-      info log_format('resetting datapath info')
+      @lock.synchronize {
+        info log_format('resetting datapath info')
 
-      @controller.pass_task { @controller.reset_datapath(@dpid) }
-
+        @controller.pass_task { @controller.reset_datapath(@dpid) }
+      }
       return
     end
 
@@ -110,7 +107,7 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+      "#{@dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
     end
 
     def do_cleanup
@@ -126,14 +123,27 @@ module Vnet::Openflow
     end
 
     def link_with_managers
-      @dp_info.managers.each do |manager|
+      @dp_info.managers.each { |manager|
         begin
           link(manager)
         rescue => e
           error "Fail to link with #{manager.class.name}: #{e}"
           raise e
         end
-      end
+      }
+    end
+
+    # TODO: Add a way to block events from being processed by managers
+    # until everything has been initialized.
+    def initialize_managers
+      @dp_info.managers.each { |manager|
+        manager.set_datapath_info(@datapath_info)
+      }
+
+      # Until we have datapath_info loaded none of the ports can be
+      # initialized.
+      @dp_info.port_manager.initialize_ports
+      @dp_info.interface_port_manager.load_internal_interfaces
     end
 
   end
