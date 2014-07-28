@@ -59,8 +59,14 @@ module Vnet::Core
     private
 
     def do_cleanup
+      return if @datapath_info.nil?
+
       info log_format('cleaning up')
-      internal_deactivate_all_local_items
+      begin
+        mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
+      rescue NoMethodError => e
+        info log_format(e.message, e.class.name)
+      end
       info log_format('cleaned up')
     end
 
@@ -85,7 +91,7 @@ module Vnet::Core
       filter, value = filter_part
 
       case filter
-      when :id, :interface_id, :datapath_id, :port_name, :label, :singular, :enable_routing
+      when :id, :interface_id, :datapath_id, :port_name, :port_number, :label, :singular, :enable_routing
         proc { |id, item| value == item.send(filter) }
       # when :not_local
       #   proc { |id, item| value != item.network_id }
@@ -99,7 +105,9 @@ module Vnet::Core
       filter << {id: params[:id]} if params.has_key? :id
       filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
       filter << {datapath_id: params[:datapath_id]} if params.has_key? :datapath_id
+
       filter << {port_name: params[:port_name]} if params.has_key? :port_name
+      filter << {port_number: params[:port_number]} if params.has_key? :port_number
 
       filter << {label: params[:label]} if params.has_key? :label
       filter << {singular: params[:singular]} if params.has_key? :singular
@@ -146,23 +154,13 @@ module Vnet::Core
 
       # Currently only allow updated to change 'label', 'singular' and
       # 'port_name'.  
-      item.port_name = params[:port_name]
-      item.label = params[:label]
-      item.singular = params[:singular]
+      # item.label = params[:label]
+      # item.singular = params[:singular]
 
       # TODO: Update this properly.
       item.enable_routing = params[:enable_routing]
 
       debug log_format("updated " + item.pretty_id, item.pretty_properties)
-    end
-
-    #
-    # Update local items:
-    #
-
-    def internal_deactivate_all_local_items
-      return if @datapath_info.nil?
-      mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
     end
 
     #

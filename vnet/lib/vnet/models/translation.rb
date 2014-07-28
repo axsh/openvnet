@@ -9,6 +9,9 @@ module Vnet::Models
 
     one_to_many :translation_static_addresses
 
+    plugin :association_dependencies,
+      :translation_static_addresses => :destroy
+
     subset(:alives, {})
 
   end

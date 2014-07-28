@@ -20,7 +20,7 @@ module Vnet
 
     def retrieve(params)
       begin
-        item_to_hash(item_by_params(params))
+        item_to_hash(internal_retrieve(params))
       rescue Celluloid::Task::TerminatedError => e
         raise e
       rescue Exception => e
@@ -95,10 +95,15 @@ module Vnet
         raise("Manager.set_datapath_info called twice.")
       end
 
+      if datapath_info.nil? || datapath_info.id.nil?
+        raise("Manager.set_datapath_info received invalid datapath info.")
+      end
+
       @datapath_info = datapath_info
 
       # We need to update remote interfaces in case they are now in
       # our datapath.
+      initialized_datapath_info
     end
 
     #
@@ -133,6 +138,12 @@ module Vnet
     def item_unload_event
       # Must be implemented by subclass
       raise NotImplementedError
+    end
+
+    def initialized_datapath_info
+    end
+
+    def cleared_datapath_info
     end
 
     #
@@ -206,7 +217,7 @@ module Vnet
       item && item.to_hash
     end
 
-    def item_by_params(params)
+    def internal_retrieve(params)
       item = internal_detect(params)
       return item if item
 
@@ -219,6 +230,7 @@ module Vnet
 
       internal_new_item(item_map)
     end
+    alias_method :item_by_params, :internal_retrieve
 
     # The default select call with no fill options.
     def select_item(batch)
@@ -228,6 +240,18 @@ module Vnet
     #
     # Default install/uninstall methods:
     #
+
+    def item_pre_install(item, item_map)
+    end
+
+    def item_post_install(item, item_map)
+    end
+
+    def item_pre_uninstall(item)
+    end
+
+    def item_post_uninstall(item)
+    end
 
     def load_item(params)
       item_map = params[:item_map] || return
@@ -243,29 +267,15 @@ module Vnet
       resume_event_tasks(:loaded, item_id)
     end
 
-    def item_pre_install(item, item_map)
-    end
-
-    def item_post_install(item, item_map)
-    end
-
     def unload_item(params)
-      debug log_format("uninstalling", params.inspect)
-
       item_id = (params && params[:id]) || return
       item = @items.delete(item_id) || return
+
+      debug log_format("uninstalling " + item.pretty_id, item.pretty_properties)
 
       item_pre_uninstall(item)
       item.try_uninstall
       item_post_uninstall(item)
-
-      debug log_format("uninstalled " + item.pretty_id, item.pretty_properties)
-    end
-
-    def item_pre_uninstall(item)
-    end
-
-    def item_post_uninstall(item)
     end
 
     #
@@ -399,7 +409,7 @@ module Vnet
 
       return if !push_message(item_id, params[:message])
 
-      item = item_by_params(id: item_id)
+      item = internal_retrieve(id: item_id)
       return if item.nil?
 
       return item

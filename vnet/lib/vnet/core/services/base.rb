@@ -87,7 +87,7 @@ module Vnet::Core::Services
     def find_ipv4_and_network(message, ipv4_address)
       ipv4_address = ipv4_address != IPV4_BROADCAST ? ipv4_address : nil
 
-      interface = @dp_info.interface_manager.retrieve(id: @interface_id)
+      interface = @dp_info.interface_manager.detect(id: @interface_id)
       return unless interface
 
       mac_info, ipv4_info = interface.get_ipv4_infos(any_md: message.match.metadata,
@@ -131,7 +131,7 @@ module Vnet::Core::Services
     protected
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
-      interface = @dp_info.interface_manager.retrieve(port_number: port_number)
+      interface = @dp_info.interface_manager.detect(port_number: port_number)
       return [] if interface.nil?
 
       client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])

@@ -13,6 +13,7 @@ Sequel.migration do
       Integer :interface_id, :index => true, :null => false
       Integer :datapath_id, :index => true, :null => false
       String :port_name, :index => true
+      String :port_number, :index => true
 
       String :label
       TrueClass :singular
@@ -21,10 +22,11 @@ Sequel.migration do
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+      DateTime :deleted_at
 
-      index [:interface_id, :datapath_id], :unique => true
-      index [:interface_id, :label], :unique => true
-      unique [:interface_id, :singular]
+      index [:interface_id, :datapath_id, :deleted_at], :unique => true
+      index [:interface_id, :label, :deleted_at], :unique => true
+      unique [:interface_id, :singular, :deleted_at]
     end
 
     create_table(:datapaths) do
@@ -34,6 +36,7 @@ Sequel.migration do
       FalseClass :is_connected, :null=>false, :default => false
       Bignum :dpid, :null=>false
       String :node_id, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
@@ -73,6 +76,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :network_service_id, :index => true, :null => false
       String :public_dns
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -85,6 +89,7 @@ Sequel.migration do
       String :name, :null => false
       Bignum :ipv4_address, :null => false
       Integer :ttl
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -96,16 +101,36 @@ Sequel.migration do
       String :mode, :default => 'vif',:null => false
       String :display_name
 
-      String :port_name, :index => true, :null => true
-
-      Integer :owner_datapath_id, :index => true
-
       FalseClass :ingress_filtering_enabled, :null => false
       FalseClass :enable_routing, :null=>false
       FalseClass :enable_route_translation, :null=>false
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+    end
+
+    create_table(:interface_ports) do
+      primary_key :id
+
+      Integer :interface_id, :index => true, :null => false
+      Integer :datapath_id, :index => true
+
+      String :port_name, :index => true
+
+      TrueClass :singular
+
+      # Temporary work-around until we refactor port manager so that
+      # interface_port's can just include an interface_ingress/egress
+      # parameter.
+      String :interface_mode, :null => false
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at
+
+      index [:interface_id, :datapath_id, :deleted_at], :unique => true
+      index [:port_name, :datapath_id, :singular, :deleted_at], :unique => true
     end
 
     create_table(:interface_security_groups) do
@@ -119,9 +144,11 @@ Sequel.migration do
       primary_key :id
       Integer :network_id, :index => true, :null => false
       Bignum :ipv4_address, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+
       Integer :deleted, :default => 0, :null => false
       unique [:network_id, :ipv4_address, :deleted]
     end
@@ -157,6 +184,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       String :allocation_type, :null=>false, :default => "incremental"
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -168,6 +196,7 @@ Sequel.migration do
       Integer :ip_range_group_id, :index => true, :null => false
       Bignum :begin_ipv4_address, :null=>false
       Bignum :end_ipv4_address, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -177,8 +206,10 @@ Sequel.migration do
       primary_key :id
       Integer :ip_lease_id, :index => true, :null => false
       Integer :ip_retention_container_id, :index => true, :null => false
+
       DateTime :leased_at
       DateTime :released_at
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -188,6 +219,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :lease_time
       Integer :grace_time
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -198,6 +230,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       String :mode, :null=>false, :default => "simple"
       String :timing, :null=>false, :default => "immediate"
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -208,6 +241,7 @@ Sequel.migration do
       Integer :lease_policy_id, :index => true, :null => false
       Integer :interface_id, :index => true, :null => false
       String :label
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -218,6 +252,7 @@ Sequel.migration do
       Integer :lease_policy_id, :index => true, :null => false
       Integer :network_id, :index => true, :null => false
       Integer :ip_range_group_id, :index => true, :null => false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -243,6 +278,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
       Bignum :mac_address, :unique => true, :null=>false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end
@@ -252,6 +288,7 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       Integer :interface_id, :index => true
       Integer :mac_address_id, :index => true, :null => false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at
@@ -266,6 +303,7 @@ Sequel.migration do
       String :domain_name
       String :network_mode
       FalseClass :editable
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
@@ -281,6 +319,7 @@ Sequel.migration do
       String :type, :index => true, :null=>false
       Integer :incoming_port
       Integer :outgoing_port
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
     end

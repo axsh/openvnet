@@ -104,7 +104,7 @@ module Vnet::Core
         # TODO: Set flood off.
 
         # TODO: Make sure activate port recreates previously remote ports.
-        @dp_info.interface_manager.publish(INTERFACE_ACTIVATE_PORT,
+        @dp_info.interface_manager.publish(INTERFACE_PORT_ACTIVATE,
                                            id: :port,
                                            port_name: port.port_name,
                                            port_number: port.port_number)
@@ -119,9 +119,8 @@ module Vnet::Core
       # We always trigger the deactivate event even if interface_id is
       # not set, as there might otherwise be a race-condition with
       # activation events.
-      @dp_info.interface_manager.publish(INTERFACE_DEACTIVATE_PORT,
+      @dp_info.interface_manager.publish(INTERFACE_PORT_DEACTIVATE,
                                          id: :port,
-                                         interface_id: port.interface_id,
                                          port_name: port.port_name,
                                          port_number: port.port_number)
 
@@ -134,15 +133,16 @@ module Vnet::Core
       port = @items[params[:id]] || return
       return if port.installed?
 
-      interface = params[:interface] || return      
+      interface_id = params[:interface_id] || return      
+      interface_mode = params[:interface_mode] || return      
 
-      case interface.mode
+      case interface_mode
       when :host, :edge, :patch
-        prepare_port_eth(port, interface)
+        prepare_port_eth(port, interface_id, interface_mode)
       when :vif
-        prepare_port_vif(port, interface)
+        prepare_port_vif(port, interface_id, interface_mode)
       else
-        error log_format('unknown interface mode', "name:#{port.port_name} type:#{interface.mode}")
+        error log_format('unknown interface mode', "name:#{port.port_name} interface_id:#{interface_id} interface_mode:#{interface_mode}")
       end
     end
 
@@ -168,35 +168,35 @@ module Vnet::Core
       port.try_install
     end
 
-    def prepare_port_eth(port, interface)
+    def prepare_port_eth(port, interface_id, interface_mode)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)
 
-      if interface.nil?
-        error log_format("could not find interface for #{port.port_name}")
+      if interface_id.nil? || interface_mode.nil?
+        error log_format("could not find proper interface for #{port.port_name}")
         return
       end
 
-      if interface.mode == :host || interface.mode == :patch
+      if interface_mode == :host || interface_mode == :patch
         port.extend(Ports::Host)
-        port.interface_id = interface.id
+        port.interface_id = interface_id
 
-      elsif interface.mode == :edge
+      elsif interface_mode == :edge
         port.extend(Ports::Generic)
-        port.interface_id = interface.id
+        port.interface_id = interface_id
 
       else
-        error log_format("unknown port type", interface.mode)
+        error log_format("unknown port type", interface_mode)
       end
 
       port.try_install
     end
 
-    def prepare_port_vif(port, interface)
-      debug log_format("prepare_port_vif #{interface.uuid}", "port_name:#{port.port_name}")
+    def prepare_port_vif(port, interface_id, interface_mode)
+      debug log_format("prepare_port_vif", "port_name:#{port.port_name}")
 
       port.extend(Ports::Vif)
 
-      port.interface_id = interface.id
+      port.interface_id = interface_id
       port.try_install
     end
 

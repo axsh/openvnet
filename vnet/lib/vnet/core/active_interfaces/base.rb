@@ -8,7 +8,9 @@ module Vnet::Core::ActiveInterfaces
     attr_reader :interface_id
     attr_reader :datapath_id
 
-    attr_accessor :port_name
+    attr_reader :port_name
+    attr_reader :port_number
+
     attr_accessor :label
     attr_accessor :singular
     attr_accessor :enable_routing
@@ -22,6 +24,7 @@ module Vnet::Core::ActiveInterfaces
       @datapath_id = map.datapath_id
 
       @port_name = map.port_name
+      @port_number = map.port_number
       @label = map.label
       @singular = map.singular
       @enable_routing = map.enable_routing
@@ -42,6 +45,7 @@ module Vnet::Core::ActiveInterfaces
     def pretty_properties
       "interface_id:#{@interface_id} datapath_id:#{@datapath_id}" +
         (@port_name ? ' port_name:' + @port_name : '') +
+        (@port_number ? ' port_number:' + @port_number : '') +
         (@label ? ' label:' + @label : '') +
         (@singular ? ' singular' : '') +
         (@enable_routing ? ' routing_enabled' : '')
@@ -59,6 +63,8 @@ module Vnet::Core::ActiveInterfaces
                                       datapath_id: @datapath_id,
 
                                       port_name: @port_name,
+                                      port_number: @port_number,
+
                                       label: @label,
                                       singular: @singular,
                                       enable_routing: @enable_routing)

@@ -26,6 +26,7 @@ module Vnet::NodeApi
           old_model = prune_for_singular(active_models, datapath_id) if singular
           Celluloid::Logger.debug "active interfaces post-prune_for_singular: #{active_models.inspect}"
 
+          # TODO: Delete, don't update.
           if old_model
             model = old_model
             model.set(port_name: options[:port_name],

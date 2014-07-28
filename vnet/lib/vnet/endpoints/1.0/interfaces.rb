@@ -11,7 +11,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     param :enable_route_translation, :Boolean
   end
 
-  fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
+  fill = [ { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
+
+  #
+  # Base:
+  #
 
   put_post_shared_params
   param_uuid M::Interface
@@ -44,6 +48,68 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     check_syntax_and_get_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     update_by_uuid(:Interface, fill)
   end
+
+  param_uuid M::Interface
+  param :new_uuid, :String
+  put '/:uuid/rename_uuid' do
+    updated_object = M::Interface.batch.rename_uuid(params['uuid'], params['new_uuid']).commit
+    respond_with([updated_object])
+  end
+
+  #
+  # Ports:
+  #
+
+  #TODO: Write some FREAKING tests for this
+
+  def self.port_put_post_shared_params
+    param_uuid M::Datapath, :datapath_uuid
+    param :port_name, :String
+    param :singular, :Boolean
+  end
+
+  port_put_post_shared_params
+  param_uuid M::Interface
+  post '/:uuid/ports' do
+    interface = uuid_to_id(M::Interface, 'uuid', 'interface_id')
+    datapath = uuid_to_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
+
+    # TODO: Move to node_api.
+    params['interface_mode'] = interface.mode
+
+    remove_system_parameters
+
+    interface_port = M::InterfacePort.create(params)
+    respond_with(R::InterfacePort.generate(interface_port))
+  end
+
+  get '/:uuid/ports' do
+    show_relations(:Interface, :interface_ports)
+  end
+
+  port_put_post_shared_params
+  delete '/:uuid/ports' do
+    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
+    datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
+
+    remove_system_parameters
+
+    filter = {
+      interface_id: interface.id,
+    }
+    filter[:datapath_id] = datapath.id if datapath
+    filter[:port_name] = params['port_name'] if params.has_key?('port_name')
+    filter[:singular] = params['singular'] if params.has_key?('singular')
+
+    ports = M::InterfacePort.batch.where(filter).all.commit
+    ports.each { |r| M::InterfacePort.destroy(r.id) }
+
+    respond_with(ports)
+  end
+
+  #
+  # Security Groups:
+  #
 
   post '/:uuid/security_groups/:security_group_uuid' do
     security_group = check_syntax_and_get_id(M::SecurityGroup, 'security_group_uuid', 'security_group_id')

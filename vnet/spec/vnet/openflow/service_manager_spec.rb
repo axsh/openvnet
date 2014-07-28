@@ -5,7 +5,11 @@ require 'spec_helper'
 include Vnet::Constants::Openflow
 
 describe Vnet::Core::ServiceManager do
+
+  use_mock_event_handler
+
   let(:datapath) { create_mock_datapath }
+  let(:dp_info) { datapath.dp_info }
 
   let(:service_manager) do
     datapath.dp_info.service_manager
@@ -49,7 +53,7 @@ describe Vnet::Core::ServiceManager do
 
     describe "when ADDED_SERVICE is published" do
       it "should create a network service with a dns service" do
-        interface_manager.retrieve(id: 1)
+        interface_manager.load_shared_interface(1)
         expect(interface_manager.wait_for_loaded({id: 1}, 3)).not_to be_nil
 
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
@@ -64,7 +68,7 @@ describe Vnet::Core::ServiceManager do
           expect(item.dns_server_for(1)).to eq IPAddr.new("192.168.1.3").to_s
         end
 
-        expect(datapath.added_flows).to be_any { |flow|
+        expect(dp_info.added_flows).to be_any { |flow|
           flow.params[:table_id] == TABLE_OUT_PORT_INTERFACE_INGRESS
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800
@@ -72,7 +76,7 @@ describe Vnet::Core::ServiceManager do
           flow.params[:match][:udp_dst] == 53
         }
 
-        expect(datapath.added_flows).to be_any { |flow|
+        expect(dp_info.added_flows).to be_any { |flow|
           flow.params[:table_id] == TABLE_FLOOD_SIMULATED
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800
@@ -84,7 +88,7 @@ describe Vnet::Core::ServiceManager do
 
     describe "when REMOVED_SERVICE is published" do
       it "should remove a network service" do
-        interface_manager.retrieve(id: 1)
+        interface_manager.load_shared_interface(1)
         expect(interface_manager.wait_for_loaded({id: 1}, 3)).not_to be_nil
 
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
@@ -99,7 +103,7 @@ describe Vnet::Core::ServiceManager do
 
         expect(service_manager.retrieve(id: network_service.id)).to be_nil
 
-        expect(datapath.deleted_flows).to be_any { |flow|
+        expect(dp_info.deleted_flows).to be_any { |flow|
           flow.params[:table_id] == TABLE_OUT_PORT_INTERFACE_INGRESS
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800
@@ -107,7 +111,7 @@ describe Vnet::Core::ServiceManager do
           flow.params[:match][:udp_dst] == 53
         }
 
-        expect(datapath.deleted_flows).to be_any { |flow|
+        expect(dp_info.deleted_flows).to be_any { |flow|
           flow.params[:table_id] == TABLE_FLOOD_SIMULATED
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800

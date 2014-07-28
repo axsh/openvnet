@@ -2,7 +2,7 @@
 
 module Vnet::Models
 
-  class ActiveInterface < Base
+  class InterfacePort < Base
 
     plugin :paranoia
 
@@ -11,8 +11,6 @@ module Vnet::Models
 
     def validate
       super
-      errors.add(:label, 'must be set if singular is null') if label.nil? && singular.nil?
-      errors.add(:label, 'must be set to null if singular is true') if singular == true && label
       errors.add(:singular, 'must be set to either true or null') if singular != true && !singular.nil?
     end
 

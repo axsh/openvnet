@@ -11,19 +11,22 @@ module Vnet::Models
     many_to_many :networks, :join_table => :datapath_networks, :conditions => "datapath_networks.deleted_at is null"
     many_to_many :route_links, :join_table => :datapath_route_links
 
-    one_to_many :interfaces_owned, :class => Interface, :key => :owner_datapath_id
+    one_to_many :interface_ports
+    one_to_many :active_interfaces
 
     one_to_many :tunnels, :key => :src_datapath_id
 
     plugin :association_dependencies,
       datapath_networks: :destroy,
-      interfaces_owned: :nullify
+      datapath_route_links: :destroy,
+      active_interfaces: :destroy,
+      interface_ports: :destroy
 
     subset(:alives, {})
 
-    one_to_many :host_interfaces, :class => Interface do |ds|
-      Interface.where({owner_datapath_id: self.id} & {mode: 'host'})
-    end
+    # one_to_many :host_interfaces, :class => Interface do |ds|
+    #   Interface.where({owner_datapath_id: self.id} & {mode: 'host'})
+    # end
 
     def dpid_s
       "0x%016x" % dpid

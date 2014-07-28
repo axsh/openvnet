@@ -9,7 +9,9 @@ module Vnet::Models
 
     many_to_one :interface
     one_to_many :ip_leases
-    plugin :association_dependencies, ip_leases: :destroy
+
+    plugin :association_dependencies,
+      :ip_leases => :destroy
 
     def cookie_id
       self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count

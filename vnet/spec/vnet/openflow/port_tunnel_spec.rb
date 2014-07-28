@@ -6,11 +6,14 @@ include Vnet::Constants::Openflow
 
 describe Vnet::Core::Ports::Tunnel do
   describe "install" do
+
+    let(:datapath) { MockDatapath.new(double, 10) }
+    let(:dp_info) { datapath.dp_info }
+
     it "creates tunnel specific flows" do
-      datapath = MockDatapath.new(double, 10)
-      port = Vnet::Core::Ports::Base.new(dp_info: datapath.dp_info,
-                                             id: 10,
-                                             port_desc: double(port_no: 10, name: 't-a'))
+      port = Vnet::Core::Ports::Base.new(dp_info: dp_info,
+                                         id: 10,
+                                         port_desc: double(port_no: 10, name: 't-a'))
       port.extend(Vnet::Core::Ports::Tunnel)
       port.dst_datapath_id = 5
 
@@ -22,10 +25,10 @@ describe Vnet::Core::Ports::Tunnel do
 
       port.try_install
 
-      expect(datapath.added_ovs_flows.size).to eq 0
-      expect(datapath.added_flows.size).to eq(1 + DATAPATH_IDLE_FLOWCOUNT)
+      expect(dp_info.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_flows.size).to eq(1 + DATAPATH_IDLE_FLOWCOUNT)
 
-      expect(datapath.added_flows).to include Vnet::Openflow::Flow.create(
+      expect(dp_info.added_flows).to include Vnet::Openflow::Flow.create(
                                               TABLE_TUNNEL_PORTS,
                                               30,
                                               {:in_port => 10},

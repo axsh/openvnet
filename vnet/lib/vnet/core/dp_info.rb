@@ -18,6 +18,7 @@ module Vnet::Core
       connection
       datapath
       interface
+      interface_port
       network
       route
       router

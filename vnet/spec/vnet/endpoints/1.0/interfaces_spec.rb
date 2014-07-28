@@ -14,6 +14,10 @@ describe "/interfaces" do
   let(:fabricator)  { :interface }
   let(:model_class) { Vnet::Models::Interface }
 
+  #
+  # Base:
+  #
+
   include_examples "GET /"
   include_examples "GET /:uuid"
   include_examples "DELETE /:uuid"
@@ -23,19 +27,19 @@ describe "/interfaces" do
     let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
     let!(:active) { Fabricate(:datapath) { uuid "dp-active" } }
 
-    accepted_params = {
+    expected_response = {
       :uuid => "if-test",
       :network_uuid => "nw-testnet",
       :ipv4_address => "192.168.1.10",
       :ingress_filtering_enabled => true,
       :mac_address => "11:11:11:11:11:11",
-      :owner_datapath_uuid => "dp-owner",
       :mode => "simulated"
     }
+    accepted_params = expected_response.merge(owner_datapath_uuid: "dp-owner")
     required_params = []
     uuid_params = [:network_uuid, :owner_datapath_uuid]
 
-    include_examples "POST /", accepted_params, required_params, uuid_params
+    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
 
     context "With a faulty mac address" do
       let(:request_params) { { mac_address: "i am not a mac address" } }
@@ -54,7 +58,7 @@ describe "/interfaces" do
 
       it "handles a single event" do
         expect(last_response).to succeed
-        expect(MockEventHandler.handled_events.size).to eq 1
+        expect(MockEventHandler.handled_events.size).to eq 2
       end
     end
   end
@@ -65,7 +69,7 @@ describe "/interfaces" do
     accepted_params = {
       :display_name => "updated interface",
       :ingress_filtering_enabled => true,
-      :owner_datapath_uuid => "dp-new",
+      # :owner_datapath_uuid => "dp-new",
     }
 
     include_examples "PUT /:uuid", accepted_params
@@ -80,7 +84,35 @@ describe "/interfaces" do
     end
   end
 
-  describe "Many to many relation calls for route links" do
+  #
+  # Ports:
+  #
+
+  # TODO: Write shared example for this:
+
+  # describe "POST /:uuid/ports" do
+  #   let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
+  #   #let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+
+  #   expected_response = {
+  #     interface_uuid: 'if-test',
+  #     datapath_uuid: 'dp-owner',
+  #     port_name: 'vif-foo',
+  #     singular: 1
+  #   }
+
+  #   accepted_params = expected_response #.merge( datapath_uuid: "dp-owner")
+  #   required_params = []
+  #   uuid_params = [:datapath_uuid]
+
+  #   include_examples "POST /:uuid/ports", accepted_params, required_params, uuid_params, expected_response
+  # end
+
+  #
+  # Security groups:
+  #
+
+  describe "Many to many relation calls for security groups" do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :security_group }
 
@@ -88,4 +120,5 @@ describe "/interfaces" do
 
     include_examples "many_to_many_relation", "security_groups", {}
   end
+
 end

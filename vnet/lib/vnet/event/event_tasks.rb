@@ -26,8 +26,10 @@ module Vnet::Event
       tasks[current_task] = state = { status: :valid }
 
       while true
+        # Suspend returns the value passed to resume by the other
+        # task. We do not allow nil to be passed.
         passed_value = Celluloid::Task.suspend(:event_task)
-        break unless passed_value
+        next if passed_value.nil?
 
         result = block.call(passed_value)
         break result if result
