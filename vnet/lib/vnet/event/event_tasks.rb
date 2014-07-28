@@ -20,15 +20,21 @@ module Vnet::Event
     # The block should not contain any calls that yield.
     def create_event_task(task_name, max_wait, &block)
       current_task = Celluloid::Task.current
-      current_timer = max_wait && after(max_wait) { current_task.resume }
 
       tasks = (@event_tasks[task_name] ||= {})
       tasks[current_task] = state = { status: :valid }
+
+      current_timer = max_wait && after(max_wait) {
+        state[:status] = :invalid
+        current_task.resume
+      }
 
       while true
         # Suspend returns the value passed to resume by the other
         # task. We do not allow nil to be passed.
         passed_value = Celluloid::Task.suspend(:event_task)
+
+        break if state[:status] == :invalid
         next if passed_value.nil?
 
         result = block.call(passed_value)
