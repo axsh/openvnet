@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
+
 module Vnet::Models
 
-  # TODO: Refactor.
   class DnsRecord < Base
     taggable "dnsr"
 
@@ -8,4 +9,5 @@ module Vnet::Models
 
     many_to_one :dns_service
   end
+
 end

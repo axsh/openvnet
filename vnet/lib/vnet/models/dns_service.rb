@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
-require "ipaddress"
-
 module Vnet::Models
 
-  # TODO: Refactor.
   class DnsService < Base
     taggable "dnss"
 
@@ -21,13 +18,19 @@ module Vnet::Models
     end
 
     def validate
-      if public_dns && !public_dns.split(",").all? { |ip| IPAddress.valid_ipv4?(ip) }
-        errors.add(:public_dns, 'is not valid')
-      end
       validates_presence :network_service_id
+
       if network_service && network_service.type != "dns"
         errors.add(:network_service, 'must be dns')
       end
+
+      has_invalid = public_dns.nil? || public_dns.split(",").detect { |ip_address|
+        !IPAddr.new(ip_address).ipv4?
+      }
+
+      errors.add(:public_dns, 'is not valid') if has_invalid
     end
+
   end
+
 end
