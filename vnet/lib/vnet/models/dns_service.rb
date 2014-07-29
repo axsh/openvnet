@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'ipaddr'
+
 module Vnet::Models
 
   class DnsService < Base

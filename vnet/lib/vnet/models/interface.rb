@@ -3,6 +3,7 @@
 module Vnet::Models
 
   # TODO: Refactor.
+
   class Interface < Base
     taggable 'if'
 
