@@ -64,7 +64,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     datapath = check_syntax_and_pop_uuid(M::Datapath)
     network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
 
-    M::DatapathNetwork.destroy(datapath_id: datapath.id, network_id: network.id)
+    M::DatapathNetwork.destroy(datapath_id: datapath.id, generic_id: network.id)
 
     respond_with([network.uuid])
   end
@@ -93,7 +93,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     datapath = check_syntax_and_pop_uuid(M::Datapath)
     route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
 
-    M::DatapathRouteLink.destroy(datapath_id: datapath.id, route_link_id: route_link.id)
+    M::DatapathRouteLink.destroy(datapath_id: datapath.id, generic_id: route_link.id)
 
     respond_with([route_link.uuid])
   end
