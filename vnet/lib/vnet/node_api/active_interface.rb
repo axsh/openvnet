@@ -57,8 +57,7 @@ module Vnet::NodeApi
       private
 
       def dispatch_created_item_events(model)
-        # TODO: Send has not just id.
-        dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, id: model.to_hash)
+        dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, model.to_hash)
       end
 
       def dispatch_deleted_item_events(model)
