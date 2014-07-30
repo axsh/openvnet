@@ -87,7 +87,7 @@ module Vnet::NodeApi
         ActiveInterface.dispatch_deleted_where({ interface_id: model.id }, model.deleted_at)
         InterfacePort.dispatch_deleted_where({ interface_id: model.id }, model.deleted_at)
         MacLease.dispatch_deleted_where({ interface_id: model.id }, model.deleted_at)
-        InterfaceSecurityGroup.dispatch_deleted_where({ interface_id: item.id }, model.deleted_at)
+        InterfaceSecurityGroup.dispatch_deleted_where({ interface_id: model.id }, model.deleted_at)
       end
 
       def create_interface_port(interface, datapath_id, port_name)

@@ -11,12 +11,12 @@ module Vnet::NodeApi
 
       private
 
-      def created_item_event
-        INTERFACE_PORT_CREATED_ITEM
+      def dispatch_created_item_events(model)
+        dispatch_event(INTERFACE_PORT_CREATED_ITEM, model.to_hash)
       end
 
-      def deleted_item_event
-        INTERFACE_PORT_DELETED_ITEM
+      def dispatch_deleted_item_events(model)
+        dispatch_event(INTERFACE_PORT_DELETED_ITEM, id: model.id)
       end
 
     end
