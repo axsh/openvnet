@@ -26,7 +26,7 @@ module Vnet::Models
         errors.add(:network_service, 'must be dns')
       end
 
-      has_invalid = public_dns.nil? || public_dns.split(",").detect { |ip_address|
+      has_invalid = public_dns && public_dns.split(",").detect { |ip_address|
         !IPAddr.new(ip_address).ipv4?
       }
 
