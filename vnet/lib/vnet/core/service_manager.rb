@@ -24,8 +24,9 @@ module Vnet::Core
     subscribe_event ADDED_DNS_RECORD, :add_dns_record
     subscribe_event REMOVED_DNS_RECORD, :remove_dns_record
 
+    # TODO: Refactor these:
     def dns_server_for(network_id)
-      @items.each do |_, item|
+      @items.dup.each do |_, item|
         next unless item.type == TYPE_DNS && item.networks[network_id]
         return item.dns_server_for(network_id)
       end
@@ -33,14 +34,14 @@ module Vnet::Core
     end
 
     def add_dns_server(network_id, dns_server)
-      @items.each do |_, item|
+      @items.dup.each do |_, item|
         next unless item.type == TYPE_DHCP && item.networks[network_id]
         item.add_dns_server(network_id, dns_server)
       end
     end
 
     def remove_dns_server(network_id)
-      @items.each do |_, item|
+      @items.dup.each do |_, item|
         next unless item.type == TYPE_DHCP && item.networks[network_id]
         item.remove_dns_server(network_id)
       end
