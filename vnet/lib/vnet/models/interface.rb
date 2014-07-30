@@ -19,8 +19,8 @@ module Vnet::Models
 
     # TODO: Rename to security_group_interfaces, and move associations
     # and helper methods to security group models. Same goes for lease policies.
-    one_to_many :interface_security_groups
-    many_to_many :security_groups, :join_table => :interface_security_groups
+    one_to_many :security_group_interfaces
+    many_to_many :security_groups, :join_table => :security_group_interfaces
 
     many_to_many :lease_policies, :join_table => :lease_policy_base_interfaces
     one_to_many :lease_policy_base_interfaces
@@ -38,14 +38,14 @@ module Vnet::Models
     # group relation and that's throwing a wrench in Sequel's inner workings.
     # We override the relation accessors to remedy that.
     def security_groups_dataset
-      ds = SecurityGroup.join(:interface_security_groups, security_group_id: :id)
-      ds = ds.where(interface_security_groups__deleted_at: nil)
+      ds = SecurityGroup.join(:security_group_interfaces, security_group_id: :id)
+      ds = ds.where(security_group_interfaces__deleted_at: nil)
       ds.where(interface_id: self.id).select_all(:security_groups)
     end
 
     # We override this method for the same reason
     def remove_security_group(sg)
-      InterfaceSecurityGroup.filter(interface_id: id, security_group_id: sg.id).destroy
+      SecurityGroupInterface.filter(interface_id: id, security_group_id: sg.id).destroy
     end
 
     def ip_addresses_dataset

@@ -115,13 +115,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     security_group = check_syntax_and_get_id(M::SecurityGroup, 'security_group_uuid', 'security_group_id')
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
 
-    M::InterfaceSecurityGroup.filter(:interface_id => interface.id,
+    M::SecurityGroupInterface.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).empty? ||
     raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
     remove_system_parameters
 
-    M::InterfaceSecurityGroup.create(params)
+    M::SecurityGroupInterface.create(params)
 
     respond_with(R::SecurityGroup.generate(security_group))
   end
@@ -134,12 +134,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     interface = check_syntax_and_pop_uuid(M::Interface)
     security_group = check_syntax_and_pop_uuid(M::SecurityGroup, 'security_group_uuid')
 
-    relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
+    relations = M::SecurityGroupInterface.batch.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).all.commit
 
     # We call the destroy class method so we go trough NodeApi and send an
     # update isolation event. As opposed to calling the destroy instance method
-    relations.each { |r| M::InterfaceSecurityGroup.destroy(r.id) }
+    relations.each { |r| M::SecurityGroupInterface.destroy(r.id) }
     respond_with([security_group.uuid])
   end
 end

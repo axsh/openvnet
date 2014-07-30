@@ -21,7 +21,7 @@ module Vnet::Plugins
         :NetworkVifIpLease => [:IpAddress, :IpLease],
         :NetworkService => [:NetworkService],
         :NetworkRoute => [:TranslationStaticAddress],
-        :NetworkVifSecurityGroup => [:InterfaceSecurityGroup]
+        :NetworkVifSecurityGroup => [:SecurityGroupInterface]
       }
 
       info "vdc_vnet_plugin initialized..."
@@ -51,14 +51,14 @@ module Vnet::Plugins
             ip_address_id: ip_address.id
           ).first
           Vnet::NodeApi::IpLease.execute(:destroy, ip_lease.canonical_uuid)
-        when :InterfaceSecurityGroup
+        when :SecurityGroupInterface
           security_group = Vnet::NodeApi::SecurityGroup[options[:security_group_uuid]]
           interface = Vnet::NodeApi::Interface[options[:interface_uuid]]
-          interface_security_group = Vnet::NodeApi::InterfaceSecurityGroup.filter(
+          security_group_interface = Vnet::NodeApi::SecurityGroupInterface.filter(
             security_group_id: security_group.id,
             interface_id: interface.id
           ).first
-          Vnet::NodeApi::InterfaceSecurityGroup.execute(:destroy, interface_security_group.canonical_uuid)
+          Vnet::NodeApi::SecurityGroupInterface.execute(:destroy, security_group_interface.canonical_uuid)
         when :Network
           network = Vnet::NodeApi::Network[options[:uuid]]
           Vnet::NodeApi::DatapathNetwork.filter(network_id: network.id).map { |dpn| dpn.destroy }
@@ -243,7 +243,7 @@ module Vnet::Plugins
         interface_id: Vnet::NodeApi::Interface[vnet_params[:interface_uuid]].id,
         security_group_id: Vnet::NodeApi::SecurityGroup[vnet_params[:security_group_uuid]].id
       }
-      Vnet::NodeApi::InterfaceSecurityGroup.create(vnet_params)
+      Vnet::NodeApi::SecurityGroupInterface.create(vnet_params)
     end
 
     def translation_static_address_params(vnet_params)

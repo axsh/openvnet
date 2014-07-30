@@ -2,7 +2,7 @@
 
 module Vnet::NodeApi
 
-  class InterfaceSecurityGroup < EventBase
+  class SecurityGroupInterface < EventBase
     class << self
       include Vnet::Helpers::Event
 

@@ -125,19 +125,6 @@ Sequel.migration do
       unique [:port_name, :datapath_id, :singular, :deleted_at]
     end
 
-    create_table(:interface_security_groups) do
-      primary_key :id
-
-      Integer :interface_id, :index => true, :null => false
-      Integer :security_group_id, :index => true, :null => false
-
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at, :index => true
-
-      unique [:interface_id, :security_group_id, :deleted_at]
-    end
-
     create_table(:ip_addresses) do
       primary_key :id
 
@@ -321,6 +308,19 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+    end
+
+    create_table(:security_group_interfaces) do
+      primary_key :id
+
+      Integer :security_group_id, :index => true, :null => false
+      Integer :interface_id, :index => true, :null => false
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at, :index => true
+
+      unique [:interface_id, :security_group_id, :deleted_at]
     end
 
     create_table(:translations) do
