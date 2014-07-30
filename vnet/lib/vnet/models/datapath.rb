@@ -2,8 +2,7 @@
 
 module Vnet::Models
 
-  # TODO: Refactor partial, fix conditions and add comments. Refactor
-  # node_api.
+  # TODO: Add comments.
 
   class Datapath < Base
     taggable 'dp'
