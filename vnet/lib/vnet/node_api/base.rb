@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+
 module Vnet::NodeApi
+
   class Base
     extend Vnet::Event::Dispatchable
 
@@ -100,33 +102,7 @@ module Vnet::NodeApi
         end
       end
 
-      #
-      # Internal methods:
-      #
-
-      private
-
-      # Make sure events are dispatched for entries deleted by
-      # sequel's association_dependencies plugin. We send events for
-      # all entries with 'deleted_at' within the last 3 seconds in
-      # order to account for the possibility that the two timestamps
-      # are mismatched.
-      #
-      # Note: Investigate if parent's deleted_at always gets written
-      # last, if so remove the 3 second grace time.
-
-      # TODO: Fix. Make this call a method in the model's node_api so
-      # that we can follow sub-dependencies.
-
-      def dispatch_deleted_events(model_sym, id_sym, item, event)
-        filter_id = { id_sym => item.id }
-        filter_date = ['deleted_at >= ? || deleted_at = NULL', item.deleted_at - 3]
-
-        model_class(model_sym).with_deleted.where(filter_id).filter(*filter_date).each { |model|
-          dispatch_event(event, model.to_hash)
-        }
-      end
-
     end
   end
+
 end

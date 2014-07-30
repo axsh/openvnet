@@ -337,8 +337,10 @@ module Vnet
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
 
-    autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :Base, 'vnet/node_api/base'
+    autoload :EventBase, 'vnet/node_api/event_base'
+
+    autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathGeneric, 'vnet/node_api/datapath_generic.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_generic.rb'

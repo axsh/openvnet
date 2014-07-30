@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
-  class ActiveInterface < Base
+
+  class ActiveInterface < EventBase
     class << self
 
       # Currently only supports very simple handling of race
@@ -18,13 +19,11 @@ module Vnet::NodeApi
         transaction {
 
           active_models = model_class.where(interface_id: interface_id).all
-          Celluloid::Logger.debug "active interfaces pre-prune: #{active_models.inspect}"
-
+          # Celluloid::Logger.debug "active interfaces pre-prune: #{active_models.inspect}"
           old_model = prune_old(active_models, datapath_id)
-          Celluloid::Logger.debug "active interfaces post-prune_old: #{active_models.inspect}"
-
+          # Celluloid::Logger.debug "active interfaces post-prune_old: #{active_models.inspect}"
           old_model = prune_for_singular(active_models, datapath_id) if singular
-          Celluloid::Logger.debug "active interfaces post-prune_for_singular: #{active_models.inspect}"
+          # Celluloid::Logger.debug "active interfaces post-prune_for_singular: #{active_models.inspect}"
 
           # TODO: Delete, don't update.
           if old_model
@@ -45,22 +44,10 @@ module Vnet::NodeApi
           model
 
         }.tap { |model|
-          case
-          when model.nil?
-            next
-          when model.new?
-            dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, model.to_hash)
-          else
-            dispatch_event(ACTIVE_INTERFACE_UPDATED, model.to_hash)
-          end
-        }
-      end
+          next if model.nil? || model.new?
 
-      def destroy(id)
-        super.tap do |model|
-          next if model.nil?
-          dispatch_event(ACTIVE_INTERFACE_DELETED_ITEM, model.to_hash)
-        end
+          dispatch_event(ACTIVE_INTERFACE_UPDATED, model.to_hash)
+        }
       end
 
       #
@@ -68,6 +55,15 @@ module Vnet::NodeApi
       #
 
       private
+
+      def dispatch_created_item_events(model)
+        # TODO: Send has not just id.
+        dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, id: model.to_hash)
+      end
+
+      def dispatch_deleted_item_events(model)
+        dispatch_event(ACTIVE_INTERFACE_DELETED_ITEM, id: model.id)
+      end
 
       def prune_old(active_models, ignore_datapath_id)
         old_model = nil
@@ -110,4 +106,5 @@ module Vnet::NodeApi
 
     end
   end
+
 end
