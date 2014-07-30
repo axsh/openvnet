@@ -20,8 +20,8 @@ module Vnet::Models
     one_to_many :active_interfaces
 
     one_to_many :tunnels, :key => :src_datapath_id
-    one_to_many :src_tunnels, :class => Datapath, :key => :src_datapath_id
-    one_to_many :dst_tunnels, :class => Datapath, :key => :dst_datapath_id
+    one_to_many :src_tunnels, :class => Tunnel, :key => :src_datapath_id
+    one_to_many :dst_tunnels, :class => Tunnel, :key => :dst_datapath_id
 
     plugin :association_dependencies,
       datapath_networks: :destroy,
