@@ -36,15 +36,6 @@ module Vnet::Models
       :routes => :destroy,
       :translations => :destroy
 
-    # We're using paranoia on the join table for the interface <=> security
-    # group relation and that's throwing a wrench in Sequel's inner workings.
-    # We override the relation accessors to remedy that.
-    def security_groups_dataset
-      ds = SecurityGroup.join(:security_group_interfaces, security_group_id: :id)
-      ds = ds.where(security_group_interfaces__deleted_at: nil)
-      ds.where(interface_id: self.id).select_all(:security_groups)
-    end
-
     def network
       ip_leases.first.try(:network)
     end
