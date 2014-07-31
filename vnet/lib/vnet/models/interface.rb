@@ -17,6 +17,8 @@ module Vnet::Models
     one_to_many :routes
     one_to_many :translations
 
+    many_to_many :ip_addresses, :join_table => :ip_leases
+
     # TODO: Rename to security_group_interfaces, and move associations
     # and helper methods to security group models. Same goes for lease policies.
     one_to_many :security_group_interfaces
@@ -46,14 +48,6 @@ module Vnet::Models
     # We override this method for the same reason
     def remove_security_group(sg)
       SecurityGroupInterface.filter(interface_id: id, security_group_id: sg.id).destroy
-    end
-
-    def ip_addresses_dataset
-      IpAddress.where(ip_lease: self.ip_leases_dataset)
-    end
-
-    def ip_addresses
-      ip_addresses_dataset.all
     end
 
     def network
