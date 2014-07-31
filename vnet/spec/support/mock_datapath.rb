@@ -119,13 +119,13 @@ class MockDatapath < Vnet::Openflow::Datapath
   end
 
   def create_datapath_map
-    datapath_map = MW::Datapath[:dpid => @dp_info.dpid_s]
-    initialize_datapath_info(datapath_map)
+    @datapath_info = Vnet::Openflow::DatapathInfo.new(MW::Datapath[:dpid => @dp_info.dpid_s])
+    initialize_managers
   end
 
   def create_mock_datapath_map
-    datapath_map = OpenStruct.new(dpid: @dp_info.dpid_s, id: 1, uuid: 'dp-test1')
-    initialize_datapath_info(datapath_map)
+    @datapath_info = Vnet::Openflow::DatapathInfo.new(OpenStruct.new(dpid: @dp_info.dpid_s, id: 1, uuid: 'dp-test1'))
+    initialize_managers
   end
 
   def create_mock_switch
