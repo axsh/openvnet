@@ -115,6 +115,7 @@ describe "/interfaces" do
   describe "Many to many relation calls for security groups" do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :security_group }
+    let(:join_table_fabricator) { :security_group_interface }
 
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
 

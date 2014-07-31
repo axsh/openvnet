@@ -1,2 +1,2 @@
-Fabricator(:interface_security_group, class_name: Vnet::Models::InterfaceSecurityGroup) do
+Fabricator(:security_group_interface, class_name: Vnet::Models::SecurityGroupInterface) do
 end
