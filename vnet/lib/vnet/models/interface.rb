@@ -45,11 +45,6 @@ module Vnet::Models
       ds.where(interface_id: self.id).select_all(:security_groups)
     end
 
-    # We override this method for the same reason
-    def remove_security_group(sg)
-      SecurityGroupInterface.filter(interface_id: id, security_group_id: sg.id).destroy
-    end
-
     def network
       ip_leases.first.try(:network)
     end

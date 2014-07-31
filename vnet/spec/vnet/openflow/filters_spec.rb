@@ -426,7 +426,7 @@ describe Vnet::Core::FilterManager do
       subject.apply_filters wrapper(interface)
       subject.apply_filters wrapper(interface2)
 
-      interface2.remove_security_group(group)
+      group.interfaces.delete(interface2)
 
       subject.removed_interface_from_sg(
         id: group.id,
