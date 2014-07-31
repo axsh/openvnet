@@ -3,7 +3,6 @@
 require 'sequel/model'
 require 'sequel/plugins/mac_address'
 require 'sequel/plugins/ip_address'
-require 'sequel/plugins/paranoia_with_unique_constraint'
 
 Sequel.extension(:core_extensions)
 

@@ -23,7 +23,6 @@ describe Vnet::Plugins::VdcVnetPlugin do
         :ipv4_prefix => 24,
         :domain_name => "test_domain",
         :network_mode => 'virtual',
-        :editable => true
       }
     end
     let!(:datapath) { Fabricate(:datapath_1) }
