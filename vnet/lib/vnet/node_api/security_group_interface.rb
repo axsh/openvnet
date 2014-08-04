@@ -6,6 +6,18 @@ module Vnet::NodeApi
     class << self
       include Vnet::Helpers::Event
 
+      def destroy_where(filter)
+        count = 0
+
+        model_class.dataset.where(filter).all.each { |model|
+          next if model.destroy.nil?
+          count += 1
+          dispatch_deleted_item_events(model)
+        }
+
+        count
+      end
+
       #
       # Internal methods:
       #

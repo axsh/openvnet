@@ -134,12 +134,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     interface = check_syntax_and_pop_uuid(M::Interface)
     security_group = check_syntax_and_pop_uuid(M::SecurityGroup, 'security_group_uuid')
 
-    relations = M::SecurityGroupInterface.batch.filter(:interface_id => interface.id,
-      :security_group_id => security_group.id).all.commit
+    deleted = M::SecurityGroupInterface.destroy_where(interface_id: interface.id,
+                                                      security_group_id: security_group.id)
 
-    # We call the destroy class method so we go trough NodeApi and send an
-    # update isolation event. As opposed to calling the destroy instance method
-    relations.each { |r| M::SecurityGroupInterface.destroy(r.id) }
-    respond_with([security_group.uuid])
+    respond_with(deleted > 0 ? [security_group.uuid] : [])
   end
+
 end
