@@ -7,7 +7,7 @@ module Vnet::Models
     one_to_many :ip_retentions
 
     one_to_many :lease_policy_ip_retention_containers
-    many_to_many :lease_policies, :join_table => :lease_policy_ip_retention_containers
+    many_to_many :lease_policies, :join_table => :lease_policy_ip_retention_containers, :conditions => "lease_policy_ip_retention_containers.deleted_at is null"
 
     plugin :association_dependencies,
       lease_policy_ip_retention_containers: :destroy

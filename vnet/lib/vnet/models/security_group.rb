@@ -11,7 +11,7 @@ module Vnet::Models
     plugin :paranoia
 
     one_to_many :security_group_interfaces
-    many_to_many :interfaces, :join_table => :security_group_interfaces
+    many_to_many :interfaces, :join_table => :security_group_interfaces, :conditions => "security_group_interfaces.deleted_at is null"
 
     # We're using paranoia on the join table for the interface <=> security
     # group relation and that's throwing a wrench in Sequel's inner workings.

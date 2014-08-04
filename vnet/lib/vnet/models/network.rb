@@ -9,12 +9,12 @@ module Vnet::Models
     plugin :paranoia
 
     one_to_many :datapath_networks
-    many_to_many :datapaths, :join_table => :datapath_networks
+    many_to_many :datapaths, :join_table => :datapath_networks, :conditions => "datapath_networks.deleted_at is null"
     one_to_many :ip_addresses
     one_to_many :tunnels
     one_to_many :ip_leases
 
-    many_to_many :lease_policies, :join_table => :lease_policy_base_networks
+    many_to_many :lease_policies, :join_table => :lease_policy_base_networks, :conditions => "lease_policy_base_networks.deleted_at is null"
     one_to_many :lease_policy_base_networks
 
     many_to_many :network_services do |ds|

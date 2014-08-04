@@ -11,7 +11,7 @@ module Vnet::Models
     plugin :mac_address
     one_to_many :routes
     one_to_many :datapath_route_links
-    many_to_many :datapaths, :join_table => :datapath_route_links
+    many_to_many :datapaths, :join_table => :datapath_route_links, :conditions => "datapath_route_links.deleted_at is null"
 
   end
 end
