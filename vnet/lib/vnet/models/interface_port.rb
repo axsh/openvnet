@@ -11,7 +11,10 @@ module Vnet::Models
 
     def validate
       super
-      errors.add(:singular, 'must be set to either true or null') if singular != true && !singular.nil?
+
+      if singular != true && !singular.nil?
+        errors.add(:singular, 'must be set to either true or null')
+      end
     end
 
   end

@@ -2,7 +2,7 @@
 
 module Vnet::Models
 
-  # TODO: Refactor.
+  # TODO: Refactor. Make sure all associate dependencies cause events.
 
   class Interface < Base
     taggable 'if'
@@ -19,8 +19,8 @@ module Vnet::Models
 
     many_to_many :ip_addresses, :join_table => :ip_leases, :conditions => "ip_leases.deleted_at is null"
 
-    # TODO: Rename to security_group_interfaces, and move associations
-    # and helper methods to security group models. Same goes for lease policies.
+    # TODO: Move associations and helper methods to security group
+    # models. Same goes for lease policies.
     one_to_many :security_group_interfaces
     many_to_many :security_groups, :join_table => :security_group_interfaces, :conditions => "security_group_interfaces.deleted_at is null"
 
@@ -34,7 +34,10 @@ module Vnet::Models
       :mac_leases => :destroy,
       :network_services => :destroy,
       :routes => :destroy,
-      :translations => :destroy
+      :translations => :destroy,
+    
+      :lease_policy_base_interfaces => :destroy,
+      :security_group_interfaces => :destroy,
 
   end
 end
