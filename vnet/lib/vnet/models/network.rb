@@ -2,17 +2,18 @@
 
 module Vnet::Models
 
-  # TODO: Refactor.
+  # TODO: Refactor. Make sure all associate dependencies cause events.
+
   class Network < Base
     taggable 'nw'
 
     plugin :paranoia_is_deleted
 
+    one_to_many :tunnels
+    one_to_many :ip_addresses
+
     one_to_many :datapath_networks
     many_to_many :datapaths, :join_table => :datapath_networks, :conditions => "datapath_networks.deleted_at is null"
-    one_to_many :ip_addresses
-    one_to_many :tunnels
-    one_to_many :ip_leases
 
     many_to_many :lease_policies, :join_table => :lease_policy_base_networks, :conditions => "lease_policy_base_networks.deleted_at is null"
     one_to_many :lease_policy_base_networks
@@ -43,22 +44,6 @@ module Vnet::Models
       ).select_all(:routes)
     end
 
-    def self.find_by_mac_address(mac_address)
-      dataset.join_table(
-        :left, :ip_addresses,
-        {ip_addresses__network_id: :networks__id}
-      ).join_table(
-        :inner, :ip_leases,
-        {ip_leases__ip_address_id: :ip_addresses__id}
-      ).join_table(
-        :inner, :mac_leases,
-        {ip_leases__mac_lease_id: :mac_leases__id}
-      ).join_table(
-        :inner, :mac_addresses,
-        {mac_addresses__id: :mac_leases__mac_address_id}
-      ).where(mac_addresses__mac_address: mac_address).select_all(:networks).first
-    end
-
     def before_destroy
       [DatapathNetwork, IpAddress, Route, VlanTranslation].each do |klass|
         if klass[network_id: id]
@@ -66,5 +51,6 @@ module Vnet::Models
         end
       end
     end
+
   end
 end
