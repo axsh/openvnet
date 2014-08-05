@@ -36,17 +36,5 @@ module Vnet::Models
       :routes => :destroy,
       :translations => :destroy
 
-    def network
-      ip_leases.first.try(:network)
-    end
-
-    def ipv4_address
-      ip_leases.first.try(:ipv4_address)
-    end
-
-    def mac_address
-      mac_leases.first.try(:mac_address)
-    end
-
   end
 end
