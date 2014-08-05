@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
-
   class EventBase < Base
     class << self
 
@@ -52,5 +51,4 @@ module Vnet::NodeApi
 
     end
   end
-
 end

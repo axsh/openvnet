@@ -365,11 +365,11 @@ module Vnet
     autoload :Network, 'vnet/node_api/models.rb'
     autoload :NetworkService, 'vnet/node_api/network_service.rb'
     autoload :Route, 'vnet/node_api/route.rb'
-    autoload :RouteLink, 'vnet/node_api/models.rb'
+    autoload :RouteLink, 'vnet/node_api/route_link.rb'
     autoload :SecurityGroup, 'vnet/node_api/security_group'
     autoload :SecurityGroupInterface, 'vnet/node_api/security_group_interface'
     autoload :Translation, 'vnet/node_api/translation.rb'
-    autoload :TranslationStaticAddress, 'vnet/node_api/translation.rb'
+    autoload :TranslationStaticAddress, 'vnet/node_api/translation_static_address.rb'
     autoload :Tunnel, 'vnet/node_api/tunnel.rb'
     autoload :VlanTranslation, 'vnet/node_api/translation.rb'
   end

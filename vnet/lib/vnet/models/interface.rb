@@ -35,9 +35,9 @@ module Vnet::Models
       :network_services => :destroy,
       :routes => :destroy,
       :translations => :destroy,
-    
+
       :lease_policy_base_interfaces => :destroy,
-      :security_group_interfaces => :destroy,
+      :security_group_interfaces => :destroy
 
   end
 end

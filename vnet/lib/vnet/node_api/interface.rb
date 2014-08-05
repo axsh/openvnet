@@ -88,10 +88,13 @@ module Vnet::NodeApi
       def dispatch_deleted_item_events(model)
         dispatch_event(INTERFACE_DELETED_ITEM, id: model.id)
 
-        ActiveInterface.dispatch_deleted_where({ interface_id: model.id }, model.deleted_at)
-        InterfacePort.dispatch_deleted_where({ interface_id: model.id }, model.deleted_at)
-        MacLease.dispatch_deleted_where({ interface_id: model.id }, model.deleted_at)
-        SecurityGroupInterface.dispatch_deleted_where({ interface_id: model.id }, model.deleted_at)
+        filter = { interface_id: model.id }
+
+        ActiveInterface.dispatch_deleted_where(filter, model.deleted_at)
+        InterfacePort.dispatch_deleted_where(filter, model.deleted_at)
+        MacLease.dispatch_deleted_where(filter, model.deleted_at)
+        Translation.dispatch_deleted_where(filter, model.deleted_at)
+        SecurityGroupInterface.dispatch_deleted_where(filter, model.deleted_at)
       end
 
       def create_interface_port(interface, datapath_id, port_name)

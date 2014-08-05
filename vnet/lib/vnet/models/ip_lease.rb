@@ -3,6 +3,7 @@
 module Vnet::Models
 
   # TODO: Refactor.
+
   class IpLease < Base
     taggable 'il'
 
@@ -48,9 +49,8 @@ module Vnet::Models
     end
 
     def to_hash
-      super.merge({
-        ipv4_address: self.ipv4_address
-      })
+      super.merge(ipv4_address: self.ipv4_address)
     end
+
   end
 end

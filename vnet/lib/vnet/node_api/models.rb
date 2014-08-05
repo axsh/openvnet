@@ -32,7 +32,4 @@ module Vnet::NodeApi
   class NetworkService < Base
   end
 
-  class RouteLink < Base
-  end
-
 end
