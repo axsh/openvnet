@@ -6,7 +6,7 @@ module Vnet::Models
 
   class ActiveInterface < Base
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     many_to_one :interface
     many_to_one :datapath

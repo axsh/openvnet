@@ -8,7 +8,7 @@ module Vnet::Models
 
     taggable 'sg'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     one_to_many :security_group_interfaces
     many_to_many :interfaces, :join_table => :security_group_interfaces, :conditions => "security_group_interfaces.deleted_at is null"

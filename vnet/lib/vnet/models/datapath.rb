@@ -7,7 +7,7 @@ module Vnet::Models
   class Datapath < Base
     taggable 'dp'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     one_to_many :datapath_networks
     one_to_many :datapath_route_links

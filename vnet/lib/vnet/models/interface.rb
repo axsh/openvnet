@@ -7,7 +7,7 @@ module Vnet::Models
   class Interface < Base
     taggable 'if'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     one_to_many :active_interfaces
     one_to_many :interface_ports

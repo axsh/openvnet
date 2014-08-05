@@ -7,7 +7,7 @@ module Vnet::Models
   class Translation < Base
     taggable 'tr'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     many_to_one :interface
 

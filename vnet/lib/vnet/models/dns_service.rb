@@ -7,7 +7,7 @@ module Vnet::Models
   class DnsService < Base
     taggable "dnss"
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     many_to_one :network_service
     one_to_many :dns_records

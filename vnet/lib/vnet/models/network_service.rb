@@ -6,7 +6,7 @@ module Vnet::Models
   class NetworkService < Base
     taggable 'ns'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     many_to_one :interface
 

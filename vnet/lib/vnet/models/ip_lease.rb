@@ -6,7 +6,7 @@ module Vnet::Models
   class IpLease < Base
     taggable 'il'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
     plugin :ip_address
 
     many_to_one :network

@@ -6,7 +6,7 @@ module Vnet::Models
   class Network < Base
     taggable 'nw'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     one_to_many :datapath_networks
     many_to_many :datapaths, :join_table => :datapath_networks, :conditions => "datapath_networks.deleted_at is null"

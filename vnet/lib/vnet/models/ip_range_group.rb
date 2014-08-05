@@ -9,6 +9,6 @@ module Vnet::Models
     one_to_many :lease_policy_base_networks
     one_to_many :ip_ranges
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
   end
 end

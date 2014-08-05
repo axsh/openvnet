@@ -6,7 +6,7 @@ module Vnet::Models
   class RouteLink < Base
     taggable 'rl'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     plugin :mac_address
     one_to_many :routes

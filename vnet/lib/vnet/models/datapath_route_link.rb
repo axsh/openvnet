@@ -6,7 +6,7 @@ module Vnet::Models
 
   class DatapathRouteLink < Base
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
     plugin :mac_address
 
     many_to_one :datapath
