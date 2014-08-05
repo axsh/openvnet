@@ -48,11 +48,5 @@ module Vnet::Models
       mac_leases.first.try(:mac_address)
     end
 
-    def to_hash
-      super.merge({
-        ipv4_address: self.ipv4_address,
-        mac_address: self.mac_address,
-      })
-    end
   end
 end
