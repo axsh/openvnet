@@ -18,13 +18,5 @@ module Vnet::Models
     many_to_many :lease_policies, :join_table => :lease_policy_base_networks, :conditions => "lease_policy_base_networks.deleted_at is null"
     one_to_many :lease_policy_base_networks
 
-    def before_destroy
-      [DatapathNetwork, IpAddress, Route, VlanTranslation].each do |klass|
-        if klass[network_id: id]
-          raise DeleteRestrictionError, "cannot delete network(id: #{id}) if any dependency still exists. dependency: #{klass}"
-        end
-      end
-    end
-
   end
 end
