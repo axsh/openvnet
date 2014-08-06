@@ -36,7 +36,10 @@ describe Vnet::Plugins::VdcVnetPlugin do
 
       mac_lease = Fabricate(:mac_lease_any, interface: interface)
       ip_address = Fabricate(:ip_address, network: network)
-      ip_lease = Fabricate(:ip_lease_any, mac_lease: mac_lease, network: network, ip_address: ip_address)
+      ip_lease = Fabricate(:ip_lease_any,
+                           mac_lease: mac_lease,
+                           network_id: network.id,
+                           ip_address: ip_address)
 
       interface.add_ip_lease(ip_lease)
       interface
@@ -140,7 +143,11 @@ describe Vnet::Plugins::VdcVnetPlugin do
         interface_id interface.id
       end
 
-      ip_lease = Fabricate(:ip_lease_any, interface: interface, mac_lease: mac_lease, network: outer_network, ipv4_address: 1)
+      ip_lease = Fabricate(:ip_lease_any,
+                           interface: interface,
+                           mac_lease: mac_lease,
+                           network_id: outer_network.id,
+                           ipv4_address: 1)
 
       interface.add_ip_lease(ip_lease)
       interface.save

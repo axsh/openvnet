@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 class MockEventHandler
   class << self
     cattr_accessor :handled_events

@@ -303,15 +303,17 @@ module Vnet::Plugins
 
     def create_route(route_link, gw)
       #TODO
-      ipv4_network, ipv4_prefix = case gw.network.canonical_uuid
+      network = gw.ip_leases.first.network
+
+      ipv4_network, ipv4_prefix = case network.canonical_uuid
                                   when 'nw-public' then [0, 0]
                                   else
-                                    [gw.network.ipv4_network, gw.network.ipv4_prefix]
+                                    [network.ipv4_network, network.ipv4_prefix]
                                   end
       params = {
         :interface_id => gw.id,
         :route_link_id => route_link.id,
-        :network_id => gw.network.id,
+        :network_id => network.id,
         :ipv4_network => ipv4_network,
         :ipv4_prefix => ipv4_prefix
       }
@@ -373,7 +375,8 @@ module Vnet::Plugins
       gateways = Vnet::NodeApi::Interface.find_all { |i|
         i.enable_routing == true && i.mode == MODE_SIMULATED
       }.select{ |i|
-        i.network && i.network.canonical_uuid == network_uuid
+        ip_lease = i.ip_leases.first
+        ip_lease.network && ip_lease.network.canonical_uuid == network_uuid
       }
 
       if gateways.empty?
