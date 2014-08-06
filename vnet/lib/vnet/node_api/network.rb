@@ -16,7 +16,7 @@ module Vnet::NodeApi
 
         # 0001_origin
         # IpAddresses.dispatch_deleted_where(filter, model.deleted_at)
-        DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
+        # DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at) # Enable this.
         Route.dispatch_deleted_where(filter, model.deleted_at)
         # VlanTranslation.dispatch_deleted_where(filter, model.deleted_at)
 

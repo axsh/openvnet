@@ -16,7 +16,7 @@ module Vnet::NodeApi
         filter = { route_link_id: model.id }
 
         Route.dispatch_deleted_where(filter, model.deleted_at)
-        DatapathRouteLink.dispatch_deleted_where(filter, model.deleted_at)
+        # DatapathRouteLink.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end
