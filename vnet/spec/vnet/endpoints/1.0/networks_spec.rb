@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
+
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 Dir["#{File.dirname(__FILE__)}/matchers/*.rb"].map {|f| require f }
 
@@ -9,6 +10,8 @@ def app
 end
 
 describe "/networks" do
+  before(:each) { use_mock_event_handler }
+
   let(:api_suffix)  { "networks" }
   let(:fabricator)  { :network }
   let(:model_class) { Vnet::Models::Network }
@@ -16,18 +19,6 @@ describe "/networks" do
   include_examples "GET /"
   include_examples "GET /:uuid"
   include_examples "DELETE /:uuid"
-
-  describe "DELETE /:uuid" do
-    it "returns DependencyExists(400) error" do
-      network = Fabricate(:network)
-      ip_address = Fabricate(:ip_address, network: network)
-
-      delete "/networks/#{network.canonical_uuid}"
-
-      expect(last_response.status).to be 400
-      expect(last_response.body).to match /DeleteRestrictionError/
-    end
-  end
 
   describe "POST /" do
     accepted_params = {
