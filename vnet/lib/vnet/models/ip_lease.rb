@@ -10,6 +10,8 @@ module Vnet::Models
     plugin :paranoia_is_deleted
     plugin :ip_address
 
+    many_to_one :mac_lease
+
     one_to_many :ip_retentions
 
     one_to_many :ip_lease_container_ip_leases
@@ -18,10 +20,6 @@ module Vnet::Models
     plugin :association_dependencies,
       ip_retentions: :destroy,
       ip_lease_container_ip_leases: :destroy
-
-    many_to_one :network do |ds|
-      ds.ip_address.network
-    end
 
     dataset_module do
       def all_interface_ids

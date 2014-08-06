@@ -23,10 +23,6 @@ module Vnet::Models
       select_statement.filter({:prev__ipv4_address=>nil} | {:follow__ipv4_address=>nil})
     }
 
-    plugin :association_dependencies,
-    # 0001_origin
-    ip_lease: :destroy
-
   end
 
 end
