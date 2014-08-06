@@ -21,9 +21,12 @@ describe Vnet::NodeApi::Interface do
 
       expect(interface[:uuid]).to eq "if-test"
       model = Vnet::Models::Interface["if-test"]
-      expect(model.network.id).to eq network.id
-      expect(model.ipv4_address).to eq 1
-      expect(model.mac_address).to eq 2
+
+      ip_lease = model.ip_leases.first
+
+      expect(ip_lease.network.id).to eq network.id
+      expect(ip_lease.ipv4_address).to eq 1
+      expect(ip_lease.mac_lease.mac_address).to eq 2
       # expect(model.owner_datapath.id).to eq datapath.id
 
       events = MockEventHandler.handled_events
