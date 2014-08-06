@@ -19,8 +19,6 @@ module Vnet::Models
 
     many_to_many :ip_addresses, :join_table => :ip_leases, :conditions => "ip_leases.deleted_at is null"
 
-    # TODO: Move associations and helper methods to security group
-    # models. Same goes for lease policies.
     one_to_many :security_group_interfaces
     many_to_many :security_groups, :join_table => :security_group_interfaces, :conditions => "security_group_interfaces.deleted_at is null"
 
@@ -28,16 +26,17 @@ module Vnet::Models
     one_to_many :lease_policy_base_interfaces
 
     plugin :association_dependencies,
-      :active_interfaces => :destroy,
-      :interface_ports => :destroy,
-      :ip_leases => :destroy,
-      :mac_leases => :destroy,
-      :network_services => :destroy,
-      :routes => :destroy,
-      :translations => :destroy,
-
-      :lease_policy_base_interfaces => :destroy,
-      :security_group_interfaces => :destroy
+    # 0001_origin
+    active_interfaces: :destroy,
+    interface_ports: :destroy,
+    ip_leases: :destroy,
+    mac_leases: :destroy,
+    network_services: :destroy,
+    routes: :destroy,
+    translations: :destroy,
+    # 0002_services
+    lease_policy_base_interfaces: :destroy,
+    security_group_interfaces: :destroy
 
   end
 end

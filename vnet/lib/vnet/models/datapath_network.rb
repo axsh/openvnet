@@ -22,5 +22,4 @@ module Vnet::Models
     end
 
   end
-
 end

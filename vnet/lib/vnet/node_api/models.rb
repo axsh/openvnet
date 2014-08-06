@@ -26,9 +26,6 @@ module Vnet::NodeApi
   class MacAddress < Base
   end
 
-  class Network < Base
-  end
-
   class NetworkService < Base
   end
 

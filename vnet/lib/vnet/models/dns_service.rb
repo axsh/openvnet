@@ -13,7 +13,8 @@ module Vnet::Models
     one_to_many :dns_records
 
     plugin :association_dependencies,
-      :dns_records => :destroy
+    # 0001_origin
+    dns_records: :destroy
 
     def before_validation
       self.public_dns.gsub!(/\s/, "") if self.public_dns
