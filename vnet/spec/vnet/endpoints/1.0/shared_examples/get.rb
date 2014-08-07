@@ -54,23 +54,6 @@ shared_examples "GET /:uuid" do
 end
 
 shared_examples "GET /:uuid/postfix" do
-  # describe "GET /:uuid/postfix" do
-  #   before(:each) do
-  #     get api_suffix_with_uuid
-  #   end
-
-  #   include_examples "api_with_uuid_in_suffix"
-
-  #   context "with an existing uuid" do
-  #     let!(:object) { Fabricate(fabricator) }
-  #     let(:api_suffix_with_uuid) { "#{api_suffix}/#{object.canonical_uuid}/#{api_postfix}" }
-
-  #     it "should return one entry" do
-  #       expect(last_response).to succeed.with_body_containing({:uuid => object.canonical_uuid})
-  #     end
-  #   end
-  # end
-
   describe "GET /:uuid/postfix" do
     let!(:object) { Fabricate(fabricator) }
     let(:api_suffix_with_uuid) { "#{api_suffix}/#{object.canonical_uuid}/#{api_postfix}" }

@@ -60,8 +60,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   # Ports:
   #
 
-  #TODO: Write some FREAKING tests for this
-
   def self.port_put_post_shared_params
     param_uuid M::Datapath, :datapath_uuid
     param :port_name, :String
