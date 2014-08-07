@@ -81,9 +81,7 @@ module Vnet::NodeApi
       def dispatch_created_item_events(model)
         dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_event_hash(model))
 
-        model.interface.security_groups.each do |group|
-          dispatch_update_sg_ip_addresses(group)
-        end
+        dispatch_security_group_item_events(model)
       end
 
       def dispatch_deleted_item_events(model)
@@ -91,13 +89,7 @@ module Vnet::NodeApi
           dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: model.interface_id, ip_lease_id: model.id)
         end
 
-        model.interface.tap { |interface|
-          next if interface.nil?
-
-          interface.security_groups.each { |group|
-            dispatch_update_sg_ip_addresses(group)
-          }
-        }
+        dispatch_security_group_item_events(model)
 
         # 0001_origin
         # datapath_networks: :destroy,
@@ -111,6 +103,16 @@ module Vnet::NodeApi
             dispatch_event(IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION,
                            id: item.ip_retention_container_id,
                            ip_retention_id: item.id)
+          }
+        }
+      end
+
+      def dispatch_security_group_item_events(model)
+        model.interface.tap { |interface|
+          next if interface.nil?
+
+          interface.security_groups.each { |group|
+            dispatch_update_sg_ip_addresses(group)
           }
         }
       end

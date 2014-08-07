@@ -112,7 +112,7 @@ module Vnet::NodeApi
           singular: singular
         }
 
-        interface_port = model_class(:interface_port).create(options)
+        InterfacePort.create(options)
       end
 
       def add_lease(interface, mac_address, network_id, ipv4_address)
