@@ -275,7 +275,7 @@ module Vnspec
           interface.destroy
 
           # Rename to allow tests to reuse the uuid.
-          interface.rename_uuid(uuid, "#{uuid}old")
+          interface.rename(uuid, "#{uuid}old")
         end
       end
 

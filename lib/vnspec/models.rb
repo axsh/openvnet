@@ -134,12 +134,12 @@ module Vnspec
         reload
       end
 
-      def rename_uuid(old_uuid, new_uuid)
+      def rename(old_uuid, new_uuid)
         options = {
           new_uuid: new_uuid,
         }
 
-        API.request(:put, "interfaces/#{old_uuid}/rename_uuid", options)
+        API.request(:put, "interfaces/#{old_uuid}/rename", options)
       end
 
       def destroy
