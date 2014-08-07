@@ -21,7 +21,8 @@ module Vnet::Plugins
         :NetworkVifIpLease => [:IpAddress, :IpLease],
         :NetworkService => [:NetworkService],
         :NetworkRoute => [:TranslationStaticAddress],
-        :NetworkVifSecurityGroup => [:InterfaceSecurityGroup]
+        :NetworkVifSecurityGroup => [:SecurityGroupInterface],
+        :SecurityGroup => [:SecurityGroup]
       }
 
       info "vdc_vnet_plugin initialized..."
@@ -72,6 +73,10 @@ module Vnet::Plugins
     end
 
     private
+
+    def security_group_params(vnet_params)
+      Vnet::NodeApi::SecurityGroup.create(vnet_params)
+    end
 
     def get_host_interfaces(datapath_id)
       dataset = Vnet::NodeApi::Interface.dataset.join_table(:left, :interface_ports,
