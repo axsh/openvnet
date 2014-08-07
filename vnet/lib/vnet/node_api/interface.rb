@@ -63,7 +63,7 @@ module Vnet::NodeApi
 
         interface_port = nil
 
-        transaction {
+        model = transaction {
           interface = internal_create(options) || next
           interface_port = create_interface_port(interface, datapath_id, port_name)
 
@@ -71,6 +71,10 @@ module Vnet::NodeApi
 
           interface
         }
+
+        InterfacePort.dispatch_created_for_model(interface_port)
+        
+        model
       end
 
       def dispatch_created_item_events(model)
@@ -112,7 +116,7 @@ module Vnet::NodeApi
           singular: singular
         }
 
-        InterfacePort.create(options)
+        model_class(:interface_port).create(options)
       end
 
       def add_lease(interface, mac_address, network_id, ipv4_address)

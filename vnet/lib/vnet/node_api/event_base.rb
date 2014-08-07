@@ -27,6 +27,10 @@ module Vnet::NodeApi
       # Note: Investigate if parent's deleted_at always gets written
       # last, if so remove the 3 second grace time.
 
+      def dispatch_created_for_model(model)
+        dispatch_created_item_events(model)
+      end
+
       def dispatch_deleted_where(filter, deleted_at)
         filter_date = ['deleted_at >= ? || deleted_at = NULL', deleted_at - 3]
 
