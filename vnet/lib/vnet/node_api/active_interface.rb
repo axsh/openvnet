@@ -5,10 +5,15 @@ module Vnet::NodeApi
   class ActiveInterface < EventBase
     class << self
 
+      #
+      # Internal methods:
+      #
+
+      private
+
       # Currently only supports very simple handling of race
       # conditions, etc.
-
-      def create(options)
+      def create_with_transaction(options)
         options = options.dup
 
         interface_id = options[:interface_id]
@@ -17,13 +22,9 @@ module Vnet::NodeApi
         singular = options[:singular]
 
         transaction {
-
           active_models = model_class.where(interface_id: interface_id).all
-          # Celluloid::Logger.debug "active interfaces pre-prune: #{active_models.inspect}"
           old_model = prune_old(active_models, datapath_id)
-          # Celluloid::Logger.debug "active interfaces post-prune_old: #{active_models.inspect}"
           old_model = prune_for_singular(active_models, datapath_id) if singular
-          # Celluloid::Logger.debug "active interfaces post-prune_for_singular: #{active_models.inspect}"
 
           # TODO: Delete, don't update.
           if old_model
@@ -42,19 +43,8 @@ module Vnet::NodeApi
           end
 
           model
-
-        }.tap { |model|
-          next if model.nil? || model.new?
-
-          dispatch_event(ACTIVE_INTERFACE_UPDATED, model.to_hash)
         }
       end
-
-      #
-      # Internal methods:
-      #
-
-      private
 
       def dispatch_created_item_events(model)
         dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, model.to_hash)
