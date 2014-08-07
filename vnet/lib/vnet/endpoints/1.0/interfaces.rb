@@ -71,16 +71,16 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   port_put_post_shared_params
   param_uuid M::Interface
   post '/:uuid/ports' do
-    interface = uuid_to_id(M::Interface, 'uuid', 'interface_id')
-    datapath = uuid_to_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
+    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
+    datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
 
     # TODO: Move to node_api.
     params['interface_mode'] = interface.mode
 
     remove_system_parameters
 
-    interface_port = M::InterfacePort.create(params)
-    respond_with(R::InterfacePort.generate(interface_port))
+    interface_port = M::InterfacePort.create_with_uuid(params)
+    respond_with(interface_port)
   end
 
   get '/:uuid/ports' do

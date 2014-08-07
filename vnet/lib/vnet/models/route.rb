@@ -3,6 +3,7 @@
 module Vnet::Models
 
   # TODO: Refactor.
+
   class Route < Base
     taggable 'r'
 
@@ -26,5 +27,6 @@ module Vnet::Models
         ~{routes__id: self.id}
       ).select_all(:routes).all
     end
+
   end
 end
