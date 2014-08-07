@@ -9,9 +9,9 @@ module Vnet::Services
     #
     # Events:
     #
-    subscribe_event ADDED_LEASE_POLICY, :create_item
-    subscribe_event REMOVED_LEASE_POLICY, :delete_item
-    subscribe_event INITIALIZED_LEASE_POLICY, :install_item
+    subscribe_event LEASE_POLICY_INITIALIZED, :install_item
+    subscribe_event LEASE_POLICY_CREATED_ITEM, :create_item
+    subscribe_event LEASE_POLICY_DELETED_ITEM, :delete_item
 
     def update(params)
       debug log_format('update(params)',"#{params}")
@@ -70,7 +70,7 @@ module Vnet::Services
 
     def initialized_item_event
       debug log_format('initialized_item_event',"")
-      INITIALIZED_LEASE_POLICY
+      LEASE_POLICY_INITIALIZED
     end
 
     def create_item(params)

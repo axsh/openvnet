@@ -104,9 +104,9 @@ module Vnet
     #
     # lease policy event
     #
-    INITIALIZED_LEASE_POLICY = "initialized_lease_policy"
-    ADDED_LEASE_POLICY = "added_lease_policy"
-    REMOVED_LEASE_POLICY = "removed_lease_policy"
+    LEASE_POLICY_INITIALIZED = "lease_policy_initialized"
+    LEASE_POLICY_CREATED_ITEM = "lease_policy_created_item"
+    LEASE_POLICY_DELETED_ITEM = "lease_policy_deleted_item"
 
     #
     # Port events:

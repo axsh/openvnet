@@ -52,7 +52,6 @@ module Vnet::Models
     translations: :destroy,
     # 0002_services
     lease_policy_base_interfaces: :destroy,
-    security_group_interfaces: :destroy
 
   end
 end
