@@ -158,14 +158,12 @@ module Vnet::Core
     end
 
     def terminate_managers(timeout = 10.0)
-      # TODO: Fix this so it calculates the remaining timeout between each join.
-      timeout = timeout / 10
+      start_time = Time.new
 
       managers.each { |manager|
-        manager.terminate!
-      }
-      managers.each { |manager|
-        Celluloid::Actor.join(manager, timeout)
+        next_timeout = timeout - (Time.new - start_time)
+
+        Celluloid::Actor.join(manager, (next_timeout < 0.1) ? 0.1 : next_timeout)
       }
     end
 

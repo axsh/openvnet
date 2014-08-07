@@ -49,16 +49,18 @@ module Vnet::Openflow
                                         ovs_ofctl: ofctl)
 
       @ovs_ofctl = @dp_info.ovs_ofctl
+    end
 
+    def create_switch
       link_with_managers
 
       @switch = Switch.new(self)
       link(@switch)
       
       @switch.create_default_flows
-
-      # Fix.
       @switch.switch_ready
+
+      return
     end
 
     def run_normal
@@ -123,9 +125,22 @@ module Vnet::Openflow
     end
 
     def link_with_managers
+      vnmgr_node = DCell::Node[:vnmgr]
+
+      if vnmgr_node.nil?
+        warn log_format('could not find vnmgr dcell node, cannot create link for actor cleanup')
+      end
+
+      # The DCell messenger should not close before we have had a
+      # chance to clean up all managers, however it seems to not work
+      # properly.
+
+      # vnmgr_node && vnmgr_node.link(self)
+
       @dp_info.managers.each { |manager|
         begin
           link(manager)
+          # vnmgr_node && vnmgr_node.link(manager)
         rescue => e
           error "Fail to link with #{manager.class.name}: #{e}"
           raise e
@@ -147,5 +162,4 @@ module Vnet::Openflow
     end
 
   end
-
 end
