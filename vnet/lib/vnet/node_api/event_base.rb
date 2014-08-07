@@ -5,14 +5,14 @@ module Vnet::NodeApi
     class << self
 
       def create(options)
-        super.tap { |model|
+        create_with_transaction(options).tap { |model|
           next if model.nil?
           dispatch_created_item_events(model)
         }
       end
 
       def destroy(filter)
-        super.tap { |model|
+        destroy_with_transaction(filter).tap { |model|
           next if model.nil?
           dispatch_deleted_item_events(model)
         }
@@ -40,6 +40,30 @@ module Vnet::NodeApi
       #
 
       private
+
+      def internal_create(options)
+        model_class.create(options)
+      end
+
+      def internal_destroy(model)
+        model.destroy
+      end
+
+      #
+      # Customizable methods:
+      #
+
+      # Allows the model to be created/deleted within a
+      # transaction. The overloading method needs to add the
+      # transaction block and call internal_create/delete.
+
+      def create_with_transaction(options)
+        model_class.create(options)
+      end
+
+      def destroy_with_transaction(filter)
+        model_class[filter].destroy
+      end
 
       def dispatch_created_item_events(model)
         raise NotImplementedError
