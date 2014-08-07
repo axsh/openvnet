@@ -24,10 +24,10 @@ describe Vnet::NodeApi::Interface do
       expect(model.network.id).to eq network.id
       expect(model.ipv4_address).to eq 1
       expect(model.mac_address).to eq 2
-      expect(model.owner_datapath.id).to eq datapath.id
+      # expect(model.owner_datapath.id).to eq datapath.id
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
+      expect(events.size).to eq 2
       expect(events.first[:event]).to eq Vnet::Event::INTERFACE_CREATED_ITEM
       expect(events.first[:options][:id]).to eq interface[:id]
       expect(events.first[:options][:port_name]).to eq interface[:port_name]
@@ -36,6 +36,7 @@ describe Vnet::NodeApi::Interface do
 
   describe "update" do
     let(:datapath) { Fabricate(:datapath) }
+    let(:dp_info) { datapath.dp_info }
     let(:interface) do
       Fabricate(:interface,
         mac_leases: [
@@ -45,20 +46,19 @@ describe Vnet::NodeApi::Interface do
               Fabricate(:ip_lease,
                 ipv4_address: 1,
                 network_id: Fabricate(:network).id)
-            ])],
-        owner_datapath: datapath)
+            ])])
     end
 
     it "success" do
       Vnet::NodeApi::Interface.execute(:update,
         interface.canonical_uuid,
         {
-          owner_datapath: Fabricate(:datapath, uuid: "dp-new"),
+          # owner_datapath: Fabricate(:datapath, uuid: "dp-new"),
         }  
       )
 
       model = Vnet::Models::Interface[interface.id]
-      expect(model.owner_datapath.canonical_uuid).to eq "dp-new"
+      # expect(model.owner_datapath.canonical_uuid).to eq "dp-new"
 
       events = MockEventHandler.handled_events
       expect(events.size).to eq 1
@@ -70,6 +70,7 @@ describe Vnet::NodeApi::Interface do
   describe "delete" do
     let(:network) { Fabricate(:network) }
     let(:datapath) { Fabricate(:datapath) }
+    let(:dp_info) { datapath.dp_info }
     let(:interface) do
       Fabricate(:interface,
         mac_leases: [
@@ -79,8 +80,7 @@ describe Vnet::NodeApi::Interface do
               Fabricate(:ip_lease,
                 ipv4_address: 1,
                 network_id: network.id)
-            ])],
-        owner_datapath: datapath)
+            ])])
     end
 
     it "with associations" do

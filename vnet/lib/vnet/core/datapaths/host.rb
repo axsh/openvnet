@@ -20,19 +20,6 @@ module Vnet::Core::Datapaths
     # Events:
     #
 
-    def install
-      @dp_info.datapath.initialize_datapath_info(id: @id,
-                                                 uuid: @uuid,
-                                                 display_name: @display_name,
-                                                 node_id: @node_id)
-    end
-
-    def uninstall
-      super
-
-      @dp_info.datapath.reset_datapath_info
-    end
-
     def activate_network_id(network_id)
       network = @active_networks[network_id] || return
 

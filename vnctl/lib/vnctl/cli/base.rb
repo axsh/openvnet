@@ -117,6 +117,15 @@ module Vnctl::Cli
         end
       end
 
+      def self.define_rename
+        desc "rename UUID [OPTIONS]", "Rename a #{namespace}."
+        option_uuid
+        option :new_uuid, :type => :string, :desc => "New unique UUID for the #{namespace}."
+        define_method(:rename) do |uuid|
+          puts put("#{suffix}/#{uuid}/rename", :query => options)
+        end
+      end
+
       # And one little convenient method to define all CRUD commands
       def self.define_standard_crud_commands
         option_uuid

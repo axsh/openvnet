@@ -141,7 +141,7 @@ module Vnet::Core
                                      id: :network,
                                      network_id: item.id)
 
-      @dp_info.interface_manager.load_simulated_on_network_id(item.id)
+      @dp_info.interface_port_manager.load_simulated_on_network_id(item.id)
     end
 
     def item_pre_uninstall(item)

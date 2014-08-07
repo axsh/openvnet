@@ -18,13 +18,6 @@ module Vnet::Core::Ports
     end
 
     def install
-      set_remote_md = flow_options.merge(md_create(:remote => nil))
-
-      reflection_md = md_create(:reflection => nil)
-      reflection_mac2mac_md = md_create({ :reflection => nil,
-                                          :mac2mac => nil
-                                        })
-
       flows = []
 
       if @interface_id

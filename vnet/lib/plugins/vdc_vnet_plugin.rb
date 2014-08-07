@@ -21,7 +21,7 @@ module Vnet::Plugins
         :NetworkVifIpLease => [:IpAddress, :IpLease],
         :NetworkService => [:NetworkService],
         :NetworkRoute => [:TranslationStaticAddress],
-        :NetworkVifSecurityGroup => [:InterfaceSecurityGroup],
+        :NetworkVifSecurityGroup => [:SecurityGroupInterface],
         :SecurityGroup => [:SecurityGroup]
       }
 
@@ -78,6 +78,14 @@ module Vnet::Plugins
       Vnet::NodeApi::SecurityGroup.create(vnet_params)
     end
 
+    def get_host_interfaces(datapath_id)
+      dataset = Vnet::NodeApi::Interface.dataset.join_table(:left, :interface_ports,
+                                                            {interface_ports__interface_id: :interfaces__id})
+      dataset = dataset.where(interfaces__mode: MODE_HOST,
+                              interface_ports__datapath_id: datapath_id)
+      dataset.select_all(:interfaces)
+    end
+
     # TODO
     # automatic datapath_network creation fails if no host port entry is on the db.
     # however the datapath_network is necessary entry for packet forwarding on vnet.
@@ -93,7 +101,7 @@ module Vnet::Plugins
 
       Vnet::NodeApi::Datapath.all.each do |datapath|
         # TODO refactor
-        host_ports = Vnet::NodeApi::Interface.where({:mode => MODE_HOST, :owner_datapath_id => datapath.id}).all
+        host_ports = get_host_interfaces(datapath.id)
 
         host_ports.each do |host_port|
           datapath_network_params = {

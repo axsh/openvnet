@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class Network < Base
     taggable 'nw'
 
-    plugin :paranoia_with_unique_constraint
+    plugin :paranoia
 
     one_to_many :datapath_networks
     many_to_many :datapaths, :join_table => :datapath_networks
@@ -25,7 +27,7 @@ module Vnet::Models
       ).join_table(
         :inner, :ip_addresses,
         {ip_addresses__id: :ip_leases__ip_address_id} & {ip_addresses__network_id: self.id}
-      ).select_all(:network_services).alives
+      ).select_all(:network_services)
     end
 
     one_to_many :routes, :class=>Route do |ds|
@@ -38,7 +40,7 @@ module Vnet::Models
       ).join_table(
         :inner, :ip_addresses,
         {ip_addresses__id: :ip_leases__ip_address_id} & {ip_addresses__network_id: self.id}
-      ).select_all(:routes).alives
+      ).select_all(:routes)
     end
 
     def self.find_by_mac_address(mac_address)
@@ -54,10 +56,8 @@ module Vnet::Models
       ).join_table(
         :inner, :mac_addresses,
         {mac_addresses__id: :mac_leases__mac_address_id}
-      ).where(mac_addresses__mac_address: mac_address).select_all(:networks).alives.first
+      ).where(mac_addresses__mac_address: mac_address).select_all(:networks).first
     end
-
-    subset(:alives, {})
 
     def before_destroy
       [DatapathNetwork, IpAddress, Route, VlanTranslation].each do |klass|

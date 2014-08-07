@@ -63,6 +63,8 @@ module Vnet::Core
       case filter
       when :id, :uuid, :dpid
         proc { |id, item| value == item.send(filter) }
+      when :host
+        proc { |id, item| item.mode == :host }
       else
         raise NotImplementedError, filter
       end
@@ -72,16 +74,23 @@ module Vnet::Core
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
       filter << {dpid: params[:dpid]} if params.has_key? :dpid
+      filter << {host: @dp_info.dpid} if params.has_key? :host
       filter
     end
 
     def item_initialize(item_map)
-      item_class =
-        if item_map.dpid == @dp_info.dpid
-          Datapaths::Host
-        else
-          Datapaths::Remote
+      if item_map.dpid == @dp_info.dpid
+        item_class = Datapaths::Host
+
+        if internal_detect(host: true)
+          warn log_format('host datapath already loaded')
+          # TODO: Do something..
+          return
         end
+
+      else
+        item_class = Datapaths::Remote
+      end
 
       item_class.new(dp_info: @dp_info, map: item_map)
     end
@@ -91,6 +100,7 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
+      # TODO: Make events.
       item_map.batch.datapath_networks.commit.each do |dpn_map|
         publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
       end

@@ -15,27 +15,33 @@ module Vnet::NodeApi
 
           model_class.create(options)
 
-        }.tap { |dp_obj|
-          # TODO: Fix...
-          dp_obj && dispatch_event(ADDED_DATAPATH_NETWORK,
-                                   id: dp_obj.datapath_id,
-                                   network_id: dp_obj.network_id,
-                                   dpn_id: dp_obj.id)
+        }.tap { |model|
+          next if model.nil?
+          dispatch_event(ADDED_DATAPATH_NETWORK, model_to_event_hash(model))
         }
       end
 
       def destroy(datapath_id: datapath_id, network_id: network_id)
         transaction {
           model_class.find(datapath_id: datapath_id, network_id: network_id).tap(&:destroy)
-        }.tap do |dp_obj|
-          dp_obj && dispatch_event(REMOVED_DATAPATH_NETWORK,
-                                id: dp_obj.datapath_id,
-                                network_id: dp_obj.network_id,
-                                dpn_id: dp_obj.id)
+        }.tap do |model|
+          next if model.nil?
+          dispatch_event(REMOVED_DATAPATH_NETWORK, model_to_event_hash(model))
         end
       end
 
+      #
+      # Internal methods:
+      #
+
       private
+
+      def model_to_event_hash(model)
+        model.to_hash.tap { |event_hash|
+          event_hash[:dpn_id] = event_hash[:id]
+          event_hash[:id] = event_hash[:datapath_id]
+        }
+      end
 
       def find_ip_lease_id(interface_id)
         return if interface_id.nil?

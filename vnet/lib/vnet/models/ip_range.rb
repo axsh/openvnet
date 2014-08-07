@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class IpRange < Base
     taggable 'ipr'
 

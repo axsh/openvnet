@@ -26,9 +26,11 @@ module Vnet::Core::Interfaces
     TAG_ICMP_REQUEST          = 0x6
     TAG_DISABLED_FILTERING    = 0x7
 
-    attr_accessor :mode
-    attr_accessor :port_name
-    attr_accessor :owner_datapath_ids
+    attr_reader :mode
+    attr_reader :port_name
+    attr_reader :port_number
+    attr_reader :mac_addresses
+
     attr_accessor :display_name
 
     attr_accessor :enable_routing
@@ -36,15 +38,14 @@ module Vnet::Core::Interfaces
 
     attr_accessor :ingress_filtering_enabled
 
-    attr_reader :port_number
-    attr_reader :mac_addresses
-
     def initialize(params)
       super
 
+      @port_name = params[:port_name]
+      @port_number = params[:port_number]
+
       map = params[:map]
       @mode = map.mode.to_sym
-      @port_name = map.port_name
       @display_name = map.display_name
 
       @mac_addresses = {}
@@ -52,12 +53,6 @@ module Vnet::Core::Interfaces
       @enable_routing = map.enable_routing
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
-
-      if map.owner_datapath_id
-        @owner_datapath_ids = [map.owner_datapath_id]
-      else
-        @owner_datapath_ids = nil
-      end
     end
 
     def log_type
@@ -65,7 +60,9 @@ module Vnet::Core::Interfaces
     end
 
     def pretty_properties
-      "mode:#{@mode} port_name:#{@port_name}"
+      "mode:#{@mode}" +
+        (@port_name ? " port_name:#{@port_name}" : '') +
+        (@port_number ? " port_number:#{@port_number}" : '')
     end
 
     def cookie(type = 0, value = 0)
@@ -121,17 +118,12 @@ module Vnet::Core::Interfaces
                                 port_number: @port_number,
                                 port_name: @port_name,
                                 display_name: @display_name,
-                                mac_addresses: @mac_addresses,
-
-                                owner_datapath_ids: @owner_datapath_ids)
+                                mac_addresses: @mac_addresses)
     end
 
     #
     # Events:
     #
-
-    def install
-    end
 
     def uninstall
       debug log_format("interfaces: removing flows...")
@@ -141,44 +133,6 @@ module Vnet::Core::Interfaces
     def update
       interface = MW::Interface[@id]
       @display_name = interface.display_name
-
-      # Check for nil...
-      if @owner_datapath_ids != [interface.owner_datapath_id] ||
-          (@owner_datapath_ids && interface.owner_datapath_id.nil?)
-        # update_owner_datapath(interface.owner_datapath_id)
-
-        Celluloid::Actor.current.publish(INTERFACE_UPDATED,
-                                         event: :owner_datapath_id,
-                                         id: @id,
-                                         owner_datapath_id: interface.owner_datapath_id,
-                                         port_name: interface.port_name)
-      end
-    end
-
-    def update_owner_datapath(owner_datapath_id)
-      if owner_datapath_id
-        # add new owner_datapath_id
-        @owner_datapath_ids = [owner_datapath_id]
-      else
-        @owner_datapath_ids = nil
-      end
-    end
-
-    def update_port_number(new_number)
-      return if @port_number == new_number
-
-      debug log_format("update port number to #{new_number}")
-
-      @port_number = new_number
-
-      if @port_number
-        @dp_info.network_manager.set_interface_port(@id, @port_number)
-      else
-        @dp_info.network_manager.clear_interface_port(@id)
-      end
-    end
-
-    def update_remote_datapath(params)
     end
 
     #

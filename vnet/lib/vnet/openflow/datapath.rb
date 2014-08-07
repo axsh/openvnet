@@ -41,52 +41,37 @@ module Vnet::Openflow
     def initialize(ofc, dp_id, ofctl = nil)
       @dpid = dp_id
       @dpid_s = "0x%016x" % @dpid
+      @controller = ofc
 
-      @dp_info = Vnet::Core::DpInfo.new(controller: ofc,
+      @dp_info = Vnet::Core::DpInfo.new(controller: @controller,
                                         datapath: self,
-                                        dpid: dp_id,
+                                        dpid: @dpid,
                                         ovs_ofctl: ofctl)
 
-      @controller = @dp_info.controller
       @ovs_ofctl = @dp_info.ovs_ofctl
 
       link_with_managers
-    end
 
-    def create_switch
       @switch = Switch.new(self)
+      link(@switch)
+      
       @switch.create_default_flows
 
-      switch_ready
-    end
-
-    def switch_ready
+      # Fix.
       @switch.switch_ready
-
-      unless @dp_info.datapath_manager.retrieve(dpid: @dp_info.dpid)
-        warn log_format('could not find dpid in database')
-      end
     end
 
-    def initialize_datapath_info(datapath_map)
-      info log_format('initializing datapath info')
+    def run_normal
+      info log_format('starting normal vnet datapath')
+      
+      wait_for_load_of_host_datapath
+      initialize_managers
+      wait_for_unload_of_host_datapath
 
-      @datapath_info = DatapathInfo.new(datapath_map)
-
-      @dp_info.managers.each { |manager|
-        manager.set_datapath_info(@datapath_info)
-      }
-
-      # Until we have datapath_info loaded none of the ports can be
-      # initialized.
-      @dp_info.port_manager.initialize_ports
-      @dp_info.interface_manager.load_internal_interfaces
-    end
-
-    def reset_datapath_info
       info log_format('resetting datapath info')
-
       @controller.pass_task { @controller.reset_datapath(@dpid) }
+
+      return
     end
 
     #
@@ -96,7 +81,33 @@ module Vnet::Openflow
     private
 
     def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+      "#{@dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
+    end
+
+    def wait_for_load_of_host_datapath
+      host_datapath = nil
+      counter = 0
+
+      @dp_info.datapath_manager.async.retrieve(dpid: @dpid)
+
+      while host_datapath.nil?
+        info log_format('querying database for datapath with matching dpid', "seconds:#{counter * 30}")
+
+        host_datapath = @dp_info.datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
+        counter += 1
+      end
+
+      @datapath_info = DatapathInfo.new(host_datapath)
+    end
+
+    def wait_for_unload_of_host_datapath
+      unloaded = nil
+
+      while unloaded.nil?
+        unloaded = @dp_info.datapath_manager.wait_for_unloaded({id: @datapath_info.id}, nil)
+      end
+
+      debug log_format('host datapath was unloaded')
     end
 
     def do_cleanup
@@ -112,14 +123,27 @@ module Vnet::Openflow
     end
 
     def link_with_managers
-      @dp_info.managers.each do |manager|
+      @dp_info.managers.each { |manager|
         begin
           link(manager)
         rescue => e
           error "Fail to link with #{manager.class.name}: #{e}"
           raise e
         end
-      end
+      }
+    end
+
+    # TODO: Add a way to block events from being processed by managers
+    # until everything has been initialized.
+    def initialize_managers
+      @dp_info.managers.each { |manager|
+        manager.set_datapath_info(@datapath_info)
+      }
+
+      # Until we have datapath_info loaded none of the ports can be
+      # initialized.
+      @dp_info.interface_port_manager.load_internal_interfaces
+      @dp_info.port_manager.initialize_ports
     end
 
   end

@@ -2,12 +2,12 @@
 
 module Vnet::Models
 
+  # TODO: Refactor.
+
   class TranslationStaticAddress < Base
 
     many_to_one :translation
     many_to_one :route_link
-
-    subset(:alives, {})
 
     def ingress_ipv4_address_s
       self.ingress_ipv4_address && parse_ipv4(self.ingress_ipv4_address)

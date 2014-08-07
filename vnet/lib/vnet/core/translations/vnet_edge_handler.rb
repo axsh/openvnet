@@ -106,7 +106,7 @@ module Vnet::Core::Translations
         actions = {:mod_vlan_vid => vlan_vids, :output => edge_port[:port_number]}
       end
 
-      dpn = MW::DatapathNetwork.batch.on_specific_datapath(@dp_info.datapath.datapath_info).all.commit.select { |t| t.network_id == src_network_id }
+      dpn = MW::Datapath.batch[id: @dp_info.datapath.datapath_info.id].datapath_networks.commit.select { |t| t.network_id == src_network_id }
       dpn_broadcast = dpn.first.broadcast_mac_address
 
       flows << Flow.create(TABLE_EDGE_SRC, 2, {

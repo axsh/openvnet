@@ -37,7 +37,6 @@ describe "/networks" do
       :ipv4_prefix => 24,
       :domain_name => "vdc.test.domain",
       :network_mode => "virtual",
-      :editable => false
     }
     required_params = [:display_name, :ipv4_network]
     uuid_params = [:uuid]
@@ -52,7 +51,6 @@ describe "/networks" do
       :ipv4_prefix => 8,
       :domain_name => "new.vdc.test.domain",
       :network_mode => "physical",
-      :editable => true
     }
 
     include_examples "PUT /:uuid", accepted_params

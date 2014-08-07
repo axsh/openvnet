@@ -7,6 +7,7 @@ module Vnet
 
     attr_reader :id
     attr_reader :installed
+    attr_reader :invalid
 
     def initialize(params)
       @installed = false
@@ -14,6 +15,10 @@ module Vnet
 
     def installed?
       @installed == true
+    end
+
+    def invalid?
+      @invalid == true
     end
 
     def install
@@ -24,6 +29,7 @@ module Vnet
 
     def try_install
       (@installed == false) && install 
+      return if @invalid == true
       @installed = true
     end
 
