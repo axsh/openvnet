@@ -8,11 +8,17 @@ module Vnet::Models
     # TODO: Rename to mac_address.
     plugin :mac_address, :attr_name => :broadcast_mac_address
 
+    one_to_one :mac_address
+
     many_to_one :datapath
     many_to_one :network
 
     many_to_one :interface
     many_to_one :ip_lease
+
+    plugin :association_dependencies,
+    # 0001_origin
+    mac_address: :destroy
 
     # TODO: Remove this.
     def datapath_networks_in_the_same_network

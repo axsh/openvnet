@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
-
   class InterfacePort < EventBase
     class << self
 
@@ -31,5 +30,4 @@ module Vnet::NodeApi
 
     end
   end
-
 end

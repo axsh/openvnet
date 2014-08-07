@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
   class InterfacePort < Base
 
     plugin :paranoia_is_deleted
@@ -18,5 +17,4 @@ module Vnet::Models
     end
 
   end
-
 end

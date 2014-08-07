@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
-
   class ActiveInterface < EventBase
     class << self
       private
@@ -73,5 +72,4 @@ module Vnet::NodeApi
 
     end
   end
-
 end

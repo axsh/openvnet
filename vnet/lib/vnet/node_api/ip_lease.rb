@@ -109,6 +109,7 @@ module Vnet::NodeApi
 
         ip_lease
       end
+
     end
   end
 end

@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
-
   class MacLease < EventBase
     class << self
 
       def update(uuid, options)
-        options = options.dup
         deleted_mac_address = false
 
         mac_lease = transaction do
@@ -46,5 +44,4 @@ module Vnet::NodeApi
 
     end
   end
-
 end

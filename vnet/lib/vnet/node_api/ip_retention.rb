@@ -1,12 +1,21 @@
 module Vnet::NodeApi
-  class IpRetention < Base
+  class IpRetention < EventBase
     class << self
-      include Vnet::Helpers::Event
+      private
 
-      def destroy(id)
-        super
+      def dispatch_created_item_events(model)
+        # dispatch_event(, model.to_hash)
+
+        # 0001_origin
+        # ip_lease_container_ip_leases: send?
+        # 0002_services
+        # lease_policy_ip_lease_containers: send?
+      end
+
+      def dispatch_deleted_item_events(model)
         dispatch_event(IP_RETENTION_DELETED_ITEM, id: id)
       end
+
     end
   end
 end

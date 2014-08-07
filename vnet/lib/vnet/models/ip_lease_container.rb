@@ -11,8 +11,10 @@ module Vnet::Models
     many_to_many :lease_policies, join_table: :lease_policy_ip_lease_containers, :conditions => "lease_policy_ip_lease_containers.deleted_at is null"
 
     plugin :association_dependencies,
-      ip_lease_container_ip_leases: :destroy,
-      lease_policy_ip_lease_containers: :destroy
+    # 0001_origin
+    ip_lease_container_ip_leases: :destroy,
+    # 0002_services
+    lease_policy_ip_lease_containers: :destroy
 
   end
 end
