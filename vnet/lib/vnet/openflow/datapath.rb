@@ -140,7 +140,7 @@ module Vnet::Openflow
       @dp_info.managers.each { |manager|
         begin
           link(manager)
-          # vnmgr_node && vnmgr_node.link(manager)
+          vnmgr_node && vnmgr_node.link(manager)
         rescue => e
           error "Fail to link with #{manager.class.name}: #{e}"
           raise e
