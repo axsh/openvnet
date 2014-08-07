@@ -10,16 +10,32 @@ module Vnet::Models
     plugin :paranoia_is_deleted
     plugin :ip_address
 
-    many_to_one :mac_lease
+    #
+    # 0001_origin
+    #
 
-    one_to_many :ip_retentions
+    # TODO: Move relations from ip_address plugin.
+    # many_to_one :mac_lease
+
+    one_to_many :datapath_networks
+    one_to_many :datapath_route_links
 
     one_to_many :ip_lease_container_ip_leases
     many_to_many :ip_lease_containers, join_table: :ip_lease_container_ip_leases, :conditions => "ip_lease_container_ip_leases.deleted_at is null"
 
+    #
+    # 0002_services
+    #
+    one_to_many :ip_retentions
+
     plugin :association_dependencies,
-      ip_retentions: :destroy,
-      ip_lease_container_ip_leases: :destroy
+    # 0001_origin
+    datapath_networks: :destroy,
+    datapath_route_links: :destroy,
+    ip_address: :destroy,
+    ip_lease_container_ip_leases: :destroy,
+    # 0002_services
+    ip_retentions: :destroy
 
     dataset_module do
       def all_interface_ids
@@ -47,10 +63,6 @@ module Vnet::Models
     # TODO: Is this really safe if interface_id is changed?
     def cookie_id
       self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count
-    end
-
-    def to_hash
-      super.merge(ipv4_address: self.ipv4_address)
     end
 
   end

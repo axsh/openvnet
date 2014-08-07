@@ -3,20 +3,12 @@
 module Vnet::NodeApi
   class Datapath < EventBase
     class << self
-
-      #
-      # Internal methods:
-      #
-
       private
 
       def dispatch_created_item_events(model)
         dispatch_event(DATAPATH_CREATED_ITEM, model.to_hash)
       end
 
-      # DatapathNetwork and DatapathRouteLink events are not needed as
-      # DatapathManager cleans up everything on the main deleted
-      # event.
       def dispatch_deleted_item_events(model)
         dispatch_event(DATAPATH_DELETED_ITEM, id: model.id, node_id: model.node_id)
 
