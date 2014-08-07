@@ -2,8 +2,6 @@
 
 module Vnet::Models
 
-  # TODO: Refactor.
-
   class DatapathNetwork < Base
 
     plugin :paranoia_is_deleted

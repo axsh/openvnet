@@ -2,8 +2,6 @@
 
 module Vnet::Models
 
-  # TODO: Refactor.
-
   class DatapathRouteLink < Base
 
     plugin :paranoia_is_deleted

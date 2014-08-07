@@ -1,36 +1,7 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
-
   class Interface < EventBase
     class << self
-
-      def create(options)
-        options = options.dup
-
-        datapath_id = options.delete(:owner_datapath_id)
-        port_name = options.delete(:port_name)
-
-        network_id = options.delete(:network_id)
-        ipv4_address = options.delete(:ipv4_address)
-        mac_address = options.delete(:mac_address)
-
-        interface_port = nil
-
-        transaction {
-          interface = super || next
-          interface_port = create_interface_port(interface, datapath_id, port_name)
-
-          add_lease(interface, mac_address, network_id, ipv4_address)
-
-          interface
-
-        }.tap { |model|
-          next if model.nil?
-          # TODO: Create interface_port using InterfacePort.
-          dispatch_event(INTERFACE_PORT_CREATED_ITEM, interface_port.to_hash) if interface_port
-        }
-      end
-
       # TODO dispatch_event
       def update(uuid, options)
         options = options.dup
@@ -80,6 +51,28 @@ module Vnet::NodeApi
 
       private
 
+      def create_with_transaction(options)
+        options = options.dup
+
+        datapath_id = options.delete(:owner_datapath_id)
+        port_name = options.delete(:port_name)
+
+        network_id = options.delete(:network_id)
+        ipv4_address = options.delete(:ipv4_address)
+        mac_address = options.delete(:mac_address)
+
+        interface_port = nil
+
+        transaction {
+          interface = internal_create(options) || next
+          interface_port = create_interface_port(interface, datapath_id, port_name)
+
+          add_lease(interface, mac_address, network_id, ipv4_address)
+
+          interface
+        }
+      end
+
       def dispatch_created_item_events(model)
         # TODO: Send has not just id.
         dispatch_event(INTERFACE_CREATED_ITEM, id: model.id)
@@ -90,11 +83,21 @@ module Vnet::NodeApi
 
         filter = { interface_id: model.id }
 
+        # 0001_origin
         ActiveInterface.dispatch_deleted_where(filter, model.deleted_at)
+        # datapath_networks: :destroy,
+        # datapath_route_links: :destroy,
         InterfacePort.dispatch_deleted_where(filter, model.deleted_at)
+        # ip_leases: verify
         MacLease.dispatch_deleted_where(filter, model.deleted_at)
-        Translation.dispatch_deleted_where(filter, model.deleted_at)
+        # network_services: add
+        # routes: add
         SecurityGroupInterface.dispatch_deleted_where(filter, model.deleted_at)
+        # src_tunnels: :destroy,
+        # dst_tunnels: :destroy,
+        Translation.dispatch_deleted_where(filter, model.deleted_at)
+        # 0002_services
+        # lease_policy_base_interfaces: :destroy,
       end
 
       def create_interface_port(interface, datapath_id, port_name)
