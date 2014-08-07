@@ -46,7 +46,7 @@ module Vnet::NodeApi
       end
 
       def internal_destroy(model)
-        model.destroy
+        model && model.destroy
       end
 
       #
@@ -62,7 +62,7 @@ module Vnet::NodeApi
       end
 
       def destroy_with_transaction(filter)
-        model_class[filter].destroy
+        internal_destroy(model_class[filter])
       end
 
       def dispatch_created_item_events(model)

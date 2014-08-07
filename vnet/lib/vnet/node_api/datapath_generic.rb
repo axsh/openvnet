@@ -2,40 +2,22 @@
 
 module Vnet::NodeApi
 
-  class DatapathGeneric < Base
+  class DatapathGeneric < EventBase
     class << self
+      private
 
-      def create(options)
-        options = options.dup
-
+      def create_with_transaction(options)
         if options[:ip_lease_id].nil?
+          options = options.dup
           options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
         end
 
-        dp_obj = transaction {
-          model_class.create(options)
-        }.tap { |model|
-          next if model.nil?
-          dispatch_event(event_added, model_to_event_hash(model))
-        }
+        internal_create(options)
       end
 
-      def destroy(datapath_id: datapath_id, generic_id: generic_id)
-        filter = destroy_filter(datapath_id, generic_id)
-
-        transaction {
-          model_class.find(filter).tap(&:destroy)
-        }.tap { |model|
-          next if model.nil?
-          dispatch_event(event_removed, model_to_event_hash(model))
-        }
+      def destroy_with_transaction(datapath_id: datapath_id, generic_id: generic_id)
+        internal_destroy(model_class[datapath_id, generic_id])
       end
-
-      #
-      # Internal methods:
-      #
-
-      private
 
       def model_to_event_hash(model)
         model.to_hash.tap { |event_hash|
@@ -57,21 +39,23 @@ module Vnet::NodeApi
     class << self
       private
 
-      def event_added
-        ADDED_DATAPATH_NETWORK
+      def dispatch_created_item_events(model)
+        dispatch_event(ADDED_DATAPATH_NETWORK, prepare_event_hash(model))
       end
 
-      def event_removed
-        REMOVED_DATAPATH_NETWORK
+      def dispatch_deleted_item_events(model)
+        dispatch_event(REMOVED_DATAPATH_NETWORK, prepare_event_hash(model))
       end
 
       def destroy_filter(datapath_id, generic_id)
         { datapath_id: datapath_id, network_id: generic_id }
       end
 
-      def prepare_event_hash(event_hash)
-        event_hash[:dpn_id] = event_hash[:id]
-        event_hash[:id] = event_hash[:datapath_id]
+      def prepare_event_hash(model)
+        model.to_hash.tap { |event_hash|
+          event_hash[:dpn_id] = event_hash[:id]
+          event_hash[:id] = event_hash[:datapath_id]
+        }
       end
 
     end
@@ -81,21 +65,23 @@ module Vnet::NodeApi
     class << self
       private
 
-      def event_added
-        ADDED_DATAPATH_ROUTE_LINK
+      def dispatch_created_item_events(model)
+        dispatch_event(ADDED_DATAPATH_ROUTE_LINK, prepare_event_hash(model))
       end
 
-      def event_removed
-        REMOVED_DATAPATH_ROUTE_LINK
+      def dispatch_deleted_item_events(model)
+        dispatch_event(REMOVED_DATAPATH_ROUTE_LINK, prepare_event_hash(model))
       end
 
       def destroy_filter(datapath_id, generic_id)
         { datapath_id: datapath_id, route_link_id: generic_id }
       end
 
-      def prepare_event_hash(event_hash)
-        event_hash[:dprl_id] = event_hash[:id]
-        event_hash[:id] = event_hash[:datapath_id]
+      def prepare_event_hash(model)
+        model.to_hash.tap { |event_hash|
+          event_hash[:dprl_id] = event_hash[:id]
+          event_hash[:id] = event_hash[:datapath_id]
+        }
       end
 
     end
