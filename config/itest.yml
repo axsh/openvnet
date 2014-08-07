@@ -1,4 +1,4 @@
-specs_ext: []
+specs_ext: [edge]
 nodes:
   webapi: [192.168.2.91]
   vnmgr: [192.168.2.91]
