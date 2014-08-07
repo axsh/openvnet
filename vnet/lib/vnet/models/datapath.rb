@@ -2,8 +2,6 @@
 
 module Vnet::Models
 
-  # TODO: Add comments.
-
   class Datapath < Base
     taggable 'dp'
 

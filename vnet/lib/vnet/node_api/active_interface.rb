@@ -4,11 +4,6 @@ module Vnet::NodeApi
 
   class ActiveInterface < EventBase
     class << self
-
-      #
-      # Internal methods:
-      #
-
       private
 
       # Currently only supports very simple handling of race
@@ -51,13 +46,9 @@ module Vnet::NodeApi
           end
 
           # TODO: Catch exceptions.
-
           # Only destroy active entries that are old.
-
           # Currently default to destroying all:
-
           # next unless active_model.updated_at + timeout < current_time
-
           # active_model.destroy
         }
 
