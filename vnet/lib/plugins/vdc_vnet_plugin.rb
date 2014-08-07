@@ -21,7 +21,8 @@ module Vnet::Plugins
         :NetworkVifIpLease => [:IpAddress, :IpLease],
         :NetworkService => [:NetworkService],
         :NetworkRoute => [:TranslationStaticAddress],
-        :NetworkVifSecurityGroup => [:InterfaceSecurityGroup]
+        :NetworkVifSecurityGroup => [:InterfaceSecurityGroup],
+        :SecurityGroup => [:SecurityGroup]
       }
 
       info "vdc_vnet_plugin initialized..."
@@ -73,6 +74,9 @@ module Vnet::Plugins
 
     private
 
+    def security_group_params(vnet_params)
+      Vnet::NodeApi::SecurityGroup.create(vnet_params)
+    end
 
     # TODO
     # automatic datapath_network creation fails if no host port entry is on the db.
