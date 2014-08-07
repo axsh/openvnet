@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
   class DatapathNetwork < Base
 
     plugin :paranoia_is_deleted
     # TODO: Rename to mac_address.
     plugin :mac_address, :attr_name => :broadcast_mac_address
-
-    one_to_one :mac_address
 
     many_to_one :datapath
     many_to_one :network

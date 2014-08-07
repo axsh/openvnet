@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
   class IpAddress < Base
     include Vnet::ModelWrappers::Helpers::IPv4
 
@@ -24,5 +23,4 @@ module Vnet::Models
     }
 
   end
-
 end

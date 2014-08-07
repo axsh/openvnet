@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+
 module Vnet::NodeApi
   class IpLease < Base
     class << self
+      # TODO: Fix this...
       include Vnet::Helpers::Event
 
       def create(options)

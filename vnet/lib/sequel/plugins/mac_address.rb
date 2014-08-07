@@ -3,7 +3,7 @@
 module Sequel
   module Plugins
     module MacAddress
-      def self.apply(model, opts=OPTS)
+      def self.apply(model, opts = OPTS)
         association_name = (opts[:attr_name] ? :mac_address : :_mac_address)
         model.many_to_one association_name, class: model.name.split(/::/).tap{|n| n[-1] = "MacAddress"}.join("::"), key: :mac_address_id
 

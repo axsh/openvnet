@@ -7,10 +7,7 @@ module Vnet::Models
     taggable 'rl'
 
     plugin :paranoia_is_deleted
-
     plugin :mac_address
-
-    one_to_one :mac_address
 
     one_to_many :routes
     one_to_many :datapath_route_links
@@ -18,7 +15,7 @@ module Vnet::Models
 
     plugin :association_dependencies,
     # 0001_origin
-    mac_address: :destroy
+    _mac_address: :destroy
 
   end
 end

@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
   class DatapathRouteLink < Base
 
     plugin :paranoia_is_deleted
     plugin :mac_address
-
-    one_to_one :mac_address
 
     many_to_one :datapath
     many_to_one :route_link
@@ -17,7 +14,7 @@ module Vnet::Models
 
     plugin :association_dependencies,
     # 0001_origin
-    mac_address: :destroy
+    _mac_address: :destroy
 
     # TODO: Remove this.
     def datapath_route_links_in_the_same_route_link
@@ -25,5 +22,4 @@ module Vnet::Models
     end
 
   end
-
 end
