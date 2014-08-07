@@ -1,8 +1,8 @@
-specs_ext: [edge_esxi]
+specs_ext: [edge]
 nodes:
   webapi: [192.168.2.61]
   vnmgr: [192.168.2.61]
-  vna: [192.168.2.61, 192.168.2.62, 192.168.2.63, 192.168.2.60, 192.168.2.65]
+  vna: [192.168.2.61, 192.168.2.62, 192.168.2.63, 192.168.2.60]
 
 webapi:
   host: 192.168.2.61
@@ -35,7 +35,3 @@ legacy_machines:
   legacy1:
     ssh_ip: 192.168.2.64
     ipv4_address: 10.101.0.100
-  legacy_esxi:
-    hostname: legacy-esxi
-    ssh_ip: 192.168.2.66
-    ipv4_address: 10.101.0.101
