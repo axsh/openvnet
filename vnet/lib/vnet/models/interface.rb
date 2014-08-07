@@ -51,7 +51,7 @@ module Vnet::Models
     dst_tunnels: :destroy,
     translations: :destroy,
     # 0002_services
-    lease_policy_base_interfaces: :destroy,
+    lease_policy_base_interfaces: :destroy
 
   end
 end

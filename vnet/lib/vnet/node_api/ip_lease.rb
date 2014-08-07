@@ -81,7 +81,7 @@ module Vnet::NodeApi
       def dispatch_created_item_events(model)
         dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_event_hash(model))
 
-        ip_lease.interface.security_groups.each do |group|
+        model.interface.security_groups.each do |group|
           dispatch_update_sg_ip_addresses(group)
         end
       end
