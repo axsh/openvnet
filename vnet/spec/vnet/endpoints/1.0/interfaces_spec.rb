@@ -10,6 +10,7 @@ end
 
 describe "/interfaces" do
   before(:each) { use_mock_event_handler }
+
   let(:api_suffix)  { "interfaces" }
   let(:fabricator)  { :interface }
   let(:model_class) { Vnet::Models::Interface }
@@ -88,25 +89,28 @@ describe "/interfaces" do
   # Ports:
   #
 
-  # TODO: Write shared example for this:
+  describe "/interfaces/:uuid/ports" do
+    let(:api_postfix)  { "ports" }
+    let(:postfix_parent_sym) { :interface_id }
+    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => 1}) }
+    let(:postfix_model_class) { Vnet::Models::InterfacePort }
 
-  # describe "POST /:uuid/ports" do
-  #   let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
-  #   #let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+    include_examples "GET /:uuid/postfix"
+    include_examples "DELETE /:uuid/postfix"
 
-  #   expected_response = {
-  #     interface_uuid: 'if-test',
-  #     datapath_uuid: 'dp-owner',
-  #     port_name: 'vif-foo',
-  #     singular: 1
-  #   }
+    describe "POST /:uuid/ports" do
+      let!(:owner) { Fabricate(:datapath) { uuid "dp-owner" } }
 
-  #   accepted_params = expected_response #.merge( datapath_uuid: "dp-owner")
-  #   required_params = []
-  #   uuid_params = [:datapath_uuid]
+      accepted_params = {
+        datapath_uuid: 'dp-owner',
+        port_name: 'vif-foo',
+        singular: true
+      }
+      required_params = []
 
-  #   include_examples "POST /:uuid/ports", accepted_params, required_params, uuid_params, expected_response
-  # end
+      include_examples "POST /:uuid/postfix", accepted_params, required_params
+    end
+  end
 
   #
   # Security groups:
