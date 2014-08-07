@@ -92,8 +92,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
     datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
 
-    remove_system_parameters
-
     filter = {
       interface_id: interface.id,
     }
