@@ -23,26 +23,13 @@ module Vnet::NodeApi
 
         transaction {
           active_models = model_class.where(interface_id: interface_id).all
+
           old_model = prune_old(active_models, datapath_id)
           old_model = prune_for_singular(active_models, datapath_id) if singular
 
-          # TODO: Delete, don't update.
-          if old_model
-            model = old_model
-            model.set(port_name: options[:port_name],
-                      label: label,
-                      singular: singular,
-                      enable_routing: options[:enable_routing])
-            model.save_changes
-            
-            Celluloid::Logger.debug "updated active interface: #{model.inspect}"
+          old_model.destroy if old_model
 
-          else
-            model = super(options)
-            Celluloid::Logger.debug "created active interface: #{model.inspect}"
-          end
-
-          model
+          internal_create(options)
         }
       end
 
