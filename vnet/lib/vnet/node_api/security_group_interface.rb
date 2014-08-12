@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
-
   class SecurityGroupInterface < EventBase
     class << self
       include Vnet::Helpers::Event
@@ -47,5 +46,4 @@ module Vnet::NodeApi
 
     end
   end
-
 end
