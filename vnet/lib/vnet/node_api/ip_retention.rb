@@ -13,7 +13,9 @@ module Vnet::NodeApi
       end
 
       def dispatch_deleted_item_events(model)
-        dispatch_event(IP_RETENTION_DELETED_ITEM, id: id)
+        dispatch_event(IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION,
+                       id: model.ip_retention_container_id,
+                       ip_retention_id: model.id)
       end
 
     end

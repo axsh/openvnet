@@ -79,7 +79,9 @@ module Vnet::NodeApi
       private
 
       def dispatch_created_item_events(model)
-        dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_event_hash(model))
+        if model.interface_id
+          dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_event_hash(model))
+        end
 
         dispatch_security_group_item_events(model)
       end
@@ -89,7 +91,7 @@ module Vnet::NodeApi
           dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: model.interface_id, ip_lease_id: model.id)
         end
 
-        dispatch_security_group_item_events(model)
+        filter = { ip_lease_id: model.id }
 
         # 0001_origin
         # datapath_networks: :destroy,
@@ -97,14 +99,10 @@ module Vnet::NodeApi
         # ip_address: :destroy,
         # ip_lease_container_ip_leases: :destroy,
 
+        dispatch_security_group_item_events(model)
+
         # 0002_services
-        model.ip_retentions.tap { |ass_models|
-          ass_models && ass_models.each { |ass_model|
-            dispatch_event(IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION,
-                           id: item.ip_retention_container_id,
-                           ip_retention_id: item.id)
-          }
-        }
+        IpRetention.dispatch_deleted_where(filter, model.deleted_at)
       end
 
       def dispatch_security_group_item_events(model)
