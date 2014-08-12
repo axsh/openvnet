@@ -1,11 +1,12 @@
 module Vnet::Models
-
-  # TODO: Refactor.
   class IpRetentionContainer < Base
     taggable 'irc'
 
     plugin :paranoia_is_deleted
 
+    #
+    # 0002_services
+    #
     one_to_many :ip_retentions
 
     one_to_many :lease_policy_ip_retention_containers
@@ -21,5 +22,6 @@ module Vnet::Models
       errors.add(:lease_time, 'cannot be less than 0') if grace_time && grace_time < 0
       errors.add(:grace_time, 'cannot be less than 0') if grace_time && grace_time < 0
     end
+
   end
 end

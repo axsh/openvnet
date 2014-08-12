@@ -206,7 +206,7 @@ module Vnet
     REMOVED_DNS_RECORD = "removed_dns_record"
 
     #
-    # Ip retention container events:
+    # Ip Retention Container Events:
     #
     IP_RETENTION_CONTAINER_INITIALIZED = 'ip_retention_container_initialized'
     IP_RETENTION_CONTAINER_UNLOAD_ITEM = 'ip_retention_container_unload_item'
@@ -216,5 +216,6 @@ module Vnet
     IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION = 'ip_retention_container_removed_ip_retention'
     IP_RETENTION_CONTAINER_LEASE_TIME_EXPIRED = 'ip_retention_container_lease_time_expired'
     IP_RETENTION_CONTAINER_GRACE_TIME_EXPIRED = 'ip_retention_container_grace_time_expired'
+
   end
 end

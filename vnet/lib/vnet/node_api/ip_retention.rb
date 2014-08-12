@@ -15,11 +15,6 @@ module Vnet::NodeApi
         dispatch_event(IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION,
                        id: model.ip_retention_container_id,
                        ip_retention_id: model.id)
-
-        # 0001_origin
-        # ip_lease_container_ip_leases: send?
-        # 0002_services
-        # lease_policy_ip_lease_containers: send?
       end
 
       def prepare_event_hash(model)

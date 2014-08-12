@@ -1,11 +1,14 @@
-module Vnet::Models
+# -*- coding: utf-8 -*-
 
-  # TODO: Refactor.
+module Vnet::Models
   class IpRetention < Base
     plugin :paranoia_is_deleted
 
     many_to_one :ip_lease
     many_to_one :ip_retention_container
+
+    # TODO: Should we delete the ip lease?
+    # TODO: Should we use created_at column for leased_at?
 
     def expire
       if ip_retention_container.grace_time
@@ -20,5 +23,6 @@ module Vnet::Models
       self.leased_at = Time.now
       super
     end
+
   end
 end

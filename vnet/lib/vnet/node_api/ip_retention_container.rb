@@ -47,7 +47,7 @@ module Vnet::NodeApi
         dispatch_event(IP_RETENTION_CONTAINER_DELETED_ITEM, id: model.id)
 
         # 0002_services
-        # ip_retentions: :destroy,
+        # ip_retentions: handled by main event?
         # lease_policy_ip_retention_containers: :destroy
       end
 
