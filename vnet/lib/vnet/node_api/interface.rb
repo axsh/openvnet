@@ -61,25 +61,25 @@ module Vnet::NodeApi
         ipv4_address = options.delete(:ipv4_address)
         mac_address = options.delete(:mac_address)
 
-        interface_port = nil
+        # TODO: Raise rollback if any step fails.
+        transaction {
+          model = internal_create(options) || next
+          create_interface_port(model, datapath_id, port_name)
 
-        model = transaction {
-          interface = internal_create(options) || next
-          interface_port = create_interface_port(interface, datapath_id, port_name)
+          add_lease(model, mac_address, network_id, ipv4_address)
 
-          add_lease(interface, mac_address, network_id, ipv4_address)
-
-          interface
+          model
         }
-
-        InterfacePort.dispatch_created_for_model(interface_port)
-        
-        model
       end
 
       def dispatch_created_item_events(model)
         # TODO: Send has not just id.
         dispatch_event(INTERFACE_CREATED_ITEM, id: model.id)
+
+        filter = { interface_id: model.id }
+
+        # 0001_origin
+        InterfacePort.dispatch_created_where(filter, model.created_at)
       end
 
       def dispatch_deleted_item_events(model)
@@ -120,20 +120,19 @@ module Vnet::NodeApi
       end
 
       def add_lease(interface, mac_address, network_id, ipv4_address)
-        return if mac_address.nil?
+        return true if mac_address.nil?
 
-        mac_lease = model_class(:mac_lease).create(mac_address: mac_address)
-        return if mac_lease.nil?
+        mac_lease = model_class(:mac_lease).create(mac_address: mac_address) || return
+        interface.add_mac_lease(mac_lease) || return
 
-        interface.add_mac_lease(mac_lease).tap do |mac_lease|
-          next if mac_lease.nil?
-          next if network_id.nil? || ipv4_address.nil?
+        return true if network_id.nil? || ipv4_address.nil?
 
-          ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
-                                                   network_id: network_id,
-                                                   ipv4_address: ipv4_address)
-          interface.add_ip_lease(ip_lease)
-        end
+        ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
+                                                 network_id: network_id,
+                                                 ipv4_address: ipv4_address) || return
+        interface.add_ip_lease(ip_lease) || return
+
+        return true
       end
 
     end
