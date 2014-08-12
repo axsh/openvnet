@@ -6,7 +6,7 @@ module Vnet::Models
 
     plugin :paranoia_is_deleted
 
-    one_to_many :mac_lease
+    one_to_one :mac_lease
 
   end
 end
