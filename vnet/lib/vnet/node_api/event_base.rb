@@ -31,6 +31,18 @@ module Vnet::NodeApi
         dispatch_created_item_events(model)
       end
 
+      def dispatch_deleted_for_model(model)
+        dispatch_deleted_item_events(model)
+      end
+
+      def dispatch_created_where(filter, created_at)
+        filter_date = ['created_at <= ?', created_at + 3]
+
+        model_class.where(filter).filter(*filter_date).each { |model|
+          dispatch_created_item_events(model)
+        }
+      end
+
       def dispatch_deleted_where(filter, deleted_at)
         filter_date = ['deleted_at >= ? || deleted_at = NULL', deleted_at - 3]
 
