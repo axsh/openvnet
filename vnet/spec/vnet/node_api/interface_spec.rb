@@ -92,11 +92,14 @@ describe Vnet::NodeApi::Interface do
       expect(Vnet::Models::Interface[interface.id]).to be_nil
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 2
-      expect(events.first[:event]).to eq Vnet::Event::INTERFACE_DELETED_ITEM
-      expect(events.first[:options][:id]).to eq interface[:id]
-      expect(events.last[:event]).to eq Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS
-      expect(events.last[:options][:id]).to eq interface[:id]
+
+      expect(events.size).to eq 3
+      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_DELETED_ITEM
+      expect(events[0][:options][:id]).to eq interface[:id]
+      expect(events[1][:event]).to eq Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS
+      expect(events[1][:options][:id]).to eq interface[:id]
+      expect(events[2][:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
+      expect(events[2][:options][:id]).to eq interface[:id]
     end
   end
 end
