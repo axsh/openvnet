@@ -44,7 +44,8 @@ module Vnet::NodeApi
       end
 
       def dispatch_deleted_where(filter, deleted_at)
-        filter_date = ['deleted_at >= ? || deleted_at = NULL', deleted_at - 3]
+        filter_date = ['deleted_at >= ? || deleted_at = NULL',
+                       (deleted_at || Time.now) - 3]
 
         model_class.with_deleted.where(filter).filter(*filter_date).each { |model|
           dispatch_deleted_item_events(model)
