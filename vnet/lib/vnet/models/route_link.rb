@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
-  # TODO: Refactor.
   class RouteLink < Base
     taggable 'rl'
 

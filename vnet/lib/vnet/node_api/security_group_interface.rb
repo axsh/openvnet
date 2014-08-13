@@ -42,6 +42,8 @@ module Vnet::NodeApi
                        interface_id: model.interface_id)
 
         dispatch_update_sg_ip_addresses(group)
+
+        # no dependencies
       end
 
     end
