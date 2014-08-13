@@ -9,7 +9,6 @@ module Vnet::Models
     #
     # 0001_origin
     #
-
     one_to_many :active_interfaces
     one_to_many :datapath_networks
     one_to_many :datapath_route_links
@@ -32,7 +31,6 @@ module Vnet::Models
     #
     # 0002_services
     #
-
     one_to_many :lease_policy_base_interfaces
     many_to_many :lease_policies, :join_table => :lease_policy_base_interfaces, :conditions => "lease_policy_base_interfaces.deleted_at is null"
 
