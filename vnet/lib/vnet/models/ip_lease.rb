@@ -61,6 +61,8 @@ module Vnet::Models
     end
 
     # TODO: Is this really safe if interface_id is changed?
+    # TODO: This could cause issues if we lease/release translation
+    # related ip leases often.
     def cookie_id
       self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count
     end

@@ -11,12 +11,11 @@ module Vnet::NodeApi
       def dispatch_deleted_item_events(model)
         dispatch_event(NETWORK_DELETED_ITEM, id: model.id)
 
-        # TODO: Event for all routes (?).
         filter = { network_id: model.id }
 
         # 0001_origin
-        # IpAddresses.dispatch_deleted_where(filter, model.deleted_at)
-        # DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at) # Enable this.
+        # IpAddresses.dispatch_deleted_where(filter, model.deleted_at) # Needed? We're deleting the network.
+        DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
         Route.dispatch_deleted_where(filter, model.deleted_at)
         # VlanTranslation.dispatch_deleted_where(filter, model.deleted_at)
 

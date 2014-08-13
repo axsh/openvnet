@@ -11,6 +11,8 @@ module Vnet::NodeApi
 
       def dispatch_deleted_item_events(model)
         dispatch_event(ROUTE_DELETED_ITEM, id: model.id)
+
+        # no dependencies
       end
 
     end
