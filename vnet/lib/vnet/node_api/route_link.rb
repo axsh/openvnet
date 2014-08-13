@@ -6,11 +6,11 @@ module Vnet::NodeApi
       private
 
       def dispatch_created_item_events(model)
-        dispatch_event(ROUTE_LINK_CREATED_ITEM, model.to_hash)
+        dispatch_event(ROUTER_CREATED_ITEM, model.to_hash)
       end
 
       def dispatch_deleted_item_events(model)
-        dispatch_event(ROUTE_LINK_DELETED_ITEM, id: model.id)
+        dispatch_event(ROUTER_DELETED_ITEM, id: model.id)
 
         filter = { route_link_id: model.id }
 
