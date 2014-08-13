@@ -206,7 +206,10 @@ module Vnet::Core
       tunnel = @dp_info.tunnel_manager.retrieve(uuid: port.port_name)
 
       if tunnel.nil?
-        error log_format("could not find tunnel for #{port.port_name}")
+        # We need to delete the tunnel as the datapath such as ovs has
+        # issues with duplicate src/dst ip addresses for tunnel.
+        info log_format("could not find tunnel item for #{port.port_name}, deleting")
+        @dp_info.delete_tunnel(port.port_name)
         return
       end
 
