@@ -13,8 +13,9 @@ module Vnet::Configurations
 
       DSL do
         def addr(&block)
-          @config[:addr] = Addr.new.tap {|c| c.parse_dsl(&block) if block }
-          @config[:addr_string] = "#{@config[:addr].protocol}://#{@config[:addr].host}:#{@config[:addr].port}"
+          addr = @config[:addr]
+          addr = Addr.new.tap {|c| c.parse_dsl(&block) if block }
+          @config[:addr_string] = "#{addr.protocol}://#{addr.host}:#{addr.port}"
         end
       end
     end
