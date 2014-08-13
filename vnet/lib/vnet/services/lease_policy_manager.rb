@@ -43,7 +43,7 @@ module Vnet::Services
       when params[:interface_id] then params
       else
         # Any invalid params that should cause an exception needs to
-        # be caught by the item_by_params_direct method.
+        # be caught by the internal_retrieve_direct method.
         return nil
       end
     end

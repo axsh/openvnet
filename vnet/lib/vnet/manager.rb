@@ -150,6 +150,12 @@ module Vnet
     # Filters:
     #
 
+    # We explicity initialize each proc parts into the method's local
+    # context, and create the block by referencing those for
+    # optimization reasons.
+    #
+    # Properly verify the speed of any changes to the implementation.
+
     def match_item_proc(params)
       case params.size
       when 1
@@ -160,14 +166,21 @@ module Vnet
         part_1 = match_item_proc_part(part_1)
         part_2 = match_item_proc_part(part_2)
         part_1 && part_2 &&
-          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) }
+          proc { |id, item|
+          part_1.call(id, item) &&
+          part_2.call(id, item)
+        }
       when 3
         part_1, part_2, part_3 = params.to_a
         part_1 = match_item_proc_part(part_1)
         part_2 = match_item_proc_part(part_2)
         part_3 = match_item_proc_part(part_3)
         part_1 && part_2 && part_3 &&
-          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) }
+          proc { |id, item|
+          part_1.call(id, item) &&
+          part_2.call(id, item) &&
+          part_3.call(id, item)
+        }
       when 4
         part_1, part_2, part_3, part_4 = params.to_a
         part_1 = match_item_proc_part(part_1)
@@ -175,7 +188,12 @@ module Vnet
         part_3 = match_item_proc_part(part_3)
         part_4 = match_item_proc_part(part_4)
         part_1 && part_2 && part_3 && part_4 &&
-          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) && part_4.call(id, item) }
+          proc { |id, item|
+          part_1.call(id, item) &&
+          part_2.call(id, item) &&
+          part_3.call(id, item) &&
+          part_4.call(id, item)
+        }
       when 0
         proc { |id, item| true }
       else
@@ -230,7 +248,6 @@ module Vnet
 
       internal_new_item(item_map)
     end
-    alias_method :item_by_params, :internal_retrieve
 
     # The default select call with no fill options.
     def select_item(batch)

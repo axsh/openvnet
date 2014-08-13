@@ -165,7 +165,7 @@ module Vnet::Core
 
       if item.nil?
         # TODO: Make sure we don't look here...
-        return item_by_params(id: params[:id])
+        return internal_retrieve(id: params[:id])
       end
 
       case 
@@ -238,7 +238,7 @@ module Vnet::Core
         next if dpn_map.datapath_id == @datapath_info.id
         next if @items[dpn_map.datapath_id]
 
-        self.async.item_by_params(id: dpn_map.datapath_id)
+        self.async.internal_retrieve(id: dpn_map.datapath_id)
       }
     end
 
@@ -283,7 +283,7 @@ module Vnet::Core
 
       if item.nil?
         # TODO: Make sure we don't loop here...
-        return item_by_params(id: params[:id])
+        return internal_retrieve(id: params[:id])
       end
 
       case 
@@ -350,7 +350,7 @@ module Vnet::Core
         next if dprl_map.datapath_id == @datapath_info.id
         next if @items[dprl_map.datapath_id]
 
-        self.async.item_by_params(id: dprl_map.datapath_id)
+        self.async.internal_retrieve(id: dprl_map.datapath_id)
       }
     end
 

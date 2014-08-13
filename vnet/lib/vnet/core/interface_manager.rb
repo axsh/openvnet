@@ -38,11 +38,11 @@ module Vnet::Core
     # Disable unload... (?)
 
     def load_shared_interface(interface_id)
-      item_to_hash(item_by_params(id: interface_id))
+      item_to_hash(internal_retrieve(id: interface_id))
     end
 
     def load_local_interface(interface_id)
-      item_to_hash(item_by_params(id: interface_id))
+      item_to_hash(internal_retrieve(id: interface_id))
     end
 
     def load_local_port(interface_id, port_name, port_number)
@@ -52,7 +52,7 @@ module Vnet::Core
         port_number: port_number
       }
 
-      item_to_hash(item_by_params(id: interface_id))
+      item_to_hash(internal_retrieve(id: interface_id))
     end
 
     def unload_local_port(interface_id, port_name, port_number)
