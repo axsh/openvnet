@@ -2,10 +2,10 @@
 
 # Thread-safe access to static information on the datapath and
 # managers. No writes are done to this instance after the creation of
-# the datapath. 
+# the datapath.
 #
-# Since this isn't an actor we avoid the need to go through Datapath's
-# thread for every time we use a manager.
+# Since this isn't an actor we avoid the need to go through the
+# Datapath actor's messaging queue for every time we use a manager.
 
 module Vnet::Core
 
@@ -49,6 +49,10 @@ module Vnet::Core
       @ovs_ofctl = params[:ovs_ofctl]
 
       initialize_managers
+    end
+
+    def inspect
+      "<##{self.class.name} dpid:#{@dpid}>"
     end
 
     #
@@ -149,9 +153,9 @@ module Vnet::Core
       }
     end
 
-    def inspect
-      "<##{self.class.name} dpid:#{@dpid}>"
-    end
+    #
+    # Managers:
+    #
 
     def managers
       MANAGER_NAMES.map { |name| __send__("#{name}_manager") }

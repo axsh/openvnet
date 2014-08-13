@@ -142,7 +142,7 @@ module Vnet::Openflow
           link(manager)
           vnmgr_node && vnmgr_node.link(manager)
         rescue => e
-          error "Fail to link with #{manager.class.name}: #{e}"
+          error log_format("Fail to link with #{manager.class.name}", e)
           raise e
         end
       }
