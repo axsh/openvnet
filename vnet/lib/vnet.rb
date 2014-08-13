@@ -345,7 +345,6 @@ module Vnet
     autoload :DatapathGeneric, 'vnet/node_api/datapath_generic.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_generic.rb'
     autoload :DatapathRouteLink, 'vnet/node_api/datapath_generic.rb'
-    autoload :DcSegment, 'vnet/node_api/models.rb'
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'

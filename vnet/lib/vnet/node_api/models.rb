@@ -2,9 +2,6 @@
 
 module Vnet::NodeApi
 
-  class DcSegment < Base
-  end
-
   class IpAddress < Base
   end
 
@@ -21,9 +18,6 @@ module Vnet::NodeApi
   end
 
   class MacAddress < Base
-  end
-
-  class NetworkService < Base
   end
 
 end

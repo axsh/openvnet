@@ -26,6 +26,8 @@ module Vnet::NodeApi
 
       def dispatch_deleted_item_events(model)
         # dispatch_event(REMOVED_TUNNEL, id: model.id)
+
+        # no dependencies
       end
 
     end

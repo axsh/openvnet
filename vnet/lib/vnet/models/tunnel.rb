@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
-  # TODO: Refactor.
-
   class Tunnel < Base
     taggable 't'
 

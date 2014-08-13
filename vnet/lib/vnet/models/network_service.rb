@@ -7,6 +7,7 @@ module Vnet::Models
     plugin :paranoia_is_deleted
 
     many_to_one :interface
+    one_to_many :dns_services
 
     plugin :association_dependencies,
     # 0002_services
