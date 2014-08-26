@@ -60,8 +60,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   # Ports:
   #
 
-  #TODO: Write some FREAKING tests for this
-
   def self.port_put_post_shared_params
     param_uuid M::Datapath, :datapath_uuid
     param :port_name, :String
@@ -71,16 +69,16 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   port_put_post_shared_params
   param_uuid M::Interface
   post '/:uuid/ports' do
-    interface = uuid_to_id(M::Interface, 'uuid', 'interface_id')
-    datapath = uuid_to_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
+    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
+    datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
 
     # TODO: Move to node_api.
     params['interface_mode'] = interface.mode
 
     remove_system_parameters
 
-    interface_port = M::InterfacePort.create(params)
-    respond_with(R::InterfacePort.generate(interface_port))
+    interface_port = M::InterfacePort.create_with_uuid(params)
+    respond_with(interface_port)
   end
 
   get '/:uuid/ports' do
@@ -91,8 +89,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   delete '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
     datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
-
-    remove_system_parameters
 
     filter = {
       interface_id: interface.id,
@@ -115,13 +111,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     security_group = check_syntax_and_get_id(M::SecurityGroup, 'security_group_uuid', 'security_group_id')
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
 
-    M::InterfaceSecurityGroup.filter(:interface_id => interface.id,
+    M::SecurityGroupInterface.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).empty? ||
     raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
     remove_system_parameters
 
-    M::InterfaceSecurityGroup.create(params)
+    M::SecurityGroupInterface.create(params)
 
     respond_with(R::SecurityGroup.generate(security_group))
   end
@@ -134,12 +130,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     interface = check_syntax_and_pop_uuid(M::Interface)
     security_group = check_syntax_and_pop_uuid(M::SecurityGroup, 'security_group_uuid')
 
-    relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
-      :security_group_id => security_group.id).all.commit
+    deleted = M::SecurityGroupInterface.destroy_where(interface_id: interface.id,
+                                                      security_group_id: security_group.id)
 
-    # We call the destroy class method so we go trough NodeApi and send an
-    # update isolation event. As opposed to calling the destroy instance method
-    relations.each { |r| M::InterfaceSecurityGroup.destroy(r.id) }
-    respond_with([security_group.uuid])
+    respond_with(deleted > 0 ? [security_group.uuid] : [])
   end
+
 end

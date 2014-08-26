@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
-  # TODO: Refactor.
-
   class DatapathNetwork < Base
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
     # TODO: Rename to mac_address.
     plugin :mac_address, :attr_name => :broadcast_mac_address
 
@@ -16,11 +13,14 @@ module Vnet::Models
     many_to_one :interface
     many_to_one :ip_lease
 
+    plugin :association_dependencies,
+    # 0001_origin
+    mac_address: :destroy
+
     # TODO: Remove this.
     def datapath_networks_in_the_same_network
       self.class.eager_graph(:datapath).where(network_id: self.network_id).exclude(datapath_networks__id: self.id).all
     end
 
   end
-
 end

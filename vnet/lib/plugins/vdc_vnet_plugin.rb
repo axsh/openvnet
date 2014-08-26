@@ -52,14 +52,14 @@ module Vnet::Plugins
             ip_address_id: ip_address.id
           ).first
           Vnet::NodeApi::IpLease.execute(:destroy, ip_lease.canonical_uuid)
-        when :InterfaceSecurityGroup
+        when :SecurityGroupInterface
           security_group = Vnet::NodeApi::SecurityGroup[options[:security_group_uuid]]
           interface = Vnet::NodeApi::Interface[options[:interface_uuid]]
-          interface_security_group = Vnet::NodeApi::InterfaceSecurityGroup.filter(
+          security_group_interface = Vnet::NodeApi::SecurityGroupInterface.filter(
             security_group_id: security_group.id,
             interface_id: interface.id
           ).first
-          Vnet::NodeApi::InterfaceSecurityGroup.execute(:destroy, interface_security_group.canonical_uuid)
+          Vnet::NodeApi::SecurityGroupInterface.execute(:destroy, security_group_interface.canonical_uuid)
         when :Network
           network = Vnet::NodeApi::Network[options[:uuid]]
           Vnet::NodeApi::DatapathNetwork.filter(network_id: network.id).map { |dpn| dpn.destroy }
@@ -248,7 +248,7 @@ module Vnet::Plugins
         interface_id: Vnet::NodeApi::Interface[vnet_params[:interface_uuid]].id,
         security_group_id: Vnet::NodeApi::SecurityGroup[vnet_params[:security_group_uuid]].id
       }
-      Vnet::NodeApi::InterfaceSecurityGroup.create(vnet_params)
+      Vnet::NodeApi::SecurityGroupInterface.create(vnet_params)
     end
 
     def translation_static_address_params(vnet_params)
@@ -308,15 +308,17 @@ module Vnet::Plugins
 
     def create_route(route_link, gw)
       #TODO
-      ipv4_network, ipv4_prefix = case gw.network.canonical_uuid
+      network = gw.ip_leases.first.network
+
+      ipv4_network, ipv4_prefix = case network.canonical_uuid
                                   when 'nw-public' then [0, 0]
                                   else
-                                    [gw.network.ipv4_network, gw.network.ipv4_prefix]
+                                    [network.ipv4_network, network.ipv4_prefix]
                                   end
       params = {
         :interface_id => gw.id,
         :route_link_id => route_link.id,
-        :network_id => gw.network.id,
+        :network_id => network.id,
         :ipv4_network => ipv4_network,
         :ipv4_prefix => ipv4_prefix
       }
@@ -378,7 +380,8 @@ module Vnet::Plugins
       gateways = Vnet::NodeApi::Interface.find_all { |i|
         i.enable_routing == true && i.mode == MODE_SIMULATED
       }.select{ |i|
-        i.network && i.network.canonical_uuid == network_uuid
+        ip_lease = i.ip_leases.first
+        ip_lease.network && ip_lease.network.canonical_uuid == network_uuid
       }
 
       if gateways.empty?

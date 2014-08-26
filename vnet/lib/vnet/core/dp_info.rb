@@ -2,10 +2,10 @@
 
 # Thread-safe access to static information on the datapath and
 # managers. No writes are done to this instance after the creation of
-# the datapath. 
+# the datapath.
 #
-# Since this isn't an actor we avoid the need to go through Datapath's
-# thread for every time we use a manager.
+# Since this isn't an actor we avoid the need to go through the
+# Datapath actor's messaging queue for every time we use a manager.
 
 module Vnet::Core
 
@@ -49,6 +49,10 @@ module Vnet::Core
       @ovs_ofctl = params[:ovs_ofctl]
 
       initialize_managers
+    end
+
+    def inspect
+      "<##{self.class.name} dpid:#{@dpid}>"
     end
 
     #
@@ -149,23 +153,21 @@ module Vnet::Core
       }
     end
 
-    def inspect
-      "<##{self.class.name} dpid:#{@dpid}>"
-    end
+    #
+    # Managers:
+    #
 
     def managers
       MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
     def terminate_managers(timeout = 10.0)
-      # TODO: Fix this so it calculates the remaining timeout between each join.
-      timeout = timeout / 10
+      start_time = Time.new
 
       managers.each { |manager|
-        manager.terminate!
-      }
-      managers.each { |manager|
-        Celluloid::Actor.join(manager, timeout)
+        next_timeout = timeout - (Time.new - start_time)
+
+        Celluloid::Actor.join(manager, (next_timeout < 0.1) ? 0.1 : next_timeout)
       }
     end
 

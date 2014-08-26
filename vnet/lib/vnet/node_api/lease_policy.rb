@@ -2,6 +2,8 @@
 
 require "ipaddress"
 
+# TODO: Refactor.
+
 module Vnet::NodeApi
   class LeasePolicy < Base
     class << self
@@ -175,6 +177,7 @@ module Vnet::NodeApi
         end
         model
       end
+
     end
   end
 end

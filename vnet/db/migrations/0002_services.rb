@@ -13,6 +13,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:dns_records) do
@@ -28,6 +29,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:ip_retentions) do
@@ -42,6 +44,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:ip_retention_containers) do
@@ -54,6 +57,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:lease_policies) do
@@ -66,6 +70,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:lease_policy_base_interfaces) do
@@ -79,6 +84,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:lease_policy_base_networks) do
@@ -91,6 +97,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:lease_policy_ip_lease_containers) do
@@ -104,8 +111,9 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:lease_policy_id, :ip_lease_container_id, :deleted_at]
+      unique [:lease_policy_id, :ip_lease_container_id, :is_deleted]
     end
 
     create_table(:lease_policy_ip_retention_containers) do
@@ -117,9 +125,10 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
       index :ip_retention_container_id, :name => :container_id_index
-      unique [:lease_policy_id, :ip_retention_container_id, :deleted_at]
+      unique [:lease_policy_id, :ip_retention_container_id, :is_deleted]
     end
 
   end

@@ -2,11 +2,9 @@
 
 module Vnet::Models
 
-  # TODO: Refactor partial. Verify node_api.
-
   class ActiveInterface < Base
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     many_to_one :interface
     many_to_one :datapath

@@ -52,3 +52,31 @@ shared_examples "GET /:uuid" do
     end
   end
 end
+
+shared_examples "GET /:uuid/postfix" do
+  describe "GET /:uuid/postfix" do
+    let!(:object) { Fabricate(fabricator) }
+    let(:api_suffix_with_uuid) { "#{api_suffix}/#{object.canonical_uuid}/#{api_postfix}" }
+
+    before(:each) do
+      entries.times { postfix_fabricate }
+      get api_suffix_with_uuid
+    end
+
+    context "with no entries in the database" do
+      let(:entries) { 0 }
+
+      it "should return json with empty items" do
+        expect(last_response).to succeed.with_body({
+          "total_count" => 0,
+          "offset" =>  0,
+          "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
+          "items" => [],
+        })
+      end
+    end
+
+    test_with_db_entries 1
+  end
+end
+

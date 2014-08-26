@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
-  # TODO: Refactor.
   class NetworkService < Base
     taggable 'ns'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     many_to_one :interface
+    one_to_many :dns_services
+
+    plugin :association_dependencies,
+    # 0002_services
+    dns_services: :destroy
 
     def validate
       # TODO: Use constants.
@@ -18,5 +21,6 @@ module Vnet::Models
         "router",
       ], :type
     end
+
   end
 end

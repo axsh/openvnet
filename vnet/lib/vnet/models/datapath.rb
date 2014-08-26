@@ -2,13 +2,10 @@
 
 module Vnet::Models
 
-  # TODO: Refactor partial, fix conditions and add comments. Verify
-  # dependencies, and refactor node_api.
-
   class Datapath < Base
     taggable 'dp'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     one_to_many :datapath_networks
     one_to_many :datapath_route_links
@@ -20,12 +17,17 @@ module Vnet::Models
     one_to_many :active_interfaces
 
     one_to_many :tunnels, :key => :src_datapath_id
+    one_to_many :src_tunnels, :class => Tunnel, :key => :src_datapath_id
+    one_to_many :dst_tunnels, :class => Tunnel, :key => :dst_datapath_id
 
     plugin :association_dependencies,
-      datapath_networks: :destroy,
-      datapath_route_links: :destroy,
-      active_interfaces: :destroy,
-      interface_ports: :destroy
+    # 0001_origin
+    active_interfaces: :destroy,
+    datapath_networks: :destroy,
+    datapath_route_links: :destroy,
+    interface_ports: :destroy,
+    src_tunnels: :destroy,
+    dst_tunnels: :destroy
 
     def dpid_s
       "0x%016x" % dpid

@@ -62,11 +62,13 @@ module Vnet::Core
       return if @datapath_info.nil?
 
       info log_format('cleaning up')
+
       begin
         mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
       rescue NoMethodError => e
         info log_format(e.message, e.class.name)
       end
+
       info log_format('cleaned up')
     end
 

@@ -127,6 +127,7 @@ module Vnet::Openflow
 
       @datapaths[dpid] = { datapath: datapath, dp_info: datapath.dp_info }
 
+      datapath.async.create_switch
       datapath.async.run_normal
     end
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+
 module Vnet::NodeApi
-  class Tunnel < Base
+  class Tunnel < EventBase
     class << self
 
       def update_mode(id, mode)
@@ -11,6 +12,22 @@ module Vnet::NodeApi
             obj.save_changes
           end
         end
+      end
+
+      #
+      # Internal methods:
+      #
+
+      private
+
+      def dispatch_created_item_events(model)
+        # dispatch_event(ADDED_TUNNEL, model.to_hash)
+      end
+
+      def dispatch_deleted_item_events(model)
+        # dispatch_event(REMOVED_TUNNEL, id: model.id)
+
+        # no dependencies
       end
 
     end

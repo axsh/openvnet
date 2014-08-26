@@ -1,36 +1,7 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
-  class Interface < Base
+  class Interface < EventBase
     class << self
-      def create(options)
-        options = options.dup
-
-        datapath_id = options.delete(:owner_datapath_id)
-        port_name = options.delete(:port_name)
-
-        network_id = options.delete(:network_id)
-        ipv4_address = options.delete(:ipv4_address)
-        mac_address = options.delete(:mac_address)
-
-        interface_port = nil
-
-        transaction {
-          interface = model_class.create(options)
-          interface_port = create_interface_port(interface, datapath_id, port_name)
-
-          add_lease(interface, mac_address, network_id, ipv4_address)
-
-          interface
-
-        }.tap { |interface|
-          next if interface.nil?
-
-          # TODO: Send has not just id.
-          dispatch_event(INTERFACE_CREATED_ITEM, id: interface.id)
-          dispatch_event(INTERFACE_PORT_CREATED_ITEM, interface_port.to_hash) if interface_port
-        }
-      end
-
       # TODO dispatch_event
       def update(uuid, options)
         options = options.dup
@@ -58,30 +29,6 @@ module Vnet::NodeApi
         end
       end
 
-      def destroy(uuid)
-        interface = super
-
-        dispatch_event(INTERFACE_DELETED_ITEM, id: interface.id)
-
-        return if interface.deleted_at.nil?
-
-        dispatch_deleted_events(:active_interface, :interface_id, interface, ACTIVE_INTERFACE_DELETED_ITEM)
-        dispatch_deleted_events(:interface_port, :interface_id, interface, INTERFACE_PORT_DELETED_ITEM)
-
-        # TODO: Clean up.
-        model_class(:mac_lease).with_deleted.where(interface_id: interface.id).each do |mac_lease|
-          dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, id: interface.id,
-                                               mac_lease_id: mac_lease.id)
-        end
-
-        # TODO: Use with_deleted.
-        interface.interface_security_groups.each do |isg|
-          InterfaceSecurityGroup.destroy(isg.id)
-        end
-
-        nil
-      end
-
       # TODO: Move to base.
       def rename(old_uuid, new_uuid)
         old_trimmed = model_class.trim_uuid(old_uuid)
@@ -104,6 +51,59 @@ module Vnet::NodeApi
 
       private
 
+      def create_with_transaction(options)
+        options = options.dup
+
+        datapath_id = options.delete(:owner_datapath_id)
+        port_name = options.delete(:port_name)
+
+        network_id = options.delete(:network_id)
+        ipv4_address = options.delete(:ipv4_address)
+        mac_address = options.delete(:mac_address)
+
+        # TODO: Raise rollback if any step fails.
+        transaction {
+          model = internal_create(options) || next
+          create_interface_port(model, datapath_id, port_name)
+
+          add_lease(model, mac_address, network_id, ipv4_address)
+
+          model
+        }
+      end
+
+      def dispatch_created_item_events(model)
+        # TODO: Send has not just id.
+        dispatch_event(INTERFACE_CREATED_ITEM, id: model.id)
+
+        filter = { interface_id: model.id }
+
+        # 0001_origin
+        InterfacePort.dispatch_created_where(filter, model.created_at)
+      end
+
+      def dispatch_deleted_item_events(model)
+        dispatch_event(INTERFACE_DELETED_ITEM, id: model.id)
+
+        filter = { interface_id: model.id }
+
+        # 0001_origin
+        ActiveInterface.dispatch_deleted_where(filter, model.deleted_at)
+        # datapath_networks: :destroy,
+        # datapath_route_links: :destroy,
+        InterfacePort.dispatch_deleted_where(filter, model.deleted_at)
+        # ip_leases: verify
+        MacLease.dispatch_deleted_where(filter, model.deleted_at)
+        # network_services: add
+        # routes: add
+        SecurityGroupInterface.dispatch_deleted_where(filter, model.deleted_at)
+        # src_tunnels: :destroy,
+        # dst_tunnels: :destroy,
+        Translation.dispatch_deleted_where(filter, model.deleted_at)
+        # 0002_services
+        # lease_policy_base_interfaces: :destroy,
+      end
+
       def create_interface_port(interface, datapath_id, port_name)
         singular = (datapath_id || port_name) ? true : nil
 
@@ -116,24 +116,23 @@ module Vnet::NodeApi
           singular: singular
         }
 
-        interface_port = model_class(:interface_port).create(options)
+        model_class(:interface_port).create(options)
       end
 
       def add_lease(interface, mac_address, network_id, ipv4_address)
-        return if mac_address.nil?
+        return true if mac_address.nil?
 
-        mac_lease = model_class(:mac_lease).create(mac_address: mac_address)
-        return if mac_lease.nil?
+        mac_lease = model_class(:mac_lease).create(mac_address: mac_address) || return
+        interface.add_mac_lease(mac_lease) || return
 
-        interface.add_mac_lease(mac_lease).tap do |mac_lease|
-          next if mac_lease.nil?
-          next if network_id.nil? || ipv4_address.nil?
+        return true if network_id.nil? || ipv4_address.nil?
 
-          ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
-                                                   network_id: network_id,
-                                                   ipv4_address: ipv4_address)
-          interface.add_ip_lease(ip_lease)
-        end
+        ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
+                                                 network_id: network_id,
+                                                 ipv4_address: ipv4_address) || return
+        interface.add_ip_lease(ip_lease) || return
+
+        return true
       end
 
     end

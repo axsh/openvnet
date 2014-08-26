@@ -160,11 +160,12 @@ module Vnet::Core
     end
 
     def item_post_uninstall(item)
-      return unless item.port_number
+      # TODO: Unload properly for other cases too.
 
+      return unless item.port_number
       @dp_info.port_manager.publish(PORT_DETACH_INTERFACE,
                                     id: item.port_number,
-                                    interface_id: item.id)
+                                    interface_id: item.interface_id)
 
       @dp_info.network_manager.clear_interface_port(item.interface_id)
       @dp_info.interface_manager.unload_local_port(item.interface_id, item.port_name, item.port_number)

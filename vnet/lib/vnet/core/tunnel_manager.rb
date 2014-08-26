@@ -297,7 +297,7 @@ module Vnet::Core
 
       tunnel = MW::Tunnel.create(options.merge(mode: tunnel_mode))
 
-      item_by_params(options)
+      internal_retrieve(options)
     end
 
     # Load or create the tunnel item if we have both host and remote
@@ -318,7 +318,7 @@ module Vnet::Core
                       "datapath_id:#{remote_dp_obj[:datapath_id]} " +
                       "interface_id:#{remote_dp_obj[:interface_id]}")
 
-      item = item_by_params(options)
+      item = internal_retrieve(options)
       tunnel_mode = select_tunnel_mode(host_dp_obj[:interface_id], remote_dp_obj[:interface_id])
 
       if tunnel_mode == nil
@@ -386,7 +386,7 @@ module Vnet::Core
       port_name = params[:port_name] || return
       port_number = params[:port_number] || return
 
-      item = item_by_params(uuid: port_name)
+      item = internal_retrieve(uuid: port_name)
 
       if item.nil?
         info log_format("could not find tunnel item for port name '#{port_name}'")
@@ -407,7 +407,7 @@ module Vnet::Core
 
     def clear_tunnel_port_number(params)
       port_name = params[:port_name] || return
-      item = item_by_params(uuid: port_name) || return
+      item = internal_retrieve(uuid: port_name) || return
 
       # TODO: Turn into an event, and use the same update_networks
       # list for all callers, with an event that pulls network id's to

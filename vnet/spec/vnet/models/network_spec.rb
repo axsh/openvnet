@@ -28,6 +28,7 @@ describe Vnet::Models::Network do
         network = network1
         ipv4_address = ipv4_address1 + i
       end
+
       interface = Fabricate(:interface)
       mac_lease = Fabricate(:mac_lease, interface: interface)
       ip_lease = Fabricate(:ip_lease,
@@ -38,7 +39,16 @@ describe Vnet::Models::Network do
     end
 
     let!("route#{i + 1}".to_sym) do
-      Fabricate(:route, uuid: "r-#{i + 1}", interface: send("interface#{i + 1}"))
+      if i == 3
+        network = network2
+      else
+        network = network1
+      end
+
+      Fabricate(:route,
+                uuid: "r-#{i + 1}",
+                interface: send("interface#{i + 1}"),
+                network: network)
     end
 
     let!("network_service#{i + 1}".to_sym) do
@@ -56,29 +66,23 @@ describe Vnet::Models::Network do
     it { expect(subject.map(&:canonical_uuid)).to eq [ "r-1", "r-2", "r-3" ] }
   end
 
-  describe "network_services" do
-    subject { Vnet::Models::Network["nw-1"].network_services }
-
-    it { expect(subject.map(&:canonical_uuid)).to eq [ "ns-1", "ns-2", "ns-3" ] }
-  end
-
   describe "find_by_mac_address" do
-    it { expect(Vnet::Models::Network.find_by_mac_address(0)).to eq network1 }
-    it { expect(Vnet::Models::Network.find_by_mac_address(2)).to eq network1 }
-    it { expect(Vnet::Models::Network.find_by_mac_address(4)).to eq network1 }
-    it { expect(Vnet::Models::Network.find_by_mac_address(6)).to eq network2 }
+    it { expect(Vnet::Models::MacAddress[mac_address: 0].mac_lease.ip_leases.first.network).to eq network1 }
+    it { expect(Vnet::Models::MacAddress[mac_address: 2].mac_lease.ip_leases.first.network).to eq network1 }
+    it { expect(Vnet::Models::MacAddress[mac_address: 4].mac_lease.ip_leases.first.network).to eq network1 }
+    it { expect(Vnet::Models::MacAddress[mac_address: 6].mac_lease.ip_leases.first.network).to eq network2 }
   end
 
   describe "destroy" do
     subject {  network1.destroy }
 
-    it "cannot delete a network while any related model to the network exists" do
-      expect { subject }.to raise_error Vnet::Models::DeleteRestrictionError
-    end
-
-    it "can delete a network after all the relations was deleted" do
-      network1.remove_all_ip_addresses
+    it "deleting a network deletes associated items" do
       expect(subject).to be_a Vnet::Models::Network
+
+      expect(subject.ip_addresses).to be_empty
+      expect(subject.datapath_networks).to be_empty
+      expect(subject.routes).to be_empty
     end
   end
+
 end

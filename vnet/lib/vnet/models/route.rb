@@ -3,10 +3,11 @@
 module Vnet::Models
 
   # TODO: Refactor.
+
   class Route < Base
     taggable 'r'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     many_to_one :interface
     many_to_one :network
@@ -26,5 +27,6 @@ module Vnet::Models
         ~{routes__id: self.id}
       ).select_all(:routes).all
     end
+
   end
 end

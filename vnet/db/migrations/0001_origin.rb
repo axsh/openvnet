@@ -25,10 +25,11 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:interface_id, :datapath_id, :deleted_at]
-      unique [:interface_id, :label, :deleted_at]
-      unique [:interface_id, :singular, :deleted_at]
+      unique [:interface_id, :datapath_id, :is_deleted]
+      unique [:interface_id, :label, :is_deleted]
+      unique [:interface_id, :singular, :is_deleted]
     end
 
     create_table(:datapaths) do
@@ -45,6 +46,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
       # TODO: Add unique for [node_id, dpid], or possibly [dpid].
     end
@@ -64,8 +66,9 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:datapath_id, :network_id, :deleted_at]
+      unique [:datapath_id, :network_id, :is_deleted]
     end
 
     create_table(:datapath_route_links) do
@@ -83,8 +86,9 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:datapath_id, :route_link_id, :deleted_at]
+      unique [:datapath_id, :route_link_id, :is_deleted]
     end
 
     create_table(:interfaces) do
@@ -100,6 +104,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:interface_ports) do
@@ -120,22 +125,10 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:interface_id, :datapath_id, :deleted_at]
-      unique [:port_name, :datapath_id, :singular, :deleted_at]
-    end
-
-    create_table(:interface_security_groups) do
-      primary_key :id
-
-      Integer :interface_id, :index => true, :null => false
-      Integer :security_group_id, :index => true, :null => false
-
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at, :index => true
-
-      unique [:interface_id, :security_group_id, :deleted_at]
+      unique [:interface_id, :datapath_id, :is_deleted]
+      unique [:port_name, :datapath_id, :singular, :is_deleted]
     end
 
     create_table(:ip_addresses) do
@@ -147,8 +140,9 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:network_id, :ipv4_address, :deleted_at]
+      unique [:network_id, :ipv4_address, :is_deleted]
     end
 
     create_table(:ip_leases) do
@@ -164,8 +158,9 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:ip_address_id, :deleted_at]
+      unique [:ip_address_id, :is_deleted]
     end
 
     create_table(:ip_lease_containers) do
@@ -175,6 +170,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:ip_lease_container_ip_leases) do
@@ -186,8 +182,9 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:ip_lease_container_id, :ip_lease_id, :deleted_at]
+      unique [:ip_lease_container_id, :ip_lease_id, :is_deleted]
     end
 
     create_table(:ip_range_groups) do
@@ -199,6 +196,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:ip_ranges) do
@@ -213,6 +211,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:mac_addresses) do
@@ -224,8 +223,9 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      unique [:mac_address, :deleted_at]
+      unique [:mac_address, :is_deleted]
     end
 
     create_table(:mac_leases) do
@@ -238,6 +238,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:networks) do
@@ -255,8 +256,9 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
-      index [:ipv4_network, :ipv4_prefix, :deleted_at]
+      index [:ipv4_network, :ipv4_prefix, :is_deleted]
     end
 
     create_table(:network_services) do
@@ -274,6 +276,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:routes) do
@@ -297,6 +300,7 @@ Sequel.migration do
       DateTime :created_at, :null => false
       DateTime :updated_at, :null => false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:route_links) do
@@ -308,6 +312,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:security_groups) do
@@ -321,6 +326,21 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
+    end
+
+    create_table(:security_group_interfaces) do
+      primary_key :id
+
+      Integer :security_group_id, :index => true, :null => false
+      Integer :interface_id, :index => true, :null => false
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
+
+      unique [:interface_id, :security_group_id, :is_deleted]
     end
 
     create_table(:translations) do
@@ -335,6 +355,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
     end
 
     create_table(:translation_static_addresses) do
@@ -352,6 +373,7 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
       # We depend on SQL handling of null elements in unique to ensure
       # that equival addresses with non-null port numbers cannot be
@@ -361,7 +383,7 @@ Sequel.migration do
               :egress_ipv4_address,
               :ingress_port_number,
               :egress_port_number,
-              :deleted_at]
+              :is_deleted]
     end
 
     create_table(:tunnels) do
@@ -377,12 +399,13 @@ Sequel.migration do
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
 
       unique [:src_datapath_id,
               :dst_datapath_id,
               :src_interface_id,
               :dst_interface_id,
-              :deleted_at], :name => :tunnels_datapath_id_interface_id_index
+              :is_deleted], :name => :tunnels_datapath_id_interface_id_index
     end
 
     create_table(:vlan_translations) do
@@ -402,7 +425,6 @@ Sequel.migration do
                :datapath_networks,
                :datapath_route_links,
                :interfaces,
-               :interface_security_groups,
                :ip_addresses,
                :ip_leases,
                :ip_lease_containers,
@@ -416,6 +438,7 @@ Sequel.migration do
                :routes,
                :route_links,
                :security_groups,
+               :security_group_interfaces,
                :translation,
                :translation_static_addresses,
                :tunnels,

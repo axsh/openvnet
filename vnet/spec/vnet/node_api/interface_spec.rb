@@ -21,9 +21,12 @@ describe Vnet::NodeApi::Interface do
 
       expect(interface[:uuid]).to eq "if-test"
       model = Vnet::Models::Interface["if-test"]
-      expect(model.network.id).to eq network.id
-      expect(model.ipv4_address).to eq 1
-      expect(model.mac_address).to eq 2
+
+      ip_lease = model.ip_leases.first
+
+      expect(ip_lease.network.id).to eq network.id
+      expect(ip_lease.ipv4_address).to eq 1
+      expect(ip_lease.mac_lease.mac_address).to eq 2
       # expect(model.owner_datapath.id).to eq datapath.id
 
       events = MockEventHandler.handled_events
@@ -89,11 +92,14 @@ describe Vnet::NodeApi::Interface do
       expect(Vnet::Models::Interface[interface.id]).to be_nil
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 2
-      expect(events.first[:event]).to eq Vnet::Event::INTERFACE_DELETED_ITEM
-      expect(events.first[:options][:id]).to eq interface[:id]
-      expect(events.last[:event]).to eq Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS
-      expect(events.last[:options][:id]).to eq interface[:id]
+
+      expect(events.size).to eq 3
+      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_DELETED_ITEM
+      expect(events[0][:options][:id]).to eq interface[:id]
+      expect(events[1][:event]).to eq Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS
+      expect(events[1][:options][:id]).to eq interface[:id]
+      expect(events[2][:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
+      expect(events[2][:options][:id]).to eq interface[:id]
     end
   end
 end
