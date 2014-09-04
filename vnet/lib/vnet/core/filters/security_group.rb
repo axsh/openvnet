@@ -119,7 +119,7 @@ module Vnet::Core::Filters
     end
 
     def parse_rules(rules)
-      rules_array = split_multiline_rule_string(rules)
+      rules_array = split_multiline_rules_string(rules)
 
       # The model class doesn't allow rules with syntax errors to be saved but
       # we check here again in case somebody put them in the database without

@@ -41,7 +41,7 @@ module Vnet::Helpers::SecurityGroup
     rule.split(':')
   end
 
-  def split_multiline_rule_string(rules)
+  def split_multiline_rules_string(rules)
     # remove comments
     rules = rules.gsub(/#.*(\r\n|\r|\n|$)/, "")
 
