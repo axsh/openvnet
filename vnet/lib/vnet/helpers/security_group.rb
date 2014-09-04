@@ -41,8 +41,17 @@ module Vnet::Helpers::SecurityGroup
     rule.split(':')
   end
 
-  def split_rule_collection(rules)
-    rules = rules.gsub(/#.*(\r\n|\r|\n|$)/, "").split(/,|\r\n|\r|\n/)
-    rules.map { |r| r.strip }.select { |r| !r.empty? }
+  def split_multiline_rule_string(rules)
+    # remove comments
+    rules = rules.gsub(/#.*(\r\n|\r|\n|$)/, "")
+
+    # split based on comma or newline
+    rules = rules.split(/,|\r\n|\r|\n/)
+
+    # remove trailing or leading whitespace
+    rules.map! { |r| r.strip }
+
+    # remove empty lines
+    rules.select { |r| !r.empty? }
   end
 end

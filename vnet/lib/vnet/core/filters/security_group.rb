@@ -119,26 +119,21 @@ module Vnet::Core::Filters
     end
 
     def parse_rules(rules)
-      rules = split_rule_collection(rules).map { |r|
-        # The model class doesn't allow broken rules to be saved but we check
-        # here again in case somebody put them in the database without going
-        # through the model class' validation hooks
-        rule_is_valid, error_msg = validate_rule(r)
-        unless rule_is_valid
-          warn log_format(error_msg, " #{@uuid}: '#{r}'")
-          next
-        end
+      rules_array = split_multiline_rule_string(rules)
 
-        r
-      }.compact
+      # The model class doesn't allow rules with syntax errors to be saved but
+      # we check here again in case somebody put them in the database without
+      # going through the model class' validation hooks
+      remove_malformed_rules!(rules_array)
 
       normal_rules = []
       ref_hash = Hash.new
 
-      rules.each { |r|
+      rules_array.each { |r|
         protocol, port, ip_or_uuid = split_rule(r)
+        is_reference_rule = !(ip_or_uuid =~ uuid_regex).nil?
 
-        if is_valid_uuid?(ip_or_uuid)
+        if is_reference_rule
           referencee = Vnet::ModelWrappers::SecurityGroup.batch[ip_or_uuid].commit
 
           if referencee.nil?
@@ -159,8 +154,19 @@ module Vnet::Core::Filters
       [normal_rules, ref_hash]
     end
 
-    def is_valid_uuid?(uuid)
-      ! (uuid =~ uuid_regex).nil?
+    def remove_malformed_rules!(rules_array)
+      rules_array.map! { |r|
+        rule_is_valid, error_msg = validate_rule(r)
+
+        unless rule_is_valid
+          warn log_format(error_msg, " #{@uuid}: '#{r}'")
+          next
+        end
+
+        r
+      }
+
+      rules_array.compact!
     end
 
     def log_format(msg, values = nil)
