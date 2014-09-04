@@ -132,8 +132,9 @@ module Vnet::Core::Filters
         r
       }.compact
 
+      #TODO: refactor so we don't need to split the rule twice
       rules, reference = rules.partition { |r|
-        (r =~ REF_REGEX).nil?
+        (split_rule(r).last =~ uuid_regex).nil?
       }
 
       ref_hash = Hash.new.tap { |rh| reference.each { |r|

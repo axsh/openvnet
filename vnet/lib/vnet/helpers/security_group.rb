@@ -2,8 +2,11 @@
 require 'ipaddress'
 
 module Vnet::Helpers::SecurityGroup
-  REF_REGEX = /sg-.{1,8}[a-z1-9]$/
   COMMENT_REGEX = /^#.*/
+
+  def uuid_regex
+    Vnet::Endpoints::V10::Helpers::UUID.regex('sg')
+  end
 
   def validate_protocol(protocol)
     ['icmp', 'tcp', 'udp'].member?(protocol)
@@ -14,11 +17,11 @@ module Vnet::Helpers::SecurityGroup
   end
 
   def validate_ipv4_or_uuid(value)
-    (IPAddress(value) rescue false) || value == '0.0.0.0/0' || !(value =~ REF_REGEX).nil?
+    (IPAddress(value) rescue false) || value == '0.0.0.0/0' || !(value =~ uuid_regex).nil?
   end
 
   def is_reference_rule?(rule)
-    !(split_rule(rule)[2] =~ REF_REGEX).nil?
+    !(split_rule(rule)[2] =~ uuid_regex).nil?
   end
 
   def validate_rule(rule)
