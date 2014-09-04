@@ -132,28 +132,35 @@ module Vnet::Core::Filters
         r
       }.compact
 
-      #TODO: refactor so we don't need to split the rule twice
-      rules, reference = rules.partition { |r|
-        (split_rule(r).last =~ uuid_regex).nil?
+      normal_rules = []
+      ref_hash = Hash.new
+
+      rules.each { |r|
+        protocol, port, ip_or_uuid = split_rule(r)
+
+        if is_valid_uuid?(ip_or_uuid)
+          referencee = Vnet::ModelWrappers::SecurityGroup.batch[ip_or_uuid].commit
+
+          if referencee.nil?
+            warn log_format("'#{@uuid}': Unknown security group uuid in rule: '#{r}'")
+            next
+          end
+
+          ref_hash[referencee.id] = {
+            uuid: referencee.uuid,
+            rule: r,
+            ipv4s: referencee.batch.ip_addresses.commit
+          }
+        else
+          normal_rules << r
+        end
       }
 
-      ref_hash = Hash.new.tap { |rh| reference.each { |r|
-        referencee_uuid = split_rule(r).last
-        referencee = Vnet::ModelWrappers::SecurityGroup.batch[referencee_uuid].commit
+      [normal_rules, ref_hash]
+    end
 
-        if referencee.nil?
-          warn log_format("'#{@uuid}': Unknown security group uuid in rule: '#{r}'")
-          next
-        end
-
-        rh[referencee.id] = {
-          uuid: referencee.uuid,
-          rule: r,
-          ipv4s: referencee.batch.ip_addresses.commit
-        }
-      }}
-
-      [rules, ref_hash]
+    def is_valid_uuid?(uuid)
+      ! (uuid =~ uuid_regex).nil?
     end
 
     def log_format(msg, values = nil)
