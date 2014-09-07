@@ -21,11 +21,11 @@ Pre-setup
 
 Download the openvnet.repo file and put it to your /etc/yum.repos.d/ directory.
 
-    # curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.github.com/axsh/openvnet/master/openvnet.repo
+    # curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet.repo
 
 Download the openvnet-third-party.repo file and put it in your /etc/yum.repos.d/ directory.
 
-    # curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.github.com/axsh/openvnet/master/openvnet-third-party.repo
+    # curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet-third-party.repo
 
 Install epel-release.
 
