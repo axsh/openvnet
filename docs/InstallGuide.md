@@ -2,6 +2,13 @@
 
 # Preliminary Operations and Installation #
 
+> **Note:**
+This document explains the installation of OpenVNet.  However, it was
+written for an older version of OpenVNet and does not apply
+to the current version.  We plan to update this guide soon.  Until
+then, we are leaving this guide here and hope it will be useful for those
+who wish to learn more about the components that make up OpenVNet.
+
 
 Installation Requirements
 -------------------------
