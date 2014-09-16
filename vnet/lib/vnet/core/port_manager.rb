@@ -133,8 +133,8 @@ module Vnet::Core
       port = @items[params[:id]] || return
       return if port.installed?
 
-      interface_id = params[:interface_id] || return      
-      interface_mode = params[:interface_mode] || return      
+      interface_id = params[:interface_id] || return
+      interface_mode = params[:interface_mode] || return
 
       case interface_mode
       when :host, :edge, :patch

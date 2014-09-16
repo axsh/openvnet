@@ -67,7 +67,7 @@ module Vnet::Event
       end
 
       @event_queues.delete(id)
-      return 
+      return
 
     ensure
       @queue_statuses.delete(id)
