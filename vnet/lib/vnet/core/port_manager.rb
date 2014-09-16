@@ -142,7 +142,9 @@ module Vnet::Core
       when :vif
         prepare_port_vif(port, interface_id, interface_mode)
       else
-        error log_format('unknown interface mode', "name:#{port.port_name} interface_id:#{interface_id} interface_mode:#{interface_mode}")
+        error log_format('unknown interface mode',
+                         "name:#{port.port_name} interface_id:#{interface_id} " +
+                         "interface_mode:#{interface_mode}")
       end
     end
 
