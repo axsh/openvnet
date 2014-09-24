@@ -9,8 +9,10 @@ gem "faraday_middleware"
 gem "ipaddress"
 gem "parallel"
 
-gem "knife-solo"
-gem "berkshelf"
+group :development do
+  gem "knife-solo"
+  gem "berkshelf"
+end
 
 group :development, :test do
   gem "rspec"
