@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem "rspec"
 gem "rake"
 gem "net-ssh"
 gem "net-ssh-multi"
@@ -15,7 +16,6 @@ group :development do
 end
 
 group :development, :test do
-  gem "rspec"
   gem "pry-nav"
   gem "rb-readline", :require => false
 end
