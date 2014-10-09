@@ -3,7 +3,7 @@ OpenVNet
 
 Data Center Level Virtual Network Toolkit
 
-- http://openvnet.com
+- http://openvnet.org
 
 Getting Started
 ---------------
