@@ -159,7 +159,7 @@ module Vnet::Plugins
                     Vnet::NodeApi::Interface.find_all {|i|
                       i.ip_addresses.first == vnet_params[:ipv4_address] &&
                       i.mac_address == vnet_params[:mac_address]
-                    }
+                    }.first
                   elsif vnet_params[:uuid]
                     Vnet::NodeApi::Interface[vnet_params[:uuid]]
                   else
