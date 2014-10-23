@@ -80,5 +80,60 @@ stp_enable          : false
 
 ## Why does not OpenVNet release IP addresses for virtual machines?
 
-* Use [tcpdump](http://www.tcpdump.org/) to capture the DHCP packets sent from the virtual machines to the [Open vSwtich](http://openvswitch.org/)'s datapath.
 * Check Open vSwitch's flow tables to see the DHCP packets are handled properly (sometimes the packet is dropped by some rules).
+* Use [tcpdump](http://www.tcpdump.org/) to capture the DHCP packets sent from the virtual machines to the [Open vSwtich](http://openvswitch.org/)'s datapath.
+
+```
+[kemukins@11-vnetdev ~]$ sudo ovs-vsctl show
+7091f6a6-25dc-4d56-bfab-64ec1f8d7d97
+    Bridge "br0"
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+        fail_mode: standalone
+        Port "br0"
+            Interface "br0"
+                type: internal
+        Port "veth_kvm2lxc1"
+            Interface "veth_kvm2lxc1"
+        Port "eth0"
+            Interface "eth0"
+        Port "veth_kvm2lxc2"
+            Interface "veth_kvm2lxc2"
+    ovs_version: "2.3.0"
+[kemukins@11-vnetdev ~]$ sudo tcpdump -i veth_kvm2lxc2
+11:03:01.265152 IP6 :: > ff02::16: HBH ICMP6, multicast listener report v2, 1 group record(s), length 28
+11:03:01.631191 IP6 :: > ff02::1:ffe5:3504: ICMP6, neighbor solicitation, who has fe80::218:51ff:fee5:3504, length 24
+11:03:02.631175 IP6 fe80::218:51ff:fee5:3504 > ff02::2: ICMP6, router solicitation, length 16
+11:03:05.001001 IP 0.0.0.0.bootpc > 255.255.255.255.bootps: BOOTP/DHCP, Request from 00:18:51:e5:35:04 (oui Unknown), length 300
+11:03:05.034090 IP 10.0.0.5.bootps > 10.0.0.203.bootpc: BOOTP/DHCP, Reply, length 300
+11:03:05.064323 ARP, Request who-has 10.0.0.203 (Broadcast) tell 0.0.0.0, length 28
+11:03:06.064564 ARP, Request who-has 10.0.0.203 (Broadcast) tell 0.0.0.0, length 28
+11:03:06.631194 IP6 fe80::218:51ff:fee5:3504 > ff02::2: ICMP6, router solicitation, length 16
+11:03:07.810198 IP6 fe80::218:51ff:fee5:3504 > ff02::16: HBH ICMP6, multicast listener report v2, 1 group record(s), length 28
+11:03:10.631179 IP6 fe80::218:51ff:fee5:3504 > ff02::2: ICMP6, router solicitation, length 16
+```
+
+* Check /var/log/openvnet/vna.log to find the log DHCP release.
+
+```
+[kemukins@11-vnetdev ~]$ tail -f /var/log/openvnet/vna.log
+D, [2014-10-23T10:52:03.018259 #16740] DEBUG -- : 0x0000bbbbbbbbbbbb service/dhcp: DHCP send: DHCP_MSG_ACK
+D, [2014-10-23T10:52:03.034879 #16740] DEBUG -- : 0x0000bbbbbbbbbbbb service/dhcp: DHCP send (output:DHCP Message
+        FIELDS:
+                Transaction ID = 0xf86da613
+                Client IP address = 0.0.0.0
+                Your IP address = 10.0.0.203
+                Next server IP address = 10.0.0.5
+                Relay agent IP address = 0.0.0.0
+                Hardware address = 00:18:51:E5:35:04
+                Server Name = [""]
+                File Name = [""]
+        OPT:
+                 DHCP Message Type = DHCP ACK (5)
+                 Server Identifier = 10.0.0.5
+                 IP Address Lease Time = infinite seg
+                 Broadcast Adress = 10.0.0.255
+                 Subnet Mask = 255.255.255.0
+                 Domain Name Server = 127.0.0.1
+)
+```
