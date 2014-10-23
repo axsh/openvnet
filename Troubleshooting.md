@@ -6,9 +6,8 @@ Please try following:
 
 * Run [ping](http://linux.die.net/man/8/ping) between virtual machines.
 * Run [route](http://linux.die.net/man/8/route) to see IP routing table.
-* Check /var/log/openvnet/vna.log.
-* Check /var/log/openvnet/vnmgr.log.
-* Check MAC addresses don't duplicate.
+* Check /var/log/openvnet/vna.log, /var/log/openvnet/vnmgr.log, /var/log/openvnet/webapi.log.
+* Check if the MAC addresses are not duplicated.
 
 ```
 [kemukins@10-vnetdev ~]$ ifconfig|grep HWaddr
@@ -19,7 +18,7 @@ veth_kvm1lxc1 Link encap:Ethernet  HWaddr FE:D0:34:A9:89:F6
 veth_kvm1lxc2 Link encap:Ethernet  HWaddr FE:18:01:59:48:C2
 ```
 
-* See "interfaces", "mac_leases", "mac_addresses", "datapaths" DB table to know KVM's NICs are connected.
+* See "interfaces", "mac_leases", "mac_addresses" and "datapaths" DB tables to check if the virtual machines' NICs are associated.
 
 ```
 [kemukins@10-vnetdev ~]$ mysql -u root vnet
@@ -33,7 +32,7 @@ mysql> select * from datapaths;
 ```
 
 * Use "vnflows-monitor" https://github.com/axsh/openvnet/blob/master/vnet/bin/vnflows-monitor
-* Run "ovs-vsctl show" to see Open vSwitch bridge setting.
+* Run "ovs-vsctl show" to see the Open vSwitch datapath settings.
 
 ```
 [kemukins@10-vnetdev ~]$ sudo ovs-vsctl show
@@ -54,7 +53,7 @@ c715dd09-72e6-4ca3-a3bf-b8f796d0b5ac
     ovs_version: "2.3.0"
 ```
 
-* Run "ovs-vsctl list bridge" to see Open vSwitch datapath setting.
+* Run "ovs-vsctl list bridge" to see the Open vSwitch datapath settings.
 
 ```
 [kemukins@10-vnetdev ~]$ sudo ovs-vsctl list bridge
@@ -79,7 +78,7 @@ stp_enable          : false
 ```
 
 
-## Why not OpenVNet release IP address for virtual machines?
+## Why does not OpenVNet release IP addresses for virtual machines?
 
-* Use [tcpdump](http://www.tcpdump.org/) to see DHCP packet from virtual machines to [Open vSwtich](http://openvswitch.org/)'s bridge.
-* Check Open vSwtich's flow table to know DHCP packet (sometimes the packet is dropped by some rules)
+* Use [tcpdump](http://www.tcpdump.org/) to capture the DHCP packets sent from the virtual machines to the [Open vSwtich](http://openvswitch.org/)'s datapath.
+* Check Open vSwitch's flow tables to see the DHCP packets are handled properly (sometimes the packet is dropped by some rules).
