@@ -45,7 +45,7 @@ module Vnet::Models
     end
 
     def validate
-      rules && split_rule_collection(rules).each { |r|
+      rules && split_multiline_rules_string(rules).each { |r|
         valid, error_msg = validate_rule(r)
         errors.add(error_msg, "'#{r}'") unless valid
 
