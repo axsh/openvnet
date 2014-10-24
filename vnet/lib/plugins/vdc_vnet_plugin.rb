@@ -157,9 +157,9 @@ module Vnet::Plugins
 
       interface = if vnet_params[:ipv4_address] && vnet_params[:mac_address]
                     Vnet::NodeApi::Interface.find_all {|i|
-                      i.ipv4_address == vnet_params[:ipv4_address] &&
+                      i.ip_addresses.first == vnet_params[:ipv4_address] &&
                       i.mac_address == vnet_params[:mac_address]
-                    }
+                    }.first
                   elsif vnet_params[:uuid]
                     Vnet::NodeApi::Interface[vnet_params[:uuid]]
                   else
@@ -214,7 +214,7 @@ module Vnet::Plugins
 
       ip_lease = Vnet::NodeApi::IpLease.find(params)
       if ip_lease.nil?
-        Vnet::NodeApi::IpLease.create(params)
+        ip_lease = Vnet::NodeApi::IpLease.create(params)
       end
 
       ip_lease
@@ -377,12 +377,23 @@ module Vnet::Plugins
     end
 
     def find_gw_interface(network_uuid, ipv4_gw)
-      gateways = Vnet::NodeApi::Interface.find_all { |i|
+      g = Vnet::NodeApi::Interface.find_all { |i|
         i.enable_routing == true && i.mode == MODE_SIMULATED
-      }.select{ |i|
-        ip_lease = i.ip_leases.first
-        ip_lease.network && ip_lease.network.canonical_uuid == network_uuid
       }
+
+      # TODO debug and refactor
+      # some cases show g.empty? == true somehow
+      # although the records to retrieve exist in db
+      if g.empty?
+        g = Vnet::NodeApi::Interface.all.select { |i|
+          i.enable_routing == true && i.mode == MODE_SIMULATED
+        }
+      end
+
+      gateways = if g.empty? then []
+                 else
+                   g.select { |i| i.ip_leases.first.network.canonical_uuid == network_uuid }
+                 end
 
       if gateways.empty?
         info "no gateway interface has been found in the network(#{network_uuid})... create a gateway interface"
@@ -418,7 +429,6 @@ module Vnet::Plugins
                       mac_lease_id: interface.mac_leases.first.id,
                       interface_id: interface.id,
                       enable_routing: false)
-
       interface
     end
 
