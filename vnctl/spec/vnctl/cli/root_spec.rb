@@ -3,23 +3,15 @@ require 'spec_helper'
 
 describe Vnctl::Cli::Root do
   it "should display error message" do
-    content = capture(:stdout) { Vnctl::Cli::Root.start }
+    content = capture(:stdout) { Vnctl::Cli::Root.start(%w[datapaths]) }
     expect(content).to eq "Commands:
-  vnctl datapaths          # Operations for datapaths.
-  vnctl dns_services       # Operations for dns_services.
-  vnctl help [COMMAND]     # Describe available commands or one specific command
-  vnctl interfaces         # Operations for interfaces.
-  vnctl ip_leases          # Operations for ip leases.
-  vnctl ip_range_groups    # Operations for ip ranges.
-  vnctl lease_policies     # Operations for lease policies.
-  vnctl mac_leases         # Operations for mac leases.
-  vnctl network_services   # Operations for network services.
-  vnctl networks           # Operations for networks.
-  vnctl route_links        # Operations for route links.
-  vnctl routes             # Operations for routes.
-  vnctl security_groups    # Operations for security groups.
-  vnctl translations       # Operations for translations.
-  vnctl vlan_translations  # Operations for vlan translations.
+  vnctl datapaths add [OPTIONS] --display-name=DISPLAY_NAME --dpid=DPID --node-id=NODE_ID  # Creates a new datapaths.
+  vnctl datapaths del UUID(S)                                                              # Deletes one or more datapaths(s) separated by a space.
+  vnctl datapaths help [COMMAND]                                                           # Describe subcommands or one specific subcommand
+  vnctl datapaths modify UUID [OPTIONS]                                                    # Modify a datapaths.
+  vnctl datapaths networks OPTIONS                                                         # subcommand to manage networks in this datapaths.
+  vnctl datapaths route_links OPTIONS                                                      # subcommand to manage route_links in this datapaths.
+  vnctl datapaths show [UUID(S)]                                                           # Shows all or a specific set of datapaths(s).
 
 "
   end
