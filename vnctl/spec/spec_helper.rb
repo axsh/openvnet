@@ -6,7 +6,8 @@ Bundler.setup(:default)
 Bundler.require(:test)
 
 require 'thor'
-require "thor/group"
+require 'thor/group'
+require 'fuguta'
 require 'vnctl'
 
 # Set shell to basic
@@ -32,4 +33,25 @@ RSpec.configure do |config|
   end
 
   alias silence capture
+
+  Vnctl.class_eval do
+    paths = [
+      "/etc/openvnet/vnctl.conf",
+      "/etc/wakame-vnet/vnctl.conf"
+    ]
+
+    path = paths.find { |p| File.exists?(p) }
+
+    begin
+      @conf = case
+      when path
+        Vnctl::Configuration::Vnctl.load(path)
+      else
+        Vnctl::Configuration::Vnctl.new
+      end
+    rescue Fuguta::Configuration::ValidationError => e
+      abort("Validation Error: #{path}\n  " +
+        e.errors.join("\n  "))
+    end
+  end
 end
