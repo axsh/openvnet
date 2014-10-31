@@ -35,20 +35,11 @@ RSpec.configure do |config|
   alias silence capture
 
   Vnctl.class_eval do
-    paths = [
-      "/etc/openvnet/vnctl.conf",
-      "/etc/wakame-vnet/vnctl.conf"
-    ]
-
-    path = paths.find { |p| File.exists?(p) }
-
     begin
-      @conf = case
-      when path
-        Vnctl::Configuration::Vnctl.load(path)
-      else
-        Vnctl::Configuration::Vnctl.new
-      end
+      @conf = Vnctl::Configuration::Vnctl.new.tap { |c|
+        c.config[:webapi_uri] = '127.0.0.1'
+        c.config[:webapi_port] = 9123
+      }
     rescue Fuguta::Configuration::ValidationError => e
       abort("Validation Error: #{path}\n  " +
         e.errors.join("\n  "))
