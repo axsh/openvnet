@@ -32,4 +32,8 @@ module Vnctl
   module Configuration
     autoload :Vnctl, 'vnctl/configuration/vnctl'
   end
+
+  def self.run(*args)
+    Cli::Root.start(*args)
+  end
 end
