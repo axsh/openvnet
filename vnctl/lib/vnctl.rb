@@ -34,6 +34,10 @@ module Vnctl
   end
 
   def self.run(*args)
-    Cli::Root.start(*args)
+    begin
+      Cli::Root.start(*args)
+    rescue Errno::ECONNREFUSED => e
+      abort("Network Error: " + e.to_s)
+    end
   end
 end
