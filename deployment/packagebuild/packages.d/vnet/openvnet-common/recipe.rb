@@ -32,7 +32,6 @@ class OpenvnetCommon < FPM::Cookery::Recipe
     ).each do |f|
       opt('axsh/openvnet/vnet').install Dir["vnet/#{f}"]
     end
-    opt('axsh/openvnet/vnctl').install Dir["vnctl/*"]
 
     etc('/default').install Dir['deployment/conf_files/etc/default/openvnet']
     etc('/openvnet').install Dir['deployment/conf_files/etc/openvnet/common.conf']
