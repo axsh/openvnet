@@ -1,11 +1,11 @@
 specs_ext: [edge]
 nodes:
-  webapi: [192.168.2.61]
-  vnmgr: [192.168.2.61]
-  vna: [192.168.2.61, 192.168.2.62, 192.168.2.63, 192.168.2.60]
+  webapi: [192.168.3.91]
+  vnmgr: [192.168.3.91]
+  vna: [192.168.3.91, 192.168.3.92, 192.168.3.93, 192.168.3.90]
 
 webapi:
-  host: 192.168.2.61
+  host: 192.168.3.91
   port: 9090
 
 vnet_branch: master
@@ -19,19 +19,19 @@ log_level: debug
 dataset_options:
   physical_port: eth0
   edge_port: eth2
-  edge_ipv4_address: 172.16.20.10
-  edge_esxi_ipv4_address: 172.16.20.9
-  dp1_ipv4_address: 172.16.20.11
-  dp2_ipv4_address: 172.16.20.12
-  dp3_ipv4_address: 172.16.30.11
-  public_ipv4_network: 172.16.20.0
+  edge_ipv4_address: 172.16.90.9
+  edge_esxi_ipv4_address: 172.16.90.12
+  dp1_ipv4_address: 172.16.90.10
+  dp2_ipv4_address: 172.16.90.11
+  dp3_ipv4_address: 172.16.91.10
+  public_ipv4_network: 172.16.90.0
   public_ipv4_prefix: 24
-  public_ipv4_address1: 172.16.20.20
-  public_ipv4_address2: 172.16.20.21
-  public_dhcp_ipv4_address: 172.16.20.3
-  public_router_ipv4_address: 172.16.20.4
+  public_ipv4_address1: 172.16.90.20
+  public_ipv4_address2: 172.16.90.21
+  public_dhcp_ipv4_address: 172.16.90.3
+  public_router_ipv4_address: 172.16.90.4
 
 legacy_machines:
   legacy1:
-    ssh_ip: 192.168.2.64
+    ssh_ip: 192.168.3.94
     ipv4_address: 10.101.0.100
