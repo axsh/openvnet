@@ -3,9 +3,8 @@ class OpenvnetCommon < FPM::Cookery::Recipe
   description 'Common files for OpenVNet'
   homepage 'https://github.com/axsh/openvnet/'
   version (ENV['BUILD_TIME'] || Time.now.strftime('%Y%m%d%H%M%S')) + (ENV['GIT_COMMIT'] ? "git#{ENV['GIT_COMMIT'].slice(0, 7)}" : "spot")
-  #source   'https://github.com/axsh/openvnet/', :with => :git
   source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
-  #arch 'all' # should be x86_64
+
   depends *%w(
     zeromq3-devel
     openvnet-ruby
