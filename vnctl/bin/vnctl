@@ -7,12 +7,17 @@ require 'rubygems'
 
 setup_rb = File.expand_path('../../vendor/bundle/bundler/setup.rb', __FILE__)
 if File.exists?(setup_rb)
+  # This is used with a standalone bundle like would be the case when installing
+  # from rpm. Without this, you wouldn't be able to run vnctl without having
+  # /opt/axsh/openvnet as your working directory.
   require setup_rb
 
   require 'fuguta'
   require 'thor'
   require 'httparty'
 else
+  # This is here to support bundle install without the --standalone flag but
+  # requires vnctl to be called with /opt/axsh/openvnet as the working directory.
   require 'bundler/setup'
   Bundler.setup
   Bundler.require
