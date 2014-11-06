@@ -4,9 +4,19 @@
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
-require 'bundler/setup'
-Bundler.setup
-Bundler.require
+
+setup_rb = File.expand_path('../../vendor/bundle/bundler/setup.rb', __FILE__)
+if File.exists?(setup_rb)
+  require setup_rb
+
+  require 'fuguta'
+  require 'thor'
+  require 'httparty'
+else
+  require 'bundler/setup'
+  Bundler.setup
+  Bundler.require
+end
 
 require 'vnctl'
 

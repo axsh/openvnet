@@ -7,8 +7,8 @@ all: install-bundle
 dev: install-bundle-dev update-config
 
 install-bundle:
-	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle --without development test)
-	(cd $(CURDIR)/vnctl; bundle install --path vendor/bundle --without development test)
+	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle --without development test --standalone)
+	(cd $(CURDIR)/vnctl; bundle install --path vendor/bundle --without development test --standalone)
 
 clean-bundle:
 	(cd $(CURDIR)/vnet; bundle clean)
