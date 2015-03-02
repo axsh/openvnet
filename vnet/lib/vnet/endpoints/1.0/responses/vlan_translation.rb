@@ -8,6 +8,7 @@ module Vnet::Endpoints::V10::Responses
         translation = object.batch.translation.commit
         h[:translation_uuid] = translation.uuid if translation
         h[:mac_address] = object.mac_address_s
+        h[:network_uuid] = object.network.uuid
       }
     end
   end

@@ -27,16 +27,18 @@ describe "/vlan_translations" do
       )
     end
 
+    let!(:network) { Fabricate(:network) { uuid "nw-test1" } }
+
     accepted_params = {
       :uuid => "vt-jantje",
       :translation_uuid => "tr-test",
       :mac_address => "fe:e5:06:64:a6:c3",
       :vlan_id => 1,
-      :network_id => 1
+      :network_uuid => "nw-test1"
     }
 
-    required_params = []
-    uuid_params = [:uuid, :translation_uuid]
+    required_params = [:translation_uuid, :network_id]
+    uuid_params = [:uuid, :translation_uuid, :network_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
@@ -49,14 +51,16 @@ describe "/vlan_translations" do
       )
     end
 
+    let!(:network) { Fabricate(:network) { uuid "nw-test2" } }
+
     accepted_params = {
       :translation_uuid => "tr-test2",
       :mac_address => "fe:e5:06:64:a6:c2",
       :vlan_id => 2,
-      :network_id => 2
+      :network_uuid => "nw-test2"
     }
 
-    uuid_params = [:translation_uuid]
+    uuid_params = [:translation_uuid, :network_uuid]
 
     include_examples "PUT /:uuid", accepted_params, uuid_params
   end
