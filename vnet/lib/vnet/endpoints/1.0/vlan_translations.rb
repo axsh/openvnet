@@ -19,9 +19,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
 
   put_post_shared_params
   param_uuid M::VlanTranslation
+  param_options :translation_uuid, required: true
   param_options :network_uuid, required: true
   post do
-    parse_translation if params["translation_uuid"]
+    parse_translation
     uuid_to_id(M::Network, "network_uuid", "network_id")
 
     post_new(:VlanTranslation)
