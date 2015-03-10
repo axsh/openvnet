@@ -1,5 +1,2 @@
 --color
-#--format json
-#--format documentation
 --backtrace
---default_path spec
