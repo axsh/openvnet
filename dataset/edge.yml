@@ -153,6 +153,6 @@ vlan_translations:
 
   - uuid: vt-edge
     vlan_id: 100
-    network_id: 3
+    network_uuid: nw-vnet1
     translation_uuid: tr-edge
 
