@@ -1,13 +1,15 @@
 # OpenVNet #
 
-# Preliminary Operations and Installation #
+Overview
+--------
 
-> **Note:**
-This document explains the installation of OpenVNet.  However, it was
-written for an older version of OpenVNet and does not apply
-to the current version.  We plan to update this guide soon.  Until
-then, we are leaving this guide here and hope it will be useful for those
-who wish to learn more about the components that make up OpenVNet.
+Welcome to the world of OpenVNet! With this installation guide we help you
+create a very simple yet innovative virtual network environment.
+
+![vnet_minimum](https://www.dropbox.com/s/dezarv561fg7sdj/vnet_minimum.png?dl=1)
+
+On this environment there is one virtual network whose network address is 10.100.0.0/24
+and 2 virtual machines joining the virtual network.
 
 
 Requirements
