@@ -10,13 +10,13 @@ then, we are leaving this guide here and hope it will be useful for those
 who wish to learn more about the components that make up OpenVNet.
 
 
-Installation Requirements
--------------------------
+Requirements
+------------
 
 ### System Requirements
 
-+ RHEL 6.4
-+ Kernel 2.6.32-358.6.2.el6.x86_64
++ RHEL 6.5, 6.6
++ Kernel 2.6.32-431.el6.x86_64, 2.6.32-504.el6.x86_64
 
 ### Network Requirements
 
@@ -40,14 +40,14 @@ Install epel-release.
 
 
 OpenVNet installation
-------------------------
+---------------------
 
 Install OpenVNet.
 
     # yum install -y openvnet
 
-Initial Configuration
----------------------
+Configuration
+-------------
 
 ### Setup vnmgr
 
@@ -58,12 +58,14 @@ Modify the following section in /etc/openvnet/vnmgr.conf on the vnmgr node.
       addr {
         protocol "tcp"
         host "192.168.100.2"
+        public ""
         port 9102
       }
     }
 
-- **host** : The IP address or host name of the ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the vnmgr process is run on the same node as vna or webapi, specify a different value from vna and webapi.
+- **host** : The private IP address of the vnmgr node.
+- **port** : The port number for the ZeroMQ connection. If the vnmgr process is run on the same node as vna or webapi, specify a different value from vna and webapi.
+- **public** : The public IP address if exist.
 
 
 ### Setup vna
@@ -75,12 +77,16 @@ Modify the following section in /etc/openvnet/vna.conf on the node.
       addr {
         protocol "tcp"
         host "192.168.100.2"
+        public ""
         port 9103
       }
     }
 
-- **host** : The IP address or host name of the ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the vna process is run on the same node as vnmgr or webapi, specify a different value from vnmgr and webapi.
+- **host** : The private IP address of the vna node.
+- **port** : The port number for the ZeroMQ connection. If the vna process is run on the same node as vnmgr or webapi, specify a different value from vnmgr and webapi.
+- **public** : The public IP address if exist.
+
+The ID (written as `vna`) will be used later to create a database record for a datapath.
 
 
 ### Setup webapi
@@ -92,18 +98,58 @@ Modify the following section in /etc/openvnet/webapi.conf on the webapi node.
       addr {
         protocol "tcp"
         host "192.168.100.2"
+        public ""
         port 9101
       }
     }
 
-- **host** : The IP address or host name of the ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the webapi process is run on the same node as vnmgr or vna, specify a different value from vnmgr and vna.
+- **host** : The private IP address of the webapi node.
+- **port** : The port number for the ZeroMQ connection. If the webapi process is run on the same node as vnmgr or vna, specify a different value from vnmgr and vna.
+- **public** : The public IP address if exist.
+
+### Setup Datapath
+
+Datapath is one of the Linux kernel capabilities behaving similar to the Linux bridge.
+Save the following net-script in `/etc/sysconfig/network-scripts` directory as `ifcfg-br0`. However you need to pay attention to several parameters.
+
+* IPADDRESS
+
+The IP address of the datapath.
+
+* datapath-id
+
+The datapath ID that the Open vSwitch will use. Set unique 16 hex digits as you like.
+
+```
+DEVICE=br0
+DEVICETYPE=ovs
+TYPE=OVSBridge
+ONBOOT=yes
+BOOTPROTO=static
+IPADDR=172.16.20.41
+NETMASK=255.255.255.0
+HOTPLUG=no
+OVS_EXTRA="
+ set bridge     ${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
+ set bridge     ${DEVICE} other_config:disable-in-band=true --
+ set bridge     ${DEVICE} other-config:datapath-id=0000aaaaaaaaaaaa --
+ set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
+ set-fail-mode  ${DEVICE} standalone --
+ set-controller ${DEVICE} tcp:127.0.0.1:6633
+"
+```
+
+Start `openvswitch` service and `ifup` the datapath.
+
+```
+# service openvswitch start
+# ifup br0
+```
 
 
-Configuring Database
---------------------
+### Setup Database
 
-Modify the following section in /etc/openvnet/common.conf on all nodes.
+Modify the following section in /etc/openvnet/common.conf on the vnmgr nodes.
 
     db {
       adapter "mysql2"
@@ -116,12 +162,11 @@ Modify the following section in /etc/openvnet/common.conf on all nodes.
 
 - **host** : The IP address of the node running mysqld.
 - **database** : The database name.
-- **port** : The port number for connecting with mysqld. If necessary.
-- **user** : The user name for connecting.
-- **password** : The password for connecting.
+- **port** : The port number for mysqld. If necessary.
+- **user** : The user name for mysqld.
+- **password** : The password for mysqld.
 
-Creating Database
------------------
+### Create Database
 
 Before creating the database, you need to launch the mysql server.
 
@@ -131,11 +176,65 @@ To automatically launch the mysql server, execute the following command.
 
     # chkconfig mysqld on
 
-Create Database
+Create database
 
     # mysqladmin -uroot create vnet
     # cd /opt/axsh/openvnet/vnet
     # bundle exec rake db:init
+
+Start vnmgr and webapi
+
+    # initctl start vnet-vnmgr
+    # initctl start vnet-webapi
+
+To insert the database records use `vnctl`
+
+```
+# cd /opt/axsh/openvnet/vnctl
+# bundle install --path vendor/bundle
+```
+
+From now on you need to create a couple of database records to launch a simple OpenVNet environment.
+
+#### Datapath
+
+```
+# ./bin/vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
+```
+
+* dpid
+
+The datapath ID specified in `/etc/sysconfig/network-scripts/ifcfg-br0`
+
+* node-id
+
+The ID of the vna written in `/etc/openvnet/vna.conf`
+
+
+#### Network
+
+```
+# ./vnctl networks add --uuid nw-test1 --display-name testnet1 --ipv4-network 10.100.0.0 --ipv4-prefix 24 --network-mode virtual
+```
+
+* ipv4-network
+
+The network address.
+
+* ipv4-prefix
+
+The IPv4 network prefix. (default 24)
+
+* network-mode
+
+The mode of the network to create. Use `virtual` in case of creating virtual network.
+
+#### Interface
+
+```
+# ./vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-vnet1 --ipv4-address 10.100.0.10 --port-name inst1
+# ./vnctl interfaces add --uuid if-inst2 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:02 --network-uuid nw-vnet1 --ipv4-address 10.100.0.11 --port-name inst2
+```
 
 
 Start the OpenVNet services
@@ -162,8 +261,8 @@ Install the following operation system and kernel.
 + Kernel 2.6.32-358.6.2.el6.x86_64
 
 
-Installation and Setup of OpenVNet
------------------------------------
+Install and Setup of OpenVNet
+-----------------------------
 
 ### Network interfaces setup
 
