@@ -1,4 +1,3 @@
-
 Overview
 --------
 
@@ -268,6 +267,25 @@ Start vna
 ```
 
 OpenVNet writes its logs in the /var/log/openvnet directory. If there's a problem starting any of the services, you can find its log files there.
+
+If it launches vna successfully you can see `is_connected: true` by `ovs-vsctl show` such as following.
+
+```
+fbe23184-7f14-46cb-857b-3abf6153a6d6
+    Bridge "br0"
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+```
+
+This means the OpenFlow controller which is vna is now connected to the datapath. After the connection between the OpenFlow controller and the
+datapath is established it starts installing the flows on the datapath. You can see the flows by `vnflows-monitor`.
+
+```
+# cd /opt/axsh/openvnet/vnet/bin
+# ./vnflows-monitor
+```
+
+It may require you to setup `PATH` environment variable to find the path for ruby. OpenVNet uses its own ruby binary which is in `/opt/axsh/openvnet/ruby/bin` directory.
 
 
 
