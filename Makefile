@@ -7,13 +7,16 @@ all: install-bundle
 dev: install-bundle-dev update-config
 
 install-bundle:
-	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle --without development test)
+	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle --without development test --standalone)
+	(cd $(CURDIR)/vnctl; bundle install --path vendor/bundle --without development test --standalone)
 
 clean-bundle:
 	(cd $(CURDIR)/vnet; bundle clean)
+	(cd $(CURDIR)/vnctl; bundle clean)
 
 install-bundle-dev:
 	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle)
+	(cd $(CURDIR)/vnctl; bundle install --path vendor/bundle)
 
 install: update-config
 	mkdir -p $(DSTDIR)/opt/axsh/openvnet
@@ -45,6 +48,8 @@ remove-config:
 clean:
 	rm -rf $(CURDIR)/vnet/vendor
 	rm -rf $(CURDIR)/vnet/.bundle
+	rm -rf $(CURDIR)/vnctl/vendor
+	rm -rf $(CURDIR)/vnctl/.bundle
 
 build-rpm: build-rpm-third-party build-rpm-vnet
 
