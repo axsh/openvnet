@@ -21,8 +21,10 @@ describe Vnet::Core::TunnelManager do
       (1..3).map { |i|
         dp_self = Fabricate("datapath_#{i}")
 
-        interface = Fabricate("interface_dp#{i}eth0",
-                              owner_datapath_id: dp_self.id)
+        interface = Fabricate("interface_dp#{i}eth0")
+        Fabricate(:interface_port_eth0,
+                  interface_id: interface.id,
+                  datapath_id: dp_self.id)
 
         if i != 1
           active_interface = Fabricate(:active_interface,
@@ -55,12 +57,16 @@ describe Vnet::Core::TunnelManager do
 
         if2_id = dp.dp_info.active_interface_manager.retrieve(interface_id: 2)[:interface_id]
         if3_id = dp.dp_info.active_interface_manager.retrieve(interface_id: 3)[:interface_id]
-        if1_id = dp.dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id
+        if1_id = dp.dp_info.interface_manager.load_local_interface(1).id
 
         sleep(0.3)
 
-        dp.added_flows.clear
+        dp.dp_info.added_flows.clear
       end
+    end
+
+    let(:dp_info) do
+      datapath.dp_info
     end
 
     # TODO: Make some tests fail when the tunnel port is loaded but
@@ -70,7 +76,7 @@ describe Vnet::Core::TunnelManager do
 
       dp_info.tunnel_manager.update(event: :updated_interface,
                                     interface_event: :set_host_port_number,
-                                    interface_id: dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0').id,
+                                    interface_id: 1,
                                     port_number: 1)
     end
 
@@ -135,12 +141,12 @@ describe Vnet::Core::TunnelManager do
       host_datapath_networks
       # host_port_1
 
-      added_flows = datapath.added_flows.uniq
+      added_flows = dp_info.added_flows.uniq
       # added_flows.each { |flow| pp flow.inspect }
 
-      datapath.added_tunnels.each { |tunnel| pp tunnel.inspect }
+      dp_info.added_tunnels.each { |tunnel| pp tunnel.inspect }
 
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       expect(added_flows.size).to eq 7
     end
 
@@ -148,17 +154,19 @@ describe Vnet::Core::TunnelManager do
       host_datapath_networks
       remote_datapath_networks_1
 
-      datapath.added_flows.clear
+      sleep(0.3)
+
+      dp_info.added_flows.clear
 
       host_port_1
 
       sleep(0.3)
 
-      added_flows = datapath.added_flows.uniq
+      added_flows = dp_info.added_flows.uniq
       added_flows.each { |flow| pp flow.inspect }
 
       expect(datapath.dp_info.added_tunnels.size).to eq 1
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       expect(added_flows.size).to eq 1
 
       # expect(added_flows[0]).to eq Vnet::Openflow::Flow.create(
@@ -184,7 +192,7 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      datapath.added_flows.clear
+      dp_info.added_flows.clear
 
       tunnel_manager.update(event: :set_tunnel_port_number,
                             port_name: datapath.dp_info.added_tunnels[0][:tunnel_name],
@@ -192,10 +200,10 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      added_flows = datapath.added_flows.uniq
+      added_flows = dp_info.added_flows.uniq
       # added_flows.each { |flow| pp flow.inspect }
 
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       expect(added_flows.size).to eq 1
 
       # expect(added_flows[0]).to eq Vnet::Openflow::Flow.create(
@@ -230,8 +238,10 @@ describe Vnet::Core::TunnelManager do
       (1..3).map { |i|
         dp_self = Fabricate("datapath_#{i}")
 
-        interface = Fabricate("interface_dp#{i}eth0",
-                              owner_datapath_id: dp_self.id)
+        interface = Fabricate("interface_dp#{i}eth0")
+        Fabricate(:interface_port_eth0,
+                  interface_id: interface.id,
+                  datapath_id: dp_self.id)
 
         mac_lease = Fabricate(:mac_lease,
                               interface: interface,
@@ -262,17 +272,21 @@ describe Vnet::Core::TunnelManager do
 
         dp.create_mock_datapath_map
 
-        dp.dp_info.active_interface_manager.retrieve(interface_id: 2)[:interface_id]
-        dp.dp_info.active_interface_manager.retrieve(interface_id: 3)[:interface_id]
-        dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        dp_info.active_interface_manager.retrieve(interface_id: 2)[:interface_id]
+        dp_info.active_interface_manager.retrieve(interface_id: 3)[:interface_id]
+        dp_info.interface_manager.load_local_interface(1).id
       }
     }
+
+    let(:dp_info) do
+      datapath.dp_info
+    end
 
     subject do
       datapath.dp_info.tunnel_manager.tap do |tm|
         dp_info = datapath.dp_info
 
-        if_dp1eth0 = dp_info.interface_manager.retrieve(uuid: 'if-dp1eth0')
+        if_dp1eth0 = dp_info.interface_manager.detect(uuid: 'if-dp1eth0')
         expect(if_dp1eth0)
 
         dp_info.tunnel_manager.update(event: :updated_interface,
@@ -299,16 +313,16 @@ describe Vnet::Core::TunnelManager do
         }
 
         sleep(0.3)
-        datapath.added_flows.clear
-        datapath.deleted_flows.clear
+        dp_info.added_flows.clear
+        dp_info.deleted_flows.clear
       end
     end
 
     it "should delete tunnel when the network is deleted on the local datapath" do
       subject
 
-      added_flows = datapath.added_flows.uniq
-      deleted_flows = datapath.deleted_flows
+      added_flows = dp_info.added_flows.uniq
+      deleted_flows = dp_info.deleted_flows
       # added_flows.each { |flow| pp flow.inspect }
       # deleted_flows.each { |flow| pp flow.inspect }
 
@@ -329,12 +343,12 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      added_flows = datapath.added_flows.uniq
-      deleted_flows = datapath.deleted_flows
+      added_flows = dp_info.added_flows.uniq
+      deleted_flows = dp_info.deleted_flows
       # added_flows.each { |flow| pp flow.inspect }
       # deleted_flows.each { |flow| pp flow.inspect }
 
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       # expect(added_flows.size).to eq 0
       expect(deleted_flows.size).to eq 2
 
@@ -363,8 +377,8 @@ describe Vnet::Core::TunnelManager do
       }
 
       sleep(0.3)
-      datapath.added_flows.clear
-      datapath.deleted_flows.clear
+      dp_info.added_flows.clear
+      dp_info.deleted_flows.clear
 
       [[5, 3, 1, 3, 3, 'removed_remote_datapath_network'],
       ].each { |index, datapath_id, network_id, interface_id, ip_lease_id, event|
@@ -383,12 +397,12 @@ describe Vnet::Core::TunnelManager do
 
       sleep(0.3)
 
-      added_flows = datapath.added_flows.uniq
-      deleted_flows = datapath.deleted_flows
+      added_flows = dp_info.added_flows.uniq
+      deleted_flows = dp_info.deleted_flows
       added_flows.each { |flow| pp flow.inspect }
       deleted_flows.each { |flow| pp flow.inspect }
 
-      expect(datapath.added_ovs_flows.size).to eq 0
+      expect(dp_info.added_ovs_flows.size).to eq 0
       # expect(added_flows.size).to eq 0
       # expect(deleted_flows.size).to eq 2
 

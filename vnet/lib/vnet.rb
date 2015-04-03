@@ -28,6 +28,7 @@ module Vnet
   autoload :ItemDpBase,           'vnet/item_base'
   autoload :ItemDpUuid,           'vnet/item_base'
   autoload :Manager,              'vnet/manager'
+  autoload :LookupParams,         'vnet/manager_modules'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
 
@@ -42,6 +43,7 @@ module Vnet
   module Constants
     autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
+    autoload :MacAddressPrefix, 'vnet/constants/mac_address_prefix'
     autoload :Network, 'vnet/constants/network'
     autoload :NetworkService, 'vnet/constants/network_service'
     autoload :Openflow, 'vnet/constants/openflow'
@@ -66,6 +68,8 @@ module Vnet
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Interface, 'vnet/core/interface'
     autoload :InterfaceManager, 'vnet/core/interface_manager'
+    autoload :InterfacePort, 'vnet/core/interface_port'
+    autoload :InterfacePortManager, 'vnet/core/interface_port_manager'
     autoload :Manager, 'vnet/core/manager'
     autoload :Network, 'vnet/core/network'
     autoload :NetworkManager, 'vnet/core/network_manager'
@@ -117,6 +121,10 @@ module Vnet
       autoload :Patch, 'vnet/core/interfaces/patch'
       autoload :Simulated, 'vnet/core/interfaces/simulated'
       autoload :Vif, 'vnet/core/interfaces/vif'
+    end
+
+    module InterfacePorts
+      autoload :Base, 'vnet/core/interface_ports/base'
     end
 
     module Networks
@@ -181,9 +189,11 @@ module Vnet
     autoload :Errors, 'vnet/endpoints/errors'
     autoload :ResponseGenerator, 'vnet/endpoints/response_generator'
     autoload :CollectionResponseGenerator, 'vnet/endpoints/response_generator'
+
     module V10
       autoload :Helpers, 'vnet/endpoints/1.0/helpers'
       autoload :VnetAPI, 'vnet/endpoints/1.0/vnet_api'
+
       module Responses
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
@@ -191,6 +201,7 @@ module Vnet
         autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfacePort, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :IpLeaseContainer, 'vnet/endpoints/1.0/responses/ip_lease_container'
@@ -216,6 +227,7 @@ module Vnet
         autoload :DnsServiceCollection, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecordCollection, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfacePortCollection, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :IpLeaseContainerCollection, 'vnet/endpoints/1.0/responses/ip_lease_container'
@@ -253,7 +265,7 @@ module Vnet
     autoload :DnsService, 'vnet/models/dns_service'
     autoload :DnsRecord, 'vnet/models/dns_record'
     autoload :Interface, 'vnet/models/interface'
-    autoload :InterfaceSecurityGroup, 'vnet/models/interface_security_group'
+    autoload :InterfacePort, 'vnet/models/interface_port'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
     autoload :IpLeaseContainer, 'vnet/models/ip_lease_container'
@@ -274,6 +286,7 @@ module Vnet
     autoload :Route, 'vnet/models/route'
     autoload :RouteLink, 'vnet/models/route_link'
     autoload :SecurityGroup, 'vnet/models/security_group'
+    autoload :SecurityGroupInterface, 'vnet/models/security_group_interface'
     autoload :Taggable, 'vnet/models/base'
     autoload :Translation, 'vnet/models/translation'
     autoload :TranslationStaticAddress, 'vnet/models/translation_static_address'
@@ -291,7 +304,7 @@ module Vnet
     autoload :DnsRecord, 'vnet/model_wrappers/dns_record'
     autoload :Helpers, 'vnet/model_wrappers/helpers'
     autoload :Interface, 'vnet/model_wrappers/interface'
-    autoload :InterfaceSecurityGroup, 'vnet/model_wrappers/interface_security_group'
+    autoload :InterfacePort, 'vnet/model_wrappers/interface_port'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
     autoload :IpLeaseContainer, 'vnet/model_wrappers/ip_lease_container'
@@ -312,6 +325,7 @@ module Vnet
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
+    autoload :SecurityGroupInterface, 'vnet/model_wrappers/security_group_interface'
     autoload :Translation, 'vnet/model_wrappers/translation'
     autoload :TranslationStaticAddress, 'vnet/model_wrappers/translation'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
@@ -323,16 +337,18 @@ module Vnet
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
 
-    autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :Base, 'vnet/node_api/base'
+    autoload :EventBase, 'vnet/node_api/event_base'
+
+    autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
-    autoload :DatapathNetwork, 'vnet/node_api/datapath_network.rb'
-    autoload :DatapathRouteLink, 'vnet/node_api/datapath_route_link.rb'
-    autoload :DcSegment, 'vnet/node_api/models.rb'
+    autoload :DatapathGeneric, 'vnet/node_api/datapath_generic.rb'
+    autoload :DatapathNetwork, 'vnet/node_api/datapath_generic.rb'
+    autoload :DatapathRouteLink, 'vnet/node_api/datapath_generic.rb'
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'
-    autoload :InterfaceSecurityGroup, 'vnet/node_api/interface_security_group'
+    autoload :InterfacePort, 'vnet/node_api/interface_port.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :IpLeaseContainer, 'vnet/node_api/ip_lease_container'
@@ -345,13 +361,14 @@ module Vnet
     autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models.rb'
     autoload :MacAddress, 'vnet/node_api/models.rb'
     autoload :MacLease, 'vnet/node_api/mac_lease.rb'
-    autoload :Network, 'vnet/node_api/models.rb'
+    autoload :Network, 'vnet/node_api/network.rb'
     autoload :NetworkService, 'vnet/node_api/network_service.rb'
     autoload :Route, 'vnet/node_api/route.rb'
-    autoload :RouteLink, 'vnet/node_api/models.rb'
+    autoload :RouteLink, 'vnet/node_api/route_link.rb'
     autoload :SecurityGroup, 'vnet/node_api/security_group'
+    autoload :SecurityGroupInterface, 'vnet/node_api/security_group_interface'
     autoload :Translation, 'vnet/node_api/translation.rb'
-    autoload :TranslationStaticAddress, 'vnet/node_api/translation.rb'
+    autoload :TranslationStaticAddress, 'vnet/node_api/translation_static_address.rb'
     autoload :Tunnel, 'vnet/node_api/tunnel.rb'
     autoload :VlanTranslation, 'vnet/node_api/translation.rb'
   end
@@ -378,7 +395,7 @@ module Vnet
   end
 
   module Plugins
-    autoload :VdcVnetPlugin, 'vnet/plugins/vdc_vnet_plugin'
+    autoload :VdcVnetPlugin, 'plugins/vdc_vnet_plugin'
   end
 
   module Services

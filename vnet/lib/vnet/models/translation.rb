@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
   class Translation < Base
     taggable 'tr'
 
-    many_to_one :interface
+    plugin :paranoia_is_deleted
 
     one_to_many :translation_static_addresses
+    one_to_many :vlan_translations
 
-    subset(:alives, {})
+    many_to_one :interface
+
+    plugin :association_dependencies,
+    # 0001_origin
+    translation_static_addresses: :destroy,
+    vlan_translations: :destroy
 
   end
-
 end

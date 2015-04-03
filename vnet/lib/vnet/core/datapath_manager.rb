@@ -63,6 +63,8 @@ module Vnet::Core
       case filter
       when :id, :uuid, :dpid
         proc { |id, item| value == item.send(filter) }
+      when :host
+        proc { |id, item| item.mode == :host }
       else
         raise NotImplementedError, filter
       end
@@ -72,16 +74,23 @@ module Vnet::Core
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
       filter << {dpid: params[:dpid]} if params.has_key? :dpid
+      filter << {host: @dp_info.dpid} if params.has_key? :host
       filter
     end
 
     def item_initialize(item_map)
-      item_class =
-        if item_map.dpid == @dp_info.dpid
-          Datapaths::Host
-        else
-          Datapaths::Remote
+      if item_map.dpid == @dp_info.dpid
+        item_class = Datapaths::Host
+
+        if internal_detect(host: true)
+          warn log_format('host datapath already loaded')
+          # TODO: Do something..
+          return
         end
+
+      else
+        item_class = Datapaths::Remote
+      end
 
       item_class.new(dp_info: @dp_info, map: item_map)
     end
@@ -91,6 +100,7 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
+      # TODO: Make events.
       item_map.batch.datapath_networks.commit.each do |dpn_map|
         publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
       end
@@ -123,8 +133,6 @@ module Vnet::Core
       network_id = params[:network_id] || return
       return if @active_networks.has_key? network_id
 
-      info log_format("activating network #{network_id}")
-
       @active_networks[network_id] = {
       }
 
@@ -142,8 +150,6 @@ module Vnet::Core
       network_id = params[:network_id] || return
       network = @active_networks.delete(network_id) || return
 
-      info log_format("deactivating network #{network_id}")
-
       @items.select { |id, item|
         item.has_active_network?(network_id)
       }.each { |id, item|
@@ -159,7 +165,7 @@ module Vnet::Core
 
       if item.nil?
         # TODO: Make sure we don't look here...
-        return item_by_params(id: params[:id])
+        return internal_retrieve(id: params[:id])
       end
 
       case 
@@ -180,13 +186,13 @@ module Vnet::Core
     # REMOVED_DATAPATH_NETWORK on queue 'item.id'
     def removed_datapath_network(params)
       item = internal_detect_by_id(params) || return
-      dpn_map = params[:dpn_map] || return
+      network_id = params[:network_id] || return
 
-      item.remove_active_network(dpn_map.network_id)
-      item.deactivate_network(network_id) unless @active_networks[network_id]
+      item.remove_active_network(network_id)
+      item.deactivate_network_id(network_id)
 
       if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
+        publish(REMOVED_DATAPATH, id: item.id)
       end
     end
 
@@ -196,6 +202,8 @@ module Vnet::Core
 
       network_id = params[:network_id] || return
       network = @active_networks[network_id]
+
+      info log_format("activating datapath network #{network_id}")
 
       item.activate_network_id(network_id) if network
     end
@@ -207,10 +215,12 @@ module Vnet::Core
       network_id = params[:network_id] || return
       network = @active_networks[network_id]
 
-      item.deactivate_network_id(network_id) unless network
+      info log_format("deactivating datapath network #{network_id}")
+
+      item.deactivate_network_id(network_id)
 
       if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: dpn_map.datapath_id)
+        publish(REMOVED_DATAPATH, id: item.id)
       end
     end
 
@@ -228,7 +238,7 @@ module Vnet::Core
         next if dpn_map.datapath_id == @datapath_info.id
         next if @items[dpn_map.datapath_id]
 
-        self.async.item_by_params(id: dpn_map.datapath_id)
+        self.async.internal_retrieve(id: dpn_map.datapath_id)
       }
     end
 
@@ -240,8 +250,6 @@ module Vnet::Core
     def activate_route_link(params)
       route_link_id = params[:route_link_id] || return
       return if @active_route_links.has_key? route_link_id
-
-      info log_format("activating route link #{route_link_id}")
 
       @active_route_links[route_link_id] = {
       }
@@ -260,8 +268,6 @@ module Vnet::Core
       route_link_id = params[:route_link_id] || return
       route_link = @active_route_links.delete(route_link_id) || return
 
-      info log_format("deactivating route link #{route_link_id}")
-
       @items.select { |id, item|
         item.has_active_route_link?(route_link_id)
       }.each { |id, item|
@@ -277,7 +283,7 @@ module Vnet::Core
 
       if item.nil?
         # TODO: Make sure we don't loop here...
-        return item_by_params(id: params[:id])
+        return internal_retrieve(id: params[:id])
       end
 
       case 
@@ -298,14 +304,13 @@ module Vnet::Core
     # REMOVED_DATAPATH_ROUTE_LINK on queue 'item.id'
     def removed_datapath_route_link(params)
       item = internal_detect_by_id(params) || return
+      route_link_id = params[:route_link_id] || return
 
-      dprl_map = params[:dprl_map] || return
-
-      item.remove_active_route_link(dprl_map.route_link_id)
-      item.deactivate_route_link(route_link_id) unless @active_route_links[route_link_id]
+      item.remove_active_route_link(route_link_id)
+      item.deactivate_route_link_id(route_link_id)
 
       if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: dprl_map.datapath_id) # TODO FOOO...
+        publish(REMOVED_DATAPATH, id: item.id)
       end
     end
 
@@ -324,10 +329,10 @@ module Vnet::Core
       route_link_id = params[:route_link_id] || return
       route_link = @active_route_links[route_link_id]
 
-      item.deactivate_route_link_id(route_link_id) unless route_link
+      item.deactivate_route_link_id(route_link_id)
 
       if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: dprl_map.datapath_id) # TODO FOOOO....
+        publish(REMOVED_DATAPATH, id: item.id)
       end
     end
 
@@ -345,7 +350,7 @@ module Vnet::Core
         next if dprl_map.datapath_id == @datapath_info.id
         next if @items[dprl_map.datapath_id]
 
-        self.async.item_by_params(id: dprl_map.datapath_id)
+        self.async.internal_retrieve(id: dprl_map.datapath_id)
       }
     end
 

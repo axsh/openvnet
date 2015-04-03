@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class IpRange < Base
     taggable 'ipr'
 
     many_to_one :ip_range_group
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
     def_dataset_method(:containing_range) { |begin_range,end_range|
       new_dataset = self

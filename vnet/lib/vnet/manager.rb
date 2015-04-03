@@ -11,6 +11,7 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
+    include Vnet::LookupParams
 
     def initialize(info, options = {})
       @items = {}
@@ -19,7 +20,7 @@ module Vnet
 
     def retrieve(params)
       begin
-        item_to_hash(item_by_params(params))
+        item_to_hash(internal_retrieve(params))
       rescue Celluloid::Task::TerminatedError => e
         raise e
       rescue Exception => e
@@ -94,10 +95,15 @@ module Vnet
         raise("Manager.set_datapath_info called twice.")
       end
 
+      if datapath_info.nil? || datapath_info.id.nil?
+        raise("Manager.set_datapath_info received invalid datapath info.")
+      end
+
       @datapath_info = datapath_info
 
       # We need to update remote interfaces in case they are now in
       # our datapath.
+      initialized_datapath_info
     end
 
     #
@@ -134,9 +140,21 @@ module Vnet
       raise NotImplementedError
     end
 
+    def initialized_datapath_info
+    end
+
+    def cleared_datapath_info
+    end
+
     #
     # Filters:
     #
+
+    # We explicity initialize each proc parts into the method's local
+    # context, and create the block by referencing those for
+    # optimization reasons.
+    #
+    # Properly verify the speed of any changes to the implementation.
 
     def match_item_proc(params)
       case params.size
@@ -148,14 +166,21 @@ module Vnet
         part_1 = match_item_proc_part(part_1)
         part_2 = match_item_proc_part(part_2)
         part_1 && part_2 &&
-          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) }
+          proc { |id, item|
+          part_1.call(id, item) &&
+          part_2.call(id, item)
+        }
       when 3
         part_1, part_2, part_3 = params.to_a
         part_1 = match_item_proc_part(part_1)
         part_2 = match_item_proc_part(part_2)
         part_3 = match_item_proc_part(part_3)
         part_1 && part_2 && part_3 &&
-          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) }
+          proc { |id, item|
+          part_1.call(id, item) &&
+          part_2.call(id, item) &&
+          part_3.call(id, item)
+        }
       when 4
         part_1, part_2, part_3, part_4 = params.to_a
         part_1 = match_item_proc_part(part_1)
@@ -163,7 +188,12 @@ module Vnet
         part_3 = match_item_proc_part(part_3)
         part_4 = match_item_proc_part(part_4)
         part_1 && part_2 && part_3 && part_4 &&
-          proc { |id, item| part_1.call(id, item) && part_2.call(id, item) && part_3.call(id, item) && part_4.call(id, item) }
+          proc { |id, item|
+          part_1.call(id, item) &&
+          part_2.call(id, item) &&
+          part_3.call(id, item) &&
+          part_4.call(id, item)
+        }
       when 0
         proc { |id, item| true }
       else
@@ -205,7 +235,7 @@ module Vnet
       item && item.to_hash
     end
 
-    def item_by_params(params)
+    def internal_retrieve(params)
       item = internal_detect(params)
       return item if item
 
@@ -228,6 +258,18 @@ module Vnet
     # Default install/uninstall methods:
     #
 
+    def item_pre_install(item, item_map)
+    end
+
+    def item_post_install(item, item_map)
+    end
+
+    def item_pre_uninstall(item)
+    end
+
+    def item_post_uninstall(item)
+    end
+
     def load_item(params)
       item_map = params[:item_map] || return
       item_id = item_map.id || return
@@ -237,34 +279,29 @@ module Vnet
 
       item_pre_install(item, item_map)
       item.try_install
+
+      if item.invalid?
+        debug log_format("installation failed, marked invalid " + item.pretty_id, item.pretty_properties)
+        # TODO: Do some more cleanup here.
+        return
+      end
+
       item_post_install(item, item_map)
 
       resume_event_tasks(:loaded, item_id)
     end
 
-    def item_pre_install(item, item_map)
-    end
-
-    def item_post_install(item, item_map)
-    end
-
     def unload_item(params)
-      debug log_format("uninstalling", params.inspect)
-
       item_id = (params && params[:id]) || return
       item = @items.delete(item_id) || return
+
+      debug log_format("uninstalling " + item.pretty_id, item.pretty_properties)
 
       item_pre_uninstall(item)
       item.try_uninstall
       item_post_uninstall(item)
 
-      debug log_format("uninstalled " + item.pretty_id, item.pretty_properties)
-    end
-
-    def item_pre_uninstall(item)
-    end
-
-    def item_post_uninstall(item)
+      resume_event_tasks(:unloaded, item_id)
     end
 
     #
@@ -335,6 +372,24 @@ module Vnet
       @items[item_id]
     end
 
+    def internal_detect_by_id_with_error(params)
+      item_id = (params && params[:id])
+
+      if item_id.nil?
+        log_format("missing id")
+        return
+      end
+
+      item = @items[item_id]
+
+      if item.nil?
+        log_format("missing item", "id:#{item_id}")
+        return
+      end
+
+      item
+    end
+
     def internal_select(params)
       @items.select(&match_item_proc(params))
     end
@@ -363,7 +418,7 @@ module Vnet
       match_item_id = item.id
 
       create_event_task(:unloaded, max_wait) { |item_id|
-        item_id == match_item_id ? true : nil
+        (item_id == match_item_id) ? true : nil
       }
     end
 
@@ -380,7 +435,7 @@ module Vnet
 
       return if !push_message(item_id, params[:message])
 
-      item = item_by_params(id: item_id)
+      item = internal_retrieve(id: item_id)
       return if item.nil?
 
       return item

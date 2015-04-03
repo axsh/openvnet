@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
+
+  # TODO: Convert to EventBase.
+
   class DnsService < Base
     class << self
       def create(options)

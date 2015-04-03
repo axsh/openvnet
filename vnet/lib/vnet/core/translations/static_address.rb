@@ -19,6 +19,14 @@ module Vnet::Core::Translations
       true
     end
 
+    def pretty_static_address(sa_tr)
+      "sa_id:#{sa_tr[:static_address_id]}" +
+        (sa_tr[:route_link_id] ? " route_link_id:#{sa_tr[:route_link_id]}" : '') +
+        " ipv4_address:#{sa_tr[:ingress_ipv4_address]}->#{sa_tr[:egress_ipv4_address]}" +
+        (sa_tr[:ingress_port_number] || sa_tr[:egress_port_number] ?
+         " port:#{sa_tr[:ingress_port_number]}->#{sa_tr[:egress_port_number]}" : '')
+    end
+
     def install
       return if @interface_id.nil?
 
@@ -26,8 +34,9 @@ module Vnet::Core::Translations
       flows_for_enable_passthrough(flows) if @passthrough == true
 
       @static_addresses.each { |id, translation|
-        debug log_format('install translation flow', translation.inspect)
-
+        debug log_format('installing translation for ' + self.pretty_id,
+                         pretty_static_address(translation))
+                         
         next unless valid_translation?(translation)
 
         flows_for_ingress_translation(flows, translation)

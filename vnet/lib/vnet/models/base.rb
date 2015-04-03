@@ -3,11 +3,15 @@
 require 'sequel/model'
 require 'sequel/plugins/mac_address'
 require 'sequel/plugins/ip_address'
-require 'sequel/plugins/paranoia_with_unique_constraint'
+require 'sequel/plugins/paranoia_is_deleted'
+require 'sequel/plugins/dataset_associations.rb'
+require 'sequel/plugins/many_through_many.rb'
 
 Sequel.extension(:core_extensions)
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class DeleteRestrictionError < StandardError; end
 
   # Sequal::Model plugin to inject the Taggable feature to the model
@@ -510,6 +514,8 @@ module Vnet::Models
 
   class Base < Sequel::Model
 
+    plugin :dataset_associations
+    plugin :many_through_many
     plugin :validation_helpers
 
     db.extension :pagination

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
 describe Vnet::Models::DatapathNetwork do
@@ -20,13 +21,6 @@ describe Vnet::Models::DatapathNetwork do
     Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_2.id, :network_id => 2, :mac_address => mac_address_2_2)
     Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 1, :mac_address => mac_address_3_1)
     Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 2, :mac_address => mac_address_3_2)
-  end
-
-  describe "datapath_networks_on_specific_datapath" do
-    subject { Vnet::Models::DatapathNetwork.on_specific_datapath(datapath_1).all }
-    it { expect(subject.size).to eq 2 }
-    it { expect(subject.first).to be_a Vnet::Models::DatapathNetwork }
-    it { expect(subject.first.mac_address).to eq mac_address_1_1 }
   end
 
   describe "datapath_networks_in_the_same_network" do

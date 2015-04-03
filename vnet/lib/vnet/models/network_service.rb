@@ -4,16 +4,23 @@ module Vnet::Models
   class NetworkService < Base
     taggable 'ns'
 
-    many_to_one :interface
+    plugin :paranoia_is_deleted
 
-    subset(:alives, {})
+    many_to_one :interface
+    one_to_many :dns_services
+
+    plugin :association_dependencies,
+    # 0002_services
+    dns_services: :destroy
 
     def validate
+      # TODO: Use constants.
       validates_includes [
         "dhcp",
         "dns",
         "router",
       ], :type
     end
+
   end
 end

@@ -3,8 +3,8 @@
 module Vnet::Constants::Interface
   MODE_EDGE      = 'edge'
   MODE_HOST      = 'host'
-  MODE_INTERNAL  = 'internal' 
-  MODE_PATCH     = 'patch' 
+  MODE_INTERNAL  = 'internal'
+  MODE_PATCH     = 'patch'
   MODE_REMOTE    = 'remote'
   MODE_SIMULATED = 'simulated'
   MODE_VIF       = 'vif'

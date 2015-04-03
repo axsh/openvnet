@@ -11,7 +11,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     param :enable_route_translation, :Boolean
   end
 
-  fill = [ :owner_datapath, { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
+  fill = [ { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
+
+  #
+  # Base:
+  #
 
   put_post_shared_params
   param_uuid M::Interface
@@ -45,17 +49,75 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     update_by_uuid(:Interface, fill)
   end
 
+  param_uuid M::Interface
+  param :new_uuid, :String
+  put '/:uuid/rename' do
+    updated_object = M::Interface.batch.rename(params['uuid'], params['new_uuid']).commit
+    respond_with([updated_object])
+  end
+
+  #
+  # Ports:
+  #
+
+  def self.port_put_post_shared_params
+    param_uuid M::Datapath, :datapath_uuid
+    param :port_name, :String
+    param :singular, :Boolean
+  end
+
+  port_put_post_shared_params
+  param_uuid M::Interface
+  post '/:uuid/ports' do
+    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
+    datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
+
+    # TODO: Move to node_api.
+    params['interface_mode'] = interface.mode
+
+    remove_system_parameters
+
+    interface_port = M::InterfacePort.create_with_uuid(params)
+    respond_with(interface_port)
+  end
+
+  get '/:uuid/ports' do
+    show_relations(:Interface, :interface_ports)
+  end
+
+  port_put_post_shared_params
+  delete '/:uuid/ports' do
+    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
+    datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
+
+    filter = {
+      interface_id: interface.id,
+    }
+    filter[:datapath_id] = datapath.id if datapath
+    filter[:port_name] = params['port_name'] if params.has_key?('port_name')
+    filter[:singular] = params['singular'] if params.has_key?('singular')
+
+    ports = M::InterfacePort.batch.where(filter).all.commit
+    ports.each { |r| M::InterfacePort.destroy(r.id) }
+
+    respond_with(ports)
+  end
+
+  #
+  # Security Groups:
+  #
+
   post '/:uuid/security_groups/:security_group_uuid' do
     security_group = check_syntax_and_get_id(M::SecurityGroup, 'security_group_uuid', 'security_group_id')
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
 
-    M::InterfaceSecurityGroup.filter(:interface_id => interface.id,
+    M::SecurityGroupInterface.filter(:interface_id => interface.id,
       :security_group_id => security_group.id).empty? ||
     raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
 
     remove_system_parameters
 
-    M::InterfaceSecurityGroup.create(params)
+    M::SecurityGroupInterface.create(params)
 
     respond_with(R::SecurityGroup.generate(security_group))
   end
@@ -68,12 +130,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     interface = check_syntax_and_pop_uuid(M::Interface)
     security_group = check_syntax_and_pop_uuid(M::SecurityGroup, 'security_group_uuid')
 
-    relations = M::InterfaceSecurityGroup.batch.filter(:interface_id => interface.id,
-      :security_group_id => security_group.id).all.commit
+    deleted = M::SecurityGroupInterface.destroy_where(interface_id: interface.id,
+                                                      security_group_id: security_group.id)
 
-    # We call the destroy class method so we go trough NodeApi and send an
-    # update isolation event. As opposed to calling the destroy instance method
-    relations.each { |r| M::InterfaceSecurityGroup.destroy(r.id) }
-    respond_with([security_group.uuid])
+    respond_with(deleted > 0 ? [security_group.uuid] : [])
   end
+
 end

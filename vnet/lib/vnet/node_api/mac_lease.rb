@@ -1,22 +1,9 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
-  class MacLease < Base
+  class MacLease < EventBase
     class << self
-      def create(options)
-        options = options.dup
-        mac_lease = transaction do
-          model_class.create(options)
-        end
-
-        dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, id: mac_lease.interface_id,
-                                           mac_lease_id: mac_lease.id,
-                                           mac_address: mac_lease.mac_address)
-
-        mac_lease
-      end
 
       def update(uuid, options)
-        options = options.dup
         deleted_mac_address = false
 
         mac_lease = transaction do
@@ -29,28 +16,38 @@ module Vnet::NodeApi
         end
 
         if deleted_mac_address
-          dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, id: mac_lease.interface_id,
-                                               mac_lease_id: mac_lease.id)
-
-          dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, id: mac_lease.interface_id,
-                                             mac_lease_id: mac_lease.id,
-                                             mac_address: mac_lease.mac_address)
+          dispatch_deleted_item_events(mac_lease)
+          dispatch_created_item_events(mac_lease)
         end
 
         mac_lease
       end
 
-      def destroy(uuid)
-        mac_lease = model_class[uuid].tap do |model|
-          transaction do
-            model.destroy
-          end
-        end
+      #
+      # Internal methods:
+      #
 
-        dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, id: mac_lease.interface_id, mac_lease_id: mac_lease.id)
+      private
 
-        mac_lease
+      def dispatch_created_item_events(model)
+        dispatch_event(INTERFACE_LEASED_MAC_ADDRESS,
+                       id: model.interface_id,
+                       mac_lease_id: model.id,
+                       mac_address: model.mac_address)
       end
+
+      def dispatch_deleted_item_events(model)
+        dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS,
+                       id: model.interface_id,
+                       mac_lease_id: model.id)
+
+        filter = { mac_lease_id: model.id }
+        
+        # 0001_origin
+        IpLease.dispatch_deleted_where(filter, model.deleted_at)
+        # _mac_address: ignore
+      end
+
     end
   end
 end

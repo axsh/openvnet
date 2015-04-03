@@ -16,6 +16,10 @@ module Vnet::Endpoints::V10::Helpers
   end
 
   module UUID
+    def self.regex(prefix)
+      /^#{prefix}-[a-z0-9]{1,16}$/
+    end
+
     def pop_uuid(model, key = "uuid", fill = {})
       uuid = @params.delete(key)
       model.batch[uuid].commit(:fill => fill) || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
@@ -42,6 +46,8 @@ module Vnet::Endpoints::V10::Helpers
 
     def uuid_to_id(model, uuid_key = "uuid", id_key = "id", fill = {})
       model = pop_uuid(model, uuid_key, fill)
+      model.id || raise(E::InvalidID, "#{model.name.split("::").last}#uuid: #{uuid}")
+
       @params[id_key] = model.id
 
       model

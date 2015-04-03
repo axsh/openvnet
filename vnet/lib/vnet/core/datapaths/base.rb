@@ -45,8 +45,12 @@ module Vnet::Core::Datapaths
     end
 
     def to_hash
+      # TODO: Remove active_networks?
       Vnet::Core::Datapath.new(id: @id,
                                uuid: @uuid,
+                               display_name: @display_name,
+                               node_id: @node_id,
+
                                active_networks: @active_networks.values)
     end
 
@@ -112,7 +116,7 @@ module Vnet::Core::Datapaths
 
       @dp_info.add_flows(flows)
 
-      debug log_format("adding to #{@uuid}/#{@id} datapath network #{dpn_map.network_id}")
+      debug log_format("adding datapath network #{dpn_map.network_id} to #{self.pretty_id}")
     end
 
     def remove_active_network(network_id)
@@ -121,7 +125,7 @@ module Vnet::Core::Datapaths
 
       @dp_info.del_cookie(dp_network[:id] | COOKIE_TYPE_DP_NETWORK)
 
-      debug log_format("removing from #{@uuid}/#{@id} datapath network #{network_id}")
+      debug log_format("removing datapath network #{network_id} from #{self.pretty_id}")
     end
 
     #
@@ -157,7 +161,16 @@ module Vnet::Core::Datapaths
 
       @dp_info.add_flows(flows)
 
-      debug log_format("adding to #{@uuid}/#{@id} datapath route link #{dprl_map.route_link_id}")
+      debug log_format("adding datapath route link #{dprl_map.route_link_id} to #{self.pretty_id}")
+    end
+
+    def remove_active_route_link(route_link_id)
+      dp_route_link = @active_route_links.delete(route_link_id)
+      return false if dp_route_link.nil?
+
+      @dp_info.del_cookie(dp_route_link[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+
+      debug log_format("removing datapath route link #{route_link_id} from #{self.pretty_id}")
     end
 
     #

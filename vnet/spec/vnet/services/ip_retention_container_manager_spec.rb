@@ -13,7 +13,7 @@ describe Vnet::Services::IpRetentionContainerManager do
       end
     end
 
-    it "laod all database records into items" do
+    it "load all database records into items" do
       manager.async.send(:load_all_items)
 
       3.times do |i|

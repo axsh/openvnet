@@ -14,12 +14,19 @@ conf = Vnet::Configurations::Vnmgr.conf
 
 Vnet::Initializers::DB.run(conf.db_uri)
 
-DCell.start :id => conf.node.id, :addr => conf.node.addr_string,
+params = {
+  :id => conf.node.id,
+  :addr => conf.node.addr_string,
   :registry => {
     :adapter => conf.registry.adapter,
     :host => conf.registry.host,
     :port => conf.registry.port
   }
+}
+
+params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
+
+DCell.start(params)
 
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
@@ -29,7 +36,7 @@ DCell::Global[:rpc] = Celluloid::Actor[:rpc]
 DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
 
 conf.node.plugins.each do |plugin|
-  require File.join(::Vnet::ROOT, "lib/vnet/plugins/#{plugin}.rb")
+  require File.join(::Vnet::ROOT, "lib/plugins/#{plugin}.rb")
 end
 
 sleep

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
 describe Vnet::Models::Datapath do
@@ -6,27 +7,35 @@ describe Vnet::Models::Datapath do
   let(:datapath_2) { Fabricate(:datapath_2) }
   let(:datapath_3) { Fabricate(:datapath_3) }
 
-  let(:mac_address_1_1) { Fabricate(:mac_address) }
-  let(:mac_address_1_2) { Fabricate(:mac_address) }
-  let(:mac_address_2_1) { Fabricate(:mac_address) }
-  let(:mac_address_2_2) { Fabricate(:mac_address) }
-  let(:mac_address_3_1) { Fabricate(:mac_address) }
-  let(:mac_address_3_2) { Fabricate(:mac_address) }
+  let(:vnet_1) { Fabricate(:vnet_1) }
+  let(:vnet_2) { Fabricate(:vnet_2) }
+
+  let(:route_link_1) { Fabricate(:route_link_1) }
+  let(:route_link_2) { Fabricate(:route_link_2) }
 
   before(:each) do
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_1.id, :network_id => 1)
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_1.id, :network_id => 2)
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_2.id, :network_id => 1)
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_2.id, :network_id => 2).destroy
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 2)
+    datapath_1
+    datapath_2
+    datapath_3
+    vnet_1
+    vnet_2
+    route_link_1
+    route_link_2
   end
 
-  describe "peers" do
+  describe "datapath_networks" do
+    before(:each) do
+      Fabricate(:datapath_network_1_1)
+      Fabricate(:datapath_network_1_2)
+      Fabricate(:datapath_network_2_1)
+      Fabricate(:datapath_network_2_2).destroy
+      Fabricate(:datapath_network_3_2)
+    end
+
     context "non-deleted datapath" do
-      it "returns non-deleted peers" do
-        expect(datapath_1.peers).to eq [datapath_2, datapath_3]
-        expect(datapath_2.peers).to eq [datapath_1]
-        expect(datapath_3.peers).to eq [datapath_1]
+      it "returns non-deleted datapaths" do
+        expect(vnet_1.datapath_networks.map(&:datapath)).to eq [datapath_1, datapath_2]
+        expect(vnet_2.datapath_networks.map(&:datapath)).to eq [datapath_1, datapath_3]
       end
     end
 
@@ -35,11 +44,39 @@ describe Vnet::Models::Datapath do
         datapath_1.destroy
       end
 
-      it "returns non-deleted peers" do
-        expect(datapath_1.peers).to eq [datapath_2, datapath_3]
-        expect(datapath_2.peers).to eq []
-        expect(datapath_3.peers).to eq []
+      it "returns non-deleted datapaths" do
+        expect(vnet_1.datapath_networks.map(&:datapath)).to eq [datapath_2]
+        expect(vnet_2.datapath_networks.map(&:datapath)).to eq [datapath_3]
       end
     end
   end
+
+  describe "datapath_route_links" do
+    before(:each) do
+      Fabricate(:datapath_route_link_1_1)
+      Fabricate(:datapath_route_link_1_2)
+      Fabricate(:datapath_route_link_2_1)
+      Fabricate(:datapath_route_link_2_2).destroy
+      Fabricate(:datapath_route_link_3_2)
+    end
+
+    context "non-deleted datapath" do
+      it "returns non-deleted datapaths" do
+        expect(route_link_1.datapath_route_links.map(&:datapath)).to eq [datapath_1, datapath_2]
+        expect(route_link_2.datapath_route_links.map(&:datapath)).to eq [datapath_1, datapath_3]
+      end
+    end
+
+    context "deleted datapath" do
+      before(:each) do
+        datapath_1.destroy
+      end
+
+      it "returns non-deleted datapaths" do
+        expect(route_link_1.datapath_route_links.map(&:datapath)).to eq [datapath_2]
+        expect(route_link_2.datapath_route_links.map(&:datapath)).to eq [datapath_3]
+      end
+    end
+  end
+
 end

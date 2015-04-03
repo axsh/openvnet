@@ -57,9 +57,11 @@ module Vnet::Core::Translations
     private
 
     def network_id_by_mac(mac_address)
-      network_map = Vnet::ModelWrappers::Network.batch.find_by_mac_address(mac_address).commit
+      network_map = Vnet::ModelWrappers::MacAddress.batch[mac_address: mac_address].mac_lease.ip_leases.first.network.commit
+
       debug log_format("network_id_by_mac : mac_address => #{Trema::Mac.new(mac_address)}")
       debug log_format("network_id_by_mac : network_map => #{network_map.inspect}")
+
       return network_map && network_map.id
     end
 
@@ -106,7 +108,7 @@ module Vnet::Core::Translations
         actions = {:mod_vlan_vid => vlan_vids, :output => edge_port[:port_number]}
       end
 
-      dpn = MW::DatapathNetwork.batch.on_specific_datapath(@dp_info.datapath.datapath_info).all.commit.select { |t| t.network_id == src_network_id }
+      dpn = MW::Datapath.batch[id: @dp_info.datapath.datapath_info.id].datapath_networks.commit.select { |t| t.network_id == src_network_id }
       dpn_broadcast = dpn.first.broadcast_mac_address
 
       flows << Flow.create(TABLE_EDGE_SRC, 2, {

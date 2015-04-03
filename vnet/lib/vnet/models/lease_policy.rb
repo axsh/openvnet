@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
+
+  # TODO: Refactor.
   class LeasePolicy < Base
     taggable 'lp'
 
-    plugin :paranoia
+    plugin :paranoia_is_deleted
 
-    many_to_many :networks, :join_table => :lease_policy_base_networks
+    many_to_many :networks, :join_table => :lease_policy_base_networks, :conditions => "lease_policy_base_networks.deleted_at is null"
     one_to_many :lease_policy_base_networks
 
-    many_to_many :interfaces, :join_table => :lease_policy_base_interfaces
+    many_to_many :interfaces, :join_table => :lease_policy_base_interfaces, :conditions => "lease_policy_base_interfaces.deleted_at is null"
     one_to_many :lease_policy_base_interfaces
 
     one_to_many :lease_policy_ip_lease_containers
-    many_to_many :ip_lease_containers, :join_table => :lease_policy_ip_lease_containers
+    many_to_many :ip_lease_containers, :join_table => :lease_policy_ip_lease_containers, :conditions => "lease_policy_ip_lease_containers.deleted_at is null"
 
     one_to_many :lease_policy_ip_retention_containers
-    many_to_many :ip_retention_containers, :join_table => :lease_policy_ip_retention_containers
+    many_to_many :ip_retention_containers, :join_table => :lease_policy_ip_retention_containers, :conditions => "lease_policy_ip_retention_containers.deleted_at is null"
 
     plugin :association_dependencies,
       lease_policy_base_networks: :destroy,

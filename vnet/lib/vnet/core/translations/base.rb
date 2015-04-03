@@ -21,6 +21,11 @@ module Vnet::Core::Translations
       'translation/base'
     end
 
+    def pretty_properties
+      "interface_id:#{@interface_id}" +
+        (@passthrough == 1 ? ' passthrough' : '')
+    end
+
     def cookie
       @id | COOKIE_TYPE_TRANSLATION
     end

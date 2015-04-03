@@ -42,7 +42,7 @@ def mysql_opts(config)
     opts << "-h #{config.db.host}"
     opts << "-P #{config.db.port}"
     opts << "-u #{config.db.user}"
-    opts << "-p #{config.db.password}" if config.db.password && config.db.password.size > 0
+    opts << "--password=#{config.db.password}" if config.db.password && config.db.password.size > 0
     opts << "#{config.db.database}"
   end.join(" ")
 end

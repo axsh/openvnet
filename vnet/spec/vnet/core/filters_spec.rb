@@ -7,8 +7,9 @@ include Vnet::Openflow::FlowHelpers
 
 describe Vnet::Core::FilterManager do
   let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
-  let(:flows) { datapath.current_flows }
-  let(:deleted_flows) { datapath.deleted_flows }
+  let(:dp_info) { datapath.dp_info }
+  let(:flows) { dp_info.current_flows }
+  let(:deleted_flows) { dp_info.deleted_flows }
 
   let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
   let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
@@ -394,7 +395,8 @@ describe Vnet::Core::FilterManager do
     end
 
     context "with a remote interface" do
-      let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
+      # let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
+      let(:interface2) { Fabricate(:filter_interface) }
 
       it "doesn't apply the rule flows for the new interface" do
        expect(flows).not_to include rule_flow({
@@ -424,12 +426,12 @@ describe Vnet::Core::FilterManager do
       subject.apply_filters wrapper(interface)
       subject.apply_filters wrapper(interface2)
 
-      interface2.remove_security_group(group)
+      group.interfaces.delete(interface2)
 
       subject.removed_interface_from_sg(
         id: group.id,
         interface_id: interface2.id,
-        interface_owner_datapath_id: interface2.owner_datapath_id,
+        #interface_owner_datapath_id: interface2.owner_datapath_id,
       )
     end
 

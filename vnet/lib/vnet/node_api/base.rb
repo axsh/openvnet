@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+
 module Vnet::NodeApi
+
   class Base
     extend Vnet::Event::Dispatchable
 
@@ -26,6 +28,7 @@ module Vnet::NodeApi
 
       def destroy(uuid)
         model_class[uuid].tap do |model|
+          next if model.nil?
           transaction { model.destroy }
         end
       end
@@ -135,6 +138,8 @@ module Vnet::NodeApi
           data
         end
       end
+
     end
   end
+
 end

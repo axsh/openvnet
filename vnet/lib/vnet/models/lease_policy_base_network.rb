@@ -2,6 +2,8 @@
 
 module Vnet::Models
 
+  # TODO: Refactor.
+
   class LeasePolicyBaseNetwork < Base
 
     many_to_one :lease_policy

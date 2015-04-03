@@ -2,44 +2,22 @@
 
 module Vnet::NodeApi
 
-  class Translation < Base
+  class Translation < EventBase
     class << self
-      def create(options)
-        super.tap do |obj|
-          dispatch_event(TRANSLATION_CREATED_ITEM, obj.values)
-        end
+      private
+
+      def dispatch_created_item_events(model)
+        dispatch_event(TRANSLATION_CREATED_ITEM, model.to_hash)
       end
 
-      def destroy(uuid)
-        super.tap do |obj|
-          dispatch_event(TRANSLATION_DELETED_ITEM, id: obj.id)
-        end
-      end
-    end
-  end
+      def dispatch_deleted_item_events(model)
+        dispatch_event(TRANSLATION_DELETED_ITEM, id: model.id)
 
-  class TranslationStaticAddress < Base
-    class << self
-      def create(options)
-        super.tap do |obj|
-          dispatch_event(TRANSLATION_ADDED_STATIC_ADDRESS,
-                         id: obj.translation_id,
-                         static_address_id: obj.id,
-                         route_link_id: obj.route_link_id,
-                         ingress_ipv4_address: obj.ingress_ipv4_address,
-                         egress_ipv4_address: obj.egress_ipv4_address,
-                         ingress_port_number: obj.ingress_port_number,
-                         egress_port_number: obj.egress_port_number)
-        end
+        # 0001_origin
+        # translation_static_addresses: ignore, handled by main event
+        # vlan_translations: ignore, handled by main event
       end
 
-      def destroy(uuid)
-        super.tap do |obj|
-          dispatch_event(TRANSLATION_REMOVED_STATIC_ADDRESS,
-                         id: obj.translation_id,
-                         static_address_id: obj.id)
-        end
-      end
     end
   end
 

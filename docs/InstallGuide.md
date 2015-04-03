@@ -2,6 +2,13 @@
 
 # Preliminary Operations and Installation #
 
+> **Note:**
+This document explains the installation of OpenVNet.  However, it was
+written for an older version of OpenVNet and does not apply
+to the current version.  We plan to update this guide soon.  Until
+then, we are leaving this guide here and hope it will be useful for those
+who wish to learn more about the components that make up OpenVNet.
+
 
 Installation Requirements
 -------------------------
@@ -21,11 +28,11 @@ Pre-setup
 
 Download the openvnet.repo file and put it to your /etc/yum.repos.d/ directory.
 
-    # curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.github.com/axsh/openvnet/master/openvnet.repo
+    # curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet.repo
 
 Download the openvnet-third-party.repo file and put it in your /etc/yum.repos.d/ directory.
 
-    # curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.github.com/axsh/openvnet/master/openvnet-third-party.repo
+    # curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet-third-party.repo
 
 Install epel-release.
 

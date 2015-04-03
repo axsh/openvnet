@@ -119,40 +119,54 @@ module Vnet::Core::Filters
     end
 
     def parse_rules(rules)
-      rules = split_rule_collection(rules).map { |r|
-        # The model class doesn't allow broken rules to be saved but we check
-        # here again in case somebody put them in the database without going
-        # through the model class' validation hooks
+      rules_array = split_multiline_rules_string(rules)
+
+      # The model class doesn't allow rules with syntax errors to be saved but
+      # we check here again in case somebody put them in the database without
+      # going through the model class' validation hooks
+      remove_malformed_rules!(rules_array)
+
+      normal_rules = []
+      ref_hash = Hash.new
+
+      rules_array.each { |r|
+        protocol, port, ip_or_uuid = split_rule(r)
+        is_reference_rule = !(ip_or_uuid =~ uuid_regex).nil?
+
+        if is_reference_rule
+          referencee = Vnet::ModelWrappers::SecurityGroup.batch[ip_or_uuid].commit
+
+          if referencee.nil?
+            warn log_format("'#{@uuid}': Unknown security group uuid in rule: '#{r}'")
+            next
+          end
+
+          ref_hash[referencee.id] = {
+            uuid: referencee.uuid,
+            rule: r,
+            ipv4s: referencee.batch.ip_addresses.commit
+          }
+        else
+          normal_rules << r
+        end
+      }
+
+      [normal_rules, ref_hash]
+    end
+
+    def remove_malformed_rules!(rules_array)
+      rules_array.map! { |r|
         rule_is_valid, error_msg = validate_rule(r)
+
         unless rule_is_valid
           warn log_format(error_msg, " #{@uuid}: '#{r}'")
           next
         end
 
         r
-      }.compact
-
-      rules, reference = rules.partition { |r|
-        (r =~ REF_REGEX).nil?
       }
 
-      ref_hash = Hash.new.tap { |rh| reference.each { |r|
-        referencee_uuid = split_rule(r).last
-        referencee = Vnet::ModelWrappers::SecurityGroup.batch[referencee_uuid].commit
-
-        if referencee.nil?
-          warn log_format("'#{@uuid}': Unknown security group uuid in rule: '#{r}'")
-          next
-        end
-
-        rh[referencee.id] = {
-          uuid: referencee.uuid,
-          rule: r,
-          ipv4s: referencee.batch.ip_addresses.commit
-        }
-      }}
-
-      [rules, ref_hash]
+      rules_array.compact!
     end
 
     def log_format(msg, values = nil)

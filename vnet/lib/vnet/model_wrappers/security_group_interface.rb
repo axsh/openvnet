@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::ModelWrappers
-  class InterfaceSecurityGroup < Base
+  class SecurityGroupInterface < Base
   end
 end

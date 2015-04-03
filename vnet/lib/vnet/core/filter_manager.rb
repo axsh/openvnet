@@ -109,7 +109,7 @@ module Vnet::Core
 
       groups = interface.batch.security_groups.commit
       groups.each do |group|
-        item = item_by_params(id: group.id)
+        item = internal_retrieve(id: group.id)
 
         log_interface_added(interface.uuid, item.uuid)
 

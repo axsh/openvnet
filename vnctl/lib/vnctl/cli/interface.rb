@@ -30,7 +30,9 @@ module Vnctl::Cli
 
     define_show
     define_del
+    define_rename
 
     define_relation :security_groups
+
   end
 end

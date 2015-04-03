@@ -2,13 +2,7 @@
 
 module Vnet::NodeApi
 
-  class DcSegment < Base
-  end
-
   class IpAddress < Base
-  end
-
-  class IpLease < Base
   end
 
   class IpRange < Base
@@ -24,15 +18,6 @@ module Vnet::NodeApi
   end
 
   class MacAddress < Base
-  end
-
-  class Network < Base
-  end
-
-  class NetworkService < Base
-  end
-
-  class RouteLink < Base
   end
 
 end
