@@ -24,11 +24,19 @@ when :direct
   Vnet::Initializers::DB.run(conf.db_uri)
 end
 
-DCell.start(:id => conf.node.id, :addr => conf.node.addr_string,
+params = {
+  :id => conf.node.id,
+  :addr => conf.node.addr_string,
   :registry => {
     :adapter => conf.registry.adapter,
     :host => conf.registry.host,
-    :port => conf.registry.port })
+    :port => conf.registry.port
+  }
+}
+
+params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
+
+DCell.start(params)
 
 map '/api' do
   use Rack::Cors do

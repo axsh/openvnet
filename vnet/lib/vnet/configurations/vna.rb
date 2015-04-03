@@ -8,6 +8,7 @@ module Vnet::Configurations
       class Addr < Fuguta::Configuration
         param :protocol, :default => "tcp"
         param :host, :default => "127.0.0.1"
+        param :public, :default => ""
         param :port, :default => 9103
       end
 
@@ -15,6 +16,7 @@ module Vnet::Configurations
         def addr(&block)
           @config[:addr] = Addr.new.tap {|c| c.parse_dsl(&block) if block }
           @config[:addr_string] = "#{@config[:addr].protocol}://#{@config[:addr].host}:#{@config[:addr].port}"
+          @config[:pub_addr_string] = "#{@config[:addr].protocol}://#{@config[:addr].public}:#{@config[:addr].port}"
         end
       end
     end
