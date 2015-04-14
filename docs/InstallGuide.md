@@ -25,11 +25,11 @@ See architecture for more detail of how the OpenVNet works.
 
 ### Install OpenVNet Packages
 
-Download the openvnet.repo file and put it to your /etc/yum.repos.d/ directory.
+Download the openvnet.repo file and put it to your `/etc/yum.repos.d/` directory.
 
     # curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet.repo
 
-Download the openvnet-third-party.repo file and put it in your /etc/yum.repos.d/ directory.
+Download the openvnet-third-party.repo file and put it in your `/etc/yum.repos.d/` directory.
 
     # curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet-third-party.repo
 
@@ -73,8 +73,7 @@ Edit the file `/etc/openvnet/vnmgr.conf`
     }
 
 Modify the parameters `host` and `public` according to your environment. In order for
-the sample environment we leave those parameters as is. The detail of each parameter is
-following.
+the sample environment in the overview section we leave those parameters as is. The detail of each parameter is following.
 
 - **id** : The identifier of the OpenVNet's process. For example the paramter `id` in `vnmgr.conf` is applied to the vnmgr process. Specify universally unique string data in the world of the OpenVNet.
 
@@ -234,15 +233,18 @@ The IPv4 address which will be assigned to the network interface.
 OpenVNet associates an Open vSwitches port with a database record of the interface table if its `port-name` is corresponded to what you can see by `ovs-vsctl show`.
 
 
-Start vna
+### Launch Services
+
+The OpenVNet's processes(vnmgr, webapi and vna) are registered as upstart job.
+You can launch them by the following commands. Several of them may have already been launched in the last sections.
 
 ```
+# initctl start vnet-vnmgr
+# initctl start vnet-webapi
 # initctl start vnet-vna
 ```
 
-OpenVNet writes its logs in the /var/log/openvnet directory. If there's a problem starting any of the services, you can find its log files there.
-
-If it launches vna successfully you can see `is_connected: true` by `ovs-vsctl show` such as following.
+The log files are created in the /var/log/openvnet directory. See them if something bad happens. If the vna is successfully launched you can see `is_connected: true` by `ovs-vsctl show` such as following.
 
 ```
 fbe23184-7f14-46cb-857b-3abf6153a6d6
@@ -252,20 +254,21 @@ fbe23184-7f14-46cb-857b-3abf6153a6d6
 ```
 
 This means the OpenFlow controller which is vna is now connected to the datapath. After the connection between the OpenFlow controller and the
-datapath is established it starts installing the flows on the datapath. You can see the flows by `vnflows-monitor`.
-
-```
-# cd /opt/axsh/openvnet/vnet/bin
-# ./vnflows-monitor
-```
-
-It may require you to setup `PATH` environment variable to find ruby binary. OpenVNet uses its own ruby binary which is in `/opt/axsh/openvnet/ruby/bin` directory.
+datapath is established it starts installing the flows on the datapath.
 
 Verification
 -------
 
-By following all the instructions in the previous section, you already have the simple OpenVNet environment. In this section we are going to see network packets going through OpenFlow rules to reach
-from one LXC guest to another.
+By following all the instructions from the beginning to this section, you already have the sample environment. In this section, we are firstly going to play around the environment then secondary see network packets going through OpenFlow rules to reach
+from one guest to another.
+
+As a representation of the guest here we use [LXC](https://linuxcontainers.org), which helps users run multiple isolated Linux system containers. Any other virtualization technologies might be used, however we take LXC since it is easy to create/destroy/configure and simple enough to do this verification.
+
+Install LXC
+
+```
+# yum -y install lxc lxc-templates
+```
 
 Create 2 LXC guests
 
@@ -304,8 +307,7 @@ lxc.utsname = inst2
 lxc.autodev = 0
 ```
 
-Make sure that the IPv4 address and MAC address are the same as what you specify when you create interface
-database records.
+Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.
 
 Launch the LXC guests then enslave the tap interfaces to the datapath.
 
@@ -331,9 +333,17 @@ ping to inst2
 ```
 
 Meanwhile you can see which flows are selected by `vnflows-monitor`.
+Execute the following command on a lxc guest, then ping from one another.
 
 ```
 # ./vnflows-monitor c 0 d 1
+```
+
+You can see the whole flows by `vnflows-monitor`.
+
+```
+# cd /opt/axsh/openvnet/vnet/bin
+# ./vnflows-monitor
 ```
 
 
