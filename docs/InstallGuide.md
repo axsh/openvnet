@@ -270,6 +270,14 @@ Install LXC
 # yum -y install lxc lxc-templates
 ```
 
+Create and mount cgroup
+
+```
+# mkdir /cgroup
+# echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
+# mount /cgroup
+```
+
 Create 2 LXC guests
 
 ```
