@@ -2,17 +2,11 @@
 set -e
 
 user="vnet-vnmgr"
-group="vnet-vnmgr"
 logfile="/var/log/openvnet/vnmgr.log"
 
-if ! getent group "$group" > /dev/null 2>&1 ; then
-    addgroup --system "$group" --quiet
-fi
-
 if ! id "$user" > /dev/null 2>&1 ; then
-    adduser --system --no-create-home \
-	--ingroup "$group" --disabled-password \
-	--shell /bin/false "$user"
+    adduser --system --no-create-home --shell /bin/false "$user"
 fi
 
-install -o "$user" -g "$group" -m 0755 "$logfile"
+touch "$logfile"
+chown "$user"."$user" "$logfile"
