@@ -22,9 +22,12 @@ class OpenvnetWebapi < FPM::Cookery::Recipe
   end
 
   def install
+    puts "*" * 50
+    puts "Install OpenVNet webapi"
     opt('axsh/openvnet/vnet').install Dir["vnet/rack"]
     etc('/init').install Dir['deployment/conf_files/etc/init/vnet-webapi.conf']
     etc('/default').install Dir['deployment/conf_files/etc/default/vnet-webapi']
     etc('/openvnet').install Dir['deployment/conf_files/etc/openvnet/webapi.conf']
+    puts "*" * 50
   end
 end

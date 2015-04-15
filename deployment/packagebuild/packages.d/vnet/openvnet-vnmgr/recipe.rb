@@ -25,6 +25,7 @@ class OpenvnetVnmgr < FPM::Cookery::Recipe
 
   def install
     puts "*" * 50
+    puts "Install OpenVNet vnmgr"
     opt('axsh/openvnet/vnet/bin').install Dir["vnet/bin/vnmgr"]
     etc('/init').install Dir['deployment/conf_files/etc/init/vnet-vnmgr.conf']
     etc('/default').install Dir['deployment/conf_files/etc/default/vnet-vnmgr']
