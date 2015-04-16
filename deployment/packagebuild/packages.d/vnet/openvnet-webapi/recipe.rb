@@ -15,7 +15,7 @@ class OpenvnetWebapi < FPM::Cookery::Recipe
     /etc/openvnet/webapi.conf
   )
 
-  post_install 'post-install'
+  post_install 'post-install.sh'
 
   def build
   end
