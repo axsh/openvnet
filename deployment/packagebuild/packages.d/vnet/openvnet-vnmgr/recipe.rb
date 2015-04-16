@@ -18,7 +18,7 @@ class OpenvnetVnmgr < FPM::Cookery::Recipe
     /etc/openvnet/vnmgr.conf
   )
 
-  post_install 'post-install'
+  post_install 'post-install.sh'
 
   def build
   end
