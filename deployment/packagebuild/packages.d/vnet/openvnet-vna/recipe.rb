@@ -18,7 +18,7 @@ class OpenvnetVna < FPM::Cookery::Recipe
     /etc/openvnet/vna.conf
   )
 
-  post_install 'post-install'
+  post_install 'post-install.sh'
 
   def build
   end
