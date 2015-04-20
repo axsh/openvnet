@@ -3,3 +3,12 @@ source 'http://rubygems.org'
 gem 'thor'
 gem 'httparty'
 gem 'fuguta'
+
+group :development, :test do
+  gem "rake"
+  gem "rspec", '>= 2.14.0.rc1'
+  gem "rack-test"
+  gem "coveralls"
+  gem "pry-byebug"
+end
+

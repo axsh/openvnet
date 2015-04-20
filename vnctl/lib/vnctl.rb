@@ -32,4 +32,12 @@ module Vnctl
   module Configuration
     autoload :Vnctl, 'vnctl/configuration/vnctl'
   end
+
+  def self.run(*args)
+    begin
+      Cli::Root.start(*args)
+    rescue Errno::ECONNREFUSED => e
+      abort("Network Error: " + e.to_s)
+    end
+  end
 end

@@ -54,4 +54,4 @@ Vnctl.class_eval do
   end
 end
 
-Vnctl::Cli::Root.start
+Vnctl::run
