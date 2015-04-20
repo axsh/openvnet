@@ -33,22 +33,59 @@ module Vnet::NodeApi
         end
       end
 
+      # Events added during the transaction are guaranteed to not be dispatched until the transaction has finished.
+      def execute(method_name, *args, &block)
+        result = event_transaction do
+          self.__send__(method_name, *args, &block)
+        end
+        to_hash(result)
+      end
+
+      # Events added during the transaction are guaranteed to not be dispatched until the transaction has finished.
+      def execute_batch(*args)
+        methods = args.dup
+        options = methods.last.is_a?(Hash) ? methods.pop : {}
+        result = nil
+        event_transaction do
+          result = methods.inject(self) do |klass, method|
+            name, *args = method
+            klass.__send__(name, *args)
+          end
+        end
+        to_hash(result, options)
+      end
+
+      alias_method :dispatch_event_without_transaction, :dispatch_event
+      def dispatch_event(event, options = {})
+        if Thread.current[:event_transaction]
+          Thread.current[:event_queue] << { event: event, options: options }
+        else
+          dispatch_event_without_transaction(event, options)
+        end
+      end
+
+      protected
+
       def model_class(name = nil)
         Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
       end
 
-      def execute(method_name, *args, &block)
-        to_hash(self.__send__(method_name, *args, &block))
-      end
-
-      def execute_batch(*args)
-        methods = args.dup
-        options = methods.last.is_a?(Hash) ? methods.pop : {}
-        transaction do
-          to_hash(methods.inject(self) do |klass, method|
-            name, *args = method
-            klass.__send__(name, *args)
-          end, options)
+      def event_transaction(&block)
+        if Thread.current[:event_transaction]
+          yield
+        else
+          Thread.current[:event_transaction] = true
+          Thread.current[:event_queue] ||= []
+          begin
+            yield.tap do
+              Thread.current[:event_queue].each do |event|
+                dispatch_event_without_transaction(event[:event], event[:options])
+              end
+            end
+          ensure
+            Thread.current[:event_transaction] = false
+            Thread.current[:event_queue].clear
+          end
         end
       end
 
