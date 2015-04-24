@@ -33,6 +33,8 @@ module Vnet::Core
       @host_route_links = {}
       @remote_datapath_networks = {}
       @remote_datapath_route_links = {}
+
+      @mutex_create_tunnel = Mutex.new
     end
 
     def update(params)
@@ -295,7 +297,17 @@ module Vnet::Core
       info log_format("creating tunnel entry mode '#{tunnel_mode}'",
                       options.map { |k, v| "#{k}:#{v}" }.join(" "))
 
-      tunnel = MW::Tunnel.create(options.merge(mode: tunnel_mode))
+      if @mutex_create_tunnel.locked?
+        while @mutex_create_tunnel.locked? | @mutex_create_tunnel.owned? do
+          sleep(1)
+        end
+      end
+      @mutex_create_tunnel.synchronize {
+        tunnel = MW::Tunnel.find(options)
+        if !tunnel
+          tunnel = MW::Tunnel.create(options.merge(mode: tunnel_mode))
+        end
+      }
 
       internal_retrieve(options)
     end
