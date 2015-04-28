@@ -31,7 +31,7 @@ module Vnet::NodeApi
         # Only create a tunnel if it doesn't exist yet       
         tunnel = find(options)
         if !tunnel
-          tunnel = create(sanitize_options(options))
+          tunnel = create(options)
         end
         tunnel
       end
@@ -50,14 +50,6 @@ module Vnet::NodeApi
          dispatch_event(REMOVED_TUNNEL, id: model.id)
 
         # no dependencies
-      end
-
-      def sanitize_options(options)
-         sanitized = options.clone
-         sanitized[:mode] = "#{options[:mode]}"
-         logger.debug(" %%%%%% OPTIONS SANITIZED #{sanitized} %%%%%%")
-
-         sanitized
       end
 
     end

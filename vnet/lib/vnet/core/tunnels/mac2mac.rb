@@ -5,7 +5,7 @@ module Vnet::Core::Tunnels
   class Mac2Mac < Base
 
     def mode
-      :mac2mac
+      "mac2mac"
     end
 
     def log_type

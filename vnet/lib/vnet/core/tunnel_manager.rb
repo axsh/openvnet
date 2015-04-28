@@ -112,9 +112,9 @@ module Vnet::Core
 
       case
       when src_interface[:network_id] != dst_interface[:network_id]
-        :gre
+        "gre"
       when src_interface[:network_id] == dst_interface[:network_id]
-        :mac2mac
+        "mac2mac"
       else
         nil
       end
@@ -148,9 +148,9 @@ module Vnet::Core
 
       item_class =
         case tunnel_mode
-        when :gre     then Tunnels::Gre
-        when :mac2mac then Tunnels::Mac2Mac
-        when :unknown then Tunnels::Unknown
+        when "gre"     then Tunnels::Gre
+        when "mac2mac" then Tunnels::Mac2Mac
+        when "unknown" then Tunnels::Unknown
         else
           return
         end
