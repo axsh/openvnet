@@ -297,15 +297,7 @@ module Vnet::Core
       info log_format("creating tunnel entry mode '#{tunnel_mode}'",
                       options.map { |k, v| "#{k}:#{v}" }.join(" "))
 
-      while @mutex_create_tunnel.locked? | @mutex_create_tunnel.owned? do
-        sleep(1)
-      end
-      @mutex_create_tunnel.synchronize {
-        tunnel = MW::Tunnel.find(options)
-        if !tunnel
-          tunnel = MW::Tunnel.create(options.merge(mode: tunnel_mode))
-        end
-      }
+      tunnel = MW::Tunnel.create_or_find(options.merge(mode: tunnel_mode))
 
       internal_retrieve(options)
     end
