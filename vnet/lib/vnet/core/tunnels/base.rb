@@ -33,7 +33,7 @@ module Vnet::Core::Tunnels
     end
     
     def mode
-      :base
+      "base"
     end
 
     def log_type
@@ -159,7 +159,7 @@ module Vnet::Core::Tunnels
 
       @tunnel_port_number = new_port_number
 
-      return if self.mode != :gre
+      return if self.mode != "gre"
 
       @datapath_networks.each { |dpn|
         updated_networks[dpn[:network_id]] = true
@@ -170,7 +170,7 @@ module Vnet::Core::Tunnels
       return if @tunnel_port_number.nil?
       @tunnel_port_number = nil
 
-      return if self.mode != :gre
+      return if self.mode != "gre"
 
       @datapath_networks.each { |dpn|
         updated_networks[dpn[:network_id]] = true
@@ -183,7 +183,7 @@ module Vnet::Core::Tunnels
 
       @host_port_number = new_port_number
 
-      return if self.mode != :mac2mac
+      return if self.mode != "mac2mac"
 
       @datapath_networks.each { |dpn|
         updated_networks[dpn[:network_id]] = true
