@@ -33,8 +33,6 @@ module Vnet::Core
       @host_route_links = {}
       @remote_datapath_networks = {}
       @remote_datapath_route_links = {}
-
-      @mutex_create_tunnel = Mutex.new
     end
 
     def update(params)

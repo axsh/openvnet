@@ -28,7 +28,7 @@ module Vnet::NodeApi
       end
 
       def create_or_find(options)
-        # Only create a tunnel if it doesn't exist yet       
+        # Only create a tunnel if it doesn't exist yet
         tunnel = find(options)
         if !tunnel
           tunnel = create(options)
