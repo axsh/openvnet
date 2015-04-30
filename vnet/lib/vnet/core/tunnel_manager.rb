@@ -105,13 +105,15 @@ module Vnet::Core
     def select_tunnel_mode(src_interface_id, dst_interface_id)
       src_interface = @interfaces[src_interface_id]
       dst_interface = @interfaces[dst_interface_id]
-      return "unknown" unless src_interface && src_interface[:network_id]
-      return "unknown" unless dst_interface && dst_interface[:network_id]
+      src_interface_network = src_interface[:network_id]
+      dst_interface_network = dst_interface[:network_id]
+      return "unknown" unless src_interface && src_interface_network
+      return "unknown" unless dst_interface && dst_interface_network
 
       case
-      when src_interface[:network_id] != dst_interface[:network_id]
+      when src_interface_network != dst_interface_network
         "gre"
-      when src_interface[:network_id] == dst_interface[:network_id]
+      when src_interface_network == dst_interface_network
         "mac2mac"
       else
         nil
