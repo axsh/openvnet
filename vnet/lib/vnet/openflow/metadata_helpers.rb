@@ -23,7 +23,7 @@ module Vnet::Openflow
         when :local, :match_local, :write_local
           metadata = metadata | METADATA_FLAG_LOCAL
           metadata_mask = metadata_mask | METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE
-        when :mac2mac, :match_mac2mac, :write_mac2mac
+        when "mac2mac", :match_mac2mac, :write_mac2mac
           metadata = metadata | METADATA_FLAG_MAC2MAC
           metadata_mask = metadata_mask | METADATA_FLAG_MAC2MAC
         when :network, :match_network, :write_network

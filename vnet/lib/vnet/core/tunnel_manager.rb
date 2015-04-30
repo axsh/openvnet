@@ -105,14 +105,16 @@ module Vnet::Core
     def select_tunnel_mode(src_interface_id, dst_interface_id)
       src_interface = @interfaces[src_interface_id]
       dst_interface = @interfaces[dst_interface_id]
-      return :unknown unless src_interface && src_interface[:network_id]
-      return :unknown unless dst_interface && dst_interface[:network_id]
+      src_interface_network = src_interface[:network_id]
+      dst_interface_network = dst_interface[:network_id]
+      return "unknown" unless src_interface && src_interface_network
+      return "unknown" unless dst_interface && dst_interface_network
 
       case
-      when src_interface[:network_id] != dst_interface[:network_id]
-        :gre
-      when src_interface[:network_id] == dst_interface[:network_id]
-        :mac2mac
+      when src_interface_network != dst_interface_network
+        "gre"
+      when src_interface_network == dst_interface_network
+        "mac2mac"
       else
         nil
       end
@@ -146,9 +148,9 @@ module Vnet::Core
 
       item_class =
         case tunnel_mode
-        when :gre     then Tunnels::Gre
-        when :mac2mac then Tunnels::Mac2Mac
-        when :unknown then Tunnels::Unknown
+        when "gre"     then Tunnels::Gre
+        when "mac2mac" then Tunnels::Mac2Mac
+        when "unknown" then Tunnels::Unknown
         else
           return
         end
@@ -295,7 +297,7 @@ module Vnet::Core
       info log_format("creating tunnel entry mode '#{tunnel_mode}'",
                       options.map { |k, v| "#{k}:#{v}" }.join(" "))
 
-      tunnel = MW::Tunnel.create(options.merge(mode: tunnel_mode))
+      tunnel = MW::Tunnel.create_or_find(options.merge(mode: tunnel_mode))
 
       internal_retrieve(options)
     end

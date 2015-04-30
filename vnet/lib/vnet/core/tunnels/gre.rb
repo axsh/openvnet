@@ -5,7 +5,7 @@ module Vnet::Core::Tunnels
   class Gre < Base
 
     def mode
-      :gre
+      "gre"
     end
 
     def log_type

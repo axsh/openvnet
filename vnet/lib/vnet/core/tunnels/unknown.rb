@@ -5,7 +5,7 @@ module Vnet::Core::Tunnels
   class Unknown < Base
 
     def mode
-      :unknown
+      "unknown"
     end
 
     def log_type
