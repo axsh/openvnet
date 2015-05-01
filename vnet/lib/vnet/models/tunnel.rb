@@ -12,5 +12,11 @@ module Vnet::Models
     many_to_one :src_interface, :class => Interface, :key => :src_interface_id
     many_to_one :dst_interface, :class => Interface, :key => :dst_interface_id
 
+    def self.create(options)
+      super(options) if self.find(src_datapath_id: options[:src_datapath_id],
+                                  dst_datapath_id: options[:dst_datapath_id],
+                                  src_interface_id: options[:src_interface_id],
+                                  dst_interface_id: options[:dst_interface_id]).nil?
+    end
   end
 end
