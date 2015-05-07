@@ -2,10 +2,10 @@
 
 module Vnctl::Configuration
   class Vnctl < Fuguta::Configuration
+    param :webapi_protocol, :default => 'http'
     param :webapi_uri, :default => '127.0.0.1'
     param :webapi_port, :default => 9090
     param :webapi_version, :default => '1.0'
-    param :webapi_protocol, :default => 'http'
     param :output_format, :default => 'yml'
 
     def validate(errors)
