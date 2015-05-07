@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class Interface < Base
     namespace :interfaces
-    api_suffix "/api/interfaces"
+    api_suffix "interfaces"
 
     add_modify_shared_options {
       option :ingress_filtering_enabled, :type => :boolean,

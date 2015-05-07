@@ -6,23 +6,23 @@ module Vnctl
       @webapi_uri = Vnctl.conf.webapi_uri
       @webapi_port = Vnctl.conf.webapi_port.to_i
       @webapi_version = Vnctl.conf.webapi_version
+      @webapi_protocol = Vnctl.conf.webapi_protocol
       @output_format = Vnctl.conf.output_format
 
-      @webapi_full_uri = "#{@webapi_uri}/api/#{@webapi_version}"
+      @webapi_full_uri = "#{@webapi_protocol}://#{@webapi_uri}:#{@webapi_port}/api/#{@webapi_version}"
     end
 
     def send_request(verb, suffix, params = nil)
-      uri = URI::HTTP.build(host: @webapi_full_uri,
-                            path: "#{suffix}.#{@output_format}",
-                            port: @webapi_port)
+      uri = URI("#{@webapi_full_uri}/#{suffix}.#{@output_format}")
 
       uri.query = URI.encode_www_form(params) if params
 
-      p uri
-      Net::HTTP.start(uri.host, uri.port) do |http|
+      response = Net::HTTP.start(uri.host, uri.port) do |http|
         request = verb.new(uri.request_uri)
         http.request(request)
       end
+
+      response.body
     end
 
     def post(suffix, params = nil)
