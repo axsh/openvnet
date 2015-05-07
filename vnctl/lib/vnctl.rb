@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
-require 'httparty'
+require 'net/http'
 
 module Vnctl
-
-  def self.conf
-    @conf
-  end
-
   autoload :WebApi, 'vnctl/webapi'
 
   module Cli
@@ -31,5 +26,13 @@ module Vnctl
 
   module Configuration
     autoload :Vnctl, 'vnctl/configuration/vnctl'
+  end
+
+  def self.conf
+    @conf
+  end
+
+  def self.webapi
+    @webapi ||= Vnctl::WebApi.new
   end
 end
