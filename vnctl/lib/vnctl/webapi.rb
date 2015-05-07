@@ -3,14 +3,14 @@
 module Vnctl
   class WebApi
     def initialize
-      @webapi_uri = Vnctl.conf.webapi_uri
-      @webapi_port = Vnctl.conf.webapi_port.to_i
-      @webapi_version = Vnctl.conf.webapi_version
-      @webapi_protocol = Vnctl.conf.webapi_protocol
-      @output_format = Vnctl.conf.output_format
+      @conf = Vnctl.conf
 
-      @webapi_full_uri = "%s://%s:%s/api/%s" %
-        [@webapi_protocol, @webapi_uri, @webapi_port, @webapi_version]
+      @output_format = @conf.output_format
+
+      @webapi_full_uri = "%s://%s:%s/api/%s" % [@conf.webapi_protocol,
+                                                @conf.webapi_uri,
+                                                @conf.webapi_port,
+                                                @conf.webapi_version]
     end
 
     def send_request(verb, suffix, params = nil)
