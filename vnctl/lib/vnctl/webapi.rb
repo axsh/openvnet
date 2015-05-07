@@ -9,7 +9,8 @@ module Vnctl
       @webapi_protocol = Vnctl.conf.webapi_protocol
       @output_format = Vnctl.conf.output_format
 
-      @webapi_full_uri = "#{@webapi_protocol}://#{@webapi_uri}:#{@webapi_port}/api/#{@webapi_version}"
+      @webapi_full_uri = "%s://%s:%s/api/%s" %
+        [@webapi_protocol, @webapi_uri, @webapi_port, @webapi_version]
     end
 
     def send_request(verb, suffix, params = nil)
