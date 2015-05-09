@@ -22,11 +22,20 @@ get('browse', format: :yaml)
 routes = YAML.load(last_response.body)
 
 webapi_post_datapaths = routes.find { |r| r[:route] == 'POST  /datapaths' }
+
+webapi_cli_verb_map = {
+  'POST' => 'add',
+  'GET' => 'show',
+  'DELETE' => 'del',
+  'PUT' => 'modify',
+}
+
+verb, namespace = webapi_post_datapaths[:route].split('  /')
 cli_add_datapath = Vnctl::Cli::Datapath.all_tasks["add"]
 
 describe 'vnctl' do
-  describe 'datapaths' do
-    describe 'add' do
+  describe namespace do
+    describe webapi_cli_verb_map[verb] do
 
       webapi_post_datapaths[:parameters].each do |param|
         param_name = param[:name]
