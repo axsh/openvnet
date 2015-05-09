@@ -16,6 +16,8 @@ require 'vnctl'
 
 describe 'vnctl' do
   it 'has exactly the same parameters as the webapi' do
+    # We use the YAML format because it has support for ruby ranges.
+    # Json would create a giant array of all possible tcp ports for some paramters
     get('browse', format: :yaml)
     routes = YAML.load(last_response.body)
 
