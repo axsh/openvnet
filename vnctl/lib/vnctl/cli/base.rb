@@ -26,16 +26,6 @@ module Vnctl::Cli
         self.class.api_suffix
       end
 
-      # Some syntax sugar for the actual api calls
-      [:post, :get, :delete, :put].each { |req_type|
-        define_method(req_type) { |*args|
-          uri = args.shift
-          format = Vnctl.conf.output_format
-
-          Vnctl::WebApi.send(req_type, "#{uri}.#{format}", *args)
-        }
-      }
-
       ####################################################
       # Metaprogramming to define standard CRUD commands #
       ####################################################
@@ -86,7 +76,7 @@ module Vnctl::Cli
           options[o].instance_variable_set(:@required, true)
         }
         define_method(:add) do
-          puts post(suffix, :query => options)
+          puts Vnctl.webapi.post(suffix, options)
         end
       end
 
@@ -94,9 +84,9 @@ module Vnctl::Cli
         desc "show [UUID(S)]", "Shows all or a specific set of #{namespace}(s)."
         define_method(:show) do |*uuids|
           if uuids.empty?
-            puts get(suffix)
+            puts Vnctl.webapi.get(suffix)
           else
-            uuids.each { |uuid| puts get("#{suffix}/#{uuid}") }
+            uuids.each { |uuid| puts Vnctl.webapi.get("#{suffix}/#{uuid}") }
           end
         end
       end
@@ -105,7 +95,7 @@ module Vnctl::Cli
         desc "del UUID(S)", "Deletes one or more #{namespace}(s) separated by a space."
         define_method(:del) do |*uuids|
           puts uuids.map { |uuid|
-            delete("#{suffix}/#{uuid}")
+            Vnctl.webapi.delete("#{suffix}/#{uuid}")
           }.join("\n")
         end
       end
@@ -113,7 +103,7 @@ module Vnctl::Cli
       def self.define_modify
         desc "modify UUID [OPTIONS]", "Modify a #{namespace}."
         define_method(:modify) do |uuid|
-          puts put("#{suffix}/#{uuid}", :query => options)
+          puts Vnctl.webapi.put("#{suffix}/#{uuid}", options)
         end
       end
 
@@ -122,7 +112,7 @@ module Vnctl::Cli
         option_uuid
         option :new_uuid, :type => :string, :desc => "New unique UUID for the #{namespace}."
         define_method(:rename) do |uuid|
-          puts put("#{suffix}/#{uuid}/rename", :query => options)
+          puts Vnctl.webapi.put("#{suffix}/#{uuid}/rename", options)
         end
       end
 
@@ -189,27 +179,28 @@ module Vnctl::Cli
             desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
               "Adds #{desc_label} to a(n) #{parent.namespace}."
             def add(base_uuid, rel_uuid)
-              puts post("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}", :query => options)
+              full_uri_suffix = "#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}"
+              puts Vnctl.webapi.post(full_uri_suffix, options)
             end
           else
             desc "add #{base_uuid_label} OPTIONS",
               "Adds #{desc_label} to a(n) #{parent.namespace}."
             def add(base_uuid)
-              puts post("#{suffix}/#{base_uuid}/#{rel_name}", :query => options)
+              puts Vnctl.webapi.post("#{suffix}/#{base_uuid}/#{rel_name}", options)
             end
           end
 
           desc "show #{base_uuid_label}",
             "Shows all #{desc_label} in this #{parent.namespace}."
           def show(base_uuid)
-            puts get("#{suffix}/#{base_uuid}/#{rel_name}")
+            puts Vnctl.webapi.get("#{suffix}/#{base_uuid}/#{rel_name}")
           end
 
           desc "del #{base_uuid_label} #{relation_uuid_label}(S)",
             "Removes #{desc_label} from a(n) #{parent.namespace}."
           def del(base_uuid, *rel_uuids)
             puts rel_uuids.map { |rel_uuid|
-              delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
+              Vnctl.webapi.delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
             }.join("\n")
           end
         end
