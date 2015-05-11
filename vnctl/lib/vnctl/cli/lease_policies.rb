@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class LeasePolicy < Base
     namespace :lease_policies
-    api_suffix "/api/lease_policies"
+    api_suffix "lease_policies"
 
     add_modify_shared_options {
       option :mode, :type => :string, :desc => "The mode for this lease policy. (reserved for future use)"

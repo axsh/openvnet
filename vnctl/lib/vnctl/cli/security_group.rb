@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class SecurityGroup < Base
     namespace :security_groups
-    api_suffix "/api/security_groups"
+    api_suffix "security_groups"
 
     add_modify_shared_options {
       option_display_name
