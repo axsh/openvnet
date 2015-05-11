@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class NetworkService < Base
     namespace :network_services
-    api_suffix "/api/network_services"
+    api_suffix "network_services"
 
     add_modify_shared_options {
       option_display_name

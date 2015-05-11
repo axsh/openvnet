@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class VlanTranslation < Base
     namespace :vlan_translations
-    api_suffix "/api/vlan_translations"
+    api_suffix "vlan_translations"
 
     add_modify_shared_options {
       option :translation_uuid, :type => :string, :desc => "The translation uuid for this vlan translation."

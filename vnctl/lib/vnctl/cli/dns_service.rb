@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class DnsService < Base
     namespace :dns_services
-    api_suffix "/api/dns_services"
+    api_suffix "dns_services"
 
     add_modify_shared_options {
       option :public_dns, :type => :string, :desc => "Public DNS Server addresses(separated by `.`)."
