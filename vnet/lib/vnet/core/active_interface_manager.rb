@@ -173,7 +173,7 @@ module Vnet::Core
     def params_valid_item?(params)
       return @datapath_info &&
         params[:id] &&
-        params[:interface_id]
+        params[:interface_id] &&
         params[:datapath_id]
     end
 
