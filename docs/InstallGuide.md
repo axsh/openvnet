@@ -1,3 +1,4 @@
+
 # OpenVNet Installation Guide
 
 ## Overview
@@ -8,7 +9,7 @@ create a very simple yet innovative virtual network environment.
 
 ![vnet_minimum](https://www.dropbox.com/s/dezarv561fg7sdj/vnet_minimum.png?dl=1)
 
-On a given physical server (here named as server1) there is one virtual network whose network address is 10.100.0.0/24 and 2 virtual machines joining it.
+On a given server (here named as server1) there is one virtual network whose network address is 10.100.0.0/24 and 2 virtual machines joining it.
 The orange circles describe OpenVNet's ruby processes; vna, vnmgr and webapi.
 See architecture for more detail of how the OpenVNet works.
 
@@ -36,7 +37,7 @@ Download the openvnet-third-party.repo file and put it in your `/etc/yum.repos.d
 Each repo has the following packages:
 
 * openvnet.repo
-  * openvnet (virtual package)
+  * openvnet (metapackage)
   * openvnet-common
   * openvnet-vna
   * openvnet-vnmgr
@@ -55,7 +56,7 @@ Install OpenVNet packages.
 
     # yum install -y openvnet
 
-`openvnet` is a virtual package. It is equivalent to install `openvnet-common`,
+`openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
 `openvnet-vna`, `openvnet-vnmgr` and `openvnet-webapi` at once.
 
 ### Edit Configuration Files
@@ -75,7 +76,7 @@ Edit the file `/etc/openvnet/vnmgr.conf`
 Modify the parameters `host` and `public` according to your environment. In order for
 the sample environment in the overview section we leave those parameters as is. The detail of each parameter is following.
 
-- **id** : The identifier of the OpenVNet's process. For example the paramter `id` in `vnmgr.conf` is applied to the vnmgr process. Specify universally unique string data in the world of the OpenVNet.
+- **id** : OpenVNet uses the [0mq](http://zeromq.org) protocol for communication between its processes. This id is used by 0mq to identify each process. Any string here is fine as long as there's no two processes using the same one. It's recommended to just use the default values.
 
 - **protocol** : The network protocol that the OpenVNet's processes will use for communication. The default `tcp`.
 
@@ -134,7 +135,7 @@ Launch mysql server.
 
     # service mysqld start
 
-To automatically launch the mysql server, execute the following command.
+To automatically launch the mysql server at boot, execute the following command.
 
     # chkconfig mysqld on
 
@@ -152,13 +153,6 @@ Create database
 # bundle exec rake db:init
 ```
 
-We use `vnctl` to create database records.
-
-```
-# cd /opt/axsh/openvnet/vnctl
-# bundle install --path vendor/bundle
-```
-
 Start vnmgr and webapi.
 
 ```
@@ -171,7 +165,7 @@ Subsequent database records are required for the sake of the sample environment.
 #### Datapath
 
 ```
-# ./bin/vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
+# vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
 ```
 
 * dpid
@@ -186,7 +180,7 @@ The ID of the vna written in `/etc/openvnet/vna.conf`
 #### Network
 
 ```
-# ./bin/vnctl networks add --uuid nw-test1 --display-name testnet1 --ipv4-network 10.100.0.0 --ipv4-prefix 24 --network-mode virtual
+# vnctl networks add --uuid nw-test1 --display-name testnet1 --ipv4-network 10.100.0.0 --ipv4-prefix 24 --network-mode virtual
 ```
 
 * ipv4-network
@@ -199,18 +193,19 @@ The IPv4 network prefix. (default 24)
 
 * network-mode
 
-The mode of the network to create. Use `virtual` in case of creating virtual network.
+The mode of the network to create. We are currently creating the virtual network (10.100.0.0/24) mentioned in the figure at the top of this guide. That is why we specify `virtual` here.
+
 
 #### Interface
 
 ```
-# ./bin/vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-test1 --ipv4-address 10.100.0.10 --port-name inst1
-# ./bin/vnctl interfaces add --uuid if-inst2 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:02 --network-uuid nw-test1 --ipv4-address 10.100.0.11 --port-name inst2
+# vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-test1 --ipv4-address 10.100.0.10 --port-name inst1
+# vnctl interfaces add --uuid if-inst2 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:02 --network-uuid nw-test1 --ipv4-address 10.100.0.11 --port-name inst2
 ```
 
 * mode
 
-The mode of the interface. `vif` must be specified if a virtual machine is supposed to have this.
+The mode of the interface. If a virtual or physical device is attached to the Open vSwitch, it is going to be associated to an entry in `vif` mode. (There are other criteria to associate. Checking the mode is one of them.)
 
 * owner-datapath-uuid
 
@@ -236,7 +231,7 @@ OpenVNet associates an Open vSwitches port with a database record of the interfa
 ### Launch Services
 
 The OpenVNet's processes(vnmgr, webapi and vna) are registered as upstart job.
-You can launch them by the following commands. Several of them may have already been launched in the last sections.
+You can launch them by the following commands. vnmgr and webapi may have already been launched in the last sections.
 
 ```
 # initctl start vnet-vnmgr
@@ -244,7 +239,7 @@ You can launch them by the following commands. Several of them may have already 
 # initctl start vnet-vna
 ```
 
-The log files are created in the /var/log/openvnet directory. See them if something bad happens. If the vna is successfully launched you can see `is_connected: true` by `ovs-vsctl show` such as following.
+The log files are created in the /var/log/openvnet directory. Refer to them if something bad happens. If the vna is successfully launched you can see `is_connected: true` by `ovs-vsctl show` such as following.
 
 ```
 fbe23184-7f14-46cb-857b-3abf6153a6d6
@@ -279,6 +274,7 @@ Create and mount cgroup
 ```
 
 Create 2 LXC guests
+(it may require rsync to be installed)
 
 ```
 # lxc-create -t centos -n inst1
@@ -317,7 +313,7 @@ lxc.autodev = 0
 
 Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.
 
-Launch the LXC guests then enslave the tap interfaces to the datapath.
+Launch the LXC guests then enslave the LXC's tap interfaces to the datapath.
 
 ```
 # lxc-start -d -n inst1
@@ -327,6 +323,8 @@ Launch the LXC guests then enslave the tap interfaces to the datapath.
 # ovs-vsctl add-port br0 inst2
 ```
 
+Now the LXC's network interfaces are attached to the Open vSwitch, likewise you plug a LAN cable to a network switch.
+
 Log in to the inst1 to see if the IP address is assigned properly.
 
 ```
@@ -334,16 +332,18 @@ Log in to the inst1 to see if the IP address is assigned properly.
 # ip a
 ```
 
+The IP address is assigned to eth0. After the network interface of inst1 is attached to br0, a DHCP request is sent then the IP address is determined by the DHCP server implemented in vna.
+
 ping to inst2
 
 ```
 # ping 10.100.0.11
 ```
 
-Meanwhile you can see which flows are selected by `vnflows-monitor`.
-Execute the following command on a lxc guest, then ping from one another.
+You would see the ping replyed from the peer machine (in this case inst2). Meanwhile you can see which flows are selected by `vnflows-monitor`. Execute the following command on a lxc guest, then ping from one another.
 
 ```
+# cd /opt/axsh/openvnet/vnet/bin
 # ./vnflows-monitor c 0 d 1
 ```
 
