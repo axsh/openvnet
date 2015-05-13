@@ -47,6 +47,7 @@ module Sequel
           super
           errors.add(:network_id, 'cannot be empty') if self.network_id.blank?
           errors.add(:ipv4_address, 'cannot be empty') if self.ipv4_address.blank?
+          errors.add(:ipv4_address, 'invalid subnet') if not valid_subnet
         end
 
         def before_save
