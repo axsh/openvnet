@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-1;2c
+
 module Vnet::Models
 
   # TODO: Refactor.
