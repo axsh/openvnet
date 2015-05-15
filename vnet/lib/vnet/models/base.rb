@@ -8,6 +8,7 @@ require 'sequel/plugins/dataset_associations.rb'
 require 'sequel/plugins/many_through_many.rb'
 
 Sequel.extension(:core_extensions)
+Sequel::Model.plugin :after_initialize
 
 module Vnet::Models
 
@@ -637,7 +638,6 @@ module Vnet::Models
         # end
         def self.taggable(uuid_prefix)
           return if self == Base
-          self.plugin :after_initialize
           self.plugin Taggable
           self.uuid_prefix(uuid_prefix)
         end
