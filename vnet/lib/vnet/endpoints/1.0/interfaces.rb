@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 require 'trema/mac'
+require "vnet/constants/datapath"
+require "vnet/constants/interface"
+require "vnet/constants/network"
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   def self.put_post_shared_params
-    param_uuid M::Datapath, :owner_datapath_uuid
+    param_uuid2 :owner_datapath_uuid, C::Datapath
     param :ingress_filtering_enabled, :Boolean
     param :display_name, :String
     param :enable_routing, :Boolean
@@ -18,8 +21,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   #
 
   put_post_shared_params
-  param_uuid M::Interface
-  param_uuid M::Network, :network_uuid
+  param_uuid2 :uuid, C::Interface
+  param_uuid2 :network_uuid, C::Network
   param :ipv4_address, :String, transform: PARSE_IPV4
   param :mac_address, :String, transform: PARSE_MAC
   param :port_name, :String
@@ -35,22 +38,25 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     get_all(:Interface, fill)
   end
 
+  param_uuid2 :uuid, C::Interface
   get '/:uuid' do
     get_by_uuid(:Interface, fill)
   end
 
+  param_uuid2 :uuid, C::Interface
   delete '/:uuid' do
     delete_by_uuid(:Interface)
   end
 
+  param_uuid2 :uuid, C::Interface
   put_post_shared_params
   put '/:uuid' do
     check_syntax_and_get_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     update_by_uuid(:Interface, fill)
   end
 
-  param_uuid M::Interface
-  param :new_uuid, :String
+  param_uuid2 :uuid, C::Interface
+  param_uuid2 :new_uuid, C::Interface
   put '/:uuid/rename' do
     updated_object = M::Interface.batch.rename(params['uuid'], params['new_uuid']).commit
     respond_with([updated_object])
@@ -61,13 +67,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   #
 
   def self.port_put_post_shared_params
-    param_uuid M::Datapath, :datapath_uuid
+    param_uuid2 :datapath_uuid, C::Datapath
     param :port_name, :String
     param :singular, :Boolean
   end
 
   port_put_post_shared_params
-  param_uuid M::Interface
+  param_uuid2 :uuid, C::Interface
   post '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
     datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
@@ -81,10 +87,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     respond_with(interface_port)
   end
 
+  param_uuid2 :uuid, C::Interface
   get '/:uuid/ports' do
     show_relations(:Interface, :interface_ports)
   end
 
+  param_uuid2 :uuid, C::Interface
   port_put_post_shared_params
   delete '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')

@@ -67,6 +67,27 @@ module Vnet::Endpoints::V10
       param name, :String, final_options
     end
 
+    def self.param_uuid2(name, constant_class, options = {})
+      #TODO: Allow access to default_on_error in here
+      error_handler = proc { |result|
+        case result[:reason]
+        when :format
+          raise(E::InvalidUUID, "#{constant_class.to_s.split("::").last}#uuid: #{result[:value]}")
+        else
+          vnet_default_on_error(result)
+        end
+      }
+
+      final_options = {
+        format: Vnet::Endpoints::V10::Helpers::UUID.regex(constant_class.const_get(:UUID_PREFIX)),
+        on_error: error_handler
+      }
+
+      final_options.merge!(options)
+
+      param name, :String, final_options
+    end
+
     def delete_by_uuid(class_name)
       model_wrapper = M.const_get(class_name)
       uuid = @params[:uuid]
