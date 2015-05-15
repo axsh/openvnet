@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
+require "vnet/constants/datapath"
 module Vnet::Models
 
   class Datapath < Base
-    taggable 'dp'
+    taggable Vnet::Constants::Datapath::UUID_PREFIX
 
     plugin :paranoia_is_deleted
 
