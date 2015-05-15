@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+require "vnet/constants/interface"
 
 module Vnet::Models
   class Interface < Base
-    taggable 'if'
+    taggable Vnet::Constants::Interface::UUID_PREFIX
 
     plugin :paranoia_is_deleted
 

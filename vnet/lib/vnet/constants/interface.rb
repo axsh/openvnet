@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Constants::Interface
+  UUID_PREFIX    = 'if'.freeze
   MODE_EDGE      = 'edge'
   MODE_HOST      = 'host'
   MODE_INTERNAL  = 'internal'
