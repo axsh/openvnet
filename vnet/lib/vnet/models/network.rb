@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+require "vnet/constants/network"
 
 module Vnet::Models
   class Network < Base
-    taggable 'nw'
+    taggable Vnet::Constants::Network::UUID_PREFIX
 
     plugin :paranoia_is_deleted
 
