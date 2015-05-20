@@ -1,4 +1,3 @@
-
 # OpenVNet Installation Guide
 
 ## Overview
@@ -11,7 +10,7 @@ create a very simple yet innovative virtual network environment.
 
 On a given server (here named as server1) there is one virtual network whose network address is 10.100.0.0/24 and 2 virtual machines joining it.
 The orange circles describe OpenVNet's ruby processes; vna, vnmgr and webapi.
-See architecture for more detail of how the OpenVNet works.
+See architecture for more details of how the OpenVNet works.
 
 
 ## Requirements
@@ -42,6 +41,7 @@ Each repo has the following packages:
   * openvnet-vna
   * openvnet-vnmgr
   * openvnet-webapi
+  * openvnet-vnctl
 
 * openvnet-third-party.repo
   * openvnet-ruby
@@ -76,17 +76,17 @@ Edit the file `/etc/openvnet/vnmgr.conf`
 Modify the parameters `host` and `public` according to your environment. In order for
 the sample environment in the overview section we leave those parameters as is. The detail of each parameter is following.
 
-- **id** : OpenVNet uses the [0mq](http://zeromq.org) protocol for communication between its processes. This id is used by 0mq to identify each process. Any string here is fine as long as there's no two processes using the same one. It's recommended to just use the default values.
+- **id** : OpenVNet relies on the [0mq](http://zeromq.org) protocol for communication among its processes. Hereby processes means vnmgr, vna and webapi. This id is used by 0mq to identify each process. Any string here is fine as long as there's no collision in OpenVNet. It's recommended to just use the default values.
 
-- **protocol** : The network protocol that the OpenVNet's processes will use for communication. The default `tcp`.
+- **protocol** : The layer 4 protocol which is either TCP or UDP. A socket which the 0mq needs will be created based on this paramter. The default value is `tcp`.
 
-- **host** : The IP address of the vnmgr node. Since all the processes reside on the same node we use loopback address in this guide.
+- **host** : The IP address of the vnmgr node. We use loopback address in this guide because all the processes reside on the same node .
 
-- **public** : In case the process running in a NAT environment, specify the NAT address as the process can advertise its location.
+- **public** : In case the process running in a NAT environment, specify the NAT address as the process can be reached from the outside of the NAT environment.
 
 - **port** : The port number that the process will listen to. Specify a unique port number and make sure the port number is different for each of the OpenVNet's processes and also not taken by any other process.
 
-`/etc/openvnet/vna.conf` and `/etc/openvnet/webapi.conf` have the same structure as `vnmgr.conf`. Edit them if necessary otherwise leave them as is for the sample environment we are just creating. However the `id` parameter in `vna.conf`, we need it for the database configuration so please remember what you specified.
+`/etc/openvnet/vna.conf` and `/etc/openvnet/webapi.conf` have the same structure as `vnmgr.conf`. Edit them if necessary otherwise leave them as is for the sample environment we are just creating. We need the `id` parameter in `vna.conf` later when we configure the database. Please make sure what you specified.
 
 ### Setup Local Infrastructure
 
@@ -160,9 +160,11 @@ Start vnmgr and webapi.
 # initctl start vnet-webapi
 ```
 
-Subsequent database records are required for the sake of the sample environment.
+We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is Web API client offered by the `openvnet-vnctl` package.
 
 #### Datapath
+
+We created a datapath earlier that the OpenVNet needs to know. The following database record must be created in order to tell the OpenVNet about the datapath.
 
 ```
 # vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
@@ -179,6 +181,8 @@ The ID of the vna written in `/etc/openvnet/vna.conf`
 
 #### Network
 
+In the figure of the sample environment there is a light purple circle which represents a virtual network. You need to define the virtual network by `vnctl networks add` subcommand with the following parameters.
+
 ```
 # vnctl networks add --uuid nw-test1 --display-name testnet1 --ipv4-network 10.100.0.0 --ipv4-prefix 24 --network-mode virtual
 ```
@@ -193,10 +197,12 @@ The IPv4 network prefix. (default 24)
 
 * network-mode
 
-The mode of the network to create. We are currently creating the virtual network (10.100.0.0/24) mentioned in the figure at the top of this guide. That is why we specify `virtual` here.
+The mode of the network to create. We are currently creating the virtual network (10.100.0.0/24) mentioned in the figure. That is why we specify `virtual` here.
 
 
 #### Interface
+
+As the sample environment has 2 virtual machines, here we define 2 database records of interface. These recores will be associated to the tap interfaces of the virtual machines. The former record contains `inst1`'s network interface information. The latter is for `inst2`.
 
 ```
 # vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-test1 --ipv4-address 10.100.0.10 --port-name inst1
@@ -205,7 +211,7 @@ The mode of the network to create. We are currently creating the virtual network
 
 * mode
 
-The mode of the interface. If a virtual or physical device is attached to the Open vSwitch, it is going to be associated to an entry in `vif` mode. (There are other criteria to associate. Checking the mode is one of them.)
+The mode of the interface. An entry with `vif` mode is basically for a virtual or physical device that is attached to the datapath of the Open vSwitch. Another mode might be specified for a physical device but here we omit the explanation about it.
 
 * owner-datapath-uuid
 
@@ -213,7 +219,7 @@ The UUID of the datapath to which this interface will be connected.
 
 * mac-address
 
-The MAC address of an interface of a virtual machine.
+The MAC address of the network interface of the virtual machine.
 
 * network-uuid
 
@@ -225,13 +231,13 @@ The IPv4 address which will be assigned to the network interface.
 
 * port-name
 
-OpenVNet associates an Open vSwitches port with a database record of the interface table if its `port-name` is corresponded to what you can see by `ovs-vsctl show`.
+The OpenVNet associates an Open vSwitch's port with a database record of the interface table if its `port-name` is corresponded to what you can see by `ovs-vsctl show`.
 
 
 ### Launch Services
 
-The OpenVNet's processes(vnmgr, webapi and vna) are registered as upstart job.
-You can launch them by the following commands. vnmgr and webapi may have already been launched in the last sections.
+The OpenVNet's processes(vnmgr, webapi and vna) are registered as upstart jobs.
+You can launch them using the following commands. vnmgr and webapi may have already been launched in the last sections.
 
 ```
 # initctl start vnet-vnmgr
@@ -310,6 +316,8 @@ lxc.arch = x86_64
 lxc.utsname = inst2
 lxc.autodev = 0
 ```
+
+We do not use `lxc.network.link` parameter because the linux bridge is replaced by the Open vSwitch.
 
 Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.
 
