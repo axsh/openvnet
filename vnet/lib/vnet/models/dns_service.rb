@@ -18,6 +18,7 @@ module Vnet::Models
 
     def before_validation
       self.public_dns.gsub!(/\s/, "") if self.public_dns
+      super
     end
 
     def validate

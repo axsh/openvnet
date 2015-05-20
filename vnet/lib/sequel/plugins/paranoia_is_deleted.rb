@@ -14,6 +14,7 @@ module Sequel
       module InstanceMethods
         def before_destroy
           self.is_deleted = self.id
+          super
         end
       end
 
