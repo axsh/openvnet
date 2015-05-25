@@ -11,6 +11,15 @@ module Vnet::Core
 
   class DpInfo
 
+    BOOTSTRAP_MANAGER_NAMES = %w(
+      host_datapath
+    ).freeze
+
+    BOOTSTRAP_MANAGER_NAMES.each do |name|
+      attr_reader "#{name}_manager"
+    end
+
+
     # Port manager is always last in order to ensure that all other
     # managers have valid datapath_info before ports are initialized.
     MANAGER_NAMES = %w(
@@ -19,7 +28,6 @@ module Vnet::Core
       datapath
       interface
       interface_port
-      host_datapath
       network
       route
       router
@@ -49,6 +57,7 @@ module Vnet::Core
       @datapath = params[:datapath]
       @ovs_ofctl = params[:ovs_ofctl]
 
+      initialize_bootstrap_managers
       initialize_managers
     end
 
@@ -172,6 +181,21 @@ module Vnet::Core
       }
     end
 
+    def bootstrap_managers
+      BOOTSTRAP_MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
+    end
+
+    def terminate_bootstrap_managers(timeout = 10.0)
+      start_time = Time.new
+
+      bootstrap_managers.each { |manager|
+        next_timeout = timeout - (Time.new - start_time)
+
+        Celluloid::Actor.join(manager, (next_timeout < 0.1) ? 0.1 : next_timeout)
+      }
+    end
+
+
     #
     # Internal methods:
     #
@@ -183,6 +207,13 @@ module Vnet::Core
         instance_variable_set("@#{name}_manager", Vnet::Core.const_get("#{name.to_s.camelize}Manager").new(self))
       end
     end
+
+    def initialize_bootstrap_managers
+      BOOTSTRAP_MANAGER_NAMES.each do |name|
+        instance_variable_set("@#{name}_manager", Vnet::Core.const_get("#{name.to_s.camelize}Manager").new(self))
+      end
+    end
+
 
   end
 

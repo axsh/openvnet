@@ -52,7 +52,8 @@ module Vnet::Openflow
     end
 
     def create_switch
-      link_with_managers
+      link_with_managers(@dp_info.bootstrap_managers)
+      link_with_managers(@dp_info.managers)
 
       @switch = Switch.new(self)
       link(@switch)
@@ -124,7 +125,7 @@ module Vnet::Openflow
       info log_format('cleaned up')
     end
 
-    def link_with_managers
+    def link_with_managers(managers)
       vnmgr_node = DCell::Node[:vnmgr]
 
       if vnmgr_node.nil?
@@ -137,7 +138,7 @@ module Vnet::Openflow
 
       # vnmgr_node && vnmgr_node.link(self)
 
-      @dp_info.managers.each { |manager|
+      managers.each { |manager|
         begin
           link(manager)
           vnmgr_node && vnmgr_node.link(manager)
@@ -147,6 +148,16 @@ module Vnet::Openflow
         end
       }
     end
+
+    # TODO: Add a way to block events from being processed by managers
+    # until everything has been initialized.
+    def initialize_bootstrap_managers
+      @dp_info.bootstrap_managers.each { |manager|
+        manager.set_datapath_info(@datapath_info)
+      }
+
+    end
+
 
     # TODO: Add a way to block events from being processed by managers
     # until everything has been initialized.
