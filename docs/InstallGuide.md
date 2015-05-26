@@ -280,7 +280,7 @@ Create and mount cgroup
 ```
 
 Create 2 LXC guests
-(it may require rsync to be installed)
+(it may require rsync to be installed. If it is not installed execute `yum install rsync`)
 
 ```
 # lxc-create -t centos -n inst1
@@ -340,9 +340,7 @@ Log in to the inst1 to see if the IP address is assigned properly.
 # ip a
 ```
 
-The IP address is assigned to eth0. After the network interface of inst1 is attached to br0, a DHCP request is sent then the IP address is determined by the DHCP server implemented in vna.
-
-ping to inst2
+ping to inst2 (10.100.0.11)
 
 ```
 # ping 10.100.0.11
