@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class IpLease < Base
     namespace :ip_leases
-    api_suffix "/api/ip_leases"
+    api_suffix "ip_leases"
 
     add_modify_shared_options {
       option :network_uuid, :type => :string, :desc => "The network to lease this ip in."
