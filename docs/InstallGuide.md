@@ -1,424 +1,364 @@
-# OpenVNet #
+# OpenVNet Installation Guide
 
-# Preliminary Operations and Installation #
-
-> **Note:**
-This document explains the installation of OpenVNet.  However, it was
-written for an older version of OpenVNet and does not apply
-to the current version.  We plan to update this guide soon.  Until
-then, we are leaving this guide here and hope it will be useful for those
-who wish to learn more about the components that make up OpenVNet.
+## Overview
 
 
-Installation Requirements
--------------------------
+Welcome to the world of OpenVNet! With this installation guide we help you
+create a very simple yet innovative virtual network environment.
 
-### System Requirements
+![vnet_minimum](https://www.dropbox.com/s/dezarv561fg7sdj/vnet_minimum.png?dl=1)
 
-+ RHEL 6.4
-+ Kernel 2.6.32-358.6.2.el6.x86_64
+On a given server (here named as server1) there is one virtual network whose network address is 10.100.0.0/24 and 2 virtual machines joining it.
+The orange circles describe OpenVNet's ruby processes; vna, vnmgr and webapi.
+See architecture for more details of how the OpenVNet works.
+
+
+## Requirements
+
 
 ### Network Requirements
 
 + Local Area Network (LAN)
 + Internet connection
 
-Pre-setup
----------
+## Installation
 
-Download the openvnet.repo file and put it to your /etc/yum.repos.d/ directory.
+### Install OpenVNet Packages
+
+Download the openvnet.repo file and put it to your `/etc/yum.repos.d/` directory.
 
     # curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet.repo
 
-Download the openvnet-third-party.repo file and put it in your /etc/yum.repos.d/ directory.
+Download the openvnet-third-party.repo file and put it in your `/etc/yum.repos.d/` directory.
 
     # curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet-third-party.repo
 
+Each repo has the following packages:
+
+* openvnet.repo
+  * openvnet (metapackage)
+  * openvnet-common
+  * openvnet-vna
+  * openvnet-vnmgr
+  * openvnet-webapi
+  * openvnet-vnctl
+
+* openvnet-third-party.repo
+  * openvnet-ruby
+  * openvswitch
+
 Install epel-release.
 
-    # rpm -Uvh http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release
+    # yum install -y epel-release
 
 
-OpenVNet installation
-------------------------
-
-Install OpenVNet.
+Install OpenVNet packages.
 
     # yum install -y openvnet
 
-Initial Configuration
----------------------
+`openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
+`openvnet-vna`, `openvnet-vnmgr` and `openvnet-webapi` at once.
 
-### Setup vnmgr
+### Edit Configuration Files
 
-Modify the following section in /etc/openvnet/vnmgr.conf on the vnmgr node.
+Edit the file `/etc/openvnet/vnmgr.conf`
 
     node {
       id "vnmgr"
       addr {
         protocol "tcp"
-        host "192.168.100.2"
+        host "127.0.0.1"
+        public ""
         port 9102
       }
     }
 
-- **host** : The IP address or host name of the ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the vnmgr process is run on the same node as vna or webapi, specify a different value from vna and webapi.
+Modify the parameters `host` and `public` according to your environment. In order for
+the sample environment in the overview section we leave those parameters as is. The detail of each parameter is following.
 
+- **id** : OpenVNet relies on the [0mq](http://zeromq.org) protocol for communication among its processes. Hereby processes means vnmgr, vna and webapi. This id is used by 0mq to identify each process. Any string here is fine as long as there's no collision in OpenVNet. It's recommended to just use the default values.
 
-### Setup vna
+- **protocol** : The layer 4 protocol which is either TCP or UDP. A socket which the 0mq needs will be created based on this paramter. The default value is `tcp`.
 
-Modify the following section in /etc/openvnet/vna.conf on the node.
+- **host** : The IP address of the vnmgr node. We use loopback address in this guide because all the processes reside on the same node .
 
-    node {
-      id "vna"
-      addr {
-        protocol "tcp"
-        host "192.168.100.2"
-        port 9103
-      }
-    }
+- **public** : In case the process running in a NAT environment, specify the NAT address as the process can be reached from the outside of the NAT environment.
 
-- **host** : The IP address or host name of the ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the vna process is run on the same node as vnmgr or webapi, specify a different value from vnmgr and webapi.
+- **port** : The port number that the process will listen to. Specify a unique port number and make sure the port number is different for each of the OpenVNet's processes and also not taken by any other process.
 
+`/etc/openvnet/vna.conf` and `/etc/openvnet/webapi.conf` have the same structure as `vnmgr.conf`. Edit them if necessary otherwise leave them as is for the sample environment we are just creating. We need the `id` parameter in `vna.conf` later when we configure the database. Please make sure what you specified.
 
-### Setup webapi
+### Setup Local Infrastructure
 
-Modify the following section in /etc/openvnet/webapi.conf on the webapi node.
+Datapath is one of the Linux kernel capabilities behaving similar to the Linux bridge.
+Create the file `/etc/sysconfig/network-scripts/ifcfg-br0` with the following contents. However you need to pay attention to several parameters.
 
-    node {
-      id "webapi"
-      addr {
-        protocol "tcp"
-        host "192.168.100.2"
-        port 9101
-      }
-    }
+* datapath-id
 
-- **host** : The IP address or host name of the ZeroMQ node.
-- **port** : The port number for connecting with ZeroMQ. If the webapi process is run on the same node as vnmgr or vna, specify a different value from vnmgr and vna.
+The datapath ID that the Open vSwitch will use. Set unique 16 hex digits as you like.
 
+```
+DEVICE=br0
+DEVICETYPE=ovs
+TYPE=OVSBridge
+ONBOOT=yes
+BOOTPROTO=static
+HOTPLUG=no
+OVS_EXTRA="
+ set bridge     ${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
+ set bridge     ${DEVICE} other_config:disable-in-band=true --
+ set bridge     ${DEVICE} other-config:datapath-id=0000aaaaaaaaaaaa --
+ set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
+ set-fail-mode  ${DEVICE} standalone --
+ set-controller ${DEVICE} tcp:127.0.0.1:6633
+"
+```
 
-Configuring Database
---------------------
+Start `openvswitch` service and `ifup` the datapath.
 
-Modify the following section in /etc/openvnet/common.conf on all nodes.
+```
+# service openvswitch start
+# ifup br0
+```
 
-    db {
-      adapter "mysql2"
-      host "localhost"
-      database "vnet"
-      port 3306
-      user "root"
-      password ""
-    }
+Start redis
 
-- **host** : The IP address of the node running mysqld.
-- **database** : The database name.
-- **port** : The port number for connecting with mysqld. If necessary.
-- **user** : The user name for connecting.
-- **password** : The password for connecting.
+```
+# service redis start
+```
 
-Creating Database
------------------
+### Setup Database
 
-Before creating the database, you need to launch the mysql server.
+Edit `/etc/openvnet/common.conf` if necessary. The sample environment uses the default settings.
+
+Launch mysql server.
 
     # service mysqld start
 
-To automatically launch the mysql server, execute the following command.
+To automatically launch the mysql server at boot, execute the following command.
 
     # chkconfig mysqld on
 
-Create Database
+Set `PATH` environment variable as following since the OpenVNet uses its own ruby binary.
 
-    # mysqladmin -uroot create vnet
-    # cd /opt/axsh/openvnet/vnet
-    # bundle exec rake db:init
+```
+# PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
+```
 
+Create database
 
-Start the OpenVNet services
----------------------------
+```
+# cd /opt/axsh/openvnet/vnet
+# bundle exec rake db:create
+# bundle exec rake db:init
+```
 
-    # initctl start vnet-vnmgr
-    # initctl start vnet-webapi
-    # initctl start vnet-vna
+Start vnmgr and webapi.
 
-OpenVNet writes its logs in the /var/log/openvnet directory. If there's a problem starting any of the services, you can find its log files there.
+```
+# initctl start vnet-vnmgr
+# initctl start vnet-webapi
+```
 
+We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is Web API client offered by the `openvnet-vnctl` package.
 
+#### Datapath
 
----------------------------------------------------------------------
+We created a datapath earlier that the OpenVNet needs to know. The following database record must be created in order to tell the OpenVNet about the datapath.
 
-# Let's try 1Box OpenVNet#
+```
+# vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
+```
 
-This section explains how to install OpenVNet on one node. This is a great way to try it out.
-![1BOX](OpenVNet_1Box_environment.gif)
+* dpid
 
-Install the following operation system and kernel.
+The datapath ID specified in `/etc/sysconfig/network-scripts/ifcfg-br0`
 
-+ RHEL (or Centos) 6.4
-+ Kernel 2.6.32-358.6.2.el6.x86_64
+* node-id
 
+The ID of the vna written in `/etc/openvnet/vna.conf`
 
-Installation and Setup of OpenVNet
------------------------------------
 
-### Network interfaces setup
+#### Network
 
-We're going to enslave eth0 to openvswitch so OpenVNet can use it. You will no longer be able to use eth0 to ssh into the node or access the Internet. Prepare another interface for that if you need to.
+In the figure of the sample environment there is a light purple circle which represents a virtual network. You need to define the virtual network by `vnctl networks add` subcommand with the following parameters.
 
-    # vi /etc/sysconfig/network-scripts/ifcfg-eth0
-    DEVICE=eth0
-    DEVICETYPE=ovs
-    TYPE=OVSPort
-    OVS_BRIDGE=br0
-    BOOTPROTO=none
-    ONBOOT=yes
-    HOTPLUG=no
-    #
-    # vi /etc/sysconfig/network-scripts/ifcfg-br0
-    DEVICE=br0
-    DEVICETYPE=ovs
-    TYPE=OVSBridge
-    ONBOOT=yes
-    BOOTPROTO=static
-    IPADDR=172.16.20.41
-    NETMASK=255.255.255.0
-    HOTPLUG=no
-    OVS_EXTRA="
-     set bridge     ${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
-     set bridge     ${DEVICE} other_config:disable-in-band=true --
-     set bridge     ${DEVICE} other-config:datapath-id=00004e6d2b508f4c --
-     set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
-     set-fail-mode  ${DEVICE} standalone --
-     set-controller ${DEVICE} tcp:127.0.0.1:6633
-    "
+```
+# vnctl networks add --uuid nw-test1 --display-name testnet1 --ipv4-network 10.100.0.0 --ipv4-prefix 24 --network-mode virtual
+```
 
-### OpenVNet package installation
+* ipv4-network
 
-Please install OpenVNet according to the "Pre-setup" and "OpenVNet installation" sections of "Preliminary Operations and Installation".
+The IPv4 network address.
 
-The config files (vnmgr.conf, vna.conf and webapi.conf) in the /etc/openvnet directory do not need to be edited. They're set up for a single node installation by default.
+* ipv4-prefix
 
-### Other package installation
+The IPv4 network prefix. (default 24)
 
-    # yum install qemu-kvm
-    # yum install tcpdump
+* network-mode
 
+The mode of the network to create. We are currently creating the virtual network (10.100.0.0/24) mentioned in the figure. That is why we specify `virtual` here.
 
-Start the required processes for OpenVNet
------------------------------------------
 
-### redis
+#### Interface
 
-    # chkconfig --list redis
-    redis           0:off   1:off   2:off   3:off   4:off   5:off   6:off
-    # chkconfig redis on
-    # chkconfig --list redis
-    redis           0:off   1:off   2:on    3:on    4:on    5:on    6:off
-    # service redis start
+As the sample environment has 2 virtual machines, here we define 2 database records of interface. These recores will be associated to the tap interfaces of the virtual machines. The former record contains `inst1`'s network interface information. The latter is for `inst2`.
 
+```
+# vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-test1 --ipv4-address 10.100.0.10 --port-name inst1
+# vnctl interfaces add --uuid if-inst2 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:02 --network-uuid nw-test1 --ipv4-address 10.100.0.11 --port-name inst2
+```
 
-### mysqld
+* mode
 
-    # chkconfig --list mysqld
-    mysqld          0:off   1:off   2:off   3:off   4:off   5:off   6:off
-    # chkconfig mysqld on
-    mysqld          0:off   1:off   2:on    3:on    4:on    5:on    6:off
-    # service mysqld start
+The mode of the interface. An entry with `vif` mode is basically for a virtual or physical device that is attached to the datapath of the Open vSwitch. Another mode might be specified for a physical device but here we omit the explanation about it.
 
+* owner-datapath-uuid
 
-Start OpenVNet
----------------
-    # reboot
-    #
-    # initctl start vnet-vnmgr
-    # initctl start vnet-webapi
-    # initctl start vnet-vna
-    # initctl list | grep vnet # <- This line confirms that all three processes have started successfully.
-    vnet-vna start/running, process 2505
-    vnet-vnmgr start/running, process 2286
-    vnet-webapi start/running, process 2296
+The UUID of the datapath to which this interface will be connected.
 
+* mac-address
 
-Download test environment
---------------------------
-
-Download the test environment archive and unpack it in the /root directory. The size of this archive is about 1.3 GB.
+The MAC address of the network interface of the virtual machine.
 
-     # curl -o /root/vnet-test-kvm.tgz -R http://dlc.openvnet.axsh.jp/tests/vnet-test-kvm.tgz
-     # tar xvfz ./vnet-test-kvm.tgz
+* network-uuid
 
-Create Database
-----------------
+The UUID of the virtual network to participate
 
-Create the database and enter the sample data.
+* ipv4-address
 
-    # vi ~/.bash_profile
-    PATH=$PATH:$HOME/bin -> PATH=$PATH:$HOME/bin:/opt/axsh/openvnet/ruby/bin
-    # source ~/.bash_profile
-    # cd /root/vnet-test-kvm
-    # ./db.sh
+The IPv4 address which will be assigned to the network interface.
 
+* port-name
 
-Reboot vna
------------
+The OpenVNet associates an Open vSwitch's port with a database record of the interface table if its `port-name` is corresponded to what you can see by `ovs-vsctl show`.
 
-    # initctl restart vnet-vna
-    # initctl list | grep vnet # <- This line confirms that all three process have started successfully.
-    vnet-vna start/running, process 2699
-    vnet-vnmgr start/running, process 2286
-    vnet-webapi start/running, process 2296
 
+### Launch Services
 
-Check setup for OpenFlow
--------------------------
+The OpenVNet's processes(vnmgr, webapi and vna) are registered as upstart jobs.
+You can launch them using the following commands. vnmgr and webapi may have already been launched in the last sections.
 
-### openvswitch process
-
-    # /etc/init.d/openvswitch status
-    ovsdb-server is running with pid 868
-    ovs-vswitchd is running with pid 877
-
-### bridge
-
-    # ovs-vsctl show
-    70cf0a71-9413-4889-867c-d76d8e2b7ec4
-        Bridge "br0"
-            Controller "tcp:127.0.0.1:6633"
-            fail_mode: standalone
-            Port "eth0"
-                Interface "eth0"
-            Port "br0"
-                Interface "br0"
-                    type: internal
-        ovs_version: "1.10.0"
-
-### Initial Flow
-
-Use the following command to check if flows have been applied
-
-    # ovs-ofctl dump-flows br0
-
-Below is an example of some flows you should see.
-
-    NXST_FLOW reply (xid=0x4):
-    cookie=0x900000000000001, duration=297.442s, table=0, n_packets=0, n_bytes=0, idle_age=297, priority=1,tun_id=0 actions=drop
-     cookie=0x900000000000001, duration=297.442s, table=0, n_packets=0, n_bytes=0, idle_age=297, priority=2,in_port=CONTROLLER actions=write_metadata:0x2040000000000/0x20c0000000000
-     cookie=0x500000000000003, duration=271.027s, table=0, n_packets=9, n_bytes=894, idle_age=97, priority=2,in_port=3 actions=write_metadata:0x700040000000002/0xff000c00ffffffff
-    ...
-    ...
-    cookie=0xc00005100000006, duration=271.791s, table=65, n_packets=0, n_bytes=0, idle_age=271, priority=30,arp,metadata=0x700000000000006/0xff000000ffffffff,arp_op=2 actions=CONTROLLER:65535
-     cookie=0xc00001100000008, duration=271.027s, table=65, n_packets=0, n_bytes=0, idle_age=271, priority=30,arp,metadata=0x700000000000008/0xff000000ffffffff,arp_op=1 actions=CONTROLLER:65535
-     cookie=0xc00001100000005, duration=272.126s, table=65, n_packets=0, n_bytes=0, idle_age=272, priority=30,arp,metadata=0x700000000000005/0xff000000ffffffff,arp_op=1 actions=CONTROLLER:65535
-
-
-Check Virtual Network Operation.
-------------------------------------
-
-### Start VM(s)
-
-We use kvm to start four virtual machines. Their interfaces were registered in the database earlier. These VMs and their networks are arranged as follows.
-
-+ vm1, vm3 -> vnet1
-+ vm2, vm4 -> vnet2
-
-The command "run-vm-all" starts all four virtual machines at once.
-
-    # cd /root/vnet-test-kvm/vm
-    # ./run-vm-all
-    *** vm1 ***
-    node-id: 1
-    interface name: if-x5vjmksl
-    mac address: 52:54:00:0d:84:8c
-    *** vm2 ***
-    node-id: 2
-    interface name: if-sve1s6xp
-    mac address: 52:54:00:9a:cc:00
-    *** vm3 ***
-    node-id: 3
-    interface name: if-bvixz40n
-    mac address: 52:54:00:0a:fb:78
-    *** vm4 ***
-    node-id: 4
-    interface name: if-7st2alal
-    mac address: 52:54:00:e5:f9:fb
-
-### Check the IP address of virtual machines
-
-You can log into the virtual machines using the telnet command.
-
-    # telnet localhost PORT-NO
-
-The port numbers are:
-
-+ vm1 : 5001
-+ vm2 : 5002
-+ vm3 : 5003
-+ vm4 : 5004
-
-The ip addresses are assigned as follows. As you can see, vm1 and vm3, share the same ip address, as do vm2 and vm4.
-
-+ vm1 : 10.102.0.10
-+ vm2 : 10.102.0.10
-+ vm3 : 10.102.0.11
-+ vm4 : 10.102.0.11
-
-Log into the virtual machines and make sure their ip addresses are correct.
-
-**ex) vm1**
-
-    # telnet localhost 5001 <- vm1
-    Trying 127.0.0.1...
-    Connected to localhost.
-    Escape character is '^]'.
-
-    CentOS release 6.4 (Final)
-    Kernel 2.6.32-358.el6.x86_64 on an x86_64
-
-    vm1 login: root
-    Password:
-    Last login: Thu Nov 28 21:06:57 on ttyS0
-    [root@vm1 ~]# ip addr
-    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
-        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-        inet 127.0.0.1/8 scope host lo
-        inet6 ::1/128 scope host
-           valid_lft forever preferred_lft forever
-    2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP qlen 1000
-        link/ether 52:54:00:0d:84:8c brd ff:ff:ff:ff:ff:ff
-        inet 10.102.0.10/24 brd 10.102.0.255 scope global eth0
-        inet6 fe80::5054:ff:fe0d:848c/64 scope link
-           valid_lft forever preferred_lft forever
-
-
-### Check if the virtual networks work correctly
-
-Use tcpdump to supervise the interfaces of vm3 (10.102.0.11) and vm4 (10.102.0.11). This is going to show us that only the virtual machines that are in the same virtual network will be able to reach each other.
-
-**Run tcpdump on the node where you installed OpenVNet and supervise the interfaces of vm3 and vm4**
-
-**vm3**
-
-    [root@vm3 ~]# tcpdump -i if-bvixz40n
-    tcpdump: WARNING: if-bvixz40n: no IPv4 address assigned
-    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-    listening on if-bvixz40n, link-type EN10MB (Ethernet), capture size 65535 bytes
-
-**vm4**
-
-    [root@vm4 ~]# tcpdump -i if-7st2alal
-    tcpdump: WARNING: if-7st2alal: no IPv4 address assigned
-    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-    listening on if-7st2alal, link-type EN10MB (Ethernet), capture size 65535 bytes
-
-**"ping" from vm1 to "10.102.0.11".**
-You should see that the ping packets reach vm3 and not vm4.
-
-**"ping" from vm2 to "10.102.0.11".**
-This time you should see that the ping packets reach vm4 and not vm3.
+```
+# initctl start vnet-vnmgr
+# initctl start vnet-webapi
+# initctl start vnet-vna
+```
+
+The log files are created in the /var/log/openvnet directory. Refer to them if something bad happens. If the vna is successfully launched you can see `is_connected: true` by `ovs-vsctl show` such as following.
+
+```
+fbe23184-7f14-46cb-857b-3abf6153a6d6
+    Bridge "br0"
+        Controller "tcp:127.0.0.1:6633"
+            is_connected: true
+```
+
+This means the OpenFlow controller which is vna is now connected to the datapath. After the connection between the OpenFlow controller and the
+datapath is established it starts installing the flows on the datapath.
+
+Verification
+-------
+
+By following all the instructions from the beginning to this section, you already have the sample environment. In this section, we are firstly going to play around the environment then secondary see network packets going through OpenFlow rules to reach
+from one guest to another.
+
+As a representation of the guest here we use [LXC](https://linuxcontainers.org), which helps users run multiple isolated Linux system containers. Any other virtualization technologies might be used, however we take LXC since it is easy to create/destroy/configure and simple enough to do this verification.
+
+Install LXC
+
+```
+# yum -y install lxc lxc-templates
+```
+
+Create and mount cgroup
+
+```
+# mkdir /cgroup
+# echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
+# mount /cgroup
+```
+
+Create 2 LXC guests
+(it may require rsync to be installed. If it is not installed execute `yum install rsync`)
+
+```
+# lxc-create -t centos -n inst1
+# lxc-create -t centos -n inst2
+```
+
+Configure interfaces of each guest
+
+```
+# vi /var/lib/lxc/inst1/config
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = inst1
+lxc.network.ipv4 = 10.100.0.10
+lxc.network.hwaddr = 10:54:FF:00:00:01
+lxc.rootfs = /var/lib/lxc/inst1/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.utsname = inst1
+lxc.autodev = 0
+```
+
+```
+# vi /var/lib/lxc/inst2/config
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = inst2
+lxc.network.ipv4 = 10.100.0.11
+lxc.network.hwaddr = 10:54:FF:00:00:02
+lxc.rootfs = /var/lib/lxc/inst2/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.utsname = inst2
+lxc.autodev = 0
+```
+
+We do not use `lxc.network.link` parameter because the linux bridge is replaced by the Open vSwitch.
+
+Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.
+
+Launch the LXC guests then enslave the LXC's tap interfaces to the datapath.
+
+```
+# lxc-start -d -n inst1
+# lxc-start -d -n inst2
+
+# ovs-vsctl add-port br0 inst1
+# ovs-vsctl add-port br0 inst2
+```
+
+Now the LXC's network interfaces are attached to the Open vSwitch, likewise you plug a LAN cable to a network switch.
+
+Log in to the inst1 to see if the IP address is assigned properly.
+
+```
+# lxc-console -n inst1
+# ip a
+```
+
+ping to inst2 (10.100.0.11)
+
+```
+# ping 10.100.0.11
+```
+
+You would see the ping replyed from the peer machine (in this case inst2). Meanwhile you can see which flows are selected by `vnflows-monitor`. Execute the following command on a lxc guest, then ping from one another.
+
+```
+# cd /opt/axsh/openvnet/vnet/bin
+# ./vnflows-monitor c 0 d 1
+```
+
+You can see the whole flows by `vnflows-monitor`.
+
+```
+# cd /opt/axsh/openvnet/vnet/bin
+# ./vnflows-monitor
+```
 
 
 ---------------------------------------------------------------------
@@ -426,4 +366,3 @@ This time you should see that the ping packets reach vm4 and not vm3.
 # License
 
 Copyright (c) Axsh Co. Components included are distributed under LGPL 3.0
-
