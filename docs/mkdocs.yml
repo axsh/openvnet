@@ -13,7 +13,7 @@ google_analytics: ['UA-63388719-2', 'axsh.github.io/openvnet']
 
 pages:
 - ['index.md', 'Home']
-- ['concept.md', 'Concept']
+#- ['concept.md', 'Concept']
 - ['installation.md', 'Getting started', 'Installation']
 - ['community.md', 'Support', 'Community']
 
