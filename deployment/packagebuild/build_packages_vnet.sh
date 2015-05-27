@@ -30,7 +30,7 @@ function build_package(){
     echo "error: recipe not found: ${name}"
     exit 1
   }
-  mkdir ${package_work_dir}
+  mkdir -p ${package_work_dir}
   (cd ${recipe_dir}; BUILD_TIME=${build_time} ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
   for arch in ${possible_archs}; do
     cp ${package_work_dir}/pkg/*${arch}.rpm ${repo_dir}/${arch} | :
