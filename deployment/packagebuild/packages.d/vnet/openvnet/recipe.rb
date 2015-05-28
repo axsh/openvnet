@@ -2,7 +2,7 @@ class Openvnet < FPM::Cookery::Recipe
   name     'openvnet'
   description "Virtual network agent for OpenVNet"
   homepage 'https://github.com/axsh/openvnet/'
-  version (ENV['BUILD_TIME'] || Time.now.strftime('%Y%m%d%H%M%S')) #+ (ENV['GIT_COMMIT'] ? "git#{ENV['GIT_COMMIT'].slice(0, 7)}" : "spot")
+  version (ENV['RPM_VERSION'] || Time.now.strftime('%Y%m%d%H%M%S'))
   source '', :with => :noop
   arch 'all'
   depends *%w(
