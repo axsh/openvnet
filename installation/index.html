@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Installation - OpenVnet</title>
+  
+
+  <link rel="shortcut icon" href="../favicon.png">
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  <link href="../custom.css" rel="stylesheet">
+
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script> 
+
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-63388719-2', 'axsh.github.io/openvnet');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> OpenVnet</a>
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <ul class="current">
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="..">Home</a>
+                
+            </li>
+        
+
+    
+        
+            <span>Getting started</span>
+            
+                <li class="toctree-l2 current">
+                    <a class="current" href="./">Installation</a>
+                    
+                        <ul>
+                        
+                            <li class="toctree-l3"><a href="#openvnet-installation-guide">OpenVNet Installation Guide</a></li>
+                            
+                                <li><a class="toctree-l4" href="#overview">Overview</a></li>
+                            
+                                <li><a class="toctree-l4" href="#requirements">Requirements</a></li>
+                            
+                                <li><a class="toctree-l4" href="#installation">Installation</a></li>
+                            
+                                <li><a class="toctree-l4" href="#verification">Verification</a></li>
+                            
+                        
+                        </ul>
+                    
+                </li>
+            
+        
+
+    
+        
+            <span>Support</span>
+            
+                <li class="toctree-l2 ">
+                    <a class="" href="../community/">Community</a>
+                    
+                </li>
+            
+        
+
+    
+</ul>
+
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">OpenVnet</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+        <li>Getting started &raquo;</li>
+      
+    
+    <li>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="https://github.com/axsh/openvnet" class="icon icon-github"> Edit on GitHub</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              <h1 id="openvnet-installation-guide">OpenVNet Installation Guide</h1>
+<h2 id="overview">Overview</h2>
+<p>Welcome to the world of OpenVNet! With this installation guide we help you
+create a very simple yet innovative virtual network environment.</p>
+<p><img alt="vnet_minimum" src="https://www.dropbox.com/s/dezarv561fg7sdj/vnet_minimum.png?dl=1" /></p>
+<p>On a given server (here named as server1) there is one virtual network whose network address is 10.100.0.0/24 and 2 virtual machines joining it.
+The orange circles describe OpenVNet's ruby processes; vna, vnmgr and webapi.
+See architecture for more details of how the OpenVNet works.</p>
+<h2 id="requirements">Requirements</h2>
+<h3 id="network-requirements">Network Requirements</h3>
+<ul>
+<li>Local Area Network (LAN)</li>
+<li>Internet connection</li>
+</ul>
+<h2 id="installation">Installation</h2>
+<h3 id="install-openvnet-packages">Install OpenVNet Packages</h3>
+<p>Download the openvnet.repo file and put it to your <code>/etc/yum.repos.d/</code> directory.</p>
+<pre><code># curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet.repo
+</code></pre>
+<p>Download the openvnet-third-party.repo file and put it in your <code>/etc/yum.repos.d/</code> directory.</p>
+<pre><code># curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/openvnet-third-party.repo
+</code></pre>
+<p>Each repo has the following packages:</p>
+<ul>
+<li>openvnet.repo</li>
+<li>openvnet (metapackage)</li>
+<li>openvnet-common</li>
+<li>openvnet-vna</li>
+<li>openvnet-vnmgr</li>
+<li>openvnet-webapi</li>
+<li>
+<p>openvnet-vnctl</p>
+</li>
+<li>
+<p>openvnet-third-party.repo</p>
+</li>
+<li>openvnet-ruby</li>
+<li>openvswitch</li>
+</ul>
+<p>Install epel-release.</p>
+<pre><code class="bash">yum install -y epel-release
+</code></pre>
+
+<p>Install OpenVNet packages.</p>
+<pre><code class="bash">yum install -y openvnet
+</code></pre>
+
+<p><code>openvnet</code> is a metapackage. It is equivalent to installing <code>openvnet-common</code>,
+<code>openvnet-vna</code>, <code>openvnet-vnmgr</code> and <code>openvnet-webapi</code> at once.</p>
+<h3 id="edit-configuration-files">Edit Configuration Files</h3>
+<p>Edit the file <code>/etc/openvnet/vnmgr.conf</code></p>
+<pre><code>node {
+  id "vnmgr"
+  addr {
+    protocol "tcp"
+    host "127.0.0.1"
+    public ""
+    port 9102
+  }
+}
+</code></pre>
+<p>Modify the parameters <code>host</code> and <code>public</code> according to your environment. In order for
+the sample environment in the overview section we leave those parameters as is. The detail of each parameter is following.</p>
+<ul>
+<li>
+<p><strong>id</strong> : OpenVNet relies on the <a href="http://zeromq.org">0mq</a> protocol for communication among its processes. Hereby processes means vnmgr, vna and webapi. This id is used by 0mq to identify each process. Any string here is fine as long as there's no collision in OpenVNet. It's recommended to just use the default values.</p>
+</li>
+<li>
+<p><strong>protocol</strong> : The layer 4 protocol which is either TCP or UDP. A socket which the 0mq needs will be created based on this parameter. The default value is <code>tcp</code>.</p>
+</li>
+<li>
+<p><strong>host</strong> : The IP address of the vnmgr node. We use loopback address in this guide because all the processes reside on the same node .</p>
+</li>
+<li>
+<p><strong>public</strong> : In case the process running in a NAT environment, specify the NAT address as the process can be reached from the outside of the NAT environment.</p>
+</li>
+<li>
+<p><strong>port</strong> : The port number that the process will listen to. Specify a unique port number and make sure the port number is different for each of the OpenVNet's processes and also not taken by any other process.</p>
+</li>
+</ul>
+<p><code>/etc/openvnet/vna.conf</code> and <code>/etc/openvnet/webapi.conf</code> have the same structure as <code>vnmgr.conf</code>. Edit them if necessary otherwise leave them as is for the sample environment we are just creating. We need the <code>id</code> parameter in <code>vna.conf</code> later when we configure the database. Please make sure what you specified.</p>
+<h3 id="setup-local-infrastructure">Setup Local Infrastructure</h3>
+<p>Datapath is one of the Linux kernel capabilities behaving similar to the Linux bridge.
+Create the file <code>/etc/sysconfig/network-scripts/ifcfg-br0</code> with the following contents. However you need to pay attention to several parameters.</p>
+<ul>
+<li>datapath-id</li>
+</ul>
+<p>The datapath ID that the Open vSwitch will use. Set unique 16 hex digits as you like.</p>
+<pre><code class="bash">DEVICE=br0
+DEVICETYPE=ovs
+TYPE=OVSBridge
+ONBOOT=yes
+BOOTPROTO=static
+HOTPLUG=no
+OVS_EXTRA=&quot;
+ set bridge     ${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
+ set bridge     ${DEVICE} other_config:disable-in-band=true --
+ set bridge     ${DEVICE} other-config:datapath-id=0000aaaaaaaaaaaa --
+ set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
+ set-fail-mode  ${DEVICE} standalone --
+ set-controller ${DEVICE} tcp:127.0.0.1:6633
+&quot;
+</code></pre>
+
+<p>Start <code>openvswitch</code> service and <code>ifup</code> the datapath.</p>
+<pre><code class="bash">service openvswitch start
+ifup br0
+</code></pre>
+
+<p>Start redis</p>
+<pre><code class="bash">service redis start
+</code></pre>
+
+<h3 id="setup-database">Setup Database</h3>
+<p>Edit <code>/etc/openvnet/common.conf</code> if necessary. The sample environment uses the default settings.</p>
+<p>Launch mysql server.</p>
+<pre><code class="bash">service mysqld start
+</code></pre>
+
+<p>To automatically launch the mysql server at boot, execute the following command.</p>
+<pre><code class="bash">chkconfig mysqld on
+</code></pre>
+
+<p>Set <code>PATH</code> environment variable as following since the OpenVNet uses its own ruby binary.</p>
+<pre><code class="bash">PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
+</code></pre>
+
+<p>Create database</p>
+<pre><code class="bash">cd /opt/axsh/openvnet/vnet
+bundle exec rake db:create
+bundle exec rake db:init
+</code></pre>
+
+<p>Start vnmgr and webapi.</p>
+<pre><code class="bash">initctl start vnet-vnmgr
+initctl start vnet-webapi
+</code></pre>
+
+<p>We use <code>vnctl</code> to create the database records subsequent to the above configurations. <code>vnctl</code> is Web API client offered by the <code>openvnet-vnctl</code> package.</p>
+<h4 id="datapath">Datapath</h4>
+<p>We created a datapath earlier that the OpenVNet needs to know. The following database record must be created in order to tell the OpenVNet about the datapath.</p>
+<pre><code class="bash">vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
+</code></pre>
+
+<ul>
+<li>dpid</li>
+</ul>
+<p>The datapath ID specified in <code>/etc/sysconfig/network-scripts/ifcfg-br0</code></p>
+<ul>
+<li>node-id</li>
+</ul>
+<p>The ID of the vna written in <code>/etc/openvnet/vna.conf</code></p>
+<h4 id="network">Network</h4>
+<p>In the figure of the sample environment there is a light purple circle which represents a virtual network. You need to define the virtual network by <code>vnctl networks add</code> subcommand with the following parameters.</p>
+<pre><code class="bash">vnctl networks add --uuid nw-test1 --display-name testnet1 --ipv4-network 10.100.0.0 --ipv4-prefix 24 --network-mode virtual
+</code></pre>
+
+<ul>
+<li>ipv4-network</li>
+</ul>
+<p>The IPv4 network address.</p>
+<ul>
+<li>ipv4-prefix</li>
+</ul>
+<p>The IPv4 network prefix. (default 24)</p>
+<ul>
+<li>network-mode</li>
+</ul>
+<p>The mode of the network to create. We are currently creating the virtual network (10.100.0.0/24) mentioned in the figure. That is why we specify <code>virtual</code> here.</p>
+<h4 id="interface">Interface</h4>
+<p>As the sample environment has 2 virtual machines, here we define 2 database records of interface. These records will be associated to the tap interfaces of the virtual machines. The former record contains <code>inst1</code>'s network interface information. The latter is for <code>inst2</code>.</p>
+<pre><code class="bash">vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-test1 --ipv4-address 10.100.0.10 --port-name inst1
+vnctl interfaces add --uuid if-inst2 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:02 --network-uuid nw-test1 --ipv4-address 10.100.0.11 --port-name inst2
+</code></pre>
+
+<ul>
+<li>mode</li>
+</ul>
+<p>The mode of the interface. An entry with <code>vif</code> mode is basically for a virtual or physical device that is attached to the datapath of the Open vSwitch. Another mode might be specified for a physical device but here we omit the explanation about it.</p>
+<ul>
+<li>owner-datapath-uuid</li>
+</ul>
+<p>The UUID of the datapath to which this interface will be connected.</p>
+<ul>
+<li>mac-address</li>
+</ul>
+<p>The MAC address of the network interface of the virtual machine.</p>
+<ul>
+<li>network-uuid</li>
+</ul>
+<p>The UUID of the virtual network to participate</p>
+<ul>
+<li>ipv4-address</li>
+</ul>
+<p>The IPv4 address which will be assigned to the network interface.</p>
+<ul>
+<li>port-name</li>
+</ul>
+<p>The OpenVNet associates an Open vSwitch's port with a database record of the interface table if its <code>port-name</code> is corresponded to what you can see by <code>ovs-vsctl show</code>.</p>
+<h3 id="launch-services">Launch Services</h3>
+<p>The OpenVNet's processes(vnmgr, webapi and vna) are registered as upstart jobs.
+You can launch them using the following commands. vnmgr and webapi may have already been launched in the last sections.</p>
+<pre><code class="bash">initctl start vnet-vnmgr
+initctl start vnet-webapi
+initctl start vnet-vna
+</code></pre>
+
+<p>The log files are created in the /var/log/openvnet directory. Refer to them if something bad happens. If the vna is successfully launched you can see <code>is_connected: true</code> by <code>ovs-vsctl show</code> such as following.</p>
+<pre><code class="bash">fbe23184-7f14-46cb-857b-3abf6153a6d6
+    Bridge &quot;br0&quot;
+        Controller &quot;tcp:127.0.0.1:6633&quot;
+            is_connected: true
+</code></pre>
+
+<p>This means the OpenFlow controller which is vna is now connected to the datapath. After the connection between the OpenFlow controller and the
+datapath is established it starts installing the flows on the datapath.</p>
+<h2 id="verification">Verification</h2>
+<p>By following all the instructions from the beginning to this section, you already have the sample environment. In this section, we are firstly going to play around the environment then secondary see network packets going through OpenFlow rules to reach
+from one guest to another.</p>
+<p>As a representation of the guest here we use <a href="https://linuxcontainers.org">LXC</a>, which helps users run multiple isolated Linux system containers. Any other virtualization technologies might be used, however we take LXC since it is easy to create/destroy/configure and simple enough to do this verification.</p>
+<p>Install LXC</p>
+<pre><code class="bash">yum -y install lxc lxc-templates
+</code></pre>
+
+<p>Create and mount cgroup</p>
+<pre><code class="bash">mkdir /cgroup
+echo &quot;cgroup /cgroup cgroup defaults 0 0&quot; &gt;&gt; /etc/fstab
+mount /cgroup
+</code></pre>
+
+<p>Create 2 LXC guests
+(it may require rsync to be installed. If it is not installed execute <code>yum install rsync</code>)</p>
+<pre><code class="bash">lxc-create -t centos -n inst1
+lxc-create -t centos -n inst2
+</code></pre>
+
+<p>Configure interfaces of each guest</p>
+<pre><code class="bash">vi /var/lib/lxc/inst1/config
+
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = inst1
+lxc.network.ipv4 = 10.100.0.10
+lxc.network.hwaddr = 10:54:FF:00:00:01
+lxc.rootfs = /var/lib/lxc/inst1/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.utsname = inst1
+lxc.autodev = 0
+</code></pre>
+
+<pre><code class="bash">vi /var/lib/lxc/inst2/config
+
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = inst2
+lxc.network.ipv4 = 10.100.0.11
+lxc.network.hwaddr = 10:54:FF:00:00:02
+lxc.rootfs = /var/lib/lxc/inst2/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.utsname = inst2
+lxc.autodev = 0
+</code></pre>
+
+<p>We do not use <code>lxc.network.link</code> parameter because the Linux bridge is replaced by the Open vSwitch.</p>
+<p>Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.</p>
+<p>Launch the LXC guests then enslave the LXC's tap interfaces to the datapath.</p>
+<pre><code class="bash">lxc-start -d -n inst1
+lxc-start -d -n inst2
+
+ovs-vsctl add-port br0 inst1
+ovs-vsctl add-port br0 inst2
+</code></pre>
+
+<p>Now the LXC's network interfaces are attached to the Open vSwitch, likewise you plug a LAN cable to a network switch.</p>
+<p>Log in to the inst1 to see if the IP address is assigned properly.</p>
+<pre><code class="bash">lxc-console -n inst1
+ip a
+</code></pre>
+
+<p>ping to inst2 (10.100.0.11)</p>
+<pre><code class="bash">ping 10.100.0.11
+</code></pre>
+
+<p>You would see the ping reply from the peer machine (in this case inst2). Meanwhile you can see which flows are selected by <code>vnflows-monitor</code>. Execute the following command on a lxc guest, then ping from one another.</p>
+<pre><code class="bash">cd /opt/axsh/openvnet/vnet/bin
+./vnflows-monitor c 0 d 1
+</code></pre>
+
+<p>You can see the whole flows by <code>vnflows-monitor</code>.</p>
+<pre><code class="bash">cd /opt/axsh/openvnet/vnet/bin
+./vnflows-monitor
+</code></pre>
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../community/" class="btn btn-neutral float-right" title="Community"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    <!-- Copyright etc -->
+    </p>
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+        
+            <a href="https://github.com/axsh/openvnet" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+        
+      <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../community/" style="color: #fcfcfc">Next &raquo;</a></span>
+    </span>
+</div>
+
+<!--
+MkDocs version  : 0.12.2
+Docs Build Date : 2015-05-28 06:35:46.888588
+-->
+</body>
+</html>
