@@ -60,11 +60,6 @@ module Vnet::Models
 
     end
 
-    def valid_in_subnet
-      ipv4_prefix = Network[network_id][:ipv4_prefix]
-      IPAddress::IPv4::parse_u32(Network[self.network_id][:ipv4_network], ipv4_prefix).include? IPAddress::IPv4::parse_u32(self.ipv4_address, ipv4_prefix)
-    end
-
     # TODO: Is this really safe if interface_id is changed?
     # TODO: This could cause issues if we lease/release translation
     # related ip leases often.

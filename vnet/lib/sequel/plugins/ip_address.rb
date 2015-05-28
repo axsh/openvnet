@@ -11,6 +11,7 @@ module Sequel
 
         model.class_eval do
           def network
+            return @network if @network
             networks.first
           end
 
@@ -39,15 +40,22 @@ module Sequel
             end
             @ipv4_address
           end
+
+          def valid_in_subnet
+            return true unless @network
+            ipv4_nw = IPAddress::IPv4::parse_u32(self.network.ipv4_network, self.network.ipv4_prefix) 
+            ipv4 = IPAddress::IPv4::parse_u32(self.ipv4_address, self.network.ipv4_prefix)
+            ipv4_nw.include? (ipv4)
+          end
         end
       end
 
       module InstanceMethods
         def validate
           super
+          errors.add(:ipv4_address, 'invalid subnet') if not valid_in_subnet
           errors.add(:network_id, 'cannot be empty') if self.network_id.blank?
           errors.add(:ipv4_address, 'cannot be empty') if self.ipv4_address.blank?
-          errors.add(:ipv4_address, 'invalid subnet') if not valid_subnet
         end
 
         def before_save
@@ -69,6 +77,7 @@ module Sequel
           unless self.ip_address
             self.ip_address = self.class.association_reflection(:ip_address).associated_class.new(ipv4_address: @ipv4_address).tap do |model|
               model.network = model.class.association_reflection(:network).associated_class[@network_id]
+              @network = model.network
               model.save
             end
           end
