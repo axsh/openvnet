@@ -93,8 +93,6 @@ module Vnet::Openflow
 
       # Pre-load host datapath if it exists, else wait for a created
       # event.
-      #
-      # TODO: Need to add 'datapath_manager'...
       @dp_info.host_datapath_manager.async.retrieve(dpid: @dpid)
 
       while host_datapath.nil?
@@ -105,6 +103,12 @@ module Vnet::Openflow
       end
 
       @datapath_info = DatapathInfo.new(host_datapath)
+
+      # Make sure datapath manager has the host datapath.
+      #
+      # TODO: This should be done automatically by datapath manager
+      # when it is initialized.
+      @dp_info.datapath_manager.async.retrieve(dpid: @dpid)
     end
 
     def wait_for_unload_of_host_datapath

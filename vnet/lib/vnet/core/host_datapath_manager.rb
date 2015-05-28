@@ -64,7 +64,7 @@ module Vnet::Core
 
     def item_post_install(item, item_map)
       if item_map.dpid != @dp_info.dpid
-        raise "this is not good"
+        raise log_format('tried to load host datapath with unexpected datapath id', "dpid:%#x" % dpid)
       end
     end
 
