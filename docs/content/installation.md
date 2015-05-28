@@ -82,7 +82,7 @@ the sample environment in the overview section we leave those parameters as is. 
 
 - **id** : OpenVNet relies on the [0mq](http://zeromq.org) protocol for communication among its processes. Hereby processes means vnmgr, vna and webapi. This id is used by 0mq to identify each process. Any string here is fine as long as there's no collision in OpenVNet. It's recommended to just use the default values.
 
-- **protocol** : The layer 4 protocol which is either TCP or UDP. A socket which the 0mq needs will be created based on this paramter. The default value is `tcp`.
+- **protocol** : The layer 4 protocol which is either TCP or UDP. A socket which the 0mq needs will be created based on this parameter. The default value is `tcp`.
 
 - **host** : The IP address of the vnmgr node. We use loopback address in this guide because all the processes reside on the same node .
 
@@ -210,7 +210,7 @@ The mode of the network to create. We are currently creating the virtual network
 
 #### Interface
 
-As the sample environment has 2 virtual machines, here we define 2 database records of interface. These recores will be associated to the tap interfaces of the virtual machines. The former record contains `inst1`'s network interface information. The latter is for `inst2`.
+As the sample environment has 2 virtual machines, here we define 2 database records of interface. These records will be associated to the tap interfaces of the virtual machines. The former record contains `inst1`'s network interface information. The latter is for `inst2`.
 
 ```bash
 vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-test1 --ipv4-address 10.100.0.10 --port-name inst1
@@ -327,7 +327,7 @@ lxc.utsname = inst2
 lxc.autodev = 0
 ```
 
-We do not use `lxc.network.link` parameter because the linux bridge is replaced by the Open vSwitch.
+We do not use `lxc.network.link` parameter because the Linux bridge is replaced by the Open vSwitch.
 
 Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.
 
@@ -356,7 +356,7 @@ ping to inst2 (10.100.0.11)
 ping 10.100.0.11
 ```
 
-You would see the ping replyed from the peer machine (in this case inst2). Meanwhile you can see which flows are selected by `vnflows-monitor`. Execute the following command on a lxc guest, then ping from one another.
+You would see the ping reply from the peer machine (in this case inst2). Meanwhile you can see which flows are selected by `vnflows-monitor`. Execute the following command on a lxc guest, then ping from one another.
 
 ```bash
 cd /opt/axsh/openvnet/vnet/bin
