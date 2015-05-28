@@ -63,13 +63,10 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
-      # TODO: Make events.
       if item_map.dpid != @dp_info.dpid
         raise "this is not good"
       end
     end
-
-    # Remove dpn and dprl events.
 
     def created_item(params)
       return if internal_detect_by_id(params)

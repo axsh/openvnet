@@ -61,7 +61,7 @@ module Vnet::Openflow
       @switch.create_default_flows
       @switch.switch_ready
 
-      return
+      return nil
     end
 
     def run_normal
@@ -74,7 +74,7 @@ module Vnet::Openflow
       info log_format('resetting datapath info')
       @controller.pass_task { @controller.reset_datapath(@dpid) }
 
-      return
+      return nil
     end
 
     #
@@ -91,12 +91,16 @@ module Vnet::Openflow
       host_datapath = nil
       counter = 0
 
-      @dp_info.datapath_manager.async.retrieve(dpid: @dpid)
+      # Pre-load host datapath if it exists, else wait for a created
+      # event.
+      #
+      # TODO: Need to add 'datapath_manager'...
+      @dp_info.host_datapath_manager.async.retrieve(dpid: @dpid)
 
       while host_datapath.nil?
         info log_format('querying database for datapath with matching dpid', "seconds:#{counter * 30}")
 
-        host_datapath = @dp_info.datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
+        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
         counter += 1
       end
 
@@ -107,7 +111,7 @@ module Vnet::Openflow
       unloaded = nil
 
       while unloaded.nil?
-        unloaded = @dp_info.datapath_manager.wait_for_unloaded({id: @datapath_info.id}, nil)
+        unloaded = @dp_info.host_datapath_manager.wait_for_unloaded({id: @datapath_info.id}, nil)
       end
 
       debug log_format('host datapath was unloaded')
@@ -155,9 +159,7 @@ module Vnet::Openflow
       @dp_info.bootstrap_managers.each { |manager|
         manager.set_datapath_info(@datapath_info)
       }
-
     end
-
 
     # TODO: Add a way to block events from being processed by managers
     # until everything has been initialized.

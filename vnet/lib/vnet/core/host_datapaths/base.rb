@@ -25,11 +25,10 @@ module Vnet::Core::HostDatapaths
     end
 
     def to_hash
-      # TODO: Remove active_networks?
       Vnet::Core::HostDatapath.new(id: @id,
-                               uuid: @uuid,
-                               display_name: @display_name,
-                               node_id: @node_id)
+                                   uuid: @uuid,
+                                   display_name: @display_name,
+                                   node_id: @node_id)
     end
 
   end
