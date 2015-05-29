@@ -37,7 +37,7 @@ function build_package(){
     exit 1
   }
   mkdir -p ${package_work_dir}
-  (cd ${recipe_dir}; RPM_SUFFIX=${rpm_suffix} ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
+  (cd ${recipe_dir}; RPM_VERSION=${rpm_suffix} ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
   for arch in ${possible_archs}; do
     cp ${package_work_dir}/pkg/*${arch}.rpm ${repo_dir}/${arch} | :
   done
