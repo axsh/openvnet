@@ -15,11 +15,11 @@ possible_archs="i386 noarch x86_64"
 
 # Set RPM_VERSION manually
 if [[ -n ${RPM_VERSIOM} ]]; then
-  rpm_suffix=${RPM_VERSION}
-else
   # Jenkins currently uses internal tagging, resulting in the next line not working
   #rpm_suffix=$(git describe --tags) 
   rpm_suffix=$(echo ${BUILD_ID:-$(date +%Y%m%d%H%M%S)} | sed -e 's/[^0-9]//g')
+else
+  rpm_suffix=${RPM_VERSION}
 fi
 
 function build_all_packages(){
