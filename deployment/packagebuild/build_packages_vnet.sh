@@ -44,7 +44,7 @@ function build_package(){
 }
 
 function check_repo(){
-  repo_dir=${repo_base_dir}/${rpm_suffix}-git$(echo ${GIT_COMMIT:-spot} | cut -c-7)
+  repo_dir=${repo_base_dir}/${rpm_suffix}git$(echo ${GIT_COMMIT:-spot} | cut -c-7)
   mkdir -p ${repo_dir}
   for i in ${possible_archs}; do
     mkdir -p ${repo_dir}/${i}
