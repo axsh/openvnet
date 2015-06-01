@@ -192,9 +192,11 @@ module Vnspec
           logfile = logfile_for(node_name)
           timestamp = "#{Time.now.strftime("%Y%m%d%H%M%S%L")}"
           rotated_logfile = "#{logfile}.#{timestamp}"
-          ssh(ip, "test -f #{logfile} && mv #{logfile} #{rotated_logfile}", use_sudo: true)
-          ssh(ip, "test -f #{rotated_logfile} && gzip #{rotated_logfile}", use_sudo: true)
-          ssh(ip, "touch #{logfile}", use_sudo: true)
+
+          ssh(ip, "cp #{logfile} #{rotated_logfile}", use_sudo: true)
+          ssh(ip, "gzip #{rotated_logfile}", use_sudo: true)
+
+          ssh(ip, "truncate --size 0 #{logfile}", use_sudo: true)
         end
       end
 
