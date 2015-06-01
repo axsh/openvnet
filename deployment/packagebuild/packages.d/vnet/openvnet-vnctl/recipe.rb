@@ -5,6 +5,7 @@ class OpenvnetVnctl < FPM::Cookery::Recipe
   version (ENV['BUILD_TIME'] || Time.now.strftime('%Y%m%d%H%M%S')) + (ENV['GIT_COMMIT'] ? "git#{ENV['GIT_COMMIT'].slice(0, 7)}" : "spot")
   source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
   arch 'all'
+  vendor 'axsh'
 
   depends 'openvnet-ruby'
 
