@@ -8,8 +8,8 @@ module Vnet::Core
     #
     # Events:
     #
-    subscribe_event DATAPATH_INITIALIZED, :load_item
-    subscribe_event DATAPATH_UNLOAD_ITEM, :unload_item
+    subscribe_event HOST_DATAPATH_INITIALIZED, :load_item
+    subscribe_event HOST_DATAPATH_UNLOAD_ITEM, :unload_item
     subscribe_event DATAPATH_CREATED_ITEM, :created_item
     subscribe_event DATAPATH_DELETED_ITEM, :unload_item
 
@@ -28,11 +28,11 @@ module Vnet::Core
     end
 
     def initialized_item_event
-      DATAPATH_INITIALIZED
+      HOST_DATAPATH_INITIALIZED
     end
 
     def item_unload_event
-      DATAPATH_UNLOAD_ITEM
+      HOST_DATAPATH_UNLOAD_ITEM
     end
 
     def match_item_proc_part(filter_part)
@@ -66,6 +66,8 @@ module Vnet::Core
       if item_map.dpid != @dp_info.dpid
         raise log_format('tried to load host datapath with unexpected datapath id', "dpid:%#x" % dpid)
       end
+
+      # TODO: Add warning if node_id does not match current node.
     end
 
     def created_item(params)
