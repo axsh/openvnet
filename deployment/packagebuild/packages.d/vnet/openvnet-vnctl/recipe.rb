@@ -2,7 +2,7 @@ class OpenvnetVnctl < FPM::Cookery::Recipe
   name     'openvnet-vnctl'
   description 'Commandline client for making requests to OpenVNet\'s web API'
   homepage 'https://github.com/axsh/openvnet/'
-  version (ENV['BUILD_TIME'] || Time.now.strftime('%Y%m%d%H%M%S')) + (ENV['GIT_COMMIT'] ? "git#{ENV['GIT_COMMIT'].slice(0, 7)}" : "spot")
+  version (ENV['RPM_VERSION'] || Time.now.strftime('%Y%m%d%H%M%S'))
   source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
   arch 'all'
   vendor 'axsh'
