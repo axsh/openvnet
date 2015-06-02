@@ -5,6 +5,7 @@ class OpenvnetCommon < FPM::Cookery::Recipe
   version (ENV['RPM_VERSION'] || Time.now.strftime('%Y%m%d%H%M%S'))
   #source   'https://github.com/axsh/openvnet/', :with => :git
   source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
+  vendor 'axsh'
 
   depends *%w(
     zeromq3-devel

@@ -6,6 +6,7 @@ class OpenvnetWebapi < FPM::Cookery::Recipe
   #source   'https://github.com/axsh/openvnet/', :with => :git
   source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
   arch 'all'
+  vendor 'axsh'
   depends *%w(
     openvnet-common
   )

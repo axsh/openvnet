@@ -5,6 +5,7 @@ class Openvnet < FPM::Cookery::Recipe
   version (ENV['RPM_VERSION'] || Time.now.strftime('%Y%m%d%H%M%S'))
   source '', :with => :noop
   arch 'all'
+  vendor 'axsh'
   depends *%w(
     openvnet-vnmgr
     openvnet-webapi

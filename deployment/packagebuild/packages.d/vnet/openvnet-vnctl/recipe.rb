@@ -5,6 +5,7 @@ class OpenvnetVnctl < FPM::Cookery::Recipe
   version (ENV['RPM_VERSION'] || Time.now.strftime('%Y%m%d%H%M%S'))
   source   File.expand_path("../../../../../", File.dirname(__FILE__)), :with => :local_path
   arch 'all'
+  vendor 'axsh'
 
   depends 'openvnet-ruby'
 
