@@ -2,8 +2,8 @@
 require 'spec_helper'
 
 describe Sequel::Plugins::IpAddress do
-  let(:ipv4_address_1) { 1 }
-  let(:ipv4_address_2) { 2 }
+  let(:ipv4_address_1) { IPAddress("192.168.1.2").to_i }
+  let(:ipv4_address_2) { IPAddress("192.168.1.3").to_i }
   let(:network_id_1) { Fabricate(:network, :uuid => "nw-1").id }
   let(:network_id_2) { Fabricate(:network, :uuid => "nw-2").id }
   let(:interface_id_1) { Fabricate(:interface, :uuid => "if-1").id }
