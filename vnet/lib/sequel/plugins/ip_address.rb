@@ -43,8 +43,9 @@ module Sequel
 
           def valid_in_subnet
             return true unless @network
-            ipv4_nw = IPAddress::IPv4::parse_u32(self.network.ipv4_network, self.network.ipv4_prefix) 
+            ipv4_nw = IPAddress::IPv4::parse_u32(self.network.ipv4_network, self.network.ipv4_prefix)
             ipv4 = IPAddress::IPv4::parse_u32(self.ipv4_address, self.network.ipv4_prefix)
+
             ipv4_nw.include? (ipv4)
           end
         end
