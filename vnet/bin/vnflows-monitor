@@ -7,6 +7,7 @@ require 'rubygems'
 require 'bundler/setup'
 require 'vnet/constants/openflow_flows'
 require 'io/wait'
+require 'optparse'
 # require 'generator' #does not work in 2.0??
 
 Signal.trap("PIPE", "EXIT")
@@ -74,7 +75,7 @@ class Flow
   end
 
   def to_pretty
-    case $opts.prettytype
+    case $opts[:pretty]
     when 0 then to_pretty0
     when 1 then to_pretty0
     when 99 then to_pretty99
@@ -97,7 +98,7 @@ class Flow
 
       value = result[0][0].to_i(16)
       mask = result[0][1] ? result[0][1].to_i(16) : ((1 << 64) - 1)
-      case $opts.prettytype
+      case $opts[:pretty]
       when 0 then
         "#{self.metadata_to_pretty(value, mask)}(#{field[1]})"
       else 
@@ -279,57 +280,6 @@ class Flow
 
 end
 
-class VnflowsMonitorOptions 
-
-  attr_reader :interval
-  attr_reader :diff
-  attr_reader :head
-  attr_reader :maxcount
-  attr_reader :runselect
-  attr_reader :iterationselect
-  attr_reader :prettytype
-
-  def initialize
-    @interval = 2  # seconds
-    @diff     = 0  # no diff
-    @head     = 0  # show all lines
-    @maxcount = 1  # don't stop
-    @nextset = :@interval
-    @runselect = 0 # most recent archived flow
-    @iterationselect = [] # process live flows
-    @prettytype = 1 # only show low 32bits of metadata value
-  end
-
-  def parse_options(str)
-    tokens = str.scan(/[a-z]+|[0-9]+/)
-    tokens.each { |t|
-      if /[0-9]+/.match(t)
-        # just set any integer...check for sanity at use
-        if @nextset == :@iterationselect
-          @iterationselect << t.to_i
-        else
-          instance_variable_set(@nextset,t.to_i)
-        end
-      else
-        case t
-        when /^c.*/ then 
-          @nextset = :@maxcount
-          $count = 0
-        when /^d.*/ then @nextset = :@diff
-        when /^h.*/ then @nextset = :@head
-        when /^q.*/ then exit
-        when /^t.*/ then @nextset = :@interval
-        when /^r.*/ then @nextset = :@runselect
-        when /^i.*/ then @nextset = :@iterationselect
-        when /^p.*/ then @nextset = :@prettytype
-        else
-          puts "unknown token #{t}"
-        end
-      end
-    }
-  end
-end
-
 class MyGen
   def initialize(arr)
     @thearr = arr
@@ -394,7 +344,35 @@ def do_diff(previous, current)
 end
 
 $ooo = "abc"
-$opts = VnflowsMonitorOptions.new
+$opts = {}
+$opts[:count] = 1
+$opts[:head] = 0
+$opts[:pretty] = 1
+$opts[:time] = 2
+$opts[:run] = 0
+OptionParser.new do |op|
+  op.on("-c", "--count N", Float, "Number of iterations, 0 = keep going (default 1") do |c|
+    $opts[:count] = c
+  end
+  op.on("-h", "--head N", Float, "Show top N lines") do |h|
+    $opts[:head] = h
+  end
+  op.on("-d", "--diff", "Turn on diff mode") do |d|
+    $opts[:diff] = true
+  end
+  op.on("-p", "--pretty N", Float,  "Switch pretty mode [0, 1, 99] (default 1)") do |p|
+    $opts[:pretty] = p
+  end
+  op.on("-t", "--time N", Float, "Time in seconds to pause between iterations (default 2)") do |t|
+    $opts[:time] = t
+  end
+  op.on("-r", "--run S", "Pull flows from previous run number xxx, defaults to most recent run") do |r|
+    $opts[:run] = r
+  end
+  op.on("-i", "--iteration S", "Pull flows from iteration number xxx") do |i|
+    $opts[:iteration] = i
+  end
+end.parse!
 $count = 0
 $prevflows = nil
 $inputcount = 0
@@ -436,7 +414,7 @@ def parse_raw_table(run,count)
 end
 
 def choose_flows
-  if $opts.diff == 0
+  if !$opts[:diff]
   then
     outputflows = $flows
   else
@@ -464,57 +442,30 @@ def output_flows(outputflows)
     
     puts flow.to_pretty
     linecount = 1 + linecount
-    break if ( $opts.head > 0 ) && ( linecount > $opts.head )
+    break if ( $opts[:head] > 0 ) && ( linecount > $opts[:head] )
   }
   puts "-------run:#{$run_n}--iteration:#{$inputcount}-------"
   $count = $count + 1  
-  exit if ( $opts.maxcount > 0 ) && ( $count >= $opts.maxcount )
+  exit if ( $opts[:count] > 0 ) && ( $count >= $opts[:count] )
 end
 
 def do_sleep
-  sleep $opts.interval
+  sleep $opts[:time]
 end
 
 def update_options
   while $stdin.ready?
-    $opts.parse_options $stdin.readline
+    $stdin.readline
   end
 end
 
-if /help/.match(ARGV.to_s)
-  puts "
-c 0   -keep iterating
-c 1   -output one iteration and stop {default}
-c n   -output n iterations and stop
-
-d 1   -turn on diff mode
-d 0   -turn off diff mode {default}
-
-p 0   -full output
-p 1   -only show low 32bits of metadata value {default}
-
-t 2   -pause 2 seconds between iterations {default}
-
-r xxx -pull flows from previous run number xxx
-       {defaults to most recent run}
-
-i xxx -pull flows from iteration xxx
-
-d 1 i xxx yyy r zzz
-      -do diff between xxx and yyy of run zzz
-
-(Many of options above can be typed into stdin while running)
-"
-  exit
-end
-$opts.parse_options(ARGV.to_s)
-
-iters = $opts.iterationselect
-if iters.length != 0
-  if $opts.runselect == 0
+if $opts[:iteration]
+  put "iterations"
+  iters = $opts[:iteration]
+  if $opts[:run] == 0
     latest = latest_run_number
   else
-    latest = $opts.runselect
+    latest = $opts[:run]
   end
   if latest == 0
     puts "Run archive not found"
