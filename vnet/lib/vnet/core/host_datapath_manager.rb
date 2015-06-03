@@ -63,8 +63,9 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
-      if item_map.dpid != @dp_info.dpid
-        raise log_format('tried to load host datapath with unexpected datapath id', "dpid:%#x" % dpid)
+      if item.dpid != @dp_info.dpid
+        raise log_format('tried to load host datapath with unexpected datapath id',
+                         "dpid:%#x" % item.dpid)
       end
 
       # TODO: Add warning if node_id does not match current node.
