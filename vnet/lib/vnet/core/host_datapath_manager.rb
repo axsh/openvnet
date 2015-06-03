@@ -72,10 +72,13 @@ module Vnet::Core
     end
 
     def created_item(params)
+      # We are only interested in the datapath that has the dpid
+      # (datapath id) of the current OpenFlow datapath.
       return if internal_detect_by_id(params)
       return if @dp_info.dpid != params[:dpid]
 
       internal_new_item(mw_class.new(params))
     end
+
   end
 end
