@@ -351,7 +351,7 @@ $opts[:pretty] = 1
 $opts[:time] = 2
 $opts[:run] = 0
 OptionParser.new do |op|
-  op.on("-c", "--count N", Float, "Number of iterations, 0 = keep going (default 1") do |c|
+  op.on("-c", "--count N", Float, "Number of iterations, 0 = keep going (default 1)") do |c|
     $opts[:count] = c
   end
   op.on("-h", "--head N", Float, "Show top N lines") do |h|
@@ -369,7 +369,7 @@ OptionParser.new do |op|
   op.on("-r", "--run S", "Pull flows from previous run number xxx, defaults to most recent run") do |r|
     $opts[:run] = r
   end
-  op.on("-i", "--iteration S", "Pull flows from iteration number xxx") do |i|
+  op.on("-i", "--iteration x,y,z", Array, "Pull flows from iteration number x. y and z") do |i|
     $opts[:iteration] = i
   end
 end.parse!
