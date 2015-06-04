@@ -24,6 +24,19 @@ module Vnet::NodeApi
         Tunnel.dispatch_deleted_where(tunnel_filter, model.deleted_at)
       end
 
+      def associate_network(uuid, network_uuid, interface_uuid, broadcast_mac_address)
+        transaction do
+          datapath  = Models::Datapath[uuid]
+          network   = Models::Network[network_uuid]
+          interface = Models::Interface[interface_uuid]
+
+          Models::DatapathNetwork.create({datapath_id: datapath.id,
+                                           interface_id: interface.id,
+                                           network_id: network.id,
+                                           broadcast_mac_address: broadcast_mac_address
+                                         })
+        end
+      end
     end
   end
 end
