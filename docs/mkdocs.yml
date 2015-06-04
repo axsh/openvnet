@@ -1,6 +1,6 @@
-site_name: OpenVnet
+site_name: OpenVNet
 site_favicon: favicon.png
-site_description: Documentation for OpenVnet
+site_description: Documentation for OpenVNet
 
 theme: readthedocs
 docs_dir: content
