@@ -14,7 +14,7 @@ The first numbered OpenVNet release.
 * `Added` Process `webapi` which acts as a user interface.
 
 * `Added` Two protocols to support virtual networking.
-  - **MAC2MAC** for virtual networking on top of a physical L2 connection.
+  - **MAC2MAC**, our own original protocol for virtual networking on top of a physical L2 connection.
   - **GRE** for virtual networking on top of a physical L3 connection.
 
 * `Added` Simulated DHCP service to assign IP addresses to network interfaces.
