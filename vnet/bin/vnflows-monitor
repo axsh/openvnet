@@ -456,8 +456,41 @@ end
 
 def update_options
   while $stdin.ready?
-    $stdin.readline
+    $str = $stdin.readline
+    parse_options $str
   end
+end
+
+$nextset = :time
+
+def parse_options(str)
+  tokens = str.scan(/[a-z]+|[0-9]+/)
+  tokens.each { |t|
+    if /[0-9]+/.match(t)
+      case $nextset
+      when :iteration
+        $opts[:iteration] << t.to_i
+        
+      else
+        $opts[$nextset] = t.to_i
+      end
+    else
+      case t
+      when /^c.*/ then
+        $nextset = :count
+        $count = 0
+      when /^d.*/ then $nextset = :diff
+      when /^h.*/ then $nextset = :head
+      when /^q.*/ then exit
+      when /^t.*/ then $nextset = :time
+      when /^r.*/ then $nextset = :run
+      when /^i.*/ then $nextset = :iteration
+      when /^p.*/ then $nextset = :pretty
+      else
+        puts "unknown token #{t}"
+      end
+    end
+  }
 end
 
 if $opts[:iteration] && $opts[:iteration].length != 0
