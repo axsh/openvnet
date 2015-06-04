@@ -350,6 +350,7 @@ $opts[:head] = 0
 $opts[:pretty] = 1
 $opts[:time] = 2
 $opts[:run] = 0
+$opts[:iteration] = []
 OptionParser.new do |op|
   op.on("-c", "--count N", Float, "Number of iterations, 0 = keep going (default 1)") do |c|
     $opts[:count] = c
@@ -369,7 +370,7 @@ OptionParser.new do |op|
   op.on("-r", "--run S", "Pull flows from previous run number xxx, defaults to most recent run") do |r|
     $opts[:run] = r
   end
-  op.on("-i", "--iteration x,y,z", Array, "Pull flows from iteration number x. y and z") do |i|
+  op.on("-i", "--iteration x,y", Array, "Pull flows from iteration number x. y") do |i|
     $opts[:iteration] = i
   end
 end.parse!
@@ -459,8 +460,7 @@ def update_options
   end
 end
 
-if $opts[:iteration]
-  put "iterations"
+if $opts[:iteration] && $opts[:iteration].length != 0
   iters = $opts[:iteration]
   if $opts[:run] == 0
     latest = latest_run_number
