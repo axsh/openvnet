@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class Route < Base
     namespace :routes
-    api_suffix "/api/routes"
+    api_suffix "routes"
 
     add_modify_shared_options {
       option :interface_uuid, :type => :string, :desc => "Interface uuid for this route."

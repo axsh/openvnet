@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class Translation < Base
     namespace :translations
-    api_suffix "/api/translations"
+    api_suffix "translations"
 
     add_modify_shared_options {
       option :interface_uuid, :type => :string, :desc => "This interface uuid for this translation."

@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class MacLease < Base
     namespace :mac_leases
-    api_suffix "/api/mac_leases"
+    api_suffix "mac_leases"
 
     add_modify_shared_options {
       option_uuid

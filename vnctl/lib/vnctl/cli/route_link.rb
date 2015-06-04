@@ -3,7 +3,7 @@
 module Vnctl::Cli
   class RouteLink < Base
     namespace :route_links
-    api_suffix "/api/route_links"
+    api_suffix "route_links"
 
     add_modify_shared_options {
       option :mac_address, :type => :string, :required => true,
