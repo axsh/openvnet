@@ -28,13 +28,13 @@ See architecture for more details of how the OpenVNet works.
 Download the openvnet.repo file and put it to your `/etc/yum.repos.d/` directory.
 
 ```bash
-curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repository/stable/openvnet.repo
+curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet.repo
 ```
 
 Download the openvnet-third-party.repo file and put it in your `/etc/yum.repos.d/` directory.
 
 ```bash
-curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repository/stable/openvnet-third-party.repo
+curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet-third-party.repo
 ```
 
 Each repo has the following packages:
@@ -65,7 +65,7 @@ yum install -y openvnet
 ```
 
 `openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
-`openvnet-vna`, `openvnet-vnmgr` and `openvnet-webapi` at once.
+`openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi`, openvnet-vnctl at once.
 
 ### Edit Configuration Files
 
