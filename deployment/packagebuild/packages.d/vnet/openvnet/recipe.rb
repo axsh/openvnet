@@ -10,6 +10,7 @@ class Openvnet < FPM::Cookery::Recipe
     openvnet-vnmgr
     openvnet-webapi
     openvnet-vna
+    openvnet-vnctl
   )
 
   def build
