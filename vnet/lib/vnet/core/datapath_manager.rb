@@ -74,20 +74,13 @@ module Vnet::Core
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
       filter << {dpid: params[:dpid]} if params.has_key? :dpid
-      filter << {host: @dp_info.dpid} if params.has_key? :host
+      filter << {host: @dp_info.dpid} if params.has_key? :host # TODO: Not sufficient.
       filter
     end
 
     def item_initialize(item_map)
       if item_map.dpid == @dp_info.dpid
         item_class = Datapaths::Host
-
-        if internal_detect(host: true)
-          warn log_format('host datapath already loaded')
-          # TODO: Do something..
-          return
-        end
-
       else
         item_class = Datapaths::Remote
       end
@@ -100,17 +93,18 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
-      # TODO: Make events.
+      # TODO: Remove the {id, dpn_map} hash.
+
       item_map.batch.datapath_networks.commit.each do |dpn_map|
-        publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
+        # publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
+        internal_added_datapath_network(item, id: item.id, dpn_map: dpn_map)
       end
 
       item_map.batch.datapath_route_links.commit.each do |dprl_map|
-        publish(ADDED_DATAPATH_ROUTE_LINK, id: item.id, dprl_map: dprl_map)
+        # publish(ADDED_DATAPATH_ROUTE_LINK, id: item.id, dprl_map: dprl_map)
+        internal_added_datapath_route_link(item, id: item.id, dprl_map: dprl_map)
       end
     end
-
-    # Remove dpn and dprl events.
 
     def created_item(params)
       return if internal_detect_by_id(params)
@@ -168,6 +162,11 @@ module Vnet::Core
         return internal_retrieve(id: params[:id])
       end
 
+      internal_added_datapath_network(item, params)
+    end
+
+    def internal_added_datapath_network(item, params)
+      # TODO: Fix this so all params contain the needed information.
       case 
       when params[:dpn_map]
         dpn_map = params[:dpn_map]
@@ -286,6 +285,10 @@ module Vnet::Core
         return internal_retrieve(id: params[:id])
       end
 
+      internal_added_datapath_route_link(item, params)
+    end
+
+    def internal_added_datapath_route_link(item, params)
       case 
       when params[:dprl_map]
         dprl_map = params[:dprl_map]
