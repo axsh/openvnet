@@ -312,7 +312,7 @@ module Vnet
     # internally and by 'created_item' specialization method.
     #
     # TODO: Rename internal_load_item
-    # TODO: Remove 'params'
+    # TODO: Create a default 'created_item' method.
     def internal_new_item(item_map)
       item_id = item_map.id || return
       item = @items[item_id]

@@ -102,16 +102,12 @@ module Vnet::Core
       }
     end
 
+    # TODO: Currently we initialize all datapaths, however in the
+    # future this should be done only when needed. Bootstrap handles
+    # loading the host datapath, so it can be ignored also. 
     def created_item(params)
       return if internal_detect_by_id(params)
-
-      # TODO: Check if we need to create the item.
-      if @dp_info.dpid != params[:dpid]
-        retrieve(id: params[:id])
-        return
-      end
-
-      retrieve(id: params[:id])
+      internal_new_item(mw_class.new(params))
     end
 
     #
