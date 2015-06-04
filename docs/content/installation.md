@@ -65,7 +65,7 @@ yum install -y openvnet
 ```
 
 `openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
-`openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi`, openvnet-vnctl at once.
+`openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi`, `openvnet-vnctl` at once.
 
 ### Edit Configuration Files
 
