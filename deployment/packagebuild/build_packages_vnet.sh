@@ -14,7 +14,7 @@ fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
 possible_archs="i386 noarch x86_64"
 
 # Set RPM_VERSION manually
-if [[ -z "${RPM_VERSIOM}" ]]; then
+if [[ -z ${RPM_VERSION} ]]; then
   # Jenkins currently uses internal tagging, resulting in the next line not working
   #rpm_suffix=$(git describe --tags) 
   rpm_suffix=$(echo ${BUILD_ID:-$(date +%Y%m%d%H%M%S)} | sed -e 's/[^0-9]//g')
