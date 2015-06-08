@@ -17,7 +17,7 @@ Other versions or operating systems may or may not work.
 Getting Started
 ---------------
 
-- [Installation Guide](https://github.com/axsh/openvnet/blob/master/docs/InstallGuide.md)
+- [Installation Guide](http://openvnet.org/installation/)
 
 Contributors
 ------------
