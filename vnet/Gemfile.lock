@@ -72,7 +72,7 @@ GEM
     ffi (1.9.8)
     ffi-rzmq (1.0.3)
       ffi
-    fuguta (1.0.3)
+    fuguta (1.0.4)
     gli (2.0.0)
     hitimes (1.2.2)
     http (0.5.1)
