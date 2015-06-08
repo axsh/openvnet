@@ -99,8 +99,8 @@ GEM
     pry-byebug (3.1.0)
       byebug (~> 4.0)
       pry (~> 0.10)
-    rack (1.5.2)
-    rack-cors (0.2.9)
+    rack (1.6.1)
+    rack-cors (0.4.0)
     rack-protection (1.5.2)
       rack
     rack-test (0.6.2)
