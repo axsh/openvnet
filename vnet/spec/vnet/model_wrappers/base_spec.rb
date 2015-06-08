@@ -26,7 +26,7 @@ describe Vnet::ModelWrappers::Base do
 
       let(:proxy) do
         double(:proxy).tap do |proxy|
-          proxy.should_receive(:parent).and_return(model)
+          proxy.should_receive(:parent).at_least(:once).and_return(model)
         end
       end
 
