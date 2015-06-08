@@ -1,8 +1,8 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    fuguta (1.0.2)
-    thor (0.18.1)
+    fuguta (1.0.4)
+    thor (0.19.1)
 
 PLATFORMS
   ruby
