@@ -93,6 +93,8 @@ module Vnet::Openflow
 
       # Pre-load host datapath if it exists, else wait for a created
       # event.
+      #
+      # TODO: Should be done automatically when the manager is initialize.
       @dp_info.host_datapath_manager.async.retrieve(dpid: @dpid)
 
       while host_datapath.nil?
