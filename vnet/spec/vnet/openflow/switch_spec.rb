@@ -9,7 +9,7 @@ describe Vnet::Openflow::Switch do
     let(:dp_info) { datapath.dp_info }
 
     it "sends messages" do
-      allow(Vnet::Core::TunnelManager.any_instance).to receive(:create_all_tunnels)
+      allow_any_instance_of(Vnet::Core::TunnelManager).to receive(:create_all_tunnels)
       switch = Vnet::Openflow::Switch.new(datapath)
       switch.switch_ready
 
