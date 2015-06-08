@@ -31,7 +31,7 @@ gem 'trema', :git=>'https://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
   gem "rake"
-  gem "rspec", '>= 2.14.0.rc1'
+  gem "rspec", '3.0.0beta2' # Updating to 3.0.0 or higher broke the unit tests.
   gem "rack-test"
   gem "fabrication"
   # http://stackoverflow.com/questions/11719183/databasecleaner-errors-in-non-rails-app

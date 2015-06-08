@@ -192,7 +192,7 @@ DEPENDENCIES
   racket (>= 1.0.12)!
   rake
   rant (>= 0.5.9)!
-  rspec (>= 2.14.0.rc1)
+  rspec (= 3.0.0beta2)
   sequel (= 4.8.0)
   sequel_paranoia
   sinatra
