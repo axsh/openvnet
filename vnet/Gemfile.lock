@@ -176,7 +176,7 @@ DEPENDENCIES
   coveralls
   database_cleaner!
   dcell
-  fabrication
+  fabrication (= 2.9.8)
   ffi-rzmq (= 1.0.3)
   fuguta
   ipaddress
