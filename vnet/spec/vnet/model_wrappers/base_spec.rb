@@ -31,7 +31,7 @@ describe Vnet::ModelWrappers::Base do
       end
 
       before(:each) do
-        Vnet::ModelWrappers::Parent.stub(:_proxy).and_return(proxy)
+        allow(Vnet::ModelWrappers::Parent).to receive(:_proxy).and_return(proxy)
       end
 
       subject do
@@ -58,7 +58,7 @@ describe Vnet::ModelWrappers::Base do
       end
 
       before(:each) do
-        Vnet::ModelWrappers::Parent.stub(:_proxy).and_return(proxy)
+        allow(Vnet::ModelWrappers::Parent).to receive(:_proxy).and_return(proxy)
       end
 
       subject do
@@ -92,7 +92,7 @@ describe Vnet::ModelWrappers::Base do
       end
 
       before(:each) do
-        Vnet::ModelWrappers::Parent.stub(:_proxy).and_return(proxy)
+        allow(Vnet::ModelWrappers::Parent).to receive(:_proxy).and_return(proxy)
       end
 
       subject do
@@ -131,7 +131,7 @@ describe Vnet::ModelWrappers::Base do
       end
 
       before(:each) do
-        Vnet::ModelWrappers::Parent.stub(:_proxy).and_return(proxy)
+        allow(Vnet::ModelWrappers::Parent).to receive(:_proxy).and_return(proxy)
       end
 
       it "execute batch" do
