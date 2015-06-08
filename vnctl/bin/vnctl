@@ -14,7 +14,6 @@ if File.exists?(setup_rb)
 
   require 'fuguta'
   require 'thor'
-  require 'httparty'
 else
   # This is here to support bundle install without the --standalone flag but
   # requires vnctl to be called with /opt/axsh/openvnet as the working directory.
