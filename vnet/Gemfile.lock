@@ -193,7 +193,7 @@ DEPENDENCIES
   rake
   rant (>= 0.5.9)!
   rspec (>= 2.14.0.rc1)
-  sequel
+  sequel (= 4.8.0)
   sequel_paranoia
   sinatra
   sinatra-browse (>= 0.3)

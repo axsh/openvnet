@@ -15,7 +15,7 @@ gem "net-dns"
 gem "rack"
 gem "rack-cors"
 gem "racket", ">= 1.0.12", :git => 'https://github.com/axsh/racket.git'
-gem "sequel"
+gem "sequel", "4.8.0" # Updating to 4.23.0 broke the unit tests. Needs to be investigated.
 gem "sequel_paranoia"
 gem "sinatra"
 gem "sinatra-contrib"
