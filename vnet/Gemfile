@@ -34,8 +34,7 @@ group :development, :test do
   gem "rspec", '3.0.0beta2' # Updating to 3.0.0 or higher broke the unit tests.
   gem "rack-test"
   gem "fabrication", '2.9.8' # Updating to 2.13.2 broke the unit tests.
-  # http://stackoverflow.com/questions/11719183/databasecleaner-errors-in-non-rails-app
-  gem 'database_cleaner', :git => "https://github.com/bmabey/database_cleaner.git", :ref => "e5cb8cea"
+  gem 'database_cleaner'
 
   gem "coveralls"
 
