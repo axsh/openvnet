@@ -20,9 +20,9 @@ gem "sequel_paranoia"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "sinatra-hashfix"
-gem "sinatra-browse", '>= 0.3'
+gem "sinatra-browse", '0.3' # Updating to 0.5 broke the unit tests.
 gem "unicorn"
-gem "activesupport"
+gem "activesupport", '3.0.0' # Updating to 4.2.1 broke the unit tests.
 
 # trema and build requirement gems
 gem 'paper_house', '~>0.5.0'
