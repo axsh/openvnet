@@ -10,7 +10,7 @@ describe Vnet::Configurations::Common do
   let(:config_path) { File.join(Vnet::ROOT, "spec/config") }
 
   before do
-    Vnet::Configurations::Common.stub(:paths).and_return([config_path])
+    allow(Vnet::Configurations::Common).to receive(:paths).and_return([config_path])
   end
 
   describe "file_names" do
