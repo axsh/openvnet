@@ -4,6 +4,7 @@ require 'spec_helper'
 describe Sequel::Plugins::IpAddress do
   let(:ipv4_address_1) { IPAddress("192.168.1.2").to_i }
   let(:ipv4_address_2) { IPAddress("192.168.1.3").to_i }
+  let(:ipv4_address_3) { IPAddress("192.168.2.1").to_i }
   let(:network_id_1) { Fabricate(:network, :uuid => "nw-1").id }
   let(:network_id_2) { Fabricate(:network, :uuid => "nw-2").id }
   let(:interface_id_1) { Fabricate(:interface, :uuid => "if-1").id }
@@ -19,9 +20,22 @@ describe Sequel::Plugins::IpAddress do
     )
   end
 
+  let(:invalid_model) do
+    Vnet::Models::IpLease.create(
+      mac_lease_id: mac_lease_id_1,
+      network_id: network_id_1,
+      ipv4_address: ipv4_address_3
+    )
+  end
+
   describe "create" do
     subject do
       model
+    end
+
+    context "ip_address invalid" do
+      it { expect(invalid_model.valid_in_subnet).to be false }
+      it { expect(subject.valid_in_subnet).to be true }
     end
 
     context "ip_address association" do
@@ -49,7 +63,7 @@ describe Sequel::Plugins::IpAddress do
       it { expect(subject.to_hash[:mac_lease_id]).to eq mac_lease_id_1 }
       it { expect(subject.reload.mac_lease_id).to eq mac_lease_id_1 }
     end
-
+ 
     context "interface" do
       it { expect(subject.interface_id).to eq interface_id_1 }
       it { expect(subject.to_hash[:interface_id]).to eq interface_id_1 }
