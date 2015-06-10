@@ -369,21 +369,28 @@ module Vnet
 
     def internal_detect_by_id(params)
       item_id = (params && params[:id]) || return
+
+      if item_id.nil?
+        warn log_format("internal_detect_by_id requires a valid id", params.inspect)
+        return
+      end
+
       @items[item_id]
     end
 
+    # TODO: Reconsider changing the level of logging.
     def internal_detect_by_id_with_error(params)
       item_id = (params && params[:id])
 
       if item_id.nil?
-        log_format("missing id")
+        warn log_format("missing id")
         return
       end
 
       item = @items[item_id]
 
       if item.nil?
-        log_format("missing item", "id:#{item_id}")
+        warn log_format("missing item", "id:#{item_id}")
         return
       end
 
