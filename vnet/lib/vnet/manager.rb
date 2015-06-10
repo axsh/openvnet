@@ -368,7 +368,7 @@ module Vnet
     end
 
     def internal_detect_by_id(params)
-      item_id = (params && params[:id]) || return
+      item_id = (params && params[:id])
 
       if item_id.nil?
         warn log_format("internal_detect_by_id requires a valid id", params.inspect)
