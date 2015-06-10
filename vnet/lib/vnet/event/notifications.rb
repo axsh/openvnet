@@ -84,7 +84,12 @@ module Vnet::Event
     def handle_event(event_name, params)
       #debug "handle event: #{event_name} params: #{params.inspect}}"
 
-      queue_id = params[:id] || :default
+      queue_id = params[:id]
+
+      if queue_id.nil?
+        warn "#{self.class.name} cannot handle an event with no or nil id (event_name:#{event_name} params:#{params.inspect})"
+        return
+      end
 
       event_queue = @event_queues[queue_id] || []
       event_queue << { event_name: event_name, params: params.dup }
