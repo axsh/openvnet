@@ -271,8 +271,24 @@ module Vnet
     end
 
     def load_item(params)
-      item_map = params[:item_map] || return
-      item_id = item_map.id || return
+      item_id = params[:id]
+      item_map = params[:item_map]
+
+      if item_id.nil?
+        warn log_format("load_item requires a valid id", params.inspect)
+        return
+      end
+
+      if item_map.nil?
+        warn log_format("load_item requires a valid item_map", params.inspect)
+        return
+      end
+
+      if item_map.id != item_id
+        warn log_format("load_item requires id to match item_map.id", params.inspect)
+        return
+      end
+
       item = @items[item_id] || return
 
       debug log_format("installing " + item.pretty_id, item.pretty_properties)
@@ -292,7 +308,13 @@ module Vnet
     end
 
     def unload_item(params)
-      item_id = (params && params[:id]) || return
+      item_id = (params && params[:id])
+
+      if item_id.nil?
+        warn log_format("unload_item requires a valid id", params.inspect)
+        return
+      end
+
       item = @items.delete(item_id) || return
 
       debug log_format("uninstalling " + item.pretty_id, item.pretty_properties)
@@ -314,9 +336,14 @@ module Vnet
     # TODO: Rename internal_load_item
     # TODO: Remove 'params'
     def internal_new_item(item_map)
-      item_id = item_map.id || return
-      item = @items[item_id]
-      return item if item
+      item_id = item_map.id
+
+      if item_id.nil?
+        warn log_format("internal_new_item requires a valid item_map.id", item_map.inspect)
+        return
+      end
+
+      return if @items[item_id]
 
       item_initialize(item_map).tap do |item|
         # TODO: Delete item from items if returned nil.
