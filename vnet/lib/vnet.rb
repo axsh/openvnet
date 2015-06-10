@@ -183,6 +183,7 @@ module Vnet
   module Helpers
     autoload :SecurityGroup, 'vnet/helpers/security_group'
     autoload :Event, 'vnet/helpers/event'
+    autoload :IpAddress, 'vnet/helpers/ip_address'
   end
 
   module Endpoints
