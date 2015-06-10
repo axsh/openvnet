@@ -368,7 +368,10 @@ module Vnet
 
     # Load all items that match the supplied query parameter
     def internal_load_where(params)
-      return if params.empty?
+      if params.empty?
+        warn log_format("internal_load_where does not allow empty params")
+        return
+      end
 
       filter = query_filter_from_params(params) || return
       expression = ((filter.size > 1) ? Sequel.&(*filter) : filter.first) || return
