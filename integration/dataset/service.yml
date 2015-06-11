@@ -1,0 +1,169 @@
+networks:
+
+  - uuid: nw-vnet1
+    display_name: vnet1
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet1
+    network_mode: virtual
+
+  - uuid: nw-vnet2
+    display_name: vnet2
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet2
+    network_mode: virtual
+
+interfaces:
+
+  - uuid: if-v1
+    port_name: if-v1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:01"
+    ipv4_address: 10.101.0.10
+
+  - uuid: if-v2
+    port_name: if-v2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:02"
+    ipv4_address: 10.101.0.10
+
+  - uuid: if-v3
+    port_name: if-v3
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:03"
+    ipv4_address: 10.101.0.11
+
+  - uuid: if-v4
+    port_name: if-v4
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:04"
+    ipv4_address: 10.101.0.11
+
+  - uuid: if-v5
+    port_name: if-v5
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:05"
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-v6
+    port_name: if-v6
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:06"
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-dhcp1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:01:01"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+  - uuid: if-dhcp2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:01:02"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+  - uuid: if-dns1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:02:01"
+    ipv4_address: 10.101.0.3
+    mode: simulated
+
+  - uuid: if-dns2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:02:02"
+    ipv4_address: 10.101.0.3
+    mode: simulated
+
+network_services:
+
+  - uuid: ns-dhcp1
+    interface_uuid: if-dhcp1
+    type: dhcp
+
+  - uuid: ns-dhcp2
+    interface_uuid: if-dhcp2
+    type: dhcp
+
+  - uuid: ns-dns1
+    interface_uuid: if-dns1
+    type: dns
+
+  - uuid: ns-dns2
+    interface_uuid: if-dns2
+    type: dns
+
+datapath_networks:
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp1eth0
+    broadcast_mac_address: "02:00:00:aa:00:01"
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp1eth0
+    broadcast_mac_address: "02:00:00:aa:00:02"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp2eth0
+    broadcast_mac_address: "02:00:00:bb:00:01"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp2eth0
+    broadcast_mac_address: "02:00:00:bb:00:02"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp3eth0
+    broadcast_mac_address: "02:00:00:cc:00:01"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp3eth0
+    broadcast_mac_address: "02:00:00:cc:00:02"
+
+dns_services:
+
+  - uuid: dnss-1
+    network_service_uuid: ns-dns1
+    public_dns: "8.8.8.8,8.8.4.4"
+
+  - uuid: dnss-2
+    network_service_uuid: ns-dns2
+    public_dns: "8.8.8.8,8.8.4.4"
+
+dns_records:
+
+  - uuid: dnsr-1
+    dns_service_uuid: dnss-1
+    name: "vm1"
+    ipv4_address: 10.101.0.10
+
+  - uuid: dnsr-3
+    dns_service_uuid: dnss-1
+    name: "vm3"
+    ipv4_address: 10.101.0.11
+
+  - uuid: dnsr-5
+    dns_service_uuid: dnss-1
+    name: "vm5"
+    ipv4_address: 10.101.0.12
+
+  - uuid: dnsr-2
+    dns_service_uuid: dnss-2
+    name: "vm2"
+    ipv4_address: 10.101.0.10
+
+  - uuid: dnsr-4
+    dns_service_uuid: dnss-2
+    name: "vm4"
+    ipv4_address: 10.101.0.11
+
+  - uuid: dnsr-6
+    dns_service_uuid: dnss-2
+    name: "vm6"
+    ipv4_address: 10.101.0.12
