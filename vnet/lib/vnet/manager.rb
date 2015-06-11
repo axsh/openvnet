@@ -297,7 +297,7 @@ module Vnet
       item.try_install
 
       if item.invalid?
-        debug log_format("installation failed, marked invalid " + item.pretty_id, item.pretty_properties)
+        warn log_format("installation failed, marked invalid " + item.pretty_id, item.pretty_properties)
         # TODO: Do some more cleanup here.
         return
       end
@@ -334,7 +334,6 @@ module Vnet
     # internally and by 'created_item' specialization method.
     #
     # TODO: Rename internal_load_item
-    # TODO: Remove 'params'
     def internal_new_item(item_map)
       item_id = item_map.id
 
