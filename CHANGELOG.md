@@ -3,6 +3,12 @@
 All notable changes to OpenVNet will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+* `Changed` Updated the ruby gems dependencies to their most recent versions where possible.
+
+* `Fixed` An issue where Celluloid would some times assume that the main Trema thread was actually a Celluloid thread.
+
 ## [0.7] - 2015-06-04
 
 The first numbered OpenVNet release.
