@@ -21,7 +21,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
 
     if(!H::IpAddress.valid_in_subnet(network, params["ipv4_address"]))
       raise(E::ArgumentError, "IP Address not in subnet.")
-    en
+    end
     
     post_new(:IpLease, fill_options)
   end
