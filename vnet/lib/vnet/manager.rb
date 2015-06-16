@@ -13,6 +13,37 @@ module Vnet
     include Vnet::Event::Notifications
     include Vnet::LookupParams
 
+    # Main events:
+    #
+    # Manager and model events are separate as the manager events are
+    # local and for the current manager only, while the model events
+    # are global.
+    #
+    # Avoid duplicate manager event names.
+    #
+    # subscribe_event <MANAGER>_INITIALIZED, :load_item
+    # subscribe_event <MANAGER>_UNLOAD_ITEM, :unload_item
+    # subscribe_event <MODEL>_CREATED_ITEM, :created_item
+    # subscribe_event <MODEL>_DELETED_ITEM, :unload_item
+    #
+    # Consistency:
+    #
+    # All events should have the item id "{id: item.id}" or a symbol
+    # "{id: :foobar}" set to ensure exclusive execution of events for
+    # said event or symbol.
+    #
+    # The id should be considered similar to a copy-on-write barrier,
+    # as such the items can be read at any time by any fiber. Thus no
+    # yielding or blocking operations can be done while the item is in
+    # an inconsistent state.
+    #
+    # E.g. updating a set of variables or lists that depend on each
+    # other will need to be done with no database requests, logging,
+    # etc between the first and last update.
+    #
+    # Updating anything that is covered by another id or symbol lock
+    # requires the use of local events.
+
     def initialize(info, options = {})
       @items = {}
       @messages = {}
