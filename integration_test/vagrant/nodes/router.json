@@ -1,0 +1,28 @@
+{
+  "run_list": ["recipe[vnet::router]"],
+  "vnet": {
+    "interfaces": [
+      {
+        "device": "eth1",
+        "onboot": "yes",
+        "bootproto": "none",
+        "target": "192.168.20.2",
+        "mask": "255.255.255.0"
+      },
+      {
+        "device": "eth2",
+        "onboot": "yes",
+        "bootproto": "none",
+        "target": "172.16.20.1",
+        "mask": "255.255.255.0"
+      },
+      {
+        "device": "eth3",
+        "onboot": "yes",
+        "bootproto": "none",
+        "target": "172.16.30.1",
+        "mask": "255.255.255.0"
+      }
+    ]
+  }
+}

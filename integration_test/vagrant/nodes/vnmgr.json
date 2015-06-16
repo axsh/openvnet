@@ -1,0 +1,20 @@
+{
+  "run_list": [
+    "role[vnmgr]"
+  ],
+  "vnet": {
+    "interfaces": [
+      {
+        "device": "eth1",
+        "onboot": "yes",
+        "bootproto": "none",
+        "target": "192.168.20.10",
+        "mask": "255.255.255.0"
+      }
+    ],
+    "config": {
+      "vnmgr": { "host": "192.168.20.10" },
+      "webapi": { "host": "192.168.20.10" }
+    }
+  }
+}
