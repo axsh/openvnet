@@ -16,14 +16,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   param_options :mac_lease_uuid, required: true
   param_options :ipv4_address, required: true
   post do
-    uuid_to_id(M::Network, "network_uuid", "network_id")
+    network - uuid_to_id(M::Network, "network_uuid", "network_id")
     uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id")
 
-    network = get_by_uuid(:network_uuid)
-    
-    if(!Vnet::Helpers::IpAddress.valid_in_subnet(network, :ip4_address))
+    if(!H::IpAddress.valid_in_subnet(network, params["ipv4_address"]))
       raise(E::ArgumentError, "IP Address not in subnet.")
-    end
+    en
     
     post_new(:IpLease, fill_options)
   end

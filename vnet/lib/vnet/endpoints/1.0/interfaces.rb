@@ -28,6 +28,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
 
+    if(!H::IpAddress.valid_in_subnet(network, params["ipv4_address"]))
+      raise(E::ArgumentError, "IP Address not in subnet.")
+    end      
+
     post_new(:Interface, fill)
   end
 

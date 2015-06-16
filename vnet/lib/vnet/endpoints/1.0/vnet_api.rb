@@ -17,6 +17,7 @@ module Vnet::Endpoints::V10
     E = Vnet::Endpoints::Errors
     R = Vnet::Endpoints::V10::Responses
     C = Vnet::Constants
+    H = Vnet::Helpers
 
     DEFAULT_PAGINATION_LIMIT = 30
 
