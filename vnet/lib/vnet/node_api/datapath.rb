@@ -26,9 +26,9 @@ module Vnet::NodeApi
 
       def associate_network(uuid, network_uuid, interface_uuid, broadcast_mac_address)
         transaction do
-          datapath  = Models::Datapath[uuid]
-          network   = Models::Network[network_uuid]
-          interface = Models::Interface[interface_uuid]
+          datapath  = Vnet::Models::Datapath[uuid]
+          network   = Vnet::Models::Network[network_uuid]
+          interface = Vnet::Models::Interface[interface_uuid]
 
           if broadcast_mac_address.nil?
             broadcast_mac_address = generate_new_mac_address
