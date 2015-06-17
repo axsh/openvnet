@@ -75,7 +75,7 @@ class Flow
   end
 
   def to_pretty
-    case $opts[:pretty]
+    case Options.opts[:pretty]
     when 0 then to_pretty0
     when 1 then to_pretty0
     when 99 then to_pretty99
@@ -98,7 +98,7 @@ class Flow
 
       value = result[0][0].to_i(16)
       mask = result[0][1] ? result[0][1].to_i(16) : ((1 << 64) - 1)
-      case $opts[:pretty]
+      case Options.opts[:pretty]
       when 0 then
         "#{self.metadata_to_pretty(value, mask)}(#{field[1]})"
       else 
@@ -343,41 +343,47 @@ def do_diff(previous, current)
   changed
 end
 
-$ooo = "abc"
-$opts = {}
-$opts[:count] = 1
-$opts[:head] = 0
-$opts[:pretty] = 1
-$opts[:time] = 2
-$opts[:run] = 0
+module Options
+  class << self
+    attr_accessor :opts
+    attr_accessor :count
+    attr_accessor :prevflows
+    attr_accessor :inputcount
+  end
+end
+
+Options.opts = {}
+Options.opts[:count] = 1
+Options.opts[:head] = 0
+Options.opts[:pretty] = 1
+Options.opts[:time] = 2
+Options.opts[:run] = 0
 OptionParser.new do |op|
   op.on("-c", "--count N", Float, "Number of iterations, 0 = keep going (default 1)") do |c|
-    $opts[:count] = c
+    Options.opts[:count] = c
   end
   op.on("-h", "--head N", Float, "Show top N lines") do |h|
-    $opts[:head] = h
+    Options.opts[:head] = h
   end
   op.on("-d", "--diff", "Turn on diff mode") do |d|
-    $opts[:diff] = true
+    Options.opts[:diff] = true
   end
   op.on("-p", "--pretty N", Float,  "Switch pretty mode [0, 1, 99] (default 1)") do |p|
-    $opts[:pretty] = p
+    Options.opts[:pretty] = p
   end
   op.on("-t", "--time N", Float, "Time in seconds to pause between iterations (default 2)") do |t|
-    $opts[:time] = t
+    Options.opts[:time] = t
   end
   op.on("-r", "--run S", "Pull flows from previous run number xxx, defaults to most recent run") do |r|
-    $opts[:run] = r
+    Options.opts[:run] = r
   end
   op.on("-i", "--iteration x,y,z", Array, "Pull flows from iteration number x. y and z") do |i|
-    $opts[:iteration] = i
+    Options.opts[:iteration] = i
   end
 end.parse!
-$count = 0
-$prevflows = nil
-$inputcount = 0
-
-$cmdline = "ovs-ofctl -O OpenFlow13 dump-flows br0"
+Options.count = 0
+Options.prevflows = nil
+Options.inputcount = 0
 
 def choose_run_number
   for i in 1..9999 
@@ -396,8 +402,9 @@ def latest_run_number
 end
 
 def read_current_table(run_n)
-  $inputcount += 1
-  system("#{$cmdline} >/tmp/vnflows-run-#{run_n}/flow-#{$inputcount}")
+  Options.inputcount += 1
+  $cmdline = "ovs-ofctl -O OpenFlow13 dump-flows br0"
+  system("#{$cmdline} >/tmp/vnflows-run-#{run_n}/flow-#{Options.inputcount}")
 end
 
 def parse_raw_table(run,count)
@@ -414,19 +421,19 @@ def parse_raw_table(run,count)
 end
 
 def choose_flows
-  if !$opts[:diff]
+  if !Options.opts[:diff]
   then
     outputflows = $flows
   else
-    if nil == $prevflows
+    if nil == Options.prevflows
     then
-      $prevflows = $flows
+      Options.prevflows = $flows
       outputflows = []
     else
-      outputflows = do_diff($prevflows, $flows)
+      outputflows = do_diff(Options.prevflows, $flows)
     end
   end
-  $prevflows = $flows
+  Options.prevflows = $flows
   outputflows
 end
   
@@ -442,15 +449,15 @@ def output_flows(outputflows)
     
     puts flow.to_pretty
     linecount = 1 + linecount
-    break if ( $opts[:head] > 0 ) && ( linecount > $opts[:head] )
+    break if ( Options.opts[:head] > 0 ) && ( linecount > Options.opts[:head] )
   }
-  puts "-------run:#{$run_n}--iteration:#{$inputcount}-------"
-  $count = $count + 1  
-  exit if ( $opts[:count] > 0 ) && ( $count >= $opts[:count] )
+  puts "-------run:#{$run_n}--iteration:#{Options.inputcount}-------"
+  Options.count = Options.count + 1  
+  exit if ( Options.opts[:count] > 0 ) && ( Options.count >= Options.opts[:count] )
 end
 
 def do_sleep
-  sleep $opts[:time]
+  sleep Options.opts[:time]
 end
 
 def update_options
@@ -459,13 +466,13 @@ def update_options
   end
 end
 
-if $opts[:iteration]
+if Options.opts[:iteration]
   put "iterations"
-  iters = $opts[:iteration]
-  if $opts[:run] == 0
+  iters = Options.opts[:iteration]
+  if Options.opts[:run] == 0
     latest = latest_run_number
   else
-    latest = $opts[:run]
+    latest = Options.opts[:run]
   end
   if latest == 0
     puts "Run archive not found"
@@ -482,7 +489,7 @@ if $opts[:iteration]
   flows = choose_flows # uses globals
 
   $run_n = latest
-  $inputcount = iters[-1]
+  Options.inputcount = iters[-1]
   output_flows(flows)
   exit
 end
@@ -490,7 +497,7 @@ end
 $run_n = choose_run_number
 while true  # note the "exit"s elsewhere
   read_current_table($run_n)
-  parse_raw_table($run_n, $inputcount)  # sets globals
+  parse_raw_table($run_n, Options.inputcount)  # sets globals
   flows = choose_flows # uses globals
   output_flows(flows)
   do_sleep
