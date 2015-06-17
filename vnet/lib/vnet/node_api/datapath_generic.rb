@@ -37,6 +37,40 @@ module Vnet::NodeApi
 
   class DatapathNetwork < DatapathGeneric
     class << self
+      def associate_network(datapath_uuid, network_uuid, interface_uuid, broadcast_mac_address)
+        transaction do
+          datapath = Vnet::Models::Datapath[datapath_uuid]
+          network = Vnet::Models::Network[network_uuid]
+          interface = Vnet::Models::Interface[interface_uuid]
+          if broadcast_mac_address.nil?
+            broadcast_mac_address = generate_new_mac_address
+          end
+
+          Vnet::Models::DatapathNetwork.create({datapath_id: datapath.id,
+                                                 interface_id: interface.id,
+                                                 network_id: network.id,
+                                                 broadcast_mac_address: broadcast_mac_address
+                                               })
+        end
+      end
+
+      private
+      def generate_new_mac_address
+        # TODO: replace with lease policy manager to ask new address.
+        retry_count = 10
+        begin
+          new_addr = [0x00, 0x16, 0x3e,
+                      Random.rand(0x7F),
+                      Random.rand(0xFF),
+                      Random.rand(0xFF)
+                      ].pack("C*")
+          if Vnet::Models::MacAddress.filter(mac_address: new_addr).empty?
+            return new_addr
+          end
+          retry_count -= 1
+        end while retry_count > 0
+      end
+
       private
 
       def dispatch_created_item_events(model)

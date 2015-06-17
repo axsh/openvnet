@@ -6,10 +6,6 @@ module Vnet
       attr_accessor :proxy
     end
 
-    def self.datapath
-      proxy.datapath
-    end
-
     module_function
 
     def set_proxy(name)
