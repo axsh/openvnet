@@ -358,6 +358,8 @@ Options.opts[:head] = 0
 Options.opts[:pretty] = 1
 Options.opts[:time] = 2
 Options.opts[:run] = 0
+Options.opts[:iteration] = []
+
 OptionParser.new do |op|
   op.on("-c", "--count N", Float, "Number of iterations, 0 = keep going (default 1)") do |c|
     Options.opts[:count] = c
@@ -377,7 +379,7 @@ OptionParser.new do |op|
   op.on("-r", "--run S", "Pull flows from previous run number xxx, defaults to most recent run") do |r|
     Options.opts[:run] = r
   end
-  op.on("-i", "--iteration x,y,z", Array, "Pull flows from iteration number x. y and z") do |i|
+  op.on("-i", "--iteration x,y", Array, "Pull flows from iteration number x. y") do |i|
     Options.opts[:iteration] = i
   end
 end.parse!
@@ -462,12 +464,44 @@ end
 
 def update_options
   while $stdin.ready?
-    $stdin.readline
+    $str = $stdin.readline
+    parse_options $str
   end
 end
 
-if Options.opts[:iteration]
-  put "iterations"
+$nextset = :time
+
+def parse_options(str)
+  tokens = str.scan(/[a-z]+|[0-9]+/)
+  tokens.each { |t|
+    if /[0-9]+/.match(t)
+      case $nextset
+      when :iteration
+        Options.opts[:iteration] << t.to_i
+        
+      else
+        Options.opts[$nextset] = t.to_i
+      end
+    else
+      case t
+      when /^c.*/ then
+        $nextset = :count
+        Options.count = 0
+      when /^d.*/ then $nextset = :diff
+      when /^h.*/ then $nextset = :head
+      when /^q.*/ then exit
+      when /^t.*/ then $nextset = :time
+      when /^r.*/ then $nextset = :run
+      when /^i.*/ then $nextset = :iteration
+      when /^p.*/ then $nextset = :pretty
+      else
+        puts "unknown token #{t}"
+      end
+    end
+  }
+end
+
+if Options.opts[:iteration] && Options.opts[:iteration].length != 0
   iters = Options.opts[:iteration]
   if Options.opts[:run] == 0
     latest = latest_run_number
