@@ -349,6 +349,8 @@ module Options
     attr_accessor :count
     attr_accessor :prevflows
     attr_accessor :inputcount
+    attr_accessor :nextset
+    attr_accessor :$un_n
   end
 end
 
@@ -453,7 +455,7 @@ def output_flows(outputflows)
     linecount = 1 + linecount
     break if ( Options.opts[:head] > 0 ) && ( linecount > Options.opts[:head] )
   }
-  puts "-------run:#{$run_n}--iteration:#{Options.inputcount}-------"
+  puts "-------run:#{Options.run_n}--iteration:#{Options.inputcount}-------"
   Options.count = Options.count + 1  
   exit if ( Options.opts[:count] > 0 ) && ( Options.count >= Options.opts[:count] )
 end
@@ -469,31 +471,31 @@ def update_options
   end
 end
 
-$nextset = :time
+Options.nextset = :time
 
 def parse_options(str)
   tokens = str.scan(/[a-z]+|[0-9]+/)
   tokens.each { |t|
     if /[0-9]+/.match(t)
-      case $nextset
+      case Options.nextset
       when :iteration
         Options.opts[:iteration] << t.to_i
         
       else
-        Options.opts[$nextset] = t.to_i
+        Options.opts[Options.nextset] = t.to_i
       end
     else
       case t
       when /^c.*/ then
-        $nextset = :count
+        Options.nextset = :count
         Options.count = 0
-      when /^d.*/ then $nextset = :diff
-      when /^h.*/ then $nextset = :head
+      when /^d.*/ then Options.nextset = :diff
+      when /^h.*/ then Options.nextset = :head
       when /^q.*/ then exit
-      when /^t.*/ then $nextset = :time
-      when /^r.*/ then $nextset = :run
-      when /^i.*/ then $nextset = :iteration
-      when /^p.*/ then $nextset = :pretty
+      when /^t.*/ then Options.nextset = :time
+      when /^r.*/ then Options.nextset = :run
+      when /^i.*/ then Options.nextset = :iteration
+      when /^p.*/ then Options.nextset = :pretty
       else
         puts "unknown token #{t}"
       end
@@ -522,16 +524,16 @@ if Options.opts[:iteration] && Options.opts[:iteration].length != 0
   parse_raw_table(latest, iters[-1])
   flows = choose_flows # uses globals
 
-  $run_n = latest
+  Options.run_n = latest
   Options.inputcount = iters[-1]
   output_flows(flows)
   exit
 end
 
-$run_n = choose_run_number
+Options.run_n = choose_run_number
 while true  # note the "exit"s elsewhere
-  read_current_table($run_n)
-  parse_raw_table($run_n, Options.inputcount)  # sets globals
+  read_current_table(Options.run_n)
+  parse_raw_table(Options.run_n, Options.inputcount)  # sets globals
   flows = choose_flows # uses globals
   output_flows(flows)
   do_sleep
