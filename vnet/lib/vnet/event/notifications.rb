@@ -38,6 +38,29 @@ module Vnet::Event
     end
 
     module ClassMethods
+      # TODO: Add a subscribe event that gets the item, or might even
+      # retrieve the item from the database if not present.
+
+      def subscribe_event(event_name, method = nil, options = {})
+        self.event_definitions[event_name] = { method: method, options: options }
+      end
+
+      def event_handler_default_state
+        @event_handler_default_state ||= :active
+      end
+
+      def event_handler_default_active
+        @event_handler_default_state = :active
+      end
+
+      def event_handler_default_drop_all
+        @event_handler_default_state = :drop_all
+      end
+
+      def event_handler_default_queue_only
+        @event_handler_default_state = :queue_only
+      end
+
       def event_definitions
         @event_definitions ||= {}
       end
@@ -57,22 +80,17 @@ module Vnet::Event
 
         event_method
       end
-
-      # TODO: Add a subscribe event that gets the item, or might even
-      # retrieve the item from the database if not present.
-
-      def subscribe_event(event_name, method = nil, options = {})
-        self.event_definitions[event_name] = { method: method, options: options }
-      end
     end
 
     module Initializer
       def initialize(*args, &block)
-        @event_handler_state = :active
+        @event_handler_state = self.class.event_handler_default_state
         @event_queues = {}
         @queue_statuses = {}
 
         super
+
+        # debug "#{self.class.name} initialized with event handler state #{@event_handler_state}"
 
         subscribe_events
       end
