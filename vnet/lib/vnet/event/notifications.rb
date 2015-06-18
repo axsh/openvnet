@@ -42,6 +42,22 @@ module Vnet::Event
         @event_definitions ||= {}
       end
 
+      def event_method_for_event_name(event_name)
+        event_definition = self.event_definitions[event_name]
+
+        if event_definition.nil?
+          warn "#{self.name} could not find event definition (event_name:#{event_name})"
+        end
+
+        event_method = event_definition[:method]
+
+        if event_method.nil?
+          warn "#{self.name} could not find event method (event_name:#{event_name} event_definition:#{event_definition})"
+        end
+
+        event_method
+      end
+
       # TODO: Add a subscribe event that gets the item, or might even
       # retrieve the item from the database if not present.
 
@@ -89,18 +105,14 @@ module Vnet::Event
       # queue handler.
     end
 
-    def event_definitions
-      self.class.event_definitions
-    end
-
     def subscribe_events
-      self.event_definitions.keys.each do |event_name|
+      self.class.event_definitions.keys.each do |event_name|
         subscribe(event_name, :handle_event)
       end
     end
 
     def unsubscribe_events(actor, reason)
-      self.event_definitions.keys.each { |e| unsubscribe(e) }
+      self.class.event_definitions.keys.each { |e| unsubscribe(e) }
     rescue Celluloid::DeadActorError
     end
 
@@ -118,11 +130,13 @@ module Vnet::Event
         return
       end
 
-      # TODO: Clean this up...
-      event_queue = @event_queues[queue_id] || []
-      event_queue << { event_name: event_name, params: params.dup }
+      event_queue = @event_queues[queue_id]
 
-      @event_queues[queue_id] = event_queue
+      if event_queue.nil?
+        event_queue = @event_queues[queue_id] = []
+      end
+
+      event_queue << { event_name: event_name, params: params.dup }
 
       event_handler_start_queue(queue_id)
     end
@@ -142,24 +156,38 @@ module Vnet::Event
 
     def event_handler_pop_event(queue_id)
       event_queue = @event_queues[queue_id] || return
-      event_queue.shift
+      event = event_queue.shift
+
+      # Delete empty queues here to ensure continuous event handling
+      # does not lead to the array's memory footprint growing ever
+      # larger.
+      @event_queues.delete(queue_id) if event.nil?
+
+      event
     end
 
     # When called '@queue_statuses[id]' must be set to true in order
     # to ensure only a single fiber is executing the events for a
     # particular id.
     def event_handler_process_queue(queue_id)
-      while (event = event_handler_pop_event(queue_id))
-        event_definition = event_definitions[event[:event_name]]
-        next unless event_definition[:method]
+      # We need to check the state to ensure that no new events are
+      # executed, however we cannot guarantee that no events are still
+      # executing after the state changes.
+      while @event_handler_state == :active
+        event = event_handler_pop_event(queue_id)
+        break if event.nil?
 
-        __send__(event_definition[:method], event[:params])
+        # Set by this module, no need to verify.
+        event_name = event[:event_name]
+        event_params = event[:params]
 
-        #debug "executed event: #{event[:event_name]} method: #{event_definition[:method]} params: #{event[:params].inspect}"
+        event_method = self.class.event_method_for_event_name(event_name)
+        next if event_method.nil?
+
+        __send__(event_method, event_params)
+
+        #debug "executed event: #{event_name} method: #{event_method} params: #{event_params.inspect}"
       end
-
-      @event_queues.delete(queue_id)
-      return
 
     ensure
       @queue_statuses.delete(queue_id)
