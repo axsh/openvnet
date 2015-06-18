@@ -68,7 +68,7 @@ module Vnet::Event
 
     module Initializer
       def initialize(*args, &block)
-        @event_handler_state = :active # Test with :drop_all
+        @event_handler_state = :active
         @event_queues = {}
         @queue_statuses = {}
 
@@ -120,7 +120,10 @@ module Vnet::Event
     # Event handling:
     #
 
+    # TODO: Rename this to something more meaningful such as queue event.
     def handle_event(event_name, params)
+      return if @event_handler_state == :drop_all
+
       #debug "handle event: #{event_name} params: #{params.inspect}}"
 
       queue_id = params[:id]
@@ -137,7 +140,6 @@ module Vnet::Event
       end
 
       event_queue << { event_name: event_name, params: params.dup }
-
       event_handler_start_queue(queue_id)
     end
 
@@ -148,6 +150,7 @@ module Vnet::Event
     private
 
     def event_handler_start_queue(queue_id)
+      return if @event_handler_state != :active
       return if @queue_statuses[queue_id]
 
       @queue_statuses[queue_id] = true
