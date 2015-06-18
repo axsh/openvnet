@@ -68,17 +68,40 @@ module Vnet::Event
 
       queue_id = params[:id] || :default
 
+      # TODO: Clean this up...
       event_queue = @event_queues[queue_id] || []
       event_queue << { event_name: event_name, params: params.dup }
 
       @event_queues[queue_id] = event_queue
 
-      unless @queue_statuses[queue_id]
-        @queue_statuses[queue_id] = true
-        async(:fetch_queued_events, queue_id)
+      event_handler_start_queue(queue_id)
+    end
+
+    def subscribe_events
+      self.event_definitions.keys.each do |event_name|
+        subscribe(event_name, :handle_event)
       end
     end
 
+    def unsubscribe_events(actor, reason)
+      self.event_definitions.keys.each { |e| unsubscribe(e) }
+    rescue Celluloid::DeadActorError
+    end
+
+    #
+    # Internal:
+    #
+
+    private
+
+    def event_handler_start_queue(queue_id)
+      return if @queue_statuses[queue_id]
+
+      @queue_statuses[queue_id] = true
+      async(:fetch_queued_events, queue_id)
+    end
+
+    # TODO: Rename method and 'id'.
     def fetch_queued_events(id)
       while @event_queues[id].present?
         event_queue = @event_queues[id]
@@ -97,17 +120,6 @@ module Vnet::Event
 
     ensure
       @queue_statuses.delete(id)
-    end
-
-    def subscribe_events
-      self.event_definitions.keys.each do |event_name|
-        subscribe(event_name, :handle_event)
-      end
-    end
-
-    def unsubscribe_events(actor, reason)
-      self.event_definitions.keys.each { |e| unsubscribe(e) }
-    rescue Celluloid::DeadActorError
     end
 
   end
