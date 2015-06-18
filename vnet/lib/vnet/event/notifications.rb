@@ -98,13 +98,12 @@ module Vnet::Event
       return if @queue_statuses[queue_id]
 
       @queue_statuses[queue_id] = true
-      async(:fetch_queued_events, queue_id)
+      async(:event_handler_process_queue, queue_id)
     end
 
-    # TODO: Rename method and 'id'.
-    def fetch_queued_events(id)
-      while @event_queues[id].present?
-        event_queue = @event_queues[id]
+    def event_handler_process_queue(queue_id)
+      while @event_queues[queue_id].present?
+        event_queue = @event_queues[queue_id]
         event = event_queue.shift
 
         event_definition = event_definitions[event[:event_name]]
@@ -115,11 +114,11 @@ module Vnet::Event
         __send__(event_definition[:method], event[:params])
       end
 
-      @event_queues.delete(id)
+      @event_queues.delete(queue_id)
       return
 
     ensure
-      @queue_statuses.delete(id)
+      @queue_statuses.delete(queue_id)
     end
 
   end
