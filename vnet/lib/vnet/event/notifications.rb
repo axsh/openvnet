@@ -43,13 +43,17 @@ module Vnet::Event
     def event_handler_active
       @event_handler_state = :active
 
-      # Call queue handler.
+      @event_queues.keys.each { |queue_id|
+        event_handler_start_queue(queue_id)
+      }
     end
 
     def event_handler_drop_all
       @event_handler_state = :drop_all
 
-      # Clear queue.
+      # The @queue_statuses should be cleared when all fibers in
+      # 'event_handler_process_queue' finish.
+      @event_queues.clear
     end
 
     def event_handler_queue_only
@@ -102,6 +106,9 @@ module Vnet::Event
     end
 
     def event_handler_process_queue(queue_id)
+      # TODO: Don't retrieve the queue needlessly, however do keep in
+      # mind the states.
+
       while @event_queues[queue_id].present?
         event_queue = @event_queues[queue_id]
         event = event_queue.shift
