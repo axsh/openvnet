@@ -1,5 +1,24 @@
 # -*- coding: utf-8 -*-
 
+# All events with the same ':id => value' are executed using FIFO
+# ordering on the same fiber. Events with differing ':id => value'
+# will each use their own fiber.
+#
+# Events with no :id key set use the :default queue id.
+#
+# Usage:
+#
+# class Foo
+#   subscribe_event "event_foo", :method_foo
+#
+#   private
+#
+#   def method_foo(params)
+#     id = params[:id]
+#     foo = params[:foo]
+#   end    
+# end
+
 module Vnet::Event
   module Notifications
 
@@ -23,6 +42,9 @@ module Vnet::Event
         @event_definitions ||= {}
       end
 
+      # TODO: Add a subscribe event that gets the item, or might even
+      # retrieve the item from the database if not present.
+
       def subscribe_event(event_name, method = nil, options = {})
         self.event_definitions[event_name] = { method: method, options: options }
       end
@@ -39,6 +61,10 @@ module Vnet::Event
         subscribe_events
       end
     end
+
+    #
+    # Public methods:
+    #
 
     def event_handler_active
       @event_handler_state = :active
@@ -67,6 +93,21 @@ module Vnet::Event
       self.class.event_definitions
     end
 
+    def subscribe_events
+      self.event_definitions.keys.each do |event_name|
+        subscribe(event_name, :handle_event)
+      end
+    end
+
+    def unsubscribe_events(actor, reason)
+      self.event_definitions.keys.each { |e| unsubscribe(e) }
+    rescue Celluloid::DeadActorError
+    end
+
+    #
+    # Event handling:
+    #
+
     def handle_event(event_name, params)
       #debug "handle event: #{event_name} params: #{params.inspect}}"
 
@@ -79,17 +120,6 @@ module Vnet::Event
       @event_queues[queue_id] = event_queue
 
       event_handler_start_queue(queue_id)
-    end
-
-    def subscribe_events
-      self.event_definitions.keys.each do |event_name|
-        subscribe(event_name, :handle_event)
-      end
-    end
-
-    def unsubscribe_events(actor, reason)
-      self.event_definitions.keys.each { |e| unsubscribe(e) }
-    rescue Celluloid::DeadActorError
     end
 
     #
@@ -105,6 +135,9 @@ module Vnet::Event
       async(:event_handler_process_queue, queue_id)
     end
 
+    # When called '@queue_statuses[id]' must be set to true in order
+    # to ensure only a single fiber is executing the events for a
+    # particular id.
     def event_handler_process_queue(queue_id)
       # TODO: Don't retrieve the queue needlessly, however do keep in
       # mind the states.
