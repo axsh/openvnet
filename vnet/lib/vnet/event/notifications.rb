@@ -2,8 +2,11 @@
 
 module Vnet::Event
   module Notifications
+
     def self.included(klass)
       klass.class_eval do
+        # TODO: Consider removing Celluloid and Celluloid::Logger
+        # includes.
         include Celluloid
         include Celluloid::Logger
         include Celluloid::Notifications
@@ -11,6 +14,7 @@ module Vnet::Event
         prepend Initializer
         trap_exit :unsubscribe_events
       end
+
       klass.extend(ClassMethods)
     end
 
@@ -26,11 +30,33 @@ module Vnet::Event
 
     module Initializer
       def initialize(*args, &block)
-        super
-        @queue_statuses = {}
+        @event_handler_state = :active # Test with :drop_all
         @event_queues = {}
+        @queue_statuses = {}
+
+        super
+
         subscribe_events
       end
+    end
+
+    def event_handler_active
+      @event_handler_state = :active
+
+      # Call queue handler.
+    end
+
+    def event_handler_drop_all
+      @event_handler_state = :drop_all
+
+      # Clear queue.
+    end
+
+    def event_handler_queue_only
+      @event_handler_state = :queue_only
+
+      # Do nothing, however we need to check state each iteration in
+      # queue handler.
     end
 
     def event_definitions
@@ -83,5 +109,6 @@ module Vnet::Event
       self.event_definitions.keys.each { |e| unsubscribe(e) }
     rescue Celluloid::DeadActorError
     end
+
   end
 end
