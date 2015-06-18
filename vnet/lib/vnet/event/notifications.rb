@@ -111,7 +111,12 @@ module Vnet::Event
     def handle_event(event_name, params)
       #debug "handle event: #{event_name} params: #{params.inspect}}"
 
-      queue_id = params[:id] || :default
+      queue_id = params[:id]
+
+      if queue_id.nil?
+        warn "#{self.class.name} cannot handle an event with no or nil id (event_name:#{event_name} params:#{params.inspect})"
+        return
+      end
 
       # TODO: Clean this up...
       event_queue = @event_queues[queue_id] || []
@@ -135,23 +140,22 @@ module Vnet::Event
       async(:event_handler_process_queue, queue_id)
     end
 
+    def event_handler_pop_event(queue_id)
+      event_queue = @event_queues[queue_id] || return
+      event_queue.shift
+    end
+
     # When called '@queue_statuses[id]' must be set to true in order
     # to ensure only a single fiber is executing the events for a
     # particular id.
     def event_handler_process_queue(queue_id)
-      # TODO: Don't retrieve the queue needlessly, however do keep in
-      # mind the states.
-
-      while @event_queues[queue_id].present?
-        event_queue = @event_queues[queue_id]
-        event = event_queue.shift
-
+      while (event = event_handler_pop_event(queue_id))
         event_definition = event_definitions[event[:event_name]]
         next unless event_definition[:method]
 
-        #debug "execute event: #{event[:event_name]} method: #{event_definition[:method]} params: #{event[:params].inspect}"
-
         __send__(event_definition[:method], event[:params])
+
+        #debug "executed event: #{event[:event_name]} method: #{event_definition[:method]} params: #{event[:params].inspect}"
       end
 
       @event_queues.delete(queue_id)
