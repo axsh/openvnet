@@ -59,16 +59,17 @@ module Vnet::NodeApi
         # TODO: replace with lease policy manager to ask new address.
         retry_count = 10
         begin
-          new_addr = [0x00, 0x16, 0x3e,
-                      Random.rand(0x7F),
-                      Random.rand(0xFF),
-                      Random.rand(0xFF)
-                      ].pack("C*")
+          new_addr = (Vnet::Configurations::Vnmgr.conf.datapath_broadcast_mac_vendor_address +
+                      [Random.rand(0x7F),
+                       Random.rand(0xFF),
+                       Random.rand(0xFF)
+                      ]).pack("C*")
           if Vnet::Models::MacAddress.filter(mac_address: new_addr).empty?
             return new_addr
           end
           retry_count -= 1
         end while retry_count > 0
+        raise "Exceeds retry to generate MAC address for broadcast."
       end
 
       private
