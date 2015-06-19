@@ -31,7 +31,7 @@ module Vnet::Configurations
     param :datapath_broadcast_mac_vendor_address, :default => [0x02, 0xbe, 0xef]
 
     def validate(errors)
-      v @config[:datapath_broadcast_mac_vendor_address]
+      v = @config[:datapath_broadcast_mac_vendor_address]
       case v
       when Array
         if v.size != 3
