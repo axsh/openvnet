@@ -90,6 +90,7 @@ module Vnet::Event
 
         super
 
+        # Careful with this debug, it causes a yield within the initializer.
         # debug "#{self.class.name} initialized with event handler state #{@event_handler_state}"
 
         subscribe_events
@@ -207,7 +208,7 @@ module Vnet::Event
 
         __send__(event_method, event_params)
 
-        #debug "executed event: #{event_name} method: #{event_method} params: #{event_params.inspect}"
+        # debug "executed event: #{event_name} method: #{event_method} params: #{event_params.inspect}"
       end
 
     ensure
