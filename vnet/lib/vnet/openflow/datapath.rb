@@ -72,6 +72,11 @@ module Vnet::Openflow
       wait_for_unload_of_host_datapath
 
       info log_format('resetting datapath info')
+
+      @dp_info.managers.each { |manager|
+        manager.event_handler_drop_all
+      }
+
       @controller.pass_task { @controller.reset_datapath(@dpid) }
 
       return nil
