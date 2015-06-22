@@ -26,8 +26,8 @@ networks:
 
   - uuid: nw-public2
     display_name: public2
-    ipv4_network: <%= public_ipv4_network %>
-    ipv4_prefix: <%= public_ipv4_prefix %>
+    ipv4_network: <%= public_ipv4_network2 %>
+    ipv4_prefix: <%= public_ipv4_prefix2 %>
     domain_name: public
     network_mode: physical
 
@@ -66,7 +66,7 @@ interfaces:
   - uuid: if-dhcppub2
     network_uuid: nw-public2
     mac_address: "02:00:00:00:01:22"
-    ipv4_address: <%= public_dhcp_ipv4_address %>
+    ipv4_address: <%= public_dhcp_ipv4_address2 %>
     mode: simulated
 
 network_services:
