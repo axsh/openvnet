@@ -41,7 +41,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   param_uuid M::Interface, :interface_uuid, required: true
-  param :broadcast_mac_address, :String, required: true, transform: PARSE_MAC
+  param :broadcast_mac_address, :String, transform: PARSE_MAC
   post '/:uuid/networks/:network_uuid' do
     datapath = check_syntax_and_pop_uuid(M::Datapath)
     interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
