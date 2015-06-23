@@ -1,5 +1,5 @@
 vm_type: :kvm
-specs: [simple, router_v2v, router_p2v, event, service, secg, secg_reference]
+specs: [simple, router_v2v, router_p2v, event, service, secg, secg_reference, auto_assign]
 # specs not included
 # [edge, edge_esxi, vxlan, lease_policy]
 vnet_branch: master
