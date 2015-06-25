@@ -1,0 +1,144 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+VAGRANT_BOX = "chef/centos-6.5"
+
+vms = [
+  {
+    name: "vnmgr",
+    networks: [
+      { type: "hostonly", ip: "192.168.20.10" },
+    ],
+  },
+  {
+    name: "vna1",
+    networks: [
+      { type: "hostonly", ip: "192.168.20.11" },
+      { type: "intnet", name: "public_network1" },
+    ],
+    use_docker: true,
+  },
+  {
+    name: "vna2",
+    networks: [
+      { type: "hostonly", ip: "192.168.20.12" },
+      { type: "intnet", name: "public_network1" },
+    ],
+    use_docker: true,
+  },
+  {
+    name: "vna3",
+    networks: [
+      { type: "hostonly", ip: "192.168.20.13" },
+      { type: "intnet", name: "public_network2" },
+    ],
+    use_docker: true,
+  },
+  {
+    name: "edge",
+    networks: [
+      { type: "hostonly", ip: "192.168.20.21" },
+      { type: "intnet", name: "public_network1" },
+      { type: "intnet", name: "public_network3" },
+    ],
+  },
+  {
+    name: "legacy",
+    networks: [
+      { type: "hostonly", ip: "192.168.20.31" },
+      { type: "intnet", name: "public_network3" },
+    ]
+  },
+  {
+    name: "router",
+    networks: [
+      { type: "hostonly", ip: "192.168.20.2" },
+      { type: "intnet", name: "public_network1" },
+      { type: "intnet", name: "public_network2" },
+      { type: "intnet", name: "public_network3" },
+    ]
+  },
+]
+
+nodes = {}.tap do |nodes|
+  nodes_dir = File.expand_path("./nodes", File.dirname(__FILE__))
+  Dir.glob("#{nodes_dir}/*.json") do |filename|
+    name = filename.sub(%r!.*/nodes/(.*)\.json!, '\1')
+    nodes[name] = JSON.parse(File.read(filename))
+  end
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  vms.each do |vm|
+
+    # only suuport virtualbox atm.
+    config.vm.provider :virtualbox do |vb|
+      vb.memory = vm[:memory] if vm[:memory]
+
+      # https://github.com/mitchellh/vagrant/issues/1172
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+    end
+
+    config.vm.define vm[:name] do |config|
+      config.vm.box = vm[:box] || VAGRANT_BOX
+
+      config.vm.hostname = vm[:name]
+      config.ssh.forward_agent = true
+
+      vm[:networks].each.with_index do |network, index|
+
+        nic_index = index + 2
+        case network[:type]
+        when "hostonly"
+          config.vm.network :private_network, ip: network[:ip]
+        when "intnet"
+          config.vm.provider :virtualbox do |vb|
+            vb.customize ["modifyvm", :id, "--nic#{nic_index}", network[:type]]
+            vb.customize ["modifyvm", :id, "--intnet#{nic_index}", network[:name]]
+          end
+        end
+
+        config.vm.provider :virtualbox do |vb|
+          vb.customize ["modifyvm", :id, "--nicpromisc#{nic_index}", "allow-all"]
+          # http://humbledown.org/virtualbox-intel-vlan-tag-stripping.xhtml
+          vb.customize ["modifyvm", :id, "--nictype#{nic_index}", "Am79C973"]
+        end
+      end
+
+      #
+      # provision
+      #
+
+      # docker
+      if vm[:use_docker]
+        config.vm.provision "docker" do |docker|
+          docker.pull_images "centos"
+        end
+      end
+
+      # chef_solo
+      config.omnibus.chef_version = :latest
+
+      config.vm.provision "chef_solo" do |chef|
+        chef.cookbooks_path = %w(cookbooks site-cookbooks)
+        chef.data_bags_path = "data_bags"
+        chef.roles_path = "roles"
+
+        nodes[vm[:name]].tap do |node|
+          node.delete("run_list").each do |recipe|
+            case recipe
+            when /recipe\[(.*)\]/
+              chef.add_recipe($1)
+            when /role\[(.*)\]/
+              chef.add_role($1)
+            end
+          end
+          chef.json = node
+        end
+      end
+    end
+  end
+end
