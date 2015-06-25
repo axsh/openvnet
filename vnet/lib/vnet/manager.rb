@@ -373,7 +373,7 @@ module Vnet
         return
       end
 
-      return if @items[item_id]
+      return @items[item_id] if @items[item_id]
 
       item_initialize(item_map).tap do |item|
         # TODO: Delete item from items if returned nil.
