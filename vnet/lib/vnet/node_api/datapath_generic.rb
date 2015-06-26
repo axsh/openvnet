@@ -46,11 +46,12 @@ module Vnet::NodeApi
             broadcast_mac_address = generate_new_mac_address
           end
 
-          Vnet::Models::DatapathNetwork.create({datapath_id: datapath.id,
-                                                 interface_id: interface.id,
-                                                 network_id: network.id,
-                                                 broadcast_mac_address: broadcast_mac_address
-                                               })
+          dpn = Vnet::Models::DatapathNetwork.create({datapath_id: datapath.id,
+                                                       interface_id: interface.id,
+                                                       network_id: network.id,
+                                                       broadcast_mac_address: broadcast_mac_address
+                                                     })
+          dispatch_created_for_model(dpn)
         end
       end
 
