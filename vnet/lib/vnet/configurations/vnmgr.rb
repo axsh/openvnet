@@ -28,17 +28,17 @@ module Vnet::Configurations
       end
     end
 
-    param :datapath_broadcast_mac_vendor_address, :default => [0x02, 0xbe, 0xef]
+    param :datapath_network_mac_vendor_address, :default => [0x02, 0xbe, 0xef]
 
     def validate(errors)
-      v = @config[:datapath_broadcast_mac_vendor_address]
+      v = @config[:datapath_network_mac_vendor_address]
       case v
       when Array
         if v.size != 3
-          raise "datapath_broadcast_mac_vendor_address: invalid length"
+          raise "datapath_network_mac_vendor_address: invalid length"
         end
       else
-        raise "datapath_broadcast_mac_vendor_address: invalid value"
+        raise "datapath_network_mac_vendor_address: invalid value"
       end
     end
   end

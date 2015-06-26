@@ -60,7 +60,7 @@ module Vnet::NodeApi
         # TODO: replace with lease policy manager to ask new address.
         retry_count = 10
         begin
-          new_addr = (Vnet::Configurations::Vnmgr.conf.datapath_broadcast_mac_vendor_address +
+          new_addr = (Vnet::Configurations::Vnmgr.conf.datapath_network_mac_vendor_address +
                       [Random.rand(0x7F),
                        Random.rand(0xFF),
                        Random.rand(0xFF)
