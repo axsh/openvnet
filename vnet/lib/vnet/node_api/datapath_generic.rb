@@ -53,6 +53,7 @@ module Vnet::NodeApi
                                                })
         end
         dispatch_created_for_model(dpn)
+        dpn
       end
 
       private
