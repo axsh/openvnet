@@ -1,0 +1,40 @@
+DEPENDENCIES
+  ntp
+  rbenv
+  sysctl
+  yum
+  yum-epel
+  yum-repoforge
+
+GRAPH
+  apt (2.3.8)
+  build-essential (2.0.0)
+  chef_handler (1.1.6)
+  dmg (2.2.0)
+  git (4.0.0)
+    build-essential (>= 0.0.0)
+    dmg (>= 0.0.0)
+    runit (>= 1.0.0)
+    windows (>= 0.0.0)
+    yum (~> 3.0)
+    yum-epel (>= 0.0.0)
+  ntp (1.6.2)
+  ohai (2.0.0)
+  rbenv (1.7.1)
+    apt (>= 0.0.0)
+    build-essential (>= 0.0.0)
+    git (>= 0.0.0)
+    ohai (>= 1.1)
+  runit (1.5.10)
+    build-essential (>= 0.0.0)
+    yum (~> 3.0)
+    yum-epel (>= 0.0.0)
+  sysctl (0.4.0)
+  windows (1.30.2)
+    chef_handler (>= 0.0.0)
+  yum (3.2.0)
+  yum-epel (0.3.6)
+    yum (~> 3.0)
+  yum-repoforge (0.2.0)
+    yum (~> 3.0)
+    yum-epel (>= 0.0.0)

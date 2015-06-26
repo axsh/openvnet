@@ -1,0 +1,8 @@
+*.swp
+*.swo
+.bundle
+vendor
+tmp
+.ruby-version
+log/*
+!.gitkeep
