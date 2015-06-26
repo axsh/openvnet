@@ -118,6 +118,13 @@ module Vnet::Core::Translations
                            :metadata => METADATA_TYPE_VIRTUAL_TO_EDGE,
                            :metadata_mask => METADATA_TYPE_MASK
                           })
+      flows << Flow.create(TABLE_EDGE_DST, 2, {
+                           :eth_dst => src_mac,
+                           :metadata => METADATA_TYPE_EDGE_TO_VIRTUAL,
+                           :metadata_mask => METADATA_TYPE_MASK
+                          }, {
+                           :output => message.in_port
+                          }, {})
 
       if dst_mac.broadcast?
         flows << Flow.create(TABLE_EDGE_DST, 2, {
@@ -127,20 +134,24 @@ module Vnet::Core::Translations
                              :metadata_mask => METADATA_TYPE_MASK
                             }, actions, {})
       elsif dpn_broadcast == dst_mac.value
-        flows << Flow.create(TABLE_EDGE_DST, 2, {
-                             :eth_type => 0x0806,
-                             :eth_dst => dst_mac,
-                             :metadata => METADATA_TYPE_VIRTUAL_TO_EDGE,
-                             :metadata_mask => METADATA_TYPE_MASK
-                            }, {:eth_dst => MAC_BROADCAST}.merge(actions), {})
-      else
-        flows << Flow.create(TABLE_EDGE_DST, 2, {
-                             :eth_dst => src_mac,
-                             :metadata => METADATA_TYPE_EDGE_TO_VIRTUAL,
-                             :metadata_mask => METADATA_TYPE_MASK
-                            }, {
-                             :output => message.in_port
-                            }, {})
+        #TODO: use openflow instead of ovs utilities.
+        # flows << Flow.create(TABLE_EDGE_DST, 2, {
+        #                      :eth_type => 0x0806,
+        #                      :eth_dst => dst_mac,
+        #                      :metadata => METADATA_TYPE_VIRTUAL_TO_EDGE,
+        #                      :metadata_mask => METADATA_TYPE_MASK
+        #                     }, {:eth_dst => MAC_BROADCAST}.merge(actions), {})
+        option_str=""
+        case actions
+        when Array
+          actions.each do |action|
+            option_str << "mod_vlan_vid:#{action[:mod_vlan_vid]}," if action[:mod_vlan_vid]
+            option_str << "output:#{action[:output]}," if action[:output]
+          end
+        when Hash
+          option_str = "mod_vlan_vid:#{actions[:mod_vlan_vid]},output:#{actions[:output]}"
+        end
+        `ovs-ofctl -O OpenFlow13 add-flow br0 'table=#{TABLE_EDGE_DST} priority=2 eth_type=0x0806 eth_dst=#{dst_mac} metadata=#{METADATA_TYPE_VIRTUAL_TO_EDGE}/#{METADATA_TYPE_MASK} actions=mod_dl_dst:#{MAC_BROADCAST},#{option_str}'`
       end
 
       @dp_info.add_flows(flows)
@@ -193,14 +204,15 @@ module Vnet::Core::Translations
                            :metadata => md[:metadata],
                            :metadata_mask => md[:metadata_mask]
                           })
-      flows << Flow.create(TABLE_EDGE_DST, 2, {
-                           :eth_dst => src_mac,
-                           :metadata => METADATA_TYPE_VIRTUAL_TO_EDGE,
-                           :metadata_mask => METADATA_TYPE_MASK
-                          }, {
-                           :mod_vlan_vid => vlan_vid,
-                           :output => message.in_port
-                          }, {})
+      # flows << Flow.create(TABLE_EDGE_DST, 2, {
+      #                      :eth_dst => src_mac,
+      #                      :metadata => METADATA_TYPE_VIRTUAL_TO_EDGE,
+      #                      :metadata_mask => METADATA_TYPE_MASK
+      #                     }, {
+      #                      :mod_vlan_vid => vlan_vid,
+      #                      :output => message.in_port
+      #                     }, {})
+      `ovs-ofctl -O OpenFlow13 add-flow br0 'table=#{TABLE_EDGE_DST} priority=2 eth_dst=#{src_mac} metadata=#{METADATA_TYPE_VIRTUAL_TO_EDGE}/#{METADATA_TYPE_MASK} actions=mod_vlan_vid:#{vlan_vid},output:#{message.in_port}'`
 
       @dp_info.add_flows(flows)
 
