@@ -38,7 +38,7 @@ module Vnet::NodeApi
   class DatapathNetwork < DatapathGeneric
     class << self
       def associate_network(datapath_uuid, network_uuid, interface_uuid, broadcast_mac_address)
-        transaction do
+        dpn = transaction do
           datapath = Vnet::Models::Datapath[datapath_uuid]
           network = Vnet::Models::Network[network_uuid]
           interface = Vnet::Models::Interface[interface_uuid]
@@ -46,13 +46,13 @@ module Vnet::NodeApi
             broadcast_mac_address = generate_new_mac_address
           end
 
-          dpn = Vnet::Models::DatapathNetwork.create({datapath_id: datapath.id,
-                                                       interface_id: interface.id,
-                                                       network_id: network.id,
-                                                       broadcast_mac_address: broadcast_mac_address
-                                                     })
-          dispatch_created_for_model(dpn)
+          Vnet::Models::DatapathNetwork.create({datapath_id: datapath.id,
+                                                 interface_id: interface.id,
+                                                 network_id: network.id,
+                                                 broadcast_mac_address: broadcast_mac_address
+                                               })
         end
+        dispatch_created_for_model(dpn)
       end
 
       private
