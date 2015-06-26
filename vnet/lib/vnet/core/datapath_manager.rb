@@ -76,20 +76,13 @@ module Vnet::Core
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
       filter << {dpid: params[:dpid]} if params.has_key? :dpid
-      filter << {host: @dp_info.dpid} if params.has_key? :host
+      filter << {host: @dp_info.dpid} if params.has_key? :host # TODO: Not sufficient.
       filter
     end
 
     def item_initialize(item_map)
       if item_map.dpid == @dp_info.dpid
         item_class = Datapaths::Host
-
-        if internal_detect(host: true)
-          warn log_format('host datapath already loaded')
-          # TODO: Do something..
-          return
-        end
-
       else
         item_class = Datapaths::Remote
       end
@@ -102,28 +95,21 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
-      # TODO: Make events.
-      item_map.batch.datapath_networks.commit.each do |dpn_map|
-        publish(ADDED_DATAPATH_NETWORK, id: item.id, dpn_map: dpn_map)
-      end
+      item_map.batch.datapath_networks.commit.each { |dpn_map|
+        internal_added_datapath_network(item, dpn_map)
+      }
 
-      item_map.batch.datapath_route_links.commit.each do |dprl_map|
-        publish(ADDED_DATAPATH_ROUTE_LINK, id: item.id, dprl_map: dprl_map)
-      end
+      item_map.batch.datapath_route_links.commit.each { |dprl_map|
+        internal_added_datapath_route_link(item, dprl_map)
+      }
     end
 
-    # Remove dpn and dprl events.
-
+    # TODO: Currently we initialize all datapaths, however in the
+    # future this should be done only when needed. Bootstrap handles
+    # loading the host datapath, so it can be ignored also. 
     def created_item(params)
       return if internal_detect_by_id(params)
-
-      # TODO: Check if we need to create the item.
-      if @dp_info.dpid != params[:dpid]
-        retrieve(id: params[:id])
-        return
-      end
-
-      retrieve(id: params[:id])
+      internal_new_item(mw_class.new(params))
     end
 
     #
@@ -166,23 +152,19 @@ module Vnet::Core
       item = internal_detect_by_id(params)
 
       if item.nil?
-        # TODO: Make sure we don't look here...
+        # TODO: Make sure we don't lock here...
         return internal_retrieve(id: params[:id])
       end
 
+      # TODO: Fix this so all params contain the needed information.
       case 
       when params[:dpn_map]
         dpn_map = params[:dpn_map]
-        network_id = dpn_map.network_id
       when params[:network_id]
-        network_id = params[:network_id]
-        dpn_map = MW::DatapathNetwork.batch[datapath_id: item.id, network_id: network_id].commit
+        dpn_map = MW::DatapathNetwork.batch[datapath_id: item.id, network_id: params[:network_id]].commit
       end
 
-      (dpn_map && network_id) || return
-
-      item.add_active_network(dpn_map)
-      item.activate_network_id(network_id) if @active_networks[network_id]
+      internal_added_datapath_network(item, dpn_map)
     end
 
     # REMOVED_DATAPATH_NETWORK on queue 'item.id'
@@ -288,19 +270,15 @@ module Vnet::Core
         return internal_retrieve(id: params[:id])
       end
 
+      # TODO: Fix this so all params contain the needed information.
       case 
       when params[:dprl_map]
         dprl_map = params[:dprl_map]
-        route_link_id = dprl_map.route_link_id
       when params[:route_link_id]
-        route_link_id = params[:route_link_id]
-        dprl_map = MW::DatapathRouteLink.batch[datapath_id: item.id, route_link_id: route_link_id].commit
+        dprl_map = MW::DatapathRouteLink.batch[datapath_id: item.id, route_link_id: params[:route_link_id]].commit
       end
 
-      (dprl_map && route_link_id) || return
-
-      item.add_active_route_link(dprl_map)
-      item.activate_route_link_id(route_link_id) if @active_route_links[route_link_id]
+      internal_added_datapath_route_link(item, dprl_map)
     end
 
     # REMOVED_DATAPATH_ROUTE_LINK on queue 'item.id'
@@ -354,6 +332,24 @@ module Vnet::Core
 
         self.async.internal_retrieve(id: dprl_map.datapath_id)
       }
+    end
+
+    #
+    # Refactored:
+    #
+
+    def internal_added_datapath_network(item, dpn_map)
+      network_id = (dpn_map && dpn_map.network_id) || return
+
+      item.add_active_network(dpn_map)
+      item.activate_network_id(network_id) if @active_networks[network_id]
+    end
+
+    def internal_added_datapath_route_link(item, dprl_map)
+      route_link_id = (dprl_map && dprl_map.route_link_id) || return
+
+      item.add_active_route_link(dprl_map)
+      item.activate_route_link_id(route_link_id) if @active_route_links[route_link_id]
     end
 
   end
