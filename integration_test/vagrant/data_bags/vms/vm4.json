@@ -1,0 +1,17 @@
+{
+  "id": "vm4",
+  "host": "vna2",
+  "ssh_port": 2224,
+  "interfaces": [ 
+    {
+      "name": "eth0",
+      "ipv4_address": "10.50.0.104"
+    },
+    {
+      "name": "eth1",
+      "bridge": "br0",
+      "port_name": "if-v4",
+      "mac_address": "02:00:00:00:00:04"
+    }
+  ]
+}

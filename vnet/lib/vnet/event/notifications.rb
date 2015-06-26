@@ -1,7 +1,27 @@
 # -*- coding: utf-8 -*-
 
+# All events with the same ':id => value' are executed using FIFO
+# ordering on the same fiber. Events with differing ':id => value'
+# will each use their own fiber.
+#
+# Events with no :id key set use the :default queue id.
+#
+# Usage:
+#
+# class Foo
+#   subscribe_event "event_foo", :method_foo
+#
+#   private
+#
+#   def method_foo(params)
+#     id = params[:id]
+#     foo = params[:foo]
+#   end    
+# end
+
 module Vnet::Event
   module Notifications
+
     def self.included(klass)
       klass.class_eval do
         include Celluloid
@@ -19,6 +39,9 @@ module Vnet::Event
         @event_definitions ||= {}
       end
 
+      # TODO: Add a subscribe event that gets the item, or might even
+      # retrieve the item from the database if not present.
+
       def subscribe_event(event_name, method = nil, options = {})
         self.event_definitions[event_name] = { method: method, options: options }
       end
@@ -33,14 +56,40 @@ module Vnet::Event
       end
     end
 
+    #
+    # Public methods:
+    #
+
     def event_definitions
       self.class.event_definitions
     end
 
+    def subscribe_events
+      self.event_definitions.keys.each do |event_name|
+        subscribe(event_name, :handle_event)
+      end
+    end
+
+    def unsubscribe_events(actor, reason)
+      self.event_definitions.keys.each { |e|
+        unsubscribe(e)
+      }
+    rescue Celluloid::DeadActorError
+    end
+
+    #
+    # Event handling:
+    #
+
     def handle_event(event_name, params)
       #debug "handle event: #{event_name} params: #{params.inspect}}"
 
-      queue_id = params[:id] || :default
+      queue_id = params[:id]
+
+      if queue_id.nil?
+        warn "#{self.class.name} cannot handle an event with no or nil id (event_name:#{event_name} params:#{params.inspect})"
+        return
+      end
 
       event_queue = @event_queues[queue_id] || []
       event_queue << { event_name: event_name, params: params.dup }
@@ -53,6 +102,9 @@ module Vnet::Event
       end
     end
 
+    # When called '@queue_statuses[id]' must be set to true in order
+    # to ensure only a single fiber is executing the events for a
+    # particular id.
     def fetch_queued_events(id)
       while @event_queues[id].present?
         event_queue = @event_queues[id]
@@ -73,15 +125,5 @@ module Vnet::Event
       @queue_statuses.delete(id)
     end
 
-    def subscribe_events
-      self.event_definitions.keys.each do |event_name|
-        subscribe(event_name, :handle_event)
-      end
-    end
-
-    def unsubscribe_events(actor, reason)
-      self.event_definitions.keys.each { |e| unsubscribe(e) }
-    rescue Celluloid::DeadActorError
-    end
   end
 end

@@ -1,0 +1,157 @@
+networks:
+
+  - uuid: nw-vnet1
+    display_name: vnet1
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet1
+    network_mode: virtual
+
+  - uuid: nw-vnet2
+    display_name: vnet2
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet2
+    network_mode: virtual
+
+datapaths:
+
+  - uuid: dp-edgeesxi
+    node_id: edge-esxi
+    display_name: edge-esxi
+    dpid: "0x0000eeeeeeeeeeee"
+
+interfaces:
+
+  - uuid: if-v1
+    port_name: if-v1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:01"
+    ipv4_address: 10.101.0.10
+
+  - uuid: if-v2
+    port_name: if-v2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:02"
+    ipv4_address: 10.101.0.10
+
+  - uuid: if-v3
+    port_name: if-v3
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:03"
+    ipv4_address: 10.101.0.11
+
+  - uuid: if-v4
+    port_name: if-v4
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:04"
+    ipv4_address: 10.101.0.11
+
+  - uuid: if-v5
+    port_name: if-v5
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:05"
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-v6
+    port_name: if-v6
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:00:06"
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-dhcp1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:01:01"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+  - uuid: if-dhcp2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:01:02"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+  - uuid: if-edge
+    port_name: "eth2"
+    mode: "edge"
+    mac_address: "52:54:00:30:05:63"
+    ipv4_address: "192.168.60.100"
+    owner_datapath_uuid: dp-edgeesxi
+
+  - uuid: if-edgeeth0
+    mode: host
+    port_name: eth0
+    owner_datapath_uuid: dp-edgeesxi
+    network_uuid: nw-public1
+    mac_address: "02:01:00:00:00:05"
+    ipv4_address: <%= edge_esxi_ipv4_address %>
+
+network_services:
+
+  - uuid: ns-dhcp1
+    interface_uuid: if-dhcp1
+    type: dhcp
+
+  - uuid: ns-dhcp2
+    interface_uuid: if-dhcp2
+    type: dhcp
+
+datapath_networks:
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp1eth0
+    broadcast_mac_address: "02:00:00:aa:00:01"
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp1eth0
+    broadcast_mac_address: "02:00:00:aa:00:02"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp2eth0
+    broadcast_mac_address: "02:00:00:bb:00:01"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp2eth0
+    broadcast_mac_address: "02:00:00:bb:00:02"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp3eth0
+    broadcast_mac_address: "02:00:00:cc:00:01"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp3eth0
+    broadcast_mac_address: "02:00:00:cc:00:02"
+
+  - datapath_uuid: dp-edgeesxi
+    network_uuid: nw-public1
+    interface_uuid: if-edgeeth0
+    broadcast_mac_address: "02:00:01:dd:01:01"
+
+  - datapath_uuid: dp-edgeesxi
+    network_uuid: nw-vnet1
+    interface_uuid: if-edgeeth0
+    broadcast_mac_address: "02:00:00:dd:00:01"
+
+  - datapath_uuid: dp-edgeesxi
+    network_uuid: nw-vnet2
+    interface_uuid: if-edgeeth0
+    broadcast_mac_address: "02:00:00:dd:00:02"
+
+translations:
+
+  - uuid: tr-edge
+    interface_uuid: if-edge
+    mode: vnet_edge
+
+vlan_translations:
+
+  - vlan_id: 100
+    network_id: 3
+    translation_uuid: tr-edge
+
