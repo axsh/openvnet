@@ -13,6 +13,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Fixed` Code cleanup and minor bug fixes in datapath manager.
 
+* `Fixed` An issue where events could get processed before managers were initialized, causing race conditions.
+
 ## [0.7] - 2015-06-04
 
 The first numbered OpenVNet release.
