@@ -72,6 +72,11 @@ module Vnet::Openflow
       wait_for_unload_of_host_datapath
 
       info log_format('resetting datapath info')
+
+      @dp_info.managers.each { |manager|
+        manager.event_handler_drop_all
+      }
+
       @controller.pass_task { @controller.reset_datapath(@dpid) }
 
       return nil
@@ -111,6 +116,13 @@ module Vnet::Openflow
       #
       # TODO: This should be done automatically by datapath manager
       # when it is initialized.
+      # 
+      # Since we load the host datapath here, we need to set
+      # queue-only now.
+      @dp_info.managers.each { |manager|
+        manager.event_handler_queue_only
+      }
+
       @dp_info.datapath_manager.async.retrieve(dpid: @dpid)
     end
 
@@ -179,6 +191,11 @@ module Vnet::Openflow
       # initialized.
       @dp_info.interface_port_manager.load_internal_interfaces
       @dp_info.port_manager.initialize_ports
+
+      # All managers should be initialized, allow events to execute.
+      @dp_info.managers.each { |manager|
+        manager.event_handler_active
+      }
     end
 
   end
