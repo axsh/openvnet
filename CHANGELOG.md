@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Fixed` An issue where Celluloid would some times assume that the main Trema thread was actually a Celluloid thread.
 
+* `Fixed` Code cleanup and minor bug fixes in datapath manager.
+
 ## [0.7] - 2015-06-04
 
 The first numbered OpenVNet release.
