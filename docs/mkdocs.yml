@@ -1,6 +1,6 @@
-site_name: OpenVnet
+site_name: OpenVNet
 site_favicon: favicon.png
-site_description: Documentation for OpenVnet
+site_description: Documentation for OpenVNet
 
 theme: readthedocs
 docs_dir: content
@@ -9,7 +9,7 @@ use_directory_urls: true
 repo_url: https://github.com/axsh/openvnet
 
 copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
-google_analytics: ['UA-63388719-2', 'axsh.github.io/openvnet']
+google_analytics: ['UA-63388719-2', 'auto']
 
 pages:
 - ['index.md', 'Home']

@@ -42,6 +42,9 @@ module Vnet
     DATAPATH_CREATED_ITEM = 'datapath_created_item'
     DATAPATH_DELETED_ITEM = 'datapath_deleted_item'
 
+    HOST_DATAPATH_INITIALIZED = 'host_datapath_initialized'
+    HOST_DATAPATH_UNLOAD_ITEM = 'host_datapath_unload_item'
+
     ACTIVATE_NETWORK_ON_HOST = 'activate_network_on_host'
     DEACTIVATE_NETWORK_ON_HOST = 'deactivate_network_on_host'
 

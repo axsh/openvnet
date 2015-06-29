@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+local_dir=${1:-/opt/axsh/openvnet/}
+current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+sync_command=${current_dir}/vnet-sync
+
+# append trailing slash
+local_dir=$(echo ${local_dir}/ | sed 's,/*$,/,')
+
+case ${OSTYPE} in
+  darwin*)
+    fswatch -o ${local_dir} | xargs -n1 -I{} ${sync_command} ${local_dir}
+    ;;
+  linux*)
+    while inotifywait -e modify -e create -e move -e delete --exclude "\..*\.sw[pox].*" -r ${local_dir}; do
+      ${sync_command} ${local_dir}
+    done
+    ;;
+esac

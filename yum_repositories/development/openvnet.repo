@@ -1,5 +1,0 @@
-[openvnet]
-name=OpenVNet
-baseurl=http://dlc.openvnet.axsh.jp/packages/rhel/6/vnet/develop/
-enabled=1
-gpgcheck=0

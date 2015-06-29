@@ -11,8 +11,19 @@ module Vnet::Core
 
   class DpInfo
 
+    BOOTSTRAP_MANAGER_NAMES = %w(
+      host_datapath
+    ).freeze
+
+    BOOTSTRAP_MANAGER_NAMES.each do |name|
+      attr_reader "#{name}_manager"
+    end
+
     # Port manager is always last in order to ensure that all other
     # managers have valid datapath_info before ports are initialized.
+    #
+    # TODO: Port manager should be moved to bootstrap.
+
     MANAGER_NAMES = %w(
       active_interface
       connection
@@ -48,7 +59,8 @@ module Vnet::Core
       @datapath = params[:datapath]
       @ovs_ofctl = params[:ovs_ofctl]
 
-      initialize_managers
+      internal_initialize_managers(BOOTSTRAP_MANAGER_NAMES)
+      internal_initialize_managers(MANAGER_NAMES)
     end
 
     def inspect
@@ -67,6 +79,7 @@ module Vnet::Core
 
     def add_flows(flows)
       return if flows.blank?
+
       @controller.pass_task {
         flows.each { |flow|
           @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
@@ -161,14 +174,16 @@ module Vnet::Core
       MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
+    def bootstrap_managers
+      BOOTSTRAP_MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
+    end
+
     def terminate_managers(timeout = 10.0)
-      start_time = Time.new
+      internal_terminate_managers(managers, timeout)
+    end
 
-      managers.each { |manager|
-        next_timeout = timeout - (Time.new - start_time)
-
-        Celluloid::Actor.join(manager, (next_timeout < 0.1) ? 0.1 : next_timeout)
-      }
+    def terminate_bootstrap_managers(timeout = 10.0)
+      internal_terminate_managers(bootstrap_managers, timeout)
     end
 
     #
@@ -177,10 +192,20 @@ module Vnet::Core
 
     private
 
-    def initialize_managers
-      MANAGER_NAMES.each do |name|
+    def internal_initialize_managers(name_list)
+      name_list.each { |name|
         instance_variable_set("@#{name}_manager", Vnet::Core.const_get("#{name.to_s.camelize}Manager").new(self))
-      end
+      }
+    end
+
+    def internal_terminate_managers(manager_list, timeout)
+      start_time = Time.new
+
+      manager_list.each { |manager|
+        next_timeout = timeout - (Time.new - start_time)
+
+        Celluloid::Actor.join(manager, (next_timeout < 0.1) ? 0.1 : next_timeout)
+      }
     end
 
   end
