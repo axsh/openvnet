@@ -667,7 +667,7 @@ module Vnet::Core
 
       if dst_list[key_id]
         error log_format("#{dst_log_prefix} #{key_id} already added")
-        return
+        # return
       end
 
       debug log_format("#{dst_log_prefix} #{key_id} added for datapath #{datapath_id}",
