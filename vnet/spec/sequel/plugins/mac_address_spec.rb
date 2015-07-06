@@ -10,7 +10,7 @@ describe Sequel::Plugins::MacAddress do
       Vnet::Models::DatapathNetwork.create(
         :datapath_id => 1,
         :network_id => 1,
-        :mac_address => mac_address_1
+        :mac_address => mac_address_1.id
       )
     end
 
@@ -51,7 +51,7 @@ describe Sequel::Plugins::MacAddress do
   context "without attr_name" do
     let(:model) do
       Vnet::Models::MacLease.create(
-        :mac_address => mac_address_1
+        :mac_address => mac_address_1.id
       )
     end
 
