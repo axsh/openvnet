@@ -4,8 +4,8 @@ require 'net/http'
 require 'json'
 
 require_relative 'vnet_api_client/api_resource'
+require_relative 'vnet_api_client/api_resources'
 require_relative 'vnet_api_client/response_format'
-require_relative 'vnet_api_client/api_resources/datapath'
 
 module VNetAPIClient
   def self.uri=(u)
