@@ -15,12 +15,12 @@ describe Vnet::Models::DatapathNetwork do
   let(:mac_address_3_2) { Fabricate(:mac_address) }
 
   before(:each) do
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_1.id, :network_id => 1, :mac_address => mac_address_1_1.id)
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_1.id, :network_id => 2, :mac_address => mac_address_1_2.id)
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_2.id, :network_id => 1, :mac_address => mac_address_2_1.id)
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_2.id, :network_id => 2, :mac_address => mac_address_2_2.id)
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 1, :mac_address => mac_address_3_1.id)
-    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 2, :mac_address => mac_address_3_2.id)
+    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_1.id, :network_id => 1, :mac_address_id => mac_address_1_1.id)
+    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_1.id, :network_id => 2, :mac_address_id => mac_address_1_2.id)
+    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_2.id, :network_id => 1, :mac_address_id => mac_address_2_1.id)
+    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_2.id, :network_id => 2, :mac_address_id => mac_address_2_2.id)
+    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 1, :mac_address_id => mac_address_3_1.id)
+    Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 2, :mac_address_id => mac_address_3_2.id)
   end
 
   describe "datapath_networks_in_the_same_network" do
