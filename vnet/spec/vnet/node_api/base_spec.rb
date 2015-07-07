@@ -39,7 +39,7 @@ describe Vnet::NodeApi::Base do
     end
 
     before do
-      Vnet::Models::TestModel.stub_chain(:all, :active).and_return(models)
+      allow(Vnet::Models::TestModel).to receive_message_chain(:all, :active).and_return(models)
     end
 
     context "without options" do

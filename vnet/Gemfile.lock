@@ -119,18 +119,19 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
-    rspec (3.0.0.beta2)
-      rspec-core (= 3.0.0.beta2)
-      rspec-expectations (= 3.0.0.beta2)
-      rspec-mocks (= 3.0.0.beta2)
-    rspec-core (3.0.0.beta2)
-      rspec-support (= 3.0.0.beta2)
-    rspec-expectations (3.0.0.beta2)
+    rspec (3.2.0)
+      rspec-core (~> 3.2.0)
+      rspec-expectations (~> 3.2.0)
+      rspec-mocks (~> 3.2.0)
+    rspec-core (3.2.3)
+      rspec-support (~> 3.2.0)
+    rspec-expectations (3.2.1)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (= 3.0.0.beta2)
-    rspec-mocks (3.0.0.beta2)
-      rspec-support (= 3.0.0.beta2)
-    rspec-support (3.0.0.beta2)
+      rspec-support (~> 3.2.0)
+    rspec-mocks (3.2.1)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.2.0)
+    rspec-support (3.2.2)
     sequel (4.8.0)
     sequel_paranoia (0.0.7)
     simplecov (0.10.0)
@@ -196,7 +197,7 @@ DEPENDENCIES
   racket (>= 1.0.12)!
   rake
   rant (>= 0.5.9)!
-  rspec (= 3.0.0beta2)
+  rspec
   sequel (= 4.8.0)
   sequel_paranoia
   sinatra
