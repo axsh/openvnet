@@ -35,29 +35,53 @@ module VNetAPIClient
       #
       # Metaprogramming to define common methods
       #
-      def define_standard_crud_methods
-        # For example class Datapath has api_suffix datapaths
-        api_suffix = self.name.split("::").last.downcase + "s"
+      def self.inherited(subclass)
+        subclass.instance_eval do
+          # For example class VnetAPIClient::Datapath has api_suffix datapaths
+          @api_suffix = self.name.split("::").last.downcase + "s"
+        end
+      end
 
+      def define_standard_crud_methods
         self.class.instance_eval do
           define_method(:create) do |params = nil|
-            send_request(Net::HTTP::Post, api_suffix, params)
+            send_request(Net::HTTP::Post, @api_suffix, params)
           end
 
           define_method(:update) do |uuid, params = nil|
-            send_request(Net::HTTP::Put, "#{api_suffix}/#{uuid}", params)
+            send_request(Net::HTTP::Put, "#{@api_suffix}/#{uuid}", params)
           end
 
           define_method(:delete) do |uuid|
-            send_request(Net::HTTP::Delete, "#{api_suffix}/#{uuid}")
+            send_request(Net::HTTP::Delete, "#{@api_suffix}/#{uuid}")
           end
 
           define_method(:show) do |uuid|
-            send_request(Net::HTTP::Get, "#{api_suffix}/#{uuid}")
+            send_request(Net::HTTP::Get, "#{@api_suffix}/#{uuid}")
           end
 
           define_method(:index) do
-            send_request(Net::HTTP::Get, api_suffix)
+            send_request(Net::HTTP::Get, @api_suffix)
+          end
+        end
+      end
+
+      def define_relation_methods(relation_name)
+        self.class.instance_eval do
+          singular_name = relation_name.to_s.chomp('s')
+
+          define_method("add_#{singular_name}") do |uuid, relation_uuid, params = nil|
+            suffix = "#{@api_suffix}/#{uuid}/#{relation_name}/#{relation_uuid}"
+            send_request(Net::HTTP::Post, suffix, params)
+          end
+
+          define_method("show_#{relation_name}") do |uuid|
+            send_request(Net::HTTP::Get, "#{uuid}/#{relation_name}")
+          end
+
+          define_method("remove_#{singular_name}") do |uuid, relation_uuid|
+            suffix = "#{@api_suffix}/#{uuid}/#{relation_name}/#{relation_uuid}"
+            send_request(Net::HTTP::Delete, suffix)
           end
         end
       end
