@@ -20,6 +20,11 @@ GIT
       gli (= 2.0.0)
       rake
 
+PATH
+  remote: /home/centos/openvnet/client
+  specs:
+    vnet_api_client (0.7)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -206,6 +211,7 @@ DEPENDENCIES
   sinatra-hashfix
   trema!
   unicorn
+  vnet_api_client!
 
 BUNDLED WITH
    1.10.5
