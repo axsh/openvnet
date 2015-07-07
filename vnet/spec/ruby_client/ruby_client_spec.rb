@@ -30,6 +30,10 @@ api_specs.each { |api_spec|
     expected_classes[class_name] << :update
   when "DELETE  /#{underscored}/:uuid"
     expected_classes[class_name] << :delete
+  when /^POST  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+\/:[a-z\_]+$/
+    # This matches for example: POST  /datapaths/:uuid/networks/:network_uuid
+    relation_name = api_spec[:route].split('/')[3].chomp('s')
+    expected_classes[class_name] << "add_#{relation_name}"
   end
 }
 
