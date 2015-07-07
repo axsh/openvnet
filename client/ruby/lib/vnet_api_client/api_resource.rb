@@ -32,6 +32,36 @@ module VNetAPIClient
         ResponseFormats[response_format].parse(response)
       end
 
+      #
+      # Metaprogramming to define common methods
+      #
+      def define_standard_crud_methods
+        # For example class Datapath has api_suffix datapaths
+        api_suffix = self.name.split("::").last.downcase + "s"
+
+        self.class.instance_eval do
+          define_method(:create) do |params = nil|
+            send_request(Net::HTTP::Post, api_suffix, params)
+          end
+
+          define_method(:update) do |uuid, params = nil|
+            send_request(Net::HTTP::Put, "#{api_suffix}/#{uuid}", params)
+          end
+
+          define_method(:delete) do |uuid|
+            send_request(Net::HTTP::Delete, "#{api_suffix}/#{uuid}")
+          end
+
+          define_method(:show) do |uuid|
+            send_request(Net::HTTP::Get, "#{api_suffix}/#{uuid}")
+          end
+
+          define_method(:index) do
+            send_request(Net::HTTP::Get, api_suffix)
+          end
+        end
+      end
+
     end
   end
 
