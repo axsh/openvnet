@@ -97,6 +97,8 @@ Sequel.migration do
       String :mode, :default=> 'static_filter', :null => false
       String :disply_name
 
+      Integer :interface_id, ;index => true
+
       Bignum: :ipv4_address => :null => false
       Integer :port_number => :null => false
       
