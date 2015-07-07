@@ -34,6 +34,14 @@ api_specs.each { |api_spec|
     # This matches for example: POST  /datapaths/:uuid/networks/:network_uuid
     relation_name = api_spec[:route].split('/')[3].chomp('s')
     expected_classes[class_name] << "add_#{relation_name}"
+  when /^GET  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+$/
+    # This matches for example: GET  /datapaths/:uuid/networks
+    relation_name = api_spec[:route].split('/')[3]
+    expected_classes[class_name] << "show_#{relation_name}"
+  when /^DELETE  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+\/:[a-z\_]+$/
+    # This matches for example: DELETE  /datapaths/:uuid/networks/:network_uuid
+    relation_name = api_spec[:route].split('/')[3].chomp('s')
+    expected_classes[class_name] << "remove_#{relation_name}"
   end
 }
 
