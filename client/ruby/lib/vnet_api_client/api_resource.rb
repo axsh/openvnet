@@ -67,6 +67,12 @@ module VNetAPIClient
       end
 
       def define_relation_methods(relation_name)
+        define_add_relation(relation_name)
+        define_show_relation(relation_name)
+        define_remove_relation(relation_name)
+      end
+
+      def define_add_relation(relation_name)
         self.class.instance_eval do
           singular_name = relation_name.to_s.chomp('s')
 
@@ -74,10 +80,20 @@ module VNetAPIClient
             suffix = "#{@api_suffix}/#{uuid}/#{relation_name}/#{relation_uuid}"
             send_request(Net::HTTP::Post, suffix, params)
           end
+        end
+      end
 
+      def define_show_relation(relation_name)
+        self.class.instance_eval do
           define_method("show_#{relation_name}") do |uuid|
             send_request(Net::HTTP::Get, "#{uuid}/#{relation_name}")
           end
+        end
+      end
+
+      def define_remove_relation(relation_name)
+        self.class.instance_eval do
+          singular_name = relation_name.to_s.chomp('s')
 
           define_method("remove_#{singular_name}") do |uuid, relation_uuid|
             suffix = "#{@api_suffix}/#{uuid}/#{relation_name}/#{relation_uuid}"
