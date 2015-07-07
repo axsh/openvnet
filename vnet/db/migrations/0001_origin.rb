@@ -91,13 +91,12 @@ Sequel.migration do
       unique [:datapath_id, :route_link_id, :is_deleted]
     end
 
-    create_tabke(:filters) do
+    create_table(:filters) do
       primary_key :id
       String :uuid, :unique => true, :null => false
-      String :mode, :default=> 'static_filter', :null => false
-      String :disply_name
-
-      Integer :interface_id, ;index => true
+      String :mode, :null => false
+\
+      Integer :interface_id, :index => true
 
       Bignum: :ipv4_address => :null => false
       Integer :port_number => :null => false
@@ -112,6 +111,16 @@ Sequel.migration do
       Integer :is_deleted, :null =>false
     end
 
+    create_table(:filters_static_mode) do
+      primary_key :id
+      Integer :filter_id, :index => true, :null => false
+      
+      DateTime :created_at, :null =>false
+      DateTime :updated_at, :null =>false
+      DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null =>false
+    end
+      
     create_table(:interfaces) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
