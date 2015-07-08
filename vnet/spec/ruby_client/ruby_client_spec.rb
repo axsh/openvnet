@@ -121,7 +121,7 @@ describe VNetAPIClient do
   describe VNetAPIClient::Translation do
     include_examples 'test_method', :add_static_address,
                      'POST  /translations/:uuid/static_address'
-    include_examples 'test_method', :remove_translation,
+    include_examples 'test_method', :remove_static_address,
                      'DELETE  /translations/:uuid/static_address'
   end
 

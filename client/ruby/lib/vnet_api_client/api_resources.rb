@@ -19,7 +19,7 @@ module VNetAPIClient
     define_standard_crud_methods
 
     def self.add_dns_record(dns_service_uuid, params = nil)
-      send_request(Net::HTTP::Post, "#{@api_suffix}/#{dns_service_uuid}/dns_records")
+      send_request(Net::HTTP::Post, "#{@api_suffix}/#{dns_service_uuid}/dns_records", params)
     end
   end
 
@@ -30,6 +30,18 @@ module VNetAPIClient
     define_relation_methods(:security_groups)
 
     define_show_relation(:ports)
+
+    def self.rename(interface_uuid, params = nil)
+      send_request(Net::HTTP::Put, "#{@api_suffix}/#{interface_uuid}/rename", params)
+    end
+
+    def self.add_port(interface_uuid, params = nil)
+      send_request(Net::HTTP::Post, "#{@api_suffix}/#{interface_uuid}/ports", params)
+    end
+
+    def self.remove_port(interface_uuid, params = nil)
+      send_request(Net::HTTP::Delete, "#{@api_suffix}/#{interface_uuid}/ports", params)
+    end
   end
 
   class IpLease < ApiResource
@@ -45,6 +57,10 @@ module VNetAPIClient
 
     define_show_relation(:ip_ranges)
     define_remove_relation(:ip_ranges)
+
+    def self.add_range(ip_range_group_uuid, params = nil)
+      send_request(Net::HTTP::Post, "#{@api_suffix}/#{ip_range_group_uuid}/ip_ranges", params)
+    end
   end
 
   class IpLeaseContainer < ApiResource
@@ -71,6 +87,10 @@ module VNetAPIClient
     define_relation_methods(:ip_retention_containers)
     define_relation_methods(:networks)
     define_relation_methods(:interfaces)
+
+    def self.add_lease(lease_policy_uuid, params = nil)
+      send_request(Net::HTTP::Post, "#{@api_suffix}/#{lease_policy_uuid}/ip_leases", params)
+    end
   end
 
   class MacLease < ApiResource
@@ -114,6 +134,18 @@ module VNetAPIClient
     api_suffix :translations
 
     define_standard_crud_methods
+
+    def self.add_static_address(translation_uuid, params = nil)
+      send_request(Net::HTTP::Post,
+                   "#{@api_suffix}/#{translation_uuid}/static_address",
+                   params)
+    end
+
+    def self.remove_static_address(translation_uuid, params = nil)
+      send_request(Net::HTTP::Delete,
+                   "#{@api_suffix}/#{translation_uuid}/static_address",
+                   params)
+    end
   end
 
   class VlanTranslation < ApiResource
