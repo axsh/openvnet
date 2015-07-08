@@ -35,7 +35,7 @@ module VNetAPIClient
       #
       # Metaprogramming to define common methods
       #
-      def self.inherited(subclass)
+      def inherited(subclass)
         subclass.instance_eval do
           # For example class VnetAPIClient::Datapath has api_suffix datapaths
           @api_suffix = self.name.split("::").last.downcase + "s"
