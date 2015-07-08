@@ -5,19 +5,30 @@ def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
+# Use Rack::Test to made all call to the VNet API and get the generated documentation
+# from Sinatra-browse in YAML format. We choose YAML over JSON because the VNet API
+# has some Ruby ranges that would expand into huge arrays in JSON.
 include Rack::Test::Methods
 api_specs = YAML.load(get("browse", format: :yaml).body)
 
+
+# Now that we have the API descriptions in a ruby hash, we are going to parse them
+# into a format that will make it easier to write tests.
 expected_classes = {}
+non_standard_routes = []
+named_args_regex = /:[a-z\_]+/
 
 api_specs.each { |api_spec|
   verb, suffix = api_spec[:route].split('  ')
   underscored = suffix.split('/')[1]
+
+  # The 'browse' route is added by Sinatra-browse and doesn't need to be included
+  # in the VNet API client
   next if underscored == 'browse'
 
   class_name = underscored.classify
 
-  expected_classes[class_name] ||= {non_standard: []}
+  expected_classes[class_name] ||= {}
 
   case route = api_spec[:route]
   when "POST  /#{underscored}"
@@ -30,20 +41,20 @@ api_specs.each { |api_spec|
     expected_classes[class_name][:update] = route
   when "DELETE  /#{underscored}/:uuid"
     expected_classes[class_name][:delete] = route
-  when /^POST  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+\/:[a-z\_]+$/
+  when /^POST  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
     # This matches for example: POST  /datapaths/:uuid/networks/:network_uuid
     relation_name = route.split('/')[3].chomp('s')
     expected_classes[class_name]["add_#{relation_name}"] = route
-  when /^GET  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+$/
+  when /^GET  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+$/
     # This matches for example: GET  /datapaths/:uuid/networks
     relation_name = route.split('/')[3]
     expected_classes[class_name]["show_#{relation_name}"] = route
-  when /^DELETE  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+\/:[a-z\_]+$/
+  when /^DELETE  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
     # This matches for example: DELETE  /datapaths/:uuid/networks/:network_uuid
     relation_name = route.split('/')[3].chomp('s')
     expected_classes[class_name]["remove_#{relation_name}"] = route
   else
-    expected_classes[class_name][:non_standard] << route
+    non_standard_routes << route
   end
 }
 
@@ -57,21 +68,13 @@ describe VNetAPIClient do
         klass
       end
 
-      non_standard_routes = methods.delete(:non_standard)
-      it "has implemented and tested all corresponding API routes" do
-        if ! non_standard_routes.empty?
-          raise "The following routes where not tested and might not be implemented:\n%s" %
-            non_standard_routes.join("\n")
-        end
-      end
-
       methods.each do |method, route|
         verb, uri = route.split('  ')
 
         describe "##{method}" do
           it "makes a #{verb} request to '#{uri}'" do
-            arguments = uri.scan(/:[a-z_]+/).map { |arg| "test_id" }
-            uri_with_args = uri.gsub(/:[a-z_]+/, 'test_id')
+            arguments = uri.scan(named_args_regex).map { |arg| "test_id" }
+            uri_with_args = uri.gsub(named_args_regex, 'test_id')
 
             stubby = stub_request(verb.downcase.to_sym,
                                   "http://localhost:9101/api/1.0#{uri_with_args}.json")
@@ -82,6 +85,13 @@ describe VNetAPIClient do
         end
       end
 
+    end
+  end
+
+  it "has implemented and tested all routes in the OpenVNet WebAPI" do
+    if ! non_standard_routes.empty?
+      raise "The following routes where not tested and might not be implemented:\n%s" %
+        non_standard_routes.join("\n")
     end
   end
 end
