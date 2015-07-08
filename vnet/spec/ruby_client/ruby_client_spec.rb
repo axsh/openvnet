@@ -1,15 +1,24 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-def app
-  Vnet::Endpoints::V10::VnetAPI
-end
 
 # We use Rack::Test to make a call to the VNet API and get the generated documentation
 # from Sinatra-browse in YAML format. We choose YAML over JSON because the VNet API
 # has some Ruby ranges that would expand into huge arrays in JSON.
-include Rack::Test::Methods
-api_specs = YAML.load(get("browse", format: :yaml).body)
+class SinatraBrowsePoller
+  class << self
+    include Rack::Test::Methods
+
+    def app
+      Vnet::Endpoints::V10::VnetAPI
+    end
+
+    def poll
+      YAML.load(get("browse", format: :yaml).body)
+    end
+  end
+end
+api_specs = SinatraBrowsePoller.poll
 
 
 # Now that we have the API descriptions in a ruby hash, we are going to parse them
