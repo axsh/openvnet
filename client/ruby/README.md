@@ -15,8 +15,8 @@ require 'rubygems'
 require 'vnet_api_client'
 
 # This is the default value. If your OpenVNet WebAPI is located at localhost
-# port 9101, you don't have to include this line.
-VNetAPIClient.uri = 'http://localhost:9101'
+# port 9090, you don't have to include this line.
+VNetAPIClient.uri = 'http://localhost:9090'
 
 # Creates a new network
 VNetAPIClient::Network.create(display_name: 'my_network',

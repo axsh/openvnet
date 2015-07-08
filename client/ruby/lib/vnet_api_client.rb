@@ -22,5 +22,5 @@ module VNetAPIClient
 end
 
 # Set default values
-VNetAPIClient.uri = 'http://localhost:9101'
+VNetAPIClient.uri = 'http://localhost:9090'
 VNetAPIClient.format = :json
