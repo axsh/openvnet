@@ -23,14 +23,27 @@ api_specs.each { |api_spec|
   underscored = suffix.split('/')[1]
 
   # The 'browse' route is added by Sinatra-browse and doesn't need to be included
-  # in the VNet API client
+  # in the VNet API client gem.
   next if underscored == 'browse'
 
+  # Determine the class that should represent this WebAPI namespace in the gem.
   class_name = underscored.classify
-
   expected_classes[class_name] ||= {}
 
   case route = api_spec[:route]
+  #
+  # First we identify the standard CRUD routes. A lot of endpoints are going to
+  # have these and we know exactly which methods should be in the VNetAPIClient gem
+  # for them. We will generate tests for them automatically.
+  #
+  # Examples of matches:
+  #
+  # POST  /datapaths
+  # GET  /lease_policies
+  # GET  /interfaces/:uuid
+  # PUT  /ip_range_groups/:uuid
+  # DELETE  /ip_leases/:uuid
+  #
   when "POST  /#{underscored}"
     expected_classes[class_name][:create] = route
   #TODO: Use regex here
@@ -42,19 +55,35 @@ api_specs.each { |api_spec|
     expected_classes[class_name][:update] = route
   when "DELETE  /#{underscored}/:uuid"
     expected_classes[class_name][:delete] = route
+  #
+  # Next we identify the CRD routes for relations. Again a lot of endpoints are
+  # going to have these and we know exactly which methods should be present in
+  # the gem. We will generate tests for these automatically too.
+  #
+  # Examples of matches:
+  #
+  #  POST  /datapaths/:uuid/networks/:network_uuid
+  #  GET  /datapaths/:uuid/networks
+  #  DELETE  /datapaths/:uuid/networks/:network_uuid
+  #
   when /^POST  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
-    # This matches for example: POST  /datapaths/:uuid/networks/:network_uuid
     relation_name = route.split('/')[3].chomp('s')
     expected_classes[class_name]["add_#{relation_name}"] = route
   when /^GET  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+$/
-    # This matches for example: GET  /datapaths/:uuid/networks
     relation_name = route.split('/')[3]
     expected_classes[class_name]["show_#{relation_name}"] = route
   when /^DELETE  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
-    # This matches for example: DELETE  /datapaths/:uuid/networks/:network_uuid
     relation_name = route.split('/')[3].chomp('s')
     expected_classes[class_name]["remove_#{relation_name}"] = route
   else
+  #
+  # Any route that doesn't match the above, we will refer to as a non standard
+  # route. We do not know exactly which method the gem will define for these
+  # but since they exist in the API, the gem is still required to implement them.
+  #
+  # Tests for these have to be written manually. The test suite will be red if
+  # not all of these are accounted for.
+  #
     non_standard_routes << route
   end
 }
@@ -66,8 +95,8 @@ shared_examples_for "test_method" do |method, route|
 
   describe "##{method}" do
     it "makes a #{verb} request to '#{uri}'" do
-      arguments = uri.scan(/:[a-z\_]+/n).map { |arg| "test_id" }
-      uri_with_args = uri.gsub(/:[a-z\_]+/, 'test_id')
+      arguments = uri.scan(named_args_regex).map { |arg| "test_id" }
+      uri_with_args = uri.gsub(named_args_regex, 'test_id')
 
       stubby = stub_request(verb.downcase.to_sym,
                             "http://localhost:9101/api/1.0#{uri_with_args}.json")
@@ -81,7 +110,9 @@ end
 describe VNetAPIClient do
   let(:klass) { described_class }
 
+  #
   # First we test all standard methods
+  #
   expected_classes.each do |class_name, methods|
     describe VNetAPIClient.const_get(class_name) do
 
@@ -96,7 +127,9 @@ describe VNetAPIClient do
     end
   end
 
-  # Next we test all non standard methods
+  #
+  # Next we test all non standard routes
+  #
   describe VNetAPIClient::DnsService do
     include_examples 'test_method', :add_dns_record,
                      "POST  /dns_services/:dns_service_uuid/dns_records"
@@ -125,7 +158,9 @@ describe VNetAPIClient do
                      'DELETE  /translations/:uuid/static_address'
   end
 
-  # Finally we make sure that no standard methods are left unimplemented/untested
+  #
+  # Finally we make sure that no non standard routes are left untested
+  #
   it "has implemented and tested all routes in the OpenVNet WebAPI" do
     if ! non_standard_routes.empty?
       raise "The following routes where not tested and might not be implemented:\n%s" %

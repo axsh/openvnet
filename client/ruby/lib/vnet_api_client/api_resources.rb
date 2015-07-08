@@ -19,7 +19,9 @@ module VNetAPIClient
     define_standard_crud_methods
 
     def self.add_dns_record(dns_service_uuid, params = nil)
-      send_request(Net::HTTP::Post, "#{@api_suffix}/#{dns_service_uuid}/dns_records", params)
+      send_request(Net::HTTP::Post,
+                   "#{@api_suffix}/#{dns_service_uuid}/dns_records",
+                   params)
     end
   end
 
@@ -59,7 +61,9 @@ module VNetAPIClient
     define_remove_relation(:ip_ranges)
 
     def self.add_range(ip_range_group_uuid, params = nil)
-      send_request(Net::HTTP::Post, "#{@api_suffix}/#{ip_range_group_uuid}/ip_ranges", params)
+      send_request(Net::HTTP::Post,
+                   "#{@api_suffix}/#{ip_range_group_uuid}/ip_ranges",
+                   params)
     end
   end
 
@@ -89,7 +93,9 @@ module VNetAPIClient
     define_relation_methods(:interfaces)
 
     def self.add_lease(lease_policy_uuid, params = nil)
-      send_request(Net::HTTP::Post, "#{@api_suffix}/#{lease_policy_uuid}/ip_leases", params)
+      send_request(Net::HTTP::Post,
+                   "#{@api_suffix}/#{lease_policy_uuid}/ip_leases",
+                   params)
     end
   end
 
