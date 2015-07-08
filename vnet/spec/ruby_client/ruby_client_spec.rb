@@ -33,6 +33,7 @@ api_specs.each { |api_spec|
   case route = api_spec[:route]
   when "POST  /#{underscored}"
     expected_classes[class_name][:create] = route
+  #TODO: Use regex here
   when "GET  /#{underscored}"
     expected_classes[class_name][:index] = route
   when "GET  /#{underscored}/:uuid"
@@ -58,9 +59,26 @@ api_specs.each { |api_spec|
   end
 }
 
+def test_method(method, route)
+  verb, uri = route.split('  ')
+
+  describe "##{method}" do
+    it "makes a #{verb} request to '#{uri}'" do
+      arguments = uri.scan(/:[a-z\_]+/n).map { |arg| "test_id" }
+      uri_with_args = uri.gsub(/:[a-z\_]+/, 'test_id')
+
+      stubby = stub_request(verb.downcase.to_sym,
+                            "http://localhost:9101/api/1.0#{uri_with_args}.json")
+      described_class.send(method, *arguments)
+
+      assert_requested(stubby)
+    end
+  end
+end
+
 describe VNetAPIClient do
   expected_classes.each do |class_name, methods|
-    describe class_name do
+    describe VNetAPIClient.const_get(class_name) do
 
       let(:klass) { VNetAPIClient.const_get(class_name) }
 
@@ -86,6 +104,10 @@ describe VNetAPIClient do
       end
 
     end
+  end
+
+  describe VNetAPIClient::DnsService do
+    test_method(:add_dns_record, "POST  /dns_services/:dns_service_uuid/dns_records")
   end
 
   it "has implemented and tested all routes in the OpenVNet WebAPI" do
