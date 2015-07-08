@@ -20,7 +20,7 @@ module VNetAPIClient
 
     class Json < Format
       def parse(response)
-        JSON.parse(response.body)
+        JSON.parse(response.body) if response.body
       end
     end
 
