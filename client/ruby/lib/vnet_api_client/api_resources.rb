@@ -28,8 +28,7 @@ module VNetAPIClient
 
     define_standard_crud_methods
     define_relation_methods(:security_groups)
-
-    define_show_relation(:ports)
+    define_relation_methods(:ports)
   end
 
   class IpLease < ApiResource
