@@ -98,9 +98,34 @@ describe VNetAPIClient do
 
   # Next we test all non standard methods
   describe VNetAPIClient::DnsService do
-    include_examples 'test_method', :add_dns_record, "POST  /dns_services/:dns_service_uuid/dns_records"
+    include_examples 'test_method', :add_dns_record,
+                     "POST  /dns_services/:dns_service_uuid/dns_records"
   end
 
+  describe VNetAPIClient::Interface do
+    include_examples 'test_method', :rename, 'PUT  /interfaces/:uuid/rename'
+    include_examples 'test_method', :add_port, 'POST  /interfaces/:uuid/ports'
+    include_examples 'test_method', :remove_port, 'DELETE  /interfaces/:uuid/ports'
+  end
+
+  describe VNetAPIClient::IpRangeGroup do
+    include_examples 'test_method', :add_range,
+                     'POST  /ip_range_groups/:ip_range_group_uuid/ip_ranges'
+  end
+
+  describe VNetAPIClient::LeasePolicy do
+    include_examples 'test_method', :add_lease,
+                     'POST  /lease_policies/:uuid/ip_leases'
+  end
+
+  describe VNetAPIClient::Translation do
+    include_examples 'test_method', :add_static_address,
+                     'POST  /translations/:uuid/static_address'
+    include_examples 'test_method', :remove_translation,
+                     'DELETE  /translations/:uuid/static_address'
+  end
+
+  # Finally we make sure that no standard methods are left unimplemented/untested
   it "has implemented and tested all routes in the OpenVNet WebAPI" do
     if ! non_standard_routes.empty?
       raise "The following routes where not tested and might not be implemented:\n%s" %
