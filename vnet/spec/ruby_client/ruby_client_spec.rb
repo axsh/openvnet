@@ -107,13 +107,20 @@ shared_examples_for "test_method" do |method, route|
 end
 
 describe VNetAPIClient do
+  # This let is here so we can use the "test_method" shared examples without
+  # having to define the let(:klass) every time. This is used in the non standard
+  # route tests below
   let(:klass) { described_class }
 
   #
   # First we test all standard methods
   #
   expected_classes.each do |class_name, methods|
-    describe VNetAPIClient.const_get(class_name) do
+    # We describe a string here instead of a constant. That's because of the
+    # 'it "exists" do' test below. If we were discribing a non-existant class
+    # here the test suite would crash and not test any of the classes that do
+    # exist
+    describe class_name do
 
       let(:klass) { VNetAPIClient.const_get(class_name) }
 
