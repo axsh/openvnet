@@ -39,11 +39,13 @@ module VNetAPIClient
         @api_suffix = suffix
       end
 
-      def define_standard_crud_methods
-        metaclass = class << self
+      def metaclass
+        class << self
           self
         end
+      end
 
+      def define_standard_crud_methods
         metaclass.instance_eval do
           define_method(:create) do |params = nil|
             send_request(Net::HTTP::Post, @api_suffix, params)
@@ -74,10 +76,6 @@ module VNetAPIClient
       end
 
       def define_add_relation(relation_name)
-        metaclass = class << self
-          self
-        end
-
         metaclass.instance_eval do
           singular_name = relation_name.to_s.chomp('s')
 
@@ -89,10 +87,6 @@ module VNetAPIClient
       end
 
       def define_show_relation(relation_name)
-        metaclass = class << self
-          self
-        end
-
         metaclass.instance_eval do
           define_method("show_#{relation_name}") do |uuid|
             send_request(Net::HTTP::Get, "#{@api_suffix}/#{uuid}/#{relation_name}")
@@ -101,10 +95,6 @@ module VNetAPIClient
       end
 
       def define_remove_relation(relation_name)
-        metaclass = class << self
-          self
-        end
-
         metaclass.instance_eval do
           singular_name = relation_name.to_s.chomp('s')
 
