@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'vnet_api_client'
   s.version     = '0.7'
-  s.date        = '2015-07-15'
+  s.date        = '2015-07-09'
   s.summary     = 'Ruby wrapper for OpenVNet\'s RESTful API'
   s.description = s.summary
   s.authors     = ['Axsh Co. LTD']
