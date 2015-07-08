@@ -59,8 +59,10 @@ api_specs.each { |api_spec|
   end
 }
 
-def test_method(method, route)
+shared_examples_for "test_method" do |method, route|
   verb, uri = route.split('  ')
+
+  non_standard_routes.delete(route)
 
   describe "##{method}" do
     it "makes a #{verb} request to '#{uri}'" do
@@ -69,7 +71,7 @@ def test_method(method, route)
 
       stubby = stub_request(verb.downcase.to_sym,
                             "http://localhost:9101/api/1.0#{uri_with_args}.json")
-      described_class.send(method, *arguments)
+      klass.send(method, *arguments)
 
       assert_requested(stubby)
     end
@@ -77,6 +79,9 @@ def test_method(method, route)
 end
 
 describe VNetAPIClient do
+  let(:klass) { described_class }
+
+  # First we test all standard methods
   expected_classes.each do |class_name, methods|
     describe VNetAPIClient.const_get(class_name) do
 
@@ -86,28 +91,14 @@ describe VNetAPIClient do
         klass
       end
 
-      methods.each do |method, route|
-        verb, uri = route.split('  ')
-
-        describe "##{method}" do
-          it "makes a #{verb} request to '#{uri}'" do
-            arguments = uri.scan(named_args_regex).map { |arg| "test_id" }
-            uri_with_args = uri.gsub(named_args_regex, 'test_id')
-
-            stubby = stub_request(verb.downcase.to_sym,
-                                  "http://localhost:9101/api/1.0#{uri_with_args}.json")
-            klass.send(method, *arguments)
-
-            assert_requested(stubby)
-          end
-        end
-      end
+      methods.each { |method, route| include_examples 'test_method', method, route }
 
     end
   end
 
+  # Next we test all non standard methods
   describe VNetAPIClient::DnsService do
-    test_method(:add_dns_record, "POST  /dns_services/:dns_service_uuid/dns_records")
+    include_examples 'test_method', :add_dns_record, "POST  /dns_services/:dns_service_uuid/dns_records"
   end
 
   it "has implemented and tested all routes in the OpenVNet WebAPI" do
