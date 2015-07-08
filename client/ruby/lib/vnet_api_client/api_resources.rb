@@ -8,15 +8,15 @@ module VNetAPIClient
     define_standard_crud_methods
     define_relation_methods(:networks)
     define_relation_methods(:route_links)
-
-    define_show_relation(:dns_records)
-    define_remove_relation(:dns_records)
   end
 
   class DnsService < ApiResource
     api_suffix :dns_services
 
     define_standard_crud_methods
+
+    define_show_relation(:dns_records)
+    define_remove_relation(:dns_records)
 
     def self.add_dns_record(dns_service_uuid, params = nil)
       send_request(Net::HTTP::Post,
