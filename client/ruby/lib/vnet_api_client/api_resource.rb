@@ -35,17 +35,8 @@ module VNetAPIClient
       #
       # Metaprogramming to define common methods
       #
-      def inherited(subclass)
-        subclass.instance_eval do
-          # For example class VnetAPIClient::VlanTranslation has api_suffix vlan_translations
-          @api_suffix = self.name.split('::').last.tap { |n|
-            n.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
-            n.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
-            n.tr!("-", "_")
-            n.downcase!
-            n << "s"
-          }
-        end
+      def api_suffix(suffix)
+        @api_suffix = suffix
       end
 
       def define_standard_crud_methods
