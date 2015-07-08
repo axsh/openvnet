@@ -15,6 +15,8 @@ require "rack/test"
 require "fabrication"
 require "database_cleaner"
 
+require 'webmock/rspec'
+
 require 'coveralls'
 Coveralls.wear!
 

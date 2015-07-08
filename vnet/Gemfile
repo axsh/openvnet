@@ -37,6 +37,8 @@ group :development, :test do
   gem 'database_cleaner'
 
   gem "coveralls"
+
+  gem 'webmock'
   gem "vnet_api_client", path: File.dirname(File.expand_path('../../client/ruby/', __FILE__))
 
   gem "pry-byebug"

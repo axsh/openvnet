@@ -19,7 +19,7 @@ api_specs.each { |api_spec|
 
   expected_classes[class_name] ||= []
 
-  case api_spec[:route]
+  case route = api_spec[:route]
   when "POST  /#{underscored}"
     expected_classes[class_name] << :create
   when "GET  /#{underscored}"
@@ -32,16 +32,18 @@ api_specs.each { |api_spec|
     expected_classes[class_name] << :delete
   when /^POST  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+\/:[a-z\_]+$/
     # This matches for example: POST  /datapaths/:uuid/networks/:network_uuid
-    relation_name = api_spec[:route].split('/')[3].chomp('s')
+    relation_name = route.split('/')[3].chomp('s')
     expected_classes[class_name] << "add_#{relation_name}"
   when /^GET  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+$/
     # This matches for example: GET  /datapaths/:uuid/networks
-    relation_name = api_spec[:route].split('/')[3]
+    relation_name = route.split('/')[3]
     expected_classes[class_name] << "show_#{relation_name}"
   when /^DELETE  \/#{underscored}\/:[a-z\_]+\/[a-z\_]+\/:[a-z\_]+$/
     # This matches for example: DELETE  /datapaths/:uuid/networks/:network_uuid
-    relation_name = api_spec[:route].split('/')[3].chomp('s')
+    relation_name = route.split('/')[3].chomp('s')
     expected_classes[class_name] << "remove_#{relation_name}"
+  else
+    puts "WARNING: Route doesn't conform to standard: #{route.inspect}"
   end
 }
 
@@ -61,6 +63,16 @@ describe VNetAPIClient do
         end
       end
 
+    end
+  end
+
+  describe VNetAPIClient::Datapath do
+    describe "#create" do
+      it "sends a POST request to 'datapaths'" do
+        stubby = stub_request(:post, "http://localhost:9101/api/1.0/datapaths.json")
+        VNetAPIClient::Datapath.create
+        assert_requested(stubby)
+      end
     end
   end
 end
