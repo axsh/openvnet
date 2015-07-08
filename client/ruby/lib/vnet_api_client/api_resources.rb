@@ -17,6 +17,10 @@ module VNetAPIClient
     api_suffix :dns_services
 
     define_standard_crud_methods
+
+    def self.add_dns_record(dns_service_uuid, params = nil)
+      send_request(Net::HTTP::Post, "#{@api_suffix}/#{dns_service_uuid}/dns_records")
+    end
   end
 
   class Interface < ApiResource
