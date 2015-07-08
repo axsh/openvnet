@@ -15,7 +15,7 @@ api_specs.each { |api_spec|
   underscored = suffix.split('/')[1]
   next if underscored == 'browse'
 
-  class_name = underscored.chomp('s').split('_').collect!{ |w| w.capitalize }.join
+  class_name = underscored.classify
 
   expected_classes[class_name] ||= {non_standard: []}
 
