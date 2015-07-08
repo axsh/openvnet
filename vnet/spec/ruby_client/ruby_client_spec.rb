@@ -46,14 +46,13 @@ api_specs.each { |api_spec|
   #
   when "POST  /#{underscored}"
     expected_classes[class_name][:create] = route
-  #TODO: Use regex here
   when "GET  /#{underscored}"
     expected_classes[class_name][:index] = route
-  when "GET  /#{underscored}/:uuid"
+  when /^GET  \/#{underscored}\/#{named_args_regex}+$/
     expected_classes[class_name][:show] = route
-  when "PUT  /#{underscored}/:uuid"
+  when /^PUT  \/#{underscored}\/#{named_args_regex}+$/
     expected_classes[class_name][:update] = route
-  when "DELETE  /#{underscored}/:uuid"
+  when /^DELETE  \/#{underscored}\/#{named_args_regex}+$/
     expected_classes[class_name][:delete] = route
   #
   # Next we identify the CRD routes for relations. Again a lot of endpoints are
