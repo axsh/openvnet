@@ -86,7 +86,7 @@ module VNetAPIClient
       def define_show_relation(relation_name)
         self.class.instance_eval do
           define_method("show_#{relation_name}") do |uuid|
-            send_request(Net::HTTP::Get, "#{uuid}/#{relation_name}")
+            send_request(Net::HTTP::Get, "#{@api_suffix}/#{uuid}/#{relation_name}")
           end
         end
       end
