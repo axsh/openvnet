@@ -5,7 +5,7 @@ def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
-# Use Rack::Test to made all call to the VNet API and get the generated documentation
+# We use Rack::Test to make a call to the VNet API and get the generated documentation
 # from Sinatra-browse in YAML format. We choose YAML over JSON because the VNet API
 # has some Ruby ranges that would expand into huge arrays in JSON.
 include Rack::Test::Methods
