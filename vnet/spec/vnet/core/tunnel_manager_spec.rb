@@ -135,21 +135,6 @@ describe Vnet::Core::TunnelManager do
       end
     end
 
-    it "should only add broadcast mac addressess flows at start" do
-      pending "Current dpn/dprl and tunnel creation method does not fit this test."
-
-      host_datapath_networks
-      # host_port_1
-
-      added_flows = dp_info.added_flows.uniq
-      # added_flows.each { |flow| pp flow.inspect }
-
-      dp_info.added_tunnels.each { |tunnel| pp tunnel.inspect }
-
-      expect(dp_info.added_ovs_flows.size).to eq 0
-      expect(added_flows.size).to eq 7
-    end
-
     it "should add flood flow network 1" do
       host_datapath_networks
       remote_datapath_networks_1
