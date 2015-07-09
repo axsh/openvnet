@@ -5,9 +5,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+* `Added` Warning messages in the log when managers receive events with invalid parameters.
+
 * `Changed` Updated the ruby gems dependencies to their most recent versions where possible.
 
 * `Fixed` An issue where Celluloid would some times assume that the main Trema thread was actually a Celluloid thread.
+
+* `Fixed` Code cleanup and minor bug fixes in datapath manager.
+
+* `Fixed` An issue where events could get processed before managers were initialized, causing race conditions.
 
 ## [0.7] - 2015-06-04
 

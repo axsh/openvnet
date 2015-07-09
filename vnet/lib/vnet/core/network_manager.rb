@@ -11,6 +11,7 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
     
     # Networks have no created item event as they always get loaded
     # when used by other managers.
