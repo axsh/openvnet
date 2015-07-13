@@ -95,11 +95,11 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null => false
       String :mode, :null => false
-\
+
       Integer :interface_id, :index => true
 
-      Bignum: :ipv4_address => :null => false
-      Integer :port_number => :null => false
+      Bignum :ipv4_address, :null => false
+      Integer :port_number, :null => false
       
       Boolean :ingress_filtering, :null => false
       Boolean :egress_filtering, :null => false
