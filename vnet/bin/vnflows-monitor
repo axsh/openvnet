@@ -79,7 +79,7 @@ class Flow
     when 0 then to_pretty0
     when 1 then to_pretty0
     when 99 then to_pretty99
-    else 
+    else
       puts "invalid pretty type"
       to_pretty0
     end
@@ -101,7 +101,7 @@ class Flow
       case Options.opts[:pretty]
       when 0 then
         "#{self.metadata_to_pretty(value, mask)}(#{field[1]})"
-      else 
+      else
         "#{self.metadata_to_pretty(value, mask)}(#{"0x%x" % (value & 0xffffffff) })"
       end
     else
@@ -329,7 +329,7 @@ def do_diff(previous, current)
       end
 
       case cmp
-      when -1 then 
+      when -1 then
         pgen.next
       when 0 then
         pgen.next
@@ -390,7 +390,7 @@ Options.prevflows = nil
 Options.inputcount = 0
 
 def choose_run_number
-  for i in 1..9999 
+  for i in 1..9999
     next if File.exists?("/tmp/vnflows-run-#{i}")
     Dir.mkdir("/tmp/vnflows-run-#{i}")
     break i
@@ -399,7 +399,7 @@ end
 
 def latest_run_number
   hits = Dir.glob("/tmp/vnflows-run-*")
-  alln = hits.map { |d| 
+  alln = hits.map { |d|
     digits=d.scan(/[0-9]+/)
     digits.length == 0 ? 0 : digits[0].to_i }
   alln.max
@@ -440,7 +440,7 @@ def choose_flows
   Options.prevflows = $flows
   outputflows
 end
-  
+
 def output_flows(outputflows)
   current_table = nil
   linecount = 0
@@ -450,13 +450,13 @@ def output_flows(outputflows)
       puts "(#{flow.table}): #{Flow.table_name(flow.table)}"
       linecount = 1 + linecount
     end
-    
+
     puts flow.to_pretty
     linecount = 1 + linecount
     break if ( Options.opts[:head] > 0 ) && ( linecount > Options.opts[:head] )
   }
   puts "-------run:#{Options.run_n}--iteration:#{Options.inputcount}-------"
-  Options.count = Options.count + 1  
+  Options.count = Options.count + 1
   exit if ( Options.opts[:count] > 0 ) && ( Options.count >= Options.opts[:count] )
 end
 
@@ -480,7 +480,7 @@ def parse_options(str)
       case Options.nextset
       when :iteration
         Options.opts[:iteration] << t.to_i
-        
+
       else
         Options.opts[Options.nextset] = t.to_i
       end
