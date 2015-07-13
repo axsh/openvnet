@@ -350,7 +350,7 @@ module Options
     attr_accessor :prevflows
     attr_accessor :inputcount
     attr_accessor :nextset
-    attr_accessor :$un_n
+    attr_accessor :run_n
   end
 end
 
