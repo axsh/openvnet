@@ -14,8 +14,6 @@ module Vnet::Core
     subscribe_event PORT_DETACH_INTERFACE, :detach_interface
 
     def initialize_ports
-      return if @datapath_info.nil?
-
       @items.each { |id, item|
         publish(PORT_INITIALIZED, id: item.id)
       }
