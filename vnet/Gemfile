@@ -39,7 +39,12 @@ group :development, :test do
   gem "coveralls"
 
   gem 'webmock'
-  gem "vnet_api_client", path: File.dirname(File.expand_path('../../client/ruby/', __FILE__))
+  vnet_api_client_path = File.dirname(File.expand_path('../../client/ruby/', __FILE__))
+  if File.exist?(vnet_api_client_path)
+    gem "vnet_api_client", path: vnet_api_client_path
+  else
+    gem "vnet_api_client"
+  end
 
   gem "pry-byebug"
 end
