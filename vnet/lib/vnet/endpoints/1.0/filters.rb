@@ -2,7 +2,7 @@
 
 #TODO: Write some FREAKING tests for this
 Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
-CT = C::Filter
+  CT = C::Filter
   
   def self.put_post_shared_params
     param_uuid M::Interface, :interface_uuid

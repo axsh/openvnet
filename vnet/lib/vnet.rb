@@ -207,6 +207,7 @@ module Vnet
         autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
         autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
+        autoload :Filter, 'vnet/endpoints/1.0/responses/filter'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
         autoload :InterfacePort, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'

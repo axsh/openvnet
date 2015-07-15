@@ -95,6 +95,21 @@ module Vnet
     INTERFACE_PORT_DEACTIVATE = "interface_port_deactivate"
 
     #
+    # Filter evvents:
+    #
+
+    FILTER_INITIALIZED = "filter_initialized"
+    FILTER_UNLOAD_ITEM = "filter_unload_item"
+    FILTER_CREATED_ITEM = "filter_created_item"
+    FILTER_DELETED_ITEM = "filter_deleted_item"
+
+    FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
+    FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"
+    FILTER_ADDED_STATIC= "filter_added_static"
+    FILTER_REMOVED_STATICS = "filter_removed_static"
+
+
+    #
     # Network event:
     #
 
