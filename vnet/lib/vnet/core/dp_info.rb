@@ -26,6 +26,7 @@ module Vnet::Core
 
     MANAGER_NAMES = %w(
       active_interface
+      active_port
       connection
       datapath
       interface

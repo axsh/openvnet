@@ -35,6 +35,15 @@ module Vnet
     ACTIVE_INTERFACE_UPDATED = "active_interface_updated"
 
     #
+    # Active Port events:
+    #
+
+    ACTIVE_PORT_INITIALIZED = "active_port_initialized"
+    ACTIVE_PORT_UNLOAD_ITEM = "active_port_unload_item"
+    ACTIVE_PORT_CREATED_ITEM = "active_port_created_item"
+    ACTIVE_PORT_DELETED_ITEM = "active_port_deleted_item"
+
+    #
     # Datapath events:
     #
     DATAPATH_INITIALIZED = 'datapath_initialized'

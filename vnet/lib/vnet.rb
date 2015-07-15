@@ -58,9 +58,10 @@ module Vnet
     autoload :ActivePortEvents, 'vnet/core/event_helpers'
     autoload :ActiveRouteLinkEvents, 'vnet/core/event_helpers'
     autoload :DpInfo, 'vnet/core/dp_info'
-
     autoload :ActiveInterface, 'vnet/core/active_interface'
     autoload :ActiveInterfaceManager, 'vnet/core/active_interface_manager'
+    autoload :ActivePort, 'vnet/core/generic_items'
+    autoload :ActivePortManager, 'vnet/core/active_port_manager'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
     autoload :Datapath, 'vnet/core/datapath'
@@ -92,6 +93,10 @@ module Vnet
       autoload :Base, 'vnet/core/active_interfaces/base'
       autoload :Local, 'vnet/core/active_interfaces/local'
       autoload :Remote, 'vnet/core/active_interfaces/remote'
+    end
+
+    module ActivePorts
+      autoload :Base, 'vnet/core/active_ports/base'
     end
 
     module Connections
@@ -264,6 +269,7 @@ module Vnet
     class InvalidUUIDError < StandardError; end
 
     autoload :ActiveInterface, 'vnet/models/active_interface'
+    autoload :ActivePort, 'vnet/models/active_port'
     autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
@@ -302,6 +308,7 @@ module Vnet
 
   module ModelWrappers
     autoload :ActiveInterface, 'vnet/model_wrappers/active_interface'
+    autoload :ActivePort, 'vnet/model_wrappers/active_port'
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
@@ -339,6 +346,7 @@ module Vnet
   end
 
   autoload :NodeApi, 'vnet/node_api'
+
   module NodeApi
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
@@ -347,6 +355,7 @@ module Vnet
     autoload :EventBase, 'vnet/node_api/event_base'
 
     autoload :ActiveInterface, 'vnet/node_api/active_interface'
+    autoload :ActivePort, 'vnet/node_api/active_port'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathGeneric, 'vnet/node_api/datapath_generic.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_generic.rb'

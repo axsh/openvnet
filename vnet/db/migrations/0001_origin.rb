@@ -32,6 +32,25 @@ Sequel.migration do
       unique [:interface_id, :singular, :is_deleted]
     end
 
+    create_table(:active_ports) do
+      primary_key :id
+
+      Integer :datapath_id, :index => true, :null => false
+
+      # Integer :interface_port_id, :index => true
+
+      Integer :port_number, :null => false
+      String :port_name, :index => true, :null => false
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false
+
+      unique [:datapath_id, :port_number, :is_deleted]
+      #unique [:datapath_id, :port_name, :is_deleted]
+    end
+
     create_table(:datapaths) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
