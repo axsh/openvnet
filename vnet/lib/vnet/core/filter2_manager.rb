@@ -114,7 +114,7 @@ module Vnet::Core
       end
 
 
-      item.added_static_address(static_filter_id)
+      item.added_static_filter(static_filter_id)
     end
 
     # FILTER_REMOVED_STATIC on queue 'item.id'.

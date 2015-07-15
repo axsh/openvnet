@@ -146,6 +146,7 @@ module Vnet::Endpoints::V10
 
     load_namespace('datapaths')
     load_namespace('dns_services')
+    load_namespace('filters')
     load_namespace('interfaces')
     load_namespace('ip_leases')
     load_namespace('ip_range_groups')

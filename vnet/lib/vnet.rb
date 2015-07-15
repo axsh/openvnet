@@ -50,6 +50,7 @@ module Vnet
     autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
     autoload :Translation, 'vnet/constants/translation'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
+    autoload :Filter, 'vnet/constants/filter'
   end
 
   module Core
@@ -280,6 +281,7 @@ module Vnet
     autoload :IpRangeGroup, 'vnet/models/ip_range_group'
     autoload :IpRetention, 'vnet/models/ip_retention'
     autoload :IpRetentionContainer, 'vnet/models/ip_retention_container'
+    autoload :Filter, 'vnet/models/filter'
     autoload :LeasePolicy, 'vnet/models/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/models/lease_policy_base_network'
     autoload :LeasePolicyBaseInterface, 'vnet/models/lease_policy_base_interface'
@@ -319,6 +321,7 @@ module Vnet
     autoload :IpRangeGroup, 'vnet/model_wrappers/ip_range_group'
     autoload :IpRetention, 'vnet/model_wrappers/ip_retention'
     autoload :IpRetentionContainer, 'vnet/model_wrappers/ip_retention_container'
+    autoload :Filter, 'vnet/model_wrappers/filter'
     autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseInterface, 'vnet/model_wrappers/lease_policy'
@@ -361,6 +364,7 @@ module Vnet
     autoload :IpRange, 'vnet/node_api/models.rb'
     autoload :IpRangeGroup, 'vnet/node_api/models.rb'
     autoload :IpRetention, 'vnet/node_api/ip_retention'
+    autoload :Filter, 'vnet/node_api/filter.rb'
     autoload :IpRetentionContainer, 'vnet/node_api/ip_retention_container'
     autoload :LeasePolicy, 'vnet/node_api/lease_policy.rb'
     autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'
