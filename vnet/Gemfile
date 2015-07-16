@@ -20,7 +20,7 @@ gem "sequel_paranoia"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "sinatra-hashfix"
-gem "sinatra-browse", '0.3' # Updating to 0.5 broke the unit tests.
+gem "sinatra-browse", ">= 0.6.1" # 0.5 and 0.6 have a bug where missing parameters would be set to nil values
 gem "unicorn"
 gem "activesupport", '3.0.0' # Updating to 4.2.1 broke the unit tests.
 
@@ -37,6 +37,8 @@ group :development, :test do
   gem 'database_cleaner'
 
   gem "coveralls"
+
+  gem 'webmock'
 
   gem "pry-byebug"
 end

@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` Warning messages in the log when managers receive events with invalid parameters.
 
+* `Added` A ruby gem for accessing the WebAPI. (https://rubygems.org/gems/vnet_api_client)
+
 * `Changed` Updated the ruby gems dependencies to their most recent versions where possible.
 
 * `Fixed` An issue where Celluloid would some times assume that the main Trema thread was actually a Celluloid thread.
