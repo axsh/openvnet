@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Changed` Updated the ruby gems dependencies to their most recent versions where possible.
 
+* `Changed` The command line arguments to the `vnflows-monitor` debug tool now use a more common format.
+
 * `Fixed` An issue where Celluloid would some times assume that the main Trema thread was actually a Celluloid thread.
 
 * `Fixed` Code cleanup and minor bug fixes in datapath manager.
