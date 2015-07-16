@@ -8,19 +8,19 @@ dev: install-bundle-dev update-config
 
 install-bundle:
 	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle --without development test --standalone)
-	(cd $(CURDIR)/vnctl; bundle install --path vendor/bundle --without development test --standalone)
+	(cd $(CURDIR)/client/vnctl; bundle install --path vendor/bundle --without development test --standalone)
 
 clean-bundle:
 	(cd $(CURDIR)/vnet; bundle clean)
-	(cd $(CURDIR)/vnctl; bundle clean)
+	(cd $(CURDIR)/client/vnctl; bundle clean)
 
 install-bundle-dev:
 	(cd $(CURDIR)/vnet; bundle install --path vendor/bundle)
-	(cd $(CURDIR)/vnctl; bundle install --path vendor/bundle)
+	(cd $(CURDIR)/client/vnctl; bundle install --path vendor/bundle)
 
 install: update-config
 	mkdir -p $(DSTDIR)/opt/axsh/openvnet
-	cp -r vnet vnctl deployment $(DSTDIR)/opt/axsh/openvnet
+	cp -r vnet client/vnctl deployment $(DSTDIR)/opt/axsh/openvnet
 
 
 uninstall: remove-config
@@ -48,8 +48,8 @@ remove-config:
 clean:
 	rm -rf $(CURDIR)/vnet/vendor
 	rm -rf $(CURDIR)/vnet/.bundle
-	rm -rf $(CURDIR)/vnctl/vendor
-	rm -rf $(CURDIR)/vnctl/.bundle
+	rm -rf $(CURDIR)/client/vnctl/vendor
+	rm -rf $(CURDIR)/client/vnctl/.bundle
 
 build-rpm: build-rpm-third-party build-rpm-vnet
 
