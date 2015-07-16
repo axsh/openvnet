@@ -15,6 +15,7 @@ module Vnctl::Cli
     set_required_options [:type]
 
     add_modify_shared_options
+    option_uuid
     option :type, :type => :string, :desc => "The type of this service."
     define_add
 
