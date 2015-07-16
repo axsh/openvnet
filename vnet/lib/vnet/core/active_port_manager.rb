@@ -14,6 +14,9 @@ module Vnet::Core
     subscribe_event ACTIVE_PORT_CREATED_ITEM, :created_item
     subscribe_event ACTIVE_PORT_DELETED_ITEM, :unload_item
 
+    subscribe_event ACTIVE_PORT_ACTIVATE, :activate_port
+    subscribe_event ACTIVE_PORT_DEACTIVATE, :deactivate_port
+
     finalizer :do_cleanup
 
     #
@@ -90,6 +93,42 @@ module Vnet::Core
       return if params[:datapath_id] != @datapath_info.id
 
       internal_new_item(mw_class.new(params))
+    end
+
+    #
+    # Port events:
+    #
+
+    # activate port on queue '[:port, port_number]'
+    def activate_port(params)
+      warn log_format("XXXXXXXXXXX", params)
+
+      # Validate, etc...
+
+      port_name = params[:port_name]
+      port_number = params[:port_number]
+
+      # Validate port_number matches port_number in :id.
+
+      # Check for conflicts.
+
+      item_model = mw_class.create(datapath_id: @datapath_info.id,
+                                   port_name: port_name,
+                                   port_number: port_number)
+    end
+
+    # deactivate port on queue '[:port, port_number]'
+    def deactivate_port(params)
+      warn log_format("YYYYYYYYYYY", params)
+
+      # Validate, etc...
+
+      port_number = params[:id][1]
+
+      # Check for conflicts.
+
+      item_model = mw_class.destroy(datapath_id: @datapath_info.id,
+                                    port_number: port_number)
     end
 
   end

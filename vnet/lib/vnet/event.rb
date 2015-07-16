@@ -43,6 +43,9 @@ module Vnet
     ACTIVE_PORT_CREATED_ITEM = "active_port_created_item"
     ACTIVE_PORT_DELETED_ITEM = "active_port_deleted_item"
 
+    ACTIVE_PORT_ACTIVATE = "active_port_activate"
+    ACTIVE_PORT_DEACTIVATE = "active_port_deactivate"
+
     #
     # Datapath events:
     #
