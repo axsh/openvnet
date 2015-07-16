@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
+ruby_client_path = File.expand_path('../../../../client/ruby/lib/', __FILE__)
+$LOAD_PATH.unshift(ruby_client_path)
+require 'vnet_api_client'
+
 
 # We use Rack::Test to make a call to the VNet API and get the generated documentation
 # from Sinatra-browse in YAML format. We choose YAML over JSON because the VNet API
