@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-ruby_client_path = File.expand_path('../../../../../client/ruby/lib/', __FILE__)
-$LOAD_PATH.unshift(ruby_client_path)
+$LOAD_PATH.unshift File.expand_path("#{Vnet::ROOT}/../client/ruby/lib")
 require 'vnet_api_client'
 
 
