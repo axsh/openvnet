@@ -6,7 +6,7 @@ module Vnspec
 
         args = build_args(method, url, params)
         address = config[:webapi][:host]
-        command = "cd #{config[:vnet_path]}/vnctl && bundle exec bin/vnctl #{args.join(" ")}"
+        command = "vnctl #{args.join(" ")}"
         logger.debug command
         logger.debug "params:"
         logger.debug old_params
