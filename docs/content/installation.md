@@ -15,10 +15,9 @@ See architecture for more details of how the OpenVNet works.
 
 ## Requirements
 
-
-### Network Requirements
-
-+ Local Area Network (LAN)
++ Ruby 2.1.1
++ CentOS 6.6
++ Open vSwitch 2.3.1
 + Internet connection
 
 ## Installation
