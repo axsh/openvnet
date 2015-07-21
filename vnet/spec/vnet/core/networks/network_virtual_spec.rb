@@ -12,7 +12,7 @@ describe Vnet::Core::Networks::Virtual do
     Fabricate('datapath_1')
   end
 
-  describe "install vnet_1 without broadcast_mac_address" do
+  describe "install vnet_1 without mac_address" do
     let(:vnet_map) { Vnet::ModelWrappers::Network['nw-aaaaaaaa'] }
     let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
     let(:dp_info) { datapath.dp_info }

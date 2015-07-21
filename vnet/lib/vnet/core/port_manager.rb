@@ -14,8 +14,12 @@ module Vnet::Core
     subscribe_event PORT_DETACH_INTERFACE, :detach_interface
 
     def initialize_ports
-      @items.each { |id, item|
-        publish(PORT_INITIALIZED, id: item.id)
+      return if @datapath_info.nil?
+
+      # Iterate through a copy of the items else 'insert/delete' may
+      # cause issues.
+      @items.keys.each { |id|
+        publish(PORT_INITIALIZED, id: id)
       }
     end
 
