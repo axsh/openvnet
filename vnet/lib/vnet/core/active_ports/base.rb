@@ -35,9 +35,7 @@ module Vnet::Core::ActivePorts
     end
 
     def pretty_properties
-      "port_id:#{@port_id} datapath_id:#{@datapath_id}" +
-        (@port_name ? ' port_name:' + @port_name : '') +
-        (@port_number ? ' port_number:' + @port_number : '')
+      "datapath_id:#{@datapath_id} port_name:#{@port_name} port_number:#{@port_number}"
     end
 
     # def cookie
