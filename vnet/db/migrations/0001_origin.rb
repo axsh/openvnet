@@ -17,7 +17,7 @@ Sequel.migration do
       TrueClass :singular
 
       String :port_name, :index => true
-      String :port_number
+      column :port_number, 'integer(32) unsigned'
 
       FalseClass :enable_routing, :null=>false
 
@@ -37,9 +37,7 @@ Sequel.migration do
 
       Integer :datapath_id, :index => true, :null => false
 
-      # Integer :interface_port_id, :index => true
-
-      Integer :port_number, :null => false
+      column :port_number, 'integer(32) unsigned not null'
       String :port_name, :index => true, :null => false
 
       DateTime :created_at, :null=>false
