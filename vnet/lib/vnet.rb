@@ -68,6 +68,7 @@ module Vnet
     autoload :DatapathManager, 'vnet/core/datapath_manager'
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Filter2Manager, 'vnet/core/filter2_manager'
+    autoload :Filter, 'vnet/core/filter'
     autoload :HostDatapath, 'vnet/core/host_datapath'
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
     autoload :Interface, 'vnet/core/interface'
@@ -114,6 +115,8 @@ module Vnet
       autoload :Base, 'vnet/core/filters/base'
       autoload :Cookies, 'vnet/core/filters/cookies'
       autoload :SecurityGroup, 'vnet/core/filters/security_group'
+      autoload :StaticFilter, 'vnet/core/filters/static_filter'
+
     end
 
     module HostDatapaths

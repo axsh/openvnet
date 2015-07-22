@@ -7,7 +7,7 @@ module Vnet::Core::Filters
     def initialize(params)
       super
 
-      @static_filter
+      @static_filters = {}
     end
 
     def log_type
@@ -18,8 +18,10 @@ module Vnet::Core::Filters
       return if @interface_id.nil?
       flows = []
 
-      @static_filter.each { |id, filter|
-
+      @static_filters.each { |id, filter|
+        
+        debug log_format(id.to_s)
+        debug log_format(filter.to_s)
         debug log_format('installing filter')
 
         flows_for_ingress_filtering(flows, filter) if @ingress_filtering
@@ -31,7 +33,7 @@ module Vnet::Core::Filters
 
 
     def added_static_filter
-
+      
     end
 
 

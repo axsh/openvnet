@@ -105,9 +105,8 @@ module Vnet
 
     FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
     FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"
-    FILTER_ADDED_STATIC= "filter_added_static"
-    FILTER_REMOVED_STATICS = "filter_removed_static"
-
+    FILTER_ADDED_STATIC = "filter_added_static"
+    FILTER_REMOVED_STATIC = "filter_removed_static"
 
     #
     # Network event:

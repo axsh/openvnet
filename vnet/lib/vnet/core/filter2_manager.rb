@@ -86,6 +86,7 @@ module Vnet::Core
 
     # FILTER_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
+
       return if internal_detect_by_id(params)
       return if params[:interface_id].nil?
       return if @active_interfaces[params[:interface_id]].nil?
@@ -104,15 +105,12 @@ module Vnet::Core
       }
     end
 
-    # TRANSLATION_ADDED_STATIC_ADDRESS on queue 'item.id'.
+    # FILTER_ADDED_STATIC on queue 'item.id'.
     def added_static_filter(params)
+      
       item = internal_detect_by_id_with_error(params) || return
 
       static_filter_id = get_param_id(params, :static_filter_id) || return
-
-        return
-      end
-
 
       item.added_static_filter(static_filter_id)
     end
