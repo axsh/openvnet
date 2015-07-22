@@ -5,6 +5,10 @@ module Vnet::NodeApi
     class << self
       private
 
+      # TODO: Remember to add associations.
+
+      # TODO: Remember to verify port_number range.
+
       # Currently only supports very simple handling of race
       # conditions, etc.
       def create_with_transaction(options)

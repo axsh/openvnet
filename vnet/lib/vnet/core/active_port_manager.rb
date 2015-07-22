@@ -25,8 +25,10 @@ module Vnet::Core
 
     private
 
+    # TODO: Add do_initialize, clean up old port entries.
+
     def do_cleanup
-      # Cleanup can be called before the manager is initialized.
+      # Cleanup may be called before the manager is initialized.
       return if @datapath_info.nil?
 
       info log_format('cleaning up')
@@ -60,7 +62,7 @@ module Vnet::Core
       filter, value = filter_part
 
       case filter
-      when :id, :port_id, :datapath_id, :port_name, :port_number
+      when :id, :datapath_id, :port_name, :port_number
         proc { |id, item| value == item.send(filter) }
       else
         raise NotImplementedError, filter
@@ -130,6 +132,27 @@ module Vnet::Core
       item_model = mw_class.destroy(datapath_id: @datapath_info.id,
                                     port_number: port_number)
     end
+
+    #
+    # Helper methods:
+    #
+
+    def params_id_second(params)
+      param_id = params[:id]
+
+      # if item_id.nil?
+      #   warn log_format("missing id")
+      #   return
+      # end
+
+      # item = @items[item_id]
+
+      # if item.nil?
+      #   warn log_format("missing item", "id:#{item_id}")
+      #   return
+      # end
+
+      port_number = params[:id][1]
 
   end
 
