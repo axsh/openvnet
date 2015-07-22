@@ -21,7 +21,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
-    post_new(:Filter)
+    post_new :Filter
   end
 
   get do

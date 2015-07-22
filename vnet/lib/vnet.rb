@@ -324,6 +324,7 @@ module Vnet
     autoload :IpRetention, 'vnet/model_wrappers/ip_retention'
     autoload :IpRetentionContainer, 'vnet/model_wrappers/ip_retention_container'
     autoload :Filter, 'vnet/model_wrappers/filter'
+    autoload :FilterStatic, 'vnet/model_wrappers/filter'
     autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseInterface, 'vnet/model_wrappers/lease_policy'
