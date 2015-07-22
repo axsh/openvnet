@@ -33,6 +33,7 @@ module Vnet::Core
       network
       route
       router
+      filter2
       filter
       service
       tunnel
