@@ -9,7 +9,7 @@ describe Vnet::Openflow::Switch do
     let(:dp_info) { datapath.dp_info }
 
     it "sends messages" do
-      Vnet::Core::TunnelManager.any_instance.stub(:create_all_tunnels)
+      allow_any_instance_of(Vnet::Core::TunnelManager).to receive(:create_all_tunnels)
       switch = Vnet::Openflow::Switch.new(datapath)
       switch.switch_ready
 
@@ -28,7 +28,6 @@ describe Vnet::Openflow::Switch do
       it "should create a port object whose datapath_id is 1" do
         tunnel = double(:tunnel)
 
-        #Vnet::Core::TunnelManager.any_instance.stub(:item).and_return(tunnel)
         allow_any_instance_of(Vnet::Core::TunnelManager).to receive(:retrieve).and_return(tunnel)
 
         datapath.create_mock_port_manager

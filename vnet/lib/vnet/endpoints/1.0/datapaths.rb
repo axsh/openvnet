@@ -41,16 +41,21 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   param_uuid M::Interface, :interface_uuid, required: true
-  param :broadcast_mac_address, :String, required: true, transform: PARSE_MAC
+
+  # 'broadcast_mac_address' is deprecated and should be phased out.
+  param :mac_address, :String, transform: PARSE_MAC
+  param :broadcast_mac_address, :String, transform: PARSE_MAC
   post '/:uuid/networks/:network_uuid' do
     datapath = check_syntax_and_pop_uuid(M::Datapath)
     interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
     network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
 
+    mac_address = params["mac_address"] || params["broadcast_mac_address"]
+
     M::DatapathNetwork.create({ :datapath_id => datapath.id,
                                 :interface_id => interface.id,
                                 :network_id => network.id,
-                                :broadcast_mac_address => params["broadcast_mac_address"]
+                                :mac_address => mac_address
                               })
 
     respond_with(R::Network.generate(network))

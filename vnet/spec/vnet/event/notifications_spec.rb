@@ -221,18 +221,21 @@ describe Vnet::Event::Notifications do
 
     it "enqueue event to a list identified by params[:id]" do
       manager_class.class_eval do
-        def fetch_queued_events(id)
+        def event_handler_process_queue(id)
           "do nothing"
         end
       end
 
       item_manager = manager_class.new
 
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
+      item_map_1 = { id: 1, name: :foo }
+      item_map_2 = { id: 2, name: :bar }
+
+      item_manager.db_items.push(item_map_1)
+      notifier.publish("item_created", id: 1, item_map: item_map_1)
       sleep 0.01
-      item_manager.db_items.push({ id: 2, name: :bar })
-      notifier.publish("item_created", id: 2)
+      item_manager.db_items.push(item_map_2)
+      notifier.publish("item_created", id: 2, item_map: item_map_2)
       sleep 0.01
       item_manager.db_items.find{|i| i[:id] == 2}[:name] = :baz
       notifier.publish("item_updated", id: 2)
