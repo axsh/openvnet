@@ -60,13 +60,13 @@ interfaces:
   - uuid: if-dhcppub1
     network_uuid: nw-public1
     mac_address: "02:00:00:00:01:11"
-    ipv4_address: <%= public_dhcp_ipv4_address %>
+    ipv4_address: <%= public_ipv4_public1_dhcp_address %>
     mode: simulated
 
   - uuid: if-dhcppub2
     network_uuid: nw-public2
     mac_address: "02:00:00:00:01:22"
-    ipv4_address: <%= public_dhcp_ipv4_address %>
+    ipv4_address: <%= public_ipv4_public2_dhcp_address %>
     mode: simulated
 
 network_services:
