@@ -6,6 +6,7 @@ module Vnet::Core::Filters
     include Vnet::Openflow::FlowHelpers
 
     attr_accessor :dp_info
+    attr_reader :interface_id
 
     COOKIE_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
 
@@ -23,6 +24,14 @@ module Vnet::Core::Filters
       # TODO: Support proper params initialization:
       super({})
     end
+
+    # def initialize(params)
+    #  super
+    #  debug log_format(params.to_s)
+   
+
+
+    # end
 
     # We make a class method out of cookie so we can access
     # it easily in unit tests.
@@ -42,5 +51,12 @@ module Vnet::Core::Filters
       @dp_info.del_cookie(cookie)
     end
 
+    # def added_static_filter(static_filter_id)
+    # end
+
+    # def removed_static_filter(static_filter_id)
+    # end
+
   end
+
 end
