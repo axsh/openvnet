@@ -38,7 +38,7 @@ module Vnet::Core
     end
 
     def initialized_item_event
-      FILTERN_INITIALIZED
+      FILTER_INITIALIZED
     end
 
     def item_unload_event
@@ -63,10 +63,10 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map)
+    def item_initialize(item_map)      
       item_class =
         case item_map.mode
-        when MODE_STATIC_FILTER then Filter::StaticFilter
+        when MODE_STATIC_FILTER then Filters::StaticFilter
         else
           return
         end
@@ -79,17 +79,17 @@ module Vnet::Core
     #
 
     def item_pre_install(item, item_map)
-      case item.mode
+      case item_map.mode
       when :static_filter then load_static_filter(item, item_map)
       end
     end
 
     # FILTER_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-
       return if internal_detect_by_id(params)
       return if params[:interface_id].nil?
-      return if @active_interfaces[params[:interface_id]].nil?
+
+#      return if @active_interfaces[params[:interface_id]].nil?
 
       internal_new_item(mw_class.new(params))
     end
@@ -106,8 +106,7 @@ module Vnet::Core
     end
 
     # FILTER_ADDED_STATIC on queue 'item.id'.
-    def added_static_filter(params)
-      
+    def added_static_filter(params)      
       item = internal_detect_by_id_with_error(params) || return
 
       static_filter_id = get_param_id(params, :static_filter_id) || return

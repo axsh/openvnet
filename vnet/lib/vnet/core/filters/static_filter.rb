@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 
 module Vnet::Core::Filters
 
@@ -6,7 +6,7 @@ module Vnet::Core::Filters
 
     def initialize(params)
       super
-
+      
       @static_filters = {}
     end
 
@@ -20,8 +20,6 @@ module Vnet::Core::Filters
 
       @static_filters.each { |id, filter|
         
-        debug log_format(id.to_s)
-        debug log_format(filter.to_s)
         debug log_format('installing filter')
 
         flows_for_ingress_filtering(flows, filter) if @ingress_filtering
@@ -52,11 +50,11 @@ module Vnet::Core::Filters
     end
 
     def flows_for_ingress_filtering(flows, filter)
-      puts "@@@@@@@@ creating ingress flow with #{filter} @@@@@@@@"
+      debug log_format("@@@@@@@@ creating ingress flow with #{filter} @@@@@@@@")
     end
 
     def flows_for_egress_filtering(flows, filter)
-      puts "@@@@@@@@ creating egress flow with #{filter} @@@@@@@@"
+      debug log_fomat("@@@@@@@@ creating egress flow with #{filter} @@@@@@@@")
     end
 
   end
