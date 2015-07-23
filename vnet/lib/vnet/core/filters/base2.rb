@@ -22,8 +22,13 @@ module Vnet::Core::Filters
 
     def initialize(params)
       super
-      debug log_format(params.to_s)
    
+      # TODO: declare needed variables
+    end
+
+    def pretty_id
+      # TODO: return proper value 
+      return "foobar"
     end
 
     # We make a class method out of cookie so we can access
