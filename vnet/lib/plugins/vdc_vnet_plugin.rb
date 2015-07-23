@@ -114,7 +114,7 @@ module Vnet::Plugins
 
           if datapath_network.nil?
             Vnet::NodeApi::DatapathNetwork.create(datapath_network_params.merge({
-              :broadcast_mac_address => mac_generate(MAC_ADDRESS_PREFIX_DATAPATH_NETWORK)
+              :mac_address => mac_generate(MAC_ADDRESS_PREFIX_DATAPATH_NETWORK)
             }))
           end
         end

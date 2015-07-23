@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` A ruby gem for accessing the WebAPI. (https://rubygems.org/gems/vnet_api_client)
 
+* `Added` Error handling for when a user tries to create an IP address outside of its subnet range.
+
+* `Deprecated` The `broadcast_mac_address` parameter in the WebAPI's datapaths endpoint. Use `mac_address` instead.
+
 * `Changed` Updated the ruby gems dependencies to their most recent versions where possible.
 
 * `Changed` The command line arguments to the `vnflows-monitor` debug tool now use a more common format.
