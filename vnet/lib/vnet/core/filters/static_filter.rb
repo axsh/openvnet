@@ -2,7 +2,7 @@
 
 module Vnet::Core::Filters
 
-  class StaticFilter < Base
+  class StaticFilter < Base2
 
     def initialize(params)
       super

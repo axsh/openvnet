@@ -113,6 +113,7 @@ module Vnet
       autoload :AcceptAllTraffic, 'vnet/core/filters/accept_all_traffic'
       autoload :AcceptIngressArp, 'vnet/core/filters/accept_ingress_arp'
       autoload :Base, 'vnet/core/filters/base'
+      autoload :Base2, 'vnet/core/filters/base2'
       autoload :Cookies, 'vnet/core/filters/cookies'
       autoload :SecurityGroup, 'vnet/core/filters/security_group'
       autoload :StaticFilter, 'vnet/core/filters/static_filter'

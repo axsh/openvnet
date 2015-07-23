@@ -2,7 +2,7 @@
 
 module Vnet::Core::Filters
 
-  class Base < Vnet::ItemBase
+  class Base2 < Vnet::ItemBase
     include Vnet::Openflow::FlowHelpers
 
     attr_accessor :dp_info
@@ -20,9 +20,10 @@ module Vnet::Core::Filters
 
     COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
 
-    def initialize
-      # TODO: Support proper params initialization:
-      super({})
+    def initialize(params)
+      super
+      debug log_format(params.to_s)
+   
     end
 
     # We make a class method out of cookie so we can access
@@ -41,6 +42,12 @@ module Vnet::Core::Filters
 
     def uninstall
       @dp_info.del_cookie(cookie)
+    end
+
+    def added_static_filter(static_filter_id)
+    end
+
+    def removed_static_filter(static_filter_id)
     end
 
   end
