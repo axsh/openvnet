@@ -84,7 +84,7 @@ module Vnet::Core
     def item_initialize(item_map)
       item_class =
         case item_map.mode
-        when MODE_UNKNOWN then ActivePorts::Base # Change to unknown.
+        when MODE_UNKNOWN then ActivePorts::Unknown
         else
           return nil
         end
