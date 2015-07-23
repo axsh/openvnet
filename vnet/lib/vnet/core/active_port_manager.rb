@@ -84,6 +84,7 @@ module Vnet::Core
     def item_initialize(item_map)
       item_class =
         case item_map.mode
+        when MODE_LOCAL then ActivePorts::Local
         when MODE_UNKNOWN then ActivePorts::Unknown
         else
           return nil
@@ -108,6 +109,10 @@ module Vnet::Core
     # Port events:
     #
 
+    # Port manager will always pass us properly sequenced
+    # activate/deactivate port events, so it is safe to add/remove
+    # flows and such independently of the item created/deleted events.
+
     # activate port on queue '[:port, port_number]'
     def activate_port(params)
       warn log_format("XXXXXXXXXXXX activating port", params)
@@ -126,7 +131,7 @@ module Vnet::Core
       # Figure out what port type this is, and tell e.g. interface
       # port / tunnel manager.
 
-      item_mode = :unknown
+      item_mode = detect_item_mode(port_name, port_number)
 
       # May need to do the creation using async in order to allow
       # deactivation of port if vnmgr is down.
@@ -152,6 +157,15 @@ module Vnet::Core
     #
     # Helper methods:
     #
+
+    def detect_item_mode(port_name, port_number)
+      case
+      when port_number == OFPP_LOCAL
+        MODE_LOCAL
+      else
+        MODE_UNKNOWN
+      end
+    end
 
     # TODO: Move the params methods to a manager helper module.
 

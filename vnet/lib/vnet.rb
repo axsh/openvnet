@@ -98,6 +98,7 @@ module Vnet
 
     module ActivePorts
       autoload :Base, 'vnet/core/active_ports/base'
+      autoload :Local, 'vnet/core/active_ports/local'
       autoload :Unknown, 'vnet/core/active_ports/unknown'
     end
 
