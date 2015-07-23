@@ -111,7 +111,7 @@ Sequel.migration do
       Integer :is_deleted, :null =>false
     end
 
-    create_table(:filters_static_mode) do
+    create_table(:filter_statics) do
       primary_key :id
       Integer :filter_id, :index => true, :null => false
       
