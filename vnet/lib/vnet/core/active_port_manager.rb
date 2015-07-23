@@ -4,6 +4,8 @@ module Vnet::Core
 
   class ActivePortManager < Vnet::Core::Manager
 
+    include Vnet::Constants::ActivePort
+
     #
     # Events:
     #
@@ -80,7 +82,12 @@ module Vnet::Core
     end
 
     def item_initialize(item_map)
-      item_class = ActivePorts::Base
+      item_class =
+        case item_map.mode
+        when MODE_UNKNOWN then ActivePorts::Base # Change to unknown.
+        else
+          return nil
+        end
 
       item = item_class.new(dp_info: @dp_info, id: item_map[:id], map: item_map)
     end
@@ -128,7 +135,8 @@ module Vnet::Core
 
       item_model = mw_class.create(datapath_id: @datapath_info.id,
                                    port_name: port_name,
-                                   port_number: port_number)
+                                   port_number: port_number,
+                                   mode: item_mode)
     end
 
     # deactivate port on queue '[:port, port_number]'

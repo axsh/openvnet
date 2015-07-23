@@ -40,6 +40,8 @@ Sequel.migration do
       column :port_number, 'integer(32) unsigned not null'
       String :port_name, :index => true, :null => false
 
+      String :mode, :null => false
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true

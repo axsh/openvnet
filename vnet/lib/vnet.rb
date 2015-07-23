@@ -41,6 +41,7 @@ module Vnet
   end
 
   module Constants
+    autoload :ActivePort, 'vnet/constants/active_port'
     autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
     autoload :MacAddressPrefix, 'vnet/constants/mac_address_prefix'
