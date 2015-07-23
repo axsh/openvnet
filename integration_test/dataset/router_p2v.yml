@@ -180,4 +180,4 @@ routes:
     interface_uuid: if-routerpv
     network_uuid: nw-public1
     route_link_uuid: rl-1
-    ipv4_network: <%= public_ipv4_network  %>
+    ipv4_network: <%= public_ipv4_public1_network %>
