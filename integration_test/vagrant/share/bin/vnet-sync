@@ -7,7 +7,7 @@ local_dir=${1:-/opt/axsh/openvnet/}
 local_dir=$(echo ${local_dir}/ | sed 's,/*$,/,')
 
 remote_dir=/opt/axsh/openvnet/
-exclude="--exclude *.swp --exclude *.swo --exclude .git --exclude vnet/.bundle --exclude vnet/vendor --exclude vnctl/.bundle --exclude vnctl/vendor"
+exclude="--exclude *.swp --exclude *.swo --exclude .git --exclude vnet/.bundle --exclude vnet/vendor --exclude client/vnctl/.bundle --exclude client/vnctl/vendor"
 
 servers="
 vnmgr

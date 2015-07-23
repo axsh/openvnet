@@ -15,7 +15,7 @@ class OpenvnetVnctl < FPM::Cookery::Recipe
   end
 
   def install
-    opt('axsh/openvnet/vnctl').install Dir["vnctl/*"]
+    opt('axsh/openvnet/client/vnctl').install Dir["client/vnctl/*"]
     etc('/openvnet').install 'deployment/conf_files/etc/openvnet/vnctl.conf'
 
     bin.install 'deployment/conf_files/usr/bin/vnctl'
