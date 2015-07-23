@@ -58,8 +58,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       filter_id: filter.id,
     )
 
-    respond_with(R::Filter.generate(sf))
-#    respond_with(R::FilterStatic.generate(sf))
+    respond_with(R::FilterStatic.generate(sf))
   end
 
   static_filter_shared_params
