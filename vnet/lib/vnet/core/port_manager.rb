@@ -99,7 +99,7 @@ module Vnet::Core
 
       case
       when port.port_number == OFPP_LOCAL
-        prepare_port_local(port)
+        # prepare_port_local(port)
       when port.port_desc.name =~ /^t-/
         prepare_port_tunnel(port)
       else
@@ -174,11 +174,6 @@ module Vnet::Core
     #
     # Ports:
     #
-
-    def prepare_port_local(port)
-      port.extend(Ports::Local)
-      port.try_install
-    end
 
     def prepare_port_eth(port, interface_id, interface_mode)
       @dp_info.ovs_ofctl.mod_port(port.port_number, :flood)

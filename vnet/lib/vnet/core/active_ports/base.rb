@@ -38,10 +38,6 @@ module Vnet::Core::ActivePorts
       "datapath_id:#{@datapath_id} port_name:#{@port_name} port_number:#{@port_number}"
     end
 
-    # def cookie
-    #   @id | COOKIE_TYPE_ACTIVE_PORT
-    # end
-
     def to_hash
       Vnet::Core::ActivePort.new(id: @id,
                                  datapath_id: @datapath_id,
@@ -50,6 +46,16 @@ module Vnet::Core::ActivePorts
                                  port_number: @port_number)
     end
 
+    class << self
+
+      def cookie_for_id(item_id)
+        item_id | Vnet::Constants::OpenflowFlows::COOKIE_TYPE_ACTIVE_PORT
+      end
+
+      def add_flows_for_id(dp_info, item_id)
+      end
+
+    end
   end
 
 end

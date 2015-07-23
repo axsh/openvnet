@@ -82,14 +82,7 @@ module Vnet::Core
     end
 
     def item_initialize(item_map)
-      item_class =
-        case item_map.mode
-        when MODE_LOCAL then ActivePorts::Local
-        when MODE_UNKNOWN then ActivePorts::Unknown
-        else
-          return nil
-        end
-
+      item_class = detect_item_class(item_map.mode) || return
       item = item_class.new(dp_info: @dp_info, id: item_map[:id], map: item_map)
     end
 
@@ -133,6 +126,8 @@ module Vnet::Core
 
       item_mode = detect_item_mode(port_name, port_number)
 
+      add_port_flows(item_mode, port_number)
+
       # May need to do the creation using async in order to allow
       # deactivation of port if vnmgr is down.
       #
@@ -150,6 +145,8 @@ module Vnet::Core
 
       port_number = validate_port_number(params_id_value(params)) || return
 
+      del_port_flows(item_mode, port_number)
+
       item_model = mw_class.destroy(datapath_id: @datapath_info.id,
                                     port_number: port_number)
     end
@@ -158,6 +155,15 @@ module Vnet::Core
     # Helper methods:
     #
 
+    def detect_item_class(mode)
+      case mode
+      when MODE_LOCAL then ActivePorts::Local
+      when MODE_UNKNOWN then ActivePorts::Unknown
+      else
+        nil
+      end
+    end
+
     def detect_item_mode(port_name, port_number)
       case
       when port_number == OFPP_LOCAL
@@ -165,6 +171,16 @@ module Vnet::Core
       else
         MODE_UNKNOWN
       end
+    end
+
+    def add_port_flows(mode, port_number)
+      item_class = detect_item_class(mode) || return
+      item_class.add_flows_for_id(@dp_info, port_number)
+    end
+
+    def del_port_flows(mode, port_number)
+      cookie = ActivePorts::Base.cookie_for_id(port_number)
+      @dp_info.del_cookie(cookie)
     end
 
     # TODO: Move the params methods to a manager helper module.
