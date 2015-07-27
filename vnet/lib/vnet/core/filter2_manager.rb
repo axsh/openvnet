@@ -20,8 +20,8 @@ module Vnet::Core
     subscribe_event FILTER_ACTIVATE_INTERFACE, :activate_interface
     subscribe_event FILTER_DEACTIVATE_INTERFACE, :deactivate_interface
 
-    subscribe_event FILTER_ADDED_STATIC, :added_static_address
-    subscribe_event FILTER_REMOVED_STATIC, :removed_static_address
+    subscribe_event FILTER_ADDED_STATIC, :added_static
+    subscribe_event FILTER_REMOVED_STATIC, :removed_static
 
     #
     # Internal methods:
@@ -66,7 +66,7 @@ module Vnet::Core
     def item_initialize(item_map)      
       item_class =
         case item_map.mode
-        when MODE_STATIC_FILTER then Filters::StaticFilter
+        when MODE_STATIC then Filters::Static
         else
           return
         end
@@ -80,7 +80,7 @@ module Vnet::Core
 
     def item_pre_install(item, item_map)
       case item_map.mode
-      when :static_filter then load_static_filter(item, item_map)
+      when :static then load_static(item, item_map)
       end
     end
 
@@ -99,28 +99,28 @@ module Vnet::Core
     # to change
 
     # load static filter on queue 'item.id'.
-    def load_static_filter(item, item_map)
-      item_map.batch.static_filter.commit.each { |filter|
-        item.added_static_filter(filter.id)
+    def load_static(item, item_map)
+      item_map.batch.static.commit.each { |filter|
+        item.added_static(filter.id)
       }
     end
 
     # FILTER_ADDED_STATIC on queue 'item.id'.
-    def added_static_filter(params)      
+    def added_static(params)      
       item = internal_detect_by_id_with_error(params) || return
 
-      static_filter_id = get_param_id(params, :static_filter_id) || return
+      static_id = get_param_id(params, :static_id) || return
 
-      item.added_static_filter(static_filter_id)
+      item.added_static(static_id)
     end
 
     # FILTER_REMOVED_STATIC on queue 'item.id'.
-    def removed_static_filter(params)
+    def removed_static(params)
       item = internal_detect_by_id(params) || return
 
-      static_filter_id = params[:static_filter_id] || return
+      static_id = params[:static_id] || return
 
-      item.removed_static_filter(static_filter_id)
+      item.removed_static(static_id)
     end
 
   end

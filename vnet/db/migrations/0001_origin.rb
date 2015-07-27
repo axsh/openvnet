@@ -97,13 +97,8 @@ Sequel.migration do
       String :mode, :null => false
 
       Integer :interface_id, :index => true
-
-      Bignum :ipv4_address, :null => false
-      Integer :port_number, :null => false
       
-      Boolean :ingress_filtering, :null => false
-      Boolean :egress_filtering, :null => false
-      Boolean :pass, :null => false
+      Boolean :passthrough, :null => false
 
       DateTime :created_at, :null =>false
       DateTime :updated_at, :null =>false
@@ -114,6 +109,9 @@ Sequel.migration do
     create_table(:filter_statics) do
       primary_key :id
       Integer :filter_id, :index => true, :null => false
+
+      Bignum :ipv4_address, :null => false
+      Integer :port_number, :null => false
       
       DateTime :created_at, :null =>false
       DateTime :updated_at, :null =>false
@@ -128,6 +126,7 @@ Sequel.migration do
       String :display_name
 
       FalseClass :ingress_filtering_enabled, :null => false
+      FalseClass :egress_filtering_enabled, :null => false
       FalseClass :enable_routing, :null=>false
       FalseClass :enable_route_translation, :null=>false
 
@@ -454,6 +453,8 @@ Sequel.migration do
     drop_table(:datapaths,
                :datapath_networks,
                :datapath_route_links,
+               :filters,
+               :filter_statics,
                :interfaces,
                :ip_addresses,
                :ip_leases,

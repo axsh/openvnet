@@ -2,23 +2,23 @@
 
 module Vnet::Core::Filters
 
-  class StaticFilter < Base2
+  class Static < Base2
 
     def initialize(params)
       super
       
-      @static_filters = {}
+      @statics = {}
     end
 
     def log_type
-      'filter/static_filter'
+      'filter/static'
     end
 
     def install
       return if @interface_id.nil?
       flows = []
 
-      @static_filters.each { |id, filter|
+      @statics.each { |id, filter|
         
         debug log_format('installing filter')
 

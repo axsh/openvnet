@@ -49,10 +49,10 @@ module Vnet::Core::Filters
       @dp_info.del_cookie(cookie)
     end
 
-    def added_static_filter(static_filter_id)
+    def added_static(static_id)
     end
 
-    def removed_static_filter(static_filter_id)
+    def removed_static(static_id)
     end
 
   end

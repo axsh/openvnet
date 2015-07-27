@@ -7,15 +7,15 @@ module Vnet::NodeApi
 
       def dispatch_created_item_events(model)
         model_hash = model.to_hash.merge(id: model.filter_id,
-                                         static_filter_id: model.id)
+                                         static_id: model.id)
 
-        dispatch_event(FILTER_ADDED_STATIC_FILTER, model_hash)
+        dispatch_event(FILTER_ADDED_STATIC, model_hash)
       end
 
       def dispatch_deleted_item_events(model)
-        dispatch_event(FILTER_REMOVED_STATIC_FILTER,
+        dispatch_event(FILTER_REMOVED_STATIC,
                        id: model.filter_id,
-                       static_filter_id: model.id)
+                       static_id: model.id)
       end
 
     end

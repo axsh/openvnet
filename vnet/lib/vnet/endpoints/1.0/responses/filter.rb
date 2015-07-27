@@ -10,7 +10,7 @@ module Vnet::Endpoints::V10::Responses
       end
     end
 
-    def self.filter_static(object)
+    def self.static(object)
         argument_type_check(object,Vnet::ModelWrappers::Filter)
       {
         :uuid => object.uuid,

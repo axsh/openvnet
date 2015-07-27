@@ -116,7 +116,7 @@ module Vnet
       autoload :Base2, 'vnet/core/filters/base2'
       autoload :Cookies, 'vnet/core/filters/cookies'
       autoload :SecurityGroup, 'vnet/core/filters/security_group'
-      autoload :StaticFilter, 'vnet/core/filters/static_filter'
+      autoload :Static, 'vnet/core/filters/static'
 
     end
 

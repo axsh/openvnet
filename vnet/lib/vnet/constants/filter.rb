@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Constants::Filter
-  MODE_STATIC_FILTER = 'static_filter'
+  MODE_STATIC = 'static'
 
-  MODES = [ MODE_STATIC_FILTER ]
+  MODES = [ MODE_STATIC ]
 end

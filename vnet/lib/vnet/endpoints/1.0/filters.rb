@@ -7,11 +7,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   def self.put_post_shared_params
     param_uuid M::Interface, :interface_uuid
     param :mode, :String, in: CT::MODES
-    param :pass, :Boolean
-    param :ingress_filtering, :Boolean
-    param :egress_filtering, :Boolean
-    param :ipv4_address, :String, required: true
-    param :port_mumber, :Integer, in: 1..65536
+    param :passthrough, :Boolean
   end
 
   put_post_shared_params
@@ -43,30 +39,34 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
     update_by_uuid(:Filter)
   end
 
-  def self.static_filter_shared_params
+  def self.static_shared_params
+    param :ipv4_address, :String, required: true
+    param :port_mumber, :Integer, in: 1..65536    
   end
 
-  static_filter_shared_params
-  post '/:uuid/static_filter' do
+  static_shared_params
+  post '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
 
-    if filter.mode != CT::MODE_STATIC_FILTER
-      raise(E::ArgumentError, "Filter mode must be '#{CT::MODE_STATIC_FILTER}'.")
+    if filter.mode != CT::MODE_STATIC
+      raise(E::ArgumentError, "Filter mode must be '#{CT::MODE_STATIC}'.")
     end
 
     sf = M::FilterStatic.create(
       filter_id: filter.id,
+      ipv4_address: params["ipv4_address"],
+      port_number: params["port_number"]    
     )
 
     respond_with(R::FilterStatic.generate(sf))
   end
 
-  static_filter_shared_params
-  delete '/:uuid/static_filter' do
+  static_shared_params
+  delete '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
 
-    if filter.mode != CT::MODE_STATIC_FILTER
-      raise(E::ArgumentError, "Filter mode must be '#{CT::MODE_STATIC_FILTER}'.")
+    if filter.mode != CT::MODE_STATIC
+      raise(E::ArgumentError, "Filter mode must be '#{CT::MODE_STATIC}'.")
     end
 
     remove_system_parameters
@@ -85,7 +85,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
     
     M::FilterStatic.destroy(id: sf.id)
 
-    respond_with(R::Filter.filter_static(filter))
+    respond_with(R::Filter.static(filter))
   end
 
 end
