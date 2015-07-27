@@ -40,7 +40,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   end
 
   def self.static_shared_params
-    param :ipv4_address, :String, required: true
+    param :ipv4_address, :String, transform: PARSE_IPV4, required: true
     param :port_mumber, :Integer, in: 1..65536    
   end
 
@@ -52,13 +52,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       raise(E::ArgumentError, "Filter mode must be '#{CT::MODE_STATIC}'.")
     end
 
-    sf = M::FilterStatic.create(
+    s = M::FilterStatic.create(
       filter_id: filter.id,
       ipv4_address: params["ipv4_address"],
       port_number: params["port_number"]    
     )
 
-    respond_with(R::FilterStatic.generate(sf))
+    respond_with(R::FilterStatic.generate(s))
   end
 
   static_shared_params
@@ -77,13 +77,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
     # params[:translation_id] = translation.id
     # tsa = M::TranslationStaticAddress.batch[filter_params].commit
 
-    if !sf
+    if !s
       rp = request.params.to_json
       raise E::UnknownResource, "Couldn't find resource with parameters: #{rp}"
     end
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
-    M::FilterStatic.destroy(id: sf.id)
+    M::FilterStatic.destroy(id: s.id)
 
     respond_with(R::Filter.static(filter))
   end
