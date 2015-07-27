@@ -22,8 +22,15 @@ module Vnet::Core::Filters
 
     def initialize(params)
       super
-   
-      # TODO: declare needed variables
+
+      map = params[:map]
+
+      @interface_id = map.interface_id
+      @passthrough = map.passthrough
+
+      # @ingress_filtering
+      # @egress_filtering
+      
     end
 
     def pretty_id
@@ -49,7 +56,7 @@ module Vnet::Core::Filters
       @dp_info.del_cookie(cookie)
     end
 
-    def added_static(static_id)
+    def added_static(static_id, ipv4_address, port_number)
     end
 
     def removed_static(static_id)

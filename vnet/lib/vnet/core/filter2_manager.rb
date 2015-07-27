@@ -101,17 +101,38 @@ module Vnet::Core
     # load static filter on queue 'item.id'.
     def load_static(item, item_map)
       item_map.batch.static.commit.each { |filter|
-        item.added_static(filter.id)
+        item.added_static(filter.id,
+                          filter.ipv4_address,
+                          filter.port_number
+                         )
       }
     end
 
     # FILTER_ADDED_STATIC on queue 'item.id'.
     def added_static(params)      
+      degug log_format("passed")
       item = internal_detect_by_id_with_error(params) || return
 
+      degug log_format("passed")
       static_id = get_param_id(params, :static_id) || return
 
-      item.added_static(static_id)
+      degug log_format("passed")
+      ipv4_address = get_param_id(params, :ipv4_address) || return
+
+      degug log_format("passed")
+      port_number = get_param_id(params, :port_number, false) || return
+      
+      debug log_format("passed")
+      if (params.has_key?(:port_number)) &&
+         (port_number.nil)
+         log_format("invalid port number", "port_number:#{params[:port_number]}")
+        return
+      end
+
+      item.added_static(filter.id,
+                        filter.ipv4_address,
+                        filter.port_number
+                       )
     end
 
     # FILTER_REMOVED_STATIC on queue 'item.id'.

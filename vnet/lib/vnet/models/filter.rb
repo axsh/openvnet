@@ -15,14 +15,6 @@ module Vnet::Models
     filter_static: :destroy
 
     def ipv4_address_s
-      self.ipv4_address && parse_ipv4(self.ipv4_address)
-    end
-
-    #TODO: properly use module for this
-    private
-
-    def parse_ipv4(ipv4)
-      IPAddress::IPv4::parse_u32(ipv4).to_s
     end
     
   end
