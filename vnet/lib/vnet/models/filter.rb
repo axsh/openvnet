@@ -12,10 +12,6 @@ module Vnet::Models
 
     plugin :association_dependencies,
     # 0001_origin
-    filter_static: :destroy
-
-    def ipv4_address_s
-    end
-    
+    filter_static: :destroy    
   end
 end
