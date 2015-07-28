@@ -17,17 +17,31 @@ module Vnet::Event
       end
     end
 
-    # The block should not contain any calls that yield.
-    def create_event_task(task_name, max_wait, &block)
+    def has_event_task_id?(task_name, task_id)
+      tasks = @event_tasks[task_name] || return
+      tasks.any? { |task, state|
+        state[:status] == :valid && state[:id] == task_id
+      }
+    end
+
+    # The block and task_init should not contain any calls that yield.
+    def create_event_task(task_name, max_wait, task_id = nil, task_init = nil, &block)
       current_task = Celluloid::Task.current
 
+      state = {
+        status: :valid,
+        id: task_id
+      }
+
       tasks = (@event_tasks[task_name] ||= {})
-      tasks[current_task] = state = { status: :valid }
+      tasks[current_task] = state
 
       current_timer = max_wait && after(max_wait) {
         state[:status] = :invalid
         current_task.resume
       }
+
+      task_init && task_init.call
 
       while true
         # Suspend returns the value passed to resume by the other
