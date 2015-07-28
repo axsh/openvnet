@@ -24,7 +24,11 @@ module Vnet::Event
       }
     end
 
-    # The block and task_init should not contain any calls that yield.
+    # The block and task_init should not contain any calls that yield,
+    # this includes async.
+    #
+    # If task_init returns a non-nil value, it means that during the
+    # init proc call the event condition was satisfied.
     def create_event_task(task_name, max_wait, task_id = nil, task_init = nil, &block)
       current_task = Celluloid::Task.current
 
@@ -41,9 +45,10 @@ module Vnet::Event
         current_task.resume
       }
 
-      task_init && task_init.call
+      result = task_init && task_init.call
+      return result if result
 
-      while true
+      while state[:status] == :valid
         # Suspend returns the value passed to resume by the other
         # task. We do not allow nil to be passed.
         passed_value = Celluloid::Task.suspend(:event_task)
@@ -52,7 +57,7 @@ module Vnet::Event
         next if passed_value.nil?
 
         result = block.call(passed_value)
-        break result if result
+        return result if result
       end
 
     ensure
