@@ -2,11 +2,11 @@
 
 #TODO: Write some FREAKING tests for this
 Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
-  CT = C::Filter
+  CF = C::Filter
   
   def self.put_post_shared_params
     param_uuid M::Interface, :interface_uuid
-    param :mode, :String, in: CT::MODES
+    param :mode, :String, in: CF::MODES
     param :passthrough, :Boolean
   end
 
@@ -41,21 +41,22 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
   def self.static_shared_params
     param :ipv4_address, :String, transform: PARSE_IPV4, required: true
-    param :port_mumber, :Integer, in: 1..65536    
+    param :port_number, :Integer, in: 1..65536    
   end
 
   static_shared_params
   post '/:uuid/static' do
+
     filter = check_syntax_and_pop_uuid(M::Filter)
 
-    if filter.mode != CT::MODE_STATIC
-      raise(E::ArgumentError, "Filter mode must be '#{CT::MODE_STATIC}'.")
+    if filter.mode != CF::MODE_STATIC
+      raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
     end
 
     s = M::FilterStatic.create(
       filter_id: filter.id,
       ipv4_address: params["ipv4_address"],
-      port_number: params["port_number"]    
+      port_number: params["port_number"]
     )
 
     respond_with(R::FilterStatic.generate(s))
@@ -65,8 +66,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   delete '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
 
-    if filter.mode != CT::MODE_STATIC
-      raise(E::ArgumentError, "Filter mode must be '#{CT::MODE_STATIC}'.")
+    if filter.mode != CF::MODE_STATIC
+      raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
     end
 
     remove_system_parameters
