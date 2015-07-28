@@ -159,16 +159,16 @@ module Vnet
   module LookupParams
     def get_param(params, key, required = true)
       param = (params && params[key])
-
       if param.nil?
         log_format("missing param", "key:#{key}") if required
         return
       end
+
+      param
     end
 
     def get_param_id(params, key, required = true)
       param = get_param(params, key, required) || return
-
       if (param < 0) || (param >= (1 << 31))
         log_format("invalid value for id")
         return
