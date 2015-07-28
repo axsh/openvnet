@@ -157,7 +157,8 @@ module Vnet::Core
 
     def detect_item_class(mode)
       case mode
-      when MODE_LOCAL then ActivePorts::Local
+      when MODE_LOCAL   then ActivePorts::Local
+      when MODE_TUNNEL  then ActivePorts::Tunnel
       when MODE_UNKNOWN then ActivePorts::Unknown
       else
         nil
@@ -168,6 +169,8 @@ module Vnet::Core
       case
       when port_number == OFPP_LOCAL
         MODE_LOCAL
+      when port_name =~ /^t-/
+        MODE_TUNNEL
       else
         MODE_UNKNOWN
       end
