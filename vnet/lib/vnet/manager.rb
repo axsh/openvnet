@@ -98,11 +98,11 @@ module Vnet
     #
 
     def wait_for_loaded(params, max_wait = 10.0)
-      item_to_hash(internal_wait_for_loaded(params))
+      item_to_hash(internal_wait_for_loaded(params, max_wait))
     end
     
     def wait_for_unloaded(params, max_wait = 10.0)
-      internal_wait_for_unloaded(params)
+      internal_wait_for_unloaded(params, max_wait)
     end
     
     #
@@ -466,7 +466,7 @@ module Vnet
     # Internal polling methods:
     #
 
-    def internal_wait_for_loaded(params, max_wait = 10.0)
+    def internal_wait_for_loaded(params, max_wait)
       # TODO: Check if item was install and not being uninstalled.
       item = internal_detect(params)
       return item if item
@@ -479,7 +479,7 @@ module Vnet
       }
     end
 
-    def internal_wait_for_unloaded(params, max_wait = 10.0)
+    def internal_wait_for_unloaded(params, max_wait)
       item = internal_detect(params)
       return true if item.nil?
 
