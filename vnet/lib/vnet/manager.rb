@@ -97,8 +97,8 @@ module Vnet
     # Polling methods:
     #
 
-    def wait_for_loaded(params, max_wait = 10.0)
-      item_to_hash(internal_wait_for_loaded(params, max_wait))
+    def wait_for_loaded(params, max_wait = 10.0, try_load = false)
+      item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
     
     def wait_for_unloaded(params, max_wait = 10.0)
@@ -270,7 +270,10 @@ module Vnet
       item = internal_detect(params)
       return item if item
 
+      # TODO: Add proper error messages?
+
       select_filter = select_filter_from_params(params) || return
+
       item_map = select_item(select_filter.first) || return
 
       # TODO: Only allow one fiber at the time to make a request with
@@ -466,14 +469,22 @@ module Vnet
     # Internal polling methods:
     #
 
-    def internal_wait_for_loaded(params, max_wait)
+    # TODO: Wait_for_loaded needs to work correctly when create is
+    # called and the manager doesn't know the item is wanted.
+
+    def internal_wait_for_loaded(params, max_wait, try_load)
       # TODO: Check if item was install and not being uninstalled.
       item = internal_detect(params)
       return item if item
 
+      load_proc = try_load && !has_event_task_id?(:loaded, params) && proc {
+        self.async.retrieve(params)
+        internal_detect(params)
+      }
+
       match_proc = match_item_proc(params)
 
-      create_event_task(:loaded, max_wait) { |item_id|
+      create_event_task(:loaded, max_wait, params, load_proc) { |item_id|
         item = (item_id && @items[item_id]) || next
         match_proc.call(item_id, item) ? item : nil
       }
