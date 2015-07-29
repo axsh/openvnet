@@ -126,10 +126,12 @@ Sequel.migration do
       String :display_name
 
       FalseClass :ingress_filtering_enabled, :null => false
-      FalseClass :egress_filtering_enabled, :null => false
       FalseClass :enable_routing, :null=>false
       FalseClass :enable_route_translation, :null=>false
 
+      FalseClass :enable_egress_filtering, :null => false
+      FalseClass :enable_ingress_filtering, :null => false
+      
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
