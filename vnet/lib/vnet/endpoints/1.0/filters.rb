@@ -86,7 +86,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
     
     M::FilterStatic.destroy(id: s.id)
 
-    respond_with(R::Filter.static(filter))
+    respond_with(R::Filter.filter_statics(filter))
   end
 
 end
