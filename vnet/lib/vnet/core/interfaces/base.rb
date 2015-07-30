@@ -37,7 +37,9 @@ module Vnet::Core::Interfaces
     attr_accessor :enable_route_translation
 
     attr_accessor :ingress_filtering_enabled
-
+    attr_accessor :enable_egress_filtering
+    attr_accessor :enable_ingress_filtering
+    
     def initialize(params)
       super
 
@@ -53,6 +55,9 @@ module Vnet::Core::Interfaces
       @enable_routing = map.enable_routing
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
+      @enable_egress_filtering = map.enable_egress_filtering
+      @enable_ingress_filtering = map.enable_ingress_filtering
+      
     end
 
     def log_type

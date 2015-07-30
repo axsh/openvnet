@@ -19,7 +19,8 @@ module Vnet::Models
     one_to_many :routes
     one_to_many :security_group_interfaces
     one_to_many :translations
-
+    one_to_many :filters
+    
     many_to_many :ip_addresses, :join_table => :ip_leases, :conditions => "ip_leases.deleted_at is null"
 
     one_to_many :src_tunnels, :class => Tunnel, :key => :src_interface_id
@@ -48,6 +49,7 @@ module Vnet::Models
     src_tunnels: :destroy,
     dst_tunnels: :destroy,
     translations: :destroy,
+    filters: :destroy,
     # 0002_services
     lease_policy_base_interfaces: :destroy
 

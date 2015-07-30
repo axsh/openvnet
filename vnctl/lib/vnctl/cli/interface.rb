@@ -14,6 +14,10 @@ module Vnctl::Cli
         :desc => "Flag that decides whether or not route translation is enabled."
       option :owner_datapath_uuid, :type => :string,
         :desc => "The uuid of the datapath that owns this interface."
+      option :enable_ingress_filtering, :type => :boolean,
+        :desc => "Flags that decides whether or not ingress filtering is enabled."
+      option :enable_egress_filtering, :type => :boolean,
+        :desc => "Flags that decides whether or not egress filtering is enabled."
     }
 
     option_uuid
