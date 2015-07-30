@@ -109,7 +109,7 @@ module Vnet::Core::Translations
       end
 
       dpn = MW::Datapath.batch[id: @dp_info.datapath.datapath_info.id].datapath_networks.commit.select { |t| t.network_id == src_network_id }
-      dpn_broadcast = dpn.first.broadcast_mac_address
+      dpn_broadcast = dpn.first.mac_address
 
       flows << Flow.create(TABLE_EDGE_SRC, 2, {
                            :eth_src => src_mac

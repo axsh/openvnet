@@ -51,7 +51,7 @@ describe "/datapaths" do
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
 
     include_examples "many_to_many_relation", "networks", {
-      :broadcast_mac_address => "02:00:00:cc:00:02",
+      :mac_address => "02:00:00:cc:00:02",
       :interface_uuid => 'if-test'
     }
   end
