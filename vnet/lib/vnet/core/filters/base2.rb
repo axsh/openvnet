@@ -2,11 +2,12 @@
 
 module Vnet::Core::Filters
 
-  class Base2 < Vnet::ItemBase
+  class Base2 < Vnet::ItemDpUuidMode
+    include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_accessor :dp_info
-    attr_reader :interface_id
+#    attr_accessor :dp_info
+    attr_reader :interface_id, :ingress_filtering, :egress_filtering
 
     COOKIE_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
 
@@ -22,20 +23,18 @@ module Vnet::Core::Filters
 
     def initialize(params)
       super
-
+     
       map = params[:map]
 
       @interface_id = map.interface_id
       @passthrough = map.passthrough
-
-      # @ingress_filtering
-      # @egress_filtering
+      @ingress_filtering
+#      @egress_filtering
       
     end
 
-    def pretty_id
-      # TODO: return proper value 
-      return "foobar"
+    def pretty_properties
+      "interface_id:#{@interface_id}" 
     end
 
     # We make a class method out of cookie so we can access
@@ -45,7 +44,13 @@ module Vnet::Core::Filters
     end
 
     def cookie
-      self.class.cookie
+      @id | COOKIE_TYPE_FILTER
+    end
+
+    def to_hash
+      Vnet::Core::Static.new(id: @id,
+                             uuid: @uuid,
+                             mode: @mode)
     end
 
     def install
