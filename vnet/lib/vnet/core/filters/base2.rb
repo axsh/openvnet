@@ -28,7 +28,7 @@ module Vnet::Core::Filters
 
       @interface_id = map.interface_id
       @passthrough = map.passthrough
-      @ingress_filtering
+#      @ingress_filtering
 #      @egress_filtering
       
     end
