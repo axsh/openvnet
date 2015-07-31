@@ -48,6 +48,8 @@ module Vnspec
             :security_groups
           when %r(^dns_services/[^/]+/dns_records)
             :dns_records
+          when %r(^ip_range_groups/[^/]+/ip_ranges)
+            :ip_ranges
           end
         args += [convert_method(method), values[1], values[3]].compact
         params.keys.each do |key|
