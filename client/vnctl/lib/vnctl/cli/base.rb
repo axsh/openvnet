@@ -42,7 +42,7 @@ module Vnctl::Cli
         if block_given?
           @shared_options = blk
         else
-          @shared_options.call
+          @shared_options && @shared_options.call
         end
       end
 

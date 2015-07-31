@@ -10,6 +10,7 @@ module Vnctl
     autoload :Datapath, 'vnctl/cli/datapath'
     autoload :DnsService, 'vnctl/cli/dns_service'
     autoload :IpLease, 'vnctl/cli/ip_lease'
+    autoload :IpLeaseContainer, 'vnctl/cli/ip_lease_container'
     autoload :IpRangeGroup, 'vnctl/cli/ip_range_group'
     autoload :LeasePolicy, 'vnctl/cli/lease_policies'
     autoload :MacLease, 'vnctl/cli/mac_lease'
