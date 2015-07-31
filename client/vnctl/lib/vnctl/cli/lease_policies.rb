@@ -17,6 +17,7 @@ module Vnctl::Cli
         :desc => "The ip range group uuid for this policy in this network."
     end
 
+    define_relation :ip_lease_containers
     define_relation :interfaces
   end
 end
