@@ -21,9 +21,8 @@ module Vnet::Core::Filters
     def install
 
       return if @interface_id.nil?
+
       flows = []
-      flows_for_passthrough(flows)
-      
       @statics.each { |id, filter|
         
         debug log_format('installing translation for ' + pretty_static(filter))
@@ -92,11 +91,11 @@ module Vnet::Core::Filters
 
         flow_options = {
           table: TABLE_INTERFACE_INGRESS_FILTER,
-          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
           priority: 50,
           match: match,
           match_interface: @interface_id
-        }
+       }
+        flow_options[:goto_table] = TABLE_OUT_PORT_INTERFACE_INGRESS if @passthrough == true
         flows << flow_create(flow_options)
       }
     end
@@ -107,30 +106,13 @@ module Vnet::Core::Filters
 
         flow_options = {
           table: TABLE_INTERFACE_EGRESS_FILTER,
-          goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
           priority: 50,
           match: match,
           match_interface: @interface_id
         }
+        flow_options[:goto_table] = TABLE_OUT_PORT_INTERFACE_EGRESS if @passthrough == true
+
         flows << flow_create(flow_options)
       }
     end
-
-    def flows_for_passthrough(flows)
-
-      [[TABLE_INTERFACE_INGRESS_FILTER, TABLE_OUT_PORT_INTERFACE_INGRESS],
-       [TABLE_INTERFACE_EGRESS_FILTER, TABLE_OUT_PORT_INTERFACE_EGRESS]
-      ].each { |table, goto_table|
-        flows << flow_create(table: table,
-                             goto_table: goto_table,
-                             priority: 10,
-                             
-                             match_interface: @interface_id
-                            )
-      }
-     end
-
-    
-  end
-
 end
