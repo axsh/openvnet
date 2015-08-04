@@ -4,7 +4,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   def self.put_post_shared_params
     param :display_name, :String
     param :description, :String
-    param :rules, :String #TODO: Check rule syntax
+    param :rules, :String
   end
 
   put_post_shared_params
