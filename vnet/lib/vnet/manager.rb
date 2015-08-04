@@ -47,6 +47,8 @@ module Vnet
     def initialize(info, options = {})
       @items = {}
       @messages = {}
+
+      @loading_params = {}
     end
 
     def retrieve(params)

@@ -134,7 +134,7 @@ module Vnet::Core::Services
     end
 
     def dns_server_for(network_id)
-      interface = @dp_info.interface_manager.wait_for_loaded(id: @interface_id, 10, true)
+      interface = @dp_info.interface_manager.wait_for_loaded({id: @interface_id}, 10, true)
 
       ipv4_info = interface.get_ipv4_infos(network_id: network_id).map(&:last).detect do |ipv4_info|
         ipv4_info[:network_id] == network_id
