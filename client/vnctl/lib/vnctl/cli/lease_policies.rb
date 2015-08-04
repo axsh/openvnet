@@ -18,6 +18,7 @@ module Vnctl::Cli
     end
 
     define_relation :ip_lease_containers
+    define_relation :ip_retention_containers
     define_relation :interfaces
   end
 end

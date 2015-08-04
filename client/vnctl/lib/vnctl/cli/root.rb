@@ -14,6 +14,7 @@ module Vnctl::Cli
     vnctl_register(C::IpLease, "ip leases")
     vnctl_register(C::IpLeaseContainer, "ip lease containers")
     vnctl_register(C::IpRangeGroup, "ip ranges")
+    vnctl_register(C::IpRetentionContainer, "ip retention containers")
     vnctl_register(C::LeasePolicy, "lease policies")
     vnctl_register(C::MacLease, "mac leases")
     vnctl_register(C::Network, "networks")

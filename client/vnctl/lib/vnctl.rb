@@ -12,6 +12,7 @@ module Vnctl
     autoload :IpLease, 'vnctl/cli/ip_lease'
     autoload :IpLeaseContainer, 'vnctl/cli/ip_lease_container'
     autoload :IpRangeGroup, 'vnctl/cli/ip_range_group'
+    autoload :IpRetentionContainer, 'vnctl/cli/ip_retention_container'
     autoload :LeasePolicy, 'vnctl/cli/lease_policies'
     autoload :MacLease, 'vnctl/cli/mac_lease'
     autoload :Network, 'vnctl/cli/network'
