@@ -50,6 +50,14 @@ module Vnspec
             :dns_records
           when %r(^ip_range_groups/[^/]+/ip_ranges)
             :ip_ranges
+          when %r(^lease_policies/[^/]+/networks)
+            :networks
+          when %r(^lease_policies/[^/]+/ip_lease_containers)
+            :ip_lease_containers
+          when %r(^lease_policies/[^/]+/ip_retention_containers)
+            :ip_retention_containers
+          when %r(^lease_policies/[^/]+/interfaces)
+            :interfaces
           end
         args += [convert_method(method), values[1], values[3]].compact
         params.keys.each do |key|
