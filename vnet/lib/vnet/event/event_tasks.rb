@@ -33,20 +33,29 @@ module Vnet::Event
       current_task = Celluloid::Task.current
 
       state = {
-        status: :valid,
+        status: :init,
         id: task_id
       }
 
       tasks = (@event_tasks[task_name] ||= {})
       tasks[current_task] = state
 
-      current_timer = max_wait && after(max_wait) {
-        state[:status] = :invalid
-        current_task.resume
-      }
-
+      # The task_init call should always return the same object as we
+      # would receive from the block call, or nil if we should just
+      # wait.
       result = task_init && task_init.call
       return result if result
+
+      # We make sure that if timer was made invalid during the task
+      # init we return nil.
+      return if state[:status] != :init
+      state[:status] = :valid
+
+      current_timer = max_wait && after(max_wait) {
+        old_state = state[:status]
+        state[:status] = :invalid
+        current_task.resume if old_state == :valid
+      }
 
       while state[:status] == :valid
         # Suspend returns the value passed to resume by the other
