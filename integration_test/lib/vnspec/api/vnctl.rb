@@ -59,21 +59,22 @@ module Vnspec
           when %r(^lease_policies/[^/]+/interfaces)
             :interfaces
           end
-        args += [convert_method(method), values[1], values[3]].compact
+        args += [convert_method(method, url), values[1], values[3]].compact
         params.keys.each do |key|
           args << %Q(--#{key} "#{params[key]}")
         end
         args
       end
 
-      def convert_method(method)
+      def convert_method(method, url)
         case method
         when :get
           :show
         when :post
           :add
         when :put
-          :modify
+          #TODO: clean this up
+          url =~ %r([^/]+/rename$) ? :rename : :modify
         when :delete
           :del
         else
