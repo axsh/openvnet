@@ -118,9 +118,10 @@ module Vnctl::Cli
       end
 
       def self.define_rename
-        desc "rename UUID [OPTIONS]", "Rename a #{namespace}."
+        desc "rename UUID", "Rename a #{namespace}."
         option_uuid
-        option :new_uuid, :type => :string, :desc => "New unique UUID for the #{namespace}."
+        option :new_uuid, :type => :string, :required => true,
+          :desc => "New unique UUID for the #{namespace}."
         define_method(:rename) do |uuid|
           puts Vnctl.webapi.put("#{suffix}/#{uuid}/rename", options)
         end

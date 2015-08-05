@@ -50,7 +50,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   end
 
   param_uuid M::Interface
-  param :new_uuid, :String
+  param :new_uuid, :String, required: true
   put '/:uuid/rename' do
     updated_object = M::Interface.batch.rename(params['uuid'], params['new_uuid']).commit
     respond_with([updated_object])
