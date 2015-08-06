@@ -52,8 +52,15 @@ module Vnspec
         # Convert relation WebAPI calls to vnctl arguments.
         # For example 'POST datapaths/dp-xxxx/networks/nw-yyyy'
         # becomes: 'vnctl datapaths networks add dp-xxxx nw-yyyy'
-        relation_name = url.match(%r([^/]+/[^/]+/([^/]+)))
-        args << relation_name.captures.first unless relation_name.nil?
+        relation_capture = url.match(%r([^/]+/[^/]+/([^/]+)))
+        if relation_capture
+          relation_name = relation_capture.captures.first
+
+          # Currently 'PUT interfaces/:uuid/rename' is the only API route that
+          # does not follow the REST standard. This is a quick hack to work
+          # around it.
+          args << relation_name unless relation_name == 'rename'
+        end
 
         args += [convert_method(method, url), values[1], values[3]].compact
         params.keys.each do |key|
