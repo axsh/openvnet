@@ -16,21 +16,31 @@ module Vnspec
           raise "Request failed: #{raw_response[:stderr]}"
         end
 
-        YAML.load(raw_response[:stdout]).tap do |response|
-          logger.debug "response:"
-          logger.debug response
+        begin
+          response = YAML.load(raw_response[:stdout])
+        rescue
+          logger.error(
+            "An error occurred while trying to parse the following WebAPI reply as Yaml.\n%s" %
+            raw_response[:stdout])
 
-          if response.is_a?(Hash)
-            response = response.symbolize_keys
-            if response[:error]
-              raise "Request failed: #{response[:error]} #{response[:code]} #{response[:message]}"
-            end
-          elsif response.is_a?(String)
-            raise "Request failed: #{response}"
-          end
-
-          return yield(response) if block_given?
+          raise
         end
+
+        logger.debug "response:"
+        logger.debug response
+
+        if response.is_a?(Hash)
+          response = response.symbolize_keys
+          if response[:error]
+            raise "Request failed: #{response[:error]} #{response[:code]} #{response[:message]}"
+          end
+        elsif response.is_a?(String)
+          raise "Request failed: #{response}"
+        end
+
+        return yield(response) if block_given?
+
+        response
       end
 
       private
