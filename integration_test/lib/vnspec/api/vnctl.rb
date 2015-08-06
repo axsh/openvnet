@@ -70,7 +70,6 @@ module Vnspec
         when :post
           :add
         when :put
-          #TODO: clean this up
           url =~ %r([^/]+/rename$) ? :rename : :modify
         when :delete
           :del
