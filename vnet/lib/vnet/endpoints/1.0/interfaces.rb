@@ -60,13 +60,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   # Ports:
   #
 
-  def self.port_put_post_shared_params
+  def self.port_delete_post_shared_params
     param_uuid M::Datapath, :datapath_uuid
     param :port_name, :String
     param :singular, :Boolean
   end
 
-  port_put_post_shared_params
+  port_delete_post_shared_params
   param_uuid M::Interface
   post '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
@@ -85,7 +85,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     show_relations(:Interface, :interface_ports)
   end
 
-  port_put_post_shared_params
+  port_delete_post_shared_params
   delete '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
     datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
