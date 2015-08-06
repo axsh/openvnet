@@ -48,33 +48,18 @@ module Vnspec
         values = url.split("/").compact
         # datapath networks show dp-3 nw-public
         args = [values[0]]
-        args <<
-          case url
-          when %r(^datapaths/[^/]+/networks)
-            :networks
-          when %r(^datapaths/[^/]+/route_links)
-            :route_links
-          when %r(^interfaces/[^/]+/security_groups)
-            :security_groups
-          when %r(^interfaces/[^/]+/ports)
-            :ports
-          when %r(^dns_services/[^/]+/dns_records)
-            :dns_records
-          when %r(^ip_range_groups/[^/]+/ip_ranges)
-            :ip_ranges
-          when %r(^lease_policies/[^/]+/networks)
-            :networks
-          when %r(^lease_policies/[^/]+/ip_lease_containers)
-            :ip_lease_containers
-          when %r(^lease_policies/[^/]+/ip_retention_containers)
-            :ip_retention_containers
-          when %r(^lease_policies/[^/]+/interfaces)
-            :interfaces
-          end
+
+        # Convert relation WebAPI calls to vnctl arguments.
+        # For example 'POST datapaths/dp-xxxx/networks/nw-yyyy'
+        # becomes: 'vnctl datapaths networks add dp-xxxx nw-yyyy'
+        relation_name = url.match(%r([^/]+/[^/]+/([^/]+)))
+        args << relation_name.captures.first unless relation_name.nil?
+
         args += [convert_method(method, url), values[1], values[3]].compact
         params.keys.each do |key|
           args << %Q(--#{key} "#{params[key]}")
         end
+
         args
       end
 
