@@ -223,6 +223,8 @@ module Vnctl::Cli
 
         register(c, "#{relation_name}", "#{relation_name} OPTIONS",
           "subcommand to manage #{relation_name} in this #{self.namespace}.")
+
+        c
       end
     }
   end
