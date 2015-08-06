@@ -56,6 +56,8 @@ module Vnspec
             :route_links
           when %r(^interfaces/[^/]+/security_groups)
             :security_groups
+          when %r(^interfaces/[^/]+/ports)
+            :ports
           when %r(^dns_services/[^/]+/dns_records)
             :dns_records
           when %r(^ip_range_groups/[^/]+/ip_ranges)
