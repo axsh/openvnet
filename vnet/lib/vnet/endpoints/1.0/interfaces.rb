@@ -78,7 +78,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     remove_system_parameters
 
     interface_port = M::InterfacePort.create_with_uuid(params)
-    respond_with(interface_port)
+    respond_with(R::InterfacePort.generate(interface_port))
   end
 
   get '/:uuid/ports' do
@@ -100,7 +100,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     ports = M::InterfacePort.batch.where(filter).all.commit
     ports.each { |r| M::InterfacePort.destroy(r.id) }
 
-    respond_with(ports)
+    respond_with(R::InterfacePortCollection.generate(ports))
   end
 
   #
