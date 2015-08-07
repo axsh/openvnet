@@ -46,15 +46,15 @@ module Vnet::Event
       result = task_init && task_init.call
       return result if result
 
-      # We make sure that if timer was made invalid during the task
+      # We make sure that if the state was made invalid during task
       # init we return nil.
       return if state[:status] != :init
       state[:status] = :valid
 
       current_timer = max_wait && after(max_wait) {
-        old_state = state[:status]
+        next if state[:status] == :invalid
         state[:status] = :invalid
-        current_task.resume if old_state == :valid
+        current_task.resume
       }
 
       while state[:status] == :valid
@@ -62,8 +62,8 @@ module Vnet::Event
         # task. We do not allow nil to be passed.
         passed_value = Celluloid::Task.suspend(:event_task)
 
-        break if state[:status] == :invalid
         next if passed_value.nil?
+        next if state[:status] != :valid
 
         result = block.call(passed_value)
         return result if result
@@ -82,6 +82,21 @@ module Vnet::Event
 
         task.resume(pass_value)
       }
+      
+      return
+    end
+
+    def fail_event_tasks(task_name, task_id)
+      return if task_id.nil?
+
+      (@event_tasks[task_name] || return).select { |task, state|
+        next unless state[:id] == task_id
+        state[:status] = :invalid
+      }.each { |task, state|
+        task.resume(nil)
+      }
+      
+      return
     end
 
   end
