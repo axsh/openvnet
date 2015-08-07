@@ -9,7 +9,7 @@ module Vnctl::Cli
       option :translation_uuid, :type => :string, :desc => "The translation uuid for this vlan translation."
       option :mac_address, :type => :string, :desc => "The mac address for this vlan translation."
       option :vlan_id, :type => :numeric, :desc => "The vlan id for this vlan translation."
-      option :network_id, :type => :numeric, :desc => "The network id for this vlan translation."
+      option :network_uuid, :type => :string, :desc => "The network uuid for this vlan translation."
     }
 
     set_required_options [:network_id]
