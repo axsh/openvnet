@@ -25,8 +25,7 @@ Requires: zeromq
 Requires: openvnet-ruby
 
 %Description
-This package contains all the common code for OpenVNet's services. All of the
-OpenVNet services depend on this package.
+This package contains all the common code for OpenVNet's services. All of the OpenVNet services depend on this package.
 
 %prep
 #TODO: make sure we have ruby and bundle installed
@@ -40,6 +39,7 @@ bundle install --path vendor/bundle --without development test --standalone
 %files
 %dir /etc/openvnet
 %dir /opt/axsh/openvnet/vnet
+%dir /opt/axsh/openvnet/vnet/bin
 /opt/axsh/openvnet/vnet/Gemfile
 /opt/axsh/openvnet/vnet/Gemfile.lock
 /opt/axsh/openvnet/vnet/LICENSE
@@ -57,6 +57,7 @@ OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
 mkdir -p "$RPM_BUILD_ROOT"/etc/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/etc/default
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
+mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 cp "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/default/openvnet "$RPM_BUILD_ROOT"/etc/default/
 cp "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/openvnet/common.conf "$RPM_BUILD_ROOT"/etc/openvnet/
 cp "$OPENVNET_SRC_DIR"/vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
