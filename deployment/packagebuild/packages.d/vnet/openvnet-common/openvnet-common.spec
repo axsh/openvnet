@@ -40,6 +40,7 @@ bundle install --path vendor/bundle --without development test --standalone
 %dir /etc/openvnet
 %dir /opt/axsh/openvnet/vnet
 %dir /opt/axsh/openvnet/vnet/bin
+%dir /var/log/openvnet
 /opt/axsh/openvnet/vnet/Gemfile
 /opt/axsh/openvnet/vnet/Gemfile.lock
 /opt/axsh/openvnet/vnet/LICENSE
@@ -58,6 +59,7 @@ mkdir -p "$RPM_BUILD_ROOT"/etc/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/etc/default
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
+mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 cp "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/default/openvnet "$RPM_BUILD_ROOT"/etc/default/
 cp "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/openvnet/common.conf "$RPM_BUILD_ROOT"/etc/openvnet/
 cp "$OPENVNET_SRC_DIR"/vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
