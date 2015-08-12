@@ -45,10 +45,11 @@ function build_package(){
 
 function check_repo(){
   repo_dir=${repo_base_dir}/${rpm_suffix}git$(echo ${GIT_COMMIT:-spot} | cut -c-7)
-  mkdir -p ${repo_dir}
-  for i in ${possible_archs}; do
-    mkdir -p ${repo_dir}/${i}
-  done
+  echo "$repo_dir"
+  #mkdir -p ${repo_dir}
+  #for i in ${possible_archs}; do
+  #  mkdir -p ${repo_dir}/${i}
+  #done
 }
 
 function cleanup(){
@@ -57,19 +58,76 @@ function cleanup(){
   done
 }
 
-rm -rf ${work_dir}/packages.d/vnet
-mkdir -p ${work_dir}/packages.d/vnet
+#rm -rf ${work_dir}/packages.d/vnet
+#mkdir -p ${work_dir}/packages.d/vnet
+#
+#check_repo
+#
+#if [[ -n ${package} ]]; then
+#  build_package ${package}
+#else
+#  build_all_packages
+#fi
+#
+#(cd ${repo_dir}; createrepo .)
+#
+#ln -sfn ${repo_dir} ${repo_base_dir}/current
+#
+#cleanup
 
-check_repo
+BUILD_TYPE=${BUILD_TYPE:-development}
+OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
+OPENVNET_SRC_ROOT_DIR=$( cd "${current_dir}/../.."; pwd )
+WORK_DIR=${WORK_DIR:-/tmp/vnet-rpmbuild}
 
-if [[ -n ${package} ]]; then
-  build_package ${package}
-else
-  build_all_packages
+#
+# Install dependencies
+#
+
+command -v yum-builddep >/dev/null 2>&1 || {
+  sudo yum install -y yum-utils
+}
+
+if [ ! -f /opt/axsh/openvnet/ruby/bin/bundle ]; then
+  #TODO: When building a stable version, make sure that we're installing the correct version of openvnet-ruby
+  echo 'WARN: openvnet-ruby was not installed. Adding the OpenVNet third party repository to /etc/yum.repos.d so we can install it.'
+  sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
 fi
 
-(cd ${repo_dir}; createrepo .)
+sudo yum-builddep "$OPENVNET_SPEC_FILE"
 
-ln -sfn ${repo_dir} ${repo_base_dir}/current
+#
+# Prepare build directories and put the source in place.
+#
 
-cleanup
+OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
+if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
+  rm -rf "$OPENVNET_SRC_BUILD_DIR"
+fi
+
+mkdir -p "${WORK_DIR}/SOURCES"
+cp -r "$OPENVNET_SRC_ROOT_DIR/" "${WORK_DIR}/SOURCES"
+
+#
+# Build the packages
+#
+
+if [ "$BUILD_TYPE" == "stable" ]; then
+  # If we're building a stable version we must make sure we checkout the correct version of the code.
+
+  cd "$OPENVNET_SRC_BUILD_DIR"
+  git checkout "${RPM_VERSION}"
+  rpmbuild -ba --define "_topdir ${WORK_DIR}" "${OPENVNET_SPEC_FILE}"
+else
+  # If we're building a development version we must append a suffix to the version number.
+
+  RELEASE_SUFFIX="dev$(date +%Y%m%d%H%M%S)git$(cd ${OPENVNET_SRC_BUILD_DIR}; git rev-parse --short HEAD)"
+
+  rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_version_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
+fi
+
+
+#
+# Prepare the yum repo
+#
+check_repo
