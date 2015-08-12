@@ -1,6 +1,11 @@
+# This is a little trick to allow the rpmbuild command to define a suffix for
+# development (non stable) versions.
+%define release 2
+%{?dev_version_suffix:%define release 1}
+
 Name: openvnet
-Version: 0.7
-Release: 2
+Version: 0.7%{dev_version_suffix}
+Release: %{release}
 Summary: Metapackage that depends on all other OpenVNet packages.
 Vendor: Axsh Co. LTD <dev@axsh.net>
 URL: http://openvnet.org
