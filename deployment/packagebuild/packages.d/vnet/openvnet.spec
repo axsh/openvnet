@@ -31,7 +31,6 @@ Requires: openvnet-vna
 This is an empty metapackage that depends on all OpenVNet services and the vnctl client. Just a conventient way to install everything at once on a single machine.
 
 %prep
-#TODO: make sure we have ruby and bundle installed
 OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
 BUNDLE_PATH="/opt/axsh/openvnet/ruby/bin/bundle"
 if [ ! -d "$OPENVNET_SRC_DIR" ]; then
