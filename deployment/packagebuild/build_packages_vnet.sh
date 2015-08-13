@@ -106,28 +106,34 @@ if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
 fi
 
 mkdir -p "${WORK_DIR}/SOURCES"
-cp -r "$OPENVNET_SRC_ROOT_DIR/" "${WORK_DIR}/SOURCES"
+#cp -r "$OPENVNET_SRC_ROOT_DIR/" "${WORK_DIR}/SOURCES"
+
+rm -rf "${WORK_DIR}/RPMS/*"
 
 #
 # Build the packages
 #
 
+cd ${OPENVNET_SRC_BUILD_DIR}
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
 
-  cd "$OPENVNET_SRC_BUILD_DIR"
+  #TODO: Fail if RPM_VERSION isn't set
   git checkout "${RPM_VERSION}"
+  echo "Building the following commit for stable version ${RPM_VERSION}"
+  git log -n 1 --format=short
+
   rpmbuild -ba --define "_topdir ${WORK_DIR}" "${OPENVNET_SPEC_FILE}"
 else
-  # If we're building a development version we must append a suffix to the version number.
+  # If we're building a development version we set the git commit time and hash as release
+  timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
+  RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  RELEASE_SUFFIX="dev$(date +%Y%m%d%H%M%S)git$(cd ${OPENVNET_SRC_BUILD_DIR}; git rev-parse --short HEAD)"
-
-  rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_version_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
+  rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
 
 
 #
 # Prepare the yum repo
 #
-check_repo
+#check_repo
