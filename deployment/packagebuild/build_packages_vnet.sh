@@ -106,7 +106,7 @@ if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
 fi
 
 mkdir -p "${WORK_DIR}/SOURCES"
-#cp -r "$OPENVNET_SRC_ROOT_DIR/" "${WORK_DIR}/SOURCES"
+cp -r "$OPENVNET_SRC_ROOT_DIR/" "${WORK_DIR}/SOURCES"
 
 rm -rf "${WORK_DIR}/RPMS/*"
 
