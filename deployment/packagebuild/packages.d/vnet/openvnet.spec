@@ -4,7 +4,7 @@
 %{?dev_release_suffix:%define release %{dev_release_suffix}.el6}
 
 Name: openvnet
-Version: 0.7
+Version: 0.7%{?dev_release_suffix:dev}
 Release: %{release}
 Summary: Metapackage that depends on all other OpenVNet packages.
 Vendor: Axsh Co. LTD <dev@axsh.net>
