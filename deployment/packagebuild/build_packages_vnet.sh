@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 repo_dir=
 
@@ -35,7 +37,7 @@ check_dependency createrepo createrepo
 # Make sure that we work with the correct version of openvnet-ruby
 sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
 
-sudo yum-builddep "$OPENVNET_SPEC_FILE"
+sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 
 #
 # Prepare build directories and put the source in place.
