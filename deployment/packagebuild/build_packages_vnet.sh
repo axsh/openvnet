@@ -1,5 +1,7 @@
 #!/bin/bash
 
+current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+
 BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
 OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
