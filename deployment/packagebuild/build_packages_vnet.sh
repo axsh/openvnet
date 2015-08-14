@@ -90,10 +90,12 @@ for arch in ${POSSIBLE_ARCHS}; do
   fi
 done
 sudo mkdir -p "${repo_dir}"
+sudo chown $USER "${repo_dir}"
 
 for arch in ${POSSIBLE_ARCHS}; do
-  mv "${WORK_DIR}/RPMS/${arch}" "${repo_dir}"
+  if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
+    mv "${WORK_DIR}/RPMS/${arch}" "${repo_dir}"
+  fi
 done
 
-cd "${repo_dir}"
-createrepo
+createrepo "${repo_dir}"
