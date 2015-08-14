@@ -63,7 +63,7 @@ done
 cd ${OPENVNET_SRC_BUILD_DIR}
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
-  repo_dir="${REPO_BASE_DIR}/${RPM_VERSION}"
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RPM_VERSION}"
 
   git checkout "${RPM_VERSION}"
   echo "Building the following commit for stable version ${RPM_VERSION}"
@@ -75,7 +75,7 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_dir="${REPO_BASE_DIR}/${RELEASE_SUFFIX}"
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
