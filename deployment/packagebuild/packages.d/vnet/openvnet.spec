@@ -106,8 +106,8 @@ This package contains all the common code for OpenVNet's services. All of the Op
 /opt/axsh/openvnet/vnet/lib
 /opt/axsh/openvnet/vnet/vendor
 /opt/axsh/openvnet/vnet/.bundle
-%config /etc/openvnet/common.conf
-%config /etc/default/openvnet
+%config(noreplace) /etc/openvnet/common.conf
+%config(noreplace) /etc/default/openvnet
 
 #
 # openvnet-webapi package
@@ -125,8 +125,8 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 
 %files webapi
 /opt/axsh/openvnet/vnet/rack
-%config /etc/openvnet/webapi.conf
-%config /etc/default/vnet-webapi
+%config(noreplace) /etc/openvnet/webapi.conf
+%config(noreplace) /etc/default/vnet-webapi
 %config /etc/init/vnet-webapi.conf
 
 %post webapi
@@ -155,8 +155,8 @@ This package contains OpenVNet's VNMGR process. This process acts as a frontend 
 
 %files vnmgr
 /opt/axsh/openvnet/vnet/bin/vnmgr
-%config /etc/openvnet/vnmgr.conf
-%config /etc/default/vnet-vnmgr
+%config(noreplace) /etc/openvnet/vnmgr.conf
+%config(noreplace) /etc/default/vnet-vnmgr
 %config /etc/init/vnet-vnmgr.conf
 
 %post vnmgr
@@ -188,8 +188,8 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 %files vna
 /opt/axsh/openvnet/vnet/bin/vna
 /opt/axsh/openvnet/vnet/bin/vnflows-monitor
-%config /etc/openvnet/vna.conf
-%config /etc/default/vnet-vna
+%config(noreplace) /etc/openvnet/vna.conf
+%config(noreplace) /etc/default/vnet-vna
 %config /etc/init/vnet-vna.conf
 
 #
@@ -214,4 +214,4 @@ This package contains the vnctl client for OpenVNet's WebAPI. It's a simple comm
 %dir /etc/openvnet
 /opt/axsh/openvnet/client/vnctl
 /usr/bin/vnctl
-%config /etc/openvnet/vnctl.conf
+%config(noreplace) /etc/openvnet/vnctl.conf
