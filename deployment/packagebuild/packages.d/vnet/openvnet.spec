@@ -25,7 +25,7 @@ BuildRequires: libpcap-devel
 
 # We require openvnet-ruby do run bundle install.
 # By using openvnet-ruby we ensure that the downloaded gems are compatible.
-BuildRequires: openvnet-ruby
+BuildRequires: openvnet-ruby = 2.1.1.axsh0
 
 Requires: openvnet-vnctl
 Requires: openvnet-webapi

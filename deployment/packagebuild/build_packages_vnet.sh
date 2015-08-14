@@ -1,6 +1,7 @@
 #!/bin/bash
 
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+repo_dir=
 
 BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
@@ -31,11 +32,8 @@ fi
 check_dependency yum-builddep yum-utils
 check_dependency createrepo createrepo
 
-if [ ! -f /opt/axsh/openvnet/ruby/bin/bundle ]; then
-  #TODO: When building a stable version, make sure that we're installing the correct version of openvnet-ruby
-  echo 'WARN: openvnet-ruby was not installed. Adding the OpenVNet third party repository to /etc/yum.repos.d so we can install it.'
-  sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
-fi
+# Make sure that we work with the correct version of openvnet-ruby
+sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
 
 sudo yum-builddep "$OPENVNET_SPEC_FILE"
 
@@ -53,7 +51,9 @@ cp -r "$OPENVNET_SRC_ROOT_DIR/" "${WORK_DIR}/SOURCES"
 
 # Get rid up any possible dirty build directories
 for arch in ${POSSIBLE_ARCHS}; do
-  rm -rf "${WORK_DIR}/RPMS/${arch}"
+  if [ -d "${WORK_DIR}/RPMS/${arch}"]; then
+    rm -rf "${WORK_DIR}/RPMS/${arch}"
+  fi
 done
 
 #
@@ -75,7 +75,7 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_dir="${REPO_BASE_DIR}/${RPM_VERSION}"
+  repo_dir="${REPO_BASE_DIR}/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
@@ -84,7 +84,12 @@ fi
 #
 # Prepare the yum repo
 #
-mkdir -p "${repo_dir}"
+for arch in ${POSSIBLE_ARCHS}; do
+  if [ -d "${repo_dir}/${arch}" ]; then
+    rm -rf "${repo_dir}/${arch}"
+  fi
+done
+sudo mkdir -p "${repo_dir}"
 
 for arch in ${POSSIBLE_ARCHS}; do
   mv "${WORK_DIR}/RPMS/${arch}" "${repo_dir}"
