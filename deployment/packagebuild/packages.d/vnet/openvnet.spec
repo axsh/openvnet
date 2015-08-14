@@ -23,7 +23,7 @@ BuildRequires: mysql-devel
 BuildRequires: sqlite-devel
 BuildRequires: libpcap-devel
 
-# We require openvnet-ruby do run bundle install.
+# We require openvnet-ruby to run bundle install.
 # By using openvnet-ruby we ensure that the downloaded gems are compatible.
 BuildRequires: openvnet-ruby = 2.1.1.axsh0
 
