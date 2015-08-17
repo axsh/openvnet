@@ -49,7 +49,7 @@ if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
 fi
 
 mkdir -p "${WORK_DIR}/SOURCES"
-cp -r "$OPENVNET_SRC_ROOT_DIR/" "${WORK_DIR}/SOURCES"
+cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
 
 # Get rid up any possible dirty build directories
 for arch in ${POSSIBLE_ARCHS}; do
