@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -xe
 
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 repo_dir=
