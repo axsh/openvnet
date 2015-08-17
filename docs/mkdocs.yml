@@ -12,8 +12,10 @@ copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
 google_analytics: ['UA-63388719-2', 'axsh.github.io/openvnet']
 
 pages:
-- ['index.md', 'Home']
-#- ['concept.md', 'Concept']
-- ['installation.md', 'Getting started', 'Installation']
-- ['community.md', 'Support', 'Community']
+- 'Home': 'index.md'
+#- 'Concept': 'concept.md'
+- Getting Started:
+  - 'Installation': 'installation.md'
+- Support:
+  - 'Community': 'community.md'
 
