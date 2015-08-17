@@ -53,7 +53,7 @@ cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
 
 # Get rid up any possible dirty build directories
 for arch in ${POSSIBLE_ARCHS}; do
-  if [ -d "${WORK_DIR}/RPMS/${arch}"]; then
+  if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
     rm -rf "${WORK_DIR}/RPMS/${arch}"
   fi
 done
