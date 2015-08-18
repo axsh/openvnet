@@ -9,7 +9,7 @@ BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
 OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
-BASE_REPO_DIR="${BASE_REPO_DIR:-/var/www/html/repos}"
+REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
 POSSIBLE_ARCHS=( 'x86_64', 'i386', 'noarch' )
 
 function check_dependency() {
