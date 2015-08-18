@@ -86,7 +86,7 @@ Summary: Common code for all OpenVNet services.
 # things in ruby gems under vendor that it wrongly detects as a dependency.
 AutoReqProv: no
 
-Requires: zeromq
+Requires: zeromq3
 Requires: openvnet-ruby
 
 %description common
