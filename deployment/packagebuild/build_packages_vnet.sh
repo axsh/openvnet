@@ -10,7 +10,7 @@ OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
 OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
 REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
-POSSIBLE_ARCHS=( 'x86_64', 'i386', 'noarch' )
+POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
 
 function check_dependency() {
   local cmd="$1"
@@ -52,7 +52,7 @@ mkdir -p "${WORK_DIR}/SOURCES"
 cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
 
 # Get rid up any possible dirty build directories
-for arch in ${POSSIBLE_ARCHS}; do
+for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
     rm -rf "${WORK_DIR}/RPMS/${arch}"
   fi
@@ -86,7 +86,7 @@ fi
 #
 # Prepare the yum repo
 #
-for arch in ${POSSIBLE_ARCHS}; do
+for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${repo_dir}/${arch}" ]; then
     rm -rf "${repo_dir}/${arch}"
   fi
@@ -94,9 +94,9 @@ done
 sudo mkdir -p "${repo_dir}"
 sudo chown $USER "${repo_dir}"
 
-for arch in ${POSSIBLE_ARCHS}; do
+for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
-    mv "${WORK_DIR}/RPMS/${arch}" "${repo_dir}"
+    mv "${WORK_DIR}/RPMS/${arch}" "${repo_dir}/${arch}"
   fi
 done
 
