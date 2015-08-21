@@ -5,7 +5,7 @@
 
 Name: openvnet
 Version: 0.7%{?dev_release_suffix:dev}
-Release: %{release}.el6
+Release: %{release}%{?dist}
 Summary: Metapackage that depends on all other OpenVNet packages.
 Vendor: Axsh Co. LTD <dev@axsh.net>
 URL: http://openvnet.org
