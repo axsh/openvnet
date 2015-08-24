@@ -40,7 +40,7 @@ sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.r
 sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 
 #
-# Prepare build directories and put the source in place.
+# Get rid up any possible dirty build directories
 #
 
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
@@ -48,10 +48,6 @@ if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
   rm -rf "$OPENVNET_SRC_BUILD_DIR"
 fi
 
-mkdir -p "${WORK_DIR}/SOURCES"
-cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
-
-# Get rid up any possible dirty build directories
 for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
     rm -rf "${WORK_DIR}/RPMS/${arch}"
