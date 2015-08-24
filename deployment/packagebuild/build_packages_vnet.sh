@@ -40,7 +40,7 @@ sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.r
 sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 
 #
-# Get rid up any possible dirty build directories
+# Prepare build directories and put the source in place.
 #
 
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
@@ -48,17 +48,26 @@ if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
   rm -rf "$OPENVNET_SRC_BUILD_DIR"
 fi
 
+mkdir -p "${WORK_DIR}/SOURCES"
+cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
+
+# Get rid up any possible dirty build directories
 for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
     rm -rf "${WORK_DIR}/RPMS/${arch}"
   fi
 done
 
+
+# Clean up the source dir if it's dirty
+cd ${OPENVNET_SRC_BUILD_DIR}
+git reset --hard
+git clean -xdf
+
 #
 # Build the packages
 #
 
-cd ${OPENVNET_SRC_BUILD_DIR}
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
   repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RPM_VERSION}"
