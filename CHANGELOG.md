@@ -3,7 +3,7 @@
 All notable changes to OpenVNet will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [0.8] - 2015-08-27
 
 * `Added` Warning messages in the log when managers receive events with invalid parameters.
 
