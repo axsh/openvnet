@@ -273,33 +273,56 @@ module Vnet
       return item if item
 
       if @load_queries.has_key?(params)
-        # TODO: Add wait for loaded here.
-        info log_format("internal_retrieve DUPLICATE", params.inspect)
-      else
-        @load_queries[params] = :querying
+        # Can't use blocking calls here.
+        # info log_format("internal_retrieve DUPLICATE", params.inspect)
+
+        item = create_event_task_match_proc(:retrieved, params, nil)
+
+        if item.nil?
+          info log_format("internal_retrieve duplicate fiber query FAILED", params.inspect)
+          return
+        end
+
+        info log_format("internal_retrieve duplicate fiber query SUCCESS", params.inspect)
+
+        return item
       end
 
-      select_filter = select_filter_from_params(params) || return
-      item_map = select_item(select_filter.first) || return
+      begin
+        @load_queries[params] = :querying
 
-      # TODO: Only allow one fiber at the time to make a request with
-      # the exact same select_filter. The remaining fibers should use
-      # internal_wait_for_loaded/initializing.
+        select_filter = select_filter_from_params(params) || return
+        item_map = select_item(select_filter.first) || return
 
-      item = internal_new_item(item_map)
+        # TODO: Only allow one fiber at the time to make a request with
+        # the exact same select_filter. The remaining fibers should use
+        # internal_wait_for_loaded/initializing.
 
-      # TODO: Make this use wait_for_loaded.
+        item = internal_new_item(item_map)
 
-    ensure
-      # We can assume that the load failed if item is nil, and such
-      # there will be no trigger of event tasks once the item is
-      # initialized.
-      #
-      # Therefor we use event task to pass a nil value to the waiting
-      # tasks that have the same query params.
+        # TODO: Set querying to something else?
 
-      if item.nil?
-        # TODO: Fail queries with the same params.
+        item
+
+      ensure
+        # TODO: Ensure should only include the fiber that does the query.
+
+        # We can assume that the load failed if item is nil, and such
+        # there will be no trigger of event tasks once the item is
+        # initialized.
+        #
+        # Therefor we use event task to pass a nil value to the waiting
+        # tasks that have the same query params.
+
+        @load_queries.delete(params)
+
+        # TODO: Should we make sure no event tasks are left with
+        # 'params' task_id?
+        resume_event_tasks(:retrieved, item)
+
+        if item.nil?
+          info log_format("internal_retrieve main fiber query FAILED", params.inspect)
+        end
       end
     end
 
@@ -367,7 +390,7 @@ module Vnet
 
       # TODO: Pass along item instead?
       # TODO: Consider checking if all task_id's are gone.
-      resume_event_tasks(:loaded, item_id)
+      resume_event_tasks(:loaded, item)
     end
 
     def unload_item(params)
@@ -506,6 +529,8 @@ module Vnet
       item = internal_detect(params)
       return item if item
 
+      # TODO: Use proper internal_retrieve now that it supports event tasks.
+
       load_proc = try_load && !has_event_task_id?(:loaded, params) && proc {
         self.async.retrieve(params)
         item = internal_detect(params) || next
@@ -513,12 +538,7 @@ module Vnet
         item
       }
 
-      match_proc = match_item_proc(params)
-
-      create_event_task(:loaded, max_wait, params, load_proc) { |item_id|
-        item = (item_id && @items[item_id]) || next
-        match_proc.call(item_id, item) ? item : nil
-      }
+      create_event_task_match_proc(:loaded, params, max_wait, load_proc)
     end
 
     def internal_wait_for_unloaded(params, max_wait)
@@ -529,6 +549,14 @@ module Vnet
 
       create_event_task(:unloaded, max_wait) { |item_id|
         (item_id == match_item_id) ? true : nil
+      }
+    end
+
+    def create_event_task_match_proc(task_name, params, max_wait, task_init = nil)
+      match_proc = match_item_proc(params)
+
+      create_event_task(task_name, max_wait, params, task_init) { |item|
+        (item && match_proc.call(item.id, item)) ? item : nil
       }
     end
 
