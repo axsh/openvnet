@@ -58,11 +58,16 @@ for arch in "${POSSIBLE_ARCHS[@]}"; do
   fi
 done
 
+
+# Clean up the source dir if it's dirty
+cd ${OPENVNET_SRC_BUILD_DIR}
+git reset --hard
+git clean -xdf
+
 #
 # Build the packages
 #
 
-cd ${OPENVNET_SRC_BUILD_DIR}
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
   repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RPM_VERSION}"
