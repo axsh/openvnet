@@ -10,7 +10,7 @@ require 'celluloid'
 require 'celluloid/autostart'
 require 'dcell'
 
-#Vnet::Initializers::Logger.run("vna.log")
+Vnet::Initializers::Logger.run("vna.log")
 
 conf = Vnet::Configurations::Vna.conf
 

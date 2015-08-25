@@ -8,7 +8,7 @@ require 'bundler/setup'
 require 'dcell'
 require 'vnet'
 
-#Vnet::Initializers::Logger.run("vnmgr.log")
+Vnet::Initializers::Logger.run("vnmgr.log")
 
 conf = Vnet::Configurations::Vnmgr.conf
 
