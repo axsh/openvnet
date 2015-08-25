@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Core::Filters
-
+  
   class Static < Base2
 
     def initialize(params)
@@ -66,22 +66,24 @@ module Vnet::Core::Filters
 
     def match_actions(filter)
       port_number = filter[:port_number]
-
+      
       if port_number
+        debug log_format("port number")
         [{ eth_type: ETH_TYPE_IPV4,
-          ipv4_dst: filter[:ipv4_address],
+          ipv4_src: filter[:ipv4_address],
           ip_proto: IPV4_PROTOCOL_TCP,
           tcp_dst: port_number
           },
          { eth_type: ETH_TYPE_IPV4,
-           ipv4_dst: filter[:ipv4_address],
+           ipv4_src: filter[:ipv4_address],
            ip_proto: IPV4_PROTOCOL_UDP,
            udp_dst: port_number
           }]
       else
         [{ eth_type: ETH_TYPE_IPV4,
-          ipv4_dst: filter[:ipv4_address]
-          }]
+          ipv4_src: filter[:ipv4_address],
+          ip_proto: IPV4_PROTOCOL_ICMP
+         }]
       end
     end
 
@@ -115,4 +117,5 @@ module Vnet::Core::Filters
         flows << flow_create(flow_options)
       }
     end
+  end
 end

@@ -111,7 +111,8 @@ Sequel.migration do
       Integer :filter_id, :index => true, :null => false
 
       Bignum :ipv4_address, :null => false
-      Integer :port_number, :null => false
+
+      Integer :port_number
       
       DateTime :created_at, :null =>false
       DateTime :updated_at, :null =>false

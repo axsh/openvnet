@@ -41,7 +41,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
   def self.static_shared_params
     param :ipv4_address, :String, transform: PARSE_IPV4, required: true
-    param :port_number, :Integer, in: 1..65536    
+    param :port_number, :Integer, in: 1..65536
   end
 
   static_shared_params
