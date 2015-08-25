@@ -388,8 +388,9 @@ module Vnet
 
       item_post_install(item, item_map)
 
-      # TODO: Pass along item instead?
       # TODO: Consider checking if all task_id's are gone.
+
+      item.set_loaded
       resume_event_tasks(:loaded, item)
     end
 
@@ -474,6 +475,8 @@ module Vnet
     # Internal enumerators:
     #
 
+    # Make into a module.
+
     def internal_detect(params)
       if params.size == 1 && params.first.first == :id
         @items[params.first.last]
@@ -481,6 +484,11 @@ module Vnet
         item = @items.detect(&match_item_proc(params))
         item && item.last
       end
+    end
+
+    def internal_detect_loaded(params)
+      item = internal_detect(params)
+      (item && item.loaded?) ? item : nil
     end
 
     def internal_detect_by_id(params)
@@ -525,8 +533,7 @@ module Vnet
     # called and the manager doesn't know the item is wanted.
 
     def internal_wait_for_loaded(params, max_wait, try_load)
-      # TODO: Check if item was install and not being uninstalled. And loaded.
-      item = internal_detect(params)
+      item = internal_detect_loaded(params)
       return item if item
 
       if try_load
@@ -534,10 +541,10 @@ module Vnet
         # return if in retrieve queue.
         self.async.retrieve(params)
         
-        item = internal_detect(params)
-        return item if item #.loaded?
+        item = internal_detect_loaded(params)
+        return item if item
 
-        # TODO: Check if the item is uninstalling, or other edge cases.
+        # TODO: Check if the item is uninstalling, or other edge cases. (?)
       end
 
       create_event_task_match_proc(:loaded, params, max_wait)
