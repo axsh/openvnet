@@ -48,7 +48,7 @@ module Vnet
       @items = {}
       @messages = {}
 
-      @loading_params = {}
+      @load_queries = {}
     end
 
     def retrieve(params)
@@ -272,17 +272,35 @@ module Vnet
       item = internal_detect(params)
       return item if item
 
-      # TODO: Add proper error messages?
+      if @load_queries.has_key?(params)
+        # TODO: Add wait for loaded here.
+        info log_format("internal_retrieve DUPLICATE", params.inspect)
+      else
+        @load_queries[params] = :querying
+      end
 
       select_filter = select_filter_from_params(params) || return
-
       item_map = select_item(select_filter.first) || return
 
       # TODO: Only allow one fiber at the time to make a request with
       # the exact same select_filter. The remaining fibers should use
       # internal_wait_for_loaded/initializing.
 
-      internal_new_item(item_map)
+      item = internal_new_item(item_map)
+
+      # TODO: Make this use wait_for_loaded.
+
+    ensure
+      # We can assume that the load failed if item is nil, and such
+      # there will be no trigger of event tasks once the item is
+      # initialized.
+      #
+      # Therefor we use event task to pass a nil value to the waiting
+      # tasks that have the same query params.
+
+      if item.nil?
+        # TODO: Fail queries with the same params.
+      end
     end
 
     # The default select call with no fill options.
@@ -325,7 +343,14 @@ module Vnet
         return
       end
 
-      item = @items[item_id] || return
+      item = @items[item_id]
+
+      # It should not be possible for the item to have disappeared due
+      # to the event queue item id lock.
+      if item.nil?
+        warn log_format("load_item could not find item", params.inspect)
+        return
+      end
 
       debug log_format("installing " + item.pretty_id, item.pretty_properties)
 
@@ -340,6 +365,8 @@ module Vnet
 
       item_post_install(item, item_map)
 
+      # TODO: Pass along item instead?
+      # TODO: Consider checking if all task_id's are gone.
       resume_event_tasks(:loaded, item_id)
     end
 
@@ -475,13 +502,15 @@ module Vnet
     # called and the manager doesn't know the item is wanted.
 
     def internal_wait_for_loaded(params, max_wait, try_load)
-      # TODO: Check if item was install and not being uninstalled.
+      # TODO: Check if item was install and not being uninstalled. And use a detect by match_item_proc.
       item = internal_detect(params)
       return item if item
 
       load_proc = try_load && !has_event_task_id?(:loaded, params) && proc {
         self.async.retrieve(params)
-        internal_detect(params)
+        item = internal_detect(params) || next
+        next if !item.installed? # Does not properly check... errr.. this is why we have fail_event_tasks.
+        item
       }
 
       match_proc = match_item_proc(params)
