@@ -35,7 +35,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   param_uuid M::IpRangeGroup, :ip_range_group_uuid, required: true
   post '/:uuid/networks/:network_uuid' do
     # TODO: it is now possible to associate twice....probably should not allow that.
-    
+
     lease_policy = check_syntax_and_pop_uuid(M::LeasePolicy)
     network = check_syntax_and_pop_uuid(M::Network, "network_uuid")
 
