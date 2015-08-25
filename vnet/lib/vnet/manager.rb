@@ -525,20 +525,22 @@ module Vnet
     # called and the manager doesn't know the item is wanted.
 
     def internal_wait_for_loaded(params, max_wait, try_load)
-      # TODO: Check if item was install and not being uninstalled. And use a detect by match_item_proc.
+      # TODO: Check if item was install and not being uninstalled. And loaded.
       item = internal_detect(params)
       return item if item
 
-      # TODO: Use proper internal_retrieve now that it supports event tasks.
-
-      load_proc = try_load && !has_event_task_id?(:loaded, params) && proc {
+      if try_load
+        # TODO: internal_retrieve does not have max_wait or immediate
+        # return if in retrieve queue.
         self.async.retrieve(params)
-        item = internal_detect(params) || next
-        next if !item.installed? # Does not properly check... errr.. this is why we have fail_event_tasks.
-        item
-      }
+        
+        item = internal_detect(params)
+        return item if item #.loaded?
 
-      create_event_task_match_proc(:loaded, params, max_wait, load_proc)
+        # TODO: Check if the item is uninstalling, or other edge cases.
+      end
+
+      create_event_task_match_proc(:loaded, params, max_wait)
     end
 
     def internal_wait_for_unloaded(params, max_wait)
