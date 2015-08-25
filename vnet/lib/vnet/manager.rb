@@ -288,41 +288,44 @@ module Vnet
         return item
       end
 
-      begin
-        @load_queries[params] = :querying
+      internal_retrieve_query_db(params)
+    end
 
-        select_filter = select_filter_from_params(params) || return
-        item_map = select_item(select_filter.first) || return
+    def internal_retrieve_query_db(params)
+      @load_queries[params] = :querying
 
-        # TODO: Only allow one fiber at the time to make a request with
-        # the exact same select_filter. The remaining fibers should use
-        # internal_wait_for_loaded/initializing.
+      item = nil
+      select_filter = select_filter_from_params(params) || return
+      item_map = select_item(select_filter.first) || return
 
-        item = internal_new_item(item_map)
+      # TODO: Only allow one fiber at the time to make a request with
+      # the exact same select_filter. The remaining fibers should use
+      # internal_wait_for_loaded/initializing.
 
-        # TODO: Set querying to something else?
+      item = internal_new_item(item_map)
 
-        item
+      # TODO: Set querying to something else?
 
-      ensure
-        # TODO: Ensure should only include the fiber that does the query.
+      item
 
-        # We can assume that the load failed if item is nil, and such
-        # there will be no trigger of event tasks once the item is
-        # initialized.
-        #
-        # Therefor we use event task to pass a nil value to the waiting
-        # tasks that have the same query params.
+    ensure
+      # TODO: Ensure should only include the fiber that does the query.
 
-        @load_queries.delete(params)
+      # We can assume that the load failed if item is nil, and such
+      # there will be no trigger of event tasks once the item is
+      # initialized.
+      #
+      # Therefor we use event task to pass a nil value to the waiting
+      # tasks that have the same query params.
 
-        # TODO: Should we make sure no event tasks are left with
-        # 'params' task_id?
-        resume_event_tasks(:retrieved, item)
+      @load_queries.delete(params)
 
-        if item.nil?
-          info log_format("internal_retrieve main fiber query FAILED", params.inspect)
-        end
+      # TODO: Should we make sure no event tasks are left with
+      # 'params' task_id?
+      resume_event_tasks(:retrieved, item)
+
+      if item.nil?
+        info log_format("internal_retrieve main fiber query FAILED", params.inspect)
       end
     end
 
