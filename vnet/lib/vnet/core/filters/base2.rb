@@ -7,7 +7,7 @@ module Vnet::Core::Filters
     include Vnet::Openflow::FlowHelpers
 
 #    attr_accessor :dp_info
-    attr_reader :interface_id, :ingress_filtering, :egress_filtering
+    attr_reader :interface_id
 
     COOKIE_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
 
@@ -28,8 +28,7 @@ module Vnet::Core::Filters
 
       @interface_id = map.interface_id
       @passthrough = map.passthrough
-#      @ingress_filtering
-#      @egress_filtering
+      @interface = MW::Interface[map.interface_id]
       
     end
 
