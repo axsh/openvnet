@@ -87,6 +87,7 @@ Summary: Common code for all OpenVNet services.
 AutoReqProv: no
 
 Requires: zeromq3
+Requires: zeromq3-devel
 Requires: mysql-libs
 Requires: openvnet-ruby
 
