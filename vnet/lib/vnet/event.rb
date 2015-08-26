@@ -71,9 +71,17 @@ module Vnet
     INTERFACE_DELETED_ITEM = "interface_deleted_item"
 
     INTERFACE_UPDATED = "interface_updated"
+
+    # To be become deprecated
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
 
+    INTERFACE_ENABLED_EGRESS_FILTERING = "interface_enabled_egress_filtering"
+    INTERFACE_DISABLED_EGRESS_FILTERING = "interface_disabled_egress_filtering"
+    INTERFACE_ENABLED_INGRESS_FILTERING = "interface_enabled_ingress_filtering"
+    INTERFACE_DISABLED_INGRESS_FILTERING = "interface_disabled_ingress_filtering"
+
+    
     # MAC and IPv4 addresses:
     INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
     INTERFACE_RELEASED_MAC_ADDRESS = "interface_released_mac_address"

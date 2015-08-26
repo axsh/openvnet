@@ -26,6 +26,21 @@ module Vnet::NodeApi
             dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
           end
 
+
+          # Checking for seprated filtering implemented with Filter2Manager
+          case options[:enable_ingress_filtering]
+          when "true"
+            dispatch_event(INTERFACE_ENABLED_INGRESS_FILTERING, id: interface.id)
+          when "false"
+            dispatch_event(INTERFACE_DISABLED_INGRESS_FILTERING, id: interface.id)
+          end
+
+          case options[:enable_egress_filtering]
+          when "true"
+            dispatch_event(INTERFACE_ENABLED_EGRESS_FILTERING, id: interface.id)
+          when "false"
+            dispatch_event(INTERFACE_DISABLED_EGRESS_FILTERING, id: interface.id)
+          end          
         end
       end
 

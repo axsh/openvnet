@@ -20,6 +20,13 @@ module Vnet::Core
     subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
     subscribe_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
 
+    # Events for filter2manager functions
+
+    subscribe_event INTERFACE_ENABLED_EGRESS_FILTERING, :enabled_egress_filtering
+    subscribe_event INTERFACE_DISABLED_EGRESS_FILTERING, :disabled_egress_filtering
+    subscribe_event INTERFACE_ENABLED_INGRESS_FILTERING, :enabled_ingress_filtering
+    subscribe_event INTERFACE_DISABLED_INGRESS_FILTERING, :disabled_ingress_filtering
+    
     subscribe_event INTERFACE_LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event INTERFACE_RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
@@ -146,9 +153,9 @@ module Vnet::Core
                                        id: :interface,
                                        interface_id: item.id)
 
-      
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
+      
     end
 
     def item_post_uninstall(item)
@@ -257,8 +264,15 @@ module Vnet::Core
                            mac_address: mac_address,
                            cookie_id: mac_lease.cookie_id)
 
-      item.ingress_filtering_enabled &&
-        @dp_info.connection_manager.async.catch_new_egress(item.id, mac_address)
+#      item.ingress_filtering_enabled &&
+#        @dp_info.connection_manager.async.catch_new_egress(item.id, mac_address)
+
+      #  Filter2Manager.
+
+#      item.ingress_filtering2_enabled &&
+#        @dp_info.connection_manager.async.catch_new_egress(item.id, mac_address)
+
+
     end
 
     # INTERFACE_RELEASED_MAC_ADDRESS on queue 'item.id'
@@ -338,6 +352,39 @@ module Vnet::Core
 
       info log_format("disabled filtering on interface", item.uuid)
       item.disable_filtering
+    end
+
+    #  Refactored to be used with Filter2Manager 
+    def enabled_egress_filtering(params)
+      item = @items[params[:id]]
+      return if !item || item.egress_filtering_enabled
+
+      info log_format("enabled egress filtering on interface", item.uuid)
+      item.enable_egress_filtering
+    end
+
+    def disabled_egress_filtering(params)
+      item = @items[params[:id]]
+      return if !item || !item.egress_filtering_enabled
+
+      info log_format("disabled filtering on interface", item.uuid)
+      item.disable_egress_filtering
+    end
+    
+    def enabled_ingress_filtering(params)
+      item = @items[params[:id]]
+      return if !item || item.ingress_filtering2_enabled
+
+      info log_format("enabled ingress filtering on interface", item.uuid)
+      item.enable_ingress_filtering
+    end
+
+    def disabled_ingress_filtering(params)
+      item = @items[params[:id]]
+      return if !item || !item.ingress_filtering2_enabled
+
+      info log_format("disabled filtering on interface", item.uuid)
+      item.disable_ingress_filtering
     end
 
     #
