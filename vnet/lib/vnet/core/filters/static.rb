@@ -64,7 +64,7 @@ module Vnet::Core::Filters
 
     private
 
-    def match_actions(filter)
+    def match_actions_for_ingress(filter)
       port_number = filter[:port_number]
       ipv4_address = filter[:ipv4_address]
       if port_number
@@ -85,11 +85,27 @@ module Vnet::Core::Filters
          }]
       end
     end
-    
-    def exclude_from_match(match, *params)
-      params.each { |param|
-        match.tap { |key| key.delete(param) }
-      }
+
+    def match_actions_for_egress(filter)
+      port_number = filter[:port_number]
+      ipv4_address = filter[:ipv4_address]
+      if port_number
+        [{ eth_type: ETH_TYPE_IPV4,
+           ipv4_dst: ipv4_address,
+           ip_proto: IPV4_PROTOCOL_TCP,
+           tcp_dst: port_number
+         },
+         { eth_type: ETH_TYPE_IPV4,
+           ipv4_dst: ipv4_address,
+           ip_proto: IPV4_PROTOCOL_UDP,
+           udp_dst: port_number
+         }]
+      else
+        [{ eth_type: ETH_TYPE_IPV4,
+          ipv4_dst: filter[:ipv4_address],
+          ip_proto: IPV4_PROTOCOL_ICMP
+         }]
+      end
     end
 
     def check_zero_value(match, filter)
@@ -103,10 +119,10 @@ module Vnet::Core::Filters
         end
         return match
     end
-    
+
     def flows_for_ingress_filtering(flows, filter)
 
-      match_actions(filter).each { |match|
+      match_actions_for_ingress(filter).each { |match|
 
         flow_options = {
           table: TABLE_INTERFACE_INGRESS_FILTER,
@@ -120,8 +136,8 @@ module Vnet::Core::Filters
     end
 
     def flows_for_egress_filtering(flows, filter)
-
-      match_actions(filter).each { |match|
+      
+      match_actions_for_egress(filter).each { |match|
         
         flow_options = {
           table: TABLE_INTERFACE_EGRESS_FILTER,
