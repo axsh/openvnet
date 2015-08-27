@@ -32,40 +32,40 @@ module Vnet::Core::Interfaces
     flows = []
     def enable_egress_filtering
       @egress_filtering_enabled = true
-      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
+      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_EGRESS
 
       # TODO: make catch ingress
-      @mac_addresses.each { |id, mac|
-        @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
-      }
+ #     @mac_addresses.each { |id, mac|
+ #       @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
+ #     }
     end
 
     def disable_egress_filtering
       @egress_filtering_enabled = false
       @dp_info.add_flows flows_for_filter_egress_disabled(flows)
 
-      @mac_addresses.each { |id, mac_address|
-        @dp_info.connection_manager.async.remove_catch_new_egress(id)
-      }
+#      @mac_addresses.each { |id, mac_address|
+#        @dp_info.connection_manager.async.remove_catch_new_egress(id)
+#      }
 
     end
 
     def enable_ingress_filtering
-      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
-      @einress_filtering2_enabled = true
+      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_INGRESS
+      @ingress_filtering2_enabled = true
 
-      @mac_addresses.each { |id, mac|
-        @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
-      }
+#      @mac_addresses.each { |id, mac|
+#        @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
+#      }
     end
 
     def disable_ingress_filtering
       @ingress_filtering2_enabled = false
       @dp_info.add_flows flows_for_filter_ingress_disabled(flows)
 
-      @mac_addresses.each { |id, mac_address|
-        @dp_info.connection_manager.async.remove_catch_new_egress(id)
-      }
+#      @mac_addresses.each { |id, mac_address|
+#        @dp_info.connection_manager.async.remove_catch_new_egress(id)
+#      }
     end
 
     
@@ -85,22 +85,21 @@ module Vnet::Core::Interfaces
 
     # Methods to work with Filter2Manager
 
-    def flows_for_filter_egress_disaled(flows)
+    def flows_for_filter_egress_disabled(flows = [])
       flows << flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
                            priority: 90,
-                           match_interface: @id,
-                           cookie: cookies_for_tag(TAG_DISABLED_FILTERING)
-      )
+                           cookie: cookie_for_tag(TAG_DISABLED_EGRESS)
+                          )
     end
 
-    def flows_for_filter_ingress_disabled(flows)
+    def flows_for_filter_ingress_disabled(flows = [])
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 90,
                            match_interface: @id,
-                           cookie: cookies_for_tag(TAG_DISABLED_FILTERING)
-      )
+                           cookie: cookie_for_tag(TAG_DISABLED_INGRESS)
+                          )
     end
 
     

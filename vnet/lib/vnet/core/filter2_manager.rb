@@ -117,12 +117,6 @@ module Vnet::Core
 
       port_number = get_param_id(params, :port_number, false) || return
       
-#      if (params.has_key?(:port_number)) &&
-#         (port_number.nil)
-#         log_format("invalid port number", "port_number:#{params[:port_number]}")
-#        return
-#      end
-
       item.added_static(static_id,
                         ipv4_address,
                         port_number

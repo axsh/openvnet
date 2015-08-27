@@ -142,10 +142,9 @@ module Vnet::Core::Filters
         flow_options = {
           table: TABLE_INTERFACE_EGRESS_FILTER,
           priority: 50,
-          match: check_zero_value(match, filter),
-          match_interface: @interface_id
+          match: check_zero_value(match, filter)
         }
-        flow_options[:goto_table] = TABLE_OUT_PORT_INTERFACE_EGRESS if @passthrough == true
+        flow_options[:goto_table] = TABLE_NETWORK_SRC_CLASSIFIER if @passthrough == true
         
         flows << flow_create(flow_options)
       }
