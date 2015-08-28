@@ -6,6 +6,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   def self.put_post_shared_params
     param_uuid M::Datapath, :owner_datapath_uuid
     param :ingress_filtering_enabled, :Boolean
+    param :enable_filtering, :Boolean
     param :display_name, :String
     param :enable_routing, :Boolean
     param :enable_route_translation, :Boolean
