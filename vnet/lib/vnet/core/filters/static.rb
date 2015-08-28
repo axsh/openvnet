@@ -28,7 +28,7 @@ module Vnet::Core::Filters
         debug log_format('installing translation for ' + pretty_static(filter))
         
         flows_for_ingress_filtering(flows, filter) if @ingress_passthrough
-        flows_for_egress_filtering(flows, filter) if @egress_passhtrough
+        flows_for_egress_filtering(flows, filter) if @egress_passthrough
       }
 
       @dp_info.add_flows(flows)
@@ -132,7 +132,8 @@ module Vnet::Core::Filters
           priority: 50,
           match: check_zero_value(match, filter),
           match_interface: @interface_id
-        flows << flow_create(flow_options)
+        }
+        flows << flow_create(flow_options)  
       }
     end
 

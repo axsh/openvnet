@@ -100,7 +100,7 @@ Sequel.migration do
       
       Boolean :passthrough, :null => false
       Boolean :ingress_passthrough, :null=> false
-      Boolean :egress_passhtrough, :null=>false
+      Boolean :egress_passthrough, :null=>false
 
       
       DateTime :created_at, :null =>false

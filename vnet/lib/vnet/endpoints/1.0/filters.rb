@@ -7,7 +7,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   def self.put_post_shared_params
     param_uuid M::Interface, :interface_uuid
     param :mode, :String, in: CF::MODES
-    param :passthrough, :Boolean
     param :egress_passthrough, :Boolean
     param :ingress_passthrough, :Boolean
   end

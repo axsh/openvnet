@@ -12,7 +12,7 @@ module Vnctl::Cli
       option :port_number, :type => :string, :desc => "This is the port for which to the filter will listen to."
     }
 
-    set_required_options [:interface_uuid, :mode, :pass]
+    set_required_options [:interface_uuid, :mode, :egress_passthrough, :ingress_passthrough]
 
     define_standard_crud_commands
 
