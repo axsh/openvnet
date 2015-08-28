@@ -38,5 +38,23 @@ module Vnctl::Cli
 
     define_relation :security_groups
 
+    # Here we do a dirty hack because the ports relation does not follow the
+    # standard relation format. More specifically, it takes arguments to its
+    # delete route.
+    ports_relation = define_relation :ports, require_relation_uuid_label: false
+
+    options_hash = {
+      datapath_uuid: Thor::Option.new(:datapath_uuid, type: :string,
+          desc: "The UUID of the dtapath this port will be on."),
+
+      port_name: Thor::Option.new(:port_name, type: :string,
+          desc: "The name of this port."),
+
+      singular: Thor::Option.new(:singular, type: :boolean,
+          desc: "A flag to decide if this port is singular or not.")
+    }
+
+    ports_relation.commands["add"].options.merge!(options_hash)
+    ports_relation.commands["del"].options.merge!(options_hash)
   end
 end

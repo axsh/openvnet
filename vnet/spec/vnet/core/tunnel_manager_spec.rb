@@ -44,11 +44,11 @@ describe Vnet::Core::TunnelManager do
                              network_id: networks[i-1].id)
       }
 
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, ip_lease_id: 1, broadcast_mac_address: 1)
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 2, interface_id: 1, ip_lease_id: 1, broadcast_mac_address: 2)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, interface_id: 2, ip_lease_id: 2, broadcast_mac_address: 3)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 2, interface_id: 2, ip_lease_id: 2, broadcast_mac_address: 4)
-      Fabricate(:datapath_network, datapath_id: 3, network_id: 1, interface_id: 3, ip_lease_id: 3, broadcast_mac_address: 5)
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, ip_lease_id: 1, mac_address: 1)
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 2, interface_id: 1, ip_lease_id: 1, mac_address: 2)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, interface_id: 2, ip_lease_id: 2, mac_address: 3)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 2, interface_id: 2, ip_lease_id: 2, mac_address: 4)
+      Fabricate(:datapath_network, datapath_id: 3, network_id: 1, interface_id: 3, ip_lease_id: 3, mac_address: 5)
     end
 
     let(:datapath) do
@@ -246,8 +246,8 @@ describe Vnet::Core::TunnelManager do
         end
       }
 
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, ip_lease_id: 1, broadcast_mac_address: 1)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, interface_id: 2, ip_lease_id: 2, broadcast_mac_address: 2)
+      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, ip_lease_id: 1, mac_address: 1)
+      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, interface_id: 2, ip_lease_id: 2, mac_address: 2)
     end
 
     let(:ofctl) { double(:ofctl) }

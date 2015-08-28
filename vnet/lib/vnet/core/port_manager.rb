@@ -16,8 +16,10 @@ module Vnet::Core
     def initialize_ports
       return if @datapath_info.nil?
 
-      @items.each { |id, item|
-        publish(PORT_INITIALIZED, id: item.id)
+      # Iterate through a copy of the items else 'insert/delete' may
+      # cause issues.
+      @items.keys.each { |id|
+        publish(PORT_INITIALIZED, id: id)
       }
     end
 
