@@ -28,7 +28,6 @@ module Vnet::Core::Filters
 
       @interface_id = map.interface_id
       @passthrough = map.passthrough
-      @interface = MW::Interface[map.interface_id]
       
     end
 
@@ -47,7 +46,7 @@ module Vnet::Core::Filters
     end
 
     def to_hash
-      Vnet::Core::Static.new(id: @id,
+      Vnet::Core::Filter.new(id: @id,
                              uuid: @uuid,
                              mode: @mode)
     end

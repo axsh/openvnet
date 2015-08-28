@@ -57,8 +57,8 @@ module Vnet::Core::Interfaces
 
 #      flows_for_disabled_filtering(flows) unless @ingress_filtering_enabled
 
-      flows_for_filter_egress_disabled(flows) unless @egress_filtering_enabled
-      flows_for_filter_ingress_disabled(flows) unless @ingress_filtering2_enabled
+#      flows_for_filter_egress_disabled(flows) unless @egress_filtering_enabled
+#      flows_for_filter_ingress_disabled(flows) unless @ingress_filtering2_enabled
 
       
       flows_for_base(flows)

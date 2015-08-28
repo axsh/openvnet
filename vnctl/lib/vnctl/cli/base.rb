@@ -177,27 +177,27 @@ module Vnctl::Cli
 
           if require_relation_uuid_label
             desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
-              "Adds #{desc_label} to a(n) #{parent.namespace}."
+                 "Adds #{desc_label} to a(n) #{parent.namespace}."
             def add(base_uuid, rel_uuid)
               full_uri_suffix = "#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}"
               puts Vnctl.webapi.post(full_uri_suffix, options)
             end
           else
             desc "add #{base_uuid_label} OPTIONS",
-              "Adds #{desc_label} to a(n) #{parent.namespace}."
+                 "Adds #{desc_label} to a(n) #{parent.namespace}."
             def add(base_uuid)
               puts Vnctl.webapi.post("#{suffix}/#{base_uuid}/#{rel_name}", options)
             end
           end
 
           desc "show #{base_uuid_label}",
-            "Shows all #{desc_label} in this #{parent.namespace}."
+               "Shows all #{desc_label} in this #{parent.namespace}."
           def show(base_uuid)
             puts Vnctl.webapi.get("#{suffix}/#{base_uuid}/#{rel_name}")
           end
 
           desc "del #{base_uuid_label} #{relation_uuid_label}(S)",
-            "Removes #{desc_label} from a(n) #{parent.namespace}."
+               "Removes #{desc_label} from a(n) #{parent.namespace}."
           def del(base_uuid, *rel_uuids)
             puts rel_uuids.map { |rel_uuid|
               Vnctl.webapi.delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
@@ -209,7 +209,7 @@ module Vnctl::Cli
         c.api_suffix self.api_suffix
 
         register(c, "#{relation_name}", "#{relation_name} OPTIONS",
-          "subcommand to manage #{relation_name} in this #{self.namespace}.")
+                 "subcommand to manage #{relation_name} in this #{self.namespace}.")
       end
     }
   end

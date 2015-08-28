@@ -15,7 +15,7 @@ module Vnet::Core::Filters
     end
 
     def pretty_static(sf)
-      "fil_id:#{sf[:static_id]} ipv4_address:#{sf[:ipv4_address]} port_number:#{sf[:port_number]}"
+      "filter_id:#{sf[:static_id]} ipv4_address:#{sf[:ipv4_address]} port_number:#{sf[:port_number]}"
     end
     
     def install
@@ -27,8 +27,8 @@ module Vnet::Core::Filters
         
         debug log_format('installing translation for ' + pretty_static(filter))
         
-        flows_for_ingress_filtering(flows, filter) if @interface.enable_ingress_filtering
-        flows_for_egress_filtering(flows, filter) if @interface.enable_egress_filtering
+        flows_for_ingress_filtering(flows, filter)
+        flows_for_egress_filtering(flows, filter)
       }
 
       @dp_info.add_flows(flows)
@@ -49,8 +49,8 @@ module Vnet::Core::Filters
       return if @installed == false
 
       flows = []         
-      flows_for_ingress_filtering(flows, filter) if @interface.enable_ingress_filtering
-      flows_for_egress_filtering(flows, filter) if @interface.enable_egress_filtering
+      flows_for_ingress_filtering(flows, filter)
+      flows_for_egress_filtering(flows, filter)
 
     end
 
