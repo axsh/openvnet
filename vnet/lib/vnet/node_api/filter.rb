@@ -14,8 +14,7 @@ module Vnet::NodeApi
         dispatch_event(FILTER_DELETED_ITEM, id: model.id)
 
         # 0001_origin
-        # translation_static_addresses: ignore, handled by main event
-        # vlan_translations: ignore, handled by main event
+        # filter_static: ignore, handled by main event
       end
 
     end
