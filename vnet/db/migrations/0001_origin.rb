@@ -99,7 +99,10 @@ Sequel.migration do
       Integer :interface_id, :index => true
       
       Boolean :passthrough, :null => false
+      Boolean :ingress_passthrough, :null=> false
+      Boolean :egress_passhtrough, :null=>false
 
+      
       DateTime :created_at, :null =>false
       DateTime :updated_at, :null =>false
       DateTime :deleted_at, :index => true
@@ -130,8 +133,7 @@ Sequel.migration do
       FalseClass :enable_routing, :null=>false
       FalseClass :enable_route_translation, :null=>false
 
-      FalseClass :enable_egress_filtering, :null => false
-      FalseClass :enable_ingress_filtering, :null => false
+      FalseClass :enable_filtering, :null=>false
       
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false

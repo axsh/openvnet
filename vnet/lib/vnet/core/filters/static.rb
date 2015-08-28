@@ -27,8 +27,8 @@ module Vnet::Core::Filters
         
         debug log_format('installing translation for ' + pretty_static(filter))
         
-        flows_for_ingress_filtering(flows, filter)
-        flows_for_egress_filtering(flows, filter)
+        flows_for_ingress_filtering(flows, filter) if @ingress_passthrough
+        flows_for_egress_filtering(flows, filter) if @egress_passhtrough
       }
 
       @dp_info.add_flows(flows)
@@ -49,8 +49,8 @@ module Vnet::Core::Filters
       return if @installed == false
 
       flows = []         
-      flows_for_ingress_filtering(flows, filter)
-      flows_for_egress_filtering(flows, filter)
+      flows_for_ingress_filtering(flows, filter) if @egress_passthrough
+      flows_for_egress_filtering(flows, filter) if @ingress_passthrough
 
     end
 
@@ -67,6 +67,7 @@ module Vnet::Core::Filters
     def match_actions_for_ingress(filter)
       port_number = filter[:port_number]
       ipv4_address = filter[:ipv4_address]
+
       if port_number
         [{ eth_type: ETH_TYPE_IPV4,
            ipv4_src: ipv4_address,
@@ -89,6 +90,7 @@ module Vnet::Core::Filters
     def match_actions_for_egress(filter)
       port_number = filter[:port_number]
       ipv4_address = filter[:ipv4_address]
+
       if port_number
         [{ eth_type: ETH_TYPE_IPV4,
            ipv4_dst: ipv4_address,
@@ -126,11 +128,10 @@ module Vnet::Core::Filters
 
         flow_options = {
           table: TABLE_INTERFACE_INGRESS_FILTER,
+          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
           priority: 50,
           match: check_zero_value(match, filter),
           match_interface: @interface_id
-       }
-        flow_options[:goto_table] = TABLE_OUT_PORT_INTERFACE_INGRESS if @passthrough == true
         flows << flow_create(flow_options)
       }
     end
@@ -141,11 +142,10 @@ module Vnet::Core::Filters
         
         flow_options = {
           table: TABLE_INTERFACE_EGRESS_FILTER,
+          goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
           priority: 50,
           match: check_zero_value(match, filter)
-        }
-        flow_options[:goto_table] = TABLE_NETWORK_SRC_CLASSIFIER if @passthrough == true
-        
+        }        
         flows << flow_create(flow_options)
       }
     end

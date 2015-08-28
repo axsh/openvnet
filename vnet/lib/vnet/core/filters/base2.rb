@@ -27,8 +27,9 @@ module Vnet::Core::Filters
       map = params[:map]
 
       @interface_id = map.interface_id
-      @passthrough = map.passthrough
-      
+      @egress_passthrough = map.egress_passthrough
+      @ingress_passthrough = map.ingress_passthrough
+
     end
 
     def pretty_properties

@@ -8,6 +8,8 @@ module Vnet::Core::Interfaces
 
     def enable_filtering
       @ingress_filtering_enabled = true
+      @enabled_filtering = true
+
       @dp_info.filter_manager.async.apply_filters(@id)
       del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
       
@@ -18,6 +20,8 @@ module Vnet::Core::Interfaces
 
     def disable_filtering
       @ingress_filtering_enabled = false
+      @enabled_filtering = false
+      
       @dp_info.add_flows flows_for_disabled_filtering
       @dp_info.filter_manager.async.remove_filters(@id)
 
@@ -27,33 +31,6 @@ module Vnet::Core::Interfaces
         # that are still open. We just allow the open connections to expire naturally.
       }
     end
-
-    # new interface filtering
-    flows = []
-    def enable_egress_filtering
-      @egress_filtering_enabled = true
-      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_EGRESS
-
-    end
-
-    def disable_egress_filtering
-      @egress_filtering_enabled = false
-      @dp_info.add_flows flows_for_filter_egress_disabled(flows)
-
-    end
-
-    def enable_ingress_filtering
-      @ingress_filtering2_enabled = true
-      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_INGRESS
-
-    end
-
-    def disable_ingress_filtering
-      @ingress_filtering2_enabled = false
-      @dp_info.add_flows flows_for_filter_ingress_disabled(flows)
-
-    end
-
     
     #
     # Internal methods:

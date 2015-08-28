@@ -39,8 +39,7 @@ module Vnet::Core::Interfaces
     attr_accessor :enable_route_translation
 
     attr_accessor :ingress_filtering_enabled
-    attr_accessor :egress_filtering_enabled
-    attr_accessor :ingress_filtering2_enabled
+    attr_accessor :enable_filtering
     
     def initialize(params)
       super
@@ -57,8 +56,7 @@ module Vnet::Core::Interfaces
       @enable_routing = map.enable_routing
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
-      @egress_filtering_enabled = map.enable_egress_filtering
-      @ingress_filtering2_enabled = map.enable_ingress_filtering
+      @enable_filtering = map.enable_filtering
       
     end
 
@@ -219,20 +217,6 @@ module Vnet::Core::Interfaces
     def disabled_filtering
     end
 
-    # Filter2Manager filtering methods
-    
-    def enabled_egress_filtering
-    end
-
-    def disabled_egress_filtering
-    end
-    
-    def enabled_ingress_filtering
-    end
-
-    def disabled_ingress_filtering
-    end
-    
     #
     # Internal methods:
     #
