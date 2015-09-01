@@ -25,9 +25,7 @@ module Vnet::Core::Interfaces
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
     TAG_DISABLED_FILTERING    = 0x7
-    TAG_DISABLED_INGRESS      = 0x8
-    TAG_DISABLED_EGRESS       = 0x9
-
+\
     attr_reader :mode
     attr_reader :port_name
     attr_reader :port_number
@@ -56,7 +54,7 @@ module Vnet::Core::Interfaces
       @enable_routing = map.enable_routing
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
-      @enable_filtering = map.enable_filtering
+      @enabled_filtering = map.enable_filtering
       
     end
 
