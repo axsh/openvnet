@@ -60,7 +60,7 @@ module Vnet::Core::Filters
       @dp_info.del_cookie(cookie)
     end
 
-    def added_static(static_id, ipv4_address, port_number)
+    def added_static(static_id, ipv4_address, port_number, protocol)
     end
 
     def removed_static(static_id)

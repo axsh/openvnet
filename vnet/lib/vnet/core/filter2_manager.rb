@@ -102,7 +102,8 @@ module Vnet::Core
       item_map.batch.filter_statics.commit.each { |filter|
         item.added_static(filter.id,
                           filter.ipv4_address,
-                          filter.port_number
+                          filter.port_number,
+                          filter.protocol
                          )
       }
     end
@@ -117,9 +118,12 @@ module Vnet::Core
 
       port_number = get_param_id(params, :port_number, false) || return
       
+      protocol = get_param_id(params, :protocol) || return
+      
       item.added_static(static_id,
                         ipv4_address,
-                        port_number
+                        port_number,
+                        protocol
                        )
     end
 

@@ -27,8 +27,8 @@ module Vnet::Core::Filters
         
         debug log_format('installing translation for ' + pretty_static(filter))
         
-        flows_for_ingress_filtering(flows, filter) if @ingress_passthrough
-        flows_for_egress_filtering(flows, filter) if @egress_passthrough
+        flows_for_ingress_filtering(flows, filter)
+        flows_for_egress_filtering(flows, filter)
       }
 
       @dp_info.add_flows(flows)
@@ -36,12 +36,13 @@ module Vnet::Core::Filters
     end
 
 
-    def added_static(static_id, ipv4_address, port_number)
+    def added_static(static_id, ipv4_address, port_number, protocol)
 
       filter = {
         :static_id => static_id,
         :ipv4_address => ipv4_address,
-        :port_number => port_number
+        :port_number => port_number,
+        :protocol => protocol
       }
       
       @statics[static_id] = filter
@@ -49,8 +50,8 @@ module Vnet::Core::Filters
       return if @installed == false
 
       flows = []         
-      flows_for_ingress_filtering(flows, filter) if @egress_passthrough
-      flows_for_egress_filtering(flows, filter) if @ingress_passthrough
+      flows_for_ingress_filtering(flows, filter) 
+      flows_for_egress_filtering(flows, filter)
 
     end
 
@@ -65,21 +66,20 @@ module Vnet::Core::Filters
     private
 
     def match_actions_for_ingress(filter)
-      port_number = filter[:port_number]
-      ipv4_address = filter[:ipv4_address]
-
-      if port_number
+      case filter[:protocol]
+      when 'tcp' then
         [{ eth_type: ETH_TYPE_IPV4,
-           ipv4_src: ipv4_address,
+           ipv4_src: filter[:ipv4_address],
            ip_proto: IPV4_PROTOCOL_TCP,
-           tcp_dst: port_number
-         },
-         { eth_type: ETH_TYPE_IPV4,
-           ipv4_src: ipv4_address,
+           tcp_dst: filter[:port_number]
+        }]
+      when 'udp' then
+         [{ eth_type: ETH_TYPE_IPV4,
+           ipv4_src: filter[:ipv4_address],
            ip_proto: IPV4_PROTOCOL_UDP,
-           udp_dst: port_number
-         }]
-      else
+           udp_dst: filter[:port_number]
+          }]
+      when 'icmp' then
         [{ eth_type: ETH_TYPE_IPV4,
           ipv4_src: filter[:ipv4_address],
           ip_proto: IPV4_PROTOCOL_ICMP
@@ -88,25 +88,26 @@ module Vnet::Core::Filters
     end
 
     def match_actions_for_egress(filter)
-      port_number = filter[:port_number]
-      ipv4_address = filter[:ipv4_address]
-
-      if port_number
+      case filter[:protocol]
+      when "tcp" then
         [{ eth_type: ETH_TYPE_IPV4,
-           ipv4_dst: ipv4_address,
+           ipv4_dst: filter[:ipv4_address],
            ip_proto: IPV4_PROTOCOL_TCP,
-           tcp_dst: port_number
-         },
-         { eth_type: ETH_TYPE_IPV4,
-           ipv4_dst: ipv4_address,
-           ip_proto: IPV4_PROTOCOL_UDP,
-           udp_dst: port_number
+           tcp_dst: filter[:port_number]
          }]
-      else
+      when "udb" then
+         [{ eth_type: ETH_TYPE_IPV4,
+           ipv4_dst: filter[:ipv4_address],
+           ip_proto: IPV4_PROTOCOL_UDP,
+           udp_dst: filter[:port_number]
+          }]
+      when "icmp" then
         [{ eth_type: ETH_TYPE_IPV4,
           ipv4_dst: filter[:ipv4_address],
           ip_proto: IPV4_PROTOCOL_ICMP
          }]
+      when "arp" then
+        [{ eth_type: ETH_TYPE_ARP }]
       end
     end
 
@@ -116,37 +117,49 @@ module Vnet::Core::Filters
           match.delete(:udp_dst)
         end
 
-        if filter[:ipv4_address] == "0.0.0.0"
+        if filter[:ipv4_address] <= 0
           match.delete(:ipv4_src)
+          match.delete(:ipv4_dst)
         end
         return match
     end
 
-    def flows_for_ingress_filtering(flows, filter)
+    def flows_for_ingress_filtering(flows = [], filter)
 
       match_actions_for_ingress(filter).each { |match|
-
-        flow_options = {
-          table: TABLE_INTERFACE_INGRESS_FILTER,
-          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-          priority: 50,
-          match: check_zero_value(match, filter),
-          match_interface: @interface_id
-        }
-        flows << flow_create(flow_options)  
+        if @ingress_passthrough
+          flows << flow_create(
+            table: TABLE_INTERFACE_INGRESS_FILTER,
+            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+            priority: 10,
+            match_interface: @interface_id,
+            match: check_zero_value(match, filter),
+          )
+        else
+          flows << flow_create(
+            table: TABLE_INTERFACE_INGRESS_FILTER,
+            priority: 50,
+            match: check_zero_value(match, filter),
+            match_interface: @interface_id
+          )
+        end
       }
     end
 
-    def flows_for_egress_filtering(flows, filter)
-      
+    def flows_for_egress_filtering(flows = [], filter)
       match_actions_for_egress(filter).each { |match|
-        
         flow_options = {
           table: TABLE_INTERFACE_EGRESS_FILTER,
-          goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
           priority: 50,
+          match_interface: @interface_id,
           match: check_zero_value(match, filter)
-        }        
+        }
+        
+        if @egress_passthrough
+          flow_options[:goto_table] = TABLE_INTERFACE_EGRESS_VALIDATE
+          flow_options[:priority] = 10
+        end
+
         flows << flow_create(flow_options)
       }
     end
