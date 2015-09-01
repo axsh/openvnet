@@ -40,9 +40,10 @@ module Vnet
 
       # Handle egress packets from trusted interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15
-      TABLE_INTERFACE_EGRESS_ROUTES      = 16
-      TABLE_INTERFACE_EGRESS_MAC         = 17
-      TABLE_INTERFACE_EGRESS_FILTER      = 18
+      TABLE_INTERFACE_EGRESS_FILTER      = 16
+      TABLE_INTERFACE_EGRESS_VALIDATE    = 17
+      TABLE_INTERFACE_EGRESS_ROUTES      = 18
+      TABLE_INTERFACE_EGRESS_MAC         = 19
 
       # Initial verification of network number and application of global
       # filtering rules.
