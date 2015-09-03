@@ -1,6 +1,6 @@
 # This is a little trick to allow the rpmbuild command to define a suffix for
 # development (non stable) versions.
-%define release 2
+%define release 1
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
 
 Name: openvnet
