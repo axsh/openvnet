@@ -96,17 +96,11 @@ module Vnet::Openflow
       host_datapath = nil
       counter = 0
 
-      # Pre-load host datapath if it exists, else wait for a created
-      # event.
-      #
-      # TODO: Should be done automatically when the manager is initialize.
-      @dp_info.host_datapath_manager.async.retrieve(dpid: @dpid)
-
       while host_datapath.nil?
         info log_format('querying database for datapath with matching dpid', "seconds:#{counter * 30}")
 
         # TODO: Check for node id.
-        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
+        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30, true)
         counter += 1
       end
 
