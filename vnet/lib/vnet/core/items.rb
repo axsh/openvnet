@@ -7,6 +7,9 @@ module Vnet::Core
   class ActiveInterface < OpenStruct
   end
 
+  class ActiveNetwork < OpenStruct
+  end
+
   class Datapath < OpenStruct
   end
 

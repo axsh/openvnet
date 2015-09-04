@@ -9,6 +9,7 @@ module Vnet::Models
     #
     # 0001_origin
     #
+    one_to_many :active_networks
     one_to_many :ip_addresses
     one_to_many :datapath_networks
     one_to_many :routes
@@ -25,6 +26,7 @@ module Vnet::Models
 
     plugin :association_dependencies,
     # 0001_origin
+    active_networks: :destroy,
     ip_addresses: :destroy,
     datapath_networks: :destroy,
     routes: :destroy,
