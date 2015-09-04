@@ -66,6 +66,12 @@ yum install -y openvnet
 `openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
 `openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi`, `openvnet-vnctl` at once.
 
+Install Redis and Mysql server. Redis is required for OpenVNet's processes to communicate and Mysql for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
+
+```
+yum install -y mysql-server redis
+```
+
 ### Edit Configuration Files
 
 Edit the file `/etc/openvnet/vnmgr.conf`
