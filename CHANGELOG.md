@@ -19,6 +19,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Changed` Moved `vnctl` to the client directory.
 
+* `Fixed` An issue where VNet Edge related flows were not always created correctly. Edge is now no longer considered experimental.
+
 * `Fixed` An issue where Celluloid would some times assume that the main Trema thread was actually a Celluloid thread.
 
 * `Fixed` Code cleanup and minor bug fixes in datapath manager.
