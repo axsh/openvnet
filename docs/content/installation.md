@@ -372,10 +372,10 @@ You would see the ping reply from the peer machine (in this case inst2). Meanwhi
 
 ```bash
 cd /opt/axsh/openvnet/vnet/bin
-./vnflows-monitor c 0 d 1
+./vnflows-monitor -d -c 0
 ```
 
-You can see the whole flows by `vnflows-monitor`.
+You can see all the flows by calling `vnflows-monitor` without arguments.
 
 ```bash
 cd /opt/axsh/openvnet/vnet/bin
