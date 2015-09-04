@@ -66,7 +66,7 @@ yum install -y openvnet
 `openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
 `openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi`, `openvnet-vnctl` at once.
 
-Install [Redis](http://redis.io) and [Mysql server](https://www.mysql.com). Redis is required for OpenVNet's processes to communicate and Mysql for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
+Install [Redis](http://redis.io) and [MySQL server](https://www.mysql.com). Redis is required for OpenVNet's processes to communicate and MySQL for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
 
 ```
 yum install -y mysql-server redis
@@ -144,13 +144,13 @@ service redis start
 
 Edit `/etc/openvnet/common.conf` if necessary. The sample environment uses the default settings.
 
-Launch mysql server.
+Launch MySQL server.
 
 ```bash
 service mysqld start
 ```
 
-To automatically launch the mysql server at boot, execute the following command.
+To automatically launch the MySQL server at boot, execute the following command.
 
 ```bash
 chkconfig mysqld on
