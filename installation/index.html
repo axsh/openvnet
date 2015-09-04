@@ -70,7 +70,7 @@
           
             <li>
     <ul class="subnav">
-    <li><span>Getting started</span></li>
+    <li><span>Getting Started</span></li>
 
         
             
@@ -135,7 +135,7 @@
     
       
         
-          <li>Getting started &raquo;</li>
+          <li>Getting Started &raquo;</li>
         
       
     
@@ -205,6 +205,10 @@ See architecture for more details of how the OpenVNet works.</p>
 
 <p><code>openvnet</code> is a metapackage. It is equivalent to installing <code>openvnet-common</code>,
 <code>openvnet-vna</code>, <code>openvnet-vnmgr</code>, <code>openvnet-webapi</code>, <code>openvnet-vnctl</code> at once.</p>
+<p>Install <a href="http://redis.io">Redis</a> and <a href="https://www.mysql.com">MySQL server</a>. Redis is required for OpenVNet's processes to communicate and MySQL for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.</p>
+<pre><code>yum install -y mysql-server redis
+</code></pre>
+
 <h3 id="edit-configuration-files">Edit Configuration Files</h3>
 <p>Edit the file <code>/etc/openvnet/vnmgr.conf</code></p>
 <pre><code>node {
@@ -271,11 +275,11 @@ ifup br0
 
 <h3 id="setup-database">Setup Database</h3>
 <p>Edit <code>/etc/openvnet/common.conf</code> if necessary. The sample environment uses the default settings.</p>
-<p>Launch mysql server.</p>
+<p>Launch MySQL server.</p>
 <pre><code class="bash">service mysqld start
 </code></pre>
 
-<p>To automatically launch the mysql server at boot, execute the following command.</p>
+<p>To automatically launch the MySQL server at boot, execute the following command.</p>
 <pre><code class="bash">chkconfig mysqld on
 </code></pre>
 
@@ -386,8 +390,10 @@ echo &quot;cgroup /cgroup cgroup defaults 0 0&quot; &gt;&gt; /etc/fstab
 mount /cgroup
 </code></pre>
 
-<p>Create 2 LXC guests
-(it may require rsync to be installed. If it is not installed execute <code>yum install rsync</code>)</p>
+<p>Create 2 LXC guests. Rsync is required for this. If it's not installed already, install it with the following command.</p>
+<pre><code class="bash">yum install -y rsync
+</code></pre>
+
 <pre><code class="bash">lxc-create -t centos -n inst1
 lxc-create -t centos -n inst2
 </code></pre>
@@ -443,10 +449,10 @@ ip a
 
 <p>You would see the ping reply from the peer machine (in this case inst2). Meanwhile you can see which flows are selected by <code>vnflows-monitor</code>. Execute the following command on a lxc guest, then ping from one another.</p>
 <pre><code class="bash">cd /opt/axsh/openvnet/vnet/bin
-./vnflows-monitor c 0 d 1
+./vnflows-monitor -d -c 0
 </code></pre>
 
-<p>You can see the whole flows by <code>vnflows-monitor</code>.</p>
+<p>You can see all the flows by calling <code>vnflows-monitor</code> without arguments.</p>
 <pre><code class="bash">cd /opt/axsh/openvnet/vnet/bin
 ./vnflows-monitor
 </code></pre>
