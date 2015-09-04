@@ -66,6 +66,12 @@ yum install -y openvnet
 `openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
 `openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi`, `openvnet-vnctl` at once.
 
+Install [Redis](http://redis.io) and [MySQL server](https://www.mysql.com). Redis is required for OpenVNet's processes to communicate and MySQL for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
+
+```
+yum install -y mysql-server redis
+```
+
 ### Edit Configuration Files
 
 Edit the file `/etc/openvnet/vnmgr.conf`
@@ -138,13 +144,13 @@ service redis start
 
 Edit `/etc/openvnet/common.conf` if necessary. The sample environment uses the default settings.
 
-Launch mysql server.
+Launch MySQL server.
 
 ```bash
 service mysqld start
 ```
 
-To automatically launch the mysql server at boot, execute the following command.
+To automatically launch the MySQL server at boot, execute the following command.
 
 ```bash
 chkconfig mysqld on
@@ -290,8 +296,11 @@ echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
 mount /cgroup
 ```
 
-Create 2 LXC guests
-(it may require rsync to be installed. If it is not installed execute `yum install rsync`)
+Create 2 LXC guests. Rsync is required for this. If it's not installed already, install it with the following command.
+
+```bash
+yum install -y rsync
+```
 
 ```bash
 lxc-create -t centos -n inst1
@@ -363,10 +372,10 @@ You would see the ping reply from the peer machine (in this case inst2). Meanwhi
 
 ```bash
 cd /opt/axsh/openvnet/vnet/bin
-./vnflows-monitor c 0 d 1
+./vnflows-monitor -d -c 0
 ```
 
-You can see the whole flows by `vnflows-monitor`.
+You can see all the flows by calling `vnflows-monitor` without arguments.
 
 ```bash
 cd /opt/axsh/openvnet/vnet/bin
