@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+
+local_dir=${1:-/opt/axsh/openvnet/}
+# append trailing slash
+local_dir=$(echo ${local_dir}/ | sed 's,/*$,/,')
+
+remote_dir=/opt/axsh/openvnet/
+exclude="--exclude *.swp --exclude *.swo --exclude .git --exclude vnet/.bundle --exclude vnet/vendor --exclude client/vnctl/.bundle --exclude client/vnctl/vendor"
+
+servers="
+vnmgr
+vna1
+vna2
+vna3
+edge
+"
+
+hostname=$(hostname)
+for server in $servers; do
+  [ ${hostname} = ${server} ] && continue
+  rsync -avz -e ssh --delete ${exclude} ${local_dir} ${server}:${remote_dir}
+done

@@ -14,7 +14,7 @@ describe Vnet::NodeApi::Interface do
       interface = Vnet::NodeApi::Interface.execute(:create,
         uuid: "if-test",
         network_id: network.id,
-        ipv4_address: 1,
+        ipv4_address: IPAddress("192.168.1.2").to_i,
         mac_address: 2,
         owner_datapath_id: datapath.id
       )
@@ -25,7 +25,7 @@ describe Vnet::NodeApi::Interface do
       ip_lease = model.ip_leases.first
 
       expect(ip_lease.network.id).to eq network.id
-      expect(ip_lease.ipv4_address).to eq 1
+      expect(ip_lease.ipv4_address).to eq IPAddress("192.168.1.2").to_i
       expect(ip_lease.mac_lease.mac_address).to eq 2
       # expect(model.owner_datapath.id).to eq datapath.id
 
@@ -47,7 +47,7 @@ describe Vnet::NodeApi::Interface do
             mac_address: 2,
             ip_leases: [
               Fabricate(:ip_lease,
-                ipv4_address: 1,
+                ipv4_address: IPAddr.new("192.168.1.2").to_i,
                 network_id: Fabricate(:network).id)
             ])])
     end
@@ -81,7 +81,7 @@ describe Vnet::NodeApi::Interface do
             mac_address: 2,
             ip_leases: [
               Fabricate(:ip_lease,
-                ipv4_address: 1,
+                        ipv4_address: IPAddr.new("192.168.1.2").to_i,
                 network_id: network.id)
             ])])
     end

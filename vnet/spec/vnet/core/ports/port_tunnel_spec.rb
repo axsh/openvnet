@@ -20,8 +20,8 @@ describe Vnet::Core::Ports::Tunnel do
       tunnel_manager = double(:tunnel_manager)
 
       # update_item is now called from port manager.
-      tunnel_manager.should_receive(:update)
-      datapath.dp_info.should_receive(:tunnel_manager).and_return(tunnel_manager)
+      allow(tunnel_manager).to receive(:update)
+      allow(datapath.dp_info).to receive(:tunnel_manager).and_return(tunnel_manager)
 
       port.try_install
 

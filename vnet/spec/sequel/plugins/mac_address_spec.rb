@@ -2,15 +2,15 @@
 require 'spec_helper'
 
 describe Sequel::Plugins::MacAddress do
-  let(:mac_address_1) { MacAddr.new("00:00:00:00:00:01").to_i }
-  let(:mac_address_2) { MacAddr.new("00:00:00:00:00:02").to_i }
+  let(:mac_address_1) { MacAddr.new("00:00:00:00:00:01") }
+  let(:mac_address_2) { MacAddr.new("00:00:00:00:00:02") }
 
   context "with attr_name" do
     let(:model) do
       Vnet::Models::DatapathNetwork.create(
         :datapath_id => 1,
         :network_id => 1,
-        :broadcast_mac_address => mac_address_1
+        :mac_address => mac_address_1
       )
     end
 
@@ -19,23 +19,23 @@ describe Sequel::Plugins::MacAddress do
         model
       end
 
-      it { expect(subject.broadcast_mac_address).to eq mac_address_1 }
-      it { expect(subject.to_hash[:broadcast_mac_address]).to eq mac_address_1 }
-      it { expect(subject.mac_address).to be_exists }
-      it { expect(subject.mac_address.mac_address).to eq mac_address_1 }
-      it { expect(subject.reload.broadcast_mac_address).to eq mac_address_1 }
+      it { expect(subject.mac_address).to eq mac_address_1 }
+      it { expect(subject.to_hash[:mac_address]).to eq mac_address_1 }
+      it { expect(subject._mac_address).to be_exists }
+      it { expect(subject._mac_address.mac_address).to eq mac_address_1.to_i }
+      it { expect(subject.reload.mac_address).to eq mac_address_1 }
     end
 
     describe "update" do
       subject do
-        model.broadcast_mac_address = mac_address_2
+        model.mac_address = mac_address_2
         model.save
       end
 
-      it { expect(subject.broadcast_mac_address).to eq mac_address_2 }
-      it { expect(subject.to_hash[:broadcast_mac_address]).to eq mac_address_2 }
-      it { expect(subject.mac_address).to be_exists }
-      it { expect(subject.mac_address.mac_address).to eq mac_address_2 }
+      it { expect(subject.mac_address).to eq mac_address_2 }
+      it { expect(subject.to_hash[:mac_address]).to eq mac_address_2 }
+      it { expect(subject._mac_address).to be_exists }
+      it { expect(subject._mac_address.mac_address).to eq mac_address_2.to_i }
     end
 
     describe "destroy" do
@@ -64,7 +64,7 @@ describe Sequel::Plugins::MacAddress do
       it { expect(subject.to_hash[:mac_address]).to eq mac_address_1 }
       it { expect(subject._mac_address).to be_exists }
       it { expect(subject.mac_address_id).not_to be_nil }
-      it { expect(subject._mac_address.mac_address).to eq mac_address_1 }
+      it { expect(subject._mac_address.mac_address).to eq mac_address_1.to_i }
       it { expect(subject.reload.mac_address).to eq mac_address_1 }
     end
 
@@ -78,7 +78,7 @@ describe Sequel::Plugins::MacAddress do
       it { expect(subject.to_hash[:mac_address]).to eq mac_address_2 }
       it { expect(subject._mac_address).to be_exists }
       it { expect(subject.mac_address_id).not_to be_nil }
-      it { expect(subject._mac_address.mac_address).to eq mac_address_2 }
+      it { expect(subject._mac_address.mac_address).to eq mac_address_2.to_i }
     end
 
     describe "destroy" do

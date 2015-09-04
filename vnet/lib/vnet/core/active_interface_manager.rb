@@ -7,6 +7,7 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
 
     subscribe_event ACTIVE_INTERFACE_INITIALIZED, :load_item
     subscribe_event ACTIVE_INTERFACE_UNLOAD_ITEM, :unload_item
@@ -18,8 +19,6 @@ module Vnet::Core
     finalizer :do_cleanup
 
     def activate_local_item(params)
-      return if @datapath_info.nil? # Add error message...
-
       create_params = params.merge(datapath_id: @datapath_info.id)
 
       # Needs to be an event... or rather we need a way to disable an
@@ -39,7 +38,6 @@ module Vnet::Core
     end
 
     def deactivate_local_item(interface_id)
-      return if @datapath_info.nil? # Add error message...
       return if interface_id.nil?
 
       # Do we need this?
@@ -59,6 +57,7 @@ module Vnet::Core
     private
 
     def do_cleanup
+      # Cleanup can be called before the manager is initialized.
       return if @datapath_info.nil?
 
       info log_format('cleaning up')

@@ -9,6 +9,7 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
 
     subscribe_event ROUTE_INITIALIZED, :load_item
     subscribe_event ROUTE_UNLOAD_ITEM, :unload_item

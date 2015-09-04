@@ -13,6 +13,37 @@ module Vnet
     include Vnet::Event::Notifications
     include Vnet::LookupParams
 
+    # Main events:
+    #
+    # Manager and model events are separate as the manager events are
+    # local and for the current manager only, while the model events
+    # are global.
+    #
+    # Avoid duplicate manager event names.
+    #
+    # subscribe_event <MANAGER>_INITIALIZED, :load_item
+    # subscribe_event <MANAGER>_UNLOAD_ITEM, :unload_item
+    # subscribe_event <MODEL>_CREATED_ITEM, :created_item
+    # subscribe_event <MODEL>_DELETED_ITEM, :unload_item
+    #
+    # Consistency:
+    #
+    # All events should have the item id "{id: item.id}" or a symbol
+    # "{id: :foobar}" set to ensure exclusive execution of events for
+    # said event or symbol.
+    #
+    # The id should be considered similar to a copy-on-write barrier,
+    # as such the items can be read at any time by any fiber. Thus no
+    # yielding or blocking operations can be done while the item is in
+    # an inconsistent state.
+    #
+    # E.g. updating a set of variables or lists that depend on each
+    # other will need to be done with no database requests, logging,
+    # etc between the first and last update.
+    #
+    # Updating anything that is covered by another id or symbol lock
+    # requires the use of local events.
+
     def initialize(info, options = {})
       @items = {}
       @messages = {}
@@ -271,8 +302,24 @@ module Vnet
     end
 
     def load_item(params)
-      item_map = params[:item_map] || return
-      item_id = item_map.id || return
+      item_id = params[:id]
+      item_map = params[:item_map]
+
+      if item_id.nil?
+        warn log_format("load_item requires a valid id", params.inspect)
+        return
+      end
+
+      if item_map.nil?
+        warn log_format("load_item requires a valid item_map", params.inspect)
+        return
+      end
+
+      if item_map.id != item_id
+        warn log_format("load_item requires id to match item_map.id", params.inspect)
+        return
+      end
+
       item = @items[item_id] || return
 
       debug log_format("installing " + item.pretty_id, item.pretty_properties)
@@ -281,7 +328,7 @@ module Vnet
       item.try_install
 
       if item.invalid?
-        debug log_format("installation failed, marked invalid " + item.pretty_id, item.pretty_properties)
+        warn log_format("installation failed, marked invalid " + item.pretty_id, item.pretty_properties)
         # TODO: Do some more cleanup here.
         return
       end
@@ -292,7 +339,13 @@ module Vnet
     end
 
     def unload_item(params)
-      item_id = (params && params[:id]) || return
+      item_id = (params && params[:id])
+
+      if item_id.nil?
+        warn log_format("unload_item requires a valid id", params.inspect)
+        return
+      end
+
       item = @items.delete(item_id) || return
 
       debug log_format("uninstalling " + item.pretty_id, item.pretty_properties)
@@ -312,11 +365,16 @@ module Vnet
     # internally and by 'created_item' specialization method.
     #
     # TODO: Rename internal_load_item
-    # TODO: Remove 'params'
+    # TODO: Create a default 'created_item' method.
     def internal_new_item(item_map)
-      item_id = item_map.id || return
-      item = @items[item_id]
-      return item if item
+      item_id = item_map.id
+
+      if item_id.nil?
+        warn log_format("internal_new_item requires a valid item_map.id", item_map.inspect)
+        return
+      end
+
+      return @items[item_id] if @items[item_id]
 
       item_initialize(item_map).tap do |item|
         # TODO: Delete item from items if returned nil.
@@ -341,7 +399,10 @@ module Vnet
 
     # Load all items that match the supplied query parameter
     def internal_load_where(params)
-      return if params.empty?
+      if params.empty?
+        warn log_format("internal_load_where does not allow empty params")
+        return
+      end
 
       filter = query_filter_from_params(params) || return
       expression = ((filter.size > 1) ? Sequel.&(*filter) : filter.first) || return
@@ -368,22 +429,29 @@ module Vnet
     end
 
     def internal_detect_by_id(params)
-      item_id = (params && params[:id]) || return
+      item_id = (params && params[:id])
+
+      if item_id.nil?
+        warn log_format("internal_detect_by_id requires a valid id", params.inspect)
+        return
+      end
+
       @items[item_id]
     end
 
+    # TODO: Reconsider changing the level of logging.
     def internal_detect_by_id_with_error(params)
       item_id = (params && params[:id])
 
       if item_id.nil?
-        log_format("missing id")
+        warn log_format("missing id")
         return
       end
 
       item = @items[item_id]
 
       if item.nil?
-        log_format("missing item", "id:#{item_id}")
+        warn log_format("missing item", "id:#{item_id}")
         return
       end
 

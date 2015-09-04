@@ -52,7 +52,8 @@ module Vnet::Openflow
     end
 
     def create_switch
-      link_with_managers
+      link_with_managers(@dp_info.bootstrap_managers)
+      link_with_managers(@dp_info.managers)
 
       @switch = Switch.new(self)
       link(@switch)
@@ -60,7 +61,7 @@ module Vnet::Openflow
       @switch.create_default_flows
       @switch.switch_ready
 
-      return
+      return nil
     end
 
     def run_normal
@@ -71,9 +72,14 @@ module Vnet::Openflow
       wait_for_unload_of_host_datapath
 
       info log_format('resetting datapath info')
+
+      @dp_info.managers.each { |manager|
+        manager.event_handler_drop_all
+      }
+
       @controller.pass_task { @controller.reset_datapath(@dpid) }
 
-      return
+      return nil
     end
 
     #
@@ -90,23 +96,41 @@ module Vnet::Openflow
       host_datapath = nil
       counter = 0
 
-      @dp_info.datapath_manager.async.retrieve(dpid: @dpid)
+      # Pre-load host datapath if it exists, else wait for a created
+      # event.
+      #
+      # TODO: Should be done automatically when the manager is initialize.
+      @dp_info.host_datapath_manager.async.retrieve(dpid: @dpid)
 
       while host_datapath.nil?
         info log_format('querying database for datapath with matching dpid', "seconds:#{counter * 30}")
 
-        host_datapath = @dp_info.datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
+        # TODO: Check for node id.
+        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
         counter += 1
       end
 
       @datapath_info = DatapathInfo.new(host_datapath)
+
+      # Make sure datapath manager has the host datapath.
+      #
+      # TODO: This should be done automatically by datapath manager
+      # when it is initialized.
+      # 
+      # Since we load the host datapath here, we need to set
+      # queue-only now.
+      @dp_info.managers.each { |manager|
+        manager.event_handler_queue_only
+      }
+
+      @dp_info.datapath_manager.async.retrieve(dpid: @dpid)
     end
 
     def wait_for_unload_of_host_datapath
       unloaded = nil
 
       while unloaded.nil?
-        unloaded = @dp_info.datapath_manager.wait_for_unloaded({id: @datapath_info.id}, nil)
+        unloaded = @dp_info.host_datapath_manager.wait_for_unloaded({id: @datapath_info.id}, nil)
       end
 
       debug log_format('host datapath was unloaded')
@@ -124,7 +148,7 @@ module Vnet::Openflow
       info log_format('cleaned up')
     end
 
-    def link_with_managers
+    def link_with_managers(managers)
       vnmgr_node = DCell::Node[:vnmgr]
 
       if vnmgr_node.nil?
@@ -137,7 +161,7 @@ module Vnet::Openflow
 
       # vnmgr_node && vnmgr_node.link(self)
 
-      @dp_info.managers.each { |manager|
+      managers.each { |manager|
         begin
           link(manager)
           vnmgr_node && vnmgr_node.link(manager)
@@ -145,6 +169,14 @@ module Vnet::Openflow
           error log_format("Fail to link with #{manager.class.name}", e)
           raise e
         end
+      }
+    end
+
+    # TODO: Add a way to block events from being processed by managers
+    # until everything has been initialized.
+    def initialize_bootstrap_managers
+      @dp_info.bootstrap_managers.each { |manager|
+        manager.set_datapath_info(@datapath_info)
       }
     end
 
@@ -159,6 +191,11 @@ module Vnet::Openflow
       # initialized.
       @dp_info.interface_port_manager.load_internal_interfaces
       @dp_info.port_manager.initialize_ports
+
+      # All managers should be initialized, allow events to execute.
+      @dp_info.managers.each { |manager|
+        manager.event_handler_active
+      }
     end
 
   end

@@ -9,6 +9,8 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event SERVICE_INITIALIZED, :load_item
     subscribe_event SERVICE_UNLOAD_ITEM, :unload_item
     subscribe_event SERVICE_CREATED_ITEM, :created_item
