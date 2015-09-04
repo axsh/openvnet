@@ -296,8 +296,11 @@ echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
 mount /cgroup
 ```
 
-Create 2 LXC guests
-(it may require rsync to be installed. If it is not installed execute `yum install rsync`)
+Create 2 LXC guests. Rsync is required for this. If it's not installed already, install it with the following command.
+
+```bash
+yum install -y rsync
+```
 
 ```bash
 lxc-create -t centos -n inst1
