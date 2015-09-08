@@ -185,7 +185,7 @@ module Vnctl::Cli
           end
 
           yield self if block_given?
-
+          
           if require_relation_uuid_label
             desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
                  "Adds #{desc_label} to a(n) #{parent.namespace}."
@@ -224,6 +224,34 @@ module Vnctl::Cli
         register(c, "#{relation_name}", "#{relation_name} OPTIONS",
                  "subcommand to manage #{relation_name} in this #{self.namespace}.")
 
+        c
+      end
+      
+      # Method for mode type relationships
+
+      def self.define_mode_relation(mode_type, required_opts = [], &block)
+        parent = self
+        c = Class.new(Base) do
+
+          base_uuid = "#{parent.namespace.chomp('s')}"
+          yield self if block_given?
+          
+          desc "add #{base_uuid.upcase}_UUID --option=OPTION", "Adds a(n) #{mode_type} #{base_uuid}."
+          define_method("add") { | uuid |
+            puts Vnctl.webapi.post("#{suffix}/#{uuid}/#{mode_type}", options)
+          }
+          desc "del #{base_uuid.upcase}_UUID" , "Removes a(n) #{mode_type} #{base_uuid}."
+          define_method("del") { | uuid |
+            puts Vnctl.webapi.delete("#{suffix}/#{uuid}")
+          }
+          
+        end
+
+        c.namespace "#{self.namespace} #{mode_type}"
+        c.api_suffix self.api_suffix
+
+        register(c, "#{mode_type}", "#{mode_type} OPTIONS",
+                 "subcommand to manage #{mode_type} in this #{self.namespace}.")
         c
       end
     }
