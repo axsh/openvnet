@@ -1,10 +1,10 @@
 # This is a little trick to allow the rpmbuild command to define a suffix for
 # development (non stable) versions.
-%define release 2
+%define release 1
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
 
 Name: openvnet
-Version: 0.7%{?dev_release_suffix:dev}
+Version: 0.8%{?dev_release_suffix:dev}
 Release: %{release}%{?dist}
 Summary: Metapackage that depends on all other OpenVNet packages.
 Vendor: Axsh Co. LTD <dev@axsh.net>
@@ -87,7 +87,14 @@ Summary: Common code for all OpenVNet services.
 AutoReqProv: no
 
 Requires: zeromq3
+Requires: mysql-libs
 Requires: openvnet-ruby
+
+# The zeromq3-devel package is required because it provides the /usr/lib64/libzmq.so file.
+# That file is just a symlink to /usr/lib64/libzmq.so.3.0.0 which is provided by the zerom13
+# runtime package but we will need it for our 0mq client to work. Why this symlink is included
+# in the development package instead of the runtime package is beyond me.
+Requires: zeromq3-devel
 
 %description common
 This package contains all the common code for OpenVNet's services. All of the OpenVNet services depend on this package.
