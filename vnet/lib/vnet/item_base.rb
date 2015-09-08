@@ -7,14 +7,22 @@ module Vnet
 
     attr_reader :id
     attr_reader :installed
+    attr_reader :loaded
     attr_reader :invalid
 
     def initialize(params)
       @installed = false
+      @loaded = false
     end
 
     def installed?
       @installed == true
+    end
+
+    # Loaded can be true even if the item is going through unload, and
+    # has been unloaded.
+    def loaded?
+      @loaded == true
     end
 
     def invalid?
@@ -36,6 +44,10 @@ module Vnet
     def try_uninstall
       @installed, was_installed = false, @installed
       (was_installed == true) && uninstall 
+    end
+
+    def set_loaded
+      @loaded = true
     end
 
     def pretty_id
@@ -77,6 +89,7 @@ module Vnet
 
     def initialize(params)
       @installed = false
+      @loaded = false
       @dp_info = params[:dp_info]
       @id = params[:id]
     end
@@ -98,6 +111,7 @@ module Vnet
 
     def initialize(params)
       @installed = false
+      @loaded = false
       @dp_info = params[:dp_info]
 
       map = params[:map]
@@ -116,6 +130,7 @@ module Vnet
 
     def initialize(params)
       @installed = false
+      @loaded = false
       @dp_info = params[:dp_info]
 
       map = params[:map]
