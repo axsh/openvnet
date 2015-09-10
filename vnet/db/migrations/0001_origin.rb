@@ -32,23 +32,6 @@ Sequel.migration do
       unique [:interface_id, :singular, :is_deleted]
     end
 
-    create_table(:active_networks) do
-      primary_key :id
-
-      Integer :network_id, :null => false
-      Integer :datapath_id, :null => false
-
-      DateTime :created_at, :null=>false
-      DateTime :updated_at, :null=>false
-      DateTime :deleted_at, :index => true
-      Integer :is_deleted, :null=>false
-
-      index [:network_id, :is_deleted]
-      index [:datapath_id, :is_deleted]
-
-      unique [:network_id, :datapath_id, :is_deleted]
-    end
-
     create_table(:datapaths) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -439,7 +422,6 @@ Sequel.migration do
 
   down do
     drop_table(:active_interfaces,
-               :active_networks,
                :datapaths,
                :datapath_networks,
                :datapath_route_links,
