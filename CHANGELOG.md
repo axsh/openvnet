@@ -3,6 +3,10 @@
 All notable changes to OpenVNet will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+* `Fixed` An issue where vna could retrieve network resources from vnmgr while their related resources were not fully loaded yet.
+
 ## [0.8] - 2015-09-04
 
 * `Added` Warning messages in the log when managers receive events with invalid parameters.
