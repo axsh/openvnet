@@ -39,8 +39,6 @@ module Vnet::Core::Interfaces
         flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
       end
 
-#      flows_for_disabled_filtering(flows, ipv4_info) unless @enabled_filtering
-
       @dp_info.add_flows(flows)
     end
 

@@ -72,7 +72,6 @@ module Vnet
 
     INTERFACE_UPDATED = "interface_updated"
 
-    # To be become deprecated
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
     

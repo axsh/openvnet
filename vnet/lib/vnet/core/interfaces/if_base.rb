@@ -9,9 +9,8 @@ module Vnet::Core::Interfaces
     def enable_filtering
       @ingress_filtering_enabled = true
       @enabled_filtering = true
-
       @dp_info.filter_manager.async.apply_filters(@id)
-#      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
+      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
       
       @mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
@@ -41,12 +40,12 @@ module Vnet::Core::Interfaces
     private
 
     def flows_for_disabled_legacy_filtering(flows)\
-#      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
-#                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-#                           priority: 90,
-#                           match_interface: @id,
-#                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING)
-#                          )
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 90,
+                           match_interface: @id,
+                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING)
+                          )
     end
     
     def flows_for_disabled_filtering(flows = [])
@@ -196,6 +195,7 @@ module Vnet::Core::Interfaces
                            write_interface: @id,
                            cookie: cookie)
     end
+
     # TODO: Rename:
     def flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])

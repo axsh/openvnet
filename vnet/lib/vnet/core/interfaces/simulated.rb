@@ -52,8 +52,6 @@ module Vnet::Core::Interfaces
 
       arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
 
-#      flows_for_disabled_filtering(flows, ipv4_info) unless @enabled_filtering
-
       @dp_info.add_flows(flows)
 
       if self.installed?

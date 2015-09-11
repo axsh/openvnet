@@ -28,13 +28,12 @@ module Vnet::Core::Interfaces
 
       flows = []
       flows_for_ipv4(flows, mac_info, ipv4_info)
+      flows_for_interface_ipv4(flows, mac_info, ipv4_info)
 
       if @enable_routing
         flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
         flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
       end
-
-#      flows_for_disabled_filtering(flows, ipv4_info) unless @enabled_filtering
 
       @dp_info.add_flows(flows)
     end

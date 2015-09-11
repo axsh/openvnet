@@ -25,7 +25,7 @@ module Vnet::Core::Interfaces
     TAG_ARP_REPLY             = 0x5
     TAG_ICMP_REQUEST          = 0x6
     TAG_DISABLED_FILTERING    = 0x7
-\
+
     attr_reader :mode
     attr_reader :port_name
     attr_reader :port_number
