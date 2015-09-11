@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Core::Filters
-  class AccepArp < Base
+  class AcceptArp < Base
     def self.cookie
       COOKIE_TYPE_FILTER |
       COOKIE_TYPE_TAG |
