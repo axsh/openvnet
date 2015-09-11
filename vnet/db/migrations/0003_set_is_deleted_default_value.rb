@@ -2,10 +2,12 @@
 
 def tables_with_is_deleted
   [
+    :active_interfaces,
     :datapaths,
     :datapath_networks,
     :datapath_route_links,
     :interfaces,
+    :interface_ports,
     :ip_addresses,
     :ip_leases,
     :ip_lease_containers,
