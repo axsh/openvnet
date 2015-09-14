@@ -5,6 +5,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+* `Fixed` An issue where vna could retrieve network resources from vnmgr while their related resources were not fully loaded yet.
+
+## [0.8] - 2015-09-04
+
 * `Added` Warning messages in the log when managers receive events with invalid parameters.
 
 * `Added` A ruby gem for accessing the WebAPI. (https://rubygems.org/gems/vnet_api_client)
@@ -18,6 +22,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * `Changed` The command line arguments to the `vnflows-monitor` debug tool now use a more common format.
 
 * `Changed` Moved `vnctl` to the client directory.
+
+* `Fixed` An issue where VNet Edge related flows were not always created correctly. Edge is now no longer considered experimental.
 
 * `Fixed` An issue where Celluloid would some times assume that the main Trema thread was actually a Celluloid thread.
 
