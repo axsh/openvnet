@@ -32,7 +32,7 @@ module Vnet::Core::Interfaces
         # that are still open. We just allow the open connections to expire naturally.
       }
     end
-    
+
     #
     # Internal methods:
     #

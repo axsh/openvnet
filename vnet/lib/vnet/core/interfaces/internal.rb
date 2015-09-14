@@ -25,7 +25,7 @@ module Vnet::Core::Interfaces
 
       flows = []
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
-      
+
       @dp_info.add_flows(flows)
     end
 

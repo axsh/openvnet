@@ -147,7 +147,7 @@ module Vnet::Core
                                        interface_id: item.id)
 
       item.ingress_filtering_enabled &&
-        @dp_info.filter_manager.async.apply_filters(item_map)      
+        @dp_info.filter_manager.async.apply_filters(item_map)
     end
 
     def item_post_uninstall(item)

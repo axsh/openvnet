@@ -43,5 +43,4 @@ module Vnet::Core::Filters
     end
 
   end
-
 end
