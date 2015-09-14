@@ -147,8 +147,7 @@ module Vnet::Core
                                        interface_id: item.id)
 
       item.ingress_filtering_enabled &&
-        @dp_info.filter_manager.async.apply_filters(item_map)
-      
+        @dp_info.filter_manager.async.apply_filters(item_map)      
     end
 
     def item_post_uninstall(item)
@@ -259,7 +258,6 @@ module Vnet::Core
 
       item.ingress_filtering_enabled &&
         @dp_info.connection_manager.async.catch_new_egress(item.id, mac_address)
-
     end
 
     # INTERFACE_RELEASED_MAC_ADDRESS on queue 'item.id'

@@ -37,8 +37,9 @@ module Vnet::Core::Interfaces
     attr_accessor :enable_route_translation
 
     attr_accessor :ingress_filtering_enabled
-    attr_accessor :enable_filtering
-    
+
+    attr_accessor :enable_filtering    
+
     def initialize(params)
       super
 

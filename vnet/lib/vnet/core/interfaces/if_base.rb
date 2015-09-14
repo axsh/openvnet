@@ -11,7 +11,7 @@ module Vnet::Core::Interfaces
       @enabled_filtering = true
       @dp_info.filter_manager.async.apply_filters(@id)
       del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
-      
+
       @mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
       }
@@ -56,7 +56,7 @@ module Vnet::Core::Interfaces
                            cookie: self.cookie
                           )
     end
-    
+
     def flows_for_interface_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 

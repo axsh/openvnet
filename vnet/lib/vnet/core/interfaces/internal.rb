@@ -25,7 +25,6 @@ module Vnet::Core::Interfaces
 
       flows = []
       flows_for_interface_ipv4(flows, mac_info, ipv4_info)
-
       
       @dp_info.add_flows(flows)
     end
@@ -33,7 +32,6 @@ module Vnet::Core::Interfaces
     def install
       flows = []
       flows_for_base(flows)
-
       flows_for_disabled_filtering(flows) unless @enabled_filtering
       flows_for_disabled_legacy_filtering(flows) unless @ingress_filtering_enabled
       

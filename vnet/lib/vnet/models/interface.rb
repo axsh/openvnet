@@ -20,7 +20,7 @@ module Vnet::Models
     one_to_many :routes
     one_to_many :security_group_interfaces
     one_to_many :translations
-    
+
     many_to_many :ip_addresses, :join_table => :ip_leases, :conditions => "ip_leases.deleted_at is null"
 
     one_to_many :src_tunnels, :class => Tunnel, :key => :src_interface_id
