@@ -9,6 +9,4 @@ Gem::Specification.new do |s|
   s.files       = Dir.glob("{lib}/**/*") + %w(README.md)
   s.homepage    = 'http://openvnet.org'
   s.license     = 'LGPLv3'
-
-  s.required_ruby_version = '>= 2.1.1'
 end
