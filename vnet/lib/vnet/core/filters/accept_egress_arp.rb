@@ -18,7 +18,7 @@ module Vnet::Core::Filters
         flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
                     priority: 90,
                     match: { eth_type: ETH_TYPE_ARP },
-                    goto_table: TABLE_INTERFAC_EGRESS_VALIDATE)
+                    goto_table: TABLE_INTERFACE_EGRESS_VALIDATE)
       )
     end
   end

@@ -39,7 +39,7 @@ module Vnet::Core::Interfaces
 
     private
 
-    def flows_for_disabled_legacy_filtering(flows)\
+    def flows_for_disabled_legacy_filtering(flows)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 90,
