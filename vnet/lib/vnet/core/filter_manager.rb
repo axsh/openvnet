@@ -14,7 +14,7 @@ module Vnet::Core
     def initialize(*args)
       super(*args)
 
-      accept_arp.install
+      accept_ingress_arp.install
     end
 
     #
@@ -186,8 +186,8 @@ module Vnet::Core
       @items.values.select { |item| item.has_interface?(interface_id) }
     end
 
-    def accept_arp
-      Filters::AcceptArp.new.tap {|i| i.dp_info = @dp_info}
+    def accept_ingress_arp
+      Filters::AccepIngresstArp.new.tap {|i| i.dp_info = @dp_info}
     end
 
     def is_remote?(interface)
