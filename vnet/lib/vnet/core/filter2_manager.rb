@@ -23,6 +23,13 @@ module Vnet::Core
     subscribe_event FILTER_ADDED_STATIC, :added_static
     subscribe_event FILTER_REMOVED_STATIC, :removed_static
 
+    def initialize(*args)
+      super(*args)
+
+      accept_ingress_arp.install
+      accept_egress_arp.install
+    end
+
     #
     # Internal methods:
     #
@@ -136,6 +143,18 @@ module Vnet::Core
       item.removed_static(static_id)
     end
 
+    def accept_ingress_arp
+      Filter::AcceptIngressArp.new.tap { |i|
+        i.dp_info = @dp_info
+      }
+    end
+
+    def accept_egress_arp
+      Filter::AcceptEgressArp.new.tap { |i|
+        i.dp_info = @dp_info
+      }
+    end
+    
   end
 
 end
