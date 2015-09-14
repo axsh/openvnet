@@ -111,7 +111,7 @@ module Vnet
 
     module Filters
       autoload :AcceptAllTraffic, 'vnet/core/filters/accept_all_traffic'
-      autoload :AcceptIngresstArp, 'vnet/core/filters/accept_ingress_arp'
+      autoload :AcceptIngressArp, 'vnet/core/filters/accept_ingress_arp'
       autoload :AcceptEgressArp, 'vnet/core/filters/accept_egress_arp'
       autoload :Base, 'vnet/core/filters/base'
       autoload :Base2, 'vnet/core/filters/base2'

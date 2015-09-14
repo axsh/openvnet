@@ -144,13 +144,13 @@ module Vnet::Core
     end
 
     def accept_ingress_arp
-      Filter::AcceptIngressArp.new.tap { |arp|
+      Filters::AcceptIngressArp.new.tap { |arp|
         arp.dp_info = @dp_info
       }
     end
 
     def accept_egress_arp
-      Filter::AcceptEgressArp.new.tap { |arp|
+      Filters::AcceptEgressArp.new.tap { |arp|
         arp.dp_info = @dp_info
       }
     end
