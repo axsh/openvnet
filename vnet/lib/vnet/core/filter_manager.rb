@@ -187,7 +187,7 @@ module Vnet::Core
     end
 
     def accept_ingress_arp
-      Filters::AccepIngresstArp.new.tap {|i| i.dp_info = @dp_info}
+      Filters::AcceptIngresstArp.new.tap {|i| i.dp_info = @dp_info}
     end
 
     def is_remote?(interface)

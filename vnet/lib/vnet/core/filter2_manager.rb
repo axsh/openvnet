@@ -24,7 +24,7 @@ module Vnet::Core
     subscribe_event FILTER_REMOVED_STATIC, :removed_static
 
     def initialize(*args)
-      super(*args)
+      super
 
       accept_ingress_arp.install
       accept_egress_arp.install
@@ -144,14 +144,14 @@ module Vnet::Core
     end
 
     def accept_ingress_arp
-      Filter::AcceptIngressArp.new.tap { |i|
-        i.dp_info = @dp_info
+      Filter::AcceptIngressArp.new.tap { |arp|
+        arp.dp_info = @dp_info
       }
     end
 
     def accept_egress_arp
-      Filter::AcceptEgressArp.new.tap { |i|
-        i.dp_info = @dp_info
+      Filter::AcceptEgressArp.new.tap { |arp|
+        arp.dp_info = @dp_info
       }
     end
     
