@@ -112,7 +112,7 @@ module Vnet::Core::Interfaces
          :arp_spa => ipv4_info[:ipv4_address]
        }].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
-                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
+                             goto_table: TABLE_NETWORK_CONNECTION,
                              priority: 30,
                              match: match,
                              match_interface: @id,

@@ -113,6 +113,7 @@ module Vnet::Openflow
        [TABLE_ARP_TABLE, TABLE_ARP_LOOKUP],
        [TABLE_FLOOD_SIMULATED, TABLE_FLOOD_LOCAL],
        [TABLE_FLOOD_TUNNELS, TABLE_FLOOD_SEGMENT],
+       [TABLE_NETWORK_CONNECTION, TABLE_NETWORK_SRC_CLASSIFIER],
        [TABLE_INTERFACE_INGRESS_FILTER, TABLE_INTERFACE_INGRESS_FILTER_LOOKUP],
       ].each { |from_table, to_table|
         flows << flow_create(table: from_table,
