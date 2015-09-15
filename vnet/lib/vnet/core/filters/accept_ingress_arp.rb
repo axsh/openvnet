@@ -4,8 +4,8 @@ module Vnet::Core::Filters
   class AcceptIngressArp < Base
     def self.cookie
       COOKIE_TYPE_FILTER |
-        COOKIE_TYPE_TAG |
-        COOKIE_TAG_INGRESS_ARP_ACCEPT
+      COOKIE_TYPE_TAG |
+      COOKIE_TAG_INGRESS_ARP_ACCEPT
     end
 
     # Just something to identify this thing with in @items in filter manager

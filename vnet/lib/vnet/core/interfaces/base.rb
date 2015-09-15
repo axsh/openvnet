@@ -55,7 +55,13 @@ module Vnet::Core::Interfaces
       @enable_routing = map.enable_routing
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
-      @enabled_filtering = map.enable_filtering      
+      @enabled_filtering = map.enable_filtering
+
+      # disable filter2manager when using old security groups
+
+      if @ingress_filtering_enabled
+        @enabled_filtering = false
+      end
     end
 
     def log_type

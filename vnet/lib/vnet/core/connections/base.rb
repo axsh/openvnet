@@ -28,8 +28,8 @@ module Vnet::Core::Connections
       interface_id = message.cookie & COOKIE_ID_MASK
 
       [
-        flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
-                    priority: 21,
+        flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
+                    priority: 92,
                     match: {
                       eth_src:   message.packet_info.eth_src,
                       eth_type: message.eth_type,
