@@ -421,7 +421,8 @@ Sequel.migration do
   end
 
   down do
-    drop_table(:datapaths,
+    drop_table(:active_interfaces,
+               :datapaths,
                :datapath_networks,
                :datapath_route_links,
                :interfaces,
