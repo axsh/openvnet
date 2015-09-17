@@ -440,7 +440,7 @@ Sequel.migration do
                :route_links,
                :security_groups,
                :security_group_interfaces,
-               :translation,
+               :translations,
                :translation_static_addresses,
                :tunnels,
                :vlan_translations,
