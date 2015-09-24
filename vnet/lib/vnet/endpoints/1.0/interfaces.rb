@@ -9,7 +9,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     param :enable_filtering, :Boolean
     param :display_name, :String
     param :enable_routing, :Boolean
-    param :use_legacy_filtering, :Boolean
     param :enable_route_translation, :Boolean
   end
 
