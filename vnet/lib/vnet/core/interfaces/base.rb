@@ -39,7 +39,8 @@ module Vnet::Core::Interfaces
     attr_accessor :ingress_filtering_enabled
 
     attr_accessor :enable_filtering    
-
+    attr_accessor :enable_legacy_filtering
+    
     def initialize(params)
       super
 
@@ -56,11 +57,8 @@ module Vnet::Core::Interfaces
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
       @enabled_filtering = map.enable_filtering
-
+      @enable_legacy_filtering = map.use_legacy_filtering
       # disable filter2manager when using old security groups
-
-      if @ingress_filtering_enabled
-        @enabled_filtering = false
       end
     end
 

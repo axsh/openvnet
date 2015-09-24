@@ -47,6 +47,8 @@ module Vnet::Core::Interfaces
                            cookie: cookie_for_tag(TAG_DISABLED_FILTERING)
                           )
     end
+
+    # needs to be disabled when old filter manager is active
     
     def flows_for_disabled_filtering(flows = [])
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,

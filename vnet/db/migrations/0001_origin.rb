@@ -134,6 +134,7 @@ Sequel.migration do
       FalseClass :enable_route_translation, :null=>false
 
       FalseClass :enable_filtering, :null=>false
+      FalseClass :use_legacy_filtering, :null=>false
       
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
