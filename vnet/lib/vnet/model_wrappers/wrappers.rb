@@ -5,4 +5,7 @@ module Vnet::ModelWrappers
   class ActiveInterface < Base
   end
 
+  class ActiveNetwork < Base
+  end
+
 end

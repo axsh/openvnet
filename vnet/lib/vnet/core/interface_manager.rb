@@ -132,6 +132,7 @@ module Vnet::Core
     #
 
     def item_pre_install(item, item_map)
+      # Should be post-install?
       activate_local_interface(item)
     end
 
