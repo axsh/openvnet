@@ -54,8 +54,8 @@ module Vnet::Core::Interfaces
 
     def install
       flows = []      
-      flows_for_disabled_filtering(flows) unless @enabled_filtering && !@enabled_legacy_filtering
-      flows_for_disabled_legacy_filtering(flows) unless @ingress_filtering_enabled
+      flows_for_disabled_filtering(flows) unless @enabled_filtering and not @enabled_legacy_filtering
+      flows_for_disabled_legacy_filtering(flows) unless @ingress_filtering_enabled and @enabled_legacy_filtering
       flows_for_base(flows)
 
       @dp_info.add_flows(flows)
