@@ -39,23 +39,14 @@ module Vnet::Core::Interfaces
 
     private
 
-    def flows_for_disabled_legacy_filtering(flows)
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                           priority: 90,
-                           match_interface: @id,
-                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING)
-                          )
-    end
-
-    # needs to be disabled when old filter manager is active
-    
     def flows_for_disabled_filtering(flows = [])
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 90,
                            match_interface: @id,
-                           cookie: self.cookie
+                           cookie: @enabled_legacy_filtering ?
+                             cookie_for_tag(TAG_DISABLED_FILTERING) :
+                             self.cookie
                           )
     end
 
