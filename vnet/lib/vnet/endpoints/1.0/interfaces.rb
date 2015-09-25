@@ -10,6 +10,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     param :display_name, :String
     param :enable_routing, :Boolean
     param :enable_route_translation, :Boolean
+    param :enable_legacy_filtering, :Boolean
   end
 
   fill = [ { :mac_leases => [ :mac_address, { :ip_leases => { :ip_address => :network } } ] } ]
