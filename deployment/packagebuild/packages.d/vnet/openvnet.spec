@@ -19,7 +19,11 @@ BuildRequires: rpmdevtools
 BuildRequires: make
 BuildRequires: gcc-c++ gcc
 BuildRequires: git
+%if 0%{?el6}
 BuildRequires: mysql-devel
+%else
+BuildRequires: mysql-community-devel
+%endif
 BuildRequires: sqlite-devel
 BuildRequires: libpcap-devel
 
@@ -55,9 +59,11 @@ mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
+%if 0%{?el6}
 cp -r deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
 cp -r deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
 cp -r deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
+%endif
 install -m 755 deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -86,7 +92,11 @@ Summary: Common code for all OpenVNet services.
 AutoReqProv: no
 
 Requires: zeromq3
+%if 0%{?el6}
 Requires: mysql-libs
+%else
+Requires: mysql-community-libs
+%endif
 Requires: openvnet-ruby
 
 # The zeromq3-devel package is required because it provides the /usr/lib64/libzmq.so file.
