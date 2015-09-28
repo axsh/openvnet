@@ -75,6 +75,7 @@ git archive --format=tgz --prefix="openvnet/" --output="${WORK_DIR}/SOURCES/open
 # Build the packages
 #
 
+export PATH="/opt/axsh/openvnet/ruby/bin:$PATH"
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
   repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RPM_VERSION}"
