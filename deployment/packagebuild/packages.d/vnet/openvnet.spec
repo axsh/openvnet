@@ -9,7 +9,7 @@ Release: %{release}%{?dist}
 Summary: Metapackage that depends on all other OpenVNet packages.
 Vendor: Axsh Co. LTD <dev@axsh.net>
 URL: http://openvnet.org
-Source: https://github.com/axsh/openvnet
+Source: %{name}.tar.gz
 License: LGPLv3
 
 BuildArch: x86_64
@@ -36,44 +36,43 @@ Requires: openvnet-vna
 This is an empty metapackage that depends on all OpenVNet services and the vnctl client. Just a conventient way to install everything at once on a single machine.
 
 %prep
-OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
-BUNDLE_PATH="/opt/axsh/openvnet/ruby/bin/bundle"
-if [ ! -d "$OPENVNET_SRC_DIR" ]; then
-  git clone https://github.com/axsh/openvnet "$OPENVNET_SRC_DIR"
-fi
-cd "$OPENVNET_SRC_DIR/vnet"
-"$BUNDLE_PATH" install --path vendor/bundle --without development test --standalone
-cd "$OPENVNET_SRC_DIR/client/vnctl"
-"$BUNDLE_PATH" install --path vendor/bundle --without development test --standalone
+%setup -qn %{name}
+
+%build
+pushd "vnet"
+bundle install --path vendor/bundle --without development test --standalone
+popd
+pushd "client/vnctl"
+bundle install --path vendor/bundle --without development test --standalone
+popd
 
 %files
 # No files in the openvnet metapackage.
 
 %install
-OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
 mkdir -p "$RPM_BUILD_ROOT"/etc
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
-cp "$OPENVNET_SRC_DIR"/deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/README.md "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp -r "$OPENVNET_SRC_DIR"/vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
-cp -r "$OPENVNET_SRC_DIR"/client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
+cp -r deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
+cp -r deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
+cp -r deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
+install -m 755 deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
+cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/README.md "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+install -m 755 vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+cp -r vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
+cp -r client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
 
 #
 # openvnet-common package

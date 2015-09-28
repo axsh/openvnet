@@ -7,7 +7,6 @@ repo_dir=
 
 BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
-OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
 REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
 POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
@@ -57,13 +56,9 @@ sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 # Prepare build directories and put the source in place.
 #
 
-OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
-if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
-  rm -rf "$OPENVNET_SRC_BUILD_DIR"
+if [[ ! -d "${WORK_DIR}/SOURCES" ]]; then
+  mkdir -p "${WORK_DIR}/SOURCES"
 fi
-
-mkdir -p "${WORK_DIR}/SOURCES"
-cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
 
 # Get rid up any possible dirty build directories
 for arch in "${POSSIBLE_ARCHS[@]}"; do
@@ -73,10 +68,8 @@ for arch in "${POSSIBLE_ARCHS[@]}"; do
 done
 
 
-# Clean up the source dir if it's dirty
-cd ${OPENVNET_SRC_BUILD_DIR}
-git reset --hard
-git clean -xdf
+export GIT_BRANCH=${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
+git archive --format=tgz --prefix="openvnet/" --output="${WORK_DIR}/SOURCES/openvnet.tar.gz" ${GIT_BRANCH}
 
 #
 # Build the packages
