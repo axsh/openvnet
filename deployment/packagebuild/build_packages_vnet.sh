@@ -36,6 +36,20 @@ check_dependency createrepo createrepo
 
 # Make sure that we work with the correct version of openvnet-ruby
 sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+case $(rpm --eval '%{rhel}') in
+  6)
+    :
+    ;;
+  7)
+    if ! rpm -q mysql-community-release > /dev/null; then
+      rpm -Uvh http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+    fi
+    ;;
+  *)
+    echo "ERROR: Unsupported distro: $(rpm --eval '%{dist}')" >&2
+    exit 1
+    ;;
+esac
 
 sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 
