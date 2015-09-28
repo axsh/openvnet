@@ -1,3 +1,4 @@
+%define debug_package %{nil}
 # This is a little trick to allow the rpmbuild command to define a suffix for
 # development (non stable) versions.
 %define release 1
