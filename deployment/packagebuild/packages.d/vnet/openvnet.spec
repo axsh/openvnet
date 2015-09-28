@@ -61,9 +61,7 @@ mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
 %if 0%{?el6}
-cp -r deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
-cp -r deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
-cp -r deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
+cp -r deployment/conf.el6/etc/* "$RPM_BUILD_ROOT"/etc/
 %endif
 install -m 755 deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
