@@ -9,7 +9,6 @@ BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
 REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
-POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
 RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
 
 function check_dependency() {
@@ -67,12 +66,7 @@ if [[ ! -d "${WORK_DIR}/SOURCES" ]]; then
 fi
 
 # Get rid up any possible dirty build directories
-for arch in "${POSSIBLE_ARCHS[@]}"; do
-  if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
-    rm -rf "${WORK_DIR}/RPMS/${arch}"
-  fi
-done
-
+find ${WORK_DIR}/{SRPMS,RPMS} -name '*.rpm' -exec rm -f {} \;
 
 export GIT_BRANCH=${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
 git archive --format=tgz --prefix="openvnet/" --output="${WORK_DIR}/SOURCES/openvnet.tar.gz" ${GIT_BRANCH}
@@ -105,18 +99,8 @@ fi
 #
 # Prepare the yum repo
 #
-for arch in "${POSSIBLE_ARCHS[@]}"; do
-  if [ -d "${repo_dir}/${arch}" ]; then
-    rm -rf "${repo_dir}/${arch}"
-  fi
-done
 sudo mkdir -p "${repo_dir}"
 sudo chown $USER "${repo_dir}"
 
-for arch in "${POSSIBLE_ARCHS[@]}"; do
-  if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
-    mv "${WORK_DIR}/RPMS/${arch}" "${repo_dir}/${arch}"
-  fi
-done
-
+cp -a ${WORK_DIR}/RPMS/* ${repo_dir}
 createrepo "${repo_dir}"
