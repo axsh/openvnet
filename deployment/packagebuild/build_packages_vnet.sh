@@ -38,9 +38,14 @@ check_dependency createrepo createrepo
 sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
 case $RHEL_RELVER in
   6)
-    :
+    if ! rpm -q epel-release > /dev/null; then
+      rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+    fi
     ;;
   7)
+    if ! rpm -q epel-release > /dev/null; then
+      rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    fi
     if ! rpm -q mysql-community-release > /dev/null; then
       rpm -Uvh http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
     fi
