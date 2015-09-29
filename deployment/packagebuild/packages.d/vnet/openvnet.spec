@@ -65,8 +65,8 @@ install -m 755 deployment/conf/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
 %if 0%{?el6}
 cp -r deployment/conf.el6/etc/* "$RPM_BUILD_ROOT"/etc/
 %else
-install -m 755 -d "$RPM_BUILD_ROOT"/usr/lib/systemd/system/
-cp deployment/conf.el7/systemd/*.service "$RPM_BUILD_ROOT"/usr/lib/systemd/system/
+install -m 755 -d "$RPM_BUILD_ROOT"%{_unitdir}
+cp deployment/conf.el7/systemd/*.service "$RPM_BUILD_ROOT"%{_unitdir}
 %endif
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -138,7 +138,9 @@ Summary: OpenVNet's RESTful WebAPI.
 BuildArch: noarch
 
 Requires: openvnet-common
-
+%if 0%{?el6} == 0
+%{systemd_requires}
+%endif
 
 %description webapi
 This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNet by sending HTTP requests to this API.
@@ -150,7 +152,7 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 %config(noreplace) /etc/default/vnet-webapi
 %config /etc/init/vnet-webapi.conf
 %else
-%config /usr/lib/systemd/system/vnet-webapi.service
+%config %{_unitdir}/vnet-webapi.service
 %endif
 
 %post webapi
@@ -164,6 +166,16 @@ fi
 touch "$logfile"
 chown "$user"."$user" "$logfile"
 
+%if 0%{?el6} == 0
+%systemd_post vnet-webapi.service
+
+%preun webapi
+%systemd_preun vnet-webapi.service
+
+%postun webapi
+%systemd_postun vnet-webapi.service
+%endif
+
 #
 # openvnet-vnmgr package
 #
@@ -173,6 +185,9 @@ Summary: Virtual Network Manager for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
+%if 0%{?el6} == 0
+%{systemd_requires}
+%endif
 
 %description vnmgr
 This package contains OpenVNet's VNMGR process. This process acts as a frontend for the MySQL database and broadcasts commands to VNA processes.
@@ -184,7 +199,7 @@ This package contains OpenVNet's VNMGR process. This process acts as a frontend 
 %config(noreplace) /etc/default/vnet-vnmgr
 %config /etc/init/vnet-vnmgr.conf
 %else
-%config /usr/lib/systemd/system/vnet-vnmgr.service
+%config %{_unitdir}/vnet-vnmgr.service
 %endif
 
 %post vnmgr
@@ -198,6 +213,16 @@ fi
 touch "$logfile"
 chown "$user"."$user" "$logfile"
 
+%if 0%{?el6} == 0
+%systemd_post vnet-vnmgr.service
+
+%preun vnmgr
+%systemd_preun vnet-vnmgr.service
+
+%postun vnmgr
+%systemd_postun vnet-vnmgr.service
+%endif
+
 #
 # openvnet-vna package
 #
@@ -209,6 +234,9 @@ BuildArch: noarch
 
 Requires: openvnet-common
 Requires: openvswitch = 2.3.1
+%if 0%{?el6} == 0
+%{systemd_requires}
+%endif
 
 %description vna
 This package contains OpenVNet's VNA process. This is an OpenFlow controller that sends commands to Open vSwitch to implement virtual networks.
@@ -221,7 +249,19 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 %config(noreplace) /etc/default/vnet-vna
 %config /etc/init/vnet-vna.conf
 %else
-%config /usr/lib/systemd/system/vnet-vna.service
+%config %{_unitdir}/vnet-vna.service
+%endif
+
+
+%if 0%{?el6} == 0
+%post vna
+%systemd_post vnet-vna.service
+
+%preun vna
+%systemd_preun vnet-vna.service
+
+%postun vna
+%systemd_postun vnet-vna.service
 %endif
 
 #
