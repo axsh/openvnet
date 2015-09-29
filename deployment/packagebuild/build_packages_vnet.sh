@@ -10,6 +10,7 @@ OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
 REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
 POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
+RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
 
 function check_dependency() {
   local cmd="$1"
@@ -60,7 +61,7 @@ mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
 
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
-  repo_rel_path="packages/rhel/$(rpm --eval %{rhel})/vnet/${RPM_VERSION}"
+  repo_rel_path="packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
 
   git checkout "${RPM_VERSION}"
   echo "Building the following commit for stable version ${RPM_VERSION}"
@@ -72,7 +73,7 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_rel_path="packages/rhel/$(rpm --eval %{rhel})/vnet/${RELEASE_SUFFIX}"
+  repo_rel_path="packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
