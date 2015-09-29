@@ -60,10 +60,14 @@ mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
+cp -r deployment/conf/etc "$RPM_BUILD_ROOT"/
+install -m 755 deployment/conf/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
 %if 0%{?el6}
 cp -r deployment/conf.el6/etc/* "$RPM_BUILD_ROOT"/etc/
+%else
+install -m 755 -d "$RPM_BUILD_ROOT"/usr/lib/systemd/system/
+cp deployment/conf.el7/systemd/*.service "$RPM_BUILD_ROOT"/usr/lib/systemd/system/
 %endif
-install -m 755 deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -122,8 +126,9 @@ This package contains all the common code for OpenVNet's services. All of the Op
 /opt/axsh/openvnet/vnet/vendor
 /opt/axsh/openvnet/vnet/.bundle
 %config(noreplace) /etc/openvnet/common.conf
+%if 0%{?el6}
 %config(noreplace) /etc/default/openvnet
-
+%endif
 #
 # openvnet-webapi package
 #
@@ -141,8 +146,12 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 %files webapi
 /opt/axsh/openvnet/vnet/rack
 %config(noreplace) /etc/openvnet/webapi.conf
+%if 0%{?el6}
 %config(noreplace) /etc/default/vnet-webapi
 %config /etc/init/vnet-webapi.conf
+%else
+%config /usr/lib/systemd/system/vnet-webapi.service
+%endif
 
 %post webapi
 user="vnet-webapi"
@@ -171,8 +180,12 @@ This package contains OpenVNet's VNMGR process. This process acts as a frontend 
 %files vnmgr
 /opt/axsh/openvnet/vnet/bin/vnmgr
 %config(noreplace) /etc/openvnet/vnmgr.conf
+%if 0%{?el6}
 %config(noreplace) /etc/default/vnet-vnmgr
 %config /etc/init/vnet-vnmgr.conf
+%else
+%config /usr/lib/systemd/system/vnet-vnmgr.service
+%endif
 
 %post vnmgr
 user="vnet-vnmgr"
@@ -204,8 +217,12 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 /opt/axsh/openvnet/vnet/bin/vna
 /opt/axsh/openvnet/vnet/bin/vnflows-monitor
 %config(noreplace) /etc/openvnet/vna.conf
+%if 0%{?el6}
 %config(noreplace) /etc/default/vnet-vna
 %config /etc/init/vnet-vna.conf
+%else
+%config /usr/lib/systemd/system/vnet-vna.service
+%endif
 
 #
 # openvnet-vnctl package
