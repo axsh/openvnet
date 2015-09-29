@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+ENV['BUNDLE_GEMFILE']=File.expand_path('../../Gemfile', __FILE__)
+require 'rubygems'
+require 'bundler/setup'
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+ARGV.reject! { |a|
+  a.is_a?(String) && a =~ /\.ru$/
+}
+ARGV.push(File.expand_path('../../rack/config-webapi.ru', __FILE__))
+
+gem 'unicorn'
+load Gem.bin_path('unicorn', 'unicorn')
