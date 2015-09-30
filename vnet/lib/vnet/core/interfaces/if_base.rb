@@ -78,15 +78,21 @@ module Vnet::Core::Interfaces
       #
       # new Classifier
       #
-      
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                           goto_table: @enabled_filtering ?
-                             TABLE_INTERFACE_EGRESS_FILTER :
-                             TABLE_INTERFACE_EGRESS_VALIDATE,
-                           priority: 30,
-                           match_interface: @id,
-                           cookie: cookie
-                     )
+      if @enabled_filtering
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_EGRESS_FILTER
+                             priority: 90,
+                             match_interface: @id,
+                             cookie: cookie
+                            )
+      else
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                             priority: 30,
+                             match_interface: @id,
+                             cookie: cookie
+                            )
+      end
       
       #
       # Validate (old Classifier)
