@@ -257,6 +257,9 @@ module Vnet::Core
                            mac_address: mac_address,
                            cookie_id: mac_lease.cookie_id)
 
+      item.enabled_filtering &&
+        @dp_info.connection_manager.async.catch_new_egress(item.id, mac_address)
+
       item.ingress_filtering_enabled &&
         @dp_info.connection_manager.async.catch_new_egress(item.id, mac_address)
     end
@@ -325,7 +328,7 @@ module Vnet::Core
     # INTERFACE_ENABLED_FILTERING on queue 'item.id'
     def enabled_filtering(params)
       item = @items[params[:id]]
-      return if !item || item.ingress_filtering_enabled
+      return if !item || item.ingress_filtering_enabled || item.enabled_filtering
 
       info log_format("enabled filtering on interface", item.uuid)
       item.enable_filtering
@@ -334,7 +337,7 @@ module Vnet::Core
     # INTERFACE_DISABLED_FILTERING on queue 'item.id'
     def disabled_filtering(params)
       item = @items[params[:id]]
-      return if !item || !item.ingress_filtering_enabled
+      return if !item || !item.ingress_filtering_enabled || !item.enabled_filtering
 
       info log_format("disabled filtering on interface", item.uuid)
       item.disable_filtering
