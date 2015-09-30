@@ -154,6 +154,24 @@ module VNetAPIClient
     end
   end
 
+  class Filter < ApiResource
+    api_suffix :filters
+
+    define_standard_curd_methods
+
+    def self.add_filter_static(filter_uud, params = nil)
+      send_request(Net::HTTP::Post,
+                   "#{@api_suffix}/#{filter_uuid}/static",
+                   params)
+    end
+
+    def self.remove_static_address(filter_uuid, params = nil)
+      send_request(Net::HTTP::Delete,
+                   "#{@api_suffix}/#{filter_uuid}/static",
+                   params)
+    end
+  end
+  
   class VlanTranslation < ApiResource
     api_suffix :vlan_translations
 
