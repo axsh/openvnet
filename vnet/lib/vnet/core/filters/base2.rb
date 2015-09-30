@@ -9,18 +9,6 @@ module Vnet::Core::Filters
 #    attr_accessor :dp_info
     attr_reader :interface_id
 
-    COOKIE_TYPE_MASK = 0xf << COOKIE_TAG_SHIFT
-
-    COOKIE_TYPE_TAG  = 0x1 << COOKIE_TAG_SHIFT
-    COOKIE_TYPE_RULE = 0x2 << COOKIE_TAG_SHIFT
-    COOKIE_TYPE_REF  = 0x3 << COOKIE_TAG_SHIFT
-    COOKIE_TYPE_ISO  = 0x4 << COOKIE_TAG_SHIFT
-
-    COOKIE_TYPE_VALUE_SHIFT = 36
-    COOKIE_TYPE_VALUE_MASK  = 0xfffff << COOKIE_TYPE_VALUE_SHIFT
-
-    COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
-
     def initialize(params)
       super
      
