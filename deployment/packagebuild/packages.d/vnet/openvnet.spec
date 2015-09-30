@@ -67,6 +67,8 @@ cp -r deployment/conf.el6/etc/* "$RPM_BUILD_ROOT"/etc/
 %else
 install -m 755 -d "$RPM_BUILD_ROOT"%{_unitdir}
 cp deployment/conf.el7/systemd/*.service "$RPM_BUILD_ROOT"%{_unitdir}
+install -m 755 -d "$RPM_BUILD_ROOT"/etc/sysconfig
+cp deployment/conf.el7/sysconfig/* "$RPM_BUILD_ROOT"/etc/sysconfig
 %endif
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -152,6 +154,7 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 %config(noreplace) /etc/default/vnet-webapi
 %config /etc/init/vnet-webapi.conf
 %else
+%config(noreplace) /etc/sysconfig/vnet-webapi
 %config %{_unitdir}/vnet-webapi.service
 %endif
 
