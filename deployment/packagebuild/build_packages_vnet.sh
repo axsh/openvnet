@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -xe
+set -xe -o pipefail
 
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 repo_dir=
@@ -69,7 +69,8 @@ fi
 find ${WORK_DIR}/{SRPMS,RPMS} -name '*.rpm' -exec rm -f {} \;
 
 export GIT_BRANCH=${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
-git archive --format=tgz --prefix="openvnet/" --output="${WORK_DIR}/SOURCES/openvnet.tar.gz" ${GIT_BRANCH}
+# git 1.7 issue: --format=tar.gz is not supported and returns "Not a valid object name" for ref name.
+git archive --format=tar --prefix="openvnet/" $(git rev-parse HEAD) | gzip > "${WORK_DIR}/SOURCES/openvnet.tar.gz"
 
 #
 # Build the packages
