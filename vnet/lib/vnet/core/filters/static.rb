@@ -95,7 +95,7 @@ module Vnet::Core::Filters
            ip_proto: IPV4_PROTOCOL_TCP,
            tcp_dst: filter[:port_number]
          }]
-      when "udb" then
+      when "udp" then
          [{ eth_type: ETH_TYPE_IPV4,
            ipv4_dst: filter[:ipv4_address],
            ip_proto: IPV4_PROTOCOL_UDP,
@@ -147,20 +147,24 @@ module Vnet::Core::Filters
     end
 
     def flows_for_egress_filtering(flows = [], filter)
-      match_actions_for_egress(filter).each { |match|
-        flow_options = {
-          table: TABLE_INTERFACE_EGRESS_FILTER,
-          priority: 50,
-          match_interface: @interface_id,
-          match: check_zero_value(match, filter)
-        }
-        
-        if @egress_passthrough
-          flow_options[:goto_table] = TABLE_INTERFACE_EGRESS_VALIDATE
-          flow_options[:priority] = 10
-        end
 
-        flows << flow_create(flow_options)
+      match_actions_for_egress(filter).each { |match|
+        if @egress_passthrough
+          flows << flow_create(
+            table: TABLE_INTERFACE_EGRESS_FILTER,
+            goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
+            priority: 10,
+            match_interface: @interface_id,
+            match: check_zero_value(match, filter)
+          )
+        else
+          flows << flow_create(
+            table: TABLE_INTERFACE_EGRESS_FILTER,
+            priority: 50,
+            match_interface: @interface_id,
+            match: check_zero_value(match, filter)
+          )
+        end
       }
     end
   end
