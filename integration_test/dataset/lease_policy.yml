@@ -72,7 +72,7 @@ ip_ranges:
   - ip_range_group_uuid: iprg-1
     begin_ipv4_address: 10.101.0.20
     end_ipv4_address: 10.101.0.30
- 
+
 lease_policy_base_networks:
   - lease_policy_uuid: lp-1
     network_uuid: nw-vnet1

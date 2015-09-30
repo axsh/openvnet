@@ -50,7 +50,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   end
 
   param_uuid M::Interface
-  param :new_uuid, :String
+  param :new_uuid, :String, required: true
   put '/:uuid/rename' do
     updated_object = M::Interface.batch.rename(params['uuid'], params['new_uuid']).commit
     respond_with([updated_object])
@@ -60,13 +60,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   # Ports:
   #
 
-  def self.port_put_post_shared_params
+  def self.port_delete_post_shared_params
     param_uuid M::Datapath, :datapath_uuid
     param :port_name, :String
     param :singular, :Boolean
   end
 
-  port_put_post_shared_params
+  port_delete_post_shared_params
   param_uuid M::Interface
   post '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
@@ -78,14 +78,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     remove_system_parameters
 
     interface_port = M::InterfacePort.create_with_uuid(params)
-    respond_with(interface_port)
+    respond_with(R::InterfacePort.generate(interface_port))
   end
 
   get '/:uuid/ports' do
     show_relations(:Interface, :interface_ports)
   end
 
-  port_put_post_shared_params
+  port_delete_post_shared_params
   delete '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
     datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
@@ -100,7 +100,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     ports = M::InterfacePort.batch.where(filter).all.commit
     ports.each { |r| M::InterfacePort.destroy(r.id) }
 
-    respond_with(ports)
+    respond_with(R::InterfacePortCollection.generate(ports))
   end
 
   #

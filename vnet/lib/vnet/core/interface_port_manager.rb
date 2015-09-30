@@ -9,6 +9,7 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
 
     subscribe_event INTERFACE_PORT_INITIALIZED, :load_item
     subscribe_event INTERFACE_PORT_UNLOAD_ITEM, :unload_item
@@ -20,9 +21,8 @@ module Vnet::Core
     subscribe_event INTERFACE_PORT_ACTIVATE, :activate_port
     subscribe_event INTERFACE_PORT_DEACTIVATE, :deactivate_port
 
+    # When event handling is set to drop-all, this does nothing.
     def load_internal_interfaces
-      return if @datapath_info.nil?
-
       internal_load_where(mode: 'internal', allowed_datapath: true)
     end
 
@@ -101,7 +101,6 @@ module Vnet::Core
     # If the interface port has a port name, then we require port
     # manager to have provided an associated port number.
     def item_initialize(item_map)
-      return if @datapath_info.nil?
       return if item_map.datapath_id && item_map.datapath_id != @datapath_info.id
 
       item_class = InterfacePorts::Base

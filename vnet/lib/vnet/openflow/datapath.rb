@@ -72,6 +72,11 @@ module Vnet::Openflow
       wait_for_unload_of_host_datapath
 
       info log_format('resetting datapath info')
+
+      @dp_info.managers.each { |manager|
+        manager.event_handler_drop_all
+      }
+
       @controller.pass_task { @controller.reset_datapath(@dpid) }
 
       return nil
@@ -91,17 +96,11 @@ module Vnet::Openflow
       host_datapath = nil
       counter = 0
 
-      # Pre-load host datapath if it exists, else wait for a created
-      # event.
-      #
-      # TODO: Should be done automatically when the manager is initialize.
-      @dp_info.host_datapath_manager.async.retrieve(dpid: @dpid)
-
       while host_datapath.nil?
         info log_format('querying database for datapath with matching dpid', "seconds:#{counter * 30}")
 
         # TODO: Check for node id.
-        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
+        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30, true)
         counter += 1
       end
 
@@ -111,6 +110,13 @@ module Vnet::Openflow
       #
       # TODO: This should be done automatically by datapath manager
       # when it is initialized.
+      # 
+      # Since we load the host datapath here, we need to set
+      # queue-only now.
+      @dp_info.managers.each { |manager|
+        manager.event_handler_queue_only
+      }
+
       @dp_info.datapath_manager.async.retrieve(dpid: @dpid)
     end
 
@@ -179,6 +185,11 @@ module Vnet::Openflow
       # initialized.
       @dp_info.interface_port_manager.load_internal_interfaces
       @dp_info.port_manager.initialize_ports
+
+      # All managers should be initialized, allow events to execute.
+      @dp_info.managers.each { |manager|
+        manager.event_handler_active
+      }
     end
 
   end

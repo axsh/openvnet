@@ -10,6 +10,8 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event TRANSLATION_INITIALIZED, :load_item
     subscribe_event TRANSLATION_UNLOAD_ITEM, :unload_item
     subscribe_event TRANSLATION_CREATED_ITEM, :created_item

@@ -9,6 +9,8 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event INTERFACE_INITIALIZED, :load_item
     subscribe_event INTERFACE_UNLOAD_ITEM, :unload_item
     subscribe_event INTERFACE_CREATED_ITEM, :created_item
@@ -130,6 +132,7 @@ module Vnet::Core
     #
 
     def item_pre_install(item, item_map)
+      # Should be post-install?
       activate_local_interface(item)
     end
 
@@ -334,8 +337,6 @@ module Vnet::Core
     #
 
     def update_item_exclusively(params)
-      return if @datapath_info.nil?
-
       id = params.fetch(:id) || return
       event = params[:event] || return
 
