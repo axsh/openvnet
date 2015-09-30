@@ -157,16 +157,16 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 
 %post webapi
 user="vnet-webapi"
-logfile="/var/log/openvnet/webapi.log"
 
 if ! id "$user" > /dev/null 2>&1 ; then
     adduser --system --no-create-home --shell /bin/false "$user"
 fi
 
+%if 0%{?el6}
+logfile="/var/log/openvnet/webapi.log"
 touch "$logfile"
 chown "$user"."$user" "$logfile"
-
-%if 0%{?el6} == 0
+%else
 %systemd_post vnet-webapi.service
 
 %preun webapi
@@ -204,16 +204,16 @@ This package contains OpenVNet's VNMGR process. This process acts as a frontend 
 
 %post vnmgr
 user="vnet-vnmgr"
-logfile="/var/log/openvnet/vnmgr.log"
 
 if ! id "$user" > /dev/null 2>&1 ; then
     adduser --system --no-create-home --shell /bin/false "$user"
 fi
 
+%if 0%{?el6}
+logfile="/var/log/openvnet/vnmgr.log"
 touch "$logfile"
 chown "$user"."$user" "$logfile"
-
-%if 0%{?el6} == 0
+%else
 %systemd_post vnet-vnmgr.service
 
 %preun vnmgr
