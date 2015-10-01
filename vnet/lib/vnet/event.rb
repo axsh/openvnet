@@ -83,6 +83,8 @@ module Vnet
 
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
+    INTERFACE_ENABLED_FILTERING2 = "interface_enabled_filtering2"
+    INTERFACE_DISABLED_FILTERING2 = "interface_disabled_filtering2"
 
     # MAC and IPv4 addresses:
     INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
