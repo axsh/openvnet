@@ -49,11 +49,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     datapath = check_syntax_and_pop_uuid(M::Datapath)
     interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
     network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
-    M::DatapathNetwork.associate_network(datapath.uuid,
-                                         network.uuid,
-                                         interface.uuid,
-                                         params["broadcast_mac_address"]
-                                         )
+    M::DatapathNetwork.create({ :datapath_id => datapath.id,
+                                :network_id => network.id,
+                                :interface_id => interface.id,
+                                :mac_address => params["broadcast_mac_address"]
+                              })
     # TODO: use response from associate_network().
     respond_with(R::Network.generate(network))
   end
