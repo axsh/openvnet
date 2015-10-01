@@ -26,12 +26,9 @@ module Vnet::Core::Filters
 
     # We make a class method out of cookie so we can access
     # it easily in unit tests.
-    def self.cookie
-      raise NotImplementedError
-    end
 
     def cookie
-      @id | COOKIE_TYPE_FILTER
+      @id | COOKIE_TYPE_FILTER2
     end
 
     def to_hash
@@ -49,9 +46,11 @@ module Vnet::Core::Filters
     end
 
     def added_static(static_id, ipv4_address, port_number, protocol)
+      raise NotImplementedError
     end
 
     def removed_static(static_id)
+      raise NotImplementedError
     end
 
   end
