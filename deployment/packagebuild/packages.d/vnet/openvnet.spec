@@ -109,6 +109,8 @@ Requires: openvnet-ruby
 # runtime package but we will need it for our 0mq client to work. Why this symlink is included
 # in the development package instead of the runtime package is beyond me.
 Requires: zeromq3-devel
+# for yum-builddep
+BuildRequires: zeromq3-devel
 
 %description common
 This package contains all the common code for OpenVNet's services. All of the OpenVNet services depend on this package.
