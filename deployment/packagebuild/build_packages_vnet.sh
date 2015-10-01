@@ -20,6 +20,13 @@ function check_dependency() {
   }
 }
 
+function rpmbuildtree() {
+  local i
+  for i in BUILD  BUILDROOT  RPMS  SOURCES  SPECS  SRPMS; do
+    [[ -d $i ]] || mkdir -p ./$i
+  done
+}
+
 if [ "${BUILD_TYPE}" == "stable" ] && [ -z "${RPM_VERSION}" ]; then
   echo "You need to set RPM_VERSION when building a stable version. This should contain the name of a branch of tag for git to checkout.
         Ex: v0.7"
@@ -61,9 +68,10 @@ sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 # Prepare build directories and put the source in place.
 #
 
-if [[ ! -d "${WORK_DIR}/SOURCES" ]]; then
-  mkdir -p "${WORK_DIR}/SOURCES"
+if [[ ! -d "${WORK_DIR}" ]]; then
+  mkdir -p "${WORK_DIR}"
 fi
+(cd $WORK_DIR; rpmbuildtree)
 
 # Get rid up any possible dirty build directories
 find ${WORK_DIR}/{SRPMS,RPMS} -name '*.rpm' -exec rm -f {} \;
