@@ -108,7 +108,7 @@ module Vnet::Core
 
     # activate port on queue '[:port, port_number]'
     def activate_port(params)
-      warn log_format("XXXXXXXXXXXX activating port", params)
+      warn log_format("activating port", params)
 
       port_name = params_string_n(params, :port_name) || return
       port_number = validate_port_number(params_value(params, :port_number)) || return
@@ -141,7 +141,7 @@ module Vnet::Core
 
     # deactivate port on queue '[:port, port_number]'
     def deactivate_port(params)
-      debug log_format("YYYYYYYYYYYYYY deactivating port", params)
+      debug log_format("deactivating port", params)
 
       port_number = validate_port_number(params_id_value(params)) || return
 

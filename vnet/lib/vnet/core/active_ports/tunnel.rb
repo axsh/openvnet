@@ -17,9 +17,9 @@ module Vnet::Core::ActivePorts
 
       # TODO: Make this flow default for the switch.
       def add_flows_for_id(dp_info, item_id)
-        flows = []
+        # flows = []
 
-        dp_info.add_flows(flows)
+        # dp_info.add_flows(flows)
       end
 
     end
