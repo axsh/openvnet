@@ -59,11 +59,11 @@ module Vnet
     autoload :ActivePortEvents, 'vnet/core/event_helpers'
     autoload :ActiveRouteLinkEvents, 'vnet/core/event_helpers'
     autoload :DpInfo, 'vnet/core/dp_info'
-    autoload :ActiveInterface, 'vnet/core/active_interface'
+    autoload :ActiveInterface, 'vnet/core/items'
     autoload :ActiveInterfaceManager, 'vnet/core/active_interface_manager'
     autoload :ActiveNetwork, 'vnet/core/items'
     autoload :ActiveNetworkManager, 'vnet/core/active_network_manager'
-    autoload :ActivePort, 'vnet/core/generic_items'
+    autoload :ActivePort, 'vnet/core/items'
     autoload :ActivePortManager, 'vnet/core/active_port_manager'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
@@ -107,8 +107,10 @@ module Vnet
     module ActivePorts
       autoload :Base, 'vnet/core/active_ports/base'
       autoload :Local, 'vnet/core/active_ports/local'
+      autoload :Tunnel, 'vnet/core/active_ports/tunnel'
       autoload :Unknown, 'vnet/core/active_ports/unknown'
     end
+
     module Connections
       autoload :Base, 'vnet/core/connections/base'
       autoload :TCP, 'vnet/core/connections/tcp'
