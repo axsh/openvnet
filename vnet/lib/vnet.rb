@@ -61,11 +61,13 @@ module Vnet
     autoload :DpInfo, 'vnet/core/dp_info'
     autoload :ActiveInterface, 'vnet/core/active_interface'
     autoload :ActiveInterfaceManager, 'vnet/core/active_interface_manager'
+    autoload :ActiveNetwork, 'vnet/core/items'
+    autoload :ActiveNetworkManager, 'vnet/core/active_network_manager'
     autoload :ActivePort, 'vnet/core/generic_items'
     autoload :ActivePortManager, 'vnet/core/active_port_manager'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
-    autoload :Datapath, 'vnet/core/datapath'
+    autoload :Datapath, 'vnet/core/items'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :HostDatapath, 'vnet/core/host_datapath'
@@ -75,17 +77,17 @@ module Vnet
     autoload :InterfacePort, 'vnet/core/interface_port'
     autoload :InterfacePortManager, 'vnet/core/interface_port_manager'
     autoload :Manager, 'vnet/core/manager'
-    autoload :Network, 'vnet/core/network'
+    autoload :Network, 'vnet/core/items'
     autoload :NetworkManager, 'vnet/core/network_manager'
     autoload :Port, 'vnet/core/port'
     autoload :PortManager, 'vnet/core/port_manager'
-    autoload :Route, 'vnet/core/route'
+    autoload :Route, 'vnet/core/items'
     autoload :RouteManager, 'vnet/core/route_manager'
-    autoload :Router, 'vnet/core/router'
+    autoload :Router, 'vnet/core/items'
     autoload :RouterManager, 'vnet/core/router_manager'
     autoload :Service, 'vnet/core/service'
     autoload :ServiceManager, 'vnet/core/service_manager'
-    autoload :Translation, 'vnet/core/translation'
+    autoload :Translation, 'vnet/core/items'
     autoload :TranslationManager, 'vnet/core/translation_manager'
     autoload :Tunnel, 'vnet/core/tunnel'
     autoload :TunnelManager, 'vnet/core/tunnel_manager'
@@ -96,12 +98,17 @@ module Vnet
       autoload :Remote, 'vnet/core/active_interfaces/remote'
     end
 
+    module ActiveNetworks
+      autoload :Base, 'vnet/core/active_networks/base'
+      autoload :Local, 'vnet/core/active_networks/local'
+      autoload :Remote, 'vnet/core/active_networks/remote'
+    end
+
     module ActivePorts
       autoload :Base, 'vnet/core/active_ports/base'
       autoload :Local, 'vnet/core/active_ports/local'
       autoload :Unknown, 'vnet/core/active_ports/unknown'
     end
-
     module Connections
       autoload :Base, 'vnet/core/connections/base'
       autoload :TCP, 'vnet/core/connections/tcp'
@@ -272,6 +279,7 @@ module Vnet
     class InvalidUUIDError < StandardError; end
 
     autoload :ActiveInterface, 'vnet/models/active_interface'
+    autoload :ActiveNetwork, 'vnet/models/active_network'
     autoload :ActivePort, 'vnet/models/active_port'
     autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
@@ -310,7 +318,8 @@ module Vnet
   end
 
   module ModelWrappers
-    autoload :ActiveInterface, 'vnet/model_wrappers/active_interface'
+    autoload :ActiveInterface, 'vnet/model_wrappers/wrappers'
+    autoload :ActiveNetwork, 'vnet/model_wrappers/wrappers'
     autoload :ActivePort, 'vnet/model_wrappers/active_port'
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
@@ -358,6 +367,7 @@ module Vnet
     autoload :EventBase, 'vnet/node_api/event_base'
 
     autoload :ActiveInterface, 'vnet/node_api/active_interface'
+    autoload :ActiveNetwork, 'vnet/node_api/active_network'
     autoload :ActivePort, 'vnet/node_api/active_port'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathGeneric, 'vnet/node_api/datapath_generic.rb'

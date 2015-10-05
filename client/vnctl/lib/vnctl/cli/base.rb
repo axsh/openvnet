@@ -42,7 +42,7 @@ module Vnctl::Cli
         if block_given?
           @shared_options = blk
         else
-          @shared_options.call
+          @shared_options && @shared_options.call
         end
       end
 
@@ -69,6 +69,14 @@ module Vnctl::Cli
         option :description, :type => :string, :desc => "Optional verbose description."
       end
 
+      def self.option_offset
+        option :offset, type: :numeric, desc: "Providing X offset will not return the first X records from the WebAPI"
+      end
+
+      def self.option_limit
+        option :limit, type: :numeric, desc: "Limits the amount of records the WebAPI returns."
+      end
+
       # And here we have the methods that create the actual CRUD tasks
       def self.define_add
         desc "add [OPTIONS]", "Creates a new #{namespace}."
@@ -82,9 +90,11 @@ module Vnctl::Cli
 
       def self.define_show
         desc "show [UUID(S)]", "Shows all or a specific set of #{namespace}(s)."
+        option_limit
+        option_offset
         define_method(:show) do |*uuids|
           if uuids.empty?
-            puts Vnctl.webapi.get(suffix)
+            puts Vnctl.webapi.get(suffix, options)
           else
             uuids.each { |uuid| puts Vnctl.webapi.get("#{suffix}/#{uuid}") }
           end
@@ -108,9 +118,10 @@ module Vnctl::Cli
       end
 
       def self.define_rename
-        desc "rename UUID [OPTIONS]", "Rename a #{namespace}."
+        desc "rename UUID", "Rename a #{namespace}."
         option_uuid
-        option :new_uuid, :type => :string, :desc => "New unique UUID for the #{namespace}."
+        option :new_uuid, :type => :string, :required => true,
+          :desc => "New unique UUID for the #{namespace}."
         define_method(:rename) do |uuid|
           puts Vnctl.webapi.put("#{suffix}/#{uuid}/rename", options)
         end
@@ -192,8 +203,10 @@ module Vnctl::Cli
 
           desc "show #{base_uuid_label}",
             "Shows all #{desc_label} in this #{parent.namespace}."
+          option_limit
+          option_offset
           def show(base_uuid)
-            puts Vnctl.webapi.get("#{suffix}/#{base_uuid}/#{rel_name}")
+            puts Vnctl.webapi.get("#{suffix}/#{base_uuid}/#{rel_name}", options)
           end
 
           desc "del #{base_uuid_label} #{relation_uuid_label}(S)",
@@ -210,6 +223,8 @@ module Vnctl::Cli
 
         register(c, "#{relation_name}", "#{relation_name} OPTIONS",
           "subcommand to manage #{relation_name} in this #{self.namespace}.")
+
+        c
       end
     }
   end

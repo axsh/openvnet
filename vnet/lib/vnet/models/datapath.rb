@@ -15,6 +15,7 @@ module Vnet::Models
 
     one_to_many :interface_ports
     one_to_many :active_interfaces
+    one_to_many :active_networks
 
     one_to_many :tunnels, :key => :src_datapath_id
     one_to_many :src_tunnels, :class => Tunnel, :key => :src_datapath_id
@@ -23,6 +24,7 @@ module Vnet::Models
     plugin :association_dependencies,
     # 0001_origin
     active_interfaces: :destroy,
+    active_networks: :destroy,
     datapath_networks: :destroy,
     datapath_route_links: :destroy,
     interface_ports: :destroy,

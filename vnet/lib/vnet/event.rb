@@ -35,6 +35,15 @@ module Vnet
     ACTIVE_INTERFACE_UPDATED = "active_interface_updated"
 
     #
+    # Active Network events:
+    #
+
+    ACTIVE_NETWORK_INITIALIZED = "active_network_initialized"
+    ACTIVE_NETWORK_UNLOAD_ITEM = "active_network_unload_item"
+    ACTIVE_NETWORK_CREATED_ITEM = "active_network_created_item"
+    ACTIVE_NETWORK_DELETED_ITEM = "active_network_deleted_item"
+
+    #
     # Active Port events:
     #
 

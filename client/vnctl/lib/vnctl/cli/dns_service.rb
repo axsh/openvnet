@@ -11,6 +11,7 @@ module Vnctl::Cli
 
     set_required_options [:network_service_uuid]
 
+    option_uuid
     add_modify_shared_options
     option :network_service_uuid, :type => :string, :desc => "Network service uuid."
     define_add

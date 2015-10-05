@@ -45,3 +45,11 @@ VNetAPIClient::Datapath.show_networks('dp-mypath')
 # Deletes a static address from a translation
 VNetAPIClient::Translation.remove_static_address('tr-xxxxx')
 ```
+
+The version number of this gem follows the version of OpenVNet. Each number has the following meaning:
+
+[OpenVNet major version].[OpenVNet minor version].[OpenVNet hotix].[vnet_api_client gem release]
+
+The vnet_api_client gem release number is added because it can some times be necessary to release hotfixes for the gem before a new version of OpenVNet is released.
+
+Do note that OpenVNet's versioning scheme ommits the hotfix number if it is zero. For example if you are using OpenVNet 0.8, then you should use vnet_api_client version 0.8.0.x.

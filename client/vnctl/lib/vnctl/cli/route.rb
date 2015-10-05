@@ -13,6 +13,7 @@ module Vnctl::Cli
       option :ipv4_prefix, :type => :numeric, :desc => "IPv4 prefix for this route."
     }
 
+    option_uuid
     add_modify_shared_options
     option :ingress, :type => :boolean, :desc => "Flag to determine if this is an ingress route."
     option :egress, :type => :boolean, :desc => "Flag to determine if this is an egress route."
