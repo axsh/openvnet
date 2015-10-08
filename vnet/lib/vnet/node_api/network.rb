@@ -3,6 +3,11 @@
 module Vnet::NodeApi
   class Network < EventBase
     class << self
+      def create(params)
+        model_network = super(params)
+        DatapathNetwork.auto_create(model_network.id) if params[:auto_dpnet]
+        model_network
+      end
       private
 
       def dispatch_created_item_events(model)

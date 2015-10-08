@@ -7,12 +7,19 @@ module Vnet::NodeApi
       private
 
       def create_with_transaction(options)
-        if options[:ip_lease_id].nil?
+        transaction do
           options = options.dup
-          options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
-        end
 
-        internal_create(options)
+          if options[:mac_address].nil?
+            options[:mac_address] = generate_new_mac_address
+          end
+
+          if options[:ip_lease_id].nil?
+            options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
+          end
+
+          internal_create(options)
+        end
       end
 
       def destroy_with_transaction(datapath_id: datapath_id, generic_id: generic_id)
@@ -37,7 +44,48 @@ module Vnet::NodeApi
 
   class DatapathNetwork < DatapathGeneric
     class << self
+
+      def auto_create(network_id)
+        Datapath.all.each do |datapath|
+          get_host_interfaces(datapath.id).each do |host_if|
+            params = {
+              :datapath_id => datapath.id,
+              :network_id => network.id,
+              :interface_id => host_if.id
+            }
+            create(params) if DatapathNetwork.filter(params).empty?
+          end
+        end
+      end
+
       private
+
+      def get_host_interfaces(datapath_id)
+        Interface.dataset.join_table(
+          :left, :interface_ports,
+          {interface_ports__interface_id: :interfaces__id}
+        ).where(
+          interfaces__mode: MODE_HOST,
+          interface_ports__datapath_id: datapath_id
+        ).select_all(:interfaces)
+      end
+
+      def generate_new_mac_address
+        # TODO: replace with lease policy manager to ask new address.
+        retry_count = 10
+        begin
+          new_addr = (Vnet::Configurations::Vnmgr.conf.datapath_network_mac_vendor_address +
+                      [Random.rand(0x7F),
+                       Random.rand(0xFF),
+                       Random.rand(0xFF)
+                      ]).pack("C*")
+          if Vnet::Models::MacAddress.filter(mac_address: new_addr).empty?
+            return new_addr
+          end
+          retry_count -= 1
+        end while retry_count > 0
+        raise "Exceeds retry to generate MAC address for broadcast."
+      end
 
       def dispatch_created_item_events(model)
         dispatch_event(ADDED_DATAPATH_NETWORK, prepare_event_hash(model))

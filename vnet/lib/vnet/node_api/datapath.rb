@@ -24,7 +24,6 @@ module Vnet::NodeApi
         InterfacePort.dispatch_deleted_where(default_filter, model.deleted_at)
         Tunnel.dispatch_deleted_where(tunnel_filter, model.deleted_at)
       end
-
     end
   end
 end

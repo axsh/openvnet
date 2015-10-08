@@ -14,6 +14,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   param_uuid M::Network
   param_options :display_name, required: true
   param_options :ipv4_network, required: true
+  param_options :auto_dpnet, required: false
   post do
     post_new(:Network)
   end

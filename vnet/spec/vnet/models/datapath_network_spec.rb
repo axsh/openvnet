@@ -23,6 +23,19 @@ describe Vnet::Models::DatapathNetwork do
     Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_3.id, :network_id => 2, :mac_address_id => mac_address_3_2.id)
   end
 
+  context "unique condition" do
+    it "rejects same existing entry" do
+      expect {
+        Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_1.id, :network_id => 1, :mac_address => mac_address_1_1)
+      }.to raise_error Sequel::Error
+    end
+    it "rejects same broadcast mac address" do
+      expect {
+        Vnet::Models::DatapathNetwork.create(:datapath_id => datapath_1.id, :network_id => 3, :mac_address => mac_address_1_1)
+      }.to raise_error Sequel::Error
+    end
+  end
+
   describe "datapath_networks_in_the_same_network" do
     subject { datapath_1.datapath_networks.first.datapath_networks_in_the_same_network }
     it { expect(subject.size).to eq 2 }

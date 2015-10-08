@@ -27,5 +27,19 @@ module Vnet::Configurations
         @config[:node] = Node.new.tap {|node| node.parse_dsl(&block) if block }
       end
     end
+
+    param :datapath_network_mac_vendor_address, :default => [0x02, 0xbe, 0xef]
+
+    def validate(errors)
+      v = @config[:datapath_network_mac_vendor_address]
+      case v
+      when Array
+        if v.size != 3
+          raise "datapath_network_mac_vendor_address: invalid length"
+        end
+      else
+        raise "datapath_network_mac_vendor_address: invalid value"
+      end
+    end
   end
 end
