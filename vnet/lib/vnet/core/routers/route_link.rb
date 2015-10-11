@@ -27,17 +27,19 @@ module Vnet::Core::Routers
     private
 
     def flows_for_dynamic_load(flows)
-      flows << flow_create(table: TABLE_ROUTER_CLASSIFIER,
-                           goto_table: TABLE_ROUTER_EGRESS_LOOKUP,
-                           priority: 30,
+      routing_table_base_indices.each { |table_base|
+        flows << flow_create(table: table_base + TABLEN_ROUTER_CLASSIFIER,
+                             goto_table: table_base + TABLEN_ROUTER_EGRESS_LOOKUP,
+                             priority: 30,
 
-                           # TODO: Set reflection flag here?... If so don't set it in route_link_ingress(?)
-                           match_route_link: @id)
+                             # TODO: Set reflection flag here?... If so don't set it in route_link_ingress(?)
+                             match_route_link: @id)
+      }
     end
 
     def flows_for_route_link(flows)
       flows << flow_create(table: TABLE_CONTROLLER_PORT,
-                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           goto_table: routing_table_index(TABLEN_ROUTER_CLASSIFIER, 0),
                            priority: 30,
 
                            match: {
@@ -46,7 +48,7 @@ module Vnet::Core::Routers
                            write_route_link: @id)
 
       flows << flow_create(table: TABLE_TUNNEL_NETWORK_IDS,
-                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           goto_table: routing_table_index(TABLEN_ROUTER_CLASSIFIER, 0),
                            priority: 30,
 
                            match: {

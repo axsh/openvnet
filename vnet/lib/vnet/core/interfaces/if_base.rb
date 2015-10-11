@@ -142,7 +142,9 @@ module Vnet::Core::Interfaces
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       if ipv4_info[:enable_routing] != true
-        flows << flow_create(table: TABLE_ROUTE_INGRESS_INTERFACE,
+        # TODO: Should not be needed if we catch eth_dst on networks
+        # the interface is part of.
+        flows << flow_create(table: routing_table_index(TABLEN_ROUTE_INGRESS_INTERFACE, 0),
                              goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                              priority: 20,
                              match: {
@@ -154,16 +156,18 @@ module Vnet::Core::Interfaces
                              cookie: cookie)
       end
 
-      flows << flow_create(table: TABLE_ROUTE_INGRESS_INTERFACE,
-                           goto_table: TABLE_ROUTE_INGRESS_TRANSLATION,
-                           priority: 10,
-                           match: {
-                             :eth_type => 0x0800,
-                             :eth_dst => mac_info[:mac_address]
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie)
+      routing_table_base_indices.each { |table_base|
+        flows << flow_create(table: table_base + TABLEN_ROUTE_INGRESS_INTERFACE,
+                             goto_table: table_base + TABLEN_ROUTE_INGRESS_TRANSLATION,
+                             priority: 10,
+                             match: {
+                               :eth_type => 0x0800,
+                               :eth_dst => mac_info[:mac_address]
+                             },
+                             match_network: ipv4_info[:network_id],
+                             write_interface: @id,
+                             cookie: cookie)
+      }
     end
 
     # TODO: Rename:
@@ -231,38 +235,43 @@ module Vnet::Core::Interfaces
                            },
                            match_network: ipv4_info[:network_id],
                            cookie: cookie)
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
-                           goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
-                           priority: 20,
 
-                           match_value_pair_first: @id,
+      routing_table_base_indices.each { |table_base|
+        flows << flow_create(table: table_base + TABLEN_ROUTE_EGRESS_LOOKUP,
+                             goto_table: table_base + TABLEN_ROUTE_EGRESS_TRANSLATION,
+                             priority: 20,
 
-                           clear_all: true,
-                           write_reflection: true,
-                           write_interface: @id,
+                             match_value_pair_first: @id,
 
-                           cookie: cookie)
+                             clear_all: true,
+                             write_reflection: true,
+                             write_interface: @id,
 
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE,
-                           goto_table: TABLE_ARP_TABLE,
-                           priority: 20,
+                             cookie: cookie)
 
-                           actions: {
-                             :eth_src => mac_info[:mac_address]
-                           },
-                           match_interface: @id,
-                           write_network: ipv4_info[:network_id],
-                           cookie: cookie)
+        flows << flow_create(table: table_base + TABLEN_ROUTE_EGRESS_INTERFACE,
+                             goto_table: TABLE_ARP_TABLE,
+                             priority: 20,
+
+                             actions: {
+                               :eth_src => mac_info[:mac_address]
+                             },
+                             match_interface: @id,
+                             write_network: ipv4_info[:network_id],
+                             cookie: cookie)
+      }
     end
 
     def flows_for_route_translation(flows)
-      [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS_LOOKUP],
-       [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
-      ].each { |table, goto_table|
-        flows << flow_create(table: table,
-                             goto_table: goto_table,
-                             priority: 90,
-                             match_interface: @id)
+      [[TABLEN_ROUTE_INGRESS_TRANSLATION, TABLEN_ROUTER_INGRESS_LOOKUP],
+       [TABLEN_ROUTE_EGRESS_TRANSLATION, TABLEN_ROUTE_EGRESS_INTERFACE],
+      ].each { |table_index, goto_table|
+        routing_table_base_indices.each { |table_base|
+          flows << flow_create(table: table_base + table_index,
+                               goto_table: table_base + goto_table,
+                               priority: 90,
+                               match_interface: @id)
+        }
       }
     end
 

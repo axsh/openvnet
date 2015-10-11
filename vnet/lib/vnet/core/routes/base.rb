@@ -94,22 +94,25 @@ module Vnet::Core::Routes
                            write_network: @network_id)
 
       if @ingress == true
-        flows << flow_create(table: TABLE_ROUTER_INGRESS_LOOKUP,
-                             goto_table: TABLE_ROUTER_CLASSIFIER,
-                             priority: self.is_default_route ? 20 : 30,
+        routing_table_base_indices.each { |table_base|
+          flows << flow_create(table: table_base + TABLEN_ROUTER_INGRESS_LOOKUP,
+                               goto_table: table_base + TABLEN_ROUTER_CLASSIFIER,
+                               priority: self.is_default_route ? 20 : 30,
 
-                             match: subnet_src,
-                             match_interface: @interface_id,
-                             write_route_link: @route_link_id,
-                             write_reflection: true)
+                               match: subnet_src,
+                               match_interface: @interface_id,
+                               write_route_link: @route_link_id,
+                               write_reflection: true)
+        }
       end
 
       # In order to know what interface to egress from this flow needs
       # to be created even on datapaths where the interface is remote.
       [true, false].each { |reflection|
         if @egress == true
-          flows << flow_create(table: TABLE_ROUTER_EGRESS_LOOKUP,
-                               goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
+        routing_table_base_indices.each { |table_base|
+          flows << flow_create(table: table_base + TABLEN_ROUTER_EGRESS_LOOKUP,
+                               goto_table: table_base + TABLEN_ROUTE_EGRESS_LOOKUP,
                                priority: self.is_default_route ? 20 : 30,
 
                                match: subnet_dst,
@@ -118,6 +121,7 @@ module Vnet::Core::Routes
                                write_value_pair_flag: reflection,
                                write_value_pair_first: @interface_id,
                                write_value_pair_second: @route_link_id)
+          }
         end
       }
 

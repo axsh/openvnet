@@ -116,17 +116,17 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_INTERFACE_EGRESS_ROUTES)
 
       # FOOO
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
-                           priority: 20,
+      # flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE,
+      #                      goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+      #                      priority: 20,
 
-                           actions: {
-                             :eth_src => Trema::Mac.new('00:00:27:11:11:11'),
-                             :eth_dst => Trema::Mac.new('00:00:27:22:22:22'),
-                           },
-                           match_interface: @id,
+      #                      actions: {
+      #                        :eth_src => Trema::Mac.new('00:00:27:11:11:11'),
+      #                        :eth_dst => Trema::Mac.new('00:00:27:22:22:22'),
+      #                      },
+      #                      match_interface: @id,
 
-                           cookie: cookie)
+      #                      cookie: cookie)
     end
 
     def flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
@@ -145,17 +145,20 @@ module Vnet::Core::Interfaces
                            },
                            match_network: ipv4_info[:network_id],
                            cookie: cookie)
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
-                           goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
-                           priority: 1,
 
-                           match_value_pair_first: @id,
+      routing_table_base_indices.each { |table_base|
+        flows << flow_create(table: table_base + TABLEN_ROUTE_EGRESS_LOOKUP,
+                             goto_table: table_base + TABLEN_ROUTE_EGRESS_TRANSLATION,
+                             priority: 1,
 
-                           clear_all: true,
-                           write_reflection: true,
-                           write_interface: @id,
+                             match_value_pair_first: @id,
 
-                           cookie: cookie)
+                             clear_all: true,
+                             write_reflection: true,
+                             write_interface: @id,
+
+                             cookie: cookie)
+      }
     end
 
   end

@@ -81,16 +81,20 @@ module Vnet::Core::Translations
       # TODO: Fix del flow for route link translation...
 
       match_actions_for_ingress(translation).each { |match, actions|
-        @dp_info.del_flows(table_id: TABLE_ROUTE_INGRESS_TRANSLATION,
-                           cookie: self.cookie,
-                           cookie_mask: self.cookie_mask,
-                           match: match)
+        routing_table_base_indices.each { |table_base|
+          @dp_info.del_flows(table_id: table_base + TABLEN_ROUTE_INGRESS_TRANSLATION,
+                             cookie: self.cookie,
+                             cookie_mask: self.cookie_mask,
+                             match: match)
+        }
       }
       match_actions_for_egress(translation).each { |match, actions|
-        @dp_info.del_flows(table_id: TABLE_ROUTE_EGRESS_TRANSLATION,
-                           cookie: self.cookie,
-                           cookie_mask: self.cookie_mask,
-                           match: match)
+        routing_table_base_indices.each { |table_base|
+          @dp_info.del_flows(table_id: table_base + TABLEN_ROUTE_EGRESS_TRANSLATION,
+                             cookie: self.cookie,
+                             cookie_mask: self.cookie_mask,
+                             match: match)
+        }
       }
     end
 
@@ -159,21 +163,22 @@ module Vnet::Core::Translations
     end
 
     def flows_for_enable_passthrough(flows)
-      [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS_LOOKUP],
-       [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE]
-      ].each { |table, goto_table|
-        flows << flow_create(table: table,
-                             goto_table: goto_table,
-                             priority: 10,
+      [[TABLEN_ROUTE_INGRESS_TRANSLATION, TABLEN_ROUTER_INGRESS_LOOKUP],
+       [TABLEN_ROUTE_EGRESS_TRANSLATION, TABLEN_ROUTE_EGRESS_INTERFACE]
+      ].each { |table_index, goto_table|
+        routing_table_base_indices.each { |table_base|
+          flows << flow_create(table: table_base + table_index,
+                               goto_table: table_base + goto_table,
+                               priority: 10,
 
-                             match_interface: @interface_id)
+                               match_interface: @interface_id)
+        }
       }
     end
 
     def flows_for_ingress_translation(flows, translation)
       match_actions_for_ingress(translation).each { |match, actions|
         flow_options = {
-          table: TABLE_ROUTE_INGRESS_TRANSLATION,
           priority: 50,
           match: match,
           match_interface: @interface_id,
@@ -181,14 +186,19 @@ module Vnet::Core::Translations
         }
 
         if translation[:route_link_id]
-          flow_options[:goto_table] = TABLE_ROUTER_CLASSIFIER
+          goto_table = TABLEN_ROUTER_CLASSIFIER
           flow_options[:write_route_link] = translation[:route_link_id]
           flow_options[:write_reflection] = true
         else
-          flow_options[:goto_table] = TABLE_ROUTER_INGRESS_LOOKUP
+          goto_table = TABLEN_ROUTER_INGRESS_LOOKUP
         end
 
-        flows << flow_create(flow_options)
+        routing_table_base_indices.each { |table_base|
+          flow_options[:table] = table_base + TABLEN_ROUTE_INGRESS_TRANSLATION
+          flow_options[:goto_table] = table_base + goto_table
+
+          flows << flow_create(flow_options)
+        }
       }
     end
 
@@ -203,20 +213,25 @@ module Vnet::Core::Translations
 
         # TODO: Move outside of block...
         if translation[:route_link_id]
-          flow_options[:table] = TABLE_ROUTE_EGRESS_LOOKUP
-          flow_options[:goto_table] = TABLE_ROUTE_EGRESS_INTERFACE
+          table_index = TABLEN_ROUTE_EGRESS_LOOKUP
+          goto_table = TABLEN_ROUTE_EGRESS_INTERFACE
           flow_options[:match_value_pair_first] = @interface_id
           flow_options[:match_value_pair_second] = translation[:route_link_id]
           flow_options[:clear_all] = true
           flow_options[:write_reflection] = true
           flow_options[:write_interface] = @interface_id
         else
-          flow_options[:table] = TABLE_ROUTE_EGRESS_TRANSLATION
-          flow_options[:goto_table] = TABLE_ROUTE_EGRESS_INTERFACE
+          table_index = TABLEN_ROUTE_EGRESS_TRANSLATION
+          goto_table = TABLEN_ROUTE_EGRESS_INTERFACE
           flow_options[:match_interface] = @interface_id
         end
 
-        flows << flow_create(flow_options)
+        routing_table_base_indices.each { |table_base|
+          flow_options[:table] = table_base + table_index
+          flow_options[:goto_table] = table_base + goto_table
+
+          flows << flow_create(flow_options)
+        }
       }
     end
 

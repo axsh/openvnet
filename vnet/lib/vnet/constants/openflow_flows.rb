@@ -57,34 +57,53 @@ module Vnet
 
       # In the transition from TABLE_ROUTER_EGRESS_LOOKUP to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.
-      TABLE_ROUTE_INGRESS_INTERFACE          = 30
-      TABLE_ROUTE_INGRESS_TRANSLATION        = 31
-      TABLE_ROUTER_INGRESS_LOOKUP            = 32
-      TABLE_ROUTER_CLASSIFIER                = 33
-      TABLE_ROUTER_EGRESS_LOOKUP             = 34
-      TABLE_ROUTE_EGRESS_LOOKUP              = 35
-      TABLE_ROUTE_EGRESS_TRANSLATION         = 36
-      TABLE_ROUTE_EGRESS_INTERFACE           = 37
+      TABLE_ROUTING_INDEX = 30
+      TABLE_ROUTING_SIZE  = 10
+      TABLE_ROUTING_MAX_N = 3
 
-      TABLE_ARP_TABLE                        = 40
-      TABLE_ARP_LOOKUP                       = 41
+      TABLE2_ROUTE_INGRESS_INTERFACE          = 30
+      TABLE2_ROUTE_INGRESS_TRANSLATION        = 31
+      TABLE2_ROUTER_INGRESS_LOOKUP            = 32
+      TABLE2_ROUTER_CLASSIFIER                = 33
+      TABLE2_ROUTER_EGRESS_LOOKUP             = 34
+      TABLE2_ROUTE_EGRESS_LOOKUP              = 35
+      TABLE2_ROUTE_EGRESS_TRANSLATION         = 36
+      TABLE2_ROUTE_EGRESS_INTERFACE           = 37
 
-      TABLE_NETWORK_DST_CLASSIFIER           = 42
-      TABLE_NETWORK_DST_MAC_LOOKUP           = 43
+      TABLEN_ROUTE_INGRESS_INTERFACE          = 0
+      TABLEN_ROUTE_INGRESS_TRANSLATION        = 1
+      TABLEN_ROUTER_INGRESS_LOOKUP            = 2
+      TABLEN_ROUTER_CLASSIFIER                = 3
+      TABLEN_ROUTER_EGRESS_LOOKUP             = 4
+      TABLEN_ROUTE_EGRESS_LOOKUP              = 5
+      TABLEN_ROUTE_EGRESS_TRANSLATION         = 6
+      TABLEN_ROUTE_EGRESS_INTERFACE           = 7
 
-      TABLE_INTERFACE_INGRESS_FILTER         = 45
-      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP  = 46
+      #
+      # Post-routing tables:
+      #
 
-      TABLE_FLOOD_SIMULATED                  = 50
-      TABLE_FLOOD_LOCAL                      = 51
-      TABLE_FLOOD_TUNNELS                    = 52
-      TABLE_FLOOD_SEGMENT                    = 53
+      TABLE_POST_ROUTING_INDEX = 100
 
-      TABLE_LOOKUP_IF_NW_TO_DP_NW            = 70
-      TABLE_LOOKUP_IF_RL_TO_DP_RL            = 71
-      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK       = 72
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 73
-      TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS = 74
+      TABLE_ARP_TABLE                        = TABLE_POST_ROUTING_INDEX + 0
+      TABLE_ARP_LOOKUP                       = TABLE_POST_ROUTING_INDEX + 1
+
+      TABLE_NETWORK_DST_CLASSIFIER           = TABLE_POST_ROUTING_INDEX + 2
+      TABLE_NETWORK_DST_MAC_LOOKUP           = TABLE_POST_ROUTING_INDEX + 3
+
+      TABLE_INTERFACE_INGRESS_FILTER         = TABLE_POST_ROUTING_INDEX + 5
+      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP  = TABLE_POST_ROUTING_INDEX + 6
+
+      TABLE_FLOOD_SIMULATED                  = TABLE_POST_ROUTING_INDEX + 10
+      TABLE_FLOOD_LOCAL                      = TABLE_POST_ROUTING_INDEX + 11
+      TABLE_FLOOD_TUNNELS                    = TABLE_POST_ROUTING_INDEX + 12
+      TABLE_FLOOD_SEGMENT                    = TABLE_POST_ROUTING_INDEX + 13
+
+      TABLE_LOOKUP_IF_NW_TO_DP_NW            = TABLE_POST_ROUTING_INDEX + 20
+      TABLE_LOOKUP_IF_RL_TO_DP_RL            = TABLE_POST_ROUTING_INDEX + 21
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK       = TABLE_POST_ROUTING_INDEX + 22
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = TABLE_POST_ROUTING_INDEX + 23
+      TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS = TABLE_POST_ROUTING_INDEX + 24
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source
@@ -96,14 +115,14 @@ module Vnet
       # network or route link, while for tunnels the output port needs
       # to be selected from pre-created tunnels.
 
-      TABLE_OUTPUT_DP_NETWORK_DST_IF         = 80
-      TABLE_OUTPUT_DP_NETWORK_SRC_IF         = 81
+      TABLE_OUTPUT_DP_NETWORK_DST_IF    = TABLE_POST_ROUTING_INDEX + 30
+      TABLE_OUTPUT_DP_NETWORK_SRC_IF    = TABLE_POST_ROUTING_INDEX + 31
 
-      TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF      = 82
-      TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF      = 84
+      TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF = TABLE_POST_ROUTING_INDEX + 32
+      TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF = TABLE_POST_ROUTING_INDEX + 34
 
-      TABLE_OUTPUT_DP_OVER_MAC2MAC           = 85 # Match src/dst if id, output if present.
-      TABLE_OUTPUT_DP_OVER_TUNNEL            = 86 # Use tun_id to determine type for goto_table.
+      TABLE_OUTPUT_DP_OVER_MAC2MAC      = TABLE_POST_ROUTING_INDEX + 35 # Match src/dst if id, output if present.
+      TABLE_OUTPUT_DP_OVER_TUNNEL       = TABLE_POST_ROUTING_INDEX + 36 # Use tun_id to determine type for goto_table.
 
       #
       # Output ports tables:
@@ -112,9 +131,9 @@ module Vnet
       # Directly output to a port type with no additional
       # actions. Usable by any table and as such need to be the last
       # tables.
-      TABLE_OUT_PORT_INTERFACE_INGRESS = 90
-      TABLE_OUT_PORT_INTERFACE_EGRESS  = 91
-      TABLE_OUT_PORT_TUNNEL            = 92
+      TABLE_OUT_PORT_INTERFACE_INGRESS  = TABLE_POST_ROUTING_INDEX + 40
+      TABLE_OUT_PORT_INTERFACE_EGRESS   = TABLE_POST_ROUTING_INDEX + 41
+      TABLE_OUT_PORT_TUNNEL             = TABLE_POST_ROUTING_INDEX + 42
 
       #
       # Cookie constants:

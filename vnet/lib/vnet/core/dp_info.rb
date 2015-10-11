@@ -83,9 +83,14 @@ module Vnet::Core
 
       @controller.pass_task {
         flows.each { |flow|
-          @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
+          begin
+            @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
+          rescue Exception => e
+            Celluloid::Logger.error "Could not create flow: #{flow.inspect}"
+            raise e
+          end
+          }
         }
-      }
     end
 
     def add_ovs_flow(flow_str)

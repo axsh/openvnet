@@ -55,14 +55,6 @@ module Vnet::Openflow
 
        TABLE_NETWORK_SRC_CLASSIFIER,
 
-       TABLE_ROUTE_INGRESS_INTERFACE,
-       TABLE_ROUTE_INGRESS_TRANSLATION,
-       TABLE_ROUTER_INGRESS_LOOKUP,
-       TABLE_ROUTER_CLASSIFIER,
-       TABLE_ROUTER_EGRESS_LOOKUP,
-       TABLE_ROUTE_EGRESS_LOOKUP,
-       TABLE_ROUTE_EGRESS_TRANSLATION,
-       TABLE_ROUTE_EGRESS_INTERFACE,
        TABLE_ARP_LOOKUP,
 
        TABLE_NETWORK_DST_CLASSIFIER,
@@ -92,6 +84,25 @@ module Vnet::Openflow
         flows << flow_create(table: table, priority: 0)
       }
 
+      routing_table_base_indices.each { |table_base|
+        [TABLEN_ROUTE_INGRESS_INTERFACE,
+         TABLEN_ROUTE_INGRESS_TRANSLATION,
+         TABLEN_ROUTER_INGRESS_LOOKUP,
+         TABLEN_ROUTER_CLASSIFIER,
+         TABLEN_ROUTER_EGRESS_LOOKUP,
+         TABLEN_ROUTE_EGRESS_LOOKUP,
+         TABLEN_ROUTE_EGRESS_TRANSLATION,
+         TABLEN_ROUTE_EGRESS_INTERFACE
+        ].each { |table_index|
+          flows << flow_create(table: table_base + table_index,
+                               priority: 0)
+        }
+
+        flows << flow_create(table: table_base + TABLEN_ROUTE_INGRESS_INTERFACE,
+                             goto_table: TABLE_NETWORK_DST_CLASSIFIER,
+                             priority: 0)
+      }
+
       [[TABLE_CLASSIFIER, 1, nil, { :tunnel_id => 0 }],
        [TABLE_FLOOD_TUNNELS, 10, :match_remote, nil],
        [TABLE_OUTPUT_DP_NETWORK_DST_IF, 2, nil, { :eth_dst => MAC_BROADCAST }],
@@ -107,7 +118,6 @@ module Vnet::Openflow
       # Default goto_table flows:
       #
       [[TABLE_NETWORK_SRC_MAC_LEARNING, TABLE_NETWORK_DST_CLASSIFIER],
-       [TABLE_ROUTE_INGRESS_INTERFACE, TABLE_NETWORK_DST_CLASSIFIER],
        [TABLE_ARP_TABLE, TABLE_ARP_LOOKUP],
        [TABLE_FLOOD_SIMULATED, TABLE_FLOOD_LOCAL],
        [TABLE_FLOOD_TUNNELS, TABLE_FLOOD_SEGMENT],
