@@ -132,7 +132,7 @@ module Vnet::Openflow
     end
 
     def routing_table_base_indices
-      @routing_table_base_list ||= (0..TABLE_ROUTING_MAX_N).map { |i|
+      @routing_table_base_list ||= (0..(TABLE_ROUTING_MAX_N-1)).map { |i|
         TABLE_ROUTING_INDEX + (TABLE_ROUTING_SIZE * i)
       }
     end

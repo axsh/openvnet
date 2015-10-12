@@ -85,20 +85,20 @@ module Vnet::Openflow
       }
 
       routing_table_base_indices.each { |table_base|
-        [TABLEN_ROUTE_INGRESS_INTERFACE,
-         TABLEN_ROUTE_INGRESS_TRANSLATION,
-         TABLEN_ROUTER_INGRESS_LOOKUP,
-         TABLEN_ROUTER_CLASSIFIER,
-         TABLEN_ROUTER_EGRESS_LOOKUP,
-         TABLEN_ROUTE_EGRESS_LOOKUP,
-         TABLEN_ROUTE_EGRESS_TRANSLATION,
-         TABLEN_ROUTE_EGRESS_INTERFACE
+        [TABLE_ROUTE_INGRESS_INTERFACE,
+         TABLE_ROUTE_INGRESS_TRANSLATION,
+         TABLE_ROUTER_INGRESS_LOOKUP,
+         TABLE_ROUTER_CLASSIFIER,
+         TABLE_ROUTER_EGRESS_LOOKUP,
+         TABLE_ROUTE_EGRESS_LOOKUP,
+         TABLE_ROUTE_EGRESS_TRANSLATION,
+         TABLE_ROUTE_EGRESS_INTERFACE
         ].each { |table_index|
           flows << flow_create(table: table_base + table_index,
                                priority: 0)
         }
 
-        flows << flow_create(table: table_base + TABLEN_ROUTE_INGRESS_INTERFACE,
+        flows << flow_create(table: table_base + TABLE_ROUTE_INGRESS_INTERFACE,
                              goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                              priority: 0)
       }

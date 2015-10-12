@@ -147,8 +147,8 @@ module Vnet::Core::Interfaces
                            cookie: cookie)
 
       routing_table_base_indices.each { |table_base|
-        flows << flow_create(table: table_base + TABLEN_ROUTE_EGRESS_LOOKUP,
-                             goto_table: table_base + TABLEN_ROUTE_EGRESS_TRANSLATION,
+        flows << flow_create(table: table_base + TABLE_ROUTE_EGRESS_LOOKUP,
+                             goto_table: table_base + TABLE_ROUTE_EGRESS_TRANSLATION,
                              priority: 1,
 
                              match_value_pair_first: @id,

@@ -144,7 +144,7 @@ module Vnet::Core::Interfaces
       if ipv4_info[:enable_routing] != true
         # TODO: Should not be needed if we catch eth_dst on networks
         # the interface is part of.
-        flows << flow_create(table: routing_table_index(TABLEN_ROUTE_INGRESS_INTERFACE, 0),
+        flows << flow_create(table: routing_table_index(TABLE_ROUTE_INGRESS_INTERFACE, 0),
                              goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                              priority: 20,
                              match: {
@@ -157,8 +157,8 @@ module Vnet::Core::Interfaces
       end
 
       routing_table_base_indices.each { |table_base|
-        flows << flow_create(table: table_base + TABLEN_ROUTE_INGRESS_INTERFACE,
-                             goto_table: table_base + TABLEN_ROUTE_INGRESS_TRANSLATION,
+        flows << flow_create(table: table_base + TABLE_ROUTE_INGRESS_INTERFACE,
+                             goto_table: table_base + TABLE_ROUTE_INGRESS_TRANSLATION,
                              priority: 10,
                              match: {
                                :eth_type => 0x0800,
@@ -237,8 +237,8 @@ module Vnet::Core::Interfaces
                            cookie: cookie)
 
       routing_table_base_indices.each { |table_base|
-        flows << flow_create(table: table_base + TABLEN_ROUTE_EGRESS_LOOKUP,
-                             goto_table: table_base + TABLEN_ROUTE_EGRESS_TRANSLATION,
+        flows << flow_create(table: table_base + TABLE_ROUTE_EGRESS_LOOKUP,
+                             goto_table: table_base + TABLE_ROUTE_EGRESS_TRANSLATION,
                              priority: 20,
 
                              match_value_pair_first: @id,
@@ -249,7 +249,7 @@ module Vnet::Core::Interfaces
 
                              cookie: cookie)
 
-        flows << flow_create(table: table_base + TABLEN_ROUTE_EGRESS_INTERFACE,
+        flows << flow_create(table: table_base + TABLE_ROUTE_EGRESS_INTERFACE,
                              goto_table: TABLE_ARP_TABLE,
                              priority: 20,
 
@@ -263,8 +263,8 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_route_translation(flows)
-      [[TABLEN_ROUTE_INGRESS_TRANSLATION, TABLEN_ROUTER_INGRESS_LOOKUP],
-       [TABLEN_ROUTE_EGRESS_TRANSLATION, TABLEN_ROUTE_EGRESS_INTERFACE],
+      [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS_LOOKUP],
+       [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
       ].each { |table_index, goto_table|
         routing_table_base_indices.each { |table_base|
           flows << flow_create(table: table_base + table_index,

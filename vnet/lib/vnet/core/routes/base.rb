@@ -95,8 +95,8 @@ module Vnet::Core::Routes
 
       if @ingress == true
         routing_table_base_indices.each { |table_base|
-          flows << flow_create(table: table_base + TABLEN_ROUTER_INGRESS_LOOKUP,
-                               goto_table: table_base + TABLEN_ROUTER_CLASSIFIER,
+          flows << flow_create(table: table_base + TABLE_ROUTER_INGRESS_LOOKUP,
+                               goto_table: table_base + TABLE_ROUTER_CLASSIFIER,
                                priority: self.is_default_route ? 20 : 30,
 
                                match: subnet_src,
@@ -111,8 +111,8 @@ module Vnet::Core::Routes
       [true, false].each { |reflection|
         if @egress == true
         routing_table_base_indices.each { |table_base|
-          flows << flow_create(table: table_base + TABLEN_ROUTER_EGRESS_LOOKUP,
-                               goto_table: table_base + TABLEN_ROUTE_EGRESS_LOOKUP,
+          flows << flow_create(table: table_base + TABLE_ROUTER_EGRESS_LOOKUP,
+                               goto_table: table_base + TABLE_ROUTE_EGRESS_LOOKUP,
                                priority: self.is_default_route ? 20 : 30,
 
                                match: subnet_dst,

@@ -15,7 +15,7 @@ module Vnet::Core::Networks
     def install
       flows = []
       flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           goto_table: routing_table_index(TABLEN_ROUTE_INGRESS_INTERFACE, 0),
+                           goto_table: routing_table_index(TABLE_ROUTE_INGRESS_INTERFACE, 0),
                            priority: 30,
                            match_network: @id)
       flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,

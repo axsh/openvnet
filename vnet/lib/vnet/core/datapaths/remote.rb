@@ -121,7 +121,7 @@ module Vnet::Core::Datapaths
       # The source mac address of route link packets is required to
       # match a remote dp_rl mac address.
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
-                           goto_table: routing_table_index(TABLEN_ROUTER_CLASSIFIER, 0),
+                           goto_table: routing_table_index(TABLE_ROUTER_CLASSIFIER, 0),
                            priority: 1,
 
                            match: {

@@ -132,7 +132,7 @@ module Vnet::Core::Datapaths
       #
       # TODO: Add verification of the ingress host interface.
       flows << flow_create(table: TABLE_TUNNEL_NETWORK_IDS,
-                           goto_table: routing_table_index(TABLEN_ROUTER_CLASSIFIER, 0),
+                           goto_table: routing_table_index(TABLE_ROUTER_CLASSIFIER, 0),
                            priority: 30,
 
                            match: {
