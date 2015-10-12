@@ -126,14 +126,14 @@ module Vnet::Openflow
     end
 
     def routing_table_index(table_type, hop_n)
-      raise "Invalid routing table index #{hop_n}" if (hop_n < 0 || hop_n >= TABLE_ROUTING_MAX_N)
+      raise "Invalid routing table index #{hop_n}" if (hop_n < 0 || hop_n >= ROUTING_TABLE_MAX_N)
 
-      TABLE_ROUTING_INDEX + (TABLE_ROUTING_SIZE * hop_n) + table_type
+      ROUTING_TABLE_INDEX + (ROUTING_TABLE_SIZE * hop_n) + table_type
     end
 
     def routing_table_base_indices
-      @routing_table_base_list ||= (0..(TABLE_ROUTING_MAX_N-1)).map { |i|
-        TABLE_ROUTING_INDEX + (TABLE_ROUTING_SIZE * i)
+      @routing_table_base_list ||= (0..(ROUTING_TABLE_MAX_N-1)).map { |i|
+        ROUTING_TABLE_INDEX + (ROUTING_TABLE_SIZE * i)
       }
     end
 
