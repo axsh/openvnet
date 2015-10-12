@@ -236,6 +236,9 @@ module Vnet::Core::Interfaces
                            match_network: ipv4_info[:network_id],
                            cookie: cookie)
 
+      prefix = ipv4_info[:network_prefix]
+      subnet = ipv4_info[:ipv4_address].mask(prefix)
+
       routing_table_base_indices.each { |table_base|
         flows << flow_create(table: table_base + TABLE_ROUTE_EGRESS_LOOKUP,
                              goto_table: table_base + TABLE_ROUTE_EGRESS_TRANSLATION,
@@ -250,7 +253,7 @@ module Vnet::Core::Interfaces
                              cookie: cookie)
 
         flows << flow_create(table: table_base + TABLE_ROUTE_EGRESS_INTERFACE,
-                             goto_table: TABLE_ARP_TABLE,
+                             goto_table: table_base + TABLE_ROUTE_NETWORK_HOP,
                              priority: 20,
 
                              actions: {
@@ -258,6 +261,22 @@ module Vnet::Core::Interfaces
                              },
                              match_interface: @id,
                              write_network: ipv4_info[:network_id],
+                             cookie: cookie)
+
+        flows << flow_create(table: table_base + TABLE_ROUTE_EGRESS_INTERFACE,
+                             goto_table: TABLE_ARP_TABLE,
+                             priority: 30,
+                             match: {
+                               :eth_type => 0x0800,
+                               :ipv4_dst => subnet,
+                               :ipv4_dst_mask => IPV4_BROADCAST << (32 - prefix)
+                             },
+                             match_interface: @id,
+
+                             write_network: ipv4_info[:network_id],
+                             actions: {
+                               :eth_src => mac_info[:mac_address]
+                             },
                              cookie: cookie)
       }
     end

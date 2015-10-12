@@ -92,7 +92,8 @@ module Vnet::Openflow
          TABLE_ROUTER_EGRESS_LOOKUP,
          TABLE_ROUTE_EGRESS_LOOKUP,
          TABLE_ROUTE_EGRESS_TRANSLATION,
-         TABLE_ROUTE_EGRESS_INTERFACE
+         TABLE_ROUTE_EGRESS_INTERFACE,
+         TABLE_ROUTE_NETWORK_HOP
         ].each { |table_index|
           flows << flow_create(table: table_base + table_index,
                                priority: 0)
