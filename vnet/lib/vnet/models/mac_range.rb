@@ -18,7 +18,7 @@ module Vnet::Models
 
     def validate
       super
-      errors.add(:begin_mac_address, 'invalid mac address range') unless begin_mac_address >= end_mac_address
+      errors.add(:begin_mac_address, 'invalid mac address range') unless begin_mac_address <= end_mac_address
     end
 
   end
