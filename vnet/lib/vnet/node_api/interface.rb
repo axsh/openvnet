@@ -135,37 +135,18 @@ module Vnet::NodeApi
 
       def add_mac_lease(model, mac_address, mac_range_group_id)
         if mac_address
-          mac_lease = model_class(:mac_lease).create(mac_address: mac_address)
+          mac_lease = model_class(:mac_lease).create(interface_id: model.id,
+                                                     mac_address: mac_address)
           return mac_lease
         end
 
         return if mac_range_group_id.nil?
 
-        mac_range_group = model_class(:mac_range_group)[id: mac_range_group_id]
-        return if mac_range_group.nil?
+        mac_range_group = model_class(:mac_range_group)[id: mac_range_group_id] || return
 
-        mac_lease = mac_lease_from_range_group(mac_range_group) # || next
-
-      ensure
-        model.add_mac_lease(mac_lease) if mac_lease
-      end
-
-      def mac_lease_from_range_group(mac_range_group)
         mac_range_group.mac_ranges.each { |mac_range|
-          range_size = mac_range.end_mac_address - mac_range.begin_mac_address + 1
-
-          retry_count = 20
-
-          # TODO: Fix this to ensure it always allocates an address if
-          # available.
-          begin
-            mac_address = mac_range.begin_mac_address + Random.rand(range_size)
-            mac_lease = model_class(:mac_lease).create(mac_address: mac_address)
-            
-            return mac_lease if mac_lease
-          
-            retry_count -= 1
-          end while retry_count > 0
+          mac_lease = mac_range.lease_random(model.id)
+          return mac_lease if mac_lease
         }
 
         nil
