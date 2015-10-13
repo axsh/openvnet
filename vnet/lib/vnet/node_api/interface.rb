@@ -59,12 +59,18 @@ module Vnet::NodeApi
 
         network_id = options.delete(:network_id)
         ipv4_address = options.delete(:ipv4_address)
+
         mac_address = options.delete(:mac_address)
+        mac_range_group_id = options.delete(:mac_range_group_id)
 
         # TODO: Raise rollback if any step fails.
         transaction {
           model = internal_create(options) || next
           create_interface_port(model, datapath_id, port_name)
+
+          if mac_address.nil? && mac_range_group_id
+            mac_address = mac_from_range_group(mac_range_group_id) || next
+          end
 
           add_lease(model, mac_address, network_id, ipv4_address)
 
@@ -133,6 +139,11 @@ module Vnet::NodeApi
         interface.add_ip_lease(ip_lease) || return
 
         return true
+      end
+
+      def mac_from_range_group(mac_range_group_id)
+        Celluloid.logger.info "XXXXXXXXXXXXX #{mac_range_group_id}"
+        nil
       end
 
     end
