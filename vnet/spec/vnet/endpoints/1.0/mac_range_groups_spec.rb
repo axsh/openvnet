@@ -43,7 +43,7 @@ describe "/mac_range_groups" do
 
     include_examples "one_to_many_relation",
       "mac_ranges", {
-      :uuid => "macr-new",
+      :uuid => "mr-new",
       :begin_mac_address => "08:00:27:aa:00:00",
       :end_mac_address => "08:00:27:cc:ff:ff"
     }

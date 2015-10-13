@@ -16,11 +16,6 @@ module Vnet::Models
       new_dataset
     }
 
-    def validate
-      super
-      errors.add(:begin_mac_address, 'invalid mac address range') unless begin_mac_address <= end_mac_address
-    end
-
     def address_random
       block_random { |mac_address|
         MacAddress.create(mac_address: mac_address)
@@ -32,6 +27,14 @@ module Vnet::Models
         MacLease.create(interface_id: interface_id,
                         mac_address: mac_address)
       }
+    end
+
+    def validate
+      super
+
+      if begin_mac_address && end_mac_address
+        errors.add(:begin_mac_address, 'invalid mac address range') unless begin_mac_address <= end_mac_address
+      end
     end
 
     private
