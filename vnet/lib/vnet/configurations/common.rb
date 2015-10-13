@@ -67,5 +67,7 @@ module Vnet::Configurations
         @config[:registry] = Registry.new.tap {|c| c.parse_dsl(&block) if block }
       end
     end
+
+    param :datapath_mac_group, :default => nil
   end
 end
