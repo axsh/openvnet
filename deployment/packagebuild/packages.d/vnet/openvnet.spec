@@ -69,6 +69,9 @@ install -m 755 -d "$RPM_BUILD_ROOT"%{_unitdir}
 cp deployment/conf.el7/systemd/*.service "$RPM_BUILD_ROOT"%{_unitdir}
 install -m 755 -d "$RPM_BUILD_ROOT"/etc/sysconfig
 cp deployment/conf.el7/sysconfig/* "$RPM_BUILD_ROOT"/etc/sysconfig
+install -m 755 -d "$RPM_BUILD_ROOT"/etc/firewalld/
+install -m 755 -d "$RPM_BUILD_ROOT"/etc/firewalld/services
+cp  deployment/conf.el7/firewalld/* "$RPM_BUILD_ROOT"/etc/firewalld/services
 %endif
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -158,6 +161,7 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 %else
 %config(noreplace) /etc/sysconfig/vnet-webapi
 %config %{_unitdir}/vnet-webapi.service
+%config /etc/firewalld/services/vnet-webapi.xml
 %endif
 
 %post webapi
@@ -205,6 +209,7 @@ This package contains OpenVNet's VNMGR process. This process acts as a frontend 
 %config /etc/init/vnet-vnmgr.conf
 %else
 %config %{_unitdir}/vnet-vnmgr.service
+%config /etc/firewalld/services/vnet-vnmgr.xml
 %endif
 
 %post vnmgr
@@ -255,6 +260,7 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 %config /etc/init/vnet-vna.conf
 %else
 %config %{_unitdir}/vnet-vna.service
+%config /etc/firewalld/services/vnet-vna.xml
 %endif
 
 
