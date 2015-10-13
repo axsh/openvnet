@@ -21,7 +21,22 @@ module Vnet::Models
       errors.add(:begin_mac_address, 'invalid mac address range') unless begin_mac_address <= end_mac_address
     end
 
+    def address_random
+      block_random { |mac_address|
+        MacAddress.create(mac_address: mac_address)
+      }
+    end
+
     def lease_random(interface_id)
+      block_random { |mac_address|
+        MacLease.create(interface_id: interface_id,
+                        mac_address: mac_address)
+      }
+    end
+
+    private
+
+    def block_random(&block)
       retry_count = 20
       range_size = end_mac_address - begin_mac_address + 1
 
@@ -29,10 +44,9 @@ module Vnet::Models
       # available.
       begin
         mac_address = begin_mac_address + Random.rand(range_size)
-        mac_lease = MacLease.create(interface_id: interface_id,
-                                    mac_address: mac_address)
+        result = block.call(mac_address)
         
-        return mac_lease if mac_lease
+        return result if result
         
         retry_count -= 1
       end while retry_count > 0
