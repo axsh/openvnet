@@ -68,11 +68,8 @@ module Vnet::NodeApi
           model = internal_create(options) || next
           create_interface_port(model, datapath_id, port_name)
 
-          if mac_address.nil? && mac_range_group_id
-            mac_address = mac_from_range_group(mac_range_group_id) || next
-          end
-
-          add_lease(model, mac_address, network_id, ipv4_address)
+          mac_lease = add_mac_lease(model, mac_address, mac_range_group_id)
+          add_lease(model, mac_lease, network_id, ipv4_address)
 
           model
         }
@@ -125,12 +122,7 @@ module Vnet::NodeApi
         model_class(:interface_port).create(options)
       end
 
-      def add_lease(interface, mac_address, network_id, ipv4_address)
-        return true if mac_address.nil?
-
-        mac_lease = model_class(:mac_lease).create(mac_address: mac_address) || return
-        interface.add_mac_lease(mac_lease) || return
-
+      def add_lease(interface, mac_lease, network_id, ipv4_address)
         return true if network_id.nil? || ipv4_address.nil?
 
         ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
@@ -141,8 +133,41 @@ module Vnet::NodeApi
         return true
       end
 
-      def mac_from_range_group(mac_range_group_id)
-        Celluloid.logger.info "XXXXXXXXXXXXX #{mac_range_group_id}"
+      def add_mac_lease(model, mac_address, mac_range_group_id)
+        if mac_address
+          mac_lease = model_class(:mac_lease).create(mac_address: mac_address)
+          return mac_lease
+        end
+
+        return if mac_range_group_id.nil?
+
+        mac_range_group = model_class(:mac_range_group)[id: mac_range_group_id]
+        return if mac_range_group.nil?
+
+        mac_lease = mac_lease_from_range_group(mac_range_group) # || next
+
+      ensure
+        model.add_mac_lease(mac_lease) if mac_lease
+      end
+
+      def mac_lease_from_range_group(mac_range_group)
+        mac_range_group.mac_ranges.each { |mac_range|
+          range_size = mac_range.end_mac_address - mac_range.begin_mac_address + 1
+
+          retry_count = 20
+
+          # TODO: Fix this to ensure it always allocates an address if
+          # available.
+          begin
+            mac_address = mac_range.begin_mac_address + Random.rand(range_size)
+            mac_lease = model_class(:mac_lease).create(mac_address: mac_address)
+            
+            return mac_lease if mac_lease
+          
+            retry_count -= 1
+          end while retry_count > 0
+        }
+
         nil
       end
 
