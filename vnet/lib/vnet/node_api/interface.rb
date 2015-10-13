@@ -143,13 +143,7 @@ module Vnet::NodeApi
         return if mac_range_group_id.nil?
 
         mac_range_group = model_class(:mac_range_group)[id: mac_range_group_id] || return
-
-        mac_range_group.mac_ranges.each { |mac_range|
-          mac_lease = mac_range.lease_random(model.id)
-          return mac_lease if mac_lease
-        }
-
-        nil
+        mac_range_group.lease_random(model.id)
       end
 
     end
