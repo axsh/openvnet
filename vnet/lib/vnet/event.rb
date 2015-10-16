@@ -177,6 +177,14 @@ module Vnet
     TRANSLATION_REMOVED_STATIC_ADDRESS = "translation_removed_static_address"
 
     #
+    # Topology events:
+    #
+    TOPOLOGY_INITIALIZED = "topology_initialized"
+    TOPOLOGY_UNLOAD_ITEM = "topology_unload_item"
+    TOPOLOGY_CREATED_ITEM = "topology_created_item"
+    TOPOLOGY_DELETED_ITEM = "topology_deleted_item"
+
+    #
     # tunnel event
     #
     ADDED_TUNNEL = "added_tunnel"

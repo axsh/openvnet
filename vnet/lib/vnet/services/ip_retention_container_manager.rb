@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
+
 module Vnet::Services
+
   class IpRetentionContainerManager < Vnet::Manager
     DEFAULT_OPTIONS = {
       expiration_check_interval: 60,
@@ -12,6 +15,7 @@ module Vnet::Services
     subscribe_event IP_RETENTION_CONTAINER_UNLOAD_ITEM, :unload_item
     subscribe_event IP_RETENTION_CONTAINER_CREATED_ITEM, :created_item
     subscribe_event IP_RETENTION_CONTAINER_DELETED_ITEM, :unload_item
+
     subscribe_event IP_RETENTION_CONTAINER_ADDED_IP_RETENTION, :added_ip_retention
     subscribe_event IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, :removed_ip_retention
     subscribe_event IP_RETENTION_CONTAINER_LEASE_TIME_EXPIRED, :lease_time_expired

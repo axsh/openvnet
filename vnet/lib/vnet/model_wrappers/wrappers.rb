@@ -20,4 +20,7 @@ module Vnet::ModelWrappers
   class MacRangeGroup < Base
   end
 
+  class Topology < Base
+  end
+
 end
