@@ -81,6 +81,7 @@ cp vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 install -m 755 vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
 install -m 755 vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
 install -m 755 vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnwebapi "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
 cp -r vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -154,6 +155,7 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 
 %files webapi
 /opt/axsh/openvnet/vnet/rack
+/opt/axsh/openvnet/vnet/bin/vnwebapi
 %config(noreplace) /etc/openvnet/webapi.conf
 %if 0%{?el6}
 %config(noreplace) /etc/default/vnet-webapi
