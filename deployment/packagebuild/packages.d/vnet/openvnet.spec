@@ -27,6 +27,7 @@ BuildRequires: mysql-community-devel
 %endif
 BuildRequires: sqlite-devel
 BuildRequires: libpcap-devel
+BuildRequires: zeromq3-devel
 
 # We require openvnet-ruby to run bundle install.
 # By using openvnet-ruby we ensure that the downloaded gems are compatible.
@@ -114,7 +115,6 @@ Requires: openvnet-ruby
 # in the development package instead of the runtime package is beyond me.
 Requires: zeromq3-devel
 # for yum-builddep
-BuildRequires: zeromq3-devel
 
 %description common
 This package contains all the common code for OpenVNet's services. All of the OpenVNet services depend on this package.
