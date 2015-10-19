@@ -24,7 +24,8 @@ module Vnet::NodeApi
         dispatch_event(ACTIVE_NETWORK_CREATED_ITEM, model.to_hash)
 
         dispatch_event(TOPOLOGY_NETWORK_ACTIVATED,
-                       id: [:network, model.id],
+                       id: [:network, model.network_id],
+                       datapath_id: model.datapath_id,
                        )
       end
 
@@ -32,7 +33,8 @@ module Vnet::NodeApi
         dispatch_event(ACTIVE_NETWORK_DELETED_ITEM, id: model.id)
 
         dispatch_event(TOPOLOGY_NETWORK_DEACTIVATED,
-                       id: [:network, model.id],
+                       id: [:network, model.network_id],
+                       datapath_id: model.datapath_id,
                        )
       end
 
