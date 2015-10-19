@@ -22,10 +22,18 @@ module Vnet::NodeApi
 
       def dispatch_created_item_events(model)
         dispatch_event(ACTIVE_NETWORK_CREATED_ITEM, model.to_hash)
+
+        dispatch_event(TOPOLOGY_NETWORK_ACTIVATED,
+                       id: [:network, model.id],
+                       )
       end
 
       def dispatch_deleted_item_events(model)
         dispatch_event(ACTIVE_NETWORK_DELETED_ITEM, id: model.id)
+
+        dispatch_event(TOPOLOGY_NETWORK_DEACTIVATED,
+                       id: [:network, model.id],
+                       )
       end
 
     end

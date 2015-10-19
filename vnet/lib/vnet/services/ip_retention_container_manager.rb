@@ -137,6 +137,11 @@ module Vnet::Services
 
     def load_all_items
       # OPTIMIZE
+      #
+      # This should be done within the safety of the manager
+      # inititialization stage where events are queued. That means the
+      # events should be removed.
+
       i = 1
       loop do
         mw_class.batch.dataset.paginate(i, 10000).all.commit.tap do |ip_retention_containers|
@@ -154,6 +159,10 @@ module Vnet::Services
 
     def load_ip_retentions(item)
       # OPTIMIZE
+      #
+      # This should happen while the item locks the item.id queue, so
+      # no events should be needed.
+
       i = 1
       loop do
         mw_class.batch[item.id].ip_retentions_dataset.paginate(i, 10000).all.commit.tap do |ip_retentions|

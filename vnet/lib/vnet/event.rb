@@ -184,6 +184,9 @@ module Vnet
     TOPOLOGY_CREATED_ITEM = "topology_created_item"
     TOPOLOGY_DELETED_ITEM = "topology_deleted_item"
 
+    TOPOLOGY_NETWORK_ACTIVATED = "topology_network_activated"
+    TOPOLOGY_NETWORK_DEACTIVATED = "topology_network_deactivated"
+
     #
     # tunnel event
     #

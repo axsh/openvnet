@@ -15,6 +15,9 @@ module Vnet::Services
     subscribe_event TOPOLOGY_CREATED_ITEM, :created_item
     subscribe_event TOPOLOGY_DELETED_ITEM, :unload_item
 
+    subscribe_event TOPOLOGY_NETWORK_ACTIVATED, :network_activated
+    subscribe_event TOPOLOGY_NETWORK_DEACTIVATED, :network_deactivated
+
     def initialize(info, options = {})
       super
       @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
@@ -85,6 +88,20 @@ module Vnet::Services
       return if internal_detect_by_id(params)
 
       internal_new_item(mw_class.new(params))
+    end
+
+    #
+    # Network events:
+    #
+
+    # Queue [:network, network.id]
+
+    def network_activated(params)
+      debug log_format("network_activated", params)
+    end
+
+    def network_deactivated(params)
+      debug log_format("network_deactivated", params)
     end
 
   end
