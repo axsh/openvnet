@@ -3,6 +3,8 @@
 module Vnet::Services
 
   class TopologyManager < Vnet::Manager
+    include Vnet::Constants::Topology
+
     #
     # Events:
     #
@@ -58,9 +60,14 @@ module Vnet::Services
     end
 
     def item_initialize(item_map)
-      item_class = Topologies::Base
+      item_class =
+        case item_map.mode
+        when MODE_SIMPLE_OVERLAY then Topologies::SimpleOverlay
+        else
+          return
+        end
 
-      item = item_class.new(dp_info: @dp_info, map: item_map)
+      item_class.new(dp_info: @dp_info, map: item_map)
     end
 
     #
