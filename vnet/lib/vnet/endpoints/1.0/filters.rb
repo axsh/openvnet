@@ -41,7 +41,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   end
 
   def self.static_shared_params
-    param :ipv4_address, :String, transform: PARSE_IPV4, required: true
+    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS, required: true
     param :port_number, :Integer, in: 0..65536
     param :protocol, :String
   end
@@ -57,7 +57,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
     s = M::FilterStatic.create(
       filter_id: filter.id,
-      ipv4_address: params["ipv4_address"],
+      ipv4_address: params["ipv4_address"].to_i,
+      ipv4_prefix: params["ipv4_address"].prefix,
       port_number: params["port_number"],
       protocol: params["protocol"]
     )

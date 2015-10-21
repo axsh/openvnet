@@ -73,5 +73,16 @@ module Vnet::Endpoints::V10::Helpers
         raise(E::ArgumentError, "Could not parse MAC address: #{param}")
       end
     end
+
+    PARSE_IPV4_ADDRESS = proc do |param|
+      begin
+        #TODO: Change to ipaddress
+        address = IPAddress::IPv4.new(param)
+        raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
+        address
+      rescue ArgumentError
+        raise(E::ArgumentError, "Could not parse IPv4 address: #{param}")
+      end
+    end
   end
 end
