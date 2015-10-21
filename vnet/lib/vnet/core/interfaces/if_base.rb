@@ -8,7 +8,6 @@ module Vnet::Core::Interfaces
 
     def enable_filtering
       @ingress_filtering_enabled = true
-      @enabled_filtering = true
       @dp_info.filter_manager.async.apply_filters(@id)
       del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
 
@@ -19,11 +18,8 @@ module Vnet::Core::Interfaces
 
     def disable_filtering
       @ingress_filtering_enabled = false
-      @enabled_filtering = false
       
-      @dp_info.add_flows flows_for_disabled_filtering
       @dp_info.add_flows flows_for_disabled_legacy_filtering
-
       @dp_info.filter_manager.async.remove_filters(@id)
 
       @mac_addresses.each { |id, mac_address|
@@ -33,6 +29,14 @@ module Vnet::Core::Interfaces
       }
     end
 
+    def enable_filtering2
+      @enabled_filtering = true
+    end
+
+    def disable_filtering2
+      @enabled_filtering = false
+      @dp_info.add_flows flows_for_disabled_filtering
+    end
     #
     # Internal methods:
     #
@@ -44,9 +48,16 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 90,
                            match_interface: @id,
-                           cookie: @enabled_legacy_filtering ?
-                             cookie_for_tag(TAG_DISABLED_FILTERING) :
-                             self.cookie
+                           cookie: self.cookie
+                          )
+    end
+
+    def flows_for_disabled_legacy_filtering(flows = [])
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 91,
+                           match_interface: @id,
+                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING)
                           )
     end
 
@@ -80,7 +91,7 @@ module Vnet::Core::Interfaces
       #
       if @enabled_filtering
         flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_EGRESS_FILTER
+                             goto_table: TABLE_INTERFACE_EGRESS_FILTER,
                              priority: 90,
                              match_interface: @id,
                              cookie: cookie

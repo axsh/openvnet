@@ -57,7 +57,7 @@ module Vnet::Core::Interfaces
       @enable_route_translation = map.enable_route_translation
       @ingress_filtering_enabled = map.ingress_filtering_enabled
       @enabled_legacy_filtering = map.enable_legacy_filtering
-      @enabled_filtering = map.enabled_filtering
+      @enabled_filtering = map.enable_filtering
     end
 
     def log_type
