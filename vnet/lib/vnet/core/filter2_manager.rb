@@ -26,8 +26,6 @@ module Vnet::Core
     def initialize(*args)
       super
 
-      accept_ingress_arp.install
-      accept_egress_arp.install
     end
 
     #
@@ -70,7 +68,7 @@ module Vnet::Core
       filter
     end
 
-    def item_initialize(item_map)      
+    def item_initialize(item_map)
       item_class =
         case item_map.mode
         when MODE_STATIC then Filters::Static
@@ -95,7 +93,7 @@ module Vnet::Core
     def created_item(params)
       return if internal_detect_by_id(params)
       return if params[:interface_id].nil?
-      
+
       return if @active_interfaces[params[:interface_id]].nil?
       internal_new_item(mw_class.new(params))
     end
@@ -109,6 +107,7 @@ module Vnet::Core
       item_map.batch.filter_statics.commit.each { |filter|
         item.added_static(filter.id,
                           filter.ipv4_address,
+                          filter.ipv4_prefix,
                           filter.port_number,
                           filter.protocol
                          )
@@ -124,11 +123,14 @@ module Vnet::Core
       ipv4_address = get_param_id(params, :ipv4_address) || return
 
       port_number = get_param_id(params, :port_number, false) || return
+
+      prefix = get_param_id(params, :ipv4_prefix) || return
       
       protocol = get_param_id(params, :protocol) || return
       
       item.added_static(static_id,
                         ipv4_address,
+                        prefix,
                         port_number,
                         protocol
                        )
@@ -143,18 +145,6 @@ module Vnet::Core
       item.removed_static(static_id)
     end
 
-    def accept_ingress_arp
-      Filters::AcceptIngressArp.new.tap { |arp|
-        arp.dp_info = @dp_info
-      }
-    end
-
-    def accept_egress_arp
-      Filters::AcceptEgressArp.new.tap { |arp|
-        arp.dp_info = @dp_info
-      }
-    end
-    
   end
 
 end

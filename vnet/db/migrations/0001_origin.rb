@@ -98,11 +98,9 @@ Sequel.migration do
 
       Integer :interface_id, :index => true
       
-      Boolean :passthrough, :null => false
-      Boolean :ingress_passthrough, :null=> false
-      Boolean :egress_passthrough, :null=>false
+      FalseClass :ingress_passthrough, :null=> false
+      FalseClass :egress_passthrough, :null=>false
 
-      
       DateTime :created_at, :null =>false
       DateTime :updated_at, :null =>false
       DateTime :deleted_at, :index => true
@@ -114,6 +112,7 @@ Sequel.migration do
       Integer :filter_id, :index => true, :null => false
 
       Bignum :ipv4_address, :null => false
+      Integer :ipv4_prefix, :null => false
       Integer :port_number
       String :protocol, :null => false
       
