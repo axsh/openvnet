@@ -85,16 +85,18 @@ module Vnet::Core
 
     def item_pre_install(item, item_map)
       case item.mode
-      when :static then load_static(item, item_map)
+      when :static then load_static(item_map)
       end
     end
 
     # FILTER_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-      return if internal_detect_by_id(params)
-      return if params[:interface_id].nil?
+      interface_id = params[:interface_id]
 
-      return if @active_interfaces[params[:interface_id]].nil?
+      return if internal_detect_by_id(params)
+      return if interface_id.nil?
+
+      return if @active_interfaces[interface_id].nil?
       internal_new_item(mw_class.new(params))
     end
 
@@ -103,31 +105,29 @@ module Vnet::Core
     # to change
 
     # load static filter on queue 'item.id'.
-    def load_static(item, item_map)
+    def load_static(item_map)
       item_map.batch.filter_statics.commit.each { |filter|
-        item.added_static(filter.id,
-                          filter.ipv4_address,
-                          filter.ipv4_prefix,
-                          filter.port_number,
-                          filter.protocol
-                         )
+        model_hash = filter.to_hash.merge(id: item_map.id,
+                                          static_id: filter.id)
+
+        added_static(model_hash)
       }
     end
 
     # FILTER_ADDED_STATIC on queue 'item.id'.
-    def added_static(params)            
+    def added_static(params)
       item = internal_detect_by_id_with_error(params) || return
 
       static_id = get_param_id(params, :static_id) || return
 
       ipv4_address = get_param_id(params, :ipv4_address) || return
 
-      port_number = get_param_id(params, :port_number, false) || return
-
       prefix = get_param_id(params, :ipv4_prefix) || return
       
-      protocol = get_param_id(params, :protocol) || return
+      protocol = get_param(params, :protocol) || return
       
+      port_number = get_param_id(params, :port_number, false)
+
       item.added_static(static_id,
                         ipv4_address,
                         prefix,
