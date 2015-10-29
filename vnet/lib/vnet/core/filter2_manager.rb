@@ -120,13 +120,13 @@ module Vnet::Core
 
       static_id = get_param_id(params, :static_id) || return
 
-      ipv4_address = get_param_id(params, :ipv4_address) || return
+      ipv4_address = get_param_ipv4_address(params, :ipv4_address) || return
 
       prefix = get_param_id(params, :ipv4_prefix) || return
       
       protocol = get_param(params, :protocol) || return
       
-      port_number = get_param_id(params, :port_number, false)
+      port_number = get_param_port_number(params, :port_number, false)
 
       item.added_static(static_id,
                         ipv4_address,
