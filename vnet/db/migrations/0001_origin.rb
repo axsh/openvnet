@@ -91,36 +91,6 @@ Sequel.migration do
       unique [:datapath_id, :route_link_id, :is_deleted]
     end
 
-    create_table(:filters) do
-      primary_key :id
-      String :uuid, :unique => true, :null => false
-      String :mode, :null => false
-
-      Integer :interface_id, :index => true
-      
-      FalseClass :ingress_passthrough, :null=> false
-      FalseClass :egress_passthrough, :null=>false
-
-      DateTime :created_at, :null =>false
-      DateTime :updated_at, :null =>false
-      DateTime :deleted_at, :index => true
-      Integer :is_deleted, :null =>false
-    end
-
-    create_table(:filter_statics) do
-      primary_key :id
-      Integer :filter_id, :index => true, :null => false
-
-      Bignum :ipv4_address, :null => false
-      Integer :ipv4_prefix, :null => false
-      Integer :port_number
-      String :protocol, :null => false
-      
-      DateTime :created_at, :null =>false
-      DateTime :updated_at, :null =>false
-      DateTime :deleted_at, :index => true
-      Integer :is_deleted, :null =>false
-    end
       
     create_table(:interfaces) do
       primary_key :id
@@ -131,9 +101,6 @@ Sequel.migration do
       FalseClass :ingress_filtering_enabled, :null => false
       FalseClass :enable_routing, :null=>false
       FalseClass :enable_route_translation, :null=>false
-
-      FalseClass :enable_filtering, :null=>false
-      FalseClass :enable_legacy_filtering, :null=>false
       
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
@@ -459,8 +426,6 @@ Sequel.migration do
                :datapaths,
                :datapath_networks,
                :datapath_route_links,
-               :filters,
-               :filter_statics,
                :interfaces,
                :ip_addresses,
                :ip_leases,
