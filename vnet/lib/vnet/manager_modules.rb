@@ -182,7 +182,7 @@ module Vnet
     def get_param_ipv4_address(params, key, required = true)
       param = get_param(params, key, required) || return
 
-      if !IPAddr.new(param).ipv4?
+      if !IPAddr.new(param, Socket::AF_INET).ipv4?
         log_format("invalid value for ipv4", "value:#{param}")
         return
       end
