@@ -157,7 +157,7 @@ module VNetAPIClient
   class Filter < ApiResource
     api_suffix :filters
 
-    define_standard_curd_methods
+    define_standard_crud_methods
 
     def self.add_filter_static(filter_uud, params = nil)
       send_request(Net::HTTP::Post,
