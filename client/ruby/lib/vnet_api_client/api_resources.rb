@@ -165,7 +165,7 @@ module VNetAPIClient
                    params)
     end
 
-    def self.remove_static_address(filter_uuid, params = nil)
+    def self.remove_filter_static(filter_uuid, params = nil)
       send_request(Net::HTTP::Delete,
                    "#{@api_suffix}/#{filter_uuid}/static",
                    params)
