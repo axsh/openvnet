@@ -159,7 +159,7 @@ module VNetAPIClient
 
     define_standard_crud_methods
 
-    def self.add_filter_static(filter_uud, params = nil)
+    def self.add_filter_static(filter_uuid, params = nil)
       send_request(Net::HTTP::Post,
                    "#{@api_suffix}/#{filter_uuid}/static",
                    params)
