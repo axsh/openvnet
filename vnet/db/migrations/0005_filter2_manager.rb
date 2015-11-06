@@ -23,10 +23,17 @@ Sequel.migration do
       primary_key :id
       Integer :filter_id, :index => true, :null => false
 
-      Bignum :ipv4_address, :null => false
-      Integer :ipv4_prefix, :null => false
-      Integer :port_number
+      Bignum :ipv4_src_address, :null => false
+      Bignum :ipv4_dst_address, :null => false
+      Integer :ipv4_src_prefix, :null => false
+      Integer :ipv4_src_prefix, :null => false
+      Integer :port_src_first
+      Integer :port_dst_first
+      Integer :port_src_last
+      Integer :port_dst_last
+      
       String :protocol, :null => false
+      FlaseClss :passthrough, :null => false
       
       DateTime :created_at, :null =>false
       DateTime :updated_at, :null =>false
