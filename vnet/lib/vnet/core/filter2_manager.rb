@@ -133,10 +133,9 @@ module Vnet::Core
       port_number[:dst_first] = get_param_port_number(params, :port_dst_first, false)
       port_number[:dst_last] = get_param_port_number(params, :port_dst_last, false)
 
-
       protocol = get_param(params, :protocol) || return
 
-      passthrough = get_params_id(params, :passthrough) || return
+      passthrough = get_param(params, :passthrough) || return
 
       item.added_static(static_id,
                         ipv4,
