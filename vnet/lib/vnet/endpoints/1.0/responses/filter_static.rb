@@ -7,7 +7,8 @@ module Vnet::Endpoints::V10::Responses
       object.to_hash.tap { |res|
 #        interface = object.batch.interface.commit  
 #        res[:interface_uuid] = interface.uuid if interface
-        res[:ipv4_address] = object.batch.ipv4_address_s.commit
+        res[:ipv4_dst_address] = object.batch.ipv4_address_s.commit
+        res[:ipv4_src_address] = object.batch.ipv4_address_s.commit
       }
     end
   end

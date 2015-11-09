@@ -21,9 +21,24 @@ module Vnctl::Cli
       mode.option :protocol, :type => :string, :required => true,
         :desc => "This is the protocol which the filter will listen on."
       mode.option :port_number, :type => :string,
-        :desc => "This is the port number the filter will listen on."
-    end
-    
-    #TODO Write the static thingy
+        :desc => "This is the port number the filter will listen on." 
+      mode_option :passthrough, :type => :boolean,
+        :desc => "Flag that controlls where the static should pass or drop data for specified rule."
+      
+      
+      mode.option :ipv4_src_address, :type => :string,
+        :desc => "This is the address the filter will apply for incoming traffic."
+      mode.option :port_src_first, :type => :string,
+        :desc => "This is the first port which the rule will listen for incoming traffic on."
+      mode.option :port_src_last, :type => :string,
+        :desc => "This is the last port which the rule will listen for incoming traffic on."
+
+      mode.option :ipv4_dst_address, :type => :string,
+        :desc => "This is the address the filter will apply for outgoing traffic."
+      mode.option :port_dst_first, :type => :string,
+        :desc => "This is the first port which the rule will listen for outgoing traffic on."
+      mode.option :port_dst_last, :type => :string,
+        :desc => "This is the first port which the rule will listen for outgoing traffic on."
+    end    
   end
 end
