@@ -43,13 +43,14 @@ module Vnet::Core::Filters
 
     end
 
-    def added_static(static_id, ipv4_address, ipv4_prefix, port, protocol, passthrough)
+    def added_static(static_id, ipv4, port, protocol, passthrough)
 
       filter = {
         :static_id => static_id,
-        :ipv4_src_address => ipv4_address[:src],
-        :ipv4_dst_address => ipv4_addressc[:dst],
-        :ipv4_prefix => ipv4_prefix,
+        :ipv4_src_address => ipv4[:src_address],
+        :ipv4_dst_address => ipv4[:dst_address],
+        :ipv4_src_prefix => ipv4[:src_prefix],
+        :ipv4_dst_prefix => ipv4[:dst_prefix],
         :port_src_first => port[:src_first],
         :port_dst_first => port[:dst_first],
         :port_src_last => port[:src_last],
@@ -89,7 +90,7 @@ module Vnet::Core::Filters
 
       ipv4_address = filter[:ipv4_src_address]
       port = filter[:port_src_first]
-      prefix = filter[:ipv4_prefix]
+      prefix = filter[:ipv4_src_prefix]
 
       case protocol
       when "tcp"  then rule_for_tcp(ipv4_address, port, prefix)
