@@ -53,6 +53,26 @@ module Vnet::Core::Filters
       raise NotImplementedError
     end
 
+    def flows_for_ingress_filtering(flows = [])
+      flow = {
+        table: TABLE_INTERFACE_INGRESS_FILTER,
+        priority: 10,
+        match_interface: @interface_id
+      }
+      flow[:goto_table] = TABLE_OUT_PORT_INTERFACE_INGRESS if @ingress_passthrough
+      flows << flow_create*(flow)
+    end
+
+    def flows_for_egress_filtering(flows = [])
+      flow = {
+        table: TABLE_INTERFACE_EGRESS_FILTER,
+        priority: 10,
+        match_interface: @interface_id
+      )
+      flow[:goto_table] = TABLE_INTERFACE_EGRESS_VALUDATE if @egress_passthrough
+      flows << flow_create*(flow)
+    end
+
   end
 
 end
