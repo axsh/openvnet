@@ -24,11 +24,14 @@ module Vnet::Core::Filters
       flows = []
       @statics.each { |id, filter|
 
-        debug log_format('installing filter for ' + pretty_static(filter[:match]))
+        match = filter[:match]
+        pass = filter[:passthrough]
 
-        rules(filter[:match], filter[:protocol]).each { |ingress_rule, egress_rule|
-          flows_for_ingress_filtering(flows, ingress_rule)
-          flows_for_egress_filtering(flows, egress_rule)
+        debug log_format('installing filter for ' + pretty_static(match)
+
+        rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
+          flows_for_ingress_filtering(flows, ingress_rule, pass)
+          flows_for_egress_filtering(flows, egress_rule, pass)
         }
       }
 
@@ -36,7 +39,7 @@ module Vnet::Core::Filters
 
     end
 
-    def added_static(static_id, ipv4_address, ipv4_prefix, port, protocol)
+    def added_static(static_id, ipv4_address, ipv4_prefix, port, protocol, passthrough)
 
       filter = {
         :static_id => static_id,
@@ -47,7 +50,8 @@ module Vnet::Core::Filters
 
       @statics[static_id] = {
         :match => filter,
-        :protocol => protocol
+        :protocol => protocol,
+        :passthrough => passthrough
       }
 
       return if !installed?
@@ -176,8 +180,8 @@ module Vnet::Core::Filters
       ]
     end
 
-    def flows_for_ingress_filtering(flows = [], match)
-      if @ingress_passthrough
+    def flows_for_ingress_filtering(flows = [], match, passthrough)
+      if passthrough
         flows << flow_create(
           table: TABLE_INTERFACE_INGRESS_FILTER,
           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
@@ -195,8 +199,8 @@ module Vnet::Core::Filters
       end
     end
 
-    def flows_for_egress_filtering(flows = [], match)
-      if @egress_passthrough
+    def flows_for_egress_filtering(flows = [], match, passthrough)
+      if passthrough
         flows << flow_create(
           table: TABLE_INTERFACE_EGRESS_FILTER,
           goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,

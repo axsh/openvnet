@@ -128,11 +128,14 @@ module Vnet::Core
       
       port_number = get_param_port_number(params, :port_number, false)
 
+      passthrough = get_params_id(params, :passthrough) || return
+
       item.added_static(static_id,
                         ipv4_address,
                         prefix,
                         port_number,
-                        protocol
+                        protocol,
+                        passthrough
                        )
     end
 
