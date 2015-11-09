@@ -22,6 +22,10 @@ module Vnet::Core::Filters
       return if @interface_id.nil?
 
       flows = []
+
+      flows_for_ingress_filtering(flows)
+      flows_for_egress_filtering(flows)
+
       @statics.each { |id, filter|
 
         match = filter[:match]
@@ -30,8 +34,8 @@ module Vnet::Core::Filters
         debug log_format('installing filter for ' + pretty_static(match)
 
         rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
-          flows_for_ingress_filtering(flows, ingress_rule, pass)
-          flows_for_egress_filtering(flows, egress_rule, pass)
+          flows_for_static_ingress_filtering(flows, ingress_rule, pass)
+          flows_for_static_egress_filtering(flows, egress_rule, pass)
         }
       }
 
@@ -58,8 +62,8 @@ module Vnet::Core::Filters
 
       flows = []
       rules(filter, protocol).each { |ingress_rule, egress_rule|
-        flows_for_ingress_filtering(flows, ingress_rule)
-        flows_for_egress_filtering(flows, egress_rule)
+        flows_for_static_ingress_filtering(flows, ingress_rule)
+        flows_for_static_egress_filtering(flows, egress_rule)
       }
 
       @db_info.add_flows(flows)
@@ -180,7 +184,7 @@ module Vnet::Core::Filters
       ]
     end
 
-    def flows_for_ingress_filtering(flows = [], match, passthrough)
+    def flows_for_static_ingress_filtering(flows = [], match, passthrough)
       if passthrough
         flows << flow_create(
           table: TABLE_INTERFACE_INGRESS_FILTER,
@@ -199,7 +203,7 @@ module Vnet::Core::Filters
       end
     end
 
-    def flows_for_egress_filtering(flows = [], match, passthrough)
+    def flows_for_static_egress_filtering(flows = [], match, passthrough)
       if passthrough
         flows << flow_create(
           table: TABLE_INTERFACE_EGRESS_FILTER,
