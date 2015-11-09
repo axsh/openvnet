@@ -31,7 +31,7 @@ module Vnet::Core::Filters
         match = filter[:match]
         pass = filter[:passthrough]
 
-        debug log_format('installing filter for ' + pretty_static(match)
+        debug log_format('installing filter for ' + pretty_static(match))
 
         rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
           flows_for_static_ingress_filtering(flows, ingress_rule, pass)

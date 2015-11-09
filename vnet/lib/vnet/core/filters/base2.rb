@@ -60,7 +60,7 @@ module Vnet::Core::Filters
         match_interface: @interface_id
       }
       flow[:goto_table] = TABLE_OUT_PORT_INTERFACE_INGRESS if @ingress_passthrough
-      flows << flow_create*(flow)
+      flows << flow_create(flow)
     end
 
     def flows_for_egress_filtering(flows = [])
@@ -69,8 +69,8 @@ module Vnet::Core::Filters
         priority: 10,
         match_interface: @interface_id
       )
-      flow[:goto_table] = TABLE_INTERFACE_EGRESS_VALUDATE if @egress_passthrough
-      flows << flow_create*(flow)
+      flow[:goto_table] = TABLE_INTERFACE_EGRESS_VALIDATE if @egress_passthrough
+      flows << flow_create(flow)
     end
 
   end
