@@ -47,9 +47,13 @@ module Vnet::Core::Filters
 
       filter = {
         :static_id => static_id,
-        :ipv4_address => ipv4_address,
+        :ipv4_src_address => ipv4_address[:src],
+        :ipv4_dst_address => ipv4_addressc[:dst],
         :ipv4_prefix => ipv4_prefix,
-        :port => port
+        :port_src_first => port[:src_first],
+        :port_dst_first => port[:dst_first],
+        :port_src_last => port[:src_last],
+        :port_dst_last => port[:dst_last]
       }
 
       @statics[static_id] = {
@@ -62,8 +66,8 @@ module Vnet::Core::Filters
 
       flows = []
       rules(filter, protocol).each { |ingress_rule, egress_rule|
-        flows_for_static_ingress_filtering(flows, ingress_rule)
-        flows_for_static_egress_filtering(flows, egress_rule)
+        flows_for_static_ingress_filtering(flows, ingress_rule, passthrough)
+        flows_for_static_egress_filtering(flows, egress_rule, passthrough)
       }
 
       @db_info.add_flows(flows)
@@ -80,8 +84,11 @@ module Vnet::Core::Filters
     private
 
     def rules(filter, protocol)
-      ipv4_address = filter[:ipv4_adress]
-      port = filter[:port]
+
+      # Using src as the main address until src/dst functionallity is fully implemented
+
+      ipv4_address = filter[:ipv4_src_address]
+      port = filter[:port_src_first]
       prefix = filter[:ipv4_prefix]
 
       case protocol

@@ -118,15 +118,22 @@ module Vnet::Core
     def added_static(params)
       item = internal_detect_by_id_with_error(params) || return
 
+      ipv4_address = {}
+      port_number = {}
+
       static_id = get_param_id(params, :static_id) || return
 
-      ipv4_address = get_param_ipv4_address(params, :ipv4_address) || return
+      ipv4_address[:src] = get_param_ipv4_address(params, :ipv4_src_address) || return
+      ipv4_address[:dst] = get_param_ipv4_address(params, :ipv4_dst_address) || return
+
+      port_number[:src_first] = get_param_port_number(params, :port_src_first, false)
+      port_number[:src_last] = get_param_port_number(params, :port_src_last, false)
+      port_number[:dst_first] = get_param_port_number(params, :port_dst_first, false)
+      port_number[:dst_last] = get_param_port_number(params, :port_dst_last, false)
 
       prefix = get_param_id(params, :ipv4_prefix) || return
-      
+
       protocol = get_param(params, :protocol) || return
-      
-      port_number = get_param_port_number(params, :port_number, false)
 
       passthrough = get_params_id(params, :passthrough) || return
 
