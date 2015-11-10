@@ -182,12 +182,12 @@ module Vnet::Core::Filters
     def rule_for_arp(ipv4_address, prefix)
       [
         [{ eth_type: ETH_TYPE_ARP,
-           ipv4_src: ipv4_address,
-           ipv4_src_mask: IPV4_BROADCAST << (32 - prefix)
+           arp_spa: ipv4_address,
+           arp_spa_mask: IPV4_BROADCAST << (32 - prefix)
          },
          { eth_type: ETH_TYPE_ARP,
-           ipv4_src: ipv4_address,
-           ipv4_dst_mask: IPV4_BROADCAST << (32 - prefix)
+           arp_tpa: ipv4_address,
+           arp_tpa_mask: IPV4_BROADCAST << (32 - prefix)
          }]
       ]
     end
