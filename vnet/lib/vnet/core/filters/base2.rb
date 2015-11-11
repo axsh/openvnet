@@ -68,7 +68,7 @@ module Vnet::Core::Filters
         table: TABLE_INTERFACE_EGRESS_FILTER,
         priority: 10,
         match_interface: @interface_id
-      )
+      }
       flow[:goto_table] = TABLE_INTERFACE_EGRESS_VALIDATE if @egress_passthrough
       flows << flow_create(flow)
     end

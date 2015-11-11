@@ -22,7 +22,7 @@ module Vnctl::Cli
         :desc => "This is the protocol which the filter will listen on."
       mode.option :port_number, :type => :string,
         :desc => "This is the port number the filter will listen on." 
-      mode_option :passthrough, :type => :boolean,
+      mode.option :passthrough, :type => :boolean,
         :desc => "Flag that controlls where the static should pass or drop data for specified rule."
       
       
