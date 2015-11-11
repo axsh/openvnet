@@ -71,7 +71,7 @@ module Vnet::Core::Filters
         flows_for_static_egress_filtering(flows, egress_rule, passthrough)
       }
 
-      @db_info.add_flows(flows)
+      @dp_info.add_flows(flows)
 
     end
 
