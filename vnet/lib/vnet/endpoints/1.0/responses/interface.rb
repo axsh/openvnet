@@ -27,6 +27,8 @@ module Vnet::Endpoints::V10::Responses
         MacLease.generate(mac_lease)
       end
 
+      object.enable_legacy_filtering = object.ingress_filtering_enabled
+
       object.to_hash
     end
   end

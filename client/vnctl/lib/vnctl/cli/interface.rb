@@ -16,8 +16,6 @@ module Vnctl::Cli
         :desc => "The uuid of the datapath that owns this interface."
       option :enable_filtering, :type => :boolean,
         :desc => "Flags that decides whether or not filtering is enabled."
-      option :enable_legacy_filtering, :type => :boolean,
-        :desct => "Flag that enables the old filtering method."
     }
 
     option_uuid
