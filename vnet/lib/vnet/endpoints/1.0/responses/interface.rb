@@ -27,9 +27,11 @@ module Vnet::Endpoints::V10::Responses
         MacLease.generate(mac_lease)
       end
 
-      object.enable_legacy_filtering = object.ingress_filtering_enabled
-
-      object.to_hash
+      object.to_hash.tap { |flag|
+        ife = flag[:ingress_filtering_enabled]
+        flag[:enable_legacy_filering] = ife
+        Vnet::ModelWrappers::Interface.batch.update(flag[:uuid],{ "enable_legacy_filtering" => ife }).commit
+      }
     end
   end
 
