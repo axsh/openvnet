@@ -29,8 +29,8 @@ module Vnet::Endpoints::V10::Responses
 
       object.to_hash.tap { |flag|
         ife = flag[:ingress_filtering_enabled]
-        flag[:enable_legacy_filering] = ife
         Vnet::ModelWrappers::Interface.batch.update(flag[:uuid],{ "enable_legacy_filtering" => ife }).commit
+        flag[:enable_legacy_filtering] = ife
       }
     end
   end
