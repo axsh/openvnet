@@ -20,16 +20,16 @@ module Vnet::NodeApi
 
           # TODO: Checking for 'true' or 'false' is insufficient.
           case options[:ingress_filtering_enabled]
-          when "true"
+          when true
             dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
-          when "false"
+          when false
             dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
           end
 
           case options[:enabled_filtering]
-          when "true"
+          when true
             dispatch_event(INTERFACE_ENABLED_FILTERING2, id: interface.id)
-          when "false"
+          when false
             dispatch_event(INTERFACE_DISABLED_FILTERING2, id: interface.id)
           end
 
