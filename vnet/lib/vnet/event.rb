@@ -114,6 +114,7 @@ module Vnet
     FILTER_UNLOAD_ITEM = "filter_unload_item"
     FILTER_CREATED_ITEM = "filter_created_item"
     FILTER_DELETED_ITEM = "filter_deleted_item"
+    FILTER_UPDATED = "filter_updated"
 
     FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
     FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"

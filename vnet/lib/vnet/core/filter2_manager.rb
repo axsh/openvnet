@@ -16,7 +16,8 @@ module Vnet::Core
     subscribe_event FILTER_UNLOAD_ITEM, :unload_item
     subscribe_event FILTER_CREATED_ITEM, :created_item
     subscribe_event FILTER_DELETED_ITEM, :unload_item
-
+    subscribe_event FILTER_UPDATED, :updated_item
+    
     subscribe_event FILTER_ACTIVATE_INTERFACE, :activate_interface
     subscribe_event FILTER_DEACTIVATE_INTERFACE, :deactivate_interface
 
@@ -98,6 +99,11 @@ module Vnet::Core
 
       return if @active_interfaces[interface_id].nil?
       internal_new_item(mw_class.new(params))
+    end
+
+    def updated_item(params)
+      item = internal_detect_by_id_with_error(params) || return
+      item.update(params[:egress_passthrough], params[:ingress_passthrough])
     end
 
     #

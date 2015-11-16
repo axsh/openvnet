@@ -4,6 +4,18 @@ module Vnet::NodeApi
 
   class Filter < EventBase
     class << self
+      def update(uuid, options)
+        filter = transaction {
+          model_class[uuid].tap do |model|
+            model.update(options)
+          end
+        }
+
+        p filter.tap { |filter|
+          dispatch_event(FILTER_UPDATED, model.to_hash)
+        }
+      end
+
       private
 
       def dispatch_created_item_events(model)

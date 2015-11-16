@@ -53,6 +53,17 @@ module Vnet::Core::Filters
       raise NotImplementedError
     end
 
+    def update(egress_pass, ingress_pass)
+      uninstall
+      @egress_passthrough = egress_pass
+      @ingress_passthrough = ingress_pass
+
+      flows = []
+      flows_for_ingress_filtering(flows)
+      flows_for_egress_filtering(flows)
+      @dp_info.add_flows(flows)
+    end
+
     def flows_for_ingress_filtering(flows = [])
       flow = {
         table: TABLE_INTERFACE_INGRESS_FILTER,
