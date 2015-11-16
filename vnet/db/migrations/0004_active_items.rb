@@ -25,8 +25,8 @@ Sequel.migration do
 
       Integer :datapath_id, :index => true, :null => false
 
-      column :port_number, 'integer(32) unsigned not null'
       String :port_name, :index => true, :null => false
+      column :port_number, 'integer(32) unsigned not null'
 
       String :mode, :null => false
 

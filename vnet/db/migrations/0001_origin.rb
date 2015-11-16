@@ -17,7 +17,7 @@ Sequel.migration do
       TrueClass :singular
 
       String :port_name, :index => true
-      column :port_number, 'integer(32) unsigned'
+      String :port_number
 
       FalseClass :enable_routing, :null=>false
 

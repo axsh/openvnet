@@ -83,7 +83,8 @@ module Vnet::Core
 
     def item_initialize(item_map)
       item_class = detect_item_class(item_map.mode) || return
-      item = item_class.new(dp_info: @dp_info, id: item_map[:id], map: item_map)
+
+      item_class.new(dp_info: @dp_info, id: item_map[:id], map: item_map)
     end
 
     #
