@@ -156,52 +156,137 @@ module Vnet
 
   end
 
+  # Look up params passed using events and such. Since these generate
+  # warning on invalid input they should be used only when the input
+  # is assumed to always be correct.
+  #
+  # A missing value is not an error if 'required != true', while an
+  # invalid value for the type requested is.
+
   module LookupParams
+
     def get_param(params, key, required = true)
       param = (params && params[key])
 
-      if param.nil?
-        log_format("missing param", "key:#{key}") if required
-        return
+      if param.nil? && required
+        return get_param_error('key is missing or nil', params, key)
       end
+
+      # TODO: Add proper FixNum (or other valid integer) type check.
+
+      param
     end
 
-    def get_param_id(params, key, required = true)
+    # TODO: Use the backtrace to get the root calling get_param_*
+    # method name, and the root Manager method name.
+    def get_param_error(message, params, key)
+      error log_format(message, "key:#{key} params:#{params}")
+      nil
+    end
+
+    # MySQL keys are 31 bits, and we use that size of the default id.
+    def get_param_id(params, key = :id, required = true)
       param = get_param(params, key, required) || return
 
-      if (param < 0) || (param >= (1 << 31))
-        log_format("invalid value for id")
-        return
+      if !(param > 0 && param < (1 << 30))
+        return get_param_error('invalid value for id type', params, key)
       end
 
       param
     end
 
+    def get_param_id_32(params, key = :id, required = true)
+      param = get_param(params, key, required) || return
+
+      if !(param > 0 && param < (1 << 31))
+        return get_param_error('invalid value for id_32 type', params, key)
+      end
+
+      param
+    end
+
+    # TODO: Add a 32 bit version.
+    def get_param_packed_id(params, key = :id, required = true)
+      # TODO: Implement get_param_list.
+      param_id_list = get_param(params, key, required) || return
+      param_id = param_id_list[1]
+
+      if param_id.nil?
+        return get_param_error('list is missing packed id', params, key)
+      end
+
+      if !(param_id > 0 && param_id < (1 << 30))
+        return get_param_error('invalid value for packed id type', params, key)
+      end
+
+      param_id
+    end
+
+    # TODO: Add support for other integer types.
+    def get_param_int(params, key, required = true)
+      param = get_param(params, key, required) || return
+
+      if !param.is_a?(Fixnum)
+        return get_param_error('value is not an integer type', params, key)
+      end
+
+      param
+    end
+
+    def get_param_string(params, key, required = true)
+      param = get_param(params, key, required) || return
+
+      if !param.is_a?(String)
+        return get_param_error('value is not a string type', params, key)
+      end
+
+      if param.empty?
+        return get_param_error('string is empty', params, key)
+      end
+
+      param
+    end
+
+    def get_param_string_n(params, key, required = true)
+      param = get_param(params, key, required) || return
+
+      if !param.is_a?(String)
+        return get_param_error('value is not a string type', params, key)
+      end
+
+      param
+    end
+
+    # TODO: Add methods to validate IPv4 addresses with different restrictions.
     def get_param_ipv4_address(params, key, required = true)
       param = get_param(params, key, required) || return
 
       if !IPAddr.new(param).ipv4?
-        log_format("invalid value for ipv4", "value:#{param}")
-        return
+        return get_param_error('value is not a valid IPv4 address', params, key)
       end
 
       param
     end
 
-    def get_param_port_number(params, key, required = true)
-      param = get_param(params, key, required) || return
+    def get_param_tp_port(params, key, required = true)
+      param = get_param_int(params, key, required) || return
 
-      if !param.is_a?(Fixnum)
-        log_format("invalid type of port number")
-        return
-      end
-
-      if (param <= 0) || (param >= (1 << 16))
-        log_format("invalid port number")
-        return
+      if !(param > 0 && param < (1 << 15))
+        return get_param_error('value is not a valid transport port', params, key)
       end
 
       param
     end
+
+    def get_param_of_port(params, key, required = true)
+      param = get_param_int(params, key, required) || return
+
+      if !(param > 0 && param < (1 << 31))
+        return get_param_error('value is not a valid OpenFlow port', params, key)
+      end
+
+      param
+    end
+
   end
 end
