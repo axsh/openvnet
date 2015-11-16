@@ -28,11 +28,11 @@ module Vnet
   autoload :ItemDpBase,           'vnet/item_base'
   autoload :ItemDpUuid,           'vnet/item_base'
   autoload :Manager,              'vnet/manager'
-  autoload :LookupParams,         'vnet/manager_modules'
+  autoload :LookupParams,         'vnet/manager_params'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
 
-  autoload :ParamError, 'vnet/manager_modules'
+  autoload :ParamError, 'vnet/manager_params'
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'
