@@ -179,6 +179,26 @@ initctl start vnet-webapi
 
 We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is Web API client offered by the `openvnet-vnctl` package.
 
+
+#### Mac Address Range
+
+In order for the network overlay to work OpenVNet uses mac addresses independently of any real or virtual interface. To allocate these it requires the creation of a default mac range group.
+
+```bash
+vnctl mac_range_groups add --uuid mrg-dpg
+```
+
+In `common.conf`, the mac range group is set by default to `mrg-dpg` and can be changed using the `datapath_mac_group` option.
+
+```bash
+vnctl mac_range_groups mac_ranges add mrg-dpg --begin_mac_address 52:56:01:00:00:00 --end_mac_address 52:56:01:ff:ff:ff
+```
+
+- **begin_mac_address** : The lowest possible mac address value in the range.
+
+- **end_mac_address** : The highest possible mac address value in the range.
+
+
 #### Datapath
 
 We created a datapath earlier that the OpenVNet needs to know. The following database record must be created in order to tell the OpenVNet about the datapath.

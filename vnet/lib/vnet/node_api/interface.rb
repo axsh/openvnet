@@ -59,14 +59,17 @@ module Vnet::NodeApi
 
         network_id = options.delete(:network_id)
         ipv4_address = options.delete(:ipv4_address)
+
         mac_address = options.delete(:mac_address)
+        mac_range_group_id = options.delete(:mac_range_group_id)
 
         # TODO: Raise rollback if any step fails.
         transaction {
           model = internal_create(options) || next
           create_interface_port(model, datapath_id, port_name)
 
-          add_lease(model, mac_address, network_id, ipv4_address)
+          mac_lease = add_mac_lease(model, mac_address, mac_range_group_id)
+          add_lease(model, mac_lease, network_id, ipv4_address)
 
           model
         }
@@ -119,12 +122,7 @@ module Vnet::NodeApi
         model_class(:interface_port).create(options)
       end
 
-      def add_lease(interface, mac_address, network_id, ipv4_address)
-        return true if mac_address.nil?
-
-        mac_lease = model_class(:mac_lease).create(mac_address: mac_address) || return
-        interface.add_mac_lease(mac_lease) || return
-
+      def add_lease(interface, mac_lease, network_id, ipv4_address)
         return true if network_id.nil? || ipv4_address.nil?
 
         ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
@@ -133,6 +131,19 @@ module Vnet::NodeApi
         interface.add_ip_lease(ip_lease) || return
 
         return true
+      end
+
+      def add_mac_lease(model, mac_address, mac_range_group_id)
+        if mac_address
+          mac_lease = model_class(:mac_lease).create(interface_id: model.id,
+                                                     mac_address: mac_address)
+          return mac_lease
+        end
+
+        return if mac_range_group_id.nil?
+
+        mac_range_group = model_class(:mac_range_group)[id: mac_range_group_id] || return
+        mac_range_group.lease_random(model.id)
       end
 
     end
