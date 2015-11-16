@@ -32,6 +32,8 @@ module Vnet
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
 
+  autoload :ParamError, 'vnet/manager_modules'
+
   module Configurations
     autoload :Base,   'vnet/configurations/base'
     autoload :Common, 'vnet/configurations/common'
