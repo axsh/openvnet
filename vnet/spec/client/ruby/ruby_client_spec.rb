@@ -169,6 +169,11 @@ describe VNetAPIClient do
                      'POST  /lease_policies/:uuid/ip_leases'
   end
 
+  describe VNetAPIClient::MacRangeGroup do
+    include_examples 'test_method', :add_range,
+                     'POST  /mac_range_groups/:mac_range_group_uuid/mac_ranges'
+  end
+
   describe VNetAPIClient::Translation do
     include_examples 'test_method', :add_static_address,
                      'POST  /translations/:uuid/static_address'
@@ -181,7 +186,7 @@ describe VNetAPIClient do
   #
   it "has implemented and tested all routes in the OpenVNet WebAPI" do
     if ! non_standard_routes.empty?
-      raise "The following routes where not tested and might not be implemented:\n%s" %
+      raise "The following routes were not tested and might not be implemented:\n%s" %
         non_standard_routes.join("\n")
     end
   end
