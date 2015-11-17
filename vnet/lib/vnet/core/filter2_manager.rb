@@ -24,11 +24,6 @@ module Vnet::Core
     subscribe_event FILTER_ADDED_STATIC, :added_static
     subscribe_event FILTER_REMOVED_STATIC, :removed_static
 
-    def initialize(*args)
-      super
-
-    end
-
     #
     # Internal methods:
     #
