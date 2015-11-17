@@ -4,7 +4,7 @@ module Vnet::Core::Filters
   
   class Static < Base2
 
-    PASS_PRIORITY = 10
+    PASS_PRIORITY = 20
     DROP_PRIORITY = 50
     
     def initialize(params)
@@ -35,8 +35,8 @@ module Vnet::Core::Filters
 
         rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
 
-          flows_for_static_ingress_filtering(flows, ingress_rule, passthrough, match[:src_prefix])
-          flows_for_static_egress_filtering(flows, egress_rule, passthrough, match[:dst_prefix])
+          flows_for_static_ingress_filtering(flows, ingress_rule, passthrough, match[:ipv4_src_prefix])
+          flows_for_static_egress_filtering(flows, egress_rule, passthrough, match[:ipv4_dst_prefix])
         }
       }
 
@@ -195,41 +195,23 @@ module Vnet::Core::Filters
     end
 
     def flows_for_static_ingress_filtering(flows = [], match, passthrough, prefix)
-      if passthrough
-        flows << flow_create(
-          table: TABLE_INTERFACE_INGRESS_FILTER,
-          goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-          priority: PASS_PRIORITY + prefix,
-          match_interface: @interface_id,
-          match: match
-        )
-      else
-        flows << flow_create(
-          table: TABLE_INTERFACE_INGRESS_FILTER,
-          priority: DROP_PRIORITY + prefix,
-          match_interface: @interface_id,
-          match: match
-        )
-      end
+      flows << flow_create(
+        table: TABLE_INTERFACE_INGRESS_FILTER,
+        goto_table: passthrough ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil,
+        priority: prefix + (passthrough ? PASS_PRIORITY : DROP_PRIORITY),
+        match_interface: @interface_id,
+        match: match
+      )
     end
 
     def flows_for_static_egress_filtering(flows = [], match, passthrough, prefix)
-      if passthrough
-        flows << flow_create(
-          table: TABLE_INTERFACE_EGRESS_FILTER,
-          goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
-          priority: PASS_PRIORITY + prefix,
-          match_interface: @interface_id,
-          match: match
-        )
-      else
-        flows << flow_create(
-          table: TABLE_INTERFACE_EGRESS_FILTER,
-          priority: DROP_PRIORITY + prefix,
-          match_interface: @interface_id,
-          match: match
-        )
-      end
+      flows << flow_create(
+        table: TABLE_INTERFACE_EGRESS_FILTER,
+        goto_table: passthrough ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
+        priority: prefix + (passthrough ? PASS_PRIORITY : DROP_PRIORITY),
+        match_interface: @interface_id,
+        match: match
+      )
     end
   end
 end
