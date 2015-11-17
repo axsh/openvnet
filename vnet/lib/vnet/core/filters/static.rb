@@ -19,12 +19,9 @@ module Vnet::Core::Filters
     end
 
     def install
-      return if @interface_id.nil?
+      super
 
       flows = []
-
-      flows_for_ingress_filtering(flows)
-      flows_for_egress_filtering(flows)
 
       @statics.each { |id, filter|
 
@@ -97,6 +94,7 @@ module Vnet::Core::Filters
       when "udp"  then rule_for_udp(ipv4_address, port, prefix)
       when "arp"  then rule_for_arp(ipv4_address, prefix)
       when "icmp" then rule_for_icmp(ipv4_address, prefix)
+      when "all"  then rule_for_all
       end
     end
 

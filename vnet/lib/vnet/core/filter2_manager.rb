@@ -102,8 +102,12 @@ module Vnet::Core
     end
 
     def updated_item(params)
-      item = internal_detect_by_id_with_error(params) || return
-      item.update(params[:egress_passthrough], params[:ingress_passthrough])
+      id = params.fetch(:id) || return
+      
+      item = internal_detect(id: id)
+      return if item.nil?
+      
+      item.update
     end
 
     #

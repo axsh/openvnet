@@ -38,7 +38,13 @@ module Vnet::Core::Filters
     end
 
     def install
-      raise NotImplementedError
+      return if @interface_id.nil?
+      flows = []
+
+      flows_for_ingress_filtering(flows)
+      flows_for_egress_filtering(flows)
+
+      @dp_info.add_flows(flows)
     end
 
     def uninstall
@@ -55,13 +61,10 @@ module Vnet::Core::Filters
 
     def update(egress_pass, ingress_pass)
       uninstall
-      @egress_passthrough = egress_pass
-      @ingress_passthrough = ingress_pass
-
-      flows = []
-      flows_for_ingress_filtering(flows)
-      flows_for_egress_filtering(flows)
-      @dp_info.add_flows(flows)
+      filter = MW::Filter[@id]
+      @egress_passthrough = filter.egress_passthrough
+      @ingress_passthrough = filter.ingress_passthrough
+      install
     end
 
     def flows_for_ingress_filtering(flows = [])
