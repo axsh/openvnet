@@ -4,6 +4,9 @@ module Vnet::Core::Filters
   
   class Static < Base2
 
+    PASS_PRIORITY = 10
+    DROP_PRIORITY = 50
+    
     def initialize(params)
       super
 
@@ -26,13 +29,14 @@ module Vnet::Core::Filters
       @statics.each { |id, filter|
 
         match = filter[:match]
-        pass = filter[:passthrough]
+        passthrough = filter[:passthrough]
 
         debug log_format('installing filter for ' + pretty_static(match))
 
         rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
-          flows_for_static_ingress_filtering(flows, ingress_rule, pass)
-          flows_for_static_egress_filtering(flows, egress_rule, pass)
+
+          flows_for_static_ingress_filtering(flows, ingress_rule, passthrough, match[:src_prefix])
+          flows_for_static_egress_filtering(flows, egress_rule, passthrough, match[:dst_prefix])
         }
       }
 
@@ -63,9 +67,9 @@ module Vnet::Core::Filters
       return if !installed?
 
       flows = []
-      rules(filter, protocol).each { |ingress_rule, egress_rule|
-        flows_for_static_ingress_filtering(flows, ingress_rule, passthrough)
-        flows_for_static_egress_filtering(flows, egress_rule, passthrough)
+      rules(filter, protocol).each { |ingress_rule, egress_rule|        
+        flows_for_static_ingress_filtering(flows, ingress_rule, passthrough, ipv4[:src_prefix])
+        flows_for_static_egress_filtering(flows, egress_rule, passthrough, ipv4[:dst_prefix])
       }
 
       @dp_info.add_flows(flows)
@@ -190,38 +194,38 @@ module Vnet::Core::Filters
       ]
     end
 
-    def flows_for_static_ingress_filtering(flows = [], match, passthrough)
+    def flows_for_static_ingress_filtering(flows = [], match, passthrough, prefix)
       if passthrough
         flows << flow_create(
           table: TABLE_INTERFACE_INGRESS_FILTER,
           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-          priority: 10,
+          priority: PASS_PRIORITY + prefix,
           match_interface: @interface_id,
           match: match
         )
       else
         flows << flow_create(
           table: TABLE_INTERFACE_INGRESS_FILTER,
-          priority: 50,
+          priority: DROP_PRIORITY + prefix,
           match_interface: @interface_id,
           match: match
         )
       end
     end
 
-    def flows_for_static_egress_filtering(flows = [], match, passthrough)
+    def flows_for_static_egress_filtering(flows = [], match, passthrough, prefix)
       if passthrough
         flows << flow_create(
           table: TABLE_INTERFACE_EGRESS_FILTER,
           goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
-          priority: 10,
+          priority: PASS_PRIORITY + prefix,
           match_interface: @interface_id,
           match: match
         )
       else
         flows << flow_create(
           table: TABLE_INTERFACE_EGRESS_FILTER,
-          priority: 50,
+          priority: DROP_PRIORITY + prefix,
           match_interface: @interface_id,
           match: match
         )
