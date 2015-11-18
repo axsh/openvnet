@@ -117,45 +117,56 @@ module Vnet::Core
     def activate_port(params)
       warn log_format("activating port", params)
 
-      port_name = params_string_n(params, :port_name) || return
-      port_number = validate_port_number(params_value(params, :port_number)) || return
+      begin
+        item_id = get_param_packed_id(params, :id, true, 32)
 
-      if port_number != params_id_value(params)
-        return params_error("mismatch between params id value and port_number", params)
+        port_name = get_param_string(params, :port_name)
+        port_number = get_param_of_port(params, :port_number)
+
+        if port_number != item_id
+          return throw_param_error("mismatch between params id value and port_number", params, :id)
+        end
+
+        # If we already have this port, decide what to do.
+
+        # Figure out what port type this is, and tell e.g. interface
+        # port / tunnel manager.
+
+        item_mode = detect_item_mode(port_name, port_number)
+
+        add_port_flows(item_mode, port_number)
+
+        # May need to do the creation using async in order to allow
+        # deactivation of port if vnmgr is down.
+        #
+        # A list of ports in the process of creation might be needed.
+
+        item_model = mw_class.create(
+          datapath_id: @datapath_info.id,
+          port_name: port_name,
+          port_number: port_number,
+          mode: item_mode
+          )
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
       end
-
-      # Check for conflicts.
-
-      # If we already have this port, decide what to do.
-
-      # Figure out what port type this is, and tell e.g. interface
-      # port / tunnel manager.
-
-      item_mode = detect_item_mode(port_name, port_number)
-
-      add_port_flows(item_mode, port_number)
-
-      # May need to do the creation using async in order to allow
-      # deactivation of port if vnmgr is down.
-      #
-      # A list of ports in the process of creation might be needed.
-
-      item_model = mw_class.create(datapath_id: @datapath_info.id,
-                                   port_name: port_name,
-                                   port_number: port_number,
-                                   mode: item_mode)
     end
 
     # deactivate port on queue '[:port, port_number]'
     def deactivate_port(params)
       debug log_format("deactivating port", params)
 
-      port_number = validate_port_number(params_id_value(params)) || return
+      begin
+        item_id = get_param_packed_id(params, :id, true, 32)
 
-      del_port_flows(port_number)
+        del_port_flows(item_id)
 
-      item_model = mw_class.destroy(datapath_id: @datapath_info.id,
-                                    port_number: port_number)
+        mw_class.destroy(datapath_id: @datapath_info.id,
+                         port_number: item_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     #
@@ -191,46 +202,6 @@ module Vnet::Core
     def del_port_flows(port_number)
       cookie = ActivePorts::Base.cookie_for_id(port_number)
       @dp_info.del_cookie(cookie)
-    end
-
-    # TODO: Move the params methods to a manager helper module.
-
-    def params_string(params, key)
-      params[key] || params_error("missing string parameter #{key}", params)
-      # Add type check.
-    end
-
-    def params_string_n(params, key)
-      params[key] || params_error("missing string parameter #{key}", params)
-      # Add type and not-empty check.
-    end
-
-    def params_value(params, key)
-      params[key] || params_error("missing value parameter #{key}", params)
-      # Add type check.
-    end
-
-    # We can pass id params as [:category, id_value] in cases where we
-    # need event queues that do not apply to a specific item id.
-
-    def params_id_value(params)
-      p_id = params[:id] || params_error("missing parameter id", params)
-      p_id[1] || params_error("missing second element in id array", params)
-    end
-
-    # Used for cases where the params is supposed to always contain a
-    # certain parameter.
-    def params_error(message, params)
-      error log_format(message, params.inspect)
-      caller.each { |str| error log_format(str) }
-
-      # We return nil to ensure the callers properly handle the error.
-      return nil
-    end
-
-    def validate_port_number(port_number)
-      # TODO: Add verification.
-      port_number
     end
 
   end

@@ -64,8 +64,7 @@ module Vnet
       param
     end
 
-    # TODO: Add a 32 bit version.
-    def get_param_packed_id(params, key = :id, required = true)
+    def get_param_packed_id(params, key = :id, required = true, id_size = 31)
       # TODO: Implement get_param_list.
       param_id_list = get_param(params, key, required) || return
       param_id = param_id_list[1]
@@ -74,7 +73,7 @@ module Vnet
         return throw_param_error('list is missing packed id', params, key)
       end
 
-      if !(param_id > 0 && param_id < (1 << 31))
+      if !(param_id > 0 && param_id < (1 << id_size))
         return throw_param_error('invalid value for packed id type', params, key)
       end
 
