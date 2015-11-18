@@ -13,8 +13,8 @@ module Vnet::NodeApi
         datapath_id = options[:datapath_id]
 
         transaction {
-          model_class.where(datapath_id: datapath_id, port_name: port_name).destroy
-          model_class.where(datapath_id: datapath_id, port_number: port_number).destroy
+          self.destroy(datapath_id: datapath_id, port_name: port_name)
+          self.destroy(datapath_id: datapath_id, port_number: port_number)
 
           internal_create(options)
         }
