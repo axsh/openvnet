@@ -146,7 +146,7 @@ module Vnet::Core
 
       port_number = validate_port_number(params_id_value(params)) || return
 
-      del_port_flows(item_mode, port_number)
+      del_port_flows(port_number)
 
       item_model = mw_class.destroy(datapath_id: @datapath_info.id,
                                     port_number: port_number)
@@ -182,7 +182,7 @@ module Vnet::Core
       item_class.add_flows_for_id(@dp_info, port_number)
     end
 
-    def del_port_flows(mode, port_number)
+    def del_port_flows(port_number)
       cookie = ActivePorts::Base.cookie_for_id(port_number)
       @dp_info.del_cookie(cookie)
     end
