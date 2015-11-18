@@ -5,19 +5,15 @@ module Vnet::NodeApi
     class << self
       private
 
-      # TODO: Remember to add associations.
-
-      # TODO: Remember to verify port_number range.
-
       # Currently only supports very simple handling of race
       # conditions, etc.
       def create_with_transaction(options)
-        options = options.dup
-
+        port_name = options[:port_name]
         port_number = options[:port_number]
         datapath_id = options[:datapath_id]
 
         transaction {
+          model_class.where(datapath_id: datapath_id, port_name: port_name).destroy
           model_class.where(datapath_id: datapath_id, port_number: port_number).destroy
 
           internal_create(options)

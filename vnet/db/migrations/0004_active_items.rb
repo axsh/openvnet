@@ -35,6 +35,7 @@ Sequel.migration do
       DateTime :deleted_at, :index => true
       Integer :is_deleted, :null=>false, :default=>0
 
+      unique [:datapath_id, :port_name, :is_deleted]
       unique [:datapath_id, :port_number, :is_deleted]
     end
 
