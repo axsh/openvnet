@@ -47,7 +47,7 @@ module Vnet
     def get_param_id(params, key = :id, required = true)
       param = get_param(params, key, required) || return
 
-      if !(param > 0 && param < (1 << 30))
+      if !(param > 0 && param < (1 << 31))
         return throw_param_error('invalid value for id type', params, key)
       end
 
@@ -57,7 +57,7 @@ module Vnet
     def get_param_id_32(params, key = :id, required = true)
       param = get_param(params, key, required) || return
 
-      if !(param > 0 && param < (1 << 31))
+      if !(param > 0 && param < (1 << 32))
         return throw_param_error('invalid value for id_32 type', params, key)
       end
 
@@ -74,7 +74,7 @@ module Vnet
         return throw_param_error('list is missing packed id', params, key)
       end
 
-      if !(param_id > 0 && param_id < (1 << 30))
+      if !(param_id > 0 && param_id < (1 << 31))
         return throw_param_error('invalid value for packed id type', params, key)
       end
 
@@ -132,7 +132,7 @@ module Vnet
     def get_param_tp_port(params, key, required = true)
       param = get_param_int(params, key, required) || return
 
-      if !(param > 0 && param < (1 << 15))
+      if !(param > 0 && param < (1 << 16))
         return throw_param_error('value is not a valid transport port', params, key)
       end
 
@@ -142,7 +142,7 @@ module Vnet
     def get_param_of_port(params, key, required = true)
       param = get_param_int(params, key, required) || return
 
-      if !(param > 0 && param < (1 << 31))
+      if !(param > 0 && param < (1 << 32))
         return throw_param_error('value is not a valid OpenFlow port', params, key)
       end
 
