@@ -143,10 +143,19 @@ module Vnet::Openflow
                              })
       }
 
+      #
+      # Default classifier flows:
+      #
+      flows << flow_create(table: TABLE_CLASSIFIER,
+                           goto_table: TABLE_LOCAL_PORT,
+                           priority: 2,
+                           match: {
+                             :in_port => OFPP_LOCAL
+                           },
+                           write_local: true)
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_CONTROLLER_PORT,
                            priority: 2,
-
                            match: {
                              :in_port => OFPP_CONTROLLER
                            },
