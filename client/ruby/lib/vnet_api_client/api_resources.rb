@@ -105,6 +105,21 @@ module VNetAPIClient
     define_standard_crud_methods
   end
 
+  class MacRangeGroup < ApiResource
+    api_suffix :mac_range_groups
+
+    define_standard_crud_methods
+
+    define_show_relation(:mac_ranges)
+    define_remove_relation(:mac_ranges)
+
+    def self.add_range(mac_range_group_uuid, params = nil)
+      send_request(Net::HTTP::Post,
+                   "#{@api_suffix}/#{mac_range_group_uuid}/mac_ranges",
+                   params)
+    end
+  end
+
   class Network < ApiResource
     api_suffix :networks
 
