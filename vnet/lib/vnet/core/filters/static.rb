@@ -4,12 +4,10 @@ module Vnet::Core::Filters
   
   class Static < Base2
 
-    PASS_PRIORITY = 20
-    DROP_PRIORITY = 50
-    
+    BASE_PRIORITY = 20
+
     def initialize(params)
       super
-
       @statics = {}
     end
 
@@ -34,12 +32,15 @@ module Vnet::Core::Filters
         debug log_format('installing filter for ' + pretty_static(match))
 
         rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
+          flows_for_static_ingress_filtering(flows, ingress_rule, passthrough) { |base|
+            base + priority(match[:ipv4_src_prefix], match[:port_src_first], passthrough)
+          }
 
-          flows_for_static_ingress_filtering(flows, ingress_rule, passthrough, match[:ipv4_src_prefix])
-          flows_for_static_egress_filtering(flows, egress_rule, passthrough, match[:ipv4_dst_prefix])
+          flows_for_static_egress_filtering(flows, egress_rule, passthrough) { |base|
+            base + priority(match[:ipv4_dst_prefix], match[:port_dst_first], passthrough)
+          }
         }
       }
-
       @dp_info.add_flows(flows)
 
     end
@@ -67,11 +68,15 @@ module Vnet::Core::Filters
       return if !installed?
 
       flows = []
-      rules(filter, protocol).each { |ingress_rule, egress_rule|        
-        flows_for_static_ingress_filtering(flows, ingress_rule, passthrough, ipv4[:src_prefix])
-        flows_for_static_egress_filtering(flows, egress_rule, passthrough, ipv4[:dst_prefix])
-      }
+      rules(filter, protocol).each { |ingress_rule, egress_rule|
+        flows_for_static_ingress_filtering(flows, ingress_rule, passthrough) { |base|
+          base + priority(ipv4[:src_prefix], port[:src_first], passthrough)
+        }
 
+        flows_for_static_egress_filtering(flows, egress_rule, passthrough) { |base|
+          base + priority(ipv4[:dst_prefix], port[:dst_first], passthrough)
+        }
+      }
       @dp_info.add_flows(flows)
 
     end
@@ -84,6 +89,10 @@ module Vnet::Core::Filters
     #
 
     private
+
+    def priority(prefix, port, passthrough)
+      (prefix << 1) + (passthrough ? 1 : 0) + ((port.nil? || port == 0) ? 0 : 2)
+    end
 
     def rules(filter, protocol)
 
@@ -194,21 +203,21 @@ module Vnet::Core::Filters
       ]
     end
 
-    def flows_for_static_ingress_filtering(flows = [], match, passthrough, prefix)
+    def flows_for_static_ingress_filtering(flows = [], match, passthrough)
       flows << flow_create(
         table: TABLE_INTERFACE_INGRESS_FILTER,
         goto_table: passthrough ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil,
-        priority: prefix + (passthrough ? PASS_PRIORITY : DROP_PRIORITY),
+        priority: yield(BASE_PRIORITY),
         match_interface: @interface_id,
         match: match
       )
     end
 
-    def flows_for_static_egress_filtering(flows = [], match, passthrough, prefix)
+    def flows_for_static_egress_filtering(flows = [], match, passthrough)
       flows << flow_create(
         table: TABLE_INTERFACE_EGRESS_FILTER,
         goto_table: passthrough ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
-        priority: prefix + (passthrough ? PASS_PRIORITY : DROP_PRIORITY),
+        priority: yield(BASE_PRIORITY),
         match_interface: @interface_id,
         match: match
       )
