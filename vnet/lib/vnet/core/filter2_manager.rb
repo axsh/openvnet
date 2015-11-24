@@ -102,7 +102,7 @@ module Vnet::Core
       item = internal_detect(id: id)
       return if item.nil?
       
-      item.update
+      item.update(params)
     end
 
     #

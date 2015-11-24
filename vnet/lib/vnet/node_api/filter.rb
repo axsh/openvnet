@@ -5,14 +5,20 @@ module Vnet::NodeApi
   class Filter < EventBase
     class << self
       def update(uuid, options)
+        options.each { |param|
+          return unless param.first == "ingress_passthrough" || param.first == "egress_passthrough"
+        }
+
         filter = transaction {
           model_class[uuid].tap do |model|
             model.update(options)
           end
-        }
-
-        p filter.tap { |filter|
-          dispatch_event(FILTER_UPDATED, model.to_hash)
+        }.tap { |filter|
+          dispatch_event(FILTER_UPDATED,
+                         id: filter.id,
+                         ingress_passthrough: filter.ingress_passthrough,
+                         egress_passthrough: filter.egress_passthrough
+                        )
         }
       end
 
