@@ -26,7 +26,7 @@ module Vnet::NodeApi
             dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
           end
 
-          case options[:enabled_filtering]
+          case options[:enable_filtering]
           when true
             dispatch_event(INTERFACE_ENABLED_FILTERING2, id: interface.id)
           when false
