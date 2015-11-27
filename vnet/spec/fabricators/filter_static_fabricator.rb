@@ -2,28 +2,46 @@ Fabricator(:filter_static,
   class_name: Vnet::Models::FilterStatic
 )
 
-Fabricator(:static_enable_tcp, class_name: Vnet::Models::FilterStatic) do
-  protocol "tcp",
-  ipv4_src_address IPAddr.new("10.101.0.11").to_i,
-  ipv4_dst_address IPAddr.new("10.101.0.11").to_i,
-  port_src_first 80,
-  port_src_last 80,
-  port_dst_first  80,
-  port_dst_last 80,
-  ipv4_src_prefix 32, 
-  ipv4_dst_prefix 32,
+Fabricator(:static_tcp_pass, class_name: Vnet::Models::FilterStatic) do
+  protocol "tcp"
+  ipv4_src_address 1
+  ipv4_dst_address 1
+  port_src 1
+  port_dst 1
+  ipv4_src_prefix  1
+  ipv4_dst_prefix 1
   passthrough true
 end
 
-Fabricator(:static_enable_udp, class_name: Vnet::Models::FilterStatic) do
-  protocol "upd",
-  ipv4_src_address IPAddr.new("10.101.0.11").to_i,
-  ipv4_dst_address IPAddr.new("10.101.0.11").to_i,
-  port_src_first 80,
-  port_src_last 80,
-  port_dst_first  80,
-  port_dst_last 80,
-  ipv4_src_prefix 32, 
-  ipv4_dst_prefix 32,
+Fabricator(:static_tcp_drop, class_name: Vnet::Models::FilterStatic) do
+  protocol "tcp"
+  ipv4_src_address 2
+  ipv4_dst_address 2
+  port_src 2
+  port_dst 2
+  ipv4_src_prefix  2
+  ipv4_dst_prefix 2
+  passthrough false
+end
+
+Fabricator(:static_udp_pass, class_name: Vnet::Models::FilterStatic) do
+  protocol "udp"
+  ipv4_src_address 1
+  ipv4_dst_address 1
+  port_src 1
+  port_dst 1
+  ipv4_src_prefix  1
+  ipv4_dst_prefix 1
   passthrough true
+end
+
+Fabricator(:static_udp_drop, class_name: Vnet::Models::FilterStatic) do
+  protocol "udp"
+  ipv4_src_address 2
+  ipv4_dst_address 2
+  port_src 2
+  port_dst 2
+  ipv4_src_prefix 2
+  ipv4_dst_prefix 2
+  passthrough false
 end
