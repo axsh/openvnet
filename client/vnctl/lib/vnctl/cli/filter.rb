@@ -28,17 +28,12 @@ module Vnctl::Cli
       
       mode.option :ipv4_src_address, :type => :string,
         :desc => "This is the address the filter will apply for incoming traffic."
-      mode.option :port_src_first, :type => :string,
-        :desc => "This is the first port which the rule will listen for incoming traffic on."
-      mode.option :port_src_last, :type => :string,
-        :desc => "This is the last port which the rule will listen for incoming traffic on."
-
       mode.option :ipv4_dst_address, :type => :string,
         :desc => "This is the address the filter will apply for outgoing traffic."
-      mode.option :port_dst_first, :type => :string,
-        :desc => "This is the first port which the rule will listen for outgoing traffic on."
-      mode.option :port_dst_last, :type => :string,
-        :desc => "This is the first port which the rule will listen for outgoing traffic on."
+      mode.option :port_src, :type => :string,
+        :desc => "This is the port which the rule will apply to for incoming traffic."
+      mode.option :port_dst, :type => :string,
+        :desc => "This is the port which the rule will apply to for outgoing traffic."
     end    
   end
 end

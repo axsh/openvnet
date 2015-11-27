@@ -27,10 +27,8 @@ Sequel.migration do
       Bignum :ipv4_dst_address, :null => false
       Integer :ipv4_src_prefix, :null => false
       Integer :ipv4_dst_prefix, :null => false
-      Integer :port_src_first
-      Integer :port_dst_first
-      Integer :port_src_last
-      Integer :port_dst_last
+      Integer :port_src
+      Integer :port_dst
       
       String :protocol, :null => false
       FalseClass :passthrough, :null => false

@@ -133,10 +133,8 @@ module Vnet::Core
       ipv4[:src_prefix] = get_param_id(params, :ipv4_src_prefix) || return
       ipv4[:dst_prefix] = get_param_id(params, :ipv4_dst_prefix) || return
 
-      port_number[:src_first] = get_param_port_number(params, :port_src_first, false)
-      port_number[:src_last] = get_param_port_number(params, :port_src_last, false)
-      port_number[:dst_first] = get_param_port_number(params, :port_dst_first, false)
-      port_number[:dst_last] = get_param_port_number(params, :port_dst_last, false)
+      port_number[:src] = get_param_port_number(params, :port_src, false)
+      port_number[:dst] = get_param_port_number(params, :port_dst, false)
 
       protocol = get_param(params, :protocol) || return
 

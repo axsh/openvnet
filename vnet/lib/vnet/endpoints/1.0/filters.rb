@@ -46,10 +46,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
     param :ipv4_src_address, :String, transform: PARSE_IPV4_ADDRESS
     param :ipv4_dst_address, :String, transform: PARSE_IPV4_ADDRESS
-    param :port_src_first, :Integer, in: 0..65536
-    param :port_src_last, :Integer, in: 0..65536
-    param :port_dst_first, :Integer, in: 0..65536
-    param :port_dst_last, :Integer, in: 0..65536
+    param :port_src, :Integer, in: 0..65536
+    param :port_dst, :Integer, in: 0..65536
     param :protocol, :String
     param :passthrough, :Boolean
   end
@@ -69,10 +67,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       ipv4_src_prefix: params["ipv4_address"].prefix,
       ipv4_dst_address: "0",
       ipv4_dst_prefix: 0,
-      port_src_first: params["port_number"],
-      port_src_last: params["port_number"],
-      port_dst_first: params["port_number"],
-      port_dst_last: params["port_number"],
+      port_src: params["port_number"],
+      port_dst: params["port_number"],
       protocol: params["protocol"],
       passthrough: params["passthrough"]
     )

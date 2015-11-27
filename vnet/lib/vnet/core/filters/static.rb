@@ -33,11 +33,11 @@ module Vnet::Core::Filters
 
         rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
           flows_for_static_ingress_filtering(flows, ingress_rule, passthrough) { |base|
-            base + priority(match[:ipv4_src_prefix], match[:port_src_first], passthrough)
+            base + priority(match[:ipv4_src_prefix], match[:port_src], passthrough)
           }
 
           flows_for_static_egress_filtering(flows, egress_rule, passthrough) { |base|
-            base + priority(match[:ipv4_dst_prefix], match[:port_dst_first], passthrough)
+            base + priority(match[:ipv4_dst_prefix], match[:port_dst], passthrough)
           }
         }
       }
@@ -53,10 +53,8 @@ module Vnet::Core::Filters
         :ipv4_dst_address => ipv4[:dst_address],
         :ipv4_src_prefix => ipv4[:src_prefix],
         :ipv4_dst_prefix => ipv4[:dst_prefix],
-        :port_src_first => port[:src_first],
-        :port_dst_first => port[:dst_first],
-        :port_src_last => port[:src_last],
-        :port_dst_last => port[:dst_last]
+        :port_src => port[:src],
+        :port_dst => port[:dst],
       }
 
       @statics[static_id] = {
@@ -70,11 +68,11 @@ module Vnet::Core::Filters
       flows = []
       rules(filter, protocol).each { |ingress_rule, egress_rule|
         flows_for_static_ingress_filtering(flows, ingress_rule, passthrough) { |base|
-          base + priority(ipv4[:src_prefix], port[:src_first], passthrough)
+          base + priority(ipv4[:src_prefix], port[:src], passthrough)
         }
 
         flows_for_static_egress_filtering(flows, egress_rule, passthrough) { |base|
-          base + priority(ipv4[:dst_prefix], port[:dst_first], passthrough)
+          base + priority(ipv4[:dst_prefix], port[:dst], passthrough)
         }
       }
       @dp_info.add_flows(flows)
@@ -99,7 +97,7 @@ module Vnet::Core::Filters
       # Using src as the main address until src/dst functionallity is fully implemented
 
       ipv4_address = filter[:ipv4_src_address]
-      port = filter[:port_src_first]
+      port = filter[:port_src]
       prefix = filter[:ipv4_src_prefix]
 
       case protocol
