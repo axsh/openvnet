@@ -4,7 +4,6 @@ module Vnet::Services
 
   class TopologyManager < Vnet::Manager
     include Vnet::Constants::Topology
-    include Vnet::Constants::Interface
 
     #
     # Events:
@@ -165,14 +164,14 @@ module Vnet::Services
     def get_a_host_interface_id(datapath_id)
       filter = {
         datapath_id: datapath_id,
-        interface_mode: MODE_HOST
+        interface_mode: Vnet::Constants::Interface::MODE_HOST
       }
 
-      interface = MW::Interface.batch.dataset.where(filter).first.commit
+      interface = MW::InterfacePort.batch.dataset.where(filter).first.commit
 
       debug log_format("get_a_host_interface", interface.inspect)
 
-      interface.id
+      interface.interface_id
     end
 
   end

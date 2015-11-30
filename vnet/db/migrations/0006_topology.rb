@@ -43,6 +43,7 @@ Sequel.migration do
       DateTime :deleted_at, :index => true
       Integer :is_deleted, :null=>false, :default=>0
 
+      # TODO: Only allow network to have be part of one topology?
       unique [:topology_id, :network_id, :is_deleted]
     end
 

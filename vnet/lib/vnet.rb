@@ -236,6 +236,7 @@ module Vnet
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
         autoload :Topology, 'vnet/endpoints/1.0/responses/topology'
+        autoload :TopologyNetwork, 'vnet/endpoints/1.0/responses/topology'
         autoload :Translation, 'vnet/endpoints/1.0/responses/translation'
         autoload :TranslationStaticAddress, 'vnet/endpoints/1.0/responses/translation_static_address'
         autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
@@ -265,6 +266,7 @@ module Vnet
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
         autoload :TopologyCollection, 'vnet/endpoints/1.0/responses/topology'
+        autoload :TopologyNetworkCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TranslationCollection, 'vnet/endpoints/1.0/responses/translation'
         autoload :VlanTranslationCollection, 'vnet/endpoints/1.0/responses/vlan_translation'
       end
