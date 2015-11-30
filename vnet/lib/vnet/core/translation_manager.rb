@@ -141,7 +141,6 @@ module Vnet::Core
     # TRANSLATION_REMOVED_STATIC_ADDRESS on queue 'item.id'.
     def removed_static_address(params)
       item = internal_detect_by_id(params) || return
-
       static_address_id = params[:static_address_id] || return
 
       item.removed_static_address(static_address_id)
