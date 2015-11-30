@@ -2,12 +2,8 @@
 
 module Vnet::Models
 
-  class Topology < Base
-    taggable 'tp'
-
+  class TopologyDatapath < Base
     plugin :paranoia_is_deleted
-
-    # TODO: Add assosiate_dependencies.
 
   end
 

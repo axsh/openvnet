@@ -95,6 +95,8 @@ module Vnet::Services
     # Network events:
     #
 
+    # TODO: Queue needs to add datapath?
+
     # Queue [:network, network.id]
 
     def network_activated(params)
@@ -112,24 +114,26 @@ module Vnet::Services
         return
       end
 
-      interface = get_a_host_interface(params[:datapath_id])
+      interface_id = get_a_host_interface_id(datapath_id)
 
-      if interface.nil?
-        debug log_format("network_activated could not find host interface",
+      if interface_id.nil?
+        info log_format("network_activated could not find host interface",
                          "datapath_id:#{datapath_id} network_id:#{network_id}")
         return
       end
 
-      dp_nw = MW::DatapathNetwork.create(datapath_id: datapath_id,
-                                         network_id: network_id,
-                                         interface_id: interface.id)
-      
-      if dp_nw
+      create_params = {
+        datapath_id: datapath_id,
+        network_id: network_id,
+        interface_id: interface_id
+      }
+
+      if MW::DatapathNetwork.batch.create(create_params).commit
         debug log_format("network_activated created datapath_network",
-                         "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface.id}")
+                         "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface_id}")
       else
         info log_format("network_activated failed to create datapath_network",
-                        "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface.id}")
+                        "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface_id}")
       end
     end
 
@@ -137,23 +141,38 @@ module Vnet::Services
       debug log_format("network deactivated", params)
     end
 
-    def has_datapath_network?(datapath_id, network_id)
-      dp_nw = MW::DatapathNetwork.dataset.where(datapath_id: datapath_id, network_id: network_id).first
+    #
+    # Helper methods:
+    #
 
-      return !dp_nw.nil?
+    def find_topology_network(network_id, datapath_id)
+      nil
     end
 
-    def get_a_host_interface(datapath_id)
-      interface_port = MW::InterfacePort.dataset.where(datapath_id: datapath_id,
-                                                       interface_mode: MODE_HOST).first
+    def has_datapath_network?(datapath_id, network_id)
+      filter = {
+        datapath_id: datapath_id,
+        network_id: network_id
+      }
 
-      # debug log_format("get_a_host_interface", interface_port.inspect)
+      !MW::DatapathNetwork.batch.dataset.where(filter).first.commit.nil?
+    end
 
-      interface = interface_port.interface
+    #
+    #
+    #
 
-      # debug log_format("get_a_host_interface", interface.inspect)
+    def get_a_host_interface_id(datapath_id)
+      filter = {
+        datapath_id: datapath_id,
+        interface_mode: MODE_HOST
+      }
 
-      interface
+      interface = MW::Interface.batch.dataset.where(filter).first.commit
+
+      debug log_format("get_a_host_interface", interface.inspect)
+
+      interface.id
     end
 
   end
