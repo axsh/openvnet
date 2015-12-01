@@ -8,6 +8,14 @@
 #
 # A missing value is not an error if 'required != true', while an
 # invalid value for the type requested is.
+#
+# Usage:
+#
+# begin
+#   port_number = get_param_of_port(params, :port_number)
+# rescue Vnet::ParamError => e
+#   handle_param_error(e)
+# end
 
 module Vnet
 
