@@ -123,6 +123,16 @@ module Vnet
       param
     end
 
+    def get_param_symbol(params, key, required = true)
+      param = get_param(params, key, required) || return
+
+      if !param.is_a?(Symbol)
+        return throw_param_error('value is not a symbol type', params, key)
+      end
+
+      param
+    end
+
     # TODO: Add methods to validate IPv4 addresses with different restrictions.
     #
     # TODO: Shouldn't this be creating IPAddr types?
