@@ -111,36 +111,23 @@ module Vnet::Services
         datapath_id = get_param_id(params, :datapath_id)
 
         if has_datapath_network?(datapath_id, network_id)
-          debug log_format("network_activated found existing datapath_network",
-                           "datapath_id:#{datapath_id} network_id:#{network_id}")
+          debug log_format_dn("network_activated found existing datapath_network", datapath_id, network_id)
           return
         end
 
         interface_id = get_a_host_interface_id(datapath_id)
 
         if interface_id.nil?
-          info log_format("network_activated could not find host interface",
-                          "datapath_id:#{datapath_id} network_id:#{network_id}")
+          info log_format_dn("network_activated could not find host interface", datapath_id, network_id)
           return
         end
+
+        create_datapath_network(datapath_id, network_id, interface_id)
 
       rescue Vnet::ParamError => e
         handle_param_error(e)
       end
 
-      create_params = {
-        datapath_id: datapath_id,
-        network_id: network_id,
-        interface_id: interface_id
-      }
-
-      if MW::DatapathNetwork.batch.create(create_params).commit
-        debug log_format("network_activated created datapath_network",
-                         "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface_id}")
-      else
-        info log_format("network_activated failed to create datapath_network",
-                        "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface_id}")
-      end
     end
 
     def network_deactivated(params)
@@ -162,6 +149,28 @@ module Vnet::Services
       }
 
       !MW::DatapathNetwork.batch.dataset.where(filter).first.commit.nil?
+    end
+
+    def create_datapath_network(datapath_id, network_id, interface_id)
+      create_params = {
+        datapath_id: datapath_id,
+        network_id: network_id,
+        interface_id: interface_id
+      }
+
+      if MW::DatapathNetwork.batch.create(create_params).commit
+        debug log_format_dni("created datapath_network", datapath_id, network_id, interface_id)
+      else
+        info log_format_dni("failed to create datapath_network", datapath_id, network_id, interface_id)
+      end
+    end
+
+    def log_format_dn(message, datapath_id, network_id)
+      log_format(message, "datapath_id:#{datapath_id} network_id:#{network_id}")
+    end
+
+    def log_format_dni(message, datapath_id, network_id, interface_id)
+      log_format(message, "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface_id}")
     end
 
     #
