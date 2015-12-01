@@ -8,8 +8,6 @@ module Vnet::NodeApi
       # Currently only supports very simple handling of race
       # conditions, etc.
       def create_with_transaction(options)
-        options = options.dup
-
         network_id = options[:network_id]
         datapath_id = options[:datapath_id]
 
