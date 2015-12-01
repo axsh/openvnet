@@ -18,6 +18,8 @@ module Vnet::Services
     subscribe_event TOPOLOGY_NETWORK_ACTIVATED, :network_activated
     subscribe_event TOPOLOGY_NETWORK_DEACTIVATED, :network_deactivated
 
+    # TODO: Add events for host interfaces?
+
     def initialize(info, options = {})
       super
       @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
@@ -104,21 +106,26 @@ module Vnet::Services
       # Add a quick hack that bypasses topology just to test out dp_nw
       # creation.
 
-      network_id = params[:id][1]
-      datapath_id = params[:datapath_id]
+      begin
+        network_id = get_param_packed_id(params)
+        datapath_id = get_param_id(params, :datapath_id)
 
-      if has_datapath_network?(datapath_id, network_id)
-        debug log_format("network_activated found existing datapath_network",
-                         "datapath_id:#{datapath_id} network_id:#{network_id}")
-        return
-      end
+        if has_datapath_network?(datapath_id, network_id)
+          debug log_format("network_activated found existing datapath_network",
+                           "datapath_id:#{datapath_id} network_id:#{network_id}")
+          return
+        end
 
-      interface_id = get_a_host_interface_id(datapath_id)
+        interface_id = get_a_host_interface_id(datapath_id)
 
-      if interface_id.nil?
-        info log_format("network_activated could not find host interface",
-                         "datapath_id:#{datapath_id} network_id:#{network_id}")
-        return
+        if interface_id.nil?
+          info log_format("network_activated could not find host interface",
+                          "datapath_id:#{datapath_id} network_id:#{network_id}")
+          return
+        end
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
       end
 
       create_params = {
