@@ -164,7 +164,7 @@ module Vnet::Services
           return
         end
 
-        case get_param_string(params, :type)
+        case get_param_symbol(params, :type)
         when :network
           create_datapath_network(datapath_id, dp_generic_id, interface_id)
         else
@@ -197,7 +197,7 @@ module Vnet::Services
       end
 
       # TODO: wait_for_loaded?
-      internal_retrieve(get_param_id(params, :topology_id))
+      internal_retrieve(id: tp_nw.topology_id)
     end
 
     def has_datapath_network?(datapath_id, network_id)
