@@ -37,10 +37,16 @@ def protocol_type(protocol, port_number)
         udp_dst: port_number,
         ip_proto: IPV4_PROTOCOL_UDP
       }
+    when "icmp" then
+      {
+        ip_proto: IPV4_PROTOCOL_ICMP
+      }
+    else      
+      return;
     end
 end
 
-def rule_flow(traffic_direction, protocol, ipv4_address, prefix, port_number)
+def rule_flow(traffic_direction, protocol, ipv4_address, prefix, port_number = nil)
   case traffic_direction
   when "ingress" then
     match_ipv4_subnet_src(ipv4_address, prefix).merge(protocol_type(protocol, port_number))
@@ -65,9 +71,9 @@ def static_hash(static)
                                        static.passthrough) },
       { match: rule_flow("ingress",
                          static.protocol,
-                         static.port_src,
                          static.ipv4_src_address,
-                         static.ipv4_src_prefix) }
+                         static.ipv4_src_prefix,
+                         static.port_src) }
     ].inject(&:merge) => [
         filter.to_hash,
         egress_tables(static.passthrough),
@@ -76,9 +82,9 @@ def static_hash(static)
                                          static.passthrough) },
         { match: rule_flow("egress",
                            static.protocol,
-                           static.port_dst,
                            static.ipv4_dst_address,
-                           static.ipv4_dst_prefix) }
+                           static.ipv4_dst_prefix,
+                           static.port_dst) }
       ].inject(&:merge)
   }
 end
