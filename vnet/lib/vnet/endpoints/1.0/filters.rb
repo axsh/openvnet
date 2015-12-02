@@ -41,7 +41,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   end
 
   def self.static_shared_params
-    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS, required: true
+    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
     param :port_number, :Integer, in: 0..65536
 
     param :ipv4_src_address, :String, transform: PARSE_IPV4_ADDRESS
@@ -77,6 +77,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   end
 
   static_shared_params
+  param :id, :Integer
   delete '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
 
@@ -86,21 +87,18 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
     remove_system_parameters
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # Sequel expects symbols in its filter hash. Symbolise the string keys in params
-    # filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
-    # params[:translation_id] = translation.id
-    # tsa = M::TranslationStaticAddress.batch[filter_params].commit
+    filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
+    filter_params[:filter_id] = filter.id
+
+    s = M::FilterStatic.batch[filter_params].commit
 
     if !s
       rp = request.params.to_json
       raise E::UnknownResource, "Couldn't find resource with parameters: #{rp}"
     end
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
+
     M::FilterStatic.destroy(id: s.id)
 
     respond_with(R::Filter.filter_statics(filter))
   end
-
 end

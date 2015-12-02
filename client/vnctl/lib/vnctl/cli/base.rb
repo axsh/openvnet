@@ -234,17 +234,18 @@ module Vnctl::Cli
         c = Class.new(Base) do
 
           base_uuid = "#{parent.namespace.chomp('s')}"
+
           yield self if block_given?
-          
           desc "add #{base_uuid.upcase}_UUID --option=OPTION", "Adds a(n) #{mode_type} #{base_uuid}."
           define_method("add") { | uuid |
             puts Vnctl.webapi.post("#{suffix}/#{uuid}/#{mode_type}", options)
           }
+
+          yield self if block_given?
           desc "del #{base_uuid.upcase}_UUID" , "Removes a(n) #{mode_type} #{base_uuid}."
           define_method("del") { | uuid |
-            puts Vnctl.webapi.delete("#{suffix}/#{uuid}")
+            puts Vnctl.webapi.delete("#{suffix}/#{uuid}/#{mode_type}", options)
           }
-          
         end
 
         c.namespace "#{self.namespace} #{mode_type}"
@@ -257,3 +258,4 @@ module Vnctl::Cli
     }
   end
 end
+
