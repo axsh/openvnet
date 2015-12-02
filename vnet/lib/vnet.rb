@@ -262,6 +262,7 @@ module Vnet
         autoload :IpRetentionCollection, 'vnet/endpoints/1.0/responses/ip_retention'
         autoload :IpRetentionContainerCollection, 'vnet/endpoints/1.0/responses/ip_retention_container'
         autoload :FilterCollection, 'vnet/endpoints/1.0/responses/filter'
+        autoload :FilterStaticCollection, 'vnet/endpoints/1.0/responses/filter_static'
         autoload :LeasePolicyCollection, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddressCollection, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
