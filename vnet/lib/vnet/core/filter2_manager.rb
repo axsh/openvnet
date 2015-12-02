@@ -138,7 +138,7 @@ module Vnet::Core
 
       protocol = get_param(params, :protocol) || return
 
-      passthrough = get_param(params, :passthrough) || return
+      passthrough = get_param(params, :passthrough)
 
       item.added_static(static_id,
                         ipv4,
