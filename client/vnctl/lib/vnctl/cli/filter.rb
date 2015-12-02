@@ -15,8 +15,7 @@ module Vnctl::Cli
     define_standard_crud_commands
 
     define_mode_relation(:static) do | mode |
-#      mode.option :filter_uuid, :type => :string, :desc => "This is the filter that will be activated."
-      mode.option :ipv4_address, :type => :string, :required => true,
+      mode.option :ipv4_address, :type => :string,
         :desc => "This is the ipv4 address the filter will be applied on."
       mode.option :protocol, :type => :string, :required => true,
         :desc => "This is the protocol which the filter will listen on."
@@ -34,6 +33,6 @@ module Vnctl::Cli
         :desc => "This is the port which the rule will apply to for incoming traffic."
       mode.option :port_dst, :type => :string,
         :desc => "This is the port which the rule will apply to for outgoing traffic."
-    end    
+    end
   end
 end
