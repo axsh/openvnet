@@ -120,6 +120,9 @@ module Vnet::Core
         :out_group => Vnet::Openflow::Controller::OFPG_ANY,
       }.merge(params)
 
+      match = options[:match]
+      options[:match] = Trema::Match.new(match) if match
+
       @controller.pass_task {
         @controller.public_send_flow_mod(@dpid, options)
       }
