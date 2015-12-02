@@ -27,15 +27,15 @@ end
 
 def protocol_type(protocol, port_number)
   case protocol
-    when IPV4_PROTOCOL_TCP then
+    when "tcp" then
       {
         tcp_dst: port_number,
-        ip_proto: protocol
+        ip_proto: IPV4_PROTOCOL_TCP
       }
-    when IPV4_PROTOCOL_UDP then
+    when "udp" then
       {
         udp_dst: port_number,
-        ip_proto: protocol
+        ip_proto: IPV4_PROTOCOL_UDP
       }
     end
 end
@@ -61,10 +61,10 @@ def static_hash(static)
       filter.to_hash,
       ingress_tables(static.passthrough),
       { priority: 20 + static_priority(static.ipv4_src_prefix,
-                                       static.passthrough,
-                                       static.port_src) },
+                                       static.port_src,
+                                       static.passthrough) },
       { match: rule_flow("ingress",
-                         IPV4_PROTOCOL_TCP,
+                         static.protocol,
                          static.port_src,
                          static.ipv4_src_address,
                          static.ipv4_src_prefix) }
@@ -72,10 +72,10 @@ def static_hash(static)
         filter.to_hash,
         egress_tables(static.passthrough),
         { priority: 20 + static_priority(static.ipv4_dst_prefix,
-                                         static.passthrough,
-                                         static.port_dst) },
+                                         static.port_dst,
+                                         static.passthrough) },
         { match: rule_flow("egress",
-                           IPV4_PROTOCOL_TCP,
+                           static.protocol,
                            static.port_dst,
                            static.ipv4_dst_address,
                            static.ipv4_dst_prefix) }

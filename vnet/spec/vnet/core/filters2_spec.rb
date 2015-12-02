@@ -41,9 +41,9 @@ describe Vnet::Core::Filter2Manager do
                               )
       }
       it "creates the a filter item" do
-        filter_hash(filter).each { |ingress_flow, egress_flow|
-          expect(flows).to include flow(ingress_flow)
-          expect(flows).to include flow(egress_flow)
+        filter_hash(filter).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
         }
       end
     end
@@ -57,9 +57,9 @@ describe Vnet::Core::Filter2Manager do
                               )
       }
       it "creates the a filter item" do
-        filter_hash(filter).each { |ingress_flow, egress_flow|
-          expect(flows).to include flow(ingress_flow)
-          expect(flows).to include flow(egress_flow)
+        filter_hash(filter).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
         }
       end
     end
@@ -79,9 +79,9 @@ describe Vnet::Core::Filter2Manager do
         filter2_manager.publish(Vnet::Event::FILTER_UPDATED, id: filter.id, ingress_passthrough: false, egress_passthrough: true)
         sleep(1)
 
-        filter_hash(filter).each { |ingress_flow, egress_flow|
-          expect(flows).to include flow(ingress_flow)
-          expect(flows).to include flow(egress_flow)
+        filter_hash(filter).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
         }
       end
     end
@@ -98,9 +98,9 @@ describe Vnet::Core::Filter2Manager do
         filter2_manager.publish(Vnet::Event::FILTER_UPDATED, id: filter.id, ingress_passthrough: true, egress_passthrough: false)
         sleep(1)
 
-        filter_hash(filter).each { |ingress_flow, egress_flow|
-          expect(flows).to include flow(ingress_flow)
-          expect(flows).to include flow(egress_flow)
+        filter_hash(filter).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
         }
       end
     end
@@ -113,22 +113,21 @@ describe Vnet::Core::Filter2Manager do
                                                           static_id: filter_static.id))
       sleep(1)
     end
-
     context "when protocol is tcp and passthrough is enabled" do
       let(:filter_static) { Fabricate(:static_tcp_pass) }
       it "adds the static" do
-        static_filter_hash(filter_static).each { |ingress_flow, egress_flow|
-          expect(flows).to include flow(ingress_flow)
-          expect(flows).to include flow(egress_flow)
+        static_hash(filter_static).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
         }
       end
     end
     context "when protocol is tcp and passthrough is disabled" do
       let(:filter_static) { Fabricate(:static_tcp_drop) }
       it "adds he static" do
-        static_filter_hash(filter_static).each { |ingress_flow, egress_flow|
-          expect(flows).to include flow(ingress_flow)
-          expect(flows).to include flow(egress_flow)
+        static_hash(filter_static).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
         }
       end
     end
