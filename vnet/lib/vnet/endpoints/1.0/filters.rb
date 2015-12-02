@@ -100,5 +100,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
     M::FilterStatic.destroy(id: s.id)
 
     respond_with(R::Filter.filter_statics(filter))
+
+  end
+
+  get '/static/' do
+    get_all(:FilterStatic)
+  end    
+
+  get '/static/:uuid' do
+    show_relations(:Filter, :filter_statics)
   end
 end

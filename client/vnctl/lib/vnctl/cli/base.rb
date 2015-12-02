@@ -246,6 +246,11 @@ module Vnctl::Cli
           define_method("del") { | uuid |
             puts Vnctl.webapi.delete("#{suffix}/#{uuid}/#{mode_type}", options)
           }
+
+          desc "show #{mode_type} #{base_uuid.upcase}_UUID",  "Shows all #{mode_type}s."
+          define_method("show") { | uuid = nil |
+            puts Vnctl.webapi.get("#{suffix}/#{mode_type}/#{uuid}")
+          }
         end
 
         c.namespace "#{self.namespace} #{mode_type}"
