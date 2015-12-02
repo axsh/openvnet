@@ -80,6 +80,24 @@ module Vnet::Core::Filters
     end
 
     def removed_static(static_id)
+      static = @statics.delete(static_id)
+      return if !installed?
+
+      match = static[:match]
+
+      debug log_format('removing filter for ' + pretty_static(match))
+
+      rules(match, static[:protocol]).each { |ingress_rule, egress_rule|
+        @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
+                           cookie: self.cookie,
+                           cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+                           match: ingress_rule)
+
+        @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_FILTER,
+                           cookie: self.cookie,
+                           cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+                           match: egress_rule)
+      }
     end
 
     #
