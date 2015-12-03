@@ -25,9 +25,9 @@ describe Vnet::Core::Filter2Manager do
 
     before(:each) do
     filter2_manager.publish(Vnet::Event::FILTER_ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
-    sleep(3)
+    sleep(1)
     filter2_manager.publish(Vnet::Event::FILTER_CREATED_ITEM, filter.to_hash)
-    sleep(3)
+    sleep(1)
   end
 
   describe "#created_item" do
@@ -101,7 +101,7 @@ describe Vnet::Core::Filter2Manager do
         filter_hash(filter).each { |ingress, egress|
           expect(flows).to include flow(ingress)
           expect(flows).to include flow(egress)
-        }
+        }        
       end
     end
   end
@@ -126,6 +126,60 @@ describe Vnet::Core::Filter2Manager do
       let(:filter_static) { Fabricate(:static_tcp_drop) }
       it "adds he static" do
         static_hash(filter_static).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
+        }
+      end
+    end
+    context "when protocol is udp and passthrough is enabled" do
+      let(:filter_static) { Fabricate(:static_udp_pass) }
+      it "adds he static" do
+        static_hash(filter_static).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
+        }
+      end
+    end
+    context "when protocol is udp and passthrough is disabled" do
+      let(:filter_static) { Fabricate(:static_udp_drop) }
+      it "adds he static" do
+        static_hash(filter_static).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
+        }
+      end
+    end
+    context "when protocol is icmp and passthrough is enabled" do
+      let(:filter_static) { Fabricate(:static_icmp_pass) }
+      it "adds he static" do
+        static_hash(filter_static).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
+        }
+      end
+    end
+    context "when protocol is icmp and passthrough is disabled" do
+      let(:filter_static) { Fabricate(:static_icmp_drop) }
+      it "adds he static" do
+        static_hash(filter_static).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
+        }
+      end
+    end
+    context "when protocol is arp and passthrough is enabled" do
+      let(:filter_static) { Fabricate(:static_arp_pass) }
+      it "adds he static" do
+        static_hash_arp(filter_static).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
+        }
+      end
+    end
+    context "when protocol is arp and passthrough is disabled" do
+      let(:filter_static) { Fabricate(:static_arp_drop) }
+      it "adds he static" do
+        static_hash_arp(filter_static).each { |ingress, egress|
           expect(flows).to include flow(ingress)
           expect(flows).to include flow(egress)
         }

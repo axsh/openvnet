@@ -8,9 +8,9 @@ Fabricator(:static_tcp_pass, class_name: Vnet::Models::FilterStatic) do
   ipv4_dst_address 1
   port_src 1
   port_dst 1
-  ipv4_src_prefix 1
+  ipv4_src_prefix  1
   ipv4_dst_prefix 1
-  passthrough true
+  passthrough true 
 end
 
 Fabricator(:static_tcp_drop, class_name: Vnet::Models::FilterStatic) do
@@ -41,6 +41,42 @@ Fabricator(:static_udp_drop, class_name: Vnet::Models::FilterStatic) do
   ipv4_dst_address 2
   port_src 2
   port_dst 2
+  ipv4_src_prefix 2
+  ipv4_dst_prefix 2
+  passthrough false
+end
+
+Fabricator(:static_icmp_pass, class_name: Vnet::Models::FilterStatic) do
+  protocol "icmp"
+  ipv4_src_address 1
+  ipv4_dst_address 1
+  ipv4_src_prefix 1
+  ipv4_dst_prefix 1
+  passthrough true
+end
+
+Fabricator(:static_icmp_drop, class_name: Vnet::Models::FilterStatic) do
+  protocol "icmp"
+  ipv4_src_address 2
+  ipv4_dst_address 2
+  ipv4_src_prefix 2
+  ipv4_dst_prefix 2
+  passthrough false
+end
+
+Fabricator(:static_arp_pass, class_name: Vnet::Models::FilterStatic) do
+  protocol "arp"
+  ipv4_src_address 2
+  ipv4_dst_address 2
+  ipv4_src_prefix 2
+  ipv4_dst_prefix 2
+  passthrough false
+end
+
+Fabricator(:static_arp_drop, class_name: Vnet::Models::FilterStatic) do
+  protocol "arp"
+  ipv4_src_address 2
+  ipv4_dst_address 2
   ipv4_src_prefix 2
   ipv4_dst_prefix 2
   passthrough false

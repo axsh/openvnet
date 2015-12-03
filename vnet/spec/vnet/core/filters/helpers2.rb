@@ -57,7 +57,7 @@ def rule_flow(traffic_direction, protocol, ipv4_address, prefix, port_number = n
   end
 end
 
-def static_priority(prefix, port, passthrough)
+def static_priority(prefix, port = nil, passthrough)
   (prefix << 1) + ((port.nil? || port == 0) ? 0 : 2) + (passthrough ? 1 : 0)
 end
 
@@ -86,6 +86,36 @@ def static_hash(static)
                            static.ipv4_dst_prefix,
                            static.port_dst) }
       ].inject(&:merge)
+  }
+end
+
+def static_hash_arp(static)
+  {
+    [
+      filter.to_hash,
+      ingress_tables(static.passthrough),
+      { priority: 20 + static_priority(static.ipv4_src_prefix,
+                                       0,
+                                       static.passthrough) },
+      { match: {
+          eth_type: ETH_TYPE_ARP,
+          arp_spa: static.ipv4_src_address,
+          arp_spa_mask: IPV4_BROADCAST << (32 - static.ipv4_src_prefix)
+        }
+      }
+    ].inject(&:merge) => [
+      filter.to_hash,
+      egress_tables(static.passthrough),
+      { priority: 20 + static_priority(static.ipv4_dst_prefix,
+                                       0,
+                                       static.passthrough) },
+      { match: {
+          eth_type: ETH_TYPE_ARP,
+          arp_tpa: static.ipv4_dst_address,
+          arp_tpa_mask: IPV4_BROADCAST << (32 - static.ipv4_dst_prefix)
+        }
+      }
+    ].inject(&:merge)
   }
 end
 
