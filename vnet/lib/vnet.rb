@@ -71,7 +71,7 @@ module Vnet
     autoload :DatapathManager, 'vnet/core/datapath_manager'
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Filter2Manager, 'vnet/core/filter2_manager'
-    autoload :Filter, 'vnet/core/filter'
+    autoload :Filter, 'vnet/core/items'
     autoload :HostDatapath, 'vnet/core/host_datapath'
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
     autoload :Interface, 'vnet/core/interface'

@@ -344,7 +344,7 @@ module Vnet::Core
 
     # INTERFACE_ENABLED_FILTERING2 on queue 'item.id'
     def enabled_filtering2(params)
-      item = @items[params[:id]]
+      item = internal_detect(id: id)
       return if !item || item.enabled_filtering
 
       info log_format("enabled filtering on interface", item.uuid)
@@ -353,7 +353,7 @@ module Vnet::Core
 
     # INTERFACE_DISABLED_FILTERING2 on queue 'item.id'
     def disabled_filtering2(params)
-      item = @items[params[:id]]
+      item = internal_detect(id: id)
       return if !item || !item.enabled_filtering
 
       info log_format("disabled filtering on interface", item.uuid)

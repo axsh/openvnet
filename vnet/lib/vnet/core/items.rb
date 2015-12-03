@@ -25,4 +25,7 @@ module Vnet::Core
   class Translation < OpenStruct
   end
 
+  class Filter < OpenStruct
+  end
+
 end
