@@ -123,7 +123,7 @@ module Vnet::Core::Filters
       when "udp"  then rule_for_udp(ipv4_address, port, prefix)
       when "arp"  then rule_for_arp(ipv4_address, prefix)
       when "icmp" then rule_for_icmp(ipv4_address, prefix)
-      when "all"  then rule_for_all
+      when "all"  then rule_for_all(ipv4_address, prefix)
       end
     end
 
@@ -215,6 +215,19 @@ module Vnet::Core::Filters
          { eth_type: ETH_TYPE_ARP,
            arp_tpa: ipv4_address,
            arp_tpa_mask: IPV4_BROADCAST << (32 - prefix)
+         }]
+      ]
+    end
+
+    def rule_for_all(ipv4_address, prefix)
+      [
+        [{ eth_type: ETH_TYPE_IPV4,
+           ipv4_src: ipv4_address,
+           ipv4_src_mask: IPV4_BROADCAST << (32 - prefix)
+         },
+         { eth_type: ETH_TYPE_IPV4,
+           ipv4_dst: ipv4_address,
+           ipv4_dst_mask: IPV4_BROADCAST << (32 - prefix)
          }]
       ]
     end
