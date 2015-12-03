@@ -46,7 +46,7 @@ def protocol_type(protocol, port_number)
     end
 end
 
-def rule_flow(traffic_direction, protocol, ipv4_address, prefix, port_number = nil)
+def rule(traffic_direction, protocol, ipv4_address, prefix, port_number = nil)
   case traffic_direction
   when "ingress" then
     match_ipv4_subnet_src(ipv4_address, prefix).merge(protocol_type(protocol, port_number))
@@ -69,7 +69,7 @@ def static_hash(static)
       { priority: 20 + static_priority(static.ipv4_src_prefix,
                                        static.port_src,
                                        static.passthrough) },
-      { match: rule_flow("ingress",
+      { match: rule("ingress",
                          static.protocol,
                          static.ipv4_src_address,
                          static.ipv4_src_prefix,
@@ -80,7 +80,7 @@ def static_hash(static)
         { priority: 20 + static_priority(static.ipv4_dst_prefix,
                                          static.port_dst,
                                          static.passthrough) },
-        { match: rule_flow("egress",
+        { match: rule("egress",
                            static.protocol,
                            static.ipv4_dst_address,
                            static.ipv4_dst_prefix,
