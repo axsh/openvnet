@@ -14,39 +14,10 @@ module Vnet::Core
     subscribe_event ACTIVE_NETWORK_CREATED_ITEM, :created_item
     subscribe_event ACTIVE_NETWORK_DELETED_ITEM, :unload_item
 
+    subscribe_event ACTIVE_NETWORK_ACTIVATE, :activate_network
+    subscribe_event ACTIVE_NETWORK_DEACTIVATE, :deactivate_network
+
     finalizer :do_cleanup
-
-    def activate_local_item(params)
-      create_params = params.merge(datapath_id: @datapath_info.id)
-
-      # Needs to be an event... or rather we need a way to disable an
-      # id manually. Also this requires us to be able to insert an
-      # event task in order to stay within this context and get the
-      # return value.
-
-      item_model = mw_class.create(create_params)
-
-      if item_model.nil?
-        warn log_format("could not activate network", params.inspect)
-        return
-      end
-      
-      # Wait for loaded...
-      item_model.to_hash
-    end
-
-    def deactivate_local_item(network_id)
-      return if network_id.nil?
-
-      # Do we need this?
-      # item = internal_detect(network_id: network_id,
-      #                        datapath_id: @datapath_info.id)
-      # return if item.nil?
-
-      mw_class.destroy(network_id: network_id,
-                       datapath_id: @datapath_info.id)
-      nil
-    end
 
     #
     # Internal methods:
@@ -134,6 +105,44 @@ module Vnet::Core
       # Only load local and those of interest.
 
       internal_new_item(mw_class.new(params))
+    end
+
+    #
+    # Network events:
+    #
+
+    # activate network on queue '[:network, network_id]'
+    def activate_network(params)
+      debug log_format("activating network", params)
+
+      begin
+        options = {
+          datapath_id: @datapath_info.id,
+          network_id: get_param_packed_id(params)
+        }
+    
+        mw_class.create(options)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
+    end
+
+    # deactivate network on queue '[:network, network_id]'
+    def deactivate_network(params)
+      debug log_format("deactivating network", params)
+
+      begin
+        filter = {
+          datapath_id: @datapath_info.id,
+          network_id: get_param_packed_id(params)
+        }
+    
+        mw_class.destroy(filter)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     #

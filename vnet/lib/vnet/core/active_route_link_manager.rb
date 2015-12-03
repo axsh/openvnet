@@ -111,7 +111,7 @@ module Vnet::Core
     # Route Link events:
     #
 
-    # activate port on queue '[:route_link, route_link_id]'
+    # activate route link on queue '[:route_link, route_link_id]'
     def activate_route_link(params)
       debug log_format("activating route link", params)
 
@@ -128,7 +128,7 @@ module Vnet::Core
       end
     end
 
-    # deactivate port on queue '[:route_link, route_link_id]'
+    # deactivate route link on queue '[:route_link, route_link_id]'
     def deactivate_route_link(params)
       debug log_format("deactivating route link", params)
 
