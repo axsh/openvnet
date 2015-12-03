@@ -44,6 +44,18 @@ module Vnet
     ACTIVE_NETWORK_DELETED_ITEM = "active_network_deleted_item"
 
     #
+    # Active Port events:
+    #
+
+    ACTIVE_PORT_INITIALIZED = "active_port_initialized"
+    ACTIVE_PORT_UNLOAD_ITEM = "active_port_unload_item"
+    ACTIVE_PORT_CREATED_ITEM = "active_port_created_item"
+    ACTIVE_PORT_DELETED_ITEM = "active_port_deleted_item"
+
+    ACTIVE_PORT_ACTIVATE = "active_port_activate"
+    ACTIVE_PORT_DEACTIVATE = "active_port_deactivate"
+
+    #
     # Datapath events:
     #
     DATAPATH_INITIALIZED = 'datapath_initialized'

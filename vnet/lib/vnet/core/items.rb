@@ -10,6 +10,9 @@ module Vnet::Core
   class ActiveNetwork < OpenStruct
   end
 
+  class ActivePort < OpenStruct
+  end
+
   class Datapath < OpenStruct
   end
 

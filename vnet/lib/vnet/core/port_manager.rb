@@ -111,6 +111,11 @@ module Vnet::Core
                                            port_name: port.port_name,
                                            port_number: port.port_number)
       end
+
+      @dp_info.active_port_manager.publish(ACTIVE_PORT_ACTIVATE,
+                                           id: [:port, port.port_number],
+                                           port_name: port.port_name,
+                                           port_number: port.port_number)
     end
 
     def uninstall_item(params)
@@ -125,6 +130,9 @@ module Vnet::Core
                                          id: :port,
                                          port_name: port.port_name,
                                          port_number: port.port_number)
+
+      @dp_info.active_port_manager.publish(ACTIVE_PORT_DEACTIVATE,
+                                           id: [:port, port.port_number])
 
       debug log_format("uninstall #{port.port_name}/#{port.id}")
     end
