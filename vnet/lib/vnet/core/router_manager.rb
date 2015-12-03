@@ -64,6 +64,8 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
+      @dp_info.active_route_link_manager.async.activate_local_item(route_link_id: item.id)
+
       @dp_info.route_manager.publish(ROUTE_ACTIVATE_ROUTE_LINK,
                                      id: :route_link,
                                      route_link_id: item.id)
@@ -73,6 +75,8 @@ module Vnet::Core
     end
 
     def item_post_uninstall(item)
+      @dp_info.active_route_link_manager.async.deactivate_local_item(route_link_id: item.id)
+
       @dp_info.route_manager.publish(ROUTE_DEACTIVATE_ROUTE_LINK,
                                      id: :route_link,
                                      route_link_id: item.id)
