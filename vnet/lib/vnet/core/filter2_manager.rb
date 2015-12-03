@@ -17,7 +17,6 @@ module Vnet::Core
     subscribe_event FILTER_CREATED_ITEM, :created_item
     subscribe_event FILTER_DELETED_ITEM, :unload_item
     subscribe_event FILTER_UPDATED, :updated_item
-    
     subscribe_event FILTER_ACTIVATE_INTERFACE, :activate_interface
     subscribe_event FILTER_DEACTIVATE_INTERFACE, :deactivate_interface
 
@@ -98,10 +97,10 @@ module Vnet::Core
 
     def updated_item(params)
       id = params.fetch(:id) || return
-      
+
       item = internal_detect(id: id)
       return if item.nil?
-      
+
       item.update(params)
     end
 
@@ -122,20 +121,15 @@ module Vnet::Core
     # FILTER_ADDED_STATIC on queue 'item.id'.
     def added_static(params)
       item = internal_detect_by_id_with_error(params) || return
-
       begin
         item.added_static(
           get_param_id(params, :static_id),
-          {
-            ipv4_address: get_param_ipv4_address(params, :ipv4_src_address),
-            port_number: get_param_tp_port(params, :port_src, false),
-            prefix: get_param_int(params, :ipv4_src_prefix)
-          },
-          {
-            ipv4_address: get_param_ipv4_address(params, :ipv4_dst_address),
-            port_number: get_param_tp_port(params, :port_dst, false),
-            prefix: get_param_int(params, :ipv4_dst_prefix)
-          }
+          get_param_ipv4_address(params, :ipv4_src_address),
+          get_param_ipv4_address(params, :ipv4_dst_address),
+          get_param_int(params, :ipv4_src_prefix),
+          get_param_int(params, :ipv4_dst_prefix),
+          get_param_int(params, :port_src, false),
+          get_param_int(params, :port_dst, false),
           get_param_string(params, :protocol),
           get_param(params, :passthrough)
         )

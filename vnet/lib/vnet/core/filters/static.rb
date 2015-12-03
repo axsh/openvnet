@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Core::Filters
-  
+
   class Static < Base2
 
     BASE_PRIORITY = 20
@@ -28,7 +28,6 @@ module Vnet::Core::Filters
 
         match = filter[:match]
         passthrough = filter[:passthrough]
-
         debug log_format('installing filter for ' + pretty_static(match))
 
         rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
@@ -45,16 +44,24 @@ module Vnet::Core::Filters
 
     end
 
-    def added_static(static_id, src, dst, protocol, passthrough)
+    def added_static(static_id,
+                     ipv4_src_address,
+                     ipv4_dst_address,
+                     ipv4_src_prefix,
+                     ipv4_dst_prefix,
+                     port_src,
+                     port_dst,
+                     protocol,
+                     passthrough)
 
       filter = {
         :static_id => static_id,
-        :ipv4_src_address => src[:ipv4_address],
-        :ipv4_dst_address => dst[:ipv4_address],
-        :ipv4_src_prefix => src[:prefix]
-        :ipv4_dst_prefix => dst[:prefix],
-        :port_src => src[:port_number],
-        :port_dst => dst[:port_number],
+        :ipv4_src_address => ipv4_src_address,
+        :ipv4_dst_address => ipv4_dst_address,
+        :ipv4_src_prefix => ipv4_src_prefix,
+        :ipv4_dst_prefix => ipv4_dst_prefix,
+        :port_src => port_src,
+        :port_dst => port_dst
       }
 
       @statics[static_id] = {
@@ -68,11 +75,11 @@ module Vnet::Core::Filters
       flows = []
       rules(filter, protocol).each { |ingress_rule, egress_rule|
         flows_for_static_ingress_filtering(flows, ingress_rule, passthrough) { |base|
-          base + priority(ipv4[:src_prefix], port[:src], passthrough)
+          base + priority(ipv4_src_prefix, port_src, passthrough)
         }
 
         flows_for_static_egress_filtering(flows, egress_rule, passthrough) { |base|
-          base + priority(ipv4[:dst_prefix], port[:dst], passthrough)
+          base + priority(ipv4_dst_prefix, port_dst, passthrough)
         }
       }
       @dp_info.add_flows(flows)
@@ -188,7 +195,7 @@ module Vnet::Core::Filters
              udp_dst: port
            }]
         ]
-      end        
+      end
     end
 
     def rule_for_icmp(ipv4_address, prefix)
@@ -206,6 +213,7 @@ module Vnet::Core::Filters
       ]
     end
 
+
     def rule_for_arp(ipv4_address, prefix)
       [
         [{ eth_type: ETH_TYPE_ARP,
@@ -215,6 +223,19 @@ module Vnet::Core::Filters
          { eth_type: ETH_TYPE_ARP,
            arp_tpa: ipv4_address,
            arp_tpa_mask: IPV4_BROADCAST << (32 - prefix)
+         }]
+      ]
+    end
+
+    def rule_for_all(ipv4_address, prefix)
+      [
+        [{ eth_type: ETH_TYPE_IPV4,
+           ipv4_src: ipv4_address,
+           ipv4_src_mask: IPV4_BROADCAST << (32 - prefix)
+         },
+         { eth_type: ETH_TYPE_IPV4,
+           ipv4_dst: ipv4_address,
+           ipv4_dst_mask: IPV4_BROADCAST << (32 - prefix)
          }]
       ]
     end
