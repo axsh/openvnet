@@ -14,7 +14,6 @@ interfaces:
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:01"
     ingress_filtering_enabled: true
-    enable_legacy_filtering: true
     ipv4_address: 10.101.0.10
 
   - uuid: if-v2
@@ -22,7 +21,6 @@ interfaces:
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:02"
     ingress_filtering_enabled: true
-    enable_legacy_filtering: true
     ipv4_address: 10.101.0.11
 
   - uuid: if-v3
@@ -30,7 +28,6 @@ interfaces:
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:03"
     ingress_filtering_enabled: true
-    enable_legacy_filtering: true
     ipv4_address: 10.101.0.12
 
   - uuid: if-v4
@@ -38,7 +35,6 @@ interfaces:
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:04"
     ingress_filtering_enabled: true
-    enable_legacy_filtering: true
     ipv4_address: 10.101.0.13
 
   - uuid: if-v5
@@ -46,7 +42,6 @@ interfaces:
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:05"
     ingress_filtering_enabled: true
-    enable_legacy_filtering: true
     ipv4_address: 10.101.0.14
 
   - uuid: if-v6
@@ -54,7 +49,6 @@ interfaces:
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:06"
     ipv4_address: 10.101.0.15
-    enable_legacy_filtering: true
 
   - uuid: if-dhcp1
     network_uuid: nw-vnet1

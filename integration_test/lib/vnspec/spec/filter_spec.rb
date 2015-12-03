@@ -94,4 +94,15 @@ describe "filters" do
       expect(vm5).not_to be_able_to_ping(vm3)
     end
   end
+
+  describe "passthrough all" do
+    before(:each) { vm4.udp_listen(7452) }
+    after(:each) { vm4.udp_close(7452) }
+
+    it "vm4 accepts on all protocol from vm1" do
+      expect(vm4).to be_reachable_to(vm1)
+      expect(vm1).to be_able_to_send_udp(vm4, 7452)
+      expect(vm1).to be_able_to_ping(vm4)
+    end
+  end
 end

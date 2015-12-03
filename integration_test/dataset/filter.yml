@@ -22,7 +22,6 @@ interfaces:
     mac_address: "02:00:00:00:00:01"
     enable_filtering: true
     ipv4_address: 10.101.0.10
-    enable_legacy_filtering: false
 
   - uuid: if-v2
     port_name: if-v2
@@ -30,7 +29,6 @@ interfaces:
     mac_address: "02:00:00:00:00:02"
     enable_filtering: true
     ipv4_address: 10.101.0.11
-    enable_legacy_filtering: false
 
   - uuid: if-v3
     port_name: if-v3
@@ -38,7 +36,6 @@ interfaces:
     mac_address: "02:00:00:00:00:03"
     enable_filtering: true
     ipv4_address: 10.101.0.12
-    enable_legacy_filtering: false
 
   - uuid: if-v4
     port_name: if-v4
@@ -46,35 +43,30 @@ interfaces:
     mac_address: "02:00:00:00:00:04"
     enable_filtering: true
     ipv4_address: 10.101.0.13
-    enable_legacy_filtering: false
 
   - uuid: if-v5
     port_name: if-v5
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:05"
     ipv4_address: 10.101.0.14
-    enable_legacy_filtering: false
 
   - uuid: if-v6
     port_name: if-v6
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:06"
     ipv4_address: 10.101.0.15
-    enable_legacy_filtering: false
 
   - uuid: if-dhcp1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:01:01"
     ipv4_address: 10.101.0.2
     mode: simulated
-    enable_legacy_filtering: false
 
   - uuid: if-dhcp2
     network_uuid: nw-vnet2
     mac_address: "02:00:00:00:01:02"
     ipv4_address: 10.101.0.2
     mode: simulated
-    enable_legacy_filtering: false
 
 network_services:
 
@@ -122,95 +114,88 @@ filters:
 
   - uuid: fil-test1
     interface_uuid: if-v1
-    egress_passthrough: true
-    ingress_passthrough: true
     mode: static
   - uuid: fil-test2
     interface_uuid: if-v2
-    egress_passthrough: false
-    ingress_passthrough: false
     mode: static
   - uuid: fil-test3
     interface_uuid: if-v3
-    egress_passthrough: true
-    ingress_passthrough: true
     mode: static
-  - uuid: fil-test4a
+  - uuid: fil-test4
     interface_uuid: if-v4
-    egress_passthrough: true
-    ingress_passthrough: false
-    mode: static
-  - uuid: fil-test4b
-    interface_uuid: if-v4
-    egress_passthrough: true
-    ingress_passthrough: true
     mode: static
 
 filter_static:
 
   - filter_uuid: fil-test1
     protocol: "tcp"
+    passthrough: true
     ipv4_address: "0.0.0.0/0"
+    port_number: 0
   - filter_uuid: fil-test1
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
+    port_number: 0
+    passthrough: true
   - filter_uuid: fil-test1
     protocol: "icmp"
     ipv4_address: "0.0.0.0/0"
+    passthrough: true
   - filter_uuid : fil-test1
     protocol: "arp"
     ipv4_address: "0.0.0.0/0"
-
-  - filter_uuid: fil-test2
-    protocol: "tcp"
-    ipv4_address: "0.0.0.0/0"
-  - filter_uuid: fil-test2
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-  - filter_uuid: fil-test2
-    protocol: "icmp"
-    ipv4_address: "0.0.0.0/0"
-  - filter_uuid : fil-test2
-    protocol: "arp"
-    ipv4_address: "0.0.0.0/0"
+    passthrough: true
 
   - filter_uuid: fil-test3
     protocol: "tcp"
     ipv4_address: "10.101.0.10"
     port_number: 0
+    passthrough: true
   - filter_uuid: fil-test3
     protocol: "udp"
     ipv4_address: "10.101.0.13"
     port_number: 1344
+    passthrough: true
   - filter_uuid: fil-test3
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 68
+    passthrough: true
   - filter_uuid: fil-test3
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 67
+    passthrough: true
   - filter_uuid: fil-test3
     protocol: "icmp"
     ipv4_address: "10.101.0.10"
+    passthrough: true
   - filter_uuid : fil-test3
     protocol: "arp"
     ipv4_address: "0.0.0.0/0"
+    passthrough: true
 
 
-  - filter_uuid: fil-test4a
+  - filter_uuid: fil-test4
+    protocol: "all"
+    ipv4_address: "10.101.0.10"
+    passthrough: true
+  - filter_uuid: fil-test4
     protocol: "udp"
+    port_number: 1344
     ipv4_address: "10.101.0.12"
-
-  - filter_uuid: fil-test4b
+    passthrough: true
+  - filter_uuid : fil-test4
+    protocol: "arp"
+    ipv4_address: "0.0.0.0/0"
+    passthrough: true
+  - filter_uuid: fil-test4
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 68
-  - filter_uuid: fil-test4b
+    passthrough: true
+  - filter_uuid: fil-test4
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 67
-  - filter_uuid : fil-test4b
-    protocol: "arp"
-    ipv4_address: "0.0.0.0/0"
-
+    passthrough: true

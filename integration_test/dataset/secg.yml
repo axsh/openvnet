@@ -22,7 +22,6 @@ interfaces:
     mac_address: "02:00:00:00:00:01"
     ingress_filtering_enabled: true
     ipv4_address: 10.101.0.10
-    enable_legacy_filtering: true
 
   - uuid: if-v2
     port_name: if-v2
@@ -30,7 +29,6 @@ interfaces:
     mac_address: "02:00:00:00:00:02"
     ingress_filtering_enabled: true
     ipv4_address: 10.101.0.11
-    enable_legacy_filtering: true
 
   - uuid: if-v3
     port_name: if-v3
@@ -38,7 +36,6 @@ interfaces:
     mac_address: "02:00:00:00:00:03"
     ingress_filtering_enabled: true
     ipv4_address: 10.101.0.12
-    enable_legacy_filtering: true
 
   - uuid: if-v4
     port_name: if-v4
@@ -46,7 +43,6 @@ interfaces:
     mac_address: "02:00:00:00:00:04"
     ingress_filtering_enabled: true
     ipv4_address: 10.101.0.13
-    enable_legacy_filtering: true
 
   - uuid: if-v5
     port_name: if-v5
@@ -54,7 +50,6 @@ interfaces:
     mac_address: "02:00:00:00:00:05"
     ingress_filtering_enabled: true
     ipv4_address: 10.101.0.14
-    enable_legacy_filtering: true
 
   - uuid: if-v6
     port_name: if-v6
