@@ -52,6 +52,9 @@ module Vnet
     ACTIVE_ROUTE_LINK_CREATED_ITEM = "active_route_link_created_item"
     ACTIVE_ROUTE_LINK_DELETED_ITEM = "active_route_link_deleted_item"
 
+    ACTIVE_ROUTE_LINK_ACTIVATE = "active_route_link_activate"
+    ACTIVE_ROUTE_LINK_DEACTIVATE = "active_route_link_deactivate"
+
     #
     # Active Port events:
     #

@@ -14,39 +14,10 @@ module Vnet::Core
     subscribe_event ACTIVE_ROUTE_LINK_CREATED_ITEM, :created_item
     subscribe_event ACTIVE_ROUTE_LINK_DELETED_ITEM, :unload_item
 
+    subscribe_event ACTIVE_ROUTE_LINK_ACTIVATE, :activate_route_link
+    subscribe_event ACTIVE_ROUTE_LINK_DEACTIVATE, :deactivate_route_link
+
     finalizer :do_cleanup
-
-    def activate_local_item(params)
-      create_params = params.merge(datapath_id: @datapath_info.id)
-
-      # Needs to be an event... or rather we need a way to disable an
-      # id manually. Also this requires us to be able to insert an
-      # event task in order to stay within this context and get the
-      # return value.
-
-      item_model = mw_class.create(create_params)
-
-      if item_model.nil?
-        warn log_format("could not activate route_link", params.inspect)
-        return
-      end
-      
-      # Wait for loaded...
-      item_model.to_hash
-    end
-
-    def deactivate_local_item(route_link_id)
-      return if route_link_id.nil?
-
-      # Do we need this?
-      # item = internal_detect(route_link_id: route_link_id,
-      #                        datapath_id: @datapath_info.id)
-      # return if item.nil?
-
-      mw_class.destroy(route_link_id: route_link_id,
-                       datapath_id: @datapath_info.id)
-      nil
-    end
 
     #
     # Internal methods:
@@ -134,6 +105,44 @@ module Vnet::Core
       # Only load local and those of interest.
 
       internal_new_item(mw_class.new(params))
+    end
+
+    #
+    # Route Link events:
+    #
+
+    # activate port on queue '[:route_link, route_link_id]'
+    def activate_route_link(params)
+      debug log_format("activating route link", params)
+
+      begin
+        options = {
+          datapath_id: @datapath_info.id,
+          route_link_id: get_param_packed_id(params)
+        }
+    
+        mw_class.create(options)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
+    end
+
+    # deactivate port on queue '[:route_link, route_link_id]'
+    def deactivate_route_link(params)
+      debug log_format("deactivating route link", params)
+
+      begin
+        filter = {
+          datapath_id: @datapath_info.id,
+          route_link_id: get_param_packed_id(params)
+        }
+    
+        mw_class.destroy(filter)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     #
