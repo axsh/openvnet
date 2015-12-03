@@ -7,7 +7,6 @@ module Vnet::Core
     #
     # Events:
     #
-
     subscribe_event ACTIVE_NETWORK_INITIALIZED, :load_item
     subscribe_event ACTIVE_NETWORK_UNLOAD_ITEM, :unload_item
     subscribe_event ACTIVE_NETWORK_CREATED_ITEM, :created_item

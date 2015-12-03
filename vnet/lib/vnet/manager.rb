@@ -139,6 +139,9 @@ module Vnet
       initialized_datapath_info
     end
 
+    def do_initialize
+    end
+
     #
     # Internal methods:
     #
