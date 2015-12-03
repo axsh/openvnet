@@ -123,38 +123,36 @@ module Vnet::Core
     def added_static(params)
       item = internal_detect_by_id_with_error(params) || return
 
-      ipv4 = {}
-      port_number = {}
-
-      static_id = get_param_id(params, :static_id) || return
-
-      ipv4[:src_address] = get_param_ipv4_address(params, :ipv4_src_address) || return
-      ipv4[:dst_address] = get_param_ipv4_address(params, :ipv4_dst_address) || return
-      ipv4[:src_prefix] = get_param_id(params, :ipv4_src_prefix) || return
-      ipv4[:dst_prefix] = get_param_id(params, :ipv4_dst_prefix) || return
-
-      port_number[:src] = get_param_port_number(params, :port_src, false)
-      port_number[:dst] = get_param_port_number(params, :port_dst, false)
-
-      protocol = get_param(params, :protocol) || return
-
-      passthrough = get_param(params, :passthrough)
-
-      item.added_static(static_id,
-                        ipv4,
-                        port_number,
-                        protocol,
-                        passthrough
-                       )
+      begin
+        item.added_static(
+          get_param_id(params, :static_id),
+          {
+            ipv4_address: get_param_ipv4_address(params, :ipv4_src_address),
+            port_number: get_param_tp_port(params, :port_src, false),
+            prefix: get_param_int(params, :ipv4_src_prefix)
+          },
+          {
+            ipv4_address: get_param_ipv4_address(params, :ipv4_dst_address),
+            port_number: get_param_tp_port(params, :port_dst, false),
+            prefix: get_param_int(params, :ipv4_dst_prefix)
+          }
+          get_param_string(params, :protocol),
+          get_param(params, :passthrough)
+        )
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # FILTER_REMOVED_STATIC on queue 'item.id'.
     def removed_static(params)
       item = internal_detect_by_id(params) || return
 
-      static_id = params[:static_id] || return
-
-      item.removed_static(static_id)
+      begin
+        item.removed_static(get_param_id(params, :static_id))
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
   end

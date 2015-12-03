@@ -45,16 +45,16 @@ module Vnet::Core::Filters
 
     end
 
-    def added_static(static_id, ipv4, port, protocol, passthrough)
+    def added_static(static_id, src, dst, protocol, passthrough)
 
       filter = {
         :static_id => static_id,
-        :ipv4_src_address => ipv4[:src_address],
-        :ipv4_dst_address => ipv4[:dst_address],
-        :ipv4_src_prefix => ipv4[:src_prefix],
-        :ipv4_dst_prefix => ipv4[:dst_prefix],
-        :port_src => port[:src],
-        :port_dst => port[:dst],
+        :ipv4_src_address => src[:ipv4_address],
+        :ipv4_dst_address => dst[:ipv4_address],
+        :ipv4_src_prefix => src[:prefix]
+        :ipv4_dst_prefix => dst[:prefix],
+        :port_src => src[:port_number],
+        :port_dst => dst[:port_number],
       }
 
       @statics[static_id] = {
