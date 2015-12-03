@@ -2,12 +2,11 @@
 
 module Vnet::Core
 
-  class ActiveNetworkManager < Vnet::Core::Manager
+  class ActiveNetworkManager < Vnet::Core::ActiveManager
 
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event ACTIVE_NETWORK_INITIALIZED, :load_item
     subscribe_event ACTIVE_NETWORK_UNLOAD_ITEM, :unload_item
@@ -17,28 +16,11 @@ module Vnet::Core
     subscribe_event ACTIVE_NETWORK_ACTIVATE, :activate_network
     subscribe_event ACTIVE_NETWORK_DEACTIVATE, :deactivate_network
 
-    finalizer :do_cleanup
-
     #
     # Internal methods:
     #
 
     private
-
-    def do_cleanup
-      # Cleanup can be called before the manager is initialized.
-      return if @datapath_info.nil?
-
-      info log_format('cleaning up')
-
-      begin
-        mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
-      rescue NoMethodError => e
-        info log_format(e.message, e.class.name)
-      end
-
-      info log_format('cleaned up')
-    end
 
     #
     # Specialize Manager:
@@ -154,12 +136,6 @@ module Vnet::Core
       return params[:id] &&
         params[:network_id] &&
         params[:datapath_id]
-    end
-
-    def params_current_datapath?(params)
-      raise "params_current_datapath? assumes params[:datapath_id] is valid" unless params[:datapath_id]
-
-      return params[:datapath_id] == @datapath_info.id
     end
 
   end
