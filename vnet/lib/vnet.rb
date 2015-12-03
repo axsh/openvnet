@@ -28,9 +28,11 @@ module Vnet
   autoload :ItemDpBase,           'vnet/item_base'
   autoload :ItemDpUuid,           'vnet/item_base'
   autoload :Manager,              'vnet/manager'
-  autoload :LookupParams,         'vnet/manager_modules'
+  autoload :LookupParams,         'vnet/manager_params'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
+
+  autoload :ParamError, 'vnet/manager_params'
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'
@@ -41,6 +43,7 @@ module Vnet
   end
 
   module Constants
+    autoload :ActivePort, 'vnet/constants/active_port'
     autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
     autoload :MacAddressPrefix, 'vnet/constants/mac_address_prefix'
@@ -58,12 +61,12 @@ module Vnet
     autoload :ActivePortEvents, 'vnet/core/event_helpers'
     autoload :ActiveRouteLinkEvents, 'vnet/core/event_helpers'
     autoload :DpInfo, 'vnet/core/dp_info'
-
     autoload :ActiveInterface, 'vnet/core/items'
     autoload :ActiveInterfaceManager, 'vnet/core/active_interface_manager'
     autoload :ActiveNetwork, 'vnet/core/items'
     autoload :ActiveNetworkManager, 'vnet/core/active_network_manager'
-
+    autoload :ActivePort, 'vnet/core/items'
+    autoload :ActivePortManager, 'vnet/core/active_port_manager'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
     autoload :Datapath, 'vnet/core/items'
@@ -101,6 +104,13 @@ module Vnet
       autoload :Base, 'vnet/core/active_networks/base'
       autoload :Local, 'vnet/core/active_networks/local'
       autoload :Remote, 'vnet/core/active_networks/remote'
+    end
+
+    module ActivePorts
+      autoload :Base, 'vnet/core/active_ports/base'
+      autoload :Local, 'vnet/core/active_ports/local'
+      autoload :Tunnel, 'vnet/core/active_ports/tunnel'
+      autoload :Unknown, 'vnet/core/active_ports/unknown'
     end
 
     module Connections
@@ -278,6 +288,7 @@ module Vnet
 
     autoload :ActiveInterface, 'vnet/models/active_interface'
     autoload :ActiveNetwork, 'vnet/models/active_network'
+    autoload :ActivePort, 'vnet/models/active_port'
     autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
@@ -319,6 +330,7 @@ module Vnet
   module ModelWrappers
     autoload :ActiveInterface, 'vnet/model_wrappers/wrappers'
     autoload :ActiveNetwork, 'vnet/model_wrappers/wrappers'
+    autoload :ActivePort, 'vnet/model_wrappers/active_port'
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
     autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
@@ -358,6 +370,7 @@ module Vnet
   end
 
   autoload :NodeApi, 'vnet/node_api'
+
   module NodeApi
     autoload :RpcProxy, 'vnet/node_api/proxies'
     autoload :DirectProxy, 'vnet/node_api/proxies'
@@ -367,6 +380,7 @@ module Vnet
 
     autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :ActiveNetwork, 'vnet/node_api/active_network'
+    autoload :ActivePort, 'vnet/node_api/active_port'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathGeneric, 'vnet/node_api/datapath_generic.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_generic.rb'
