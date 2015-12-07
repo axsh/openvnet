@@ -185,6 +185,16 @@ module VNetAPIClient
                    "#{@api_suffix}/#{filter_uuid}/static",
                    params)
     end
+    def self.show_filter_static(params = nil)
+      send_request(Net::HTTP::Get,
+                   "#{@api_suffix}/static/",
+                   params)
+    end
+    def self.show_filter_static_by_uuid(filter_uuid, params = nil)
+      send_request(Net::HTTP::Get,
+                   "#{@api_suffix}/static/#{filter_uuid}",
+                   params)
+    end
   end
   
   class VlanTranslation < ApiResource
