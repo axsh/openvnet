@@ -11,13 +11,13 @@ def flow(params)
   )
 end
 
-def deleted_flow(params) 
-  flow_create(
-    table: params[:table],
-    cookie: params[:id ] | COOKIE_TYPE_FILTER2,
+def deleted_flow(params)
+  {
+    table_id: params[:table],
+    cookie: params[:id] | COOKIE_TYPE_FILTER2,
     cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
     match: params[:match]
-  )
+  }
 end
 
 def ingress_tables(passthrough)
@@ -38,92 +38,81 @@ def protocol_type(protocol, port_number)
   case protocol
     when "tcp" then
       {
-        tcp_dst: port_number,
-        ip_proto: IPV4_PROTOCOL_TCP
+        ip_proto: IPV4_PROTOCOL_TCP,
+        tcp_dst: port_number
       }
     when "udp" then
       {
-        udp_dst: port_number,
-        ip_proto: IPV4_PROTOCOL_UDP
+        ip_proto: IPV4_PROTOCOL_UDP,
+        udp_dst: port_number
       }
     when "icmp" then
       {
         ip_proto: IPV4_PROTOCOL_ICMP
       }
-    else      
+    else
       return;
     end
 end
 
+def arp_match_src(ipv4_address, prefix)
+  {
+    eth_type: ETH_TYPE_ARP,
+    arp_spa: ipv4_address,
+    arp_spa_mask: IPV4_BROADCAST << (32 - prefix)
+  }
+end
+
+def arp_match_dst(ipv4_address, prefix)
+  {
+    eth_type: ETH_TYPE_ARP,
+    arp_tpa: ipv4_address,
+    arp_tpa_mask: IPV4_BROADCAST << (32 - prefix)
+  }
+end
+
 def rule(traffic_direction, protocol, ipv4_address, prefix, port_number = nil)
+
   case traffic_direction
   when "ingress" then
+    return arp_match_src(ipv4_address, prefix) if protocol == "arp"
     match_ipv4_subnet_src(ipv4_address, prefix).merge(protocol_type(protocol, port_number))
   when "egress" then
+    return arp_match_dst(ipv4_address, prefix) if protocol == "arp"
     match_ipv4_subnet_dst(ipv4_address, prefix).merge(protocol_type(protocol, port_number))
   else
     return
   end
 end
 
-def static_priority(prefix, port = nil, passthrough)
+def static_priority(prefix, passthrough, port = nil)
   (prefix << 1) + ((port.nil? || port == 0) ? 0 : 2) + (passthrough ? 1 : 0)
 end
 
-def static_hash(static)
+def static_hash(static, protocol)
   {
     [
       filter.to_hash,
       ingress_tables(static.passthrough),
       { priority: 20 + static_priority(static.ipv4_src_prefix,
-                                       static.port_src,
-                                       static.passthrough) },
+                                       static.passthrough,
+                                       static.port_src) },
       { match: rule("ingress",
-                         static.protocol,
-                         static.ipv4_src_address,
-                         static.ipv4_src_prefix,
-                         static.port_src) }
-    ].inject(&:merge) => [
-        filter.to_hash,
-        egress_tables(static.passthrough),
-        { priority: 20 + static_priority(static.ipv4_dst_prefix,
-                                         static.port_dst,
-                                         static.passthrough) },
-        { match: rule("egress",
-                           static.protocol,
-                           static.ipv4_dst_address,
-                           static.ipv4_dst_prefix,
-                           static.port_dst) }
-      ].inject(&:merge)
-  }
-end
-
-def static_hash_arp(static)
-  {
-    [
-      filter.to_hash,
-      ingress_tables(static.passthrough),
-      { priority: 20 + static_priority(static.ipv4_src_prefix,
-                                       0,
-                                       static.passthrough) },
-      { match: {
-          eth_type: ETH_TYPE_ARP,
-          arp_spa: static.ipv4_src_address,
-          arp_spa_mask: IPV4_BROADCAST << (32 - static.ipv4_src_prefix)
-        }
-      }
+                    protocol,
+                    static.ipv4_src_address,
+                    static.ipv4_src_prefix,
+                    static.port_src) }
     ].inject(&:merge) => [
       filter.to_hash,
       egress_tables(static.passthrough),
       { priority: 20 + static_priority(static.ipv4_dst_prefix,
-                                       0,
-                                       static.passthrough) },
-      { match: {
-          eth_type: ETH_TYPE_ARP,
-          arp_tpa: static.ipv4_dst_address,
-          arp_tpa_mask: IPV4_BROADCAST << (32 - static.ipv4_dst_prefix)
-        }
-      }
+                                       static.passthrough,
+                                       static.port_dst) },
+      { match: rule("egress",
+                    protocol,
+                    static.ipv4_dst_address,
+                    static.ipv4_dst_prefix,
+                    static.port_dst) }
     ].inject(&:merge)
   }
 end

@@ -19,90 +19,67 @@ describe Vnet::Core::Filter2Manager do
   let(:filter) { Fabricate(:filter,
                            uuid: "fil-test",
                            interface_id: 1,
-                           mode: "static",
-                          )
-  }
+                           mode: "static") }
 
-    before(:each) do
+  before(:each) do
     filter2_manager.publish(Vnet::Event::FILTER_ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
-    sleep(1)
+    sleep(0.2)
     filter2_manager.publish(Vnet::Event::FILTER_CREATED_ITEM, filter.to_hash)
-    sleep(1)
+    sleep(0.2)
+  end
+
+  shared_examples_for "filter_methods" do |operation, passthrough, event = nil|
+    let(:filter) { Fabricate(:filter,
+                             uuid: "fil-test",
+                             interface_id: 1,
+                             mode: "static",
+                             egress_passthrough: passthrough[:egress],
+                             ingress_passthrough: passthrough[:ingress]) }
+
+    it "#{operation} the filter item" do
+
+      event.call(filter2_manager, filter) unless event.nil?
+
+      filter_hash(filter).each { |ingress, egress|
+        expect(flows).to include flow(ingress)
+        expect(flows).to include flow(egress)
+      }
+    end
+  end
+
+  shared_examples_for "added_static" do |static, protocol|
+
+    let(:filter_static) { Fabricate(static) }
+    let(:protocol) { protocol }
+
+    it "adds the static" do
+      static_hash(filter_static, protocol).each { |ingress, egress|
+          expect(flows).to include flow(ingress)
+          expect(flows).to include flow(egress)
+        }
+    end
+
   end
 
   describe "#created_item" do
     context "with with passthrough set to false" do
-      let(:filter) { Fabricate(:filter,
-                               uuid: "fil-test",
-                               interface_id: 1,
-                               mode: "static",
-                               egress_passthrough: false,
-                               ingress_passthrough: false
-                              )
-      }
-      it "creates the a filter item" do
-        filter_hash(filter).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'filter_methods', :creates, { egress: false, ingress: false }
     end
     context "with with passthrough set to true" do
-      let(:filter) { Fabricate(:filter,
-                               uuid: "fil-test",
-                               interface_id: 1,
-                               mode: "static",
-                               egress_passthrough: true,
-                               ingress_passthrough: true
-                              )
-      }
-      it "creates the a filter item" do
-        filter_hash(filter).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'filter_methods', :creates, { egress: true, ingress: true }
     end
   end
 
   describe "#updated_item" do
     context "with with ingress passthrough set false, egress_passthrough set true" do
-      let(:filter) { Fabricate(:filter,
-                               uuid: "fil-test",
-                               interface_id: 1,
-                               mode: "static",
-                               egress_passthrough: true,
-                               ingress_passthrough: false
-                              )
+      include_examples 'filter_methods', :updates, { egress: true, ingress: true }, lambda { |fm, f|
+        fm.publish(Vnet::Event::FILTER_UPDATED, id: f.id, egress_passthrough: true, ingress_passthrough: false)
       }
-      it "updates the a filter item" do
-        filter2_manager.publish(Vnet::Event::FILTER_UPDATED, id: filter.id, ingress_passthrough: false, egress_passthrough: true)
-        sleep(1)
-
-        filter_hash(filter).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
     end
     context "with with ingress passthrough set true, egress_passthrough set false" do
-      let(:filter) { Fabricate(:filter,
-                               uuid: "fil-test",
-                               interface_id: 1,
-                               mode: "static",
-                               egress_passthrough: false,
-                               ingress_passthrough: true
-                              )
+      include_examples 'filter_methods', :updates, { egress: true, ingress: true }, lambda { |fm, f|
+        fm.publish(Vnet::Event::FILTER_UPDATED, id: f.id, egress_passthrough: false, ingress_passthrough: true)
       }
-      it "updates the a filter item" do
-        filter2_manager.publish(Vnet::Event::FILTER_UPDATED, id: filter.id, ingress_passthrough: true, egress_passthrough: false)
-        sleep(1)
-
-        filter_hash(filter).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }        
-      end
     end
   end
 
@@ -110,80 +87,32 @@ describe Vnet::Core::Filter2Manager do
     before(:each) do
       filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
-                                                          static_id: filter_static.id))
-      sleep(1)
+                                                          static_id: filter_static.id,
+                                                          protocol: protocol))
     end
     context "when protocol is tcp and passthrough is enabled" do
-      let(:filter_static) { Fabricate(:static_tcp_pass) }
-      it "adds the static" do
-        static_hash(filter_static).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'added_static', :static_pass, "tcp"
     end
     context "when protocol is tcp and passthrough is disabled" do
-      let(:filter_static) { Fabricate(:static_tcp_drop) }
-      it "adds he static" do
-        static_hash(filter_static).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'added_static', :static_drop, "tcp"
     end
     context "when protocol is udp and passthrough is enabled" do
-      let(:filter_static) { Fabricate(:static_udp_pass) }
-      it "adds he static" do
-        static_hash(filter_static).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'added_static', :static_pass, "udp"
     end
     context "when protocol is udp and passthrough is disabled" do
-      let(:filter_static) { Fabricate(:static_udp_drop) }
-      it "adds he static" do
-        static_hash(filter_static).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'added_static', :static_drop, "udp"
     end
     context "when protocol is icmp and passthrough is enabled" do
-      let(:filter_static) { Fabricate(:static_icmp_pass) }
-      it "adds he static" do
-        static_hash(filter_static).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'added_static', :static_pass, "icmp"
     end
     context "when protocol is icmp and passthrough is disabled" do
-      let(:filter_static) { Fabricate(:static_icmp_drop) }
-      it "adds he static" do
-        static_hash(filter_static).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'added_static', :static_drop, "icmp"
     end
     context "when protocol is arp and passthrough is enabled" do
-      let(:filter_static) { Fabricate(:static_arp_pass) }
-      it "adds he static" do
-        static_hash_arp(filter_static).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'added_static', :static_pass, "arp"
     end
     context "when protocol is arp and passthrough is disabled" do
-      let(:filter_static) { Fabricate(:static_arp_drop) }
-      it "adds he static" do
-        static_hash_arp(filter_static).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
-      end
+      include_examples 'added_static', :static_drop, "icmp"
     end
   end
 
@@ -191,23 +120,22 @@ describe Vnet::Core::Filter2Manager do
     before(:each) do
       filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
-                                                          static_id: filter_static.id))
-      sleep(1)
+                                                          static_id: filter_static.id,
+                                                          protocol: protocol))
       filter2_manager.publish(Vnet::Event::FILTER_REMOVED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
                                                           static_id: filter_static.id))
-      sleep(1)
     end
     context "when a static rule has been added" do
-      let(:filter_static) { Fabricate(:static_tcp_pass) }
+      let(:filter_static) { Fabricate(:static_pass) }
+      let(:protocol) { "tcp" }
       it "removes a static rule" do
-        
-        static_hash(filter_static).each { |ingress, egress|
+        static_hash(filter_static, protocol).each { |ingress, egress|
           expect(flows).not_to include deleted_flow(ingress)
           expect(flows).not_to include deleted_flow(egress)
 
           expect(deleted_flows).to include deleted_flow(ingress)
-          expect(deleted_flows).to include deleted_flow(egress) 
+          expect(deleted_flows).to include deleted_flow(egress)
        }
       end
     end
