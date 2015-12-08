@@ -189,9 +189,27 @@ describe Vnet::Core::Filter2Manager do
 
   describe "#remove static" do
     before(:each) do
+      filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
+                              filter_static.to_hash.merge(id: filter.id,
+                                                          static_id: filter_static.id))
+      sleep(1)
+      filter2_manager.publish(Vnet::Event::FILTER_REMOVED_STATIC,
+                              filter_static.to_hash.merge(id: filter.id,
+                                                          static_id: filter_static.id))
+      sleep(1)
     end
+    context "when a static rule has been added" do
+      let(:filter_static) { Fabricate(:static_tcp_pass) }
+      it "removes a static rule" do
+        
+        static_hash(filter_static).each { |ingress, egress|
+          expect(flows).not_to include deleted_flow(ingress)
+          expect(flows).not_to include deleted_flow(egress)
 
-    it "removes a static rule" do
+          expect(deleted_flows).to include deleted_flow(ingress)
+          expect(deleted_flows).to include deleted_flow(egress) 
+       }
+      end
     end
   end
 end

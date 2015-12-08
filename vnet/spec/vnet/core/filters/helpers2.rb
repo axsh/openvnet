@@ -11,6 +11,15 @@ def flow(params)
   )
 end
 
+def deleted_flow(params) 
+  flow_create(
+    table: params[:table],
+    cookie: params[:id ] | COOKIE_TYPE_FILTER2,
+    cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+    match: params[:match]
+  )
+end
+
 def ingress_tables(passthrough)
    {
     table: TABLE_INTERFACE_INGRESS_FILTER,
