@@ -27,7 +27,6 @@ module Vnet::NodeApi
           case options[:ingress_filtering_enabled]
           when "true"
             dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
-
           when "false"
             dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
           end

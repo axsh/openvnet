@@ -91,7 +91,6 @@ Sequel.migration do
       unique [:datapath_id, :route_link_id, :is_deleted]
     end
 
-      
     create_table(:interfaces) do
       primary_key :id
       String :uuid, :unique => true, :null=>false
@@ -101,7 +100,7 @@ Sequel.migration do
       FalseClass :ingress_filtering_enabled, :null => false
       FalseClass :enable_routing, :null=>false
       FalseClass :enable_route_translation, :null=>false
-      
+
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true

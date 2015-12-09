@@ -240,19 +240,6 @@ module Vnet::Core::Filters
       ]
     end
 
-    def rule_for_all(ipv4_address, prefix)
-      [
-        [{ eth_type: ETH_TYPE_IPV4,
-           ipv4_src: ipv4_address,
-           ipv4_src_mask: IPV4_BROADCAST << (32 - prefix)
-         },
-         { eth_type: ETH_TYPE_IPV4,
-           ipv4_dst: ipv4_address,
-           ipv4_dst_mask: IPV4_BROADCAST << (32 - prefix)
-         }]
-      ]
-    end
-
     def flows_for_static_ingress_filtering(flows = [], match, passthrough)
       flows << flow_create(
         table: TABLE_INTERFACE_INGRESS_FILTER,
