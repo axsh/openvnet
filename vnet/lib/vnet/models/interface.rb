@@ -12,7 +12,6 @@ module Vnet::Models
     one_to_many :active_interfaces
     one_to_many :datapath_networks
     one_to_many :datapath_route_links
-    one_to_many :filters
     one_to_many :interface_ports
     one_to_many :ip_leases
     one_to_many :mac_leases
@@ -35,12 +34,16 @@ module Vnet::Models
     one_to_many :lease_policy_base_interfaces
     many_to_many :lease_policies, :join_table => :lease_policy_base_interfaces, :conditions => "lease_policy_base_interfaces.deleted_at is null"
 
+    #
+    # 0006_filters
+    #
+    one_to_many :filters
+
     plugin :association_dependencies,
     # 0001_origin
     active_interfaces: :destroy,
     datapath_networks: :destroy,
     datapath_route_links: :destroy,
-    filters: :destroy,
     interface_ports: :destroy,
     ip_leases: :destroy,
     mac_leases: :destroy,
@@ -52,6 +55,7 @@ module Vnet::Models
     translations: :destroy,
     # 0002_services
     lease_policy_base_interfaces: :destroy
-
+    # 0006_filters
+    filters: :destroy,
   end
 end

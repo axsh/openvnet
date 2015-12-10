@@ -11,7 +11,7 @@ module Vnet::Models
     many_to_one :interface
 
     plugin :association_dependencies,
-    # 0001_origin
+    # 0006_filters
     filter_statics: :destroy    
   end
 end

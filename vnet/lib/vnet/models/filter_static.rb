@@ -5,6 +5,7 @@ module Vnet::Models
   # TODO: Refactor.
 
   class FilterStatic < Base
+    plugin :paranoia_is_deleted
 
     many_to_one :filter
     # TODO: Association needed:

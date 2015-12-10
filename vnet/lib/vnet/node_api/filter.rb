@@ -31,7 +31,7 @@ module Vnet::NodeApi
       def dispatch_deleted_item_events(model)
         dispatch_event(FILTER_DELETED_ITEM, id: model.id)
 
-        # 0001_origin
+        # 0006_filters
         # filter_static: ignore, handled by main event
       end
 
