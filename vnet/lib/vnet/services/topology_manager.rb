@@ -134,6 +134,11 @@ module Vnet::Services
         return
       end
 
+      if internal_retrieve(id: item_id).nil?
+        warn log_format_dn("could not retrieve topology associated with network", datapath_id, network_id)
+        return
+      end
+
       event_options = {
         id: item_id,
         type: :network,
