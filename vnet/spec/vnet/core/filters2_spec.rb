@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-
 require 'spec_helper'
-require_relative 'filters/helpers2'
 
 include Vnet::Constants::Openflow
 include Vnet::Openflow::FlowHelpers
