@@ -8,10 +8,6 @@ module Vnet::Core::Translations
       super
     end
 
-    def mode
-      :vnet_edge_handler
-    end
-
     def log_type
       'translation/vnet_edge_handler'
     end

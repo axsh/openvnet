@@ -10,10 +10,6 @@ module Vnet::Core::Translations
       @static_addresses = {}
     end
 
-    def mode
-      :static_address
-    end
-
     def log_type
       'translation/static_address'
     end

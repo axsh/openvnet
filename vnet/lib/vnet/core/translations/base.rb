@@ -17,10 +17,6 @@ module Vnet::Core::Translations
       @passthrough = map.passthrough == 1
     end
 
-    def mode
-      :base
-    end
-
     def log_type
       'translation/base'
     end
