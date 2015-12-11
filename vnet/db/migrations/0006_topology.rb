@@ -7,7 +7,7 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null=>false
 
-      String :mode, :null=>false, :default => "simple_overlay"
+      String :mode, :null=>false
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false

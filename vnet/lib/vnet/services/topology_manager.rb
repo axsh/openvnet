@@ -53,7 +53,7 @@ module Vnet::Services
       filter, value = filter_part
 
       case filter
-      when :id
+      when :id, :uuid
         proc { |id, item| value == item.send(filter) }
       else
         raise NotImplementedError, filter
@@ -127,15 +127,15 @@ module Vnet::Services
       # using an event.
       #
       # TODO: Just need the topology_id.
-      item = find_using_tp_nw(network_id, datapath_id)
+      item_id = find_id_using_tp_nw(network_id, datapath_id)
 
-      if item.nil?
+      if item_id.nil?
         warn log_format_dn("network not associated with a topology", datapath_id, network_id)
         return
       end
 
       event_options = {
-        id: item.id,
+        id: item_id,
         type: :network,
         dp_generic_id: network_id,
         datapath_id: datapath_id
@@ -182,7 +182,7 @@ module Vnet::Services
 
     # Currently we look up the topology directly, which means we don't
     # have proper handling of changes to topologies, etc.
-    def find_using_tp_nw(network_id, datapath_id)
+    def find_id_using_tp_nw(network_id, datapath_id)
       filter = {
         network_id: network_id
       }
@@ -192,12 +192,7 @@ module Vnet::Services
       
       debug log_format("detect_using_tp_nw XXXXXXXXXXXX", tp_nw.inspect)
 
-      if tp_nw.nil?
-        return
-      end
-
-      # TODO: wait_for_loaded?
-      internal_retrieve(id: tp_nw.topology_id)
+      tp_nw && tp_nw.topology_id
     end
 
     def has_datapath_network?(datapath_id, network_id)
