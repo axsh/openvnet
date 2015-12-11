@@ -16,7 +16,7 @@ Sequel.migration do
       DateTime :created_at, :null =>false
       DateTime :updated_at, :null =>false
       DateTime :deleted_at, :index => true
-      Integer :is_deleted, :null =>false
+      Integer :is_deleted, :null =>false, :default =>0
     end
     
     create_table(:filter_statics) do
@@ -37,6 +37,15 @@ Sequel.migration do
       DateTime :updated_at, :null =>false
       DateTime :deleted_at, :index => true
       Integer :is_deleted, :null =>false
+
+      unique [:filter_id,
+              :ipv4_src_address,
+              :ipv4_dst_address,
+              :ipv4_src_prefix,
+              :ipv4_dst_prefix,
+              :port_src,
+              :port_dst,
+              :protocol]
     end
 
     alter_table(:interfaces) do
