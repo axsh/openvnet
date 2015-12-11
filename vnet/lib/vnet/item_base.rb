@@ -139,25 +139,4 @@ module Vnet
     end
   end
 
-  # TODO: Deprecate this.
-  class ItemDpUuidMode < ItemDpUuid
-    attr_reader :mode
-
-    def initialize(params)
-      @installed = false
-      @loaded = false
-      @dp_info = params[:dp_info]
-
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
-      @mode = map.mode.to_sym
-    end
-
-    def pretty_properties
-      "mode:#{@mode}"
-    end
-
-  end
-
 end

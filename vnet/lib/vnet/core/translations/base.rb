@@ -2,7 +2,7 @@
 
 module Vnet::Core::Translations
 
-  class Base < Vnet::ItemDpUuidMode
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -15,6 +15,10 @@ module Vnet::Core::Translations
 
       @interface_id = map.interface_id
       @passthrough = map.passthrough == 1
+    end
+
+    def mode
+      :base
     end
 
     def log_type
@@ -36,8 +40,7 @@ module Vnet::Core::Translations
 
     def to_hash
       Vnet::Core::Translation.new(id: @id,
-                                  uuid: @uuid,
-                                  mode: @mode)
+                                  uuid: @uuid)
     end
 
     def uninstall
