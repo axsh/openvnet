@@ -25,6 +25,7 @@ module Vnet
   autoload :Event,                'vnet/event'
   autoload :ItemBase,             'vnet/item_base'
   autoload :ItemVnetBase,         'vnet/item_base'
+  autoload :ItemVnetUuid,         'vnet/item_base'
   autoload :ItemDpBase,           'vnet/item_base'
   autoload :ItemDpUuid,           'vnet/item_base'
   autoload :Manager,              'vnet/manager'

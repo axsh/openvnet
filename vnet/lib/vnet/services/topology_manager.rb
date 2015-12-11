@@ -142,7 +142,7 @@ module Vnet::Services
       event_options = {
         id: item_id,
         type: :network,
-        dp_generic_id: network_id,
+        object_id: network_id,
         datapath_id: datapath_id
       }
 
@@ -154,28 +154,12 @@ module Vnet::Services
     end
 
     def create_dp_generic(params)
-      debug log_format("create_datapath_generic", params.inspect)
+      debug log_format("create_datapath_generic", params)
 
       item = internal_detect_by_id(params) || return
 
       begin
-        dp_generic_id = get_param_id(params, :dp_generic_id)
-        datapath_id = get_param_id(params, :datapath_id)
-
-        interface_id = get_a_host_interface_id(datapath_id)
-
-        if interface_id.nil?
-          warn log_format_dn("create_datapath_generic could not find host interface", datapath_id, network_id)
-          return
-        end
-
-        case get_param_symbol(params, :type)
-        when :network
-          create_datapath_network(datapath_id, dp_generic_id, interface_id)
-        else
-          throw_param_error("unknown type", params, :type)
-        end
-
+        item.create_dp_generic(params)
       rescue Vnet::ParamError => e
         handle_param_error(e)
       end
@@ -207,37 +191,6 @@ module Vnet::Services
       }
 
       !MW::DatapathNetwork.batch.dataset.where(filter).first.commit.nil?
-    end
-
-    def create_datapath_network(datapath_id, network_id, interface_id)
-      create_params = {
-        datapath_id: datapath_id,
-        network_id: network_id,
-        interface_id: interface_id
-      }
-
-      if MW::DatapathNetwork.batch.create(create_params).commit
-        debug log_format_dni("created datapath_network", datapath_id, network_id, interface_id)
-      else
-        info log_format_dni("failed to create datapath_network", datapath_id, network_id, interface_id)
-      end
-    end
-
-    #
-    #
-    #
-
-    def get_a_host_interface_id(datapath_id)
-      filter = {
-        datapath_id: datapath_id,
-        interface_mode: Vnet::Constants::Interface::MODE_HOST
-      }
-
-      interface = MW::InterfacePort.batch.dataset.where(filter).first.commit
-
-      debug log_format("get_a_host_interface", interface.inspect)
-
-      interface.interface_id
     end
 
   end
