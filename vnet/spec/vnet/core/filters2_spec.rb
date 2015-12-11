@@ -14,6 +14,7 @@ describe Vnet::Core::Filter2Manager do
 
   let(:filter2_manager) { datapath.dp_info.filter2_manager }
   let(:interface_manager) { datapath.dp_info.interface_manager }
+
   let(:filter) { Fabricate(:filter,
                            uuid: "fil-test",
                            interface_id: 1,
@@ -47,14 +48,13 @@ describe Vnet::Core::Filter2Manager do
 
   shared_examples_for "added_static" do |static, protocol|
 
-    let(:filter_static) { Fabricate(static) }
-    let(:protocol) { protocol }
+    let(:filter_static) { Fabricate(static, protocol: protocol) }
 
     it "adds the static" do
-      static_hash(filter_static, protocol).each { |ingress, egress|
-          expect(flows).to include flow(ingress)
-          expect(flows).to include flow(egress)
-        }
+      static_hash(filter_static).each { |ingress, egress|
+        expect(flows).to include flow(ingress)
+        expect(flows).to include flow(egress)
+      }
     end
 
   end
@@ -85,8 +85,7 @@ describe Vnet::Core::Filter2Manager do
     before(:each) do
       filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
-                                                          static_id: filter_static.id,
-                                                          protocol: protocol))
+                                                          static_id: filter_static.id))
     end
     context "when protocol is tcp and passthrough is enabled" do
       include_examples 'added_static', :static_pass, "tcp"
@@ -101,16 +100,16 @@ describe Vnet::Core::Filter2Manager do
       include_examples 'added_static', :static_drop, "udp"
     end
     context "when protocol is icmp and passthrough is enabled" do
-      include_examples 'added_static', :static_pass, "icmp"
+      include_examples 'added_static', :static_pass_without_port, "icmp"
     end
     context "when protocol is icmp and passthrough is disabled" do
-      include_examples 'added_static', :static_drop, "icmp"
+      include_examples 'added_static', :static_drop_without_port, "icmp"
     end
     context "when protocol is arp and passthrough is enabled" do
-      include_examples 'added_static', :static_pass, "arp"
+      include_examples 'added_static', :static_pass_without_port, "arp"
     end
     context "when protocol is arp and passthrough is disabled" do
-      include_examples 'added_static', :static_drop, "icmp"
+      include_examples 'added_static', :static_drop_without_port, "icmp"
     end
   end
 
@@ -118,17 +117,15 @@ describe Vnet::Core::Filter2Manager do
     before(:each) do
       filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
-                                                          static_id: filter_static.id,
-                                                          protocol: protocol))
+                                                          static_id: filter_static.id))
       filter2_manager.publish(Vnet::Event::FILTER_REMOVED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
                                                           static_id: filter_static.id))
     end
     context "when a static rule has been added" do
-      let(:filter_static) { Fabricate(:static_pass) }
-      let(:protocol) { "tcp" }
+      let(:filter_static) { Fabricate(:static_pass, protocol: "tcp") }
       it "removes a static rule" do
-        static_hash(filter_static, protocol).each { |ingress, egress|
+        static_hash(filter_static).each { |ingress, egress|
           expect(flows).not_to include deleted_flow(ingress)
           expect(flows).not_to include deleted_flow(egress)
 

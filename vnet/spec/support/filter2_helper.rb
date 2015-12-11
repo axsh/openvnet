@@ -89,7 +89,7 @@ def static_priority(prefix, passthrough, port = nil)
   (prefix << 1) + ((port.nil? || port == 0) ? 0 : 2) + (passthrough ? 1 : 0)
 end
 
-def static_hash(static, protocol)
+def static_hash(static)
   {
     [
       filter.to_hash,
@@ -98,7 +98,7 @@ def static_hash(static, protocol)
                                        static.passthrough,
                                        static.port_src) },
       { match: rule("ingress",
-                    protocol,
+                    static.protocol,
                     static.ipv4_src_address,
                     static.ipv4_src_prefix,
                     static.port_src) }
@@ -109,7 +109,7 @@ def static_hash(static, protocol)
                                        static.passthrough,
                                        static.port_dst) },
       { match: rule("egress",
-                    protocol,
+                    static.protocol,
                     static.ipv4_dst_address,
                     static.ipv4_dst_prefix,
                     static.port_dst) }

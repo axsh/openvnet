@@ -21,7 +21,7 @@ module Vnet::Models
     def validate
       errors.add(:ipv4_src_prefix, "prefix out of range") if !(0..32).member?(self.ipv4_src_prefix)
       errors.add(:ipv4_dst_prefix, "prefix out of range") if !(0..32).member?(self.ipv4_dst_prefix)
-      errors.add(:protocol, "unknown protocol type") if !protocol_included(["tcp, udp, icmp, arp, all"])
+      errors.add(:protocol, "unknown protocol type #{self.protocol}") if !protocol_included(["tcp", "udp", "icmp", "arp", "all"])
 
       if protocol_included(["tcp", "udp"])
         errors.add(:port_src, "port not in valid range") if !(0..0xffff).member?(self.port_src)
