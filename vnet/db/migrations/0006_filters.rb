@@ -36,7 +36,7 @@ Sequel.migration do
       DateTime :created_at, :null =>false
       DateTime :updated_at, :null =>false
       DateTime :deleted_at, :index => true
-      Integer :is_deleted, :null =>false
+      Integer :is_deleted, :null =>false, :default =>0
 
       unique [:filter_id,
               :ipv4_src_address,
@@ -45,7 +45,9 @@ Sequel.migration do
               :ipv4_dst_prefix,
               :port_src,
               :port_dst,
-              :protocol]
+              :protocol,
+              :is_deleted
+             ]
     end
 
     alter_table(:interfaces) do
