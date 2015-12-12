@@ -43,15 +43,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
   end
 
   delete '/:uuid/networks/:network_uuid' do
-    # topology = check_syntax_and_pop_uuid(M::Topology)
-    # network = check_syntax_and_pop_uuid(M::TopologyNetwork, "network_uuid")
+    topology = check_syntax_and_pop_uuid(M::Topology)
+    network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
 
-    # raise E::UnknownUUIDResource, network.uuid unless network.topology_id == topology.id
+    M::TopologyNetwork.destroy(topology_id: topology.id, network_id: network.id)
 
-    # M::TopologyNetwork.destroy(network.id)
-
-    # respond_with([network.uuid])
-    nil
+    respond_with([network.uuid])
   end
 
 end
