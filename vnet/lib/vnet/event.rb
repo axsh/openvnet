@@ -205,7 +205,7 @@ module Vnet
     TOPOLOGY_NETWORK_ACTIVATED = "topology_network_activated"
     TOPOLOGY_NETWORK_DEACTIVATED = "topology_network_deactivated"
 
-    TOPOLOGY_CREATE_DP_GENERIC = "topology_create_dp_generic"
+    TOPOLOGY_CREATE_DP_NW = "topology_create_dp_nw"
 
     #
     # tunnel event

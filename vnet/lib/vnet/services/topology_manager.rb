@@ -18,7 +18,7 @@ module Vnet::Services
     subscribe_event TOPOLOGY_NETWORK_ACTIVATED, :network_activated
     subscribe_event TOPOLOGY_NETWORK_DEACTIVATED, :network_deactivated
 
-    subscribe_event TOPOLOGY_CREATE_DP_GENERIC, :create_dp_generic
+    subscribe_event TOPOLOGY_CREATE_DP_NW, :create_dp_nw
 
     # TODO: Add events for host interfaces?
 
@@ -77,11 +77,11 @@ module Vnet::Services
       item_class.new(dp_info: @dp_info, map: item_map)
     end
 
-    def log_format_dn(message, datapath_id, network_id)
+    def log_format_dp_nw(message, datapath_id, network_id)
       log_format(message, "datapath_id:#{datapath_id} network_id:#{network_id}")
     end
 
-    def log_format_dni(message, datapath_id, network_id, interface_id)
+    def log_format_dp_nw_if(message, datapath_id, network_id, interface_id)
       log_format(message, "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface_id}")
     end
 
@@ -100,22 +100,16 @@ module Vnet::Services
     # Network events:
     #
 
-    # TODO: Queue needs to add datapath?
-
-    # Queue [:network, network.id]
-
+    # TOPOLOGY_NETWORK_ACTIVATED on queue [:network, network.id]
     def network_activated(params)
-      debug log_format("network_activated", params.inspect)
-
-      # Add a quick hack that bypasses topology just to test out dp_nw
-      # creation.
-
       begin
         network_id = get_param_packed_id(params)
         datapath_id = get_param_id(params, :datapath_id)
 
+        debug log_format_dp_nw("network activated", datapath_id, network_id)
+
         if has_datapath_network?(datapath_id, network_id)
-          debug log_format_dn("network_activated found existing datapath_network", datapath_id, network_id)
+          debug log_format_dp_nw("found existing datapath_network", datapath_id, network_id)
           return
         end
 
@@ -123,43 +117,35 @@ module Vnet::Services
         handle_param_error(e)
       end
 
-      # TODO: Rest should be done within the context of the item,
-      # using an event.
-      #
-      # TODO: Just need the topology_id.
-      item_id = find_id_using_tp_nw(network_id, datapath_id)
-
-      if item_id.nil?
-        warn log_format_dn("network not associated with a topology", datapath_id, network_id)
-        return
-      end
+      item_id = find_id_using_tp_nw(datapath_id, network_id) || return
 
       if internal_retrieve(id: item_id).nil?
-        warn log_format_dn("could not retrieve topology associated with network", datapath_id, network_id)
+        warn log_format_dp_nw("could not retrieve topology associated with network", datapath_id, network_id)
         return
       end
 
       event_options = {
         id: item_id,
-        type: :network,
-        object_id: network_id,
+        network_id: network_id,
         datapath_id: datapath_id
       }
 
-      publish(TOPOLOGY_CREATE_DP_GENERIC, event_options)
+      publish(TOPOLOGY_CREATE_DP_NW, event_options)
     end
 
+    # TOPOLOGY_NETWORK_DEACTIVATED on queue [:network, network.id]
     def network_deactivated(params)
       debug log_format("network deactivated", params)
     end
 
-    def create_dp_generic(params)
-      debug log_format("create_datapath_generic", params)
+    # TOPOLOGY_CREATE_DP_NW on queue 'item.id'
+    def create_dp_nw(params)
+      debug log_format("creating datapath_network", params)
 
       item = internal_detect_by_id(params) || return
 
       begin
-        item.create_dp_generic(params)
+        item.create_dp_nw(params)
       rescue Vnet::ParamError => e
         handle_param_error(e)
       end
@@ -171,7 +157,7 @@ module Vnet::Services
 
     # Currently we look up the topology directly, which means we don't
     # have proper handling of changes to topologies, etc.
-    def find_id_using_tp_nw(network_id, datapath_id)
+    def find_id_using_tp_nw(datapath_id, network_id)
       filter = {
         network_id: network_id
       }
@@ -179,9 +165,12 @@ module Vnet::Services
       # TODO: Should keep local tp_nw list.
       tp_nw = MW::TopologyNetwork.batch.dataset.where(filter).first.commit
       
-      debug log_format("detect_using_tp_nw XXXXXXXXXXXX", tp_nw.inspect)
+      if tp_nw.nil? || tp_nw.topology_id.nil?
+        warn log_format_dp_nw("network not associated with a topology", datapath_id, network_id)
+        return
+      end
 
-      tp_nw && tp_nw.topology_id
+      tp_nw.topology_id
     end
 
     def has_datapath_network?(datapath_id, network_id)
