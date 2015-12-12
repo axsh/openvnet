@@ -13,13 +13,16 @@ module Vnet::Models
     # 0002_services
     dns_services: :destroy
 
+    # TODO: Rename type to mode, then add deprecation translation in
+    # api.
+
+    def valid_modes
+      Vnet::Constants::NetworkService::MODES
+    end
+
     def validate
-      # TODO: Use constants.
-      validates_includes [
-        "dhcp",
-        "dns",
-        "router",
-      ], :type
+      validates_includes(valid_modes, :type)
+      super
     end
 
   end
