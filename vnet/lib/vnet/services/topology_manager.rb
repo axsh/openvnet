@@ -70,6 +70,7 @@ module Vnet::Services
       item_class =
         case item_map.mode
         when MODE_SIMPLE_OVERLAY then Topologies::SimpleOverlay
+        when MODE_SIMPLE_UNDERLAY then Topologies::SimpleUnderlay
         else
           return
         end

@@ -477,6 +477,7 @@ module Vnet
     module Topologies
       autoload :Base, 'vnet/services/topologies/base'
       autoload :SimpleOverlay, 'vnet/services/topologies/simple_overlay'
+      autoload :SimpleUnderlay, 'vnet/services/topologies/simple_underlay'
     end
 
   end
