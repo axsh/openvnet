@@ -28,12 +28,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     update_by_uuid(:Topology)
   end
 
-  def self.network_shared_params
-    param_uuid M::Network, :network_uuid, required: true
-  end
-  
-  network_shared_params
-  post '/:uuid/networks' do
+  post '/:uuid/networks/:network_uuid' do
     topology = uuid_to_id(M::Topology, "uuid", "topology_id")
     network = uuid_to_id(M::Network, "network_uuid", "network_id")
 
