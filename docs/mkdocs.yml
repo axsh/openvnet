@@ -16,6 +16,7 @@ pages:
 #- 'Concept': 'concept.md'
 - Getting Started:
   - 'Installation': 'installation.md'
+  - 'Single network with DHCP server': 'single-network-dhcp.md'
 - Support:
   - 'Community': 'community.md'
 
