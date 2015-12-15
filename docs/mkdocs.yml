@@ -14,8 +14,9 @@ google_analytics: ['UA-63388719-2', 'auto']
 pages:
 - 'Home': 'index.md'
 #- 'Concept': 'concept.md'
-- Getting Started:
-  - 'Installation': 'installation.md'
+- 'Installation' : 'installation.md'
+- Creating virtual networks:
+  - 'Single network': 'single-network.md'
   - 'Single network with DHCP server': 'single-network-dhcp.md'
 - Support:
   - 'Community': 'community.md'
