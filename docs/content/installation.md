@@ -13,8 +13,7 @@ In this guide we are going to install all of OpenVNet's services into a single m
 
 ## Requirements
 
-+ CentOS 6.6
-+ Open vSwitch 2.3.1
++ CentOS 6
 + Internet connection
 
 ## Installation
@@ -60,23 +59,19 @@ Install OpenVNet packages.
 yum install -y openvnet
 ```
 
-`openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
-`openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi`, `openvnet-vnctl` at once.
+`openvnet` is an metapackage that depends on `openvnet-common`, `openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi` and `openvnet-vnctl`. It's just a convenient way to install all of those at once.
 
 Install [Redis](http://redis.io) and [MySQL server](https://www.mysql.com). Redis is required for OpenVNet's processes to communicate and MySQL for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
 
-```
+```bash
 yum install -y mysql-server redis
 ```
 
-### Setup Local Infrastructure
+### Setup Open vSwitch
 
-Datapath is one of the Linux kernel capabilities behaving similar to the Linux bridge.
-Create the file `/etc/sysconfig/network-scripts/ifcfg-br0` with the following contents. However you need to pay attention to several parameters.
+We are going to create a bridge `br0` using Open vSwitch. Later we will attach our VMs `inst1` and `inst2` to this bridge.
 
-* datapath-id
-
-The datapath ID that the Open vSwitch will use. Set unique 16 hex digits as you like.
+Create the file `/etc/sysconfig/network-scripts/ifcfg-br0` with the following contents.
 
 ```bash
 DEVICE=br0
@@ -95,17 +90,13 @@ OVS_EXTRA="
 "
 ```
 
-Start `openvswitch` service and `ifup` the datapath.
+**Remark:** Notice how we set the `datapath-id` to `0000aaaaaaaaaaaa`? This is a unique ID that OpenVNet will use to recognise this bridge later. You can set it to any 16 hex digits of your choosing but make sure to remember it for later.
+
+Start the `openvswitch` service and bring  up the bridge.
 
 ```bash
 service openvswitch start
 ifup br0
-```
-
-Start redis
-
-```bash
-service redis start
 ```
 
 ### Setup Database
@@ -118,25 +109,23 @@ Launch MySQL server.
 service mysqld start
 ```
 
-To automatically launch the MySQL server at boot, execute the following command.
-
-```bash
-chkconfig mysqld on
-```
-
-Set `PATH` environment variable as following since the OpenVNet uses its own ruby binary.
-
-```bash
-PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
-```
-
 Create database
 
 ```bash
 cd /opt/axsh/openvnet/vnet
-bundle exec rake db:create
-bundle exec rake db:init
+/opt/axsh/openvnet/ruby/bin/bundle exec rake db:create
+/opt/axsh/openvnet/ruby/bin/bundle exec rake db:init
 ```
+
+### Start redis
+
+As mentioned above, OpenVNet services use redis to communicate with each other.
+
+```bash
+service redis start
+```
+
+### Start OpenVNet services
 
 Start vnmgr and webapi.
 
@@ -147,9 +136,7 @@ initctl start vnet-webapi
 
 We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is Web API client offered by the `openvnet-vnctl` package.
 
-#### Datapath
-
-We created a datapath earlier that the OpenVNet needs to know. The following database record must be created in order to tell the OpenVNet about the datapath.
+Remember the `datapath-id` we set when setting up Open vSwitch? Now we're going tell OpenVNet to manage this datapath using vna.
 
 ```bash
 vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
@@ -161,11 +148,9 @@ The datapath ID specified in `/etc/sysconfig/network-scripts/ifcfg-br0`
 
 * node-id
 
-The ID of the vna written in `/etc/openvnet/vna.conf`
+The ID of the vna written in `/etc/openvnet/vna.conf`. In a production environment, it's very likely for OpenVNet to span multiple hosts, each with their own Open vSwitch and vna combo. Therefore we need to tell OpenVNet which vna will manage which datapath. For this simple installation we have only one vna so we use the default `node-id` without editing `vna.conf`.
 
-### Launch Services
-
-Now let's start vna. This is OpenVNet's OpenFlow controller. It's going to send commands to Open vSwitch and setup the actual flows that implement virtual networks.
+Now let's start vna.
 
 ```bash
 initctl start vnet-vna
@@ -182,11 +167,9 @@ fbe23184-7f14-46cb-857b-3abf6153a6d6
             is_connected: true
 ```
 
-This means the OpenFlow controller which is vna is now connected to the datapath. After the connection between the OpenFlow controller and the datapath is established it starts installing the flows on the datapath.
-
 ## LXC Setup
 
-Next we are going to use [LXC](https://linuxcontainers.org) to create the two virtual machines `inst1` and `inst2` that will be connected to OpenVNet's virtual networks.
+We now have OpenVNet set up and working but we don't have any virtual machines connected to it yet. In this step we are going to use [LXC](https://linuxcontainers.org) to create the two virtual machines `inst1` and `inst2` that will be connected to OpenVNet's virtual networks.
 
 Any virtualization techonology will work but in this guide we're using LXC because it's lightweight and can easily be set up inside virtual machines as well.
 
@@ -260,3 +243,5 @@ ovs-vsctl add-port br0 inst2
 ```
 
 Now the LXC's network interfaces are attached to the Open vSwitch. This is basically the same as plugging a network cable into a physical switch.
+
+Congratulations. You have now installed OpenVNet and you're ready to start building your first virtual network. We recommend you start with the simplest possible setting: [Single Network](single-network).
