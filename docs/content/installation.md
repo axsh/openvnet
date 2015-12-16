@@ -109,12 +109,18 @@ Launch MySQL server.
 service mysqld start
 ```
 
+Set `PATH` environment variable as following since the OpenVNet uses its own ruby binary. This is needed so we can use the bundle command in the next step.
+
+```bash
+PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
+```
+
 Create database
 
 ```bash
 cd /opt/axsh/openvnet/vnet
-/opt/axsh/openvnet/ruby/bin/bundle exec rake db:create
-/opt/axsh/openvnet/ruby/bin/bundle exec rake db:init
+bundle exec rake db:create
+bundle exec rake db:init
 ```
 
 ### Start redis
@@ -134,7 +140,7 @@ initctl start vnet-vnmgr
 initctl start vnet-webapi
 ```
 
-We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is Web API client offered by the `openvnet-vnctl` package.
+We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is a Web API client offered by the `openvnet-vnctl` package.
 
 Remember the `datapath-id` we set when setting up Open vSwitch? Now we're going tell OpenVNet to manage this datapath using vna.
 
@@ -158,7 +164,7 @@ initctl start vnet-vna
 
 The log files are created in the /var/log/openvnet directory. Refer to them if something bad happens. You can run `ovs-vsctl show` to check if vna is working correctly.
 
-You should be able to see `is_connected: true` in its output.
+You should be able to see `is_connected: true` in its output. If it doesn't appear right away, wait a few seconds and then try again. If it still doesn't appear, something went wrong.
 
 ```bash
 fbe23184-7f14-46cb-857b-3abf6153a6d6
@@ -173,13 +179,13 @@ We now have OpenVNet set up and working but we don't have any virtual machines c
 
 Any virtualization techonology will work but in this guide we're using LXC because it's lightweight and can easily be set up inside virtual machines as well.
 
-Install LXC
+### Install LXC
 
 ```bash
 yum -y install lxc lxc-templates
 ```
 
-Create and mount cgroup
+### Create and mount cgroup
 
 ```bash
 mkdir /cgroup
@@ -187,7 +193,9 @@ echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
 mount /cgroup
 ```
 
-Create 2 LXC guests. Rsync is required for this. If it's not installed already, install it with the following command.
+### Create 2 LXC guests
+
+Rsync is required for this. If it's not installed already, install it with the following command.
 
 ```bash
 yum install -y rsync
@@ -198,11 +206,13 @@ lxc-create -t centos -n inst1
 lxc-create -t centos -n inst2
 ```
 
-Configure interfaces of each guest
+These commands' output will tell you were to find or set the root password for `inst1` and `inst2`. Make sure set it and remember it for later. You're going to need it to log into them.
+
+### Apply Network interface settings
+
+Open the file `/var/lib/lxc/inst1/config` and replace it with the following.
 
 ```bash
-vi /var/lib/lxc/inst1/config
-
 lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.veth.pair = inst1
@@ -214,9 +224,10 @@ lxc.utsname = inst1
 lxc.autodev = 0
 ```
 
-```bash
-vi /var/lib/lxc/inst2/config
+Open the file `/var/lib/lxc/inst2/config` and replace it with the following.
 
+
+```bash
 lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.veth.pair = inst2
@@ -228,16 +239,18 @@ lxc.utsname = inst2
 lxc.autodev = 0
 ```
 
-Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.
+**Remark:** We do not use `lxc.network.link` parameter because the Linux bridge is replaced by the Open vSwitch. That parameter expects to interface with the Linux bridge and containers will fail to start if you attempt to use it with Open vSwitch. We'll enslave the tap interfaces manually in the next step.
 
-Launch the LXC guests then enslave the LXC's tap interfaces to the datapath.
-
-**Remark:** We do not use `lxc.network.link` parameter because the Linux bridge is replaced by the Open vSwitch. That parameter expects to interface with the Linux bridge and containers will fail to start if you attempt to use it with Open vSwitch. We'll enslave the tap interfaces manually.
+### Start the LXC guests
 
 ```bash
 lxc-start -d -n inst1
 lxc-start -d -n inst2
+```
 
+### Attach them to Open vSwitch
+
+```bash
 ovs-vsctl add-port br0 inst1
 ovs-vsctl add-port br0 inst2
 ```
