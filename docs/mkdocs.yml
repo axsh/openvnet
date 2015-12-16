@@ -18,6 +18,10 @@ pages:
 - Creating virtual networks:
   - 'Single network': 'single-network.md'
   - 'Single network with DHCP server': 'single-network-dhcp.md'
+- Configuration files: 'configuration-files.md'
+- Vnctl:
+  - 'interfaces': 'vnctl-interfaces.md'
+  - 'networks'  : 'vnctl-networks.md'
 - Support:
   - 'Community': 'community.md'
 
