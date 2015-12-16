@@ -43,13 +43,11 @@ vnctl network-services add \
 
 ### Move inst2 to the new network
 
-Up until now we have used a single vnctl command to create a new interface, put it in a virtual network and assign it an IP address. While this is all pretty simple from the user's perspective, OpenVNet actually some quite complicated setup behind the scenes.
-
-At the time of writing, this single-command interface setup is only supported when creating a new interface and not when editing an existing one. That leaves us two ways of putting `inst2` in our newly created network.
+There are two ways to do this.
 
 * The quick and dirty way. Remove its interface and re-create it.
 
-* The clean but harder way. Dig a little deeper into OpenVNet's inner workings make only the required changes.
+* The clean but slightly harder way. Dig a little deeper into OpenVNet's inner workings make only the required changes.
 
 Choose one of the two two ways below.
 
@@ -78,7 +76,7 @@ vnctl interfaces add \
 
 You're done. Move on to the [test section](#test).
 
-#### The clean but harder way
+#### The clean but slightly harder way
 
 We've now created several network interfaces in OpenVNet using the `vnctl interfaces add` command. Actually every time we call that command, OpenVNet has created several entries in its database  to keep track of MAC address, IP address, network assignment etc. The field we need to change here is `ip lease`.
 
