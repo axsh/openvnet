@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is the simplest possible setup after the installation guide. It's a great start for when you're just getting into OpenVNet.
+This is the simplest possible setup after completing the installation guide. It's a great start for when you're just getting into OpenVNet.
 
 This document expects you to have set up OpenVNet according to the [installation guide](installation). We will be referring to the VMs `inst1` and `inst2` as they've been set up in there.
 
@@ -19,7 +19,7 @@ We will just have one simple network: `10.100.0.0/24`.
 
 ### Create the network
 
-```
+```bash
 vnctl networks add \
   --uuid nw-test1 \
   --display-name testnet1 \
@@ -32,7 +32,7 @@ vnctl networks add \
 
 Now that we have a virtual network, we need to tell OpenVNet which interfaces are in it and which IP addresses they will get. We need to do this for both `inst1` and `inst2`.
 
-```
+```bash
 vnctl interfaces add \
   --uuid if-inst1 \
   --mode vif \
