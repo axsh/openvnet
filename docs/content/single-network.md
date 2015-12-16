@@ -104,3 +104,7 @@ ping 10.100.0.10
 What do you see? Ping no longer works.
 
 On a tradition network, changing the IP address to anywhere within `10.100.0.0/24` would work but OpenVNet is more strict. We have registered `inst2` in OpenVNet's database with IP address `10.100.0.11` and OpenVNet will not allow it to use anything else.
+
+## What's next?
+
+You've now successfully set up the simplest possible OpenVNet configuration. How about we make this virtual network a little more interesting by adding a [DHCP service](single-network-dhcp)?

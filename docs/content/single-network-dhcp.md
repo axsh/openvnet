@@ -2,48 +2,17 @@
 
 ## Overview
 
-This document expects you to have set up OpenVNet according to the [installation guide](installation). We will be referring to the VMs `inst1` and `inst2` As they've been set up in there.
+This document expects you to have set up OpenVNet according to the [installation guide](installation) and created the simple [single network](single-network) afterwards. We will be continuing from there so complete those steps first.
 
-### Remove the IP addresses from LXC's config
+All we are going to do in this guide is add a DHCP server. This will give us the following virtual network topology.
 
-Open the files `/var/lib/lxc/inst1/config` and `/var/lib/lxc/inst2/config`. Find the lines that start with `lxc.network.ipv4` and either remove them or comment them out.
+![Single network with dhcp server](img/single-network-dhcp.png)
 
-We are going to start using OpenVNet's built-in DHCP service to assign IP addresses so we no longer need to rely on LXC to do it for us.
-
-```
-vi /var/lib/lxc/inst1/config
-
-lxc.network.type = veth
-lxc.network.flags = up
-lxc.network.veth.pair = inst1
-# lxc.network.ipv4 = 10.100.0.10
-lxc.network.hwaddr = 10:54:FF:00:00:01
-lxc.rootfs = /var/lib/lxc/inst1/rootfs
-lxc.include = /usr/share/lxc/config/centos.common.conf
-lxc.arch = x86_64
-lxc.utsname = inst1
-lxc.autodev = 0
-
-```
-
-```
-vi /var/lib/lxc/inst2/config
-
-lxc.network.type = veth
-lxc.network.flags = up
-lxc.network.veth.pair = inst2
-# lxc.network.ipv4 = 10.100.0.11
-lxc.network.hwaddr = 10:54:FF:00:00:02
-lxc.rootfs = /var/lib/lxc/inst2/rootfs
-lxc.include = /usr/share/lxc/config/centos.common.conf
-lxc.arch = x86_64
-lxc.utsname = inst2
-lxc.autodev = 0
-```
+## Setup
 
 ### Create a simulated interface
 
-OpenVNet will simulate DHCP without actually starting up a server. Everything will be handled using flows in Open vSwitch. However, the machines attached to OpenVNet's virtual networks will still expect a DHCP server to exist with a certain IP address. Therefore we need to tell OpenVNet to create a simulated interface that will give off the illusion of a real DHCP server.
+OpenVNet will simulate DHCP entirely in OpenFlow. Everything will be handled using flows in Open vSwitch. However, the machines attached to OpenVNet's virtual networks will still expect a DHCP server to exist with a certain IP address. Therefore we need to tell OpenVNet to create a simulated interface that will give off the illusion of a real DHCP server.
 
 ```
 vnctl interfaces add \
@@ -62,3 +31,47 @@ Now that we have a simulated interface in place, all we have to do is tell OpenV
 ```
 vnctl network-services add --uuid ns-dhcp --interface-uuid if-dhcp --type dhcp
 ```
+
+## Test
+
+First of all let's have a look at VNA's log file.
+
+```bash
+tail /var/log/openvnet/vna.log
+```
+
+You should see something like this.
+
+```
+D, [2015-12-16T17:17:38.687225 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa interface_manager: installing if-dhcp/3 (mode:simulated)
+D, [2015-12-16T17:17:38.732223 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa active_interface_manager: installing local/3 (interface_id:3 datapath_id:1 label:dp-test1)
+D, [2015-12-16T17:17:38.741769 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa interface/simulated: adding mac address to if-dhcp/3 (02:00:00:00:01:11)
+D, [2015-12-16T17:17:38.763137 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa interface/simulated: adding ipv4 address to if-dhcp/3 (02:00:00:00:01:11/10.100.0.100)
+D, [2015-12-16T17:17:44.662743 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa service_manager: installing ns-dhcp/1 (mode:dhcp)
+```
+
+Looking good so far. VNA seems to have created the simulated interface and added the dhcp service to it.
+
+Log into `inst1` and have it do a DHCP request.
+
+```bash
+lxc-console -n inst1
+service network restart
+```
+
+If everything went well, `inst1` should have received a DHCP reply and it now has IP address `10.100.0.10`
+
+Taking another look at `/var/log/openvnet/vna.log` will show you how the simulated DHCP server has received the request and constructed a reply to it.
+
+Now let's do the same on `inst2` and see how the DHCP service assigns `10.100.0.11`.
+
+```bash
+lxc-console -n inst2
+service network restart
+```
+
+There we go. The two VMs can now ping each other again.
+
+## What's next?
+
+Now that you've successfully set up a single network and added a DHCP server to it, how about we set up [multiple networks](two-networks) next?
