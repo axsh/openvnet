@@ -52,6 +52,8 @@ vnctl interfaces add \
   --port-name inst2
 ```
 
+For more information about the interfaces commands, visit [their section](vnctl-interfaces.md) in the Vnctl documentation.
+
 ## Test
 
 Log into `inst1` and check its IP address configuration.
