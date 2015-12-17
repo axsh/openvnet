@@ -12,19 +12,19 @@ copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
 google_analytics: ['UA-63388719-2', 'auto']
 
 pages:
-- 'Home': 'index.md'
+- Home: 'index.md'
 #- 'Concept': 'concept.md'
-- 'Installation' : 'installation.md'
+- Installation : 'installation.md'
 - Creating virtual networks:
-  - 'Single network': 'single-network.md'
-  - 'Single network with DHCP server': 'single-network-dhcp.md'
-  - 'Two networks': 'two-networks.md'
-  - 'Two network with router': 'two-networks-router.md'
+  - 'Single network': 'creating-virtual-networks/single-network.md'
+  - 'Single network with DHCP server': 'creating-virtual-networks/single-network-dhcp.md'
+  - 'Two networks': 'creating-virtual-networks/two-networks.md'
+  - 'Two network with router': 'creating-virtual-networks/two-networks-router.md'
 - Configuration files: 'configuration-files.md'
 - Vnctl:
-  - 'interfaces': 'vnctl-interfaces.md'
-  - 'networks'  : 'vnctl-networks.md'
+  - 'interfaces': 'vnctl/interfaces.md'
+  - 'networks'  : 'vnctl/networks.md'
 - Debugging:
   - 'vnflows-monitor': 'debugging/vnflows-monitor.md'
   - 'troubleshooting': 'debugging/troubleshooting.md'
-- 'Community': 'community.md'
+- Community: 'community.md'
