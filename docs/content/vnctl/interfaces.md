@@ -1,6 +1,21 @@
-# The interfaces commands explained
+# interfaces add
 
-Let's take a little time to explain what all the lines in these commands actually mean. Feel free to skip to the [test phase](single-network#test) if you're not interested.
+This page explains the arguments used by the `vnctl interfaces add` command in the [Single network](../creating-virtual-networks/single-network)) guide.
+
+```bash
+vnctl interfaces add \
+  --uuid if-inst1 \
+  --mode vif \
+  --owner-datapath-uuid dp-test1 \
+  --mac-address 10:54:ff:00:00:01 \
+  --network-uuid nw-test1 \
+  --ipv4-address 10.100.0.10 \
+  --port-name inst1
+```
+
+* uuid
+
+A unique ID that will be used to refer to this interface.
 
 * mode
 
@@ -8,7 +23,7 @@ The mode of the interface. An entry with `vif` mode is basically means that this
 
 * owner-datapath-uuid
 
-The UUID of the datapath to which this interface will be connected. We created this datapath back in the installation guide.
+The UUID of the datapath to which this interface will be connected. We created this datapath back in the [installation guide](../installation).
 
 * mac-address
 
@@ -24,5 +39,4 @@ The IPv4 address which will be assigned to the network interface.
 
 * port-name
 
-The OpenVNet associates an Open vSwitch's port with a database record of the interface table if its `port-name` is corresponded to what you can see by `ovs-vsctl show`.
-
+Typically there are multiple network interfaces connected to Open vSwitch. OpenVNet needs to know which one we are describing here. That's where `port-name` comes in. This needs to be the same as this interface's port name on Open vSwitch. You can see the ports currently connected to Open vSwitch by running `ovs-vsctl show`.
