@@ -1,6 +1,6 @@
 # vnmgr.conf
 
-This file contains common configuration that is by `vnmgr`.
+This file contains the configuration used by `vnmgr`.
 
 You'll find it at `/etc/openvnet/vnmgr.conf`.
 

@@ -1,6 +1,6 @@
 # webapi.conf
 
-This file contains common configuration that is by `webapi`.
+This file contains the configuration used by `webapi`.
 
 You'll find it at `/etc/openvnet/webapi.conf`.
 

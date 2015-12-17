@@ -1,6 +1,6 @@
 # vna.conf
 
-This file contains common configuration that is by `vna`.
+This file contains the configuration used by `vna`.
 
 You'll find it at `/etc/openvnet/vna.conf`.
 
