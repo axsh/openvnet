@@ -17,16 +17,26 @@ node {
 }
 ```
 
-* id: The ID of the OpenVNet's process. It should be unique among the entire world of the OpenVNet.
+* id
 
-* protocol: This parameter can be used to specify the 0MQ address. Default value is 'tcp'.
+The ID of the OpenVNet's process. It should be unique among the entire world of the OpenVNet.
 
-* host: Private IP address that can be used to specify the 0MQ address.
+* protocol
 
-* public: Public/Global IP address that is linked to the private IP address specified by the 'host' parameter.
-            A 0MQ socket will be created with the public/global IP address if this paramter is specified.
-            Otherwise 'host' parameter will be used to create a 0MQ socket.
+This parameter can be used to specify the 0MQ address. Default value is 'tcp'.
 
-* port: Listen port of the process.
+* host
 
-* plugins: currently the only plugin available is for integration with [Wakame-vdc](http://wakame-vdc.org). Even when you're not integration with Wakame-vdc, you can leave it in place. It will not cause any problems.
+Private IP address that can be used to specify the 0MQ address.
+
+* public
+
+Public/Global IP address that is linked to the private IP address specified by the 'host' parameter. A 0MQ socket will be created with the public/global IP address if this paramter is specified. Otherwise 'host' parameter will be used to create a 0MQ socket.
+
+* port
+
+Listen port of the process.
+
+* plugins
+
+Currently the only plugin available is for integration with [Wakame-vdc](http://wakame-vdc.org). Even when you're not integration with Wakame-vdc, you can leave it in place. It will not cause any problems.
