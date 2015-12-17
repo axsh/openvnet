@@ -136,4 +136,4 @@ If you did things right, ping should have now told you that `inst1`'s network is
 
 ## What's next?
 
-Now that we have two different networks, let's try using a simulated router to connect them together.
+Now that we have two different networks, let's try [using a simulated router](two-networks-router) to connect them together.
