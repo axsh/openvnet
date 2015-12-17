@@ -20,7 +20,12 @@ pages:
   - 'Single network with DHCP server': 'creating-virtual-networks/single-network-dhcp.md'
   - 'Two networks': 'creating-virtual-networks/two-networks.md'
   - 'Two network with router': 'creating-virtual-networks/two-networks-router.md'
-- Configuration files: 'configuration-files.md'
+- Configuration files:
+  - 'common.conf': 'configuration-files/common.md'
+  - 'vnmgr.conf': 'configuration-files/vnmgr.md'
+  - 'webapi.conf': 'configuration-files/webapi.md'
+  - 'vna.conf': 'configuration-files/vna.md'
+  - 'vnctl.conf': 'configuration-files/vnctl.md'
 - Vnctl:
   - 'interfaces': 'vnctl/interfaces.md'
   - 'networks'  : 'vnctl/networks.md'
