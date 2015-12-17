@@ -1,6 +1,8 @@
-# Common.conf
+# common.conf
 
-This file contains common configuration that is used `vnmgr`, `webapi` and `vna`. Like all configuration files it's located in `/etc/openvnet`
+This file contains common configuration that is used `vnmgr`, `webapi` and `vna`.
+
+You'll find it at `/etc/openvnet/vnmgr.conf`.
 
 It contains two sections.
 
