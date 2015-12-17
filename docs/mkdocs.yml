@@ -24,6 +24,7 @@ pages:
 - Vnctl:
   - 'interfaces': 'vnctl-interfaces.md'
   - 'networks'  : 'vnctl-networks.md'
-- Support:
-  - 'Community': 'community.md'
-
+- Debugging:
+  - 'vnflows-monitor': 'debugging/vnflows-monitor.md'
+  - 'troubleshooting': 'debugging/troubleshooting.md'
+- 'Community': 'community.md'
