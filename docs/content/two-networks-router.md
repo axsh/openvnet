@@ -6,7 +6,7 @@ This document builds on the last guides. If you haven't already, make sure to co
 
 Now that we have two virtual networks with an interface in each, it makes sense to add a router to them so that both interfaces can reach each other. That's exactly what we'll do in this guide, resulting in the following topology.
 
-![](img/two-networks-router.png)
+![Two networks with router](img/two-networks-router.png)
 
 ## Setup
 
