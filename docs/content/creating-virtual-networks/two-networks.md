@@ -78,7 +78,7 @@ You're done. Move on to the [test section](#test).
 
 #### The clean but slightly harder way
 
-We've now created several network interfaces in OpenVNet using the `vnctl interfaces add` command. Actually every time we call that command, OpenVNet has created several entries in its database  to keep track of MAC address, IP address, network assignment etc. The field we need to change here is `ip lease`.
+We've now created several network interfaces in OpenVNet using the [vnctl interfaces add](../vnctl/interfaces) command. Actually every time we call that command, OpenVNet creates several fields in the database  to keep track of MAC address, IP address, network assignment etc. The field we need to change here is `ip lease`.
 
 First have a look at `inst2`'s interface.
 
