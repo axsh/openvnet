@@ -18,11 +18,17 @@ registry {
 }
 ```
 
-* adapter : The name of key-value store. Defalut value is 'redis'.
+* adapter
 
-* host : IP address of the key-value store.
+The name of key-value store. Defalut value is 'redis'.
 
-* port : TCP port that the key-value process is listening on.
+* host
+
+IP address of the key-value store.
+
+* port
+
+TCP port that the key-value process is listening on.
 
 ## DB
 
@@ -40,15 +46,27 @@ db {
 ```
 
 
-* adapter : The adapter name for the database. OpenVNet only support `mysql` at this time.
+* adapter
 
-* host : IP address of the db server.
+The adapter name for the database. OpenVNet only support `mysql` at this time.
 
-* database : The name of the database.
+* host
 
-* port : Listen port of the db server.
+IP address of the db server.
 
-* user : User name of the db server.
+* database
 
-* password : Password of the db server.
+The name of the database.
+
+* port
+
+Listen port of the db server.
+
+* user
+
+User name of the db server.
+
+* password
+
+Password of the db server.
 
