@@ -1,0 +1,52 @@
+# Common.conf
+
+This file contains common configuration that is used `vnmgr`, `webapi` and `vna`. Like all configuration files it's located in `/etc/openvnet`
+
+It contains two sections.
+
+## Registry
+
+This is the key-value storage that the [DCell framework](https://github.com/celluloid/dcell) requires. OpenVNet's services use DCell to communicate with each other.
+
+```ruby
+registry {
+  adapter "redis"
+  host "127.0.0.1"
+  port 6379
+}
+```
+
+* adapter : The name of key-value store. Defalut value is 'redis'.
+
+* host : IP address of the key-value store.
+
+* port : TCP port that the key-value process is listening on.
+
+## DB
+
+This holds all the information OpenVNet needs to connect to its [MySQL](https://www.mysql.com) database.
+
+```ruby
+db {
+  adapter "mysql2"
+  host "localhost"
+  database "vnet"
+  port 3306
+  user "root"
+  password ""
+}
+```
+
+
+* adapter : The adapter name for the database. OpenVNet only support `mysql` at this time.
+
+* host : IP address of the db server.
+
+* database : The name of the database.
+
+* port : Listen port of the db server.
+
+* user : User name of the db server.
+
+* password : Password of the db server.
+
