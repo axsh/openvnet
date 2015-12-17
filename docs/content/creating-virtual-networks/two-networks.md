@@ -45,7 +45,7 @@ vnctl network-services add \
 
 There are two ways to do this.
 
-* The quick and dirty way. Remove its interface and re-create it.
+* The quick and dirty way. Remove the interface and re-create it.
 
 * The clean but slightly harder way. Dig a little deeper into OpenVNet's inner workings make only the required changes.
 
