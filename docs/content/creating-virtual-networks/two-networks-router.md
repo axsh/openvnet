@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document builds on the last guides. If you haven't already, make sure to complete the previous guides first: [Installation guide](installation), [Single Network](single-network), [Single Network with DHCP server](single-network-dhcp) and [Two Networks](two-networks).
+This document builds on the last guides. If you haven't already, make sure to complete the previous guides first: [Installation guide](../installation), [Single Network](single-network), [Single Network with DHCP server](single-network-dhcp) and [Two Networks](two-networks).
 
 Now that we have two virtual networks with an interface in each, it makes sense to add a router to them so that both interfaces can reach each other. That's exactly what we'll do in this guide, resulting in the following topology.
 
@@ -12,7 +12,7 @@ Now that we have two virtual networks with an interface in each, it makes sense 
 
 ### Create the simulated interfaces
 
-Just like OpenVNet's DHCP service, routers are simulated entirely Open vSwitch's flows. Therefore we are again going to create simulated interfaces. The only difference from DHCP is that this time we are going to set the `enable_routing` flag.
+Just like OpenVNet's DHCP service, routers are simulated entirely in Open vSwitch's [flows](../jargon-dictionary#flow). Therefore we are again going to create simulated interfaces. The only difference from DHCP is that this time we are going to set the `enable_routing` flag.
 
 First we'll add a simulated interface to the network `nw-test1` (the one `inst1` is in) with IP address `10.100.0.1`.
 
@@ -48,7 +48,7 @@ vnctl route_links add --uuid rl-1 --mac-address 02:00:10:00:00:01
 
 Now we are add the actual routes.
 
-These commands bring everything together. They well OpenVNet to use the `route_link` and the simulated interfaces we just created to set up a router that can connect the networks `nw-test1` and `nw-test2`.
+These commands bring everything together. They tell OpenVNet to use the `route_link` and the simulated interfaces we just created to set up a router that can connect the networks `nw-test1` and `nw-test2`.
 
 ```bash
 vnctl routes add \
@@ -113,10 +113,14 @@ That's OpenVNet's simulated interfaces in action. To the LXC guests, it looks li
 
 You're done. You have completed all examples contained in this OpenVNet tutorial. There's a couple of things you can from here.
 
-* Have a look at the actual flows in Open vSwitch using the [vnflows-monitor](vnflows-monitor) debug tool.
+* Have a look at the actual flows in Open vSwitch using the [vnflows-monitor](../debugging/vnflows-monitor) debug tool.
 
-* Check out the [integration test](integration-test) for an example of more complicated OpenVNet environments.
+* Check out the [integration test](../debugging/integration-test) for an example of more complicated OpenVNet environments.
 
-* Use what you have learned to set up your own virtual network environments. Have fun.
+* Maybe try adding some more LXC guests and setting up your own virtual network environments.
 
+* How about trying to create an environment with multiple hosts, each with their own Open vSwitch and VNA. This will require some more setup and is currently not yet covered in this documentation. It will require you to carefully study the examples in the [integration test](../debugging/integration-test).
 
+Thank you for taking the time to check out OpenVNet. Good luck, have fun and be creative.
+
+If you need any further help, don't hesitate to contact us on the [Wakame Users Group](https://groups.google.com/forum/#!forum/wakame-ug). We're very busy and might not get back to you immediately but we'll do our very best to help you out.

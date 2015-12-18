@@ -34,11 +34,15 @@ A single rule inside Open vSwitch. When packets traverse trough Open vSwitch, th
 
 ## OpenFlow
 
-An open protocol that allows a controller to tell network devices like switches and routers to update their flow tables. [http://openflow.org]
+An open protocol that allows a controller to tell network devices like switches and routers to update their flow tables.
+
+[http://openflow.org](http://openflow.org)
 
 ## Open vSwitch
 
-A virtual switch capable of using [OpenFlow](#openflow). [http://openvswitch.org]
+A virtual switch capable of using [OpenFlow](#openflow).
+
+[http://openvswitch.org](http://openvswitch.org)
 
 # P
 

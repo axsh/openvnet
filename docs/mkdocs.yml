@@ -32,6 +32,7 @@ pages:
   - 'networks'  : 'vnctl/networks.md'
 - Debugging:
   - 'vnflows-monitor': 'debugging/vnflows-monitor.md'
-  - 'troubleshooting': 'debugging/troubleshooting.md'
+  - 'Troubleshooting': 'debugging/troubleshooting.md'
+  - 'Integration test': 'debugging/integration-test.md'
 - Community: 'community.md'
 - Jargon Dictionary: 'jargon-dictionary.md'
