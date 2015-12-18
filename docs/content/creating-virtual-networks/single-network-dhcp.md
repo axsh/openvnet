@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document expects you to have set up OpenVNet according to the [installation guide](installation) and created the simple [single network](single-network) afterwards. We will be continuing from there so complete those steps first.
+This document expects you to have set up OpenVNet according to the [installation guide](../installation) and created the simple [single network](single-network) afterwards. We will be continuing from there so complete those guides first.
 
 All we are going to do in this guide is add a DHCP server. This will give us the following virtual network topology.
 
@@ -12,7 +12,7 @@ All we are going to do in this guide is add a DHCP server. This will give us the
 
 ### Create a simulated interface
 
-OpenVNet will simulate DHCP entirely in OpenFlow. Everything will be handled using flows in Open vSwitch. However, the machines attached to OpenVNet's virtual networks will still expect a DHCP server to exist with a certain IP address. Therefore we need to tell OpenVNet to create a simulated interface that will give off the illusion of a real DHCP server.
+OpenVNet will simulate DHCP entirely using [flows](../jargon-dictionary#flow) in Open vSwitch. However, the machines attached to OpenVNet's virtual networks will still expect a DHCP server to exist with a certain IP address. Therefore we need to tell OpenVNet to create a simulated interface that will give off the illusion of a real DHCP server.
 
 ```
 vnctl interfaces add \
@@ -26,7 +26,7 @@ vnctl interfaces add \
 
 ### Create the DHCP service
 
-Now that we have a simulated interface in place, all we have to do is tell OpenVNet to simulate a DHCP service on it.
+Now that we have a simulated interface in place, next we need to tell OpenVNet to simulate a DHCP service on it.
 
 ```
 vnctl network-services add --uuid ns-dhcp --interface-uuid if-dhcp --type dhcp
@@ -50,7 +50,7 @@ D, [2015-12-16T17:17:38.763137 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa interface/s
 D, [2015-12-16T17:17:44.662743 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa service_manager: installing ns-dhcp/1 (mode:dhcp)
 ```
 
-Looking good so far. VNA seems to have created the simulated interface and added the dhcp service to it.
+Looking good so far. VNA seems to have created the simulated interface and added the DHCP service to it.
 
 Log into `inst1` and have it do a DHCP request.
 
