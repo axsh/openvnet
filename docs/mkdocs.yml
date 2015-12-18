@@ -22,8 +22,8 @@ pages:
   - 'Two network with router': 'creating-virtual-networks/two-networks-router.md'
 - Debugging:
   - 'vnflows-monitor': 'debugging/vnflows-monitor.md'
-  - 'Troubleshooting': 'debugging/troubleshooting.md'
   - 'Integration test': 'debugging/integration-test.md'
+  - 'Troubleshooting': 'debugging/troubleshooting.md'
 - Configuration files:
   - 'common.conf': 'configuration-files/common.md'
   - 'vnmgr.conf': 'configuration-files/vnmgr.md'
