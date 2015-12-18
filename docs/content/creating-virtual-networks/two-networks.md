@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document expects you to have set up OpenVNet according to the [installation guide](installation), created the simple [single network](single-network) and set up [its DHCP server](single-network-dhcp). We will be continuing from there so complete those steps first.
+This document expects you to have set up OpenVNet according to the [installation guide](../installation), created the simple [single network](single-network) and set up [its DHCP server](single-network-dhcp). We will be continuing from there so complete those guides first.
 
 In this guide we will set up a second virtual network and move `inst2` to it. We'll also set up a new DHCP server for that network. That will give us the following topology.
 
@@ -10,7 +10,7 @@ In this guide we will set up a second virtual network and move `inst2` to it. We
 
 ## Setup
 
-The first two steps we have done before. Create a new network and setup its simulated DHCP service.
+The first two steps are similar to what we have done before. Create a new network and setup its simulated DHCP service.
 
 ### Create the new network
 
@@ -126,7 +126,7 @@ lxc-console -n inst2
 service network restart
 ```
 
-If everything went well, `inst2` should now have received IP address `192.168.50.10`. Now try pining `inst1`.
+If everything went well, `inst2` should now have received IP address `192.168.50.10`. Now try pinging `inst1`.
 
 ```bash
 ping 10.100.0.10
