@@ -46,6 +46,10 @@ A virtual switch capable of using [OpenFlow](#openflow).
 
 # P
 
+## Physical network
+
+"Regular" networks that are not managed by OpenVNet. OpenVNet itself uses physical networks for its processes to communicate.
+
 # Q
 
 # R
@@ -54,9 +58,21 @@ A virtual switch capable of using [OpenFlow](#openflow).
 
 # T
 
+## Traditional network
+
+See [physical network](#physical-network).
+
 # U
 
 # V
+
+## VNet Edge
+
+A part of OpenVNet that allows traditional networks to be connected to OpenVNet's virtual networks on Layer 2 of the [OSI model](https://en.wikipedia.org/wiki/OSI_model).
+
+## Virtual network
+
+A software defined network managed by OpenVNet. These are defined using [flows](#flow) in [Open vSwitch](#open-vswitch).
 
 # W
 
