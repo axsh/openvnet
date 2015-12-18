@@ -61,7 +61,9 @@ yum install -y openvnet
 
 `openvnet` is an metapackage that depends on `openvnet-common`, `openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi` and `openvnet-vnctl`. It's just a convenient way to install all of those at once.
 
-Install [Redis](http://redis.io) and [MySQL server](https://www.mysql.com). Redis is required for OpenVNet's processes to communicate and MySQL for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
+Install [Redis](http://redis.io) and [MySQL server](https://www.mysql.com). Redis is required for OpenVNet's processes to communicate and MySQL is used to store the network state.
+
+Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
 
 ```bash
 yum install -y mysql-server redis
@@ -101,15 +103,13 @@ ifup br0
 
 ### Setup Database
 
-Edit `/etc/openvnet/common.conf` if necessary. The sample environment uses the default settings.
-
-Launch MySQL server.
+Launch the MySQL server.
 
 ```bash
 service mysqld start
 ```
 
-Set `PATH` environment variable as following since the OpenVNet uses its own ruby binary. This is needed so we can use the bundle command in the next step.
+OpenVNet uses its own ruby binary. We need to add it to the `PATH` variable so we can call bundle in the next step.
 
 ```bash
 PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
@@ -125,13 +125,15 @@ bundle exec rake db:init
 
 ### Start redis
 
-As mentioned above, OpenVNet services use redis to communicate with each other.
+As mentioned above, OpenVNet services require redis to communicate with each other. Start it.
 
 ```bash
 service redis start
 ```
 
 ### Start OpenVNet services
+
+Starting the OpenVNet services will create log files in the `/var/log/openvnet` directory. If anything goes wrong, you might find useful error messages in them.
 
 Start vnmgr and webapi.
 
@@ -142,19 +144,11 @@ initctl start vnet-webapi
 
 We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is a Web API client offered by the `openvnet-vnctl` package.
 
-Remember the `datapath-id` we set when setting up Open vSwitch? Now we're going tell OpenVNet to manage this datapath using vna.
+Remember the `datapath-id` we set when setting up Open vSwitch? The following command will tell OpenVNet that VNA needs to manage this datapath.
 
 ```bash
 vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
 ```
-
-* dpid
-
-The datapath ID specified in `/etc/sysconfig/network-scripts/ifcfg-br0`
-
-* node-id
-
-The ID of the vna written in `/etc/openvnet/vna.conf`. In a production environment, it's very likely for OpenVNet to span multiple hosts, each with their own Open vSwitch and vna combo. Therefore we need to tell OpenVNet which vna will manage which datapath. For this simple installation we have only one vna so we use the default `node-id` without editing `vna.conf`.
 
 Now let's start vna.
 
@@ -162,9 +156,9 @@ Now let's start vna.
 initctl start vnet-vna
 ```
 
-The log files are created in the /var/log/openvnet directory. Refer to them if something bad happens. You can run `ovs-vsctl show` to check if vna is working correctly.
+You can run `ovs-vsctl show` to check if vna is working correctly.
 
-You should be able to see `is_connected: true` in its output. If it doesn't appear right away, wait a few seconds and then try again. If it still doesn't appear, something went wrong.
+You should be able to see `is_connected: true` in its output. If it doesn't appear right away, wait a few seconds and then try again. If it still doesn't appear, something went wrong and you should have a look at `/var/log/openvnet/vna.log` for errors.
 
 ```bash
 fbe23184-7f14-46cb-857b-3abf6153a6d6
@@ -175,7 +169,7 @@ fbe23184-7f14-46cb-857b-3abf6153a6d6
 
 ## LXC Setup
 
-We now have OpenVNet set up and working but we don't have any virtual machines connected to it yet. In this step we are going to use [LXC](https://linuxcontainers.org) to create the two virtual machines `inst1` and `inst2` that will be connected to OpenVNet's virtual networks.
+We now have OpenVNet set up and working but we don't have any virtual machines connected to it yet. In this step we are going to use [LXC](https://linuxcontainers.org) to create the two containers (guests) `inst1` and `inst2` that will be connected to OpenVNet's virtual networks.
 
 Any virtualization techonology will work but in this guide we're using LXC because it's lightweight and can easily be set up inside virtual machines as well.
 
@@ -210,7 +204,7 @@ These commands' output will tell you were to find or set the root password for `
 
 ### Apply Network interface settings
 
-Open the file `/var/lib/lxc/inst1/config` and replace it with the following.
+Open the file `/var/lib/lxc/inst1/config` and replace its contents with the following.
 
 ```bash
 lxc.network.type = veth
@@ -224,7 +218,7 @@ lxc.utsname = inst1
 lxc.autodev = 0
 ```
 
-Open the file `/var/lib/lxc/inst2/config` and replace it with the following.
+Open the file `/var/lib/lxc/inst2/config` and replace its contents with the following.
 
 
 ```bash
@@ -257,4 +251,4 @@ ovs-vsctl add-port br0 inst2
 
 Now the LXC's network interfaces are attached to the Open vSwitch. This is basically the same as plugging a network cable into a physical switch.
 
-Congratulations. You have now installed OpenVNet and you're ready to start building your first virtual network. We recommend you start with the simplest possible setting: [Single Network](single-network).
+Congratulations. You have now installed OpenVNet and you're ready to start building your first virtual network. We recommend you start with the simplest possible setting: [Single Network](creating-virtual-networks/single-network).

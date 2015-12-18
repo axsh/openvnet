@@ -27,6 +27,7 @@ pages:
   - 'vna.conf': 'configuration-files/vna.md'
   - 'vnctl.conf': 'configuration-files/vnctl.md'
 - Vnctl:
+  - 'datapaths' : 'vnctl/datapaths.md'
   - 'interfaces': 'vnctl/interfaces.md'
   - 'networks'  : 'vnctl/networks.md'
 - Debugging:
