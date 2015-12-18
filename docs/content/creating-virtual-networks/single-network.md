@@ -2,9 +2,9 @@
 
 ## Overview
 
-This is the simplest possible setup after completing the installation guide. It's a great start for when you're just getting into OpenVNet.
+This is the simplest possible setup after completing the [installation guide](../installation). It's a great start for when you're just getting into OpenVNet.
 
-This document expects you to have set up OpenVNet according to the [installation guide](installation). We will be referring to the VMs `inst1` and `inst2` as they've been set up in there.
+This document expects you to have set up OpenVNet according to the installation guide. We will be referring to the VMs `inst1` and `inst2` as they've been set up in there.
 
 We are going to use them to create the following virtual network topology.
 
@@ -12,8 +12,8 @@ We are going to use them to create the following virtual network topology.
 
 We will just have one simple network: `10.100.0.0/24`.
 
-* Inst1's IP address: `10.100.0.10`
-* Inst2's IP address: `10.100.0.11`
+* `Inst1`'s IP address: `10.100.0.10`
+* `Inst2`'s IP address: `10.100.0.11`
 
 ## Setup
 
@@ -52,7 +52,7 @@ vnctl interfaces add \
   --port-name inst2
 ```
 
-For more information about the interfaces commands, visit [their section](vnctl-interfaces.md) in the Vnctl documentation.
+For more information about the interfaces commands, visit [their section](../vnctl/interfaces) in the Vnctl documentation.
 
 ## Test
 
