@@ -14,6 +14,7 @@ google_analytics: ['UA-63388719-2', 'auto']
 pages:
 - Home: 'index.md'
 - Concept: 'concept.md'
+- Features: 'features.md'
 - Installation : 'installation.md'
 - Creating virtual networks:
   - 'Single network': 'creating-virtual-networks/single-network.md'
