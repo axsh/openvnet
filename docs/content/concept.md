@@ -22,6 +22,8 @@ This is a server running Linux that will start virtual machines which will then 
 
 While most OpenVNet environments will consist of only virtual machines, it is possible to place bare metal servers in virtual networks. Their network cards can be added to Open vSwitch in the same way virtual machines are.
 
+Below we will explain OpenVNet's different components one by one.
+
 ### Open vSwitch
 
 [Open vSwitch](http://openvswitch.org) is a Linux kernel module that acts as a network switch for virtual machines. Because this switch has implemented OpenFlow, OpenVNet is able to change its *flow tables* on the fly. These flow tables are essentially a set of rules that decide what needs to happen as network traffic is processed. It is through manipulating these that software defined networking can be implemented.
@@ -40,7 +42,7 @@ The database stores a representation of the current network topology. Vnmgr is r
 
 ### Web API
 
-This is the endpoint through which users can talk to OpenVNet. Through HTTP requests to this API, the virtual network topology can be changed.
+This is the endpoint through which users can talk to OpenVNet. By sending HTTP requests to this API, the virtual network topology can be changed.
 
 ### Vnctl
 
@@ -56,5 +58,5 @@ As the name might imply, this is the edge of VNet's virtual network topology. VN
 
 ### Physical Network
 
-This is the network that provides connectivity between hypervisor hosts and the servers running Vnmgr, Web API and the database. It doesn't matter what hardware this is run on. As long as all hosts can reach each other through IP, OpenVNet will work.
+This is the network that provides connectivity between hypervisor hosts and the servers running Vnmgr, Web API and the database. It doesn't matter what hardware this is run on. As long as all hosts have TCP/IP access to each other, OpenVNet will work.
 
