@@ -2,7 +2,7 @@
 
 # What is OpenVNet?
 
-OpenVNet is what you would call a network hypervisor. A network hypervisor provides a layer of abstraction on top of existing network hardware. Network engineers become able to create any network topology that they have in mind, without taking the existing hardware into account.
+OpenVNet is what you would call a network hypervisor or [software-defined networking](https://en.wikipedia.org/wiki/Software-defined_networking). It is basically is to networking what virtual machines are to servers. Network engineers become able to create any network topology that they have in mind, without changing the hardware that's in place. Visit the [OpenVNet concept](concept) page to learn more.
 
 OpenVNet is free open source software. The source is [freely available on Github](https://github.com/axsh/openvnet). Everybody is welcome to contribute to development and the software can be freely distributed. (Within the rules of the LGPL license)
 
