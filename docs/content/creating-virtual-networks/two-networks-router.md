@@ -40,7 +40,7 @@ vnctl interfaces add \
 
 Now we have two new simulated interfaces that are capable of routing but we have not yet told OpenVNet that they should be able to route to each other. For that first we'll create a `route_link`
 
-You can thing of a `route_link` as a central hub that routed traffic passes through.
+You can thing of a `route_link` as a central point that routed traffic passes through.
 
 ```bash
 vnctl route_links add --uuid rl-1 --mac-address 02:00:10:00:00:01
