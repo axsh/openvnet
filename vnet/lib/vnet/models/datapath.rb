@@ -15,6 +15,8 @@ module Vnet::Models
 
     one_to_many :interface_ports
     one_to_many :active_interfaces
+    one_to_many :active_networks
+    one_to_many :active_ports
 
     one_to_many :tunnels, :key => :src_datapath_id
     one_to_many :src_tunnels, :class => Tunnel, :key => :src_datapath_id
@@ -27,7 +29,10 @@ module Vnet::Models
     datapath_route_links: :destroy,
     interface_ports: :destroy,
     src_tunnels: :destroy,
-    dst_tunnels: :destroy
+    dst_tunnels: :destroy,
+    # 0004_active_items
+    active_networks: :destroy,
+    active_ports: :destroy
 
     def dpid_s
       "0x%016x" % dpid

@@ -3,6 +3,14 @@
 All notable changes to OpenVNet will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+* `Added` A new simple firewall feature alongside the existing security groups. Security groups will eventually be ported to use this.
+
+* `Changed` Added a default value of `false` to all `is_deleted` flags in the database. Now OpenVNet can be used with MySQL's STRICT mode.
+
+* `Fixed` An issue where vna could retrieve network resources from vnmgr while their related resources were not fully loaded yet.
+
 ## [0.8] - 2015-09-04
 
 * `Added` Warning messages in the log when managers receive events with invalid parameters.
@@ -18,6 +26,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * `Changed` The command line arguments to the `vnflows-monitor` debug tool now use a more common format.
 
 * `Changed` Moved `vnctl` to the client directory.
+
+* `Fixed` An issue where VNet Edge related flows were not always created correctly. Edge is now no longer considered experimental.
 
 * `Fixed` An issue where Celluloid would some times assume that the main Trema thread was actually a Celluloid thread.
 

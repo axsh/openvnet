@@ -421,7 +421,8 @@ Sequel.migration do
   end
 
   down do
-    drop_table(:datapaths,
+    drop_table(:active_interfaces,
+               :datapaths,
                :datapath_networks,
                :datapath_route_links,
                :interfaces,
@@ -439,7 +440,7 @@ Sequel.migration do
                :route_links,
                :security_groups,
                :security_group_interfaces,
-               :translation,
+               :translations,
                :translation_static_addresses,
                :tunnels,
                :vlan_translations,

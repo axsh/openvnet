@@ -14,6 +14,7 @@ module Vnet::NodeApi
         filter = { network_id: model.id }
 
         # 0001_origin
+        ActiveNetwork.dispatch_deleted_where(filter, model.deleted_at)
         # IpAddresses.dispatch_deleted_where(filter, model.deleted_at) # Needed? We're deleting the network.
         DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
         Route.dispatch_deleted_where(filter, model.deleted_at)

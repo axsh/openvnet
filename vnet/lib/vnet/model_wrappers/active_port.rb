@@ -2,7 +2,7 @@
 
 module Vnet::ModelWrappers
 
-  class ActiveInterface < Base
+  class ActivePort < Base
   end
 
 end

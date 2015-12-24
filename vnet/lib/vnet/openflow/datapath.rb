@@ -96,17 +96,11 @@ module Vnet::Openflow
       host_datapath = nil
       counter = 0
 
-      # Pre-load host datapath if it exists, else wait for a created
-      # event.
-      #
-      # TODO: Should be done automatically when the manager is initialize.
-      @dp_info.host_datapath_manager.async.retrieve(dpid: @dpid)
-
       while host_datapath.nil?
         info log_format('querying database for datapath with matching dpid', "seconds:#{counter * 30}")
 
         # TODO: Check for node id.
-        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
+        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30, true)
         counter += 1
       end
 
@@ -180,12 +174,14 @@ module Vnet::Openflow
       }
     end
 
-    # TODO: Add a way to block events from being processed by managers
-    # until everything has been initialized.
     def initialize_managers
       @dp_info.managers.each { |manager|
         manager.set_datapath_info(@datapath_info)
       }
+
+      # TODO: Add a default do_initialize method to manager and
+      # parallelize them.
+      @dp_info.active_port_manager.do_initialize
 
       # Until we have datapath_info loaded none of the ports can be
       # initialized.

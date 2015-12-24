@@ -169,6 +169,11 @@ describe VNetAPIClient do
                      'POST  /lease_policies/:uuid/ip_leases'
   end
 
+  describe VNetAPIClient::MacRangeGroup do
+    include_examples 'test_method', :add_range,
+                     'POST  /mac_range_groups/:mac_range_group_uuid/mac_ranges'
+  end
+
   describe VNetAPIClient::Translation do
     include_examples 'test_method', :add_static_address,
                      'POST  /translations/:uuid/static_address'
@@ -176,12 +181,22 @@ describe VNetAPIClient do
                      'DELETE  /translations/:uuid/static_address'
   end
 
+  describe VNetAPIClient::Filter do
+    include_examples 'test_method', :add_filter_static,
+                     'POST  /filters/:uuid/static'
+    include_examples 'test_method', :remove_filter_static,
+                     'DELETE  /filters/:uuid/static'
+    include_examples 'test_method', :show_filter_static,
+                     'GET  /filters/static/'
+    include_examples 'test_method', :show_filter_static_by_uuid,
+                     'GET  /filters/static/:uuid'
+  end
   #
   # Finally we make sure that no non standard routes are left untested
   #
   it "has implemented and tested all routes in the OpenVNet WebAPI" do
     if ! non_standard_routes.empty?
-      raise "The following routes where not tested and might not be implemented:\n%s" %
+      raise "The following routes were not tested and might not be implemented:\n%s" %
         non_standard_routes.join("\n")
     end
   end

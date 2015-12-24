@@ -26,6 +26,8 @@ module Vnet::Core
 
     MANAGER_NAMES = %w(
       active_interface
+      active_network
+      active_port
       connection
       datapath
       interface
@@ -33,6 +35,7 @@ module Vnet::Core
       network
       route
       router
+      filter2
       filter
       service
       tunnel
@@ -117,6 +120,9 @@ module Vnet::Core
         :out_port => Vnet::Openflow::Controller::OFPP_ANY,
         :out_group => Vnet::Openflow::Controller::OFPG_ANY,
       }.merge(params)
+
+      match = options[:match]
+      options[:match] = Trema::Match.new(match) if match
 
       @controller.pass_task {
         @controller.public_send_flow_mod(@dpid, options)

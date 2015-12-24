@@ -73,12 +73,12 @@ module Vnet::Core::Translations
     end
 
     def removed_static_address(static_address_id)
+      debug log_format("removing static address #{static_address_id} from #{@uuid}/#{@id}")
+
       translation = @static_addresses.delete(static_address_id)
 
       return if @installed == false
       return unless valid_translation?(translation)
-
-      # TODO: Fix del flow for route link translation...
 
       match_actions_for_ingress(translation).each { |match, actions|
         @dp_info.del_flows(table_id: TABLE_ROUTE_INGRESS_TRANSLATION,
@@ -87,7 +87,7 @@ module Vnet::Core::Translations
                            match: match)
       }
       match_actions_for_egress(translation).each { |match, actions|
-        @dp_info.del_flows(table_id: TABLE_ROUTE_EGRESS_TRANSLATION,
+        @dp_info.del_flows(table_id: egress_table_id(translation),
                            cookie: self.cookie,
                            cookie_mask: self.cookie_mask,
                            match: match)
@@ -192,10 +192,12 @@ module Vnet::Core::Translations
       }
     end
 
-
     def flows_for_egress_translation(flows, translation)
       match_actions_for_egress(translation).each { |match, actions|
         flow_options = {
+          table: egress_table_id(translation),
+          goto_table: TABLE_ROUTE_EGRESS_INTERFACE,
+
           priority: 50,
           match: match,
           actions: actions
@@ -203,21 +205,21 @@ module Vnet::Core::Translations
 
         # TODO: Move outside of block...
         if translation[:route_link_id]
-          flow_options[:table] = TABLE_ROUTE_EGRESS_LOOKUP
-          flow_options[:goto_table] = TABLE_ROUTE_EGRESS_INTERFACE
           flow_options[:match_value_pair_first] = @interface_id
           flow_options[:match_value_pair_second] = translation[:route_link_id]
           flow_options[:clear_all] = true
           flow_options[:write_reflection] = true
           flow_options[:write_interface] = @interface_id
         else
-          flow_options[:table] = TABLE_ROUTE_EGRESS_TRANSLATION
-          flow_options[:goto_table] = TABLE_ROUTE_EGRESS_INTERFACE
           flow_options[:match_interface] = @interface_id
         end
 
         flows << flow_create(flow_options)
       }
+    end
+
+    def egress_table_id(translation)
+      translation[:route_link_id] ? TABLE_ROUTE_EGRESS_LOOKUP : TABLE_ROUTE_EGRESS_TRANSLATION
     end
 
   end

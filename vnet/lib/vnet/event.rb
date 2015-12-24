@@ -35,6 +35,27 @@ module Vnet
     ACTIVE_INTERFACE_UPDATED = "active_interface_updated"
 
     #
+    # Active Network events:
+    #
+
+    ACTIVE_NETWORK_INITIALIZED = "active_network_initialized"
+    ACTIVE_NETWORK_UNLOAD_ITEM = "active_network_unload_item"
+    ACTIVE_NETWORK_CREATED_ITEM = "active_network_created_item"
+    ACTIVE_NETWORK_DELETED_ITEM = "active_network_deleted_item"
+
+    #
+    # Active Port events:
+    #
+
+    ACTIVE_PORT_INITIALIZED = "active_port_initialized"
+    ACTIVE_PORT_UNLOAD_ITEM = "active_port_unload_item"
+    ACTIVE_PORT_CREATED_ITEM = "active_port_created_item"
+    ACTIVE_PORT_DELETED_ITEM = "active_port_deleted_item"
+
+    ACTIVE_PORT_ACTIVATE = "active_port_activate"
+    ACTIVE_PORT_DEACTIVATE = "active_port_deactivate"
+
+    #
     # Datapath events:
     #
     DATAPATH_INITIALIZED = 'datapath_initialized'
@@ -71,8 +92,11 @@ module Vnet
     INTERFACE_DELETED_ITEM = "interface_deleted_item"
 
     INTERFACE_UPDATED = "interface_updated"
+
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
+    INTERFACE_ENABLED_FILTERING2 = "interface_enabled_filtering2"
+    INTERFACE_DISABLED_FILTERING2 = "interface_disabled_filtering2"
 
     # MAC and IPv4 addresses:
     INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
@@ -93,6 +117,21 @@ module Vnet
 
     INTERFACE_PORT_ACTIVATE = "interface_port_activate"
     INTERFACE_PORT_DEACTIVATE = "interface_port_deactivate"
+
+    #
+    # Filter evvents:
+    #
+
+    FILTER_INITIALIZED = "filter_initialized"
+    FILTER_UNLOAD_ITEM = "filter_unload_item"
+    FILTER_CREATED_ITEM = "filter_created_item"
+    FILTER_DELETED_ITEM = "filter_deleted_item"
+    FILTER_UPDATED = "filter_updated"
+
+    FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
+    FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"
+    FILTER_ADDED_STATIC = "filter_added_static"
+    FILTER_REMOVED_STATIC = "filter_removed_static"
 
     #
     # Network event:

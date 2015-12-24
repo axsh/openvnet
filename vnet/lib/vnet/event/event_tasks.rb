@@ -17,28 +17,56 @@ module Vnet::Event
       end
     end
 
-    # The block should not contain any calls that yield.
-    def create_event_task(task_name, max_wait, &block)
+    def has_event_task_id?(task_name, task_id)
+      tasks = @event_tasks[task_name] || return
+      tasks.any? { |task, state|
+        state[:status] == :valid && state[:id] == task_id
+      }
+    end
+
+    # The block and task_init should not contain any calls that yield,
+    # this includes async.
+    #
+    # If task_init returns a non-nil value, it means that during the
+    # init proc call the event condition was satisfied.
+    def create_event_task(task_name, max_wait, task_id = nil, task_init = nil, &block)
       current_task = Celluloid::Task.current
 
+      state = {
+        status: :init,
+        id: task_id
+      }
+
       tasks = (@event_tasks[task_name] ||= {})
-      tasks[current_task] = state = { status: :valid }
+      tasks[current_task] = state
+
+      # The task_init call should always return the same object as we
+      # would receive from the block call, or nil if we should just
+      # wait.
+      result = task_init && task_init.call
+      return result if result
+
+      # We make sure that if the state was made invalid during task
+      # init we return nil.
+      return if state[:status] != :init
+      state[:status] = :valid
 
       current_timer = max_wait && after(max_wait) {
+        next if state[:status] == :invalid
         state[:status] = :invalid
         current_task.resume
       }
 
-      while true
+      while state[:status] == :valid
         # Suspend returns the value passed to resume by the other
         # task. We do not allow nil to be passed.
         passed_value = Celluloid::Task.suspend(:event_task)
 
-        break if state[:status] == :invalid
         next if passed_value.nil?
+        next if state[:status] != :valid
 
         result = block.call(passed_value)
-        break result if result
+        return result if result
       end
 
     ensure
@@ -54,6 +82,21 @@ module Vnet::Event
 
         task.resume(pass_value)
       }
+      
+      return
+    end
+
+    def fail_event_tasks(task_name, task_id)
+      return if task_id.nil?
+
+      (@event_tasks[task_name] || return).select { |task, state|
+        next unless state[:id] == task_id
+        state[:status] = :invalid
+      }.each { |task, state|
+        task.resume(nil)
+      }
+      
+      return
     end
 
   end

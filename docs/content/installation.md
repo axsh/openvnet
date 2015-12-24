@@ -144,11 +144,31 @@ initctl start vnet-webapi
 
 We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is a Web API client offered by the `openvnet-vnctl` package.
 
+#### Datapath
+
 Remember the `datapath-id` we set when setting up Open vSwitch? The following command will tell OpenVNet that VNA needs to manage this datapath.
 
 ```bash
 vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
 ```
+
+#### Mac Address Range
+
+In order for the network overlay to work, OpenVNet uses mac addresses independently of any real or virtual interface. To allocate these it requires the creation of a default mac range group.
+
+```bash
+vnctl mac_range_groups add --uuid mrg-dpg
+```
+
+In [common.conf](configuration-files/common), the mac range group is set by default to `mrg-dpg` and can be changed using the `datapath_mac_group` option.
+
+```bash
+vnctl mac_range_groups mac_ranges add mrg-dpg --begin_mac_address 52:56:01:00:00:00 --end_mac_address 52:56:01:ff:ff:ff
+```
+
+- **begin_mac_address** : The lowest possible mac address value in the range.
+
+- **end_mac_address** : The highest possible mac address value in the range.
 
 Now let's start vna.
 
