@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>vna.conf - OpenVNet</title>
+  
+
+  <link rel="shortcut icon" href="../../favicon.png">
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/highlight.css">
+  <link href="../../custom.css" rel="stylesheet">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "vna.conf";
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js"></script>
+  <script src="../../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script src="../../js/theme.js"></script> 
+
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-63388719-2', 'auto');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> OpenVNet</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../..">Home</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../concept/">Concept</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../features/">Features</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../installation/">Installation</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Creating virtual networks</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/single-network/">Single network</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/single-network-dhcp/">Single network with DHCP server</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/two-networks/">Two networks</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/two-networks-router/">Two network with router</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Debugging</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/vnflows-monitor/">vnflows-monitor</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/integration-test/">Integration test</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/troubleshooting/">Troubleshooting</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Configuration files</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../common/">common.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../vnmgr/">vnmgr.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../webapi/">webapi.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">vna.conf</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#vnaconf">vna.conf</a></li>
+                
+                    <li><a class="toctree-l4" href="#node">Node</a></li>
+                
+                    <li><a class="toctree-l4" href="#network">Network</a></li>
+                
+            
+            </ul>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../vnctl/">vnctl.conf</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Vnctl</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/datapaths/">datapaths</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/interfaces/">interfaces</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/networks/">networks</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../community/">Community</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../jargon-dictionary/">Jargon Dictionary</a>
+        
+    </li>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">OpenVNet</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Configuration files &raquo;</li>
+        
+      
+    
+    <li>vna.conf</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="https://github.com/axsh/openvnet" class="icon icon-github"> Edit on GitHub</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="vnaconf">vna.conf</h1>
+<p>This file contains the configuration used by <code>vna</code>.</p>
+<p>You'll find it at <code>/etc/openvnet/vna.conf</code>.</p>
+<p>It contains two sections.</p>
+<h2 id="node">Node</h2>
+<p>This is similar to the node sections found in other config files. It's all the information OpenVNet needs to enable this vna to communicate with all other OpenVNet processes.</p>
+<pre><code class="ruby">node {
+  id &quot;vna&quot;
+  addr {
+    protocol &quot;tcp&quot;
+    host &quot;127.0.0.1&quot;
+    public &quot;&quot;
+    port 9103
+  }
+}
+</code></pre>
+
+<ul>
+<li>id</li>
+</ul>
+<p>The ID of the OpenVNet's process. It should be unique among the entire world of the OpenVNet.</p>
+<ul>
+<li>protocol</li>
+</ul>
+<p>This parameter can be used to specify the 0MQ address. Default value is 'tcp'.</p>
+<ul>
+<li>host</li>
+</ul>
+<p>Private IP address that can be used to specify the 0MQ address.</p>
+<ul>
+<li>public</li>
+</ul>
+<p>Public/Global IP address that is linked to the private IP address specified by the 'host' parameter. A 0MQ socket will be created with the public/global IP address if this paramter is specified. Otherwise 'host' parameter will be used to create a 0MQ socket.</p>
+<ul>
+<li>port</li>
+</ul>
+<p>Listen port of the process.</p>
+<h2 id="network">Network</h2>
+<p>This lets OpenVNet know what physical network this VNA is in. Whe installing OpenVNet on a single machine like we do in the <a href="../../installation">installation guide</a>, this section can be left empty.</p>
+<pre><code class="ruby">network {
+  uuid &quot;&quot;
+  gateway {
+    address &quot;&quot;
+  }
+}
+</code></pre>
+
+<ul>
+<li>uuid</li>
+</ul>
+<p>The uuid of the public/physical network in which the vna participates.</p>
+<ul>
+<li>address</li>
+</ul>
+<p>The gateway address of the network specified by the 'uuid'.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../vnctl/" class="btn btn-neutral float-right" title="vnctl.conf"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../webapi/" class="btn btn-neutral" title="webapi.conf"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../webapi/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../vnctl/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+
+</body>
+</html>

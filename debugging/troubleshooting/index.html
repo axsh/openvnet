@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Troubleshooting - OpenVNet</title>
+  
+
+  <link rel="shortcut icon" href="../../favicon.png">
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/highlight.css">
+  <link href="../../custom.css" rel="stylesheet">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Troubleshooting";
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js"></script>
+  <script src="../../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script src="../../js/theme.js"></script> 
+
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-63388719-2', 'auto');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> OpenVNet</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../..">Home</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../concept/">Concept</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../features/">Features</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../installation/">Installation</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Creating virtual networks</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/single-network/">Single network</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/single-network-dhcp/">Single network with DHCP server</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/two-networks/">Two networks</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/two-networks-router/">Two network with router</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Debugging</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../vnflows-monitor/">vnflows-monitor</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../integration-test/">Integration test</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Troubleshooting</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#troubleshooting">Troubleshooting</a></li>
+                
+                    <li><a class="toctree-l4" href="#make-sure-all-required-services-are-running">Make sure all required services are running</a></li>
+                
+                    <li><a class="toctree-l4" href="#make-sure-the-database-exists-and-is-populated">Make sure the database exists and is populated.</a></li>
+                
+                    <li><a class="toctree-l4" href="#double-check-all-vnctl-commands">Double check all vnctl commands</a></li>
+                
+                    <li><a class="toctree-l4" href="#check-if-vna-is-connected-to-open-vswitch">Check if VNA is connected to Open vSwitch</a></li>
+                
+                    <li><a class="toctree-l4" href="#check-if-open-vswitchs-ports-are-connected">Check if Open vSwitch's ports are connected</a></li>
+                
+                    <li><a class="toctree-l4" href="#use-tcpdump">Use tcpdump</a></li>
+                
+                    <li><a class="toctree-l4" href="#use-vnflows-monitor">Use vnflows-monitor</a></li>
+                
+                    <li><a class="toctree-l4" href="#contact-us">Contact us</a></li>
+                
+            
+            </ul>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Configuration files</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/common/">common.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vnmgr/">vnmgr.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/webapi/">webapi.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vna/">vna.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vnctl/">vnctl.conf</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Vnctl</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/datapaths/">datapaths</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/interfaces/">interfaces</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/networks/">networks</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../community/">Community</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../jargon-dictionary/">Jargon Dictionary</a>
+        
+    </li>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">OpenVNet</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Debugging &raquo;</li>
+        
+      
+    
+    <li>Troubleshooting</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="https://github.com/axsh/openvnet" class="icon icon-github"> Edit on GitHub</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="troubleshooting">Troubleshooting</h1>
+<p>So something went wrong. What should you do?</p>
+<h2 id="make-sure-all-required-services-are-running">Make sure all required services are running</h2>
+<pre><code class="bash">service mysqld status
+service redis status
+
+initctl status vnet-vnmgr
+initctl status vnet-webapi
+initctl status vnet-vna
+</code></pre>
+
+<p>If any of these services are not running, start them. Make sure that they are still running after starting them. It is possible for a service to start successfully but go down again immediately afterwards.</p>
+<p>If any of these services aren't starting correctly, look for clues in the log files in <code>/var/log/openvnet</code>.</p>
+<h2 id="make-sure-the-database-exists-and-is-populated">Make sure the database exists and is populated.</h2>
+<pre><code class="bash">mysql -u root
+
+use vnet;
+show tables;
+</code></pre>
+
+<p>If the database or tables don't exist, set it up as specified in the <a href="../../installation#setup-database">installation guide</a>.</p>
+<h2 id="double-check-all-vnctl-commands">Double check all vnctl commands</h2>
+<p>Mistakes are easily made. Review your vnctl commands carefully and make sure you didn't make any typos.</p>
+<h2 id="check-if-vna-is-connected-to-open-vswitch">Check if VNA is connected to Open vSwitch</h2>
+<p>Run <code>ovs-vsctl show</code>. The output should look similar to this.</p>
+<pre><code class="bash">54b868bc-04fa-44d7-831a-00cb8eff7ee2
+    Bridge &quot;br0&quot;
+        Controller &quot;tcp:127.0.0.1:6633&quot;
+            is_connected: true
+        fail_mode: standalone
+        Port &quot;inst2&quot;
+            Interface &quot;inst2&quot;
+        Port &quot;br0&quot;
+            Interface &quot;br0&quot;
+                type: internal
+        Port &quot;inst1&quot;
+            Interface &quot;inst1&quot;
+    ovs_version: &quot;2.3.1&quot;
+</code></pre>
+
+<p>If you are missing the <code>is_connected: true</code> line then VNA isn't connected to Open vSwitch. In that case, run the following command.</p>
+<pre><code class="bash">vnctl datapaths show
+</code></pre>
+
+<p>Its output should contain something similar to the following.</p>
+<pre><code class="yaml">- :id: 1
+  :uuid: dp-test1
+  :display_name: test1
+  :dpid: '0x0000aaaaaaaaaaaa'
+  :node_id: vna
+  :is_connected: false
+  :created_at: 2015-12-18 04:13:28.000000000 Z
+  :updated_at: 2015-12-18 04:13:28.000000000 Z
+  :deleted_at:
+  :is_deleted: 0
+</code></pre>
+
+<p>Check if the <code>node_id</code> in there is the same as the one defined in <code>/etc/openvnet/vna.conf</code>.</p>
+<p>Also check the <code>dpid</code>. It should be the same as outputted the following command.</p>
+<pre><code class="bash">ovs-vsctl list bridge | grep datapath_id
+</code></pre>
+
+<p>If the above command outputted more than one line, you have more than one bridge set up with Open vSwitch. Make sure the correct one is registered with OpenVnet.</p>
+<p>If either of these need to be changed you can do so with the following command.</p>
+<pre><code class="bash">vnctl datapaths modify dp-test1 --dpid 0xdeadbeefdeadbeef --node-id foobar
+</code></pre>
+
+<h2 id="check-if-open-vswitchs-ports-are-connected">Check if Open vSwitch's ports are connected</h2>
+<p>Run the <code>ovs-vsctl show</code> command again. Like in the section above, the output should look similar to this.</p>
+<pre><code class="bash">54b868bc-04fa-44d7-831a-00cb8eff7ee2
+    Bridge &quot;br0&quot;
+        Controller &quot;tcp:127.0.0.1:6633&quot;
+            is_connected: true
+        fail_mode: standalone
+        Port &quot;inst2&quot;
+            Interface &quot;inst2&quot;
+        Port &quot;br0&quot;
+            Interface &quot;br0&quot;
+                type: internal
+        Port &quot;inst1&quot;
+            Interface &quot;inst1&quot;
+    ovs_version: &quot;2.3.1&quot;
+</code></pre>
+
+<p>If you followed the installation guide, the ports <code>inst1</code> and <code>inst2</code> should be there. If not, add them as specified <a href="../../installation#attach-them-to-open-vswitch">in the guide</a>.</p>
+<p>If Open vSwitch was shut down incorrectly in the past, it's possible for ports to show up even when they're not really connected. In that case try removing and re-adding them.</p>
+<pre><code class="bash">ovs-vsctl del-port br0 inst1
+ovs-vsctl del-port br0 inst2
+
+ovs-vsctl add-port br0 inst1
+ovs-vsctl add-port br0 inst2
+</code></pre>
+
+<h2 id="use-tcpdump">Use tcpdump</h2>
+<p>Tcpdump is a very useful tool for debugging networks. You can install it on Centos with the following command.</p>
+<pre><code class="bash">yum install tcpdump
+</code></pre>
+
+<p>There are many tutorials out there on how to use it. Have your network setup do some actions (like ping) that you think should work and use tcpdump to figure out exactly where things go wrong.</p>
+<h2 id="use-vnflows-monitor">Use vnflows-monitor</h2>
+<p>So you've used tcpdump and noticed that it's inside Open vSwitch that things are going wrong? In that case OpenVNet is probably configured incorrectly. You can use the vnflows-monitor debug tool to see exactly which flows get matched and figure where things go wrong. Read more about vnflows-monitor in <a href="../vnflows-monitor">its own guide</a>.</p>
+<h2 id="contact-us">Contact us</h2>
+<p>So you've tried everything and just can't figure it out? Contact us on the <a href="https://groups.google.com/forum/#!forum/wakame-ug">Wakame Users Group</a>. We are very busy and might not be able to reply right away but we will do our very best to help you.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../configuration-files/common/" class="btn btn-neutral float-right" title="common.conf"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../integration-test/" class="btn btn-neutral" title="Integration test"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../integration-test/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../../configuration-files/common/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+
+</body>
+</html>

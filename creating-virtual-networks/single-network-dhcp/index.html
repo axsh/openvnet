@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Single network with DHCP server - OpenVNet</title>
+  
+
+  <link rel="shortcut icon" href="../../favicon.png">
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/highlight.css">
+  <link href="../../custom.css" rel="stylesheet">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Single network with DHCP server";
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js"></script>
+  <script src="../../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script src="../../js/theme.js"></script> 
+
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-63388719-2', 'auto');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> OpenVNet</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../..">Home</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../concept/">Concept</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../features/">Features</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../installation/">Installation</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Creating virtual networks</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../single-network/">Single network</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Single network with DHCP server</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#single-network-with-dhcp-server">Single network with DHCP server</a></li>
+                
+                    <li><a class="toctree-l4" href="#overview">Overview</a></li>
+                
+                    <li><a class="toctree-l4" href="#setup">Setup</a></li>
+                
+                    <li><a class="toctree-l4" href="#test">Test</a></li>
+                
+                    <li><a class="toctree-l4" href="#whats-next">What's next?</a></li>
+                
+            
+            </ul>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../two-networks/">Two networks</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../two-networks-router/">Two network with router</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Debugging</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/vnflows-monitor/">vnflows-monitor</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/integration-test/">Integration test</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/troubleshooting/">Troubleshooting</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Configuration files</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/common/">common.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vnmgr/">vnmgr.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/webapi/">webapi.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vna/">vna.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vnctl/">vnctl.conf</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Vnctl</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/datapaths/">datapaths</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/interfaces/">interfaces</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/networks/">networks</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../community/">Community</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../jargon-dictionary/">Jargon Dictionary</a>
+        
+    </li>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">OpenVNet</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Creating virtual networks &raquo;</li>
+        
+      
+    
+    <li>Single network with DHCP server</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="https://github.com/axsh/openvnet" class="icon icon-github"> Edit on GitHub</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="single-network-with-dhcp-server">Single network with DHCP server</h1>
+<h2 id="overview">Overview</h2>
+<p>This document expects you to have set up OpenVNet according to the <a href="../../installation">installation guide</a> and created the simple <a href="../single-network">single network</a> afterwards. We will be continuing from there so complete those guides first.</p>
+<p>All we are going to do in this guide is add a DHCP server. This will give us the following virtual network topology.</p>
+<p><img alt="Single network with dhcp server" src="../img/single-network-dhcp.png" /></p>
+<h2 id="setup">Setup</h2>
+<h3 id="create-a-simulated-interface">Create a simulated interface</h3>
+<p>OpenVNet will simulate DHCP entirely using <a href="../../jargon-dictionary#flow">flows</a> in Open vSwitch. However, the machines attached to OpenVNet's virtual networks will still expect a DHCP server to exist with a certain IP address. Therefore we need to tell OpenVNet to create a simulated interface that will give off the illusion of a real DHCP server.</p>
+<pre><code>vnctl interfaces add \
+  --uuid if-dhcp \
+  --mode simulated \
+  --owner-datapath-uuid dp-test1 \
+  --mac-address 02:00:00:00:01:11 \
+  --network-uuid nw-test1 \
+  --ipv4-address 10.100.0.100
+</code></pre>
+
+<h3 id="create-the-dhcp-service">Create the DHCP service</h3>
+<p>Now that we have a simulated interface in place, next we need to tell OpenVNet to simulate a DHCP service on it.</p>
+<pre><code>vnctl network-services add --uuid ns-dhcp --interface-uuid if-dhcp --type dhcp
+</code></pre>
+
+<h2 id="test">Test</h2>
+<p>First of all let's have a look at VNA's log file.</p>
+<pre><code class="bash">tail /var/log/openvnet/vna.log
+</code></pre>
+
+<p>You should see something like this.</p>
+<pre><code>D, [2015-12-16T17:17:38.687225 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa interface_manager: installing if-dhcp/3 (mode:simulated)
+D, [2015-12-16T17:17:38.732223 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa active_interface_manager: installing local/3 (interface_id:3 datapath_id:1 label:dp-test1)
+D, [2015-12-16T17:17:38.741769 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa interface/simulated: adding mac address to if-dhcp/3 (02:00:00:00:01:11)
+D, [2015-12-16T17:17:38.763137 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa interface/simulated: adding ipv4 address to if-dhcp/3 (02:00:00:00:01:11/10.100.0.100)
+D, [2015-12-16T17:17:44.662743 #19913] DEBUG -- : 0x0000aaaaaaaaaaaa service_manager: installing ns-dhcp/1 (mode:dhcp)
+</code></pre>
+
+<p>Looking good so far. VNA seems to have created the simulated interface and added the DHCP service to it.</p>
+<p>Log into <code>inst1</code> and have it do a DHCP request.</p>
+<pre><code class="bash">lxc-console -n inst1
+service network restart
+</code></pre>
+
+<p>If everything went well, <code>inst1</code> should have received a DHCP reply and it now has IP address <code>10.100.0.10</code></p>
+<p>Taking another look at <code>/var/log/openvnet/vna.log</code> will show you how the simulated DHCP server has received the request and constructed a reply to it.</p>
+<p>Now let's do the same on <code>inst2</code> and see how the DHCP service assigns <code>10.100.0.11</code>.</p>
+<pre><code class="bash">lxc-console -n inst2
+service network restart
+</code></pre>
+
+<p>There we go. The two VMs can now ping each other again.</p>
+<h2 id="whats-next">What's next?</h2>
+<p>Now that you've successfully set up a single network and added a DHCP server to it, how about we set up <a href="../two-networks">multiple networks</a> next?</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../two-networks/" class="btn btn-neutral float-right" title="Two networks"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../single-network/" class="btn btn-neutral" title="Single network"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../single-network/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../two-networks/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+
+</body>
+</html>

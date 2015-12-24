@@ -69,11 +69,20 @@
 <li>
           
             <li>
-    <ul class="subnav">
-    <li><span>Getting Started</span></li>
-
+    <li class="toctree-l1 ">
+        <a class="" href="../concept/">Concept</a>
         
-            
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../features/">Features</a>
+        
+    </li>
+<li>
+          
+            <li>
     <li class="toctree-l1 current">
         <a class="current" href="./">Installation</a>
         
@@ -87,10 +96,43 @@
                 
                     <li><a class="toctree-l4" href="#installation">Installation</a></li>
                 
-                    <li><a class="toctree-l4" href="#verification">Verification</a></li>
+                    <li><a class="toctree-l4" href="#lxc-setup">LXC Setup</a></li>
                 
             
             </ul>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Creating virtual networks</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../creating-virtual-networks/single-network/">Single network</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../creating-virtual-networks/single-network-dhcp/">Single network with DHCP server</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../creating-virtual-networks/two-networks/">Two networks</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../creating-virtual-networks/two-networks-router/">Two network with router</a>
         
     </li>
 
@@ -100,17 +142,117 @@
           
             <li>
     <ul class="subnav">
-    <li><span>Support</span></li>
+    <li><span>Debugging</span></li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../community/">Community</a>
+        <a class="" href="../debugging/vnflows-monitor/">vnflows-monitor</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../debugging/integration-test/">Integration test</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../debugging/troubleshooting/">Troubleshooting</a>
         
     </li>
 
         
     </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Configuration files</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../configuration-files/common/">common.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../configuration-files/vnmgr/">vnmgr.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../configuration-files/webapi/">webapi.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../configuration-files/vna/">vna.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../configuration-files/vnctl/">vnctl.conf</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Vnctl</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../vnctl/datapaths/">datapaths</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../vnctl/interfaces/">interfaces</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../vnctl/networks/">networks</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../community/">Community</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../jargon-dictionary/">Jargon Dictionary</a>
+        
+    </li>
 <li>
           
         </ul>
@@ -134,10 +276,6 @@
     <li><a href="..">Docs</a> &raquo;</li>
     
       
-        
-          <li>Getting Started &raquo;</li>
-        
-      
     
     <li>Installation</li>
     <li class="wy-breadcrumbs-aside">
@@ -157,15 +295,11 @@
 <h2 id="overview">Overview</h2>
 <p>Welcome to the world of OpenVNet! With this installation guide we help you
 create a very simple yet innovative virtual network environment.</p>
-<p><img alt="vnet_minimum" src="https://www.dropbox.com/s/dezarv561fg7sdj/vnet_minimum.png?dl=1" /></p>
-<p>On a given server (here named as server1) there is one virtual network whose network address is 10.100.0.0/24 and 2 virtual machines joining it.
-The orange circles describe OpenVNet's ruby processes; vna, vnmgr and webapi.
-See architecture for more details of how the OpenVNet works.</p>
+<p>In this guide we are going to install all of OpenVNet's services into a single machine running CentOS. This can be a virtual machine. Afterwards we are going to use LXC to set up two containers that we'll connect to OpenVNet's virtual networks.</p>
+<p><img alt="All in one host" src="../img/all-in-one-host.png" /></p>
 <h2 id="requirements">Requirements</h2>
 <ul>
-<li>Ruby 2.1.1</li>
-<li>CentOS 6.6</li>
-<li>Open vSwitch 2.3.1</li>
+<li>CentOS 6</li>
 <li>Internet connection</li>
 </ul>
 <h2 id="installation">Installation</h2>
@@ -179,19 +313,17 @@ See architecture for more details of how the OpenVNet works.</p>
 </code></pre>
 
 <p>Each repo has the following packages:</p>
+<h4 id="openvnetrepo">openvnet.repo</h4>
 <ul>
-<li>openvnet.repo</li>
 <li>openvnet (metapackage)</li>
 <li>openvnet-common</li>
 <li>openvnet-vna</li>
 <li>openvnet-vnmgr</li>
 <li>openvnet-webapi</li>
-<li>
-<p>openvnet-vnctl</p>
-</li>
-<li>
-<p>openvnet-third-party.repo</p>
-</li>
+<li>openvnet-vnctl</li>
+</ul>
+<h4 id="openvnet-third-partyrepo">openvnet-third-party.repo</h4>
+<ul>
 <li>openvnet-ruby</li>
 <li>openvswitch</li>
 </ul>
@@ -203,51 +335,15 @@ See architecture for more details of how the OpenVNet works.</p>
 <pre><code class="bash">yum install -y openvnet
 </code></pre>
 
-<p><code>openvnet</code> is a metapackage. It is equivalent to installing <code>openvnet-common</code>,
-<code>openvnet-vna</code>, <code>openvnet-vnmgr</code>, <code>openvnet-webapi</code>, <code>openvnet-vnctl</code> at once.</p>
-<p>Install <a href="http://redis.io">Redis</a> and <a href="https://www.mysql.com">MySQL server</a>. Redis is required for OpenVNet's processes to communicate and MySQL for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.</p>
-<pre><code>yum install -y mysql-server redis
+<p><code>openvnet</code> is an metapackage that depends on <code>openvnet-common</code>, <code>openvnet-vna</code>, <code>openvnet-vnmgr</code>, <code>openvnet-webapi</code> and <code>openvnet-vnctl</code>. It's just a convenient way to install all of those at once.</p>
+<p>Install <a href="http://redis.io">Redis</a> and <a href="https://www.mysql.com">MySQL server</a>. Redis is required for OpenVNet's processes to communicate and MySQL is used to store the network state.</p>
+<p>Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.</p>
+<pre><code class="bash">yum install -y mysql-server redis
 </code></pre>
 
-<h3 id="edit-configuration-files">Edit Configuration Files</h3>
-<p>Edit the file <code>/etc/openvnet/vnmgr.conf</code></p>
-<pre><code>node {
-  id "vnmgr"
-  addr {
-    protocol "tcp"
-    host "127.0.0.1"
-    public ""
-    port 9102
-  }
-}
-</code></pre>
-<p>Modify the parameters <code>host</code> and <code>public</code> according to your environment. In order for
-the sample environment in the overview section we leave those parameters as is. The detail of each parameter is following.</p>
-<ul>
-<li>
-<p><strong>id</strong> : OpenVNet relies on the <a href="http://zeromq.org">0mq</a> protocol for communication among its processes. Hereby processes means vnmgr, vna and webapi. This id is used by 0mq to identify each process. Any string here is fine as long as there's no collision in OpenVNet. It's recommended to just use the default values.</p>
-</li>
-<li>
-<p><strong>protocol</strong> : The layer 4 protocol which is either TCP or UDP. A socket which the 0mq needs will be created based on this parameter. The default value is <code>tcp</code>.</p>
-</li>
-<li>
-<p><strong>host</strong> : The IP address of the vnmgr node. We use loopback address in this guide because all the processes reside on the same node .</p>
-</li>
-<li>
-<p><strong>public</strong> : In case the process running in a NAT environment, specify the NAT address as the process can be reached from the outside of the NAT environment.</p>
-</li>
-<li>
-<p><strong>port</strong> : The port number that the process will listen to. Specify a unique port number and make sure the port number is different for each of the OpenVNet's processes and also not taken by any other process.</p>
-</li>
-</ul>
-<p><code>/etc/openvnet/vna.conf</code> and <code>/etc/openvnet/webapi.conf</code> have the same structure as <code>vnmgr.conf</code>. Edit them if necessary otherwise leave them as is for the sample environment we are just creating. We need the <code>id</code> parameter in <code>vna.conf</code> later when we configure the database. Please make sure what you specified.</p>
-<h3 id="setup-local-infrastructure">Setup Local Infrastructure</h3>
-<p>Datapath is one of the Linux kernel capabilities behaving similar to the Linux bridge.
-Create the file <code>/etc/sysconfig/network-scripts/ifcfg-br0</code> with the following contents. However you need to pay attention to several parameters.</p>
-<ul>
-<li>datapath-id</li>
-</ul>
-<p>The datapath ID that the Open vSwitch will use. Set unique 16 hex digits as you like.</p>
+<h3 id="setup-open-vswitch">Setup Open vSwitch</h3>
+<p>We are going to create a bridge <code>br0</code> using Open vSwitch. Later we will attach our VMs <code>inst1</code> and <code>inst2</code> to this bridge.</p>
+<p>Create the file <code>/etc/sysconfig/network-scripts/ifcfg-br0</code> with the following contents.</p>
 <pre><code class="bash">DEVICE=br0
 DEVICETYPE=ovs
 TYPE=OVSBridge
@@ -264,26 +360,18 @@ OVS_EXTRA=&quot;
 &quot;
 </code></pre>
 
-<p>Start <code>openvswitch</code> service and <code>ifup</code> the datapath.</p>
+<p><strong>Remark:</strong> Notice how we set the <code>datapath-id</code> to <code>0000aaaaaaaaaaaa</code>? This is a unique ID that OpenVNet will use to recognise this bridge later. You can set it to any 16 hex digits of your choosing but make sure to remember it for later.</p>
+<p>Start the <code>openvswitch</code> service and bring  up the bridge.</p>
 <pre><code class="bash">service openvswitch start
 ifup br0
 </code></pre>
 
-<p>Start redis</p>
-<pre><code class="bash">service redis start
-</code></pre>
-
 <h3 id="setup-database">Setup Database</h3>
-<p>Edit <code>/etc/openvnet/common.conf</code> if necessary. The sample environment uses the default settings.</p>
-<p>Launch MySQL server.</p>
+<p>Launch the MySQL server.</p>
 <pre><code class="bash">service mysqld start
 </code></pre>
 
-<p>To automatically launch the MySQL server at boot, execute the following command.</p>
-<pre><code class="bash">chkconfig mysqld on
-</code></pre>
-
-<p>Set <code>PATH</code> environment variable as following since the OpenVNet uses its own ruby binary.</p>
+<p>OpenVNet uses its own ruby binary. We need to add it to the <code>PATH</code> variable so we can call bundle in the next step.</p>
 <pre><code class="bash">PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
 </code></pre>
 
@@ -293,104 +381,50 @@ bundle exec rake db:create
 bundle exec rake db:init
 </code></pre>
 
+<h3 id="start-redis">Start redis</h3>
+<p>As mentioned above, OpenVNet services require redis to communicate with each other. Start it.</p>
+<pre><code class="bash">service redis start
+</code></pre>
+
+<h3 id="start-openvnet-services">Start OpenVNet services</h3>
+<p>Starting the OpenVNet services will create log files in the <code>/var/log/openvnet</code> directory. If anything goes wrong, you might find useful error messages in them.</p>
 <p>Start vnmgr and webapi.</p>
 <pre><code class="bash">initctl start vnet-vnmgr
 initctl start vnet-webapi
 </code></pre>
 
-<p>We use <code>vnctl</code> to create the database records subsequent to the above configurations. <code>vnctl</code> is Web API client offered by the <code>openvnet-vnctl</code> package.</p>
-<h4 id="datapath">Datapath</h4>
-<p>We created a datapath earlier that the OpenVNet needs to know. The following database record must be created in order to tell the OpenVNet about the datapath.</p>
+<p>We use <code>vnctl</code> to create the database records subsequent to the above configurations. <code>vnctl</code> is a Web API client offered by the <code>openvnet-vnctl</code> package.</p>
+<p>Remember the <code>datapath-id</code> we set when setting up Open vSwitch? The following command will tell OpenVNet that VNA needs to manage this datapath.</p>
 <pre><code class="bash">vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
 </code></pre>
 
-<ul>
-<li>dpid</li>
-</ul>
-<p>The datapath ID specified in <code>/etc/sysconfig/network-scripts/ifcfg-br0</code></p>
-<ul>
-<li>node-id</li>
-</ul>
-<p>The ID of the vna written in <code>/etc/openvnet/vna.conf</code></p>
-<h4 id="network">Network</h4>
-<p>In the figure of the sample environment there is a light purple circle which represents a virtual network. You need to define the virtual network by <code>vnctl networks add</code> subcommand with the following parameters.</p>
-<pre><code class="bash">vnctl networks add --uuid nw-test1 --display-name testnet1 --ipv4-network 10.100.0.0 --ipv4-prefix 24 --network-mode virtual
+<p>Now let's start vna.</p>
+<pre><code class="bash">initctl start vnet-vna
 </code></pre>
 
-<ul>
-<li>ipv4-network</li>
-</ul>
-<p>The IPv4 network address.</p>
-<ul>
-<li>ipv4-prefix</li>
-</ul>
-<p>The IPv4 network prefix. (default 24)</p>
-<ul>
-<li>network-mode</li>
-</ul>
-<p>The mode of the network to create. We are currently creating the virtual network (10.100.0.0/24) mentioned in the figure. That is why we specify <code>virtual</code> here.</p>
-<h4 id="interface">Interface</h4>
-<p>As the sample environment has 2 virtual machines, here we define 2 database records of interface. These records will be associated to the tap interfaces of the virtual machines. The former record contains <code>inst1</code>'s network interface information. The latter is for <code>inst2</code>.</p>
-<pre><code class="bash">vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-test1 --ipv4-address 10.100.0.10 --port-name inst1
-vnctl interfaces add --uuid if-inst2 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:02 --network-uuid nw-test1 --ipv4-address 10.100.0.11 --port-name inst2
-</code></pre>
-
-<ul>
-<li>mode</li>
-</ul>
-<p>The mode of the interface. An entry with <code>vif</code> mode is basically for a virtual or physical device that is attached to the datapath of the Open vSwitch. Another mode might be specified for a physical device but here we omit the explanation about it.</p>
-<ul>
-<li>owner-datapath-uuid</li>
-</ul>
-<p>The UUID of the datapath to which this interface will be connected.</p>
-<ul>
-<li>mac-address</li>
-</ul>
-<p>The MAC address of the network interface of the virtual machine.</p>
-<ul>
-<li>network-uuid</li>
-</ul>
-<p>The UUID of the virtual network to participate</p>
-<ul>
-<li>ipv4-address</li>
-</ul>
-<p>The IPv4 address which will be assigned to the network interface.</p>
-<ul>
-<li>port-name</li>
-</ul>
-<p>The OpenVNet associates an Open vSwitch's port with a database record of the interface table if its <code>port-name</code> is corresponded to what you can see by <code>ovs-vsctl show</code>.</p>
-<h3 id="launch-services">Launch Services</h3>
-<p>The OpenVNet's processes(vnmgr, webapi and vna) are registered as upstart jobs.
-You can launch them using the following commands. vnmgr and webapi may have already been launched in the last sections.</p>
-<pre><code class="bash">initctl start vnet-vnmgr
-initctl start vnet-webapi
-initctl start vnet-vna
-</code></pre>
-
-<p>The log files are created in the /var/log/openvnet directory. Refer to them if something bad happens. If the vna is successfully launched you can see <code>is_connected: true</code> by <code>ovs-vsctl show</code> such as following.</p>
+<p>You can run <code>ovs-vsctl show</code> to check if vna is working correctly.</p>
+<p>You should be able to see <code>is_connected: true</code> in its output. If it doesn't appear right away, wait a few seconds and then try again. If it still doesn't appear, something went wrong and you should have a look at <code>/var/log/openvnet/vna.log</code> for errors.</p>
 <pre><code class="bash">fbe23184-7f14-46cb-857b-3abf6153a6d6
     Bridge &quot;br0&quot;
         Controller &quot;tcp:127.0.0.1:6633&quot;
             is_connected: true
 </code></pre>
 
-<p>This means the OpenFlow controller which is vna is now connected to the datapath. After the connection between the OpenFlow controller and the
-datapath is established it starts installing the flows on the datapath.</p>
-<h2 id="verification">Verification</h2>
-<p>By following all the instructions from the beginning to this section, you already have the sample environment. In this section, we are firstly going to play around the environment then secondary see network packets going through OpenFlow rules to reach
-from one guest to another.</p>
-<p>As a representation of the guest here we use <a href="https://linuxcontainers.org">LXC</a>, which helps users run multiple isolated Linux system containers. Any other virtualization technologies might be used, however we take LXC since it is easy to create/destroy/configure and simple enough to do this verification.</p>
-<p>Install LXC</p>
+<h2 id="lxc-setup">LXC Setup</h2>
+<p>We now have OpenVNet set up and working but we don't have any virtual machines connected to it yet. In this step we are going to use <a href="https://linuxcontainers.org">LXC</a> to create the two containers (guests) <code>inst1</code> and <code>inst2</code> that will be connected to OpenVNet's virtual networks.</p>
+<p>Any virtualization techonology will work but in this guide we're using LXC because it's lightweight and can easily be set up inside virtual machines as well.</p>
+<h3 id="install-lxc">Install LXC</h3>
 <pre><code class="bash">yum -y install lxc lxc-templates
 </code></pre>
 
-<p>Create and mount cgroup</p>
+<h3 id="create-and-mount-cgroup">Create and mount cgroup</h3>
 <pre><code class="bash">mkdir /cgroup
 echo &quot;cgroup /cgroup cgroup defaults 0 0&quot; &gt;&gt; /etc/fstab
 mount /cgroup
 </code></pre>
 
-<p>Create 2 LXC guests. Rsync is required for this. If it's not installed already, install it with the following command.</p>
+<h3 id="create-2-lxc-guests">Create 2 LXC guests</h3>
+<p>Rsync is required for this. If it's not installed already, install it with the following command.</p>
 <pre><code class="bash">yum install -y rsync
 </code></pre>
 
@@ -398,13 +432,12 @@ mount /cgroup
 lxc-create -t centos -n inst2
 </code></pre>
 
-<p>Configure interfaces of each guest</p>
-<pre><code class="bash">vi /var/lib/lxc/inst1/config
-
-lxc.network.type = veth
+<p>These commands' output will tell you were to find or set the root password for <code>inst1</code> and <code>inst2</code>. Make sure set it and remember it for later. You're going to need it to log into them.</p>
+<h3 id="apply-network-interface-settings">Apply Network interface settings</h3>
+<p>Open the file <code>/var/lib/lxc/inst1/config</code> and replace its contents with the following.</p>
+<pre><code class="bash">lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.veth.pair = inst1
-lxc.network.ipv4 = 10.100.0.10
 lxc.network.hwaddr = 10:54:FF:00:00:01
 lxc.rootfs = /var/lib/lxc/inst1/rootfs
 lxc.include = /usr/share/lxc/config/centos.common.conf
@@ -413,12 +446,10 @@ lxc.utsname = inst1
 lxc.autodev = 0
 </code></pre>
 
-<pre><code class="bash">vi /var/lib/lxc/inst2/config
-
-lxc.network.type = veth
+<p>Open the file <code>/var/lib/lxc/inst2/config</code> and replace its contents with the following.</p>
+<pre><code class="bash">lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.veth.pair = inst2
-lxc.network.ipv4 = 10.100.0.11
 lxc.network.hwaddr = 10:54:FF:00:00:02
 lxc.rootfs = /var/lib/lxc/inst2/rootfs
 lxc.include = /usr/share/lxc/config/centos.common.conf
@@ -427,35 +458,19 @@ lxc.utsname = inst2
 lxc.autodev = 0
 </code></pre>
 
-<p>We do not use <code>lxc.network.link</code> parameter because the Linux bridge is replaced by the Open vSwitch.</p>
-<p>Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.</p>
-<p>Launch the LXC guests then enslave the LXC's tap interfaces to the datapath.</p>
+<p><strong>Remark:</strong> We do not use <code>lxc.network.link</code> parameter because the Linux bridge is replaced by the Open vSwitch. That parameter expects to interface with the Linux bridge and containers will fail to start if you attempt to use it with Open vSwitch. We'll enslave the tap interfaces manually in the next step.</p>
+<h3 id="start-the-lxc-guests">Start the LXC guests</h3>
 <pre><code class="bash">lxc-start -d -n inst1
 lxc-start -d -n inst2
+</code></pre>
 
-ovs-vsctl add-port br0 inst1
+<h3 id="attach-them-to-open-vswitch">Attach them to Open vSwitch</h3>
+<pre><code class="bash">ovs-vsctl add-port br0 inst1
 ovs-vsctl add-port br0 inst2
 </code></pre>
 
-<p>Now the LXC's network interfaces are attached to the Open vSwitch, likewise you plug a LAN cable to a network switch.</p>
-<p>Log in to the inst1 to see if the IP address is assigned properly.</p>
-<pre><code class="bash">lxc-console -n inst1
-ip a
-</code></pre>
-
-<p>ping to inst2 (10.100.0.11)</p>
-<pre><code class="bash">ping 10.100.0.11
-</code></pre>
-
-<p>You would see the ping reply from the peer machine (in this case inst2). Meanwhile you can see which flows are selected by <code>vnflows-monitor</code>. Execute the following command on a lxc guest, then ping from one another.</p>
-<pre><code class="bash">cd /opt/axsh/openvnet/vnet/bin
-./vnflows-monitor -d -c 0
-</code></pre>
-
-<p>You can see all the flows by calling <code>vnflows-monitor</code> without arguments.</p>
-<pre><code class="bash">cd /opt/axsh/openvnet/vnet/bin
-./vnflows-monitor
-</code></pre>
+<p>Now the LXC's network interfaces are attached to the Open vSwitch. This is basically the same as plugging a network cable into a physical switch.</p>
+<p>Congratulations. You have now installed OpenVNet and you're ready to start building your first virtual network. We recommend you start with the simplest possible setting: <a href="../creating-virtual-networks/single-network">Single Network</a>.</p>
               
             </div>
           </div>
@@ -463,10 +478,10 @@ ip a
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../community/" class="btn btn-neutral float-right" title="Community"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../creating-virtual-networks/single-network/" class="btn btn-neutral float-right" title="Single network"/>Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../features/" class="btn btn-neutral" title="Features"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -496,10 +511,10 @@ ip a
           <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../features/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../community/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../creating-virtual-networks/single-network/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

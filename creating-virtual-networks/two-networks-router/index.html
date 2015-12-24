@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Two network with router - OpenVNet</title>
+  
+
+  <link rel="shortcut icon" href="../../favicon.png">
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/highlight.css">
+  <link href="../../custom.css" rel="stylesheet">
+
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Two network with router";
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js"></script>
+  <script src="../../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../../js/highlight.pack.js"></script>
+  <script src="../../js/theme.js"></script> 
+
+  
+  <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-63388719-2', 'auto');
+      ga('send', 'pageview');
+  </script>
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="../.." class="icon icon-home"> OpenVNet</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <ul class="current">
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../..">Home</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../concept/">Concept</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../features/">Features</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../installation/">Installation</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Creating virtual networks</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../single-network/">Single network</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../single-network-dhcp/">Single network with DHCP server</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../two-networks/">Two networks</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Two network with router</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#two-virtual-networks-with-router">Two virtual networks with router</a></li>
+                
+                    <li><a class="toctree-l4" href="#overview">Overview</a></li>
+                
+                    <li><a class="toctree-l4" href="#setup">Setup</a></li>
+                
+                    <li><a class="toctree-l4" href="#test">Test</a></li>
+                
+                    <li><a class="toctree-l4" href="#remark">Remark</a></li>
+                
+                    <li><a class="toctree-l4" href="#whats-next">What's next</a></li>
+                
+            
+            </ul>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Debugging</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/vnflows-monitor/">vnflows-monitor</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/integration-test/">Integration test</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../debugging/troubleshooting/">Troubleshooting</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Configuration files</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/common/">common.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vnmgr/">vnmgr.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/webapi/">webapi.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vna/">vna.conf</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../configuration-files/vnctl/">vnctl.conf</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Vnctl</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/datapaths/">datapaths</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/interfaces/">interfaces</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/networks/">networks</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../community/">Community</a>
+        
+    </li>
+<li>
+          
+            <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../jargon-dictionary/">Jargon Dictionary</a>
+        
+    </li>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">OpenVNet</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Creating virtual networks &raquo;</li>
+        
+      
+    
+    <li>Two network with router</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        
+          <a href="https://github.com/axsh/openvnet" class="icon icon-github"> Edit on GitHub</a>
+        
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="two-virtual-networks-with-router">Two virtual networks with router</h1>
+<h2 id="overview">Overview</h2>
+<p>This document builds on the last guides. If you haven't already, make sure to complete the previous guides first: <a href="../../installation">Installation guide</a>, <a href="../single-network">Single Network</a>, <a href="../single-network-dhcp">Single Network with DHCP server</a> and <a href="../two-networks">Two Networks</a>.</p>
+<p>Now that we have two virtual networks with an interface in each, it makes sense to add a router to them so that both interfaces can reach each other. That's exactly what we'll do in this guide, resulting in the following topology.</p>
+<p><img alt="Two networks with router" src="../img/two-networks-router.png" /></p>
+<h2 id="setup">Setup</h2>
+<h3 id="create-the-simulated-interfaces">Create the simulated interfaces</h3>
+<p>Just like OpenVNet's DHCP service, routers are simulated entirely in Open vSwitch's <a href="../../jargon-dictionary#flow">flows</a>. Therefore we are again going to create simulated interfaces. The only difference from DHCP is that this time we are going to set the <code>enable_routing</code> flag.</p>
+<p>First we'll add a simulated interface to the network <code>nw-test1</code> (the one <code>inst1</code> is in) with IP address <code>10.100.0.1</code>.</p>
+<pre><code class="bash">vnctl interfaces add \
+  --uuid if-router1 \
+  --network_uuid nw-test1 \
+  --mac_address &quot;02:00:00:00:02:01&quot; \
+  --ipv4_address 10.100.0.1 \
+  --mode simulated \
+  --enable_routing true
+</code></pre>
+
+<p>Next we'll add a similar simulated interface to the network <code>nw-test2</code> (the one <code>inst2</code> is in) with IP address <code>192.168.50.1</code>.</p>
+<pre><code class="bash">vnctl interfaces add \
+  --uuid if-router2 \
+  --network_uuid nw-test2 \
+  --mac_address &quot;02:00:00:00:02:02&quot; \
+  --ipv4_address 192.168.50.1 \
+  --mode simulated \
+  --enable_routing true
+</code></pre>
+
+<p>Now we have two new simulated interfaces that are capable of routing but we have not yet told OpenVNet that they should be able to route to each other. For that first we'll create a <code>route_link</code></p>
+<p>You can thing of a <code>route_link</code> as a central point that routed traffic passes through.</p>
+<pre><code class="bash">vnctl route_links add --uuid rl-1 --mac-address 02:00:10:00:00:01
+</code></pre>
+
+<p>Now we are add the actual routes.</p>
+<p>These commands bring everything together. They tell OpenVNet to use the <code>route_link</code> and the simulated interfaces we just created to set up a router that can connect the networks <code>nw-test1</code> and <code>nw-test2</code>.</p>
+<pre><code class="bash">vnctl routes add \
+  --uuid r-1 \
+  --interface-uuid if-router1 \
+  --network-uuid nw-test1 \
+  --ipv4-network 10.100.0.0 \
+  --route-link-uuid rl-1
+
+vnctl routes add \
+  --uuid r-2 \
+  --interface-uuid if-router2 \
+  --network-uuid nw-test2 \
+  --ipv4-network 192.168.50.0 \
+  --route-link-uuid rl-1
+</code></pre>
+
+<h2 id="test">Test</h2>
+<p>Routing is now set up and should be working. We could set up the routing table in our LXC guests manually but we don't need to. All we need to do is have them perform a new DHCP request. OpenVNet will automatically include these routes in its DHCP reply.</p>
+<p>Log into <code>inst1</code> and have it do a DHCP request.</p>
+<pre><code class="bash">lxc-console -n inst1
+service network restart
+</code></pre>
+
+<p>If everything went well, it should now have a new entry in its routing table. Try running <code>ip route show</code>. IT should include the following line in its output.</p>
+<pre><code class="bash">192.168.50.0/24 via 10.100.0.1 dev eth0  proto static
+</code></pre>
+
+<p>Now have <code>inst2</code> do a new DHCP request as well.</p>
+<pre><code class="bash">lxc-console -n inst2
+service network restart
+</code></pre>
+
+<p>Now try to have <code>inst2</code> ping <code>inst1</code> again. Now that there is a router connecting both networks, ping should be working. If it's not working, something went wrong. Review the commands and check if you made a mistake anywhere.</p>
+<h2 id="remark">Remark</h2>
+<p>Have another look at VNA's log file.</p>
+<pre><code class="bash">tail /var/log/openvnet/vna.log
+</code></pre>
+
+<p>If you haven't done anything special after the two LXC guests pinged each other, you'll see these lines.</p>
+<pre><code class="bash">I, [2015-12-17T17:28:15.168336 #1538]  INFO -- : 0x0000aaaaaaaaaaaa interface/simulated: simulated arp reply (arp_tpa:192.168.50.1)
+I, [2015-12-17T17:28:15.182135 #1538]  INFO -- : 0x0000aaaaaaaaaaaa interface/simulated: simulated arp reply (arp_tpa:10.100.0.1)
+</code></pre>
+
+<p>That's OpenVNet's simulated interfaces in action. To the LXC guests, it looks like they're communicating with regular routers. They discover their MAC Address through ARP and then send IP packets. In reality though, these interfaces don't exist and everything is simulated using OpenFlow.</p>
+<h2 id="whats-next">What's next</h2>
+<p>You're done. You have completed all examples contained in this OpenVNet tutorial. There's a couple of things you can from here.</p>
+<ul>
+<li>
+<p>Have a look at the actual flows in Open vSwitch using the <a href="../../debugging/vnflows-monitor">vnflows-monitor</a> debug tool.</p>
+</li>
+<li>
+<p>Check out the <a href="../../debugging/integration-test">integration test</a> for an example of more complicated OpenVNet environments.</p>
+</li>
+<li>
+<p>Maybe try adding some more LXC guests and setting up your own virtual network environments.</p>
+</li>
+<li>
+<p>How about trying to create an environment with multiple hosts, each with their own Open vSwitch and VNA. This will require some more setup and is currently not yet covered in this documentation. It will require you to carefully study the examples in the <a href="../../debugging/integration-test">integration test</a>.</p>
+</li>
+</ul>
+<p>Thank you for taking the time to check out OpenVNet. Good luck, have fun and be creative.</p>
+<p>If you need any further help, don't hesitate to contact us on the <a href="https://groups.google.com/forum/#!forum/wakame-ug">Wakame Users Group</a>. We're very busy and might not get back to you immediately but we'll do our very best to help you out.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../debugging/vnflows-monitor/" class="btn btn-neutral float-right" title="vnflows-monitor"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../two-networks/" class="btn btn-neutral" title="Two networks"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../two-networks/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../../debugging/vnflows-monitor/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+
+</body>
+</html>
