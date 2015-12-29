@@ -21,7 +21,7 @@ module Vnet::Models
     end
 
     def validate
-      validates_includes(valid_modes, :type)
+      validates_includes(valid_modes, :mode)
       super
     end
 
