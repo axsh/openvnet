@@ -5,6 +5,8 @@ module Vnet::Models
   class ActivePort < Base
     plugin :paranoia_is_deleted
 
+    use_modes Vnet::Constants::ActivePort::MODES
+
     many_to_one :datapath
 
     def validate

@@ -5,8 +5,9 @@ module Vnet::Models
   # TODO: Refactor.
   class LeasePolicy < Base
     taggable 'lp'
-
     plugin :paranoia_is_deleted
+
+    use_modes Vnet::Constants::LeasePolicy::MODES
 
     many_to_many :networks, :join_table => :lease_policy_base_networks, :conditions => "lease_policy_base_networks.deleted_at is null"
     one_to_many :lease_policy_base_networks

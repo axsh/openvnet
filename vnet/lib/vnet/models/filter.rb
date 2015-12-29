@@ -3,8 +3,9 @@
 module Vnet::Models
   class Filter < Base
     taggable 'fil'
-
     plugin :paranoia_is_deleted
+
+    use_modes Vnet::Constants::Filter::MODES
 
     one_to_many :filter_statics
 
@@ -13,5 +14,6 @@ module Vnet::Models
     plugin :association_dependencies,
     # 0006_filters
     filter_statics: :destroy    
+
   end
 end
