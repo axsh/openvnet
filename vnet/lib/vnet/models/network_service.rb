@@ -3,6 +3,7 @@
 module Vnet::Models
   class NetworkService < Base
     taggable 'ns'
+    use_modes
 
     plugin :paranoia_is_deleted
 
@@ -13,16 +14,8 @@ module Vnet::Models
     # 0002_services
     dns_services: :destroy
 
-    # TODO: Rename type to mode, then add deprecation translation in
-    # api.
-
     def valid_modes
       Vnet::Constants::NetworkService::MODES
-    end
-
-    def validate
-      validates_includes(valid_modes, :mode)
-      super
     end
 
   end

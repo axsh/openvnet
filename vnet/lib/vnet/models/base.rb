@@ -398,6 +398,16 @@ module Vnet::Models
           self.plugin BaseTaggable
           self.uuid_prefix(uuid_prefix)
         end
+
+        # Install mode module as Sequel plugin.
+        #
+        # class Model1 < Base
+        #   use_modes
+        # end
+        def self.use_modes()
+          return if self == Base
+          self.plugin BaseMode
+        end
       }
     end
 

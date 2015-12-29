@@ -298,6 +298,7 @@ module Vnet
     class InvalidUUIDError < StandardError; end
 
     autoload :Base, 'vnet/models/base'
+    autoload :BaseMode, 'vnet/models/base_mode'
     autoload :BaseTaggable, 'vnet/models/base_taggable'
 
     autoload :ActiveInterface, 'vnet/models/active_interface'
