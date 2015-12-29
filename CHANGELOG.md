@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+* `Added` A new simple firewall feature alongside the existing security groups. Security groups will eventually be ported to use this.
+
 * `Changed` Added a default value of `false` to all `is_deleted` flags in the database. Now OpenVNet can be used with MySQL's STRICT mode.
 
 * `Fixed` An issue where vna could retrieve network resources from vnmgr while their related resources were not fully loaded yet.

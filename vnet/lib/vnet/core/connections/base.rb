@@ -28,8 +28,8 @@ module Vnet::Core::Connections
       interface_id = message.cookie & COOKIE_ID_MASK
 
       [
-        flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
-                    priority: 21,
+        flow_create(table: TABLE_NETWORK_CONNECTION,
+                    priority: 92,
                     match: {
                       eth_src:   message.packet_info.eth_src,
                       eth_type: message.eth_type,
@@ -39,6 +39,7 @@ module Vnet::Core::Connections
                     idle_timeout: EGRESS_IDLE_TIMEOUT,
                     cookie: cookie(interface_id),
                     goto_table: TABLE_NETWORK_SRC_CLASSIFIER),
+
         flow_create(table: TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
                     priority: 10,
                     match: {
