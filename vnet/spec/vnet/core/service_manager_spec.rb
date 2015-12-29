@@ -59,7 +59,7 @@ describe Vnet::Core::ServiceManager do
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
                                 id: 1,
                                 interface_id: 1,
-                                type: 'dns')
+                                mode: 'dns')
         expect(service_manager.wait_for_loaded({id: 1}, 3)).not_to be_nil
 
         service_manager.send(:internal_detect, id: network_service.id).tap do |item|
@@ -94,7 +94,7 @@ describe Vnet::Core::ServiceManager do
         service_manager.publish(Vnet::Event::SERVICE_CREATED_ITEM,
                                 id: 1,
                                 interface_id: 1,
-                                type: 'dns')
+                                mode: 'dns')
         expect(service_manager.wait_for_loaded({id: network_service.id}, 3)).not_to be_nil
 
         network_service.destroy
