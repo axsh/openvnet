@@ -83,7 +83,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     options = {
       datapath_id: check_syntax_and_pop_uuid(M::Datapath).id,
       interface_id: check_syntax_and_pop_uuid(M::Interface, 'interface_uuid').id,
-      route_link: route_link.id,
+      route_link_id: route_link.id,
       mac_address: params["mac_address"]
     }
 
