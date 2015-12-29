@@ -36,7 +36,6 @@ describe "/translations" do
     let!(:test_interface) { Fabricate(:interface, uuid: 'if-test2') }
 
     accepted_params = {
-      :mode => "vnet_edge",
       :interface_uuid => "if-test2"
     }
 
