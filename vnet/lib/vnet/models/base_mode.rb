@@ -10,9 +10,25 @@
 module Vnet::Models
   module BaseMode
 
-    # C = Vnet::Constants::Foo
-
     module InstanceMethods
+      def valid_modes
+        self.class.valid_modes
+      end
+
+      def validate
+        validates_includes(self.class.valid_modes, :mode)
+        super
+      end
+    end
+
+    module ClassMethods
+      def valid_modes
+        @valid_modes
+      end
+
+      def set_valid_modes(modes)
+        @valid_modes = modes
+      end
     end
 
   end

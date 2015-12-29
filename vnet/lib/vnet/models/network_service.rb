@@ -3,9 +3,9 @@
 module Vnet::Models
   class NetworkService < Base
     taggable 'ns'
-    use_modes
-
     plugin :paranoia_is_deleted
+
+    use_modes Vnet::Constants::NetworkService::MODES
 
     many_to_one :interface
     one_to_many :dns_services
@@ -13,10 +13,6 @@ module Vnet::Models
     plugin :association_dependencies,
     # 0002_services
     dns_services: :destroy
-
-    def valid_modes
-      Vnet::Constants::NetworkService::MODES
-    end
 
   end
 end

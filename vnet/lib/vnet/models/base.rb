@@ -404,9 +404,10 @@ module Vnet::Models
         # class Model1 < Base
         #   use_modes
         # end
-        def self.use_modes()
+        def self.use_modes(modes)
           return if self == Base
           self.plugin BaseMode
+          self.set_valid_modes(modes)
         end
       }
     end
