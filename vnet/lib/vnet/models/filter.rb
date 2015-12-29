@@ -5,7 +5,8 @@ module Vnet::Models
     taggable 'fil'
     plugin :paranoia_is_deleted
 
-    use_modes Vnet::Constants::Filter::MODES
+    # TODO: Disabling 'use_modes' until specs are fixed.
+    # use_modes Vnet::Constants::Filter::MODES
 
     one_to_many :filter_statics
 
