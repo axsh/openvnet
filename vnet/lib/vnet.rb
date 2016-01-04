@@ -53,6 +53,7 @@ module Vnet
     autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
     autoload :Translation, 'vnet/constants/translation'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
+    autoload :Filter, 'vnet/constants/filter'
   end
 
   module Core
@@ -77,6 +78,8 @@ module Vnet
     autoload :Datapath, 'vnet/core/items'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
     autoload :FilterManager, 'vnet/core/filter_manager'
+    autoload :Filter2Manager, 'vnet/core/filter2_manager'
+    autoload :Filter, 'vnet/core/items'
     autoload :HostDatapath, 'vnet/core/host_datapath'
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
     autoload :Interface, 'vnet/core/interface'
@@ -138,9 +141,13 @@ module Vnet
     module Filters
       autoload :AcceptAllTraffic, 'vnet/core/filters/accept_all_traffic'
       autoload :AcceptIngressArp, 'vnet/core/filters/accept_ingress_arp'
+      autoload :AcceptEgressArp, 'vnet/core/filters/accept_egress_arp'
       autoload :Base, 'vnet/core/filters/base'
+      autoload :Base2, 'vnet/core/filters/base2'
       autoload :Cookies, 'vnet/core/filters/cookies'
       autoload :SecurityGroup, 'vnet/core/filters/security_group'
+      autoload :Static, 'vnet/core/filters/static'
+
     end
 
     module HostDatapaths
@@ -235,6 +242,8 @@ module Vnet
         autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
         autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
+        autoload :Filter, 'vnet/endpoints/1.0/responses/filter'
+        autoload :FilterStatic, 'vnet/endpoints/1.0/responses/filter_static'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
         autoload :InterfacePort, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
@@ -272,6 +281,8 @@ module Vnet
         autoload :IpRangeGroupCollection, 'vnet/endpoints/1.0/responses/ip_range_group'
         autoload :IpRetentionCollection, 'vnet/endpoints/1.0/responses/ip_retention'
         autoload :IpRetentionContainerCollection, 'vnet/endpoints/1.0/responses/ip_retention_container'
+        autoload :FilterCollection, 'vnet/endpoints/1.0/responses/filter'
+        autoload :FilterStaticCollection, 'vnet/endpoints/1.0/responses/filter_static'
         autoload :LeasePolicyCollection, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddressCollection, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
@@ -316,6 +327,8 @@ module Vnet
     autoload :IpRangeGroup, 'vnet/models/ip_range_group'
     autoload :IpRetention, 'vnet/models/ip_retention'
     autoload :IpRetentionContainer, 'vnet/models/ip_retention_container'
+    autoload :Filter, 'vnet/models/filter'
+    autoload :FilterStatic, 'vnet/models/filter_static'
     autoload :LeasePolicy, 'vnet/models/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/models/lease_policy_base_network'
     autoload :LeasePolicyBaseInterface, 'vnet/models/lease_policy_base_interface'
@@ -360,6 +373,8 @@ module Vnet
     autoload :IpRangeGroup, 'vnet/model_wrappers/wrappers'
     autoload :IpRetention, 'vnet/model_wrappers/ip_retention'
     autoload :IpRetentionContainer, 'vnet/model_wrappers/ip_retention_container'
+    autoload :Filter, 'vnet/model_wrappers/filter'
+    autoload :FilterStatic, 'vnet/model_wrappers/filter'
     autoload :LeasePolicy, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseNetwork, 'vnet/model_wrappers/lease_policy'
     autoload :LeasePolicyBaseInterface, 'vnet/model_wrappers/lease_policy'
@@ -408,6 +423,8 @@ module Vnet
     autoload :IpRange, 'vnet/node_api/models.rb'
     autoload :IpRangeGroup, 'vnet/node_api/models.rb'
     autoload :IpRetention, 'vnet/node_api/ip_retention'
+    autoload :Filter, 'vnet/node_api/filter.rb'
+    autoload :FilterStatic, 'vnet/node_api/filter_static.rb'
     autoload :IpRetentionContainer, 'vnet/node_api/ip_retention_container'
     autoload :LeasePolicy, 'vnet/node_api/lease_policy.rb'
     autoload :LeasePolicyBaseInterface, 'vnet/node_api/models.rb'

@@ -5,7 +5,8 @@ require 'trema/mac'
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   def self.put_post_shared_params
     param_uuid M::Datapath, :owner_datapath_uuid
-    param :ingress_filtering_enabled, :Boolean
+    param :ingress_filtering_enabled, :Boolean, default: false
+    param :enable_filtering, :Boolean
     param :display_name, :String
     param :enable_routing, :Boolean
     param :enable_route_translation, :Boolean
@@ -30,6 +31,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     uuid_to_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id") if params["mac_range_group_uuid"]
 
+    params["enable_legacy_filtering"] = params["ingress_filtering_enabled"]
     post_new(:Interface, fill)
   end
 
