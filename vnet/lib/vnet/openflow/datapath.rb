@@ -172,16 +172,24 @@ module Vnet::Openflow
       @dp_info.bootstrap_managers.each { |manager|
         manager.set_datapath_info(@datapath_info)
       }
+      @dp_info.managers.each { |manager|
+        manager.async.start_initialize
+      }
+      @dp_info.managers.each { |manager|
+        manager.wait_for_initialized(nil)
+      }
     end
 
     def initialize_managers
       @dp_info.managers.each { |manager|
         manager.set_datapath_info(@datapath_info)
       }
-
-      # TODO: Add a default do_initialize method to manager and
-      # parallelize them.
-      @dp_info.active_port_manager.do_initialize
+      @dp_info.managers.each { |manager|
+        manager.async.start_initialize
+      }
+      @dp_info.managers.each { |manager|
+        manager.wait_for_initialized(nil)
+      }
 
       # Until we have datapath_info loaded none of the ports can be
       # initialized.
