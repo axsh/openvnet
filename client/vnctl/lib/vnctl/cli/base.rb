@@ -242,7 +242,7 @@ module Vnctl::Cli
           }
 
           yield self if block_given?
-          desc "del #{base_uuid.upcase}_UUID" , "Removes a(n) #{mode_type} #{base_uuid}."
+          desc "del #{base_uuid.upcase}_UUID --option=OPTION", "Removes a(n) #{mode_type} #{base_uuid}."
           define_method("del") { | uuid |
             puts Vnctl.webapi.delete("#{suffix}/#{uuid}/#{mode_type}", options)
           }
