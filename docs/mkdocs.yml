@@ -12,10 +12,28 @@ copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
 google_analytics: ['UA-63388719-2', 'auto']
 
 pages:
-- 'Home': 'index.md'
-#- 'Concept': 'concept.md'
-- Getting Started:
-  - 'Installation': 'installation.md'
-- Support:
-  - 'Community': 'community.md'
-
+- Home: 'index.md'
+- Concept: 'concept.md'
+- Features: 'features.md'
+- Installation : 'installation.md'
+- Creating virtual networks:
+  - 'Single network': 'creating-virtual-networks/single-network.md'
+  - 'Single network with DHCP server': 'creating-virtual-networks/single-network-dhcp.md'
+  - 'Two networks': 'creating-virtual-networks/two-networks.md'
+  - 'Two network with router': 'creating-virtual-networks/two-networks-router.md'
+- Debugging:
+  - 'vnflows-monitor': 'debugging/vnflows-monitor.md'
+  - 'Integration test': 'debugging/integration-test.md'
+  - 'Troubleshooting': 'debugging/troubleshooting.md'
+- Configuration files:
+  - 'common.conf': 'configuration-files/common.md'
+  - 'vnmgr.conf': 'configuration-files/vnmgr.md'
+  - 'webapi.conf': 'configuration-files/webapi.md'
+  - 'vna.conf': 'configuration-files/vna.md'
+  - 'vnctl.conf': 'configuration-files/vnctl.md'
+- Vnctl:
+  - 'datapaths' : 'vnctl/datapaths.md'
+  - 'interfaces': 'vnctl/interfaces.md'
+  - 'networks'  : 'vnctl/networks.md'
+- Community: 'community.md'
+- Jargon Dictionary: 'jargon-dictionary.md'
