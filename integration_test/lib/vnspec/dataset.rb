@@ -32,6 +32,8 @@ module Vnspec
             "datapaths/#{v.delete(:datapath_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
           when :interface_security_groups
             "interfaces/#{v.delete(:interface_uuid)}/security_groups/#{v.delete(:security_group_uuid)}"
+          when :filter_static
+            "filters/#{v.delete(:filter_uuid)}/static"
           when :dns_records
             "dns_services/#{v.delete(:dns_service_uuid)}/dns_records"
           when :ip_ranges
