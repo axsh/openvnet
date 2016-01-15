@@ -283,7 +283,6 @@ Sequel.migration do
       primary_key :id
       String :uuid, :unique => true, :null => false
 
-      # Rename to 'mode'.
       String :route_type, :default => 'gateway', :null => false
 
       Integer :interface_id, :index => true
