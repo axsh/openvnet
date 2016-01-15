@@ -37,11 +37,11 @@ end
 
 # create template
 
-template_dir = "#{node[:vnet][:lxc][:basedir]}/#{node[:vnet][:lxc][:template_name}"
+template_dir = "#{node[:vnet][:lxc][:basedir]}/#{node[:vnet][:lxc][:template_name]}"
 template_file = "#{template_dir}.tar.gz"
 
 bash "create_template" do
-  not_if { File.exists?(template_file) }
+  not_if { File.exist?(template_file) }
 
   code <<-EOS
     mkdir -p #{template_dir}
