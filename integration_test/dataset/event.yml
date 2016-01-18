@@ -88,14 +88,6 @@ network_services:
     interface_uuid: if-dhcp2
     type: dhcp
 
-  - uuid: ns-router1
-    interface_uuid: if-router1
-    type: router
-
-  - uuid: ns-router2
-    interface_uuid: if-router2
-    type: router
-
 datapath_networks:
 
   - datapath_uuid: dp-1
