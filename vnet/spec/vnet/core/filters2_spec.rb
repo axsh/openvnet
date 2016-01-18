@@ -20,6 +20,7 @@ describe Vnet::Core::Filter2Manager do
                            interface_id: 1,
                            mode: "static") }
 
+  # TODO: Sleep timers here create random fails based on load. Use wait_for_loaded.
   before(:each) do
     filter2_manager.publish(Vnet::Event::FILTER_ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
     sleep(0.01)

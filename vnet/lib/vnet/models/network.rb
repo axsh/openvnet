@@ -3,7 +3,6 @@
 module Vnet::Models
   class Network < Base
     taggable 'nw'
-
     plugin :paranoia_is_deleted
 
     #

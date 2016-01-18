@@ -297,10 +297,13 @@ module Vnet
   module Models
     class InvalidUUIDError < StandardError; end
 
+    autoload :Base, 'vnet/models/base'
+    autoload :BaseMode, 'vnet/models/base_mode'
+    autoload :BaseTaggable, 'vnet/models/base_taggable'
+
     autoload :ActiveInterface, 'vnet/models/active_interface'
     autoload :ActiveNetwork, 'vnet/models/active_network'
     autoload :ActivePort, 'vnet/models/active_port'
-    autoload :Base, 'vnet/models/base'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
     autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'

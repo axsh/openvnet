@@ -23,7 +23,7 @@ module Vnet::Models
     def validate
       validates_presence :network_service_id
 
-      if network_service && network_service.type != "dns"
+      if network_service && network_service.mode != "dns"
         errors.add(:network_service, 'must be dns')
       end
 
