@@ -19,7 +19,7 @@ describe "/dns_services" do
   include_examples "DELETE /:uuid"
 
   describe "POST /" do
-    let!(:network_service) { Fabricate(:network_service, uuid: "ns-test", type: "dns")  }
+    let!(:network_service) { Fabricate(:network_service, uuid: "ns-test", mode: "dns")  }
     accepted_params = {
       uuid: "dnss-test",
       network_service_uuid: "ns-test",

@@ -1,6 +1,5 @@
-Fabricator(:filter_static,
-  class_name: Vnet::Models::FilterStatic
-)
+Fabricator(:filter_static, class_name: Vnet::Models::FilterStatic) do
+end
 
 Fabricator(:static_pass, class_name: Vnet::Models::FilterStatic) do
   ipv4_src_address 1
