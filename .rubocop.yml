@@ -2,14 +2,15 @@ inherit_from: .rubocop_todo.yml
 
 AllCops:
   Include:
-    - 'vnet/bin/**/*'
-    - 'vnet/lib/**/*'
+    - 'client/**/*.rb'
+    - 'integration_test/**/*.rb'
     - 'vnet/rack/**/*'
     - 'vnet/spec/**/*'
-    - 'vnet/tools/**/*'
+    - 'vnet/tools/*'
   Exclude:
-    - 'vnet/db/**/*'
+    - 'vnet/db/migrations/*'
     - 'vnet/lib/vnet/node_api/proxies.rb'
+    - 'vnet/vendor/**/*'
 
 Style/BlockDelimiters:
   Enabled: false
