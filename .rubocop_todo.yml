@@ -133,19 +133,6 @@ Lint/ShadowingOuterLocalVariable:
     - 'vnet/lib/vnet/services/ip_retention_containers/base.rb'
     - 'vnet/spec/fabricators/interface_fabricator.rb'
 
-# Offense count: 19
-# Cop supports --auto-correct.
-Lint/StringConversionInInterpolation:
-  Exclude:
-    - 'integration_test/lib/vnspec/vnet.rb'
-    - 'vnet/lib/sinatra/vnet_api_setup.rb'
-    - 'vnet/lib/vnet/core/address_helpers.rb'
-    - 'vnet/lib/vnet/core/services/dhcp.rb'
-    - 'vnet/lib/vnet/core/tunnels/gre.rb'
-    - 'vnet/lib/vnet/core/tunnels/mac2mac.rb'
-    - 'vnet/lib/vnet/models/base.rb'
-    - 'vnet/lib/vnet/openflow/ovs_ofctl.rb'
-
 # Offense count: 1
 Lint/UnreachableCode:
   Exclude:

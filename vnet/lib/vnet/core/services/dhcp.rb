@@ -87,7 +87,7 @@ module Vnet::Core::Services
 
       dhcp_out = create_dhcp_packet(params)
 
-      debug log_format("DHCP send", "output:#{dhcp_out.to_s}")
+      debug log_format("DHCP send", "output:#{dhcp_out}")
 
       packet_udp_out({ :out_port => message.in_port,
                        :eth_src => mac_info[:mac_address],
@@ -219,7 +219,7 @@ module Vnet::Core::Services
       dhcp_in = DHCP::Message.from_udp_payload(raw_in_l4.payload)
       message_type = dhcp_in.options.select { |each| each.type == $DHCP_MESSAGETYPE }
 
-      debug log_format("message", "#{dhcp_in.to_s}")
+      debug log_format("message", "#{dhcp_in}")
 
       [dhcp_in, message_type]
     end
