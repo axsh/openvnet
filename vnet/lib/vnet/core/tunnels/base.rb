@@ -31,7 +31,7 @@ module Vnet::Core::Tunnels
       @datapath_networks = []
       @datapath_route_links = []
     end
-    
+
     def mode
       :base
     end
@@ -104,7 +104,7 @@ module Vnet::Core::Tunnels
     #
     # Events:
     #
-    
+
     def add_datapath_network(datapath_network)
       raise ArgumentError, "missing network_id parameter" unless datapath_network[:network_id]
 

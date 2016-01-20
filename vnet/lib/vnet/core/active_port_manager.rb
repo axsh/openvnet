@@ -23,7 +23,7 @@ module Vnet::Core
 
     def do_initialize
       info log_format('cleaning up old active port entries')
-      
+
       mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
     end
 

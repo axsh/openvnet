@@ -92,7 +92,7 @@ module Vnet::Openflow
       mask = value if mask.nil?
       (value & (mask & flag)) == flag
     end
-    
+
     def md_to_id(type, metadata)
       type_value = case type
                    when :network then METADATA_TYPE_NETWORK
@@ -100,11 +100,11 @@ module Vnet::Openflow
                    else
                      return nil
                    end
-      
+
       if metadata.nil? || (metadata & METADATA_TYPE_MASK) != type_value
         return nil
       end
-      
+
       metadata & METADATA_VALUE_MASK
     end
 

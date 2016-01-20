@@ -18,7 +18,7 @@ end
 
 bash "add_private_key_to_authorized_keys" do
   code <<-EOS
-    cat /vagrant/share/ssh/vnet_private_key.pub >> /home/vagrant/.ssh/authorized_keys 
+    cat /vagrant/share/ssh/vnet_private_key.pub >> /home/vagrant/.ssh/authorized_keys
   EOS
 
   not_if 'grep "$(cat /vagrant/share/ssh/vnet_private_key.pub)" /home/vagrant/.ssh/authorized_keys'

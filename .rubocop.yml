@@ -2,11 +2,12 @@ inherit_from: .rubocop_todo.yml
 
 AllCops:
   Include:
-    - 'vnet/bin'
-    - 'vnet/lib'
-    - 'vnet/rack'
-    - 'vnet/spec'
-    - 'vnet/tools'
+    - 'vnet/bin/**/*'
+    - 'vnet/lib/**/*'
+    - 'vnet/rack/**/*'
+    - 'vnet/spec/**/*'
+    - 'vnet/tools/**/*'
 
   Exclude:
+    - 'vnet/db/**/*'
     - 'vnet/lib/vnet/node_api/proxies.rb'

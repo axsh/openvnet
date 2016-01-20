@@ -15,7 +15,7 @@ module Vnet::Core::ActiveInterfaces
     end
 
     #
-    # Events: 
+    # Events:
     #
 
     def install

@@ -196,7 +196,7 @@ module VNetAPIClient
                    params)
     end
   end
-  
+
   class VlanTranslation < ApiResource
     api_suffix :vlan_translations
 

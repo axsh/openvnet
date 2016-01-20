@@ -16,7 +16,7 @@
 #   def method_foo(params)
 #     id = params[:id]
 #     foo = params[:foo]
-#   end    
+#   end
 # end
 
 module Vnet::Event

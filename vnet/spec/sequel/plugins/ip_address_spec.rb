@@ -63,7 +63,7 @@ describe Sequel::Plugins::IpAddress do
       it { expect(subject.to_hash[:mac_lease_id]).to eq mac_lease_id_1 }
       it { expect(subject.reload.mac_lease_id).to eq mac_lease_id_1 }
     end
- 
+
     context "interface" do
       it { expect(subject.interface_id).to eq interface_id_1 }
       it { expect(subject.to_hash[:interface_id]).to eq interface_id_1 }

@@ -136,7 +136,7 @@ data_bag(:vms).map { |id| data_bag_item(:vms, id) }.select { |vm|
       EOS
     end
   end
-    
+
   unless vms.empty?
     bash "build_vmbase" do
       code <<-EOS
@@ -145,7 +145,7 @@ data_bag(:vms).map { |id| data_bag_item(:vms, id) }.select { |vm|
       timeout 7200
     end
   end
-    
+
   vms.each do |vm|
     bash "run_vm" do
       code <<-EOS

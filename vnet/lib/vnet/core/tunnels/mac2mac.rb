@@ -68,7 +68,7 @@ module Vnet::Core::Tunnels
       return if @host_port_number.nil?
 
       dpn = detect_network_id?(network_id) || return
-      
+
       mac2mac_actions << {
         :eth_dst => dpn[:mac_address],
         :output => @host_port_number

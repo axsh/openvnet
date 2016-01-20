@@ -152,7 +152,7 @@ module Vnet::Core
       else
         if item.singular
           @dp_info.interface_manager.load_local_interface(item.interface_id)
-        elsif 
+        elsif
           @dp_info.interface_manager.load_shared_interface(item.interface_id)
         end
       end

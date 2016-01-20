@@ -97,7 +97,7 @@ module Vnet::Core
                        "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
 
       del_cookie_for_ip_lease(ipv4_info[:cookie_id])
-      
+
       [mac_info, ipv4_info]
     end
 

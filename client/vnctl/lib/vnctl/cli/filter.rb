@@ -20,11 +20,10 @@ module Vnctl::Cli
       mode.option :protocol, :type => :string, :required => true,
         :desc => "This is the protocol which the filter will listen on."
       mode.option :port_number, :type => :string,
-        :desc => "This is the port number the filter will listen on." 
+        :desc => "This is the port number the filter will listen on."
       mode.option :passthrough, :type => :boolean,
         :desc => "Flag that controlls where the static should pass or drop data for specified rule."
-      
-      
+
       mode.option :ipv4_src_address, :type => :string,
         :desc => "This is the address the filter will apply for incoming traffic."
       mode.option :ipv4_dst_address, :type => :string,

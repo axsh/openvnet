@@ -392,10 +392,6 @@ Style/ClassVars:
 Style/ClosingParenthesisIndentation:
   Exclude:
     - 'integration_test/lib/vnspec/vnet.rb'
-    - 'vnet/db/migrations/0001_origin.rb'
-    - 'vnet/db/migrations/0002_services.rb'
-    - 'vnet/db/migrations/0004_active_items.rb'
-    - 'vnet/db/migrations/0005_mac_leases.rb'
     - 'vnet/lib/vnet/core/active_port_manager.rb'
     - 'vnet/lib/vnet/core/connection_manager.rb'
     - 'vnet/lib/vnet/core/translation_manager.rb'
@@ -1190,11 +1186,6 @@ Style/TrailingCommaInArguments:
   Exclude:
     - 'integration_test/lib/vnspec/spec/event_spec.rb'
     - 'integration_test/lib/vnspec/spec/service_spec.rb'
-    - 'vnet/db/migrations/0001_origin.rb'
-    - 'vnet/db/migrations/0002_services.rb'
-    - 'vnet/db/migrations/0004_active_items.rb'
-    - 'vnet/db/migrations/0005_mac_leases.rb'
-    - 'vnet/db/migrations/0006_filters.rb'
     - 'vnet/spec/vnet/core/filters_spec.rb'
     - 'vnet/spec/vnet/models/network_spec.rb'
     - 'vnet/spec/vnet/services/ip_retention_containers/base_spec.rb'
@@ -1204,11 +1195,6 @@ Style/TrailingCommaInArguments:
 # Configuration parameters: EnforcedStyleForMultiline, SupportedStyles.
 # SupportedStyles: comma, consistent_comma, no_comma
 Style/TrailingCommaInLiteral:
-  Enabled: false
-
-# Offense count: 114
-# Cop supports --auto-correct.
-Style/TrailingWhitespace:
   Enabled: false
 
 # Offense count: 1

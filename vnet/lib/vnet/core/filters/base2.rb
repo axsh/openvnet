@@ -11,7 +11,7 @@ module Vnet::Core::Filters
 
     def initialize(params)
       super
-     
+
       map = params[:map]
 
       @interface_id = map.interface_id
@@ -21,7 +21,7 @@ module Vnet::Core::Filters
     end
 
     def pretty_properties
-      "interface_id:#{@interface_id}" 
+      "interface_id:#{@interface_id}"
     end
 
     # We make a class method out of cookie so we can access

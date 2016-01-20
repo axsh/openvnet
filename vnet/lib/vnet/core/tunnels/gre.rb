@@ -81,7 +81,7 @@ module Vnet::Core::Tunnels
 
     def actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
       return if @tunnel_port_number.nil? || !has_network_id?(network_id)
-      
+
       tunnel_actions << { :output => @tunnel_port_number }
     end
 

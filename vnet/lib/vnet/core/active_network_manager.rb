@@ -30,7 +30,7 @@ module Vnet::Core
         warn log_format("could not activate network", params.inspect)
         return
       end
-      
+
       # Wait for loaded...
       item_model.to_hash
     end

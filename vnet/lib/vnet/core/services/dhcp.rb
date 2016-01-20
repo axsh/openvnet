@@ -170,7 +170,7 @@ module Vnet::Core::Services
       ip_lease = MW::IpLease.batch.dataset.join_ip_addresses.where(filter).first.commit(fill: :ipv4_address)
       ip_lease && ipaddr_to_octets(ip_lease.ipv4_address)
     end
-    
+
     def ipaddr_to_octets(ip)
       i = ip.to_i
       [ (i >> 24) % 256, (i >> 16) % 256, (i >> 8) % 256, i % 256 ]

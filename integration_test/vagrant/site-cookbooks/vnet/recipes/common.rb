@@ -21,7 +21,7 @@ node[:vnet][:ruby_versions].each do |version|
   rbenv_ruby version do
     global version == node[:vnet][:ruby_global]
   end
- 
+
   rbenv_gem "bundler" do
     ruby_version version
   end

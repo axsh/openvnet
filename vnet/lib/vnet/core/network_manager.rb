@@ -12,7 +12,7 @@ module Vnet::Core
     # Events:
     #
     event_handler_default_drop_all
-    
+
     # Networks have no created item event as they always get loaded
     # when used by other managers.
     subscribe_event NETWORK_INITIALIZED, :load_item
@@ -170,7 +170,7 @@ module Vnet::Core
 
       @interface_networks.each { |interface_id, networks|
         next unless networks.include? network_id
-        
+
         port_numbers << (@interface_ports[interface_id] || next)
       }
 
