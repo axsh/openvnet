@@ -208,7 +208,7 @@ module Vnet::Core
       return @datapath_info &&
         params[:id] &&
         params[:interface_id]
-        params[:datapath_id]
+      params[:datapath_id]
     end
 
     def params_current_datapath?(params)

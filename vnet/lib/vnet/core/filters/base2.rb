@@ -72,7 +72,7 @@ module Vnet::Core::Filters
 
       unless egress_passthrough == @egress_passthrough
        @egress_passthrough = egress_passthrough
-        flows_for_egress_filtering(flows)
+       flows_for_egress_filtering(flows)
       end
 
       @dp_info.add_flows(flows)

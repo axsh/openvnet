@@ -721,18 +721,6 @@ Style/IndentArray:
 Style/IndentHash:
   Enabled: false
 
-# Offense count: 7
-# Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle, SupportedStyles.
-# SupportedStyles: normal, rails
-Style/IndentationConsistency:
-  Exclude:
-    - 'vnet/lib/vnet/core/filters/base2.rb'
-    - 'vnet/lib/vnet/core/interface_port_manager.rb'
-    - 'vnet/lib/vnet/endpoints/1.0/responses/filter.rb'
-    - 'vnet/spec/vnet/core/filters_spec.rb'
-    - 'vnet/spec/vnet/endpoints/1.0/security_groups_spec.rb'
-
 # Offense count: 14
 # Cop supports --auto-correct.
 # Configuration parameters: Width.
