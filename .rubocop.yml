@@ -7,7 +7,9 @@ AllCops:
     - 'vnet/rack/**/*'
     - 'vnet/spec/**/*'
     - 'vnet/tools/**/*'
-
   Exclude:
     - 'vnet/db/**/*'
     - 'vnet/lib/vnet/node_api/proxies.rb'
+
+Style/BlockDelimiters:
+  Enabled: false
