@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Removed` The `broadcast_mac_address` parameter in the WebAPI's datapaths endpoint. Use `mac_address` instead.
 
+* `Changed` Optimized manager initialization code so no events can be processed before the targeted managers are properly initialized.
+
 * `Changed` Added a default value of `false` to all `is_deleted` flags in the database. Now OpenVNet can be used with MySQL's STRICT mode.
 
 * `Fixed` An issue where vna could retrieve network resources from vnmgr while their related resources were not fully loaded yet.
