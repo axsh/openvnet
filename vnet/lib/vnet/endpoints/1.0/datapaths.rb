@@ -41,23 +41,20 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   param_uuid M::Interface, :interface_uuid, required: true
-
-  # 'broadcast_mac_address' is deprecated and should be phased out.
-  param :mac_address, :String, transform: PARSE_MAC
-  param :broadcast_mac_address, :String, transform: PARSE_MAC
+  param :mac_address, :String, required: true, transform: PARSE_MAC
   post '/:uuid/networks/:network_uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath)
-    interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
     network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
 
-    mac_address = params["mac_address"] || params["broadcast_mac_address"]
+    options = {
+      datapath_id: check_syntax_and_pop_uuid(M::Datapath).id,
+      interface_id: check_syntax_and_pop_uuid(M::Interface, 'interface_uuid').id,
+      network_id: network.id,
+      mac_address: params["mac_address"]
+    }
 
-    M::DatapathNetwork.create({ :datapath_id => datapath.id,
-                                :interface_id => interface.id,
-                                :network_id => network.id,
-                                :mac_address => mac_address
-                              })
+    M::DatapathNetwork.create(options)
 
+    # TODO: Change return type.
     respond_with(R::Network.generate(network))
   end
 
@@ -66,10 +63,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   delete '/:uuid/networks/:network_uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath)
     network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
 
-    M::DatapathNetwork.destroy(datapath_id: datapath.id, generic_id: network.id)
+    options = {
+      datapath_id: check_syntax_and_pop_uuid(M::Datapath).id,
+      generic_id: network.id,
+    }
+
+    M::DatapathNetwork.destroy(options)
 
     respond_with([network.uuid])
   end
@@ -77,16 +78,18 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   param_uuid M::Interface, :interface_uuid, required: true
   param :mac_address, :String, required: true, transform: PARSE_MAC
   post '/:uuid/route_links/:route_link_uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath)
-    interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')
     route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
 
-    M::DatapathRouteLink.create({ :datapath_id => datapath.id,
-                                  :interface_id => interface.id,
-                                  :route_link_id => route_link.id,
-                                  :mac_address => params["mac_address"],
-                                })
+    options = {
+      datapath_id: check_syntax_and_pop_uuid(M::Datapath).id,
+      interface_id: check_syntax_and_pop_uuid(M::Interface, 'interface_uuid').id,
+      route_link_id: route_link.id,
+      mac_address: params["mac_address"]
+    }
 
+    M::DatapathRouteLink.create(options)
+
+    # TODO: Change return type.
     respond_with(R::RouteLink.generate(route_link))
   end
 
@@ -95,11 +98,16 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   delete '/:uuid/route_links/:route_link_uuid' do
-    datapath = check_syntax_and_pop_uuid(M::Datapath)
     route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
 
-    M::DatapathRouteLink.destroy(datapath_id: datapath.id, generic_id: route_link.id)
+    options = {
+      datapath_id: check_syntax_and_pop_uuid(M::Datapath).id,
+      generic_id: route_link.id
+    }
 
+    M::DatapathRouteLink.destroy(options)
+
+    # TODO: Change return type.
     respond_with([route_link.uuid])
   end
 
