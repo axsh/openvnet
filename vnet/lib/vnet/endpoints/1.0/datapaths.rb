@@ -41,7 +41,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   param_uuid M::Interface, :interface_uuid, required: true
-  param :mac_address, :String, required: true, transform: PARSE_MAC
+  param :mac_address, :String, required: false, transform: PARSE_MAC
   post '/:uuid/networks/:network_uuid' do
     network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
 
@@ -52,10 +52,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
       mac_address: params["mac_address"]
     }
 
-    M::DatapathNetwork.create(options)
-
-    # TODO: Change return type.
-    respond_with(R::Network.generate(network))
+    object = M::DatapathNetwork.create(options)
+    respond_with(R::DatapathNetwork.generate(object))
   end
 
   get '/:uuid/networks' do
@@ -76,7 +74,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   end
 
   param_uuid M::Interface, :interface_uuid, required: true
-  param :mac_address, :String, required: true, transform: PARSE_MAC
+  param :mac_address, :String, required: false, transform: PARSE_MAC
   post '/:uuid/route_links/:route_link_uuid' do
     route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
 
@@ -87,10 +85,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
       mac_address: params["mac_address"]
     }
 
-    M::DatapathRouteLink.create(options)
-
-    # TODO: Change return type.
-    respond_with(R::RouteLink.generate(route_link))
+    object = M::DatapathRouteLink.create(options)
+    respond_with(R::DatapathRouteLink.generate(object))
   end
 
   get '/:uuid/route_links' do
