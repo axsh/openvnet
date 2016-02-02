@@ -57,6 +57,9 @@ module Vnet
   end
 
   module Core
+    autoload :Manager, 'vnet/core/manager'
+    autoload :ActiveManager, 'vnet/core/active_manager'
+
     autoload :ActiveInterfaceEvents, 'vnet/core/event_helpers'
     autoload :ActiveNetworkEvents, 'vnet/core/event_helpers'
     autoload :ActivePortEvents, 'vnet/core/event_helpers'
@@ -81,7 +84,6 @@ module Vnet
     autoload :InterfaceManager, 'vnet/core/interface_manager'
     autoload :InterfacePort, 'vnet/core/interface_port'
     autoload :InterfacePortManager, 'vnet/core/interface_port_manager'
-    autoload :Manager, 'vnet/core/manager'
     autoload :Network, 'vnet/core/items'
     autoload :NetworkManager, 'vnet/core/network_manager'
     autoload :Port, 'vnet/core/port'
