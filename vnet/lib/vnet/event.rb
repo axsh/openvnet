@@ -43,6 +43,9 @@ module Vnet
     ACTIVE_NETWORK_CREATED_ITEM = "active_network_created_item"
     ACTIVE_NETWORK_DELETED_ITEM = "active_network_deleted_item"
 
+    ACTIVE_NETWORK_ACTIVATE = "active_network_activate"
+    ACTIVE_NETWORK_DEACTIVATE = "active_network_deactivate"
+
     #
     # Active Port events:
     #
