@@ -78,11 +78,6 @@ module Vnspec
       Vnet.start(:vna)
 
       VM.start_network
-
-      # Sleep to ensure the vna's have initialized before dumping
-      # flows or starting specs.
-      # sleep(10)
-
       Vnet.dump_flows
 
       true
