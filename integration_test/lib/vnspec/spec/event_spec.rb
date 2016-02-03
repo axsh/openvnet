@@ -152,19 +152,19 @@ describe "event" do
         datapath.add_datapath_network(
           "nw-public1",
           interface_uuid: "if-dp1eth0",
-          broadcast_mac_address: "02:00:00:aa:01:01"
+          mac_address: "02:00:00:aa:01:01"
         )
 
         datapath.add_datapath_network(
           "nw-vnet1",
           interface_uuid: "if-dp1eth0",
-          broadcast_mac_address: "02:00:00:aa:00:01"
+          mac_address: "02:00:00:aa:00:01"
         )
 
         datapath.add_datapath_network(
           "nw-vnet2",
           interface_uuid: "if-dp1eth0",
-          broadcast_mac_address: "02:00:00:aa:00:02"
+          mac_address: "02:00:00:aa:00:02"
         )
 
         sleep(1)
