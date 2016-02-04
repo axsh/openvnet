@@ -48,7 +48,7 @@ describe "/datapaths" do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :network }
 
-    let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+    let!(:interface) { Fabricate(:interface_w_ip_lease) { uuid "if-test" } }
 
     include_examples "many_to_many_relation", "networks", {
       :mac_address => "02:00:00:cc:00:02",
@@ -60,7 +60,7 @@ describe "/datapaths" do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :route_link }
 
-    let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+    let!(:interface) { Fabricate(:interface_w_ip_lease) { uuid "if-test" } }
 
     include_examples "many_to_many_relation", "route_links", {
       :mac_address => "02:00:00:cc:00:02",

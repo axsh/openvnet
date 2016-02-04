@@ -15,6 +15,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Changed` Added a default value of `false` to all `is_deleted` flags in the database. Now OpenVNet can be used with MySQL's STRICT mode.
 
+* `Changed` The `mac_address` parameter in the WebAPI's `datapath_networks` and `datapath_route_links` endpoints are no longer required. OpenVNet will now generate them if not provided.
+
 * `Fixed` An issue where vna could retrieve network resources from vnmgr while their related resources were not fully loaded yet.
 
 ## [0.8] - 2015-09-04
