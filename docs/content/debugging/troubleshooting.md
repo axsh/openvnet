@@ -41,7 +41,7 @@ Run `ovs-vsctl show`. The output should look similar to this.
     Bridge "br0"
         Controller "tcp:127.0.0.1:6633"
             is_connected: true
-        fail_mode: standalone
+        fail_mode: secure
         Port "inst2"
             Interface "inst2"
         Port "br0"
@@ -98,7 +98,7 @@ Run the `ovs-vsctl show` command again. Like in the section above, the output sh
     Bridge "br0"
         Controller "tcp:127.0.0.1:6633"
             is_connected: true
-        fail_mode: standalone
+        fail_mode: secure
         Port "inst2"
             Interface "inst2"
         Port "br0"
