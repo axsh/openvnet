@@ -139,8 +139,7 @@ module Vnet
     end
   end
 
-  class ItemDpUuidMode < ItemDpBase
-    attr_reader :uuid
+  class ItemDpUuidMode < ItemDpUuid
     attr_reader :mode
 
     def initialize(params)
@@ -151,10 +150,7 @@ module Vnet
       map = params[:map]
       @id = map.id
       @uuid = map.uuid
-    end
-
-    def pretty_id
-      "#{@uuid}/#{@id}"
+      @mode = map.mode.to_sym
     end
 
     def pretty_properties
