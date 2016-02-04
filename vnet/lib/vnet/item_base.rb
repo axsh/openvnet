@@ -139,4 +139,27 @@ module Vnet
     end
   end
 
+  class ItemDpUuidMode < ItemDpBase
+    attr_reader :uuid
+    attr_reader :mode
+
+    def initialize(params)
+      @installed = false
+      @loaded = false
+      @dp_info = params[:dp_info]
+
+      map = params[:map]
+      @id = map.id
+      @uuid = map.uuid
+    end
+
+    def pretty_id
+      "#{@uuid}/#{@id}"
+    end
+
+    def pretty_properties
+      "mode:#{@mode}"
+    end
+  end
+
 end
