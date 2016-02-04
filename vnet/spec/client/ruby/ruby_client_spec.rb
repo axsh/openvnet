@@ -181,6 +181,16 @@ describe VNetAPIClient do
                      'DELETE  /translations/:uuid/static_address'
   end
 
+  describe VNetAPIClient::Filter do
+    include_examples 'test_method', :add_filter_static,
+                     'POST  /filters/:uuid/static'
+    include_examples 'test_method', :remove_filter_static,
+                     'DELETE  /filters/:uuid/static'
+    include_examples 'test_method', :show_filter_static,
+                     'GET  /filters/static/'
+    include_examples 'test_method', :show_filter_static_by_uuid,
+                     'GET  /filters/static/:uuid'
+  end
   #
   # Finally we make sure that no non standard routes are left untested
   #

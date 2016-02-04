@@ -6,6 +6,11 @@ module Vnet::NodeApi
       def update(uuid, options)
         options = options.dup
 
+        ife = options["ingress_filtering_enabled"]
+        unless ife.nil?
+          options["enable_legacy_filtering"] = ife
+        end
+
         transaction {
           model_class[uuid].tap do |i|
             return unless i
@@ -24,6 +29,13 @@ module Vnet::NodeApi
             dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
           when "false"
             dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
+          end
+
+          case options[:enable_filtering]
+          when "true"
+            dispatch_event(INTERFACE_ENABLED_FILTERING2, id: interface.id)
+          when "false"
+            dispatch_event(INTERFACE_DISABLED_FILTERING2, id: interface.id)
           end
 
         end

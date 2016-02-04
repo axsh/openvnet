@@ -6,18 +6,14 @@
 Welcome to the world of OpenVNet! With this installation guide we help you
 create a very simple yet innovative virtual network environment.
 
-![vnet_minimum](https://www.dropbox.com/s/dezarv561fg7sdj/vnet_minimum.png?dl=1)
+In this guide we are going to install all of OpenVNet's services into a single machine running CentOS. This can be a virtual machine. Afterwards we are going to use LXC to set up two containers that we'll connect to OpenVNet's virtual networks.
 
-On a given server (here named as server1) there is one virtual network whose network address is 10.100.0.0/24 and 2 virtual machines joining it.
-The orange circles describe OpenVNet's ruby processes; vna, vnmgr and webapi.
-See architecture for more details of how the OpenVNet works.
+![All in one host](img/all-in-one-host.png)
 
 
 ## Requirements
 
-+ Ruby 2.1.1
-+ CentOS 6.6
-+ Open vSwitch 2.3.1
++ CentOS 6
 + Internet connection
 
 ## Installation
@@ -38,7 +34,7 @@ curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercont
 
 Each repo has the following packages:
 
-* openvnet.repo
+#### openvnet.repo
   * openvnet (metapackage)
   * openvnet-common
   * openvnet-vna
@@ -46,7 +42,7 @@ Each repo has the following packages:
   * openvnet-webapi
   * openvnet-vnctl
 
-* openvnet-third-party.repo
+#### openvnet-third-party.repo
   * openvnet-ruby
   * openvswitch
 
@@ -63,52 +59,21 @@ Install OpenVNet packages.
 yum install -y openvnet
 ```
 
-`openvnet` is a metapackage. It is equivalent to installing `openvnet-common`,
-`openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi`, `openvnet-vnctl` at once.
+`openvnet` is an metapackage that depends on `openvnet-common`, `openvnet-vna`, `openvnet-vnmgr`, `openvnet-webapi` and `openvnet-vnctl`. It's just a convenient way to install all of those at once.
 
-Install [Redis](http://redis.io) and [MySQL server](https://www.mysql.com). Redis is required for OpenVNet's processes to communicate and MySQL for data storage. Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
+Install [Redis](http://redis.io) and [MySQL server](https://www.mysql.com). Redis is required for OpenVNet's processes to communicate and MySQL is used to store the network state.
 
-```
+Though they're both required, they are not package dependencies because OpenVNet is distributed software. In a production environment, it is very likely for these packages to be installed on other machines than the OpenVNet processes themselves.
+
+```bash
 yum install -y mysql-server redis
 ```
 
-### Edit Configuration Files
+### Setup Open vSwitch
 
-Edit the file `/etc/openvnet/vnmgr.conf`
+We are going to create a bridge `br0` using Open vSwitch. Later we will attach our VMs `inst1` and `inst2` to this bridge.
 
-    node {
-      id "vnmgr"
-      addr {
-        protocol "tcp"
-        host "127.0.0.1"
-        public ""
-        port 9102
-      }
-    }
-
-Modify the parameters `host` and `public` according to your environment. In order for
-the sample environment in the overview section we leave those parameters as is. The detail of each parameter is following.
-
-- **id** : OpenVNet relies on the [0mq](http://zeromq.org) protocol for communication among its processes. Hereby processes means vnmgr, vna and webapi. This id is used by 0mq to identify each process. Any string here is fine as long as there's no collision in OpenVNet. It's recommended to just use the default values.
-
-- **protocol** : The layer 4 protocol which is either TCP or UDP. A socket which the 0mq needs will be created based on this parameter. The default value is `tcp`.
-
-- **host** : The IP address of the vnmgr node. We use loopback address in this guide because all the processes reside on the same node .
-
-- **public** : In case the process running in a NAT environment, specify the NAT address as the process can be reached from the outside of the NAT environment.
-
-- **port** : The port number that the process will listen to. Specify a unique port number and make sure the port number is different for each of the OpenVNet's processes and also not taken by any other process.
-
-`/etc/openvnet/vna.conf` and `/etc/openvnet/webapi.conf` have the same structure as `vnmgr.conf`. Edit them if necessary otherwise leave them as is for the sample environment we are just creating. We need the `id` parameter in `vna.conf` later when we configure the database. Please make sure what you specified.
-
-### Setup Local Infrastructure
-
-Datapath is one of the Linux kernel capabilities behaving similar to the Linux bridge.
-Create the file `/etc/sysconfig/network-scripts/ifcfg-br0` with the following contents. However you need to pay attention to several parameters.
-
-* datapath-id
-
-The datapath ID that the Open vSwitch will use. Set unique 16 hex digits as you like.
+Create the file `/etc/sysconfig/network-scripts/ifcfg-br0` with the following contents.
 
 ```bash
 DEVICE=br0
@@ -127,36 +92,24 @@ OVS_EXTRA="
 "
 ```
 
-Start `openvswitch` service and `ifup` the datapath.
+**Remark:** Notice how we set the `datapath-id` to `0000aaaaaaaaaaaa`? This is a unique ID that OpenVNet will use to recognise this bridge later. You can set it to any 16 hex digits of your choosing but make sure to remember it for later.
+
+Start the `openvswitch` service and bring  up the bridge.
 
 ```bash
 service openvswitch start
 ifup br0
 ```
 
-Start redis
-
-```bash
-service redis start
-```
-
 ### Setup Database
 
-Edit `/etc/openvnet/common.conf` if necessary. The sample environment uses the default settings.
-
-Launch MySQL server.
+Launch the MySQL server.
 
 ```bash
 service mysqld start
 ```
 
-To automatically launch the MySQL server at boot, execute the following command.
-
-```bash
-chkconfig mysqld on
-```
-
-Set `PATH` environment variable as following since the OpenVNet uses its own ruby binary.
+OpenVNet uses its own ruby binary. We need to add it to the `PATH` variable so we can call bundle in the next step.
 
 ```bash
 PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
@@ -170,6 +123,18 @@ bundle exec rake db:create
 bundle exec rake db:init
 ```
 
+### Start redis
+
+As mentioned above, OpenVNet services require redis to communicate with each other. Start it.
+
+```bash
+service redis start
+```
+
+### Start OpenVNet services
+
+Starting the OpenVNet services will create log files in the `/var/log/openvnet` directory. If anything goes wrong, you might find useful error messages in them.
+
 Start vnmgr and webapi.
 
 ```bash
@@ -177,18 +142,25 @@ initctl start vnet-vnmgr
 initctl start vnet-webapi
 ```
 
-We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is Web API client offered by the `openvnet-vnctl` package.
+We use `vnctl` to create the database records subsequent to the above configurations. `vnctl` is a Web API client offered by the `openvnet-vnctl` package.
 
+#### Datapath
+
+Remember the `datapath-id` we set when setting up Open vSwitch? The following command will tell OpenVNet that VNA needs to manage this datapath.
+
+```bash
+vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
+```
 
 #### Mac Address Range
 
-In order for the network overlay to work OpenVNet uses mac addresses independently of any real or virtual interface. To allocate these it requires the creation of a default mac range group.
+In order for the network overlay to work, OpenVNet uses mac addresses independently of any real or virtual interface. To allocate these it requires the creation of a default mac range group.
 
 ```bash
 vnctl mac_range_groups add --uuid mrg-dpg
 ```
 
-In `common.conf`, the mac range group is set by default to `mrg-dpg` and can be changed using the `datapath_mac_group` option.
+In [common.conf](configuration-files/common), the mac range group is set by default to `mrg-dpg` and can be changed using the `datapath_mac_group` option.
 
 ```bash
 vnctl mac_range_groups mac_ranges add mrg-dpg --begin_mac_address 52:56:01:00:00:00 --end_mac_address 52:56:01:ff:ff:ff
@@ -198,91 +170,15 @@ vnctl mac_range_groups mac_ranges add mrg-dpg --begin_mac_address 52:56:01:00:00
 
 - **end_mac_address** : The highest possible mac address value in the range.
 
-
-#### Datapath
-
-We created a datapath earlier that the OpenVNet needs to know. The following database record must be created in order to tell the OpenVNet about the datapath.
+Now let's start vna.
 
 ```bash
-vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
-```
-
-* dpid
-
-The datapath ID specified in `/etc/sysconfig/network-scripts/ifcfg-br0`
-
-* node-id
-
-The ID of the vna written in `/etc/openvnet/vna.conf`
-
-
-#### Network
-
-In the figure of the sample environment there is a light purple circle which represents a virtual network. You need to define the virtual network by `vnctl networks add` subcommand with the following parameters.
-
-```bash
-vnctl networks add --uuid nw-test1 --display-name testnet1 --ipv4-network 10.100.0.0 --ipv4-prefix 24 --network-mode virtual
-```
-
-* ipv4-network
-
-The IPv4 network address.
-
-* ipv4-prefix
-
-The IPv4 network prefix. (default 24)
-
-* network-mode
-
-The mode of the network to create. We are currently creating the virtual network (10.100.0.0/24) mentioned in the figure. That is why we specify `virtual` here.
-
-
-#### Interface
-
-As the sample environment has 2 virtual machines, here we define 2 database records of interface. These records will be associated to the tap interfaces of the virtual machines. The former record contains `inst1`'s network interface information. The latter is for `inst2`.
-
-```bash
-vnctl interfaces add --uuid if-inst1 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:01 --network-uuid nw-test1 --ipv4-address 10.100.0.10 --port-name inst1
-vnctl interfaces add --uuid if-inst2 --mode vif --owner-datapath-uuid dp-test1 --mac-address 10:54:ff:00:00:02 --network-uuid nw-test1 --ipv4-address 10.100.0.11 --port-name inst2
-```
-
-* mode
-
-The mode of the interface. An entry with `vif` mode is basically for a virtual or physical device that is attached to the datapath of the Open vSwitch. Another mode might be specified for a physical device but here we omit the explanation about it.
-
-* owner-datapath-uuid
-
-The UUID of the datapath to which this interface will be connected.
-
-* mac-address
-
-The MAC address of the network interface of the virtual machine.
-
-* network-uuid
-
-The UUID of the virtual network to participate
-
-* ipv4-address
-
-The IPv4 address which will be assigned to the network interface.
-
-* port-name
-
-The OpenVNet associates an Open vSwitch's port with a database record of the interface table if its `port-name` is corresponded to what you can see by `ovs-vsctl show`.
-
-
-### Launch Services
-
-The OpenVNet's processes(vnmgr, webapi and vna) are registered as upstart jobs.
-You can launch them using the following commands. vnmgr and webapi may have already been launched in the last sections.
-
-```bash
-initctl start vnet-vnmgr
-initctl start vnet-webapi
 initctl start vnet-vna
 ```
 
-The log files are created in the /var/log/openvnet directory. Refer to them if something bad happens. If the vna is successfully launched you can see `is_connected: true` by `ovs-vsctl show` such as following.
+You can run `ovs-vsctl show` to check if vna is working correctly.
+
+You should be able to see `is_connected: true` in its output. If it doesn't appear right away, wait a few seconds and then try again. If it still doesn't appear, something went wrong and you should have a look at `/var/log/openvnet/vna.log` for errors.
 
 ```bash
 fbe23184-7f14-46cb-857b-3abf6153a6d6
@@ -291,24 +187,19 @@ fbe23184-7f14-46cb-857b-3abf6153a6d6
             is_connected: true
 ```
 
-This means the OpenFlow controller which is vna is now connected to the datapath. After the connection between the OpenFlow controller and the
-datapath is established it starts installing the flows on the datapath.
+## LXC Setup
 
-Verification
--------
+We now have OpenVNet set up and working but we don't have any virtual machines connected to it yet. In this step we are going to use [LXC](https://linuxcontainers.org) to create the two containers (guests) `inst1` and `inst2` that will be connected to OpenVNet's virtual networks.
 
-By following all the instructions from the beginning to this section, you already have the sample environment. In this section, we are firstly going to play around the environment then secondary see network packets going through OpenFlow rules to reach
-from one guest to another.
+Any virtualization techonology will work but in this guide we're using LXC because it's lightweight and can easily be set up inside virtual machines as well.
 
-As a representation of the guest here we use [LXC](https://linuxcontainers.org), which helps users run multiple isolated Linux system containers. Any other virtualization technologies might be used, however we take LXC since it is easy to create/destroy/configure and simple enough to do this verification.
-
-Install LXC
+### Install LXC
 
 ```bash
 yum -y install lxc lxc-templates
 ```
 
-Create and mount cgroup
+### Create and mount cgroup
 
 ```bash
 mkdir /cgroup
@@ -316,7 +207,9 @@ echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
 mount /cgroup
 ```
 
-Create 2 LXC guests. Rsync is required for this. If it's not installed already, install it with the following command.
+### Create 2 LXC guests
+
+Rsync is required for this. If it's not installed already, install it with the following command.
 
 ```bash
 yum install -y rsync
@@ -327,15 +220,16 @@ lxc-create -t centos -n inst1
 lxc-create -t centos -n inst2
 ```
 
-Configure interfaces of each guest
+These commands' output will tell you were to find or set the root password for `inst1` and `inst2`. Make sure set it and remember it for later. You're going to need it to log into them.
+
+### Apply Network interface settings
+
+Open the file `/var/lib/lxc/inst1/config` and replace its contents with the following.
 
 ```bash
-vi /var/lib/lxc/inst1/config
-
 lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.veth.pair = inst1
-lxc.network.ipv4 = 10.100.0.10
 lxc.network.hwaddr = 10:54:FF:00:00:01
 lxc.rootfs = /var/lib/lxc/inst1/rootfs
 lxc.include = /usr/share/lxc/config/centos.common.conf
@@ -344,13 +238,13 @@ lxc.utsname = inst1
 lxc.autodev = 0
 ```
 
-```bash
-vi /var/lib/lxc/inst2/config
+Open the file `/var/lib/lxc/inst2/config` and replace its contents with the following.
 
+
+```bash
 lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.veth.pair = inst2
-lxc.network.ipv4 = 10.100.0.11
 lxc.network.hwaddr = 10:54:FF:00:00:02
 lxc.rootfs = /var/lib/lxc/inst2/rootfs
 lxc.include = /usr/share/lxc/config/centos.common.conf
@@ -359,45 +253,22 @@ lxc.utsname = inst2
 lxc.autodev = 0
 ```
 
-We do not use `lxc.network.link` parameter because the Linux bridge is replaced by the Open vSwitch.
+**Remark:** We do not use `lxc.network.link` parameter because the Linux bridge is replaced by the Open vSwitch. That parameter expects to interface with the Linux bridge and containers will fail to start if you attempt to use it with Open vSwitch. We'll enslave the tap interfaces manually in the next step.
 
-Make sure that the IPv4 address and MAC address are the same as what you specify when you create the interface database records.
-
-Launch the LXC guests then enslave the LXC's tap interfaces to the datapath.
+### Start the LXC guests
 
 ```bash
 lxc-start -d -n inst1
 lxc-start -d -n inst2
+```
 
+### Attach them to Open vSwitch
+
+```bash
 ovs-vsctl add-port br0 inst1
 ovs-vsctl add-port br0 inst2
 ```
 
-Now the LXC's network interfaces are attached to the Open vSwitch, likewise you plug a LAN cable to a network switch.
+Now the LXC's network interfaces are attached to the Open vSwitch. This is basically the same as plugging a network cable into a physical switch.
 
-Log in to the inst1 to see if the IP address is assigned properly.
-
-```bash
-lxc-console -n inst1
-ip a
-```
-
-ping to inst2 (10.100.0.11)
-
-```bash
-ping 10.100.0.11
-```
-
-You would see the ping reply from the peer machine (in this case inst2). Meanwhile you can see which flows are selected by `vnflows-monitor`. Execute the following command on a lxc guest, then ping from one another.
-
-```bash
-cd /opt/axsh/openvnet/vnet/bin
-./vnflows-monitor -d -c 0
-```
-
-You can see all the flows by calling `vnflows-monitor` without arguments.
-
-```bash
-cd /opt/axsh/openvnet/vnet/bin
-./vnflows-monitor
-```
+Congratulations. You have now installed OpenVNet and you're ready to start building your first virtual network. We recommend you start with the simplest possible setting: [Single Network](creating-virtual-networks/single-network).

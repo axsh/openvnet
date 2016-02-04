@@ -16,10 +16,8 @@ module Vnctl::Cli
     define_standard_crud_commands
 
     define_relation :networks do |relation|
-      relation.option :mac_address, :type => :string,
+      relation.option :mac_address, :type => :string, :required => true,
         :desc => "The broadcast mac address for mac2mac to use in this network."
-      relation.option :broadcast_mac_address, :type => :string,
-        :desc => "Deprecated. Use --mac_address instead."
       relation.option :interface_uuid, :type => :string, :required => true,
         :desc => "The host interface uuid to use for this network."
     end

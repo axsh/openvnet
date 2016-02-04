@@ -18,7 +18,8 @@ module Vnet::Core::Interfaces
 
     def disable_filtering
       @ingress_filtering_enabled = false
-      @dp_info.add_flows flows_for_disabled_filtering
+      
+      @dp_info.add_flows flows_for_disabled_legacy_filtering
       @dp_info.filter_manager.async.remove_filters(@id)
 
       @mac_addresses.each { |id, mac_address|
@@ -28,6 +29,14 @@ module Vnet::Core::Interfaces
       }
     end
 
+    def enable_filtering2
+      @enabled_filtering = true
+    end
+
+    def disable_filtering2
+      @enabled_filtering = false
+      @dp_info.add_flows flows_for_disabled_filtering
+    end
     #
     # Internal methods:
     #
@@ -39,7 +48,17 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 90,
                            match_interface: @id,
-                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING))
+                           cookie: self.cookie
+                          )
+    end
+
+    def flows_for_disabled_legacy_filtering(flows = [])
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 91,
+                           match_interface: @id,
+                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING)
+                          )
     end
 
     def flows_for_interface_mac(flows, mac_info)
@@ -68,7 +87,26 @@ module Vnet::Core::Interfaces
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       #
-      # Classifier
+      # new Classifier
+      #
+      if @enabled_filtering
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_EGRESS_FILTER,
+                             priority: 90,
+                             match_interface: @id,
+                             cookie: cookie
+                            )
+      else
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                             goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                             priority: 30,
+                             match_interface: @id,
+                             cookie: cookie
+                            )
+      end
+      
+      #
+      # Validate (old Classifier)
       #
       [{ :eth_type => 0x0800,
          :eth_src => mac_info[:mac_address],
@@ -83,18 +121,20 @@ module Vnet::Core::Interfaces
          :arp_sha => mac_info[:mac_address],
          :arp_spa => ipv4_info[:ipv4_address]
        }].each { |match|
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_EGRESS_FILTER,
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                             goto_table: TABLE_NETWORK_CONNECTION,
                              priority: 30,
                              match: match,
                              match_interface: @id,
                              write_network: ipv4_info[:network_id],
-                             cookie: cookie)
+                             cookie: cookie
+                            )
       }
 
       #
       # IPv4 
       #
+
       flows << flow_create(table: TABLE_ARP_TABLE,
                            goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                            priority: 40,
@@ -205,7 +245,7 @@ module Vnet::Core::Interfaces
     def flows_for_router_egress_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
                            priority: 20,
                            match: {
                              :eth_src => mac_info[:mac_address]

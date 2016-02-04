@@ -29,7 +29,7 @@ module Vnet::Core
     # TODO: Refactor these:
     def dns_server_for(network_id)
       @items.dup.each do |_, item|
-        next unless item.type == TYPE_DNS && item.networks[network_id]
+        next unless item.mode == MODE_DNS.to_sym && item.networks[network_id]
         return item.dns_server_for(network_id)
       end
       nil
@@ -37,14 +37,14 @@ module Vnet::Core
 
     def add_dns_server(network_id, dns_server)
       @items.dup.each do |_, item|
-        next unless item.type == TYPE_DHCP && item.networks[network_id]
+        next unless item.mode == MODE_DHCP.to_sym && item.networks[network_id]
         item.add_dns_server(network_id, dns_server)
       end
     end
 
     def remove_dns_server(network_id)
       @items.dup.each do |_, item|
-        next unless item.type == TYPE_DHCP && item.networks[network_id]
+        next unless item.mode == MODE_DHCP.to_sym && item.networks[network_id]
         item.remove_dns_server(network_id)
       end
     end
@@ -91,10 +91,10 @@ module Vnet::Core
 
     def item_initialize(item_map)
       item_class =
-        case item_map.type
-        when TYPE_DHCP   then Services::Dhcp
-        when TYPE_DNS    then Services::Dns
-        when TYPE_ROUTER then Services::Router
+        case item_map.mode
+        when MODE_DHCP   then Services::Dhcp
+        when MODE_DNS    then Services::Dns
+        when MODE_ROUTER then Services::Router
         else
           return
         end
@@ -114,7 +114,7 @@ module Vnet::Core
         }
       }
       
-      if item.type == TYPE_DNS
+      if item.mode == MODE_DNS.to_sym
         load_dns_service(item)
       end
     end    

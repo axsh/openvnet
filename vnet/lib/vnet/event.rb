@@ -92,8 +92,11 @@ module Vnet
     INTERFACE_DELETED_ITEM = "interface_deleted_item"
 
     INTERFACE_UPDATED = "interface_updated"
+
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
+    INTERFACE_ENABLED_FILTERING2 = "interface_enabled_filtering2"
+    INTERFACE_DISABLED_FILTERING2 = "interface_disabled_filtering2"
 
     # MAC and IPv4 addresses:
     INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
@@ -114,6 +117,21 @@ module Vnet
 
     INTERFACE_PORT_ACTIVATE = "interface_port_activate"
     INTERFACE_PORT_DEACTIVATE = "interface_port_deactivate"
+
+    #
+    # Filter evvents:
+    #
+
+    FILTER_INITIALIZED = "filter_initialized"
+    FILTER_UNLOAD_ITEM = "filter_unload_item"
+    FILTER_CREATED_ITEM = "filter_created_item"
+    FILTER_DELETED_ITEM = "filter_deleted_item"
+    FILTER_UPDATED = "filter_updated"
+
+    FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
+    FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"
+    FILTER_ADDED_STATIC = "filter_added_static"
+    FILTER_REMOVED_STATIC = "filter_removed_static"
 
     #
     # Network event:
