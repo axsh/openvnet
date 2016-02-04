@@ -68,11 +68,11 @@ network_services:
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
-    type: dhcp
+    mode: dhcp
 
   - uuid: ns-dhcp2
     interface_uuid: if-dhcp2
-    type: dhcp
+    mode: dhcp
 
 datapath_networks:
 
