@@ -12,7 +12,8 @@ module Vnctl::Cli
       option :outgoing_port, :type => :numeric, :desc => "The outgoing port for this network service."
     }
 
-    set_required_options [:type]
+    # TODO: Remove 'type' completely and make 'mode' required.
+    # set_required_options [:mode]
 
     add_modify_shared_options
     option_uuid
