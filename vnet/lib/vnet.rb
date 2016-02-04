@@ -193,6 +193,7 @@ module Vnet
 
     module Translations
       autoload :Base, 'vnet/core/translations/base'
+      autoload :Static, 'vnet/core/translations/static'
       autoload :StaticAddress, 'vnet/core/translations/static_address'
       autoload :VnetEdgeHandler, 'vnet/core/translations/vnet_edge_handler'
     end
@@ -254,6 +255,7 @@ module Vnet
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
         autoload :Translation, 'vnet/endpoints/1.0/responses/translation'
+        autoload :TranslationStatic, 'vnet/endpoints/1.0/responses/translation'
         autoload :TranslationStaticAddress, 'vnet/endpoints/1.0/responses/translation_static_address'
         autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
@@ -338,6 +340,7 @@ module Vnet
     autoload :SecurityGroupInterface, 'vnet/models/security_group_interface'
     autoload :Taggable, 'vnet/models/base'
     autoload :Translation, 'vnet/models/translation'
+    autoload :TranslationStatic, 'vnet/models/translation_static'
     autoload :TranslationStaticAddress, 'vnet/models/translation_static_address'
     autoload :Tunnel, 'vnet/models/tunnel'
     autoload :VlanTranslation, 'vnet/models/vlan_translation'
@@ -382,6 +385,7 @@ module Vnet
     autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
     autoload :SecurityGroupInterface, 'vnet/model_wrappers/security_group_interface'
     autoload :Translation, 'vnet/model_wrappers/translation'
+    autoload :TranslationStatic, 'vnet/model_wrappers/translation'
     autoload :TranslationStaticAddress, 'vnet/model_wrappers/translation'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
     autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
@@ -430,6 +434,7 @@ module Vnet
     autoload :SecurityGroup, 'vnet/node_api/security_group'
     autoload :SecurityGroupInterface, 'vnet/node_api/security_group_interface'
     autoload :Translation, 'vnet/node_api/translation.rb'
+    autoload :TranslationStatic, 'vnet/node_api/translation.rb'
     autoload :TranslationStaticAddress, 'vnet/node_api/translation_static_address.rb'
     autoload :Tunnel, 'vnet/node_api/tunnel.rb'
     autoload :VlanTranslation, 'vnet/node_api/translation.rb'

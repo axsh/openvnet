@@ -66,6 +66,7 @@ module Vnet::Core
     def item_initialize(item_map)
       item_class =
         case item_map.mode
+        when MODE_STATIC         then Translations::Static
         when MODE_STATIC_ADDRESS then Translations::StaticAddress
         when MODE_VNET_EDGE      then Translations::VnetEdgeHandler
         else

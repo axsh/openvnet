@@ -6,6 +6,9 @@ module Vnet::ModelWrappers
   class Translation < Base
   end
 
+  class TranslationStatic < Base
+  end
+
   class TranslationStaticAddress < Base
     #include Helpers::IPv4
   end
