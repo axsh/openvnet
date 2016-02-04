@@ -16,7 +16,8 @@ module Vnctl::Cli
 
     add_modify_shared_options
     option_uuid
-    option :type, :type => :string, :desc => "The type of this service."
+    option :type, :type => :string, :desc => "Deprecated. Use mode instead."
+    option :mode, :type => :string, :desc => "The mode of this service."
     define_add
 
     add_modify_shared_options
