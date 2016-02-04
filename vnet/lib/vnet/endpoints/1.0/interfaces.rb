@@ -5,7 +5,8 @@ require 'trema/mac'
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   def self.put_post_shared_params
     param_uuid M::Datapath, :owner_datapath_uuid
-    param :ingress_filtering_enabled, :Boolean
+    param :ingress_filtering_enabled, :Boolean, default: false
+    param :enable_filtering, :Boolean
     param :display_name, :String
     param :enable_routing, :Boolean
     param :enable_route_translation, :Boolean
@@ -22,12 +23,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param_uuid M::Network, :network_uuid
   param :ipv4_address, :String, transform: PARSE_IPV4
   param :mac_address, :String, transform: PARSE_MAC
+  param :mac_range_group_uuid, :String
   param :port_name, :String
   param :mode, :String, in: C::Interface::MODES
   post do
     uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+    uuid_to_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id") if params["mac_range_group_uuid"]
 
+    params["enable_legacy_filtering"] = params["ingress_filtering_enabled"]
     post_new(:Interface, fill)
   end
 
@@ -50,7 +54,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   end
 
   param_uuid M::Interface
-  param :new_uuid, :String
+  param :new_uuid, :String, required: true
   put '/:uuid/rename' do
     updated_object = M::Interface.batch.rename(params['uuid'], params['new_uuid']).commit
     respond_with([updated_object])
@@ -60,13 +64,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   # Ports:
   #
 
-  def self.port_put_post_shared_params
+  def self.port_delete_post_shared_params
     param_uuid M::Datapath, :datapath_uuid
     param :port_name, :String
     param :singular, :Boolean
   end
 
-  port_put_post_shared_params
+  port_delete_post_shared_params
   param_uuid M::Interface
   post '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
@@ -78,14 +82,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     remove_system_parameters
 
     interface_port = M::InterfacePort.create_with_uuid(params)
-    respond_with(interface_port)
+    respond_with(R::InterfacePort.generate(interface_port))
   end
 
   get '/:uuid/ports' do
     show_relations(:Interface, :interface_ports)
   end
 
-  port_put_post_shared_params
+  port_delete_post_shared_params
   delete '/:uuid/ports' do
     interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
     datapath = check_syntax_and_get_id(M::Datapath, 'datapath_uuid', 'datapath_id') if params['datapath_uuid']
@@ -100,7 +104,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     ports = M::InterfacePort.batch.where(filter).all.commit
     ports.each { |r| M::InterfacePort.destroy(r.id) }
 
-    respond_with(ports)
+    respond_with(R::InterfacePortCollection.generate(ports))
   end
 
   #

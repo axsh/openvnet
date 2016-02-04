@@ -5,7 +5,7 @@ describe Vnet::Configurations::Vnmgr do
   let(:config_path) { File.join(Vnet::ROOT, "spec/config") }
 
   before do
-    Vnet::Configurations::Vnmgr.stub(:paths).and_return([config_path])
+    allow(Vnet::Configurations::Vnmgr).to receive(:paths).and_return([config_path])
   end
 
   describe "param" do

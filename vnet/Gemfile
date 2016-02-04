@@ -15,14 +15,14 @@ gem "net-dns"
 gem "rack"
 gem "rack-cors"
 gem "racket", ">= 1.0.12", :git => 'https://github.com/axsh/racket.git'
-gem "sequel"
+gem "sequel", "4.8.0" # Updating to 4.23.0 broke the unit tests. Needs to be investigated.
 gem "sequel_paranoia"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "sinatra-hashfix"
-gem "sinatra-browse", '>= 0.3'
+gem "sinatra-browse", ">= 0.6.1" # 0.5 and 0.6 have a bug where missing parameters would be set to nil values
 gem "unicorn"
-gem "activesupport"
+gem "activesupport", '3.0.0' # Updating to 4.2.1 broke the unit tests.
 
 # trema and build requirement gems
 gem 'paper_house', '~>0.5.0'
@@ -31,13 +31,14 @@ gem 'trema', :git=>'https://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
   gem "rake"
-  gem "rspec", '>= 2.14.0.rc1'
+  gem "rspec"
   gem "rack-test"
-  gem "fabrication"
-  # http://stackoverflow.com/questions/11719183/databasecleaner-errors-in-non-rails-app
-  gem 'database_cleaner', :git => "https://github.com/bmabey/database_cleaner.git", :ref => "e5cb8cea"
+  gem "fabrication", '2.9.8' # Updating to 2.13.2 broke the unit tests.
+  gem 'database_cleaner'
 
   gem "coveralls"
+
+  gem 'webmock'
 
   gem "pry-byebug"
 end

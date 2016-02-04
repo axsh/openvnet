@@ -1,23 +1,25 @@
 OpenVNet
 ========
 
-OpenVNet allows you to fully virtualize networking using [OpenFlow](http://archive.openflow.org). In theory, it should be able to implement virtual networks on top of any OpenFlow switch out there. In reality, we've only tested it on [Open vSwitch](http://openvswitch.org) so far.
+OpenVNet is what you would call a network hypervisor. A network hypervisor provides a layer of abstraction on top of existing network hardware. Network engineers become able to create any network topology that they have in mind, without taking the existing hardware into account.
 
-Unfortunately we don't have any real body of documentation up yet. For now, please direct any questions about OpenVNet to the [Wakame Users Group](https://groups.google.com/forum/#!forum/wakame-ug). You are welcome to ask us anything. Be it 'what exactly does OpenVNet do?' or 'Why is this specialized OpenVNet installation of mine not working?'. There are no stupid questions and we do our best not to give stupid answers.
+http://openvnet.org
+
+If you have any questions about OpenVNet or just want to hang out, don't hesitate to contact us on the [Wakame Users Group](https://groups.google.com/forum/#!forum/wakame-ug).
 
 System requirements
 -------------------
 
-* Ruby version: 2.1.1
-* OS: CentOS 6.4 or higher
-* Open vSwitch version: 2.3.0 or higher
+* Ruby 2.1.1
+* CentOS 6.6
+* Open vSwitch 2.3.1
 
 Other versions or operating systems may or may not work.
 
 Getting Started
 ---------------
 
-- [Installation Guide](https://github.com/axsh/openvnet/blob/master/docs/InstallGuide.md)
+- [Installation Guide](http://openvnet.org/installation/)
 
 Contributors
 ------------

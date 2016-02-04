@@ -20,18 +20,18 @@ describe Vnet::ModelWrappers::Base do
     describe "single execution" do
       let(:model) do
         double(:model).tap do |model|
-          model.should_receive(:execute).with(:all).and_return([parent])
+          allow(model).to receive(:execute).with(:all).and_return([parent])
         end
       end
 
       let(:proxy) do
         double(:proxy).tap do |proxy|
-          proxy.should_receive(:parent).and_return(model)
+          allow(proxy).to receive(:parent).at_least(:once).and_return(model)
         end
       end
 
       before(:each) do
-        Vnet::ModelWrappers::Parent.stub(:_proxy).and_return(proxy)
+        allow(Vnet::ModelWrappers::Parent).to receive(:_proxy).and_return(proxy)
       end
 
       subject do
@@ -47,18 +47,18 @@ describe Vnet::ModelWrappers::Base do
     describe "batch" do
       let(:model) do
         double(:model).tap do |model|
-          model.should_receive(:execute_batch).with([:[], "p-xxx"], [:children], [:first], {}).and_return(child)
+          allow(model).to receive(:execute_batch).with([:[], "p-xxx"], [:children], [:first], {}).and_return(child)
         end
       end
 
       let(:proxy) do
         double(:proxy).tap do |proxy|
-          proxy.should_receive(:parent).and_return(model)
+          allow(proxy).to receive(:parent).and_return(model)
         end
       end
 
       before(:each) do
-        Vnet::ModelWrappers::Parent.stub(:_proxy).and_return(proxy)
+        allow(Vnet::ModelWrappers::Parent).to receive(:_proxy).and_return(proxy)
       end
 
       subject do
@@ -81,18 +81,18 @@ describe Vnet::ModelWrappers::Base do
 
       let(:model) do
         double(:model).tap do |model|
-          model.should_receive(:execute_batch).with([:[], "p-xxx"], [:children], [:first], {:fill => [:friends, {:children => :friends}] }).and_return(child_with_children_and_friends)
+          allow(model).to receive(:execute_batch).with([:[], "p-xxx"], [:children], [:first], {:fill => [:friends, {:children => :friends}] }).and_return(child_with_children_and_friends)
         end
       end
 
       let(:proxy) do
         double(:proxy).tap do |proxy|
-          proxy.should_receive(:parent).and_return(model)
+          allow(proxy).to receive(:parent).and_return(model)
         end
       end
 
       before(:each) do
-        Vnet::ModelWrappers::Parent.stub(:_proxy).and_return(proxy)
+        allow(Vnet::ModelWrappers::Parent).to receive(:_proxy).and_return(proxy)
       end
 
       subject do
@@ -119,19 +119,19 @@ describe Vnet::ModelWrappers::Base do
     describe "batch" do
       let(:model) do
         double(:model).tap do |model|
-          model.should_receive(:execute).with(:[], "p-xxx").and_return(parent)
-          model.should_receive(:execute_batch).with([:[], 1], [:update, {:name => "parent"}], {}).and_return(parent.merge(name: "parent"))
+          allow(model).to receive(:execute).with(:[], "p-xxx").and_return(parent)
+          allow(model).to receive(:execute_batch).with([:[], 1], [:update, {:name => "parent"}], {}).and_return(parent.merge(name: "parent"))
         end
       end
 
       let(:proxy) do
         double(:proxy).tap do |proxy|
-          proxy.should_receive(:parent).twice.and_return(model)
+          allow(proxy).to receive(:parent).twice.and_return(model)
         end
       end
 
       before(:each) do
-        Vnet::ModelWrappers::Parent.stub(:_proxy).and_return(proxy)
+        allow(Vnet::ModelWrappers::Parent).to receive(:_proxy).and_return(proxy)
       end
 
       it "execute batch" do

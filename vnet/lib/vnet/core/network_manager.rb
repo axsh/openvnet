@@ -11,6 +11,7 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
     
     # Networks have no created item event as they always get loaded
     # when used by other managers.
@@ -134,6 +135,7 @@ module Vnet::Core
     def item_post_install(item, item_map)
       add_item_id_to_update_queue(item.id)
 
+      @dp_info.active_network_manager.async.activate_local_item(network_id: item.id)
       @dp_info.datapath_manager.publish(ACTIVATE_NETWORK_ON_HOST,
                                         id: :network,
                                         network_id: item.id)
@@ -145,6 +147,7 @@ module Vnet::Core
     end
 
     def item_pre_uninstall(item)
+      @dp_info.active_network_manager.async.deactivate_local_item(item.id)
       @dp_info.datapath_manager.publish(DEACTIVATE_NETWORK_ON_HOST,
                                         id: :network,
                                         network_id: item.id)

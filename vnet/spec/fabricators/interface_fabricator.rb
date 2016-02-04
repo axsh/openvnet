@@ -53,6 +53,27 @@ Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
 
 end
 
+Fabricator(:interface_w_ip_lease, class_name: Vnet::Models::Interface) do
+  id { sequence(:interface_ids, 1) }
+
+  ip_leases do |attrs|
+    [
+     Fabricate(:ip_lease_any) do
+       interface_id { attrs[:id] }
+       mac_lease { Fabricate(:mac_lease_any,
+                             mac_address: sequence(:mac_address),
+                             interface_id: attrs[:id]
+                             )}
+       network_id { Fabricate(:network).id }
+       ip_address_id { |attrs|
+         Fabricate(:ip_address_no_nw, network_id: attrs[:network_id]).id
+       }
+       # ipv4_address { Fabricate(:ip_address) }
+     end
+    ]
+  end
+end
+
 Fabricator(:interface_dp1eth0, class_name: Vnet::Models::Interface) do
   uuid 'if-dp1eth0'
   display_name "test-dp1eth0"

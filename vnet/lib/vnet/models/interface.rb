@@ -3,8 +3,9 @@
 module Vnet::Models
   class Interface < Base
     taggable 'if'
-
     plugin :paranoia_is_deleted
+
+    use_modes Vnet::Constants::Interface::MODES
 
     #
     # 0001_origin
@@ -34,6 +35,11 @@ module Vnet::Models
     one_to_many :lease_policy_base_interfaces
     many_to_many :lease_policies, :join_table => :lease_policy_base_interfaces, :conditions => "lease_policy_base_interfaces.deleted_at is null"
 
+    #
+    # 0006_filters
+    #
+    one_to_many :filters
+
     plugin :association_dependencies,
     # 0001_origin
     active_interfaces: :destroy,
@@ -49,7 +55,9 @@ module Vnet::Models
     dst_tunnels: :destroy,
     translations: :destroy,
     # 0002_services
-    lease_policy_base_interfaces: :destroy
+    lease_policy_base_interfaces: :destroy,
+    # 0006_filters
+    filters: :destroy
 
   end
 end

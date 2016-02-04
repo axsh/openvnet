@@ -13,9 +13,44 @@ module Vnet
     include Vnet::Event::Notifications
     include Vnet::LookupParams
 
+    # Main events:
+    #
+    # Manager and model events are separate as the manager events are
+    # local and for the current manager only, while the model events
+    # are global.
+    #
+    # Avoid duplicate manager event names.
+    #
+    # subscribe_event <MANAGER>_INITIALIZED, :load_item
+    # subscribe_event <MANAGER>_UNLOAD_ITEM, :unload_item
+    # subscribe_event <MODEL>_CREATED_ITEM, :created_item
+    # subscribe_event <MODEL>_DELETED_ITEM, :unload_item
+    #
+    # Consistency:
+    #
+    # All events should have the item id "{id: item.id}" or a symbol
+    # "{id: :foobar}" set to ensure exclusive execution of events for
+    # said event or symbol.
+    #
+    # The id should be considered similar to a copy-on-write barrier,
+    # as such the items can be read at any time by any fiber. Thus no
+    # yielding or blocking operations can be done while the item is in
+    # an inconsistent state.
+    #
+    # E.g. updating a set of variables or lists that depend on each
+    # other will need to be done with no database requests, logging,
+    # etc between the first and last update.
+    #
+    # Updating anything that is covered by another id or symbol lock
+    # requires the use of local events.
+
     def initialize(info, options = {})
+      @state = :uninitialized
+
       @items = {}
       @messages = {}
+
+      @load_queries = {}
     end
 
     def retrieve(params)
@@ -66,12 +101,16 @@ module Vnet
     # Polling methods:
     #
 
-    def wait_for_loaded(params, max_wait = 10.0)
-      item_to_hash(internal_wait_for_loaded(params))
+    def wait_for_initialized(max_wait = 10.0)
+      internal_wait_for_initialized(max_wait)
+    end
+
+    def wait_for_loaded(params, max_wait = 10.0, try_load = false)
+      item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
     
     def wait_for_unloaded(params, max_wait = 10.0)
-      internal_wait_for_unloaded(params)
+      internal_wait_for_unloaded(params, max_wait)
     end
     
     #
@@ -104,6 +143,21 @@ module Vnet
       # We need to update remote interfaces in case they are now in
       # our datapath.
       initialized_datapath_info
+      nil
+    end
+
+    def start_initialize
+      if @state != :uninitialized
+        raise("Manager.start_initialized must be called on an uninitialized manager.")
+      end
+
+      do_initialize
+      
+      @state = :initialized
+
+      # TODO: Catch errors and return nil when do_initialize fails.
+      resume_event_tasks(:initialized, true)
+      nil
     end
 
     #
@@ -144,6 +198,9 @@ module Vnet
     end
 
     def cleared_datapath_info
+    end
+
+    def do_initialize
     end
 
     #
@@ -239,6 +296,29 @@ module Vnet
       item = internal_detect(params)
       return item if item
 
+      if @load_queries.has_key?(params)
+        # Can't use blocking calls here.
+        # info log_format("internal_retrieve DUPLICATE", params.inspect)
+
+        item = create_event_task_match_proc(:retrieved, params, nil)
+
+        if item.nil?
+          info log_format("internal_retrieve duplicate fiber query FAILED", params.inspect)
+          return
+        end
+
+        info log_format("internal_retrieve duplicate fiber query SUCCESS", params.inspect)
+
+        return item
+      end
+
+      internal_retrieve_query_db(params)
+    end
+
+    def internal_retrieve_query_db(params)
+      @load_queries[params] = :querying
+
+      item = nil
       select_filter = select_filter_from_params(params) || return
       item_map = select_item(select_filter.first) || return
 
@@ -246,7 +326,31 @@ module Vnet
       # the exact same select_filter. The remaining fibers should use
       # internal_wait_for_loaded/initializing.
 
-      internal_new_item(item_map)
+      item = internal_new_item(item_map)
+
+      # TODO: Set querying to something else?
+
+      item
+
+    ensure
+      # TODO: Ensure should only include the fiber that does the query.
+
+      # We can assume that the load failed if item is nil, and such
+      # there will be no trigger of event tasks once the item is
+      # initialized.
+      #
+      # Therefor we use event task to pass a nil value to the waiting
+      # tasks that have the same query params.
+
+      @load_queries.delete(params)
+
+      # TODO: Should we make sure no event tasks are left with
+      # 'params' task_id?
+      resume_event_tasks(:retrieved, item)
+
+      if item.nil?
+        info log_format("internal_retrieve main fiber query FAILED", params.inspect)
+      end
     end
 
     # The default select call with no fill options.
@@ -271,9 +375,32 @@ module Vnet
     end
 
     def load_item(params)
-      item_map = params[:item_map] || return
-      item_id = item_map.id || return
-      item = @items[item_id] || return
+      item_id = params[:id]
+      item_map = params[:item_map]
+
+      if item_id.nil?
+        warn log_format("load_item requires a valid id", params.inspect)
+        return
+      end
+
+      if item_map.nil?
+        warn log_format("load_item requires a valid item_map", params.inspect)
+        return
+      end
+
+      if item_map.id != item_id
+        warn log_format("load_item requires id to match item_map.id", params.inspect)
+        return
+      end
+
+      item = @items[item_id]
+
+      # It should not be possible for the item to have disappeared due
+      # to the event queue item id lock.
+      if item.nil?
+        warn log_format("load_item could not find item", params.inspect)
+        return
+      end
 
       debug log_format("installing " + item.pretty_id, item.pretty_properties)
 
@@ -281,18 +408,27 @@ module Vnet
       item.try_install
 
       if item.invalid?
-        debug log_format("installation failed, marked invalid " + item.pretty_id, item.pretty_properties)
+        warn log_format("installation failed, marked invalid " + item.pretty_id, item.pretty_properties)
         # TODO: Do some more cleanup here.
         return
       end
 
       item_post_install(item, item_map)
 
-      resume_event_tasks(:loaded, item_id)
+      # TODO: Consider checking if all task_id's are gone.
+
+      item.set_loaded
+      resume_event_tasks(:loaded, item)
     end
 
     def unload_item(params)
-      item_id = (params && params[:id]) || return
+      item_id = (params && params[:id])
+
+      if item_id.nil?
+        warn log_format("unload_item requires a valid id", params.inspect)
+        return
+      end
+
       item = @items.delete(item_id) || return
 
       debug log_format("uninstalling " + item.pretty_id, item.pretty_properties)
@@ -312,11 +448,16 @@ module Vnet
     # internally and by 'created_item' specialization method.
     #
     # TODO: Rename internal_load_item
-    # TODO: Remove 'params'
+    # TODO: Create a default 'created_item' method.
     def internal_new_item(item_map)
-      item_id = item_map.id || return
-      item = @items[item_id]
-      return item if item
+      item_id = item_map.id
+
+      if item_id.nil?
+        warn log_format("internal_new_item requires a valid item_map.id", item_map.inspect)
+        return
+      end
+
+      return @items[item_id] if @items[item_id]
 
       item_initialize(item_map).tap do |item|
         # TODO: Delete item from items if returned nil.
@@ -341,7 +482,10 @@ module Vnet
 
     # Load all items that match the supplied query parameter
     def internal_load_where(params)
-      return if params.empty?
+      if params.empty?
+        warn log_format("internal_load_where does not allow empty params")
+        return
+      end
 
       filter = query_filter_from_params(params) || return
       expression = ((filter.size > 1) ? Sequel.&(*filter) : filter.first) || return
@@ -358,6 +502,8 @@ module Vnet
     # Internal enumerators:
     #
 
+    # Make into a module.
+
     def internal_detect(params)
       if params.size == 1 && params.first.first == :id
         @items[params.first.last]
@@ -367,23 +513,35 @@ module Vnet
       end
     end
 
+    def internal_detect_loaded(params)
+      item = internal_detect(params)
+      (item && item.loaded?) ? item : nil
+    end
+
     def internal_detect_by_id(params)
-      item_id = (params && params[:id]) || return
+      item_id = (params && params[:id])
+
+      if item_id.nil?
+        warn log_format("internal_detect_by_id requires a valid id", params.inspect)
+        return
+      end
+
       @items[item_id]
     end
 
+    # TODO: Reconsider changing the level of logging.
     def internal_detect_by_id_with_error(params)
       item_id = (params && params[:id])
 
       if item_id.nil?
-        log_format("missing id")
+        warn log_format("missing id")
         return
       end
 
       item = @items[item_id]
 
       if item.nil?
-        log_format("missing item", "id:#{item_id}")
+        warn log_format("missing item", "id:#{item_id}")
         return
       end
 
@@ -398,20 +556,39 @@ module Vnet
     # Internal polling methods:
     #
 
-    def internal_wait_for_loaded(params, max_wait = 10.0)
-      # TODO: Check if item was install and not being uninstalled.
-      item = internal_detect(params)
-      return item if item
+    def internal_wait_for_initialized(max_wait)
+      if @state == :initialized
+        return
+      end
 
-      match_proc = match_item_proc(params)
-
-      create_event_task(:loaded, max_wait) { |item_id|
-        item = (item_id && @items[item_id]) || next
-        match_proc.call(item_id, item) ? item : nil
+      # TODO: Check for invalid state, cleaned up, etc.
+      create_event_task(:initialized, max_wait) { |result|
+        true
       }
     end
 
-    def internal_wait_for_unloaded(params, max_wait = 10.0)
+    # TODO: Wait_for_loaded needs to work correctly when create is
+    # called and the manager doesn't know the item is wanted.
+
+    def internal_wait_for_loaded(params, max_wait, try_load)
+      item = internal_detect_loaded(params)
+      return item if item
+
+      if try_load
+        # TODO: internal_retrieve does not have max_wait or immediate
+        # return if in retrieve queue.
+        self.async.retrieve(params)
+        
+        item = internal_detect_loaded(params)
+        return item if item
+
+        # TODO: Check if the item is uninstalling, or other edge cases. (?)
+      end
+
+      create_event_task_match_proc(:loaded, params, max_wait)
+    end
+
+    def internal_wait_for_unloaded(params, max_wait)
       item = internal_detect(params)
       return true if item.nil?
 
@@ -419,6 +596,14 @@ module Vnet
 
       create_event_task(:unloaded, max_wait) { |item_id|
         (item_id == match_item_id) ? true : nil
+      }
+    end
+
+    def create_event_task_match_proc(task_name, params, max_wait, task_init = nil)
+      match_proc = match_item_proc(params)
+
+      create_event_task(task_name, max_wait, params, task_init) { |item|
+        (item && match_proc.call(item.id, item)) ? item : nil
       }
     end
 

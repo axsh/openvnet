@@ -20,4 +20,10 @@ module Vnet::NodeApi
   class MacAddress < Base
   end
 
+  class MacRange < Base
+  end
+
+  class MacRangeGroup < Base
+  end
+
 end

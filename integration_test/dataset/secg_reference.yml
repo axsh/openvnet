@@ -1,0 +1,97 @@
+networks:
+
+  - uuid: nw-vnet1
+    display_name: vnet1
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet1
+    network_mode: virtual
+
+interfaces:
+
+  - uuid: if-v1
+    port_name: if-v1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:01"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.10
+
+  - uuid: if-v2
+    port_name: if-v2
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:02"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.11
+
+  - uuid: if-v3
+    port_name: if-v3
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:03"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-v4
+    port_name: if-v4
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:04"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.13
+
+  - uuid: if-v5
+    port_name: if-v5
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:05"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.14
+
+  - uuid: if-v6
+    port_name: if-v6
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:06"
+    ipv4_address: 10.101.0.15
+
+  - uuid: if-dhcp1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:01:01"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+network_services:
+
+  - uuid: ns-dhcp1
+    interface_uuid: if-dhcp1
+    type: dhcp
+
+datapath_networks:
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp1eth0
+    mac_address: "02:00:00:aa:00:01"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp2eth0
+    mac_address: "02:00:00:bb:00:01"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp3eth0
+    mac_address: "02:00:00:cc:00:01"
+
+security_groups:
+
+  - uuid: sg-reffee1
+    display_name: "referenced group 1"
+
+  - uuid: sg-reffer1
+    display_name: "reference group 1"
+    rules: "tcp:22:sg-reffee1"
+
+interface_security_groups:
+  - interface_uuid: if-v1
+    security_group_uuid: sg-reffer1
+  - interface_uuid: if-v2
+    security_group_uuid: sg-reffee1
+  - interface_uuid: if-v3
+    security_group_uuid: sg-reffee1

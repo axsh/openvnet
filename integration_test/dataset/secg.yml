@@ -1,0 +1,149 @@
+networks:
+
+  - uuid: nw-vnet1
+    display_name: vnet1
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet1
+    network_mode: virtual
+
+  - uuid: nw-vnet2
+    display_name: vnet2
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet2
+    network_mode: virtual
+
+interfaces:
+
+  - uuid: if-v1
+    port_name: if-v1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:01"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.10
+
+  - uuid: if-v2
+    port_name: if-v2
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:02"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.11
+
+  - uuid: if-v3
+    port_name: if-v3
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:03"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-v4
+    port_name: if-v4
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:04"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.13
+
+  - uuid: if-v5
+    port_name: if-v5
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:05"
+    ingress_filtering_enabled: true
+    ipv4_address: 10.101.0.14
+
+  - uuid: if-v6
+    port_name: if-v6
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:06"
+    ipv4_address: 10.101.0.15
+
+  - uuid: if-dhcp1
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:01:01"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+  - uuid: if-dhcp2
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:01:02"
+    ipv4_address: 10.101.0.2
+    mode: simulated
+
+network_services:
+
+  - uuid: ns-dhcp1
+    interface_uuid: if-dhcp1
+    type: dhcp
+
+  - uuid: ns-dhcp2
+    interface_uuid: if-dhcp2
+    type: dhcp
+
+datapath_networks:
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp1eth0
+    mac_address: "02:00:00:aa:00:01"
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp1eth0
+    mac_address: "02:00:00:aa:00:02"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp2eth0
+    mac_address: "02:00:00:bb:00:01"
+
+  - datapath_uuid: dp-2
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp2eth0
+    mac_address: "02:00:00:bb:00:02"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp3eth0
+    mac_address: "02:00:00:cc:00:01"
+
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet2
+    interface_uuid: if-dp3eth0
+    mac_address: "02:00:00:cc:00:02"
+
+security_groups:
+
+  - uuid: sg-pingall
+    display_name: "accept all icmp"
+    rules: "icmp:-1:0.0.0.0/0"
+
+  - uuid: sg-sshvm3
+    display_name: "accept a bunch of traffic from vm3"
+    rules: |
+      tcp:22:10.101.0.12
+      icmp:-1:10.101.0.12
+      udp:1344:10.101.0.12
+
+  - uuid: sg-udpvnet1
+    display_name: "accept udp from vnet1"
+    rules: "udp:1678:10.101.0.0/24"
+
+  # We give the isolation group an icmp rule so the same interfaces can be
+  # used to test pinging in other examples. These wouldn't work if the ping
+  # replies were blocked. To test isolation, we use ssh.
+  - uuid: sg-iso
+    display_name: "empty group to test isolation with"
+    rules: "icmp:-1:0.0.0.0/0"
+
+interface_security_groups:
+
+  - interface_uuid: if-v1
+    security_group_uuid: sg-sshvm3
+  - interface_uuid: if-v2
+    security_group_uuid: sg-pingall
+  - interface_uuid: if-v3
+    security_group_uuid: sg-iso
+  - interface_uuid: if-v4
+    security_group_uuid: sg-iso
+  - interface_uuid: if-v5
+    security_group_uuid: sg-udpvnet1

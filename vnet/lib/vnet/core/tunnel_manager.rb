@@ -9,6 +9,8 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event REMOVED_TUNNEL, :unload
     subscribe_event INITIALIZED_TUNNEL, :install_item
 
@@ -295,7 +297,7 @@ module Vnet::Core
       info log_format("creating tunnel entry mode '#{tunnel_mode}'",
                       options.map { |k, v| "#{k}:#{v}" }.join(" "))
 
-      tunnel = MW::Tunnel.create(options.merge(mode: tunnel_mode))
+      tunnel = MW::Tunnel.find_or_create(options.merge(mode: tunnel_mode))
 
       internal_retrieve(options)
     end

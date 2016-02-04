@@ -2,10 +2,10 @@
 set -e
 
 static_ruby_path="/opt/axsh/openvnet/ruby/bin/ruby"
-vnctl_path="/opt/axsh/openvnet/vnctl/bin/vnctl"
+vnctl_path="/opt/axsh/openvnet/client/vnctl/bin/vnctl"
 
 if [ -x $static_ruby_path ]; then
-  $static_ruby_path $vnctl_path $@
+  $static_ruby_path $vnctl_path "$@"
 else
-  $vnctl_path $@
+  $vnctl_path "$@"
 fi

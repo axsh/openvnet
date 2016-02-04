@@ -147,7 +147,7 @@ describe Vnet::Plugins::VdcVnetPlugin do
                            interface: interface,
                            mac_lease: mac_lease,
                            network_id: outer_network.id,
-                           ipv4_address: 1)
+                           ipv4_address: IPAddress("192.168.2.2").to_i)
 
       interface.add_ip_lease(ip_lease)
       interface.save

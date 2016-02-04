@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'rubygems'
+
+setup_rb = File.expand_path('../../vendor/bundle/bundler/setup.rb', __FILE__)
+if File.exists?(setup_rb)
+  # This is used with a standalone bundle like would be the case when installing
+  # from rpm. Without this, you wouldn't be able to run vnctl without having
+  # /opt/axsh/openvnet as your working directory.
+  require setup_rb
+
+  require 'fuguta'
+  require 'thor'
+else
+  # This is here to support bundle install without the --standalone flag but
+  # requires vnctl to be called with /opt/axsh/openvnet as the working directory.
+  require 'bundler/setup'
+  Bundler.setup
+  Bundler.require
+end
+
+require 'vnctl'
+
+Vnctl.class_eval do
+  paths = [
+    File.expand_path("~/.vnctlrc"),
+    File.expand_path("~/.vnctl.conf"),
+    "/etc/openvnet/vnctl.conf",
+    "/etc/wakame-vnet/vnctl.conf"
+  ]
+
+  path = paths.find { |p| File.exists?(p) }
+
+  begin
+    @conf = case
+    when ENV["VNET_WEBAPI"]
+      uri, port = ENV["VNET_WEBAPI"].split(":")
+      Vnctl::Configuration::Vnctl.new.tap { |c|
+        c.config[:webapi_uri] = uri
+        c.config[:webapi_port] = port
+      }
+    when path
+      Vnctl::Configuration::Vnctl.load(path)
+    else
+      Vnctl::Configuration::Vnctl.new
+    end
+  rescue Fuguta::Configuration::ValidationError => e
+    abort("Validation Error: #{path}\n  " +
+      e.errors.join("\n  "))
+  end
+end
+
+Vnctl::Cli::Root.start

@@ -1,0 +1,55 @@
+vm_type: :kvm
+specs: [simple, router_v2v, router_p2v, event, service, secg, secg_reference, filter]
+# specs not included
+# [edge, edge_esxi, vxlan, lease_policy]
+vnet_branch: master
+log_level: info
+vm_http_proxy: http://10.50.0.2:3128
+dump_flows: true
+aggregate_logs: true
+
+api_adapter: :vnctl
+
+vms:
+  vm1:
+    name: vm1
+    vna: 1
+    ssh_ip: 10.50.0.101
+    interfaces:
+      - uuid: if-v1
+        name: eth0
+  vm2:
+    name: vm2
+    vna: 1
+    ssh_ip: 10.50.0.102
+    interfaces:
+      - uuid: if-v2
+        name: eth0
+  vm3:
+    name: vm3
+    vna: 2
+    ssh_ip: 10.50.0.103
+    interfaces:
+      - uuid: if-v3
+        name: eth0
+  vm4:
+    name: vm4
+    vna: 2
+    ssh_ip: 10.50.0.104
+    interfaces:
+      - uuid: if-v4
+        name: eth0
+  vm5:
+    name: vm5
+    vna: 3
+    ssh_ip: 10.50.0.105
+    interfaces:
+      - uuid: if-v5
+        name: eth0
+  vm6:
+    name: vm6
+    vna: 3
+    ssh_ip: 10.50.0.106
+    interfaces:
+      - uuid: if-v6
+        name: eth0

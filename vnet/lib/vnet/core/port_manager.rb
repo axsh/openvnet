@@ -13,14 +13,6 @@ module Vnet::Core
     subscribe_event PORT_ATTACH_INTERFACE, :attach_interface
     subscribe_event PORT_DETACH_INTERFACE, :detach_interface
 
-    def initialize_ports
-      return if @datapath_info.nil?
-
-      @items.each { |id, item|
-        publish(PORT_INITIALIZED, id: item.id)
-      }
-    end
-
     def insert(port_desc)
       if @items[port_desc.port_no]
         info log_format('port already added', "port_name:#{port_desc.name} port_number:#{port_desc.port_no}")
@@ -91,6 +83,14 @@ module Vnet::Core
     # Event handlers.
     #
 
+    def do_initialize
+      # Iterate through a copy of the items else 'insert/delete' may
+      # cause issues.
+      @items.keys.each { |id|
+        publish(PORT_INITIALIZED, id: id)
+      }
+    end
+
     def install_item(params)
       port = @items[params[:id]] || return
       return if port.installed?
@@ -109,6 +109,11 @@ module Vnet::Core
                                            port_name: port.port_name,
                                            port_number: port.port_number)
       end
+
+      @dp_info.active_port_manager.publish(ACTIVE_PORT_ACTIVATE,
+                                           id: [:port, port.port_number],
+                                           port_name: port.port_name,
+                                           port_number: port.port_number)
     end
 
     def uninstall_item(params)
@@ -123,6 +128,9 @@ module Vnet::Core
                                          id: :port,
                                          port_name: port.port_name,
                                          port_number: port.port_number)
+
+      @dp_info.active_port_manager.publish(ACTIVE_PORT_DEACTIVATE,
+                                           id: [:port, port.port_number])
 
       debug log_format("uninstall #{port.port_name}/#{port.id}")
     end
