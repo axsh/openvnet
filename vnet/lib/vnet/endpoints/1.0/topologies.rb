@@ -51,4 +51,27 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     respond_with([network.uuid])
   end
 
+  post '/:uuid/route_links/:route_link_uuid' do
+    topology = uuid_to_id(M::Topology, "uuid", "topology_id")
+    route_link = uuid_to_id(M::RouteLink, "route_link_uuid", "route_link_id")
+
+    remove_system_parameters
+
+    result = M::TopologyRouteLink.create(params)
+    respond_with(R::TopologyRouteLink.generate(result))
+  end
+
+  get '/:uuid/route_links' do
+    show_relations(:Topology, :topology_route_links)
+  end
+
+  delete '/:uuid/route_links/:route_link_uuid' do
+    topology = check_syntax_and_pop_uuid(M::Topology)
+    route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
+
+    M::TopologyRouteLink.destroy(topology_id: topology.id, route_link_id: route_link.id)
+
+    respond_with([route_link.uuid])
+  end
+
 end

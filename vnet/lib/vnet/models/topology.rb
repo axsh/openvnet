@@ -7,7 +7,9 @@ module Vnet::Models
 
     plugin :paranoia_is_deleted
 
+    one_to_many :topology_datapaths
     one_to_many :topology_networks
+    one_to_many :topology_route_links
 
     # TODO: Add assosiate_dependencies.
 

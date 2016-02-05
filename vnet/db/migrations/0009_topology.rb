@@ -47,24 +47,27 @@ Sequel.migration do
       unique [:topology_id, :network_id, :is_deleted]
     end
 
-    # create_table(:topology_route_links) do
-    #   primary_key :id
+    create_table(:topology_route_links) do
+      primary_key :id
 
-    #   Integer :topology_id, :index => true, :null => false
-    #   Integer :route_link_id, :null => false
+      Integer :topology_id, :index => true, :null => false
+      Integer :route_link_id, :null => false
 
-    #   DateTime :created_at, :null=>false
-    #   DateTime :updated_at, :null=>false
-    #   DateTime :deleted_at, :index => true
-    #   Integer :is_deleted, :null=>false, :default=>0
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false, :default=>0
 
-    #   unique [:topology_id, :route_link_id, :is_deleted]
-    # end
+      unique [:topology_id, :route_link_id, :is_deleted]
+    end
 
   end
 
   down do
     drop_table(:topologies,
+               :topology_datapaths,
+               :topology_networks,
+               :topology_route_links,
                )
   end
 end

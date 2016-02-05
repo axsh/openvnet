@@ -34,7 +34,7 @@ module Vnet::Services::Topologies
         return
       end
 
-      create_datapath_route_link(datapath_id, network_id, interface_id)
+      create_datapath_route_link(datapath_id, route_link_id, interface_id)
     end
 
   end

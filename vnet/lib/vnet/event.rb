@@ -234,6 +234,8 @@ module Vnet
 
     TOPOLOGY_ADDED_NETWORK = 'topology_added_network'
     TOPOLOGY_REMOVED_NETWORK = 'topology_removed_network'
+    TOPOLOGY_ADDED_ROUTE_LINK = 'topology_added_route_link'
+    TOPOLOGY_REMOVED_ROUTE_LINK = 'topology_removed_route_link'
 
     TOPOLOGY_NETWORK_ACTIVATED = "topology_network_activated"
     TOPOLOGY_NETWORK_DEACTIVATED = "topology_network_deactivated"

@@ -50,7 +50,7 @@ module Vnet::Services::Topologies
     end
 
     def log_format_dp_rl_if(message, datapath_id, route_link_id, interface_id)
-      log_format(message, "datapath_id:#{datapath_id} route_link_id:#{networkm_id} interface_id:#{interface_id}")
+      log_format(message, "datapath_id:#{datapath_id} route_link_id:#{route_link_id} interface_id:#{interface_id}")
     end
 
     def create_datapath_network(datapath_id, network_id, interface_id)
@@ -74,7 +74,7 @@ module Vnet::Services::Topologies
         interface_id: interface_id
       }
 
-      if MW::DatapathRoute_Link.batch.create(create_params).commit
+      if MW::DatapathRouteLink.batch.create(create_params).commit
         debug log_format_dp_rl_if("created datapath_route_link", datapath_id, route_link_id, interface_id)
       else
         info log_format_dp_rl_if("failed to create datapath_route_link", datapath_id, route_link_id, interface_id)
