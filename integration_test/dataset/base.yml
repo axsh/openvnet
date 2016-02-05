@@ -73,11 +73,11 @@ network_services:
 
   - uuid: ns-dhcppub1
     interface_uuid: if-dhcppub1
-    type: dhcp
+    mode: dhcp
 
   - uuid: ns-dhcppub2
     interface_uuid: if-dhcppub2
-    type: dhcp
+    mode: dhcp
 
 datapath_networks:
 

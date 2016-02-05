@@ -7,6 +7,8 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event PORT_INITIALIZED, :install_item
     subscribe_event PORT_FINALIZED, :uninstall_item
 
