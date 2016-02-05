@@ -8,6 +8,9 @@ module Vnet::ModelWrappers
   class ActiveNetwork < Base
   end
 
+  class ActiveRouteLink < Base
+  end
+
   class IpRange < Base
   end
 

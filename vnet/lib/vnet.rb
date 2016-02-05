@@ -59,6 +59,9 @@ module Vnet
   end
 
   module Core
+    autoload :Manager, 'vnet/core/manager'
+    autoload :ActiveManager, 'vnet/core/active_manager'
+
     autoload :ActiveInterfaceEvents, 'vnet/core/event_helpers'
     autoload :ActiveNetworkEvents, 'vnet/core/event_helpers'
     autoload :ActivePortEvents, 'vnet/core/event_helpers'
@@ -70,6 +73,8 @@ module Vnet
     autoload :ActiveNetworkManager, 'vnet/core/active_network_manager'
     autoload :ActivePort, 'vnet/core/items'
     autoload :ActivePortManager, 'vnet/core/active_port_manager'
+    autoload :ActiveRouteLink, 'vnet/core/items'
+    autoload :ActiveRouteLinkManager, 'vnet/core/active_route_link_manager'
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
     autoload :Datapath, 'vnet/core/items'
@@ -83,7 +88,6 @@ module Vnet
     autoload :InterfaceManager, 'vnet/core/interface_manager'
     autoload :InterfacePort, 'vnet/core/interface_port'
     autoload :InterfacePortManager, 'vnet/core/interface_port_manager'
-    autoload :Manager, 'vnet/core/manager'
     autoload :Network, 'vnet/core/items'
     autoload :NetworkManager, 'vnet/core/network_manager'
     autoload :Port, 'vnet/core/port'
@@ -116,6 +120,12 @@ module Vnet
       autoload :Local, 'vnet/core/active_ports/local'
       autoload :Tunnel, 'vnet/core/active_ports/tunnel'
       autoload :Unknown, 'vnet/core/active_ports/unknown'
+    end
+
+    module ActiveRouteLinks
+      autoload :Base, 'vnet/core/active_route_links/base'
+      autoload :Local, 'vnet/core/active_route_links/local'
+      autoload :Remote, 'vnet/core/active_route_links/remote'
     end
 
     module Connections
@@ -310,6 +320,7 @@ module Vnet
     autoload :ActiveInterface, 'vnet/models/active_interface'
     autoload :ActiveNetwork, 'vnet/models/active_network'
     autoload :ActivePort, 'vnet/models/active_port'
+    autoload :ActiveRouteLink, 'vnet/models/active_route_link'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
     autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'
@@ -355,6 +366,7 @@ module Vnet
   module ModelWrappers
     autoload :ActiveInterface, 'vnet/model_wrappers/wrappers'
     autoload :ActiveNetwork, 'vnet/model_wrappers/wrappers'
+    autoload :ActiveRouteLink, 'vnet/model_wrappers/wrappers'
     autoload :ActivePort, 'vnet/model_wrappers/active_port'
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
@@ -411,6 +423,7 @@ module Vnet
     autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :ActiveNetwork, 'vnet/node_api/active_network'
     autoload :ActivePort, 'vnet/node_api/active_port'
+    autoload :ActiveRouteLink, 'vnet/node_api/active_route_link'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathGeneric, 'vnet/node_api/datapath_generic.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_generic.rb'
