@@ -13,6 +13,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Changed` Optimized manager initialization code so no events can be processed before the targeted managers are properly initialized.
 
+* `Deprecated` The `type` parameter in the WebAPI's network_services endpoint. Use `mode` instead.
+
 * `Changed` Added a default value of `false` to all `is_deleted` flags in the database. Now OpenVNet can be used with MySQL's STRICT mode.
 
 * `Changed` The `mac_address` parameter in the WebAPI's `datapath_networks` and `datapath_route_links` endpoints are no longer required. OpenVNet will now generate them if not provided.
