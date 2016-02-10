@@ -3,7 +3,10 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
   
   <title>Installation - OpenVNet</title>
   
@@ -23,6 +26,8 @@
   <script>
     // Current page data
     var mkdocs_page_name = "Installation";
+    var mkdocs_page_input_path = "installation.md";
+    var mkdocs_page_url = "/installation/";
   </script>
   
   <script src="../js/jquery-2.1.1.min.js"></script>
@@ -355,7 +360,7 @@ OVS_EXTRA=&quot;
  set bridge     ${DEVICE} other_config:disable-in-band=true --
  set bridge     ${DEVICE} other-config:datapath-id=0000aaaaaaaaaaaa --
  set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
- set-fail-mode  ${DEVICE} standalone --
+ set-fail-mode  ${DEVICE} secure --
  set-controller ${DEVICE} tcp:127.0.0.1:6633
 &quot;
 </code></pre>
@@ -478,7 +483,7 @@ ovs-vsctl add-port br0 inst2
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../creating-virtual-networks/single-network/" class="btn btn-neutral float-right" title="Single network"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../creating-virtual-networks/single-network/" class="btn btn-neutral float-right" title="Single network">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../features/" class="btn btn-neutral" title="Features"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -508,7 +513,7 @@ ovs-vsctl add-port br0 inst2
 <div class="rst-versions" role="note" style="cursor: pointer">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
-          <a class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
+          <a href="https://github.com/axsh/openvnet" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
         <span><a href="../features/" style="color: #fcfcfc;">&laquo; Previous</a></span>
