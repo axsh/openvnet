@@ -206,6 +206,13 @@ module Vnet::Core
     end
 
     def internal_terminate_managers(manager_list, timeout)
+      manager_list.each { |manager|
+        begin
+          manager.terminate
+        rescue Celluloid::DeadActorError
+        end
+      }
+
       start_time = Time.new
 
       manager_list.each { |manager|
