@@ -107,18 +107,17 @@ module Vnet::Core::Routes
       # In order to know what interface to egress from this flow needs
       # to be created even on datapaths where the interface is remote.
       if @egress == true
-        [true, false].each { |reflection|
-          flows << flow_create(table: TABLE_ROUTER_EGRESS_LOOKUP,
-            goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
-            priority: flow_priority,
+        flows << flow_create(
+          table: TABLE_ROUTER_EGRESS_LOOKUP,
+          goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
+          priority: flow_priority,
 
-            match: subnet_dst,
-            match_route_link: @route_link_id,
+          match: subnet_dst,
+          match_route_link: @route_link_id,
 
-            write_value_pair_flag: reflection,
-            write_value_pair_first: @interface_id,
-            write_value_pair_second: @route_link_id)
-        }
+          write_value_pair_flag: false,
+          write_value_pair_first: @interface_id,
+          write_value_pair_second: @route_link_id)
       end
 
       @dp_info.add_flows(flows)
