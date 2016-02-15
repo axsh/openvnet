@@ -37,7 +37,8 @@ module Vnet::Openflow
       info "features_reply from %#x." % dpid
 
       datapath = datapath(dpid) || return
-      datapath.switch.async.features_reply(message)
+      switch = datapath.switch || return
+      switch.async.features_reply(message)
     end
 
     def port_desc_multipart_reply(dpid, message)
@@ -57,7 +58,8 @@ module Vnet::Openflow
       debug "port_status from %#x." % dpid
 
       datapath = datapath(dpid) || return
-      datapath.switch.async.port_status(message)
+      switch = datapath.switch || return
+      switch.async.port_status(message)
     end
 
     def packet_in(dpid, message)
