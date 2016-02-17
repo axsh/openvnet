@@ -79,6 +79,14 @@ module Vnet
       "#{log_type}: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def log_format_h(message, values)
+      str = values.map { |value|
+        value.join(':')
+      }.join(' ')
+
+      log_format(message, str)
+    end
+
   end
 
   class ItemVnetBase < ItemBase

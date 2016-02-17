@@ -36,23 +36,6 @@ module Vnet::Services::Topologies
 
     private
 
-    # TODO: Better logging...
-    def log_format_dp_nw(message, datapath_id, network_id)
-      log_format(message, "datapath_id:#{datapath_id} network_id:#{network_id}")
-    end
-
-    def log_format_dp_nw_if(message, datapath_id, network_id, interface_id)
-      log_format(message, "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface_id}")
-    end
-
-    def log_format_dp_rl(message, datapath_id, route_link_id)
-      log_format(message, "datapath_id:#{datapath_id} route_link_id:#{route_link_id}")
-    end
-
-    def log_format_dp_rl_if(message, datapath_id, route_link_id, interface_id)
-      log_format(message, "datapath_id:#{datapath_id} route_link_id:#{route_link_id} interface_id:#{interface_id}")
-    end
-
     def create_datapath_network(datapath_id, network_id, interface_id)
       create_params = {
         datapath_id: datapath_id,
@@ -61,9 +44,9 @@ module Vnet::Services::Topologies
       }
 
       if MW::DatapathNetwork.batch.create(create_params).commit
-        debug log_format_dp_nw_if("created datapath_network", datapath_id, network_id, interface_id)
+        debug log_format_h("created datapath_network", create_params)
       else
-        info log_format_dp_nw_if("failed to create datapath_network", datapath_id, network_id, interface_id)
+        info log_format_h("failed to create datapath_network", create_params)
       end
     end
 
@@ -75,9 +58,9 @@ module Vnet::Services::Topologies
       }
 
       if MW::DatapathRouteLink.batch.create(create_params).commit
-        debug log_format_dp_rl_if("created datapath_route_link", datapath_id, route_link_id, interface_id)
+        debug log_format_h("created datapath_route_link", create_params)
       else
-        info log_format_dp_rl_if("failed to create datapath_route_link", datapath_id, route_link_id, interface_id)
+        info log_format_h("failed to create datapath_route_link", create_params)
       end
     end
 

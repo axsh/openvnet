@@ -16,7 +16,7 @@ module Vnet::Services::Topologies
       interface_id = get_a_host_interface_id(datapath_id)
 
       if interface_id.nil?
-        warn log_format_dp_nw("could not find host interface for new datapath_network", datapath_id, network_id)
+        warn log_format_h("could not find host interface for new datapath_network", params)
         return
       end
 
@@ -30,7 +30,7 @@ module Vnet::Services::Topologies
       interface_id = get_a_host_interface_id(datapath_id)
 
       if interface_id.nil?
-        warn log_format_dp_rl("could not find host interface for new datapath_route_link", datapath_id, route_link_id)
+        warn log_format_h("could not find host interface for new datapath_route_link", params)
         return
       end
 

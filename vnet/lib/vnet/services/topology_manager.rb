@@ -82,25 +82,6 @@ module Vnet::Services
       item_class.new(map: item_map)
     end
 
-    # TODO: Replace with a generic log_format_hash that prints the
-    # key:value pairs.
-
-    def log_format_dp_nw(message, datapath_id, network_id)
-      log_format(message, "datapath_id:#{datapath_id} network_id:#{network_id}")
-    end
-
-    def log_format_dp_nw_if(message, datapath_id, network_id, interface_id)
-      log_format(message, "datapath_id:#{datapath_id} network_id:#{network_id} interface_id:#{interface_id}")
-    end
-
-    def log_format_dp_rl(message, datapath_id, route_link_id)
-      log_format(message, "datapath_id:#{datapath_id} route_link_id:#{route_link_id}")
-    end
-
-    def log_format_dp_rl_if(message, datapath_id, route_link_id, interface_id)
-      log_format(message, "datapath_id:#{datapath_id} route_link_id:#{route_link_id} interface_id:#{interface_id}")
-    end
-
     #
     # Create / Delete events:
     #
@@ -122,10 +103,15 @@ module Vnet::Services
         network_id = get_param_packed_id(params)
         datapath_id = get_param_id(params, :datapath_id)
 
-        debug log_format_dp_nw("network activated", datapath_id, network_id)
+        event_options = {
+          network_id: network_id,
+          datapath_id: datapath_id
+        }
+
+        debug log_format_h("network activated", event_options)
 
         if has_datapath_network?(datapath_id, network_id)
-          debug log_format_dp_nw("found existing datapath_network", datapath_id, network_id)
+          debug log_format_h("found existing datapath_network", event_options)
           return
         end
 
@@ -135,28 +121,24 @@ module Vnet::Services
 
       item_id = find_id_using_tp_nw(datapath_id, network_id) || return
 
+      event_options[:id] = item_id
+
       if internal_retrieve(id: item_id).nil?
-        warn log_format_dp_nw("could not retrieve topology associated with network", datapath_id, network_id)
+        warn log_format_h("could not retrieve topology associated with network", event_options)
         return
       end
-
-      event_options = {
-        id: item_id,
-        network_id: network_id,
-        datapath_id: datapath_id
-      }
 
       publish(TOPOLOGY_CREATE_DP_NW, event_options)
     end
 
     # TOPOLOGY_NETWORK_DEACTIVATED on queue [:network, network.id]
     def network_deactivated(params)
-      debug log_format("network deactivated", params)
+      debug log_format_h("network deactivated", params)
     end
 
     # TOPOLOGY_CREATE_DP_NW on queue 'item.id'
     def create_dp_nw(params)
-      debug log_format("creating datapath_network", params)
+      debug log_format_h("creating datapath_network", params)
 
       item = internal_detect_by_id(params) || return
 
@@ -177,10 +159,15 @@ module Vnet::Services
         route_link_id = get_param_packed_id(params)
         datapath_id = get_param_id(params, :datapath_id)
 
-        debug log_format_dp_rl("route_link activated", datapath_id, route_link_id)
+        event_options = {
+          route_link_id: route_link_id,
+          datapath_id: datapath_id
+        }
+
+        debug log_format_h("route_link activated", event_options)
 
         if has_datapath_route_link?(datapath_id, route_link_id)
-          debug log_format_dp_rl("found existing datapath_route_link", datapath_id, route_link_id)
+          debug log_format_h("found existing datapath_route_link", event_options)
           return
         end
 
@@ -190,28 +177,24 @@ module Vnet::Services
 
       item_id = find_id_using_tp_rl(datapath_id, route_link_id) || return
 
+      event_options[:id] = item_id
+
       if internal_retrieve(id: item_id).nil?
-        warn log_format_dp_rl("could not retrieve topology associated with route link", datapath_id, route_link_id)
+        warn log_format_h("could not retrieve topology associated with route link", event_options)
         return
       end
-
-      event_options = {
-        id: item_id,
-        route_link_id: route_link_id,
-        datapath_id: datapath_id
-      }
 
       publish(TOPOLOGY_CREATE_DP_RL, event_options)
     end
 
     # TOPOLOGY_ROUTE_LINK_DEACTIVATED on queue [:route_link, route_link.id]
     def route_link_deactivated(params)
-      debug log_format("route_link deactivated", params)
+      debug log_format_h("route_link deactivated", params)
     end
 
     # TOPOLOGY_CREATE_DP_RL on queue 'item.id'
     def create_dp_rl(params)
-      debug log_format("creating datapath_route_link", params)
+      debug log_format_h("creating datapath_route_link", params)
 
       item = internal_detect_by_id(params) || return
 
@@ -233,7 +216,7 @@ module Vnet::Services
       tp_nw = MW::TopologyNetwork.batch.dataset.where(network_id: network_id).first.commit
       
       if tp_nw.nil? || tp_nw.topology_id.nil?
-        warn log_format_dp_nw("network not associated with a topology", datapath_id, network_id)
+        warn log_format("network not associated with a topology", "datapath_id:#{datapath_id} network_id:#{network_id}")
         return
       end
 
@@ -247,7 +230,7 @@ module Vnet::Services
       tp_rl = MW::TopologyRouteLink.batch.dataset.where(route_link_id: route_link_id).first.commit
       
       if tp_rl.nil? || tp_rl.topology_id.nil?
-        warn log_format_dp_rl("route_link not associated with a topology", datapath_id, route_link_id)
+        warn log_format("route_link not associated with a topology", "datapath_id:#{datapath_id} route_link_id:#{route_link_id}")
         return
       end
 
