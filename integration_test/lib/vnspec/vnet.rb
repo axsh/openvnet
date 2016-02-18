@@ -123,6 +123,19 @@ module Vnspec
         end
       end
 
+      def dump_logs(vna_index = nil)
+        # return unless config[:dump_flows]
+        config[:nodes][:vna].each_with_index do |ip, i|
+          next if vna_index && vna_index.to_i != i + 1
+          logger.info "#" * 50
+          logger.info "# dump_logs: vna#{i + 1}"
+          logger.info "#" * 50
+          output = ssh(ip, "cd #{config[:vnet_path]}/vnet; bundle exec bin/vnflows-monitor", debug: false)
+          logger.info output[:stdout]
+          logger.info
+        end
+      end
+
       def install_package(name)
         run_command_on_vna_nodes("yum install -y #{name}", use_sudo: true)
       end
