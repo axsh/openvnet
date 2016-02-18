@@ -4,6 +4,10 @@ require_relative "spec_helper"
 describe "edge" do
   before(:all) do
     setup_legacy_machine
+
+    # Make sure legacy machine has set up flows before the first test
+    # sends an arp packet.
+    sleep 5
   end
 
   describe "mac2mac" do
