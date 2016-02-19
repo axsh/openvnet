@@ -129,14 +129,14 @@ module Vnspec
         logger.info "#" * 50
         logger.info "# dump_logs: vnmgr"
         logger.info "#" * 50
-        output = ssh(config[:nodes][:vnmgr], "cat /var/log/openvnet/vnmgr.log", debug: false)
+        output = ssh(config[:nodes][:vnmgr].first, "cat /var/log/openvnet/vnmgr.log", debug: false)
         logger.info output[:stdout]
         logger.info
 
         logger.info "#" * 50
         logger.info "# dump_logs: webapi"
         logger.info "#" * 50
-        output = ssh(config[:nodes][:vnmgr], "cat /var/log/openvnet/webapi.log", debug: false)
+        output = ssh(config[:nodes][:vnmgr].first, "cat /var/log/openvnet/webapi.log", debug: false)
         logger.info output[:stdout]
         logger.info
 
