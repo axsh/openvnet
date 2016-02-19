@@ -124,13 +124,28 @@ module Vnspec
       end
 
       def dump_logs(vna_index = nil)
-        # return unless config[:dump_flows]
+        return unless config[:dump_flows]
+
+        logger.info "#" * 50
+        logger.info "# dump_logs: vnmgr"
+        logger.info "#" * 50
+        output = ssh(config[:nodes][:vnmgr], "cat /var/log/openvnet/vnmgr.log", debug: false)
+        logger.info output[:stdout]
+        logger.info
+
+        logger.info "#" * 50
+        logger.info "# dump_logs: webapi"
+        logger.info "#" * 50
+        output = ssh(config[:nodes][:vnmgr], "cat /var/log/openvnet/webapi.log", debug: false)
+        logger.info output[:stdout]
+        logger.info
+
         config[:nodes][:vna].each_with_index do |ip, i|
           next if vna_index && vna_index.to_i != i + 1
           logger.info "#" * 50
           logger.info "# dump_logs: vna#{i + 1}"
           logger.info "#" * 50
-          output = ssh(ip, "cd #{config[:vnet_path]}/vnet; bundle exec bin/vnflows-monitor", debug: false)
+          output = ssh(ip, "cat /var/log/openvnet/vna.log", debug: false)
           logger.info output[:stdout]
           logger.info
         end
