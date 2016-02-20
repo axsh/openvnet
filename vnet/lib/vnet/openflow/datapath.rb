@@ -166,32 +166,22 @@ module Vnet::Openflow
       }
     end
 
-    # TODO: Add a way to block events from being processed by managers
-    # until everything has been initialized.
+    # TODO: Call this from somewhere.
     def initialize_bootstrap_managers
-      @dp_info.bootstrap_managers.each { |manager|
-        manager.set_datapath_info(@datapath_info)
-      }
+      managers = @dp_info.bootstrap_managers
+      managers.each { |manager| manager.event_handler_queue_only }
+      managers.each { |manager| manager.async.start_initialize }
+      managers.each { |manager| manager.wait_for_initialized(nil) }
+      managers.each { |manager| manager.event_handler_active }
     end
 
     def initialize_managers
-      @dp_info.managers.each { |manager|
-        manager.set_datapath_info(@datapath_info)
-      }
-
-      # TODO: Add a default do_initialize method to manager and
-      # parallelize them.
-      @dp_info.active_port_manager.do_initialize
-
-      # Until we have datapath_info loaded none of the ports can be
-      # initialized.
-      @dp_info.interface_port_manager.load_internal_interfaces
-      @dp_info.port_manager.initialize_ports
-
-      # All managers should be initialized, allow events to execute.
-      @dp_info.managers.each { |manager|
-        manager.event_handler_active
-      }
+      managers = @dp_info.managers
+      managers.each { |manager| manager.set_datapath_info(@datapath_info) }
+      managers.each { |manager| manager.event_handler_queue_only }
+      managers.each { |manager| manager.async.start_initialize }
+      managers.each { |manager| manager.wait_for_initialized(nil) }
+      managers.each { |manager| manager.event_handler_active }
     end
 
   end

@@ -45,6 +45,8 @@ module Vnet
     # requires the use of local events.
 
     def initialize(info, options = {})
+      @state = :uninitialized
+
       @items = {}
       @messages = {}
 
@@ -99,6 +101,10 @@ module Vnet
     # Polling methods:
     #
 
+    def wait_for_initialized(max_wait = 10.0)
+      internal_wait_for_initialized(max_wait)
+    end
+
     def wait_for_loaded(params, max_wait = 10.0, try_load = false)
       item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
@@ -137,6 +143,21 @@ module Vnet
       # We need to update remote interfaces in case they are now in
       # our datapath.
       initialized_datapath_info
+      nil
+    end
+
+    def start_initialize
+      if @state != :uninitialized
+        raise("Manager.start_initialized must be called on an uninitialized manager.")
+      end
+
+      do_initialize
+
+      @state = :initialized
+
+      # TODO: Catch errors and return nil when do_initialize fails.
+      resume_event_tasks(:initialized, true)
+      nil
     end
 
     #
@@ -177,6 +198,9 @@ module Vnet
     end
 
     def cleared_datapath_info
+    end
+
+    def do_initialize
     end
 
     #
@@ -531,6 +555,17 @@ module Vnet
     #
     # Internal polling methods:
     #
+
+    def internal_wait_for_initialized(max_wait)
+      if @state == :initialized
+        return
+      end
+
+      # TODO: Check for invalid state, cleaned up, etc.
+      create_event_task(:initialized, max_wait) { |result|
+        true
+      }
+    end
 
     # TODO: Wait_for_loaded needs to work correctly when create is
     # called and the manager doesn't know the item is wanted.

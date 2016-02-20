@@ -21,11 +21,6 @@ module Vnet::Core
     subscribe_event INTERFACE_PORT_ACTIVATE, :activate_port
     subscribe_event INTERFACE_PORT_DEACTIVATE, :deactivate_port
 
-    # When event handling is set to drop-all, this does nothing.
-    def load_internal_interfaces
-      internal_load_where(mode: 'internal', allowed_datapath: true)
-    end
-
     def load_simulated_on_network_id(network_id)
       # TODO: Add list of active network id's for which we should have
       # simulated interfaces loaded.
@@ -93,6 +88,11 @@ module Vnet::Core
       end
 
       filter
+    end
+
+    def do_initialize
+      # When event handling is set to drop-all, this does nothing.
+      internal_load_where(mode: 'internal', allowed_datapath: true)
     end
 
     # We only initialize interface ports that are allowed on this

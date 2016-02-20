@@ -23,7 +23,7 @@ describe Vnet::Core::Filter2Manager do
   # TODO: Sleep timers here create random fails based on load. Use wait_for_loaded.
   before(:each) do
     filter2_manager.publish(Vnet::Event::FILTER_ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
-    sleep(0.2)
+    sleep(0.01)
     filter2_manager.publish(Vnet::Event::FILTER_CREATED_ITEM, filter.to_hash)
     expect(filter2_manager.wait_for_loaded({id: filter.id}, 3)).not_to be_nil
   end
@@ -123,6 +123,7 @@ describe Vnet::Core::Filter2Manager do
                               filter_static.to_hash.merge(id: filter.id,
                                                           static_id: filter_static.id))
     end
+
     context "when a static rule has been added" do
       let(:filter_static) { Fabricate(:static_pass, protocol: "tcp") }
       it "removes a static rule" do

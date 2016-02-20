@@ -7,21 +7,13 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event PORT_INITIALIZED, :install_item
     subscribe_event PORT_FINALIZED, :uninstall_item
 
     subscribe_event PORT_ATTACH_INTERFACE, :attach_interface
     subscribe_event PORT_DETACH_INTERFACE, :detach_interface
-
-    def initialize_ports
-      return if @datapath_info.nil?
-
-      # Iterate through a copy of the items else 'insert/delete' may
-      # cause issues.
-      @items.keys.each { |id|
-        publish(PORT_INITIALIZED, id: id)
-      }
-    end
 
     def insert(port_desc)
       if @items[port_desc.port_no]
@@ -92,6 +84,14 @@ module Vnet::Core
     #
     # Event handlers.
     #
+
+    def do_initialize
+      # Iterate through a copy of the items else 'insert/delete' may
+      # cause issues.
+      @items.keys.each { |id|
+        publish(PORT_INITIALIZED, id: id)
+      }
+    end
 
     def install_item(params)
       port = @items[params[:id]] || return
