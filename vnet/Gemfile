@@ -1,4 +1,3 @@
-
 source "http://rubygems.org"
 
 gem 'ffi-rzmq', "1.0.3"
