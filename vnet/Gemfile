@@ -27,6 +27,7 @@ gem "activesupport", '3.0.0' # Updating to 4.2.1 broke the unit tests.
 gem 'paper_house', '~>0.5.0'
 gem 'rant', '>= 0.5.9', :git => 'https://github.com/axsh/rant.git'
 gem 'trema', :git=>'https://github.com/axsh/trema.git', :branch=>'wakame-edge'
+gem 'pio'
 
 group :development, :test do
   gem "rake"
