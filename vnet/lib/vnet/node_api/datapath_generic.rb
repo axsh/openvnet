@@ -13,7 +13,7 @@ module Vnet::NodeApi
         end
 
         transaction {
-					mac_address_random_assign(options)
+          mac_address_random_assign(options)
           model = internal_create(options)
         }
       end
