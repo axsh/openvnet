@@ -52,6 +52,18 @@ module Vnet::NodeApi
         }
       end
 
+      def mac_address_random_assign(options)
+        mac_address = options[:mac_address]
+        mac_group_uuid = Vnet::Configurations::Common.conf.datapath_mac_group
+
+        if mac_address.nil? && mac_group_uuid
+          mac_group = model_class(:mac_range_group)[mac_group_uuid] || return
+          mac_address = mac_group.address_random || return
+
+          options[:mac_address_id] = mac_address.id
+        end
+      end
+
       #
       # Internal methods:
       #
