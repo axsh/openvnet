@@ -169,6 +169,7 @@ module Vnet::Openflow
     # TODO: Call this from somewhere.
     def initialize_bootstrap_managers
       managers = @dp_info.bootstrap_managers
+      managers.each { |manager| manager.set_datapath_info(@datapath_info) }
       managers.each { |manager| manager.event_handler_queue_only }
       managers.each { |manager| manager.async.start_initialize }
       managers.each { |manager| manager.wait_for_initialized(nil) }
