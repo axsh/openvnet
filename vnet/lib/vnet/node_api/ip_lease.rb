@@ -82,54 +82,73 @@ module Vnet::NodeApi
 
       # Use filter instead of 'model'?
       def attach_model(model, options)
+        # Verify model is not nil.
+
         interface_id = options[:interface_id]
         mac_lease_id = options[:mac_lease_id]
 
-        if interface_id.nil? || mac_lease_id.nil?
+        if interface_id.nil? && mac_lease_id.nil?
           return # raise error
         end
 
-        if model.interface_id.nil? || model.mac_lease_id.nil?
+        if !model.interface_id.nil? || !model.mac_lease_id.nil?
           return # raise error or release
         end
 
-        # TODO: Find the first mac_lease if not defined, or the
-        # reverse.
-
-        # Make sure they are still valid.
-        model.interface_id = interface_id
-        model.mac_lease_id = mac_lease_id
-
         transaction do
+          interface = interface_id && model_class(:interface)[id: interface_id]
+          mac_lease = mac_lease_id && model_class(:mac_lease)[id: mac_lease_id]
+          
+          if interface && mac_lease.nil? && mac_lease_id.nil?
+            # Error if the interface has more than one mac_lease?
+            mac_lease = interface.mac_leases.first
+          end
+
+          if mac_lease && interface.nil? && interface_id.nil?
+            interface = mac_lease.interface
+          end
+
+          if interface.nil? || mac_lease.nil?
+            return # raise error
+          end
+
+          model.interface_id = interface.id
+          model.mac_lease_id = mac_lease.id
+
           model.save_changes
           current_time = Time.now # Use updated_at instead?
 
-          # model.ip_retentions.each do |ip_retention|
-          #   ip_retention.released_at = current_time
-          #   ip_retention.save_changes
-          # end
+          model.ip_retentions.each do |ip_retention|
+            ip_retention.released_at = nil
+            ip_retention.save_changes
+          end
         end
         
-        if interface
-          interface.security_groups.each do |group|
-            dispatch_update_sg_ip_addresses(group)
-          end
+        interface.security_groups.each do |group|
+          dispatch_update_sg_ip_addresses(group)
         end
 
         dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_event_hash(model))
-
         model
       end
 
       def release_model(model)
+        # Verify model is not nil.
+
         interface = model.interface
 
         # Check that interface_id and mac_lease_id are valid.
 
-        model.interface_id = nil
-        model.mac_lease_id = nil
-
         transaction do
+          # Refresh?
+
+          if model.interface_id.nil? && model.mac_lease_id.nil?
+            return # raise error or release
+          end
+
+          model.interface_id = nil
+          model.mac_lease_id = nil
+
           model.save_changes
           current_time = Time.now # Use updated_at instead?
 
