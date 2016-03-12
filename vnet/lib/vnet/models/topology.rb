@@ -11,7 +11,11 @@ module Vnet::Models
     one_to_many :topology_networks
     one_to_many :topology_route_links
 
-    # TODO: Add assosiate_dependencies.
+    plugin :association_dependencies,
+    # 0009_topology
+    topology_datapaths: :destroy,
+    topology_networks: :destroy,
+    topology_route_links: :destroy
 
   end
 
