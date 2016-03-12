@@ -7,7 +7,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
 
   put_post_shared_params
   param_uuid M::RouteLink
-  param_options :mac_address, required: true
+  param_options :mac_address, required: false
   post do
     post_new(:RouteLink)
   end
