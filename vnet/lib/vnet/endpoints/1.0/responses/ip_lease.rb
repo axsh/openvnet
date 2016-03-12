@@ -7,8 +7,8 @@ module Vnet::Endpoints::V10::Responses
       object.interface_uuid ||= object.interface.uuid if object.interface
       object.mac_lease_uuid ||= object.mac_lease.uuid if object.mac_lease
 
-      network = object.ip_address.network
-      object.network_uuid =  network && network.uuid
+      network = object.ip_address && object.ip_address.network
+      object.network_uuid = network && network.uuid
 
       object.ipv4_address = object.ipv4_address_s
       object.to_hash

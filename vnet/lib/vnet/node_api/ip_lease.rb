@@ -18,7 +18,8 @@ module Vnet::NodeApi
       end
 
       def release_uuid(uuid)
-        release(uuid)
+        model = model_class[uuid]
+        release_model(model)
       end
 
       def release(uuid)
@@ -80,7 +81,7 @@ module Vnet::NodeApi
       # Attach / Detach:
       #
 
-      # Use filter instead of 'model'?
+      # TODO: Use a filter instead.
       def attach_model(model, options)
         # Verify model is not nil.
 
@@ -135,12 +136,12 @@ module Vnet::NodeApi
       def release_model(model)
         # Verify model is not nil.
 
-        interface = model.interface
-
-        # Check that interface_id and mac_lease_id are valid.
+        interface = nil
 
         transaction do
           # Refresh?
+
+          interface = model.interface
 
           if model.interface_id.nil? && model.mac_lease_id.nil?
             return # raise error or release
@@ -166,6 +167,9 @@ module Vnet::NodeApi
 
         dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: interface.id, ip_lease_id: model.id)
 
+        # TODO: Move this to ip_retentions as a dispatch_foo_where
+        # method.
+        #
         # re-add released ip_retentions
         model.ip_retentions.each do |ip_retention|
           dispatch_event(

@@ -59,7 +59,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   put '/:uuid/release' do
     remove_system_parameters
 
-    result = M::IpLease.release_uuid(params)
+    result = M::IpLease.release_uuid(params[:uuid])
     respond_with(R::IpLease.generate(result))
   end
 
