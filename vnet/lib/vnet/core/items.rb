@@ -10,6 +10,9 @@ module Vnet::Core
   class ActiveNetwork < OpenStruct
   end
 
+  class ActiveRouteLink < OpenStruct
+  end
+
   class ActivePort < OpenStruct
   end
 
