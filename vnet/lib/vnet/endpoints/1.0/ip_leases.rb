@@ -46,12 +46,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   param_uuid M::Interface, :interface_uuid, required: false
   param_uuid M::MacLease, :mac_lease_uuid, required: false
   put '/:uuid/attach' do
+    uuid_to_id(M::IpLease)
     uuid_to_id(M::Interface, 'interface_uuid', 'interface_id') if params['interface_uuid']
     uuid_to_id(M::MacLease, 'mac_lease_uuid', 'mac_lease_id') if params['mac_lease_uuid']
 
     remove_system_parameters
 
-    result = M::IpLease.attach_uuid(params)
+    result = M::IpLease.attach_id(params)
     respond_with(R::IpLease.generate(result))
   end
 

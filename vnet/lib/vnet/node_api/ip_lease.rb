@@ -12,9 +12,9 @@ module Vnet::NodeApi
         update_uuid(uuid, options)
       end
 
-      def attach_uuid(uuid, options)
-        model = model_class[uuid]
-        release_model(model, options)
+      def attach_id(options)
+        model = model_class[id: options[:id]]
+        attach_model(model, options)
       end
 
       def release_uuid(uuid)
@@ -95,6 +95,8 @@ module Vnet::NodeApi
         if !model.interface_id.nil? || !model.mac_lease_id.nil?
           return # raise error or release
         end
+
+        interface = nil
 
         transaction do
           interface = interface_id && model_class(:interface)[id: interface_id]
