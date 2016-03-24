@@ -28,6 +28,7 @@ module Vnet::Core
       active_interface
       active_network
       active_port
+      active_route_link
       connection
       datapath
       interface

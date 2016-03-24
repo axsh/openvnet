@@ -2,18 +2,18 @@
 
 module Vnet::Core
 
-  class ActiveNetworkManager < Vnet::Core::ActiveManager
+  class ActiveRouteLinkManager < Vnet::Core::ActiveManager
 
     #
     # Events:
     #
-    subscribe_event ACTIVE_NETWORK_INITIALIZED, :load_item
-    subscribe_event ACTIVE_NETWORK_UNLOAD_ITEM, :unload_item
-    subscribe_event ACTIVE_NETWORK_CREATED_ITEM, :created_item
-    subscribe_event ACTIVE_NETWORK_DELETED_ITEM, :unload_item
+    subscribe_event ACTIVE_ROUTE_LINK_INITIALIZED, :load_item
+    subscribe_event ACTIVE_ROUTE_LINK_UNLOAD_ITEM, :unload_item
+    subscribe_event ACTIVE_ROUTE_LINK_CREATED_ITEM, :created_item
+    subscribe_event ACTIVE_ROUTE_LINK_DELETED_ITEM, :unload_item
 
-    subscribe_event ACTIVE_NETWORK_ACTIVATE, :activate_network
-    subscribe_event ACTIVE_NETWORK_DEACTIVATE, :deactivate_network
+    subscribe_event ACTIVE_ROUTE_LINK_ACTIVATE, :activate_route_link
+    subscribe_event ACTIVE_ROUTE_LINK_DEACTIVATE, :deactivate_route_link
 
     #
     # Internal methods:
@@ -26,15 +26,15 @@ module Vnet::Core
     #
 
     def mw_class
-      MW::ActiveNetwork
+      MW::ActiveRouteLink
     end
 
     def initialized_item_event
-      ACTIVE_NETWORK_INITIALIZED
+      ACTIVE_ROUTE_LINK_INITIALIZED
     end
 
     def item_unload_event
-      ACTIVE_NETWORK_UNLOAD_ITEM
+      ACTIVE_ROUTE_LINK_UNLOAD_ITEM
     end
 
     # TODO: Add 'not_local/remote' filter.
@@ -42,10 +42,10 @@ module Vnet::Core
       filter, value = filter_part
 
       case filter
-      when :id, :network_id, :datapath_id
+      when :id, :route_link_id, :datapath_id
         proc { |id, item| value == item.send(filter) }
       # when :not_local
-      #   proc { |id, item| value != item.network_id }
+      #   proc { |id, item| value != item.route_link_id }
       else
         raise NotImplementedError, filter
       end
@@ -54,7 +54,7 @@ module Vnet::Core
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
-      filter << {network_id: params[:network_id]} if params.has_key? :network_id
+      filter << {route_link_id: params[:route_link_id]} if params.has_key? :route_link_id
       filter << {datapath_id: params[:datapath_id]} if params.has_key? :datapath_id
 
       filter
@@ -65,10 +65,10 @@ module Vnet::Core
 
       item_class =
         case item_map.datapath_id
-        when nil               then ActiveNetworks::Base
-        when @datapath_info.id then ActiveNetworks::Local
+        when nil               then ActiveRouteLinks::Base
+        when @datapath_info.id then ActiveRouteLinks::Local
         else
-          ActiveNetworks::Remote
+          ActiveRouteLinks::Remote
         end
 
       item = item_class.new(dp_info: @dp_info, id: item_map[:id], map: item_map)
@@ -89,17 +89,17 @@ module Vnet::Core
     end
 
     #
-    # Network events:
+    # Route Link events:
     #
 
-    # activate network on queue '[:network, network_id]'
-    def activate_network(params)
-      debug log_format("activating network", params)
+    # activate route link on queue '[:route_link, route_link_id]'
+    def activate_route_link(params)
+      debug log_format("activating route link", params)
 
       begin
         options = {
           datapath_id: @datapath_info.id,
-          network_id: get_param_packed_id(params)
+          route_link_id: get_param_packed_id(params)
         }
     
         mw_class.create(options)
@@ -109,14 +109,14 @@ module Vnet::Core
       end
     end
 
-    # deactivate network on queue '[:network, network_id]'
-    def deactivate_network(params)
-      debug log_format("deactivating network", params)
+    # deactivate route link on queue '[:route_link, route_link_id]'
+    def deactivate_route_link(params)
+      debug log_format("deactivating route link", params)
 
       begin
         filter = {
           datapath_id: @datapath_info.id,
-          network_id: get_param_packed_id(params)
+          route_link_id: get_param_packed_id(params)
         }
     
         mw_class.destroy(filter)
@@ -133,7 +133,7 @@ module Vnet::Core
     # TODO: Move to a core-specific manager class:
     def params_valid_item?(params)
       return params[:id] &&
-        params[:network_id] &&
+        params[:route_link_id] &&
         params[:datapath_id]
     end
 

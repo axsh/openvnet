@@ -87,7 +87,7 @@ module Vnet::Core::Routes
       # id will never be matched.
       flows << flow_create(table: TABLE_INTERFACE_EGRESS_ROUTES,
                            goto_table: TABLE_INTERFACE_EGRESS_MAC,
-                           priority: self.is_default_route ? 20 : 30,
+                           priority: flow_priority,
 
                            match: subnet_dst,
                            match_interface: @interface_id,
@@ -96,7 +96,7 @@ module Vnet::Core::Routes
       if @ingress == true
         flows << flow_create(table: TABLE_ROUTER_INGRESS_LOOKUP,
                              goto_table: TABLE_ROUTER_CLASSIFIER,
-                             priority: self.is_default_route ? 20 : 30,
+                             priority: flow_priority,
 
                              match: subnet_src,
                              match_interface: @interface_id,
@@ -106,20 +106,19 @@ module Vnet::Core::Routes
 
       # In order to know what interface to egress from this flow needs
       # to be created even on datapaths where the interface is remote.
-      [true, false].each { |reflection|
-        if @egress == true
-          flows << flow_create(table: TABLE_ROUTER_EGRESS_LOOKUP,
-                               goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
-                               priority: self.is_default_route ? 20 : 30,
+      if @egress == true
+        flows << flow_create(
+          table: TABLE_ROUTER_EGRESS_LOOKUP,
+          goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
+          priority: flow_priority,
 
-                               match: subnet_dst,
-                               match_route_link: @route_link_id,
+          match: subnet_dst,
+          match_route_link: @route_link_id,
 
-                               write_value_pair_flag: reflection,
-                               write_value_pair_first: @interface_id,
-                               write_value_pair_second: @route_link_id)
-        end
-      }
+          write_value_pair_flag: false,
+          write_value_pair_first: @interface_id,
+          write_value_pair_second: @route_link_id)
+      end
 
       @dp_info.add_flows(flows)
     end
@@ -133,6 +132,10 @@ module Vnet::Core::Routes
     #
 
     private
+
+    def flow_priority
+      20 + @ipv4_prefix
+    end
 
   end
 

@@ -149,6 +149,9 @@ module Vnet
       nil
     end
 
+    def do_initialize
+    end
+
     #
     # Internal methods:
     #
