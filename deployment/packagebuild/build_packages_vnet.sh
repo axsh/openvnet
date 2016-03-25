@@ -107,4 +107,8 @@ done
 
 createrepo "${repo_dir}"
 
-sudo ln -s "${repo_dir}" "${REPO_BASE_DIR}/packages/rhel/6/vnet/current"
+current_symlink="${REPO_BASE_DIR}/packages/rhel/6/vnet/current"
+if [ -L "${current_symlink}" ]; then
+  sudo rm "${current_symlink}"
+fi
+sudo ln -s "${repo_dir}" "${current_symlink}"
