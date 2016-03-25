@@ -106,3 +106,5 @@ for arch in "${POSSIBLE_ARCHS[@]}"; do
 done
 
 createrepo "${repo_dir}"
+
+sudo ln -s "${repo_dir}" "${REPO_BASE_DIR}/packages/rhel/6/vnet/current"
