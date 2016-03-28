@@ -99,8 +99,11 @@ describe "/translations" do
         accepted_params.merge({translation_id: translation.id}).tap { |h|
           h[:ingress_ipv4_address] = 3232236042
           h[:egress_ipv4_address] = 3232236062
-          h[:ingress_network_uuid] = nw_global.canonical_uuid
-          h[:egress_network_uuid] = nw_vnet.canonical_uuid
+          h[:ingress_network_id] = nw_global.id
+          h[:egress_network_id] = nw_vnet.id
+
+          h.delete(:ingress_network_uuid)
+          h.delete(:egress_network_uuid)
         }
       end
 
