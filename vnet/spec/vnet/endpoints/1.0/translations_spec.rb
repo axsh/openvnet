@@ -61,6 +61,24 @@ describe "/translations" do
       end
     end
 
+    shared_examples_for "with ingress/egress network uuid" do
+      context "do nothing at current moment" do
+        let(:request_params) do
+          {
+            ingress_ipv4_address: "192.168.2.10",
+            egress_ipv4_address: "192.168.2.30",
+            ingress_network_uuid: "nw-global",
+            egress_network_uuid: "nw-vnet"
+          }
+        end
+
+        it "returns ingress/egress network uuid if the parameters include them" do
+          expect(last_response).to succeed.with_body_containing(request_params)
+        end
+
+      end
+    end
+
     accepted_params = {
       ingress_ipv4_address: "192.168.2.10",
       egress_ipv4_address: "192.168.2.30",
@@ -80,6 +98,8 @@ describe "/translations" do
       include_examples "POST /", p_accepted_params, required_params, uuid_params
 
       include_examples "static address mode only"
+
+      include_examples "with ingress/egress network uuid"
     end
 
     describe "DELETE" do
