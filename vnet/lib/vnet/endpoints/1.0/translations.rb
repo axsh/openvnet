@@ -44,14 +44,17 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
     param :ingress_port_number, :Integer, in: 1..65536
     param :egress_port_number, :Integer, in: 1..65536
-    param_uuid M::Network, :ingress_network_uuid
-    param_uuid M::Network, :egress_network_uuid
+    param_uuid M::Network, :ingress_network_uuid, required: true
+    param_uuid M::Network, :egress_network_uuid, required: true
   end
 
   static_address_shared_params
   param_uuid M::RouteLink, :route_link_uuid
   post '/:uuid/static_address' do
     translation = check_syntax_and_pop_uuid(M::Translation)
+
+    ingress_network_id = check_syntax_and_pop_uuid(M::Network, "ingress_network_uuid").id
+    egress_network_id = check_syntax_and_pop_uuid(M::Network, "egress_network_uuid").id
 
     route_link_id = if params['route_link_uuid']
       check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid').id
