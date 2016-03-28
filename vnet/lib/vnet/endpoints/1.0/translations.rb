@@ -70,7 +70,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       egress_port_number: params["egress_port_number"]
     )
 
-    respond_with(R::TranslationStaticAddress.generate(tsa))
+    r = R::TranslationStaticAddress.generate(tsa)
+
+    if params['ingress_network_uuid'] && params['egress_network_uuid']
+      r[:ingress_network_uuid] = params['ingress_network_uuid']
+      r[:egress_network_uuid] = params['egress_network_uuid']
+    end
+
+    respond_with(r)
   end
 
   static_address_shared_params
