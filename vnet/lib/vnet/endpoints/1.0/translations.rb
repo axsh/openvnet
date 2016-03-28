@@ -44,6 +44,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
     param :ingress_port_number, :Integer, in: 1..65536
     param :egress_port_number, :Integer, in: 1..65536
+    param_uuid M::Network, :ingress_network_uuid
+    param_uuid M::Network, :egress_network_uuid
   end
 
   static_address_shared_params
