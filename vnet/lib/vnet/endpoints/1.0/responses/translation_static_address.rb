@@ -10,6 +10,12 @@ module Vnet::Endpoints::V10::Responses
 
         route_link = object.batch.route_link.commit
         res[:route_link_uuid] = route_link.uuid if route_link
+
+        i_network = object.batch.ingress_network.commit
+        e_network = object.batch.egress_network.commit
+
+        res[:ingress_network_uuid] = i_network.uuid if i_network
+        res[:egress_network_uuid] = e_network.uuid if e_network
       }
     end
   end

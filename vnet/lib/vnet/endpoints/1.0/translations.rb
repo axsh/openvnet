@@ -62,23 +62,21 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")
     end
 
+    ingress_network = check_syntax_and_pop_uuid(M::Network, "ingress_network_uuid")
+    egress_network = check_syntax_and_pop_uuid(M::Network, "egress_network_uuid")
+
     tsa = M::TranslationStaticAddress.create(
       translation_id: translation.id,
       route_link_id: route_link.id,
       ingress_ipv4_address: params["ingress_ipv4_address"],
       egress_ipv4_address: params["egress_ipv4_address"],
       ingress_port_number: params["ingress_port_number"],
-      egress_port_number: params["egress_port_number"]
+      egress_port_number: params["egress_port_number"],
+      ingress_network_id: ingress_network.id,
+      egress_network_id: egress_network.id
     )
 
-    r = R::TranslationStaticAddress.generate(tsa)
-
-    if params['ingress_network_uuid'] && params['egress_network_uuid']
-      r[:ingress_network_uuid] = params['ingress_network_uuid']
-      r[:egress_network_uuid] = params['egress_network_uuid']
-    end
-
-    respond_with(r)
+    respond_with(R::TranslationStaticAddress.generate(tsa))
   end
 
   static_address_shared_params
