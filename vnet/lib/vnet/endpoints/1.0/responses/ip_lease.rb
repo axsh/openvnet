@@ -5,11 +5,10 @@ module Vnet::Endpoints::V10::Responses
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::IpLease)
 
-      object.interface_uuid ||= object.interface.uuid if object.interface
-      object.mac_lease_uuid ||= object.mac_lease.uuid if object.mac_lease
+      object.interface_uuid ||= object.batch.interface.canonical_uuid.commit if object.interface_id
+      object.mac_lease_uuid ||= object.batch.mac_lease.canonical_uuid.commit if object.mac_lease_id
 
-      network = object.ip_address && object.ip_address.network
-      object.network_uuid = network && network.uuid
+      object.network_uuid ||= object.batch.network.canonical_uuid.commit
 
       object.ipv4_address = object.ipv4_address_s
       object.to_hash
