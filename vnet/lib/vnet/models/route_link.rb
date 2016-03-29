@@ -25,7 +25,7 @@ module Vnet::Models
     def self.lookup_by_nw(i_uuid, e_uuid)
       i = lookup_nw(i_uuid)
       e = lookup_nw(e_uuid)
-      i & e
+      self[:uuid => (i & e).first]
     end
 
     private
@@ -39,7 +39,7 @@ module Vnet::Models
         :inner,
         :networks,
         routes__network_id: :networks__id
-      ).where(:networks__uuid => uuid.gsub("nw-","")).select(:route_links__uuid).all.map(&:canonical_uuid)
+      ).where(:networks__uuid => uuid.gsub("nw-","")).select(:route_links__uuid).all.map(&:uuid)
     end
   end
 end

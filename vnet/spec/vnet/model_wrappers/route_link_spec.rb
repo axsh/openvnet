@@ -16,7 +16,7 @@ describe Vnet::ModelWrappers::RouteLink do
       i_uuid = nw_global.canonical_uuid
       e_uuid = nw_vnet.canonical_uuid
 
-      expect(subject.lookup_by_nw(i_uuid, e_uuid)).to eq [rl.canonical_uuid]
+      expect(subject.lookup_by_nw(i_uuid, e_uuid).id).to eq rl.id
     end
   end
 end
