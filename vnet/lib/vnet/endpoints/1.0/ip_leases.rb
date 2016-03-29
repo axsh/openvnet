@@ -36,6 +36,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
 
   put_post_shared_params
   put '/:uuid' do
+    # TODO: Change?
     uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
     uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id") if params["mac_lease_uuid"]
 
@@ -46,9 +47,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   param_uuid M::Interface, :interface_uuid, required: false
   param_uuid M::MacLease, :mac_lease_uuid, required: false
   put '/:uuid/attach' do
-    uuid_to_id(M::IpLease)
-    uuid_to_id(M::Interface, 'interface_uuid', 'interface_id') if params['interface_uuid']
-    uuid_to_id(M::MacLease, 'mac_lease_uuid', 'mac_lease_id') if params['mac_lease_uuid']
+    check_syntax_and_get_id(M::IpLease, 'uuid', 'id')
+    check_syntax_and_get_id(M::Interface, 'interface_uuid', 'interface_id') if params['interface_uuid']
+    check_syntax_and_get_id(M::MacLease, 'mac_lease_uuid', 'mac_lease_id') if params['mac_lease_uuid']
 
     remove_system_parameters
 

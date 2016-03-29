@@ -33,16 +33,10 @@ describe "/ip_leases" do
   end
 
   describe "PUT /" do
-    let!(:network) { Fabricate(:network) { uuid "nw-test" } }
-    let!(:mac_lease) { Fabricate(:mac_lease, uuid: "ml-test") }
-
     accepted_params = {
-      :network_uuid => "nw-test",
-      :mac_lease_uuid => "ml-test",
-      :ipv4_address => "192.168.1.10",
       :enable_routing => true,
     }
-    uuid_params = [:mac_lease_uuid, :network_uuid]
+    uuid_params = []
 
     include_examples "PUT /:uuid", accepted_params, uuid_params
   end
@@ -72,4 +66,22 @@ describe "/ip_leases" do
       end
     end
   end
+
+  describe "PUT /:uuid/attach" do
+    let(:api_postfix)  { "attach" }
+
+    let(:fabricator)  { :ip_lease_free }
+
+    let!(:interface) { Fabricate(:interface, uuid: "if-test") }
+    let!(:mac_lease) { Fabricate(:mac_lease_free, uuid: "ml-test", interface: interface) }
+
+    accepted_params = {
+      interface_uuid: 'if-test',
+      mac_lease_uuid: 'ml-test'
+    }
+    required_params = [:interface_uuid]
+
+    include_examples "PUT /:uuid/postfix", accepted_params, required_params
+  end
+
 end

@@ -17,6 +17,11 @@ module Vnet::NodeApi
         attach_model(model, options)
       end
 
+      def attach_uuid(options)
+        model = model_class[options[:uuid]]
+        attach_model(model, options)
+      end
+
       def release_uuid(uuid)
         model = model_class[uuid]
         release_model(model)
@@ -89,11 +94,11 @@ module Vnet::NodeApi
         mac_lease_id = options[:mac_lease_id]
 
         if interface_id.nil? && mac_lease_id.nil?
-          return # raise error
+          raise ArgumentError, 'Need valid interface or mac lease'
         end
 
         if !model.interface_id.nil? || !model.mac_lease_id.nil?
-          return # raise error or release
+          raise ArgumentError, 'Already attached'
         end
 
         interface = nil
@@ -112,7 +117,7 @@ module Vnet::NodeApi
           end
 
           if interface.nil? || mac_lease.nil?
-            return # raise error
+            raise ArgumentError, 'Could not find fitting interface or mac lease'
           end
 
           model.interface_id = interface.id
@@ -146,7 +151,7 @@ module Vnet::NodeApi
           interface = model.interface
 
           if model.interface_id.nil? && model.mac_lease_id.nil?
-            return # raise error or release
+            raise ArgumentError, 'Not attached' # raise error or release
           end
 
           model.interface_id = nil
