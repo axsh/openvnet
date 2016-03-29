@@ -27,6 +27,12 @@ module Vnet::Models
     #
     one_to_many :active_networks
 
+    #
+    # 0009_translation_static_address_with_network_uuid
+    #
+    one_to_many :tsa_ingress, :class => TranslationStaticAddress, :key => :ingress_network_id
+    one_to_many :tsa_egress, :class => TranslationStaticAddress, :key => :egress_network_id
+
     plugin :association_dependencies,
     # 0001_origin
     ip_addresses: :destroy,
@@ -36,7 +42,10 @@ module Vnet::Models
     # 0002_services
     lease_policy_base_networks: :destroy,
     # 0004_active_items
-    active_networks: :destroy
+    active_networks: :destroy,
+    # 0009_translation_static_address_with_network_uuid
+    tsa_ingress: :destroy,
+    tsa_egress: :destroy
 
   end
 end
