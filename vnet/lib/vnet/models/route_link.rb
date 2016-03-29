@@ -25,7 +25,7 @@ module Vnet::Models
     def self.lookup_by_nw(i_uuid, e_uuid)
       i = lookup_nw(i_uuid)
       e = lookup_nw(e_uuid)
-      self[:uuid => (i & e).first]
+      self[:uuid => (i&e).first]
     end
 
     private

@@ -49,8 +49,13 @@ describe "/translations" do
     let(:fabricator) { :translation_static_address }
     let(:model_class) { Vnet::Models::TranslationStaticAddress }
 
-    let(:nw_global) { Fabricate(:network_any, uuid: 'nw-global') }
-    let(:nw_vnet) { Fabricate(:network_any, uuid: 'nw-vnet') }
+    let!(:nw_global) { Fabricate(:network_any, uuid: 'nw-global') }
+    let!(:nw_vnet) { Fabricate(:network_any, uuid: 'nw-vnet') }
+
+    let!(:r_global) { Fabricate(:route_any, route_link: rl, network: nw_global) } 
+    let!(:r_vnet) { Fabricate(:route_any, route_link: rl, network: nw_vnet) } 
+
+    let!(:rl) { Fabricate(:route_link) } 
 
     shared_examples_for "static address mode only" do
       context "with a translation that isn't in static_address mode" do
@@ -81,15 +86,9 @@ describe "/translations" do
     required_params = [:ingress_ipv4_address, :egress_ipv4_address, :ingress_network_uuid, :egress_network_uuid]
 
     describe "POST" do
-      let!(:route_link) { Fabricate(:route_link, uuid: "rl-jefke") }
+      uuid_params = [:ingress_network_uuid, :egress_network_uuid]
 
-      p_accepted_params = accepted_params.merge({
-        route_link_uuid: "rl-jefke"
-      })
-
-      uuid_params = [:route_link_uuid]
-
-      include_examples "POST /", p_accepted_params, required_params, uuid_params
+      include_examples "POST /", accepted_params, required_params, uuid_params
 
       include_examples "static address mode only"
     end

@@ -49,15 +49,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   end
 
   static_address_shared_params
-  param_uuid M::RouteLink, :route_link_uuid
   post '/:uuid/static_address' do
     translation = check_syntax_and_pop_uuid(M::Translation)
 
-    ingress_network = check_syntax_and_pop_uuid(M::Network, "ingress_network_uuid")
-    egress_network = check_syntax_and_pop_uuid(M::Network, "egress_network_uuid")
+    route_link = M::RouteLink.lookup_by_nw(params["ingress_network_uuid"], params["egress_network_uuid"])
 
-    route_link_id = if params['route_link_uuid']
-      check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid').id
+    if route_link.nil?
+      raise(E::ArgumentError, "No route_link found. i_uuid:#{params["ingress_network_uuid"]}, e_uuid:#{params["egress_network_uuid"]}")
     end
 
     if translation.mode != CT::MODE_STATIC_ADDRESS
@@ -66,7 +64,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
 
     tsa = M::TranslationStaticAddress.create(
       translation_id: translation.id,
-      route_link_id: route_link_id,
+      route_link_id: route_link.id,
       ingress_ipv4_address: params["ingress_ipv4_address"],
       egress_ipv4_address: params["egress_ipv4_address"],
       ingress_port_number: params["ingress_port_number"],
@@ -99,8 +97,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     # Sequel expects symbols in its filter hash. Symbolise the string keys in params
     filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
     params[:translation_id] = translation.id
-    params[:ingress_network_id] = ingress_network.id
-    params[:egress_network_id] = egress_network.id
+    # params[:ingress_network_id] = ingress_network.id
+    # params[:egress_network_id] = egress_network.id
     tsa = M::TranslationStaticAddress.batch[filter_params].commit
 
     if !tsa
