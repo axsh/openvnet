@@ -15,6 +15,19 @@ module Vnctl::Cli
 
     define_standard_crud_commands
 
+    define_mode_relation(:static) do | mode |
+      mode.option :ingress_address, :type => :string, :required => true,
+         :desc => "The ingress address for this static address translations"
+      mode.option :egress_address, :type => :string, :required => true,
+         :desc => "The egress address for this static address translation"
+      mode.option :ingress_port, :type => :string,
+         :desc => "The ingress port number"
+      mode.option :egress_port, :type => :string,
+         :desc => "The egress port number"
+      mode.option :route_link_uuid, :type => :string,
+         :desc => "The route link uuid"
+    end
+
     define_mode_relation(:static_address) do | mode |
       mode.option :ingress_ipv4_address, :type => :string, :required => true,
          :desc => "The ingress address for this static address translations"
