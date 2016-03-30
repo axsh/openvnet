@@ -55,8 +55,6 @@ module Vnspec
         sleep(1)
 
         SPec.exec(name)
-
-        Vnet.dump_logs
       end
     end
 
