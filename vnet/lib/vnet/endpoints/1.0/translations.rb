@@ -39,6 +39,56 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     update_by_uuid(:Translation)
   end
 
+  def self.static_shared_params
+    param :ingress_address, :String, transform: PARSE_IPV4, required: true
+    param :egress_address, :String, transform: PARSE_IPV4, required: true
+    param :ingress_port, :Integer, in: 1..65536
+    param :egress_port, :Integer, in: 1..65536
+  end
+
+  static_shared_params
+  param_uuid M::RouteLink, :route_link_uuid
+  post '/:uuid/static' do
+    translation = check_syntax_and_get_id(M::Translation, 'uuid', 'translation_id')
+
+    check_syntax_and_get_id(M::RouteLink, 'route_link_uuid', 'route_link_id') if params['route_link_uuid']
+
+    # Move to nodeapi.
+    if translation.mode != CT::MODE_STATIC
+      raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC}'.")
+    end
+
+    remove_system_parameters
+
+    ts = M::TranslationStaticAddress.create(params)
+    respond_with(R::TranslationStaticAddress.generate(ts))
+  end
+
+  static_shared_params
+  delete '/:uuid/static' do
+    translation = check_syntax_and_pop_uuid(M::Translation)
+
+    remove_system_parameters
+
+    # Sequel expects symbols in its filter hash. Symbolise the string keys in params
+    filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
+    filter_params[:translation_id] = translation.id
+    tsa = M::TranslationStatic.batch[filter_params].commit
+
+    if !tsa
+      rp = request.params.to_json
+      raise E::UnknownResource, "Couldn't find resource with parameters: #{rp}"
+    end
+
+    M::TranslationStatic.destroy(id: tsa.id)
+
+    respond_with(R::Translation.translation_static(translation))
+  end
+
+  #
+  # Deprecated:
+  #
+
   def self.static_address_shared_params
     param :ingress_ipv4_address, :String, transform: PARSE_IPV4, required: true
     param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
@@ -83,7 +133,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
 
     # Sequel expects symbols in its filter hash. Symbolise the string keys in params
     filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
-    params[:translation_id] = translation.id
+    filter_params[:translation_id] = translation.id
     tsa = M::TranslationStaticAddress.batch[filter_params].commit
 
     if !tsa
