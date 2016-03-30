@@ -7,6 +7,8 @@ Sequel.migration do
       primary_key :id
       Integer :translation_id, :index => true, :null => false
 
+      Integer :route_link_id
+
       String :protocol, :null => false
 
       Bignum :ingress_address, :null => false
@@ -21,6 +23,7 @@ Sequel.migration do
       Integer :is_deleted, :null =>false, :default =>0
 
       unique [:translation_id,
+              :route_link_id,
               :protocol,
               :ingress_address,
               :egress_address,
