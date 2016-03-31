@@ -68,9 +68,11 @@ GEM
     domain_name (0.5.24)
       unf (>= 0.0.5, < 1.0.0)
     fabrication (2.9.8)
-    ffi (1.9.8)
-    ffi-rzmq (1.0.3)
-      ffi
+    ffi (1.9.10)
+    ffi-rzmq (2.0.4)
+      ffi-rzmq-core (>= 1.0.1)
+    ffi-rzmq-core (1.0.4)
+      ffi (~> 1.9)
     fuguta (1.0.4)
     gli (2.0.0)
     hitimes (1.2.2)
@@ -183,13 +185,13 @@ PLATFORMS
 DEPENDENCIES
   activesupport (= 3.0.0)
   bit-struct (>= 0.13.7)
-  celluloid
-  celluloid-io
+  celluloid (= 0.16.0)
+  celluloid-io (= 0.16.2)
   coveralls
   database_cleaner
   dcell
   fabrication (= 2.9.8)
-  ffi-rzmq (= 1.0.3)
+  ffi-rzmq
   fuguta
   ipaddress
   json
@@ -214,3 +216,6 @@ DEPENDENCIES
   trema!
   unicorn
   webmock
+
+BUNDLED WITH
+   1.11.2
