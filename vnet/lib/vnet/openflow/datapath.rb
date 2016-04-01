@@ -96,17 +96,11 @@ module Vnet::Openflow
       host_datapath = nil
       counter = 0
 
-      # Pre-load host datapath if it exists, else wait for a created
-      # event.
-      #
-      # TODO: Should be done automatically when the manager is initialize.
-      @dp_info.host_datapath_manager.async.retrieve(dpid: @dpid)
-
       while host_datapath.nil?
         info log_format('querying database for datapath with matching dpid', "seconds:#{counter * 30}")
 
         # TODO: Check for node id.
-        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30)
+        host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30, true)
         counter += 1
       end
 
@@ -172,30 +166,23 @@ module Vnet::Openflow
       }
     end
 
-    # TODO: Add a way to block events from being processed by managers
-    # until everything has been initialized.
+    # TODO: Call this from somewhere.
     def initialize_bootstrap_managers
-      @dp_info.bootstrap_managers.each { |manager|
-        manager.set_datapath_info(@datapath_info)
-      }
+      managers = @dp_info.bootstrap_managers
+      managers.each { |manager| manager.set_datapath_info(@datapath_info) }
+      managers.each { |manager| manager.event_handler_queue_only }
+      managers.each { |manager| manager.async.start_initialize }
+      managers.each { |manager| manager.wait_for_initialized(nil) }
+      managers.each { |manager| manager.event_handler_active }
     end
 
-    # TODO: Add a way to block events from being processed by managers
-    # until everything has been initialized.
     def initialize_managers
-      @dp_info.managers.each { |manager|
-        manager.set_datapath_info(@datapath_info)
-      }
-
-      # Until we have datapath_info loaded none of the ports can be
-      # initialized.
-      @dp_info.interface_port_manager.load_internal_interfaces
-      @dp_info.port_manager.initialize_ports
-
-      # All managers should be initialized, allow events to execute.
-      @dp_info.managers.each { |manager|
-        manager.event_handler_active
-      }
+      managers = @dp_info.managers
+      managers.each { |manager| manager.set_datapath_info(@datapath_info) }
+      managers.each { |manager| manager.event_handler_queue_only }
+      managers.each { |manager| manager.async.start_initialize }
+      managers.each { |manager| manager.wait_for_initialized(nil) }
+      managers.each { |manager| manager.event_handler_active }
     end
 
   end

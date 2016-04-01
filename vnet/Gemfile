@@ -1,10 +1,9 @@
-
 source "http://rubygems.org"
 
-gem 'ffi-rzmq', "1.0.3"
+gem "ffi-rzmq", "1.0.3"
 gem "bit-struct", ">= 0.13.7"
-gem "celluloid"
-gem "celluloid-io"
+gem "celluloid", "0.16.0"
+gem "celluloid-io", "0.16.2"
 gem "dcell"
 gem "fuguta"
 gem "ipaddress"
@@ -20,7 +19,7 @@ gem "sequel_paranoia"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "sinatra-hashfix"
-gem "sinatra-browse", '0.3' # Updating to 0.5 broke the unit tests.
+gem "sinatra-browse", ">= 0.6.1" # 0.5 and 0.6 have a bug where missing parameters would be set to nil values
 gem "unicorn"
 gem "activesupport", '3.0.0' # Updating to 4.2.1 broke the unit tests.
 
@@ -30,13 +29,15 @@ gem 'rant', '>= 0.5.9', :git => 'https://github.com/axsh/rant.git'
 gem 'trema', :git=>'https://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
-  gem "rake"
+  gem "rake", "10.1.0"
   gem "rspec"
   gem "rack-test"
   gem "fabrication", '2.9.8' # Updating to 2.13.2 broke the unit tests.
   gem 'database_cleaner'
 
   gem "coveralls"
+
+  gem 'webmock'
 
   gem "pry-byebug"
 end

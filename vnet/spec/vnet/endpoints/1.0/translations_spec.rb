@@ -36,7 +36,6 @@ describe "/translations" do
     let!(:test_interface) { Fabricate(:interface, uuid: 'if-test2') }
 
     accepted_params = {
-      :mode => "vnet_edge",
       :interface_uuid => "if-test2"
     }
 
@@ -74,7 +73,11 @@ describe "/translations" do
     describe "POST" do
       let!(:route_link) { Fabricate(:route_link, uuid: "rl-jefke") }
 
-      p_accepted_params = accepted_params.merge({route_link_uuid: "rl-jefke"})
+      p_accepted_params = accepted_params.merge({
+        route_link_uuid: "rl-jefke",
+        ingress_network_uuid: "nw-global",
+        egress_network_uuid: "nw-vnet"
+      })
 
       uuid_params = [:route_link_uuid]
 

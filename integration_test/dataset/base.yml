@@ -19,15 +19,15 @@ networks:
 
   - uuid: nw-public1
     display_name: public1
-    ipv4_network: <%= public_ipv4_network %>
-    ipv4_prefix: <%= public_ipv4_prefix %>
+    ipv4_network: <%= public_ipv4_public1_network %>
+    ipv4_prefix: <%= public_ipv4_public1_prefix %>
     domain_name: public
     network_mode: physical
 
   - uuid: nw-public2
     display_name: public2
-    ipv4_network: <%= public_ipv4_network2 %>
-    ipv4_prefix: <%= public_ipv4_prefix2 %>
+    ipv4_network: <%= public_ipv4_public2_network %>
+    ipv4_prefix: <%= public_ipv4_public2_prefix %>
     domain_name: public
     network_mode: physical
 
@@ -60,38 +60,38 @@ interfaces:
   - uuid: if-dhcppub1
     network_uuid: nw-public1
     mac_address: "02:00:00:00:01:11"
-    ipv4_address: <%= public_dhcp_ipv4_address %>
+    ipv4_address: <%= public_ipv4_public1_dhcp_address %>
     mode: simulated
 
   - uuid: if-dhcppub2
     network_uuid: nw-public2
     mac_address: "02:00:00:00:01:22"
-    ipv4_address: <%= public_dhcp_ipv4_address2 %>
+    ipv4_address: <%= public_ipv4_public2_dhcp_address %>
     mode: simulated
 
 network_services:
 
   - uuid: ns-dhcppub1
     interface_uuid: if-dhcppub1
-    type: dhcp
+    mode: dhcp
 
   - uuid: ns-dhcppub2
     interface_uuid: if-dhcppub2
-    type: dhcp
+    mode: dhcp
 
 datapath_networks:
 
   - datapath_uuid: dp-1
     network_uuid: nw-public1
     interface_uuid: if-dp1eth0
-    broadcast_mac_address: "02:00:01:aa:01:01"
+    mac_address: "02:00:01:aa:01:01"
 
   - datapath_uuid: dp-2
     network_uuid: nw-public1
     interface_uuid: if-dp2eth0
-    broadcast_mac_address: "02:00:01:bb:01:01"
+    mac_address: "02:00:01:bb:01:01"
 
   - datapath_uuid: dp-3
     network_uuid: nw-public2
     interface_uuid: if-dp3eth0
-    broadcast_mac_address: "02:00:01:cc:01:01"
+    mac_address: "02:00:01:cc:01:01"

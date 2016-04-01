@@ -73,43 +73,43 @@ network_services:
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
-    type: dhcp
+    mode: dhcp
 
   - uuid: ns-dhcp2
     interface_uuid: if-dhcp2
-    type: dhcp
+    mode: dhcp
 
 datapath_networks:
 
   - datapath_uuid: dp-1
     network_uuid: nw-vnet1
     interface_uuid: if-dp1eth0
-    broadcast_mac_address: "02:00:00:aa:00:01"
+    mac_address: "02:00:00:aa:00:01"
 
   - datapath_uuid: dp-1
     network_uuid: nw-vnet2
     interface_uuid: if-dp1eth0
-    broadcast_mac_address: "02:00:00:aa:00:02"
+    mac_address: "02:00:00:aa:00:02"
 
   - datapath_uuid: dp-2
     network_uuid: nw-vnet1
     interface_uuid: if-dp2eth0
-    broadcast_mac_address: "02:00:00:bb:00:01"
+    mac_address: "02:00:00:bb:00:01"
 
   - datapath_uuid: dp-2
     network_uuid: nw-vnet2
     interface_uuid: if-dp2eth0
-    broadcast_mac_address: "02:00:00:bb:00:02"
+    mac_address: "02:00:00:bb:00:02"
 
   - datapath_uuid: dp-3
     network_uuid: nw-vnet1
     interface_uuid: if-dp3eth0
-    broadcast_mac_address: "02:00:00:cc:00:01"
+    mac_address: "02:00:00:cc:00:01"
 
   - datapath_uuid: dp-3
     network_uuid: nw-vnet2
     interface_uuid: if-dp3eth0
-    broadcast_mac_address: "02:00:00:cc:00:02"
+    mac_address: "02:00:00:cc:00:02"
 
 security_groups:
 

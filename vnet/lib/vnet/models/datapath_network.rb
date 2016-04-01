@@ -4,8 +4,7 @@ module Vnet::Models
   class DatapathNetwork < Base
 
     plugin :paranoia_is_deleted
-    # TODO: Rename to mac_address.
-    plugin :mac_address, :attr_name => :broadcast_mac_address
+    plugin :mac_address
 
     many_to_one :datapath
     many_to_one :network
@@ -15,7 +14,7 @@ module Vnet::Models
 
     plugin :association_dependencies,
     # 0001_origin
-    mac_address: :destroy
+    _mac_address: :destroy
 
     # TODO: Remove this.
     def datapath_networks_in_the_same_network
