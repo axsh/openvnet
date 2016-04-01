@@ -172,8 +172,8 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
       network_id = params[:network_id] || return
 
-      item.remove_active_network(network_id)
       item.deactivate_network_id(network_id)
+      item.remove_active_network(network_id)
 
       if !item.host? && item.unused?
         publish(REMOVED_DATAPATH, id: item.id)
