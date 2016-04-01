@@ -31,11 +31,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     uuid_to_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id") if params["mac_range_group_uuid"]
 
-    if (! params["ipv4_address"].nil?)
-      if(!H::IpAddress.valid_in_subnet(network, params["ipv4_address"]))
-        raise(E::ArgumentError, "IP Address not in subnet.")
-      end
-    end
+    check_ipv4_address_subnet(network)
 
     params["enable_legacy_filtering"] = params["ingress_filtering_enabled"]
     post_new(:Interface, fill)

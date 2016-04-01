@@ -19,11 +19,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
     network = uuid_to_id(M::Network, "network_uuid", "network_id")
     uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id")
 
-    if (! params["ipv4_address"].nil?)
-      if(!H::IpAddress.valid_in_subnet(network, params["ipv4_address"]))
-        raise(E::ArgumentError, "IP Address not in subnet.")
-      end
-    end
+    check_ipv4_address_subnet(network)
 
     post_new(:IpLease, fill_options)
   end
