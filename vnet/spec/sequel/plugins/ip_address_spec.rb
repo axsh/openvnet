@@ -34,8 +34,8 @@ describe Sequel::Plugins::IpAddress do
     end
 
     context "ip_address invalid" do
-      it { expect(invalid_model.valid_in_subnet).to be false }
-      it { expect(subject.valid_in_subnet).to be true }
+      it { expect(invalid_model).not_to be_valid }
+      it { expect(subject).to be_valid }
     end
 
     context "ip_address association" do
@@ -63,7 +63,7 @@ describe Sequel::Plugins::IpAddress do
       it { expect(subject.to_hash[:mac_lease_id]).to eq mac_lease_id_1 }
       it { expect(subject.reload.mac_lease_id).to eq mac_lease_id_1 }
     end
- 
+
     context "interface" do
       it { expect(subject.interface_id).to eq interface_id_1 }
       it { expect(subject.to_hash[:interface_id]).to eq interface_id_1 }
