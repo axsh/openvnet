@@ -68,9 +68,9 @@ module Vnspec
       files = ['base']
 
       if name =~ /_tp$/
-        files << 'base_dp'
-      else
         files << 'base_topology'
+      else
+        files << 'base_dp'
       end
 
       files << name
