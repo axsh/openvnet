@@ -17,6 +17,7 @@ module Vnet::Endpoints::V10
     E = Vnet::Endpoints::Errors
     R = Vnet::Endpoints::V10::Responses
     C = Vnet::Constants
+    H = Vnet::Helpers
 
     DEFAULT_PAGINATION_LIMIT = 30
 
@@ -140,6 +141,18 @@ module Vnet::Endpoints::V10
 
       response = R.const_get("#{response_method.to_s.classify}Collection")
       respond_with(response.generate_with_pagination(pagination, items))
+    end
+
+    def check_ipv4_address_subnet(network)
+      ipv4_address = params["ipv4_address"]
+      if ipv4_address
+        valid, parsed_ipv4_nw, parsed_ipv4 = H::IpAddress.valid_in_subnet(network, ipv4_address)
+
+        if !valid
+          raise(E::ArgumentError, "IP Address %s not in subnet %s." %
+            [parsed_ipv4, parsed_ipv4_nw])
+        end
+      end
     end
 
     respond_to :json, :yml
