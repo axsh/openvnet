@@ -16,8 +16,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   param_options :mac_lease_uuid, required: true
   param_options :ipv4_address, required: true
   post do
-    uuid_to_id(M::Network, "network_uuid", "network_id")
+    network = uuid_to_id(M::Network, "network_uuid", "network_id")
     uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id")
+
+    check_ipv4_address_subnet(network)
 
     post_new(:IpLease, fill_options)
   end
