@@ -19,15 +19,15 @@ The interface for which the filter will be applied.
 
 * mode
 
-The type of filtering mode we want to used. Currently we are supporting static filtering, which opens/closes a port to a ip address for a specified protocol.
+The type of filtering mode we want to used. Currently we only support static filtering, which opens/closes a port to a ip address for a specified protocol.
 
 * ingress-passthrough
 
-The default setting for incoming traffic. Default is set to false
+A flag that decides whether to drop or allow incoming traffic for matches with no static rule. The default setting is `false`.
 
 * egress-passthrough
 
-The default setting for outgoing traffic. Default is set to false
+A flag that decides whether to drop or allow outgoing traffic for matches with no static rule. The default setting is `false`.
 
 # filters static
 
@@ -55,5 +55,4 @@ Sets port number to open/close when filtering tcp or udp traffic. 0 will match a
 
 * passthrough
 
-This is the action for this rule. Default is set to true.
-
+A flag that decides whether to drop or allow traffic when the src/dst matches the rule. The default setting is `true`.
