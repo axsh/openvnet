@@ -56,7 +56,10 @@ module Vnspec
 
         result = SPec.exec(name)
 
-        Vnet.dump_logs unless result
+        if !result
+          Vnet.dump_logs
+          Vnet.dump_flows
+        end
 
         result
       end
@@ -83,7 +86,6 @@ module Vnspec
       Vnet.start(:vna)
 
       VM.start_network
-      Vnet.dump_flows
 
       true
     end
