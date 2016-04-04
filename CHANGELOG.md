@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` Vnctl commands for the creation and deletion of static network address translation.
 
+* `Added` Error handling for IPv4 addresses in the wrong subnet as early as the WebAPI.
+
 * `Removed` The `broadcast_mac_address` parameter in the WebAPI's datapaths endpoint. Use `mac_address` instead.
 
 * `Changed` Optimized manager initialization code so no events can be processed before the targeted managers are properly initialized.
