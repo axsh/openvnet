@@ -14,6 +14,14 @@ networks:
     domain_name: vnet2
     network_mode: virtual
 
+topology_networks:
+
+  - topology_uuid: tp-vnet
+    network_uuid: nw-vnet1
+
+  - topology_uuid: tp-vnet
+    network_uuid: nw-vnet2
+
 interfaces:
 
   - uuid: if-v1
@@ -100,6 +108,11 @@ route_links:
   - uuid: rl-1
     mac_address: "02:00:10:00:00:01"
 
+topology_route_links:
+
+  - topology_uuid: tp-vnet
+    route_link_uuid: rl-1
+
 routes:
 
   - uuid: r-1
@@ -113,3 +126,4 @@ routes:
     network_uuid: nw-vnet2
     route_link_uuid: rl-1
     ipv4_network: 10.102.0.0
+
