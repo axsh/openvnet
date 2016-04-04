@@ -75,7 +75,7 @@ module Vnet::Services::Topologies
 
       debug log_format("get_a_host_interface", interface.inspect)
 
-      interface.interface_id
+      interface && interface.interface_id
     end
 
   end
