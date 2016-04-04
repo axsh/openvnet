@@ -46,7 +46,7 @@ module Sequel
       module InstanceMethods
         def validate
           super
-          if network
+          if @network
             valid_subnet, ipv4_nw_s, ipv4_s = Vnet::Helpers::IpAddress.valid_in_subnet(
               self.network, self.ipv4_address)
 
