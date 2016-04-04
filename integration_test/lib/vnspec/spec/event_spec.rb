@@ -129,6 +129,7 @@ describe "event" do
     describe "remove" do
       before(:all) do
         datapath = Vnspec::Models::Datapath.find("dp-1")
+        # TODO: Should not be needed.
         datapath.remove_datapath_network("nw-vnet1")
         datapath.remove_datapath_network("nw-vnet2")
         datapath.destroy

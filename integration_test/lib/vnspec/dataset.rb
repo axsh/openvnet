@@ -53,6 +53,7 @@ module Vnspec
           else
             key.to_s
           end
+
           request(:post, url, v)
         end
       end
@@ -62,12 +63,16 @@ module Vnspec
       API.request(method, url, params, headers, &block)
     end
 
+    def is_topology?
+      @name =~ /_tp$/
+    end
+
     private
 
     def init_dataset
       files = ['base']
 
-      if name =~ /_tp$/
+      if is_topology?
         files << 'base_topology'
       else
         files << 'base_dp'
