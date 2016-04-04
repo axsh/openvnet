@@ -56,7 +56,8 @@ module Vnspec
 
         result = SPec.exec(name)
 
-        Vnet.dump_logs
+        Vnet.dump_logs unless result
+
         result
       end
     end
