@@ -171,7 +171,7 @@ module Vnet::Openflow
       ].each { |table, cookie_type|
         flows << flow_create(table: table,
                              priority: 1,
-                             
+
                              actions: {
                                output: OFPP_CONTROLLER
                              },

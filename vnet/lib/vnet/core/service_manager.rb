@@ -113,11 +113,11 @@ module Vnet::Core
           item.add_network_unless_exists(network_id, network_id)
         }
       }
-      
+
       if item.mode == MODE_DNS.to_sym
         load_dns_service(item)
       end
-    end    
+    end
 
     # item created in db on queue 'item.id'
     def created_item(params)

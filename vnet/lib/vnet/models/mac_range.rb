@@ -48,9 +48,9 @@ module Vnet::Models
       begin
         mac_address = begin_mac_address + Random.rand(range_size)
         result = block.call(mac_address)
-        
+
         return result if result
-        
+
         retry_count -= 1
       end while retry_count > 0
 

@@ -57,7 +57,7 @@ describe Vnet::NodeApi::Interface do
         interface.canonical_uuid,
         {
           # owner_datapath: Fabricate(:datapath, uuid: "dp-new"),
-        }  
+        }
       )
 
       model = Vnet::Models::Interface[interface.id]

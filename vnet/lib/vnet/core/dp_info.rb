@@ -210,6 +210,7 @@ module Vnet::Core
         begin
           manager.terminate
         rescue Celluloid::DeadActorError
+          true
         end
       }
 

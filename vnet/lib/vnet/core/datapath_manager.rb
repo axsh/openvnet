@@ -106,7 +106,7 @@ module Vnet::Core
 
     # TODO: Currently we initialize all datapaths, however in the
     # future this should be done only when needed. Bootstrap handles
-    # loading the host datapath, so it can be ignored also. 
+    # loading the host datapath, so it can be ignored also.
     def created_item(params)
       return if internal_detect_by_id(params)
       internal_new_item(mw_class.new(params))
@@ -157,7 +157,7 @@ module Vnet::Core
       end
 
       # TODO: Fix this so all params contain the needed information.
-      case 
+      case
       when params[:dpn_map]
         dpn_map = params[:dpn_map]
       when params[:network_id]
@@ -271,7 +271,7 @@ module Vnet::Core
       end
 
       # TODO: Fix this so all params contain the needed information.
-      case 
+      case
       when params[:dprl_map]
         dprl_map = params[:dprl_map]
       when params[:route_link_id]

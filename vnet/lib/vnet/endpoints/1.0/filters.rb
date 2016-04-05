@@ -3,7 +3,7 @@
 #TODO: Write some FREAKING tests for this
 Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   CF = C::Filter
-  
+
   def self.put_post_shared_params
     param_uuid M::Interface, :interface_uuid
     param :mode, :String, in: CF::MODES
@@ -105,7 +105,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
   get '/static/' do
     get_all(:FilterStatic)
-  end    
+  end
 
   get '/static/:uuid' do
     show_relations(:Filter, :filter_statics)

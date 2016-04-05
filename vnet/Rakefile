@@ -114,3 +114,7 @@ namespace :test do
     end
   end
 end
+
+task :rubocop do
+  cd('..') { sh 'rubocop' }
+end
