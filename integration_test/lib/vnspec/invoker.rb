@@ -53,6 +53,7 @@ module Vnspec
       Vnet.aggregate_logs(job_id, name) do
         setup(name)
         sleep(1)
+
         SPec.exec(name)
       end
     end

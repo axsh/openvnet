@@ -5,7 +5,7 @@ AllCops:
     - 'client/**/*.rb'
     - 'integration_test/**/*.rb'
     - 'vnet/rack/**/*'
-    - 'vnet/spec/**/*'
+    - 'vnet/spec/**/*.rb'
     - 'vnet/tools/*'
   Exclude:
     - 'vnet/db/migrations/*'
