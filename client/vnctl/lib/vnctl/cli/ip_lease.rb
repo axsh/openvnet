@@ -13,7 +13,6 @@ module Vnctl::Cli
     define_standard_crud_commands
 
     desc "attach UUID", "Attach a #{namespace} to an interface."
-    # option_uuid
     option :interface_uuid, :type => :string, :required => false,
     :desc => "Attach to interface UUID, using the first mac lease if not specified."
     option :mac_lease_uuid, :type => :string, :required => false,
@@ -23,7 +22,6 @@ module Vnctl::Cli
     end
 
     desc "release UUID", "Release a #{namespace} from its interface."
-    # option_uuid
     define_method(:release) do |uuid|
       puts Vnctl.webapi.put("#{suffix}/#{uuid}/release", options)
     end
