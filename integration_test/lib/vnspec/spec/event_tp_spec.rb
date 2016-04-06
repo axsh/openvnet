@@ -67,27 +67,30 @@ describe "event" do
       end
     end
 
-    describe "add" do
-      before(:all) do
-        datapath = Vnspec::Models::Datapath.create(
-          uuid: "dp-new",
-          node_id: "vna1",
-          display_name: "node1",
-          dpid: "0x0000aaaaaaaaaaaa",
-        )
+    # TODO: Enable once topology manager supports updates to host
+    # interface.
 
-        sleep(1)
+    # describe "add" do
+    #   before(:all) do
+    #     datapath = Vnspec::Models::Datapath.create(
+    #       uuid: "dp-new",
+    #       node_id: "vna1",
+    #       display_name: "node1",
+    #       dpid: "0x0000aaaaaaaaaaaa",
+    #     )
 
-        Vnspec::Models::Interface.find("if-dp1eth0").update_host_interface("dp-new", "eth0")
+    #     sleep(1)
 
-        sleep(1)
+    #     Vnspec::Models::Interface.find("if-dp1eth0").update_host_interface("dp-new", "eth0")
 
-        vm1.restart_network
+    #     sleep(1)
 
-        sleep(1)
-      end
+    #     vm1.restart_network
 
-      it_behaves_like "vm(reachable)", vm1
-    end
+    #     sleep(1)
+    #   end
+
+    #   it_behaves_like "vm(reachable)", vm1
+    # end
   end
 end
