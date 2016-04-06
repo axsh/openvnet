@@ -44,45 +44,47 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
     param :ingress_port_number, :Integer, in: 1..65536
     param :egress_port_number, :Integer, in: 1..65536
-    param_uuid M::Network, :ingress_network_uuid
-    param_uuid M::Network, :egress_network_uuid
+    param_uuid M::Network, :ingress_network_uuid, required: true
+    param_uuid M::Network, :egress_network_uuid, required: true
   end
 
   static_address_shared_params
-  param_uuid M::RouteLink, :route_link_uuid
   post '/:uuid/static_address' do
     translation = check_syntax_and_pop_uuid(M::Translation)
 
-    route_link_id = if params['route_link_uuid']
-      check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid').id
+    route_link = M::RouteLink.lookup_by_nw(params["ingress_network_uuid"], params["egress_network_uuid"])
+
+    if route_link.nil?
+      raise(E::ArgumentError, "No route_link found. i_uuid:#{params["ingress_network_uuid"]}, e_uuid:#{params["egress_network_uuid"]}")
     end
 
     if translation.mode != CT::MODE_STATIC_ADDRESS
       raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")
     end
 
+    ingress_network = check_syntax_and_pop_uuid(M::Network, "ingress_network_uuid")
+    egress_network = check_syntax_and_pop_uuid(M::Network, "egress_network_uuid")
+
     tsa = M::TranslationStaticAddress.create(
       translation_id: translation.id,
-      route_link_id: route_link_id,
+      route_link_id: route_link.id,
       ingress_ipv4_address: params["ingress_ipv4_address"],
       egress_ipv4_address: params["egress_ipv4_address"],
       ingress_port_number: params["ingress_port_number"],
-      egress_port_number: params["egress_port_number"]
+      egress_port_number: params["egress_port_number"],
+      ingress_network_id: ingress_network.id,
+      egress_network_id: egress_network.id
     )
 
-    r = R::TranslationStaticAddress.generate(tsa)
-
-    if params['ingress_network_uuid'] && params['egress_network_uuid']
-      r[:ingress_network_uuid] = params['ingress_network_uuid']
-      r[:egress_network_uuid] = params['egress_network_uuid']
-    end
-
-    respond_with(r)
+    respond_with(R::TranslationStaticAddress.generate(tsa))
   end
 
   static_address_shared_params
   delete '/:uuid/static_address' do
     translation = check_syntax_and_pop_uuid(M::Translation)
+
+    ingress_network = check_syntax_and_pop_uuid(M::Network, "ingress_network_uuid")
+    egress_network = check_syntax_and_pop_uuid(M::Network, "egress_network_uuid")
 
     if translation.mode != CT::MODE_STATIC_ADDRESS
       raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")
@@ -93,6 +95,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     # Sequel expects symbols in its filter hash. Symbolise the string keys in params
     filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
     params[:translation_id] = translation.id
+    # params[:ingress_network_id] = ingress_network.id
+    # params[:egress_network_id] = egress_network.id
     tsa = M::TranslationStaticAddress.batch[filter_params].commit
 
     if !tsa

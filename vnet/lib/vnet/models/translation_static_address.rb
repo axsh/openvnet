@@ -8,6 +8,9 @@ module Vnet::Models
     many_to_one :translation
     many_to_one :route_link
 
+    many_to_one :ingress_network, :class => Network
+    many_to_one :egress_network, :class => Network
+
     def ingress_ipv4_address_s
       self.ingress_ipv4_address && parse_ipv4(self.ingress_ipv4_address)
     end

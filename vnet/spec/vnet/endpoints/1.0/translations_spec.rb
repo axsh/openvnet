@@ -49,12 +49,25 @@ describe "/translations" do
     let(:fabricator) { :translation_static_address }
     let(:model_class) { Vnet::Models::TranslationStaticAddress }
 
+    let!(:nw_global) { Fabricate(:network_any, uuid: 'nw-global') }
+    let!(:nw_vnet) { Fabricate(:network_any, uuid: 'nw-vnet') }
+
+    let!(:r_global) { Fabricate(:route_any, route_link: rl, network: nw_global) } 
+    let!(:r_vnet) { Fabricate(:route_any, route_link: rl, network: nw_vnet) } 
+
+    let!(:rl) { Fabricate(:route_link) } 
+
     shared_examples_for "static address mode only" do
       context "with a translation that isn't in static_address mode" do
         let!(:translation) { Fabricate(:translation, mode: 'vnet_edge') }
+
         let(:request_params) do
-          {ingress_ipv4_address: "192.168.2.10",
-           egress_ipv4_address: "192.168.2.30"}
+          {
+            ingress_ipv4_address: "192.168.2.10",
+            egress_ipv4_address: "192.168.2.30",
+            ingress_network_uuid: nw_global.canonical_uuid,
+            egress_network_uuid: nw_vnet.canonical_uuid
+          }
         end
 
         it_should_return_error(400, 'ArgumentError')
@@ -65,23 +78,17 @@ describe "/translations" do
       ingress_ipv4_address: "192.168.2.10",
       egress_ipv4_address: "192.168.2.30",
       ingress_port_number: 1,
-      egress_port_number: 3
+      egress_port_number: 3,
+      ingress_network_uuid: "nw-global",
+      egress_network_uuid: "nw-vnet"
     }
 
-    required_params = [:ingress_ipv4_address, :egress_ipv4_address]
+    required_params = [:ingress_ipv4_address, :egress_ipv4_address, :ingress_network_uuid, :egress_network_uuid]
 
     describe "POST" do
-      let!(:route_link) { Fabricate(:route_link, uuid: "rl-jefke") }
+      uuid_params = [:ingress_network_uuid, :egress_network_uuid]
 
-      p_accepted_params = accepted_params.merge({
-        route_link_uuid: "rl-jefke",
-        ingress_network_uuid: "nw-global",
-        egress_network_uuid: "nw-vnet"
-      })
-
-      uuid_params = [:route_link_uuid]
-
-      include_examples "POST /", p_accepted_params, required_params, uuid_params
+      include_examples "POST /", accepted_params, required_params, uuid_params
 
       include_examples "static address mode only"
     end
@@ -91,6 +98,11 @@ describe "/translations" do
         accepted_params.merge({translation_id: translation.id}).tap { |h|
           h[:ingress_ipv4_address] = 3232236042
           h[:egress_ipv4_address] = 3232236062
+          h[:ingress_network_id] = nw_global.id
+          h[:egress_network_id] = nw_vnet.id
+
+          h.delete(:ingress_network_uuid)
+          h.delete(:egress_network_uuid)
         }
       end
 

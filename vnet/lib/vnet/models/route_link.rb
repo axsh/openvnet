@@ -22,5 +22,24 @@ module Vnet::Models
     translation_static_addresses: :destroy,
     _mac_address: :destroy
 
+    def self.lookup_by_nw(i_uuid, e_uuid)
+      i = where_network_uuid(i_uuid)
+      e = where_network_uuid(e_uuid)
+      self[:uuid => (i&e).first]
+    end
+
+    dataset_module do
+      def join_routes_networks
+        self.join_table(:inner, :networks, routes__network_id: :networks__id)
+      end
+
+      def join_routes
+        self.join_table(:inner, :routes, route_links__id: :routes__route_link_id)
+      end
+
+      def where_network_uuid(uuid)
+        self.join_routes.join_routes_networks.where(:networks__uuid => uuid.gsub("nw-","")).select(:route_links__uuid).all.map(&:uuid)
+      end
+    end
   end
 end
