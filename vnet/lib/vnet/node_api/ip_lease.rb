@@ -45,10 +45,12 @@ module Vnet::NodeApi
         mac_lease_id = options[:mac_lease_id]
 
         transaction {
-          interface, mac_lease = get_if_and_ml(interface_id, mac_lease_id)
+          if interface_id || mac_lease_id
+            interface, mac_lease = get_if_and_ml(interface_id, mac_lease_id)
 
-          options[:interface_id] = interface && interface.id
-          options[:mac_lease_id] = mac_lease && mac_lease.id
+            options[:interface_id] = interface && interface.id
+            options[:mac_lease_id] = mac_lease && mac_lease.id
+          end
 
           internal_create(options)
         }
@@ -195,6 +197,10 @@ module Vnet::NodeApi
       end
 
       def get_if_and_ml(interface_id, mac_lease_id)
+        if interface_id.nil? && mac_lease_id.nil?
+          raise ArgumentError, 'Either interface and/or mac lease must be supplied'
+        end
+
         interface = interface_id && model_class(:interface)[id: interface_id]
         mac_lease = mac_lease_id && model_class(:mac_lease)[id: mac_lease_id]
         
