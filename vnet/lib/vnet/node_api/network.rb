@@ -22,6 +22,8 @@ module Vnet::NodeApi
 
         # 0002_services
         # LeasePolicyBaseNetwork.dispatch_deleted_where(filter, model.deleted_at)
+        # 0009_topology
+        TopologyNetwork.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end

@@ -57,6 +57,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid').id
     end
 
+    # TODO: Add a helper method that checks the mode, or list of valid
+    # modes in this case. Might be best done in model validation. 
+
     if translation.mode != CT::MODE_STATIC_ADDRESS
       raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")
     end

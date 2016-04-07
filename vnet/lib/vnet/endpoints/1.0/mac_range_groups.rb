@@ -56,4 +56,5 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
 
     respond_with([mac_range.uuid])
   end
+
 end

@@ -174,6 +174,7 @@ module Vnet::Endpoints::V10
     load_namespace('route_links')
     load_namespace('security_groups')
     load_namespace('translations')
+    load_namespace('topologies')
     load_namespace('vlan_translations')
   end
 end

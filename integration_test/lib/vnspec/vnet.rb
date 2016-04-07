@@ -112,6 +112,7 @@ module Vnspec
 
       def dump_flows(vna_index = nil)
         return unless config[:dump_flows]
+
         config[:nodes][:vna].each_with_index do |ip, i|
           next if vna_index && vna_index.to_i != i + 1
           logger.info "#" * 50

@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+* `Added` A new `topology manager` that automatically creates `datapath_network` and `datapath_route_link` entries in the database.
+
 * `Added` A new simple firewall feature alongside the existing security groups. Security groups will eventually be ported to use this.
 
 * `Added` Vnctl commands for the creation and deletion of static network address translation.

@@ -27,6 +27,8 @@ module Vnet::NodeApi
         DatapathRouteLink.dispatch_deleted_where(filter, model.deleted_at)
         Route.dispatch_deleted_where(filter, model.deleted_at)
         # translation_static_addresses: :destroy,
+        # 0009_topology
+        TopologyRouteLink.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end

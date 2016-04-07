@@ -24,6 +24,7 @@ module Vnctl
     autoload :Interface, 'vnctl/cli/interface'
     autoload :Filter, 'vnctl/cli/filter'
     autoload :SecurityGroup, 'vnctl/cli/security_group'
+    autoload :Topology, 'vnctl/cli/topology'
     autoload :Translation, 'vnctl/cli/translation'
     autoload :VlanTranslation, 'vnctl/cli/vlan_translation'
   end
