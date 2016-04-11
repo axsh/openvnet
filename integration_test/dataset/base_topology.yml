@@ -1,0 +1,26 @@
+mac_range_groups:
+
+  - uuid: mrg-dpg
+
+mac_range_group_mac_ranges:
+
+  - mac_range_group_uuid: mrg-dpg
+    begin_mac_address: 08:00:27:aa:00:00
+    end_mac_address:   08:00:27:aa:ff:ff
+
+topologies:
+
+  - uuid: tp-physical
+    mode: simple_underlay
+
+  - uuid: tp-vnet
+    mode: simple_overlay
+
+
+topology_networks:
+
+  - topology_uuid: tp-physical
+    network_uuid: nw-public1
+
+  - topology_uuid: tp-physical
+    network_uuid: nw-public2

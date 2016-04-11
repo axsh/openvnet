@@ -54,7 +54,14 @@ module Vnspec
         setup(name)
         sleep(1)
 
-        SPec.exec(name)
+        result = SPec.exec(name)
+
+        if !result
+          Vnet.dump_logs
+          Vnet.dump_flows
+        end
+
+        result
       end
     end
 
@@ -79,7 +86,6 @@ module Vnspec
       Vnet.start(:vna)
 
       VM.start_network
-      Vnet.dump_flows
 
       true
     end

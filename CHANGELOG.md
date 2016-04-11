@@ -5,7 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+* `Added` A new `topology manager` that automatically creates `datapath_network` and `datapath_route_link` entries in the database.
+
 * `Added` A new simple firewall feature alongside the existing security groups. Security groups will eventually be ported to use this.
+
+* `Added` Automatic MAC address assignment using `mac range groups`.
 
 * `Added` Vnctl commands for the creation and deletion of static network address translation.
 
@@ -24,6 +28,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * `Changed` Use different priority for flows depending on their prefix in order to ensure that e.g. 10.10.10.0/24 gets handled before 10.10.0.0/16.
 
 * `Fixed` An issue where vna could retrieve network resources from vnmgr while their related resources were not fully loaded yet.
+
+* `Fixed` Several minor bugfixes. 
 
 ## [0.8] - 2015-09-04
 

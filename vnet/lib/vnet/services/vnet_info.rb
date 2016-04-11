@@ -13,6 +13,7 @@ module Vnet::Services
     MANAGER_NAMES = %w(
       ip_retention_container
       lease_policy
+      topology
     )
 
     MANAGER_NAMES.each do |name|
