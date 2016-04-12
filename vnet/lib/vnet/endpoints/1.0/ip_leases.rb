@@ -2,9 +2,6 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   def self.put_post_shared_params
-    param_uuid M::Network, :network_uuid
-    param_uuid M::MacLease, :mac_lease_uuid
-    param :ipv4_address, :String, transform: PARSE_IPV4
     param :enable_routing, :Boolean
   end
 
@@ -12,12 +9,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
 
   put_post_shared_params
   param_uuid M::IpLease
-  param_options :network_uuid, required: true
-  param_options :mac_lease_uuid, required: true
-  param_options :ipv4_address, required: true
+  param_uuid M::Network, :network_uuid, required: true
+  param :ipv4_address, :String, transform: PARSE_IPV4, required: true
+  param_uuid M::MacLease, :mac_lease_uuid
+  param_uuid M::Interface, :interface_uuid
   post do
-    network = uuid_to_id(M::Network, "network_uuid", "network_id")
-    uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id")
+    network = uuid_to_id(M::Network, 'network_uuid', 'network_id')
+
+    uuid_to_id_or_nil(M::MacLease, 'mac_lease_uuid', 'mac_lease_id')
+    uuid_to_id_or_nil(M::Interface, 'interface_uuid', 'interface_id')
 
     check_ipv4_address_subnet(network)
 
@@ -38,10 +38,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
 
   put_post_shared_params
   put '/:uuid' do
-    # TODO: Change?
-    uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
-    uuid_to_id(M::MacLease, "mac_lease_uuid", "mac_lease_id") if params["mac_lease_uuid"]
-
     update_by_uuid(:IpLease, fill_options)
   end
 
@@ -49,9 +45,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   param_uuid M::Interface, :interface_uuid, required: false
   param_uuid M::MacLease, :mac_lease_uuid, required: false
   put '/:uuid/attach' do
-    check_syntax_and_get_id(M::IpLease, 'uuid', 'id')
-    check_syntax_and_get_id(M::Interface, 'interface_uuid', 'interface_id') if params['interface_uuid']
-    check_syntax_and_get_id(M::MacLease, 'mac_lease_uuid', 'mac_lease_id') if params['mac_lease_uuid']
+    uuid_to_id(M::IpLease, 'uuid', 'id')
+    uuid_to_id_or_nil(M::Interface, 'interface_uuid', 'interface_id')
+    uuid_to_id_or_nil(M::MacLease, 'mac_lease_uuid', 'mac_lease_id')
 
     remove_system_parameters
 

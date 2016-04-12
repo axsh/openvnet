@@ -38,6 +38,24 @@ module Vnet::NodeApi
 
       private
 
+      def create_with_transaction(options)
+        options = options.dup
+
+        interface_id = options[:interface_id]
+        mac_lease_id = options[:mac_lease_id]
+
+        transaction {
+          if interface_id || mac_lease_id
+            interface, mac_lease = get_if_and_ml(interface_id, mac_lease_id)
+
+            options[:interface_id] = interface && interface.id
+            options[:mac_lease_id] = mac_lease && mac_lease.id
+          end
+
+          internal_create(options)
+        }
+      end
+
       def dispatch_created_item_events(model)
         if model.interface_id
           dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_event_hash(model))
@@ -104,21 +122,7 @@ module Vnet::NodeApi
         interface = nil
 
         transaction do
-          interface = interface_id && model_class(:interface)[id: interface_id]
-          mac_lease = mac_lease_id && model_class(:mac_lease)[id: mac_lease_id]
-          
-          if interface && mac_lease.nil? && mac_lease_id.nil?
-            # Error if the interface has more than one mac_lease?
-            mac_lease = interface.mac_leases.first
-          end
-
-          if mac_lease && interface.nil? && interface_id.nil?
-            interface = mac_lease.interface
-          end
-
-          if interface.nil? || mac_lease.nil?
-            raise ArgumentError, 'Could not find fitting interface or mac lease'
-          end
+          interface, mac_lease = get_if_and_ml(interface_id, mac_lease_id)
 
           model.interface_id = interface.id
           model.mac_lease_id = mac_lease.id
@@ -190,6 +194,30 @@ module Vnet::NodeApi
         end
 
         model
+      end
+
+      def get_if_and_ml(interface_id, mac_lease_id)
+        if interface_id.nil? && mac_lease_id.nil?
+          raise ArgumentError, 'Either interface and/or mac lease must be supplied'
+        end
+
+        interface = interface_id && model_class(:interface)[id: interface_id]
+        mac_lease = mac_lease_id && model_class(:mac_lease)[id: mac_lease_id]
+        
+        if interface && mac_lease.nil? && mac_lease_id.nil?
+          # Error if the interface has more than one mac_lease?
+          mac_lease = interface.mac_leases.first
+        end
+
+        if mac_lease && interface.nil? && interface_id.nil?
+          interface = mac_lease.interface
+        end
+
+        if interface.nil? || mac_lease.nil?
+          raise ArgumentError, 'Could not find fitting interface or mac lease'
+        end
+
+        [interface, mac_lease]
       end
 
     end
