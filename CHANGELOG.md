@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` A new simple firewall feature alongside the existing security groups. Security groups will eventually be ported to use this.
 
+* `Added` Automatic MAC address assignment using `mac range groups`.
+
 * `Added` Vnctl commands for the creation and deletion of static network address translation.
 
 * `Added` Error handling for IPv4 addresses in the wrong subnet as early as the WebAPI.
