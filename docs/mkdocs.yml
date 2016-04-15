@@ -22,6 +22,8 @@ pages:
   - 'Single network with DHCP server': 'creating-virtual-networks/single-network-dhcp.md'
   - 'Two networks': 'creating-virtual-networks/two-networks.md'
   - 'Two network with router': 'creating-virtual-networks/two-networks-router.md'
+- Advanced Features:
+  - 'Filters': 'advanced-features/filters.md'
 - Debugging:
   - 'vnflows-monitor': 'debugging/vnflows-monitor.md'
   - 'Integration test': 'debugging/integration-test.md'
@@ -36,5 +38,6 @@ pages:
   - 'datapaths' : 'vnctl/datapaths.md'
   - 'interfaces': 'vnctl/interfaces.md'
   - 'networks'  : 'vnctl/networks.md'
+  - 'filters'   : 'vnctl/filters.md'
 - Community: 'community.md'
 - Jargon Dictionary: 'jargon-dictionary.md'
