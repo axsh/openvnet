@@ -33,7 +33,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
   param_uuid M::MacRange, :uuid, transform: proc { |u| M::MacRange.trim_uuid(u) }
   param :begin_mac_address, :String, transform: PARSE_MAC
   param :end_mac_address, :String, transform: PARSE_MAC
-  post '/:mac_range_group_uuid/mac_ranges' do
+  post '/:mac_range_group_uuid/ranges' do
     check_syntax_and_get_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id")
 
     remove_system_parameters
@@ -42,11 +42,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
     respond_with(R::MacRange.generate(mac_range))
   end
 
-  get '/:uuid/mac_ranges' do
+  get '/:uuid/ranges' do
     show_relations(:MacRangeGroup, :mac_ranges)
   end
 
-  delete '/:uuid/mac_ranges/:mac_range_uuid' do
+  delete '/:uuid/ranges/:mac_range_uuid' do
     mac_range_group = check_syntax_and_pop_uuid(M::MacRangeGroup)
     mac_range = check_syntax_and_pop_uuid(M::MacRange, "mac_range_uuid")
 

@@ -171,7 +171,7 @@ describe VNetAPIClient do
 
   describe VNetAPIClient::MacRangeGroup do
     include_examples 'test_method', :add_range,
-                     'POST  /mac_range_groups/:mac_range_group_uuid/mac_ranges'
+                     'POST  /mac_range_groups/:mac_range_group_uuid/ranges'
   end
 
   describe VNetAPIClient::Translation do
