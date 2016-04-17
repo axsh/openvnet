@@ -23,4 +23,7 @@ module Vnet::ModelWrappers
   class MacRangeGroup < Base
   end
 
+  class Segment < Base
+  end
+
 end
