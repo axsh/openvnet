@@ -1,10 +1,10 @@
-
 source "http://rubygems.org"
 
-gem 'ffi-rzmq', "1.0.3"
+gem "ffi-rzmq", "1.0.3"
 gem "bit-struct", ">= 0.13.7"
-gem "celluloid"
-gem "celluloid-io"
+# Celluloid and celluloid-io versions were fixed to make OpenVNet run on Ubuntu 14.04
+gem "celluloid", "0.16.0"
+gem "celluloid-io", "0.16.2"
 gem "dcell"
 gem "fuguta"
 gem "ipaddress"
@@ -30,7 +30,8 @@ gem 'rant', '>= 0.5.9', :git => 'https://github.com/axsh/rant.git'
 gem 'trema', :git=>'https://github.com/axsh/trema.git', :branch=>'wakame-edge'
 
 group :development, :test do
-  gem "rake"
+  # Rake's version required was added to make OpenVNet run on Ubuntu 14.04
+  gem "rake", "10.1.0"
   gem "rspec"
   gem "rack-test"
   gem "fabrication", '2.9.8' # Updating to 2.13.2 broke the unit tests.

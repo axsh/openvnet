@@ -27,9 +27,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param :port_name, :String
   param :mode, :String, in: C::Interface::MODES
   post do
-    uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
+    network = uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     uuid_to_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id") if params["mac_range_group_uuid"]
+
+    check_ipv4_address_subnet(network)
 
     params["enable_legacy_filtering"] = params["ingress_filtering_enabled"]
     post_new(:Interface, fill)

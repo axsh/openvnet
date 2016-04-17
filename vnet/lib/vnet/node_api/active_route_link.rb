@@ -21,10 +21,20 @@ module Vnet::NodeApi
 
       def dispatch_created_item_events(model)
         dispatch_event(ACTIVE_ROUTE_LINK_CREATED_ITEM, model.to_hash)
+
+        dispatch_event(TOPOLOGY_ROUTE_LINK_ACTIVATED,
+                       id: [:route_link, model.route_link_id],
+                       datapath_id: model.datapath_id,
+                       )
       end
 
       def dispatch_deleted_item_events(model)
         dispatch_event(ACTIVE_ROUTE_LINK_DELETED_ITEM, id: model.id)
+
+        dispatch_event(TOPOLOGY_ROUTE_LINK_DEACTIVATED,
+                       id: [:route_link, model.route_link_id],
+                       datapath_id: model.datapath_id,
+                       )
       end
 
     end

@@ -8,6 +8,14 @@
 #
 # A missing value is not an error if 'required != true', while an
 # invalid value for the type requested is.
+#
+# Usage:
+#
+# begin
+#   port_number = get_param_of_port(params, :port_number)
+# rescue Vnet::ParamError => e
+#   handle_param_error(e)
+# end
 
 module Vnet
 
@@ -110,6 +118,16 @@ module Vnet
 
       if !param.is_a?(String)
         return throw_param_error('value is not a string type', params, key)
+      end
+
+      param
+    end
+
+    def get_param_symbol(params, key, required = true)
+      param = get_param(params, key, required) || return
+
+      if !param.is_a?(Symbol)
+        return throw_param_error('value is not a symbol type', params, key)
       end
 
       param

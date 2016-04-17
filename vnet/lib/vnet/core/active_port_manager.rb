@@ -73,7 +73,7 @@ module Vnet::Core
     # item created in db on queue 'item.id'
     def created_item(params)
       return if internal_detect_by_id(params)
-      return if params[:datapath_id] != @datapath_info.id
+      return if @datapath_info.nil? || params[:datapath_id] != @datapath_info.id
 
       internal_new_item(mw_class.new(params))
     end
