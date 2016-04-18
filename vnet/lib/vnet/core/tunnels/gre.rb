@@ -27,13 +27,13 @@ module Vnet::Core::Tunnels
 
       if @dst_ipv4_address.nil? || !@dst_ipv4_address.ipv4?
         error log_format("no valid remote IPv4 address for #{@uuid}",
-                         "ipv4_address:#{@dst_ipv4_address.to_s}")
+                         "ipv4_address:#{@dst_ipv4_address}")
         return
       end
 
       if @src_ipv4_address.nil? || !@src_ipv4_address.ipv4?
         error log_format("no valid local IPv4 address for #{@uuid}",
-                         "ipv4_address:#{@src_ipv4_address.to_s}")
+                         "ipv4_address:#{@src_ipv4_address}")
         return
       end
 
@@ -61,7 +61,7 @@ module Vnet::Core::Tunnels
       @dp_info.add_flows(flows)
 
       info log_format("installed",
-                      "src_ipv4_address:#{@src_ipv4_address.to_s} dst_ipv4_address:#{@dst_ipv4_address.to_s}")
+                      "src_ipv4_address:#{@src_ipv4_address} dst_ipv4_address:#{@dst_ipv4_address}")
     end
 
     def delete_tunnel
@@ -81,7 +81,7 @@ module Vnet::Core::Tunnels
 
     def actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
       return if @tunnel_port_number.nil? || !has_network_id?(network_id)
-      
+
       tunnel_actions << { :output => @tunnel_port_number }
     end
 

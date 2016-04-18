@@ -9,7 +9,7 @@ module Vnet::Core::Routers
     end
 
     #
-    # Events: 
+    # Events:
     #
 
     def install

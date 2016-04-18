@@ -37,14 +37,14 @@ module Vnet::Services::LeasePolicies
     end
 
     #
-    # Events: 
+    # Events:
     #
 
     def install
-    end    
+    end
 
     def uninstall
-    end    
+    end
 
     #
     # Internal methods:

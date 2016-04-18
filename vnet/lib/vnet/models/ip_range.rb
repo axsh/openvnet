@@ -42,7 +42,7 @@ module Vnet::Models
         inequality_sign = :>
         number = :-
       end
-      return from if boundaries.size == 0
+      return from if boundaries.empty?
       return from if boundaries[0][prev].nil? && boundaries[0][:ipv4_address] != from
 
       start_range = nil

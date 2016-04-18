@@ -166,7 +166,7 @@ module Vnet::Core
 
       debug log_format("install #{item.mode} #{item.uuid}/#{item.id}",
                        "src_interface_id:#{item.src_interface_id} dst_interface_id:#{item.dst_interface_id}")
-      
+
       # TODO: If item_map and item.mode are different (and not unknown), update db.
       tunnel_mode = select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
       return reload_item(item) if tunnel_mode != item.mode
@@ -255,9 +255,9 @@ module Vnet::Core
       }
 
       flows = []
-      
+
       # TODO: Change this into using a specific method to remove a network id?
-      
+
       if tunnel_actions.size > 1
         flows << flow_create(table: TABLE_FLOOD_TUNNELS,
                              goto_table: TABLE_FLOOD_SEGMENT,
@@ -440,7 +440,7 @@ module Vnet::Core
       #   interface = @interfaces.delete(interface_id)
 
       #   return if interface.nil?
-        
+
         # Do stuff/event...
 
       when :set_host_port_number
@@ -517,7 +517,7 @@ module Vnet::Core
       interface = interface_prepare(interface_id, :host) || return
 
       debug log_format("interface #{interface_id} set host port number #{port_number}")
-      
+
       # TODO: Instead use a hash held by manager so that we avoid
       # unneeded calls to update.
 

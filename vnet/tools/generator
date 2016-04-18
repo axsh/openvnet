@@ -207,7 +207,7 @@ end
     EOS
 
     if @options[:endpoint]
-      puts 
+      puts
       puts <<-EOS
 -------------------------
 Endpoint configurations

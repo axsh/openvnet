@@ -214,7 +214,7 @@ module Vnet::Services
     def find_id_using_tp_nw(datapath_id, network_id)
       # TODO: Should keep local tp_nw list.
       tp_nw = MW::TopologyNetwork.batch.dataset.where(network_id: network_id).first.commit
-      
+
       if tp_nw.nil? || tp_nw.topology_id.nil?
         warn log_format("network not associated with a topology", "datapath_id:#{datapath_id} network_id:#{network_id}")
         return
@@ -228,7 +228,7 @@ module Vnet::Services
     def find_id_using_tp_rl(datapath_id, route_link_id)
       # TODO: Should keep local tp_rl list.
       tp_rl = MW::TopologyRouteLink.batch.dataset.where(route_link_id: route_link_id).first.commit
-      
+
       if tp_rl.nil? || tp_rl.topology_id.nil?
         warn log_format("route_link not associated with a topology", "datapath_id:#{datapath_id} route_link_id:#{route_link_id}")
         return

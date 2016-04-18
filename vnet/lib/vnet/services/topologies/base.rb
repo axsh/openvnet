@@ -9,8 +9,8 @@ module Vnet::Services::Topologies
       super
 
       map = params[:map]
-    end    
-    
+    end
+
     def log_type
       'topology/base'
     end

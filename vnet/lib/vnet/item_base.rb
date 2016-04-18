@@ -33,20 +33,20 @@ module Vnet
     end
 
     def install
-    end    
+    end
 
     def uninstall
-    end    
+    end
 
     def try_install
-      (@installed == false) && install 
+      (@installed == false) && install
       return if @invalid == true
       @installed = true
     end
 
     def try_uninstall
       @installed, was_installed = false, @installed
-      (was_installed == true) && uninstall 
+      (was_installed == true) && uninstall
     end
 
     def set_loaded

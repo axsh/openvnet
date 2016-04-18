@@ -152,7 +152,7 @@ module Vnet::Core
       else
         if item.singular
           @dp_info.interface_manager.load_local_interface(item.interface_id)
-        elsif 
+        elsif
           @dp_info.interface_manager.load_shared_interface(item.interface_id)
         end
       end
@@ -207,7 +207,7 @@ module Vnet::Core
     def params_valid_item?(params)
       return @datapath_info &&
         params[:id] &&
-        params[:interface_id]
+        params[:interface_id] &&
         params[:datapath_id]
     end
 
