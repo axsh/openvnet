@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Constants::NetworkService
-  TYPE_DHCP   = 'dhcp'
-  TYPE_DNS    = 'dns'
-  TYPE_ROUTER = 'router'
+  MODE_DHCP   = 'dhcp'
+  MODE_DNS    = 'dns'
+  MODE_ROUTER = 'router'
 
-  TYPES = [TYPE_DHCP, TYPE_DNS, TYPE_ROUTER]
+  MODES = [MODE_DHCP,
+           MODE_DNS,
+           MODE_ROUTER,
+          ]
 end

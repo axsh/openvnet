@@ -24,7 +24,7 @@ describe "/route_links" do
       :uuid => "rl-link",
       :mac_address => "fe:17:9b:9f:e8:33",
     }
-    required_params = [:mac_address]
+    required_params = []
     uuid_params = [:uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params

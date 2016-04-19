@@ -15,12 +15,17 @@ module Vnet::Models
     one_to_many :translation_static_addresses
     many_to_many :translations, join_table: :translation_static_addresses, conditions: "translation_static_addresses.deleted_at is null"
 
+    # 0009_topology
+    one_to_many :topology_route_links
+
     plugin :association_dependencies,
     # 0001_origin
     datapath_route_links: :destroy,
     routes: :destroy,
     translation_static_addresses: :destroy,
-    _mac_address: :destroy
+    _mac_address: :destroy,
+    # 0009_topology
+    topology_route_links: :destroy
 
   end
 end

@@ -135,6 +135,8 @@ module Vnet::Core
     def item_post_install(item, item_map)
       add_item_id_to_update_queue(item.id)
 
+      @dp_info.active_network_manager.publish(ACTIVE_NETWORK_ACTIVATE,
+                                              id: [:network, item.id])
       @dp_info.datapath_manager.publish(ACTIVATE_NETWORK_ON_HOST,
                                         id: :network,
                                         network_id: item.id)
@@ -146,6 +148,8 @@ module Vnet::Core
     end
 
     def item_pre_uninstall(item)
+      @dp_info.active_network_manager.publish(ACTIVE_NETWORK_DEACTIVATE,
+                                              id: [:network, item.id])
       @dp_info.datapath_manager.publish(DEACTIVATE_NETWORK_ON_HOST,
                                         id: :network,
                                         network_id: item.id)

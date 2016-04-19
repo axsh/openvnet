@@ -2,12 +2,10 @@
 
 module Vnet::Models
 
-  # TODO: Refactor.
-
   class TranslationStaticAddress < Base
+    plugin :paranoia_is_deleted
 
     many_to_one :translation
-    # TODO: Association needed:
     many_to_one :route_link
 
     def ingress_ipv4_address_s
