@@ -8,7 +8,7 @@
   
   
   
-  <title>Community - OpenVNet</title>
+  <title>Upgrading - OpenVNet</title>
   
 
   <link rel="shortcut icon" href="../favicon.png">
@@ -25,9 +25,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Community";
-    var mkdocs_page_input_path = "community.md";
-    var mkdocs_page_url = "/community/";
+    var mkdocs_page_name = "Upgrading";
+    var mkdocs_page_input_path = "upgrade.md";
+    var mkdocs_page_url = "/upgrade/";
   </script>
   
   <script src="../js/jquery-2.1.1.min.js"></script>
@@ -95,8 +95,25 @@
 <li>
           
             <li>
-    <li class="toctree-l1 ">
-        <a class="" href="../upgrade/">Upgrading</a>
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Upgrading</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#openvnet-upgrade-guide">OpenVNet upgrade guide</a></li>
+                
+                    <li><a class="toctree-l4" href="#turn-off-all-openvnet-services">Turn off all OpenVNet services</a></li>
+                
+                    <li><a class="toctree-l4" href="#update-openvnet-through-yum">Update OpenVNet through yum.</a></li>
+                
+                    <li><a class="toctree-l4" href="#migrate-the-database-to-the-latest-version">Migrate the database to the latest version.</a></li>
+                
+                    <li><a class="toctree-l4" href="#additional-steps">Additional steps</a></li>
+                
+                    <li><a class="toctree-l4" href="#start-openvnet-services">Start OpenVNet services</a></li>
+                
+            
+            </ul>
         
     </li>
 <li>
@@ -261,15 +278,8 @@
 <li>
           
             <li>
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Community</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#contribute">Contribute</a></li>
-                
-            
-            </ul>
+    <li class="toctree-l1 ">
+        <a class="" href="../community/">Community</a>
         
     </li>
 <li>
@@ -303,7 +313,7 @@
     
       
     
-    <li>Community</li>
+    <li>Upgrading</li>
     <li class="wy-breadcrumbs-aside">
       
         
@@ -317,12 +327,40 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="contribute">Contribute</h1>
-<p>This article is about contributing documentation. </p>
-<p>If you wish to contribute to this website, you will need to have a <a href="https://github.com">Github</a> account and be familiar with <a href="http://git-scm.com">Git</a>. You can contribute using Github's <a href="https://help.github.com/articles/using-pull-requests/#fork--pull">fork &amp; pull</a> system. We will review your contributions and possibly ask you to change around a few things.</p>
-<p>This will not be a one-way conversation. We welcome (well argumented and respectful) discussions about what the documentation should be like. Once we're satisfied with your contribution, we will merge it and publish it to the main website.</p>
-<p>This site's development repository is located here in the docs folder: <a href="https://github.com/axsh/openvnet">https://github.com/axsh/openvnet</a></p>
-<p><strong>Tip:</strong> If you want to preview your changes locally, try running <a href="http://www.mkdocs.org/">mkdocs</a>.</p>
+                <h1 id="openvnet-upgrade-guide">OpenVNet upgrade guide</h1>
+<p>This guide details the steps requires when upgrading from an older version of OpenVNet.</p>
+<h3 id="turn-off-all-openvnet-services">Turn off all OpenVNet services</h3>
+<pre><code class="bash">stop vnet-webapi
+stop vnet-vnmgr
+stop vnet-vna
+</code></pre>
+
+<h3 id="update-openvnet-through-yum">Update OpenVNet through yum.</h3>
+<pre><code class="bash">yum update
+</code></pre>
+
+<h3 id="migrate-the-database-to-the-latest-version">Migrate the database to the latest version.</h3>
+<p>It's likely that the database had added new tables in the new version. Update it.</p>
+<pre><code class="bash">PATH=/opt/axsh/openvnet/ruby/bin:${PATH}
+cd /opt/axsh/openvnet/vnet
+bundle exec rake db:migrate
+</code></pre>
+
+<h3 id="additional-steps">Additional steps</h3>
+<p>Some additional steps may be required if you are upgrading to a specific version.</p>
+<h4 id="version-09">Version 0.9</h4>
+<p>Version 0.9 added functionality for automatically creating <code>datapath_network</code> and <code>datapath_route_link</code> entries in the database.</p>
+<p>This requires OpenVNet to automatically assign MAC address values for these. When upgrading to version 0.9 it is required to provide OpenVNet with a range of MAC addresses it is allowed to assign.</p>
+<pre><code class="bash">vnctl mac_range_groups add --uuid mrg-dpg
+vnctl mac_range_groups mac_ranges add mrg-dpg --begin_mac_address 52:56:01:00:00:00 --end_mac_address 52:56:01:ff:ff:ff
+</code></pre>
+
+<p><strong>Remark:</strong> If a different UUID than <code>mrg-dpg</code> is used, you must open <code>/etc/openvnet/common.conf</code> and edit the following line. <code>datapath_mac_group "mrg-dpg"</code></p>
+<h3 id="start-openvnet-services">Start OpenVNet services</h3>
+<pre><code class="bash">start vnet-webapi
+start vnet-vnmgr
+start vnet-vna
+</code></pre>
               
             </div>
           </div>
@@ -330,10 +368,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../jargon-dictionary/" class="btn btn-neutral float-right" title="Jargon Dictionary">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../creating-virtual-networks/single-network/" class="btn btn-neutral float-right" title="Single network">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../vnctl/filters/" class="btn btn-neutral" title="filters"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../installation/" class="btn btn-neutral" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -363,10 +401,10 @@
           <a href="https://github.com/axsh/openvnet" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href="../vnctl/filters/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../installation/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../jargon-dictionary/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../creating-virtual-networks/single-network/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

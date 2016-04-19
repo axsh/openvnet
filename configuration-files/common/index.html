@@ -95,6 +95,13 @@
 <li>
           
             <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../../upgrade/">Upgrading</a>
+        
+    </li>
+<li>
+          
+            <li>
     <ul class="subnav">
     <li><span>Creating virtual networks</span></li>
 
@@ -123,6 +130,21 @@
             
     <li class="toctree-l1 ">
         <a class="" href="../../creating-virtual-networks/two-networks-router/">Two network with router</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Advanced Features</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../advanced-features/filters/">Filters</a>
         
     </li>
 
@@ -175,6 +197,8 @@
                     <li><a class="toctree-l4" href="#registry">Registry</a></li>
                 
                     <li><a class="toctree-l4" href="#db">DB</a></li>
+                
+                    <li><a class="toctree-l4" href="#misc">Misc</a></li>
                 
             
             </ul>
@@ -239,6 +263,13 @@
     </li>
 
         
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../vnctl/filters/">filters</a>
+        
+    </li>
+
+        
     </ul>
 <li>
           
@@ -299,7 +330,7 @@
                 <h1 id="commonconf">common.conf</h1>
 <p>This file contains common configuration that is used by <code>vnmgr</code>, <code>webapi</code> and <code>vna</code>.</p>
 <p>You'll find it at <code>/etc/openvnet/vnmgr.conf</code>.</p>
-<p>It contains two sections.</p>
+<p>It is divided into the following sections.</p>
 <h2 id="registry">Registry</h2>
 <p>This is the key-value storage that the <a href="https://github.com/celluloid/dcell">DCell framework</a> requires. OpenVNet's services use DCell to communicate with each other.</p>
 <pre><code class="ruby">registry {
@@ -357,6 +388,14 @@
 <li>password</li>
 </ul>
 <p>Password of the db server.</p>
+<h2 id="misc">Misc</h2>
+<pre><code class="ruby">datapath_mac_group &quot;mrg-dpg&quot;
+</code></pre>
+
+<ul>
+<li>datapath_mac_group</li>
+</ul>
+<p>Contains the UUID of the mac range group used for <code>datapath_network</code> and <code>datapath_route_link</code> mac addresses.</p>
               
             </div>
           </div>
@@ -377,7 +416,7 @@
   <div role="contentinfo">
     <!-- Copyright etc -->
     
-      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+      <p>Copyright &copy; 2016, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
     
   </div>
 

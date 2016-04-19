@@ -8,7 +8,7 @@
   
   
   
-  <title>Two networks - OpenVNet</title>
+  <title>Filters - OpenVNet</title>
   
 
   <link rel="shortcut icon" href="../../favicon.png">
@@ -25,9 +25,9 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Two networks";
-    var mkdocs_page_input_path = "creating-virtual-networks/two-networks.md";
-    var mkdocs_page_url = "/creating-virtual-networks/two-networks/";
+    var mkdocs_page_name = "Filters";
+    var mkdocs_page_input_path = "advanced-features/filters.md";
+    var mkdocs_page_url = "/advanced-features/filters/";
   </script>
   
   <script src="../../js/jquery-2.1.1.min.js"></script>
@@ -108,43 +108,28 @@
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../single-network/">Single network</a>
+        <a class="" href="../../creating-virtual-networks/single-network/">Single network</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../single-network-dhcp/">Single network with DHCP server</a>
-        
-    </li>
-
-        
-            
-    <li class="toctree-l1 current">
-        <a class="current" href="./">Two networks</a>
-        
-            <ul>
-            
-                <li class="toctree-l3"><a href="#two-virtual-networks">Two virtual networks</a></li>
-                
-                    <li><a class="toctree-l4" href="#overview">Overview</a></li>
-                
-                    <li><a class="toctree-l4" href="#setup">Setup</a></li>
-                
-                    <li><a class="toctree-l4" href="#test">Test</a></li>
-                
-                    <li><a class="toctree-l4" href="#whats-next">What's next?</a></li>
-                
-            
-            </ul>
+        <a class="" href="../../creating-virtual-networks/single-network-dhcp/">Single network with DHCP server</a>
         
     </li>
 
         
             
     <li class="toctree-l1 ">
-        <a class="" href="../two-networks-router/">Two network with router</a>
+        <a class="" href="../../creating-virtual-networks/two-networks/">Two networks</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../../creating-virtual-networks/two-networks-router/">Two network with router</a>
         
     </li>
 
@@ -158,8 +143,29 @@
 
         
             
-    <li class="toctree-l1 ">
-        <a class="" href="../../advanced-features/filters/">Filters</a>
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Filters</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#filters">Filters</a></li>
+                
+                    <li><a class="toctree-l4" href="#overview">Overview</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#setup">Setup</a></li>
+                
+                    <li><a class="toctree-l4" href="#enable-filtering">Enable filtering</a></li>
+                
+                    <li><a class="toctree-l4" href="#creating-the-filter-item">Creating the filter item</a></li>
+                
+                    <li><a class="toctree-l4" href="#creating-the-rules">Creating the rules</a></li>
+                
+            
+                <li class="toctree-l3"><a href="#test">Test</a></li>
+                
+            
+            </ul>
         
     </li>
 
@@ -311,11 +317,11 @@
     
       
         
-          <li>Creating virtual networks &raquo;</li>
+          <li>Advanced Features &raquo;</li>
         
       
     
-    <li>Two networks</li>
+    <li>Filters</li>
     <li class="wy-breadcrumbs-aside">
       
         
@@ -329,111 +335,63 @@
           <div role="main">
             <div class="section">
               
-                <h1 id="two-virtual-networks">Two virtual networks</h1>
+                <h1 id="filters">Filters</h1>
 <h2 id="overview">Overview</h2>
-<p>This document expects you to have set up OpenVNet according to the <a href="../../installation">installation guide</a>, created the simple <a href="../single-network">single network</a> and set up <a href="../single-network-dhcp">its DHCP server</a>. We will be continuing from there so complete those guides first.</p>
-<p>In this guide we will set up a second virtual network and move <code>inst2</code> to it. We'll also set up a new DHCP server for that network. That will give us the following topology.</p>
-<p><img alt="Two networks" src="../img/two-networks.png" /></p>
-<h2 id="setup">Setup</h2>
-<p>The first two steps are similar to what we have done before. Create a new network and setup its simulated DHCP service.</p>
-<h3 id="create-the-new-network">Create the new network</h3>
-<pre><code class="bash">vnctl networks add \
-  --uuid nw-test2 \
-  --display-name testnet2 \
-  --ipv4-network 192.168.50.0 \
-  --ipv4-prefix 24 \
-  --network-mode virtual
+<p>Sometimes we want to be able to controll the traffic between our interfaces and block/allow packages when certain conditions are met. In OpenVNet we can achieve this with the filter feature.</p>
+<p>In this guide we will use the enviroment created in the <a href="../../creating-virtual-networks/single-network-dhcp/">Single network with DHCP server</a> and set up some filters so that <code>inst1</code> allows traffic on the arp protocol but blocks all else.</p>
+<h1 id="setup">Setup</h1>
+<p>Before getting started we make sure that <code>inst1</code> and <code>inst2</code> can communicate both tcp/icmp by doing some simple tests.</p>
+<p>Log into <code>inst2</code> and type:</p>
+<pre><code class="bash">arping 10.100.0.10
+ping 10.100.0.10
+ssh 10.100.0.10
 </code></pre>
 
-<h3 id="set-up-its-dhcp-server">Set up its DHCP server</h3>
-<pre><code class="bash">vnctl interfaces add \
-  --uuid if-dhcp2 \
-  --mode simulated \
-  --owner-datapath-uuid dp-test1 \
-  --mac-address 02:00:00:00:01:12 \
-  --network-uuid nw-test2 \
-  --ipv4-address 192.168.50.100
-
-
-vnctl network-services add \
-  --uuid ns-dhcp2 \
-  --interface-uuid if-dhcp2 \
-  --type dhcp
+<p>These should all generate responses which indicates packages are being sent/recived.</p>
+<h3 id="enable-filtering">Enable filtering</h3>
+<p><strong>Remark:</strong> Due to a bug in OpenVNet's internal event queue, it is currently possible for filters not to update correctly. If the following commands don't have the expected result, try restarting VNA.</p>
+<p>To use filters we first need to tell OpenVNet that we want traffic to be filterd.</p>
+<pre><code class="bash">vnctl interfaces modify if-inst1 --enable-filtering
 </code></pre>
 
-<h3 id="move-inst2-to-the-new-network">Move inst2 to the new network</h3>
-<p>There are two ways to do this.</p>
-<ul>
-<li>
-<p>The quick and dirty way. Remove the interface and re-create it.</p>
-</li>
-<li>
-<p>The clean but slightly harder way. Dig a little deeper into OpenVNet's inner workings make only the required changes.</p>
-</li>
-</ul>
-<p>Choose one of the two two ways below.</p>
-<h4 id="the-quick-and-dirty-way">The quick and dirty way.</h4>
-<p>To keep things simple, we will just remove <code>inst2</code> from OpenVNet's database and re-create it.</p>
-<p>A side effect of this method is that we will not be able to use the same UUID. That's because OpenVNet's database uses logical delete. Deleted records aren't actually removed but only marked as deleted. Their unique fields cannot be reused.</p>
-<pre><code class="bash">vnctl interfaces del if-inst2
+<h3 id="creating-the-filter-item">Creating the filter item</h3>
+<p>Now we can create the filter item.</p>
+<pre><code class="bash">vnctl filters add \
+--uuid fil-filter1 \
+--interface-uuid if-inst1 \
+--mode static
 </code></pre>
 
-<p>Now re-create it. Since we can't reuse the UUID <code>if-inst2</code>, we'll use <code>if-newinst2</code>.</p>
-<pre><code class="bash">vnctl interfaces add \
-  --uuid if-newinst2 \
-  --mode vif \
-  --owner-datapath-uuid dp-test1 \
-  --mac-address 10:54:ff:00:00:02 \
-  --network-uuid nw-test2 \
-  --ipv4-address 192.168.50.10 \
-  --port-name inst2
+<h3 id="creating-the-rules">Creating the rules</h3>
+<p>We now have a filter that will block all traffic both incoming and outgoing for the interface <code>if-inst1</code>. Now we will add a rule that opens up the arp protocol. We also set up filters for tcp and icmp protocols to have traffic dropped.</p>
+<pre><code class="bash">vnctl filters static add fil-filter1 \
+--protocol arp \
+--ipv4-address 0.0.0.0/0 \
+--passthrough
+
+vnctl filters static add fil-filter1 \
+--protocol tcp \
+--ipv4-address 0.0.0.0/0 \
+--port-number 0 \
+--passthrough false
+
+vnctl filters static add fil-filter1 \
+--protocol icmp \
+--ipv4-address 0.0.0.0/0 \
+--passthrough false
 </code></pre>
 
-<p>You're done. Move on to the <a href="#test">test section</a>.</p>
-<h4 id="the-clean-but-slightly-harder-way">The clean but slightly harder way</h4>
-<p>We've now created several network interfaces in OpenVNet using the <a href="../../vnctl/interfaces">vnctl interfaces add</a> command. Actually every time we call that command, OpenVNet creates several fields in the database  to keep track of MAC address, IP address, network assignment etc. The field we need to change here is <code>ip lease</code>.</p>
-<p>First have a look at <code>inst2</code>'s interface.</p>
-<pre><code class="bash">vnctl interfaces show if-inst2
+<p><code>ipv4-address</code> set to 0.0.0.0/ will make the match for every ip address and <code>port-number</code> set to 0 will match all ports.
+For more information about filter commands, see <a href="../../vnctl/filters">filters section</a> in the vnctl documentation.</p>
+<h1 id="test">Test</h1>
+<p>Log into <code>inst2</code> and once again type in the commands from before.</p>
+<pre><code class="bash">arping 10.100.0.10
+ping 10.100.0.10
+ssh 10.100.0.10
 </code></pre>
 
-<p>As you can see, there's quite a bit of information to be had here. The part we're interested in is <code>ip lease</code> and more specifically, the <code>ip lease UUID</code>. Look for it in the output.</p>
-<pre><code class="bash">---
-:id: 2
-:uuid: if-inst2
-:mode: vif
-...
-:mac_leases:
-- :id: 2
-  :uuid: ml-sa4dusgn
-  :interface_id: 2
-  ...
-  :ip_leases:
-  - &amp;1
-    :id: 2
-    :uuid: il-36cl1ou4 # &lt;== This is what we're looking for.
-    :interface_id: 2
-    ...
-</code></pre>
-
-<p>In this example it's <code>il-36cl1ou4</code> but it will be something else on your environment. These UUIDs are randomly generated by OpenVNet when a new resource is created.</p>
-<p>Now run the following command, replacing the <code>il-36cl1ou4</code> with the correct UUID for your environment.</p>
-<pre><code class="bash">vnctl ip-leases modify il-36cl1ou4 --network-uuid nw-test2 --ipv4-address 192.168.50.10
-</code></pre>
-
-<p>That's it. <code>inst2</code> has now moved to the new network we created.</p>
-<h2 id="test">Test</h2>
-<p>Log into <code>inst2</code> and have it perform a new DHCP request.</p>
-<pre><code class="bash">lxc-console -n inst2
-service network restart
-</code></pre>
-
-<p>If everything went well, <code>inst2</code> should now have received IP address <code>192.168.50.10</code>. Now try pinging <code>inst1</code>.</p>
-<pre><code class="bash">ping 10.100.0.10
-</code></pre>
-
-<p>If you did things right, ping should have now told you that <code>inst1</code>'s network is unreachable. That's exactly right. Our LXC guests are now in two different networks and have no route to each other.</p>
-<h2 id="whats-next">What's next?</h2>
-<p>Now that we have two different networks, let's try <a href="../two-networks-router">using a simulated router</a> to connect them together.</p>
+<p>If everything went well you will notice that both the ping and ssh command should result in no response while the arping response stays unchanged.</p>
+<p>By making use of the filter feature we can create our own blacklist or whitelist according to our needs.</p>
               
             </div>
           </div>
@@ -441,10 +399,10 @@ service network restart
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../two-networks-router/" class="btn btn-neutral float-right" title="Two network with router">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../../debugging/vnflows-monitor/" class="btn btn-neutral float-right" title="vnflows-monitor">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href="../single-network-dhcp/" class="btn btn-neutral" title="Single network with DHCP server"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../creating-virtual-networks/two-networks-router/" class="btn btn-neutral" title="Two network with router"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -474,10 +432,10 @@ service network restart
           <a href="https://github.com/axsh/openvnet" class="icon icon-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href="../single-network-dhcp/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../../creating-virtual-networks/two-networks-router/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../two-networks-router/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../../debugging/vnflows-monitor/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

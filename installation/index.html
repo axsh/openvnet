@@ -110,6 +110,13 @@
 <li>
           
             <li>
+    <li class="toctree-l1 ">
+        <a class="" href="../upgrade/">Upgrading</a>
+        
+    </li>
+<li>
+          
+            <li>
     <ul class="subnav">
     <li><span>Creating virtual networks</span></li>
 
@@ -138,6 +145,21 @@
             
     <li class="toctree-l1 ">
         <a class="" href="../creating-virtual-networks/two-networks-router/">Two network with router</a>
+        
+    </li>
+
+        
+    </ul>
+<li>
+          
+            <li>
+    <ul class="subnav">
+    <li><span>Advanced Features</span></li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../advanced-features/filters/">Filters</a>
         
     </li>
 
@@ -239,6 +261,13 @@
             
     <li class="toctree-l1 ">
         <a class="" href="../vnctl/networks/">networks</a>
+        
+    </li>
+
+        
+            
+    <li class="toctree-l1 ">
+        <a class="" href="../vnctl/filters/">filters</a>
         
     </li>
 
@@ -399,10 +428,28 @@ initctl start vnet-webapi
 </code></pre>
 
 <p>We use <code>vnctl</code> to create the database records subsequent to the above configurations. <code>vnctl</code> is a Web API client offered by the <code>openvnet-vnctl</code> package.</p>
+<h4 id="datapath">Datapath</h4>
 <p>Remember the <code>datapath-id</code> we set when setting up Open vSwitch? The following command will tell OpenVNet that VNA needs to manage this datapath.</p>
 <pre><code class="bash">vnctl datapaths add --uuid dp-test1 --display-name test1 --dpid 0x0000aaaaaaaaaaaa --node-id vna
 </code></pre>
 
+<h4 id="mac-address-range">Mac Address Range</h4>
+<p>In order for the network overlay to work, OpenVNet uses mac addresses independently of any real or virtual interface. To allocate these it requires the creation of a default mac range group.</p>
+<pre><code class="bash">vnctl mac_range_groups add --uuid mrg-dpg
+</code></pre>
+
+<p>In <a href="../configuration-files/common">common.conf</a>, the mac range group is set by default to <code>mrg-dpg</code> and can be changed using the <code>datapath_mac_group</code> option.</p>
+<pre><code class="bash">vnctl mac_range_groups mac_ranges add mrg-dpg --begin_mac_address 52:56:01:00:00:00 --end_mac_address 52:56:01:ff:ff:ff
+</code></pre>
+
+<ul>
+<li>
+<p><strong>begin_mac_address</strong> : The lowest possible mac address value in the range.</p>
+</li>
+<li>
+<p><strong>end_mac_address</strong> : The highest possible mac address value in the range.</p>
+</li>
+</ul>
 <p>Now let's start vna.</p>
 <pre><code class="bash">initctl start vnet-vna
 </code></pre>
@@ -483,7 +530,7 @@ ovs-vsctl add-port br0 inst2
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../creating-virtual-networks/single-network/" class="btn btn-neutral float-right" title="Single network">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../upgrade/" class="btn btn-neutral float-right" title="Upgrading">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../features/" class="btn btn-neutral" title="Features"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -496,7 +543,7 @@ ovs-vsctl add-port br0 inst2
   <div role="contentinfo">
     <!-- Copyright etc -->
     
-      <p>Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
+      <p>Copyright &copy; 2016, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.</p>
     
   </div>
 
@@ -519,7 +566,7 @@ ovs-vsctl add-port br0 inst2
         <span><a href="../features/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../creating-virtual-networks/single-network/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../upgrade/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>
