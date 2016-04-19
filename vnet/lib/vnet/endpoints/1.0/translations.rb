@@ -44,6 +44,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     param :egress_ipv4_address, :String, transform: PARSE_IPV4, required: true
     param :ingress_port_number, :Integer, in: 1..65536
     param :egress_port_number, :Integer, in: 1..65536
+    param_uuid M::Network, :ingress_network_uuid
+    param_uuid M::Network, :egress_network_uuid
   end
 
   static_address_shared_params
@@ -54,6 +56,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     route_link_id = if params['route_link_uuid']
       check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid').id
     end
+
+    # TODO: Add a helper method that checks the mode, or list of valid
+    # modes in this case. Might be best done in model validation. 
 
     if translation.mode != CT::MODE_STATIC_ADDRESS
       raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")
@@ -68,7 +73,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
       egress_port_number: params["egress_port_number"]
     )
 
-    respond_with(R::TranslationStaticAddress.generate(tsa))
+    r = R::TranslationStaticAddress.generate(tsa)
+
+    if params['ingress_network_uuid'] && params['egress_network_uuid']
+      r[:ingress_network_uuid] = params['ingress_network_uuid']
+      r[:egress_network_uuid] = params['egress_network_uuid']
+    end
+
+    respond_with(r)
   end
 
   static_address_shared_params

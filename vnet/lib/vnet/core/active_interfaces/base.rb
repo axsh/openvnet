@@ -44,9 +44,9 @@ module Vnet::Core::ActiveInterfaces
 
     def pretty_properties
       "interface_id:#{@interface_id} datapath_id:#{@datapath_id}" +
-        (@port_name ? ' port_name:' + @port_name : '') +
-        (@port_number ? ' port_number:' + @port_number : '') +
-        (@label ? ' label:' + @label : '') +
+        (@port_name ? " port_name:#{@port_name}" : '') +
+        (@port_number ? " port_number:#{@port_number}" : '') +
+        (@label ? " label:#{@label}" : '') +
         (@singular ? ' singular' : '') +
         (@enable_routing ? ' routing_enabled' : '')
     end

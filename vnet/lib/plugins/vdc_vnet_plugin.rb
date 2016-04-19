@@ -131,7 +131,7 @@ module Vnet::Plugins
 
       params = {
         :interface_id => simulated_interface.id,
-        :type => vnet_params[:name]
+        :mode => vnet_params[:name]
       }
       ns = Vnet::NodeApi::NetworkService.find(params)
       if ns.nil?

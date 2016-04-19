@@ -18,10 +18,13 @@ module Vnet::NodeApi
 
         # 0001_origin
         ActiveInterface.dispatch_deleted_where(default_filter, model.deleted_at)
+        ActiveNetwork.dispatch_deleted_where(default_filter, model.deleted_at)
         # datapath_network: ignore, handled by main event
         # datapath_route_link: ignore, handled by main event
         InterfacePort.dispatch_deleted_where(default_filter, model.deleted_at)
         Tunnel.dispatch_deleted_where(tunnel_filter, model.deleted_at)
+        # 0009_topology
+        TopologyDatapath.dispatch_deleted_where(default_filter, model.deleted_at)
       end
 
     end

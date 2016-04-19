@@ -19,8 +19,8 @@ module Vnet::Core
 
     def catch_new_egress(mac_lease_id, mac_address)
       flows = [IPV4_PROTOCOL_TCP, IPV4_PROTOCOL_UDP].map { |protocol|
-        flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
-                    priority: 20,
+        flow_create(table: TABLE_NETWORK_CONNECTION,
+                    priority: 91,
                     match: {
                       eth_src: mac_address,
                       eth_type: ETH_TYPE_IPV4,

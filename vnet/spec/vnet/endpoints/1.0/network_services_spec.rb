@@ -23,11 +23,11 @@ describe "/network_services" do
     accepted_params = {
       :uuid => "ns-test",
       :interface_uuid => "if-test",
-      :type => "dhcp",
+      :mode => "dhcp",
       :incoming_port => 40,
       :outgoing_port => 100
     }
-    required_params = [:type]
+    required_params = [] # [:mode] Add back when 'type' is removed.
     uuid_params = [:uuid, :interface_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params

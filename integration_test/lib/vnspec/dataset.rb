@@ -32,6 +32,8 @@ module Vnspec
             "datapaths/#{v.delete(:datapath_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
           when :interface_security_groups
             "interfaces/#{v.delete(:interface_uuid)}/security_groups/#{v.delete(:security_group_uuid)}"
+          when :filter_static
+            "filters/#{v.delete(:filter_uuid)}/static"
           when :dns_records
             "dns_services/#{v.delete(:dns_service_uuid)}/dns_records"
           when :ip_ranges
@@ -44,9 +46,16 @@ module Vnspec
             "lease_policies/#{v.delete(:lease_policy_uuid)}/ip_lease_containers/#{v.delete(:ip_lease_container_uuid)}"
           when :lease_policy_ip_retention_containers
             "lease_policies/#{v.delete(:lease_policy_uuid)}/ip_retention_containers/#{v.delete(:ip_retention_container_uuid)}"
+          when :mac_range_group_mac_ranges
+            "mac_range_groups/#{v.delete(:mac_range_group_uuid)}/mac_ranges"
+          when :topology_networks
+            "topologies/#{v.delete(:topology_uuid)}/networks/#{v.delete(:network_uuid)}"
+          when :topology_route_links
+            "topologies/#{v.delete(:topology_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
           else
             key.to_s
           end
+
           request(:post, url, v)
         end
       end
@@ -56,9 +65,24 @@ module Vnspec
       API.request(method, url, params, headers, &block)
     end
 
+    def is_topology?
+      @name =~ /_tp$/
+    end
+
     private
-    def  init_dataset
-      @dataset = ["base", name].each_with_object({}) do |n, h|
+
+    def init_dataset
+      files = ['base']
+
+      if is_topology?
+        files << 'base_topology'
+      else
+        files << 'base_dp'
+      end
+
+      files << name
+
+      @dataset = files.each_with_object({}) do |n, h|
         load_file(n).each do |k, v|
           h[k] ||= []
           h[k] += v

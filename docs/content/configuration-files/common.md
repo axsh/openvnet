@@ -4,7 +4,7 @@ This file contains common configuration that is used by `vnmgr`, `webapi` and `v
 
 You'll find it at `/etc/openvnet/vnmgr.conf`.
 
-It contains two sections.
+It is divided into the following sections.
 
 ## Registry
 
@@ -70,3 +70,12 @@ User name of the db server.
 
 Password of the db server.
 
+## Misc
+
+```ruby
+datapath_mac_group "mrg-dpg"
+```
+
+* datapath_mac_group
+
+Contains the UUID of the mac range group used for `datapath_network` and `datapath_route_link` mac addresses.
