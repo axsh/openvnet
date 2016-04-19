@@ -8,5 +8,5 @@ Gem::Specification.new do |s|
   s.email       = 'dev@axsh.net'
   s.files       = Dir.glob("{lib}/**/*") + %w(README.md)
   s.homepage    = 'http://openvnet.org'
-  s.license     = 'LGPLv3'
+  s.license     = 'LGPL-3.0'
 end
