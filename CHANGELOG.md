@@ -3,7 +3,7 @@
 All notable changes to OpenVNet will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [0.9] - 2016-04-18
+## [0.9] - 2016-04-19
 
 * `Added` A new `topology manager` that automatically creates `datapath_network` and `datapath_route_link` entries in the database.
 
