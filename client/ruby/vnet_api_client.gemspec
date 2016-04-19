@@ -3,7 +3,6 @@ Gem::Specification.new do |s|
   s.version     = '0.9'
   s.date        = '2016-04-19'
   s.summary     = 'Ruby wrapper for OpenVNet\'s RESTful API'
-  s.description = s.summary
   s.authors     = ['Axsh Co. LTD']
   s.email       = 'dev@axsh.net'
   s.files       = Dir.glob("{lib}/**/*") + %w(README.md)
