@@ -16,10 +16,10 @@ networks:
 
 topology_networks:
 
-  - topology_uuid: tp-vnet
+  - topology_uuid: topo-vnet
     network_uuid: nw-vnet1
 
-  - topology_uuid: tp-vnet
+  - topology_uuid: topo-vnet
     network_uuid: nw-vnet2
 
 interfaces:
@@ -110,7 +110,7 @@ route_links:
 
 topology_route_links:
 
-  - topology_uuid: tp-vnet
+  - topology_uuid: topo-vnet
     route_link_uuid: rl-1
 
 routes:
