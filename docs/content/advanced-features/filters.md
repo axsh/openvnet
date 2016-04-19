@@ -21,6 +21,8 @@ These should all generate responses which indicates packages are being sent/reci
 
 ### Enable filtering
 
+**Remark:** Due to a bug in OpenVNet's internal event queue, it is currently possible for filters not to update correctly. If the following commands don't have the expected result, try restarting VNA.
+
 To use filters we first need to tell OpenVNet that we want traffic to be filterd.
 
 ```bash
