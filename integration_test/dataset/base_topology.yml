@@ -10,17 +10,17 @@ mac_range_group_mac_ranges:
 
 topologies:
 
-  - uuid: tp-physical
+  - uuid: topo-physical
     mode: simple_underlay
 
-  - uuid: tp-vnet
+  - uuid: topo-vnet
     mode: simple_overlay
 
 
 topology_networks:
 
-  - topology_uuid: tp-physical
+  - topology_uuid: topo-physical
     network_uuid: nw-public1
 
-  - topology_uuid: tp-physical
+  - topology_uuid: topo-physical
     network_uuid: nw-public2
