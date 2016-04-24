@@ -99,6 +99,16 @@ module Vnet
       param
     end
 
+    def get_param_true(params, key, required = true)
+      param = get_param(params, key, required) || return
+
+      if !param.is_a?(TrueClass)
+        return throw_param_error('value is not an boolean true type', params, key)
+      end
+
+      param
+    end
+
     def get_param_string(params, key, required = true)
       param = get_param(params, key, required) || return
 
