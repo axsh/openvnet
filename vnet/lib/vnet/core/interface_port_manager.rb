@@ -221,7 +221,7 @@ module Vnet::Core
 
       return @datapath_info &&
         params[:id] &&
-        params[:interface_id] # HACK: &&
+        params[:interface_id] &&
         params[:datapath_id]
     end
 
