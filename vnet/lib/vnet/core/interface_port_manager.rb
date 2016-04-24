@@ -214,8 +214,8 @@ module Vnet::Core
         params[:interface_id] &&
         params[:datapath_id]
 
-      if result_1 != result_2
-        warn log_format_h('params_valid_item?', result_1: result_1, result_2: result_2)
+      if result_1.nil? != result_2.nil?
+        warn log_format_h('params_valid_item?', params)
         Thread.current.backtrace.each { |str| warn log_format(str) }
       end
 
