@@ -205,6 +205,20 @@ module Vnet::Core
 
     # TODO: Move to a core-specific manager class:
     def params_valid_item?(params)
+      result_1 = @datapath_info &&
+        params[:id] &&
+        params[:interface_id]
+
+      result_2 = @datapath_info &&
+        params[:id] &&
+        params[:interface_id] &&
+        params[:datapath_id]
+
+      if result_1 != result_2
+        warn log_format_h('params_valid_item?', result_1: result_1, result_2: result_2)
+        Thread.current.backtrace.each { |str| warn log_format(str) }
+      end
+
       return @datapath_info &&
         params[:id] &&
         params[:interface_id] # HACK: &&
