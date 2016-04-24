@@ -203,26 +203,20 @@ module Vnet::Core
     # Overload helper methods:
     #
 
-    # TODO: Move to a core-specific manager class:
+    # TODO: Move to a core-specific manager class as an overloadable method.
     def params_valid_item?(params)
-      result_1 = @datapath_info &&
-        params[:id] &&
-        params[:interface_id]
+      begin
+        get_param_id(params, :id)
+        get_param_id(params, :interface_id)
+        get_param_id(params, :datapath_id, false)
+        get_param_true(params, :singular, false)
 
-      result_2 = @datapath_info &&
-        params[:id] &&
-        params[:interface_id] &&
-        params[:datapath_id]
-
-      if result_1.nil? != result_2.nil?
-        warn log_format_h('params_valid_item?', params)
+        return true
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
         Thread.current.backtrace.each { |str| warn log_format(str) }
+        return false
       end
-
-      return @datapath_info &&
-        params[:id] &&
-        params[:interface_id] &&
-        params[:datapath_id]
     end
 
     def params_current_datapath?(params)
