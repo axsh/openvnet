@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require_relative "spec_helper"
 
-describe "router_v2v" do
+describe "router_v2v_tp" do
   describe "vnet1" do
     context "mac2mac" do
       it "reachable to vnet1" do
