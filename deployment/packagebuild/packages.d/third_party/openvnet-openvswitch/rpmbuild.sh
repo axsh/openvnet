@@ -19,15 +19,13 @@ cd ${tmpdir}
 curl -O http://openvswitch.org/releases/openvswitch-${ovs_version}.tar.gz
 cp openvswitch-${ovs_version}.tar.gz ~/rpmbuild/SOURCES/
 tar zxvf openvswitch-${ovs_version}.tar.gz
-cp openvswitch-${ovs_version}/rhel/openvswitch-kmod.files ~/rpmbuild/SOURCES
 
+sudo yum-builddep -y openvswitch-${ovs_version}/rhel/openvswitch.spec
 rpmbuild -bb openvswitch-${ovs_version}/rhel/openvswitch.spec
-rpmbuild -bb openvswitch-${ovs_version}/rhel/openvswitch-kmod-rhel6.spec
 
 for i in ${possible_archs}; do
   mkdir -p ${package_work_dir}/pkg/${i}
   cp ~/rpmbuild/RPMS/${i}/openvswitch-${ovs_version}*.rpm ${package_work_dir}/pkg/ | :
-  cp ~/rpmbuild/RPMS/${i}/kmod-openvswitch-${ovs_version}*.rpm ${package_work_dir}/pkg/ | :
 done
 
 rm -rf ${tmpdir}
