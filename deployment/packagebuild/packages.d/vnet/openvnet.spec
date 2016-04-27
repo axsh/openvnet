@@ -245,7 +245,7 @@ Summary: Virtual network agent for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
-Requires: openvswitch = 2.3.1
+Requires: openvswitch = 2.4.0
 %if 0%{?el6} == 0
 %{systemd_requires}
 %endif
