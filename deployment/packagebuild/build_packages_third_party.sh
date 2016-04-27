@@ -7,8 +7,9 @@ set -e
 set -x
 
 package=$1
+rhel_relver=${RHEL_RELVER:-$(rpm --eval '%{rhel}')}
 work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
-repo_base_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/third_party
+repo_base_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/${rhel_relver}/third_party
 repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
