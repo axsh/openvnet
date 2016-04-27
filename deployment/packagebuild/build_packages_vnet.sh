@@ -114,7 +114,7 @@ sudo chown $USER "${repo_dir}"
 cp -a ${WORK_DIR}/RPMS/* ${repo_dir}
 createrepo "${repo_dir}"
 
-current_symlink="${REPO_BASE_DIR}/packages/rhel/6/vnet/current"
+current_symlink="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/current"
 if [ -L "${current_symlink}" ]; then
   sudo rm "${current_symlink}"
 fi
