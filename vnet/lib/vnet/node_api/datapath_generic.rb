@@ -12,7 +12,10 @@ module Vnet::NodeApi
           options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
         end
 
-        internal_create(options)
+        transaction {
+          mac_address_random_assign(options)
+          model = internal_create(options)
+        }
       end
 
       def destroy_with_transaction(datapath_id: datapath_id, generic_id: generic_id)

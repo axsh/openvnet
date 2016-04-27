@@ -10,7 +10,7 @@ module Vnet::Core::Filters
 
     # Just something to identify this thing with in @items in filter manager
     def id
-      'accept_arp'
+      'accept_ingress_arp'
     end
 
     def install

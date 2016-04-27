@@ -43,6 +43,33 @@ module Vnet
     ACTIVE_NETWORK_CREATED_ITEM = "active_network_created_item"
     ACTIVE_NETWORK_DELETED_ITEM = "active_network_deleted_item"
 
+    ACTIVE_NETWORK_ACTIVATE = "active_network_activate"
+    ACTIVE_NETWORK_DEACTIVATE = "active_network_deactivate"
+
+    #
+    # Active Route Link events:
+    #
+
+    ACTIVE_ROUTE_LINK_INITIALIZED = "active_route_link_initialized"
+    ACTIVE_ROUTE_LINK_UNLOAD_ITEM = "active_route_link_unload_item"
+    ACTIVE_ROUTE_LINK_CREATED_ITEM = "active_route_link_created_item"
+    ACTIVE_ROUTE_LINK_DELETED_ITEM = "active_route_link_deleted_item"
+
+    ACTIVE_ROUTE_LINK_ACTIVATE = "active_route_link_activate"
+    ACTIVE_ROUTE_LINK_DEACTIVATE = "active_route_link_deactivate"
+
+    #
+    # Active Port events:
+    #
+
+    ACTIVE_PORT_INITIALIZED = "active_port_initialized"
+    ACTIVE_PORT_UNLOAD_ITEM = "active_port_unload_item"
+    ACTIVE_PORT_CREATED_ITEM = "active_port_created_item"
+    ACTIVE_PORT_DELETED_ITEM = "active_port_deleted_item"
+
+    ACTIVE_PORT_ACTIVATE = "active_port_activate"
+    ACTIVE_PORT_DEACTIVATE = "active_port_deactivate"
+
     #
     # Datapath events:
     #
@@ -80,8 +107,11 @@ module Vnet
     INTERFACE_DELETED_ITEM = "interface_deleted_item"
 
     INTERFACE_UPDATED = "interface_updated"
+
     INTERFACE_ENABLED_FILTERING = "interface_enabled_filtering"
     INTERFACE_DISABLED_FILTERING = "interface_disabled_filtering"
+    INTERFACE_ENABLED_FILTERING2 = "interface_enabled_filtering2"
+    INTERFACE_DISABLED_FILTERING2 = "interface_disabled_filtering2"
 
     # MAC and IPv4 addresses:
     INTERFACE_LEASED_MAC_ADDRESS = "interface_leased_mac_address"
@@ -102,6 +132,21 @@ module Vnet
 
     INTERFACE_PORT_ACTIVATE = "interface_port_activate"
     INTERFACE_PORT_DEACTIVATE = "interface_port_deactivate"
+
+    #
+    # Filter evvents:
+    #
+
+    FILTER_INITIALIZED = "filter_initialized"
+    FILTER_UNLOAD_ITEM = "filter_unload_item"
+    FILTER_CREATED_ITEM = "filter_created_item"
+    FILTER_DELETED_ITEM = "filter_deleted_item"
+    FILTER_UPDATED = "filter_updated"
+
+    FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
+    FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"
+    FILTER_ADDED_STATIC = "filter_added_static"
+    FILTER_REMOVED_STATIC = "filter_removed_static"
 
     #
     # Network event:
@@ -175,6 +220,31 @@ module Vnet
     TRANSLATION_DEACTIVATE_INTERFACE = "translation_deactivate_interface"
     TRANSLATION_ADDED_STATIC_ADDRESS = "translation_added_static_address"
     TRANSLATION_REMOVED_STATIC_ADDRESS = "translation_removed_static_address"
+
+    #
+    # Topology events:
+    #
+    TOPOLOGY_INITIALIZED = "topology_initialized"
+    TOPOLOGY_UNLOAD_ITEM = "topology_unload_item"
+    TOPOLOGY_CREATED_ITEM = "topology_created_item"
+    TOPOLOGY_DELETED_ITEM = "topology_deleted_item"
+
+    TOPOLOGY_ADDED_DATAPATH = 'topology_added_datapath'
+    TOPOLOGY_REMOVED_DATAPATH = 'topology_removed_datapath'
+
+    TOPOLOGY_ADDED_NETWORK = 'topology_added_network'
+    TOPOLOGY_REMOVED_NETWORK = 'topology_removed_network'
+    TOPOLOGY_ADDED_ROUTE_LINK = 'topology_added_route_link'
+    TOPOLOGY_REMOVED_ROUTE_LINK = 'topology_removed_route_link'
+
+    TOPOLOGY_NETWORK_ACTIVATED = "topology_network_activated"
+    TOPOLOGY_NETWORK_DEACTIVATED = "topology_network_deactivated"
+
+    TOPOLOGY_ROUTE_LINK_ACTIVATED = "topology_route_link_activated"
+    TOPOLOGY_ROUTE_LINK_DEACTIVATED = "topology_route_link_deactivated"
+
+    TOPOLOGY_CREATE_DP_NW = "topology_create_dp_nw"
+    TOPOLOGY_CREATE_DP_RL = "topology_create_dp_rl"
 
     #
     # tunnel event

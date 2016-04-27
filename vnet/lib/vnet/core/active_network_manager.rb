@@ -2,72 +2,24 @@
 
 module Vnet::Core
 
-  class ActiveNetworkManager < Vnet::Core::Manager
+  class ActiveNetworkManager < Vnet::Core::ActiveManager
 
     #
     # Events:
     #
-    event_handler_default_drop_all
-
     subscribe_event ACTIVE_NETWORK_INITIALIZED, :load_item
     subscribe_event ACTIVE_NETWORK_UNLOAD_ITEM, :unload_item
     subscribe_event ACTIVE_NETWORK_CREATED_ITEM, :created_item
     subscribe_event ACTIVE_NETWORK_DELETED_ITEM, :unload_item
 
-    finalizer :do_cleanup
-
-    def activate_local_item(params)
-      create_params = params.merge(datapath_id: @datapath_info.id)
-
-      # Needs to be an event... or rather we need a way to disable an
-      # id manually. Also this requires us to be able to insert an
-      # event task in order to stay within this context and get the
-      # return value.
-
-      item_model = mw_class.create(create_params)
-
-      if item_model.nil?
-        warn log_format("could not activate network", params.inspect)
-        return
-      end
-      
-      # Wait for loaded...
-      item_model.to_hash
-    end
-
-    def deactivate_local_item(network_id)
-      return if network_id.nil?
-
-      # Do we need this?
-      # item = internal_detect(network_id: network_id,
-      #                        datapath_id: @datapath_info.id)
-      # return if item.nil?
-
-      mw_class.destroy(network_id: network_id,
-                       datapath_id: @datapath_info.id)
-      nil
-    end
+    subscribe_event ACTIVE_NETWORK_ACTIVATE, :activate_network
+    subscribe_event ACTIVE_NETWORK_DEACTIVATE, :deactivate_network
 
     #
     # Internal methods:
     #
 
     private
-
-    def do_cleanup
-      # Cleanup can be called before the manager is initialized.
-      return if @datapath_info.nil?
-
-      info log_format('cleaning up')
-
-      begin
-        mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
-      rescue NoMethodError => e
-        info log_format(e.message, e.class.name)
-      end
-
-      info log_format('cleaned up')
-    end
 
     #
     # Specialize Manager:
@@ -137,6 +89,44 @@ module Vnet::Core
     end
 
     #
+    # Network events:
+    #
+
+    # activate network on queue '[:network, network_id]'
+    def activate_network(params)
+      debug log_format("activating network", params)
+
+      begin
+        options = {
+          datapath_id: @datapath_info.id,
+          network_id: get_param_packed_id(params)
+        }
+    
+        mw_class.create(options)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
+    end
+
+    # deactivate network on queue '[:network, network_id]'
+    def deactivate_network(params)
+      debug log_format("deactivating network", params)
+
+      begin
+        filter = {
+          datapath_id: @datapath_info.id,
+          network_id: get_param_packed_id(params)
+        }
+    
+        mw_class.destroy(filter)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
+    end
+
+    #
     # Overload helper methods:
     #
 
@@ -145,12 +135,6 @@ module Vnet::Core
       return params[:id] &&
         params[:network_id] &&
         params[:datapath_id]
-    end
-
-    def params_current_datapath?(params)
-      raise "params_current_datapath? assumes params[:datapath_id] is valid" unless params[:datapath_id]
-
-      return params[:datapath_id] == @datapath_info.id
     end
 
   end

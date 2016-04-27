@@ -226,6 +226,41 @@ module Vnctl::Cli
 
         c
       end
+      
+      # Method for mode type relationships
+
+      def self.define_mode_relation(mode_type, required_opts = [], &block)
+        parent = self
+        c = Class.new(Base) do
+
+          base_uuid = "#{parent.namespace.chomp('s')}"
+
+          yield self if block_given?
+          desc "add #{base_uuid.upcase}_UUID OPTIONS", "Adds a(n) #{mode_type} #{base_uuid}."
+          define_method("add") { | uuid |
+            puts Vnctl.webapi.post("#{suffix}/#{uuid}/#{mode_type}", options)
+          }
+
+          yield self if block_given?
+          desc "del #{base_uuid.upcase}_UUID OPTIONS", "Removes a(n) #{mode_type} #{base_uuid}."
+          define_method("del") { | uuid |
+            puts Vnctl.webapi.delete("#{suffix}/#{uuid}/#{mode_type}", options)
+          }
+
+          desc "show #{mode_type} #{base_uuid.upcase}_UUID",  "Shows all #{mode_type}s."
+          define_method("show") { | uuid = nil |
+            puts Vnctl.webapi.get("#{suffix}/#{mode_type}/#{uuid}")
+          }
+        end
+
+        c.namespace "#{self.namespace} #{mode_type}"
+        c.api_suffix self.api_suffix
+
+        register(c, "#{mode_type}", "#{mode_type} OPTIONS",
+                 "subcommand to manage #{mode_type} in this #{self.namespace}.")
+        c
+      end
     }
   end
 end
+

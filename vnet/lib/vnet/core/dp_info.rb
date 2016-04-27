@@ -27,6 +27,8 @@ module Vnet::Core
     MANAGER_NAMES = %w(
       active_interface
       active_network
+      active_port
+      active_route_link
       connection
       datapath
       interface
@@ -34,6 +36,7 @@ module Vnet::Core
       network
       route
       router
+      filter2
       filter
       service
       tunnel
@@ -119,6 +122,9 @@ module Vnet::Core
         :out_group => Vnet::Openflow::Controller::OFPG_ANY,
       }.merge(params)
 
+      match = options[:match]
+      options[:match] = Trema::Match.new(match) if match
+
       @controller.pass_task {
         @controller.public_send_flow_mod(@dpid, options)
       }
@@ -200,6 +206,13 @@ module Vnet::Core
     end
 
     def internal_terminate_managers(manager_list, timeout)
+      manager_list.each { |manager|
+        begin
+          manager.terminate
+        rescue Celluloid::DeadActorError
+        end
+      }
+
       start_time = Time.new
 
       manager_list.each { |manager|

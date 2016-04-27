@@ -18,6 +18,7 @@ module Vnet::Core::Filters
     COOKIE_TYPE_VALUE_MASK  = 0xfffff << COOKIE_TYPE_VALUE_SHIFT
 
     COOKIE_TAG_INGRESS_ARP_ACCEPT = 0x1 << COOKIE_TYPE_VALUE_SHIFT
+    COOKIE_TAG_EGRESS_ARP_ACCEPT  = 0x2 << COOKIE_TYPE_VALUE_SHIFT
 
     def initialize
       # TODO: Support proper params initialization:

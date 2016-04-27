@@ -4,6 +4,9 @@ module Vnet
 
   class ItemBase
     include Celluloid::Logger
+    include Vnet::LookupParams
+
+    MW = Vnet::ModelWrappers
 
     attr_reader :id
     attr_reader :installed
@@ -76,17 +79,42 @@ module Vnet
       "#{log_type}: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def log_format_h(message, values)
+      str = values.map { |value|
+        value.join(':')
+      }.join(' ')
+
+      log_format(message, str)
+    end
+
   end
 
   class ItemVnetBase < ItemBase
     def initialize(params)
-      super
+      @installed = false
+      @loaded = false
       @id = params[:id]
     end
   end
 
-  class ItemDpBase < ItemBase
+  class ItemVnetUuid < ItemVnetBase
+    attr_reader :uuid
 
+    def initialize(params)
+      @installed = false
+      @loaded = false
+
+      map = params[:map]
+      @id = map.id
+      @uuid = map.uuid
+    end
+
+    def pretty_id
+      "#{@uuid}/#{@id}"
+    end
+  end
+
+  class ItemDpBase < ItemBase
     def initialize(params)
       @installed = false
       @loaded = false
@@ -94,16 +122,11 @@ module Vnet
       @id = params[:id]
     end
 
-    #
-    # Internal methods:
-    #
-
     private
 
     def log_format(message, values = nil)
       "#{@dp_info.dpid_s} #{log_type}: #{message}" + (values ? " (#{values})" : '')
     end
-
   end
 
   class ItemDpUuid < ItemDpBase
@@ -122,7 +145,6 @@ module Vnet
     def pretty_id
       "#{@uuid}/#{@id}"
     end
-
   end
 
   class ItemDpUuidMode < ItemDpUuid
@@ -142,7 +164,6 @@ module Vnet
     def pretty_properties
       "mode:#{@mode}"
     end
-
   end
 
 end

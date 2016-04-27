@@ -2,30 +2,28 @@
 
 module Vnet::Core::Services
 
-  class Base < Vnet::ItemDpUuid
+  class Base < Vnet::ItemDpUuidMode
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
     include Vnet::Openflow::PacketHelpers
 
     # TODO Integrate constants and methods related to cookie with Interfaces::Base
 
-    OPTIONAL_TYPE_MASK      = 0xf
+    OPTIONAL_TYPE_MASK     = 0xf
 
     OPTIONAL_TYPE_TAG      = 0x1
     OPTIONAL_TYPE_NETWORK  = 0x2
 
-    OPTIONAL_VALUE_SHIFT    = 36
+    OPTIONAL_VALUE_SHIFT   = 36
     OPTIONAL_VALUE_MASK    = 0xfffff
 
     attr_accessor :interface_id
-    attr_accessor :type
     attr_reader :networks
 
     def initialize(params)
       super
 
       map = params[:map]
-      @type = map.type
       @interface_id = map.interface_id
 
       @networks = {}
@@ -36,7 +34,7 @@ module Vnet::Core::Services
     end
 
     def pretty_properties
-      "mode:#{@type.to_sym}"
+      "mode:#{@mode}"
     end
 
     def cookie(type = 0, value = 0)
@@ -80,7 +78,7 @@ module Vnet::Core::Services
     def to_hash
       Vnet::Core::Service.new(id: @id,
                               uuid: @uuid,
-                              type: @type,
+                              mode: @mode,
                               interface_id: @interface_id)
     end
 

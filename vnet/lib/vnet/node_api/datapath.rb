@@ -23,6 +23,8 @@ module Vnet::NodeApi
         # datapath_route_link: ignore, handled by main event
         InterfacePort.dispatch_deleted_where(default_filter, model.deleted_at)
         Tunnel.dispatch_deleted_where(tunnel_filter, model.deleted_at)
+        # 0009_topology
+        TopologyDatapath.dispatch_deleted_where(default_filter, model.deleted_at)
       end
 
     end

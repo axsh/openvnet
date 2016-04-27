@@ -3,11 +3,33 @@
 All notable changes to OpenVNet will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [0.9] - 2016-04-19
+
+* `Added` A new `topology manager` that automatically creates `datapath_network` and `datapath_route_link` entries in the database.
+
+* `Added` A new simple firewall feature alongside the existing security groups. Security groups will eventually be ported to use this.
+
+* `Added` Automatic MAC address assignment using `mac range groups`.
+
+* `Added` Vnctl commands for the creation and deletion of static network address translation.
+
+* `Added` Error handling for IPv4 addresses in the wrong subnet as early as the WebAPI.
+
+* `Removed` The `broadcast_mac_address` parameter in the WebAPI's datapaths endpoint. Use `mac_address` instead.
+
+* `Changed` Optimized manager initialization code so no events can be processed before the targeted managers are properly initialized.
+
+* `Deprecated` The `type` parameter in the WebAPI's network_services endpoint. Use `mode` instead.
 
 * `Changed` Added a default value of `false` to all `is_deleted` flags in the database. Now OpenVNet can be used with MySQL's STRICT mode.
 
+* `Changed` The `mac_address` parameter in the WebAPI's `datapath_networks` and `datapath_route_links` endpoints are no longer required. OpenVNet will now generate them if not provided.
+
+* `Changed` Use different priority for flows depending on their prefix in order to ensure that e.g. 10.10.10.0/24 gets handled before 10.10.0.0/16.
+
 * `Fixed` An issue where vna could retrieve network resources from vnmgr while their related resources were not fully loaded yet.
+
+* `Fixed` Several minor bugfixes. 
 
 ## [0.8] - 2015-09-04
 
