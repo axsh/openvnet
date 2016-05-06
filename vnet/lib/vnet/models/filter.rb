@@ -14,7 +14,7 @@ module Vnet::Models
 
     plugin :association_dependencies,
     # 0006_filters
-    filter_statics: :destroy    
+    filter_statics: :destroy
 
   end
 end

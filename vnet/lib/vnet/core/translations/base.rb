@@ -29,7 +29,7 @@ module Vnet::Core::Translations
     def cookie
       @id | COOKIE_TYPE_TRANSLATION
     end
-    
+
     def cookie_mask
       COOKIE_PREFIX_MASK | COOKIE_ID_MASK
     end

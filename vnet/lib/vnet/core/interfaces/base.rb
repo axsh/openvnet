@@ -40,7 +40,7 @@ module Vnet::Core::Interfaces
 
     attr_accessor :enabled_filtering
     attr_accessor :enabled_legacy_filtering
-    
+
     def initialize(params)
       super
 

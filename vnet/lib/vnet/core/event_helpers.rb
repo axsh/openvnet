@@ -38,7 +38,7 @@ module Vnet::Core
 
     def activate_interface_pre_install(state_id, item)
       value = @active_interfaces[state_id] || return
-      
+
       activate_interface_update_item_proc(state_id, value, {}).tap { |proc|
         proc && proc.call(item.id, item)
       }
@@ -114,7 +114,7 @@ module Vnet::Core
 
     def activate_network_pre_install(state_id, item)
       value = @active_networks[state_id] || return
-      
+
       activate_network_update_item_proc(state_id, value, {}).tap { |proc|
         proc && proc.call(item.id, item)
       }
@@ -194,7 +194,7 @@ module Vnet::Core
 
     def activate_port_pre_install(state_id, item)
       value = @active_ports[state_id] || return
-      
+
       activate_port_update_item_proc(state_id, value, {}).tap { |proc|
         proc && proc.call(item.id, item)
       }
@@ -270,7 +270,7 @@ module Vnet::Core
 
     def activate_route_link_pre_install(state_id, item)
       value = @active_route_links[state_id] || return
-      
+
       activate_route_link_update_item_proc(state_id, value, {}).tap { |proc|
         proc && proc.call(item.id, item)
       }

@@ -47,9 +47,9 @@ describe "/security_groups" do
       let(:group) { Fabricate(:security_group) }
       let(:request_params) { accepted_params.merge(rules: "icmp::#{group.canonical_uuid}") }
 
-       it "should successfully create a security group referencing it" do
-        expect(last_response).to succeed.with_body_containing(request_params)
-      end
+      it "should successfully create a security group referencing it" do
+       expect(last_response).to succeed.with_body_containing(request_params)
+     end
     end
 
     context "with a faulty protocol in the rules" do

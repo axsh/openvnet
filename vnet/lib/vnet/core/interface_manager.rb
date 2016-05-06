@@ -163,7 +163,7 @@ module Vnet::Core
       @dp_info.filter2_manager.publish(FILTER_DEACTIVATE_INTERFACE,
                                        id: :interface,
                                        interface_id: item.id)
-      
+
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.remove_catch_new_egress(id)
         @dp_info.connection_manager.async.close_connections(id)
@@ -295,7 +295,7 @@ module Vnet::Core
       return unless item && ip_lease.interface_id == item.id
 
       network = @dp_info.network_manager.retrieve(id: ip_lease.ip_address.network_id)
-      
+
       if network.nil?
         error log_format("could not find network for ip lease",
                          "interface_id:#{ip_lease.interface_id} network_id:#{ip_lease.ip_address.network_id}")
