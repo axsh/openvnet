@@ -248,7 +248,7 @@ module Vnctl::Cli
 
         c
       end
-      
+
       # Method for mode type relationships
 
       def self.define_mode_relation(mode_type, required_opts = [], &block)

@@ -108,11 +108,11 @@ module Vnet
     def wait_for_loaded(params, max_wait = 10.0, try_load = false)
       item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
-    
+
     def wait_for_unloaded(params, max_wait = 10.0)
       internal_wait_for_unloaded(params, max_wait)
     end
-    
+
     #
     # Other:
     #
@@ -152,7 +152,7 @@ module Vnet
       end
 
       do_initialize
-      
+
       @state = :initialized
 
       # TODO: Catch errors and return nil when do_initialize fails.
@@ -589,7 +589,7 @@ module Vnet
         # TODO: internal_retrieve does not have max_wait or immediate
         # return if in retrieve queue.
         self.async.retrieve(params)
-        
+
         item = internal_detect_loaded(params)
         return item if item
 
@@ -644,7 +644,7 @@ module Vnet
 
       # Check if the item got loaded already. Currently we just drop
       # the packets to avoid packets being reflected back to the
-      # controller.  
+      # controller.
       return if @items[item_id]
 
       if @messages.has_key? item_id

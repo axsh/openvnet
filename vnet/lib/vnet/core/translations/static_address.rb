@@ -36,7 +36,7 @@ module Vnet::Core::Translations
       @static_addresses.each { |id, translation|
         debug log_format('installing translation for ' + self.pretty_id,
                          pretty_static_address(translation))
-                         
+
         next unless valid_translation?(translation)
 
         flows_for_ingress_translation(flows, translation)

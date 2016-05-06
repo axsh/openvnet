@@ -97,7 +97,7 @@ module Vnet::Openflow
         # Remove virtual network mode's use of db lookup until arp
         # lookup has been refactored, as the db lookups as-is won't
         # work with the active interface refactoring.
-        
+
         case ipv4_info[:network_type]
         when :physical
           arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
@@ -122,7 +122,7 @@ module Vnet::Openflow
 
       if network_conf.uuid && network_conf.uuid == network.uuid
         default_gw = network_conf.gateway && network_conf.gateway.address
-        
+
         debug log_format("arp lookup using gateway '#{default_gw}'")
 
         return IPAddr.new(default_gw) if default_gw
@@ -236,7 +236,7 @@ module Vnet::Openflow
 
       debug log_format('arp_lookup: process timeout, looking up in database',
                        "network:#{params[:interface_network_id]} ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]}")
-      
+
       filter_args = {
         :ip_addresses__network_id => params[:interface_network_id],
         :ip_addresses__ipv4_address => params[:request_ipv4].to_i
@@ -250,7 +250,7 @@ module Vnet::Openflow
       end
 
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
-      
+
       # Load remote interface.
       interface = @dp_info.active_interface_manager.retrieve(interface_id: ip_lease.interface_id)
 

@@ -23,8 +23,8 @@ module Vnet::NodeApi
 
         dispatch_event(TOPOLOGY_NETWORK_ACTIVATED,
                        id: [:network, model.network_id],
-                       datapath_id: model.datapath_id,
-                       )
+                       datapath_id: model.datapath_id
+                      )
       end
 
       def dispatch_deleted_item_events(model)
@@ -32,8 +32,8 @@ module Vnet::NodeApi
 
         dispatch_event(TOPOLOGY_NETWORK_DEACTIVATED,
                        id: [:network, model.network_id],
-                       datapath_id: model.datapath_id,
-                       )
+                       datapath_id: model.datapath_id
+                      )
       end
 
     end

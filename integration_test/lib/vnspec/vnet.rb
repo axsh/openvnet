@@ -13,7 +13,7 @@ module Vnspec
       def start(node_name = nil)
         if node_name
           Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
-            ssh(ip, "initctl start vnet-#{node_name.to_s}", use_sudo: true)
+            ssh(ip, "initctl start vnet-#{node_name}", use_sudo: true)
             send(:wait_for, node_name)
           end
         else
@@ -26,7 +26,7 @@ module Vnspec
       def stop(node_name = nil)
         if node_name
           Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
-            ssh(ip, "initctl stop vnet-#{node_name.to_s}", use_sudo: true)
+            ssh(ip, "initctl stop vnet-#{node_name}", use_sudo: true)
           end
           rotate_log(node_name)
         else

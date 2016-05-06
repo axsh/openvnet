@@ -18,7 +18,7 @@ module Vnet::Core::Interfaces
 
     def disable_filtering
       @ingress_filtering_enabled = false
-      
+
       @dp_info.add_flows flows_for_disabled_legacy_filtering
       @dp_info.filter_manager.async.remove_filters(@id)
 
@@ -104,7 +104,7 @@ module Vnet::Core::Interfaces
                              cookie: cookie
                             )
       end
-      
+
       #
       # Validate (old Classifier)
       #
@@ -132,7 +132,7 @@ module Vnet::Core::Interfaces
       }
 
       #
-      # IPv4 
+      # IPv4
       #
 
       flows << flow_create(table: TABLE_ARP_TABLE,

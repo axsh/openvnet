@@ -13,7 +13,7 @@ module Vnet::Core
 
     def do_initialize
       info log_format('cleaning up old entries')
-      
+
       mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
     end
 
@@ -38,7 +38,6 @@ module Vnet::Core
 
       info log_format('cleaned up')
     end
-
 
   end
 end

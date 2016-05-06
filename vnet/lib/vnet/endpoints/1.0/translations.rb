@@ -58,7 +58,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
     end
 
     # TODO: Add a helper method that checks the mode, or list of valid
-    # modes in this case. Might be best done in model validation. 
+    # modes in this case. Might be best done in model validation.
 
     if translation.mode != CT::MODE_STATIC_ADDRESS
       raise(E::ArgumentError, "Translation mode must be '#{CT::MODE_STATIC_ADDRESS}'.")

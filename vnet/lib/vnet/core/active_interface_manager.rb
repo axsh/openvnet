@@ -32,7 +32,7 @@ module Vnet::Core
         warn log_format("could not activate interface", params.inspect)
         return
       end
-      
+
       # Wait for loaded...
       item_model.to_hash
     end
@@ -154,7 +154,7 @@ module Vnet::Core
       end
 
       # Currently only allow updated to change 'label', 'singular' and
-      # 'port_name'.  
+      # 'port_name'.
       # item.label = params[:label]
       # item.singular = params[:singular]
 
