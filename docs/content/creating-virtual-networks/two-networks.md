@@ -141,8 +141,8 @@ creating a new one on the new network. Replace `il-36cl1ou4` with the
 correct ip lease UUID for your environment.
 
 ```bash
-./bin/vnctl ip-leases del il-36cl1ou4
-./bin/vnctl ip-leases add --interface-uuid if-inst2 --network-uuid nw-test2 --ipv4-address 192.168.50.10
+vnctl ip-leases del il-36cl1ou4
+vnctl ip-leases add --interface-uuid if-inst2 --network-uuid nw-test2 --ipv4-address 192.168.50.10
 ```
 
 That's it. The `inst2` interface has now moved to the new network we created.
