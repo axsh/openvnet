@@ -110,8 +110,8 @@ vnctl interfaces show if-inst2
 ```
 
 As you can see, there's quite a bit of information to be had here. The
-part we're interested in is `ip lease` and more specifically, the `ip
-lease UUID`. Look for it in the output.
+part we're interested in is `ip lease` and more specifically, the `ip lease UUID`.
+Look for it in the output.
 
 ```bash
 ---
