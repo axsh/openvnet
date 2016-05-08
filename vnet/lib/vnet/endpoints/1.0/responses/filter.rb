@@ -5,18 +5,18 @@ module Vnet::Endpoints::V10::Responses
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::Filter)
       object.to_hash.tap do |res|
-        interface = object.batch.interface.commit  
+        interface = object.batch.interface.commit
         res[:interface_uuid] = interface.uuid if interface
       end
     end
 
     def self.filter_statics(object)
         argument_type_check(object,Vnet::ModelWrappers::Filter)
-      {
-        :uuid => object.uuid,
-      }
+        {
+          :uuid => object.uuid,
+        }
     end
-      
+
   end
 
   class FilterCollection < Vnet::Endpoints::CollectionResponseGenerator

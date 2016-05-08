@@ -101,7 +101,7 @@ module Vnet::Core
           datapath_id: @datapath_info.id,
           network_id: get_param_packed_id(params)
         }
-    
+
         mw_class.create(options)
 
       rescue Vnet::ParamError => e
@@ -118,7 +118,7 @@ module Vnet::Core
           datapath_id: @datapath_info.id,
           network_id: get_param_packed_id(params)
         }
-    
+
         mw_class.destroy(filter)
 
       rescue Vnet::ParamError => e

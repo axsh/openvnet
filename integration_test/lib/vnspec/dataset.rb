@@ -74,11 +74,11 @@ module Vnspec
     def init_dataset
       files = ['base']
 
-      if is_topology?
-        files << 'base_topology'
-      else
-        files << 'base_dp'
-      end
+      files << if is_topology?
+                 'base_topology'
+               else
+                 'base_dp'
+               end
 
       files << name
 

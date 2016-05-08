@@ -196,7 +196,7 @@ module VNetAPIClient
                    params)
     end
   end
-  
+
   class Topology < ApiResource
     api_suffix :topologies
 

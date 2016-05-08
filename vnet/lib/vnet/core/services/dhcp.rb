@@ -87,7 +87,7 @@ module Vnet::Core::Services
 
       dhcp_out = create_dhcp_packet(params)
 
-      debug log_format("DHCP send", "output:#{dhcp_out.to_s}")
+      debug log_format("DHCP send", "output:#{dhcp_out}")
 
       packet_udp_out({ :out_port => message.in_port,
                        :eth_src => mac_info[:mac_address],
@@ -170,7 +170,7 @@ module Vnet::Core::Services
       ip_lease = MW::IpLease.batch.dataset.join_ip_addresses.where(filter).first.commit(fill: :ipv4_address)
       ip_lease && ipaddr_to_octets(ip_lease.ipv4_address)
     end
-    
+
     def ipaddr_to_octets(ip)
       i = ip.to_i
       [ (i >> 24) % 256, (i >> 16) % 256, (i >> 8) % 256, i % 256 ]
@@ -219,7 +219,7 @@ module Vnet::Core::Services
       dhcp_in = DHCP::Message.from_udp_payload(raw_in_l4.payload)
       message_type = dhcp_in.options.select { |each| each.type == $DHCP_MESSAGETYPE }
 
-      debug log_format("message", "#{dhcp_in.to_s}")
+      debug log_format("message", "#{dhcp_in}")
 
       [dhcp_in, message_type]
     end

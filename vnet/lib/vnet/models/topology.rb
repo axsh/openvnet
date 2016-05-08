@@ -3,7 +3,7 @@
 module Vnet::Models
 
   class Topology < Base
-    taggable 'tp'
+    taggable 'topo'
 
     plugin :paranoia_is_deleted
 

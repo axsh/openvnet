@@ -74,13 +74,13 @@ module Sinatra
       end
 
       error(Vnet::Endpoints::Errors::APIError) do |boom|
-        logger.error("API Error: #{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+        logger.error("API Error: #{request.path_info} -> #{boom.class}: #{boom.message} (#{boom.backtrace.first})")
         status(boom.http_status)
         respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>boom.error_code})
       end
 
       error do |boom|
-        logger.error("API Error: #{request.path_info} -> #{boom.class.to_s}: #{boom.message} (#{boom.backtrace.first})")
+        logger.error("API Error: #{request.path_info} -> #{boom.class}: #{boom.message} (#{boom.backtrace.first})")
         respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>500})
       end
     }

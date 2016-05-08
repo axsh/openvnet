@@ -146,7 +146,7 @@ class MockDatapath < Vnet::Openflow::Datapath
 
   def do_cleanup
     info log_format('mock cleaning up')
-  end  
+  end
 
 end
 

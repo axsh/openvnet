@@ -386,7 +386,7 @@ module Vnspec
       private
       def update_dns
         if ssh_on_host("[ -f /var/run/resolv.conf.#{name} ]").success?
-            
+
           ssh_on_host("scp -P #{ssh_port} /var/run/resolv.conf.#{name} localhost:/tmp/resolv.dnsmasq.conf")
           ssh_on_guest("mv /tmp/resolv.dnsmasq.conf /etc/resolv.dnsmasq.conf", use_sudo: true)
           ssh_on_host("rm /var/run/resolv.conf.#{name}", use_sudo: true)
