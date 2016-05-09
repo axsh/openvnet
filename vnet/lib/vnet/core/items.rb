@@ -28,6 +28,9 @@ module Vnet::Core
   class Router < OpenStruct
   end
 
+  class Segment < OpenStruct
+  end
+
   class Translation < OpenStruct
   end
 

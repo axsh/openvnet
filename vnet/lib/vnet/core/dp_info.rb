@@ -38,6 +38,7 @@ module Vnet::Core
       router
       filter2
       filter
+      segment
       service
       tunnel
       translation

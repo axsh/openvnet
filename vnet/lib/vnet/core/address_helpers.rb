@@ -25,6 +25,7 @@ module Vnet::Core
       mac_info = {
         ipv4_addresses: [],
         mac_address: params[:mac_address],
+        segment_id: params[:segment_id],
         cookie_id: params[:cookie_id],
       }
 

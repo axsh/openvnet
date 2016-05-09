@@ -257,6 +257,7 @@ module Vnet::Core
       mac_address = Trema::Mac.new(mac_lease.mac_address)
       item.add_mac_address(mac_lease_id: mac_lease.id,
                            mac_address: mac_address,
+                           segment_id: mac_lease.segment_id,
                            cookie_id: mac_lease.cookie_id)
 
       item.ingress_filtering_enabled &&

@@ -97,6 +97,8 @@ module Vnet
     autoload :RouteManager, 'vnet/core/route_manager'
     autoload :Router, 'vnet/core/items'
     autoload :RouterManager, 'vnet/core/router_manager'
+    autoload :Segment, 'vnet/core/items'
+    autoload :SegmentManager, 'vnet/core/segment_manager'
     autoload :Service, 'vnet/core/service'
     autoload :ServiceManager, 'vnet/core/service_manager'
     autoload :Translation, 'vnet/core/items'
@@ -195,6 +197,10 @@ module Vnet
     module Routers
       autoload :Base, 'vnet/core/routers/base'
       autoload :RouteLink, 'vnet/core/routers/route_link'
+    end
+
+    module Segments
+      autoload :Base, 'vnet/core/segment/base'
     end
 
     module Services

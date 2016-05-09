@@ -190,12 +190,22 @@ module Vnet
     ROUTE_DEACTIVATE_ROUTE_LINK = "route_deactivate_route_link"
 
     #
-    # router event
+    # Router event:
     #
     ROUTER_INITIALIZED = "router_initialized"
     ROUTER_UNLOAD_ITEM = "router_unload_item"
     ROUTER_CREATED_ITEM = "router_created_item"
     ROUTER_DELETED_ITEM = "router_deleted_item"
+
+    #
+    # Segment events:
+    #
+    SEGMENT_INITIALIZED = "segment_initialized"
+    SEGMENT_UNLOAD_ITEM = "segment_unload_item"
+    SEGMENT_CREATED_ITEM = "segment_created_item"
+    SEGMENT_DELETED_ITEM = "segment_deleted_item"
+
+    SEGMENT_UPDATE_ITEM_STATES = "segment_update_item_states"
 
     #
     # Service events:
