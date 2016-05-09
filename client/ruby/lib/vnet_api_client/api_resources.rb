@@ -151,6 +151,12 @@ module VNetAPIClient
     define_relation_methods(:interfaces)
   end
 
+  class Segment < ApiResource
+    api_suffix :segments
+
+    define_standard_crud_methods
+  end
+
   class Translation < ApiResource
     api_suffix :translations
 
