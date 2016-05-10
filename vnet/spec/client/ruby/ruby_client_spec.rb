@@ -159,6 +159,13 @@ describe VNetAPIClient do
     include_examples 'test_method', :remove_port, 'DELETE  /interfaces/:uuid/ports'
   end
 
+  describe VNetAPIClient::IpLease do
+    include_examples 'test_method', :attach,
+                     'PUT  /ip_leases/:uuid/attach'
+    include_examples 'test_method', :release,
+                     'PUT  /ip_leases/:uuid/release'
+  end
+
   describe VNetAPIClient::IpRangeGroup do
     include_examples 'test_method', :add_range,
                      'POST  /ip_range_groups/:ip_range_group_uuid/ip_ranges'
