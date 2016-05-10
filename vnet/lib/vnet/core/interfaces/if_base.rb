@@ -31,6 +31,11 @@ module Vnet::Core::Interfaces
 
     def enable_filtering2
       @enabled_filtering = true
+
+      @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
+                         cookie: self.cookie,
+                         cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+                         match_interface: @id)
     end
 
     def disable_filtering2
