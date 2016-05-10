@@ -200,7 +200,8 @@ module Vnet
     end
 
     module Segments
-      autoload :Base, 'vnet/core/segment/base'
+      autoload :Base, 'vnet/core/segments/base'
+      autoload :Virtual, 'vnet/core/segments/virtual'
     end
 
     module Services
