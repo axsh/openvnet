@@ -31,7 +31,6 @@ module Vnet::Core::Interfaces
 
     def enable_filtering2
       @enabled_filtering = true
-
       @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
                          cookie: self.cookie,
                          cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
@@ -66,6 +65,22 @@ module Vnet::Core::Interfaces
                           )
     end
 
+    def flows_for_egress_classifier(flows = [])
+      if @enabled_filtering
+        goto_table = TABLE_INTERFACE_EGRESS_FILTER
+        priority = 90
+      else
+        goto_table = TABLE_INTERFACE_EGRESS_VALIDATE
+        priority = 30
+      end
+
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                           goto_table: goto_table,
+                           priority: priority,
+                           match_interface: @id,
+                           cookie: self.cookie
+    end
+
     def flows_for_interface_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
@@ -94,21 +109,8 @@ module Vnet::Core::Interfaces
       #
       # new Classifier
       #
-      if @enabled_filtering
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_EGRESS_FILTER,
-                             priority: 90,
-                             match_interface: @id,
-                             cookie: cookie
-                            )
-      else
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
-                             priority: 30,
-                             match_interface: @id,
-                             cookie: cookie
-                            )
-      end
+
+      flows_for_egress_classifier(flow)
 
       #
       # Validate (old Classifier)
