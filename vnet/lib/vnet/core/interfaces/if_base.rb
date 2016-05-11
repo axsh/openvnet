@@ -31,15 +31,31 @@ module Vnet::Core::Interfaces
 
     def enable_filtering2
       @enabled_filtering = true
+
+      @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                         cookie: self.cookie,
+                         cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+                         match_interface: @id)
       @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
                          cookie: self.cookie,
                          cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
                          match_interface: @id)
+
+      @dp_info.add_flows flows_for_egress_classifier
     end
 
     def disable_filtering2
       @enabled_filtering = false
-      @dp_info.add_flows flows_for_disabled_filtering
+
+      @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                         cookie: self.cookie,
+                         cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+                         match_interface: @id)
+
+      flows = []
+      flows_for_disabled_filtering(flows)
+      flows_for_egress_classifier(flows)
+      @dp_info.add_flows(flows)
     end
     #
     # Internal methods:
