@@ -269,7 +269,7 @@ module Vnet::Openflow
                          match_network: params[:interface_network_id],
 
                          actions: {
-                           :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address),
+                           :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
                          },
 
                          idle_timeout: 3600,

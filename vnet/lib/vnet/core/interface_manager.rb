@@ -254,7 +254,7 @@ module Vnet::Core
 
       return unless mac_lease && mac_lease.interface_id == item.id
 
-      mac_address = Trema::Mac.new(mac_lease.mac_address)
+      mac_address = Pio::Mac.new(mac_lease.mac_address)
       item.add_mac_address(mac_lease_id: mac_lease.id,
                            mac_address: mac_address,
                            cookie_id: mac_lease.cookie_id)

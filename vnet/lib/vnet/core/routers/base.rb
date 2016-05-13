@@ -12,7 +12,7 @@ module Vnet::Core::Routers
       super
 
       map = params[:map]
-      @mac_address = Trema::Mac.new(map.mac_address)
+      @mac_address = Pio::Mac.new(map.mac_address)
 
       @routes = {}
     end

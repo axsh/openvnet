@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+
+# Remove top-level :array and :string methods introduced by trema-edge
+# to avoid the conflict with BinData's primitive methods.
+Class.class_eval { undef_method :array } rescue NameError
+Class.class_eval { undef_method :string } rescue NameError
+require 'pio'
+
 module Vnet::Endpoints::V10::Helpers
   E = Vnet::Endpoints::Errors
 
@@ -87,8 +94,8 @@ module Vnet::Endpoints::V10::Helpers
 
     PARSE_MAC = proc do |param|
       begin
-        Trema::Mac.new(param).value
-      rescue ArgumentError
+        Pio::Mac.new(param).to_i
+      rescue Pio::Mac::InvalidValueError
         raise(E::ArgumentError, "Could not parse MAC address: #{param}")
       end
     end

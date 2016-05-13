@@ -36,7 +36,7 @@ describe Vnet::Core::TunnelManager do
 
         mac_lease = Fabricate(:mac_lease,
                               interface: interface,
-                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value)
+                              mac_address: Pio::Mac.new("08:00:27:00:01:0#{i}"))
 
         ip_lease = Fabricate(:ip_lease,
                              mac_lease: mac_lease,
@@ -230,7 +230,7 @@ describe Vnet::Core::TunnelManager do
 
         mac_lease = Fabricate(:mac_lease,
                               interface: interface,
-                              mac_address: Trema::Mac.new("08:00:27:00:01:0#{i}").value)
+                              mac_address: Pio::Mac.new("08:00:27:00:01:0#{i}"))
 
         ip_lease = Fabricate(:ip_lease,
                              mac_lease: mac_lease,

@@ -59,7 +59,7 @@ module Vnet::Core::Translations
     def network_id_by_mac(mac_address)
       network_map = Vnet::ModelWrappers::MacAddress.batch[mac_address: mac_address].mac_lease.ip_leases.first.network.commit
 
-      debug log_format("network_id_by_mac : mac_address => #{Trema::Mac.new(mac_address)}")
+      debug log_format("network_id_by_mac : mac_address => #{Pio::Mac.new(mac_address)}")
       debug log_format("network_id_by_mac : network_map => #{network_map.inspect}")
 
       return network_map && network_map.id
