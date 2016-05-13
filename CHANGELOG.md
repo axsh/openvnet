@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Changed` It is no longer possibly to directly modify an IP lease through the WebAPI. In order to preserve network state history, IP leases need to be deleted and recreated.
 
+* `Changed` We now use the [PIO](https://github.com/trema/pio) library to manage MAC addresses.
+
 ## [0.9] - 2016-04-19
 
 * `Added` A new `topology manager` that automatically creates `datapath_network` and `datapath_route_link` entries in the database.
