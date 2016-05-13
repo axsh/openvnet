@@ -36,6 +36,26 @@ module Vnctl::Cli
       # * del
       # * show
 
+      # 'Add' often use mostly the same options. Use this method to
+      # define them
+      def self.add_shared_options(&blk)
+        if block_given?
+          @add_shared_options = blk
+        else
+          @add_shared_options && @add_shared_options.call
+        end
+      end
+
+      # 'Modify' often use mostly the same options. Use this method to
+      # define them
+      def self.modify_shared_options(&blk)
+        if block_given?
+          @modify_shared_options = blk
+        else
+          @modify_shared_options && @modify_shared_options.call
+        end
+      end
+
       # 'Add' and 'modify' often use mostly the same options. Use this method to
       # define them
       def self.add_modify_shared_options(&blk)
@@ -130,9 +150,11 @@ module Vnctl::Cli
       # And one little convenient method to define all CRUD commands
       def self.define_standard_crud_commands
         option_uuid
+        add_shared_options
         add_modify_shared_options
         define_add
 
+        modify_shared_options
         add_modify_shared_options
         define_modify
 
@@ -226,7 +248,7 @@ module Vnctl::Cli
 
         c
       end
-      
+
       # Method for mode type relationships
 
       def self.define_mode_relation(mode_type, required_opts = [], &block)

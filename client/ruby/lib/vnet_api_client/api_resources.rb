@@ -50,6 +50,19 @@ module VNetAPIClient
     api_suffix :ip_leases
 
     define_standard_crud_methods
+
+    def self.attach(target_uuid, params = nil)
+      send_request(Net::HTTP::Put,
+                   "#{@api_suffix}/#{target_uuid}/attach",
+                   params)
+    end
+
+    def self.release(target_uuid, params = nil)
+      send_request(Net::HTTP::Put,
+                   "#{@api_suffix}/#{target_uuid}/release",
+                   params)
+    end
+
   end
 
   class IpRangeGroup < ApiResource
@@ -196,7 +209,15 @@ module VNetAPIClient
                    params)
     end
   end
-  
+
+  class Topology < ApiResource
+    api_suffix :topologies
+
+    define_standard_crud_methods
+    define_relation_methods(:networks)
+    define_relation_methods(:route_links)
+  end
+
   class VlanTranslation < ApiResource
     api_suffix :vlan_translations
 

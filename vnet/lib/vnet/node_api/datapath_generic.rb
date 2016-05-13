@@ -12,17 +12,8 @@ module Vnet::NodeApi
           options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
         end
 
-        mac_address = options[:mac_address]
-        mac_group_uuid = Vnet::Configurations::Common.conf.datapath_mac_group
-
         transaction {
-          if mac_address.nil? && mac_group_uuid
-            mac_group = model_class(:mac_range_group)[mac_group_uuid] || next
-            mac_address = mac_group.address_random || next
-
-            options[:mac_address_id] = mac_address.id
-          end
-
+          mac_address_random_assign(options)
           model = internal_create(options)
         }
       end

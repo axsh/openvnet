@@ -2,7 +2,7 @@
 
 module Vnet::Core::Translations
 
-  class Base < Vnet::ItemDpUuidMode
+  class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -29,15 +29,14 @@ module Vnet::Core::Translations
     def cookie
       @id | COOKIE_TYPE_TRANSLATION
     end
-    
+
     def cookie_mask
       COOKIE_PREFIX_MASK | COOKIE_ID_MASK
     end
 
     def to_hash
       Vnet::Core::Translation.new(id: @id,
-                                  uuid: @uuid,
-                                  mode: @mode)
+                                  uuid: @uuid)
     end
 
     def uninstall

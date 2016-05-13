@@ -31,6 +31,8 @@ module Vnet::Openflow
     end
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
+      ipv4_info_mask = ipv4_info[:network_prefix]
+
       [[20, {
           :eth_src => mac_info[:mac_address],
           :eth_type => 0x0800
@@ -38,8 +40,8 @@ module Vnet::Openflow
        [30, {
           :eth_src => mac_info[:mac_address],
           :eth_type => 0x0800,
-          :ipv4_dst => ipv4_info[:ipv4_address],
-          :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info[:network_prefix])
+          :ipv4_dst => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
+          :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
         }]
       ].each { |priority, match|
         flows << flow_create(table: TABLE_ARP_LOOKUP,
@@ -163,8 +165,8 @@ module Vnet::Openflow
         if messages.first && messages.first[:destination_ipv4]
           flow = Flow.create(TABLE_ARP_LOOKUP, 25,
                              match_md.merge({ :eth_type => 0x0800,
-                                              :ipv4_dst => messages.first[:destination_ipv4],
-                                              :ipv4_dst_mask => messages.first[:destination_ipv4].mask(messages.first[:destination_prefix]),
+                                              :ipv4_dst => messages.first[:destination_ipv4].mask(messages.first[:destination_prefix]),
+                                              :ipv4_dst_mask => IPV4_BROADCAST.mask(messages.first[:destination_prefix]),
                                             }), {
                                :eth_dst => message.arp_sha
                              },

@@ -42,7 +42,7 @@ module Vnet::NodeApi
                        mac_lease_id: model.id)
 
         filter = { mac_lease_id: model.id }
-        
+
         # 0001_origin
         IpLease.dispatch_deleted_where(filter, model.deleted_at)
         # _mac_address: ignore

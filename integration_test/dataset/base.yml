@@ -78,20 +78,3 @@ network_services:
   - uuid: ns-dhcppub2
     interface_uuid: if-dhcppub2
     mode: dhcp
-
-datapath_networks:
-
-  - datapath_uuid: dp-1
-    network_uuid: nw-public1
-    interface_uuid: if-dp1eth0
-    mac_address: "02:00:01:aa:01:01"
-
-  - datapath_uuid: dp-2
-    network_uuid: nw-public1
-    interface_uuid: if-dp2eth0
-    mac_address: "02:00:01:bb:01:01"
-
-  - datapath_uuid: dp-3
-    network_uuid: nw-public2
-    interface_uuid: if-dp3eth0
-    mac_address: "02:00:01:cc:01:01"

@@ -17,5 +17,6 @@ module Vnctl::Cli
       relation.option :end_mac_address, :type => :string,
         :desc => "The mac address at which our range ends."
     end
+
   end
 end

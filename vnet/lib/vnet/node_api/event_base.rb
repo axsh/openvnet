@@ -11,6 +11,20 @@ module Vnet::NodeApi
         }
       end
 
+      def update_uuid(uuid, options)
+        model_class[uuid].tap do |model|
+          # TODO: Return error if not found.
+          next if model.nil?
+
+          if has_valid_update_fields?
+            validate_update_fields(options)
+          end
+
+          update_with_transaction(model, options)
+          dispatch_updated_item_events(model)
+        end
+      end
+
       def destroy(filter)
         destroy_with_transaction(filter).tap { |model|
           next if model.nil?
@@ -52,6 +66,18 @@ module Vnet::NodeApi
         }
       end
 
+      def mac_address_random_assign(options)
+        mac_address = options[:mac_address]
+        mac_group_uuid = Vnet::Configurations::Common.conf.datapath_mac_group
+
+        if mac_address.nil? && mac_group_uuid
+          mac_group = model_class(:mac_range_group)[mac_group_uuid] || return
+          mac_address = mac_group.address_random || return
+
+          options[:mac_address_id] = mac_address.id
+        end
+      end
+
       #
       # Internal methods:
       #
@@ -78,6 +104,10 @@ module Vnet::NodeApi
         model_class.create(options)
       end
 
+      def update_with_transaction(model, options)
+        model.update(options)
+      end
+
       def destroy_with_transaction(filter)
         internal_destroy(model_class[filter])
       end
@@ -86,8 +116,33 @@ module Vnet::NodeApi
         raise NotImplementedError
       end
 
+      def dispatch_updated_item_events(model)
+        # raise NotImplementedError
+      end
+
       def dispatch_deleted_item_events(model)
         raise NotImplementedError
+      end
+
+
+      private
+
+      def inherited(klass)
+        super
+        klass.class_eval {
+
+          # Install mode module as Sequel plugin.
+          #
+          # class Foo < Base
+          #   valid_update_fields [:foo, :bar]
+          # end
+          def self.valid_update_fields(fields)
+            return if self == Base
+
+            self.plugin BaseValidateUpdateFields
+            self.set_valid_update_fields(fields)
+          end
+        }
       end
 
     end

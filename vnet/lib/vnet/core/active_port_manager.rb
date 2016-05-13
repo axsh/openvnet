@@ -2,15 +2,13 @@
 
 module Vnet::Core
 
-  class ActivePortManager < Vnet::Core::Manager
+  class ActivePortManager < Vnet::Core::ActiveManager
 
     include Vnet::Constants::ActivePort
 
     #
     # Events:
     #
-    event_handler_default_drop_all
-
     subscribe_event ACTIVE_PORT_INITIALIZED, :load_item
     subscribe_event ACTIVE_PORT_UNLOAD_ITEM, :unload_item
     subscribe_event ACTIVE_PORT_CREATED_ITEM, :created_item
@@ -19,36 +17,11 @@ module Vnet::Core
     subscribe_event ACTIVE_PORT_ACTIVATE, :activate_port
     subscribe_event ACTIVE_PORT_DEACTIVATE, :deactivate_port
 
-    finalizer :do_cleanup
-
-    def do_initialize
-      info log_format('cleaning up old active port entries')
-      
-      mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
-    end
-
     #
     # Internal methods:
     #
 
     private
-
-    # TODO: Add do_initialize, clean up old port entries.
-
-    def do_cleanup
-      # Cleanup may be called before the manager is initialized.
-      return if @datapath_info.nil?
-
-      info log_format('cleaning up')
-
-      begin
-        mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
-      rescue NoMethodError => e
-        info log_format(e.message, e.class.name)
-      end
-
-      info log_format('cleaned up')
-    end
 
     #
     # Specialize Manager:
@@ -100,7 +73,7 @@ module Vnet::Core
     # item created in db on queue 'item.id'
     def created_item(params)
       return if internal_detect_by_id(params)
-      return if params[:datapath_id] != @datapath_info.id
+      return if @datapath_info.nil? || params[:datapath_id] != @datapath_info.id
 
       internal_new_item(mw_class.new(params))
     end

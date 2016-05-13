@@ -137,43 +137,43 @@ describe Vnet::Core::FilterManager do
       end
     end
 
-     context "with a security group that has two interfaces in it" do
-       before(:each) { subject.apply_filters wrapper(interface2) }
+    context "with a security group that has two interfaces in it" do
+      before(:each) { subject.apply_filters wrapper(interface2) }
 
-       let(:interface2) { Fabricate(:filter_interface, security_groups: [group]) }
+      let(:interface2) { Fabricate(:filter_interface, security_groups: [group]) }
 
-       it "applies the group's rule flows for both interfaces" do
-         expect(flows).to include rule_flow(
-           cookie: cookie_id(group),
-           match: match_icmp_rule("0.0.0.0/0")
-         )
+      it "applies the group's rule flows for both interfaces" do
+        expect(flows).to include rule_flow(
+          cookie: cookie_id(group),
+          match: match_icmp_rule("0.0.0.0/0")
+        )
 
-         expect(flows).to include rule_flow({
-           cookie: cookie_id(group, interface2),
-           match: match_icmp_rule("0.0.0.0/0")},
-           interface2
-         )
-       end
-     end
+        expect(flows).to include rule_flow({
+          cookie: cookie_id(group, interface2),
+          match: match_icmp_rule("0.0.0.0/0")},
+          interface2
+        )
+      end
+    end
 
-     context "with a security group referencing another security group" do
-       let(:reffee) { Fabricate(:security_group) }
-       let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
+    context "with a security group referencing another security group" do
+      let(:reffee) { Fabricate(:security_group) }
+      let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
 
-       let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
-       let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
+      let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
+      let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
 
-       let(:interface) do
-         # Dirty hack to make sure the referenced interfaces are created first
-         ref_intf1;ref_intf2
-         Fabricate(:filter_interface, security_groups: [group])
-       end
+      let(:interface) do
+        # Dirty hack to make sure the referenced interfaces are created first
+        ref_intf1;ref_intf2
+        Fabricate(:filter_interface, security_groups: [group])
+      end
 
-       it "applies the rule for each interface in the referenced group" do
-         expect(flows).to include *reference_flows_for("tcp:22", ref_intf1)
-         expect(flows).to include *reference_flows_for("tcp:22", ref_intf2)
-       end
-     end
+      it "applies the rule for each interface in the referenced group" do
+        expect(flows).to include *reference_flows_for("tcp:22", ref_intf1)
+        expect(flows).to include *reference_flows_for("tcp:22", ref_intf2)
+      end
+    end
   end
 
   describe "#remove_filters" do
@@ -192,29 +192,29 @@ describe Vnet::Core::FilterManager do
       expect(deleted_flows).to include expected_flow
     end
 
-   context "with a security group referencing another security group" do
-     let(:reffee) { Fabricate(:security_group) }
-     let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
+    context "with a security group referencing another security group" do
+      let(:reffee) { Fabricate(:security_group) }
+      let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
 
-     let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
-     let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
+      let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
+      let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
 
-     let(:interface) do
-       # Dirty hack to make sure the referenced interfaces are created first
-       ref_intf1;ref_intf2
-       Fabricate(:filter_interface, security_groups: [group])
-     end
+      let(:interface) do
+        # Dirty hack to make sure the referenced interfaces are created first
+        ref_intf1;ref_intf2
+        Fabricate(:filter_interface, security_groups: [group])
+      end
 
-     it "removes the rule for each interface in the referenced group" do
-       intf1_flows = reference_flows_for("tcp:22", ref_intf1)
-       expect(flows).not_to include *intf1_flows
-       expect(deleted_flows).to include *intf1_flows
+      it "removes the rule for each interface in the referenced group" do
+        intf1_flows = reference_flows_for("tcp:22", ref_intf1)
+        expect(flows).not_to include *intf1_flows
+        expect(deleted_flows).to include *intf1_flows
 
-       intf2_flows = reference_flows_for("tcp:22", ref_intf2)
-       expect(flows).not_to include *intf2_flows
-       expect(deleted_flows).to include *intf2_flows
-     end
-   end
+        intf2_flows = reference_flows_for("tcp:22", ref_intf2)
+        expect(flows).not_to include *intf2_flows
+        expect(deleted_flows).to include *intf2_flows
+      end
+    end
   end
 
   describe "#updated_sg_rules" do

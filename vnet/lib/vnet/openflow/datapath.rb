@@ -57,7 +57,7 @@ module Vnet::Openflow
 
       @switch = Switch.new(self)
       link(@switch)
-      
+
       @switch.create_default_flows
       @switch.switch_ready
 
@@ -66,7 +66,7 @@ module Vnet::Openflow
 
     def run_normal
       info log_format('starting normal vnet datapath')
-      
+
       wait_for_load_of_host_datapath
       initialize_managers
       wait_for_unload_of_host_datapath
@@ -110,7 +110,7 @@ module Vnet::Openflow
       #
       # TODO: This should be done automatically by datapath manager
       # when it is initialized.
-      # 
+      #
       # Since we load the host datapath here, we need to set
       # queue-only now.
       @dp_info.managers.each { |manager|
@@ -169,6 +169,7 @@ module Vnet::Openflow
     # TODO: Call this from somewhere.
     def initialize_bootstrap_managers
       managers = @dp_info.bootstrap_managers
+      managers.each { |manager| manager.set_datapath_info(@datapath_info) }
       managers.each { |manager| manager.event_handler_queue_only }
       managers.each { |manager| manager.async.start_initialize }
       managers.each { |manager| manager.wait_for_initialized(nil) }

@@ -48,7 +48,7 @@ module Vnet::Core::Tunnels
       @dp_info.add_flows(flows)
 
       info log_format("installed",
-                      "src_ipv4_address:#{@src_ipv4_address.to_s} dst_ipv4_address:#{@dst_ipv4_address.to_s}")
+                      "src_ipv4_address:#{@src_ipv4_address} dst_ipv4_address:#{@dst_ipv4_address}")
     end
 
     def delete_tunnel
@@ -68,7 +68,7 @@ module Vnet::Core::Tunnels
       return if @host_port_number.nil?
 
       dpn = detect_network_id?(network_id) || return
-      
+
       mac2mac_actions << {
         :eth_dst => dpn[:mac_address],
         :output => @host_port_number
