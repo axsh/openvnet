@@ -14,7 +14,7 @@ end
 
 def failure(msg, err = nil)
   output = "\e[31mFAILURE:\e[0m #{msg}"
-  output = output + " This is the error we got: #{err.message}" if err
+  output = output + "\n         #{err.class}: #{err.message}" if err
 
   puts output
 end
