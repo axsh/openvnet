@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'dcell'
+require 'vnet'
+
+def success(msg = "")
+  puts "\e[32mSUCCESS:\e[0m #{msg}"
+end
+
+def failure(msg = "")
+  puts "\e[31mFAILURE:\e[0m #{msg}"
+end
+
+conf = Vnet::Configurations::Common.conf
+
+Vnet::Initializers::DB.run(conf.db_uri)
+
+begin
+  Vnet::Models::Base.db.test_connection
+  success("Connected to the database successfully.")
+rescue Exception => e
+  failure "Unable to connect to the database. " +
+          "Check your settings in /etc/openvnet/common.conf. " +
+          "This is the error we got: #{e.message}"
+end
