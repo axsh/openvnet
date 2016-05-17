@@ -35,6 +35,17 @@ Vnet::Services::Vnmgr.supervise_as :vnmgr
 DCell::Global[:rpc] = Celluloid::Actor[:rpc]
 DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
 
+if mg_uuid = conf.datapath_mac_group
+  if Vnet::Models::MacRangeGroup[mg_uuid].nil?
+    Vnet.logger.warn "The datapath_mac_group UUID set in /etc/openvnet/common.conf " +
+                     "was not found in the database. " +
+                     "OpenVNet will not be able to auto-assign MAC addresses."
+  end
+else
+  Vnet.logger.warn "datapath_mac_group is not set in /etc/openvnet/common.conf. " +
+                   "OpenVNet will not be able to auto-assign MAC addresses"
+end
+
 conf.node.plugins.each do |plugin|
   require File.join(::Vnet::ROOT, "lib/plugins/#{plugin}.rb")
 end
