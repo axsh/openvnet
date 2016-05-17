@@ -122,8 +122,8 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            actions: {
-                             :eth_src => Trema::Mac.new('00:00:27:11:11:11'),
-                             :eth_dst => Trema::Mac.new('00:00:27:22:22:22'),
+                             :eth_src => Pio::Mac.new('00:00:27:11:11:11'),
+                             :eth_dst => Pio::Mac.new('00:00:27:22:22:22'),
                            },
                            match_interface: @id,
 

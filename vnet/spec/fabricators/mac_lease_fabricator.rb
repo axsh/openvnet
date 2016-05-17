@@ -7,3 +7,7 @@ end
 
 Fabricator(:mac_lease_any, class_name: Vnet::Models::MacLease) do
 end
+
+Fabricator(:mac_lease_free, class_name: Vnet::Models::MacLease) do
+  mac_address { sequence(:mac_address, 0) }
+end

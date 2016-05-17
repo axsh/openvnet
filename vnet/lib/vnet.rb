@@ -435,6 +435,7 @@ module Vnet
     autoload :DirectProxy, 'vnet/node_api/proxies'
 
     autoload :Base, 'vnet/node_api/base'
+    autoload :BaseValidateUpdateFields, 'vnet/node_api/base_valid_update_fields'
     autoload :EventBase, 'vnet/node_api/event_base'
 
     autoload :ActiveInterface, 'vnet/node_api/active_interface'

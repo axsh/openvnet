@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
 require 'ipaddr'
-require 'trema/mac'
+
+# Remove top-level :array and :string methods introduced by trema-edge
+# to avoid the conflict with BinData's primitive methods.
+Class.class_eval { undef_method :array } rescue NameError
+Class.class_eval { undef_method :string } rescue NameError
+require 'pio'
 
 module Vnet
   module Constants
@@ -15,8 +20,8 @@ module Vnet
       # Trema related constants:
       #
 
-      MAC_ZERO       = Trema::Mac.new('00:00:00:00:00:00')
-      MAC_BROADCAST  = Trema::Mac.new('ff:ff:ff:ff:ff:ff')
+      MAC_ZERO       = Pio::Mac.new('00:00:00:00:00:00')
+      MAC_BROADCAST  = Pio::Mac.new('ff:ff:ff:ff:ff:ff')
       IPV4_ZERO      = IPAddr.new('0.0.0.0')
       IPV4_BROADCAST = IPAddr.new('255.255.255.255')
 
