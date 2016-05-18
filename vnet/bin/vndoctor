@@ -54,27 +54,31 @@ rescue Exception => e
           "its IP/port is configured wrong in /etc/openvnet/common.conf.", e
 end
 
-Vnet::Initializers::DB.run(conf.db_uri)
-
 begin
+  Vnet::Initializers::DB.run(conf.db_uri)
   Vnet::Models::Base.db.test_connection
   success("Connected to the database successfully.")
 rescue Exception => e
-  failure "Unable to connect to the database. " +
-          "Check your settings in /etc/openvnet/common.conf. ", e
+  #TODO: Make this a warning and ask Vnmgr for database stuff
+  failure "Unable to connect to the database. Make sure it is running and " +
+          "the connection settings in /etc/openvnet/common.conf are correct.", e
 end
 
 
 puts
 info "Examining Vnmgr"
-if vnmgr_node = DCell::Node[:vnmgr]
-  if vnmgr_doctor = vnmgr_node[:doctor]
-    vnmgr_doctor.examination.each { |diagnosis|
-      send(diagnosis.shift, *diagnosis)
-    }
+begin
+  if vnmgr_node = DCell::Node[:vnmgr]
+    if vnmgr_doctor = vnmgr_node[:doctor]
+      vnmgr_doctor.examination.each { |diagnosis|
+        send(diagnosis.shift, *diagnosis)
+      }
+    else
+      warning "Vnmgr did not have vndoctor enabled. We can't examine it."
+    end
   else
-    warning "Vnmgr did not have vndoctor enabled. We can't examine it."
+    failure "Unable able to connect to Vnmgr. It is most probably not running."
   end
-else
-  failure "Unable able to connect to Vnmgr. It is most probably not running."
+rescue Exception => e
+  failure "Vnmgr has crashed with the following error.", e
 end
