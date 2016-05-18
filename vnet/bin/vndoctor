@@ -64,10 +64,17 @@ rescue Exception => e
           "Check your settings in /etc/openvnet/common.conf. ", e
 end
 
-vnmgr_doctor = DCell::Node[:vnmgr][:doctor]
 
 puts
 info "Examining Vnmgr"
-vnmgr_doctor.examination.each { |diagnosis|
-  send(diagnosis.shift, *diagnosis)
-}
+if vnmgr_node = DCell::Node[:vnmgr]
+  if vnmgr_doctor = vnmgr_node[:doctor]
+    vnmgr_doctor.examination.each { |diagnosis|
+      send(diagnosis.shift, *diagnosis)
+    }
+  else
+    warning "Vnmgr did not have vndoctor enabled. We can't examine it."
+  end
+else
+  failure "Unable able to connect to Vnmgr. It is most probably not running."
+end
