@@ -44,6 +44,9 @@ module Vnet::Openflow
         when :route_link, :match_route_link, :write_route_link
           metadata = metadata | value | METADATA_TYPE_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :segment, :match_segment, :write_segment
+          metadata = metadata | value | METADATA_TYPE_SEGMENT
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :match_tunnel, :write_tunnel
           metadata = metadata | value | METADATA_TYPE_TUNNEL
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK

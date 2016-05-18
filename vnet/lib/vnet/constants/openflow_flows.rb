@@ -53,9 +53,13 @@ module Vnet
       # currently known as the 'physical' network.
       #
       # Later we will always require a network number to be supplied.
-      TABLE_NETWORK_CONNECTION        = 20
-      TABLE_NETWORK_SRC_CLASSIFIER    = 21
-      TABLE_NETWORK_SRC_MAC_LEARNING  = 22
+
+      TABLE_SEGMENT_SRC_CLASSIFIER    = 20
+      TABLE_SEGMENT_SRC_MAC_LEARNING  = 21
+
+      TABLE_NETWORK_CONNECTION        = 23
+      TABLE_NETWORK_SRC_CLASSIFIER    = 24
+      TABLE_NETWORK_SRC_MAC_LEARNING  = 25
 
       # In the transition from TABLE_ROUTER_EGRESS_LOOKUP to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.
@@ -74,8 +78,11 @@ module Vnet
       TABLE_NETWORK_DST_CLASSIFIER           = 42
       TABLE_NETWORK_DST_MAC_LOOKUP           = 43
 
-      TABLE_INTERFACE_INGRESS_FILTER         = 45
-      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP  = 46
+      TABLE_SEGMENT_DST_CLASSIFIER           = 44
+      TABLE_SEGMENT_DST_MAC_LOOKUP           = 45
+
+      TABLE_INTERFACE_INGRESS_FILTER         = 46
+      TABLE_INTERFACE_INGRESS_FILTER_LOOKUP  = 47
 
       TABLE_FLOOD_SIMULATED                  = 50
       TABLE_FLOOD_LOCAL                      = 51
