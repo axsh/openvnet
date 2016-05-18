@@ -71,15 +71,17 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_interface_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+      mac_cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+      mac_address = mac_info[:mac_address]
+      segment_id = mac_info[:segment_id]
 
       #
       # Anti-spoof:
       #
-      [{ :eth_src => mac_info[:mac_address],
+      [{ :eth_src => mac_address,
        },{
          :eth_type => 0x0806,
-         :arp_sha => mac_info[:mac_address],
+         :arp_sha => mac_address,
        }
       ].each { |match|
         # Currently add to ingress_nw_if table since we do not
@@ -89,18 +91,25 @@ module Vnet::Core::Interfaces
                              match: match,
                              #match_segment: mac_info[:segment_id],
                              cookie: cookie)
-      }
 
-      segment_id = mac_info[:segment_id]
+      }
 
       if segment_id
         flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
                              goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
                              priority: 30,
-                             match: { :eth_src => mac_info[:mac_address] },
+                             match: { :eth_src => mac_address },
                              match_interface: @id,
                              write_segment: segment_id,
                              cookie: cookie)
+        flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP,
+                             goto_table: TABLE_INTERFACE_INGRESS_FILTER,
+                             priority: 60,
+                             match: { :eth_dst => mac_address },
+                             match_segment: segment_id,
+                             write_interface: @id,
+                             cookie: cookie)
+
       end
     end
 
@@ -136,7 +145,6 @@ module Vnet::Core::Interfaces
       #
       # IPv4
       #
-
       flows << flow_create(table: TABLE_ARP_TABLE,
                            goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                            priority: 40,
