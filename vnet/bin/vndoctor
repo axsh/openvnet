@@ -8,12 +8,21 @@ require 'bundler/setup'
 require 'dcell'
 require 'vnet'
 
+Celluloid.logger.level = Logger::FATAL
+
 def info(msg)
   puts "INFO: #{msg}"
 end
 
 def success(msg)
   puts "\e[32mSUCCESS:\e[0m #{msg}"
+end
+
+def warning(msg, err = nil)
+  output = "\e[33mWARNING:\e[0m #{msg}"
+  output = output + "\n         #{err.class}: #{err.message}" if err
+
+  puts output
 end
 
 def failure(msg, err = nil)
@@ -38,7 +47,7 @@ params = {
 
 begin
   DCell.start(params)
-  success("Started DCell succesfully")
+  success("Connected to Redis and started DCell succesfully")
 #TODO: This error isn't rescued properly... figure out why and fix
 rescue Exception => e
   failure "We were unable to connect to redis. It is probably not running or " +

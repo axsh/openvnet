@@ -6,11 +6,19 @@ module Vnet
       include Celluloid
 
       def examination
-        [
-          [:success, "success tested"],
-          [:success, "another success tested"],
-          [:failure, "failure tested"],
-        ]
+        results = []
+
+        conf = Vnet::Configurations::Vnmgr.conf
+
+        if conf.datapath_mac_group
+        else
+          results << [:warning,
+                      "The datapath_mac_group UUID set in /etc/openvnet/common.conf. " +
+                      "OpenVNet will not be able to auto-assign MAC addresses"
+                     ]
+        end
+
+        results
       end
     end
   end
