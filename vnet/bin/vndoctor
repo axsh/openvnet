@@ -66,6 +66,7 @@ end
 
 vnmgr_doctor = DCell::Node[:vnmgr][:doctor]
 
+puts
 info "Examining Vnmgr"
 vnmgr_doctor.examination.each { |diagnosis|
   send(diagnosis.shift, *diagnosis)
