@@ -13,7 +13,8 @@ module Vnet
         if mg_uuid = conf.datapath_mac_group
           if Vnet::Models::MacRangeGroup[mg_uuid]
             results << [:success,
-                        "The datapath_mac_group UUID was set and found in the database. " +
+                        "The datapath_mac_group UUID was set in /etc/openvnet/common.conf " +
+                        "and found in the database. " +
                         "OpenVNet will be able to auto-assign MAC addresses"
                        ]
           else
