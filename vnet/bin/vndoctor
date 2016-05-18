@@ -69,6 +69,8 @@ puts
 info "Examining Vnmgr"
 begin
   if vnmgr_node = DCell::Node[:vnmgr]
+    success "Connected to Vnmgr"
+
     if vnmgr_doctor = vnmgr_node[:doctor]
       vnmgr_doctor.examination.each { |diagnosis|
         send(diagnosis.shift, *diagnosis)

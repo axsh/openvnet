@@ -69,5 +69,6 @@ module Vnet::Configurations
     end
 
     param :datapath_mac_group, :default => nil
+    param :vndoctor_enabled, :default => true
   end
 end

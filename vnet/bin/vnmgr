@@ -31,7 +31,7 @@ DCell.start(params)
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
-Vnet::Doctor::Vnmgr.supervise_as :doctor
+Vnet::Doctor::Vnmgr.supervise_as :doctor if conf.vndoctor_enabled
 
 DCell::Global[:rpc] = Celluloid::Actor[:rpc]
 DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
