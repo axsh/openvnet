@@ -8,6 +8,10 @@ require 'bundler/setup'
 require 'dcell'
 require 'vnet'
 
+def info(msg)
+  puts "INFO: #{msg}"
+end
+
 def success(msg)
   puts "\e[32mSUCCESS:\e[0m #{msg}"
 end
@@ -50,3 +54,10 @@ rescue Exception => e
   failure "Unable to connect to the database. " +
           "Check your settings in /etc/openvnet/common.conf. ", e
 end
+
+vnmgr_doctor = DCell::Node[:vnmgr][:doctor]
+
+info "Examining Vnmgr"
+vnmgr_doctor.examination.each { |diagnosis|
+  send(diagnosis.shift, *diagnosis)
+}

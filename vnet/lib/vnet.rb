@@ -218,6 +218,12 @@ module Vnet
 
   end
 
+  module Doctor
+    autoload :Vnmgr, 'vnet/doctor/vnmgr'
+    autoload :Vna, 'vnet/doctor/vna'
+    autoload :WebApi, 'vnet/doctor/webapi'
+  end
+
   module Event
     autoload :EventTasks, 'vnet/event/event_tasks'
     autoload :Dispatchable, 'vnet/event/dispatchable'
