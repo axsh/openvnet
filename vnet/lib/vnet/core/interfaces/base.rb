@@ -185,28 +185,6 @@ module Vnet::Core::Interfaces
     end
 
     #
-    # Router ingress/egress:
-    #
-
-    # def enable_router
-    #   return if @enable_router != false
-    #   @enable_router = true
-    #
-    #   flows = []
-    #
-    #   @mac_addresses.each { |mac_lease_id, mac_info|
-    #     flows_for_router_ingress_mac(flows, mac_info)
-    #
-    #     mac_info[:ipv4_addresses].each { |ipv4_info|
-    #       flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
-    #       flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
-    #     }
-    #   }
-    #
-    #   @dp_info.add_flows(flows)
-    # end
-
-    #
     # Filtering methods:
     #
 

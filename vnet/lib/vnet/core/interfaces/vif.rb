@@ -67,6 +67,7 @@ module Vnet::Core::Interfaces
       flows_for_disabled_filtering(flows) unless @enabled_filtering || @enabled_legacy_filtering
       flows_for_disabled_legacy_filtering(flows) unless @ingress_filtering_enabled || !@enabled_legacy_filtering
       flows_for_base(flows)
+      flows_for_classifiers(flows)
 
       @dp_info.add_flows(flows)
     end

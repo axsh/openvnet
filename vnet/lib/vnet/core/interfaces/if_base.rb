@@ -43,6 +43,15 @@ module Vnet::Core::Interfaces
 
     private
 
+    def flows_for_classifiers(flows = [])
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                           goto_table: @enabled_filtering ? TABLE_INTERFACE_EGRESS_FILTER : TABLE_INTERFACE_EGRESS_VALIDATE,
+                           priority: 30,
+                           match_interface: @id,
+                           cookie: cookie
+                          )
+    end
+
     def flows_for_disabled_filtering(flows = [])
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
@@ -81,29 +90,22 @@ module Vnet::Core::Interfaces
                              #match_segment: mac_info[:segment_id],
                              cookie: cookie)
       }
+
+      segment_id = mac_info[:segment_id]
+
+      if segment_id
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                             goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                             priority: 30,
+                             match: { :eth_src => mac_info[:mac_address] },
+                             match_interface: @id,
+                             write_segment: segment_id,
+                             cookie: cookie)
+      end
     end
 
     def flows_for_interface_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
-
-      #
-      # new Classifier
-      #
-      if @enabled_filtering
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_EGRESS_FILTER,
-                             priority: 90,
-                             match_interface: @id,
-                             cookie: cookie
-                            )
-      else
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
-                             priority: 30,
-                             match_interface: @id,
-                             cookie: cookie
-                            )
-      end
 
       #
       # Validate (old Classifier)
@@ -123,7 +125,7 @@ module Vnet::Core::Interfaces
        }].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
                              goto_table: TABLE_NETWORK_CONNECTION,
-                             priority: 30,
+                             priority: 40,
                              match: match,
                              match_interface: @id,
                              write_network: ipv4_info[:network_id],
