@@ -5,7 +5,11 @@ module Vnet::Models
     taggable 'seg'
     plugin :paranoia_is_deleted
 
-    # plugin :association_dependencies,
+    one_to_many :datapath_segments
+
+    plugin :association_dependencies,
+    # 0010_segment
+    datapath_segments: :destroy
 
   end
 end

@@ -89,6 +89,14 @@ module Vnet
     ACTIVATE_DATAPATH_NETWORK = 'activate_datapath_network'
     DEACTIVATE_DATAPATH_NETWORK = 'deactivate_datapath_network'
 
+    ACTIVATE_SEGMENT_ON_HOST = 'activate_segment_on_host'
+    DEACTIVATE_SEGMENT_ON_HOST = 'deactivate_segment_on_host'
+
+    ADDED_DATAPATH_SEGMENT = 'added_datapath_segment'
+    REMOVED_DATAPATH_SEGMENT = 'removed_datapath_segment'
+    ACTIVATE_DATAPATH_SEGMENT = 'activate_datapath_segment'
+    DEACTIVATE_DATAPATH_SEGMENT = 'deactivate_datapath_segment'
+
     ACTIVATE_ROUTE_LINK_ON_HOST = 'activate_route_link_on_host'
     DEACTIVATE_ROUTE_LINK_ON_HOST = 'deactivate_route_link_on_host'
 

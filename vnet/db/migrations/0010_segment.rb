@@ -24,19 +24,21 @@ Sequel.migration do
       primary_key :id
 
       # TODO: Review indices and null.
-      Integer :datapath_id, :index => true, :null=>false
-      Integer :segment_id, :index => true, :null=>false
+      Integer :datapath_id, :null=>false
+      Integer :segment_id, :null=>false
 
-      Integer :interface_id, :index => true, :null=>true
-      Integer :mac_address_id, :index => true, :null=>false
-      Integer :ip_lease_id, :index => true
+      Integer :interface_id, :null=>true
+      Integer :mac_address_id, :null=>false
+      Integer :ip_lease_id
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
-      DateTime :deleted_at, :index => true
+      DateTime :deleted_at, :index=>true
       Integer :is_deleted, :null=>false, :default=>0
 
       unique [:datapath_id, :segment_id, :is_deleted]
+      index [:datapath_id, :is_deleted]
+      index [:segment_id, :is_deleted]
     end
 
   end

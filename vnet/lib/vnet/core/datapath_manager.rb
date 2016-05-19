@@ -23,6 +23,14 @@ module Vnet::Core
     subscribe_event ACTIVATE_DATAPATH_NETWORK, :activate_datapath_network
     subscribe_event DEACTIVATE_DATAPATH_NETWORK, :deactivate_datapath_network
 
+    subscribe_event ACTIVATE_SEGMENT_ON_HOST, :activate_segment
+    subscribe_event DEACTIVATE_SEGMENT_ON_HOST, :deactivate_segment
+
+    subscribe_event ADDED_DATAPATH_SEGMENT, :added_datapath_segment
+    subscribe_event REMOVED_DATAPATH_SEGMENT, :removed_datapath_segment
+    subscribe_event ACTIVATE_DATAPATH_SEGMENT, :activate_datapath_segment
+    subscribe_event DEACTIVATE_DATAPATH_SEGMENT, :deactivate_datapath_segment
+
     subscribe_event ACTIVATE_ROUTE_LINK_ON_HOST, :activate_route_link
     subscribe_event DEACTIVATE_ROUTE_LINK_ON_HOST, :deactivate_route_link
 
@@ -34,6 +42,7 @@ module Vnet::Core
     def initialize(*args)
       super
       @active_networks = {}
+      @active_segments = {}
       @active_route_links = {}
     end
 
@@ -97,6 +106,10 @@ module Vnet::Core
     def item_post_install(item, item_map)
       item_map.batch.datapath_networks.commit.each { |dpn_map|
         internal_added_datapath_network(item, dpn_map)
+      }
+
+      item_map.batch.datapath_segments.commit.each { |dpn_map|
+        internal_added_datapath_segment(item, dpn_map)
       }
 
       item_map.batch.datapath_route_links.commit.each { |dprl_map|
@@ -227,6 +240,120 @@ module Vnet::Core
     end
 
     #
+    # Segment events:
+    #
+
+    # ACTIVATE_SEGMENT_ON_HOST on queue ':segment'
+    def activate_segment(params)
+      segment_id = params[:segment_id] || return
+      return if @active_segments.has_key? segment_id
+
+      @active_segments[segment_id] = {
+      }
+
+      @items.select { |id, item|
+        item.has_active_segment?(segment_id)
+      }.each { |id, item|
+        publish(ACTIVATE_DATAPATH_SEGMENT, id: item.id, segment_id: segment_id)
+      }
+
+      load_datapath_segments(segment_id)
+    end
+
+    # DEACTIVATE_SEGMENT_ON_HOST on queue ':segment'
+    def deactivate_segment(params)
+      segment_id = params[:segment_id] || return
+      segment = @active_segments.delete(segment_id) || return
+
+      @items.select { |id, item|
+        item.has_active_segment?(segment_id)
+      }.each { |id, item|
+        publish(DEACTIVATE_DATAPATH_SEGMENT, id: item.id, segment_id: segment_id)
+      }
+
+      # unload_datapath_segments(segment_id)
+    end
+
+    # ADDED_DATAPATH_SEGMENT on queue 'item.id'
+    def added_datapath_segment(params)
+      item = internal_detect_by_id(params)
+
+      if item.nil?
+        # TODO: Make sure we don't lock here...
+        return internal_retrieve(id: params[:id])
+      end
+
+      # TODO: Fix this so all params contain the needed information.
+      case
+      when params[:dpseg_map]
+        dpg_map = params[:dpseg_map]
+      when params[:segment_id]
+        dpg_map = MW::DatapathSegment.batch[datapath_id: item.id, segment_id: params[:segment_id]].commit
+      end
+
+      internal_added_datapath_segment(item, dpg_map)
+    end
+
+    # REMOVED_DATAPATH_SEGMENT on queue 'item.id'
+    def removed_datapath_segment(params)
+      item = internal_detect_by_id(params) || return
+      segment_id = params[:segment_id] || return
+
+      item.remove_active_segment(segment_id)
+      item.deactivate_segment_id(segment_id)
+
+      if !item.host? && item.unused?
+        publish(REMOVED_DATAPATH, id: item.id)
+      end
+    end
+
+    # ACTIVATE_DATAPATH_SEGMENT on queue 'item.id'
+    def activate_datapath_segment(params)
+      item = internal_detect_by_id(params) || return
+
+      segment_id = params[:segment_id] || return
+      segment = @active_segments[segment_id]
+
+      info log_format("activating datapath segment #{segment_id}")
+
+      item.activate_segment_id(segment_id) if segment
+    end
+
+    # DEACTIVATE_DATAPATH_SEGMENT on queue 'item.id'
+    def deactivate_datapath_segment(params)
+      item = internal_detect_by_id(params) || return
+
+      segment_id = params[:segment_id] || return
+      segment = @active_segments[segment_id]
+
+      info log_format("deactivating datapath segment #{segment_id}")
+
+      item.deactivate_segment_id(segment_id)
+
+      if !item.host? && item.unused?
+        publish(REMOVED_DATAPATH, id: item.id)
+      end
+    end
+
+    #
+    # Segment methods:
+    #
+
+    # Require queue ':segment'
+    def load_datapath_segments(segment_id)
+      # Load all datapath segments on other datapaths.
+
+      return unless @datapath_info
+
+      MW::DatapathSegment.batch.where(segment_id: segment_id).all.commit.each { |dpg_map|
+        next if dpg_map.datapath_id == @datapath_info.id
+        next if @items[dpg_map.datapath_id]
+
+        self.async.internal_retrieve(id: dpg_map.datapath_id)
+      }
+    end
+
+    #
     # Route link events:
     #
 
@@ -338,17 +465,24 @@ module Vnet::Core
     # Refactored:
     #
 
-    def internal_added_datapath_network(item, dpn_map)
-      network_id = (dpn_map && dpn_map.network_id) || return
+    def internal_added_datapath_network(item, dpg_map)
+      network_id = (dpg_map && dpg_map.network_id) || return
 
-      item.add_active_network(dpn_map)
+      item.add_active_network(dpg_map)
       item.activate_network_id(network_id) if @active_networks[network_id]
     end
 
-    def internal_added_datapath_route_link(item, dprl_map)
-      route_link_id = (dprl_map && dprl_map.route_link_id) || return
+    def internal_added_datapath_segment(item, dpg_map)
+      segment_id = (dpg_map && dpg_map.segment_id) || return
 
-      item.add_active_route_link(dprl_map)
+      item.add_active_segment(dpg_map)
+      item.activate_segment_id(segment_id) if @active_segments[segment_id]
+    end
+
+    def internal_added_datapath_route_link(item, dpg_map)
+      route_link_id = (dpg_map && dpg_map.route_link_id) || return
+
+      item.add_active_route_link(dpg_map)
       item.activate_route_link_id(route_link_id) if @active_route_links[route_link_id]
     end
 

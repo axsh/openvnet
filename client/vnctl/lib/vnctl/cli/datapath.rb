@@ -22,6 +22,13 @@ module Vnctl::Cli
         :desc => "The host interface uuid to use for this network."
     end
 
+    define_relation :segments do |relation|
+      relation.option :mac_address, :type => :string, :required => false,
+        :desc => "The broadcast mac address for mac2mac to use in this segment."
+      relation.option :interface_uuid, :type => :string, :required => true,
+        :desc => "The host interface uuid to use for this segment."
+    end
+
     define_relation(:route_links) do |relation|
       relation.option :mac_address, :type => :string, :required => false,
         :desc => "The mac address to use for this link"

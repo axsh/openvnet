@@ -8,9 +8,11 @@ module Vnet::Models
     plugin :paranoia_is_deleted
 
     one_to_many :datapath_networks
+    one_to_many :datapath_segments
     one_to_many :datapath_route_links
 
     many_to_many :networks, :join_table => :datapath_networks, :conditions => "datapath_networks.deleted_at is null"
+    many_to_many :segments, :join_table => :datapath_segments, :conditions => "datapath_segments.deleted_at is null"
     many_to_many :route_links, :join_table => :datapath_route_links, :conditions => "datapath_route_links.deleted_at is null"
 
     one_to_many :interface_ports
@@ -36,7 +38,9 @@ module Vnet::Models
     active_networks: :destroy,
     active_ports: :destroy,
     # 0009_topology
-    topology_datapaths: :destroy
+    topology_datapaths: :destroy,
+    # 0010_segment
+    datapath_segments: :destroy
 
     def dpid_s
       "0x%016x" % dpid
