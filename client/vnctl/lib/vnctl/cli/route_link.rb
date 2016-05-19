@@ -6,10 +6,9 @@ module Vnctl::Cli
     api_suffix "route_links"
 
     add_modify_shared_options {
-      option :mac_address, :type => :string, :required => true,
+      option :mac_address, :type => :string, :required => false,
        :desc => "The mac address for this route link."
     }
-    set_required_options [:mac_address]
 
     define_standard_crud_commands
   end

@@ -21,11 +21,6 @@ module Vnet::Core
     subscribe_event INTERFACE_PORT_ACTIVATE, :activate_port
     subscribe_event INTERFACE_PORT_DEACTIVATE, :deactivate_port
 
-    # When event handling is set to drop-all, this does nothing.
-    def load_internal_interfaces
-      internal_load_where(mode: 'internal', allowed_datapath: true)
-    end
-
     def load_simulated_on_network_id(network_id)
       # TODO: Add list of active network id's for which we should have
       # simulated interfaces loaded.
@@ -95,6 +90,11 @@ module Vnet::Core
       filter
     end
 
+    def do_initialize
+      # When event handling is set to drop-all, this does nothing.
+      internal_load_where(mode: 'internal', allowed_datapath: true)
+    end
+
     # We only initialize interface ports that are allowed on this
     # datapath.
     #
@@ -152,7 +152,7 @@ module Vnet::Core
       else
         if item.singular
           @dp_info.interface_manager.load_local_interface(item.interface_id)
-        elsif 
+        elsif
           @dp_info.interface_manager.load_shared_interface(item.interface_id)
         end
       end
@@ -203,12 +203,20 @@ module Vnet::Core
     # Overload helper methods:
     #
 
-    # TODO: Move to a core-specific manager class:
+    # TODO: Move to a core-specific manager class as an overloadable method.
     def params_valid_item?(params)
-      return @datapath_info &&
-        params[:id] &&
-        params[:interface_id]
-        params[:datapath_id]
+      begin
+        get_param_id(params, :id)
+        get_param_id(params, :interface_id)
+        get_param_id(params, :datapath_id, false)
+        get_param_true(params, :singular, false)
+
+        return true
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+        Thread.current.backtrace.each { |str| warn log_format(str) }
+        return false
+      end
     end
 
     def params_current_datapath?(params)

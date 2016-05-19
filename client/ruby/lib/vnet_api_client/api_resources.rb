@@ -50,6 +50,19 @@ module VNetAPIClient
     api_suffix :ip_leases
 
     define_standard_crud_methods
+
+    def self.attach(target_uuid, params = nil)
+      send_request(Net::HTTP::Put,
+                   "#{@api_suffix}/#{target_uuid}/attach",
+                   params)
+    end
+
+    def self.release(target_uuid, params = nil)
+      send_request(Net::HTTP::Put,
+                   "#{@api_suffix}/#{target_uuid}/release",
+                   params)
+    end
+
   end
 
   class IpRangeGroup < ApiResource
@@ -105,6 +118,21 @@ module VNetAPIClient
     define_standard_crud_methods
   end
 
+  class MacRangeGroup < ApiResource
+    api_suffix :mac_range_groups
+
+    define_standard_crud_methods
+
+    define_show_relation(:mac_ranges)
+    define_remove_relation(:mac_ranges)
+
+    def self.add_range(mac_range_group_uuid, params = nil)
+      send_request(Net::HTTP::Post,
+                   "#{@api_suffix}/#{mac_range_group_uuid}/mac_ranges",
+                   params)
+    end
+  end
+
   class Network < ApiResource
     api_suffix :networks
 
@@ -152,6 +180,42 @@ module VNetAPIClient
                    "#{@api_suffix}/#{translation_uuid}/static_address",
                    params)
     end
+  end
+
+  class Filter < ApiResource
+    api_suffix :filters
+
+    define_standard_crud_methods
+
+    def self.add_filter_static(filter_uuid, params = nil)
+      send_request(Net::HTTP::Post,
+                   "#{@api_suffix}/#{filter_uuid}/static",
+                   params)
+    end
+
+    def self.remove_filter_static(filter_uuid, params = nil)
+      send_request(Net::HTTP::Delete,
+                   "#{@api_suffix}/#{filter_uuid}/static",
+                   params)
+    end
+    def self.show_filter_static(params = nil)
+      send_request(Net::HTTP::Get,
+                   "#{@api_suffix}/static/",
+                   params)
+    end
+    def self.show_filter_static_by_uuid(filter_uuid, params = nil)
+      send_request(Net::HTTP::Get,
+                   "#{@api_suffix}/static/#{filter_uuid}",
+                   params)
+    end
+  end
+
+  class Topology < ApiResource
+    api_suffix :topologies
+
+    define_standard_crud_methods
+    define_relation_methods(:networks)
+    define_relation_methods(:route_links)
   end
 
   class VlanTranslation < ApiResource

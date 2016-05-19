@@ -1,9 +1,0 @@
-source "http://api.berkshelf.com"
-
-cookbook "yum"
-cookbook "yum-epel"
-cookbook "yum-repoforge"
-
-cookbook "ntp"
-cookbook "sysctl"
-cookbook "rbenv"

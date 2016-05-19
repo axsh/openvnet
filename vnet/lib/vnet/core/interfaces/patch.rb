@@ -46,7 +46,8 @@ module Vnet::Core::Interfaces
 
     def install
       flows = []
-      flows_for_disabled_filtering(flows) unless @ingress_filtering_enabled
+      flows_for_disabled_filtering(flows) unless @enabled_filtering || @enabled_legacy_filtering
+      flows_for_disabled_legacy_filtering(flows) unless @ingress_filtering_enabled || !@enabled_legacy_filtering
       flows_for_base(flows)
 
       if @enable_routing && !@enable_route_translation
@@ -106,7 +107,7 @@ module Vnet::Core::Interfaces
     def flows_for_router_egress_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
                            priority: 20,
                            match: {
                              :eth_src => mac_info[:mac_address]

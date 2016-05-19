@@ -3,8 +3,9 @@
 module Vnet::Models
   class Translation < Base
     taggable 'tr'
-
     plugin :paranoia_is_deleted
+
+    use_modes Vnet::Constants::Translation::MODES
 
     one_to_many :translation_static_addresses
     one_to_many :vlan_translations

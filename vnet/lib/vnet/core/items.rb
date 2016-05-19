@@ -10,6 +10,12 @@ module Vnet::Core
   class ActiveNetwork < OpenStruct
   end
 
+  class ActiveRouteLink < OpenStruct
+  end
+
+  class ActivePort < OpenStruct
+  end
+
   class Datapath < OpenStruct
   end
 
@@ -23,6 +29,9 @@ module Vnet::Core
   end
 
   class Translation < OpenStruct
+  end
+
+  class Filter < OpenStruct
   end
 
 end

@@ -36,8 +36,8 @@ module Vnet::Core::Routes
 
       @active_network = false
       @active_route_link = false
-    end    
-    
+    end
+
     def log_type
       'route/base'
     end
@@ -58,7 +58,7 @@ module Vnet::Core::Routes
 
                             interface_id: @interface_id,
                             route_link_id: @route_link_id,
-                            
+
                             network_id: @network_id,
                             ipv4_address: @ipv4_address,
                             ipv4_prefix: @ipv4_prefix,
@@ -87,7 +87,7 @@ module Vnet::Core::Routes
       # id will never be matched.
       flows << flow_create(table: TABLE_INTERFACE_EGRESS_ROUTES,
                            goto_table: TABLE_INTERFACE_EGRESS_MAC,
-                           priority: self.is_default_route ? 20 : 30,
+                           priority: flow_priority,
 
                            match: subnet_dst,
                            match_interface: @interface_id,
@@ -137,6 +137,10 @@ module Vnet::Core::Routes
     #
 
     private
+
+    def flow_priority
+      20 + @ipv4_prefix
+    end
 
   end
 

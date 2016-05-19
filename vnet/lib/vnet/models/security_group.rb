@@ -35,7 +35,7 @@ module Vnet::Models
         :interface_id => interface_id).first.id
 
       SecurityGroupInterface.with_deleted.where(
-        :security_group_id => self.id).where("id <= #{row_id}").count
+        :security_group_id => self.id).where("id <= ?", row_id).count
     end
 
     def ip_addresses

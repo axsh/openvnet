@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+
+# Remove top-level :array and :string methods introduced by trema-edge
+# to avoid the conflict with BinData's primitive methods.
+Class.class_eval { undef_method :array } rescue NameError
+Class.class_eval { undef_method :string } rescue NameError
+require 'pio'
+
 module Vnet::Endpoints::V10::Helpers
   E = Vnet::Endpoints::Errors
 
@@ -22,7 +29,14 @@ module Vnet::Endpoints::V10::Helpers
 
     def pop_uuid(model, key = "uuid", fill = {})
       uuid = @params.delete(key)
+      check_uuid_syntax(model, uuid)
       model.batch[uuid].commit(:fill => fill) || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
+    end
+
+    def pop_uuid_or_nil(model, key = "uuid", fill = {})
+      uuid = @params.delete(key) || return
+      check_uuid_syntax(model, uuid)
+      model.batch[uuid].commit(:fill => fill)
     end
 
     def check_uuid_syntax(model, uuid)
@@ -34,11 +48,13 @@ module Vnet::Endpoints::V10::Helpers
       @params["uuid"] = model.trim_uuid(@params["uuid"])
     end
 
+    # Deprecated:
     def check_syntax_and_pop_uuid(model, key = "uuid", fill = {})
       check_uuid_syntax(model, @params[key])
       pop_uuid(model, key, fill)
     end
 
+    # Deprecated:
     def check_syntax_and_get_id(model, uuid_key = "uuid", id_key = "id", fill = {})
       check_uuid_syntax(model, @params[uuid_key])
       uuid_to_id(model, uuid_key, id_key, fill)
@@ -52,6 +68,16 @@ module Vnet::Endpoints::V10::Helpers
 
       model
     end
+
+    def uuid_to_id_or_nil(model, uuid_key = "uuid", id_key = "id", fill = {})
+      model = pop_uuid_or_nil(model, uuid_key, fill) || return
+      model.id || raise(E::InvalidID, "#{model.name.split("::").last}#uuid: #{uuid}")
+
+      @params[id_key] = model.id
+
+      model
+    end
+
   end
 
   module Parsers
@@ -68,9 +94,20 @@ module Vnet::Endpoints::V10::Helpers
 
     PARSE_MAC = proc do |param|
       begin
-        Trema::Mac.new(param).value
-      rescue ArgumentError
+        Pio::Mac.new(param).to_i
+      rescue Pio::Mac::InvalidValueError
         raise(E::ArgumentError, "Could not parse MAC address: #{param}")
+      end
+    end
+
+    PARSE_IPV4_ADDRESS = proc do |param|
+      begin
+        #TODO: Change to ipaddress
+        address = IPAddress::IPv4.new(param)
+        raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
+        address
+      rescue ArgumentError
+        raise(E::ArgumentError, "Could not parse IPv4 address: #{param}")
       end
     end
   end

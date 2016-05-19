@@ -19,6 +19,8 @@ module Vnet::Core
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
     subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
     subscribe_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
+    subscribe_event INTERFACE_ENABLED_FILTERING2, :enabled_filtering2
+    subscribe_event INTERFACE_DISABLED_FILTERING2, :disabled_filtering2
 
     subscribe_event INTERFACE_LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event INTERFACE_RELEASED_MAC_ADDRESS, :released_mac_address
@@ -143,6 +145,10 @@ module Vnet::Core
                                       id: :interface,
                                       interface_id: item.id)
 
+      @dp_info.filter2_manager.publish(FILTER_ACTIVATE_INTERFACE,
+                                       id: :interface,
+                                       interface_id: item.id)
+
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
     end
@@ -153,6 +159,10 @@ module Vnet::Core
                                       interface_id: item.id)
 
       @dp_info.filter_manager.async.remove_filters(item.id)
+
+      @dp_info.filter2_manager.publish(FILTER_DEACTIVATE_INTERFACE,
+                                       id: :interface,
+                                       interface_id: item.id)
 
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.remove_catch_new_egress(id)
@@ -244,7 +254,7 @@ module Vnet::Core
 
       return unless mac_lease && mac_lease.interface_id == item.id
 
-      mac_address = Trema::Mac.new(mac_lease.mac_address)
+      mac_address = Pio::Mac.new(mac_lease.mac_address)
       item.add_mac_address(mac_lease_id: mac_lease.id,
                            mac_address: mac_address,
                            cookie_id: mac_lease.cookie_id)
@@ -285,7 +295,7 @@ module Vnet::Core
       return unless item && ip_lease.interface_id == item.id
 
       network = @dp_info.network_manager.retrieve(id: ip_lease.ip_address.network_id)
-      
+
       if network.nil?
         error log_format("could not find network for ip lease",
                          "interface_id:#{ip_lease.interface_id} network_id:#{ip_lease.ip_address.network_id}")
@@ -330,6 +340,24 @@ module Vnet::Core
 
       info log_format("disabled filtering on interface", item.uuid)
       item.disable_filtering
+    end
+
+    # INTERFACE_ENABLED_FILTERING2 on queue 'item.id'
+    def enabled_filtering2(params)
+      item = internal_detect(id: id)
+      return if !item || item.enabled_filtering
+
+      info log_format("enabled filtering on interface", item.uuid)
+      item.enable_filtering2
+    end
+
+    # INTERFACE_DISABLED_FILTERING2 on queue 'item.id'
+    def disabled_filtering2(params)
+      item = internal_detect(id: id)
+      return if !item || !item.enabled_filtering
+
+      info log_format("disabled filtering on interface", item.uuid)
+      item.disable_filtering2
     end
 
     #

@@ -36,7 +36,7 @@ module Vnet::Core::Translations
       @static_addresses.each { |id, translation|
         debug log_format('installing translation for ' + self.pretty_id,
                          pretty_static_address(translation))
-                         
+
         next unless valid_translation?(translation)
 
         flows_for_ingress_translation(flows, translation)
@@ -73,12 +73,12 @@ module Vnet::Core::Translations
     end
 
     def removed_static_address(static_address_id)
+      debug log_format("removing static address #{static_address_id} from #{@uuid}/#{@id}")
+
       translation = @static_addresses.delete(static_address_id)
 
       return if @installed == false
       return unless valid_translation?(translation)
-
-      # TODO: Fix del flow for route link translation...
 
       match_actions_for_ingress(translation).each { |match, actions|
         routing_table_base_indices.each { |table_base|
@@ -202,10 +202,12 @@ module Vnet::Core::Translations
       }
     end
 
-
     def flows_for_egress_translation(flows, translation)
       match_actions_for_egress(translation).each { |match, actions|
         flow_options = {
+          table: egress_table_id(translation),
+          goto_table: TABLE_ROUTE_EGRESS_INTERFACE,
+
           priority: 50,
           match: match,
           actions: actions
@@ -233,6 +235,10 @@ module Vnet::Core::Translations
           flows << flow_create(flow_options)
         }
       }
+    end
+
+    def egress_table_id(translation)
+      translation[:route_link_id] ? TABLE_ROUTE_EGRESS_LOOKUP : TABLE_ROUTE_EGRESS_TRANSLATION
     end
 
   end

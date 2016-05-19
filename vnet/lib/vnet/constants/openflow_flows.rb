@@ -40,9 +40,10 @@ module Vnet
 
       # Handle egress packets from trusted interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15
-      TABLE_INTERFACE_EGRESS_ROUTES      = 16
-      TABLE_INTERFACE_EGRESS_MAC         = 17
-      TABLE_INTERFACE_EGRESS_FILTER      = 18
+      TABLE_INTERFACE_EGRESS_FILTER      = 16
+      TABLE_INTERFACE_EGRESS_VALIDATE    = 17
+      TABLE_INTERFACE_EGRESS_ROUTES      = 18
+      TABLE_INTERFACE_EGRESS_MAC         = 19
 
       # Initial verification of network number and application of global
       # filtering rules.
@@ -52,8 +53,9 @@ module Vnet
       # currently known as the 'physical' network.
       #
       # Later we will always require a network number to be supplied.
-      TABLE_NETWORK_SRC_CLASSIFIER    = 20
-      TABLE_NETWORK_SRC_MAC_LEARNING  = 21
+      TABLE_NETWORK_CONNECTION        = 20
+      TABLE_NETWORK_SRC_CLASSIFIER    = 21
+      TABLE_NETWORK_SRC_MAC_LEARNING  = 22
 
       #
       # Routing tables:
@@ -195,6 +197,8 @@ module Vnet
       COOKIE_PREFIX_CONNECTION     = 0xf
 
       COOKIE_PREFIX_ACTIVE_INTERFACE = 0x10
+      COOKIE_PREFIX_ACTIVE_PORT      = 0x11
+      COOKIE_PREFIX_FILTER2          = 0x12
 
       COOKIE_TYPE_CONNECTION     = (COOKIE_PREFIX_CONNECTION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DATAPATH       = (COOKIE_PREFIX_DATAPATH << COOKIE_PREFIX_SHIFT)
@@ -211,8 +215,10 @@ module Vnet
       COOKIE_TYPE_INTERFACE      = (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_TRANSLATION    = (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_FILTER         = (COOKIE_PREFIX_FILTER << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_FILTER2        = (COOKIE_PREFIX_FILTER2 << COOKIE_PREFIX_SHIFT)
 
       COOKIE_TYPE_ACTIVE_INTERFACE = (COOKIE_PREFIX_ACTIVE_INTERFACE << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_ACTIVE_PORT      = (COOKIE_PREFIX_ACTIVE_PORT << COOKIE_PREFIX_SHIFT)
 
       #
       # Metadata constants:

@@ -12,7 +12,7 @@ module Vnet::ModelWrappers
         :route_link_uuid => self.batch.route_link.commit.uuid,
         :network_uuid => network && network.uuid,
         :interface_uuid => interface && interface.uuid,
-        :route_type => self.route_type,
+        :mode => self.mode,
         :ipv4_network => self.ipv4_network,
         :ipv4_prefix => self.ipv4_prefix,
         :ingress => self.ingress,

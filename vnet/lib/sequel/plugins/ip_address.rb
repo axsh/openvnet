@@ -40,21 +40,20 @@ module Sequel
             end
             @ipv4_address
           end
-
-          def valid_in_subnet
-            return true unless @network
-            ipv4_nw = IPAddress::IPv4::parse_u32(self.network.ipv4_network, self.network.ipv4_prefix)
-            ipv4 = IPAddress::IPv4::parse_u32(self.ipv4_address, self.network.ipv4_prefix)
-
-            ipv4_nw.include? (ipv4)
-          end
         end
       end
 
       module InstanceMethods
         def validate
           super
-          errors.add(:ipv4_address, 'invalid subnet') if not valid_in_subnet
+          if @network
+            valid_subnet, ipv4_nw_s, ipv4_s = Vnet::Helpers::IpAddress.valid_in_subnet(
+              self.network, self.ipv4_address)
+
+            if !valid_subnet
+              errors.add(:ipv4_address, "IP Address #{ipv4_s} not in subnet #{ipv4_nw_s}.")
+            end
+          end
           errors.add(:network_id, 'cannot be empty') if self.network_id.blank?
           errors.add(:ipv4_address, 'cannot be empty') if self.ipv4_address.blank?
         end

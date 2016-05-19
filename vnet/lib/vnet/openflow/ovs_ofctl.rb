@@ -92,7 +92,7 @@ module Vnet::Openflow
     end
 
     def mod_port(port_no, action)
-      debug log_format('modifying', "port_number:#{port_no} action:#{action.to_s}")
+      debug log_format('modifying', "port_number:#{port_no} action:#{action}")
 
       arg = case action
             when :forward, :down, :flood, :stp, :receive, :up

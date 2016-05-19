@@ -31,6 +31,8 @@ module Vnet::Openflow
     end
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
+      ipv4_info_mask = ipv4_info[:network_prefix]
+
       [[20, {
           :eth_src => mac_info[:mac_address],
           :eth_type => 0x0800
@@ -38,8 +40,8 @@ module Vnet::Openflow
        [30, {
           :eth_src => mac_info[:mac_address],
           :eth_type => 0x0800,
-          :ipv4_dst => ipv4_info[:ipv4_address],
-          :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info[:network_prefix])
+          :ipv4_dst => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
+          :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
         }]
       ].each { |priority, match|
         flows << flow_create(table: TABLE_ARP_LOOKUP,
@@ -95,7 +97,7 @@ module Vnet::Openflow
         # Remove virtual network mode's use of db lookup until arp
         # lookup has been refactored, as the db lookups as-is won't
         # work with the active interface refactoring.
-        
+
         case ipv4_info[:network_type]
         when :physical
           arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
@@ -120,7 +122,7 @@ module Vnet::Openflow
 
       if network_conf.uuid && network_conf.uuid == network.uuid
         default_gw = network_conf.gateway && network_conf.gateway.address
-        
+
         debug log_format("arp lookup using gateway '#{default_gw}'")
 
         return IPAddr.new(default_gw) if default_gw
@@ -163,8 +165,8 @@ module Vnet::Openflow
         if messages.first && messages.first[:destination_ipv4]
           flow = Flow.create(TABLE_ARP_LOOKUP, 25,
                              match_md.merge({ :eth_type => 0x0800,
-                                              :ipv4_dst => messages.first[:destination_ipv4],
-                                              :ipv4_dst_mask => messages.first[:destination_ipv4].mask(messages.first[:destination_prefix]),
+                                              :ipv4_dst => messages.first[:destination_ipv4].mask(messages.first[:destination_prefix]),
+                                              :ipv4_dst_mask => IPV4_BROADCAST.mask(messages.first[:destination_prefix]),
                                             }), {
                                :eth_dst => message.arp_sha
                              },
@@ -234,7 +236,7 @@ module Vnet::Openflow
 
       debug log_format('arp_lookup: process timeout, looking up in database',
                        "network:#{params[:interface_network_id]} ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]}")
-      
+
       filter_args = {
         :ip_addresses__network_id => params[:interface_network_id],
         :ip_addresses__ipv4_address => params[:request_ipv4].to_i
@@ -248,7 +250,7 @@ module Vnet::Openflow
       end
 
       debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
-      
+
       # Load remote interface.
       interface = @dp_info.active_interface_manager.retrieve(interface_id: ip_lease.interface_id)
 
@@ -267,7 +269,7 @@ module Vnet::Openflow
                          match_network: params[:interface_network_id],
 
                          actions: {
-                           :eth_dst => Trema::Mac.new(ip_lease.mac_lease.mac_address),
+                           :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
                          },
 
                          idle_timeout: 3600,

@@ -36,6 +36,26 @@ module Vnctl::Cli
       # * del
       # * show
 
+      # 'Add' often use mostly the same options. Use this method to
+      # define them
+      def self.add_shared_options(&blk)
+        if block_given?
+          @add_shared_options = blk
+        else
+          @add_shared_options && @add_shared_options.call
+        end
+      end
+
+      # 'Modify' often use mostly the same options. Use this method to
+      # define them
+      def self.modify_shared_options(&blk)
+        if block_given?
+          @modify_shared_options = blk
+        else
+          @modify_shared_options && @modify_shared_options.call
+        end
+      end
+
       # 'Add' and 'modify' often use mostly the same options. Use this method to
       # define them
       def self.add_modify_shared_options(&blk)
@@ -130,9 +150,11 @@ module Vnctl::Cli
       # And one little convenient method to define all CRUD commands
       def self.define_standard_crud_commands
         option_uuid
+        add_shared_options
         add_modify_shared_options
         define_add
 
+        modify_shared_options
         add_modify_shared_options
         define_modify
 
@@ -226,6 +248,41 @@ module Vnctl::Cli
 
         c
       end
+
+      # Method for mode type relationships
+
+      def self.define_mode_relation(mode_type, required_opts = [], &block)
+        parent = self
+        c = Class.new(Base) do
+
+          base_uuid = "#{parent.namespace.chomp('s')}"
+
+          yield self if block_given?
+          desc "add #{base_uuid.upcase}_UUID OPTIONS", "Adds a(n) #{mode_type} #{base_uuid}."
+          define_method("add") { | uuid |
+            puts Vnctl.webapi.post("#{suffix}/#{uuid}/#{mode_type}", options)
+          }
+
+          yield self if block_given?
+          desc "del #{base_uuid.upcase}_UUID OPTIONS", "Removes a(n) #{mode_type} #{base_uuid}."
+          define_method("del") { | uuid |
+            puts Vnctl.webapi.delete("#{suffix}/#{uuid}/#{mode_type}", options)
+          }
+
+          desc "show #{mode_type} #{base_uuid.upcase}_UUID",  "Shows all #{mode_type}s."
+          define_method("show") { | uuid = nil |
+            puts Vnctl.webapi.get("#{suffix}/#{mode_type}/#{uuid}")
+          }
+        end
+
+        c.namespace "#{self.namespace} #{mode_type}"
+        c.api_suffix self.api_suffix
+
+        register(c, "#{mode_type}", "#{mode_type} OPTIONS",
+                 "subcommand to manage #{mode_type} in this #{self.namespace}.")
+        c
+      end
     }
   end
 end
+
