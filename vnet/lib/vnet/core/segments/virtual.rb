@@ -52,16 +52,16 @@ module Vnet::Core::Segments
     end
 
     def update_flows(port_numbers)
-      # flood_actions = port_numbers.collect { |port_number|
-      #   { :output => port_number }
-      # }
+      flood_actions = port_numbers.collect { |port_number|
+        { :output => port_number }
+      }
 
-      # flows = []
-      # flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
-      #                      md_create(:segment => @id),
-      #                      flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
+      flows = []
+      flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
+                           md_create(:segment => @id),
+                           flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
 
-      # @dp_info.add_flows(flows)
+      @dp_info.add_flows(flows)
     end
 
     def create_ovs_flow_learn_arp(priority, match_options = "", learn_options = "")

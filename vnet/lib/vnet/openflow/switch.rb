@@ -134,6 +134,9 @@ module Vnet::Openflow
        [TABLE_NETWORK_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
           :eth_dst => MAC_BROADCAST
         }],
+       [TABLE_SEGMENT_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
+          :eth_dst => MAC_BROADCAST
+        }],
        [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_OVER_TUNNEL, 1, nil, {
           :tunnel_id => TUNNEL_ROUTE_LINK
         }],
