@@ -32,10 +32,6 @@ module Vnet::Core::Interfaces
     def enable_filtering2
       @enabled_filtering = true
 
-      @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                         cookie: self.cookie,
-                         cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
-                         match_interface: @id)
       @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
                          cookie: self.cookie,
                          cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
@@ -46,11 +42,6 @@ module Vnet::Core::Interfaces
 
     def disable_filtering2
       @enabled_filtering = false
-
-      @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                         cookie: self.cookie,
-                         cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
-                         match_interface: @id)
 
       flows = []
       flows_for_disabled_filtering(flows)
@@ -84,15 +75,13 @@ module Vnet::Core::Interfaces
     def flows_for_egress_classifier(flows = [])
       if @enabled_filtering
         goto_table = TABLE_INTERFACE_EGRESS_FILTER
-        priority = 90
       else
         goto_table = TABLE_INTERFACE_EGRESS_VALIDATE
-        priority = 30
       end
 
       flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
                            goto_table: goto_table,
-                           priority: priority,
+                           priority: 30,
                            match_interface: @id,
                            cookie: self.cookie
     end
