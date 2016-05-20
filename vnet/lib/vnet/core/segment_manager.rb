@@ -141,21 +141,23 @@ module Vnet::Core
     # Create / Delete events:
     #
 
-    def item_pre_install(item, item_map)
-      # case item.class
-      # when Segments::StaticAddress then load_static_addresses(item, item_map)
-      # end
+    def item_post_install(item, item_map)
+      # @dp_info.active_segment_manager.publish(ACTIVE_SEGMENT_ACTIVATE, id: [:segment, item.id])
+      @dp_info.datapath_manager.publish(ACTIVATE_SEGMENT_ON_HOST, id: :segment, segment_id: item.id)
+
+      add_item_id_to_update_queue(item.id)
     end
 
-    def item_post_install(item, item_map)
-      add_item_id_to_update_queue(item.id)
+    def item_pre_uninstall(item)
+      # @dp_info.active_segment_manager.publish(ACTIVE_SEGMENT_DEACTIVATE, id: [:segment, item.id])
+      @dp_info.datapath_manager.publish(DEACTIVATE_SEGMENT_ON_HOST, id: :segment, segment_id: item.id)
     end
 
     # SEGMENT_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-      return if internal_detect_by_id(params)
+      # return if internal_detect_by_id(params)
 
-      internal_new_item(mw_class.new(params))
+      # internal_new_item(mw_class.new(params))
     end
 
     # Requires queue ':update_item_states'

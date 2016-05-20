@@ -104,16 +104,16 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
-      item_map.batch.datapath_networks.commit.each { |dpn_map|
-        internal_added_datapath_network(item, dpn_map)
+      item_map.batch.datapath_networks.commit.each { |dpgen_map|
+        internal_added_datapath_network(item, dpgen_map)
       }
 
-      item_map.batch.datapath_segments.commit.each { |dpn_map|
-        internal_added_datapath_segment(item, dpn_map)
+      item_map.batch.datapath_segments.commit.each { |dpgen_map|
+        internal_added_datapath_segment(item, dpgen_map)
       }
 
-      item_map.batch.datapath_route_links.commit.each { |dprl_map|
-        internal_added_datapath_route_link(item, dprl_map)
+      item_map.batch.datapath_route_links.commit.each { |dpgen_map|
+        internal_added_datapath_route_link(item, dpgen_map)
       }
     end
 
@@ -227,10 +227,6 @@ module Vnet::Core
 
     # Require queue ':network'
     def load_datapath_networks(network_id)
-      # Load all datapath networks on other datapaths.
-
-      return unless @datapath_info
-
       MW::DatapathNetwork.batch.where(network_id: network_id).all.commit.each { |dpn_map|
         next if dpn_map.datapath_id == @datapath_info.id
         next if @items[dpn_map.datapath_id]
@@ -245,6 +241,8 @@ module Vnet::Core
 
     # ACTIVATE_SEGMENT_ON_HOST on queue ':segment'
     def activate_segment(params)
+      warn log_format_h("ZZZZZZ activate_segment", params)
+
       segment_id = params[:segment_id] || return
       return if @active_segments.has_key? segment_id
 
@@ -262,6 +260,8 @@ module Vnet::Core
 
     # DEACTIVATE_SEGMENT_ON_HOST on queue ':segment'
     def deactivate_segment(params)
+      warn log_format_h("ZZZZZZ deactivate_segment", params)
+
       segment_id = params[:segment_id] || return
       segment = @active_segments.delete(segment_id) || return
 
@@ -276,6 +276,8 @@ module Vnet::Core
 
     # ADDED_DATAPATH_SEGMENT on queue 'item.id'
     def added_datapath_segment(params)
+      warn log_format_h("ZZZZZZ added_datapath_segment", params)
+
       item = internal_detect_by_id(params)
 
       if item.nil?
@@ -296,6 +298,8 @@ module Vnet::Core
 
     # REMOVED_DATAPATH_SEGMENT on queue 'item.id'
     def removed_datapath_segment(params)
+      warn log_format_h("ZZZZZZ removed_datapath_segment", params)
+
       item = internal_detect_by_id(params) || return
       segment_id = params[:segment_id] || return
 
@@ -309,6 +313,8 @@ module Vnet::Core
 
     # ACTIVATE_DATAPATH_SEGMENT on queue 'item.id'
     def activate_datapath_segment(params)
+      warn log_format_h("ZZZZZZ activate_datapath_segment", params)
+
       item = internal_detect_by_id(params) || return
 
       segment_id = params[:segment_id] || return
@@ -321,6 +327,8 @@ module Vnet::Core
 
     # DEACTIVATE_DATAPATH_SEGMENT on queue 'item.id'
     def deactivate_datapath_segment(params)
+      warn log_format_h("ZZZZZZ deactivate_datapath_segment", params)
+
       item = internal_detect_by_id(params) || return
 
       segment_id = params[:segment_id] || return
@@ -341,10 +349,6 @@ module Vnet::Core
 
     # Require queue ':segment'
     def load_datapath_segments(segment_id)
-      # Load all datapath segments on other datapaths.
-
-      return unless @datapath_info
-
       MW::DatapathSegment.batch.where(segment_id: segment_id).all.commit.each { |dpg_map|
         next if dpg_map.datapath_id == @datapath_info.id
         next if @items[dpg_map.datapath_id]
@@ -449,10 +453,6 @@ module Vnet::Core
 
     # Require queue ':route_link'
     def load_datapath_route_links(route_link_id)
-      # Load all datapath route_links on other datapaths.
-
-      return unless @datapath_info
-
       MW::DatapathRouteLink.batch.where(route_link_id: route_link_id).all.commit.each { |dprl_map|
         next if dprl_map.datapath_id == @datapath_info.id
         next if @items[dprl_map.datapath_id]
@@ -473,6 +473,8 @@ module Vnet::Core
     end
 
     def internal_added_datapath_segment(item, dpg_map)
+      warn log_format_h("ZZZZZZ internal_added_datapath_segment", item: item.inspect, dpg_map: dpg_map.inspect)
+
       segment_id = (dpg_map && dpg_map.segment_id) || return
 
       item.add_active_segment(dpg_map)

@@ -27,7 +27,7 @@ Sequel.migration do
       Integer :datapath_id, :null=>false
       Integer :segment_id, :null=>false
 
-      Integer :interface_id, :null=>true
+      Integer :interface_id
       Integer :mac_address_id, :null=>false
       Integer :ip_lease_id
 

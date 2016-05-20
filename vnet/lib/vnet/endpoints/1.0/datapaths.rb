@@ -76,12 +76,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   param_uuid M::Interface, :interface_uuid, required: true
   param :mac_address, :String, required: false, transform: PARSE_MAC
   post '/:uuid/segments/:segment_uuid' do
-    segment = check_syntax_and_pop_uuid(M::Segment, 'segment_uuid')
-
     options = {
       datapath_id: check_syntax_and_pop_uuid(M::Datapath).id,
       interface_id: check_syntax_and_pop_uuid(M::Interface, 'interface_uuid').id,
-      segment_id: segment.id,
+      segment_id: check_syntax_and_pop_uuid(M::Segment, 'segment_uuid').id,
       mac_address: params["mac_address"]
     }
 
