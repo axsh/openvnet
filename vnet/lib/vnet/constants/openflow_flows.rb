@@ -94,6 +94,7 @@ module Vnet
       TABLE_LOOKUP_DP_NW_TO_DP_NETWORK       = 72
       TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 73
       TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS = 74
+      TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS = 75
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source
@@ -107,12 +108,13 @@ module Vnet
 
       TABLE_OUTPUT_DP_NETWORK_DST_IF         = 80
       TABLE_OUTPUT_DP_NETWORK_SRC_IF         = 81
+      TABLE_OUTPUT_DP_SEGMENT_DST_IF         = 82
+      TABLE_OUTPUT_DP_SEGMENT_SRC_IF         = 83
+      TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF      = 84
+      TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF      = 85
 
-      TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF      = 82
-      TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF      = 84
-
-      TABLE_OUTPUT_DP_OVER_MAC2MAC           = 85 # Match src/dst if id, output if present.
-      TABLE_OUTPUT_DP_OVER_TUNNEL            = 86 # Use tun_id to determine type for goto_table.
+      TABLE_OUTPUT_DP_OVER_MAC2MAC           = 86 # Match src/dst if id, output if present.
+      TABLE_OUTPUT_DP_OVER_TUNNEL            = 87 # Use tun_id to determine type for goto_table.
 
       #
       # Output ports tables:
@@ -161,11 +163,13 @@ module Vnet
       COOKIE_PREFIX_FILTER2          = 0x12
 
       # TODO: Reorganize:
-      COOKIE_PREFIX_SEGMENT        = 0x13
+      COOKIE_PREFIX_DP_SEGMENT     = 0x13
+      COOKIE_PREFIX_SEGMENT        = 0x14
 
       COOKIE_TYPE_CONNECTION     = (COOKIE_PREFIX_CONNECTION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DATAPATH       = (COOKIE_PREFIX_DATAPATH << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_NETWORK     = (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
+      COOKIE_TYPE_DP_SEGMENT     = (COOKIE_PREFIX_DP_SEGMENT << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_ROUTE_LINK  = (COOKIE_PREFIX_DP_ROUTE_LINK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_NETWORK        = (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_SEGMENT        = (COOKIE_PREFIX_SEGMENT << COOKIE_PREFIX_SHIFT)

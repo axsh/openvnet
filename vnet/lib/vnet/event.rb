@@ -275,10 +275,15 @@ module Vnet
 
     ADDED_HOST_DATAPATH_NETWORK = "added_host_datapath_network"
     ADDED_REMOTE_DATAPATH_NETWORK = "added_remote_datapath_network"
+    ADDED_HOST_DATAPATH_SEGMENT = "added_host_datapath_segment"
+    ADDED_REMOTE_DATAPATH_SEGMENT = "added_remote_datapath_segment"
     ADDED_HOST_DATAPATH_ROUTE_LINK = "added_host_datapath_route_link"
     ADDED_REMOTE_DATAPATH_ROUTE_LINK = "added_remote_datapath_route_link"
+
     REMOVED_HOST_DATAPATH_NETWORK = "removed_host_datapath_network"
     REMOVED_REMOTE_DATAPATH_NETWORK = "removed_remote_datapath_network"
+    REMOVED_HOST_DATAPATH_SEGMENT = "removed_host_datapath_segment"
+    REMOVED_REMOTE_DATAPATH_SEGMENT = "removed_remote_datapath_segment"
     REMOVED_HOST_DATAPATH_ROUTE_LINK = "removed_host_datapath_route_link"
     REMOVED_REMOTE_DATAPATH_ROUTE_LINK = "removed_remote_datapath_route_link"
 
