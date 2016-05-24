@@ -16,15 +16,19 @@ module Vnet::Core::Networks
       @flow_options ||= {:cookie => @cookie}
     end
 
-    def install
-      network_md = md_create(:network => @id)
-      fo_network_md = flow_options.merge(network_md)
+    def flow_tunnel_id
+      (@id & TUNNEL_ID_MASK) | TUNNEL_NETWORK
+    end
 
+    def install
       flows = []
-      flows << Flow.create(TABLE_TUNNEL_NETWORK_IDS, 30, {
-                             :tunnel_id => @id | TUNNEL_FLAG_MASK
-                           }, nil,
-                           fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
+      flows << flow_create(table: TABLE_TUNNEL_NETWORK_IDS,
+                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           match: {
+                             :tunnel_id => flow_tunnel_id
+                           },
+                           priority: 20,
+                           write_segment: @id)
 
       flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
