@@ -59,6 +59,18 @@ module Vnet
     ACTIVE_ROUTE_LINK_DEACTIVATE = "active_route_link_deactivate"
 
     #
+    # Active Segment events:
+    #
+
+    ACTIVE_SEGMENT_INITIALIZED = "active_segment_initialized"
+    ACTIVE_SEGMENT_UNLOAD_ITEM = "active_segment_unload_item"
+    ACTIVE_SEGMENT_CREATED_ITEM = "active_segment_created_item"
+    ACTIVE_SEGMENT_DELETED_ITEM = "active_segment_deleted_item"
+
+    ACTIVE_SEGMENT_ACTIVATE = "active_segment_activate"
+    ACTIVE_SEGMENT_DEACTIVATE = "active_segment_deactivate"
+
+    #
     # Active Port events:
     #
 

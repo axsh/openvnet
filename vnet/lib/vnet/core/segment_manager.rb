@@ -142,14 +142,14 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
-      # @dp_info.active_segment_manager.publish(ACTIVE_SEGMENT_ACTIVATE, id: [:segment, item.id])
+      @dp_info.active_segment_manager.publish(ACTIVE_SEGMENT_ACTIVATE, id: [:segment, item.id])
       @dp_info.datapath_manager.publish(ACTIVATE_SEGMENT_ON_HOST, id: :segment, segment_id: item.id)
 
       add_item_id_to_update_queue(item.id)
     end
 
     def item_pre_uninstall(item)
-      # @dp_info.active_segment_manager.publish(ACTIVE_SEGMENT_DEACTIVATE, id: [:segment, item.id])
+      @dp_info.active_segment_manager.publish(ACTIVE_SEGMENT_DEACTIVATE, id: [:segment, item.id])
       @dp_info.datapath_manager.publish(DEACTIVATE_SEGMENT_ON_HOST, id: :segment, segment_id: item.id)
     end
 

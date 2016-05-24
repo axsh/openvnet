@@ -2,18 +2,18 @@
 
 module Vnet::Core
 
-  class ActiveNetworkManager < Vnet::Core::ActiveManager
+  class ActiveSegmentManager < Vnet::Core::ActiveManager
 
     #
     # Events:
     #
-    subscribe_event ACTIVE_NETWORK_INITIALIZED, :load_item
-    subscribe_event ACTIVE_NETWORK_UNLOAD_ITEM, :unload_item
-    subscribe_event ACTIVE_NETWORK_CREATED_ITEM, :created_item
-    subscribe_event ACTIVE_NETWORK_DELETED_ITEM, :unload_item
+    subscribe_event ACTIVE_SEGMENT_INITIALIZED, :load_item
+    subscribe_event ACTIVE_SEGMENT_UNLOAD_ITEM, :unload_item
+    subscribe_event ACTIVE_SEGMENT_CREATED_ITEM, :created_item
+    subscribe_event ACTIVE_SEGMENT_DELETED_ITEM, :unload_item
 
-    subscribe_event ACTIVE_NETWORK_ACTIVATE, :activate_network
-    subscribe_event ACTIVE_NETWORK_DEACTIVATE, :deactivate_network
+    subscribe_event ACTIVE_SEGMENT_ACTIVATE, :activate_segment
+    subscribe_event ACTIVE_SEGMENT_DEACTIVATE, :deactivate_segment
 
     #
     # Internal methods:
@@ -26,15 +26,15 @@ module Vnet::Core
     #
 
     def mw_class
-      MW::ActiveNetwork
+      MW::ActiveSegment
     end
 
     def initialized_item_event
-      ACTIVE_NETWORK_INITIALIZED
+      ACTIVE_SEGMENT_INITIALIZED
     end
 
     def item_unload_event
-      ACTIVE_NETWORK_UNLOAD_ITEM
+      ACTIVE_SEGMENT_UNLOAD_ITEM
     end
 
     # TODO: Add 'not_local/remote' filter.
@@ -42,7 +42,7 @@ module Vnet::Core
       filter, value = filter_part
 
       case filter
-      when :id, :network_id, :datapath_id
+      when :id, :segment_id, :datapath_id
         proc { |id, item| value == item.send(filter) }
       else
         raise NotImplementedError, filter
@@ -52,7 +52,7 @@ module Vnet::Core
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
-      filter << {network_id: params[:network_id]} if params.has_key? :network_id
+      filter << {segment_id: params[:segment_id]} if params.has_key? :segment_id
       filter << {datapath_id: params[:datapath_id]} if params.has_key? :datapath_id
 
       filter
@@ -63,10 +63,10 @@ module Vnet::Core
 
       item_class =
         case item_map.datapath_id
-        when nil               then ActiveNetworks::Base
-        when @datapath_info.id then ActiveNetworks::Local
+        when nil               then ActiveSegments::Base
+        when @datapath_info.id then ActiveSegments::Local
         else
-          ActiveNetworks::Remote
+          ActiveSegments::Remote
         end
 
       item = item_class.new(dp_info: @dp_info, id: item_map[:id], map: item_map)
@@ -87,17 +87,17 @@ module Vnet::Core
     end
 
     #
-    # Network events:
+    # Segment events:
     #
 
-    # activate network on queue '[:network, network_id]'
-    def activate_network(params)
-      debug log_format("activating network", params)
+    # activate segment on queue '[:segment, segment_id]'
+    def activate_segment(params)
+      debug log_format("activating segment", params)
 
       begin
         options = {
           datapath_id: @datapath_info.id,
-          network_id: get_param_packed_id(params)
+          segment_id: get_param_packed_id(params)
         }
 
         mw_class.create(options)
@@ -107,14 +107,14 @@ module Vnet::Core
       end
     end
 
-    # deactivate network on queue '[:network, network_id]'
-    def deactivate_network(params)
-      debug log_format("deactivating network", params)
+    # deactivate segment on queue '[:segment, segment_id]'
+    def deactivate_segment(params)
+      debug log_format("deactivating segment", params)
 
       begin
         filter = {
           datapath_id: @datapath_info.id,
-          network_id: get_param_packed_id(params)
+          segment_id: get_param_packed_id(params)
         }
 
         mw_class.destroy(filter)
@@ -131,7 +131,7 @@ module Vnet::Core
     # TODO: Move to a core-specific manager class:
     def params_valid_item?(params)
       return params[:id] &&
-        params[:network_id] &&
+        params[:segment_id] &&
         params[:datapath_id]
     end
 

@@ -11,6 +11,9 @@ module Vnet::ModelWrappers
   class ActiveRouteLink < Base
   end
 
+  class ActiveSegment < Base
+  end
+
   class IpRange < Base
   end
 

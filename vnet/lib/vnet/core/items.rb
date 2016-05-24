@@ -13,6 +13,9 @@ module Vnet::Core
   class ActiveRouteLink < OpenStruct
   end
 
+  class ActiveSegment < OpenStruct
+  end
+
   class ActivePort < OpenStruct
   end
 
