@@ -84,6 +84,7 @@ module Vnet::Core::Interfaces
                            priority: 30,
                            match_interface: @id,
                            cookie: self.cookie
+                          )
     end
 
     def flows_for_interface_mac(flows, mac_info)
@@ -115,7 +116,7 @@ module Vnet::Core::Interfaces
       # new Classifier
       #
 
-      flows_for_egress_classifier(flow)
+      flows_for_egress_classifier(flows)
 
       #
       # Validate (old Classifier)
