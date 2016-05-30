@@ -24,9 +24,9 @@ module Vnet::Core::Interfaces
       debug log_format_h("MMMMMMMMMMMMMMMMMMMMM #{segment_id}", mac_info)
 
       if segment_id
-        @dp_info.segment_manager.insert_interface_segment(@id, segment_id)
+        flows_for_mac2mac_mac(flows, mac_info)
 
-        # Do more here...
+        @dp_info.segment_manager.insert_interface_segment(@id, segment_id)
       end
 
       @dp_info.add_flows(flows)
@@ -82,24 +82,6 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_mac(flows, mac_info)
-      # flows << flow_create(:segment_src,
-      #                      priority: 85,
-      #                      match: {
-      #                        :eth_type => 0x0806,
-      #                        :eth_src => mac_info[:mac_address],
-      #                      },
-      #                      network_id: ipv4_info[:network_id],
-      #                      network_type: ipv4_info[:network_type],
-      #                      cookie: self.cookie)
-      # flows << flow_create(:segment_src,
-      #                      priority: 85,
-      #                      match: {
-      #                        :eth_type => 0x0806,
-      #                        :arp_sha => mac_info[:mac_address],
-      #                      },
-      #                      network_id: ipv4_info[:network_id],
-      #                      network_type: ipv4_info[:network_type],
-      #                      cookie: self.cookie)
     end
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)

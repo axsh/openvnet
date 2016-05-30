@@ -160,7 +160,7 @@ module Vnet::Core::Datapaths
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
                            priority: 30,
 
                            match: {
@@ -174,7 +174,7 @@ module Vnet::Core::Datapaths
                            write_value_pair_flag: true,
                            write_value_pair_first: dpg_map[:segment_id],
                            cookie: flow_cookie)
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_IF,
                            goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
                            priority: 1,
 
