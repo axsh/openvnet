@@ -9,6 +9,7 @@ module Vnet::Openflow
 
     FLOW_MATCH_METADATA_PARAMS = [:match_datapath,
                                   :match_dp_network,
+                                  :match_dp_segment,
                                   :match_dp_route_link,
                                   :match_ignore_mac2mac,
                                   :match_interface,
@@ -28,6 +29,7 @@ module Vnet::Openflow
     FLOW_WRITE_METADATA_PARAMS = [:clear_all,
                                   :write_datapath,
                                   :write_dp_network,
+                                  :write_dp_segment,
                                   :write_dp_route_link,
                                   :write_ignore_mac2mac,
                                   :write_interface,

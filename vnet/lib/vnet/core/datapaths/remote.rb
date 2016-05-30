@@ -136,6 +136,45 @@ module Vnet::Core::Datapaths
     end
 
     def flows_for_dp_segment(flows, dpg_map)
+      warn "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+      flow_id = dpg_map[:id]
+      flow_gen_id = dpg_map[:segment_id]
+      flow_cookie = flow_id | COOKIE_TYPE_DP_SEGMENT
+
+      [true, false].each { |reflection|
+
+        flows << flow_create(table: TABLE_LOOKUP_DP_SEG_TO_DP_SEGMENT,
+                             goto_table: TABLE_OUTPUT_DP_SEGMENT_DST_IF,
+                             priority: 1,
+
+                             match_value_pair_flag: reflection,
+                             match_value_pair_first: @id,
+                             match_value_pair_second: flow_gen_id,
+
+                             clear_all: true,
+                             write_reflection: reflection,
+                             write_dp_segment: flow_id,
+
+                             cookie: flow_cookie)
+
+        flows << flow_create(table: TABLE_OUTPUT_DP_SEGMENT_DST_IF,
+                             goto_table: TABLE_OUTPUT_DP_SEGMENT_SRC_IF,
+                             priority: 1,
+
+                             match_reflection: reflection,
+                             match_dp_segment: flow_id,
+
+                             actions: {
+                               :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_SEGMENT
+                             },
+
+                             write_value_pair_flag: reflection,
+                             write_value_pair_first: flow_gen_id,
+                             write_value_pair_second: dpg_map[:interface_id],
+
+                             cookie: flow_cookie)
+      }
     end
 
     def flows_for_dp_route_link(flows, dpg_map)

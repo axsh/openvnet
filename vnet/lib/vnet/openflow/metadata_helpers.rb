@@ -60,6 +60,9 @@ module Vnet::Openflow
         when :match_dp_network, :write_dp_network
           metadata = metadata | (value & METADATA_VALUE_MASK) | METADATA_TYPE_DP_NETWORK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
+        when :match_dp_segment, :write_dp_segment
+          metadata = metadata | (value & METADATA_VALUE_MASK) | METADATA_TYPE_DP_SEGMENT
+          metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK
         when :match_dp_route_link, :write_dp_route_link
           metadata = metadata | (value & METADATA_VALUE_MASK) | METADATA_TYPE_DP_ROUTE_LINK
           metadata_mask = metadata_mask | METADATA_VALUE_MASK | METADATA_TYPE_MASK

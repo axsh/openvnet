@@ -90,11 +90,12 @@ module Vnet
       TABLE_FLOOD_SEGMENT                    = 53
 
       TABLE_LOOKUP_IF_NW_TO_DP_NW            = 70
-      TABLE_LOOKUP_IF_RL_TO_DP_RL            = 71
-      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK       = 72
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 73
-      TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS = 74
-      TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS = 75
+      TABLE_LOOKUP_IF_RL_TO_DP_RL            = 72
+      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK       = 73
+      TABLE_LOOKUP_DP_SEG_TO_DP_SEGMENT      = 74
+      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 75
+      TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS = 76
+      TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS = 77
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source
@@ -227,8 +228,9 @@ module Vnet
       METADATA_TYPE_VIRTUAL_TO_EDGE = (0x9 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_TUNNEL          = (0xa << METADATA_TYPE_SHIFT)
       METADATA_TYPE_DP_NETWORK      = (0xb << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_DP_SEGMENT      = (0xc << METADATA_TYPE_SHIFT)
 
-      METADATA_TYPE_SEGMENT         = (0xc << METADATA_TYPE_SHIFT)
+      METADATA_TYPE_SEGMENT         = (0xd << METADATA_TYPE_SHIFT)
 
       METADATA_VALUE_MASK = 0x7fffffff
 
