@@ -21,9 +21,9 @@ module Vnet::Core::Interfaces
         flows_for_router_egress_mac(flows, mac_info)
       end
 
-      if segment_id
-        debug log_format_h("XXXXX #{segment_id}", mac_info)
+      debug log_format_h("MMMMMMMMMMMMMMMMMMMMM #{segment_id}", mac_info)
 
+      if segment_id
         @dp_info.segment_manager.insert_interface_segment(@id, segment_id)
 
         # Do more here...

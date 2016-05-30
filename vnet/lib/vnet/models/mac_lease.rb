@@ -5,7 +5,7 @@ module Vnet::Models
     taggable 'ml'
 
     plugin :paranoia_is_deleted
-    plugin :mac_address
+    plugin :mac_address_old
 
     many_to_one :interface
     one_to_many :ip_leases
