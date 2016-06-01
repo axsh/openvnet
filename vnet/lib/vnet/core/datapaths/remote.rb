@@ -136,8 +136,6 @@ module Vnet::Core::Datapaths
     end
 
     def flows_for_dp_segment(flows, dpg_map)
-      warn "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-
       flow_id = dpg_map[:id]
       flow_gen_id = dpg_map[:segment_id]
       flow_cookie = flow_id | COOKIE_TYPE_DP_SEGMENT

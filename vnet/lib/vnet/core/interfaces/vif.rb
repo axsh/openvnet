@@ -11,8 +11,6 @@ module Vnet::Core::Interfaces
     def add_mac_address(params)
       mac_info = super || return
 
-      segment_id = mac_info[:segment_id]
-
       flows = []
       flows_for_interface_mac(flows, mac_info)
 
@@ -21,7 +19,7 @@ module Vnet::Core::Interfaces
         flows_for_router_egress_mac(flows, mac_info)
       end
 
-      debug log_format_h("MMMMMMMMMMMMMMMMMMMMM #{segment_id}", mac_info)
+      segment_id = mac_info[:segment_id]
 
       if segment_id
         flows_for_mac2mac_mac(flows, mac_info)
@@ -30,6 +28,17 @@ module Vnet::Core::Interfaces
       end
 
       @dp_info.add_flows(flows)
+    end
+
+    def remove_mac_address(params)
+      mac_info = super || return
+      return unless mac_info
+
+      segment_id = mac_info[:segment_id]
+
+      if segment_id
+        @dp_info.segment_manager.remove_interface_segment(@id, segment_id)
+      end
     end
 
     def add_ipv4_address(params)

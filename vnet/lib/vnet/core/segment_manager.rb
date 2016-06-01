@@ -30,7 +30,7 @@ module Vnet::Core
     #
 
     def set_interface_port(interface_id, port)
-      debug log_format_h("XXXXXXX set_interface_port", interface_id: interface_id, port: port)
+      debug log_format_h("set_interface_port", interface_id: interface_id, port: port)
 
       @interface_ports[interface_id] = port
       segments = @interface_segments[interface_id]
@@ -46,7 +46,7 @@ module Vnet::Core
     end
 
     def insert_interface_segment(interface_id, segment_id)
-      debug log_format_h("XXXXXXX insert_interface_segment", interface_id: interface_id, segment_id: segment_id)
+      debug log_format_h("insert_interface_segment", interface_id: interface_id, segment_id: segment_id)
 
       segments = @interface_segments[interface_id] ||= []
       return if segments.include? segment_id
@@ -75,14 +75,6 @@ module Vnet::Core
     #
     # Internal methods:
     #
-
-    def do_initialize
-      info log_format('XXXXXXXX loading all segments')
-
-      mw_class.batch.dataset.all.commit.each { |item_map|
-        internal_new_item(item_map)
-      }
-    end
 
     private
 
@@ -124,8 +116,6 @@ module Vnet::Core
     end
 
     def item_initialize(item_map)
-      debug log_format_h("XXXXXXXXXXXXXXXXXXX", item_map.to_hash)
-
       item_class =
         case item_map.mode
         when MODE_PHYSICAL then Segments::Virtual # FIX
@@ -155,9 +145,9 @@ module Vnet::Core
 
     # SEGMENT_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-      # return if internal_detect_by_id(params)
+      return if internal_detect_by_id(params)
 
-      # internal_new_item(mw_class.new(params))
+      internal_new_item(mw_class.new(params))
     end
 
     # Requires queue ':update_item_states'

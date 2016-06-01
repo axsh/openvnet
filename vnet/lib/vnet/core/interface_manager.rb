@@ -254,6 +254,18 @@ module Vnet::Core
 
       return unless mac_lease && mac_lease.interface_id == item.id
 
+      segment_id = mac_lease.segment_id
+
+      if segment_id
+        segment = @dp_info.segment_manager.retrieve(id: segment_id)
+
+        if segment.nil?
+          error log_format("could not find segment for mac lease",
+            "interface_id:#{item.id} segment_id:#{segment_id}")
+          return
+        end
+      end
+
       mac_address = Pio::Mac.new(mac_lease.mac_address)
       item.add_mac_address(mac_lease_id: mac_lease.id,
                            mac_address: mac_address,
