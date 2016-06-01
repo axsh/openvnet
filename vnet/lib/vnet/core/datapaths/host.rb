@@ -211,7 +211,7 @@ module Vnet::Core::Datapaths
       # address, so we create the flow here.
       #
       # TODO: Add verification of the ingress host interface.
-      flows << flow_create(table: TABLE_TUNNEL_NETWORK_IDS,
+      flows << flow_create(table: TABLE_TUNNEL_IDS,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 30,
 

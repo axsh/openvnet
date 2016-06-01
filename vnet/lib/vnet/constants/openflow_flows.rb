@@ -15,7 +15,7 @@ module Vnet
       # destination mac address, which includes all non-virtual
       # networks.
       TABLE_TUNNEL_PORTS = 3
-      TABLE_TUNNEL_NETWORK_IDS = 4
+      TABLE_TUNNEL_IDS = 4
 
       TABLE_LOCAL_PORT = 6
 

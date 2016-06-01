@@ -20,7 +20,7 @@ module Vnet::Core::Ports
                            match: {
                              :in_port => self.port_number
                            },
-                           goto_table: TABLE_TUNNEL_NETWORK_IDS)
+                           goto_table: TABLE_TUNNEL_IDS)
 
       if @tunnel_id && @tunnel_id > 0
         flows << flow_create(table: TABLE_OUT_PORT_TUNNEL,

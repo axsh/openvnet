@@ -40,7 +40,7 @@ module Vnet::Openflow
       [TABLE_EDGE_SRC,
        TABLE_EDGE_DST,
        TABLE_TUNNEL_PORTS,
-       TABLE_TUNNEL_NETWORK_IDS,
+       TABLE_TUNNEL_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
 

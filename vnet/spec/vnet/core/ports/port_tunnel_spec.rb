@@ -34,7 +34,7 @@ describe Vnet::Core::Ports::Tunnel do
                                               {:in_port => 10},
                                               nil,
                                               {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
-                                               :goto_table => TABLE_TUNNEL_NETWORK_IDS})
+                                               :goto_table => TABLE_TUNNEL_IDS})
     end
 
   end

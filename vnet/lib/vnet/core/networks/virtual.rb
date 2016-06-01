@@ -22,7 +22,7 @@ module Vnet::Core::Networks
 
     def install
       flows = []
-      flows << flow_create(table: TABLE_TUNNEL_NETWORK_IDS,
+      flows << flow_create(table: TABLE_TUNNEL_IDS,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
                            match: {
                              :tunnel_id => flow_tunnel_id
