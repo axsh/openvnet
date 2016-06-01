@@ -28,8 +28,7 @@ module Vnet::Core::Networks
                              :tunnel_id => flow_tunnel_id
                            },
                            priority: 20,
-                           write_segment: @id)
-
+                           write_network: @id)
       flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
                            priority: 30,

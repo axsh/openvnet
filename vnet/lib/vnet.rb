@@ -320,7 +320,7 @@ module Vnet
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
-        autoload :SegmentGroupCollection, 'vnet/endpoints/1.0/responses/segment'
+        autoload :SegmentCollection, 'vnet/endpoints/1.0/responses/segment'
         autoload :TopologyCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyNetworkCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyRouteLinkCollection, 'vnet/endpoints/1.0/responses/topology'

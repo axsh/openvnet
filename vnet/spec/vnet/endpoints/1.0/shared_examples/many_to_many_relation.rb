@@ -69,9 +69,21 @@ shared_examples "many_to_many_relation" do |relation_suffix, post_request_params
   describe "GET /:uuid/#{relation_suffix}" do
     before(:each) do
       add_relation = "add_#{relation_suffix.chomp("s")}"
-      entries.times {
-        base_object.send(add_relation, Fabricate(relation_fabricator))
-      }
+
+      begin
+        entries.times {
+          base_object.send(add_relation, Fabricate(relation_fabricator))
+        }
+      rescue NameError => e
+        pp "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+        pp "add_relation:#{add_relation} relation_fabricator:#{relation_fabricator}"
+        pp "base_object:#{base_object.inspect}"
+
+        e.backtrace.each { |str| pp str }
+
+        raise e
+      end
 
       get api_relation_suffix
     end

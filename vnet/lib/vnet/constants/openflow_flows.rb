@@ -257,8 +257,6 @@ module Vnet
 
       TUNNEL_ID_MASK = 0x7fffffff
 
-      TUNNEL_NETWORK_MASK = 0x7fffffff # deprecate
-
       TUNNEL_NETWORK    = 0x0
       TUNNEL_ROUTE_LINK = 0x80000000
       TUNNEL_SEGMENT    = 0x80000000
