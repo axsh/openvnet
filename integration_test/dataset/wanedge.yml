@@ -140,6 +140,13 @@ translations:
     mode: static_address
     passthrough: true
 
+translation_static_addresses:
+
+  - translation_uuid: tr-saddr
+    ingress_ipv4_address: 10.255.0.104
+    egress_ipv4_address: 10.101.0.10
+    route_link_uuid: rl-1
+
 ip_leases:
 
   - uuid: il-nat1
