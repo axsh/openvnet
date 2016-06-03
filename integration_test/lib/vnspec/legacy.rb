@@ -45,9 +45,5 @@ module Vnspec
       ret = ssh(ssh_ip, "ssh #{options} #{address} hostname", {})
       ret[:stdout].chomp == vm.hostname.to_s
     end
-
-    def able_to_ping?(ip)
-      system("ping -c 1 #{ip}")
-    end
   end
 end
