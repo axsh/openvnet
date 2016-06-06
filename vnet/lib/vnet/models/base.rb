@@ -3,6 +3,7 @@
 require 'sequel/model'
 require 'sequel/plugins/mac_address'
 require 'sequel/plugins/mac_address_old'
+require 'sequel/plugins/mac_address_no_segment'
 require 'sequel/plugins/ip_address'
 require 'sequel/plugins/paranoia_is_deleted'
 require 'sequel/plugins/dataset_associations.rb'

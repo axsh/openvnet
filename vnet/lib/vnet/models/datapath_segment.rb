@@ -3,7 +3,7 @@
 module Vnet::Models
   class DatapathSegment < Base
     plugin :paranoia_is_deleted
-    plugin :mac_address, segment_name: :mac_address_segment
+    plugin :mac_address_no_segment
 
     many_to_one :datapath
     many_to_one :segment
