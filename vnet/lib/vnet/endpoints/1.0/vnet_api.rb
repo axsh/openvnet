@@ -133,6 +133,7 @@ module Vnet::Endpoints::V10
       object = check_syntax_and_pop_uuid(M.const_get(class_name))
       total_count = object.batch.send(response_method).count.commit
       items = object.batch.send("#{response_method}_dataset").offset(offset).limit(limit).all.commit
+
       pagination = {
         "total_count" => total_count,
         "offset" => offset,
