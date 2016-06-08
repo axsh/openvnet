@@ -51,6 +51,29 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     respond_with([network.uuid])
   end
 
+  post '/:uuid/segments/:segment_uuid' do
+    topology = uuid_to_id(M::Topology, "uuid", "topology_id")
+    segment = uuid_to_id(M::Segment, "segment_uuid", "segment_id")
+
+    remove_system_parameters
+
+    result = M::TopologySegment.create(params)
+    respond_with(R::TopologySegment.generate(result))
+  end
+
+  get '/:uuid/segments' do
+    show_relations(:Topology, :topology_segments)
+  end
+
+  delete '/:uuid/segments/:segment_uuid' do
+    topology = check_syntax_and_pop_uuid(M::Topology)
+    segment = check_syntax_and_pop_uuid(M::Segment, 'segment_uuid')
+
+    M::TopologySegment.destroy(topology_id: topology.id, segment_id: segment.id)
+
+    respond_with([segment.uuid])
+  end
+
   post '/:uuid/route_links/:route_link_uuid' do
     topology = uuid_to_id(M::Topology, "uuid", "topology_id")
     route_link = uuid_to_id(M::RouteLink, "route_link_uuid", "route_link_id")

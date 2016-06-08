@@ -58,12 +58,27 @@ Sequel.migration do
       index [:segment_id, :is_deleted]
     end
 
+    create_table(:topology_segments) do
+      primary_key :id
+
+      Integer :topology_id, :index => true, :null => false
+      Integer :segment_id, :null => false
+
+      DateTime :created_at, :null=>false
+      DateTime :updated_at, :null=>false
+      DateTime :deleted_at, :index => true
+      Integer :is_deleted, :null=>false, :default=>0
+
+      unique [:topology_id, :segment_id, :is_deleted]
+    end
+
   end
 
   down do
     drop_table(:segments,
                :active_segments,
                :datapath_segments,
+               :topology_segments
                )
 
     alter_table(:mac_addresses) do

@@ -23,6 +23,20 @@ module Vnet::Services::Topologies
       create_datapath_network(datapath_id, network_id, interface_id)
     end
 
+    def create_dp_seg(params)
+      segment_id = get_param_id(params, :segment_id)
+      datapath_id = get_param_id(params, :datapath_id)
+
+      interface_id = get_a_host_interface_id(datapath_id)
+
+      if interface_id.nil?
+        warn log_format_h("could not find host interface for new datapath_segment", params)
+        return
+      end
+
+      create_datapath_segment(datapath_id, segment_id, interface_id)
+    end
+
     def create_dp_rl(params)
       route_link_id = get_param_id(params, :route_link_id)
       datapath_id = get_param_id(params, :datapath_id)

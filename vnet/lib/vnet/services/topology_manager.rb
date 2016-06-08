@@ -18,10 +18,14 @@ module Vnet::Services
     subscribe_event TOPOLOGY_NETWORK_ACTIVATED, :network_activated
     subscribe_event TOPOLOGY_NETWORK_DEACTIVATED, :network_deactivated
 
+    subscribe_event TOPOLOGY_SEGMENT_ACTIVATED, :segment_activated
+    subscribe_event TOPOLOGY_SEGMENT_DEACTIVATED, :segment_deactivated
+
     subscribe_event TOPOLOGY_ROUTE_LINK_ACTIVATED, :route_link_activated
     subscribe_event TOPOLOGY_ROUTE_LINK_DEACTIVATED, :route_link_deactivated
 
     subscribe_event TOPOLOGY_CREATE_DP_NW, :create_dp_nw
+    subscribe_event TOPOLOGY_CREATE_DP_SEG, :create_dp_seg
     subscribe_event TOPOLOGY_CREATE_DP_RL, :create_dp_rl
 
     # TODO: Add events for host interfaces?
@@ -150,6 +154,62 @@ module Vnet::Services
     end
 
     #
+    # Segment events:
+    #
+
+    # TOPOLOGY_SEGMENT_ACTIVATED on queue [:segment, segment.id]
+    def segment_activated(params)
+      begin
+        segment_id = get_param_packed_id(params)
+        datapath_id = get_param_id(params, :datapath_id)
+
+        event_options = {
+          segment_id: segment_id,
+          datapath_id: datapath_id
+        }
+
+        debug log_format_h("segment activated", event_options)
+
+        if has_datapath_segment?(datapath_id, segment_id)
+          debug log_format_h("found existing datapath_segment", event_options)
+          return
+        end
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
+
+      item_id = find_id_using_tp_seg(datapath_id, segment_id) || return
+
+      event_options[:id] = item_id
+
+      if internal_retrieve(id: item_id).nil?
+        warn log_format_h("could not retrieve topology associated with segment", event_options)
+        return
+      end
+
+      publish(TOPOLOGY_CREATE_DP_SEG, event_options)
+    end
+
+    # TOPOLOGY_SEGMENT_DEACTIVATED on queue [:segment, segment.id]
+    def segment_deactivated(params)
+      debug log_format_h("segment deactivated", params)
+    end
+
+    # TOPOLOGY_CREATE_DP_SEG on queue 'item.id'
+    def create_dp_seg(params)
+      debug log_format_h("creating datapath_segment", params)
+
+      item = internal_detect_by_id(params) || return
+
+      begin
+        item.create_dp_seg(params)
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
+    end
+
+    #
     # Route Link events:
     #
 
@@ -211,20 +271,30 @@ module Vnet::Services
 
     # Currently we look up the topology directly, which means we don't
     # have proper handling of changes to topologies, etc.
-    def find_id_using_tp_nw(datapath_id, network_id)
+    def find_id_using_tp_nw(datapath_id, segment_id)
       # TODO: Should keep local tp_nw list.
-      tp_nw = MW::TopologyNetwork.batch.dataset.where(network_id: network_id).first.commit
+      tp_nw = MW::TopologySegment.batch.dataset.where(segment_id: segment_id).first.commit
 
       if tp_nw.nil? || tp_nw.topology_id.nil?
-        warn log_format("network not associated with a topology", "datapath_id:#{datapath_id} network_id:#{network_id}")
+        warn log_format("segment not associated with a topology", "datapath_id:#{datapath_id} segment_id:#{segment_id}")
         return
       end
 
       tp_nw.topology_id
     end
 
-    # Currently we look up the topology directly, which means we don't
-    # have proper handling of changes to topologies, etc.
+    def find_id_using_tp_seg(datapath_id, segment_id)
+      # TODO: Should keep local tp_seg list.
+      tp_seg = MW::TopologySegment.batch.dataset.where(segment_id: segment_id).first.commit
+
+      if tp_seg.nil? || tp_seg.topology_id.nil?
+        warn log_format("segment not associated with a topology", "datapath_id:#{datapath_id} segment_id:#{segment_id}")
+        return
+      end
+
+      tp_seg.topology_id
+    end
+
     def find_id_using_tp_rl(datapath_id, route_link_id)
       # TODO: Should keep local tp_rl list.
       tp_rl = MW::TopologyRouteLink.batch.dataset.where(route_link_id: route_link_id).first.commit
@@ -244,6 +314,15 @@ module Vnet::Services
       }
 
       !MW::DatapathNetwork.batch.dataset.where(filter).first.commit.nil?
+    end
+
+    def has_datapath_segment?(datapath_id, segment_id)
+      filter = {
+        datapath_id: datapath_id,
+        segment_id: segment_id
+      }
+
+      !MW::DatapathSegment.batch.dataset.where(filter).first.commit.nil?
     end
 
     def has_datapath_route_link?(datapath_id, route_link_id)
