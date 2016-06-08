@@ -32,12 +32,10 @@ describe Sequel::Plugins::MacAddress do
         model.save
       end
 
-      # TODO: Mac address update is to be disabled in the future.
-
-      # it { expect(subject.mac_address).to eq mac_address_2 }
-      # it { expect(subject.to_hash[:mac_address]).to eq mac_address_2 }
-      # it { expect(subject._mac_address).to be_exists }
-      # it { expect(subject._mac_address.mac_address).to eq mac_address_2.to_i }
+      it { expect(subject.mac_address).to eq mac_address_2 }
+      it { expect(subject.to_hash[:mac_address]).to eq mac_address_2 }
+      it { expect(subject._mac_address).to be_exists }
+      it { expect(subject._mac_address.mac_address).to eq mac_address_2.to_i }
     end
 
     describe "destroy" do
