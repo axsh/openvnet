@@ -5,6 +5,8 @@ module Vnet::Models
     taggable 'seg'
     plugin :paranoia_is_deleted
 
+    use_modes Vnet::Constants::Segment::MODES
+
     one_to_many :datapath_segments
 
     plugin :association_dependencies,
