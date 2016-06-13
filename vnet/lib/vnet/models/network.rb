@@ -23,6 +23,8 @@ module Vnet::Models
     # 0009_topology
     one_to_many :topology_networks
 
+    many_to_one :segment
+
     plugin :association_dependencies,
     # 0001_origin
     ip_addresses: :destroy,

@@ -20,6 +20,11 @@ Sequel.migration do
       # Add index for segment_id.
     end
 
+    alter_table(:networks) do
+      add_column :segment_id, Integer
+      # Add index for segment_id.
+    end
+
     create_table(:active_segments) do
       primary_key :id
 
@@ -82,6 +87,10 @@ Sequel.migration do
                )
 
     alter_table(:mac_addresses) do
+      drop_column :segment_id
+    end
+
+    alter_table(:networks) do
       drop_column :segment_id
     end
 

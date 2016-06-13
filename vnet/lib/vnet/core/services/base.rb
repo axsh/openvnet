@@ -95,12 +95,13 @@ module Vnet::Core::Services
       [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
     end
 
-    def add_network_unless_exists(network_id, cookie_id)
+    def add_network_unless_exists(network_id, cookie_id, segment_id)
       return if @networks[network_id]
       @networks[network_id] = { network_id: network_id,
+                                segment_id: segment_id,
                                 cookie_id: cookie_id }
 
-      add_network(network_id, cookie_id)
+      add_network(network_id, cookie_id, segment_id)
     end
 
     def add_network(network_id, cookie_id)

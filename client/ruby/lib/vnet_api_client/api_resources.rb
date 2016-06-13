@@ -138,6 +138,8 @@ module VNetAPIClient
     api_suffix :networks
 
     define_standard_crud_methods
+
+    define_relation_methods(:segments)
   end
 
   class NetworkService < ApiResource

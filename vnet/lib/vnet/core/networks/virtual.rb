@@ -46,9 +46,31 @@ module Vnet::Core::Networks
                            priority: 30,
                            match_network: @id)
 
+      ovs_flows = []
+
+      if @segment_id
+        subnet_dst = match_ipv4_subnet_dst(@ipv4_network, @ipv4_prefix)
+        subnet_src = match_ipv4_subnet_src(@ipv4_network, @ipv4_prefix)
+
+        flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                             goto_table: TABLE_NETWORK_CONNECTION,
+                             priority: 30 + flow_priority,
+                             match: subnet_dst,
+                             match_segment: @segment_id,
+                             write_network: @id)
+
+        flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
+                             goto_table: TABLE_FLOOD_SIMULATED,
+                             priority: 31,
+                             match: {
+                               :eth_dst => MAC_BROADCAST
+                             },
+                             match_network: @id,
+                             write_segment: @segment_id)
+      end
+
       @dp_info.add_flows(flows)
 
-      ovs_flows = []
       ovs_flows << create_ovs_flow_learn_arp(3, "tun_id=0,")
       ovs_flows << create_ovs_flow_learn_arp(1, "", "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\],")
       ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }

@@ -15,8 +15,8 @@ module Vnet::NodeApi
 
         filter = { segment_id: model.id }
 
-        # XXXX_segment
-        # Foo.dispatch_deleted_where(filter, model.deleted_at)
+        # 0010_segment
+        Segment.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end

@@ -8,10 +8,12 @@ module Vnet::Models
     use_modes Vnet::Constants::Segment::MODES
 
     one_to_many :datapath_segments
+    one_to_many :networks
 
     plugin :association_dependencies,
     # 0010_segment
-    datapath_segments: :destroy
+    datapath_segments: :destroy,
+    networks: :destroy
 
   end
 end
