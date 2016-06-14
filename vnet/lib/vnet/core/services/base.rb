@@ -82,21 +82,19 @@ module Vnet::Core::Services
                               interface_id: @interface_id)
     end
 
-    def find_ipv4_and_network(message, ipv4_address, network_id = nil)
+    def find_ipv4_and_network(message, ipv4_address)
       ipv4_address = ipv4_address != IPV4_BROADCAST ? ipv4_address : nil
 
       interface = @dp_info.interface_manager.detect(id: @interface_id)
       return unless interface
 
-      if_addrs = if network_id
-        interface.get_ipv4_infos(network_id: network_id, ipv4_address: ipv4_address)
-      else
-        interface.get_ipv4_infos(any_md: message.match.metadata, ipv4_address: ipv4_address)
-      end
+      # if_addrs = if network_id
+      #   interface.get_ipv4_infos(network_id: network_id, ipv4_address: ipv4_address)
+      # else
+      #   interface.get_ipv4_infos(any_md: message.match.metadata, ipv4_address: ipv4_address)
+      # end
 
       if_addrs = interface.get_ipv4_infos(any_md: message.match.metadata, ipv4_address: ipv4_address)
-
-      warn "CCCCCCCCCCCCCCCCCC network_id:#{network_id} #{if_addrs.inspect}"
 
       # mac_info, ipv4_info = if_addrs.detect { |addr_map|
       #   next addr_map if network_id
@@ -119,7 +117,7 @@ module Vnet::Core::Services
       add_network(network_id, cookie_id, segment_id)
     end
 
-    def add_network(network_id, cookie_id)
+    def add_network(network_id, cookie_id, segment_id)
       debug log_format("add_network")
       # Implement in subclass if needed
     end

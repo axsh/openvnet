@@ -116,30 +116,45 @@ module Vnet::Core::Interfaces
     def flows_for_interface_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
+      segment_id = mac_info[:segment_id]
+      network_id = ipv4_info[:network_id]
+
+      mac_address = mac_info[:mac_address]
+      ipv4_address = ipv4_info[:ipv4_address]
+
       #
-      # Validate (old Classifier)
+      # Validate
       #
       [{ :eth_type => 0x0800,
-         :eth_src => mac_info[:mac_address],
+         :eth_src => mac_address,
          :ipv4_src => IPV4_ZERO
        }, {
          :eth_type => 0x0800,
-         :eth_src => mac_info[:mac_address],
-         :ipv4_src => ipv4_info[:ipv4_address]
+         :eth_src => mac_address,
+         :ipv4_src => ipv4_address
        }, {
          :eth_type => 0x0806,
-         :eth_src => mac_info[:mac_address],
-         :arp_sha => mac_info[:mac_address],
-         :arp_spa => ipv4_info[:ipv4_address]
+         :eth_src => mac_address,
+         :arp_sha => mac_address,
+         :arp_spa => ipv4_address
        }].each { |match|
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
-                             goto_table: TABLE_NETWORK_CONNECTION,
-                             priority: 40,
-                             match: match,
-                             match_interface: @id,
-                             write_network: ipv4_info[:network_id],
-                             cookie: cookie
-                            )
+        if segment_id
+          flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                               goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                               priority: 40,
+                               match: match,
+                               match_interface: @id,
+                               write_segment: segment_id,
+                               cookie: cookie)
+        else
+          flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                               goto_table: TABLE_NETWORK_CONNECTION,
+                               priority: 40,
+                               match: match,
+                               match_interface: @id,
+                               write_network: network_id,
+                               cookie: cookie)
+        end
       }
 
       #
@@ -150,20 +165,20 @@ module Vnet::Core::Interfaces
                            priority: 40,
                            match: {
                              :eth_type => 0x0800,
-                             :ipv4_dst => ipv4_info[:ipv4_address],
+                             :ipv4_dst => ipv4_address,
                            },
-                           match_network: ipv4_info[:network_id],
+                           match_network: network_id,
                            actions: {
-                             :eth_dst => mac_info[:mac_address],
+                             :eth_dst => mac_address,
                            },
                            cookie: cookie)
       flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
                            goto_table: TABLE_INTERFACE_INGRESS_FILTER,
                            priority: 60,
                            match: {
-                             :eth_dst => mac_info[:mac_address],
+                             :eth_dst => mac_address,
                            },
-                           match_network: ipv4_info[:network_id],
+                           match_network: network_id,
                            write_interface: @id,
                            cookie: cookie)
 
@@ -171,16 +186,16 @@ module Vnet::Core::Interfaces
       # Anti-spoof:
       #
       [{ :eth_type => 0x0806,
-         :arp_spa => ipv4_info[:ipv4_address],
+         :arp_spa => ipv4_address,
        },{
          :eth_type => 0x0800,
-         :ipv4_src => ipv4_info[:ipv4_address],
+         :ipv4_src => ipv4_address,
        }
       ].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
                              priority: 90,
                              match: match,
-                             match_value_pair_first: ipv4_info[:network_id],
+                             match_value_pair_first: network_id,
                              cookie: cookie)
       }
     end

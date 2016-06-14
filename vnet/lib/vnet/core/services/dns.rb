@@ -71,7 +71,7 @@ module Vnet::Core::Services
       )
     end
 
-    def add_network(network_id, cookie_id)
+    def add_network(network_id, cookie_id, segment_id)
       add_dns_server(network_id)
 
       flows = []
