@@ -107,10 +107,12 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
-      @active_interfaces[item.interface_id].tap { |network_ids|
-        next unless network_ids
-        network_ids.each { |network_id|
-          item.add_network_unless_exists(network_id, network_id)
+      @active_interfaces[item.interface_id].tap { |params|
+        segment_id_list = params[:segment_id_list] || next
+        network_id_list = params[:network_id_list] || next
+
+        network_id_list.each { |network_id|
+          item.add_network_unless_exists(network_id, network_id, segment_id_list.first)
         }
       }
 
@@ -132,10 +134,11 @@ module Vnet::Core
     #
 
     def activate_interface_value(interface_id, params)
-      params[:network_id_list] || return
+      params || return
     end
 
     def activate_interface_update_item_proc(interface_id, value, params)
+      segment_id_list = params[:segment_id_list] || return
       network_id_list = params[:network_id_list] || return
 
       Proc.new { |id, item|
@@ -144,7 +147,7 @@ module Vnet::Core
           #
           # TODO: We can't use network_id or cookie id for the cookie
           # id parameter.
-          item.add_network_unless_exists(network_id, network_id)
+          item.add_network_unless_exists(network_id, network_id, segment_id_list.first)
         }
       }
     end

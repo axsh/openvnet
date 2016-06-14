@@ -62,6 +62,7 @@ module Vnet::Core::Interfaces
         @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
                                          id: :interface,
                                          interface_id: @id,
+                                         segment_id_list: all_segment_ids,
                                          network_id_list: all_network_ids)
       end
     end
@@ -84,10 +85,11 @@ module Vnet::Core::Interfaces
 
       @dp_info.add_flows(flows)
 
-      if !all_network_ids.empty?
+      if !all_segment_ids.empty? || !all_network_ids.empty?
         @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
                                          id: :interface,
                                          interface_id: @id,
+                                         segment_id_list: all_segment_ids,
                                          network_id_list: all_network_ids)
       end
     end

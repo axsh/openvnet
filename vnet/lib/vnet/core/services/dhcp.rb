@@ -123,7 +123,7 @@ module Vnet::Core::Services
                            match_network: network_id,
                            write_interface: @interface_id)
 
-      if @segment_id
+      if segment_id
         flows << flow_create(table: TABLE_FLOOD_SIMULATED,
                              goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                              priority: 30,
@@ -131,6 +131,7 @@ module Vnet::Core::Services
                              cookie: cookie_for_network(cookie_id), # Fix.
                              match_segment: segment_id,
                              write_interface: @interface_id)
+      end
 
       @dp_info.add_flows(flows)
     end
@@ -199,6 +200,10 @@ module Vnet::Core::Services
 
     def find_client_interface(port_number, server_mac_info, server_ipv4_info)
       interface = @dp_info.interface_manager.detect(port_number: port_number)
+
+      debug "ZZZZZZZZZZZZZZZZZZZZ #{server_mac_info.inspect}"
+      debug "ZZZZZZZZZZZZZZZZZZZZ #{server_ipv4_info.inspect}"
+      debug "ZZZZZZZZZZZZZZZZZZZZ #{interface.inspect}"
 
       if interface.nil?
         info log_format("could not find interface for port number #{port_number}")

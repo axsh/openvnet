@@ -19,6 +19,11 @@ module Vnet::Core
       when params[:network_md]
         network_id = md_to_id(:network, params[:network_md])
         return [] if network_id.nil?
+
+      when params[:network_id]
+        network_id = network_id
+        return [] if network_id.nil?
+
       else
         network_id = params[:network_id]
       end
