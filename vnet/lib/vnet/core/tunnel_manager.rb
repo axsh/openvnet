@@ -265,7 +265,7 @@ module Vnet::Core
 
       case property_type
       when :update_networks
-        tunnel_actions = [:tunnel_id => property_id | TUNNEL_FLAG_MASK]
+        tunnel_actions = [:tunnel_id => (property_id & TUNNEL_ID_MASK) | TUNNEL_NETWORK]
         segment_actions = []
 
         @items.each { |item_id, item|
@@ -300,7 +300,7 @@ module Vnet::Core
         end
 
       when :update_segments
-        tunnel_actions = [:tunnel_id => property_id | TUNNEL_FLAG_MASK]
+        tunnel_actions = [:tunnel_id => (property_id & TUNNEL_ID_MASK) | TUNNEL_SEGMENT]
         segment_actions = []
 
         @items.each { |item_id, item|
