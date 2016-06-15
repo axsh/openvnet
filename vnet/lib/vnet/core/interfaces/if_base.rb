@@ -215,6 +215,17 @@ module Vnet::Core::Interfaces
                              match_value_pair_first: network_id,
                              cookie: cookie)
       }
+
+      # WRONG!! move to add_mac?
+      # if segment_id.nil?
+      #   flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
+      #                        priority: 50,
+      #                        match: {
+      #                          :eth_dst => mac_address
+      #                        },
+      #                        match_network: network_id,
+      #                        cookie: cookie)
+      # end
     end
 
     def flows_for_router_ingress_mac(flows, mac_info)
