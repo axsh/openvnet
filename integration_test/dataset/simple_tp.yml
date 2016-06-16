@@ -14,6 +14,14 @@ networks:
     domain_name: vnet2
     network_mode: virtual
 
+topology_networks:
+
+  - topology_uuid: topo-vnet
+    network_uuid: nw-vnet1
+
+  - topology_uuid: topo-vnet
+    network_uuid: nw-vnet2
+
 interfaces:
 
   - uuid: if-v1
