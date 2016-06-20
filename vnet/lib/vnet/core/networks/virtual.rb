@@ -59,12 +59,19 @@ module Vnet::Core::Networks
                              match_segment: @segment_id,
                              write_network: @id)
 
+        # TODO: ??????????? This should be for _all_ networks.
         flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
                              goto_table: TABLE_FLOOD_SIMULATED,
                              priority: 31,
                              match: {
                                :eth_dst => MAC_BROADCAST
                              },
+                             match_network: @id,
+                             write_segment: @segment_id)
+
+        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                             priority: 25,
                              match_network: @id,
                              write_segment: @segment_id)
       end

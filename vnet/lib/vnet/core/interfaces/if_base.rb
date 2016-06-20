@@ -190,18 +190,6 @@ module Vnet::Core::Interfaces
                              cookie: cookie)
       }
 
-      # TODO: Should only be added when we do not have strict
-      # enforcement of a network on a segment.
-      if segment_id
-        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
-                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
-                             priority: 50,
-                             match: { :eth_dst => mac_address },
-                             match_network: network_id,
-                             write_segment: segment_id,
-                             cookie: cookie)
-      end
-
       #
       # Anti-spoof:
       #
