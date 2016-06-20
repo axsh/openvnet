@@ -173,31 +173,37 @@ module Vnet::Core::Interfaces
                            },
                            cookie: cookie)
 
-      if segment_id
-        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
-                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
-                             priority: 60,
-                             match: {
-                               :eth_type => 0x0800,
-                               :eth_dst => mac_address,
-                               :ipv4_dst => ipv4_address,
-                             },
-                             match_network: network_id,
-                             write_segment: segment_id,
-                             cookie: cookie)
-      else
-        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
-                             goto_table: TABLE_INTERFACE_INGRESS_FILTER,
-                             priority: 60,
-                             match: {
-                               :eth_type => 0x0800,
-                               :eth_dst => mac_address,
-                               :ipv4_dst => ipv4_address,
-                             },
-                             match_network: network_id,
-                             write_interface: @id,
-                             cookie: cookie)
-      end
+      (segment_id ?
+        [TABLE_SEGMENT_DST_CLASSIFIER, :write_segment, segment_id] :
+        [TABLE_INTERFACE_INGRESS_FILTER, :write_interface, @id]).tap { |goto_table, write_type, write_id|
+
+        [{:eth_type => 0x0800,
+          :eth_dst => mac_address,
+          :ipv4_dst => ipv4_address,
+         },{
+          :eth_type => 0x0806,
+          :eth_dst => mac_address,
+          :arp_tha => mac_address,
+          :arp_tpa => ipv4_address
+         }].each { |match|
+          flows << flow_create({table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                                goto_table: goto_table,
+                                priority: 60,
+                                match: match,
+                                match_network: network_id,
+                                write_type => write_id,
+                                cookie: cookie
+                               })
+          flows << flow_create({table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                                goto_table: goto_table,
+                                priority: 60,
+                                match: match,
+                                match_network: network_id,
+                                write_type => write_id,
+                                cookie: cookie
+                               })
+        }
+      }
 
       #
       # Anti-spoof:
