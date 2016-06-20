@@ -49,8 +49,8 @@ module Vnet::Core::Segments
       @dp_info.add_flows(flows)
 
       ovs_flows = []
-      ovs_flows << create_ovs_flow_learn_arp(30, "tun_id=0,")
-      ovs_flows << create_ovs_flow_learn_arp(10, "", "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\],")
+      ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
+      ovs_flows << create_ovs_flow_learn_arp(5, "", "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\],")
       ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
     end
 
