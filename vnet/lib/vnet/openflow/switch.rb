@@ -132,7 +132,7 @@ module Vnet::Openflow
       }
 
       [[TABLE_CLASSIFIER, TABLE_TUNNEL_PORTS, 0, :write_remote, nil],
-       [TABLE_SEGMENT_SRC_MAC_LEARNING, TABLE_SEGMENT_DST_CLASSIFIER, 20, nil, {
+       [TABLE_SEGMENT_SRC_MAC_LEARNING, TABLE_SEGMENT_DST_CLASSIFIER, 44, nil, {
           :eth_type => 0x0806,
           :tunnel_id => 0
         }],

@@ -109,7 +109,6 @@ module Vnet::Core::Interfaces
                              match_segment: segment_id,
                              write_interface: @id,
                              cookie: cookie)
-
       end
     end
 
@@ -173,31 +172,23 @@ module Vnet::Core::Interfaces
                            },
                            cookie: cookie)
 
-      if segment_id
-        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
-                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
-                             priority: 60,
-                             match: {
-                               :eth_type => 0x0800,
-                               :eth_dst => mac_address,
-                               :ipv4_dst => ipv4_address,
-                             },
-                             match_network: network_id,
-                             write_segment: segment_id,
-                             cookie: cookie)
-      else
+      [{:eth_type => 0x0800,
+        :eth_dst => mac_address,
+        :ipv4_dst => ipv4_address,
+       },{
+        :eth_type => 0x0806,
+        :eth_dst => mac_address,
+        :arp_tha => mac_address,
+        :arp_tpa => ipv4_address
+       }].each { |match|
         flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
                              goto_table: TABLE_INTERFACE_INGRESS_FILTER,
                              priority: 60,
-                             match: {
-                               :eth_type => 0x0800,
-                               :eth_dst => mac_address,
-                               :ipv4_dst => ipv4_address,
-                             },
+                             match: match,
                              match_network: network_id,
                              write_interface: @id,
                              cookie: cookie)
-      end
+      }
 
       #
       # Anti-spoof:
@@ -215,17 +206,6 @@ module Vnet::Core::Interfaces
                              match_value_pair_first: network_id,
                              cookie: cookie)
       }
-
-      # WRONG!! move to add_mac?
-      # if segment_id.nil?
-      #   flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
-      #                        priority: 50,
-      #                        match: {
-      #                          :eth_dst => mac_address
-      #                        },
-      #                        match_network: network_id,
-      #                        cookie: cookie)
-      # end
     end
 
     def flows_for_router_ingress_mac(flows, mac_info)

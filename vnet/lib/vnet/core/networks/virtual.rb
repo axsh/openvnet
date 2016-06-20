@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- Coding: utf-8 -*-
 
 module Vnet::Core::Networks
 
@@ -54,17 +54,24 @@ module Vnet::Core::Networks
 
         flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER,
                              goto_table: TABLE_NETWORK_CONNECTION,
-                             priority: 30 + flow_priority,
+                             priority: 50 + flow_priority,
                              match: subnet_dst,
                              match_segment: @segment_id,
                              write_network: @id)
 
+        # TODO: ??????????? This should be for _all_ networks.
         flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
                              goto_table: TABLE_FLOOD_SIMULATED,
                              priority: 31,
                              match: {
                                :eth_dst => MAC_BROADCAST
                              },
+                             match_network: @id,
+                             write_segment: @segment_id)
+
+        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                             priority: 25,
                              match_network: @id,
                              write_segment: @segment_id)
       end
@@ -93,18 +100,30 @@ module Vnet::Core::Networks
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_md = md_create(network: @id, remote: nil)
-      learn_md = md_create(network: @id, local: nil)
+      match_network_md = md_create(network: @id, remote: nil)
+      learn_network_md = md_create(network: @id, local: nil)
 
-      flow_learn_arp = "table=#{TABLE_NETWORK_SRC_MAC_LEARNING},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
-        [@cookie, match_md[:metadata], match_md[:metadata_mask]]
+      flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
+        [TABLE_NETWORK_SRC_MAC_LEARNING, priority, @cookie, match_network_md[:metadata], match_network_md[:metadata_mask], match_options]
       flow_learn_arp << "learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
-        [TABLE_NETWORK_DST_MAC_LOOKUP, cookie, learn_md[:metadata]]
+        [TABLE_NETWORK_DST_MAC_LOOKUP, cookie, learn_network_md[:metadata]]
 
       flow_learn_arp << learn_options
+      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\)"
 
-      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\),goto_table:%d" % TABLE_NETWORK_DST_CLASSIFIER
+      if @segment_id
+        learn_segment_md = md_create(segment: @id, local: nil)
+
+        flow_learn_arp << ",learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
+          [TABLE_SEGMENT_DST_MAC_LOOKUP, cookie, learn_segment_md[:metadata]]
+
+        flow_learn_arp << learn_options
+        flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\)"
+      end
+
+      flow_learn_arp << "goto_table:%d" % TABLE_NETWORK_DST_CLASSIFIER
       flow_learn_arp
     end
+
   end
 end

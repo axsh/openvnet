@@ -43,8 +43,9 @@ module Vnet::Core::Networks
 
     private
 
+    # TODO: Add exceptions, e.g. pass the base priority to a method.
     def flow_priority
-      20 + @ipv4_prefix
+      @ipv4_prefix
     end
 
   end
