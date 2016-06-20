@@ -219,18 +219,28 @@ module Vnet::Core::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(table: TABLE_FLOOD_SIMULATED,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                           priority: 30,
-                           match: {
-                             :eth_type => 0x0806,
-                             :arp_op => 1,
-                             :arp_tha => MAC_ZERO,
-                             :arp_tpa => ipv4_info[:ipv4_address],
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie)
+      segment_id = mac_info[:segment_id]
+      network_id = ipv4_info[:network_id]
+
+      ipv4_address = ipv4_info[:ipv4_address]
+
+      flow_base = {table: TABLE_FLOOD_SIMULATED,
+                   goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                   priority: 30,
+                   match: {:eth_type => 0x0806,
+                           :arp_op => 1,
+                           :arp_tha => MAC_ZERO,
+                           :arp_tpa => ipv4_address
+                          },
+                   write_interface: @id,
+                   cookie: cookie
+                  }
+
+      if segment_id
+        flows << flow_create(flow_base.merge({match_segment: segment_id}))
+      end
+
+      flows << flow_create(flow_base.merge({match_network: network_id}))
     end
 
   end
