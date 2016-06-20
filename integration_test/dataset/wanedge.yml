@@ -16,7 +16,7 @@ networks:
 
   - uuid: nw-global
     display_name: global
-    ipv4_network: 10.255.0.0
+    ipv4_network: 10.210.0.0
     ipv4_prefix: 24
     domain_name: global
     network_mode: physical
@@ -50,7 +50,7 @@ interfaces:
     owner_datapath_uuid: dp-wanedge
     network_uuid: nw-global
     mac_address: "02:01:00:00:00:05"
-    ipv4_address: 10.255.0.2
+    ipv4_address: 10.210.0.2
 
   - uuid: if-vnetgw
     mode: simulated
@@ -143,7 +143,7 @@ translations:
 translation_static_addresses:
 
   - translation_uuid: tr-saddr
-    ingress_ipv4_address: 10.255.0.104
+    ingress_ipv4_address: 10.210.0.104
     egress_ipv4_address: 10.101.0.10
     route_link_uuid: rl-1
 
@@ -151,6 +151,6 @@ ip_leases:
 
   - uuid: il-nat1
     mac_lease_uuid: ml-glo2vnetgw
-    ipv4_address: 10.255.0.104
+    ipv4_address: 10.210.0.104
     network_uuid: nw-global
     enable_routing: true
