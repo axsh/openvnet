@@ -124,7 +124,7 @@ module Vnet::Core::Datapaths
                              match_dp_network: flow_id,
 
                              actions: {
-                               :tunnel_id => flow_gen_id | TUNNEL_FLAG
+                               :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_NETWORK
                              },
 
                              write_value_pair_flag: reflection,

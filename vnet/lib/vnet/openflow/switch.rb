@@ -92,7 +92,6 @@ module Vnet::Openflow
        TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
        TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
 
-       TABLE_OUTPUT_DP_OVER_MAC2MAC,
        TABLE_OUTPUT_DP_OVER_TUNNEL,
 
        TABLE_OUT_PORT_INTERFACE_INGRESS,
@@ -106,6 +105,7 @@ module Vnet::Openflow
       [[TABLE_CLASSIFIER, 1, nil, { :tunnel_id => 0 }],
        [TABLE_FLOOD_TUNNELS, 10, :match_remote, nil],
        [TABLE_OUTPUT_DP_NETWORK_DST_IF, 2, nil, { :eth_dst => MAC_BROADCAST }],
+       [TABLE_OUTPUT_DP_OVER_MAC2MAC, 1, nil, { :tunnel_id => 0 }],
       ].each { |table, priority, flag, match|
         flows << flow_create({ table: table,
                                priority: priority,
@@ -125,6 +125,7 @@ module Vnet::Openflow
        [TABLE_FLOOD_SIMULATED, TABLE_FLOOD_LOCAL],
        [TABLE_FLOOD_TUNNELS, TABLE_FLOOD_SEGMENT],
        [TABLE_INTERFACE_INGRESS_FILTER, TABLE_INTERFACE_INGRESS_FILTER_LOOKUP],
+       [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_OVER_TUNNEL],
       ].each { |from_table, to_table|
         flows << flow_create(table: from_table,
                              goto_table: to_table,
@@ -145,13 +146,6 @@ module Vnet::Openflow
         }],
        [TABLE_SEGMENT_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
           :eth_dst => MAC_BROADCAST
-        }],
-       [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_OVER_TUNNEL, 1, nil, {
-          :tunnel_id => TUNNEL_ROUTE_LINK
-        }],
-       [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_OVER_TUNNEL, 1, nil, {
-          :tunnel_id => TUNNEL_FLAG,
-          :tunnel_id_mask => TUNNEL_FLAG_MASK
         }],
       ].each { |from_table, to_table, priority, flag, match|
         flows << flow_create({ table: from_table,
