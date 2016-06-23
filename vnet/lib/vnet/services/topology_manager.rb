@@ -271,40 +271,40 @@ module Vnet::Services
 
     # Currently we look up the topology directly, which means we don't
     # have proper handling of changes to topologies, etc.
-    def find_id_using_tp_nw(datapath_id, segment_id)
-      # TODO: Should keep local tp_nw list.
-      tp_nw = MW::TopologySegment.batch.dataset.where(segment_id: segment_id).first.commit
+    def find_id_using_tp_nw(datapath_id, network_id)
+      # TODO: Should keep local tp_obj list.
+      tp_obj = MW::TopologyNetwork.batch.dataset.where(network_id: network_id).first.commit
 
-      if tp_nw.nil? || tp_nw.topology_id.nil?
-        warn log_format("segment not associated with a topology", "datapath_id:#{datapath_id} segment_id:#{segment_id}")
+      if tp_obj.nil? || tp_obj.topology_id.nil?
+        warn log_format("network not associated with a topology", "datapath_id:#{datapath_id} network_id:#{network_id}")
         return
       end
 
-      tp_nw.topology_id
+      tp_obj.topology_id
     end
 
     def find_id_using_tp_seg(datapath_id, segment_id)
-      # TODO: Should keep local tp_seg list.
-      tp_seg = MW::TopologySegment.batch.dataset.where(segment_id: segment_id).first.commit
+      # TODO: Should keep local tp_obj list.
+      tp_obj = MW::TopologySegment.batch.dataset.where(segment_id: segment_id).first.commit
 
-      if tp_seg.nil? || tp_seg.topology_id.nil?
+      if tp_obj.nil? || tp_obj.topology_id.nil?
         warn log_format("segment not associated with a topology", "datapath_id:#{datapath_id} segment_id:#{segment_id}")
         return
       end
 
-      tp_seg.topology_id
+      tp_obj.topology_id
     end
 
     def find_id_using_tp_rl(datapath_id, route_link_id)
-      # TODO: Should keep local tp_rl list.
-      tp_rl = MW::TopologyRouteLink.batch.dataset.where(route_link_id: route_link_id).first.commit
+      # TODO: Should keep local tp_obj list.
+      tp_obj = MW::TopologyRouteLink.batch.dataset.where(route_link_id: route_link_id).first.commit
 
-      if tp_rl.nil? || tp_rl.topology_id.nil?
+      if tp_obj.nil? || tp_obj.topology_id.nil?
         warn log_format("route_link not associated with a topology", "datapath_id:#{datapath_id} route_link_id:#{route_link_id}")
         return
       end
 
-      tp_rl.topology_id
+      tp_obj.topology_id
     end
 
     def has_datapath_network?(datapath_id, network_id)

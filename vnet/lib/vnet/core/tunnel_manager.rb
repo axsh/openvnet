@@ -366,11 +366,7 @@ module Vnet::Core
         dst_interface_id: remote_dp_obj[:interface_id],
       }
 
-      info log_format("activated #{obj_type} link",
-                      "#{obj_type}:#{remote_dp_obj[obj_type]} " +
-                      "remote_dp_obj:#{remote_dp_obj[:id]} " +
-                      "datapath_id:#{remote_dp_obj[:datapath_id]} " +
-                      "interface_id:#{remote_dp_obj[:interface_id]}")
+      info log_format_h("activated #{obj_type} link", remote_dp_obj)
 
       item = internal_retrieve(options)
       tunnel_mode = select_tunnel_mode(host_dp_obj[:interface_id], remote_dp_obj[:interface_id])
@@ -419,11 +415,7 @@ module Vnet::Core
 
       item = internal_detect(options) || return
 
-      info log_format("deactivated #{obj_type} link",
-                      "#{obj_type}:#{remote_dp_obj[obj_type]} " +
-                      "remote_dp_obj:#{remote_dp_obj[:id]} " +
-                      "datapath_id:#{remote_dp_obj[:datapath_id]} " +
-                      "interface_id:#{remote_dp_obj[:interface_id]}")
+      info log_format_h("deactivated #{obj_type} link", remote_dp_obj)
 
       case obj_type
       when :network_id
