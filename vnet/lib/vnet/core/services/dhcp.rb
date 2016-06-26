@@ -201,10 +201,6 @@ module Vnet::Core::Services
     def find_client_interface(port_number, server_mac_info, server_ipv4_info)
       interface = @dp_info.interface_manager.detect(port_number: port_number)
 
-      debug "ZZZZZZZZZZZZZZZZZZZZ #{server_mac_info.inspect}"
-      debug "ZZZZZZZZZZZZZZZZZZZZ #{server_ipv4_info.inspect}"
-      debug "ZZZZZZZZZZZZZZZZZZZZ #{interface.inspect}"
-
       if interface.nil?
         info log_format("could not find interface for port number #{port_number}")
         return []
