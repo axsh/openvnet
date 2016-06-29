@@ -156,6 +156,15 @@ module Vnet
       param
     end
 
+    def get_param_mac_address(params, key = :mac_address, required = true)
+      param = get_param_int(params, key, required) || return
+
+      Pio::Mac.new(param)
+
+    rescue InvalidValueError
+      throw_param_error('value is not a valid MAC address', params, key)
+    end
+
     def get_param_tp_port(params, key, required = true)
       param = get_param_int(params, key, required) || return
 

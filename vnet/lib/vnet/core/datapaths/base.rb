@@ -101,28 +101,29 @@ module Vnet::Core::Datapaths
     # Networks:
     #
 
-    def add_active_network(dpn_map)
-      return if dpn_map.network_id.nil?
-      return if @active_networks.has_key? dpn_map.network_id
+    def add_active_network(dpg_map)
+      network_id = get_param_id(dpg_map, :network_id)
+
+      return if @active_networks.has_key? network_id
 
       dp_network = {
-        id: dpn_map.id || return,
-        datapath_id: dpn_map.datapath_id || return,
-        interface_id: dpn_map.interface_id || return,
-        network_id: dpn_map.network_id || return,
-        ip_lease_id: dpn_map.ip_lease_id,
-        mac_address: Pio::Mac.new(dpn_map.mac_address || return),
+        id: get_param_id(dpg_map),
+        datapath_id: get_param_id(dpg_map, :datapath_id),
+        interface_id: get_param_id(dpg_map, :interface_id),
+        network_id: get_param_id(dpg_map, :network_id),
+        ip_lease_id: get_param_id(dpg_map, :ip_lease_id),
+        mac_address: get_param_mac_address(dpg_map),
 
         active: false
       }
 
-      @active_networks[dpn_map.network_id] = dp_network
+      @active_networks[network_id] = dp_network
 
       flows = []
       flows_for_dp_network(flows, dp_network)
       @dp_info.add_flows(flows)
 
-      debug log_format("adding datapath network #{dpn_map.network_id} to #{self.pretty_id}")
+      debug log_format("adding datapath network #{network_id} to #{self.pretty_id}")
     end
 
     def remove_active_network(network_id)
@@ -139,28 +140,28 @@ module Vnet::Core::Datapaths
     #
 
     def add_active_segment(dpg_map)
-      return if dpg_map.segment_id.nil?
-      return if @active_segments.has_key? dpg_map.segment_id
+      segment_id = get_param_id(dpg_map, :segment_id)
 
-      # TODO: Refactor with get_params.
+      return if @active_segments.has_key? segment_id
+
       dp_segment = {
-        id: dpg_map.id || return,
-        datapath_id: dpg_map.datapath_id || return,
-        interface_id: dpg_map.interface_id || return,
-        segment_id: dpg_map.segment_id || return,
-        ip_lease_id: dpg_map.ip_lease_id,
-        mac_address: Pio::Mac.new(dpg_map.mac_address || return),
+        id: get_param_id(dpg_map),
+        datapath_id: get_param_id(dpg_map, :datapath_id),
+        interface_id: get_param_id(dpg_map, :interface_id),
+        segment_id: get_param_id(dpg_map, :segment_id),
+        ip_lease_id: get_param_id(dpg_map, :ip_lease_id),
+        mac_address: get_param_mac_address(dpg_map),
 
         active: false
       }
 
-      @active_segments[dpg_map.segment_id] = dp_segment
+      @active_segments[segment_id] = dp_segment
 
       flows = []
       flows_for_dp_segment(flows, dp_segment)
       @dp_info.add_flows(flows)
 
-      debug log_format("adding datapath segment #{dpg_map.segment_id} to #{self.pretty_id}")
+      debug log_format("adding datapath segment #{segment_id} to #{self.pretty_id}")
     end
 
     def remove_active_segment(segment_id)
@@ -176,32 +177,29 @@ module Vnet::Core::Datapaths
     # Route links:
     #
 
-    def add_active_route_link(dprl_map)
-      return if dprl_map.route_link_id.nil?
-      return if @active_route_links.has_key? dprl_map.route_link_id
+    def add_active_route_link(dpg_map)
+      route_link_id = get_param_id(dpg_map, :route_link_id)
+
+      return if @active_route_links.has_key? route_link_id
 
       dp_route_link = {
-        id: dprl_map.id || return,
-        datapath_id: dprl_map.datapath_id || return,
-        interface_id: dprl_map.interface_id || return,
-        route_link_id: dprl_map.route_link_id || return,
-        ip_lease_id: dprl_map.ip_lease_id,
-        mac_address: Pio::Mac.new(dprl_map.mac_address || return),
+        id: get_param_id(dpg_map),
+        datapath_id: get_param_id(dpg_map, :datapath_id),
+        interface_id: get_param_id(dpg_map, :interface_id),
+        route_link_id: get_param_id(dpg_map, :route_link_id),
+        ip_lease_id: get_param_id(dpg_map, :ip_lease_id),
+        mac_address: get_param_mac_address(dpg_map),
 
         active: false
       }
 
-      @active_route_links[dprl_map.route_link_id] = dp_route_link
-
-      return if dp_route_link[:interface_id].nil?
-      return if dp_route_link[:datapath_id].nil?
-      return if dp_route_link[:route_link_id].nil?
+      @active_route_links[route_link_id] = dp_route_link
 
       flows = []
       flows_for_dp_route_link(flows, dp_route_link)
       @dp_info.add_flows(flows)
 
-      debug log_format("adding datapath route link #{dprl_map.route_link_id} to #{self.pretty_id}")
+      debug log_format("adding datapath route link #{route_link_id} to #{self.pretty_id}")
     end
 
     def remove_active_route_link(route_link_id)
