@@ -131,33 +131,43 @@ module Vnet::Core
 
     # ACTIVATE_NETWORK_ON_HOST on queue ':network'
     def activate_network(params)
-      network_id = params[:network_id] || return
-      return if @active_networks.has_key? network_id
+      begin
+        network_id = get_param_id(params, :network_id)
+        return if @active_networks.has_key? network_id
 
-      @active_networks[network_id] = {
-      }
+        @active_networks[network_id] = {
+        }
 
-      @items.select { |id, item|
-        item.has_active_network?(network_id)
-      }.each { |id, item|
-        publish(ACTIVATE_DATAPATH_NETWORK, id: item.id, network_id: network_id)
-      }
+        @items.select { |id, item|
+          item.has_active_network?(network_id)
+        }.each { |id, item|
+          publish(ACTIVATE_DATAPATH_NETWORK, id: item.id, network_id: network_id)
+        }
 
-      load_datapath_networks(network_id)
+        load_datapath_networks(network_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # DEACTIVATE_NETWORK_ON_HOST on queue ':network'
     def deactivate_network(params)
-      network_id = params[:network_id] || return
-      network = @active_networks.delete(network_id) || return
+      begin
+        network_id = get_param_id(params, :network_id)
+        network = @active_networks.delete(network_id) || return
 
-      @items.select { |id, item|
-        item.has_active_network?(network_id)
-      }.each { |id, item|
-        publish(DEACTIVATE_DATAPATH_NETWORK, id: item.id, network_id: network_id)
-      }
+        @items.select { |id, item|
+          item.has_active_network?(network_id)
+        }.each { |id, item|
+          publish(DEACTIVATE_DATAPATH_NETWORK, id: item.id, network_id: network_id)
+        }
 
-      # unload_datapath_networks(network_id)
+        # unload_datapath_networks(network_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # ADDED_DATAPATH_NETWORK on queue 'item.id'
@@ -182,42 +192,57 @@ module Vnet::Core
 
     # REMOVED_DATAPATH_NETWORK on queue 'item.id'
     def removed_datapath_network(params)
-      item = internal_detect_by_id(params) || return
-      network_id = params[:network_id] || return
+      begin
+        item = internal_detect_by_id(params) || return
+        network_id = get_param_id(params, :network_id)
 
-      item.remove_active_network(network_id)
-      item.deactivate_network_id(network_id)
+        item.remove_active_network(network_id)
+        item.deactivate_network_id(network_id)
 
-      if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: item.id)
+        if !item.host? && item.unused?
+          publish(REMOVED_DATAPATH, id: item.id)
+        end
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
       end
     end
 
     # ACTIVATE_DATAPATH_NETWORK on queue 'item.id'
     def activate_datapath_network(params)
-      item = internal_detect_by_id(params) || return
+      begin
+        item = internal_detect_by_id(params) || return
 
-      network_id = params[:network_id] || return
-      network = @active_networks[network_id]
+        network_id = get_param_id(:network_id)
+        network = @active_networks[network_id] || return
 
-      info log_format("activating datapath network #{network_id}")
+        info log_format("activating datapath network #{network_id}")
 
-      item.activate_network_id(network_id) if network
+        item.activate_network_id(network_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # DEACTIVATE_DATAPATH_NETWORK on queue 'item.id'
     def deactivate_datapath_network(params)
-      item = internal_detect_by_id(params) || return
+      begin
+        item = internal_detect_by_id(params) || return
 
-      network_id = params[:network_id] || return
-      network = @active_networks[network_id]
+        network_id = get_param_id(params, :network_id)
+        network = @active_networks[network_id]
 
-      info log_format("deactivating datapath network #{network_id}")
+        info log_format("deactivating datapath network #{network_id}")
 
-      item.deactivate_network_id(network_id)
+        item.deactivate_network_id(network_id)
 
-      if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: item.id)
+        if !item.host? && item.unused?
+          publish(REMOVED_DATAPATH, id: item.id)
+        end
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
       end
     end
 
@@ -241,33 +266,43 @@ module Vnet::Core
 
     # ACTIVATE_SEGMENT_ON_HOST on queue ':segment'
     def activate_segment(params)
-      segment_id = params[:segment_id] || return
-      return if @active_segments.has_key? segment_id
+      begin
+        segment_id = get_param_id(params, :segment_id)
+        return if @active_segments.has_key? segment_id
 
-      @active_segments[segment_id] = {
-      }
+        @active_segments[segment_id] = {
+        }
 
-      @items.select { |id, item|
-        item.has_active_segment?(segment_id)
-      }.each { |id, item|
-        publish(ACTIVATE_DATAPATH_SEGMENT, id: item.id, segment_id: segment_id)
-      }
+        @items.select { |id, item|
+          item.has_active_segment?(segment_id)
+        }.each { |id, item|
+          publish(ACTIVATE_DATAPATH_SEGMENT, id: item.id, segment_id: segment_id)
+        }
 
-      load_datapath_segments(segment_id)
+        load_datapath_segments(segment_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # DEACTIVATE_SEGMENT_ON_HOST on queue ':segment'
     def deactivate_segment(params)
-      segment_id = params[:segment_id] || return
-      segment = @active_segments.delete(segment_id) || return
+      begin
+        segment_id = get_param_id(params, :segment_id)
+        segment = @active_segments.delete(segment_id) || return
 
-      @items.select { |id, item|
-        item.has_active_segment?(segment_id)
-      }.each { |id, item|
-        publish(DEACTIVATE_DATAPATH_SEGMENT, id: item.id, segment_id: segment_id)
-      }
+        @items.select { |id, item|
+          item.has_active_segment?(segment_id)
+        }.each { |id, item|
+          publish(DEACTIVATE_DATAPATH_SEGMENT, id: item.id, segment_id: segment_id)
+        }
 
-      # unload_datapath_segments(segment_id)
+        # unload_datapath_segments(segment_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # ADDED_DATAPATH_SEGMENT on queue 'item.id'
@@ -292,42 +327,57 @@ module Vnet::Core
 
     # REMOVED_DATAPATH_SEGMENT on queue 'item.id'
     def removed_datapath_segment(params)
-      item = internal_detect_by_id(params) || return
-      segment_id = params[:segment_id] || return
+      begin
+        item = internal_detect_by_id(params) || return
+        segment_id = get_param_id(params, :segment_id)
 
-      item.remove_active_segment(segment_id)
-      item.deactivate_segment_id(segment_id)
+        item.remove_active_segment(segment_id)
+        item.deactivate_segment_id(segment_id)
 
-      if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: item.id)
+        if !item.host? && item.unused?
+          publish(REMOVED_DATAPATH, id: item.id)
+        end
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
       end
     end
 
     # ACTIVATE_DATAPATH_SEGMENT on queue 'item.id'
     def activate_datapath_segment(params)
-      item = internal_detect_by_id(params) || return
+      begin
+        item = internal_detect_by_id(params) || return
 
-      segment_id = params[:segment_id] || return
-      segment = @active_segments[segment_id]
+        segment_id = get_param_id(params, :segment_id)
+        segment = @active_segments[segment_id] || return
 
-      info log_format("activating datapath segment #{segment_id}")
+        info log_format("activating datapath segment #{segment_id}")
 
-      item.activate_segment_id(segment_id) if segment
+        item.activate_segment_id(segment_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # DEACTIVATE_DATAPATH_SEGMENT on queue 'item.id'
     def deactivate_datapath_segment(params)
-      item = internal_detect_by_id(params) || return
+      begin
+        item = internal_detect_by_id(params) || return
 
-      segment_id = params[:segment_id] || return
-      segment = @active_segments[segment_id]
+        segment_id = get_param_id(params, :segment_id)
+        segment = @active_segments[segment_id]
 
-      info log_format("deactivating datapath segment #{segment_id}")
+        info log_format("deactivating datapath segment #{segment_id}")
 
-      item.deactivate_segment_id(segment_id)
+        item.deactivate_segment_id(segment_id)
 
-      if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: item.id)
+        if !item.host? && item.unused?
+          publish(REMOVED_DATAPATH, id: item.id)
+        end
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
       end
     end
 
@@ -351,33 +401,43 @@ module Vnet::Core
 
     # ACTIVATE_ROUTE_LINK_ON_HOST on queue ':route_link'
     def activate_route_link(params)
-      route_link_id = params[:route_link_id] || return
-      return if @active_route_links.has_key? route_link_id
+      begin
+        route_link_id = get_param_id(params, :route_link_id)
+        return if @active_route_links.has_key? route_link_id
 
-      @active_route_links[route_link_id] = {
-      }
+        @active_route_links[route_link_id] = {
+        }
 
-      @items.select { |id, item|
-        item.has_active_route_link?(route_link_id)
-      }.each { |id, item|
-        publish(ACTIVATE_DATAPATH_ROUTE_LINK, id: item.id, route_link_id: route_link_id)
-      }
+        @items.select { |id, item|
+          item.has_active_route_link?(route_link_id)
+        }.each { |id, item|
+          publish(ACTIVATE_DATAPATH_ROUTE_LINK, id: item.id, route_link_id: route_link_id)
+        }
 
-      load_datapath_route_links(route_link_id)
+        load_datapath_route_links(route_link_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # DEACTIVATE_ROUTE_LINK_ON_HOST on queue ':route_link'
     def deactivate_route_link(params)
-      route_link_id = params[:route_link_id] || return
-      route_link = @active_route_links.delete(route_link_id) || return
+      begin
+        route_link_id = get_param_id(params, :route_link_id)
+        route_link = @active_route_links.delete(route_link_id) || return
 
-      @items.select { |id, item|
-        item.has_active_route_link?(route_link_id)
-      }.each { |id, item|
-        publish(DEACTIVATE_DATAPATH_ROUTE_LINK, id: item.id, route_link_id: route_link_id)
-      }
+        @items.select { |id, item|
+          item.has_active_route_link?(route_link_id)
+        }.each { |id, item|
+          publish(DEACTIVATE_DATAPATH_ROUTE_LINK, id: item.id, route_link_id: route_link_id)
+        }
 
-      # unload_datapath_route_links(route_link_id)
+        # unload_datapath_route_links(route_link_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # ADDED_DATAPATH_ROUTE_LINK on queue 'item.id'
@@ -402,36 +462,57 @@ module Vnet::Core
 
     # REMOVED_DATAPATH_ROUTE_LINK on queue 'item.id'
     def removed_datapath_route_link(params)
-      item = internal_detect_by_id(params) || return
-      route_link_id = params[:route_link_id] || return
+      begin
+        item = internal_detect_by_id(params) || return
+        route_link_id = get_param_id(params, :route_link_id)
 
-      item.remove_active_route_link(route_link_id)
-      item.deactivate_route_link_id(route_link_id)
+        item.remove_active_route_link(route_link_id)
+        item.deactivate_route_link_id(route_link_id)
 
-      if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: item.id)
+        if !item.host? && item.unused?
+          publish(REMOVED_DATAPATH, id: item.id)
+        end
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
       end
     end
 
     # ACTIVATE_DATAPATH_ROUTE_LINK on queue 'item.id'
     def activate_datapath_route_link(params)
-      item = internal_detect_by_id(params) || return
-      route_link_id = params[:route_link_id] || return
-      route_link = @active_route_links[route_link_id]
+      begin
+        item = internal_detect_by_id(params) || return
 
-      item.activate_route_link_id(route_link_id) if route_link
+        route_link_id = get_param_id(params, :route_link_id)
+        route_link = @active_route_links[route_link_id] || return
+
+        info log_format("activating datapath route link #{route_link_id}")
+
+        item.activate_route_link_id(route_link_id)
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+      end
     end
 
     # DEACTIVATE_DATAPATH_ROUTE_LINK on queue 'item.id'
     def deactivate_datapath_route_link(params)
-      item = internal_detect_by_id(params) || return
-      route_link_id = params[:route_link_id] || return
-      route_link = @active_route_links[route_link_id]
+      begin
+        item = internal_detect_by_id(params) || return
 
-      item.deactivate_route_link_id(route_link_id)
+        route_link_id = get_param_id(params, :route_link_id)
+        route_link = @active_route_links[route_link_id]
 
-      if !item.host? && item.unused?
-        publish(REMOVED_DATAPATH, id: item.id)
+        info log_format("deactivating datapath route link #{route_link_id}")
+
+        item.deactivate_route_link_id(route_link_id)
+
+        if !item.host? && item.unused?
+          publish(REMOVED_DATAPATH, id: item.id)
+        end
+
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
       end
     end
 
