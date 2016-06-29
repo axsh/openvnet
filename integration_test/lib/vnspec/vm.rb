@@ -171,8 +171,8 @@ module Vnspec
         ].none? { |m| m.match(stdout) }
       end
 
-      def able_to_ping?(vm)
-        ssh_on_guest("ping -c 1 #{vm.ipv4_address}")[:exit_code] == 0
+      def able_to_ping?(vm, trial = 1)
+        ssh_on_guest("ping -c #{trial} #{vm.ipv4_address}")[:exit_code] == 0
       end
 
       def able_to_send_udp?(vm, port)

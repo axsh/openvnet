@@ -36,3 +36,6 @@ legacy_machines:
   legacy1:
     ssh_ip: 192.168.3.94
     ipv4_address: 10.101.0.100
+
+physical_network_gw_ip: 10.210.0.1
+pseudo_global_ip: 10.196.36.199

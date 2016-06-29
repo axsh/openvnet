@@ -80,7 +80,7 @@ module Vnet::Core
     #
 
     def item_pre_install(item, item_map)
-      case item.class
+      case item
       when Translations::StaticAddress then load_static_addresses(item, item_map)
       end
     end

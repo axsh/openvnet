@@ -54,6 +54,8 @@ module Vnspec
             "topologies/#{v.delete(:topology_uuid)}/networks/#{v.delete(:network_uuid)}"
           when :topology_route_links
             "topologies/#{v.delete(:topology_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
+          when :translation_static_addresses
+            "translations/#{v.delete(:translation_uuid)}/static_address"
           else
             key.to_s
           end
