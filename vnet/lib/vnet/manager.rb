@@ -174,7 +174,7 @@ module Vnet
     end
 
     def log_format_h(message, values)
-      str = values.map { |value|
+      str = values && values.map { |value|
         value.join(':')
       }.join(' ')
 
@@ -308,17 +308,14 @@ module Vnet
       return item if item
 
       if @load_queries.has_key?(params)
-        # Can't use blocking calls here.
-        # info log_format("internal_retrieve DUPLICATE", params.inspect)
-
         item = create_event_task_match_proc(:retrieved, params, nil)
 
         if item.nil?
-          info log_format("internal_retrieve duplicate fiber query FAILED", params.inspect)
+          info log_format_h("internal_retrieve duplicate fiber query FAILED", params)
           return
         end
 
-        info log_format("internal_retrieve duplicate fiber query SUCCESS", params.inspect)
+        info log_format_h("internal_retrieve duplicate fiber query SUCCESS", params)
 
         return item
       end
@@ -360,7 +357,7 @@ module Vnet
       resume_event_tasks(:retrieved, item)
 
       if item.nil?
-        info log_format("internal_retrieve main fiber query FAILED", params.inspect)
+        info log_format_h("internal_retrieve main fiber query FAILED", params && params.to_h)
       end
     end
 
@@ -390,17 +387,17 @@ module Vnet
       item_map = params[:item_map]
 
       if item_id.nil?
-        warn log_format("load_item requires a valid id", params.inspect)
+        warn log_format_h("load_item requires a valid id", params && params.to_h)
         return
       end
 
       if item_map.nil?
-        warn log_format("load_item requires a valid item_map", params.inspect)
+        warn log_format_h("load_item requires a valid item_map", params && params.to_h)
         return
       end
 
       if item_map.id != item_id
-        warn log_format("load_item requires id to match item_map.id", params.inspect)
+        warn log_format_h("load_item requires id to match item_map.id", params && params.to_h)
         return
       end
 
@@ -409,7 +406,7 @@ module Vnet
       # It should not be possible for the item to have disappeared due
       # to the event queue item id lock.
       if item.nil?
-        warn log_format("load_item could not find item", params.inspect)
+        warn log_format_h("load_item could not find item", params && params.to_h)
         return
       end
 
@@ -436,7 +433,7 @@ module Vnet
       item_id = (params && params[:id])
 
       if item_id.nil?
-        warn log_format("unload_item requires a valid id", params.inspect)
+        warn log_format_h("unload_item requires a valid id", params && params.to_h)
         return
       end
 
@@ -464,7 +461,7 @@ module Vnet
       item_id = item_map.id
 
       if item_id.nil?
-        warn log_format("internal_new_item requires a valid item_map.id", item_map.inspect)
+        warn log_format_h("internal_new_item requires a valid item_map.id", item_map && item_map.to_h)
         return
       end
 
@@ -533,7 +530,7 @@ module Vnet
       item_id = (params && params[:id])
 
       if item_id.nil?
-        warn log_format("internal_detect_by_id requires a valid id", params.inspect)
+        warn log_format_h("internal_detect_by_id requires a valid id", params && params.to_h)
         return
       end
 
