@@ -213,7 +213,7 @@ module Vnet::Core
       begin
         item = internal_detect_by_id(params) || return
 
-        network_id = get_param_id(:network_id)
+        network_id = get_param_id(params, :network_id)
         network = @active_networks[network_id] || return
 
         info log_format("activating datapath network #{network_id}")
@@ -533,6 +533,8 @@ module Vnet::Core
     #
     # Refactored:
     #
+
+    # TODO: !!!!!!!!!!!!!!! use get_param_* and catch.
 
     def internal_added_datapath_network(item, dpg_map)
       network_id = (dpg_map && dpg_map.network_id) || return
