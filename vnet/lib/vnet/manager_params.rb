@@ -37,6 +37,7 @@ module Vnet
     def handle_param_error(param_error)
       # TODO: Check if ParamError and if called from a manager.
       warn log_format(param_error.to_s)
+      nil
     end
 
     def get_param(params, key, required = true)
@@ -45,8 +46,6 @@ module Vnet
       if param.nil? && required
         return throw_param_error('key is missing or nil', params, key)
       end
-
-      # TODO: Add proper FixNum (or other valid integer) type check.
 
       param
     end
@@ -157,11 +156,11 @@ module Vnet
     end
 
     def get_param_mac_address(params, key = :mac_address, required = true)
-      param = get_param_int(params, key, required) || return
+      param = get_param(params, key, required) || return
 
       Pio::Mac.new(param)
 
-    rescue InvalidValueError
+    rescue Pio::Mac::InvalidValueError
       throw_param_error('value is not a valid MAC address', params, key)
     end
 

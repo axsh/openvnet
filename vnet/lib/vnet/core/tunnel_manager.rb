@@ -169,8 +169,8 @@ module Vnet::Core
     end
 
     def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
+      item_map = get_param(params, :item_map)
+      item = internal_detect_by_id(item_map) || return
 
       debug log_format("install #{item.mode} #{item.uuid}/#{item.id}",
                        "src_interface_id:#{item.src_interface_id} dst_interface_id:#{item.dst_interface_id}")
@@ -180,6 +180,9 @@ module Vnet::Core
       return reload_item(item) if tunnel_mode != item.mode
 
       setup_item(item, item_map, params)
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     def setup_item(item, item_map, params)
@@ -435,8 +438,8 @@ module Vnet::Core
     end
 
     def set_tunnel_port_number(params)
-      port_name = params[:port_name] || return
-      port_number = params[:port_number] || return
+      port_name = get_param_string(params, :port_name)
+      port_number = get_param_of_port(params, :port_number)
 
       item = internal_retrieve(uuid: port_name)
 
@@ -457,10 +460,13 @@ module Vnet::Core
 
       add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
       add_property_ids_to_update_queue(:update_segments, updated_segments.keys)
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     def clear_tunnel_port_number(params)
-      port_name = params[:port_name] || return
+      port_name = get_param_string(params, :port_name)
       item = internal_retrieve(uuid: port_name) || return
 
       # TODO: Turn into an event, and use the same update_networks
@@ -475,6 +481,9 @@ module Vnet::Core
       add_property_ids_to_update_queue(:update_segments, updated_segments.keys)
 
       # TODO: Consider deleting here?
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     #
@@ -484,8 +493,8 @@ module Vnet::Core
     # TODO: Use the :interface event queue.
 
     def updated_interface(params)
-      interface_id = params[:interface_id] || return
-      interface_event = params[:interface_event] || return
+      interface_id = get_param_id(params, :interface_id)
+      interface_event = get_param_symbol(params, :interface_event)
 
       case interface_event
       # when :added_ipv4_address
@@ -502,6 +511,9 @@ module Vnet::Core
       else
         error log_format("unknown updated_interface event '#{interface_event}'")
       end
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     # Temporary method while refactoring active interfaces.
@@ -530,7 +542,7 @@ module Vnet::Core
     end
 
     def interface_added_ipv4_address(interface_id, params)
-      interface_mode = params[:interface_mode]
+      interface_mode = get_param_symbol(params, :interface_mode)
 
       if interface_mode != :host && interface_mode != :remote
         error log_format("updated_interface received unknown interface_mode '#{interface_mode}'")
@@ -545,8 +557,8 @@ module Vnet::Core
 
       # Check if interface mode matches...
 
-      interface[:network_id] = params[:network_id]
-      interface[:ipv4_address] = params[:ipv4_address]
+      interface[:network_id] = get_param_id(params, :network_id)
+      interface[:ipv4_address] = get_param_ipv4_address(params, :ipv4_address)
 
       case interface_mode
       when :host
@@ -564,10 +576,13 @@ module Vnet::Core
           reload_item(item) if select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
         }
       end
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     def interface_set_host_port_number(interface_id, params)
-      port_number = params[:port_number] || return
+      port_number = get_param_of_port(params, :port_number)
       interface = interface_prepare(interface_id, :host) || return
 
       debug log_format("interface #{interface_id} set host port number #{port_number}")
@@ -592,6 +607,9 @@ module Vnet::Core
 
       add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
       add_property_ids_to_update_queue(:update_segments, updated_segments.keys)
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     #
@@ -785,15 +803,16 @@ module Vnet::Core
         dst_key_type, dst_object_type = :id, :route_link_id
       end
 
-      param_obj = params[:dp_obj] || return
-      key_id = param_obj[dst_key_type] || return
+      param_obj = get_param(params, :dp_obj)
 
-      id = param_obj[:id] || return
-      object_id = param_obj[dst_object_type] || return
-      datapath_id = param_obj[:datapath_id] || return
-      interface_id = param_obj[:interface_id] || return
-      ip_lease_id = param_obj[:ip_lease_id]
-      mac_address = param_obj[:mac_address] || return
+      id = get_param_id(param_obj)
+      key_id = get_param_id(param_obj, dst_key_type)
+
+      object_id = get_param_id(param_obj, dst_object_type)
+      datapath_id = get_param_id(param_obj, :datapath_id)
+      interface_id = get_param_id(param_obj, :interface_id)
+      ip_lease_id = get_param_id(param_obj, :ip_lease_id)
+      mac_address = get_param_mac_address(param_obj)
 
       if dst_list[key_id]
         error log_format("#{dst_log_prefix} #{key_id} already added")
@@ -811,6 +830,9 @@ module Vnet::Core
         :ip_lease_id => ip_lease_id,
         :mac_address => mac_address
       }
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     # TODO: Make generic.
