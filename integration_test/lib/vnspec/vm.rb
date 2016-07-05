@@ -144,6 +144,7 @@ module Vnspec
       def ready?(timeout = 600)
         logger.info("waiting for ready: #{self.name}")
         expires_at = Time.now.to_i + timeout
+
         while ssh_on_guest("hostname", { "ConnectTimeout" => 2 })[:stdout].chomp != name.to_s
           if Time.now.to_i >= expires_at
             logger.info("#{self.name} is down")
@@ -151,6 +152,7 @@ module Vnspec
           end
           sleep 3
         end
+
         logger.info("#{self.name} is ready")
         true
       end
@@ -219,6 +221,7 @@ module Vnspec
         options = { "ConnectTimeout" => options[:timeout] || 2 }
         options = ssh_options_for_quiet_mode(options) if config[:ssh_quiet_mode]
         option_string = to_ssh_option_string(options)
+
         ssh_on_guest("ssh #{option_string} #{address} hostname")[:stdout].chomp
       end
 
@@ -227,9 +230,11 @@ module Vnspec
         options = ssh_options_for_quiet_mode(options) if config[:ssh_quiet_mode]
         options.merge("ConnectTimeout" => 2)
         option_string = to_ssh_option_string(options)
+
         command = "sudo #{command}" if config[:vm_ssh_user] != "root" && use_sudo
         command = Shellwords.shellescape(command)
         command = "ssh #{option_string} #{config[:vm_ssh_user]}@#{ssh_ip} -p #{ssh_port} #{command}"
+
         ssh_on_host(command)
       end
 
@@ -238,6 +243,9 @@ module Vnspec
       end
 
       def ipv4_address
+        # Check if the ipv4 address has already been set manually.
+        return @static_ipv4_address if @static_ipv4_address
+
         begin
           ip = interfaces.first.mac_leases.first.ip_leases.first.ipv4_address
           # for compativility
@@ -246,6 +254,10 @@ module Vnspec
         rescue NoMethodError
           nil
         end
+      end
+
+      def change_ipv4_address(new_address, new_prefix = 24)
+        @static_ipv4_address = IPAddress::IPv4.parse_data(new_address, new_address)
       end
 
       def network
@@ -261,10 +273,12 @@ module Vnspec
         if @interfaces.find{|i| i.uuid == options[:uuid] }
           raise "interface exists: #{options[:uuid]}"
         end
+
         interface_config = vm_config[:interfaces].find{|i| i[:uuid] == options[:uuid]}
         unless interface_config
           raise "vm interface not found: #{options[:uuid]}"
         end
+
         @interfaces << Models::Interface.create(options)
       end
 
@@ -297,6 +311,7 @@ module Vnspec
       end
 
       private
+
       def _network_ctl(command)
         ifcmd =
           case command
@@ -307,6 +322,7 @@ module Vnspec
           else
             raise "unknown command: #{command}"
           end
+
         vm_config[:interfaces].each do |i|
           ssh_on_guest("#{ifcmd} #{i[:name]}", use_sudo: true)
         end
@@ -336,6 +352,8 @@ module Vnspec
 
       def start_network
         vm_config[:interfaces].each do |interface|
+          # TODO: Add support for static address.
+
           ip_address = if interface[:ipv4_address]
             "#{interface[:ip_v4address]}/#{interface[:mask] || 24}"
           else
@@ -384,6 +402,7 @@ module Vnspec
       end
 
       private
+
       def update_dns
         if ssh_on_host("[ -f /var/run/resolv.conf.#{name} ]").success?
 
