@@ -115,6 +115,7 @@ module Vnet::Core
         when MODE_HOST      then Interfaces::Host
         when MODE_INTERNAL  then Interfaces::Internal
         when MODE_PATCH     then Interfaces::Patch
+        when MODE_PROMISCUOUS then Interfaces::Promiscuous
         when MODE_SIMULATED then Interfaces::Simulated
         when MODE_VIF       then Interfaces::Vif
         else

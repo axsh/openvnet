@@ -163,6 +163,7 @@ module Vnet
       autoload :IfBase, 'vnet/core/interfaces/if_base'
       autoload :Internal, 'vnet/core/interfaces/internal'
       autoload :Patch, 'vnet/core/interfaces/patch'
+      autoload :Promiscuous, 'vnet/core/interfaces/promiscuous'
       autoload :Simulated, 'vnet/core/interfaces/simulated'
       autoload :Vif, 'vnet/core/interfaces/vif'
     end
