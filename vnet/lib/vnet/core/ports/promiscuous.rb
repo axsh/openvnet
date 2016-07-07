@@ -55,6 +55,14 @@ module Vnet::Core::Ports
     #
     # For now the dp_nw/seg will only work if it already exists when
     # the datapath is initialized, and has an ip_lease_id of nil.
+    #
+    # The dp_nw/seg idea seem not to be viable due to there only being
+    # possible to have one dp+nw combination.
+    #
+    # Thus we should use the vna.conf file for tests until we add
+    # interface_networks where an interface can be added to a network
+    # without an ip_lease.
+
     def prepare_dp_nw(flows)
       filter = {
         datapath_id: get_datapath_id,
@@ -91,6 +99,7 @@ module Vnet::Core::Ports
                            cookie: dp_nw_cookie)
       
       # Activate network?
+      @dp_info.network_manager.async.retrieve(id: network_id)
     end
 
     def get_datapath_id

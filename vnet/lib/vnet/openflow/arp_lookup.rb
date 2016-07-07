@@ -9,10 +9,10 @@ module Vnet::Openflow
 
     def arp_lookup_initialize(params)
       @arp_lookup = {
-        :interface_id => params[:interface_id],
-        :lookup_cookie => params[:lookup_cookie],
-        :reply_cookie => params[:reply_cookie],
-        :requests => {}
+        interface_id: params[:interface_id],
+        lookup_cookie: params[:lookup_cookie],
+        reply_cookie: params[:reply_cookie],
+        requests: {}
       }
     end
 
@@ -32,13 +32,14 @@ module Vnet::Openflow
 
     def arp_lookup_ipv4_flows(flows, mac_info, ipv4_info)
       ipv4_info_mask = ipv4_info[:network_prefix]
+      mac_address = mac_info[:mac_address]
 
       [[20, {
-          :eth_src => mac_info[:mac_address],
+          :eth_src => mac_address,
           :eth_type => 0x0800
         }],
        [30, {
-          :eth_src => mac_info[:mac_address],
+          :eth_src => mac_address,
           :eth_type => 0x0800,
           :ipv4_dst => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
           :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
