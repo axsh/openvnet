@@ -17,15 +17,15 @@ module Vnet
       TABLE_TUNNEL_PORTS = 3
       TABLE_TUNNEL_NETWORK_IDS = 4
 
-      TABLE_LOCAL_PORT = 6
-
       # For packets explicitly marked as being from the controller.
       #
       # Some packets are handed to the controller after modifications,
       # and as such can't be handled again by the classifier in the
       # normal fashion. The in_port is explicitly set to
       # OFPP_CONTROLLER.
-      TABLE_CONTROLLER_PORT = 7
+      TABLE_CONTROLLER_PORT  = 5
+      TABLE_LOCAL_PORT       = 6
+      TABLE_PROMISCUOUS_PORT = 7
 
       # Translation layer for vlan
       TABLE_EDGE_SRC = 8
@@ -34,9 +34,9 @@ module Vnet
       # Handle ingress packets to host interfaces from untrusted
       # sources.
       TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
-      TABLE_INTERFACE_INGRESS_MAC        = 11
-      TABLE_INTERFACE_INGRESS_NW_IF      = 12
-      TABLE_INTERFACE_INGRESS_ROUTE_LINK = 13
+      TABLE_INTERFACE_INGRESS_MAC        = 12
+      TABLE_INTERFACE_INGRESS_NW_IF      = 13
+      TABLE_INTERFACE_INGRESS_ROUTE_LINK = 14
 
       # Handle egress packets from trusted interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15

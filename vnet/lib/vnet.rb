@@ -184,6 +184,7 @@ module Vnet
       autoload :Generic, 'vnet/core/ports/generic'
       autoload :Host, 'vnet/core/ports/host'
       autoload :Local, 'vnet/core/ports/local'
+      autoload :Promiscuous, 'vnet/core/ports/promiscuous'
       autoload :Tunnel, 'vnet/core/ports/tunnel'
       autoload :Vif, 'vnet/core/ports/vif'
     end

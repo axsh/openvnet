@@ -23,6 +23,10 @@ module Vnet::Core::Interfaces
     private
 
     def flows_for_base(flows)
+      # flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      #                      goto_table: TABLE_INTERFACE_INGRESS_PROMISCUOUS,
+      #                      priority: 10,
+      #                      match_interface: @id)
     end
 
   end

@@ -79,6 +79,10 @@ module Vnet::Core::Datapaths
     private
 
     def flows_for_dp_network(flows, dp_nw)
+      dp_nw_cookie = dp_nw[:id] | COOKIE_TYPE_DP_NETWORK
+      network_id = dp_nw[:network_id]
+      interface_id = dp_nw[:interface_id]
+
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 30,
@@ -86,47 +90,52 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_dst => dp_nw[:mac_address]
                            },
-                           match_interface: dp_nw[:interface_id],
+                           match_interface: interface_id,
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
                            write_value_pair_flag: true,
-                           write_value_pair_first: dp_nw[:network_id],
+                           write_value_pair_first: network_id,
 
-                           cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
+                           cookie: dp_nw_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
                            priority: 1,
 
                            match_value_pair_flag: true,
-                           match_value_pair_first: dp_nw[:network_id],
-                           match_value_pair_second: dp_nw[:interface_id],
+                           match_value_pair_first: network_id,
+                           match_value_pair_second: interface_id,
 
                            clear_all: true,
                            write_remote: true,
-                           write_network: dp_nw[:network_id],
+                           write_network: network_id,
 
-                           cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
+                           cookie: dp_nw_cookie)
       flows << flow_create(table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
                            goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                            priority: 1,
 
-                           match_network: dp_nw[:network_id],
-                           write_interface: dp_nw[:interface_id],
+                           match_network: network_id,
+                           write_interface: interface_id,
 
-                           cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
+                           cookie: dp_nw_cookie)
       flows << flow_create(table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 
-                           match_value_pair_first: dp_nw[:network_id],
-                           write_value_pair_first: dp_nw[:interface_id],
+                           match_value_pair_first: network_id,
+                           write_value_pair_first: interface_id,
 
-                           cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
+                           cookie: dp_nw_cookie)
     end
 
     def flows_for_dp_route_link(flows, dp_rl)
+      dp_rl_cookie = dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK
+      interface_id = dp_rl[:interface_id]
+      route_link_id = dp_rl[:route_link_id]
+      mac_address = dp_rl[:mac_address]
+
       # The router manager does not know about the dp_rl's mac
       # address, so we create the flow here.
       #
@@ -137,11 +146,11 @@ module Vnet::Core::Datapaths
 
                            match: {
                              :tunnel_id => TUNNEL_ROUTE_LINK,
-                             :eth_dst => dp_rl[:mac_address]
+                             :eth_dst => mac_address
                            },
-                           write_route_link: dp_rl[:route_link_id],
+                           write_route_link: route_link_id,
 
-                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+                           cookie: dp_rl_cookie)
 
       # We match the route link id stored in the first value field
       # with the dp_rl associated with this datapath, and then prepare
@@ -156,12 +165,12 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
                            priority: 30,
                            match: {
-                             :eth_dst => dp_rl[:mac_address]
+                             :eth_dst => mac_address
                            },
-                           match_interface: dp_rl[:interface_id],
-                           write_route_link: dp_rl[:route_link_id],
+                           match_interface: interface_id,
+                           write_route_link: route_link_id,
 
-                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+                           cookie: dp_rl_cookie)
 
       # The source mac address is set to this datapath's dp_rl's mac
       # address in order to uniquely identify the packets as being
@@ -170,18 +179,16 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 
-                           match_value_pair_first: dp_rl[:route_link_id],
-                           write_value_pair_first: dp_rl[:interface_id],
+                           match_value_pair_first: route_link_id,
+                           write_value_pair_first: interface_id,
 
                            actions: {
-                             :eth_src => dp_rl[:mac_address]
+                             :eth_src => mac_address
                            },
 
-                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+                           cookie: dp_rl_cookie)
 
-      flows_for_filtering_mac_address(flows,
-                                      dp_rl[:mac_address],
-                                      dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+      flows_for_filtering_mac_address(flows, mac_address, dp_rl_cookie)
     end
 
   end
