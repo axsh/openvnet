@@ -11,6 +11,8 @@ describe "simple_seg" do
     # vm6.change_ip_address('10.101.0.12')
   end
 
+  let(:vm_use_dhcp) { false }
+
   describe "vnet1" do
     context "mac2mac" do
       it "reachable to vnet1" do

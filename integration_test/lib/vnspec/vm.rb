@@ -9,7 +9,9 @@ module Vnspec
       include Config
       include Logger
 
-      def setup
+      def setup(params)
+        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX #{params.inspect}"
+
         all.each do |vm|
           vm.vm_config[:interfaces].each do |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
@@ -98,6 +100,7 @@ module Vnspec
       UDP_OUTPUT_DIR="/tmp"
 
       attr_reader :name, :hostname, :host_ip, :ssh_ip, :ssh_port, :interfaces, :vm_config
+
       def initialize(name)
         @vm_config = config[:vms][name.to_sym].dup
         @name = vm_config[:name].to_sym

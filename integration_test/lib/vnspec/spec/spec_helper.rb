@@ -28,6 +28,9 @@ RSpec.configure do |c|
   #c.add_formatter(:json)
 
   c.before(:all) do
-    setup_vm
+    setup_vm(vm_use_dhcp: vm_use_dhcp)
   end
+
+  c.let(:vm_use_dhcp) { true }
+
 end
