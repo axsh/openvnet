@@ -21,6 +21,17 @@ module Vnet::Core::Ports
       flows = []
 
       if @interface_id
+        flows << flow_create(table: TABLE_CLASSIFIER,
+                             goto_table: TABLE_PROMISCUOUS_PORT,
+                             priority: 2,
+
+                             match: {
+                               :in_port => self.port_number
+                             },
+
+                             write_interface: @interface_id,
+                             write_remote: true)
+
         flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                              priority: 2,
                              match: {
@@ -64,30 +75,35 @@ module Vnet::Core::Ports
     # without an ip_lease.
 
     def prepare_dp_nw(flows)
-      filter = {
-        datapath_id: get_datapath_id,
-        interface_id: @interface_id,
-        ip_lease_id: nil
-      }
+      # filter = {
+      #   datapath_id: get_datapath_id,
+      #   interface_id: @interface_id,
+      #   ip_lease_id: nil
+      # }
 
-      if filter[:datapath_id].nil?
-        warn log_format('could not determine datapath_id')
-        return
-      end
+      # if filter[:datapath_id].nil?
+      #   warn log_format('could not determine datapath_id')
+      #   return
+      # end
 
-      dp_nw = Vnet::ModelWrappers::DatapathNetwork.batch.dataset.where(filter).first.commit
+      # dp_nw = Vnet::ModelWrappers::DatapathNetwork.batch.dataset.where(filter).first.commit
 
-      if dp_nw.nil?
-        warn log_format('could not find a valid datapath_network')
-        return
-      end
+      # if dp_nw.nil?
+      #   warn log_format('could not find a valid datapath_network')
+      #   return
+      # end
 
       # Work-around until we have a way to add/remove interfaces to
       # networks/segments without creating ip/mac_leases. This would
       # be part of the active_network/segment managers.
 
-      dp_nw_cookie = dp_nw[:id] | COOKIE_TYPE_DP_NETWORK
-      network_id = dp_nw[:network_id]
+      # !!! HARDCODE THESE VALUES.
+
+      # dp_nw_cookie = dp_nw[:id] | COOKIE_TYPE_DP_NETWORK
+      # network_id = dp_nw[:network_id]
+
+      dp_nw_cookie = 2 | COOKIE_TYPE_NETWORK
+      network_id = 2
 
       flows << flow_create(table: TABLE_PROMISCUOUS_PORT,
                            goto_table: TABLE_NETWORK_CONNECTION,
@@ -99,7 +115,10 @@ module Vnet::Core::Ports
                            cookie: dp_nw_cookie)
       
       # Activate network?
-      @dp_info.network_manager.async.retrieve(id: network_id)
+      @dp_info.network_manager.retrieve(id: network_id)
+
+      # Add to... FLOOD_LOCAL
+      @dp_info.network_manager.insert_interface_network(@interface_id, network_id)
     end
 
     def get_datapath_id
