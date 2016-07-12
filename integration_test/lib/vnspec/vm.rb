@@ -9,8 +9,14 @@ module Vnspec
       include Config
       include Logger
 
-      def setup(params)
-        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX #{params.inspect}"
+      attr_accessor :use_dhcp
+
+      def initialize
+        @use_dhcp = true
+      end
+
+      def setup
+        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX use_dhcp:#{@use_dhcp}"
 
         all.each do |vm|
           vm.vm_config[:interfaces].each do |interface_config|
@@ -87,6 +93,7 @@ module Vnspec
       end
 
       private
+
       def _exec(command)
         parallel(&command.to_sym)
       end
