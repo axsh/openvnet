@@ -8,8 +8,8 @@ def setup_vm
   vms.setup
 end
 
-def vms_use_dhcp(param)
-  vms.use_dhcp = param
+def vms_ignore_dhcp(param)
+  vms.ignore_dhcp = param
 end
 
 (1..6).map{|i| "vm#{i}".to_sym }.each do |name|

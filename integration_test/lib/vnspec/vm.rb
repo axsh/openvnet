@@ -9,14 +9,10 @@ module Vnspec
       include Config
       include Logger
 
-      attr_accessor :use_dhcp
-
-      def initialize
-        @use_dhcp = true
-      end
+      attr_accessor :ignore_dhcp
 
       def setup
-        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX use_dhcp:#{@use_dhcp.inspect}"
+        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX ignore_dhcp:#{@ignore_dhcp.inspect}"
 
         all.each do |vm|
           vm.vm_config[:interfaces].each do |interface_config|
