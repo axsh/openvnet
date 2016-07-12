@@ -1,0 +1,71 @@
+# segments:
+
+#   - uuid: seg-vseg1
+#     mode: virtual
+
+#   - uuid: seg-vseg2
+#     mode: virtual
+
+interfaces:
+
+  - uuid: if-v1
+    port_name: if-v1
+#    segment_uuid: seg-vseg1
+    mac_address: "02:00:00:00:00:01"
+
+  - uuid: if-v2
+    port_name: if-v2
+#    segment_uuid: seg-vseg2
+    mac_address: "02:00:00:00:00:02"
+
+  - uuid: if-v3
+    port_name: if-v3
+#    segment_uuid: seg-vseg1
+    mac_address: "02:00:00:00:00:03"
+
+  - uuid: if-v4
+    port_name: if-v4
+#    segment_uuid: seg-vseg2
+    mac_address: "02:00:00:00:00:04"
+
+  - uuid: if-v5
+    port_name: if-v5
+#    segment_uuid: seg-vseg1
+    mac_address: "02:00:00:00:00:05"
+
+  - uuid: if-v6
+    port_name: if-v6
+#    segment_uuid: seg-vseg2
+    mac_address: "02:00:00:00:00:06"
+
+# datapath_segments:
+
+#   - datapath_uuid: dp-1
+#     segment_uuid: seg-vseg1
+#     interface_uuid: if-dp1eth0
+#     mac_address: "02:00:00:aa:00:01"
+
+#   - datapath_uuid: dp-1
+#     segment_uuid: seg-vseg2
+#     interface_uuid: if-dp1eth0
+#     mac_address: "02:00:00:aa:00:02"
+
+#   - datapath_uuid: dp-2
+#     segment_uuid: seg-vseg1
+#     interface_uuid: if-dp2eth0
+#     mac_address: "02:00:00:bb:00:01"
+
+#   - datapath_uuid: dp-2
+#     segment_uuid: seg-vseg2
+#     interface_uuid: if-dp2eth0
+#     mac_address: "02:00:00:bb:00:02"
+
+#   - datapath_uuid: dp-3
+#     segment_uuid: seg-vseg1
+#     interface_uuid: if-dp3eth0
+#     mac_address: "02:00:00:cc:00:01"
+
+#   - datapath_uuid: dp-3
+#     segment_uuid: seg-vseg2
+#     interface_uuid: if-dp3eth0
+#     mac_address: "02:00:00:cc:00:02"
