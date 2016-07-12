@@ -16,7 +16,7 @@ module Vnspec
       end
 
       def setup
-        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX use_dhcp:#{@use_dhcp}"
+        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX use_dhcp:#{@use_dhcp.inspect}"
 
         all.each do |vm|
           vm.vm_config[:interfaces].each do |interface_config|
