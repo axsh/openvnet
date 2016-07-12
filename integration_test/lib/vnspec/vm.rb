@@ -9,8 +9,6 @@ module Vnspec
       include Config
       include Logger
 
-      attr_accessor :ignore_dhcp
-
       def setup
         logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX ignore_dhcp:#{@ignore_dhcp.inspect}"
 
@@ -19,6 +17,12 @@ module Vnspec
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
           end
         end
+      end
+
+      def ignore_dhcp
+        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX Setting ignore_dhcp = true"
+
+        @ignore_dhcp = true
       end
 
       def find(name)
