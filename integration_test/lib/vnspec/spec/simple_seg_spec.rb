@@ -4,12 +4,12 @@ require_relative "spec_helper"
 
 describe "simple_seg", :vms_ignore_dhcp => true do
   before(:all) do
-    vm1.change_ip_address('10.101.0.10')
-    vm2.change_ip_address('10.101.0.10')
-    vm3.change_ip_address('10.101.0.11')
-    vm4.change_ip_address('10.101.0.11')
-    vm5.change_ip_address('10.101.0.12')
-    vm6.change_ip_address('10.101.0.12')
+    vm1.change_ipv4_address('10.101.0.10')
+    vm2.change_ipv4_address('10.101.0.10')
+    vm3.change_ipv4_address('10.101.0.11')
+    vm4.change_ipv4_address('10.101.0.11')
+    vm5.change_ipv4_address('10.101.0.12')
+    vm6.change_ipv4_address('10.101.0.12')
   end
 
   describe "vnet1" do
