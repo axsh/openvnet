@@ -16,12 +16,14 @@ module Vnspec
           vm.vm_config[:interfaces].each do |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
           end
+
+          if @ignore_dhcp
+            vm.enable_dhcp = false
+          end
         end
       end
 
       def ignore_dhcp
-        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX Setting ignore_dhcp = true"
-
         @ignore_dhcp = true
       end
 
@@ -106,7 +108,14 @@ module Vnspec
 
       UDP_OUTPUT_DIR="/tmp"
 
-      attr_reader :name, :hostname, :host_ip, :ssh_ip, :ssh_port, :interfaces, :vm_config
+      attr_reader :name
+      attr_reader :hostname
+      attr_reader :host_ip
+      attr_reader :ssh_ip
+      attr_reader :ssh_port
+      attr_reader :interfaces
+      attr_reader :vm_config
+      attr_accessor :enable_dhcp
 
       def initialize(name)
         @vm_config = config[:vms][name.to_sym].dup
@@ -117,6 +126,8 @@ module Vnspec
         @host_ip = config[:nodes][:vna][vm_config[:vna] - 1]
 
         @interfaces = []
+        @enable_dhcp = true
+
         @open_udp_ports = {}
         @open_tcp_ports = {}
       end
@@ -268,6 +279,9 @@ module Vnspec
 
       def change_ipv4_address(new_address, new_prefix = 24)
         @static_ipv4_address = IPAddress::IPv4.parse_data(new_address, new_address)
+
+        _network_ctl(:flush)
+        _network_ctl(:change_ip, "#{new_address}/#{new_prefix}")
       end
 
       def network
@@ -322,13 +336,17 @@ module Vnspec
 
       private
 
-      def _network_ctl(command)
+      def _network_ctl(command, params = nil)
         ifcmd =
           case command
           when :start
-            "ifup"
+            'ifup'
           when :stop
-            "ifdown"
+            'ifdown'
+          when :flush
+            'ip addr flush'
+          when :change_ip
+            "ip addr #{params} dev"
           else
             raise "unknown command: #{command}"
           end
@@ -337,6 +355,7 @@ module Vnspec
           ssh_on_guest("#{ifcmd} #{i[:name]}", use_sudo: true)
         end
       end
+
     end
 
     class KVM < Base
@@ -420,8 +439,10 @@ module Vnspec
           ssh_on_guest("mv /tmp/resolv.dnsmasq.conf /etc/resolv.dnsmasq.conf", use_sudo: true)
           ssh_on_host("rm /var/run/resolv.conf.#{name}", use_sudo: true)
         end
+
         ssh_on_guest("service dnsmasq restart", use_sudo: true).success?
       end
+
     end
   end
 end
