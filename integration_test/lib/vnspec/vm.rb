@@ -278,7 +278,7 @@ module Vnspec
       end
 
       def change_ipv4_address(new_address, new_prefix = 24)
-        @static_ipv4_address = IPAddress::IPv4.parse_data(new_address, new_prefix)
+        @static_ipv4_address = IPAddress::IPv4.new("#{new_address}/#{new_prefix}")
 
         _network_ctl(:flush)
         _network_ctl(:change_ip, @static_ipv4_address)
@@ -346,7 +346,7 @@ module Vnspec
           when :flush
             'ip addr flush'
           when :change_ip
-            "ip addr #{params.to_string} dev"
+            "ip addr #{params.to_s} dev"
           else
             raise "unknown command: #{command}"
           end
