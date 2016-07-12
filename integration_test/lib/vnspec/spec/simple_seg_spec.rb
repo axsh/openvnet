@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 require_relative "spec_helper"
 
-describe "simple_seg" do
+describe "simple_seg", :vm_skip_dhcp => true do
   before(:all) do
     # vm1.change_ip_address('10.101.0.10')
     # vm2.change_ip_address('10.101.0.10')
@@ -10,8 +10,6 @@ describe "simple_seg" do
     # vm5.change_ip_address('10.101.0.12')
     # vm6.change_ip_address('10.101.0.12')
   end
-
-  let(:vm_use_dhcp) { false }
 
   describe "vnet1" do
     context "mac2mac" do
