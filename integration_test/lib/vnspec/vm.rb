@@ -10,8 +10,6 @@ module Vnspec
       include Logger
 
       def setup
-        logger.warn "XXXXXXXXXXXXXXXXXXXXXXXXXXX ignore_dhcp:#{@ignore_dhcp.inspect}"
-
         all.each do |vm|
           vm.vm_config[:interfaces].each do |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
