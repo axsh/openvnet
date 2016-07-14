@@ -355,7 +355,7 @@ module Vnspec
           when :flush
             'ip addr flush %s'
           when :change_ip
-            'ip addr ' + params.to_s + ' dev %s'
+            'ip addr ' + params.to_string + ' dev %s'
           else
             raise "unknown command: #{command}"
           end
