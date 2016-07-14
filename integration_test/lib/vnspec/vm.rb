@@ -21,6 +21,8 @@ module Vnspec
             vm.enable_dhcp = false
           end
         end
+
+        start_network
       end
 
       def ignore_dhcp
@@ -149,7 +151,12 @@ module Vnspec
 
       def start_network
         logger.info "start network: #{name}"
-        _network_ctl(:start)
+
+        if @enable_dhcp
+          _network_ctl(:start)
+        else
+          _network_ctl(:start_no_dhcp)
+        end
       end
 
       def stop_network
@@ -340,19 +347,21 @@ module Vnspec
         ifcmd =
           case command
           when :start
-            'ifup'
+            'ifup %s'
+          when :start_no_dhcp
+            'ip link set dev %s up'
           when :stop
-            'ifdown'
+            'ifdown %s'
           when :flush
-            'ip addr flush'
+            'ip addr flush %s'
           when :change_ip
-            "ip addr #{params.to_s} dev"
+            'ip addr ' + params.to_s + ' dev %s'
           else
             raise "unknown command: #{command}"
           end
 
         vm_config[:interfaces].each do |i|
-          ssh_on_guest("#{ifcmd} #{i[:name]}", use_sudo: true)
+          ssh_on_guest("#{ifcmd}" % i[:name], use_sudo: true)
         end
       end
 
