@@ -91,7 +91,7 @@ module Vnspec
       @dataset = files.each_with_object({}) do |n, h|
         load_file(n).each do |k, v|
           h[k] ||= []
-          h[k] += v
+          h[k] += v if v
         end
       end
     end
