@@ -52,6 +52,8 @@ module Vnspec
             "mac_range_groups/#{v.delete(:mac_range_group_uuid)}/mac_ranges"
           when :topology_networks
             "topologies/#{v.delete(:topology_uuid)}/networks/#{v.delete(:network_uuid)}"
+          when :topology_segments
+            "topologies/#{v.delete(:topology_uuid)}/segments/#{v.delete(:segment_uuid)}"
           when :topology_route_links
             "topologies/#{v.delete(:topology_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
           when :translation_static_addresses
