@@ -68,4 +68,16 @@ describe "/datapaths" do
     }
   end
 
+  describe "Many to many relation calls for segments" do
+    let!(:base_object) { Fabricate(fabricator) }
+    let(:relation_fabricator) { :segment }
+
+    let!(:interface) { Fabricate(:interface_w_ip_lease) { uuid "if-test" } }
+
+    include_examples "many_to_many_relation", "segments", {
+      :mac_address => "02:00:00:cc:00:02",
+      :interface_uuid => 'if-test'
+    }
+  end
+
 end

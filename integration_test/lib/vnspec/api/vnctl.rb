@@ -44,6 +44,7 @@ module Vnspec
       end
 
       private
+
       def build_args(method, url, params)
         values = url.split("/").compact
         # datapath networks show dp-3 nw-public

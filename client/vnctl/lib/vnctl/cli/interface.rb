@@ -20,7 +20,8 @@ module Vnctl::Cli
 
     option_uuid
     add_modify_shared_options
-    option :network_uuid, :type => :string, :desc => "The uuid of the network this interface is in."
+    option :segment_uuid, :type => :string, :desc => "The uuid of the segment this interface is on."
+    option :network_uuid, :type => :string, :desc => "The uuid of the network this interface is on."
     option :mac_address, :type => :string, :desc => "The mac address for this interface."
     option :ipv4_address, :type => :string, :desc => "The first ip lease for this interface."
     option :port_name, :type => :string, :desc => "The port name for this interface."

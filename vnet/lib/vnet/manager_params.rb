@@ -37,6 +37,7 @@ module Vnet
     def handle_param_error(param_error)
       # TODO: Check if ParamError and if called from a manager.
       warn log_format(param_error.to_s)
+      nil
     end
 
     def get_param(params, key, required = true)
@@ -46,7 +47,23 @@ module Vnet
         return throw_param_error('key is missing or nil', params, key)
       end
 
-      # TODO: Add proper FixNum (or other valid integer) type check.
+      param
+    end
+
+    def get_param_type(params, key, type, required = true)
+      param = (params && params[key])
+
+      if param.nil?
+        if required
+          throw_param_error('key is missing or nil', params, key)
+        else
+          return
+        end
+      end
+
+      if !param.is_a?(type)
+        return throw_param_error("value is not an #{type.name} type", params, key)
+      end
 
       param
     end
@@ -73,8 +90,7 @@ module Vnet
     end
 
     def get_param_packed_id(params, key = :id, required = true, id_size = 31)
-      # TODO: Implement get_param_list.
-      param_id_list = get_param(params, key, required) || return
+      param_id_list = get_param_array(params, key, required) || return
       param_id = param_id_list[1]
 
       if param_id.nil?
@@ -90,31 +106,15 @@ module Vnet
 
     # TODO: Add support for other integer types.
     def get_param_int(params, key, required = true)
-      param = get_param(params, key, required) || return
-
-      if !param.is_a?(Fixnum)
-        return throw_param_error('value is not an integer type', params, key)
-      end
-
-      param
+      get_param_type(params, key, Fixnum, required)
     end
 
     def get_param_true(params, key, required = true)
-      param = get_param(params, key, required) || return
-
-      if !param.is_a?(TrueClass)
-        return throw_param_error('value is not an boolean true type', params, key)
-      end
-
-      param
+      get_param_type(params, key, TrueClass, required)
     end
 
     def get_param_string(params, key, required = true)
-      param = get_param(params, key, required) || return
-
-      if !param.is_a?(String)
-        return throw_param_error('value is not a string type', params, key)
-      end
+      param = get_param_type(params, key, String, required) || return
 
       if param.empty?
         return throw_param_error('string is empty', params, key)
@@ -124,23 +124,15 @@ module Vnet
     end
 
     def get_param_string_n(params, key, required = true)
-      param = get_param(params, key, required) || return
-
-      if !param.is_a?(String)
-        return throw_param_error('value is not a string type', params, key)
-      end
-
-      param
+      get_param_type(params, key, String, required)
     end
 
     def get_param_symbol(params, key, required = true)
-      param = get_param(params, key, required) || return
+      get_param_type(params, key, Symbol, required)
+    end
 
-      if !param.is_a?(Symbol)
-        return throw_param_error('value is not a symbol type', params, key)
-      end
-
-      param
+    def get_param_array(params, key, required = true)
+      get_param_type(params, key, Array, required)
     end
 
     # TODO: Add methods to validate IPv4 addresses with different restrictions.
@@ -156,8 +148,17 @@ module Vnet
       param
     end
 
+    def get_param_mac_address(params, key = :mac_address, required = true)
+      param = get_param(params, key, required) || return
+
+      Pio::Mac.new(param)
+
+    rescue Pio::Mac::InvalidValueError
+      throw_param_error('value is not a valid MAC address', params, key)
+    end
+
     def get_param_tp_port(params, key, required = true)
-      param = get_param_int(params, key, required) || return
+      param = get_param_type(params, key, Fixnum, required) || return
 
       if !(param > 0 && param < (1 << 16))
         return throw_param_error('value is not a valid transport port', params, key)
@@ -167,7 +168,7 @@ module Vnet
     end
 
     def get_param_of_port(params, key, required = true)
-      param = get_param_int(params, key, required) || return
+      param = get_param_type(params, key, Fixnum, required) || return
 
       if !(param > 0 && param < (1 << 32))
         return throw_param_error('value is not a valid OpenFlow port', params, key)

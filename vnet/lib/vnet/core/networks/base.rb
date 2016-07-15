@@ -18,6 +18,8 @@ module Vnet::Core::Networks
       @cookie = @id | COOKIE_TYPE_NETWORK
       @ipv4_network = IPAddr.new(map.ipv4_network, Socket::AF_INET)
       @ipv4_prefix = map.ipv4_prefix
+
+      @segment_id = map.segment_id
     end
 
     def log_type
@@ -30,11 +32,20 @@ module Vnet::Core::Networks
                               type: self.network_type,
 
                               ipv4_network: @ipv4_network,
-                              ipv4_prefix: @ipv4_prefix)
+                              ipv4_prefix: @ipv4_prefix,
+
+                              segment_id: @segment_id)
     end
 
     def uninstall
       @dp_info.del_cookie(@cookie)
+    end
+
+    private
+
+    # TODO: Add exceptions, e.g. pass the base priority to a method.
+    def flow_priority
+      @ipv4_prefix
     end
 
   end

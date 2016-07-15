@@ -59,6 +59,18 @@ module Vnet
     ACTIVE_ROUTE_LINK_DEACTIVATE = "active_route_link_deactivate"
 
     #
+    # Active Segment events:
+    #
+
+    ACTIVE_SEGMENT_INITIALIZED = "active_segment_initialized"
+    ACTIVE_SEGMENT_UNLOAD_ITEM = "active_segment_unload_item"
+    ACTIVE_SEGMENT_CREATED_ITEM = "active_segment_created_item"
+    ACTIVE_SEGMENT_DELETED_ITEM = "active_segment_deleted_item"
+
+    ACTIVE_SEGMENT_ACTIVATE = "active_segment_activate"
+    ACTIVE_SEGMENT_DEACTIVATE = "active_segment_deactivate"
+
+    #
     # Active Port events:
     #
 
@@ -88,6 +100,14 @@ module Vnet
     REMOVED_DATAPATH_NETWORK = 'removed_datapath_network'
     ACTIVATE_DATAPATH_NETWORK = 'activate_datapath_network'
     DEACTIVATE_DATAPATH_NETWORK = 'deactivate_datapath_network'
+
+    ACTIVATE_SEGMENT_ON_HOST = 'activate_segment_on_host'
+    DEACTIVATE_SEGMENT_ON_HOST = 'deactivate_segment_on_host'
+
+    ADDED_DATAPATH_SEGMENT = 'added_datapath_segment'
+    REMOVED_DATAPATH_SEGMENT = 'removed_datapath_segment'
+    ACTIVATE_DATAPATH_SEGMENT = 'activate_datapath_segment'
+    DEACTIVATE_DATAPATH_SEGMENT = 'deactivate_datapath_segment'
 
     ACTIVATE_ROUTE_LINK_ON_HOST = 'activate_route_link_on_host'
     DEACTIVATE_ROUTE_LINK_ON_HOST = 'deactivate_route_link_on_host'
@@ -190,12 +210,22 @@ module Vnet
     ROUTE_DEACTIVATE_ROUTE_LINK = "route_deactivate_route_link"
 
     #
-    # router event
+    # Router event:
     #
     ROUTER_INITIALIZED = "router_initialized"
     ROUTER_UNLOAD_ITEM = "router_unload_item"
     ROUTER_CREATED_ITEM = "router_created_item"
     ROUTER_DELETED_ITEM = "router_deleted_item"
+
+    #
+    # Segment events:
+    #
+    SEGMENT_INITIALIZED = "segment_initialized"
+    SEGMENT_UNLOAD_ITEM = "segment_unload_item"
+    SEGMENT_CREATED_ITEM = "segment_created_item"
+    SEGMENT_DELETED_ITEM = "segment_deleted_item"
+
+    SEGMENT_UPDATE_ITEM_STATES = "segment_update_item_states"
 
     #
     # Service events:
@@ -234,16 +264,22 @@ module Vnet
 
     TOPOLOGY_ADDED_NETWORK = 'topology_added_network'
     TOPOLOGY_REMOVED_NETWORK = 'topology_removed_network'
+    TOPOLOGY_ADDED_SEGMENT = 'topology_added_segment'
+    TOPOLOGY_REMOVED_SEGMENT = 'topology_removed_segment'
     TOPOLOGY_ADDED_ROUTE_LINK = 'topology_added_route_link'
     TOPOLOGY_REMOVED_ROUTE_LINK = 'topology_removed_route_link'
 
     TOPOLOGY_NETWORK_ACTIVATED = "topology_network_activated"
     TOPOLOGY_NETWORK_DEACTIVATED = "topology_network_deactivated"
 
+    TOPOLOGY_SEGMENT_ACTIVATED = "topology_segment_activated"
+    TOPOLOGY_SEGMENT_DEACTIVATED = "topology_segment_deactivated"
+
     TOPOLOGY_ROUTE_LINK_ACTIVATED = "topology_route_link_activated"
     TOPOLOGY_ROUTE_LINK_DEACTIVATED = "topology_route_link_deactivated"
 
     TOPOLOGY_CREATE_DP_NW = "topology_create_dp_nw"
+    TOPOLOGY_CREATE_DP_SEG = "topology_create_dp_seg"
     TOPOLOGY_CREATE_DP_RL = "topology_create_dp_rl"
 
     #
@@ -257,10 +293,15 @@ module Vnet
 
     ADDED_HOST_DATAPATH_NETWORK = "added_host_datapath_network"
     ADDED_REMOTE_DATAPATH_NETWORK = "added_remote_datapath_network"
+    ADDED_HOST_DATAPATH_SEGMENT = "added_host_datapath_segment"
+    ADDED_REMOTE_DATAPATH_SEGMENT = "added_remote_datapath_segment"
     ADDED_HOST_DATAPATH_ROUTE_LINK = "added_host_datapath_route_link"
     ADDED_REMOTE_DATAPATH_ROUTE_LINK = "added_remote_datapath_route_link"
+
     REMOVED_HOST_DATAPATH_NETWORK = "removed_host_datapath_network"
     REMOVED_REMOTE_DATAPATH_NETWORK = "removed_remote_datapath_network"
+    REMOVED_HOST_DATAPATH_SEGMENT = "removed_host_datapath_segment"
+    REMOVED_REMOTE_DATAPATH_SEGMENT = "removed_remote_datapath_segment"
     REMOVED_HOST_DATAPATH_ROUTE_LINK = "removed_host_datapath_route_link"
     REMOVED_REMOTE_DATAPATH_ROUTE_LINK = "removed_remote_datapath_route_link"
 

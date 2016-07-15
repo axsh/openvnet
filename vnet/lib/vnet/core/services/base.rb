@@ -88,22 +88,36 @@ module Vnet::Core::Services
       interface = @dp_info.interface_manager.detect(id: @interface_id)
       return unless interface
 
-      mac_info, ipv4_info = interface.get_ipv4_infos(any_md: message.match.metadata,
-                                                     ipv4_address: ipv4_address).first
+      # if_addrs = if network_id
+      #   interface.get_ipv4_infos(network_id: network_id, ipv4_address: ipv4_address)
+      # else
+      #   interface.get_ipv4_infos(any_md: message.match.metadata, ipv4_address: ipv4_address)
+      # end
+
+      if_addrs = interface.get_ipv4_infos(any_md: message.match.metadata, ipv4_address: ipv4_address)
+
+      # mac_info, ipv4_info = if_addrs.detect { |addr_map|
+      #   next addr_map if network_id
+      #   addr_map[:ipv4_addresses
+      # }
+
+      mac_info, ipv4_info = if_addrs.first
+
       return unless ipv4_info
 
       [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
     end
 
-    def add_network_unless_exists(network_id, cookie_id)
+    def add_network_unless_exists(network_id, cookie_id, segment_id)
       return if @networks[network_id]
       @networks[network_id] = { network_id: network_id,
+                                segment_id: segment_id,
                                 cookie_id: cookie_id }
 
-      add_network(network_id, cookie_id)
+      add_network(network_id, cookie_id, segment_id)
     end
 
-    def add_network(network_id, cookie_id)
+    def add_network(network_id, cookie_id, segment_id)
       debug log_format("add_network")
       # Implement in subclass if needed
     end

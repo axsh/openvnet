@@ -8,6 +8,7 @@ module Vnet::Core::Tunnels
 
     attr_reader :dst_ipv4_address
     attr_reader :datapath_networks
+    attr_reader :datapath_segments
     attr_reader :datapath_route_links
 
     attr_reader :dst_datapath_id
@@ -29,6 +30,7 @@ module Vnet::Core::Tunnels
       @tunnel_created = false
 
       @datapath_networks = []
+      @datapath_segments = []
       @datapath_route_links = []
     end
 
@@ -62,7 +64,7 @@ module Vnet::Core::Tunnels
     end
 
     def unused?
-      @datapath_networks.empty? && @datapath_route_links.empty?
+      @datapath_networks.empty? && @datapath_segments.empty? && @datapath_route_links.empty?
     end
 
     def has_network_id?(network_id)
@@ -71,6 +73,14 @@ module Vnet::Core::Tunnels
 
     def detect_network_id?(network_id)
       @datapath_networks.find { |dpn| dpn[:network_id] == network_id }
+    end
+
+    def has_segment_id?(segment_id)
+      @datapath_segments.any? { |dpn| dpn[:segment_id] == segment_id }
+    end
+
+    def detect_segment_id?(segment_id)
+      @datapath_segments.find { |dpn| dpn[:segment_id] == segment_id }
     end
 
     def update_mode(mode)
@@ -116,6 +126,17 @@ module Vnet::Core::Tunnels
       @datapath_networks.delete_if { |d| d[:id] == dpn_id }
     end
 
+    def add_datapath_segment(datapath_segment)
+      raise ArgumentError, "missing segment_id parameter" unless datapath_segment[:segment_id]
+
+      return if @datapath_segments.detect { |d| d[:id] == datapath_segment[:id] }
+      @datapath_segments << datapath_segment
+    end
+
+    def remove_datapath_segment(dpn_id)
+      @datapath_segments.delete_if { |d| d[:id] == dpn_id }
+    end
+
     def add_datapath_route_link(datapath_route_link)
       raise ArgumentError, "missing route_link_id parameter" unless datapath_route_link[:route_link_id]
 
@@ -153,7 +174,7 @@ module Vnet::Core::Tunnels
       create_tunnel if @dst_network_id && @dst_ipv4_address # && installed?
     end
 
-    def set_tunnel_port_number(new_port_number, updated_networks)
+    def set_tunnel_port_number(new_port_number, updated_networks, updated_segments)
       return if new_port_number.nil?
       return if new_port_number == @tunnel_port_number
 
@@ -164,9 +185,12 @@ module Vnet::Core::Tunnels
       @datapath_networks.each { |dpn|
         updated_networks[dpn[:network_id]] = true
       }
+      @datapath_segments.each { |dpn|
+        updated_segments[dpn[:segment_id]] = true
+      }
     end
 
-    def clear_tunnel_port_number(updated_networks)
+    def clear_tunnel_port_number(updated_networks, updated_segments)
       return if @tunnel_port_number.nil?
       @tunnel_port_number = nil
 
@@ -175,9 +199,12 @@ module Vnet::Core::Tunnels
       @datapath_networks.each { |dpn|
         updated_networks[dpn[:network_id]] = true
       }
+      @datapath_segments.each { |dpn|
+        updated_segments[dpn[:segment_id]] = true
+      }
     end
 
-    def set_host_port_number(new_port_number, updated_networks)
+    def set_host_port_number(new_port_number, updated_networks, updated_segments)
       return if new_port_number.nil?
       return if new_port_number == @host_port_number
 
@@ -187,6 +214,9 @@ module Vnet::Core::Tunnels
 
       @datapath_networks.each { |dpn|
         updated_networks[dpn[:network_id]] = true
+      }
+      @datapath_segments.each { |dpn|
+        updated_segments[dpn[:segment_id]] = true
       }
     end
 
