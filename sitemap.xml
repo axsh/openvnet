@@ -4,7 +4,7 @@
     
     <url>
      <loc>None/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -12,7 +12,7 @@
     
     <url>
      <loc>None/concept/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -20,7 +20,7 @@
     
     <url>
      <loc>None/features/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -28,7 +28,7 @@
     
     <url>
      <loc>None/installation/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -36,7 +36,7 @@
     
     <url>
      <loc>None/upgrade/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -45,25 +45,25 @@
         
     <url>
      <loc>None/creating-virtual-networks/single-network/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/creating-virtual-networks/single-network-dhcp/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/creating-virtual-networks/two-networks/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/creating-virtual-networks/two-networks-router/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -73,7 +73,7 @@
         
     <url>
      <loc>None/advanced-features/filters/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -83,19 +83,19 @@
         
     <url>
      <loc>None/debugging/vnflows-monitor/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/debugging/integration-test/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/debugging/troubleshooting/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -105,31 +105,31 @@
         
     <url>
      <loc>None/configuration-files/common/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/configuration-files/vnmgr/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/configuration-files/webapi/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/configuration-files/vna/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/configuration-files/vnctl/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -139,25 +139,25 @@
         
     <url>
      <loc>None/vnctl/datapaths/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/vnctl/interfaces/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/vnctl/networks/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
     <url>
      <loc>None/vnctl/filters/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
         
@@ -166,7 +166,7 @@
     
     <url>
      <loc>None/community/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
@@ -174,7 +174,7 @@
     
     <url>
      <loc>None/jargon-dictionary/</loc>
-     <lastmod>2016-04-19</lastmod>
+     <lastmod>2016-07-15</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
