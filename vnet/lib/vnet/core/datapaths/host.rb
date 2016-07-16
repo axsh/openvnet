@@ -108,13 +108,14 @@ module Vnet::Core::Datapaths
       dp_nw_cookie = dp_nw[:id] | COOKIE_TYPE_DP_NETWORK
       network_id = dp_nw[:network_id]
       interface_id = dp_nw[:interface_id]
+      mac_address = dp_nw[:mac_address]
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 30,
 
                            match: {
-                             :eth_dst => dpg_map[:mac_address]
+                             :eth_dst => mac_address
                            },
                            match_interface: interface_id,
 

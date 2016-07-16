@@ -17,8 +17,6 @@ module Vnet
       TABLE_TUNNEL_PORTS = 3
       TABLE_TUNNEL_IDS = 4
 
-      TABLE_LOCAL_PORT = 6
-
       # For packets explicitly marked as being from the controller.
       #
       # Some packets are handed to the controller after modifications,
