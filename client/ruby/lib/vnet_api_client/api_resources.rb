@@ -7,6 +7,7 @@ module VNetAPIClient
 
     define_standard_crud_methods
     define_relation_methods(:networks)
+    define_relation_methods(:segments)
     define_relation_methods(:route_links)
   end
 
@@ -137,6 +138,8 @@ module VNetAPIClient
     api_suffix :networks
 
     define_standard_crud_methods
+
+    define_relation_methods(:segments)
   end
 
   class NetworkService < ApiResource
@@ -162,6 +165,12 @@ module VNetAPIClient
 
     define_standard_crud_methods
     define_relation_methods(:interfaces)
+  end
+
+  class Segment < ApiResource
+    api_suffix :segments
+
+    define_standard_crud_methods
   end
 
   class Translation < ApiResource
@@ -215,6 +224,7 @@ module VNetAPIClient
 
     define_standard_crud_methods
     define_relation_methods(:networks)
+    define_relation_methods(:segments)
     define_relation_methods(:route_links)
   end
 

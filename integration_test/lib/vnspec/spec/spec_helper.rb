@@ -27,7 +27,12 @@ RSpec.configure do |c|
   c.add_formatter(:documentation)
   #c.add_formatter(:json)
 
+  c.prepend_before(:all, :vms_ignore_dhcp => true) do
+    vms_ignore_dhcp
+  end
+
   c.before(:all) do
     setup_vm
   end
+
 end

@@ -9,6 +9,7 @@ module Vnet::Openflow
 
     FLOW_MATCH_METADATA_PARAMS = [:match_datapath,
                                   :match_dp_network,
+                                  :match_dp_segment,
                                   :match_dp_route_link,
                                   :match_ignore_mac2mac,
                                   :match_interface,
@@ -19,6 +20,7 @@ module Vnet::Openflow
                                   :match_reflection,
                                   :match_remote,
                                   :match_route_link,
+                                  :match_segment,
                                   :match_tunnel,
                                   :match_value_pair_flag,
                                   :match_value_pair_first,
@@ -27,6 +29,7 @@ module Vnet::Openflow
     FLOW_WRITE_METADATA_PARAMS = [:clear_all,
                                   :write_datapath,
                                   :write_dp_network,
+                                  :write_dp_segment,
                                   :write_dp_route_link,
                                   :write_ignore_mac2mac,
                                   :write_interface,
@@ -38,6 +41,7 @@ module Vnet::Openflow
                                   :write_reflection,
                                   :write_remote,
                                   :write_route_link,
+                                  :write_segment,
                                   :write_tunnel,
                                   :write_value_pair_flag,
                                   :write_value_pair_first,
@@ -113,7 +117,11 @@ module Vnet::Openflow
     end
 
     def flows_for_filtering_mac_address(flows, mac_address, use_cookie = self.cookie)
-      [[TABLE_NETWORK_SRC_CLASSIFIER, { :eth_src => mac_address }],
+      [[TABLE_SEGMENT_SRC_CLASSIFIER, { :eth_src => mac_address }],
+       [TABLE_SEGMENT_SRC_CLASSIFIER, { :eth_dst => mac_address }],
+       [TABLE_SEGMENT_DST_CLASSIFIER, { :eth_src => mac_address }],
+       [TABLE_SEGMENT_DST_CLASSIFIER, { :eth_dst => mac_address }],
+       [TABLE_NETWORK_SRC_CLASSIFIER, { :eth_src => mac_address }],
        [TABLE_NETWORK_SRC_CLASSIFIER, { :eth_dst => mac_address }],
        [TABLE_NETWORK_DST_CLASSIFIER, { :eth_src => mac_address }],
        [TABLE_NETWORK_DST_CLASSIFIER, { :eth_dst => mac_address }],

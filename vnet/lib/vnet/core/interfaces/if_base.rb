@@ -43,6 +43,15 @@ module Vnet::Core::Interfaces
 
     private
 
+    def flows_for_classifiers(flows = [])
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                           goto_table: @enabled_filtering ? TABLE_INTERFACE_EGRESS_FILTER : TABLE_INTERFACE_EGRESS_VALIDATE,
+                           priority: 30,
+                           match_interface: @id,
+                           cookie: cookie
+                          )
+    end
+
     def flows_for_disabled_filtering(flows = [])
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
@@ -62,15 +71,17 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_interface_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+      mac_cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+      mac_address = mac_info[:mac_address]
+      segment_id = mac_info[:segment_id]
 
       #
       # Anti-spoof:
       #
-      [{ :eth_src => mac_info[:mac_address],
+      [{ :eth_src => mac_address,
        },{
          :eth_type => 0x0806,
-         :arp_sha => mac_info[:mac_address],
+         :arp_sha => mac_address,
        }
       ].each { |match|
         # Currently add to ingress_nw_if table since we do not
@@ -80,97 +91,119 @@ module Vnet::Core::Interfaces
                              match: match,
                              #match_segment: mac_info[:segment_id],
                              cookie: cookie)
+
       }
+
+      if segment_id
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                             goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                             priority: 30,
+                             match: { :eth_src => mac_address },
+                             match_interface: @id,
+                             write_segment: segment_id,
+                             cookie: cookie)
+        flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP,
+                             goto_table: TABLE_INTERFACE_INGRESS_FILTER,
+                             priority: 60,
+                             match: { :eth_dst => mac_address },
+                             match_segment: segment_id,
+                             write_interface: @id,
+                             cookie: cookie)
+      end
     end
 
     def flows_for_interface_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      #
-      # new Classifier
-      #
-      if @enabled_filtering
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_EGRESS_FILTER,
-                             priority: 90,
-                             match_interface: @id,
-                             cookie: cookie
-                            )
-      else
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                             goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
-                             priority: 30,
-                             match_interface: @id,
-                             cookie: cookie
-                            )
-      end
+      segment_id = mac_info[:segment_id]
+      network_id = ipv4_info[:network_id]
+
+      mac_address = mac_info[:mac_address]
+      ipv4_address = ipv4_info[:ipv4_address]
 
       #
-      # Validate (old Classifier)
+      # Validate
       #
       [{ :eth_type => 0x0800,
-         :eth_src => mac_info[:mac_address],
+         :eth_src => mac_address,
          :ipv4_src => IPV4_ZERO
        }, {
          :eth_type => 0x0800,
-         :eth_src => mac_info[:mac_address],
-         :ipv4_src => ipv4_info[:ipv4_address]
+         :eth_src => mac_address,
+         :ipv4_src => ipv4_address
        }, {
          :eth_type => 0x0806,
-         :eth_src => mac_info[:mac_address],
-         :arp_sha => mac_info[:mac_address],
-         :arp_spa => ipv4_info[:ipv4_address]
+         :eth_src => mac_address,
+         :arp_sha => mac_address,
+         :arp_spa => ipv4_address
        }].each { |match|
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
-                             goto_table: TABLE_NETWORK_CONNECTION,
-                             priority: 30,
-                             match: match,
-                             match_interface: @id,
-                             write_network: ipv4_info[:network_id],
-                             cookie: cookie
-                            )
+        if segment_id
+          flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                               goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                               priority: 40,
+                               match: match,
+                               match_interface: @id,
+                               write_segment: segment_id,
+                               cookie: cookie)
+        else
+          flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                               goto_table: TABLE_NETWORK_CONNECTION,
+                               priority: 40,
+                               match: match,
+                               match_interface: @id,
+                               write_network: network_id,
+                               cookie: cookie)
+        end
       }
 
       #
       # IPv4
       #
-
       flows << flow_create(table: TABLE_ARP_TABLE,
                            goto_table: TABLE_NETWORK_DST_CLASSIFIER,
                            priority: 40,
                            match: {
                              :eth_type => 0x0800,
-                             :ipv4_dst => ipv4_info[:ipv4_address],
+                             :ipv4_dst => ipv4_address,
                            },
-                           match_network: ipv4_info[:network_id],
+                           match_network: network_id,
                            actions: {
-                             :eth_dst => mac_info[:mac_address],
+                             :eth_dst => mac_address,
                            },
                            cookie: cookie)
-      flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
-                           goto_table: TABLE_INTERFACE_INGRESS_FILTER,
-                           priority: 60,
-                           match: {
-                             :eth_dst => mac_info[:mac_address],
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie)
+
+      [{:eth_type => 0x0800,
+        :eth_dst => mac_address,
+        :ipv4_dst => ipv4_address,
+       },{
+        :eth_type => 0x0806,
+        :eth_dst => mac_address,
+        :arp_tha => mac_address,
+        :arp_tpa => ipv4_address
+       }].each { |match|
+        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                             goto_table: TABLE_INTERFACE_INGRESS_FILTER,
+                             priority: 60,
+                             match: match,
+                             match_network: network_id,
+                             write_interface: @id,
+                             cookie: cookie)
+      }
 
       #
       # Anti-spoof:
       #
       [{ :eth_type => 0x0806,
-         :arp_spa => ipv4_info[:ipv4_address],
+         :arp_spa => ipv4_address,
        },{
          :eth_type => 0x0800,
-         :ipv4_src => ipv4_info[:ipv4_address],
+         :ipv4_src => ipv4_address,
        }
       ].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
                              priority: 90,
                              match: match,
-                             match_value_pair_first: ipv4_info[:network_id],
+                             match_value_pair_first: network_id,
                              cookie: cookie)
       }
     end
@@ -306,6 +339,28 @@ module Vnet::Core::Interfaces
       }
     end
 
+    def flows_for_mac2mac_mac(flows, mac_info)
+      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+
+      [{ :eth_type => 0x0800,
+         :eth_dst => mac_info[:mac_address]
+       }, {
+         :eth_type => 0x0806,
+         :eth_dst => mac_info[:mac_address]
+       }].each { |match|
+        flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
+                             priority: 30,
+
+                             match: match,
+                             write_value_pair_flag: true,
+                             write_value_pair_first: mac_info[:segment_id],
+                             # write_value_pair_second: <- host interface id, already set.
+
+                             cookie: cookie,
+                             goto_table: TABLE_INTERFACE_INGRESS_SEG_IF)
+      }
+    end
+
     def flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
@@ -318,7 +373,7 @@ module Vnet::Core::Interfaces
          :arp_tpa => ipv4_info[:ipv4_address]
        }].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
-                             priority: 30,
+                             priority: 40,
 
                              match: match,
                              write_value_pair_flag: true,

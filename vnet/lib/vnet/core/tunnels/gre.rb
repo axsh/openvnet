@@ -79,8 +79,14 @@ module Vnet::Core::Tunnels
       # @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
-    def actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
+    def actions_append_flood_network(network_id, tunnel_actions, mac2mac_actions)
       return if @tunnel_port_number.nil? || !has_network_id?(network_id)
+
+      tunnel_actions << { :output => @tunnel_port_number }
+    end
+
+    def actions_append_flood_segment(segment_id, tunnel_actions, mac2mac_actions)
+      return if @tunnel_port_number.nil? || !has_segment_id?(segment_id)
 
       tunnel_actions << { :output => @tunnel_port_number }
     end

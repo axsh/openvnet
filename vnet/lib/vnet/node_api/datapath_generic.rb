@@ -64,6 +64,32 @@ module Vnet::NodeApi
     end
   end
 
+  class DatapathSegment < DatapathGeneric
+    class << self
+      private
+
+      def dispatch_created_item_events(model)
+        dispatch_event(ADDED_DATAPATH_SEGMENT, prepare_event_hash(model))
+      end
+
+      def dispatch_deleted_item_events(model)
+        dispatch_event(REMOVED_DATAPATH_SEGMENT, prepare_event_hash(model))
+      end
+
+      def destroy_filter(datapath_id, generic_id)
+        { datapath_id: datapath_id, segment_id: generic_id }
+      end
+
+      def prepare_event_hash(model)
+        model.to_hash.tap { |event_hash|
+          event_hash[:dpseg_id] = event_hash[:id]
+          event_hash[:id] = event_hash[:datapath_id]
+        }
+      end
+
+    end
+  end
+
   class DatapathRouteLink < DatapathGeneric
     class << self
       private

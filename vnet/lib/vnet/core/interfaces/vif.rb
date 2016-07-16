@@ -19,7 +19,26 @@ module Vnet::Core::Interfaces
         flows_for_router_egress_mac(flows, mac_info)
       end
 
+      segment_id = mac_info[:segment_id]
+
+      if segment_id
+        flows_for_mac2mac_mac(flows, mac_info)
+
+        @dp_info.segment_manager.insert_interface_segment(@id, segment_id)
+      end
+
       @dp_info.add_flows(flows)
+    end
+
+    def remove_mac_address(params)
+      mac_info = super || return
+      return unless mac_info
+
+      segment_id = mac_info[:segment_id]
+
+      if segment_id
+        @dp_info.segment_manager.remove_interface_segment(@id, segment_id)
+      end
     end
 
     def add_ipv4_address(params)
@@ -57,6 +76,7 @@ module Vnet::Core::Interfaces
       flows_for_disabled_filtering(flows) unless @enabled_filtering || @enabled_legacy_filtering
       flows_for_disabled_legacy_filtering(flows) unless @ingress_filtering_enabled || !@enabled_legacy_filtering
       flows_for_base(flows)
+      flows_for_classifiers(flows)
 
       @dp_info.add_flows(flows)
     end
@@ -71,24 +91,6 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_mac(flows, mac_info)
-      # flows << flow_create(:segment_src,
-      #                      priority: 85,
-      #                      match: {
-      #                        :eth_type => 0x0806,
-      #                        :eth_src => mac_info[:mac_address],
-      #                      },
-      #                      network_id: ipv4_info[:network_id],
-      #                      network_type: ipv4_info[:network_type],
-      #                      cookie: self.cookie)
-      # flows << flow_create(:segment_src,
-      #                      priority: 85,
-      #                      match: {
-      #                        :eth_type => 0x0806,
-      #                        :arp_sha => mac_info[:mac_address],
-      #                      },
-      #                      network_id: ipv4_info[:network_id],
-      #                      network_type: ipv4_info[:network_type],
-      #                      cookie: self.cookie)
     end
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)

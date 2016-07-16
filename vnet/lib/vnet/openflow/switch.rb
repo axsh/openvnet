@@ -40,13 +40,14 @@ module Vnet::Openflow
       [TABLE_EDGE_SRC,
        TABLE_EDGE_DST,
        TABLE_TUNNEL_PORTS,
-       TABLE_TUNNEL_NETWORK_IDS,
+       TABLE_TUNNEL_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
        TABLE_PROMISCUOUS_PORT,
 
        TABLE_INTERFACE_INGRESS_CLASSIFIER,
        TABLE_INTERFACE_INGRESS_MAC,
+       TABLE_INTERFACE_INGRESS_SEG_IF,
        TABLE_INTERFACE_INGRESS_NW_IF,
        TABLE_INTERFACE_INGRESS_ROUTE_LINK,
 
@@ -58,6 +59,7 @@ module Vnet::Openflow
        TABLE_INTERFACE_EGRESS_ROUTES,
        TABLE_INTERFACE_EGRESS_MAC,
 
+       TABLE_SEGMENT_SRC_CLASSIFIER,
        TABLE_NETWORK_SRC_CLASSIFIER,
 
        TABLE_ROUTE_INGRESS_INTERFACE,
@@ -72,21 +74,27 @@ module Vnet::Openflow
 
        TABLE_NETWORK_DST_CLASSIFIER,
        TABLE_NETWORK_DST_MAC_LOOKUP,
+       TABLE_SEGMENT_DST_CLASSIFIER,
+       TABLE_SEGMENT_DST_MAC_LOOKUP,
+
        TABLE_FLOOD_LOCAL,
        TABLE_FLOOD_SEGMENT,
 
        TABLE_LOOKUP_IF_NW_TO_DP_NW,
        TABLE_LOOKUP_IF_RL_TO_DP_RL,
        TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
+       TABLE_LOOKUP_DP_SEG_TO_DP_SEGMENT,
        TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
        TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+       TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS,
 
        TABLE_OUTPUT_DP_NETWORK_DST_IF,
        TABLE_OUTPUT_DP_NETWORK_SRC_IF,
+       TABLE_OUTPUT_DP_SEGMENT_DST_IF,
+       TABLE_OUTPUT_DP_SEGMENT_SRC_IF,
        TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
        TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
 
-       TABLE_OUTPUT_DP_OVER_MAC2MAC,
        TABLE_OUTPUT_DP_OVER_TUNNEL,
 
        TABLE_OUT_PORT_INTERFACE_INGRESS,
@@ -100,6 +108,7 @@ module Vnet::Openflow
       [[TABLE_CLASSIFIER, 1, nil, { :tunnel_id => 0 }],
        [TABLE_FLOOD_TUNNELS, 10, :match_remote, nil],
        [TABLE_OUTPUT_DP_NETWORK_DST_IF, 2, nil, { :eth_dst => MAC_BROADCAST }],
+       [TABLE_OUTPUT_DP_OVER_MAC2MAC, 1, nil, { :tunnel_id => 0 }],
       ].each { |table, priority, flag, match|
         flows << flow_create({ table: table,
                                priority: priority,
@@ -111,13 +120,15 @@ module Vnet::Openflow
       #
       # Default goto_table flows:
       #
-      [[TABLE_NETWORK_SRC_MAC_LEARNING, TABLE_NETWORK_DST_CLASSIFIER],
+      [[TABLE_SEGMENT_SRC_MAC_LEARNING, TABLE_SEGMENT_DST_CLASSIFIER],
+       [TABLE_NETWORK_CONNECTION, TABLE_NETWORK_SRC_CLASSIFIER],
+       [TABLE_NETWORK_SRC_MAC_LEARNING, TABLE_NETWORK_DST_CLASSIFIER],        
        [TABLE_ROUTE_INGRESS_INTERFACE, TABLE_NETWORK_DST_CLASSIFIER],
        [TABLE_ARP_TABLE, TABLE_ARP_LOOKUP],
        [TABLE_FLOOD_SIMULATED, TABLE_FLOOD_LOCAL],
        [TABLE_FLOOD_TUNNELS, TABLE_FLOOD_SEGMENT],
-       [TABLE_NETWORK_CONNECTION, TABLE_NETWORK_SRC_CLASSIFIER],
        [TABLE_INTERFACE_INGRESS_FILTER, TABLE_INTERFACE_INGRESS_FILTER_LOOKUP],
+       [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_OVER_TUNNEL],
       ].each { |from_table, to_table|
         flows << flow_create(table: from_table,
                              goto_table: to_table,
@@ -125,6 +136,10 @@ module Vnet::Openflow
       }
 
       [[TABLE_CLASSIFIER, TABLE_TUNNEL_PORTS, 0, :write_remote, nil],
+       [TABLE_SEGMENT_SRC_MAC_LEARNING, TABLE_SEGMENT_DST_CLASSIFIER, 44, nil, {
+          :eth_type => 0x0806,
+          :tunnel_id => 0
+        }],
        [TABLE_NETWORK_SRC_MAC_LEARNING, TABLE_NETWORK_DST_CLASSIFIER, 2, nil, {
           :eth_type => 0x0806,
           :tunnel_id => 0
@@ -132,12 +147,8 @@ module Vnet::Openflow
        [TABLE_NETWORK_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
           :eth_dst => MAC_BROADCAST
         }],
-       [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_OVER_TUNNEL, 1, nil, {
-          :tunnel_id => TUNNEL_ROUTE_LINK
-        }],
-       [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_OVER_TUNNEL, 1, nil, {
-          :tunnel_id => TUNNEL_FLAG,
-          :tunnel_id_mask => TUNNEL_FLAG_MASK
+       [TABLE_SEGMENT_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
+          :eth_dst => MAC_BROADCAST
         }],
       ].each { |from_table, to_table, priority, flag, match|
         flows << flow_create({ table: from_table,

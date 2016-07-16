@@ -46,6 +46,32 @@ module Vnet::Core::Datapaths
                                       dp_obj: network)
     end
 
+    def activate_segment_id(segment_id)
+      segment = @active_segments[segment_id] || return
+
+      return if segment[:active] == true
+      segment[:active] == true
+
+      debug log_format("activating segment #{segment_id} on #{self.pretty_id}")
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_SEGMENT,
+                                      id: :datapath_segment,
+                                      dp_obj: segment)
+    end
+
+    def deactivate_segment_id(segment_id)
+      segment = @active_segments[segment_id] || return
+
+      return if segment[:active] == false
+      segment[:active] == false
+
+      debug log_format("deactivating segment #{segment_id} on #{self.pretty_id}")
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_SEGMENT,
+                                      id: :datapath_segment,
+                                      dp_obj: segment)
+    end
+
     def activate_route_link_id(route_link_id)
       route_link = @active_route_links[route_link_id] || return
 
@@ -88,7 +114,7 @@ module Vnet::Core::Datapaths
                            priority: 30,
 
                            match: {
-                             :eth_dst => dp_nw[:mac_address]
+                             :eth_dst => dpg_map[:mac_address]
                            },
                            match_interface: interface_id,
 
@@ -140,7 +166,7 @@ module Vnet::Core::Datapaths
       # address, so we create the flow here.
       #
       # TODO: Add verification of the ingress host interface.
-      flows << flow_create(table: TABLE_TUNNEL_NETWORK_IDS,
+      flows << flow_create(table: TABLE_TUNNEL_IDS,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 30,
 
@@ -153,7 +179,7 @@ module Vnet::Core::Datapaths
                            cookie: dp_rl_cookie)
 
       # We match the route link id stored in the first value field
-      # with the dp_rl associated with this datapath, and then prepare
+      # with the dpg_map associated with this datapath, and then prepare
       # for the next table by storing the source host interface in the
       # first value field.
       #
@@ -172,7 +198,7 @@ module Vnet::Core::Datapaths
 
                            cookie: dp_rl_cookie)
 
-      # The source mac address is set to this datapath's dp_rl's mac
+      # The source mac address is set to this datapath's dpg_map's mac
       # address in order to uniquely identify the packets as being
       # from this datapath.
       flows << flow_create(table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,

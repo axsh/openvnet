@@ -10,10 +10,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
 
   put_post_shared_params
   param_uuid M::MacLease
+  param_uuid M::Segment, :segment_uuid
   param_options :interface_uuid, required: true
   param_options :mac_address, required: true
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
+    uuid_to_id(M::Segment, "segment_uuid", "segment_id") if params["segment_uuid"]
 
     post_new(:MacLease, fill_options)
   end

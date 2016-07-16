@@ -203,7 +203,7 @@ describe Vnet::Core::TunnelManager do
         1,
         {:metadata => 1 | METADATA_TYPE_NETWORK,
          :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
-        [{:tunnel_id => 1 | TUNNEL_FLAG_MASK}, {:output => 9}],
+        [{:tunnel_id => (1 & TUNNEL_ID_MASK) | TUNNEL_NETWORK}, {:output => 9}],
         {:goto_table => TABLE_FLOOD_SEGMENT,
          :cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
     end

@@ -30,6 +30,8 @@ module Vnspec
             "datapaths/#{v.delete(:datapath_uuid)}/networks/#{v.delete(:network_uuid)}"
           when :datapath_route_links
             "datapaths/#{v.delete(:datapath_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
+          when :datapath_segments
+            "datapaths/#{v.delete(:datapath_uuid)}/segments/#{v.delete(:segment_uuid)}"
           when :interface_security_groups
             "interfaces/#{v.delete(:interface_uuid)}/security_groups/#{v.delete(:security_group_uuid)}"
           when :filter_static
@@ -50,6 +52,8 @@ module Vnspec
             "mac_range_groups/#{v.delete(:mac_range_group_uuid)}/mac_ranges"
           when :topology_networks
             "topologies/#{v.delete(:topology_uuid)}/networks/#{v.delete(:network_uuid)}"
+          when :topology_segments
+            "topologies/#{v.delete(:topology_uuid)}/segments/#{v.delete(:segment_uuid)}"
           when :topology_route_links
             "topologies/#{v.delete(:topology_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
           when :translation_static_addresses
@@ -87,7 +91,7 @@ module Vnspec
       @dataset = files.each_with_object({}) do |n, h|
         load_file(n).each do |k, v|
           h[k] ||= []
-          h[k] += v
+          h[k] += v if v
         end
       end
     end

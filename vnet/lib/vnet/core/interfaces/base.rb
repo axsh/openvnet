@@ -98,10 +98,12 @@ module Vnet::Core::Interfaces
     def del_cookie(type = 0, value = 0, options = {})
       cookie_value = cookie(type, value)
       cookie_mask = COOKIE_PREFIX_MASK | COOKIE_ID_MASK
+
       unless type == 0 && value == 0
         cookie_mask |= COOKIE_TAG_MASK
       end
 
+      @dp_info.segment_manager.remove_interface_from_all(@id)
       @dp_info.network_manager.remove_interface_from_all(@id)
       @dp_info.del_cookie(cookie_value, cookie_mask)
     end
@@ -183,28 +185,6 @@ module Vnet::Core::Interfaces
 
       [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
     end
-
-    #
-    # Router ingress/egress:
-    #
-
-    # def enable_router
-    #   return if @enable_router != false
-    #   @enable_router = true
-    #
-    #   flows = []
-    #
-    #   @mac_addresses.each { |mac_lease_id, mac_info|
-    #     flows_for_router_ingress_mac(flows, mac_info)
-    #
-    #     mac_info[:ipv4_addresses].each { |ipv4_info|
-    #       flows_for_router_ingress_ipv4(flows, mac_info, ipv4_info)
-    #       flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
-    #     }
-    #   }
-    #
-    #   @dp_info.add_flows(flows)
-    # end
 
     #
     # Filtering methods:
