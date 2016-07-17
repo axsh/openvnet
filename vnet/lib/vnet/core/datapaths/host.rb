@@ -104,66 +104,110 @@ module Vnet::Core::Datapaths
 
     private
 
-    def flows_for_dp_network(flows, dp_nw)
-      dp_nw_cookie = dp_nw[:id] | COOKIE_TYPE_DP_NETWORK
-      network_id = dp_nw[:network_id]
-      interface_id = dp_nw[:interface_id]
-      mac_address = dp_nw[:mac_address]
+    def flows_for_dp_network(flows, dpg_map)
+      flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_NETWORK
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 30,
 
                            match: {
-                             :eth_dst => mac_address
+                             :eth_dst => dpg_map[:mac_address]
                            },
-                           match_interface: interface_id,
+                           match_interface: dpg_map[:interface_id],
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
                            write_value_pair_flag: true,
-                           write_value_pair_first: network_id,
+                           write_value_pair_first: dpg_map[:network_id],
 
-                           cookie: dp_nw_cookie)
+                           cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
                            priority: 1,
 
                            match_value_pair_flag: true,
-                           match_value_pair_first: network_id,
-                           match_value_pair_second: interface_id,
+                           match_value_pair_first: dpg_map[:network_id],
+                           match_value_pair_second: dpg_map[:interface_id],
 
                            clear_all: true,
                            write_remote: true,
-                           write_network: network_id,
+                           write_network: dpg_map[:network_id],
 
-                           cookie: dp_nw_cookie)
+                           cookie: flow_cookie)
       flows << flow_create(table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
                            goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                            priority: 1,
 
-                           match_network: network_id,
-                           write_interface: interface_id,
+                           match_network: dpg_map[:network_id],
+                           write_interface: dpg_map[:interface_id],
 
-                           cookie: dp_nw_cookie)
+                           cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 
-                           match_value_pair_first: network_id,
-                           write_value_pair_first: interface_id,
+                           match_value_pair_first: dpg_map[:network_id],
+                           write_value_pair_first: dpg_map[:interface_id],
 
-                           cookie: dp_nw_cookie)
+                           cookie: flow_cookie)
+
+      flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
     end
 
-    def flows_for_dp_route_link(flows, dp_rl)
-      dp_rl_cookie = dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK
-      interface_id = dp_rl[:interface_id]
-      route_link_id = dp_rl[:route_link_id]
-      mac_address = dp_rl[:mac_address]
+    def flows_for_dp_segment(flows, dpg_map)
+      flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
 
-      # The router manager does not know about the dp_rl's mac
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
+                           priority: 30,
+
+                           match: {
+                             :eth_dst => dpg_map[:mac_address]
+                           },
+                           match_interface: dpg_map[:interface_id],
+
+                           actions: {
+                             :eth_dst => MAC_BROADCAST
+                           },
+                           write_value_pair_flag: true,
+                           write_value_pair_first: dpg_map[:segment_id],
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_IF,
+                           goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                           priority: 1,
+
+                           match_value_pair_flag: true,
+                           match_value_pair_first: dpg_map[:segment_id],
+                           match_value_pair_second: dpg_map[:interface_id],
+
+                           clear_all: true,
+                           write_remote: true,
+                           write_segment: dpg_map[:segment_id],
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+                           priority: 1,
+
+                           match_segment: dpg_map[:segment_id],
+                           write_interface: dpg_map[:interface_id],
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_OUTPUT_DP_SEGMENT_SRC_IF,
+                           goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+                           priority: 1,
+
+                           match_value_pair_first: dpg_map[:segment_id],
+                           write_value_pair_first: dpg_map[:interface_id],
+                           cookie: flow_cookie)
+
+      flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
+    end
+
+    def flows_for_dp_route_link(flows, dpg_map)
+      flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_ROUTE_LINK
+
+      # The router manager does not know about the dpg_map's mac
       # address, so we create the flow here.
       #
       # TODO: Add verification of the ingress host interface.
@@ -173,11 +217,11 @@ module Vnet::Core::Datapaths
 
                            match: {
                              :tunnel_id => TUNNEL_ROUTE_LINK,
-                             :eth_dst => mac_address
+                             :eth_dst => dpg_map[:mac_address]
                            },
-                           write_route_link: route_link_id,
+                           write_route_link: dpg_map[:route_link_id],
 
-                           cookie: dp_rl_cookie)
+                           cookie: flow_cookie)
 
       # We match the route link id stored in the first value field
       # with the dpg_map associated with this datapath, and then prepare
@@ -192,12 +236,12 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
                            priority: 30,
                            match: {
-                             :eth_dst => mac_address
+                             :eth_dst => dpg_map[:mac_address]
                            },
-                           match_interface: interface_id,
-                           write_route_link: route_link_id,
+                           match_interface: dpg_map[:interface_id],
+                           write_route_link: dpg_map[:route_link_id],
 
-                           cookie: dp_rl_cookie)
+                           cookie: flow_cookie)
 
       # The source mac address is set to this datapath's dpg_map's mac
       # address in order to uniquely identify the packets as being
@@ -206,16 +250,16 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
                            priority: 1,
 
-                           match_value_pair_first: route_link_id,
-                           write_value_pair_first: interface_id,
+                           match_value_pair_first: dpg_map[:route_link_id],
+                           write_value_pair_first: dpg_map[:interface_id],
 
                            actions: {
-                             :eth_src => mac_address
+                             :eth_src => dpg_map[:mac_address]
                            },
 
-                           cookie: dp_rl_cookie)
+                           cookie: flow_cookie)
 
-      flows_for_filtering_mac_address(flows, mac_address, dp_rl_cookie)
+      flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
     end
 
   end
