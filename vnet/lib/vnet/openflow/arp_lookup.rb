@@ -107,7 +107,12 @@ module Vnet::Openflow
                                      request_ipv4: request_ipv4,
                                      attempts: 1)
         when :virtual
-          arp_lookup_datapath_lookup(interface_mac: mac_info[:mac_address],
+          # arp_lookup_datapath_lookup(interface_mac: mac_info[:mac_address],
+          #                            interface_ipv4: ipv4_info[:ipv4_address],
+          #                            interface_network_id: ipv4_info[:network_id],
+          #                            request_ipv4: request_ipv4,
+          #                            attempts: 1)
+          arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
                                      interface_ipv4: ipv4_info[:ipv4_address],
                                      interface_network_id: ipv4_info[:network_id],
                                      request_ipv4: request_ipv4,
@@ -142,8 +147,8 @@ module Vnet::Openflow
                                              ipv4_address: message.arp_tpa)
       return if mac_info.nil? || ipv4_info.nil?
 
-      case ipv4_info[:network_type]
-      when :physical
+      # case ipv4_info[:network_type]
+      # when :physical
         match_md = md_create(:network => ipv4_info[:network_id])
         reflection_md = md_create(:reflection => nil)
 
@@ -179,7 +184,7 @@ module Vnet::Openflow
         end
 
         arp_lookup_send_packets(messages)
-      end
+      # end
     end
 
     def arp_lookup_process_timeout(params)
@@ -259,28 +264,30 @@ module Vnet::Openflow
 
       # TODO: Check if interface is remote?
 
-      flow = flow_create(table: TABLE_ARP_LOOKUP,
-                         goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
-                         priority: 35,
+      flows = []
 
-                         match: {
-                           :eth_type => 0x0800,
-                           :ipv4_dst => params[:request_ipv4]
-                         },
-                         match_network: params[:interface_network_id],
+      flow_create(table: TABLE_ARP_LOOKUP,
+                  goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
+                  priority: 35,
 
-                         actions: {
-                           :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
-                         },
+                  match: {
+                    :eth_type => 0x0800,
+                    :ipv4_dst => params[:request_ipv4]
+                  },
+                  match_network: params[:interface_network_id],
 
-                         idle_timeout: 3600,
+                  actions: {
+                    :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
+                  },
 
-                         # Reflection based on metadata flag...
-                         write_value_pair_flag: true,
-                         write_value_pair_first: ip_lease.interface_id,
-                         write_value_pair_second: params[:interface_network_id],
+                  idle_timeout: 3600,
 
-                         cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
+                  # Reflection based on metadata flag...
+                  write_value_pair_flag: true,
+                  write_value_pair_first: ip_lease.interface_id,
+                  write_value_pair_second: params[:interface_network_id],
+
+                  cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
 
       @dp_info.add_flow(flow)
 
