@@ -16,7 +16,7 @@ module Vnspec
           end
 
           if @ignore_dhcp
-            vm.enable_dhcp = false
+            vm.use_dhcp = false
           end
         end
 
@@ -115,7 +115,7 @@ module Vnspec
       attr_reader :ssh_port
       attr_reader :interfaces
       attr_reader :vm_config
-      attr_accessor :enable_dhcp
+      attr_accessor :use_dhcp
 
       def initialize(name)
         @vm_config = config[:vms][name.to_sym].dup
@@ -126,7 +126,7 @@ module Vnspec
         @host_ip = config[:nodes][:vna][vm_config[:vna] - 1]
 
         @interfaces = []
-        @enable_dhcp = true
+        @use_dhcp = true
 
         @open_udp_ports = {}
         @open_tcp_ports = {}
@@ -150,7 +150,7 @@ module Vnspec
       def start_network
         logger.info "start network: #{name}"
 
-        if @enable_dhcp
+        if @use_dhcp
           _network_ctl(:start)
         else
           _network_ctl(:start_no_dhcp)
