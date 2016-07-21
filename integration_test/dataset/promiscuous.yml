@@ -1,0 +1,121 @@
+datapaths:
+
+  - uuid: dp-wanedge
+    node_id: wanedge
+    display_name: wanedge
+    dpid: "0x0000eeeeeeeeeeee"
+
+networks:
+
+  - uuid: nw-vnet1
+    display_name: vnet1
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+    domain_name: vnet1
+    network_mode: virtual
+
+  - uuid: nw-global
+    display_name: global
+    ipv4_network: 10.210.0.0
+    ipv4_prefix: 24
+    domain_name: global
+    network_mode: physical
+
+
+interfaces:
+
+  - uuid: if-v1
+    port_name: if-v1
+    network_uuid: nw-global
+    mac_address: "02:00:00:00:00:01"
+    ipv4_address: 10.210.0.10
+
+  - uuid: if-dhcp1
+    network_uuid: nw-global
+    mac_address: "02:00:00:00:01:01"
+    ipv4_address: 10.210.0.5
+    mode: simulated
+
+  - uuid: if-weth0
+    mode: host
+    port_name: eth0
+    owner_datapath_uuid: dp-wanedge
+    network_uuid: nw-public1
+    mac_address: "02:01:00:00:00:04"
+    ipv4_address: 172.16.90.12
+
+  - uuid: if-weth2
+    mode: promiscuous
+    port_name: eth2
+    owner_datapath_uuid: dp-wanedge
+
+  - uuid: if-vnetgw
+    mode: simulated
+    network_uuid: nw-vnet1
+    mac_address: 10:FE:00:00:00:00
+    enable_routing: true
+    ipv4_address: 10.101.0.1
+
+  - uuid: if-glo2vnetgw
+    owner_datapath_uuid: dp-wanedge
+    mode: simulated
+    enable_routing: true
+    network_uuid: nw-global
+    mac_address: "02:01:00:00:00:05"
+    ipv4_address: 10.210.0.2
+
+network_services:
+
+  - uuid: ns-dhcp1
+    interface_uuid: if-dhcp1
+    mode: dhcp
+
+datapath_networks:
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp1eth0
+    mac_address: "02:00:00:aa:00:01"
+
+  - datapath_uuid: dp-wanedge
+    network_uuid: nw-vnet1
+    interface_uuid: if-weth0
+    mac_address: "02:00:00:aa:01:01"
+
+  - datapath_uuid: dp-wanedge
+    network_uuid: nw-public1
+    interface_uuid: if-weth0
+    mac_address: "02:00:00:aa:01:02"
+
+route_links:
+
+  - uuid: rl-1
+    mac_address: "02:00:10:00:00:01"
+
+datapath_route_links:
+
+  - datapath_uuid: dp-1
+    route_link_uuid: rl-1
+    interface_uuid: if-dp1eth0
+    mac_address: "02:00:10:aa:00:01"
+
+  - datapath_uuid: dp-wanedge
+    route_link_uuid: rl-1
+    interface_uuid: if-weth0
+    mac_address: "02:00:10:bb:00:01"
+
+routes:
+
+  - uuid: r-vnet1
+    interface_uuid: if-vnetgw
+    network_uuid: nw-vnet1
+    route_link_uuid: rl-1
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+
+  - uuid: r-glo2vnet
+    interface_uuid: if-glo2vnetgw
+    network_uuid: nw-global
+    route_link_uuid: rl-1
+    ipv4_network: 0.0.0.0
+    ipv4_prefix: 0
