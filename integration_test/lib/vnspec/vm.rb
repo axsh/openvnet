@@ -14,17 +14,9 @@ module Vnspec
           vm.vm_config[:interfaces].each do |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
           end
-
-          if @ignore_dhcp
-            vm.use_dhcp = false
-          end
         end
 
         start_network
-      end
-
-      def ignore_dhcp
-        @ignore_dhcp = true
       end
 
       def find(name)
@@ -92,6 +84,12 @@ module Vnspec
             VM[name].__send__("start#{command}")
           end
         end)
+      end
+
+      def disable_dhcp
+        vms.each { |vm|
+          vm.use_dhcp = false
+        }
       end
 
       private

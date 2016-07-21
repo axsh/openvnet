@@ -1,8 +1,7 @@
 vm_type: :kvm
 #specs: [simple, simple_tp, simple_seg, router_v2v, router_p2v, router_v2v_tp, event, event_tp, service, secg, secg_reference, filter, wanedge]
 
-#specs: [wanedge, simple, router_v2v, event, service, filter]
-specs: [simple, wanedge]
+specs: [simple, simple_seg, wanedge]
 
 
 # specs not included
