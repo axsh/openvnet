@@ -30,6 +30,12 @@ interfaces:
     mac_address: "02:00:00:00:00:01"
     ipv4_address: 10.101.0.10
 
+  - uuid: if-v7
+    port_name: if-v7
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:07"
+    ipv4_address: 10.101.0.17
+
   - uuid: if-dhcp1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:01:01"

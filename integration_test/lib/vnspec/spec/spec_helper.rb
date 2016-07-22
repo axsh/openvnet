@@ -30,18 +30,23 @@ RSpec.configure do |c|
   c.add_formatter(:documentation)
   #c.add_formatter(:json)
 
+  c.before(:all) do
+    vms.setup
+  end
+
   c.prepend_before(:all, :vms_disable_dhcp => true) do
     vms.disable_dhcp
   end
 
   c.prepend_before(:all, :vms_enable_ifup => [:vm1]) do
     vms.disable_dhcp
-
     vm1.use_dhcp = true
   end
 
-  c.before(:all) do
-    vms.setup
+  c.prepend_before(:all, :vms_enable_ifup => [:vm1, :vm7]) do
+    vms.disable_dhcp
+    vm1.use_dhcp = true
+    vm7.use_dhcp = true
   end
 
 end
