@@ -48,14 +48,17 @@ module Vnspec
 
       def ready?(name = :all, timeout = 600)
         success = true
+
         parallel do |vm|
           success = false unless vm.ready?(timeout)
         end
+
         if success
           logger.info("all vms are ready")
         else
           logger.info("any vm is down")
         end
+
         success
       end
 
@@ -167,18 +170,28 @@ module Vnspec
 
       def ready?(timeout = 600)
         logger.info("waiting for ready: #{self.name}")
+
+        result = false
         expires_at = Time.now.to_i + timeout
 
-        while ssh_on_guest("hostname", { "ConnectTimeout" => 2 })[:stdout].chomp != name.to_s
-          if Time.now.to_i >= expires_at
-            logger.info("#{self.name} is down")
-            return false
-          end
+        while Time.now.to_i >= expires_at
+          result = _check_is_ready?
+          break if result
+
           sleep 3
         end
 
-        logger.info("#{self.name} is ready")
-        true
+        if result
+          logger.info("#{self.name} is ready")
+        else
+          logger.info("#{self.name} is down")
+
+          logger.warn("#{self.name} Result:#{result.inspect}"
+
+          # dump_network_status
+        end
+
+        result
       end
 
       def reachable_to?(vm, options = {})
@@ -251,6 +264,7 @@ module Vnspec
 
       def ssh_on_guest(command, options = {})
         use_sudo = options.delete(:use_sudo)
+
         options = ssh_options_for_quiet_mode(options) if config[:ssh_quiet_mode]
         options.merge("ConnectTimeout" => 2)
         option_string = to_ssh_option_string(options)
@@ -337,6 +351,10 @@ module Vnspec
         ssh_on_guest("http_proxy=#{config[:vm_http_proxy]} yum install -y #{name}", use_sudo: true)
       end
 
+      def dump_network_status
+        
+      end
+
       private
 
       def _network_ctl(command, params = nil)
@@ -359,6 +377,10 @@ module Vnspec
         vm_config[:interfaces].each do |i|
           ssh_on_guest("#{ifcmd}" % i[:name], use_sudo: true)
         end
+      end
+
+      def _check_is_ready?(timeout = 2)
+        ssh_on_guest("hostname", { "ConnectTimeout" => timeout })[:stdout].chomp != @name.to_s
       end
 
     end

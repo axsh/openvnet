@@ -59,6 +59,7 @@ module Vnspec
             channel.on_request("exit-signal") { |ch, data| exit_code = data.read_long }
           end
         end
+
         ssh.loop
       end
 
