@@ -186,7 +186,7 @@ module Vnspec
         else
           logger.info("#{self.name} is down")
 
-          logger.warn("#{self.name} Result:#{result.inspect}"
+          logger.warn("#{self.name} Result:#{result.inspect}")
 
           # dump_network_status
         end
@@ -316,6 +316,7 @@ module Vnspec
         end
 
         interface_config = vm_config[:interfaces].find{|i| i[:uuid] == options[:uuid]}
+
         unless interface_config
           raise "vm interface not found: #{options[:uuid]}"
         end
