@@ -174,7 +174,7 @@ module Vnspec
         result = false
         expires_at = Time.now.to_i + timeout
 
-        while Time.now.to_i >= expires_at
+        while Time.now.to_i < expires_at
           result = _check_is_ready?
           break if result
 
