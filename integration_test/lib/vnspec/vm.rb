@@ -277,7 +277,11 @@ module Vnspec
       end
 
       def ssh_on_host(command, options = {})
-        ssh(host_ip, command, options)
+        result = ssh(host_ip, command, options)
+
+        logger.info "XXXXXXXXXXXXXXXXXXXXXXXXX command:#{command} options:#{options} result:#{result.inspect}"
+
+        result
       end
 
       def ipv4_address
