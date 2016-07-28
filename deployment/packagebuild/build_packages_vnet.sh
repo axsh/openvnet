@@ -1,16 +1,15 @@
 #!/bin/bash
 
-set -xe
+set -xe -o pipefail
 
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 repo_dir=
 
 BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
-OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
 REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
-POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
+RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
 
 function check_dependency() {
   local cmd="$1"
@@ -19,6 +18,13 @@ function check_dependency() {
   command -v ${cmd} >/dev/null 2>&1 || {
     sudo yum install -y ${pkg}
   }
+}
+
+function rpmbuildtree() {
+  local i
+  for i in BUILD  BUILDROOT  RPMS  SOURCES  SPECS  SRPMS; do
+    [[ -d $i ]] || mkdir -p ./$i
+  done
 }
 
 if [ "${BUILD_TYPE}" == "stable" ] && [ -z "${RPM_VERSION}" ]; then
@@ -36,6 +42,25 @@ check_dependency createrepo createrepo
 
 # Make sure that we work with the correct version of openvnet-ruby
 sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+case $RHEL_RELVER in
+  6)
+    if ! rpm -q epel-release > /dev/null; then
+      sudo rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+    fi
+    ;;
+  7)
+    if ! rpm -q epel-release > /dev/null; then
+      sudo rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    fi
+    if ! rpm -q mysql-community-release > /dev/null; then
+      sudo rpm -Uvh http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm
+    fi
+    ;;
+  *)
+    echo "ERROR: Unsupported distro: $(rpm --eval '%{dist}')" >&2
+    exit 1
+    ;;
+esac
 
 sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 
@@ -43,34 +68,26 @@ sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 # Prepare build directories and put the source in place.
 #
 
-OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
-if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
-  rm -rf "$OPENVNET_SRC_BUILD_DIR"
+if [[ ! -d "${WORK_DIR}" ]]; then
+  mkdir -p "${WORK_DIR}"
 fi
-
-mkdir -p "${WORK_DIR}/SOURCES"
-cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
+(cd $WORK_DIR; rpmbuildtree)
 
 # Get rid up any possible dirty build directories
-for arch in "${POSSIBLE_ARCHS[@]}"; do
-  if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
-    rm -rf "${WORK_DIR}/RPMS/${arch}"
-  fi
-done
+find ${WORK_DIR}/{SRPMS,RPMS} -name '*.rpm' -exec rm -f {} \;
 
-
-# Clean up the source dir if it's dirty
-cd ${OPENVNET_SRC_BUILD_DIR}
-git reset --hard
-git clean -xdf
+export GIT_BRANCH=${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}
+# git 1.7 issue: --format=tar.gz is not supported and returns "Not a valid object name" for ref name.
+git archive --format=tar --prefix="openvnet/" $(git rev-parse HEAD) | gzip > "${WORK_DIR}/SOURCES/openvnet.tar.gz"
 
 #
 # Build the packages
 #
 
+export PATH="/opt/axsh/openvnet/ruby/bin:$PATH"
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RPM_VERSION}"
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
 
   git checkout "${RPM_VERSION}"
   echo "Building the following commit for stable version ${RPM_VERSION}"
@@ -82,7 +99,7 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RELEASE_SUFFIX}"
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
@@ -91,23 +108,13 @@ fi
 #
 # Prepare the yum repo
 #
-for arch in "${POSSIBLE_ARCHS[@]}"; do
-  if [ -d "${repo_dir}/${arch}" ]; then
-    rm -rf "${repo_dir}/${arch}"
-  fi
-done
 sudo mkdir -p "${repo_dir}"
 sudo chown $USER "${repo_dir}"
 
-for arch in "${POSSIBLE_ARCHS[@]}"; do
-  if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
-    mv "${WORK_DIR}/RPMS/${arch}" "${repo_dir}/${arch}"
-  fi
-done
-
+cp -a ${WORK_DIR}/RPMS/* ${repo_dir}
 createrepo "${repo_dir}"
 
-current_symlink="${REPO_BASE_DIR}/packages/rhel/6/vnet/current"
+current_symlink="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/current"
 if [ -L "${current_symlink}" ]; then
   sudo rm "${current_symlink}"
 fi

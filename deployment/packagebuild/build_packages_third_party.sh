@@ -7,8 +7,9 @@ set -e
 set -x
 
 package=$1
+rhel_relver=${RHEL_RELVER:-$(rpm --eval '%{rhel}')}
 work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
-repo_base_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/third_party
+repo_base_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/${rhel_relver}/third_party
 repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
@@ -48,6 +49,15 @@ function check_repo(){
   done
 }
 
+function check_dependency(){
+  local cmd="$1"
+  local pkg="$2"
+
+  command -v ${cmd} >/dev/null 2>&1 || {
+    sudo yum install -y ${pkg}
+  }
+}
+
 function cleanup(){
   for s in package-dir-build* package-dir-staging* package-rpm-build* ruby-build.*; do
     find /tmp -mindepth 1 -maxdepth 1 -mtime +1 -name "${s}" -print0 | xargs -0 rm -rf
@@ -58,6 +68,10 @@ rm -rf ${work_dir}/packages.d/third_party
 mkdir -p ${work_dir}/packages.d/third_party
 
 check_repo
+
+check_dependency yum-builddep yum-utils
+check_dependency rpmdev-setuptree rpmdevtools
+check_dependency createrepo createrepo
 
 if [[ -n ${package} ]]; then
   build_package ${package}

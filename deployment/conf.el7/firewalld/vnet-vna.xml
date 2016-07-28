@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>OpenVNet Vna</short>
+  <description>Listen ports</description>
+  <port protocol="tcp" port="9103"/>
+</service>

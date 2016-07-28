@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenVNet API node
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+User=vnet-webapi
+Type=simple
+WorkingDirectory=/opt/axsh/openvnet/vnet
+Environment="PATH=/opt/axsh/openvnet/ruby/bin:/usr/sbin:/usr/bin"
+EnvironmentFile=/etc/sysconfig/vnet-webapi
+ExecStart=/opt/axsh/openvnet/vnet/bin/vnwebapi -p ${PORT} -o ${BIND_ADDR}
+Restart=on-failure
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
