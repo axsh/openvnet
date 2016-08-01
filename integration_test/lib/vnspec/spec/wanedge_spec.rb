@@ -2,7 +2,7 @@
 
 require_relative 'spec_helper'
 
-describe 'wanedge', :vms_enable_ifup => [:vm1, :vm7] do
+describe 'wanedge', :vms_enable_vm => [:vm7], :vms_enable_ifup => [:vm1, :vm7] do
   describe 'remote vm1 in vnet1' do
     it 'reaches to the gateway' do
       to_gw = double()

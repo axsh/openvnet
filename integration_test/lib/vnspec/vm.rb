@@ -11,6 +11,8 @@ module Vnspec
 
       def setup
         all.each do |vm|
+          next unless vm.use_vm
+
           vm.vm_config[:interfaces].each do |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
           end
@@ -20,7 +22,7 @@ module Vnspec
       end
 
       def find(name)
-        all.find{|vm| vm.name == name.to_sym}
+        all.find { |vm| vm.name == name.to_sym }
       end
       alias :[] :find
 
@@ -35,11 +37,12 @@ module Vnspec
             Base
           end
 
-        @vms ||= config[:vms].keys.map{|n| vm_class.new(n)}
+        @vms ||= config[:vms].keys.map{|n| vm_class.new(n) }
       end
 
+      # TODO: Skip disabled vm's?
       def each
-        all.each{|vm| yield vm}
+        all.each { |vm| yield vm }
       end
 
       def parallel(&block)
@@ -63,7 +66,10 @@ module Vnspec
       end
 
       def install_package(name)
-        parallel { |vm| vm.install_package(name) }
+        parallel { |vm|
+          next unless vm.use_vm
+          vm.install_package(name)
+        }
       end
 
       %w(start stop start_network stop_network).each do |command|
@@ -116,7 +122,9 @@ module Vnspec
       attr_reader :ssh_port
       attr_reader :interfaces
       attr_reader :vm_config
+
       attr_accessor :use_dhcp
+      attr_accessor :use_vm
 
       def initialize(name)
         @vm_config = config[:vms][name.to_sym].dup
@@ -127,7 +135,9 @@ module Vnspec
         @host_ip = config[:nodes][:vna][vm_config[:vna] - 1]
 
         @interfaces = []
+
         @use_dhcp = true
+        @use_vm = true
 
         @open_udp_ports = {}
         @open_tcp_ports = {}
@@ -169,6 +179,11 @@ module Vnspec
       end
 
       def ready?(timeout = 600)
+        if !@use_vm
+          logger.info("vm not enabled: #{self.name}")
+          return true
+        end
+
         logger.info("waiting for ready: #{self.name}")
 
         expires_at = Time.now.to_i + timeout
@@ -183,13 +198,13 @@ module Vnspec
         if result
           logger.info("#{self.name} is ready")
 
-          true
+          return true
         else
           logger.info("#{self.name} is down")
           logger.warn("#{self.name} Result:#{result.inspect}")
 
           # dump_network_status
-          false
+          return false
         end
       end
 

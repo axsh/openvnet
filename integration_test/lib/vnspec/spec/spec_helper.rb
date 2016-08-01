@@ -34,6 +34,11 @@ RSpec.configure do |c|
     vms.setup
   end
 
+  # Disable by default 'vm7'.
+  c.prepend_before(:all) do
+    vm7.use_vm = false
+  end
+
   c.prepend_before(:all, :vms_disable_dhcp => true) do
     vms.disable_dhcp
   end
@@ -47,6 +52,10 @@ RSpec.configure do |c|
     vms.disable_dhcp
     vm1.use_dhcp = true
     vm7.use_dhcp = true
+  end
+
+  c.prepend_before(:all, :vms_enable_vm => [:vm7]) do
+    vm7.use_vm = true
   end
 
 end
