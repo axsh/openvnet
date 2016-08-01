@@ -189,9 +189,11 @@ module Vnspec
         expires_at = Time.now.to_i + timeout
 
         while Time.now.to_i < expires_at
-          result = _check_is_ready?
+          result = ssh_on_guest("hostname", { "ConnectTimeout" => 2 })
 
-          if result.success?
+          # TODO: This could be improved to break with an error if the
+          # name doesn't match.
+          if result[:stdout].chomp == @name.to_s
             logger.info("#{self.name} is ready")
             return true
           end
@@ -394,10 +396,6 @@ module Vnspec
         vm_config[:interfaces].each do |i|
           ssh_on_guest("#{ifcmd}" % i[:name], use_sudo: true)
         end
-      end
-
-      def _check_is_ready?(timeout = 2)
-        ssh_on_guest("hostname", { "ConnectTimeout" => timeout })[:stdout].chomp == @name.to_s
       end
 
     end
