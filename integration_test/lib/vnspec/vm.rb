@@ -190,22 +190,20 @@ module Vnspec
 
         while Time.now.to_i < expires_at
           result = _check_is_ready?
-          break if result
+
+          if result.success?
+            logger.info("#{self.name} is ready")
+            return true
+          end
 
           sleep 3
         end
 
-        if result
-          logger.info("#{self.name} is ready")
+        logger.info("#{self.name} is down")
+        logger.warn("#{self.name} ssh response:#{result.inspect}")
 
-          return true
-        else
-          logger.info("#{self.name} is down")
-          logger.warn("#{self.name} Result:#{result.inspect}")
-
-          # dump_network_status
-          return false
-        end
+        # dump_network_status
+        false
       end
 
       def reachable_to?(vm, options = {})

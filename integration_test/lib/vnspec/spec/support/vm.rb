@@ -8,7 +8,7 @@ def setup_vm
   vms.setup
 end
 
-(1..6).map{|i| "vm#{i}".to_sym }.each do |name|
+(1..7).map{|i| "vm#{i}".to_sym }.each do |name|
   define_method(name) do
     vms[name]
   end
