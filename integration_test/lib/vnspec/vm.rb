@@ -8,19 +8,20 @@ module Vnspec
       include SSH
       include Config
       include Logger
+      include ParallelModule
 
       def setup
         all.each do |vm|
           if !vm.use_vm
-            logger.info "setup '#{vm.name}': skipping"
+            logger.info "setup #{vm.name}: skipping"
             next
           end
 
-          logger.info "setup '#{vm.name}': setting up"
+          logger.info "setup #{vm.name}: setting up"
 
           vm.vm_config[:interfaces].each { |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid]).tap { |model|
-              logger.info "setup '#{vm.name}': adding interface uuid:#{interface_config[:uuid]} model.id:#{model.id}"
+              logger.info "setup '#{vm.name}': adding interface uuid:#{interface_config[:uuid]} model.uuid:#{model.uuid}"
             }
           }
         end
@@ -52,20 +53,8 @@ module Vnspec
         all.each { |vm| yield vm }
       end
 
-      def parallel(&block)
-        Parallel.each(all, &block)
-      end
-
-      def parallel_all?(&block)
-        result = true
-
-        Parallel.each(all) { |vm|
-          success = false unless block.call(vm)
-        }
-        result
-      end
-
-      def ready?(name = :all, timeout = 600)
+      # def ready?(name = :all, timeout = 600)
+      def ready?(name = :all, timeout = 200)
         parallel_all? { |vm|
           vm.ready?(timeout)
         }.tap { |success|
