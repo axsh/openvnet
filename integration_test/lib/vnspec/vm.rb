@@ -11,7 +11,12 @@ module Vnspec
 
       def setup
         all.each do |vm|
-          next unless vm.use_vm
+          if !vm.use_vm
+            logger.info "skipping setup for '#{name}'"
+            next
+          end
+
+          logger.info "setting up '#{name}'"
 
           vm.vm_config[:interfaces].each do |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid])
@@ -59,8 +64,8 @@ module Vnspec
       end
 
       def ready?(name = :all, timeout = 600)
-        parallel_all? {
-          |vm| vm.ready?(timeout)
+        parallel_all? { |vm|
+          vm.ready?(timeout)
         }.tap { |success|
           if success
             logger.info("all vms are ready")
