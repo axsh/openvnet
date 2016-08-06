@@ -12,15 +12,17 @@ module Vnspec
       def setup
         all.each do |vm|
           if !vm.use_vm
-            logger.info "skipping setup for '#{name}'"
+            logger.info "setup '#{vm.name}': skipping"
             next
           end
 
-          logger.info "setting up '#{name}'"
+          logger.info "setup '#{vm.name}': setting up"
 
-          vm.vm_config[:interfaces].each do |interface_config|
-            vm.interfaces << Models::Interface.find(interface_config[:uuid])
-          end
+          vm.vm_config[:interfaces].each { |interface_config|
+            vm.interfaces << Models::Interface.find(interface_config[:uuid]).tap { |model|
+              logger.info "setup '#{vm.name}': adding interface uuid:#{interface_config[:uuid]} model.id:#{model.id}"
+            }
+          }
         end
 
         start_network
@@ -58,7 +60,7 @@ module Vnspec
         result = true
 
         Parallel.each(all) { |vm|
-          success = false unless yield vm
+          success = false unless block.call(vm)
         }
         result
       end
