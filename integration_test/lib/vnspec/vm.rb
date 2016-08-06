@@ -49,20 +49,25 @@ module Vnspec
         Parallel.each(all, &block)
       end
 
+      def parallel_all?(&block)
+        result = true
+
+        Parallel.each(all) { |vm|
+          success = false unless yield vm
+        }
+        result
+      end
+
       def ready?(name = :all, timeout = 600)
-        success = true
-
-        parallel do |vm|
-          success = false unless vm.ready?(timeout)
-        end
-
-        if success
-          logger.info("all vms are ready")
-        else
-          logger.info("any vm is down")
-        end
-
-        success
+        parallel_all? {
+          |vm| vm.ready?(timeout)
+        }.tap { |success|
+          if success
+            logger.info("all vms are ready")
+          else
+            logger.info("one or more vms are down")
+          end
+        }
       end
 
       def install_package(name)
@@ -159,13 +164,13 @@ module Vnspec
       end
 
       def start_network
+        # TODO: Don't start/stop networks when not @use_vm.
+
         logger.info "start network: #{name}"
 
-        if @use_dhcp
-          _network_ctl(:start)
-        else
-          _network_ctl(:start_no_dhcp)
-        end
+        _network_ctl(@use_dhcp ? :start : :start_no_dhcp).tap { |result|
+          logger.warn("could not start network on '#{name}': #{result.inspect}") unless result.success?
+        }
       end
 
       def stop_network
@@ -377,6 +382,7 @@ module Vnspec
       private
 
       def _network_ctl(command, params = nil)
+        # TODO: Rename to :ifup and :ip_link_up, etc.
         ifcmd =
           case command
           when :start
@@ -393,9 +399,10 @@ module Vnspec
             raise "unknown command: #{command}"
           end
 
-        vm_config[:interfaces].each do |i|
-          ssh_on_guest("#{ifcmd}" % i[:name], use_sudo: true)
-        end
+        vm_config[:interfaces].detect { |i|
+          result = ssh_on_guest("#{ifcmd}" % i[:name], use_sudo: true)
+          result.success? ? nil : result
+        }
       end
 
     end

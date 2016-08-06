@@ -31,31 +31,31 @@ RSpec.configure do |c|
   #c.add_formatter(:json)
 
   c.before(:all) do
-    vms.setup
+    # Disable 'vm7' by default.
+    # vm7.use_vm = false
   end
 
-  # Disable by default 'vm7'.
-  c.prepend_before(:all) do
-    vm7.use_vm = false
-  end
-
-  c.prepend_before(:all, :vms_disable_dhcp => true) do
+  c.before(:all, :vms_disable_dhcp => true) do
     vms.disable_dhcp
   end
 
-  c.prepend_before(:all, :vms_enable_ifup => [:vm1]) do
+  c.before(:all, :vms_enable_ifup => [:vm1]) do
     vms.disable_dhcp
     vm1.use_dhcp = true
   end
 
-  c.prepend_before(:all, :vms_enable_ifup => [:vm1, :vm7]) do
+  c.before(:all, :vms_enable_ifup => [:vm1, :vm7]) do
     vms.disable_dhcp
     vm1.use_dhcp = true
     vm7.use_dhcp = true
   end
 
-  c.prepend_before(:all, :vms_enable_vm => [:vm7]) do
+  c.before(:all, :vms_enable_vm => [:vm7]) do
     vm7.use_vm = true
+  end
+
+  c.before(:all) do
+    vms.setup
   end
 
 end
