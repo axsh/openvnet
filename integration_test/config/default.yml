@@ -97,7 +97,7 @@ vms:
         mac_address: "02:00:00:00:00:06"
   vm7:
     name: vm7
-    vna: 3
+    vna: 5
     ssh_port: 2227
     interfaces:
       - uuid: if-v7
