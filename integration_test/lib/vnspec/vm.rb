@@ -238,7 +238,7 @@ module Vnspec
         logger.info("#{self.name} is down")
         logger.warn("#{self.name} ssh response:#{result.inspect}")
 
-        # dump_network_status
+        dump_network_status
         false
       end
 
@@ -406,7 +406,9 @@ module Vnspec
       end
 
       def dump_network_status
-        
+        ssh_on_host("ls /images")
+        ssh_on_host("route -n")
+        ssh_on_host("ip addr list")
       end
 
       private
