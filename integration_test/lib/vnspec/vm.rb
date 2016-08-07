@@ -8,7 +8,7 @@ module Vnspec
       include SSH
       include Config
       include Logger
-      include ParallelModule
+      # include ParallelModule
 
       def setup
         each { |vm|
@@ -29,13 +29,32 @@ module Vnspec
         start_network
       end
 
+      def all
+        @vms ||= config_all_vms
+      end
+
       def find(name)
         all.find { |vm| vm.name == name.to_sym }
       end
       alias :[] :find
 
-      def all
-        @vms ||= config_all_vms
+      def each
+        all.each { |vm| yield vm }
+      end
+
+      def parallel_each(&block)
+        logger.info "PPPPP.each #{all.inspect}"
+
+        Parallel.each(all, &block)
+      end
+
+      def parallel_all?(&block)
+        result = true
+
+        Parallel.each(all) { |item|
+          success = false unless block.call(item)
+        }
+        result
       end
 
       # def ready?(name = :all, timeout = 600)
@@ -236,6 +255,7 @@ module Vnspec
         ssh_on_guest("nc -zw 3 #{vm.ipv4_address} #{port}")[:exit_code] == 0
       end
 
+      # TODO: Move these to a separate module.
       def udp_listen(port)
         cmd = "nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!" %
           [port, "#{UDP_OUTPUT_DIR}/#{port}"]
