@@ -137,8 +137,12 @@ module Vnspec
       logger.info "Response full log: exit_code:#{response[:exit_code]} exit_signal:#{response[:exit_signal]}"
       logger.info "==== stdout ===="
       response[:stdout].each_line { |line| logger.info line }
-      logger.info "==== stderr ===="
-      response[:stderr].each_line { |line| logger.info line }
+
+      if response[:stderr]
+        logger.info "==== stderr ===="
+        response[:stderr].each_line { |line| logger.info line }
+        logger.info "================"
+      end
     end
 
   end
