@@ -194,10 +194,10 @@ module Vnspec
         logger.info "#{name}.start_network: starting"
 
         _network_ctl(@use_dhcp ? :start : :start_no_dhcp).tap { |result|
-          if result && result.success?
+          if result.nil?
             logger.warn("#{name}.start_network: started network on '#{name}'")
           else
-            logger.warn("#{name}.start_network: could not start network (result:#{result.inspect})")
+            logger.warn("#{name}.start_network: could not start a network (results:#{result.inspect})")
           end
         }
       end
@@ -429,10 +429,18 @@ module Vnspec
             raise "unknown command: #{command}"
           end
 
-        vm_config[:interfaces].detect { |i|
+        failed_results = nil
+
+        vm_config[:interfaces].each { |i|
           result = ssh_on_guest("#{ifcmd}" % i[:name], use_sudo: true)
-          result.success? ? nil : result
+
+          if !result.success?
+            failed_results ||= []
+            failed_results << result
+          end
         }
+
+        failed_results
       end
 
     end
