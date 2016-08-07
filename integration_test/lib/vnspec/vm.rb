@@ -328,7 +328,7 @@ module Vnspec
       def ssh_on_host(command, options = {})
         result = ssh(host_ip, command, options)
 
-        logger.info "XXXXXXXXXXXXXXXXXXXXXXXXX command:#{command} options:#{options} result:#{result.inspect}"
+        # logger.info "XXXXXXXXXXXXXXXXXXXXXXXXX command:#{command} options:#{options} result:#{result.inspect}"
 
         result
       end
