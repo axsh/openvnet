@@ -11,14 +11,6 @@ module Vnspec
       def success?
         self[:exit_code] == 0
       end
-
-      def print_full_log
-        logger.info "Response full log: exit_code:#{self[:exit_code]} exit_signal:#{self[:exit_signal]}"
-        logger.info "==== stdout ===="
-        self[:stdout].each_line { |line| logger.info line }
-        logger.info "==== stderr ===="
-        self[:stderr].each_line { |line| logger.info line }
-      end
     end
 
     DEFAULT_OPTIONS = {
@@ -140,5 +132,14 @@ module Vnspec
         system("ssh-add #{key}")
       end
     end
+
+    def full_response_log(response)
+      logger.info "Response full log: exit_code:#{response[:exit_code]} exit_signal:#{response[:exit_signal]}"
+      logger.info "==== stdout ===="
+      response[:stdout].each_line { |line| logger.info line }
+      logger.info "==== stderr ===="
+      response[:stderr].each_line { |line| logger.info line }
+    end
+
   end
 end
