@@ -406,9 +406,9 @@ module Vnspec
       end
 
       def dump_network_status
-        ssh_on_host("ls /images")
-        ssh_on_host("route -n")
-        ssh_on_host("ip addr list")
+        ssh_on_host("ls /images").print_full_log
+        ssh_on_host("route -n").print_full_log
+        ssh_on_host("ip addr list").print_full_log
       end
 
       private

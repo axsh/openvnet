@@ -9,6 +9,14 @@ module Vnspec
       def success?
         self[:exit_code] == 0
       end
+
+      def print_full_log
+        logger.info "Response full log: exit_code:#{self[:exit_code]} exit_signal:#{self[:exit_signal]}"
+        logger.info "==== stdout ===="
+        self[:stdout].each_line { |line| logger.info line }
+        logger.info "==== stderr ===="
+        self[:stderr].each_line { |line| logger.info line }
+      end
     end
 
     DEFAULT_OPTIONS = {
@@ -26,9 +34,10 @@ module Vnspec
     end
 
     def ssh(host, command, options = {})
+      logger.info "[#{host}] #{command}"
+
       options = ssh_options.merge(options)
       command = wrap_command(command, options)
-      logger.info "[#{host}] #{command}"
 
       stdout = ""
       stderr = ""
@@ -63,7 +72,12 @@ module Vnspec
         ssh.loop
       end
 
-      Response.new({stdout: stdout, stderr: stderr, exit_code: exit_code, exit_signal: exit_signal})
+      Response.new({
+        stdout: stdout,
+        stderr: stderr,
+        exit_code: exit_code,
+        exit_signal: exit_signal
+      })
     end
 
     def multi_ssh(hosts, *commands)
