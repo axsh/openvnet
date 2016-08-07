@@ -229,6 +229,7 @@ module Vnspec
           # name doesn't match.
           if result[:stdout].chomp == @name.to_s
             logger.info("#{self.name} is ready")
+            dump_network_status # Temporary for debugging.
             return true
           end
 
