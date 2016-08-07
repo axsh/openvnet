@@ -26,7 +26,9 @@ module Vnspec
           }
         }
 
+        logger.info "vm.setup #{vm.name}: starting networks"
         start_network
+        logger.info "vm.setup #{vm.name}: completed"
       end
 
       def all
@@ -79,6 +81,8 @@ module Vnspec
 
       %w(start stop start_network stop_network).each do |command|
         define_method(command, ->(name = :all) do
+          logger.debug "vm.#{name}: #{command}"
+
           if name.to_sym == :all
             _exec(command)
           else
