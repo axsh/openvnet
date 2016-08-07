@@ -13,15 +13,15 @@ module Vnspec
       def setup
         each { |vm|
           if !vm.use_vm
-            logger.info "setup #{vm.name}: skipping"
+            logger.info "vm.setup #{vm.name}: skipping"
             next
           end
 
-          logger.info "setup #{vm.name}: setting up"
+          logger.info "vm.setup #{vm.name}: setting up"
 
           vm.vm_config[:interfaces].each { |interface_config|
             vm.interfaces << Models::Interface.find(interface_config[:uuid]).tap { |model|
-              logger.info "setup '#{vm.name}': adding interface uuid:#{interface_config[:uuid]} model.uuid:#{model.uuid}"
+              logger.info "vm.setup #{vm.name}: adding interface uuid:#{interface_config[:uuid]} model.uuid:#{model.uuid}"
             }
           }
         }
@@ -90,6 +90,7 @@ module Vnspec
       private
 
       def _exec(command)
+        logger.debug "vm._exec: #{command}"
         parallel_each(&command.to_sym)
       end
 
