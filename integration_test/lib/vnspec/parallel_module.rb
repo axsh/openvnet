@@ -3,6 +3,10 @@
 module Vnspec
   module ParallelModule
 
+    def each
+      all.each { |vm| yield vm }
+    end
+
     def parallel_each(&block)
       Parallel.each(all, &block)
     end
@@ -10,8 +14,8 @@ module Vnspec
     def parallel_all?(&block)
       result = true
 
-      Parallel.each(all) { |vm|
-        success = false unless block.call(vm)
+      Parallel.each(all) { |item|
+        success = false unless block.call(item)
       }
       result
     end

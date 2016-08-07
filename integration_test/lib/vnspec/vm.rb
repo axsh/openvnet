@@ -11,7 +11,7 @@ module Vnspec
       include ParallelModule
 
       def setup
-        all.each do |vm|
+        each { |vm|
           if !vm.use_vm
             logger.info "setup #{vm.name}: skipping"
             next
@@ -24,7 +24,7 @@ module Vnspec
               logger.info "setup '#{vm.name}': adding interface uuid:#{interface_config[:uuid]} model.uuid:#{model.uuid}"
             }
           }
-        end
+        }
 
         start_network
       end
@@ -35,22 +35,7 @@ module Vnspec
       alias :[] :find
 
       def all
-        vm_class =
-          case config[:vm_type].to_s
-          when "docker"
-            Docker
-          when "kvm"
-            KVM
-          else
-            Base
-          end
-
-        @vms ||= config[:vms].keys.map{|n| vm_class.new(n) }
-      end
-
-      # TODO: Skip disabled vm's?
-      def each
-        all.each { |vm| yield vm }
+        @vms ||= config_all_vms
       end
 
       # def ready?(name = :all, timeout = 600)
@@ -67,7 +52,7 @@ module Vnspec
       end
 
       def install_package(name)
-        parallel { |vm|
+        parallel_each { |vm|
           next unless vm.use_vm
           vm.install_package(name)
         }
@@ -105,7 +90,21 @@ module Vnspec
       private
 
       def _exec(command)
-        parallel(&command.to_sym)
+        parallel_each(&command.to_sym)
+      end
+
+      def config_all_vms
+        vm_class =
+          case config[:vm_type].to_s
+          when "docker"
+            Docker
+          when "kvm"
+            KVM
+          else
+            Base
+          end
+
+        config[:vms].keys.map { |n| vm_class.new(n) }
       end
     end
 
