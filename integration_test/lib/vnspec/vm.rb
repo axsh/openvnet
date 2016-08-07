@@ -20,15 +20,20 @@ module Vnspec
           logger.info "vm.setup #{vm.name}: setting up"
 
           vm.vm_config[:interfaces].each { |interface_config|
-            vm.interfaces << Models::Interface.find(interface_config[:uuid]).tap { |model|
-              logger.info "vm.setup #{vm.name}: adding interface uuid:#{interface_config[:uuid]} model.uuid:#{model.uuid}"
+            Models::Interface.find(interface_config[:uuid]).tap { |model|
+              if model
+                logger.info "vm.setup #{vm.name}: adding interface uuid:#{interface_config[:uuid]} model.uuid:#{model.uuid}"
+                vm.interfaces << model
+              else
+                logger.info "vm.setup #{vm.name}: could not find interface uuid:#{interface_config[:uuid]}"
+              end
             }
           }
+
+          logger.info "vm.setup #{vm.name}: done"
         }
 
-        logger.info "vm.setup #{vm.name}: starting networks"
         start_network
-        logger.info "vm.setup #{vm.name}: completed"
       end
 
       def all
@@ -40,6 +45,7 @@ module Vnspec
       end
       alias :[] :find
 
+      # Remove comepletely since it doesn't seem to work right?
       def each
         all.each { |vm| yield vm }
       end
