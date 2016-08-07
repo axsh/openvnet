@@ -136,11 +136,11 @@ module Vnspec
     def full_response_log(response)
       logger.info "Response full log: exit_code:#{response[:exit_code]} exit_signal:#{response[:exit_signal]}"
       logger.info "==== stdout ===="
-      response[:stdout].each_line { |line| logger.info line }
+      response[:stdout].each_line { |line| logger.info line.chomp }
 
       if response[:stderr]
         logger.info "==== stderr ===="
-        response[:stderr].each_line { |line| logger.info line }
+        response[:stderr].each_line { |line| logger.info line.chomp }
         logger.info "================"
       end
     end
