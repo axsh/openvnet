@@ -191,15 +191,19 @@ module Vnspec
       def start_network
         # TODO: Don't start/stop networks when not @use_vm.
 
-        logger.info "start network: #{name}"
+        logger.info "#{name}.start_network: starting"
 
         _network_ctl(@use_dhcp ? :start : :start_no_dhcp).tap { |result|
-          logger.warn("could not start network on '#{name}': #{result.inspect}") unless result.success?
+          if result && result.success?
+            logger.warn("#{name}.start_network: started network on '#{name}'")
+          else
+            logger.warn("#{name}.start_network: could not start network (result:#{result.inspect})")
+          end
         }
       end
 
       def stop_network
-        logger.info "stop network: #{name}"
+        logger.info "#{name}.start_network: stopping"
         _network_ctl(:stop)
       end
 
