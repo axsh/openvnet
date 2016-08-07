@@ -2,6 +2,8 @@
 module Vnspec
   module SSH
     class Response < Hash
+      include Logger
+
       def initialize(hash)
         super().merge!(hash)
       end
