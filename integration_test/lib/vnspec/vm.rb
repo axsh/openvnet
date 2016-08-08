@@ -407,9 +407,10 @@ module Vnspec
       end
 
       def dump_network_status
-        full_response_log(ssh_on_host("ls /images"))
         full_response_log(ssh_on_host("route -n"))
         full_response_log(ssh_on_host("ip addr list"))
+        full_response_log(ssh_on_host("ls -l /"))
+        full_response_log(ssh_on_host("ls -l /images"))
       end
 
       private
