@@ -134,7 +134,7 @@ module Vnspec
     end
 
     def full_response_log(response)
-      logger.info "DEBUG Response inspect: #{response.inspect}"
+      #logger.info "DEBUG Response inspect: #{response.inspect}"
       logger.info "Response full log: exit_code:#{response[:exit_code]} exit_signal:#{response[:exit_signal]}"
       logger.info "==== stdout ===="
       response[:stdout].each_line { |line| logger.info line.chomp }
