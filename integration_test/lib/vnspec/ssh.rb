@@ -139,7 +139,7 @@ module Vnspec
       logger.info "==== stdout ===="
       response[:stdout].each_line { |line| logger.info line.chomp }
 
-      if response[:stderr].empty?
+      if !response[:stderr].empty?
         logger.info "==== stderr ===="
         response[:stderr].each_line { |line| logger.info line.chomp }
         logger.info "================"
