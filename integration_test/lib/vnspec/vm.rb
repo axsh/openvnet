@@ -63,8 +63,7 @@ module Vnspec
         result
       end
 
-      # def ready?(name = :all, timeout = 600)
-      def ready?(name = :all, timeout = 200)
+      def ready?(name = :all, timeout = 600)
         parallel_all? { |vm|
           vm.ready?(timeout)
         }.tap { |success|
@@ -228,7 +227,10 @@ module Vnspec
           # name doesn't match.
           if result[:stdout].chomp == @name.to_s
             logger.info("#{self.name} is ready")
-            dump_vm_status # Temporary for debugging.
+
+            # Uncomment to dump status of all vm's.
+            #dump_vm_status
+
             return true
           end
 
