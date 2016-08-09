@@ -134,19 +134,17 @@ module Vnspec
     end
 
     def full_response_log(response)
-      logger.info "==== response ===="
-
       if !response[:stdout].empty?
-        logger.info "==== stdout ===="
-        response[:stdout].each_line { |line| logger.info line.chomp }
+        logger.info "ssh.response ==== stdout ===="
+        response[:stdout].each_line { |line| logger.info "ssh.response " + line.chomp }
       end
 
       if !response[:stderr].empty?
-        logger.info "==== stderr ===="
-        response[:stderr].each_line { |line| logger.info line.chomp }
+        logger.info "ssh.response ==== stderr ===="
+        response[:stderr].each_line { |line| logger.info "ssh.response " + line.chomp }
       end
 
-      logger.info "==== exit_code:#{response[:exit_code]} exit_signal:#{response[:exit_signal]} ===="
+      logger.info "ssh.response " + "==== exit_code:#{response[:exit_code]} exit_signal:#{response[:exit_signal]} ===="
     end
 
   end
