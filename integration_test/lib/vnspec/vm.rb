@@ -11,6 +11,8 @@ module Vnspec
       # include ParallelModule
 
       def setup
+        logger.info ""
+
         all.each { |vm|
           if !vm.use_vm
             logger.info "vm.setup #{vm.name}: skipping"
@@ -34,6 +36,8 @@ module Vnspec
         }
 
         start_network
+
+        logger.info ""
       end
 
       def all
