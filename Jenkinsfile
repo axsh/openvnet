@@ -13,6 +13,5 @@ node {
     checkout scm
     writeFile(file: "build.env", text: build_env)
     stage "Build"
-    sh "bash --rcfile ./build.env -c /usr/bin/env"
-    sh "bash --rcfile ./build.env -- ./deployment/docker/build.sh"
+    sh "./deployment/docker/build.sh ./build.env"
 }
