@@ -1,3 +1,4 @@
+#!groovy
 properties ([[$class: 'ParametersDefinitionProperty',
    parameterDefinitions: [[$class: 'StringParameterDefinition',
        defaultValue: '0', description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER']]
