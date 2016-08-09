@@ -51,8 +51,6 @@ module Vnspec
       end
 
       def parallel_each(&block)
-        logger.info "PPPPP.each #{all.inspect}"
-
         Parallel.each(all, &block)
       end
 
@@ -198,6 +196,7 @@ module Vnspec
             logger.warn("#{name}.start_network: started network on '#{name}'")
           else
             logger.warn("#{name}.start_network: could not start a network (results:#{result.inspect})")
+            dump_vm_status
           end
         }
       end
@@ -229,7 +228,7 @@ module Vnspec
           # name doesn't match.
           if result[:stdout].chomp == @name.to_s
             logger.info("#{self.name} is ready")
-            dump_network_status # Temporary for debugging.
+            dump_vm_status # Temporary for debugging.
             return true
           end
 
@@ -239,7 +238,7 @@ module Vnspec
         logger.info("#{self.name} is down")
         logger.warn("#{self.name} ssh response:#{result.inspect}")
 
-        dump_network_status
+        dump_vm_status
         false
       end
 
@@ -327,11 +326,7 @@ module Vnspec
       end
 
       def ssh_on_host(command, options = {})
-        result = ssh(host_ip, command, options)
-
-        # logger.info "XXXXXXXXXXXXXXXXXXXXXXXXX command:#{command} options:#{options} result:#{result.inspect}"
-
-        result
+        ssh(host_ip, command, options)
       end
 
       def ipv4_address
@@ -406,11 +401,18 @@ module Vnspec
         ssh_on_guest("http_proxy=#{config[:vm_http_proxy]} yum install -y #{name}", use_sudo: true)
       end
 
-      def dump_network_status
+      def dump_vm_status
+        logger.info "##################################################"
+        logger.info "# dump_vm_status #{name}"
+        logger.info "##################################################"
+
         full_response_log(ssh_on_host("route -n"))
         full_response_log(ssh_on_host("ip addr list"))
         full_response_log(ssh_on_host("ls -l /"))
         full_response_log(ssh_on_host("ls -l /images"))
+
+        logger.info ""
+        logger.info ""
       end
 
       private
