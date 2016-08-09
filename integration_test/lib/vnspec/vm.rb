@@ -8,7 +8,6 @@ module Vnspec
       include SSH
       include Config
       include Logger
-      # include ParallelModule
 
       def setup
         logger.info ""
@@ -49,7 +48,6 @@ module Vnspec
       end
       alias :[] :find
 
-      # Remove comepletely since it doesn't seem to work right?
       def each
         all.each { |vm| yield vm }
       end

@@ -160,13 +160,13 @@ translation_static_addresses:
 
 ip_leases:
 
-  - uuid: il-nat1
+  - uuid: il-nat104
     mac_lease_uuid: ml-glo2vnetgw
     ipv4_address: 10.210.0.104
     network_uuid: nw-global
     enable_routing: true
 
-  - uuid: il-nat1
+  - uuid: il-nat105
     mac_lease_uuid: ml-glo2vnetgw
     ipv4_address: 10.210.0.105
     network_uuid: nw-global
