@@ -33,7 +33,6 @@ RSpec.configure do |c|
   c.before(:all) do
     # Disable 'vm7' by default.
     vm7.use_vm = false
-    vm1.use_dhcp = false # Fix this so that 'use_vm == false' disables ifup.
   end
 
   c.before(:all, :vms_disable_dhcp => true) do
