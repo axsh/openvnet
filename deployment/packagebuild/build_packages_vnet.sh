@@ -97,7 +97,9 @@ for arch in "${POSSIBLE_ARCHS[@]}"; do
   fi
 done
 sudo mkdir -p "${repo_dir}"
-sudo chown $USER "${repo_dir}"
+if [[ -n "$USER" ]]; then
+    sudo chown $USER "${repo_dir}"
+fi
 
 for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
