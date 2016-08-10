@@ -32,7 +32,7 @@ RSpec.configure do |c|
 
   c.before(:all) do
     # Disable 'vm7' by default.
-    # vm7.use_vm = false
+    vm7.use_vm = false
   end
 
   c.before(:all, :vms_disable_dhcp => true) do
