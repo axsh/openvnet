@@ -188,7 +188,7 @@ module Vnspec
       end
 
       def start_network
-        # TODO: Don't start/stop networks when not @use_vm.
+        return unless @use_vm
 
         logger.info "#{name}.start_network: starting"
 
