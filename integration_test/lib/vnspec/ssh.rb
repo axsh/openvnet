@@ -2,6 +2,8 @@
 module Vnspec
   module SSH
     class Response < Hash
+      # include Logger
+
       def initialize(hash)
         super().merge!(hash)
       end
@@ -26,9 +28,10 @@ module Vnspec
     end
 
     def ssh(host, command, options = {})
+      logger.info "[#{host}] #{command}"
+
       options = ssh_options.merge(options)
       command = wrap_command(command, options)
-      logger.info "[#{host}] #{command}"
 
       stdout = ""
       stderr = ""
@@ -59,10 +62,16 @@ module Vnspec
             channel.on_request("exit-signal") { |ch, data| exit_code = data.read_long }
           end
         end
+
         ssh.loop
       end
 
-      Response.new({stdout: stdout, stderr: stderr, exit_code: exit_code, exit_signal: exit_signal})
+      Response.new({
+        stdout: stdout,
+        stderr: stderr,
+        exit_code: exit_code,
+        exit_signal: exit_signal
+      })
     end
 
     def multi_ssh(hosts, *commands)
@@ -123,5 +132,20 @@ module Vnspec
         system("ssh-add #{key}")
       end
     end
+
+    def full_response_log(response)
+      if !response[:stdout].empty?
+        logger.info "ssh.response ==== stdout ===="
+        response[:stdout].each_line { |line| logger.info "ssh.response " + line.chomp }
+      end
+
+      if !response[:stderr].empty?
+        logger.info "ssh.response ==== stderr ===="
+        response[:stderr].each_line { |line| logger.info "ssh.response " + line.chomp }
+      end
+
+      logger.info "ssh.response " + "==== exit_code:#{response[:exit_code]} exit_signal:#{response[:exit_signal]} ===="
+    end
+
   end
 end

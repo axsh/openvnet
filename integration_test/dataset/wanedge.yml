@@ -30,6 +30,12 @@ interfaces:
     mac_address: "02:00:00:00:00:01"
     ipv4_address: 10.101.0.10
 
+  - uuid: if-v7
+    port_name: if-v7
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:07"
+    ipv4_address: 10.101.0.17
+
   - uuid: if-dhcp1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:01:01"
@@ -147,10 +153,21 @@ translation_static_addresses:
     egress_ipv4_address: 10.101.0.10
     route_link_uuid: rl-1
 
+  - translation_uuid: tr-saddr
+    ingress_ipv4_address: 10.210.0.105
+    egress_ipv4_address: 10.101.0.17
+    route_link_uuid: rl-1
+
 ip_leases:
 
-  - uuid: il-nat1
+  - uuid: il-nat104
     mac_lease_uuid: ml-glo2vnetgw
     ipv4_address: 10.210.0.104
+    network_uuid: nw-global
+    enable_routing: true
+
+  - uuid: il-nat105
+    mac_lease_uuid: ml-glo2vnetgw
+    ipv4_address: 10.210.0.105
     network_uuid: nw-global
     enable_routing: true

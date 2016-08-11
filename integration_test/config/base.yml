@@ -55,3 +55,10 @@ vms:
     interfaces:
       - uuid: if-v6
         name: eth0
+  vm7:
+    name: vm7
+    vna: 5
+    ssh_ip: 10.50.0.107
+    interfaces:
+      - uuid: if-v7
+        name: eth0

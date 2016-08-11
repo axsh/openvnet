@@ -10,69 +10,84 @@ module Vnspec
       include Logger
 
       def setup
-        all.each do |vm|
-          vm.vm_config[:interfaces].each do |interface_config|
-            vm.interfaces << Models::Interface.find(interface_config[:uuid])
+        logger.info ""
+
+        all.each { |vm|
+          if !vm.use_vm
+            logger.info "vm.setup #{vm.name}: skipping"
+            next
           end
 
-          if @ignore_dhcp
-            vm.enable_dhcp = false
-          end
-        end
+          logger.info "vm.setup #{vm.name}: setting up"
+
+          vm.vm_config[:interfaces].each { |interface_config|
+            Models::Interface.find(interface_config[:uuid]).tap { |model|
+              if model
+                logger.info "vm.setup #{vm.name}: adding interface uuid:#{interface_config[:uuid]} model.uuid:#{model.uuid}"
+                vm.interfaces << model
+              else
+                logger.info "vm.setup #{vm.name}: could not find interface uuid:#{interface_config[:uuid]}"
+              end
+            }
+          }
+
+          logger.info "vm.setup #{vm.name}: done"
+        }
 
         start_network
+
+        logger.info ""
       end
 
-      def ignore_dhcp
-        @ignore_dhcp = true
+      def all
+        @vms ||= config_all_vms
       end
 
       def find(name)
-        all.find{|vm| vm.name == name.to_sym}
+        all.find { |vm| vm.name == name.to_sym }
       end
       alias :[] :find
 
-      def all
-        vm_class =
-          case config[:vm_type].to_s
-          when "docker"
-            Docker
-          when "kvm"
-            KVM
-          else
-            Base
-          end
-
-        @vms ||= config[:vms].keys.map{|n| vm_class.new(n)}
-      end
-
       def each
-        all.each{|vm| yield vm}
+        all.each { |vm| yield vm }
       end
 
-      def parallel(&block)
+      def parallel_each(&block)
         Parallel.each(all, &block)
       end
 
+      def parallel_all?(&block)
+        result = true
+
+        Parallel.each(all) { |item|
+          success = false unless block.call(item)
+        }
+        result
+      end
+
       def ready?(name = :all, timeout = 600)
-        success = true
-        parallel do |vm|
-          success = false unless vm.ready?(timeout)
-        end
-        if success
-          logger.info("all vms are ready")
-        else
-          logger.info("any vm is down")
-        end
-        success
+        parallel_all? { |vm|
+          vm.ready?(timeout)
+        }.tap { |success|
+          if success
+            logger.info("all vms are ready")
+          else
+            logger.info("one or more vms are down")
+          end
+        }
       end
 
       def install_package(name)
-        parallel { |vm| vm.install_package(name) }
+        parallel_each { |vm|
+          next unless vm.use_vm
+          vm.install_package(name)
+        }
       end
 
       %w(start stop start_network stop_network).each do |command|
         define_method(command, ->(name = :all) do
+          logger.debug "vm.#{name}: #{command}"
+
           if name.to_sym == :all
             _exec(command)
           else
@@ -94,10 +109,31 @@ module Vnspec
         end)
       end
 
+      def disable_dhcp
+        vms.each { |vm|
+          vm.use_dhcp = false
+        }
+      end
+
       private
 
       def _exec(command)
-        parallel(&command.to_sym)
+        logger.debug "vm._exec: #{command}"
+        parallel_each(&command.to_sym)
+      end
+
+      def config_all_vms
+        vm_class =
+          case config[:vm_type].to_s
+          when "docker"
+            Docker
+          when "kvm"
+            KVM
+          else
+            Base
+          end
+
+        config[:vms].keys.map { |n| vm_class.new(n) }
       end
     end
 
@@ -115,7 +151,9 @@ module Vnspec
       attr_reader :ssh_port
       attr_reader :interfaces
       attr_reader :vm_config
-      attr_accessor :enable_dhcp
+
+      attr_accessor :use_dhcp
+      attr_accessor :use_vm
 
       def initialize(name)
         @vm_config = config[:vms][name.to_sym].dup
@@ -126,7 +164,9 @@ module Vnspec
         @host_ip = config[:nodes][:vna][vm_config[:vna] - 1]
 
         @interfaces = []
-        @enable_dhcp = true
+
+        @use_dhcp = true
+        @use_vm = true
 
         @open_udp_ports = {}
         @open_tcp_ports = {}
@@ -148,17 +188,22 @@ module Vnspec
       end
 
       def start_network
-        logger.info "start network: #{name}"
+        return unless @use_vm
 
-        if @enable_dhcp
-          _network_ctl(:start)
-        else
-          _network_ctl(:start_no_dhcp)
-        end
+        logger.info "#{name}.start_network: starting"
+
+        _network_ctl(@use_dhcp ? :start : :start_no_dhcp).tap { |result|
+          if result.nil?
+            logger.warn("#{name}.start_network: started network on '#{name}'")
+          else
+            logger.warn("#{name}.start_network: could not start a network (results:#{result.inspect})")
+            dump_vm_status
+          end
+        }
       end
 
       def stop_network
-        logger.info "stop network: #{name}"
+        logger.info "#{name}.start_network: stopping"
         _network_ctl(:stop)
       end
 
@@ -168,19 +213,37 @@ module Vnspec
       end
 
       def ready?(timeout = 600)
+        if !@use_vm
+          logger.info("vm not enabled: #{self.name}")
+          return true
+        end
+
         logger.info("waiting for ready: #{self.name}")
+
         expires_at = Time.now.to_i + timeout
 
-        while ssh_on_guest("hostname", { "ConnectTimeout" => 2 })[:stdout].chomp != name.to_s
-          if Time.now.to_i >= expires_at
-            logger.info("#{self.name} is down")
-            return false
+        while Time.now.to_i < expires_at
+          result = ssh_on_guest("hostname", { "ConnectTimeout" => 2 })
+
+          # TODO: This could be improved to break with an error if the
+          # name doesn't match.
+          if result[:stdout].chomp == @name.to_s
+            logger.info("#{self.name} is ready")
+
+            # Uncomment to dump status of all vm's.
+            #dump_vm_status
+
+            return true
           end
+
           sleep 3
         end
 
-        logger.info("#{self.name} is ready")
-        true
+        logger.info("#{self.name} is down")
+        logger.warn("#{self.name} ssh response:#{result.inspect}")
+
+        dump_vm_status
+        false
       end
 
       def reachable_to?(vm, options = {})
@@ -210,6 +273,7 @@ module Vnspec
         ssh_on_guest("nc -zw 3 #{vm.ipv4_address} #{port}")[:exit_code] == 0
       end
 
+      # TODO: Move these to a separate module.
       def udp_listen(port)
         cmd = "nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!" %
           [port, "#{UDP_OUTPUT_DIR}/#{port}"]
@@ -253,6 +317,7 @@ module Vnspec
 
       def ssh_on_guest(command, options = {})
         use_sudo = options.delete(:use_sudo)
+
         options = ssh_options_for_quiet_mode(options) if config[:ssh_quiet_mode]
         options.merge("ConnectTimeout" => 2)
         option_string = to_ssh_option_string(options)
@@ -304,6 +369,7 @@ module Vnspec
         end
 
         interface_config = vm_config[:interfaces].find{|i| i[:uuid] == options[:uuid]}
+
         unless interface_config
           raise "vm interface not found: #{options[:uuid]}"
         end
@@ -339,9 +405,24 @@ module Vnspec
         ssh_on_guest("http_proxy=#{config[:vm_http_proxy]} yum install -y #{name}", use_sudo: true)
       end
 
+      def dump_vm_status
+        logger.info "##################################################"
+        logger.info "# dump_vm_status #{name}"
+        logger.info "##################################################"
+
+        full_response_log(ssh_on_host("route -n"))
+        full_response_log(ssh_on_host("ip addr list"))
+        full_response_log(ssh_on_host("ls -l /"))
+        full_response_log(ssh_on_host("ls -l /images"))
+
+        logger.info ""
+        logger.info ""
+      end
+
       private
 
       def _network_ctl(command, params = nil)
+        # TODO: Rename to :ifup and :ip_link_up, etc.
         ifcmd =
           case command
           when :start
@@ -358,9 +439,18 @@ module Vnspec
             raise "unknown command: #{command}"
           end
 
-        vm_config[:interfaces].each do |i|
-          ssh_on_guest("#{ifcmd}" % i[:name], use_sudo: true)
-        end
+        failed_results = nil
+
+        vm_config[:interfaces].each { |i|
+          result = ssh_on_guest("#{ifcmd}" % i[:name], use_sudo: true)
+
+          if !result.success?
+            failed_results ||= []
+            failed_results << result
+          end
+        }
+
+        failed_results
       end
 
     end
