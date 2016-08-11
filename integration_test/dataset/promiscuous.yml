@@ -7,13 +7,6 @@ datapaths:
 
 networks:
 
-  - uuid: nw-vnet1
-    display_name: vnet1
-    ipv4_network: 10.101.0.0
-    ipv4_prefix: 24
-    domain_name: vnet1
-    network_mode: virtual
-
   - uuid: nw-global
     display_name: global
     ipv4_network: 10.210.0.0
@@ -48,21 +41,6 @@ interfaces:
     mode: promiscuous
     port_name: eth2
     owner_datapath_uuid: dp-wanedge
-
-  - uuid: if-vnetgw
-    mode: simulated
-    network_uuid: nw-vnet1
-    mac_address: 10:FE:00:00:00:00
-    enable_routing: true
-    ipv4_address: 10.101.0.1
-
-  - uuid: if-glo2vnetgw
-    owner_datapath_uuid: dp-wanedge
-    mode: simulated
-    enable_routing: true
-    network_uuid: nw-global
-    mac_address: "02:01:00:00:00:05"
-    ipv4_address: 10.210.0.2
 
 network_services:
 

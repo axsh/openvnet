@@ -109,10 +109,12 @@ module Vnspec
         end)
       end
 
+      def disable_vm
+        vms.each { |vm| vm.use_vm = false }
+      end
+
       def disable_dhcp
-        vms.each { |vm|
-          vm.use_dhcp = false
-        }
+        vms.each { |vm| vm.use_dhcp = false }
       end
 
       private
