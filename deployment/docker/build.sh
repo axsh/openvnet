@@ -41,4 +41,4 @@ docker cp . "${CID}:/var/tmp/openvnet"
 docker exec -t "${CID}" /bin/bash -c "cd openvnet; ./deployment/packagebuild/build_packages_vnet.sh"
 rel_path=$(docker exec -i "${CID}" cat /var/tmp/repo_rel.path)
 # Pull compiled yum repository
-docker cp "${CID}:/var/tmp/repo/" "${REPO_BASE_DIR}"
+docker cp "${CID}:${REPO_BASE_DIR}" "$(dirname ${REPO_BASE_DIR})"
