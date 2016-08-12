@@ -412,10 +412,11 @@ module Vnspec
         logger.info "# dump_vm_status #{name}"
         logger.info "##################################################"
 
-        full_response_log(ssh_on_host("route -n"))
-        full_response_log(ssh_on_host("ip addr list"))
-        full_response_log(ssh_on_host("ls -l /"))
-        full_response_log(ssh_on_host("ls -l /images"))
+        # Replace with stuff from the vm itself.
+        full_response_log(ssh_on_guest("route -n"))
+        full_response_log(ssh_on_guest("ip addr list"))
+        # full_response_log(ssh_on_host("ls -l /"))
+        # full_response_log(ssh_on_host("ls -l /images"))
 
         logger.info ""
         logger.info ""
