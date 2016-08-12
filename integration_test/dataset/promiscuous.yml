@@ -14,7 +14,6 @@ networks:
     domain_name: global
     network_mode: physical
 
-
 interfaces:
 
   - uuid: if-v1
@@ -60,6 +59,11 @@ datapath_networks:
     network_uuid: nw-global
     interface_uuid: if-dp1eth0
     mac_address: "02:00:00:aa:00:01"
+
+  - datapath_uuid: dp-1
+    network_uuid: nw-public1
+    interface_uuid: if-weth0
+    mac_address: "02:00:00:aa:00:02"
 
   - datapath_uuid: dp-wanedge
     network_uuid: nw-global
