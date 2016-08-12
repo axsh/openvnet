@@ -156,7 +156,7 @@ module Vnspec
           dump_footer
         }
 
-        vms.each { |vm|
+        Vnspec::VM.each { |vm|
           vm.use_vm && vm.dump_vm_status
         }
       end
