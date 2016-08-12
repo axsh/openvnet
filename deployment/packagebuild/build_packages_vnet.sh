@@ -3,7 +3,6 @@
 set -xe
 
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
-repo_dir=
 
 BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
@@ -70,7 +69,7 @@ git clean -xdf
 
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/$(rpm --eval %{rhel})/vnet/${RPM_VERSION}"
+  repo_rel_path="packages/rhel/$(rpm --eval %{rhel})/vnet/${RPM_VERSION}"
 
   git checkout "${RPM_VERSION}"
   echo "Building the following commit for stable version ${RPM_VERSION}"
@@ -82,15 +81,18 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/$(rpm --eval %{rhel})/vnet/${RELEASE_SUFFIX}"
+  repo_rel_path="packages/rhel/$(rpm --eval %{rhel})/vnet/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
 
+# Save it as a file so we can see from out of container.
+echo "$repo_rel_path" > /var/tmp/repo_rel.path
 
 #
 # Prepare the yum repo
 #
+repo_dir="${REPO_BASE_DIR}/${repo_rel_path}"
 for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${repo_dir}/${arch}" ]; then
     rm -rf "${repo_dir}/${arch}"

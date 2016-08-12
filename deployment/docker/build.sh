@@ -35,3 +35,4 @@ docker build -t "${img_tag}" - < "./deployment/docker/el7.Dockerfile"
 CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 docker cp . "${CID}:/var/tmp/openvnet"
 docker exec -t "${CID}" /bin/bash -c "cd openvnet; ./deployment/packagebuild/build_packages_vnet.sh"
+rel_path=$(docker exec -i "${CID}" cat /var/tmp/repo_rel.path)
