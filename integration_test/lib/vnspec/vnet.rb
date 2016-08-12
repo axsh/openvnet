@@ -148,11 +148,11 @@ module Vnspec
         config[:nodes][:vna].each_with_index { |ip, i|
           next if vna_index && vna_index.to_i != i + 1
 
-          dump_header("dump_node_status #{name}")
-          full_response_log(ssh_on_host("route -n"))
-          full_response_log(ssh_on_host("ip addr list"))
-          full_response_log(ssh_on_host("ls -l /"))
-          full_response_log(ssh_on_host("ls -l /images"))
+          dump_header("dump_node_status #{ip}")
+          full_response_log(ssh(ip, "route -n"))
+          full_response_log(ssh(ip, "ip addr list"))
+          full_response_log(ssh(ip, "ls -l /"))
+          full_response_log(ssh(ip, "ls -l /images"))
           dump_footer
         }
 
