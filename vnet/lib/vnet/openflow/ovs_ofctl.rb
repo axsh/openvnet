@@ -114,13 +114,17 @@ module Vnet::Openflow
       command << " options:remote_ip=#{params[:remote_ip]}" if params[:remote_ip]
       command << " options:local_ip=#{params[:local_ip]}" if params[:local_ip]
 
+      debug command if verbose
+
       system(command)
     end
 
     def delete_tunnel(tunnel_name)
       debug log_format('delete tunnel', "#{tunnel_name}")
 
-      system("#{@ovs_vsctl} del-port #{switch_name} #{tunnel_name}")
+      command = "#{@ovs_vsctl} del-port #{switch_name} #{tunnel_name}"
+      debug command if verbose
+      system(command)
     end
 
     #
