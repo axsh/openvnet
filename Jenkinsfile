@@ -9,8 +9,8 @@ properties ([[$class: 'ParametersDefinitionProperty',
 ]])
 
 def build_env = """
-LEAVE_CONTAINER="$LEAVE_CONTAINER"
-REPO_BASE_DIR="$REPO_BASE_DIR"
+LEAVE_CONTAINER=$LEAVE_CONTAINER
+REPO_BASE_DIR=$REPO_BASE_DIR
 """
 
 node {
