@@ -27,7 +27,7 @@ interfaces:
     port_name: if-v7
     network_uuid: nw-global
     mac_address: "02:00:00:00:00:07"
-    ipv4_address: 10.101.0.17
+    ipv4_address: 10.210.0.17
 
   - uuid: if-dhcp1
     network_uuid: nw-global
