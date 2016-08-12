@@ -26,6 +26,7 @@ if [[ -n "${BUILD_ENV_PATH}" && ! -f "${BUILD_ENV_PATH}" ]]; then
   exit 1
 fi
 
+# http://stackoverflow.com/questions/19331497/set-environment-variables-from-file
 set -a
 . ${BUILD_ENV_PATH}
 set +a
@@ -33,6 +34,8 @@ set +a
 img_tag="openvnet/${BRANCH_NAME}"
 docker build -t "${img_tag}" - < "./deployment/docker/el7.Dockerfile"
 CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
+# Upload checked out tree to the container.
 docker cp . "${CID}:/var/tmp/openvnet"
+# Run build script
 docker exec -t "${CID}" /bin/bash -c "cd openvnet; ./deployment/packagebuild/build_packages_vnet.sh"
 rel_path=$(docker exec -i "${CID}" cat /var/tmp/repo_rel.path)
