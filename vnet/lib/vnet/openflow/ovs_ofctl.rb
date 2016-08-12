@@ -21,7 +21,6 @@ module Vnet::Openflow
 
       @switch_name = conf.switch || get_bridge_name(datapath_id)
 
-      # @verbose = Dcmgr.conf.verbose_openflow
       @verbose = false
     end
 
