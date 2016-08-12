@@ -31,6 +31,7 @@ set -a
 . ${BUILD_ENV_PATH}
 set +a
 
+/usr/bin/env
 img_tag="openvnet/${BRANCH_NAME}"
 docker build -t "${img_tag}" - < "./deployment/docker/el7.Dockerfile"
 CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
