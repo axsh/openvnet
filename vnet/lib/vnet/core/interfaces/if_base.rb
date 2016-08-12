@@ -197,7 +197,7 @@ module Vnet::Core::Interfaces
       # TODO: This doesn't currently support global interfaces, as
       # such it is for the time being disabled.
 
-      if mode == :vm || mode == :host
+      if mode == :vif || mode == :host
         [{ :eth_type => 0x0806,
             :arp_spa => ipv4_address,
           },{
