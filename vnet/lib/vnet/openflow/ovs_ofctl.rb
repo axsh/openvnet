@@ -12,14 +12,14 @@ module Vnet::Openflow
       @dpid = datapath_id
       @dpid_s = "0x%016x" % @dpid
 
-      # TODO: Make ovs_vsctl use a real config option.
       conf = Vnet::Configurations::Vna.conf
-      # @ovs_ofctl = conf.ovs_ofctl_path
-      # @ovs_vsctl = conf.ovs_vsctl_path
+
       @ovs_ofctl = 'ovs-ofctl -O OpenFlow13'
       @ovs_ofctl_10 = 'ovs-ofctl -O OpenFlow10'
       @ovs_vsctl = 'ovs-vsctl'
-      @switch_name = get_bridge_name(datapath_id)
+      @ovs_vsctl += " --db=#{conf.ovsdb}" if conf.ovsdb
+
+      @switch_name = conf.switch || get_bridge_name(datapath_id)
 
       # @verbose = Dcmgr.conf.verbose_openflow
       @verbose = false
