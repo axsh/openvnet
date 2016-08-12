@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+
 require_relative "spec_helper"
 
-describe "promiscuous", :vms_enable_vm => [:vm1, :vm7], :vms_enable_ifup => [:vm1, :vm7] do
+describe "promiscuous", :vms_enable_vm => [:vm1, :vm7] do
   describe 'local vm7 in nw-global' do
     it 'reaches the gateway' do
       to_gw = double()
