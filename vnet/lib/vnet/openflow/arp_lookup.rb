@@ -218,14 +218,16 @@ module Vnet::Openflow
     end
 
     def arp_lookup_datapath_lookup(params)
-      debug log_format_h('arp_lookup_datapath_lookup', params)
-
       messages = @arp_lookup[:requests][params[:request_ipv4]]
 
       if messages.nil? || Time.now - messages.last[:timestamp] > 5.0
+        debug log_format_h('arp_lookup_datapath_lookup: skipping lookup', params)
+
         @arp_lookup[:requests].delete(params[:request_ipv4])
         return
       end
+
+      debug log_format_h('arp_lookup_datapath_lookup: looking up in database', params)
 
       # TODO: When we've received above a certain number of packets,
       # add a flow to drop packets before they get passed to the
@@ -238,9 +240,6 @@ module Vnet::Openflow
         params[:attempts] = params[:attempts] + 1
         arp_lookup_process_timeout(params)
       }
-
-      debug log_format('arp_lookup: process timeout, looking up in database',
-                       "network:#{params[:interface_network_id]} ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]}")
 
       filter_args = {
         :ip_addresses__network_id => params[:interface_network_id],
