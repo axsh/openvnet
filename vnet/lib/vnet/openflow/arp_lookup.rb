@@ -107,16 +107,16 @@ module Vnet::Openflow
                                      request_ipv4: request_ipv4,
                                      attempts: 1)
         when :virtual
-          # arp_lookup_datapath_lookup(interface_mac: mac_info[:mac_address],
-          #                            interface_ipv4: ipv4_info[:ipv4_address],
-          #                            interface_network_id: ipv4_info[:network_id],
-          #                            request_ipv4: request_ipv4,
-          #                            attempts: 1)
-          arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
+          arp_lookup_datapath_lookup(interface_mac: mac_info[:mac_address],
                                      interface_ipv4: ipv4_info[:ipv4_address],
                                      interface_network_id: ipv4_info[:network_id],
                                      request_ipv4: request_ipv4,
                                      attempts: 1)
+          # arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
+          #                            interface_ipv4: ipv4_info[:ipv4_address],
+          #                            interface_network_id: ipv4_info[:network_id],
+          #                            request_ipv4: request_ipv4,
+          #                            attempts: 1)
         end
       end
 
