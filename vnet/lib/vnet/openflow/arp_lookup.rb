@@ -147,44 +147,41 @@ module Vnet::Openflow
                                              ipv4_address: message.arp_tpa)
       return if mac_info.nil? || ipv4_info.nil?
 
-      # case ipv4_info[:network_type]
-      # when :physical
-        match_md = md_create(:network => ipv4_info[:network_id])
-        reflection_md = md_create(:reflection => nil)
+      match_md = md_create(:network => ipv4_info[:network_id])
+      reflection_md = md_create(:reflection => nil)
 
-        cookie = ipv4_info[:network_id] | COOKIE_TYPE_NETWORK
+      cookie = ipv4_info[:network_id] | COOKIE_TYPE_NETWORK
 
-        flow = Flow.create(TABLE_ARP_LOOKUP, 35,
-                           match_md.merge({ :eth_type => 0x0800,
-                                            :ipv4_dst => message.arp_spa
-                                          }), {
-                             :eth_dst => message.arp_sha
-                           },
-                           reflection_md.merge!({ :cookie => cookie,
-                                                  :idle_timeout => 3600,
-                                                  :goto_table => TABLE_NETWORK_DST_CLASSIFIER
-                                                }))
+      flow = Flow.create(TABLE_ARP_LOOKUP, 35,
+        match_md.merge({ :eth_type => 0x0800,
+            :ipv4_dst => message.arp_spa
+          }), {
+          :eth_dst => message.arp_sha
+        },
+        reflection_md.merge!({ :cookie => cookie,
+            :idle_timeout => 3600,
+            :goto_table => TABLE_NETWORK_DST_CLASSIFIER
+          }))
+      @dp_info.add_flow(flow)
+
+      messages = @arp_lookup[:requests].delete(message.arp_spa) || return
+
+      if messages.first && messages.first[:destination_ipv4]
+        flow = Flow.create(TABLE_ARP_LOOKUP, 25,
+          match_md.merge({ :eth_type => 0x0800,
+              :ipv4_dst => messages.first[:destination_ipv4].mask(messages.first[:destination_prefix]),
+              :ipv4_dst_mask => IPV4_BROADCAST.mask(messages.first[:destination_prefix]),
+            }), {
+            :eth_dst => message.arp_sha
+          },
+          reflection_md.merge!({ :cookie => cookie,
+              :idle_timeout => 3600,
+              :goto_table => TABLE_NETWORK_DST_CLASSIFIER
+            }))
         @dp_info.add_flow(flow)
+      end
 
-        messages = @arp_lookup[:requests].delete(message.arp_spa) || return
-
-        if messages.first && messages.first[:destination_ipv4]
-          flow = Flow.create(TABLE_ARP_LOOKUP, 25,
-                             match_md.merge({ :eth_type => 0x0800,
-                                              :ipv4_dst => messages.first[:destination_ipv4].mask(messages.first[:destination_prefix]),
-                                              :ipv4_dst_mask => IPV4_BROADCAST.mask(messages.first[:destination_prefix]),
-                                            }), {
-                               :eth_dst => message.arp_sha
-                             },
-                             reflection_md.merge!({ :cookie => cookie,
-                                                    :idle_timeout => 3600,
-                                                    :goto_table => TABLE_NETWORK_DST_CLASSIFIER
-                                                  }))
-          @dp_info.add_flow(flow)
-        end
-
-        arp_lookup_send_packets(messages)
-      # end
+      arp_lookup_send_packets(messages)
     end
 
     def arp_lookup_process_timeout(params)
