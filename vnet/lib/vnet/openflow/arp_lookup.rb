@@ -288,8 +288,6 @@ module Vnet::Openflow
 
       @dp_info.add_flows(flows)
 
-      debug log_format("XXXXXXXXXXXXXXXXXX", flows.inspect)
-
       arp_lookup_send_packets(@arp_lookup[:requests].delete(params[:request_ipv4]))
     end
 

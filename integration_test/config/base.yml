@@ -1,8 +1,7 @@
 vm_type: :kvm
 # specs: [promiscuous_nw, promiscuous_seg, simple, simple_tp, simple_seg, router_v2v, router_p2v, router_v2v_tp, event, event_tp, service, secg, secg_reference, filter, wanedge]
 
-# specs: [promiscuous_nw, promiscuous_seg, wanedge, simple]
-specs: [wanedge]
+specs: [promiscuous_seg, promiscuous_nw, wanedge, simple]
 
 # specs not included
 # [edge, edge_esxi, vxlan, lease_policy]
