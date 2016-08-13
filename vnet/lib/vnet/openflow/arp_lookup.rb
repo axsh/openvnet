@@ -262,29 +262,28 @@ module Vnet::Openflow
       # TODO: Check if interface is remote?
 
       flows = []
+      flows << flow_create(table: TABLE_ARP_LOOKUP,
+                           goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
+                           priority: 35,
 
-      flow_create(table: TABLE_ARP_LOOKUP,
-                  goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
-                  priority: 35,
+                           match: {
+                             :eth_type => 0x0800,
+                             :ipv4_dst => params[:request_ipv4]
+                           },
+                           match_network: params[:interface_network_id],
 
-                  match: {
-                    :eth_type => 0x0800,
-                    :ipv4_dst => params[:request_ipv4]
-                  },
-                  match_network: params[:interface_network_id],
+                           actions: {
+                             :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
+                           },
 
-                  actions: {
-                    :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
-                  },
+                           idle_timeout: 3600,
 
-                  idle_timeout: 3600,
+                           # Reflection based on metadata flag...
+                           write_value_pair_flag: true,
+                           write_value_pair_first: ip_lease.interface_id,
+                           write_value_pair_second: params[:interface_network_id],
 
-                  # Reflection based on metadata flag...
-                  write_value_pair_flag: true,
-                  write_value_pair_first: ip_lease.interface_id,
-                  write_value_pair_second: params[:interface_network_id],
-
-                  cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
+                           cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
 
       @dp_info.add_flows(flows)
 
