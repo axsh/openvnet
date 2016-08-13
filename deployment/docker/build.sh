@@ -29,6 +29,7 @@ fi
 # http://stackoverflow.com/questions/19331497/set-environment-variables-from-file
 set -a
 . ${BUILD_ENV_PATH}
+COMMIT_ID=$(git rev-parse HEAD)
 set +a
 
 /usr/bin/env
@@ -40,5 +41,13 @@ docker cp . "${CID}:/var/tmp/openvnet"
 # Run build script
 docker exec -t "${CID}" /bin/bash -c "cd openvnet; ./deployment/packagebuild/build_packages_vnet.sh"
 rel_path=$(docker exec -i "${CID}" cat /var/tmp/repo_rel.path)
+if [[ -n "$BUILD_CACHE_DIR" ]]; then
+    if [[ ! -d "$BUILD_CACHE_DIR" || ! -w "$BUILD_CACHE_DIR" ]]; then
+        echo "ERROR: BUILD_CACHE_DIR '${BUILD_CACHE_DIR}' does not exist or not writable." >&2
+        exit 1
+    fi
+    docker cp './deployment/docker/build-cache.list' "${CID}:/var/tmp/build-cache.list"
+    docker exec "${CID}" tar cO --directory=/ --files-from=/var/tmp/build-cache.list > "${BUILD_CACHE_DIR}/${COMMIT_ID}.tar"
+fi
 # Pull compiled yum repository
 docker cp "${CID}:${REPO_BASE_DIR}" "$(dirname ${REPO_BASE_DIR})"

@@ -11,6 +11,7 @@ properties ([[$class: 'ParametersDefinitionProperty',
 def build_env = """
 LEAVE_CONTAINER=$LEAVE_CONTAINER
 REPO_BASE_DIR=$REPO_BASE_DIR
+BUILD_CACHE_DIR=/var/lib/jenkins/build-cache
 """
 
 node {
