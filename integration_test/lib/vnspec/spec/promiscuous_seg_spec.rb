@@ -2,7 +2,12 @@
 
 require_relative "spec_helper"
 
-describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7] do
+describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp => true do
+  before(:all) do
+    vm1.change_ipv4_address('10.210.0.10')
+    vm7.change_ipv4_address('10.210.0.17')
+  end
+
   describe 'local vm7 in seg-global' do
     it 'reaches the gateway' do
       to_gw = double()

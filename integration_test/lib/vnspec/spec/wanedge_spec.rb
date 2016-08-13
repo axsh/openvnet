@@ -2,6 +2,8 @@
 
 require_relative 'spec_helper'
 
+# TODO: Add multiple networks and use all vm's.
+
 describe 'wanedge', :vms_enable_vm => [:vm1, :vm7] do
   describe 'remote vm1 in vnet1' do
     it 'reaches to the gateway' do
