@@ -218,6 +218,8 @@ module Vnet::Openflow
     end
 
     def arp_lookup_datapath_lookup(params)
+      debug log_format_h('arp_lookup_datapath_lookup', params)
+
       messages = @arp_lookup[:requests][params[:request_ipv4]]
 
       if messages.nil? || Time.now - messages.last[:timestamp] > 5.0
