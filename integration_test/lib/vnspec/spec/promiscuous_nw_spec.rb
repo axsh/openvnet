@@ -2,7 +2,7 @@
 
 require_relative "spec_helper"
 
-describe "promiscuous", :vms_enable_vm => [:vm1, :vm7] do
+describe "promiscuous_nw", :vms_enable_vm => [:vm1, :vm7] do
   describe 'local vm7 in nw-global' do
     it 'reaches the gateway' do
       to_gw = double()
@@ -35,12 +35,12 @@ describe "promiscuous", :vms_enable_vm => [:vm1, :vm7] do
     end
   end
 
-  describe 'vm1 and vm7 in nw-global' do
-    context "vm1 on node1" do
-      it "reachable to vm7 on promiscuous node" do
-        expect(vm1).to be_reachable_to(vm7)
-      end
-    end
-  end
+  # describe 'vm1 and vm7 in nw-global' do
+  #   context "vm1 on node1" do
+  #     it "reachable to vm7 on promiscuous node" do
+  #       expect(vm1).to be_reachable_to(vm7)
+  #     end
+  #   end
+  # end
 
 end
