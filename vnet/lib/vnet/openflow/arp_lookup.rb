@@ -286,7 +286,7 @@ module Vnet::Openflow
 
                   cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
 
-      @dp_info.add_flow(flow)
+      @dp_info.add_flows(flows)
 
       arp_lookup_send_packets(@arp_lookup[:requests].delete(params[:request_ipv4]))
     end
