@@ -38,6 +38,18 @@ docker build -t "${img_tag}" - < "./deployment/docker/el7.Dockerfile"
 CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 # Upload checked out tree to the container.
 docker cp . "${CID}:/var/tmp/openvnet"
+# Upload build cache if found.
+if [[ -n "$BUILD_CACHE_DIR" ]]; then
+  for f in $(ls "${BUILD_CACHE_DIR}"); do
+    cached_commit=$(basename $f)
+    cached_commit="${cached_commit%.*}"
+    if git rev-list "${COMMIT_ID}" | grep "${cached_commit}" > /dev/null; then
+      echo "FOUND build cache ref ID: ${cached_commit}"
+      cat "${BUILD_CACHE_DIR}/$f" | docker cp - "${CID}:/"
+      break;
+    fi
+  done
+fi
 # Run build script
 docker exec -t "${CID}" /bin/bash -c "cd openvnet; ./deployment/packagebuild/build_packages_vnet.sh"
 rel_path=$(docker exec -i "${CID}" cat /var/tmp/repo_rel.path)
