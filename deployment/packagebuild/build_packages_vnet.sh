@@ -43,25 +43,16 @@ sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 #
 
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
-if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
+if [[ -d "$OPENVNET_SRC_BUILD_DIR" && -z "${SKIP_CLEANUP}" ]]; then
   rm -rf "$OPENVNET_SRC_BUILD_DIR"
 fi
 
-mkdir -p "${WORK_DIR}/SOURCES"
-cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
-
-# Get rid up any possible dirty build directories
-for arch in "${POSSIBLE_ARCHS[@]}"; do
-  if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
-    rm -rf "${WORK_DIR}/RPMS/${arch}"
-  fi
-done
-
-
-# Clean up the source dir if it's dirty
-cd ${OPENVNET_SRC_BUILD_DIR}
-git reset --hard
-git clean -xdf
+mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
+# Copy only the tracked files to rpmbuild SOURCES/.
+(
+  cd $(git rev-parse --show-toplevel)
+  git archive HEAD | tar x -C "${OPENVNET_SRC_BUILD_DIR}"
+)
 
 #
 # Build the packages
