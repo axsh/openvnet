@@ -26,6 +26,9 @@ if [[ -n "${BUILD_ENV_PATH}" && ! -f "${BUILD_ENV_PATH}" ]]; then
   exit 1
 fi
 
+# /tmp is memory file system on docker.
+echo "WORK_DIR=/var/tmp/rpmbuild" >> ${BUILD_ENV_PATH}
+
 # http://stackoverflow.com/questions/19331497/set-environment-variables-from-file
 set -a
 . ${BUILD_ENV_PATH}
