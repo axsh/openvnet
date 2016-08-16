@@ -12,16 +12,15 @@ module Vnet::Openflow
       @dpid = datapath_id
       @dpid_s = "0x%016x" % @dpid
 
-      # TODO: Make ovs_vsctl use a real config option.
       conf = Vnet::Configurations::Vna.conf
-      # @ovs_ofctl = conf.ovs_ofctl_path
-      # @ovs_vsctl = conf.ovs_vsctl_path
+
       @ovs_ofctl = 'ovs-ofctl -O OpenFlow13'
       @ovs_ofctl_10 = 'ovs-ofctl -O OpenFlow10'
       @ovs_vsctl = 'ovs-vsctl'
-      @switch_name = get_bridge_name(datapath_id)
+      @ovs_vsctl += " --db=#{conf.ovsdb}" if conf.ovsdb
 
-      # @verbose = Dcmgr.conf.verbose_openflow
+      @switch_name = conf.switch || get_bridge_name(datapath_id)
+
       @verbose = false
     end
 
@@ -102,7 +101,7 @@ module Vnet::Openflow
             when :no_receive then 'no-receive'
             end
 
-      port_no = switch_name if port_no == Controller::OFPP_LOCAL
+      port_no = get_bridge_name(@dpid) if port_no == Controller::OFPP_LOCAL
 
       system("#{@ovs_ofctl_10} mod-port #{switch_name} #{port_no} #{arg}")
     end
@@ -114,13 +113,17 @@ module Vnet::Openflow
       command << " options:remote_ip=#{params[:remote_ip]}" if params[:remote_ip]
       command << " options:local_ip=#{params[:local_ip]}" if params[:local_ip]
 
+      debug command if verbose
+
       system(command)
     end
 
     def delete_tunnel(tunnel_name)
       debug log_format('delete tunnel', "#{tunnel_name}")
 
-      system("#{@ovs_vsctl} del-port #{switch_name} #{tunnel_name}")
+      command = "#{@ovs_vsctl} del-port #{switch_name} #{tunnel_name}"
+      debug command if verbose
+      system(command)
     end
 
     #
