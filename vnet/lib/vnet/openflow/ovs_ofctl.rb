@@ -19,7 +19,13 @@ module Vnet::Openflow
       @ovs_vsctl = 'ovs-vsctl'
       @ovs_vsctl += " --db=#{conf.ovsdb}" if conf.ovsdb
 
-      @switch_name = conf.switch || get_bridge_name(datapath_id)
+      if conf.switch
+        @switch_name = conf.switch
+
+        raise "Unable to connect to switch #{@switch_name}" if !system("#{@ovs_ofctl} show #{@switch_name}")
+      else
+        @switch_name = get_bridge_name(datapath_id)
+      end
 
       @verbose = false
     end
