@@ -17,7 +17,17 @@ module Vnet::Openflow
       @ovs_ofctl = 'ovs-ofctl -O OpenFlow13'
       @ovs_ofctl_10 = 'ovs-ofctl -O OpenFlow10'
       @ovs_vsctl = 'ovs-vsctl'
-      @ovs_vsctl += " --db=#{conf.ovsdb}" if conf.ovsdb
+
+      if conf.ovsdb
+        command = "ovsdb-client list-dbs #{conf.ovsdb}"
+        result = `#{command}`
+
+        if $?.exitstatus != 0
+          raise "Unable to connect to OVSDB at #{conf.ovsdb}."
+        end
+
+        @ovs_vsctl += " --db=#{conf.ovsdb}"
+      end
 
       if conf.switch
         @switch_name = conf.switch
