@@ -32,7 +32,8 @@ module Vnet::Openflow
       if conf.switch
         @switch_name = conf.switch
 
-        raise "Unable to connect to switch #{@switch_name}" if !system("#{@ovs_ofctl} show #{@switch_name}")
+        `#{@ovs_ofctl} show #{@switch_name}`
+        raise "Unable to connect to switch #{@switch_name}" if $?.exitstatus != 0
       else
         @switch_name = get_bridge_name(datapath_id)
       end
