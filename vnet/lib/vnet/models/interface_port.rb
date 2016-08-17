@@ -2,7 +2,6 @@
 
 module Vnet::Models
   class InterfacePort < Base
-
     plugin :paranoia_is_deleted
 
     many_to_one :interface

@@ -93,6 +93,8 @@ module Vnet
     autoload :InterfaceManager, 'vnet/core/interface_manager'
     autoload :InterfacePort, 'vnet/core/interface_port'
     autoload :InterfacePortManager, 'vnet/core/interface_port_manager'
+    autoload :InterfaceSegment, 'vnet/core/interface_segment'
+    autoload :InterfaceSegmentManager, 'vnet/core/interface_segment_manager'
     autoload :Network, 'vnet/core/items'
     autoload :NetworkManager, 'vnet/core/network_manager'
     autoload :Port, 'vnet/core/port'
@@ -182,6 +184,10 @@ module Vnet
 
     module InterfacePorts
       autoload :Base, 'vnet/core/interface_ports/base'
+    end
+
+    module InterfaceSegments
+      autoload :Base, 'vnet/core/interface_segments/base'
     end
 
     module Networks
@@ -357,6 +363,7 @@ module Vnet
     autoload :DnsRecord, 'vnet/models/dns_record'
     autoload :Interface, 'vnet/models/interface'
     autoload :InterfacePort, 'vnet/models/interface_port'
+    autoload :InterfaceSegment, 'vnet/models/interface_segment'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
     autoload :IpLeaseContainer, 'vnet/models/ip_lease_container'
@@ -410,7 +417,8 @@ module Vnet
     autoload :DnsRecord, 'vnet/model_wrappers/dns_record'
     autoload :Helpers, 'vnet/model_wrappers/helpers'
     autoload :Interface, 'vnet/model_wrappers/interface'
-    autoload :InterfacePort, 'vnet/model_wrappers/interface_port'
+    autoload :InterfacePort, 'vnet/model_wrappers/interface'
+    autoload :InterfaceSegment, 'vnet/model_wrappers/interface'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
     autoload :IpLeaseContainer, 'vnet/model_wrappers/ip_lease_container'
@@ -472,6 +480,7 @@ module Vnet
     autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'
     autoload :InterfacePort, 'vnet/node_api/interface_port.rb'
+    autoload :InterfaceSegment, 'vnet/node_api/interface_segment.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :IpLeaseContainer, 'vnet/node_api/ip_lease_container'
