@@ -51,13 +51,13 @@ CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 # Upload checked out tree to the container.
 docker cp . "${CID}:/var/tmp/openvnet"
 # Upload build cache if found.
-if [[ -n "$BUILD_CACHE_DIR" ]]; then
-  for f in $(ls "${BUILD_CACHE_DIR}"); do
+if [[ -n "$BUILD_CACHE_DIR" && -d "${build_cache_base}" ]]; then
+  for f in $(ls ${build_cache_base}); do
     cached_commit=$(basename $f)
     cached_commit="${cached_commit%.*}"
     if git rev-list "${COMMIT_ID}" | grep "${cached_commit}" > /dev/null; then
       echo "FOUND build cache ref ID: ${cached_commit}"
-      cat "${BUILD_CACHE_DIR}/$f" | docker cp - "${CID}:/"
+      cat "${build_cache_base}/$f" | docker cp - "${CID}:/"
       break;
     fi
   done
@@ -70,8 +70,11 @@ if [[ -n "$BUILD_CACHE_DIR" ]]; then
         echo "ERROR: BUILD_CACHE_DIR '${BUILD_CACHE_DIR}' does not exist or not writable." >&2
         exit 1
     fi
+    if [[ ! -d "${build_cache_base}" ]]; then
+      mkdir -p "${build_cache_base}"
+    fi
     docker cp './deployment/docker/build-cache.list' "${CID}:/var/tmp/build-cache.list"
-    docker exec "${CID}" tar cO --directory=/ --files-from=/var/tmp/build-cache.list > "${BUILD_CACHE_DIR}/${COMMIT_ID}.tar"
+    docker exec "${CID}" tar cO --directory=/ --files-from=/var/tmp/build-cache.list > "${build_cache_base}/${COMMIT_ID}.tar"
 fi
 # Pull compiled yum repository
 docker cp "${CID}:${REPO_BASE_DIR}" "$(dirname ${REPO_BASE_DIR})"
