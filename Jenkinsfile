@@ -8,7 +8,8 @@ properties ([[$class: 'ParametersDefinitionProperty',
   ]
 ]])
 
-def build_env = """
+def build_env = """# These parameters are read from bash and docker --env-file.
+# So do not use single or double quote for the value part.
 LEAVE_CONTAINER=$LEAVE_CONTAINER
 REPO_BASE_DIR=$REPO_BASE_DIR
 BUILD_CACHE_DIR=/var/lib/jenkins/build-cache
