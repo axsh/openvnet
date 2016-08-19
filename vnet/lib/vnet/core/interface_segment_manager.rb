@@ -4,6 +4,8 @@ module Vnet::Core
 
   class InterfaceSegmentManager < Vnet::Core::Manager
 
+    include ActiveInterfaceEvents
+
     #
     # Events:
     #
@@ -13,6 +15,9 @@ module Vnet::Core
     subscribe_event INTERFACE_SEGMENT_UNLOAD_ITEM, :unload_item
     subscribe_event INTERFACE_SEGMENT_CREATED_ITEM, :created_item
     subscribe_event INTERFACE_SEGMENT_DELETED_ITEM, :unload_item
+
+    subscribe_event INTERFACE_SEGMENT_ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event INTERFACE_SEGMENT_DEACTIVATE_INTERFACE, :deactivate_interface
 
     #
     # Internal methods:
@@ -73,8 +78,8 @@ module Vnet::Core
 
     # item created in db on queue 'item.id'
     def created_item(params)
-      return unless params_valid_item? params
       return if internal_detect_by_id(params)
+      return if @active_interfaces[get_param_id(params, :interface_id)].nil?
 
       internal_new_item(mw_class.new(params))
     end
