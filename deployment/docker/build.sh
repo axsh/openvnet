@@ -36,17 +36,17 @@ set -a
 set +a
 
 if [[ -n "$JENKINS_HOME" ]]; then
-  # openvnet-axsh/branch1
-  img_tag="${JOB_NAME}"
-  # $BUILD_CACHE_DIR/openvnet-axsh/0123abcdef.tar.gz
-  build_cache_base="${BUILD_CACHE_DIR}/${JOB_NAME%/*}"
+  # openvnet-axsh/branch1/el7
+  img_tag="${JOB_NAME}/${BUILD_OS}"
+  # $BUILD_CACHE_DIR/openvnet-axsh/el7/0123abcdef.tar.gz
+  build_cache_base="${BUILD_CACHE_DIR}/${BUILD_OS}/${JOB_NAME%/*}"
 else
-  img_tag="openvnet/$(git rev-parse --abbrev-ref HEAD)"
+  img_tag="openvnet/$(git rev-parse --abbrev-ref HEAD)/${BUILD_OS}"
   build_cache_base="${BUILD_CACHE_DIR}"
 fi
 
 /usr/bin/env
-docker build -t "${img_tag}" - < "./deployment/docker/el7.Dockerfile"
+docker build -t "${img_tag}" - < "./deployment/docker/${BUILD_OS}.Dockerfile"
 CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 # Upload checked out tree to the container.
 docker cp . "${CID}:/var/tmp/openvnet"

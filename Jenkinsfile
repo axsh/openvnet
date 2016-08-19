@@ -6,7 +6,9 @@ properties ([[$class: 'ParametersDefinitionProperty',
     [$class: 'StringParameterDefinition',
       defaultValue: '/var/www/html/repos', description: 'Path to create yum repository', name: 'REPO_BASE_DIR'],
     [$class: 'StringParameterDefinition',
-      defaultValue: '/var/lib/jenkins/build-cache', description: 'Directory for storing build cache archive', name: 'BUILD_CACHE_DIR']
+      defaultValue: '/var/lib/jenkins/build-cache', description: 'Directory for storing build cache archive', name: 'BUILD_CACHE_DIR'],
+    [$class: 'ChoiceParameterDefinition',
+      choices: 'el7', description: 'Target OS name', name: 'BUILD_OS']
   ]
 ]])
 
@@ -15,6 +17,7 @@ def build_env = """# These parameters are read from bash and docker --env-file.
 LEAVE_CONTAINER=$LEAVE_CONTAINER
 REPO_BASE_DIR=$REPO_BASE_DIR
 BUILD_CACHE_DIR=$BUILD_CACHE_DIR
+BUILD_OS=$BUILD_OS
 """
 
 node {
