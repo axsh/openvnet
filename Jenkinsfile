@@ -8,7 +8,7 @@ properties ([[$class: 'ParametersDefinitionProperty',
     [$class: 'StringParameterDefinition',
       defaultValue: '/var/lib/jenkins/build-cache', description: 'Directory for storing build cache archive', name: 'BUILD_CACHE_DIR'],
     [$class: 'ChoiceParameterDefinition',
-      choices: 'el7', description: 'Target OS name', name: 'BUILD_OS']
+      choices: "el7\nel6", description: 'Target OS name', name: 'BUILD_OS']
   ]
 ]])
 
