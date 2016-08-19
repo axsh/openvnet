@@ -125,6 +125,37 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   end
 
   #
+  # Segments:
+  #
+
+  get '/:uuid/segments' do
+    show_relations(:Interface, :interface_segments)
+  end
+
+  param_uuid M::Interface
+  param_uuid M::Segment, :segment_uuid
+  put '/:uuid/segments/:segment_uuid/set_static' do
+    # TODO: Move the 'uuid_to_id' calls to nodeapi and add a
+    # base_foobar module that let's us easily extract the foo_id from
+    # uuid, id or nil according to the requirements.
+    interface = uuid_to_id(M::Interface, 'uuid', 'interface_id')
+    segment = uuid_to_id(M::Segment, 'segment_uuid', 'segment_id')
+
+    result = M::InterfaceSegment.set_static(interface.id, segment.id)
+    respond_with(R::InterfaceSegment.generate(result))
+  end
+
+  param_uuid M::Interface
+  param_uuid M::Segment, :segment_uuid
+  put '/:uuid/segments/:segment_uuid/clear_static' do
+    interface = uuid_to_id(M::Interface, 'uuid', 'interface_id')
+    segment = uuid_to_id(M::Segment, 'segment_uuid', 'segment_id')
+
+    result = M::InterfaceSegment.clear_static(interface.id, segment.id)
+    respond_with(R::InterfaceSegment.generate(result))
+  end
+
+  #
   # Security Groups:
   #
 
