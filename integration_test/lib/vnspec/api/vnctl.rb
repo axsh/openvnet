@@ -81,7 +81,7 @@ module Vnspec
         when :delete
           :del
         when :put
-          url =~ %r([^/]+/rename$) ? :rename : :modify
+          get_put_command(url)
         else
           "undefined method: #{method}"
         end
