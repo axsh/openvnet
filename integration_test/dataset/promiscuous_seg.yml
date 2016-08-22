@@ -35,6 +35,12 @@ interfaces:
     port_name: eth2
     owner_datapath_uuid: dp-wanedge
 
+interface_segment_puts:
+
+  - interface_uuid: if-weth2
+    segment_uuid: seg-global
+    command: set_static
+
 datapath_segments:
 
   - datapath_uuid: dp-1
