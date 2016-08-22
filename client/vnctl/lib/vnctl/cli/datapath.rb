@@ -29,7 +29,7 @@ module Vnctl::Cli
         :desc => "The host interface uuid to use for this segment."
     end
 
-    define_relation(:route_links) do |relation|
+    define_relation :route_links do |relation|
       relation.option :mac_address, :type => :string, :required => false,
         :desc => "The mac address to use for this link"
       relation.option :interface_uuid, :type => :string, :required => true,

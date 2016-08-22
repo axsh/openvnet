@@ -5,12 +5,16 @@ module Vnet::NodeApi
   class Base
     extend Vnet::Event::Dispatchable
 
+    M = Vnet::Models
+
     def self.logger
       Vnet.logger
     end
 
     class << self
       include Vnet::Event
+
+      M = Vnet::Models
 
       def create(options)
         model = nil
@@ -33,6 +37,8 @@ module Vnet::NodeApi
         end
       end
 
+      # Deprecate: We don't need an indirect way of referencing the
+      # model class. Use 'M::' instead.
       def model_class(name = nil)
         Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
       end

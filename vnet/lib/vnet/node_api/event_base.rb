@@ -124,8 +124,9 @@ module Vnet::NodeApi
         raise NotImplementedError
       end
 
-
-      private
+      #
+      # Internal EventBase methods:
+      #
 
       def inherited(klass)
         super

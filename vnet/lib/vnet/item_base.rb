@@ -129,6 +129,15 @@ module Vnet
     end
   end
 
+  class ItemDpId < ItemDpBase
+    def initialize(params)
+      @installed = false
+      @loaded = false
+      @dp_info = params[:dp_info]
+      @id = params[:map][:id]
+    end
+  end
+
   class ItemDpUuid < ItemDpBase
     attr_reader :uuid
 

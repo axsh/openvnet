@@ -40,5 +40,18 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
+  class InterfaceSegment < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(route)
+      argument_type_check(route, Vnet::ModelWrappers::InterfaceSegment)
+      route.to_hash
+    end
+  end
+
+  class InterfaceSegmentCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i| InterfaceSegment.generate(i) }
+    end
+  end
 
 end

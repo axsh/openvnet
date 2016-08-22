@@ -140,6 +140,17 @@ module Vnet
     INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
 
     #
+    # Interface Segment events:
+    #
+    INTERFACE_SEGMENT_INITIALIZED = "interface_segment_initialized"
+    INTERFACE_SEGMENT_UNLOAD_ITEM = "interface_segment_unload_item"
+    INTERFACE_SEGMENT_CREATED_ITEM = "interface_segment_created_item"
+    INTERFACE_SEGMENT_DELETED_ITEM = "interface_segment_deleted_item"
+
+    INTERFACE_SEGMENT_ACTIVATE_INTERFACE = "interface_segment_activate_interface"
+    INTERFACE_SEGMENT_DEACTIVATE_INTERFACE = "interface_segment_deactivate_interface"
+
+    #
     # Interface Port events:
     #
 

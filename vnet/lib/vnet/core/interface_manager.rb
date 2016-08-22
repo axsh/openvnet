@@ -142,28 +142,32 @@ module Vnet::Core
     def item_post_install(item, item_map)
       load_addresses(item_map)
 
-      @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
-                                      id: :interface,
-                                      interface_id: item.id)
+      activate_params = {
+        id: :interface,
+        interface_id: item.id
+      }
 
-      @dp_info.filter2_manager.publish(FILTER_ACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: item.id)
+      # TODO: Use only one event for all these?
+      @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE, activate_params)
+      @dp_info.filter2_manager.publish(FILTER_ACTIVATE_INTERFACE, activate_params)
+      @dp_info.interface_segment_manager.publish(INTERFACE_SEGMENT_ACTIVATE_INTERFACE, activate_params)
 
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
     end
 
     def item_post_uninstall(item)
-      @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
-                                      id: :interface,
-                                      interface_id: item.id)
+      deactivate_params = {
+        id: :interface,
+        interface_id: item.id
+      }
+
+      # TODO: Use only one event for all these?
+      @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.filter2_manager.publish(FILTER_DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.interface_segment_manager.publish(INTERFACE_SEGMENT_DEACTIVATE_INTERFACE, deactivate_params)
 
       @dp_info.filter_manager.async.remove_filters(item.id)
-
-      @dp_info.filter2_manager.publish(FILTER_DEACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: item.id)
 
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.remove_catch_new_egress(id)
