@@ -260,6 +260,7 @@ module Vnet::Core
 
       segment_id = mac_lease.segment_id
 
+      # TODO: Move to interface_segment...
       if segment_id
         segment = @dp_info.segment_manager.retrieve(id: segment_id)
 

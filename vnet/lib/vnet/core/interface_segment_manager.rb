@@ -62,7 +62,6 @@ module Vnet::Core
 
     def item_initialize(item_map)
       item_class = InterfaceSegments::Base
-
       item_class.new(dp_info: @dp_info, map: item_map)
     end
 

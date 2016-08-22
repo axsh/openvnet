@@ -13,9 +13,9 @@ module Vnet::Core::InterfaceSegments
 
       map = params[:map]
 
-      @interface_id = map.interface_id
-      @segment_id = map.segment_id
-      @static = map.static
+      @interface_id = get_param_id(map, :interface_id)
+      @segment_id = get_param_id(map, :segment_id)
+      @static = map[:static]
     end
 
     def mode
@@ -32,6 +32,14 @@ module Vnet::Core::InterfaceSegments
 
     def pretty_properties
       "interface_id:#{@interface_id} segment_id:#{@segment_id}" + (@static ? ' static' : '')
+    end
+
+    def install
+      @dp_info.segment_manager.insert_interface_segment(@interface_id, @segment_id)
+    end
+
+    def uninstall
+      @dp_info.segment_manager.remove_interface_segment(@interface_id, @segment_id)
     end
 
     def to_hash
