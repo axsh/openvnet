@@ -4,6 +4,7 @@ module Vnspec
       include Logger
       include Config
       include SSH
+
       def request(method, url, params = {}, headers = {}, &block)
         raise NotImplementedError
       end
