@@ -39,7 +39,7 @@ interface_segment_puts:
 
   - interface_uuid: if-weth2
     segment_uuid: seg-global
-    command: set_static
+    static: true
 
 datapath_segments:
 

@@ -36,9 +36,12 @@ module Vnspec
             "datapaths/#{v.delete(:datapath_uuid)}/segments/#{v.delete(:segment_uuid)}"
           when :interface_security_groups
             "interfaces/#{v.delete(:interface_uuid)}/security_groups/#{v.delete(:security_group_uuid)}"
+          when :interface_network_puts
+            request_type = :put
+            "interfaces/#{v.delete(:interface_uuid)}/networks/#{v.delete(:network_uuid)}"
           when :interface_segment_puts
             request_type = :put
-            "interfaces/#{v.delete(:interface_uuid)}/segments/#{v.delete(:segment_uuid)}/#{v.delete(:command)}"
+            "interfaces/#{v.delete(:interface_uuid)}/segments/#{v.delete(:segment_uuid)}"
           when :filter_static
             "filters/#{v.delete(:filter_uuid)}/static"
           when :dns_records

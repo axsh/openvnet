@@ -47,6 +47,12 @@ interfaces:
     port_name: eth2
     owner_datapath_uuid: dp-wanedge
 
+interface_network_puts:
+
+  - interface_uuid: if-weth2
+    network_uuid: nw-global
+    static: true
+
 network_services:
 
   - uuid: ns-dhcp1
