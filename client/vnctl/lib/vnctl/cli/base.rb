@@ -224,14 +224,6 @@ module Vnctl::Cli
 
           yield self if block_given?
 
-          desc "show #{base_uuid_label}",
-            "Shows all #{desc_label} in this #{parent.namespace}."
-          option_limit
-          option_offset
-          def show(base_uuid)
-            puts Vnctl.webapi.get("#{suffix}/#{base_uuid}/#{rel_name}", options)
-          end
-
           if !only_include_show
             if require_relation_uuid_label
               desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
@@ -256,6 +248,15 @@ module Vnctl::Cli
               }.join("\n")
             end
           end
+
+          desc "show #{base_uuid_label}",
+            "Shows all #{desc_label} in this #{parent.namespace}."
+          option_limit
+          option_offset
+          def show(base_uuid)
+            puts Vnctl.webapi.get("#{suffix}/#{base_uuid}/#{rel_name}", options)
+          end
+
         end
 
         c.namespace "#{self.namespace} #{relation_name}"
