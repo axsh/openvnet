@@ -3,6 +3,11 @@
 module Vnet::Core::InterfaceSegments
 
   class Base < Vnet::ItemDpId
+    include Celluloid::Logger
+    include Vnet::Openflow::FlowHelpers
+
+    attr_reader :cookie
+
     attr_reader :interface_id
     attr_reader :segment_id
 
@@ -16,6 +21,8 @@ module Vnet::Core::InterfaceSegments
       @interface_id = get_param_id(map, :interface_id)
       @segment_id = get_param_id(map, :segment_id)
       @static = map[:static]
+
+      @cookie = self.id | COOKIE_TYPE_INTERFACE_SEGMENT
     end
 
     def mode
@@ -35,6 +42,16 @@ module Vnet::Core::InterfaceSegments
     end
 
     def install
+      flows = []
+
+      # TODO: Not the correct way, however it's good enough for now.
+      flows << flow_create(table: TABLE_PROMISCUOUS_PORT,
+                           goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                           priority: 10,
+                           match_interface: @interface_id,
+                           write_segment: @segment_id)
+
+      @dp_info.add_flows(flows)
       @dp_info.segment_manager.insert_interface_segment(@interface_id, @segment_id)
     end
 
