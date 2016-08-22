@@ -148,10 +148,6 @@ module Vnctl::Cli
       end
 
       def self.define_custom_method(method_name, &block)
-        # desc "rename UUID", "Rename a #{namespace}."
-        # option_uuid
-        # option :new_uuid, :type => :string, :required => true,
-        #   :desc => "New unique UUID for the #{namespace}."
         define_method(method_name) do |uuid|
           yield uuid, options
         end
