@@ -158,8 +158,8 @@ describe VNetAPIClient do
     include_examples 'test_method', :add_port, 'POST  /interfaces/:uuid/ports'
     include_examples 'test_method', :remove_port, 'DELETE  /interfaces/:uuid/ports'
 
-    include_examples 'test_method', :segment_set_static, 'PUT  /interfaces/:uuid/segments/:segment_uuid/set_static'
-    include_examples 'test_method', :segment_clear_static, 'PUT  /interfaces/:uuid/segments/:segment_uuid/clear_static'
+    # include_examples 'test_method', :segment_set_static, 'PUT  /interfaces/:uuid/segments/:segment_uuid/set_static'
+    # include_examples 'test_method', :segment_clear_static, 'PUT  /interfaces/:uuid/segments/:segment_uuid/clear_static'
   end
 
   describe VNetAPIClient::IpLease do

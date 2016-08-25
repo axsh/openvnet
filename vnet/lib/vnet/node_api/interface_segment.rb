@@ -7,8 +7,6 @@ module Vnet::NodeApi
       def leased(interface_id, segment_id)
         # TODO: Add log_format-style logging to NodeApi's.
         logger.warn "XXXXXXXXXXXXXX leased interface_id:#{interface_id} segment_id:#{segment_id}"
-        # TODO: Do proper param checks.
-        return if interface_id.nil? || segment_id.nil?
 
         # TODO: Add checks like with get_params and proper error reporting.
         filter = {
@@ -27,7 +25,6 @@ module Vnet::NodeApi
 
       def released(interface_id, segment_id)
         logger.warn "XXXXXXXXXXXXXX released interface_id:#{interface_id} segment_id:#{segment_id}"
-        return if interface_id.nil? || segment_id.nil?
 
         filter = {
           interface_id: interface_id,
@@ -36,22 +33,21 @@ module Vnet::NodeApi
 
         transaction {
           # If mac_lease does not exist, try to delete unless 'static==1'.
-          model = M::InterfaceSegment[filter]
+          M::InterfaceSegment[filter].tap { |model|
+            next if model.nil?
 
-          if model && !model.static
-            should_destroy = M::MacLease.dataset.where(interface_id: interface_id).segments.where(segment_id: segment_id).empty?
+            if model && !model.static
+              should_destroy = M::MacLease.dataset.where(interface_id: interface_id).segments.where(segment_id: segment_id).empty?
 
-            logger.warn "XXXXXXXXXXXXXX released should_destroy:#{should_destroy}"
-            model.destroy if should_destroy
-          end
-
-          model
+              logger.warn "XXXXXXXXXXXXXX released should_destroy:#{should_destroy}"
+              model.destroy if should_destroy
+            end
+          }
         }
       end
 
       def set_static(interface_id, segment_id)
         logger.warn "XXXXXXXXXXXXXX set_static interface_id:#{interface_id} segment_id:#{segment_id}"
-        return if interface_id.nil? || segment_id.nil?
 
         filter = {
           interface_id: interface_id,
@@ -79,7 +75,7 @@ module Vnet::NodeApi
               # HACK: dispatch_updated_item_events(model, changed_columns)
             end
 
-            return
+            return model
           end
 
           create_with_transaction(filter.merge!(static: true))
@@ -94,7 +90,17 @@ module Vnet::NodeApi
 
       def clear_static(interface_id, segment_id)
         logger.warn "XXXXXXXXXXXXXX clear_static interface_id:#{interface_id} segment_id:#{segment_id}"
-        return if interface_id.nil? || segment_id.nil?
+
+        filter = {
+          interface_id: interface_id,
+          segment_id: segment_id
+        }
+
+        transaction {
+          M::InterfaceSegment[filter].tap { |model|
+            next if model.nil?
+          }
+        }
       end
 
       #

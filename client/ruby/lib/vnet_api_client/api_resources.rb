@@ -34,6 +34,7 @@ module VNetAPIClient
 
     define_show_relation(:ports)
     define_show_relation(:segments)
+    define_update_relation(:segments)
 
     def self.rename(interface_uuid, params = nil)
       send_request(Net::HTTP::Put, "#{@api_suffix}/#{interface_uuid}/rename", params)
@@ -46,15 +47,6 @@ module VNetAPIClient
     def self.remove_port(interface_uuid, params = nil)
       send_request(Net::HTTP::Delete, "#{@api_suffix}/#{interface_uuid}/ports", params)
     end
-
-    def self.segment_set_static(interface_uuid, segment_uuid, params = nil)
-      send_request(Net::HTTP::Put, "#{@api_suffix}/#{interface_uuid}/segments/#{segment_uuid}/set_static", params)
-    end
-
-    def self.segment_clear_static(interface_uuid, segment_uuid, params = nil)
-      send_request(Net::HTTP::Put, "#{@api_suffix}/#{interface_uuid}/segments/#{segment_uuid}/clear_static", params)
-    end
-
   end
 
   class IpLease < ApiResource
