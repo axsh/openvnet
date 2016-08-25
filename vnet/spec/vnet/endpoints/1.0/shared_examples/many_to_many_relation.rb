@@ -1,8 +1,43 @@
 # -*- coding: utf-8 -*-
 
+shared_examples 'BASE many_to_many_relation' do |req_params = {}|
+  let(:request_params) { req_params }
+  let!(:related_object) { Fabricate(relation_fabricator) }
+end
+
+shared_examples 'SHARED many_to_many_relation' do |req_params = {}|
+  include_examples "BASE many_to_many_relation", req_params
+
+  before(:each) do
+    # TODO: Move to helper method.
+    base_name = base_object.class.name.demodulize.underscore
+    relation_name = related_object.class.name.demodulize.underscore
+
+    fabricator_name =
+      if respond_to?(:join_table_fabricator)
+        join_table_fabricator
+      else
+        "#{base_name}_#{relation_name}".to_sym
+      end
+
+    Fabricate(
+      fabricator_name,
+      :"#{base_name}_id" => base_object.id,
+      :"#{relation_name}_id" => related_object.id
+    )
+  end
+
+  let!(:related_object) { Fabricate(relation_fabricator) }
+end
+
+
 shared_examples 'GET many_to_many_relation' do |relation_suffix, get_request_params|
   describe "GET /:uuid/#{relation_suffix}" do
-    let(:api_relation_suffix) { "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}" }
+    include_examples "BASE many_to_many_relation"
+
+    let(:api_relation_suffix) {
+      "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}"
+    }
 
     before(:each) do
       add_relation = "add_#{relation_suffix.chomp('s')}"
@@ -46,14 +81,12 @@ shared_examples 'GET many_to_many_relation' do |relation_suffix, get_request_par
 end
 
 shared_examples 'POST many_to_many_relation' do |relation_suffix, post_request_params|
-  let!(:related_object) { Fabricate(relation_fabricator) }
-
   describe "POST /:uuid/#{relation_suffix}/:#{relation_suffix.chomp('s')}_uuid" do
+    include_examples "BASE many_to_many_relation", post_request_params
+
     before(:each) do
       post api_relation_suffix, request_params
     end
-
-    let(:request_params) { post_request_params }
 
     include_examples 'relation_uuid_checks', relation_suffix
 
@@ -70,97 +103,58 @@ shared_examples 'POST many_to_many_relation' do |relation_suffix, post_request_p
   end
 end
 
-shared_examples 'PUT many_to_many_relation' do |relation_suffix, accepted_params, required_params = [], uuid_params = [], expected_response = nil|
-  expected_response ||= accepted_params
+shared_examples 'PUT many_to_many_relation' do |relation_suffix, accepted_params, required_params = [], uuid_params = []|
+  describe "PUT /:uuid/#{relation_suffix}/:#{relation_suffix.chomp('s')}_uuid" do
+    include_examples "SHARED many_to_many_relation", accepted_params
 
-  before(:each) do
-    # TODO: Move to helper method.
-    base_name = base_object.class.name.demodulize.underscore
-    relation_name = related_object.class.name.demodulize.underscore
+    before(:each) do
+      put api_relation_suffix, request_params
+    end
 
-    fabricator_name =
-      if respond_to?(:join_table_fabricator)
-        join_table_fabricator
-      else
-        "#{base_name}_#{relation_name}".to_sym
+    include_examples 'relation_uuid_checks', relation_suffix
+
+    context "with an existing uuid" do
+      let(:api_relation_suffix) {
+        "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}/#{related_object.canonical_uuid}"
+      }
+
+      uuid_params.each { |up|
+        include_examples "uuid_in_param", accepted_params, up
+      }
+
+      context "with only the required parameters" do
+        let(:request_params) do
+          accepted_params.dup.tap { |n|
+            n.delete_if { |k,v| !required_params.member?(k) }
+          }
+        end
+
+        it "should create a database entry the required parameters set" do
+          expect(last_response).to succeed.with_body_containing(request_params)
+        end
       end
 
-    Fabricate(
-      fabricator_name,
-      :"#{base_name}_id" => base_object.id,
-      :"#{relation_name}_id" => related_object.id
-    )
+      context "with all accepted parameters" do
+        let(:expected_response) { accepted_params }
 
-    put api_relation_suffix, request_params
-  end
-
-  let!(:related_object) { Fabricate(relation_fabricator) }
-  let(:request_params) { accepted_params }
-  let!(:object) { Fabricate(fabricator) }
-
-  #describe "PUT /:uuid/#{relation_suffix}/:#{relation_suffix.chomp('s')}_uuid" do
-
-  include_examples 'relation_uuid_checks', relation_suffix
-
-  context "with an existing uuid" do
-    let(:api_relation_suffix) {
-      "#{api_suffix}/#{base_object.canonical_uuid}/#{relation_suffix}/#{related_object.canonical_uuid}"
-    }
-
-    uuid_params.each { |up| include_examples "uuid_in_param", accepted_params, up }
-
-    context "with only the required parameters" do
-      let(:request_params) do
-        accepted_params.dup.tap { |n|
-          n.delete_if { |k,v| !required_params.member?(k) }
-        }
-      end
-
-      it "should create a database entry the required parameters set" do
-        expect(last_response).to succeed.with_body_containing(request_params)
+        it "should create a database entry with all parameters set" do
+          expect(last_response).to succeed.with_body_containing(expected_response)
+        end
       end
     end
 
-    context "with all accepted parameters" do
-      let(:request_params) { accepted_params }
-
-      it "should create a database entry with all parameters set" do
-        expect(last_response).to succeed.with_body_containing(expected_response)
-      end
-    end
   end
 end
 
-
 shared_examples 'DELETE many_to_many_relation' do |relation_suffix, delete_request_params|
-  let!(:related_object) { Fabricate(relation_fabricator) }
-
-  relation_uuid_label = ":#{relation_suffix.chomp('s')}_uuid"
-
-  describe "DELETE /:uuid/#{relation_suffix}/#{relation_uuid_label}" do
-    let(:request_params) { Hash.new }
+  describe "DELETE /:uuid/#{relation_suffix}/:#{relation_suffix.chomp('s')}_uuid" do
+    include_examples "SHARED many_to_many_relation"
 
     before(:each) do
-      base_name = base_object.class.name.demodulize.underscore
-      relation_name = related_object.class.name.demodulize.underscore
-
-      fabricator_name =
-        if respond_to?(:join_table_fabricator)
-          join_table_fabricator
-        else
-          "#{base_name}_#{relation_name}".to_sym
-        end
-
-      Fabricate(
-        fabricator_name,
-        :"#{base_name}_id" => base_object.id,
-        :"#{relation_name}_id" => related_object.id
-      )
-
       delete api_relation_suffix, request_params
     end
 
-    include_examples 'relation_uuid_checks', relation_suffix, relation_uuid_label
+    include_examples 'relation_uuid_checks', relation_suffix
 
     context 'with a related object that has already been added to the base object' do
       let(:api_relation_suffix) {
