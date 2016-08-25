@@ -57,18 +57,12 @@ module Vnctl::Cli
     ports_relation.commands["del"].options.merge!(options_hash)
 
     define_relation(:segments, only_include_show: true) { |relation|
-      relation.desc 'set_static INTERFACE_UUID SEGMENT_UUID', 'Set an interface to be always connected to a segment.'
-      relation.option :segment_uuid, :type => :string,
-      :desc => 'Segment UUID to set the static flag for'
-      relation.define_custom_method(:set_static) do |uuid, options|
-        puts Vnctl.webapi.put("interfaces/#{uuid}/segments/#{options[:segment_uuid]}/set_static", {})
-      end
 
-      relation.desc 'clear_static INTERFACE_UUID SEGMENT_UUID', "Set an interface to disconnect from a segment if no mac leases exist."
-      relation.option :segment_uuid, :type => :string,
-      :desc => 'Segment UUID to clear the static flag for.'
-      relation.define_custom_method(:clear_static) do |uuid, options|
-        puts Vnctl.webapi.put("interfaces/#{uuid}/segments/#{options[:segment_uuid]}/clear_static", {})
+      relation.desc 'INTERFACE_UUID SEGEMENT_UUID --static true/false', 'Modify static flag'
+      relation.option :static, :type => :boolean,
+          :desc => 'The flag which decides if the interface should stay connected or disconnect from a segment if no mac lease exist.'
+      relation.define_custom_method(:modify, true) do |uuid, segment_uuid, options|
+        puts Vnctl.webapi.put("interfaces/#{uuid}/segments/#{segment_uuid}", options)
       end
     }
 
