@@ -98,9 +98,9 @@ module VNetAPIClient
         metaclass.instance_eval do
           singular_name = relation_name.to_s.chomp('s')
 
-          define_method("update_#{singular_name}") do |uuid, relation_uuid|
+          define_method("update_#{singular_name}") do |uuid, relation_uuid, params = nil|
             suffix = "#{@api_suffix}/#{uuid}/#{relation_name}/#{relation_uuid}"
-            send_request(Net::HTTP::Put, suffix)
+            send_request(Net::HTTP::Put, suffix, params)
           end
         end
       end
