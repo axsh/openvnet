@@ -95,6 +95,15 @@ vms:
         name: eth1
         bridge: br0
         mac_address: "02:00:00:00:00:06"
+  vm7:
+    name: vm7
+    vna: 5
+    ssh_port: 2227
+    interfaces:
+      - uuid: if-v7
+        name: eth1
+        bridge: br0
+        mac_address: "02:00:00:00:00:07"
 
 legacy_machines:
   legacy1:

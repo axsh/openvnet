@@ -2,7 +2,7 @@
 require_relative "spec_helper"
 
 describe "security groups" do
-  before(:all) { vms.parallel { |vm| vm.close_all_listening_ports } }
+  before(:all) { vms.parallel_each { |vm| vm.close_all_listening_ports } }
 
   describe "rule" do
     describe "tcp:22:10.101.0.12" do
