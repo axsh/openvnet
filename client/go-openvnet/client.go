@@ -46,3 +46,13 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c.Segment = &SegmentService{client: c, Namespace: "segments"}
 	return c
 }
+
+type OpenVNetError struct {
+	ErrorType string `json:"error"`
+	Message   string `json:"message"`
+	Code      string `json:"code"`
+}
+
+func (e *OpenVNetError) Error() string {
+	return fmt.Sprint("ERROR")
+}
