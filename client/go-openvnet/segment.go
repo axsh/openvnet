@@ -3,7 +3,6 @@ package openvnet
 import (
 	"fmt"
 	"net/http"
-
 )
 
 type Segment struct {
@@ -27,8 +26,13 @@ type SegmentCreateParms struct {
 }
 
 func (s *SegmentService) Create (params *SegmentCreateParms) (*Segment, *http.Response, error) {
+	seg := new(Segment)
+	ovnError := new(OpenVNetError)
+	resp, err := s.client.sling.New().Post(s.Namespace).BodyForm(params).Receive(seg, ovnError)
+
+	return seg, resp, err
 }
 
 func (s *SegmentService) Delete (id string) (*http.Response, error) {
-
+	return nil, nil
 }

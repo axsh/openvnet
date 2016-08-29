@@ -1,5 +1,9 @@
 package openvnet
 
+import (
+	"net/http"
+)
+
 type Network struct {
 	ID           int    `json:"id"`
 	UUID         string `json:"uuid"`
@@ -32,9 +36,13 @@ type NetworkCreateParams struct {
 }
 
 func (s *NetworkService) Create (params *NetworkCreateParams) (*Network, *http.Response, error) {
+	nw := new(Network)
+	ovnError := new(OpenVNetError)
+	resp, err := s.client.sling.New().Post(s.Namespace).BodyForm(params).Receive(nw, ovnError)
+	return nw, resp, err
 
 }
 
 func (s *NetworkService) Delete (id string) (*http.Response, error) {
-
+	return nil, nil
 }
