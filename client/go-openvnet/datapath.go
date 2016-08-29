@@ -11,8 +11,10 @@ type Datapath struct {
 	DeletedAt   string `json:"deleted_at"`
 }
 
-type DatapathService {
+type DatapathService struct {
 	client *Client
+
+	Namespace string
 }
 
 type DatapathCreateParams struct {
@@ -22,7 +24,7 @@ type DatapathCreateParams struct {
 	NodeId      string `url:"node_id"`
 }
 
-func (s *DatapathService) Create(params *DatapathCreateParams) (*Datapath, http.Response, error) {
+func (s *DatapathService) Create(params *DatapathCreateParams) (*Datapath, *http.Response, error) {
 
 }
 

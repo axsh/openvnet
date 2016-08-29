@@ -12,14 +12,16 @@ type RouteLink struct {
 
 type RouteLinkService struct {
 	client *Client
+
+	Namespace string
 }
 
-type RouteLinkCreateParams {
+type RouteLinkCreateParams struct {
 	UUID       string `url:"uuid"`
 	MacAddress string `url:"mac_address"`
 }
 
-func (s *RouteLinkService) Create (params *RouteLinkCreateParms) (*RouteLink, *http.Response, error) {
+func (s *RouteLinkService) Create (params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
 
 }
 

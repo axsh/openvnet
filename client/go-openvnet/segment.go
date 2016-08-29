@@ -15,19 +15,20 @@ type Segment struct {
 	IsDeleted int    `json:"is_deleted"`
 }
 
-type SegmentService {
+type SegmentService struct {
 	client *Client
+
+	Namespace string
 }
 
-type SegmentCreateParms {
+type SegmentCreateParms struct {
 	UUID string `url:"uuid,omitempty"`
 	Mode string `url:"mode"`
 }
 
-func (s *SegmentService) Create (params *SegmentCreateParms) (Segment, http.Response, error) {
-
+func (s *SegmentService) Create (params *SegmentCreateParms) (*Segment, *http.Response, error) {
 }
 
-func (s *SegmentService) Delete (id string) (http.Response, error) {
+func (s *SegmentService) Delete (id string) (*http.Response, error) {
 
 }
