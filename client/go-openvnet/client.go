@@ -3,6 +3,7 @@ package openvnet
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/dghubble/sling"
 )
@@ -10,8 +11,10 @@ import (
 const (
 	webapiProtocol = "http"
 	webapiUri = "localhost"
-	webapiPort = "9101"
+	webapiPort = "9090"
 	webapiVersion = "1.0"
+
+	defaultURL = webapiProtocol +"://" + webapiUri + ":" + webapiPort +"/api/" + webapiVersion
 )
 
 type Client struct {
@@ -25,18 +28,21 @@ type Client struct {
 	Segment   *SegmentService
 }
 
-func NewClient(baseURL *url.URL, httpClient *http.Client) *Client {
-	if baseURL == nil {
-		baseURL := webapiProtocol +"://" + webapiUri + ":" + webapiPort +"/api/" + webapiVersion
+func NewClient(url *url.URL, httpClient *http.Client) *Client {
+	baseURL := defaultURL
+	if url != nil {
+		baseURL = url.String()
 	}
 
-	s = sling.New().Base(baseURL).Client(httpClient)
+	fmt.Println(baseURL)
+
+	s := sling.New().Base(baseURL).Client(httpClient)
 	c := &Client{sling: s}
-	c.Datapath = &DatapathService{client: c}
-	c.Interface = &InterfaceService{client: c}
-	c.Network = &NetworkService{client: c}
-	c.Route = &RouteService{client: c}
-	c.RouteLink = &RouteLinkService{client: c}
-	c.Segment = &SegmentService{client: c}
+	c.Datapath = &DatapathService{client: c, Namespace: "datapaths"}
+	c.Interface = &InterfaceService{client: c, Namespace: "interfaces"}
+	c.Network = &NetworkService{client: c, Namespace: "networks"}
+	c.Route = &RouteService{client: c, Namespace: "routes"}
+	c.RouteLink = &RouteLinkService{client: c, Namespace: "route_links"}
+	c.Segment = &SegmentService{client: c, Namespace: "segments"}
 	return c
 }
