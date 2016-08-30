@@ -20,12 +20,12 @@ type SegmentService struct {
 	Namespace string
 }
 
-type SegmentCreateParms struct {
+type SegmentCreateParmas struct {
 	UUID string `url:"uuid,omitempty"`
 	Mode string `url:"mode"`
 }
 
-func (s *SegmentService) Create (params *SegmentCreateParms) (*Segment, *http.Response, error) {
+func (s *SegmentService) Create (params *SegmentCreateParmas) (*Segment, *http.Response, error) {
 	seg := new(Segment)
 	ovnError := new(OpenVNetError)
 	resp, err := s.client.sling.New().Post(s.Namespace).BodyForm(params).Receive(seg, ovnError)
