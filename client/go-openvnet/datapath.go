@@ -71,7 +71,7 @@ func (s *DatapathService) Delete(id string) (*http.Response, error) {
 func (s *DatapathService) CreateDatapathRelation(rel*DatapathRelationType) (*DatapathRelation, *http.Response, error) {
 	dpr := new(DatapathRelation)
 	ovnError := new(OpenVNetError)
-	ns := s.Namespace +"/"+ rel.DatapathID +"/"+ rel.Type +"/"+ rel.ID +".yml"
+	ns := s.Namespace +"/"+ rel.DatapathID +"/"+ rel.Type +"/"+ rel.ID
 
 	resp, err := s.client.sling.New().Post(ns).BodyForm(rel.Params).Receive(dpr, ovnError)
 
