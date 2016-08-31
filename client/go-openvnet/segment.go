@@ -34,5 +34,5 @@ func (s *SegmentService) Create (params *SegmentCreateParmas) (*Segment, *http.R
 }
 
 func (s *SegmentService) Delete (id string) (*http.Response, error) {
-	return nil, nil
+	return s.client.sling.New().Delete(s.Namespace +"/"+ id).Receive(nil, new(OpenVNetError))
 }

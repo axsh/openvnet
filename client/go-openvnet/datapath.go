@@ -65,7 +65,7 @@ func (s *DatapathService) Create(params *DatapathCreateParams) (*Datapath, *http
 }
 
 func (s *DatapathService) Delete(id string) (*http.Response, error) {
-	return nil, nil
+	return s.client.sling.New().Delete(s.Namespace +"/"+ id).Receive(nil, new(OpenVNetError))
 }
 
 func (s *DatapathService) CreateDatapathRelation(rel*DatapathRelationType) (*DatapathRelation, *http.Response, error) {

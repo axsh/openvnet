@@ -44,5 +44,5 @@ func (s *NetworkService) Create (params *NetworkCreateParams) (*Network, *http.R
 }
 
 func (s *NetworkService) Delete (id string) (*http.Response, error) {
-	return nil, nil
+	return s.client.sling.New().Delete(s.Namespace +"/"+ id).Receive(nil, new(OpenVNetError))
 }
