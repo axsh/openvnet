@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+const Namespace = "datapaths"
+
 type Datapath struct {
 	ID          int    `json:"id"`
 	UUID        string `json:"uuid"`

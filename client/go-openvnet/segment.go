@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+const Namespace = "segments"
+
 type Segment struct {
 	ID        int    `json:"id"`
 	UUID      string `json:"uuid"`
@@ -28,7 +30,7 @@ type SegmentCreateParmas struct {
 func (s *SegmentService) Create (params *SegmentCreateParmas) (*Segment, *http.Response, error) {
 	seg := new(Segment)
 	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(s.Namespace).BodyForm(params).Receive(seg, ovnError)
+	resp, err := s.client.sling.New().Post(Namespace).BodyForm(params).Receive(seg, ovnError)
 
 	return seg, resp, err
 }

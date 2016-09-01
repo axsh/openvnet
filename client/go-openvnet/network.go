@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+const Namespace = "networks"
+
 type Network struct {
 	ID           int    `json:"id"`
 	UUID         string `json:"uuid"`
@@ -38,7 +40,7 @@ type NetworkCreateParams struct {
 func (s *NetworkService) Create (params *NetworkCreateParams) (*Network, *http.Response, error) {
 	nw := new(Network)
 	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(s.Namespace).BodyForm(params).Receive(nw, ovnError)
+	resp, err := s.client.sling.New().Post(Namespace).BodyForm(params).Receive(nw, ovnError)
 	return nw, resp, err
 
 }

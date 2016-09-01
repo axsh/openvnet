@@ -3,6 +3,9 @@ package openvnet
 import (
 	"net/http"
 )
+
+const Namespace = "route_links"
+
 type RouteLink struct {
 	ID           int    `json:"id"`
 	UUID         string `json:"uuid"`
@@ -27,7 +30,7 @@ type RouteLinkCreateParams struct {
 func (s *RouteLinkService) Create (params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
 	rl := new(RouteLink)
 	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(s.Namespace).BodyForm(params).Receive(rl, ovnError)
+	resp, err := s.client.sling.New().Post(Namespace).BodyForm(params).Receive(rl, ovnError)
 	return rl, resp, err
 }
 
