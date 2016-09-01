@@ -28,16 +28,16 @@ type Client struct {
 	Segment   *SegmentService
 }
 
-func (s *Client) post (namespace string, output interface{}, params interface{}) (*http.Response, error) {
+func (c *Client) post (namespace string, output interface{}, params interface{}) (*http.Response, error) {
 	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(namespace).BodyForm(params).Receive(output, ovnError)
+	resp, err := c.sling.New().Post(namespace).BodyForm(params).Receive(output, ovnError)
 
 	return resp, err
 }
 
-func (s *Client) del (id string) (*http.Response, error) {
+func (c *Client) del (id string) (*http.Response, error) {
 	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Delete(id).Receive(nil, ovnError)
+	resp, err := c.sling.New().Delete(id).Receive(nil, ovnError)
 
 	return resp, err
 }
