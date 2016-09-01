@@ -28,12 +28,10 @@ type SegmentCreateParams struct {
 
 func (s *SegmentService) Create (params *SegmentCreateParams) (*Segment, *http.Response, error) {
 	seg := new(Segment)
-	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(SegmentNamespace).BodyForm(params).Receive(seg, ovnError)
-
+	resp, err := s.client.post(SegmentNamespace, seg, params)
 	return seg, resp, err
 }
 
 func (s *SegmentService) Delete (id string) (*http.Response, error) {
-	return s.client.sling.New().Delete(SegmentNamespace +"/"+ id).Receive(nil, new(OpenVNetError))
+	return s.client.del(SegmentNamespace +"/"+ id)
 }

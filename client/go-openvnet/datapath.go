@@ -61,21 +61,16 @@ type DatapathRelationCreateParams struct {
 
 func (s *DatapathService) Create(params *DatapathCreateParams) (*Datapath, *http.Response, error) {
 	dp := new(Datapath)
-	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(DatapathNamespace).BodyForm(params).Receive(dp, ovnError)
+	resp, err := s.client.post(DatapathNamespace, dp, params)
 	return dp, resp, err
 }
 
 func (s *DatapathService) Delete(id string) (*http.Response, error) {
-	return s.client.sling.New().Delete(DatapathNamespace +"/"+ id).Receive(nil, new(OpenVNetError))
+	return s.client.del(DatapathNamespace +"/"+ id)
 }
 
 func (s *DatapathService) CreateDatapathRelation(rel*DatapathRelationType) (*DatapathRelation, *http.Response, error) {
 	dpr := new(DatapathRelation)
-	ovnError := new(OpenVNetError)
-	ns := DatapathNamespace +"/"+ rel.DatapathID +"/"+ rel.Type +"/"+ rel.ID
-
-	resp, err := s.client.sling.New().Post(ns).BodyForm(rel.Params).Receive(dpr, ovnError)
-
+	resp, err := s.client.post(DatapathNamespace +"/"+ rel.DatapathID +"/"+ rel.Type +"/"+ rel.ID, dpr, rel.Params)
 	return dpr, resp, err
 }

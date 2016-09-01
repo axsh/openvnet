@@ -37,14 +37,12 @@ type NetworkCreateParams struct {
 	SegmentUUID  string `url:"segment_id,omitempty"`
 }
 
-func (s *NetworkService) Create (params *NetworkCreateParams) (*Network, *http.Response, error) {
+func (s *NetworkService) Create(params *NetworkCreateParams) (*Network, *http.Response, error) {
 	nw := new(Network)
-	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(NetworkNamespace).BodyForm(params).Receive(nw, ovnError)
+	resp, err := s.client.post(NetworkNamespace, nw, params)
 	return nw, resp, err
-
 }
 
-func (s *NetworkService) Delete (id string) (*http.Response, error) {
-	return s.client.sling.New().Delete(NetworkNamespace +"/"+ id).Receive(nil, new(OpenVNetError))
+func (s *NetworkService) Delete(id string) (*http.Response, error) {
+	return s.client.del(NetworkNamespace +"/"+ id)
 }

@@ -29,11 +29,10 @@ type RouteLinkCreateParams struct {
 
 func (s *RouteLinkService) Create (params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
 	rl := new(RouteLink)
-	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(RouteLinkNamespace).BodyForm(params).Receive(rl, ovnError)
+	resp, err := s.client.post(RouteLinkNamespace, rl, params)
 	return rl, resp, err
 }
 
 func (s *RouteLinkService) Delete (id string) (*http.Response, error) {
-	return s.client.sling.New().Delete(RouteLinkNamespace +"/"+ id).Receive(nil, new(OpenVNetError))
+	return s.client.del(RouteLinkNamespace +"/"+ id)
 }
