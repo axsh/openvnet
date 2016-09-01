@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-const Namespace = "networks"
+const NetworkNamespace = "networks"
 
 type Network struct {
 	ID           int    `json:"id"`
@@ -40,11 +40,11 @@ type NetworkCreateParams struct {
 func (s *NetworkService) Create (params *NetworkCreateParams) (*Network, *http.Response, error) {
 	nw := new(Network)
 	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(Namespace).BodyForm(params).Receive(nw, ovnError)
+	resp, err := s.client.sling.New().Post(NetworkNamespace).BodyForm(params).Receive(nw, ovnError)
 	return nw, resp, err
 
 }
 
 func (s *NetworkService) Delete (id string) (*http.Response, error) {
-	return s.client.sling.New().Delete(s.Namespace +"/"+ id).Receive(nil, new(OpenVNetError))
+	return s.client.sling.New().Delete(NetworkNamespace +"/"+ id).Receive(nil, new(OpenVNetError))
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-const Namespace = "segments"
+const SegmentNamespace = "segments"
 
 type Segment struct {
 	ID        int    `json:"id"`
@@ -30,11 +30,11 @@ type SegmentCreateParmas struct {
 func (s *SegmentService) Create (params *SegmentCreateParmas) (*Segment, *http.Response, error) {
 	seg := new(Segment)
 	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(Namespace).BodyForm(params).Receive(seg, ovnError)
+	resp, err := s.client.sling.New().Post(SegmentNamespace).BodyForm(params).Receive(seg, ovnError)
 
 	return seg, resp, err
 }
 
 func (s *SegmentService) Delete (id string) (*http.Response, error) {
-	return s.client.sling.New().Delete(s.Namespace +"/"+ id).Receive(nil, new(OpenVNetError))
+	return s.client.sling.New().Delete(SegmentNamespace +"/"+ id).Receive(nil, new(OpenVNetError))
 }

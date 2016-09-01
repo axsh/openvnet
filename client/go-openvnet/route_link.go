@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-const Namespace = "route_links"
+const RouteLinkNamespace = "route_links"
 
 type RouteLink struct {
 	ID           int    `json:"id"`
@@ -30,10 +30,10 @@ type RouteLinkCreateParams struct {
 func (s *RouteLinkService) Create (params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
 	rl := new(RouteLink)
 	ovnError := new(OpenVNetError)
-	resp, err := s.client.sling.New().Post(Namespace).BodyForm(params).Receive(rl, ovnError)
+	resp, err := s.client.sling.New().Post(RouteLinkNamespace).BodyForm(params).Receive(rl, ovnError)
 	return rl, resp, err
 }
 
 func (s *RouteLinkService) Delete (id string) (*http.Response, error) {
-	return s.client.sling.New().Delete(s.Namespace +"/"+ id).Receive(nil, new(OpenVNetError))
+	return s.client.sling.New().Delete(RouteLinkNamespace +"/"+ id).Receive(nil, new(OpenVNetError))
 }
