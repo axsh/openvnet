@@ -1,7 +1,6 @@
 package openvnet
 
 import (
-	"fmt"
 	"net/http"
 )
 
