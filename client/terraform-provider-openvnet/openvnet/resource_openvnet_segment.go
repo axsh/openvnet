@@ -12,12 +12,25 @@ func OpenVNetSegment() *schema.Resource {
         Delete: openVNetSegmentDelete,
 
         Schema: map[string]*schema.Schema{
-        
+
+        	"uuid": &schema.Schema{
+                Type:     schema.TypeString,
+                Required: true,
+            },
+
+            "mode": &schema.Schema{
+                Type:     schema.TypeString,
+                Required: true,
+            },
         },
     }
 }
 
 func openVNetSegmentCreate(d *schema.ResourceData, m interface{}) error {
+
+	uuid := d.Get("uuid").(string)
+    mode := d.Get("mode").(string)
+	
     return nil
 }
 
