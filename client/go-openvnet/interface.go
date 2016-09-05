@@ -46,13 +46,6 @@ type InterfaceCreateParams struct {
 	Mode                    string `url:"mode,,omitempty"`
 }
 
-type InterfaceSecuritGroup struct {
-	UUID        string
-	DisplayName string
-	Rules       []string
-	Description string
-}
-
 type InterfaceCreateSecurityGroup struct {
 	UUID   string
 	SGUUID string
@@ -66,4 +59,10 @@ func (s *InterfaceService) Create(params *InterfaceCreateParams) (*Interface, *h
 
 func (s *InterfaceService) Delete(id string) (*http.Response, error) {
 	return s.client.del(InterfaceNamespace +"/"+ id)
+}
+
+func (s *InterfaceService) CreateSecurityGroupRelation (params InterfaceCreateSecurityGroup) (*SecurityGroup, *http.Response, error) {
+	sg := new(SecurityGroup)
+	resp, err := s.client.post(InterfaceNamespace +"/"+ params.UUID + "/securty_groups/" + params.SGUUID, sg, nil)
+	return sg, resp, err
 }
