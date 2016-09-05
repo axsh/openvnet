@@ -20,12 +20,13 @@ const (
 type Client struct {
 	sling     *sling.Sling
 
-	Datapath  *DatapathService
-	Network   *NetworkService
-	Interface *InterfaceService
-	Route     *RouteService
-	RouteLink *RouteLinkService
-	Segment   *SegmentService
+	Datapath      *DatapathService
+	Network       *NetworkService
+	Interface     *InterfaceService
+	Route         *RouteService
+	RouteLink     *RouteLinkService
+	Segment       *SegmentService
+	SecurityGroup *SecurityGroupService
 }
 
 func (c *Client) post (namespace string, output interface{}, params interface{}) (*http.Response, error) {
@@ -58,6 +59,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c.Route = &RouteService{client: c}
 	c.RouteLink = &RouteLinkService{client: c}
 	c.Segment = &SegmentService{client: c}
+	c.SecurityGroup = &SecurityGroupService{client: c}
 	return c
 }
 
