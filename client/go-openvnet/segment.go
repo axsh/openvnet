@@ -17,8 +17,6 @@ type Segment struct {
 
 type SegmentService struct {
 	client *Client
-
-	Namespace string
 }
 
 type SegmentCreateParams struct {

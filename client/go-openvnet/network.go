@@ -23,8 +23,6 @@ type Network struct {
 
 type NetworkService struct {
 	client *Client
-
-	Namespace string
 }
 
 type NetworkCreateParams struct {

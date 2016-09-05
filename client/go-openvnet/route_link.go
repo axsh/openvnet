@@ -18,8 +18,6 @@ type RouteLink struct {
 
 type RouteLinkService struct {
 	client *Client
-
-	Namespace string
 }
 
 type RouteLinkCreateParams struct {

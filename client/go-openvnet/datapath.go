@@ -35,8 +35,6 @@ type DatapathRelation struct {
 
 type DatapathService struct {
 	client *Client
-
-	Namespace string
 }
 
 type DatapathCreateParams struct {
