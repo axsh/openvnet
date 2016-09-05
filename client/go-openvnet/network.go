@@ -31,7 +31,7 @@ type NetworkCreateParams struct {
 	UUID         string `url:"uuid,omitempty"`
 	DisplayName  string `url:"display_name,omitempty"`
 	Ipv4Network  string `url:"ipv4_network"`
-	Ipv4Prefix   string `url:"ipv4_prefix,omitempty"`
+	Ipv4Prefix   int    `url:"ipv4_prefix,omitempty"`
 	NetworkMode  string `url:"network_mode"`
 	DomainName   string `url:"domain_name,omitempty"`
 	SegmentUUID  string `url:"segment_id,omitempty"`
