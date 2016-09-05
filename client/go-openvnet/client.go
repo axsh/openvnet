@@ -22,7 +22,7 @@ type Client struct {
 
 	Datapath  *DatapathService
 	Network   *NetworkService
-//	Interface *InterfaceService
+	Interface *InterfaceService
 	Route     *RouteService
 	RouteLink *RouteLinkService
 	Segment   *SegmentService
@@ -53,7 +53,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	s := sling.New().Base(baseURL).Client(httpClient)
 	c := &Client{sling: s}
 	c.Datapath = &DatapathService{client: c}
-//	c.Interface = &InterfaceService{client: c}
+	c.Interface = &InterfaceService{client: c}
 	c.Network = &NetworkService{client: c}
 	c.Route = &RouteService{client: c}
 	c.RouteLink = &RouteLinkService{client: c}
