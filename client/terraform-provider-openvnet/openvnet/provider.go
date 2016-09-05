@@ -8,12 +8,12 @@ import (
 func Provider () terraform.ResourceProvider {
 	return &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
-			"openvnet_datapath":   resourceOpenVNetDatapaht(),
-			"openvnet_interface":  resourceOpenVNetInterface(),
-			"openvnet_network":    resourceOpenVNetNetwork(),
-			"openvnet_route":      resourceOpenVNetRoute(),
-			"openvnet_route_link": resourceOpenVNetRouteLink(),
-			"openvnet_segment":    resourceOpenVNetSegment(),
+			"openvnet_datapath":   OpenVNetDatapath(),
+			"openvnet_interface":  OpenVNetInterface(),
+			"openvnet_network":    OpenVNetNetwork(),
+			"openvnet_route":      OpenVNetRoute(),
+			"openvnet_route_link": OpenVNetRouteLink(),
+			"openvnet_segment":    OpenVNetSegment(),
 		},
 	}
 }
