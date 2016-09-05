@@ -1,8 +1,9 @@
 package openvnet
 
 type SecurityGroup struct {
-	UUID        string
-	DisplayName string
-	Rules       []string
-	Description string
+	UUID        string `json:"uudi"`
+	DisplayName string `json:"display_name"`
+	Rules       string `json:"rules"`
+	Description string `json:"description"`
 }
+
