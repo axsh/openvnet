@@ -35,13 +35,13 @@ type RouteCreateParams struct {
 	Egress        bool   `url:"egress,omitempty"`
 }
 
-func (s *RouteService) Create (params *RouteCreateParams) (*Route, *http.Response, error) {
+func (s *RouteService) Create(params *RouteCreateParams) (*Route, *http.Response, error) {
 	r := new(Route)
 	resp, err := s.client.post(RouteNamespace, r, params)
 	return r, resp, err
 
 }
 
-func (s *RouteService) Delete (id string) (*http.Response, error) {
+func (s *RouteService) Delete(id string) (*http.Response, error) {
 	return s.client.del(id)
 }

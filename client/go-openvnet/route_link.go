@@ -25,12 +25,12 @@ type RouteLinkCreateParams struct {
 	MacAddress string `url:"mac_address"`
 }
 
-func (s *RouteLinkService) Create (params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
+func (s *RouteLinkService) Create(params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
 	rl := new(RouteLink)
 	resp, err := s.client.post(RouteLinkNamespace, rl, params)
 	return rl, resp, err
 }
 
-func (s *RouteLinkService) Delete (id string) (*http.Response, error) {
-	return s.client.del(RouteLinkNamespace +"/"+ id)
+func (s *RouteLinkService) Delete(id string) (*http.Response, error) {
+	return s.client.del(RouteLinkNamespace + "/" + id)
 }

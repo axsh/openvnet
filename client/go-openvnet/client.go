@@ -10,15 +10,15 @@ import (
 
 const (
 	webapiProtocol = "http"
-	webapiUri = "localhost"
-	webapiPort = "9090"
-	webapiVersion = "1.0"
+	webapiUri      = "localhost"
+	webapiPort     = "9090"
+	webapiVersion  = "1.0"
 
-	defaultURL = webapiProtocol +"://" + webapiUri + ":" + webapiPort +"/api/" + webapiVersion
+	defaultURL = webapiProtocol + "://" + webapiUri + ":" + webapiPort + "/api/" + webapiVersion
 )
 
 type Client struct {
-	sling     *sling.Sling
+	sling *sling.Sling
 
 	Datapath      *DatapathService
 	Network       *NetworkService
@@ -29,14 +29,14 @@ type Client struct {
 	SecurityGroup *SecurityGroupService
 }
 
-func (c *Client) post (namespace string, output interface{}, params interface{}) (*http.Response, error) {
+func (c *Client) post(namespace string, output interface{}, params interface{}) (*http.Response, error) {
 	ovnError := new(OpenVNetError)
 	resp, err := c.sling.New().Post(namespace).BodyForm(params).Receive(output, ovnError)
 
 	return resp, err
 }
 
-func (c *Client) del (id string) (*http.Response, error) {
+func (c *Client) del(id string) (*http.Response, error) {
 	ovnError := new(OpenVNetError)
 	resp, err := c.sling.New().Delete(id).Receive(nil, ovnError)
 

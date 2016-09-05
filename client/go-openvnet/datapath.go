@@ -42,7 +42,6 @@ type DatapathCreateParams struct {
 	DisplayName string `url:"display_name"`
 	DPID        string `url:"dpid"`
 	NodeId      string `url:"node_id"`
-
 }
 
 type DatapathRelationType struct {
@@ -64,11 +63,11 @@ func (s *DatapathService) Create(params *DatapathCreateParams) (*Datapath, *http
 }
 
 func (s *DatapathService) Delete(id string) (*http.Response, error) {
-	return s.client.del(DatapathNamespace +"/"+ id)
+	return s.client.del(DatapathNamespace + "/" + id)
 }
 
-func (s *DatapathService) CreateDatapathRelation(rel*DatapathRelationType) (*DatapathRelation, *http.Response, error) {
+func (s *DatapathService) CreateDatapathRelation(rel *DatapathRelationType) (*DatapathRelation, *http.Response, error) {
 	dpr := new(DatapathRelation)
-	resp, err := s.client.post(DatapathNamespace +"/"+ rel.DatapathID +"/"+ rel.Type +"/"+ rel.ID, dpr, rel.Params)
+	resp, err := s.client.post(DatapathNamespace+"/"+rel.DatapathID+"/"+rel.Type+"/"+rel.ID, dpr, rel.Params)
 	return dpr, resp, err
 }

@@ -24,12 +24,12 @@ type SegmentCreateParams struct {
 	Mode string `url:"mode"`
 }
 
-func (s *SegmentService) Create (params *SegmentCreateParams) (*Segment, *http.Response, error) {
+func (s *SegmentService) Create(params *SegmentCreateParams) (*Segment, *http.Response, error) {
 	seg := new(Segment)
 	resp, err := s.client.post(SegmentNamespace, seg, params)
 	return seg, resp, err
 }
 
-func (s *SegmentService) Delete (id string) (*http.Response, error) {
-	return s.client.del(SegmentNamespace +"/"+ id)
+func (s *SegmentService) Delete(id string) (*http.Response, error) {
+	return s.client.del(SegmentNamespace + "/" + id)
 }

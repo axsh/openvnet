@@ -14,14 +14,14 @@ type IpLease struct {
 	NetworkID     int    `json:"network_id"`
 	IPv4Adress    string `json:"ipv4_address"`
 	IPAddress     struct {
-		ID            int     `json:"id"`
-		NetworkID     int     `json:"network_id"`
-		IPv4Adress    int     `json:"ipv4_address"`
-		CreatedAt     string  `json:"created_at"`
-		DeletedAt     string  `json:"deleted_at"`
-		UpdatedAt     string  `json:"updated_at"`
-		IsDeleted     int     `json:"is_deleted"`
-		Network       Network `json:"network"`
+		ID         int     `json:"id"`
+		NetworkID  int     `json:"network_id"`
+		IPv4Adress int     `json:"ipv4_address"`
+		CreatedAt  string  `json:"created_at"`
+		DeletedAt  string  `json:"deleted_at"`
+		UpdatedAt  string  `json:"updated_at"`
+		IsDeleted  int     `json:"is_deleted"`
+		Network    Network `json:"network"`
 	} `json:"ip_adress"`
 	InterfaceUUID string `json:"interface_uuid"`
 	MacLeaseUUID  string `json:"mac_lease_uuid"`
