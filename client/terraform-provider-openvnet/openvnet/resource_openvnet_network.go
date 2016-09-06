@@ -1,7 +1,8 @@
-package main
+package openvnet
 
 import (
     "github.com/hashicorp/terraform/helper/schema"
+    "github.com/axsh/openvnet/client/go-openvnet"
 )
 
 func OpenVNetNetwork() *schema.Resource {
@@ -15,16 +16,21 @@ func OpenVNetNetwork() *schema.Resource {
 
             "uuid": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
             },
 
             "display_name": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
             },
 
             "ipv4_network": &schema.Schema{
                 Type:     schema.TypeString,
+                Required: true,
+            },
+
+            "ipv4_prefix": &schema.Schema{
+                Type:     schema.TypeInt,
                 Optional: true,
             },
 
@@ -33,13 +39,13 @@ func OpenVNetNetwork() *schema.Resource {
                 Required: true,
             },
 
-            "segment_uuid": &schema.Schema{
+            "domain_name": &schema.Schema{
                 Type:     schema.TypeString,
                 Optional: true,
             },
 
-            "editable": &schema.Schema{
-                Type:     schema.TypeBool,
+            "segment_uuid": &schema.Schema{
+                Type:     schema.TypeString,
                 Optional: true,
             },
         },
@@ -48,12 +54,19 @@ func OpenVNetNetwork() *schema.Resource {
 
 func openVNetNetworkCreate(d *schema.ResourceData, m interface{}) error {
 
-	uuid := d.Get("uuid").(string)
-    display_name := d.Get("display_name").(string)
-    ipv4_network := d.Get("ipv4_network").(string)
-    network_mode := d.Get("network_mode").(string)
-    segment_uuid := d.Get("segment_uuid").(string)
-    editable := d.Get("editable").(bool)
+	client := m.(*openvnet.Client)
+
+    params := openvnet.NetworkCreateParams{
+        UUID:d.Get("uuid").(string),
+        DisplayName:d.Get("display_name").(string),
+        Ipv4Network:d.Get("ipv4_network").(string),
+        Ipv4Prefix:d.Get("ipv4_prefix").(int),
+        NetworkMode:d.Get("network_mode").(string),
+        DomainName:d.Get("domain_name").(string),
+        SegmentUUID:d.Get("segment_uuid").(string),
+    }
+
+    network, _, err := client.Network.Create(&params)
 
     return nil
 }
@@ -67,5 +80,8 @@ func openVNetNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetNetworkDelete(d *schema.ResourceData, m interface{}) error {
-    return nil
+    client := m.(*openvnet.Client)
+
+    _, err := client.Network.Delete(d.Id())
+    return err
 }

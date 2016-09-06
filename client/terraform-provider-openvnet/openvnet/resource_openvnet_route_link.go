@@ -1,7 +1,8 @@
-package main
+package openvnet
 
 import (
 		"github.com/hashicorp/terraform/helper/schema"
+        "github.com/axsh/openvnet/client/go-openvnet"
  )
 
 
@@ -30,8 +31,14 @@ func OpenVNetRouteLink() *schema.Resource {
 
 func openVNetRouteLinkCreate(d *schema.ResourceData, m interface{}) error {
 
-	uuid := d.Get("uuid").(string)
-    mac_address := d.Get("mac_address").(string)
+	client := m.(*openvnet.Client)
+
+    params := openvnet.RouteLinkCreateParams{
+        UUID:d.Get("uuid").(string),
+        MacAddress:d.Get("mac_address").(string),
+    }
+
+    route_link, _, err := client.RouteLink.Create(&params)
 
     return nil
 }

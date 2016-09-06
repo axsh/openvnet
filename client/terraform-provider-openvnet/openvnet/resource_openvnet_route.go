@@ -1,4 +1,4 @@
-package main
+package openvnet
 
 import (
     "github.com/hashicorp/terraform/helper/schema"
@@ -58,14 +58,20 @@ func OpenVNetRoute() *schema.Resource {
 
 func openVNetRouteCreate(d *schema.ResourceData, m interface{}) error {
 
-	uuid := d.Get("uuid").(string)
-    interface_uuid := d.Get("interface_uuid").(string)
-    route_link_uuid := d.Get("route_link_uuid").(string)
-    network_uuid := d.Get("network_uuid").(string)
-    ipv4_network := d.Get("ipv4_network").(string)
-    ipv4_prefix := d.Get("ipv4_prefix").(int)
-    ingress := d.Get("ingress").(string)
-    egress := d.Get("egress").(string)
+	client := m.(*openvnet.Client)
+
+    params := openvnet.InterfaceCreateParams{
+        UUID:d.Get("uuid").(string),
+        InterfaceUUID:d.Get("interface_uuid").(bool),
+        RouteLinkUUID:d.Get("route_link_uuid").(bool),
+        NetworkUUID:d.Get("network_uuid").(bool),
+        Ipv4Network:d.Get("ipv4_network").(string),
+        Ipv4Prefix:d.Get("ipv4_prefix").(bool),
+        Ingress:d.Get("ingress").(string),
+        Egress:d.Get("egress").(string),
+    }
+
+    route, _, err := client.Route.Create(&params)
 
     return nil
 }

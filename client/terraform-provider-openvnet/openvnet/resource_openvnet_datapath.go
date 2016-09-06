@@ -1,7 +1,10 @@
-package main
+package openvnet
 
 import (
     "github.com/hashicorp/terraform/helper/schema"
+    "github.com/axsh/openvnet/client/go-openvnet"
+    "fmt"
+    "log"
 )
 
 func OpenVNetDatapath() *schema.Resource {
@@ -98,10 +101,23 @@ func OpenVNetDatapath() *schema.Resource {
 
 func openVNetDatapathCreate(d *schema.ResourceData, m interface{}) error {
 
-    display_name := d.Get("display_name").(string)
-    uuid := d.Get("uuid").(string)
-    dpid := d.Get("dpid").(string)
-    node_id := d.Get("node_id").(string)
+    client := m.(*openvnet.Client)
+
+    params := openvnet.DatapathCreateParams{
+        UUID:d.Get("uuid").(string),
+        DisplayName:d.Get("display_name").(string),
+        DPID:d.Get("dpid").(string),
+        NodeID:d.Get("node_id").(string),
+    }
+
+    datapath, _, err := client.Datapath.Create(&params)
+
+    if err != nil {
+        return fmt.Errorf("Error creating datapath: %s", err)
+    }
+
+    d.SetId(datapath.ID)
+    log.Printf("[INFO] Datapath Id: %s", d.Id())
 
     return nil
 }
@@ -115,5 +131,8 @@ func openVNetDatapathUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetDatapathDelete(d *schema.ResourceData, m interface{}) error {
-    return nil
+    client := m.(*openvnet.Client)
+
+    _, err := client.Datapath.Delete(d.Id())
+    return err
 }

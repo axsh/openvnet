@@ -82,18 +82,18 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
     client := m.(*openvnet.Client)
 
     params := openvnet.InterfaceCreateParams{
-        UUID:d.Get("UUID").(string),
+        UUID:d.Get("uuid").(string),
         IngressFilteringEnabled:d.Get("ingress_filtering_enabled").(bool),
-        EnableRouting:d.Get("EnableRouting").(bool),
-        EnableRouteTranslation:d.Get("EnableRouteTranslation").(bool),
-        OwnerDatapathID:d.Get("OwnerDatapathID").(string),
-        EnableFiltering:d.Get("EnableFiltering").(bool),
-        SegmentUUID:d.Get("SegmentUUID").(string),
-        NetworkUUID:d.Get("NetworkUUID").(string),
-        MacAddress:d.Get("MacAddress").(string),
-        Ipv4Address:d.Get("Ipv4Address").(string),
-        PortName:d.Get("PortName").(string),
-        Mode:d.Get("Mode").(string),
+        EnableRouting:d.Get("enable_routing").(bool),
+        EnableRouteTranslation:d.Get("enable_route_translation").(bool),
+        OwnerDatapathID:d.Get("owner_datapath_id").(string),
+        EnableFiltering:d.Get("enable_filtering").(bool),
+        SegmentUUID:d.Get("segment_uuid").(string),
+        NetworkUUID:d.Get("network_uuid").(string),
+        MacAddress:d.Get("mac_address").(string),
+        Ipv4Address:d.Get("ipv4_address").(string),
+        PortName:d.Get("port_name").(string),
+        Mode:d.Get("mode").(string),
     }
 
     return nil
@@ -108,5 +108,8 @@ func openVNetInterfaceUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetInterfaceDelete(d *schema.ResourceData, m interface{}) error {
-    return nil
+    client := m.(*openvnet.Client)
+
+    _, err := client.Interface.Delete(d.Id())
+    return err
 }
