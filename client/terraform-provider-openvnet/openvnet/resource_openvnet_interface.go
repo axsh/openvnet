@@ -1,6 +1,9 @@
-package main
+package openvnet
 
-import "github.com/hashicorp/terraform/helper/schema"
+import (
+    "github.com/hashicorp/terraform/helper/schema"
+    "github.com/axsh/openvnet/client/go-openvnet"
+)
 
 func OpenVNetInterface() *schema.Resource {
     return &schema.Resource{
@@ -11,39 +14,52 @@ func OpenVNetInterface() *schema.Resource {
 
         Schema: map[string]*schema.Schema{
 
-            "display_name": &schema.Schema{
-                Type:     schema.TypeString,
-                Required: true,
-            },
-
             "uuid": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
-                ForceNew: true,
+                Optional: true,
             },
 
-            "mode": &schema.Schema{
-                Type:     schema.TypeString,
-                Required: true,
+            "ingress_filtering_enabled": &schema.Schema{
+                Type:     schema.TypeBool,
+                Optional: true,
             },
 
-            "ipv4_address": &schema.Schema{
+            "enable_routing": &schema.Schema{
+                Type:     schema.TypeBool,
+                Optional: true,
+            },
+
+            "enable_route_translation": &schema.Schema{
+                Type:     schema.TypeBool,
+                Optional: true,
+            },
+
+            "owner_datapath_id": &schema.Schema{
                 Type:     schema.TypeString,
                 Optional: true,
+            },
+
+            "enable_filtering": &schema.Schema{
+                Type:     schema.TypeBool,
+                Optional: true,
+            },
+
+            "segment_uuid": &schema.Schema{
+                Type:     schema.TypeString,
+                Optional: true,
+            },
+
+            "network_uuid": &schema.Schema{
+                Type:     schema.TypeString,
+                Required: true,
             },
 
             "mac_address": &schema.Schema{
                 Type:     schema.TypeString,
                 Required: true,
-                ForceNew: true,
             },
 
-            "network_uuid": &schema.Schema{
-                Type:     schema.TypeString,
-                Optional: true,
-            },
-
-            "segment_uuid": &schema.Schema{
+            "ipv4_address": &schema.Schema{
                 Type:     schema.TypeString,
                 Required: true,
             },
@@ -53,64 +69,9 @@ func OpenVNetInterface() *schema.Resource {
                 Required: true,
             },
 
-            "ingress_filtering_enable": &schema.Schema{
-                Type:     schema.TypeBool,
+            "mode": &schema.Schema{
+                Type:     schema.TypeString,
                 Required: true,
-            },
-
-            "enable_route_translations": &schema.Schema{
-                Type:     schema.TypeBool,
-                Required: true,
-            },
-
-            "enable_filtering": &schema.Schema{
-                Type:     schema.TypeBool,
-                Required: true,
-            },
-
-            "enable_routing": &schema.Schema{
-                Type:     schema.TypeBool,
-                Required: true,
-            },
-
-            "port": &schema.Schema{
-                Type:     schema.TypeList,
-                Optional: true,
-                Elem: &schema.Resource{
-                    Schema: map[string]*schema.Schema{
-
-                        "datapath_uuid": &schema.Schema{
-                            Type:     schema.TypeString,
-                            Optional: true,
-                        },
-
-                        "port_name": &schema.Schema{
-                            Type:     schema.TypeString,
-                            Optional: true,
-                            ForceNew: true,
-                        },
-
-                        "singular": &schema.Schema{
-                            Type:     schema.TypeString,
-                            Optional: true,
-                            ForceNew: true,
-                        },
-                    },
-                },
-            },
-
-            "security_group": &schema.Schema{
-                Type:     schema.TypeList,
-                Optional: true,
-                Elem: &schema.Resource{
-                    Schema: map[string]*schema.Schema{
-
-                        "security_group_id": &schema.Schema{
-                            Type:     schema.TypeString,
-                            Optional: true,
-                        },
-                    },
-                },
             },
         },
     }
@@ -118,19 +79,22 @@ func OpenVNetInterface() *schema.Resource {
 
 func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 
-	display_name := d.Get("display_name").(string)
-    uuid := d.Get("uuid").(string)
-    mode := d.Get("mode").(string)
-    ipv4_address := d.Get("ipv4_address").(string)
-    mac_address := d.Get("mac_address").(string)
-    network_uuid := d.Get("network_uuid").(string)
-    segment_uuid := d.Get("segment_uuid").(string)
-    port_name := d.Get("port_name").(string)
+    client := m.(*openvnet.Client)
 
-    ingress_filtering_enable := d.Get("ingress_filtering_enable").(bool)
-    enable_route_translations := d.Get("enable_route_translations").(bool)
-    enable_filtering := d.Get("enable_filtering").(bool)
-    enable_routing := d.Get("enable_routing").(bool)
+    params := openvnet.InterfaceCreateParams{
+        UUID:d.Get("UUID").(string),
+        IngressFilteringEnabled:d.Get("ingress_filtering_enabled").(bool),
+        EnableRouting:d.Get("EnableRouting").(bool),
+        EnableRouteTranslation:d.Get("EnableRouteTranslation").(bool),
+        OwnerDatapathID:d.Get("OwnerDatapathID").(string),
+        EnableFiltering:d.Get("EnableFiltering").(bool),
+        SegmentUUID:d.Get("SegmentUUID").(string),
+        NetworkUUID:d.Get("NetworkUUID").(string),
+        MacAddress:d.Get("MacAddress").(string),
+        Ipv4Address:d.Get("Ipv4Address").(string),
+        PortName:d.Get("PortName").(string),
+        Mode:d.Get("Mode").(string),
+    }
 
     return nil
 }
