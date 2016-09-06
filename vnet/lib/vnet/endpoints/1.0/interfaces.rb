@@ -142,7 +142,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     interface = uuid_to_id(M::Interface, 'uuid', 'interface_id')
     segment = uuid_to_id(M::Segment, 'segment_uuid', 'segment_id')
 
-    if param[:set_static] then
+    if param[:static] then
       result = M::InterfaceSegment.set_static(interface.id, segment.id)
     else
       result = M::InterfaceSegment.clear_static(interface.id, segment.id)

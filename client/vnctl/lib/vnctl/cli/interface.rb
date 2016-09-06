@@ -61,9 +61,9 @@ module Vnctl::Cli
       relation.desc 'INTERFACE_UUID OPTIONS', 'Send put request to enable/disable static state'
       relation.option :segment_uuid, :type => :string, :required => true,
           :desc => 'Segment UUID to set the static flag for'
-      relation.option :set_static, :type => :boolean,
+      relation.option :static, :type => :boolean,
           :desc => 'The flag which decides if the interface should stay connected or disconnect from a segment if no mac lease exist.'
-      relation.define_custom_method(:puts) do |uuid, options|
+      relation.define_custom_method(:modify) do |uuid, options|
         puts Vnctl.webapi.put("interfaces/#{uuid}/segments/#{options[:segment_uuid]}", options)
       end
     }
