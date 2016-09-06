@@ -147,7 +147,11 @@ module Vnctl::Cli
         end
       end
 
-      def self.define_custom_method(method_name, &block)
+      def self.define_custom_method(method_name, require_relation_uuid_label = false, &block)
+        return define_method(method_name) do |uuid, relation_uuid|
+          yield uuid, relation_uuid, options
+        end if require_relation_uuid_label
+
         define_method(method_name) do |uuid|
           yield uuid, options
         end
