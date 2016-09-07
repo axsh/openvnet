@@ -33,14 +33,14 @@ func (c *Client) post(namespace string, output interface{}, params interface{}) 
 	ovnError := new(OpenVNetError)
 	resp, err := c.sling.New().Post(namespace).BodyForm(params).Receive(output, ovnError)
 
-	return resp, err
+	return checkError(ovnError, resp, err)
 }
 
 func (c *Client) del(id string) (*http.Response, error) {
 	ovnError := new(OpenVNetError)
 	resp, err := c.sling.New().Delete(id).Receive(nil, ovnError)
 
-	return resp, err
+	return checkError(ovnError, resp, err)
 }
 
 func NewClient(url *url.URL, httpClient *http.Client) *Client {
@@ -48,8 +48,6 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	if url != nil {
 		baseURL = url.String()
 	}
-
-	fmt.Println(baseURL)
 
 	s := sling.New().Base(baseURL).Client(httpClient)
 	c := &Client{sling: s}
@@ -70,5 +68,14 @@ type OpenVNetError struct {
 }
 
 func (e *OpenVNetError) Error() string {
-	return fmt.Sprint("ERROR")
+	return fmt.Sprintf("%s\nMessage: %s\nCode: %s",
+		e.ErrorType, e.Message, e.Code)
+}
+
+func checkError(ovnError *OpenVNetError, resp *http.Response, err error) (*http.Response, error) {
+	if err == nil {
+		err = ovnError
+		fmt.Println(err)
+	}
+	return resp, err
 }
