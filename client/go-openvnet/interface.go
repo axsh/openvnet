@@ -39,7 +39,7 @@ type InterfaceCreateParams struct {
 	OwnerDatapathID         string `url:"owner_datapath_id,omitempty"`
 	EnableFiltering         bool   `url:"enable_filtering,omitempty"`
 	SegmentUUID             string `url:"segment_uuid,omitempty"`
-	NetworkUUID             string `url:"network_uuid"`
+	NetworkUUID             string `url:"network_uuid,omitempty"`
 	MacAddress              string `url:"mac_address,omitempty"`
 	Ipv4Address             string `url:"ipv4_address,omitempty"`
 	PortName                string `url:"port_name,omitempty"`
