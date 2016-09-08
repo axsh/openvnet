@@ -7,6 +7,16 @@ import (
 
 func Provider () terraform.ResourceProvider {
 	return &schema.Provider{
+
+		Schema: map[string]*schema.Schema{
+			"api_endpoint": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("OPENVNET_API_ENDPOINT", nil),
+				Description: "Endpoint URL for API.",
+			},
+		},
+
 		ResourcesMap: map[string]*schema.Resource{
 			"openvnet_datapath":   OpenVNetDatapath(),
 			"openvnet_interface":  OpenVNetInterface(),
@@ -15,5 +25,15 @@ func Provider () terraform.ResourceProvider {
 			"openvnet_route_link": OpenVNetRouteLink(),
 			"openvnet_segment":    OpenVNetSegment(),
 		},
+
+		ConfigureFunc: providerConfigure,
 	}
+}
+
+func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+	config := Config{
+		APIEndpoint: d.Get("api_endpoint").(string),
+	}
+
+	return config.Client()
 }
