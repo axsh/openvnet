@@ -43,6 +43,13 @@ func (c *Client) del(uri string) (*http.Response, error) {
 	return checkError(ovnError, resp, err)
 }
 
+func (c *Client) get(uri string, output interface{}) (*http.Response, error) {
+	ovnError := new(OpenVNetError)
+	resp, err := c.sling.New().Get(uri).Receive(output, ovnError)
+
+	return checkError(ovnError, resp, err)
+}
+
 func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	baseURL := defaultURL
 	if url != nil {

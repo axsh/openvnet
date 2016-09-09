@@ -71,3 +71,22 @@ func (s *DatapathService) CreateDatapathRelation(rel *DatapathRelationType) (*Da
 	resp, err := s.client.post(DatapathNamespace+"/"+rel.DatapathID+"/"+rel.Type+"/"+rel.ID, dpr, rel.Params)
 	return dpr, resp, err
 }
+
+func (s *DatapathService) GetByUUID(id string) (*Datapath, *http.Response, error) {
+	dp = := new(Datapath)
+	resp, err := s.client.get(DatapathNamespace+"/"+id)
+	return dpr, resp, err
+}
+
+// func (s *DatapathService) Get() (*List, *http.Response, error) {
+// 	list := new(List)
+// 	list.Items(*[]DatapathRelation)
+// 	resp, err := s.client.get(DatapathNamespace)
+// 	return list, resp, err
+// }
+
+// func (s *DatapathService) GetRelations(id string) () { 
+// 	list := new(List)
+// 	resp, err := s.client.get(DatapathNamespace)
+// 	return list, resp, err
+// }
