@@ -74,8 +74,10 @@ func (e *OpenVNetError) Error() string {
 
 func checkError(ovnError *OpenVNetError, resp *http.Response, err error) (*http.Response, error) {
 	if err == nil {
-		err = ovnError
-		fmt.Println(err)
+		if resp.StatusCode >= 400 {
+			err = ovnError
+			fmt.Println(err)
+		}
 	}
 	return resp, err
 }
