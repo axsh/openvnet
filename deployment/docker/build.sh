@@ -75,6 +75,14 @@ if [[ -n "$BUILD_CACHE_DIR" ]]; then
     fi
     docker cp './deployment/docker/build-cache.list' "${CID}:/var/tmp/build-cache.list"
     docker exec "${CID}" tar cO --directory=/ --files-from=/var/tmp/build-cache.list > "${build_cache_base}/${COMMIT_ID}.tar"
+    # Clear build cache files which no longer referenced from Git ref names (branch, tags)
+    git show-ref --head --dereference | awk '{print $1}' > /tmp/sha.a
+    (cd "${build_cache_base}"; ls *.tar) | cut -d '.' -f1 > /tmp/sha.b
+    # Set operation: B - A
+    join -v 2 <(sort -u /tmp/sha.a) <(sort -u /tmp/sha.b) | while read i; do
+      echo "Removing build cache: ${build_cache_base}/${i}.tar"
+      rm -f "${build_cache_base}/${i}.tar" || :
+    done
 fi
 # Pull compiled yum repository
 docker cp "${CID}:${REPO_BASE_DIR}" "$(dirname ${REPO_BASE_DIR})"
