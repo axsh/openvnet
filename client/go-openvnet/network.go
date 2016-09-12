@@ -7,18 +7,13 @@ import (
 const NetworkNamespace = "networks"
 
 type Network struct {
-	ID          int    `json:"id"`
-	UUID        string `json:"uuid"`
+	ItemBase
 	DisplayName string `json:"display_name"`
 	Ipv4Network string `json:"ipv4_network"`
 	Ipv4Prefix  string `json:"ipv4_prefix"`
 	NetworkMode string `json:"network_mode"`
 	DomainName  string `json:"domain_name"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
-	DeletedAt   string `json:"deleted_at"`
 	SegmentID   int    `json:"segment_id"`
-	IsDeleted   bool   `json:"id_deleted"`
 }
 
 type NetworkService struct {

@@ -7,7 +7,7 @@ import (
 const RouteNamespace = "routes"
 
 type Route struct {
-	UUID          string `json:"uuid"`
+	ItemBase
 	RouteLinkUUID string `json:"route_link_uuid"`
 	NetworkUUID   string `json:"network_uuid"`
 	InterfaceUUID string `json:"interface_uuid"`
@@ -16,8 +16,6 @@ type Route struct {
 	Ipv4Prefix    int    `json:"ipv4_prefix"`
 	Ingress       bool   `json:"ingress"`
 	Egress        bool   `json:"egress"`
-	CreatedAt     string `json:"created_at"`
-	DeletedAt     string `json:"deleted_at"`
 }
 
 type RouteService struct {

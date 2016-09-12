@@ -7,12 +7,8 @@ import (
 const RouteLinkNamespace = "route_links"
 
 type RouteLink struct {
-	ID           int    `json:"id"`
-	UUID         string `json:"uuid"`
+	ItemBase
 	MacAddressID int    `json:"mac_address_id"`
-	CreatedAt    string `json:"created_at"`
-	DeletedAt    string `json:"deleted_at"`
-	IsDeleted    bool   `json:"is_deleted"`
 	MacAddress   string `json:"mac_address"`
 }
 

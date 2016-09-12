@@ -7,17 +7,12 @@ import (
 const InterfaceNamespace = "interfaces"
 
 type Interface struct {
-	ID                      int        `json:"id"`
-	UUID                    string     `json:"uuid"`
+	ItemBase
 	Mode                    string     `json:"mode"`
 	DisplayName             string     `json:"display_name"`
 	IngressFilteringEnabled bool       `json:"ingress_filtering_enabled"`
 	EnableRouting           bool       `json:"enable_routing"`
 	EnableRouteTranslation  bool       `json:"enable_route_translation"`
-	CreatedAt               string     `json:"created_at"`
-	UpdatedAt               string     `json:"updated_at"`
-	DeletedAt               string     `json:"deleted_at"`
-	IsDeleted               int        `json:"is_deleted"`
 	EnableFiltering         bool       `json:"enable_filtering"`
 	EnableLegacyFilering    bool       `json:"enable_legacy_filtering"`
 	MacLeases               []MacLease `json:"mac_leases"`

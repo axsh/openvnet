@@ -7,12 +7,8 @@ import (
 const SegmentNamespace = "segments"
 
 type Segment struct {
-	ID        int    `json:"id"`
-	UUID      string `json:"uuid"`
-	Mode      string `json:"mode"`
-	CreatedAt string `json:"created_at"`
-	DeletedAt string `json:"deleted_ad"`
-	IsDeleted int    `json:"is_deleted"`
+	ItemBase
+	Mode string `json:"mode"`
 }
 
 type SegmentService struct {
