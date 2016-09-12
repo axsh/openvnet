@@ -4,6 +4,7 @@
 set -ex -o pipefail
 
 CID=
+TMPDIR=$(mktemp -d)
 function docker_rm() {
     if [[ -z "$CID" ]]; then
         return 0
@@ -17,7 +18,7 @@ function docker_rm() {
     docker rm -f "$CID" 
 }
 
-trap "docker_rm" EXIT
+trap "docker_rm; rm -rf ${TMPDIR}" EXIT
 
 BUILD_ENV_PATH=${1:?"ERROR: env file is not given."}
 
@@ -76,10 +77,10 @@ if [[ -n "$BUILD_CACHE_DIR" ]]; then
     docker cp './deployment/docker/build-cache.list' "${CID}:/var/tmp/build-cache.list"
     docker exec "${CID}" tar cO --directory=/ --files-from=/var/tmp/build-cache.list > "${build_cache_base}/${COMMIT_ID}.tar"
     # Clear build cache files which no longer referenced from Git ref names (branch, tags)
-    git show-ref --head --dereference | awk '{print $1}' > /tmp/sha.a
-    (cd "${build_cache_base}"; ls *.tar) | cut -d '.' -f1 > /tmp/sha.b
+    git show-ref --head --dereference | awk '{print $1}' > "${TMPDIR}/sha.a"
+    (cd "${build_cache_base}"; ls *.tar) | cut -d '.' -f1 > "${TMPDIR}/sha.b"
     # Set operation: B - A
-    join -v 2 <(sort -u /tmp/sha.a) <(sort -u /tmp/sha.b) | while read i; do
+    join -v 2 <(sort -u ${TMPDIR}/sha.a) <(sort -u ${TMPDIR}/sha.b) | while read i; do
       echo "Removing build cache: ${build_cache_base}/${i}.tar"
       rm -f "${build_cache_base}/${i}.tar" || :
     done
