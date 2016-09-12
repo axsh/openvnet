@@ -62,3 +62,21 @@ The uuid of the public/physical network in which the vna participates.
 * address
 
 The gateway address of the network specified by the 'uuid'.
+
+## Misc
+
+```ruby
+switch 'tcp:192.168.3.101:6653'
+```
+
+* switch
+
+The switch for VNA to connect when using the ovs-ofctl or ovs-vsctl commands. This is intended to be used when VNA needs to take control of an OVS running on a different host. If not provided VNA will use the Datapath ID in the database to connect to the correct local OVS.
+
+```ruby
+ovsdb 'tcp:192.168.3.101:6640'
+```
+
+* ovsdb
+
+This option can be used to make VNA connect to a remote OVSDB running on another host. If OVSDB is running locally which is the most common case, this option can be omitted.
