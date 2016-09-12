@@ -61,6 +61,18 @@ func (s *InterfaceService) Delete(id string) (*http.Response, error) {
 	return s.client.del(InterfaceNamespace + "/" + id)
 }
 
+func (s *InterfaceService) Get() (*InterfaceList, *http.Response, error) {
+	list := new(InterfaceList)
+	resp, err := s.client.get(InterfaceNamespace, list)
+	return list, resp, err
+}
+
+func (s *InterfaceService) GetByUUID(id string) (*Interface, *http.Response, error) {
+	i := new(Interface)
+	resp, err := s.client.get(InterfaceNamespace+"/"+id, i)
+	return i, resp, err
+}
+
 func (s *InterfaceService) CreateSecurityGroupRelation(params InterfaceCreateSecurityGroup) (*SecurityGroup, *http.Response, error) {
 	sg := new(SecurityGroup)
 	resp, err := s.client.post(InterfaceNamespace+"/"+params.UUID+"/securty_groups/"+params.SGUUID, sg, nil)

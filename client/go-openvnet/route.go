@@ -42,9 +42,20 @@ func (s *RouteService) Create(params *RouteCreateParams) (*Route, *http.Response
 	r := new(Route)
 	resp, err := s.client.post(RouteNamespace, r, params)
 	return r, resp, err
-
 }
 
 func (s *RouteService) Delete(id string) (*http.Response, error) {
 	return s.client.del(id)
+}
+
+func (s *RouteService) Get() (*RouteList, *http.Response, error) {
+	list := new(RouteList)
+	resp, err := s.client.get(RouteNamespace, list)
+	return list, resp, err
+}
+
+func (s *RouteService) GetByUUID(id string) (*Route, *http.Response, error) {
+	r := new(Route)
+	resp, err := s.client.get(RouteNamespace+"/"+id, r)
+	return r, resp, err
 }

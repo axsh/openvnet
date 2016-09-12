@@ -44,3 +44,15 @@ func (s *NetworkService) Create(params *NetworkCreateParams) (*Network, *http.Re
 func (s *NetworkService) Delete(id string) (*http.Response, error) {
 	return s.client.del(NetworkNamespace + "/" + id)
 }
+
+func (s *NetworkService) Get() (*NetworkList, *http.Response, error) {
+	list := new(NetworkList)
+	resp, err := s.client.get(NetworkNamespace, list)
+	return list, resp, err
+}
+
+func (s *NetworkService) GetByUUID(id string) (*Network, *http.Response, error) {
+	nw := new(Network)
+	resp, err := s.client.get(NetworkNamespace+"/"+id, nw)
+	return nw, resp, err
+}

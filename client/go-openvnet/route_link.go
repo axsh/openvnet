@@ -35,3 +35,15 @@ func (s *RouteLinkService) Create(params *RouteLinkCreateParams) (*RouteLink, *h
 func (s *RouteLinkService) Delete(id string) (*http.Response, error) {
 	return s.client.del(RouteLinkNamespace + "/" + id)
 }
+
+func (s *RouteLinkService) Get() (*RouteLinkList, *http.Response, error) {
+	list := new(RouteLinkList)
+	resp, err := s.client.get(RouteLinkNamespace, list)
+	return list, resp, err
+}
+
+func (s *RouteLinkService) GetByUUID(id string) (*RouteLink, *http.Response, error) {
+	rl := new(RouteLink)
+	resp, err := s.client.get(RouteLinkNamespace+"/"+id, rl)
+	return rl, resp, err
+}

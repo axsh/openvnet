@@ -40,3 +40,15 @@ func (s *SecurityGroupService) Create(params *SecurityGroupCreateParams) (*Secur
 func (s *SecurityGroupService) Delete(id string) (*http.Response, error) {
 	return s.client.del(id)
 }
+
+func (s *SecurityGroupService) Get() (*SecurityGroupList, *http.Response, error) {
+	list := new(SecurityGroupList)
+	resp, err := s.client.get(SecurityGroupNamespace, list)
+	return list, resp, err
+}
+
+func (s *SecurityGroupService) GetByUUID(id string) (*SecurityGroup, *http.Response, error) {
+	sg := new(SecurityGroup)
+	resp, err := s.client.get(SecurityGroupNamespace+"/"+id, sg)
+	return sg, resp, err
+}
