@@ -14,6 +14,11 @@ type SecurityGroup struct {
 	Description string `json:"description"`
 }
 
+type SecurityGroupList struct {
+	ListBase
+	Items []SecurityGroup
+}
+
 type SecurityGroupService struct {
 	client *Client
 }

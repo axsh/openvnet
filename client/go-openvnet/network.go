@@ -16,6 +16,11 @@ type Network struct {
 	SegmentID   int    `json:"segment_id"`
 }
 
+type NetworkList struct {
+	ListBase
+	Items []Network `json:"items"`
+}
+
 type NetworkService struct {
 	client *Client
 }

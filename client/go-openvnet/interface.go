@@ -22,6 +22,11 @@ type Interface struct {
 	IPLeases                []IpLease  `json:"ip_leases"`
 }
 
+type InterfaceList struct {
+	ListBase
+	Items []Interface `json:"items"`
+}
+
 type InterfaceService struct {
 	client *Client
 }

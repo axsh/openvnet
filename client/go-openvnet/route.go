@@ -18,6 +18,11 @@ type Route struct {
 	Egress        bool   `json:"egress"`
 }
 
+type RouteList struct {
+	ListBase
+	Items []Route
+}
+
 type RouteService struct {
 	client *Client
 }

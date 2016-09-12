@@ -12,6 +12,11 @@ type RouteLink struct {
 	MacAddress   string `json:"mac_address"`
 }
 
+type RouteLinkList struct {
+	ListBase
+	Items []RouteLink
+}
+
 type RouteLinkService struct {
 	client *Client
 }

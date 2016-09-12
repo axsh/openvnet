@@ -26,6 +26,11 @@ type DatapathRelation struct {
 	MacAddress    string `json:"mac_address"`
 }
 
+type DatapathList struct {
+	ListBase
+	Items []Datapath `json:"items"`
+}
+
 type DatapathService struct {
 	client *Client
 }

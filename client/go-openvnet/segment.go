@@ -11,6 +11,11 @@ type Segment struct {
 	Mode string `json:"mode"`
 }
 
+type SegmentList struct {
+	ListBase
+	Items []Segment
+}
+
 type SegmentService struct {
 	client *Client
 }
