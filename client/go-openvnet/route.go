@@ -33,7 +33,7 @@ type RouteCreateParams struct {
 	RouteLinkUUID string `url:"route_link_uuid"`
 	NetworkUUID   string `url:"network_uuid"`
 	Ipv4Network   string `url:"ipv4_network,omitempty"`
-	Ipv4Prefix    ing    `url:"ipv4_prefix,omitempty"`
+	Ipv4Prefix    int    `url:"ipv4_prefix,omitempty"`
 	Ingress       bool   `url:"ingress,omitempty"`
 	Egress        bool   `url:"egress,omitempty"`
 }
