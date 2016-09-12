@@ -45,7 +45,7 @@ func (s *RouteService) Create(params *RouteCreateParams) (*Route, *http.Response
 }
 
 func (s *RouteService) Delete(id string) (*http.Response, error) {
-	return s.client.del(id)
+	return s.client.del(RouteNamespace+"/"+id)
 }
 
 func (s *RouteService) Get() (*RouteList, *http.Response, error) {

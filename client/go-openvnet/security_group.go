@@ -8,7 +8,7 @@ import (
 const SecurityGroupNamespace = "security_groups"
 
 type SecurityGroup struct {
-	UUID        string `json:"uudi"`
+	UUID        string `json:"uuid"`
 	DisplayName string `json:"display_name"`
 	Rules       string `json:"rules"`
 	Description string `json:"description"`
@@ -38,7 +38,7 @@ func (s *SecurityGroupService) Create(params *SecurityGroupCreateParams) (*Secur
 }
 
 func (s *SecurityGroupService) Delete(id string) (*http.Response, error) {
-	return s.client.del(id)
+	return s.client.del(SecurityGroupNamespace+"/"+id)
 }
 
 func (s *SecurityGroupService) Get() (*SecurityGroupList, *http.Response, error) {
