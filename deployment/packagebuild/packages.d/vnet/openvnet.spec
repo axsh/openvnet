@@ -79,11 +79,12 @@ cp -r "$OPENVNET_SRC_DIR"/vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r "$OPENVNET_SRC_DIR"/vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
 cp -r "$OPENVNET_SRC_DIR"/client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
 
+
+%package common
 #
 # openvnet-common package
 #
 
-%package common
 Summary: Common code for all OpenVNet services.
 
 # We turn off automatic dependecy detection because rpmbuild will see some
@@ -124,11 +125,11 @@ This package contains all the common code for OpenVNet's services. All of the Op
 %config(noreplace) /etc/default/openvnet
 %endif
 
+%package webapi
 #
 # openvnet-webapi package
 #
 
-%package webapi
 Summary: OpenVNet's RESTful WebAPI.
 BuildArch: noarch
 
@@ -167,11 +168,11 @@ chown "$user"."$user" "$logfile"
 %preun webapi
 %{?systemd_preun:%systemd_preun vnet-webapi.service}
 
+%package vnmgr
 #
 # openvnet-vnmgr package
 #
 
-%package vnmgr
 Summary: Virtual Network Manager for OpenVNet.
 BuildArch: noarch
 
@@ -210,11 +211,10 @@ chown "$user"."$user" "$logfile"
 %preun vnmgr
 %{?systemd_preun:%systemd_preun vnet-vnmgr.service}
 
+%package vna
 #
 # openvnet-vna package
 #
-
-%package vna
 
 Summary: Virtual network agent for OpenVNet.
 BuildArch: noarch
@@ -246,11 +246,10 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 %preun vna
 %{?systemd_preun:%systemd_preun vnet-vna.service}
 
+%package vnctl
 #
 # openvnet-vnctl package
 #
-
-%package vnctl
 
 Summary: A commandline client for OpenVNet's WebAPI.
 BuildArch: noarch
