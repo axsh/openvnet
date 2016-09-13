@@ -22,7 +22,7 @@ type RouteLinkService struct {
 }
 
 type RouteLinkCreateParams struct {
-	UUID       string `url:"uuid"`
+	UUID       string `url:"uuid,omitempty"`
 	MacAddress string `url:"mac_address"`
 }
 
