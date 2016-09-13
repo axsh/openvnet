@@ -51,6 +51,16 @@ module Vnet::Core::InterfaceSegments
                            match_interface: @interface_id,
                            write_segment: @segment_id)
 
+      # We need to skip the source classifier table due to the remote flag.
+      flows << flow_create(table: TABLE_PROMISCUOUS_PORT,
+                           goto_table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+                           priority: 20,
+                           match: {
+                             :eth_type => 0x0806
+                           },
+                           match_interface: @interface_id,
+                           write_segment: @segment_id)
+
       @dp_info.add_flows(flows)
       @dp_info.segment_manager.insert_interface_segment(@interface_id, @segment_id)
     end

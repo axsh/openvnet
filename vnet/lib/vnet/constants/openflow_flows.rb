@@ -46,14 +46,18 @@ module Vnet
       TABLE_INTERFACE_EGRESS_ROUTES      = 18
       TABLE_INTERFACE_EGRESS_MAC         = 19
 
-      # Initial verification of network number and application of global
-      # filtering rules.
+      # Initial verification of network/segment id and application of
+      # global filtering rules. 
       #
-      # The network number stored in bits [32,48> are used to identify
-      # the network, and zero is assumped to be destined for what is
-      # currently known as the 'physical' network.
+      # The network/segment id stored in bits [32,48> are used to
+      # identify the network/segment, and zero is assumped to be
+      # destined for what is currently known as the 'physical'
+      # network/segment.
       #
-      # Later we will always require a network number to be supplied.
+      # The mac learning table should only be used by remote packets,
+      # although some special cases may exist thus checking for the
+      # remote metdata flag is the responsibility of the flow that
+      # sends the packet to these tables.
 
       TABLE_SEGMENT_SRC_CLASSIFIER    = 20
       TABLE_SEGMENT_SRC_MAC_LEARNING  = 21
