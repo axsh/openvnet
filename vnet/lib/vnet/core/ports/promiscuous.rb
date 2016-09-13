@@ -25,7 +25,7 @@ module Vnet::Core::Ports
                            priority: 2,
                            match: flow_match,
                            write_interface: @interface_id,
-                           write_remote: true)
+                           write_local: true)
       flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_EGRESS,
                            priority: 2,
                            match: flow_match,
