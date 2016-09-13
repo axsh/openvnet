@@ -3,7 +3,7 @@ Description=OpenVNet REST API process
 After=network.target
 
 [Service]
-EnvironmentFile=/etc/default/openvnet
+EnvironmentFile=/etc/sysconfig/openvnet
 Environment=BIND_ADDR=0.0.0.0 PORT=9090 RACK_ENV=production
 User=vnet-webapi
 WorkingDirectory=${VNET_ROOT}/vnet

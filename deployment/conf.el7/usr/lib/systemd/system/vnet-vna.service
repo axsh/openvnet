@@ -3,7 +3,7 @@ Description=OpenVNet agent process
 After=network.target
 
 [Service]
-EnvironmentFile=/etc/default/openvnet
+EnvironmentFile=/etc/sysconfig/openvnet
 WorkingDirectory=${VNET_ROOT}/vnet
 ExecStart=/opt/axsh/openvnet/ruby/bin/bundle exec ./bin/vna >> ${LOG_DIRECTORY}/vna.log
 
