@@ -9,13 +9,6 @@ type MacRangeGroup struct {
 	AllocationType string `json:"allocation_type"`
 }
 
-type MacRange struct {
-	ItemBase
-	MacRangeGroupID int `json:"mac_range_group_id"`
-	BeginMacAddress int `json:"begin_mac_address"`
-	EndMacAddress   int `json:"end_mac_address"`
-}
-
 type MacRangeGroupList struct {
 	ListBase
 	Items []MacRangeGroup `json:"items"`
@@ -28,11 +21,6 @@ type MacRangeGroupService struct {
 type MacRangeGroupCreateParams struct {
 	UUID           string `url:"uuid,omitempty"`
 	AllocationType string `url:"allocation_type,omitempty"`
-}
-
-type MacRangeCreateParams struct {
-	BeginMacAddress string `url:"begin_mac_address"`
-	EndMacAddress   string `url:"end_mac_address"`
 }
 
 func (s *MacRangeGroupService) Create(params *MacRangeGroupCreateParams) (*MacRangeGroup, *http.Response, error) {
@@ -51,8 +39,32 @@ func (s *MacRangeGroupService) Get() (*MacRangeGroupList, *http.Response, error)
 	return list, resp, err
 }
 
-func (s *MacRangeGroupService) CreateRange(id string, params *MacRangeCreateParams) (*MacRange, *http.Response, error) {
+///
+///    Mac Range
+///
+
+type MacRange struct {
+	MacRangeGroupUUID string
+	Body            struct {
+		ItemBase
+		MacRangeGroupID int `json:"mac_range_group_id"`
+		BeginMacAddress int `json:"begin_mac_address"`
+		EndMacAddress   int `json:"end_mac_address"`
+	}
+}
+
+type MacRangeCreateParams struct {
+	BeginMacAddress string `url:"begin_mac_address"`
+	EndMacAddress   string `url:"end_mac_address"`
+}
+
+func (s *MacRangeGroupService) CreateRange(uuid string, params *MacRangeCreateParams) (*MacRange, *http.Response, error) {
 	mr := new(MacRange)
-	resp, err := s.client.post(MacRangeGroupNamespace+"/"+id+"/mac_ranges", mr, params)
+	mr.MacRangeGroupUUID = uuid
+	resp, err := s.client.post(MacRangeGroupNamespace+"/"+uuid+"/mac_ranges", &mr.Body, params)
 	return mr, resp, err
+}
+
+func (s *MacRangeGroupService) DeleteRange(mr *MacRange) (*http.Response, error) {
+	return s.client.del(MacRangeGroupNamespace+"/"+mr.MacRangeGroupUUID+"/mac_ranges/"+mr.Body.UUID)
 }
