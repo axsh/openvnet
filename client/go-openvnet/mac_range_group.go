@@ -30,7 +30,7 @@ func (s *MacRangeGroupService) Create(params *MacRangeGroupCreateParams) (*MacRa
 }
 
 func (s *MacRangeGroupService) Delete(id string) (*http.Response, error) {
-	return s.client.del(MacRangeGroupNamespace+"/"+id)
+	return s.client.del(MacRangeGroupNamespace + "/" + id)
 }
 
 func (s *MacRangeGroupService) Get() (*MacRangeGroupList, *http.Response, error) {
@@ -45,7 +45,7 @@ func (s *MacRangeGroupService) Get() (*MacRangeGroupList, *http.Response, error)
 
 type MacRange struct {
 	MacRangeGroupUUID string
-	Body            struct {
+	Body              struct {
 		ItemBase
 		MacRangeGroupID int `json:"mac_range_group_id"`
 		BeginMacAddress int `json:"begin_mac_address"`
@@ -66,5 +66,5 @@ func (s *MacRangeGroupService) CreateRange(uuid string, params *MacRangeCreatePa
 }
 
 func (s *MacRangeGroupService) DeleteRange(mr *MacRange) (*http.Response, error) {
-	return s.client.del(MacRangeGroupNamespace+"/"+mr.MacRangeGroupUUID+"/mac_ranges/"+mr.Body.UUID)
+	return s.client.del(MacRangeGroupNamespace + "/" + mr.MacRangeGroupUUID + "/mac_ranges/" + mr.Body.UUID)
 }

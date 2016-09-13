@@ -38,7 +38,7 @@ func (s *SecurityGroupService) Create(params *SecurityGroupCreateParams) (*Secur
 }
 
 func (s *SecurityGroupService) Delete(id string) (*http.Response, error) {
-	return s.client.del(SecurityGroupNamespace+"/"+id)
+	return s.client.del(SecurityGroupNamespace + "/" + id)
 }
 
 func (s *SecurityGroupService) Get() (*SecurityGroupList, *http.Response, error) {

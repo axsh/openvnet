@@ -2,7 +2,7 @@ package openvnet
 
 import "testing"
 
-func TestNewClient (t *testing.T) {
+func TestNewClient(t *testing.T) {
 	c := NewClient(nil, nil)
 
 	if c == nil {

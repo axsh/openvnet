@@ -63,8 +63,8 @@ type Relation struct {
 }
 
 type DatapathRelation struct {
-	Relation      *Relation
-	Body          struct {
+	Relation *Relation
+	Body     struct {
 		ItemBase
 		DPID          int    `json:"datapath_id"`
 		NetworkID     int    `json:"network_id,omitempty"`
@@ -90,5 +90,5 @@ func (s *DatapathService) CreateDatapathRelation(rel *Relation, params *Datapath
 }
 
 func (s *DatapathService) DeleteDatapathRelation(params *DatapathRelation) (*http.Response, error) {
-	return s.client.del(DatapathNamespace+"/"+params.Relation.DatapathID+"/"+params.Relation.Type+"/"+params.Relation.RelationTypeUUID)
+	return s.client.del(DatapathNamespace + "/" + params.Relation.DatapathID + "/" + params.Relation.Type + "/" + params.Relation.RelationTypeUUID)
 }
