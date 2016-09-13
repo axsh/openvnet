@@ -443,7 +443,7 @@ module Vnspec
           when :change_ip
             'ip addr add ' + params.to_string + ' dev %s'
           when :route_default_via
-            'ip route default via ' + params.to_s + ' dev %s'
+            'ip route add default via ' + params.to_s + ' dev %s'
           else
             raise "unknown command: #{command}"
           end
