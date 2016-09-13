@@ -56,8 +56,12 @@ mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
+%if %{defined systemd_requires}
+cp -r "$OPENVNET_SRC_DIR"/deployment/conf.el7/* "$RPM_BUILD_ROOT"/
+%else
 cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
 cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
+%endif
 cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
 cp "$OPENVNET_SRC_DIR"/deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
 cp "$OPENVNET_SRC_DIR"/vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -114,7 +118,11 @@ This package contains all the common code for OpenVNet's services. All of the Op
 /opt/axsh/openvnet/vnet/vendor
 /opt/axsh/openvnet/vnet/.bundle
 %config(noreplace) /etc/openvnet/common.conf
+%if %{defined systemd_requires}
+%config(noreplace) /etc/sysconfig/openvnet
+%else
 %config(noreplace) /etc/default/openvnet
+%endif
 
 #
 # openvnet-webapi package
@@ -125,7 +133,7 @@ Summary: OpenVNet's RESTful WebAPI.
 BuildArch: noarch
 
 Requires: openvnet-common
-
+%{?systemd_requires}
 
 %description webapi
 This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNet by sending HTTP requests to this API.
@@ -133,8 +141,12 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 %files webapi
 /opt/axsh/openvnet/vnet/rack
 %config(noreplace) /etc/openvnet/webapi.conf
+%if %{defined systemd_requires}
+%config %{_unitdir}/vnet-webapi.service
+%else
 %config(noreplace) /etc/default/vnet-webapi
 %config /etc/init/vnet-webapi.conf
+%endif
 
 %post webapi
 user="vnet-webapi"
@@ -147,6 +159,14 @@ fi
 touch "$logfile"
 chown "$user"."$user" "$logfile"
 
+%{?systemd_post:%systemd_post vnet-webapi.service}
+
+%postun webapi
+%{?systemd_postun:%systemd_postun vnet-webapi.service}
+
+%preun webapi
+%{?systemd_preun:%systemd_preun vnet-webapi.service}
+
 #
 # openvnet-vnmgr package
 #
@@ -156,6 +176,7 @@ Summary: Virtual Network Manager for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
+%{?systemd_requires}
 
 %description vnmgr
 This package contains OpenVNet's VNMGR process. This process acts as a frontend for the MySQL database and broadcasts commands to VNA processes.
@@ -163,8 +184,12 @@ This package contains OpenVNet's VNMGR process. This process acts as a frontend 
 %files vnmgr
 /opt/axsh/openvnet/vnet/bin/vnmgr
 %config(noreplace) /etc/openvnet/vnmgr.conf
+%if %{defined systemd_requires}
+%config %{_unitdir}/vnet-vnmgr.service
+%else
 %config(noreplace) /etc/default/vnet-vnmgr
 %config /etc/init/vnet-vnmgr.conf
+%endif
 
 %post vnmgr
 user="vnet-vnmgr"
@@ -177,6 +202,14 @@ fi
 touch "$logfile"
 chown "$user"."$user" "$logfile"
 
+%{?systemd_post:%systemd_post vnet-vnmgr.service}
+
+%postun vnmgr
+%{?systemd_postun:%systemd_postun vnet-vnmgr.service}
+
+%preun vnmgr
+%{?systemd_preun:%systemd_preun vnet-vnmgr.service}
+
 #
 # openvnet-vna package
 #
@@ -188,6 +221,7 @@ BuildArch: noarch
 
 Requires: openvnet-common
 Requires: openvswitch = 2.3.1
+%{?systemd_requires}
 
 %description vna
 This package contains OpenVNet's VNA process. This is an OpenFlow controller that sends commands to Open vSwitch to implement virtual networks.
@@ -196,8 +230,21 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 /opt/axsh/openvnet/vnet/bin/vna
 /opt/axsh/openvnet/vnet/bin/vnflows-monitor
 %config(noreplace) /etc/openvnet/vna.conf
+%if %{defined systemd_requires}
+%config %{_unitdir}/vnet-vna.service
+%else
 %config(noreplace) /etc/default/vnet-vna
 %config /etc/init/vnet-vna.conf
+%endif
+
+%post vna
+%{?systemd_post:%systemd_post vnet-vna.service}
+
+%postun vna
+%{?systemd_postun:%systemd_postun vnet-vna.service}
+
+%preun vna
+%{?systemd_preun:%systemd_preun vnet-vna.service}
 
 #
 # openvnet-vnctl package
