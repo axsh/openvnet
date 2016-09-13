@@ -356,6 +356,10 @@ module Vnspec
         _network_ctl(:change_ip, @static_ipv4_address)
       end
 
+      def route_default_via(via_address)
+        _network_ctl(:route_default_via, via_address)
+      end
+
       def network
         network_uuid.split('-').last if network_uuid
       end
@@ -438,6 +442,8 @@ module Vnspec
             'ip addr flush %s'
           when :change_ip
             'ip addr add ' + params.to_string + ' dev %s'
+          when :route_default_via
+            'ip route default via ' + params.to_string + ' dev %s'
           else
             raise "unknown command: #{command}"
           end
