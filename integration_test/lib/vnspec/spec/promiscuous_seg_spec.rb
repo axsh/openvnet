@@ -29,21 +29,23 @@ describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp =>
     end
   end
 
-  describe "remote vm1 in seg-global" do
-    it "reaches the gateway" do
-      to_gw = double()
-      allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
+  # TODO: Disabled until remote promiscuous interfaces are supported.
 
-      expect(vm1).to be_able_to_ping(to_gw, 10)
-    end
+  # describe "remote vm1 in seg-global" do
+  #   it "reaches the gateway" do
+  #     to_gw = double()
+  #     allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
 
-    it "reaches the internet" do
-      to_gw = double()
-      allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
+  #     expect(vm1).to be_able_to_ping(to_gw, 10)
+  #   end
 
-      expect(vm1).to be_able_to_ping(to_gw, 10)
-    end
-  end
+  #   it "reaches the internet" do
+  #     to_gw = double()
+  #     allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
+
+  #     expect(vm1).to be_able_to_ping(to_gw, 10)
+  #   end
+  # end
 
   describe 'vm1 and vm7 in seg-global' do
     context "vm1 on node1" do
