@@ -27,6 +27,7 @@ type Client struct {
 	RouteLink     *RouteLinkService
 	Segment       *SegmentService
 	SecurityGroup *SecurityGroupService
+	MacRangeGroup *MacRangeGroupService
 }
 
 func (c *Client) post(uri string, output interface{}, params interface{}) (*http.Response, error) {
@@ -65,6 +66,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c.RouteLink = &RouteLinkService{client: c}
 	c.Segment = &SegmentService{client: c}
 	c.SecurityGroup = &SecurityGroupService{client: c}
+	c.MacRangeGroup = &MacRangeGroupService{client: c}
 	return c
 }
 
