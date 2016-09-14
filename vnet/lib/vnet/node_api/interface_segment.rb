@@ -1,89 +1,67 @@
 # -*- coding: utf-8 -*-
 
+# This association does not allow direct creation/destrucion of
+# entries.
+#
+# Instead it automatically manages the lifetime of the association
+# depending on if there is an association or not, and allows for
+# persistency if 'static' is true.
+
 module Vnet::NodeApi
   class InterfaceSegment < EventBase
     class << self
 
+      def create(options)
+        raise NotImplementedError
+      end
+
+      def destroy(filter)
+        raise NotImplementedError
+      end
+
+      # TODO: Must be called within a transaction.
       def leased(interface_id, segment_id)
         # TODO: Add log_format-style logging to NodeApi's.
         logger.warn "XXXXXXXXXXXXXX leased interface_id:#{interface_id} segment_id:#{segment_id}"
 
-        # TODO: Add checks like with get_params and proper error reporting.
-        filter = {
-          interface_id: interface_id,
-          segment_id: segment_id
-        }
-
         transaction {
-          return if M::InterfaceSegment[filter]
-          create_with_transaction(filter)
+          return if get_model(interface_id, segment_id)
+          create_with_transaction(interface_id: interface_id, segment_id: segment_id)
         }.tap { |model|
           next if model.nil?
           dispatch_created_item_events(model)
         }
       end
 
+      # TODO: Must be called within a transaction.
       def released(interface_id, segment_id)
         logger.warn "XXXXXXXXXXXXXX released interface_id:#{interface_id} segment_id:#{segment_id}"
 
-        filter = {
-          interface_id: interface_id,
-          segment_id: segment_id
-        }
-
         transaction {
-          # If mac_lease does not exist, try to delete unless 'static==1'.
-          M::InterfaceSegment[filter].tap { |model|
-            next if model.nil?
-
-            if model && !model.static
-              should_destroy = M::MacLease.dataset.where(interface_id: interface_id).segments.where(segment_id: segment_id).empty?
-
-              logger.warn "XXXXXXXXXXXXXX released should_destroy:#{should_destroy}"
-              model.destroy if should_destroy
-            end
+          get_model(interface_id, segment_id).tap { |model|
+            return if model.nil? || model.static
+            internal_destroy(model) if leases_empty?(interface_id, segment_id)
           }
+        }.tap { |model|
+          next if model.nil?
+          dispatch_deleted_item_events(model)
         }
       end
 
       def set_static(interface_id, segment_id)
         logger.warn "XXXXXXXXXXXXXX set_static interface_id:#{interface_id} segment_id:#{segment_id}"
 
-        filter = {
-          interface_id: interface_id,
-          segment_id: segment_id
-        }
-
         transaction {
-          model = M::InterfaceSegment[filter]
+          get_model(interface_id, segment_id).tap { |model|
+            next if model.nil?
+            update_model_no_validate(model, static: true)
+            return
+          }
 
-          if model
-            # Do not dispatch any events if already set.
-            return model if model.static
-
-            model.static = true
-
-            # TODO: Make a helper method that saves changes and
-            # dispatches events / adds events to be dispatched to an
-            # array.
-            #
-            # add_event_to_queue(Foo, event, model, changed_columns)
-
-            if model.save
-              # TODO: Do proper dispatch_event things here. (should be outside transaction)
-              logger.warn "XXXXXXXXXXXX set_static 'dispatch_updated_item_events' model:#{model.inspect}"
-              # HACK: dispatch_updated_item_events(model, changed_columns)
-            end
-
-            return model
-          end
-
-          create_with_transaction(filter.merge!(static: true))
+          create_with_transaction(interface_id: interface_id, segment_id: segment_id, static: true)
 
         }.tap { |model|
           next if model.nil?
-
-          logger.warn "XXXXXXXXXXXX set_static 'dispatch_created_item_events' model:#{model.inspect}"
           dispatch_created_item_events(model)
         }
       end
@@ -91,15 +69,18 @@ module Vnet::NodeApi
       def clear_static(interface_id, segment_id)
         logger.warn "XXXXXXXXXXXXXX clear_static interface_id:#{interface_id} segment_id:#{segment_id}"
 
-        filter = {
-          interface_id: interface_id,
-          segment_id: segment_id
-        }
-
         transaction {
-          M::InterfaceSegment[filter].tap { |model|
+          get_model(interface_id, segment_id).tap { |model|
             next if model.nil?
+
+            update_model_no_validate(model, static: false)
+            
+            return if !leases_empty?(interface_id, segment_id)
+            internal_destroy(model)
           }
+        }.tap { |model|
+          next if model.nil?
+          dispatch_deleted_item_events(model)
         }
       end
 
@@ -108,6 +89,14 @@ module Vnet::NodeApi
       #
 
       private
+
+      def get_model(interface_id, segment_id)
+        M::InterfaceSegment[interface_id: interface_id, segment_id: segment_id]
+      end
+
+      def leases_empty?(interface_id, segment_id)
+        M::MacLease.dataset.where(interface_id: interface_id).segments.where(segment_id: segment_id).empty?
+      end
 
       def dispatch_created_item_events(model)
         logger.warn "XXXXXXXXXXXXXX dispatch_created_item_events model.inspect:#{model.inspect}"
