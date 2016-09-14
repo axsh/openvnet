@@ -180,8 +180,6 @@ module Vnet
     FILTER_DELETED_ITEM = "filter_deleted_item"
     FILTER_UPDATED = "filter_updated"
 
-    FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
-    FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"
     FILTER_ADDED_STATIC = "filter_added_static"
     FILTER_REMOVED_STATIC = "filter_removed_static"
 
@@ -263,8 +261,6 @@ module Vnet
     TRANSLATION_CREATED_ITEM = "translation_created_item"
     TRANSLATION_DELETED_ITEM = "translation_deleted_item"
 
-    TRANSLATION_ACTIVATE_INTERFACE = "translation_activate_interface"
-    TRANSLATION_DEACTIVATE_INTERFACE = "translation_deactivate_interface"
     TRANSLATION_ADDED_STATIC_ADDRESS = "translation_added_static_address"
     TRANSLATION_REMOVED_STATIC_ADDRESS = "translation_removed_static_address"
 
