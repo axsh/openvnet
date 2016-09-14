@@ -21,7 +21,25 @@ func OpenVNetMacRangeGroup() *schema.Resource {
 
             "allocation_type": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
+            },
+
+            "mac_range": &schema.Schema{
+                Type:     schema.TypeSet,
+                Optional: true,
+                Elem: &schema.Resource{
+                    Schema: map[string]*schema.Schema{
+                       "begin_mac_address": &schema.Schema{
+                            Type:     schema.TypeString,
+                            Optional: true,
+                        },
+
+                        "end_mac_address": &schema.Schema{
+                            Type:     schema.TypeString,
+                            Optional: true,
+                        },
+                    },
+                },
             },
         },
     }
