@@ -68,3 +68,9 @@ func (s *MacRangeGroupService) CreateRange(uuid string, params *MacRangeCreatePa
 func (s *MacRangeGroupService) DeleteRange(mr *MacRange) (*http.Response, error) {
 	return s.client.del(MacRangeGroupNamespace + "/" + mr.MacRangeGroupUUID + "/mac_ranges/" + mr.Body.UUID)
 }
+
+func (s *MacRangeGroupService) GetByUUID(id string) (*MacRangeGroup, *http.Response, error) {
+	i := new(MacRangeGroup)
+	resp, err := s.client.get(MacRangeGroupNamespace+"/"+id, i)
+	return i, resp, err
+}
