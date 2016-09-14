@@ -60,8 +60,6 @@ module Vnet
   end
 
   module Core
-    autoload :Event, 'vnet/core/event'
-
     autoload :Manager, 'vnet/core/manager'
     autoload :ActiveManager, 'vnet/core/active_manager'
     autoload :AssocManager, 'vnet/core/assoc_manager'

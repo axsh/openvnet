@@ -3,6 +3,13 @@
 module Vnet
   module Event
 
+    #
+    # Shared events:
+    #
+
+    ACTIVATE_INTERFACE = "activate_interface"
+    DEACTIVATE_INTERFACE = "deactivate_interface"
+
     # *_INITIALIZED
     #
     # First event queued after the non-yielding and non-blocking
