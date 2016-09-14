@@ -89,6 +89,6 @@ func (s *DatapathService) CreateDatapathRelation(rel *Relation, params *Datapath
 	return dpr, resp, err
 }
 
-func (s *DatapathService) DeleteDatapathRelation(params *DatapathRelation) (*http.Response, error) {
-	return s.client.del(DatapathNamespace + "/" + params.Relation.DatapathID + "/" + params.Relation.Type + "/" + params.Relation.RelationTypeUUID)
+func (s *DatapathService) DeleteDatapathRelation(params *Relation) (*http.Response, error) {
+	return s.client.del(DatapathNamespace + "/" + params.DatapathID + "/" + params.Type + "/" + params.RelationTypeUUID)
 }
