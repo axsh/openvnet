@@ -141,6 +141,22 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetInterfaceRead(d *schema.ResourceData, m interface{}) error {
+    client := m.(*openvnet.Client)
+    intfc, _, err := client.Interface.GetByUUID(d.Id())
+
+    if err != nil {
+        return err
+    }
+
+    d.Set("ingress_filtering_enabled", intfc.IngressFilteringEnabled)
+    d.Set("enable_routing", intfc.EnableRouting)
+    d.Set("enable_route_translation", intfc.EnableRouteTranslation)
+    d.Set("enable_filtering", intfc.EnableFiltering)
+    d.Set("network_uuid", intfc.NetworkUUID)
+    d.Set("mac_address", intfc.MacAddress)    
+    d.Set("mode", intfc.Mode)
+    d.Set("ipv4_address", IPv4Address)
+
     return nil
 }
 

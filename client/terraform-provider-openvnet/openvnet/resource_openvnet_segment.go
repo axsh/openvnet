@@ -53,13 +53,12 @@ func openVNetSegmentCreate(d *schema.ResourceData, m interface{}) error {
 func openVNetSegmentRead(d *schema.ResourceData, m interface{}) error {
 
     client := m.(*openvnet.Client)
+    segment, _, err := client.Segment.GetByUUID(d.Id())
 
-    segment, _, err := client.Segment.GetByID(d.Id())
     if err != nil {
         return err
     }
 
-    d.Set("uuid", segment.UUID)
     d.Set("mode", segment.Mode)
 
     return nil

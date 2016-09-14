@@ -44,6 +44,16 @@ func openVNetRouteLinkCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetRouteLinkRead(d *schema.ResourceData, m interface{}) error {
+    client := m.(*openvnet.Client)
+    routelink, _, err := client.RouteLink.GetByUUID(d.Id())
+
+    if err != nil {
+        return err
+    }
+
+    d.Set("mac_address", routelink.MacAddress)
+
+
     return nil
 }
 

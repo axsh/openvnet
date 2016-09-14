@@ -77,6 +77,21 @@ func openVNetRouteCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetRouteRead(d *schema.ResourceData, m interface{}) error {
+    client := m.(*openvnet.Client)
+    route, _, err := client.Route.GetByUUID(d.Id())
+
+    if err != nil {
+        return err
+    }
+
+    d.Set("interface_uuid", route.InterfaceUUID)
+    d.Set("route_link_uuid", route.RouteLinkUUID)
+    d.Set("network_uuid", route.NetworkUUID)
+    d.Set("ipv4_network", route.Ipv4Network)
+    d.Set("ipv4_prefix", route.Ipv4Prefix)
+    d.Set("ingress", route.Ingress)    
+    d.Set("egress", route.Egress)
+
     return nil
 }
 

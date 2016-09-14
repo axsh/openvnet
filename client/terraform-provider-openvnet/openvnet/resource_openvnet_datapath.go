@@ -37,7 +37,7 @@ func OpenVNetDatapath() *schema.Resource {
             },
 
             "network": &schema.Schema{
-                Type:     schema.TypeList,
+                Type:     schema.TypeSet,
                 Optional: true,
                 Elem: &schema.Resource{
                     Schema: map[string]*schema.Schema{
@@ -57,7 +57,7 @@ func OpenVNetDatapath() *schema.Resource {
             },
 
             "route_link": &schema.Schema{
-                Type:     schema.TypeList,
+                Type:     schema.TypeSet,
                 Optional: true,
                 Elem: &schema.Resource{
                     Schema: map[string]*schema.Schema{
@@ -77,7 +77,7 @@ func OpenVNetDatapath() *schema.Resource {
             },
 
             "segment": &schema.Schema{
-                Type:     schema.TypeList,
+                Type:     schema.TypeSet,
                 Optional: true,
                 Elem: &schema.Resource{
                     Schema: map[string]*schema.Schema{
@@ -103,26 +103,33 @@ func openVNetDatapathCreate(d *schema.ResourceData, m interface{}) error {
 
     client := m.(*openvnet.Client)
 
-    params := openvnet.DatapathCreateParams{
+    params := &openvnet.DatapathCreateParams{
         UUID:d.Get("uuid").(string),
         DisplayName:d.Get("display_name").(string),
         DPID:d.Get("dpid").(string),
-        NodeID:d.Get("node_id").(string),
+        NodeId:d.Get("node_id").(string),
     }
 
-    datapath, _, err := client.Datapath.Create(&params)
+    datapath, _, err := client.Datapath.Create(params)
+    d.SetId(datapath.UUID)
 
-    if err != nil {
-        return fmt.Errorf("Error creating datapath: %s", err)
-    }
-
-    d.SetId(datapath.ID)
-    log.Printf("[INFO] Datapath Id: %s", d.Id())
-
-    return nil
+    return err
 }
 
 func openVNetDatapathRead(d *schema.ResourceData, m interface{}) error {
+    
+    client := m.(*openvnet.Client)
+    datapath, _, err := client.Datapath.GetByUUID(d.Id())
+
+    if err != nil {
+        return err
+    }
+
+    d.Set("display_name", datapath.DisplayName)
+    d.Set("dpid", datapath.DPID)
+    d.Set("node_id", datapath.NodeId)
+    d.Set("is_connected", datapath.IsConnected)
+
     return nil
 }
 

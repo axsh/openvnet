@@ -72,6 +72,20 @@ func openVNetNetworkCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetNetworkRead(d *schema.ResourceData, m interface{}) error {
+    client := m.(*openvnet.Client)
+    network, _, err := client.Network.GetByUUID(d.Id())
+
+    if err != nil {
+        return err
+    }
+
+    d.Set("display_name", network.DisplayName)
+    d.Set("ipv4_network", network.Ipv4Network)
+    d.Set("ipv4_prefix", network.Ipv4Prefix)
+    d.Set("network_mode", network.NetworkMode)
+    d.Set("domain_name", network.DomainName)
+    d.Set("segment_uuid", network.SegmentID)    
+
     return nil
 }
 
