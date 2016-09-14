@@ -23,9 +23,13 @@ BuildRequires: mysql-devel
 BuildRequires: sqlite-devel
 BuildRequires: libpcap-devel
 
+%if %{rhel} >= 7
+BuildRequires: rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem-bundler
+%else
 # We require openvnet-ruby to run bundle install.
 # By using openvnet-ruby we ensure that the downloaded gems are compatible.
 BuildRequires: openvnet-ruby = 2.1.1.axsh0
+%endif
 
 Requires: openvnet-vnctl
 Requires: openvnet-webapi
@@ -37,14 +41,13 @@ This is an empty metapackage that depends on all OpenVNet services and the vnctl
 
 %prep
 OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
-BUNDLE_PATH="/opt/axsh/openvnet/ruby/bin/bundle"
 if [ ! -d "$OPENVNET_SRC_DIR" ]; then
   git clone https://github.com/axsh/openvnet "$OPENVNET_SRC_DIR"
 fi
 cd "$OPENVNET_SRC_DIR/vnet"
-"$BUNDLE_PATH" install --path vendor/bundle --without development test --standalone
+bundle install --path vendor/bundle --without development test --standalone
 cd "$OPENVNET_SRC_DIR/client/vnctl"
-"$BUNDLE_PATH" install --path vendor/bundle --without development test --standalone
+bundle install --path vendor/bundle --without development test --standalone
 
 %files
 # No files in the openvnet metapackage.
@@ -93,7 +96,11 @@ AutoReqProv: no
 
 Requires: zeromq3
 Requires: mysql-libs
+%if %{rhel} >= 7
+Requires: rh-ruby23 rh-ruby23-rubygem-bundler
+%else
 Requires: openvnet-ruby
+%endif
 
 # The zeromq3-devel package is required because it provides the /usr/lib64/libzmq.so file.
 # That file is just a symlink to /usr/lib64/libzmq.so.3.0.0 which is provided by the zerom13
@@ -261,8 +268,11 @@ BuildArch: noarch
 # We turn off automatic dependecy detection because rpmbuild will see some
 # things in ruby gems under vendor that it wrongly detects as a dependency.
 AutoReqProv: no
-
+%if %{rhel} >= 7
+Requires: rh-ruby23 rh-ruby23-rubygem-bundler
+%else
 Requires: openvnet-ruby
+%endif
 
 %description vnctl
 This package contains the vnctl client for OpenVNet's WebAPI. It's a simple commandline client that just sends plain http calls to the API and prints their response.

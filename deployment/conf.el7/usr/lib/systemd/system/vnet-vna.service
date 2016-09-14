@@ -5,7 +5,7 @@ After=network.target
 [Service]
 EnvironmentFile=/etc/sysconfig/openvnet
 WorkingDirectory=${VNET_ROOT}/vnet
-ExecStart=/opt/axsh/openvnet/ruby/bin/bundle exec ./bin/vna >> ${LOG_DIRECTORY}/vna.log
+ExecStart=/usr/bin/scl enable rh-ruby23 -- bundle exec ./bin/vna >> ${LOG_DIRECTORY}/vna.log
 
 
 [Install]
