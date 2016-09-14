@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-require 'ostruct'
 
 module Vnet::ModelWrappers
   class Batch

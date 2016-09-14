@@ -105,7 +105,7 @@ module Vnet
       @installed = false
       @loaded = false
 
-      map = get_param_hash(params, :map)
+      map = get_param_map(params)
       @id = get_param_id(map)
       @uuid = get_param_string(map, :uuid)
     end
@@ -115,13 +115,16 @@ module Vnet
     end
   end
 
+  # TODO: This class isn't really correctly implemented, replace the
+  # initialize method with a not-implemented exception and create a
+  # different ItemDpId32 for e.g. ports. 
   class ItemDpBase < ItemBase
     def initialize(params)
       @installed = false
       @loaded = false
 
       @dp_info = get_param_dp_info(params)
-      @id = get_param_id(get_param_hash(params, :map))
+      @id = get_param_id_32(params)
     end
 
     private
@@ -137,7 +140,7 @@ module Vnet
       @loaded = false
 
       @dp_info = get_param_dp_info(params)
-      @id = get_param_id(get_param_hash(params, :map))
+      @id = get_param_id(get_param_map(params))
     end
   end
 
@@ -150,7 +153,7 @@ module Vnet
 
       @dp_info = get_param_dp_info(params)
 
-      map = get_param_hash(params, :map)
+      map = get_param_map(params)
       @id = get_param_id(map)
       @uuid = get_param_string(map, :uuid)
     end
@@ -169,7 +172,7 @@ module Vnet
 
       @dp_info = get_param_dp_info(params)
 
-      map = get_param_hash(params, :map)
+      map = get_param_map(params)
       @id = get_param_id(map)
       @uuid = get_param_string(map, :uuid)
       @mode = get_param_string(map, :mode).to_sym

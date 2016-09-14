@@ -40,29 +40,32 @@ module Vnet
       nil
     end
 
+    # TODO: Refactor to use a block.
     def get_param(params, key, required = true)
       param = (params && params[key])
 
       if param.nil? && required
-        return throw_param_error('key is missing or nil', params, key)
+        throw_param_error('key is missing or nil', params, key)
       end
 
       param
     end
 
     def get_param_type(params, key, type, required = true)
-      param = (params && params[key])
-
-      if param.nil?
-        if required
-          throw_param_error('key is missing or nil', params, key)
-        else
-          return
-        end
-      end
+      param = get_param(params, key, required) || return
 
       if !param.is_a?(type)
-        return throw_param_error("value is not an #{type.name} type", params, key)
+        throw_param_error("value is not an #{type.name} type", params, key)
+      end
+
+      param
+    end
+
+    def get_param_types(params, key, types, required = true)
+      param = get_param(params, key, required) || return
+
+      if !types.any? { |type| param.is_a?(type) }
+        throw_param_error("value is not an #{types} type", params, key)
       end
 
       param
@@ -73,7 +76,7 @@ module Vnet
       param = get_param(params, key, required) || return
 
       if !(param > 0 && param < (1 << 31))
-        return throw_param_error('invalid value for id type', params, key)
+        throw_param_error('invalid value for id type', params, key)
       end
 
       param
@@ -83,7 +86,7 @@ module Vnet
       param = get_param(params, key, required) || return
 
       if !(param > 0 && param < (1 << 32))
-        return throw_param_error('invalid value for id_32 type', params, key)
+        throw_param_error('invalid value for id_32 type', params, key)
       end
 
       param
@@ -94,11 +97,11 @@ module Vnet
       param_id = param_id_list[1]
 
       if param_id.nil?
-        return throw_param_error('list is missing packed id', params, key)
+        throw_param_error('list is missing packed id', params, key)
       end
 
       if !(param_id > 0 && param_id < (1 << id_size))
-        return throw_param_error('invalid value for packed id type', params, key)
+        throw_param_error('invalid value for packed id type', params, key)
       end
 
       param_id
@@ -121,7 +124,7 @@ module Vnet
       param = get_param_type(params, key, String, required) || return
 
       if param.empty?
-        return throw_param_error('string is empty', params, key)
+        throw_param_error('string is empty', params, key)
       end
 
       param
@@ -154,7 +157,7 @@ module Vnet
       param = get_param(params, key, required) || return
 
       if !IPAddr.new(param, Socket::AF_INET).ipv4?
-        return throw_param_error('value is not a valid IPv4 address', params, key)
+        throw_param_error('value is not a valid IPv4 address', params, key)
       end
 
       param
@@ -173,7 +176,7 @@ module Vnet
       param = get_param_type(params, key, Fixnum, required) || return
 
       if !(param > 0 && param < (1 << 16))
-        return throw_param_error('value is not a valid transport port', params, key)
+        throw_param_error('value is not a valid transport port', params, key)
       end
 
       param
@@ -183,7 +186,7 @@ module Vnet
       param = get_param_type(params, key, Fixnum, required) || return
 
       if !(param > 0 && param < (1 << 32))
-        return throw_param_error('value is not a valid OpenFlow port', params, key)
+        throw_param_error('value is not a valid OpenFlow port', params, key)
       end
 
       param
@@ -195,6 +198,12 @@ module Vnet
 
     def get_param_dp_info(params, key = :dp_info, required = true)
       get_param_type(params, key, Vnet::Core::DpInfo, required)
+    end
+
+    GET_PARAM_MAP_TYPES = [Hash, OpenStruct].freeze
+
+    def get_param_map(params, key = :map, required = true)
+      get_param_types(params, key, GET_PARAM_MAP_TYPES, required)
     end
 
   end

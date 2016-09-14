@@ -11,6 +11,7 @@ require 'ext/kernel'
 require 'fuguta'
 require 'json'
 require 'logger'
+require 'ostruct'
 
 module Vnet
 
