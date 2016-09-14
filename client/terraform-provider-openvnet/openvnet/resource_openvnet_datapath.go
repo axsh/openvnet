@@ -3,8 +3,6 @@ package openvnet
 import (
     "github.com/hashicorp/terraform/helper/schema"
     "github.com/axsh/openvnet/client/go-openvnet"
-    "fmt"
-    "log"
 )
 
 func OpenVNetDatapath() *schema.Resource {
@@ -138,8 +136,9 @@ func openVNetDatapathUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetDatapathDelete(d *schema.ResourceData, m interface{}) error {
+    
     client := m.(*openvnet.Client)
-
     _, err := client.Datapath.Delete(d.Id())
+
     return err
 }

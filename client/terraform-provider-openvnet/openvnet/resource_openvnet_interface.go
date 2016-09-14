@@ -3,6 +3,7 @@ package openvnet
 import (
     "github.com/hashicorp/terraform/helper/schema"
     "github.com/axsh/openvnet/client/go-openvnet"
+    "fmt"
 )
 
 func OpenVNetInterface() *schema.Resource {
@@ -96,8 +97,6 @@ func OpenVNetInterface() *schema.Resource {
                     },
                 },
             },
-
-
         },
     }
 }
@@ -141,6 +140,7 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetInterfaceRead(d *schema.ResourceData, m interface{}) error {
+
     client := m.(*openvnet.Client)
     intfc, _, err := client.Interface.GetByUUID(d.Id())
 
@@ -165,7 +165,8 @@ func openVNetInterfaceUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetInterfaceDelete(d *schema.ResourceData, m interface{}) error {
-   client := m.(*openvnet.Client)
+    
+    client := m.(*openvnet.Client)
     _, err := client.Interface.Delete(d.Id())
     
     return err

@@ -2,6 +2,7 @@ package openvnet
 
 import (
     "github.com/hashicorp/terraform/helper/schema"
+    "github.com/axsh/openvnet/client/go-openvnet"
 )
 
 func OpenVNetRoute() *schema.Resource {
@@ -13,7 +14,7 @@ func OpenVNetRoute() *schema.Resource {
 
         Schema: map[string]*schema.Schema{
 
-             "uuid": &schema.Schema{
+            "uuid": &schema.Schema{
                 Type:     schema.TypeString,
                 Optional: true,
             },
@@ -25,12 +26,12 @@ func OpenVNetRoute() *schema.Resource {
 
             "route_link_uuid": &schema.Schema{
                 Type:     schema.TypeString,
-                Optional: true,
+                Required: true,
             },
 
             "network_uuid": &schema.Schema{
                 Type:     schema.TypeString,
-                Optional: true,
+                Required: true,
             },
 
             "ipv4_network": &schema.Schema{
@@ -44,12 +45,12 @@ func OpenVNetRoute() *schema.Resource {
             },
 
             "ingress": &schema.Schema{
-                Type:     schema.TypeString,
+                Type:     schema.TypeBool,
                 Optional: true,
             },
 
             "egress": &schema.Schema{
-                Type:     schema.TypeString,
+                Type:     schema.TypeBool,
                 Optional: true,
             },
         },
@@ -60,20 +61,21 @@ func openVNetRouteCreate(d *schema.ResourceData, m interface{}) error {
 
 	client := m.(*openvnet.Client)
 
-    params := openvnet.InterfaceCreateParams{
+    params := &openvnet.RouteCreateParams{
         UUID:d.Get("uuid").(string),
-        InterfaceUUID:d.Get("interface_uuid").(bool),
-        RouteLinkUUID:d.Get("route_link_uuid").(bool),
-        NetworkUUID:d.Get("network_uuid").(bool),
+        InterfaceUUID:d.Get("interface_uuid").(string),
+        RouteLinkUUID:d.Get("route_link_uuid").(string),
+        NetworkUUID:d.Get("network_uuid").(string),
         Ipv4Network:d.Get("ipv4_network").(string),
-        Ipv4Prefix:d.Get("ipv4_prefix").(bool),
-        Ingress:d.Get("ingress").(string),
-        Egress:d.Get("egress").(string),
+        Ipv4Prefix:d.Get("ipv4_prefix").(int),
+        Ingress:d.Get("ingress").(bool),
+        Egress:d.Get("egress").(bool),
     }
 
-    route, _, err := client.Route.Create(&params)
+    route, _, err := client.Route.Create(params)
+    d.SetId(route.UUID)
 
-    return nil
+    return err
 }
 
 func openVNetRouteRead(d *schema.ResourceData, m interface{}) error {
@@ -100,5 +102,8 @@ func openVNetRouteUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetRouteDelete(d *schema.ResourceData, m interface{}) error {
-    return nil
+    client := m.(*openvnet.Client)
+    _, err := client.Route.Delete(d.Id())
+    
+    return err
 }

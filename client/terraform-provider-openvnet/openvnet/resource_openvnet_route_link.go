@@ -5,7 +5,6 @@ import (
         "github.com/axsh/openvnet/client/go-openvnet"
  )
 
-
 func OpenVNetRouteLink() *schema.Resource {
     return &schema.Resource{
         Create: openVNetRouteLinkCreate,
@@ -23,8 +22,7 @@ func OpenVNetRouteLink() *schema.Resource {
             "mac_address": &schema.Schema{
                 Type:     schema.TypeString,
                 Required: true,
-            },
-            
+            }, 
         },
     }
 }
@@ -33,14 +31,15 @@ func openVNetRouteLinkCreate(d *schema.ResourceData, m interface{}) error {
 
 	client := m.(*openvnet.Client)
 
-    params := openvnet.RouteLinkCreateParams{
+    params := &openvnet.RouteLinkCreateParams{
         UUID:d.Get("uuid").(string),
         MacAddress:d.Get("mac_address").(string),
     }
 
-    route_link, _, err := client.RouteLink.Create(&params)
+    routelink, _, err := client.RouteLink.Create(params)
+    d.SetId(routelink.UUID)
 
-    return nil
+    return err
 }
 
 func openVNetRouteLinkRead(d *schema.ResourceData, m interface{}) error {
@@ -62,5 +61,8 @@ func openVNetRouteLinkUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetRouteLinkDelete(d *schema.ResourceData, m interface{}) error {
-    return nil
+    client := m.(*openvnet.Client)
+    _, err := client.RouteLink.Delete(d.Id())
+    
+    return err
 }

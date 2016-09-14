@@ -56,7 +56,7 @@ func openVNetNetworkCreate(d *schema.ResourceData, m interface{}) error {
 
 	client := m.(*openvnet.Client)
 
-    params := openvnet.NetworkCreateParams{
+    params := &openvnet.NetworkCreateParams{
         UUID:d.Get("uuid").(string),
         DisplayName:d.Get("display_name").(string),
         Ipv4Network:d.Get("ipv4_network").(string),
@@ -66,12 +66,14 @@ func openVNetNetworkCreate(d *schema.ResourceData, m interface{}) error {
         SegmentUUID:d.Get("segment_uuid").(string),
     }
 
-    network, _, err := client.Network.Create(&params)
-
-    return nil
+    network, _, err := client.Network.Create(params)
+    d.SetId(network.UUID)
+   
+    return err
 }
 
 func openVNetNetworkRead(d *schema.ResourceData, m interface{}) error {
+
     client := m.(*openvnet.Client)
     network, _, err := client.Network.GetByUUID(d.Id())
 
@@ -94,8 +96,9 @@ func openVNetNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetNetworkDelete(d *schema.ResourceData, m interface{}) error {
-    client := m.(*openvnet.Client)
 
+    client := m.(*openvnet.Client)
     _, err := client.Network.Delete(d.Id())
+    
     return err
 }
