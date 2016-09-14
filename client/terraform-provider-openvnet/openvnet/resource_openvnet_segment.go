@@ -3,8 +3,6 @@ package openvnet
 import (
     "github.com/hashicorp/terraform/helper/schema"
     "github.com/axsh/openvnet/client/go-openvnet"
-    "fmt"
-    "log"
 )
 
 func OpenVNetSegment() *schema.Resource {
@@ -33,21 +31,15 @@ func openVNetSegmentCreate(d *schema.ResourceData, m interface{}) error {
 
     client := m.(*openvnet.Client)
 
-    params := openvnet.SegmentCreateParams{
-        UUID:  d.Get("UUID").(string),
-        Mode:  d.Get("Mode").(string),
+    params := &openvnet.SegmentCreateParams{
+        UUID:d.Get("uuid").(string),
+        Mode:d.Get("mode").(string),
     }
 
-    segment, _, err := client.Segment.Create(&params)
+    segment, _, err := client.Segment.Create(params)
+    d.SetId(segment.UUID)
 
-    if err != nil {
-        return fmt.Errorf("Error creating segment: %s", err)
-    }
-
-    d.SetId(segment.ID)
-    log.Printf("[INFO] Segment ID: %s", d.Id())
-
-    return nil
+    return err
 }
 
 func openVNetSegmentRead(d *schema.ResourceData, m interface{}) error {
@@ -70,7 +62,7 @@ func openVNetSegmentUpdate(d *schema.ResourceData, m interface{}) error {
 
 func openVNetSegmentDelete(d *schema.ResourceData, m interface{}) error {
     client := m.(*openvnet.Client)
-
-    _, err := client.Network.Delete(d.Id())
-    return err
+   _, err := client.Segment.Delete(d.Id())
+    
+   return err
 }
