@@ -24,6 +24,7 @@ func Provider () terraform.ResourceProvider {
 			"openvnet_route":      OpenVNetRoute(),
 			"openvnet_route_link": OpenVNetRouteLink(),
 			"openvnet_segment":    OpenVNetSegment(),
+			"openvnet_mac_range_group": OpenVNetMacRangeGroup(),
 		},
 
 		ConfigureFunc: providerConfigure,
