@@ -94,19 +94,6 @@ module Vnet::NodeApi
 
       private
 
-      def internal_create(options)
-        model_class.create(options)
-      end
-
-      def internal_destroy(model)
-        model && model.destroy
-      end
-
-      def internal_update(model, options)
-        model.update(options)
-        [model, options.keys]
-      end
-
       #
       # Customizable methods:
       #
@@ -138,6 +125,27 @@ module Vnet::NodeApi
       #
       # Internal EventBase methods:
       #
+
+      def internal_create(options)
+        model_class.create(options)
+      end
+
+      def internal_destroy(model)
+        model && model.destroy
+      end
+
+      def internal_update(model, options)
+        model.update(options)
+        [model, options.keys]
+      end
+
+      def get_changed_hash(model, changed_keys)
+        {id: model.id}.tap { |values|
+          changed_keys.each { |key|
+            values[key] = model[key]
+          }
+        }
+      end
 
       def inherited(klass)
         super

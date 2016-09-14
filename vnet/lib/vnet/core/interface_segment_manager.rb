@@ -11,6 +11,7 @@ module Vnet::Core
     subscribe_event INTERFACE_SEGMENT_INITIALIZED, :load_item
     subscribe_event INTERFACE_SEGMENT_UNLOAD_ITEM, :unload_item
     subscribe_event INTERFACE_SEGMENT_CREATED_ITEM, :created_item
+    subscribe_event INTERFACE_SEGMENT_UPDATED_ITEM, :updated_item
     subscribe_event INTERFACE_SEGMENT_DELETED_ITEM, :unload_item
 
     subscribe_event ACTIVATE_INTERFACE, :activate_interface
@@ -72,6 +73,10 @@ module Vnet::Core
       return if @active_interfaces[get_param_id(params, :interface_id)].nil?
 
       internal_new_item(mw_class.new(params))
+    end
+
+    def updated_item(params)
+      warn log_format_h('updated_item called', params)
     end
 
   end

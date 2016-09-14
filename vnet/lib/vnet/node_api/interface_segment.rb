@@ -55,7 +55,7 @@ module Vnet::NodeApi
           get_model(interface_id, segment_id).tap { |model|
             next if model.nil?
             update_model_no_validate(model, static: true)
-            return
+            return model
           }
 
           create_with_transaction(interface_id: interface_id, segment_id: segment_id, static: true)
@@ -75,7 +75,7 @@ module Vnet::NodeApi
 
             update_model_no_validate(model, static: false)
             
-            return if !leases_empty?(interface_id, segment_id)
+            return model if !leases_empty?(interface_id, segment_id)
             internal_destroy(model)
           }
         }.tap { |model|
@@ -95,13 +95,19 @@ module Vnet::NodeApi
       end
 
       def leases_empty?(interface_id, segment_id)
-        M::MacLease.dataset.where(interface_id: interface_id).segments.where(segment_id: segment_id).empty?
+        M::MacLease.dataset.where(interface_id: interface_id).segments.where(segments__id: segment_id).empty?
       end
 
       def dispatch_created_item_events(model)
         logger.warn "XXXXXXXXXXXXXX dispatch_created_item_events model.inspect:#{model.inspect}"
 
         dispatch_event(INTERFACE_SEGMENT_CREATED_ITEM, model.to_hash)
+      end
+
+      def dispatch_updated_item_events(model, changed_keys)
+        logger.warn "XXXXXXXXXXXXXX dispatch_created_item_events model.inspect:#{model.inspect}"
+
+        dispatch_event(INTERFACE_SEGMENT_UPDATED_ITEM, get_changed_hash(model, changed_keys))
       end
 
       def dispatch_deleted_item_events(model)

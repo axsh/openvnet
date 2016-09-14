@@ -155,6 +155,7 @@ module Vnet
     INTERFACE_SEGMENT_UNLOAD_ITEM = "interface_segment_unload_item"
     INTERFACE_SEGMENT_CREATED_ITEM = "interface_segment_created_item"
     INTERFACE_SEGMENT_DELETED_ITEM = "interface_segment_deleted_item"
+    INTERFACE_SEGMENT_UPDATED_ITEM = "interface_segment_updated_item"
 
     #
     # Interface Port events:
