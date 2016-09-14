@@ -14,6 +14,11 @@ func OpenVNetInterface() *schema.Resource {
 
         Schema: map[string]*schema.Schema{
 
+            "display_name": &schema.Schema{
+                Type:     schema.TypeString,
+                Optional: true,
+            },
+
             "uuid": &schema.Schema{
                 Type:     schema.TypeString,
                 Optional: true,
@@ -51,28 +56,48 @@ func OpenVNetInterface() *schema.Resource {
 
             "network_uuid": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
             },
 
             "mac_address": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
             },
 
             "ipv4_address": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
             },
 
             "port_name": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
             },
 
             "mode": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
             },
+
+            "security_group": &schema.Schema{
+                Type:     schema.TypeSet,
+                Optional: true,
+                Elem: &schema.Resource{
+                    Schema: map[string]*schema.Schema{
+                        "security_group_id": &schema.Schema{
+                            Type:     schema.TypeString,
+                            Optional: true,
+                        },
+
+                        "display_name": &schema.Schema{
+                            Type:     schema.TypeString,
+                            Required: true,
+                        },
+                    },
+                },
+            },
+
+
         },
     }
 }
@@ -81,7 +106,8 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 
     client := m.(*openvnet.Client)
 
-    params := openvnet.InterfaceCreateParams{
+    params := &openvnet.InterfaceCreateParams{
+        //DisplayName:d.Get("display_name").(string),
         UUID:d.Get("uuid").(string),
         IngressFilteringEnabled:d.Get("ingress_filtering_enabled").(bool),
         EnableRouting:d.Get("enable_routing").(bool),
@@ -96,7 +122,22 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
         Mode:d.Get("mode").(string),
     }
 
-    return nil
+    intfc, _, err := client.Interface.Create(params)
+    d.SetId(intfc.UUID)
+
+
+    if x := d.Get("security_group"); x != nil {
+        for _, y := range x.(*schema.Set).List() {
+            z := y.(map[string]interface{})
+
+            err = createSecurityGroup(client, z)
+            if err != nil {
+                return err
+            }
+        }
+    }
+
+    return err
 }
 
 func openVNetInterfaceRead(d *schema.ResourceData, m interface{}) error {
@@ -108,8 +149,27 @@ func openVNetInterfaceUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func openVNetInterfaceDelete(d *schema.ResourceData, m interface{}) error {
-    client := m.(*openvnet.Client)
-
+   client := m.(*openvnet.Client)
     _, err := client.Interface.Delete(d.Id())
+    
     return err
+}
+
+func createSecurityGroup(c *openvnet.Client, theMap map[string]interface{}) error {
+
+    sgroup_params := &openvnet.SecurityGroupCreateParams{
+        UUID: theMap["security_group_id"].(string),
+        DisplayName:     theMap["display_name"].(string),
+    }
+
+    // This could most likely be done in a much better way.
+    g, _, err := c.SecurityGroup.Create(sgroup_params)
+    if err != nil {
+        return fmt.Errorf("Error creating security group: %s", err)
+    }
+    if g == nil{
+        return nil
+    }
+
+    return nil
 }
