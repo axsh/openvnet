@@ -116,7 +116,7 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
         SegmentUUID:d.Get("segment_uuid").(string),
         NetworkUUID:d.Get("network_uuid").(string),
         MacAddress:d.Get("mac_address").(string),
-        Ipv4Address:d.Get("ipv4_address").(string),
+        IPv4Address:d.Get("ipv4_address").(string),
         PortName:d.Get("port_name").(string),
         Mode:d.Get("mode").(string),
     }
