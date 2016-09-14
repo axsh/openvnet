@@ -1,0 +1,5 @@
+[openvnet]
+name=OpenVNet
+baseurl=http://devrepo/repos/packages/rhel/$releasever/vnet/$ovn_release_suffix/
+enabled=1
+gpgcheck=0
