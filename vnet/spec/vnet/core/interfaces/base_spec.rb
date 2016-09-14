@@ -3,7 +3,10 @@ require 'spec_helper'
 
 describe Vnet::Core::Interfaces::Base do
   let(:subclass) { Class.new(Vnet::Core::Interfaces::Base) }
-  let(:instance) { subclass.new(map: OpenStruct.new(id: 1, mode: "mode")) }
+  let(:instance) {
+    subclass.new(dp_info: MockEmptyDpInfo.new,
+                 map: OpenStruct.new(id: 1, uuid: 'if-test', mode: "mode"))
+  }
 
   describe "cookie" do
     it { expect(instance.cookie.to_s(16)).to eq "c00000000000001" }

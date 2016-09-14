@@ -20,7 +20,7 @@ module Vnet::Core::InterfaceSegments
 
       @interface_id = get_param_id(map, :interface_id)
       @segment_id = get_param_id(map, :segment_id)
-      @static = map[:static]
+      @static = get_param_bool(map, :static)
 
       @cookie = self.id | COOKIE_TYPE_INTERFACE_SEGMENT
     end

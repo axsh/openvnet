@@ -18,11 +18,11 @@ module Vnet::Core
     subscribe_event FILTER_DELETED_ITEM, :unload_item
     subscribe_event FILTER_UPDATED, :updated_item
 
-    subscribe_event FILTER_ACTIVATE_INTERFACE, :activate_interface
-    subscribe_event FILTER_DEACTIVATE_INTERFACE, :deactivate_interface
-
     subscribe_event FILTER_ADDED_STATIC, :added_static
     subscribe_event FILTER_REMOVED_STATIC, :removed_static
+
+    subscribe_event ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event DEACTIVATE_INTERFACE, :deactivate_interface
 
     #
     # Internal methods:

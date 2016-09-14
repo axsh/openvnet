@@ -1,23 +1,21 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Core
-
   class InterfaceSegmentManager < Vnet::Core::Manager
-
     include ActiveInterfaceEvents
 
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event INTERFACE_SEGMENT_INITIALIZED, :load_item
     subscribe_event INTERFACE_SEGMENT_UNLOAD_ITEM, :unload_item
     subscribe_event INTERFACE_SEGMENT_CREATED_ITEM, :created_item
+    subscribe_event INTERFACE_SEGMENT_UPDATED_ITEM, :updated_item
     subscribe_event INTERFACE_SEGMENT_DELETED_ITEM, :unload_item
 
-    subscribe_event INTERFACE_SEGMENT_ACTIVATE_INTERFACE, :activate_interface
-    subscribe_event INTERFACE_SEGMENT_DEACTIVATE_INTERFACE, :deactivate_interface
+    subscribe_event ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event DEACTIVATE_INTERFACE, :deactivate_interface
 
     #
     # Internal methods:
@@ -69,12 +67,6 @@ module Vnet::Core
     # Create / Delete events:
     #
 
-    def item_post_install(item, item_map)
-    end
-
-    def item_post_uninstall(item)
-    end
-
     # item created in db on queue 'item.id'
     def created_item(params)
       return if internal_detect_by_id(params)
@@ -83,6 +75,9 @@ module Vnet::Core
       internal_new_item(mw_class.new(params))
     end
 
-  end
+    def updated_item(params)
+      warn log_format_h('updated_item called', params)
+    end
 
+  end
 end
