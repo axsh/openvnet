@@ -43,6 +43,7 @@ func OpenVNetDatapath() *schema.Resource {
                         "mac_address": &schema.Schema{
                             Type:     schema.TypeString,
                             ForceNew: true,
+                            Optional: true,
                         },
 
                         "interface_uuid": &schema.Schema{
@@ -63,6 +64,7 @@ func OpenVNetDatapath() *schema.Resource {
                         "mac_address": &schema.Schema{
                             Type:     schema.TypeString,
                             ForceNew: true,
+                            Optional: true,
                         },
 
                         "interface_uuid": &schema.Schema{
@@ -83,6 +85,7 @@ func OpenVNetDatapath() *schema.Resource {
                         "mac_address": &schema.Schema{
                             Type:     schema.TypeString,
                             ForceNew: true,
+                            Optional: true,
                         },
 
                         "interface_uuid": &schema.Schema{
