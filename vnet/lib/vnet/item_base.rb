@@ -93,7 +93,8 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @id = params[:id]
+
+      @id = get_param_id(params)
     end
   end
 
@@ -104,9 +105,9 @@ module Vnet
       @installed = false
       @loaded = false
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
+      map = get_param_hash(params, :map)
+      @id = get_param_id(map)
+      @uuid = get_param_string(map, :uuid)
     end
 
     def pretty_id
@@ -118,8 +119,9 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
-      @id = params[:id]
+
+      @dp_info = get_param_dp_info(params)
+      @id = get_param_id(get_param_hash(params, :map))
     end
 
     private
@@ -133,8 +135,9 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
-      @id = params[:map][:id]
+
+      @dp_info = get_param_dp_info(params)
+      @id = get_param_id(get_param_hash(params, :map))
     end
   end
 
@@ -144,11 +147,12 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
+      @dp_info = get_param_dp_info(params)
+
+      map = get_param_hash(params, :map)
+      @id = get_param_id(map)
+      @uuid = get_param_string(map, :uuid)
     end
 
     def pretty_id
@@ -162,12 +166,13 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
-      @mode = map.mode.to_sym
+      @dp_info = get_param_dp_info(params)
+
+      map = get_param_hash(params, :map)
+      @id = get_param_id(map)
+      @uuid = get_param_string(map, :uuid)
+      @mode = get_param_string(map, :mode).to_sym
     end
 
     def pretty_properties

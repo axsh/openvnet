@@ -104,6 +104,10 @@ module Vnet
       param_id
     end
 
+    #
+    # Standard Types:
+    #
+
     # TODO: Add support for other integer types.
     def get_param_int(params, key, required = true)
       get_param_type(params, key, Fixnum, required)
@@ -134,6 +138,14 @@ module Vnet
     def get_param_array(params, key, required = true)
       get_param_type(params, key, Array, required)
     end
+
+    def get_param_hash(params, key, required = true)
+      get_param_type(params, key, Hash, required)
+    end
+
+    #
+    # Network Types:
+    #
 
     # TODO: Add methods to validate IPv4 addresses with different restrictions.
     #
@@ -175,6 +187,14 @@ module Vnet
       end
 
       param
+    end
+
+    #
+    # VNet Types:
+    #
+
+    def get_param_dp_info(params, key = :dp_info, required = true)
+      get_param_type(params, key, Vnet::Core::DpInfo, required)
     end
 
   end
