@@ -10,7 +10,7 @@ type Network struct {
 	ItemBase
 	DisplayName string `json:"display_name"`
 	Ipv4Network string `json:"ipv4_network"`
-	Ipv4Prefix  string `json:"ipv4_prefix"`
+	Ipv4Prefix  int `json:"ipv4_prefix"`
 	NetworkMode string `json:"network_mode"`
 	DomainName  string `json:"domain_name"`
 	SegmentID   int    `json:"segment_id"`
