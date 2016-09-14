@@ -23,7 +23,7 @@ type RouteLinkService struct {
 
 type RouteLinkCreateParams struct {
 	UUID       string `url:"uuid,omitempty"`
-	MacAddress string `url:"mac_address"`
+	MacAddress string `url:"mac_address,omitempty"`
 }
 
 func (s *RouteLinkService) Create(params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
