@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Core
-  class InterfaceSegmentManager < Vnet::Core::AssocManager
+  class InterfaceSegmentManager < Vnet::Core::Manager
     include ActiveInterfaceEvents
 
     #

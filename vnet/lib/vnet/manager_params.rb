@@ -111,6 +111,8 @@ module Vnet
     # Standard Types:
     #
 
+    GET_PARAM_BOOL_TYPES = [TrueClass, FalseClass].freeze
+
     # TODO: Add support for other integer types.
     def get_param_int(params, key, required = true)
       get_param_type(params, key, Fixnum, required)
@@ -118,6 +120,14 @@ module Vnet
 
     def get_param_true(params, key, required = true)
       get_param_type(params, key, TrueClass, required)
+    end
+
+    def get_param_false(params, key, required = true)
+      get_param_type(params, key, FalseClass, required)
+    end
+
+    def get_param_bool(params, key, required = true)
+      get_param_types(params, key, GET_PARAM_BOOL_TYPES, required)
     end
 
     def get_param_string(params, key, required = true)
@@ -196,11 +206,11 @@ module Vnet
     # VNet Types:
     #
 
+    GET_PARAM_MAP_TYPES = [Hash, OpenStruct].freeze
+
     def get_param_dp_info(params, key = :dp_info, required = true)
       get_param_type(params, key, Vnet::Core::DpInfo, required)
     end
-
-    GET_PARAM_MAP_TYPES = [Hash, OpenStruct].freeze
 
     def get_param_map(params, key = :map, required = true)
       get_param_types(params, key, GET_PARAM_MAP_TYPES, required)
