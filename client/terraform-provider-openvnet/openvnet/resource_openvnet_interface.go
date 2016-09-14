@@ -155,7 +155,7 @@ func openVNetInterfaceRead(d *schema.ResourceData, m interface{}) error {
     d.Set("network_uuid", intfc.NetworkUUID)
     d.Set("mac_address", intfc.MacAddress)    
     d.Set("mode", intfc.Mode)
-    d.Set("ipv4_address", IPv4Address)
+    d.Set("ipv4_address", intfc.IPv4Address)
 
     return nil
 }
