@@ -149,7 +149,7 @@ module Vnet::Core
       # TODO: Use only one event for all these?
       @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE, activate_params)
       @dp_info.filter2_manager.publish(FILTER_ACTIVATE_INTERFACE, activate_params)
-      @dp_info.interface_segment_manager.publish(INTERFACE_SEGMENT_ACTIVATE_INTERFACE, activate_params)
+      @dp_info.interface_segment_manager.publish(ACTIVATE_INTERFACE, activate_params)
 
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
@@ -164,7 +164,7 @@ module Vnet::Core
       # TODO: Use only one event for all these?
       @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE, deactivate_params)
       @dp_info.filter2_manager.publish(FILTER_DEACTIVATE_INTERFACE, deactivate_params)
-      @dp_info.interface_segment_manager.publish(INTERFACE_SEGMENT_DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.interface_segment_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
 
       @dp_info.filter_manager.async.remove_filters(item.id)
 
