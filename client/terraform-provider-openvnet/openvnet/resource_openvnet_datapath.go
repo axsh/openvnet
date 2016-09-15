@@ -21,7 +21,8 @@ func OpenVNetDatapath() *schema.Resource {
 
             "uuid": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
+                Computed: true,
             },
 
             "dpid": &schema.Schema{

@@ -32,14 +32,12 @@ func OpenVNetDatapathRelation() *schema.Resource {
 
 						"mac_address": &schema.Schema{
 							Type:     schema.TypeString,
-							ForceNew: true,
 							Optional: true,
 						},
 
 						"interface_uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
 						},
 					},
 				},
@@ -57,14 +55,12 @@ func OpenVNetDatapathRelation() *schema.Resource {
 
 						"mac_address": &schema.Schema{
 							Type:     schema.TypeString,
-							ForceNew: true,
 							Optional: true,
 						},
 
 						"interface_uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
 						},
 					},
 				},

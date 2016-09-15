@@ -14,14 +14,15 @@ func OpenVNetRouteLink() *schema.Resource {
 
         Schema: map[string]*schema.Schema{
 
-        	"uuid": &schema.Schema{
+            "uuid": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
+                Computed: true,
             },
 
             "mac_address": &schema.Schema{
                 Type:     schema.TypeString,
-                Required: true,
+                Optional: true,
             }, 
         },
     }
@@ -29,7 +30,7 @@ func OpenVNetRouteLink() *schema.Resource {
 
 func openVNetRouteLinkCreate(d *schema.ResourceData, m interface{}) error {
 
-	client := m.(*openvnet.Client)
+    client := m.(*openvnet.Client)
 
     params := &openvnet.RouteLinkCreateParams{
         UUID:d.Get("uuid").(string),
