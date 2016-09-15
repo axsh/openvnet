@@ -92,3 +92,21 @@ func (s *DatapathService) CreateDatapathRelation(rel *Relation, params *Datapath
 func (s *DatapathService) DeleteDatapathRelation(params *Relation) (*http.Response, error) {
 	return s.client.del(DatapathNamespace + "/" + params.DatapathID + "/" + params.Type + "/" + params.RelationTypeUUID)
 }
+
+func (s *DatapathService) GetNetworkRelations(uuid string) (*NetworkList, *http.Response, error) {
+	list := new(NetworkList)
+	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/networks", list)
+	return list, resp, err
+}
+
+func (s *DatapathService) GetRouteLinkRelations(uuid string) (*RouteLinkList, *http.Response, error) {
+	list := new(RouteLinkList)
+	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/route_links", list)
+	return list, resp, err
+}
+
+func (s *DatapathService) GetSegmentRelations(uuid string) (*SegmentList, *http.Response, error) {
+	list := new(SegmentList)
+	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/segments", list)
+	return list, resp, err
+}
