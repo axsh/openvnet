@@ -99,15 +99,16 @@ func OpenVNetDatapathRelation() *schema.Resource {
 
 func openVNetDatapathRelationCreate(d *schema.ResourceData, m interface{}) error {
 
+	d.SetId(d.Get("uuid").(string))
 	client := m.(*openvnet.Client)
-	
+
 	createRelation := func(relationType string) {
 		if r := d.Get(relationType[:len(relationType)-1]) ; r != nil {
 			for _, relationTypeMap := range r.([]interface{}) {
 				relationMap := relationTypeMap.(map[string]interface{})
 				
 				relation := &openvnet.Relation{
-					DatapathID: d.Get("uuid").(string),
+					DatapathID: d.Id(),
 					Type: relationType,
 					RelationTypeUUID: relationMap["uuid"].(string),
 				}
@@ -125,6 +126,7 @@ func openVNetDatapathRelationCreate(d *schema.ResourceData, m interface{}) error
 	createRelation("networks")
 	createRelation("route_links")
 	createRelation("segments")
+
 
 	return nil
 }
@@ -148,7 +150,7 @@ func openVNetDatapathRelationDelete(d *schema.ResourceData, m interface{}) error
 				relationMap := relationTypeMap.(map[string]interface{})
 
 				relation := &openvnet.Relation{
-					DatapathID: d.Get("uuid").(string),
+					DatapathID: d.Id(),
 					Type: relationType,
 					RelationTypeUUID: relationMap["uuid"].(string),
 				}
