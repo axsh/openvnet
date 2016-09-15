@@ -47,7 +47,7 @@ else
 fi
 
 /usr/bin/env
-docker build -t "${img_tag}" - < "./deployment/docker/${BUILD_OS}.Dockerfile"
+docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
 CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 # Upload checked out tree to the container.
 docker cp . "${CID}:/var/tmp/openvnet"
