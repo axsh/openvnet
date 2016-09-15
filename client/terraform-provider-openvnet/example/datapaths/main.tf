@@ -10,7 +10,7 @@ resource "openvnet_datapath" "dp_sample" {
 }
 
 resource "openvnet_datapath_relation" "dp_sample_relation" {
-	uuid = "${openvnet_datapath_dp_sample.id}"
+	uuid = "${openvnet_datapath.dp_sample.id}"
 
 	network {
 		 mac_address = ""
