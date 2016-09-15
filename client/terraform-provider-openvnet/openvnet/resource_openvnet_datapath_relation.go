@@ -92,26 +92,25 @@ func OpenVNetDatapathRelation() *schema.Resource {
 	}
 }
 
-
 func openVNetDatapathRelationCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(d.Get("uuid").(string))
 	client := m.(*openvnet.Client)
 
 	createRelation := func(relationType string) {
-		if r := d.Get(relationType[:len(relationType)-1]) ; r != nil {
+		if r := d.Get(relationType[:len(relationType)-1]); r != nil {
 			for _, relationTypeMap := range r.([]interface{}) {
 				relationMap := relationTypeMap.(map[string]interface{})
-				
+
 				relation := &openvnet.Relation{
-					DatapathID: d.Id(),
-					Type: relationType,
+					DatapathID:       d.Id(),
+					Type:             relationType,
 					RelationTypeUUID: relationMap["uuid"].(string),
 				}
-				
+
 				relationParams := &openvnet.DatapathRelationCreateParams{
 					InterfaceUUID: relationMap["interface_uuid"].(string),
-					MacAddress: relationMap["mac_address"].(string),
+					MacAddress:    relationMap["mac_address"].(string),
 				}
 
 				client.Datapath.CreateDatapathRelation(relation, relationParams)
@@ -123,10 +122,8 @@ func openVNetDatapathRelationCreate(d *schema.ResourceData, m interface{}) error
 	createRelation("route_links")
 	createRelation("segments")
 
-
 	return nil
 }
-
 
 func openVNetDatapathRelationRead(d *schema.ResourceData, m interface{}) error {
 	return nil
@@ -141,13 +138,13 @@ func openVNetDatapathRelationDelete(d *schema.ResourceData, m interface{}) error
 	client := m.(*openvnet.Client)
 
 	deleteRelation := func(relationType string) {
-		if r := d.Get(relationType[:len(relationType)-1]) ; r != nil {
+		if r := d.Get(relationType[:len(relationType)-1]); r != nil {
 			for _, relationTypeMap := range r.([]interface{}) {
 				relationMap := relationTypeMap.(map[string]interface{})
 
 				relation := &openvnet.Relation{
-					DatapathID: d.Id(),
-					Type: relationType,
+					DatapathID:       d.Id(),
+					Type:             relationType,
 					RelationTypeUUID: relationMap["uuid"].(string),
 				}
 

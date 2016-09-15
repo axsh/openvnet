@@ -1,8 +1,8 @@
 package openvnet
 
 import (
-	"net/url"
 	"github.com/axsh/openvnet/client/go-openvnet"
+	"net/url"
 )
 
 type Config struct {

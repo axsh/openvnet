@@ -1,68 +1,68 @@
 package openvnet
 
 import (
-    "github.com/hashicorp/terraform/helper/schema"
-    "github.com/axsh/openvnet/client/go-openvnet"
+	"github.com/axsh/openvnet/client/go-openvnet"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func OpenVNetSegment() *schema.Resource {
-    return &schema.Resource{
-        Create: openVNetSegmentCreate,
-        Read:   openVNetSegmentRead,
-        Update: openVNetSegmentUpdate,
-        Delete: openVNetSegmentDelete,
+	return &schema.Resource{
+		Create: openVNetSegmentCreate,
+		Read:   openVNetSegmentRead,
+		Update: openVNetSegmentUpdate,
+		Delete: openVNetSegmentDelete,
 
-        Schema: map[string]*schema.Schema{
+		Schema: map[string]*schema.Schema{
 
-        	"uuid": &schema.Schema{
-                Type:     schema.TypeString,
-                Required: true,
-            },
+			"uuid": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
 
-            "mode": &schema.Schema{
-                Type:     schema.TypeString,
-                Required: true,
-            },
-        },
-    }
+			"mode": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
+	}
 }
 
 func openVNetSegmentCreate(d *schema.ResourceData, m interface{}) error {
 
-    client := m.(*openvnet.Client)
+	client := m.(*openvnet.Client)
 
-    params := &openvnet.SegmentCreateParams{
-        UUID:d.Get("uuid").(string),
-        Mode:d.Get("mode").(string),
-    }
+	params := &openvnet.SegmentCreateParams{
+		UUID: d.Get("uuid").(string),
+		Mode: d.Get("mode").(string),
+	}
 
-    segment, _, err := client.Segment.Create(params)
-    d.SetId(segment.UUID)
+	segment, _, err := client.Segment.Create(params)
+	d.SetId(segment.UUID)
 
-    return err
+	return err
 }
 
 func openVNetSegmentRead(d *schema.ResourceData, m interface{}) error {
 
-    client := m.(*openvnet.Client)
-    segment, _, err := client.Segment.GetByUUID(d.Id())
+	client := m.(*openvnet.Client)
+	segment, _, err := client.Segment.GetByUUID(d.Id())
 
-    if err != nil {
-        return err
-    }
+	if err != nil {
+		return err
+	}
 
-    d.Set("mode", segment.Mode)
+	d.Set("mode", segment.Mode)
 
-    return nil
+	return nil
 }
 
 func openVNetSegmentUpdate(d *schema.ResourceData, m interface{}) error {
-    return nil
+	return nil
 }
 
 func openVNetSegmentDelete(d *schema.ResourceData, m interface{}) error {
-    client := m.(*openvnet.Client)
-   _, err := client.Segment.Delete(d.Id())
-    
-   return err
+	client := m.(*openvnet.Client)
+	_, err := client.Segment.Delete(d.Id())
+
+	return err
 }
