@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
-func Provider () terraform.ResourceProvider {
+func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 
 		Schema: map[string]*schema.Schema{
@@ -18,13 +18,14 @@ func Provider () terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"openvnet_datapath":   OpenVNetDatapath(),
-			"openvnet_interface":  OpenVNetInterface(),
-			"openvnet_network":    OpenVNetNetwork(),
-			"openvnet_route":      OpenVNetRoute(),
-			"openvnet_route_link": OpenVNetRouteLink(),
-			"openvnet_segment":    OpenVNetSegment(),
-			"openvnet_mac_range_group": OpenVNetMacRangeGroup(),
+			"openvnet_datapath":          OpenVNetDatapath(),
+			"openvnet_datapath_relation": OpenVNetDatapathRelation(),
+			"openvnet_interface":         OpenVNetInterface(),
+			"openvnet_network":           OpenVNetNetwork(),
+			"openvnet_route":             OpenVNetRoute(),
+			"openvnet_route_link":        OpenVNetRouteLink(),
+			"openvnet_segment":           OpenVNetSegment(),
+			"openvnet_mac_range_group":   OpenVNetMacRangeGroup(),
 		},
 
 		ConfigureFunc: providerConfigure,
