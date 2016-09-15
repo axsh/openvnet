@@ -47,6 +47,7 @@ sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 # Prepare build directories and put the source in place.
 #
 
+. /opt/rh/rh-ruby23/enable
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
 if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
   rm -rf "$OPENVNET_SRC_BUILD_DIR"
