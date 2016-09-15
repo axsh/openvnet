@@ -7,19 +7,23 @@ resource "openvnet_datapath" "dp_sample" {
 	 uuid = "dp-demo"
 	 dpid = "0x0000aaaaaaaaaaaa"
 	 node_id = "vna"
+}
 
-	 network {
+resource "openvnet_datapath_relation" "dp_sample_relation" {
+	uuid = "${openvnet_datapath_dp_sample.id}"
+
+	network {
+		 mac_address = ""
+		interface_uuid = ""
+	}
+
+	route_link {
 		mac_address = ""
 		interface_uuid = ""
-	 }
+	}
 
-	 route_link {
+	segment {
 		mac_address = ""
 		interface_uuid = ""
-	 }
-
-	 segment {
-		mac_address = ""
-		interface_uuid = ""
-	 }
+	}
 }
