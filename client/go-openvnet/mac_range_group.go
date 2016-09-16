@@ -39,18 +39,26 @@ func (s *MacRangeGroupService) Get() (*MacRangeGroupList, *http.Response, error)
 	return list, resp, err
 }
 
+func (s *MacRangeGroupService) GetByUUID(id string) (*MacRangeGroup, *http.Response, error) {
+	i := new(MacRangeGroup)
+	resp, err := s.client.get(MacRangeGroupNamespace+"/"+id, i)
+	return i, resp, err
+}
+
 ///
 ///    Mac Range
 ///
 
 type MacRange struct {
-	MacRangeGroupUUID string
-	Body              struct {
-		ItemBase
-		MacRangeGroupID int `json:"mac_range_group_id"`
-		BeginMacAddress int `json:"begin_mac_address"`
-		EndMacAddress   int `json:"end_mac_address"`
-	}
+	ItemBase
+	MacRangeGroupID int `json:"mac_range_group_id"`
+	BeginMacAddress int `json:"begin_mac_address"`
+	EndMacAddress   int `json:"end_mac_address"`
+}
+
+type MacRangeList struct {
+	ListBase
+	Items []MacRange
 }
 
 type MacRangeCreateParams struct {
@@ -60,17 +68,16 @@ type MacRangeCreateParams struct {
 
 func (s *MacRangeGroupService) CreateRange(uuid string, params *MacRangeCreateParams) (*MacRange, *http.Response, error) {
 	mr := new(MacRange)
-	mr.MacRangeGroupUUID = uuid
-	resp, err := s.client.post(MacRangeGroupNamespace+"/"+uuid+"/mac_ranges", &mr.Body, params)
+	resp, err := s.client.post(MacRangeGroupNamespace+"/"+uuid+"/mac_ranges", mr, params)
 	return mr, resp, err
 }
 
-func (s *MacRangeGroupService) DeleteRange(mr *MacRange) (*http.Response, error) {
-	return s.client.del(MacRangeGroupNamespace + "/" + mr.MacRangeGroupUUID + "/mac_ranges/" + mr.Body.UUID)
+func (s *MacRangeGroupService) DeleteRange(mrgUUID string, mrUUID string) (*http.Response, error) {
+	return s.client.del(MacRangeGroupNamespace + "/" + mrgUUID + "/mac_ranges/" + mrUUID)
 }
 
-func (s *MacRangeGroupService) GetByUUID(id string) (*MacRangeGroup, *http.Response, error) {
-	i := new(MacRangeGroup)
-	resp, err := s.client.get(MacRangeGroupNamespace+"/"+id, i)
-	return i, resp, err
+func (s *MacRangeGroupService) GetRange(uuid string) (*MacRangeList, *http.Response, error) {
+	list := new(MacRangeList)
+	resp, err := s.client.get(MacRangeGroupNamespace+"/"+uuid+"/mac_ranges", list)
+	return list, resp, err
 }
