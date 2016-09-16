@@ -128,9 +128,7 @@ describe "/interfaces" do
     }
 
     include_examples "PUT many_to_many_relation", "segments", accepted_params
-
-    # accepted_params[:static] = false
-    # include_examples "PUT many_to_many_relation", "segments", accepted_params
+    include_examples "PUT many_to_many_relation", "segments", { static: false }, [:static]
   end
 
   #

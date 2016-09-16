@@ -12,11 +12,7 @@ module Vnet::NodeApi
       end
 
       def update_uuid(uuid, changes)
-        model_class[uuid].tap do |model|
-          # TODO: Return error if not found.
-          next if model.nil?
-          update_model(model, changes)
-        end
+        update_model(model_class[uuid], changes)
       end
 
       def update_model(model, changes)
@@ -29,8 +25,9 @@ module Vnet::NodeApi
 
       def update_model_no_validate(model, changes)
         internal_update(model, changes).tap { |model, changed_keys|
-          next if changed_keys.nil?
+          return model if model.nil? || changed_keys.nil?
           dispatch_updated_item_events(model, changed_keys)
+          return model
         }
       end
 
@@ -135,8 +132,7 @@ module Vnet::NodeApi
       end
 
       def internal_update(model, options)
-        model.update(options)
-        [model, options.keys]
+        model && model.update(options) && [model, options.keys]
       end
 
       def get_changed_hash(model, changed_keys)

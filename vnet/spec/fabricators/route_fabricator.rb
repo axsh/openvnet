@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 require 'ipaddr'
+
 Fabricator(:route, class_name: Vnet::Models::Route) do
   interface { Fabricate(:interface) }
   route_link { Fabricate(:route_link) }

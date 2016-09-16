@@ -94,23 +94,6 @@ module Vnet::NodeApi
         }
       end
 
-      # TODO: Use this in MacLease...
-      # def destroy_with_transaction(filter)
-      #   transaction {
-      #     model = Interface[filter]
-
-      #     mac_leases = model.mac_leases
-         
-      #     internal_destroy().tap { |result|
-      #       next if result.nil?
-
-      #       mac_leases.each { |lease|
-      #         InterfaceSegment.released(model.id, mac_lease.segment_id)
-      #       }
-      #     }
-      #   }
-      # end
-
       def dispatch_created_item_events(model)
         # TODO: Send has not just id.
         dispatch_event(INTERFACE_CREATED_ITEM, id: model.id)
