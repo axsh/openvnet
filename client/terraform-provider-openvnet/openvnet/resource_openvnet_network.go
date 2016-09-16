@@ -17,11 +17,12 @@ func OpenVNetNetwork() *schema.Resource {
 			"uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 
 			"display_name": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 
 			"ipv4_network": &schema.Schema{
@@ -36,7 +37,7 @@ func OpenVNetNetwork() *schema.Resource {
 
 			"network_mode": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 
 			"domain_name": &schema.Schema{

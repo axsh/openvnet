@@ -17,6 +17,7 @@ func OpenVNetRoute() *schema.Resource {
 			"uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 
 			"interface_uuid": &schema.Schema{
@@ -82,10 +83,6 @@ func openVNetRouteRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*openvnet.Client)
 	route, _, err := client.Route.GetByUUID(d.Id())
 
-	if err != nil {
-		return err
-	}
-
 	d.Set("interface_uuid", route.InterfaceUUID)
 	d.Set("route_link_uuid", route.RouteLinkUUID)
 	d.Set("network_uuid", route.NetworkUUID)
@@ -94,7 +91,7 @@ func openVNetRouteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("ingress", route.Ingress)
 	d.Set("egress", route.Egress)
 
-	return nil
+	return err
 }
 
 func openVNetRouteUpdate(d *schema.ResourceData, m interface{}) error {

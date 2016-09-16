@@ -16,7 +16,8 @@ func OpenVNetSegment() *schema.Resource {
 
 			"uuid": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
 			},
 
 			"mode": &schema.Schema{
@@ -47,13 +48,9 @@ func openVNetSegmentRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*openvnet.Client)
 	segment, _, err := client.Segment.GetByUUID(d.Id())
 
-	if err != nil {
-		return err
-	}
-
 	d.Set("mode", segment.Mode)
 
-	return nil
+	return err
 }
 
 func openVNetSegmentUpdate(d *schema.ResourceData, m interface{}) error {
