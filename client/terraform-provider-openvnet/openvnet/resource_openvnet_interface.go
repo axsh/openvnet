@@ -1,7 +1,6 @@
 package openvnet
 
 import (
-	"fmt"
 	"github.com/axsh/openvnet/client/go-openvnet"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -106,7 +105,6 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*openvnet.Client)
 
 	params := &openvnet.InterfaceCreateParams{
-		//DisplayName:d.Get("display_name").(string),
 		UUID: d.Get("uuid").(string),
 		IngressFilteringEnabled: d.Get("ingress_filtering_enabled").(bool),
 		EnableRouting:           d.Get("enable_routing").(bool),
@@ -124,14 +122,13 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 	intfc, _, err := client.Interface.Create(params)
 	d.SetId(intfc.UUID)
 
+	interfaceUUID := intfc.UUID
+
 	if x := d.Get("security_group"); x != nil {
 		for _, y := range x.(*schema.Set).List() {
 			z := y.(map[string]interface{})
 
-			err = createSecurityGroup(client, z)
-			if err != nil {
-				return err
-			}
+			createSecurityGroupRelation(client, interfaceUUID, z)
 		}
 	}
 
@@ -171,21 +168,14 @@ func openVNetInterfaceDelete(d *schema.ResourceData, m interface{}) error {
 	return err
 }
 
-func createSecurityGroup(c *openvnet.Client, theMap map[string]interface{}) error {
+func createSecurityGroupRelation(c *openvnet.Client, interfaceUUID string, theMap map[string]interface{}) error {
 
-	sgroup_params := &openvnet.SecurityGroupCreateParams{
-		UUID:        theMap["security_group_id"].(string),
-		DisplayName: theMap["display_name"].(string),
+	sgroup_params := &openvnet.InterfaceCreateSecurityGroup{
+		SGUUID: theMap["security_group_id"].(string),
+		UUID:   interfaceUUID,
 	}
 
-	// This could most likely be done in a much better way.
-	g, _, err := c.SecurityGroup.Create(sgroup_params)
-	if err != nil {
-		return fmt.Errorf("Error creating security group: %s", err)
-	}
-	if g == nil {
-		return nil
-	}
+	c.Interface.CreateSecurityGroupRelation(sgroup_params)
 
 	return nil
 }
