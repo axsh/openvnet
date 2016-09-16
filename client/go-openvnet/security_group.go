@@ -24,7 +24,7 @@ type SecurityGroupService struct {
 }
 
 type SecurityGroupCreateParams struct {
-	UUID        string   `url:"uudi,omitempty"`
+	UUID        string   `url:"uuid,omitempty"`
 	DisplayName string   `url:"display_name,omitempty"`
 	Description string   `url:"description,omitempty"`
 	Rules       []string `url:"rules,omitempty"`
