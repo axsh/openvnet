@@ -62,8 +62,8 @@ type MacRangeList struct {
 }
 
 type MacRangeCreateParams struct {
-	BeginMacAddress string `url:"begin_mac_address"`
-	EndMacAddress   string `url:"end_mac_address"`
+	BeginMacAddress string `url:"begin_mac_address,omitempty"`
+	EndMacAddress   string `url:"end_mac_address,omitempty"`
 }
 
 func (s *MacRangeGroupService) CreateRange(uuid string, params *MacRangeCreateParams) (*MacRange, *http.Response, error) {
