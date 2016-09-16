@@ -21,9 +21,6 @@ module Vnet::NodeApi
 
       # TODO: Must be called within a transaction.
       def leased(interface_id, segment_id)
-        # TODO: Add log_format-style logging to NodeApi's.
-        logger.warn "XXXXXXXXXXXXXX leased interface_id:#{interface_id} segment_id:#{segment_id}"
-
         transaction {
           return if get_model(interface_id, segment_id)
           create_with_transaction(interface_id: interface_id, segment_id: segment_id)
@@ -35,8 +32,6 @@ module Vnet::NodeApi
 
       # TODO: Must be called within a transaction.
       def released(interface_id, segment_id)
-        logger.warn "XXXXXXXXXXXXXX released interface_id:#{interface_id} segment_id:#{segment_id}"
-
         transaction {
           get_model(interface_id, segment_id).tap { |model|
             return if model.nil? || model.static
@@ -49,8 +44,6 @@ module Vnet::NodeApi
       end
 
       def set_static(interface_id, segment_id)
-        logger.warn "XXXXXXXXXXXXXX set_static interface_id:#{interface_id} segment_id:#{segment_id}"
-
         transaction {
           get_model(interface_id, segment_id).tap { |model|
             next if model.nil?
@@ -67,8 +60,6 @@ module Vnet::NodeApi
       end
 
       def clear_static(interface_id, segment_id)
-        logger.warn "XXXXXXXXXXXXXX clear_static interface_id:#{interface_id} segment_id:#{segment_id}"
-
         transaction {
           get_model(interface_id, segment_id).tap { |model|
             next if model.nil?
@@ -99,20 +90,14 @@ module Vnet::NodeApi
       end
 
       def dispatch_created_item_events(model)
-        logger.warn "XXXXXXXXXXXXXX dispatch_created_item_events model.inspect:#{model.inspect}"
-
         dispatch_event(INTERFACE_SEGMENT_CREATED_ITEM, model.to_hash)
       end
 
       def dispatch_updated_item_events(model, changed_keys)
-        logger.warn "XXXXXXXXXXXXXX dispatch_created_item_events model.inspect:#{model.inspect}"
-
         dispatch_event(INTERFACE_SEGMENT_UPDATED_ITEM, get_changed_hash(model, changed_keys))
       end
 
       def dispatch_deleted_item_events(model)
-        logger.warn "XXXXXXXXXXXXXX dispatch_deleted_item_events model.inspect:#{model.inspect}"
-
         dispatch_event(INTERFACE_SEGMENT_DELETED_ITEM, id: model.id)
       end
 
