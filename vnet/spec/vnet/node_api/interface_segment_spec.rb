@@ -78,14 +78,10 @@ describe Vnet::NodeApi::InterfaceSegment do
     it 'with no lease' do
       if_seg = create_if_seg_static
 
-      puts "XXXXXXXXXXXXXXXXXX #{if_seg.inspect}"
-
       actual_result = Vnet::NodeApi::InterfaceSegment.execute(:clear_static, interface.id, segment.id)
-      puts "YYYYYYYYYYYYYYYYYY #{actual_result.inspect}"
       expect(actual_result).to include(if_seg_non_static.merge(is_deleted: if_seg.id))
 
       events = MockEventHandler.handled_events
-      puts "ZZZZZZZZZZZZZZZZZZ #{events.inspect}"
       expect(events.size).to eq 1
 
       expect(events[0][:event]).to eq Vnet::Event::INTERFACE_SEGMENT_DELETED_ITEM
