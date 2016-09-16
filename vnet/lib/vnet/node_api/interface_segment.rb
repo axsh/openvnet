@@ -22,7 +22,10 @@ module Vnet::NodeApi
       # TODO: Must be called within a transaction.
       def leased(interface_id, segment_id)
         transaction {
-          return if get_model(interface_id, segment_id)
+          get_model(interface_id, segment_id).tap { |model|
+            return model if model
+          }
+
           create_with_transaction(interface_id: interface_id, segment_id: segment_id)
         }.tap { |model|
           next if model.nil?
@@ -46,9 +49,7 @@ module Vnet::NodeApi
       def set_static(interface_id, segment_id)
         transaction {
           get_model(interface_id, segment_id).tap { |model|
-            next if model.nil?
-            update_model_no_validate(model, static: true)
-            return model
+            return update_model_no_validate(model, static: true) if model
           }
 
           create_with_transaction(interface_id: interface_id, segment_id: segment_id, static: true)
@@ -64,9 +65,11 @@ module Vnet::NodeApi
           get_model(interface_id, segment_id).tap { |model|
             next if model.nil?
 
-            update_model_no_validate(model, static: false)
-            
-            return model if !leases_empty?(interface_id, segment_id)
+            if !leases_empty?(interface_id, segment_id)
+              return update_model_no_validate(model, static: false)
+            end
+
+            internal_update(model, static: false)
             internal_destroy(model)
           }
         }.tap { |model|
