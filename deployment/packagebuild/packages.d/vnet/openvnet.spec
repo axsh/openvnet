@@ -2,6 +2,7 @@
 # development (non stable) versions.
 %define release 1
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
+%define strip_vendor %{?strip_vendor:1}
 
 Name: openvnet
 Version: 0.9%{?dev_release_suffix:dev}
@@ -74,11 +75,22 @@ cp "$OPENVNET_SRC_DIR"/vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openv
 cp "$OPENVNET_SRC_DIR"/vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
 cp -r "$OPENVNET_SRC_DIR"/vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r "$OPENVNET_SRC_DIR"/vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r "$OPENVNET_SRC_DIR"/vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r "$OPENVNET_SRC_DIR"/vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
 cp -r "$OPENVNET_SRC_DIR"/client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
-
+%if %{strip_vendor}
+tar cO --directory="${OPENVNET_SRC_DIR}/vnet" \
+  --exclude='*.o' \
+  --exclude='.git' \
+  --exclude='cache/*.gem' \
+  --exclude='gems/*-*/test/*' \
+  --exclude='gems/*-*/spec/*' \
+  --exclude='gems/*-*/doc/*' \
+  --exclude='gems/pio-*/features/*' \
+  vendor/ | tar -x --directory="${RPM_BUILD_ROOT}/opt/axsh/openvnet/vnet" -f -
+%else
+cp -r "$OPENVNET_SRC_DIR"/vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+%endif
 
 %package common
 #
