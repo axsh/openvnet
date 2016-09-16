@@ -144,6 +144,7 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 %config(noreplace) /etc/openvnet/webapi.conf
 %if %{defined systemd_requires}
 %config %{_unitdir}/vnet-webapi.service
+%config(noreplace) /etc/systemd/system/vnet-webapi.service.d/env.conf
 %else
 %config(noreplace) /etc/default/vnet-webapi
 %config /etc/init/vnet-webapi.conf
