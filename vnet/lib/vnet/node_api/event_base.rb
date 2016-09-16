@@ -11,7 +11,7 @@ module Vnet::NodeApi
         }
       end
 
-      def update_uuid(uuid, options)
+      def update_uuid(uuid, changes)
         model_class[uuid].tap do |model|
           # TODO: Return error if not found.
           next if model.nil?

@@ -8,6 +8,7 @@ module Vnet::NodeApi
     class << self
       include Vnet::Helpers::Event
 
+      # TODO: Remove.
       def update(uuid, options)
         update_uuid(uuid, options)
       end
@@ -62,6 +63,11 @@ module Vnet::NodeApi
         end
 
         dispatch_security_group_item_events(model)
+      end
+
+      # TODO: Fix this so it updates 'enable_routing'.
+      def dispatch_updated_item_events(model, changed_keys)
+        # dispatch_event(, get_changed_hash(model, changed_keys))
       end
 
       def dispatch_deleted_item_events(model)
