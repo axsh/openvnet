@@ -129,6 +129,7 @@ module Vnet
       nil
     end
 
+    # TODO: Move to core/manager.
     def set_datapath_info(datapath_info)
       if @datapath_info
         raise("Manager.set_datapath_info called twice.")

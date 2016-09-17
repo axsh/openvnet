@@ -37,6 +37,7 @@ module Vnet::Openflow
       debug log_format("'#{command}' => #{result}") if verbose
     end
 
+    # TODO: Add a version that ...
     def add_ovs_flow(flow_str)
       command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
       result = system(command)

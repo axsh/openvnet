@@ -13,39 +13,39 @@ describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp =>
     vm7.route_default_via(config[:physical_network_gw_ip])
   end
 
-  describe 'local vm7 in seg-global' do
-    it 'reaches the gateway' do
-      to_gw = double()
-      allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
-
-      expect(vm7).to be_able_to_ping(to_gw, 10)
-    end
-
-    it 'reaches the internet' do
-      to_gw = double()
-      allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
-
-      expect(vm7).to be_able_to_ping(to_gw, 10)
-    end
-  end
-
-  # TODO: Disabled until remote promiscuous interfaces are supported.
-
-  # describe "remote vm1 in seg-global" do
-  #   it "reaches the gateway" do
+  # TODO: Disabled until both local and remote promiscuous interfaces
+  # are supported.
+  # describe 'local vm7 in seg-global' do
+  #   it 'reaches the gateway' do
   #     to_gw = double()
   #     allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
 
-  #     expect(vm1).to be_able_to_ping(to_gw, 10)
+  #     expect(vm7).to be_able_to_ping(to_gw, 10)
   #   end
 
-  #   it "reaches the internet" do
+  #   it 'reaches the internet' do
   #     to_gw = double()
   #     allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
 
-  #     expect(vm1).to be_able_to_ping(to_gw, 10)
+  #     expect(vm7).to be_able_to_ping(to_gw, 10)
   #   end
   # end
+
+  describe "remote vm1 in seg-global" do
+    it "reaches the gateway" do
+      to_gw = double()
+      allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
+
+      expect(vm1).to be_able_to_ping(to_gw, 10)
+    end
+
+    it "reaches the internet" do
+      to_gw = double()
+      allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
+
+      expect(vm1).to be_able_to_ping(to_gw, 10)
+    end
+  end
 
   describe 'vm1 and vm7 in seg-global' do
     context "vm1 on node1" do
