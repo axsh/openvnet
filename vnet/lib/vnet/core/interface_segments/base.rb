@@ -115,7 +115,7 @@ module Vnet::Core::InterfaceSegments
 
       interface = MW::InterfacePort.batch.dataset.where(filter).first.commit
       debug log_format("get_a_host_interface interface", interface.inspect)
-      return if interface
+      return if interface.nil?
 
       active_interface = MW::ActiveInterface.batch.dataset.where(interface_id: interface.interface_id).first.commit
       debug log_format("get_a_host_interface active_if", active_interface.inspect)
