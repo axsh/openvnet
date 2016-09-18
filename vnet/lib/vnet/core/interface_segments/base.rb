@@ -89,7 +89,7 @@ module Vnet::Core::InterfaceSegments
       }
       prom_interface = get_active_interface(prom_filter)
 
-      return if host_filter.nil? || prom_interface.nil?
+      return if host_interface.nil? || prom_interface.nil?
 
       match_md = md_create(interface: @interface_id)
       learn_md = md_create(interface: host_interface.interface_id, remote: nil)
