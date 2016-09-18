@@ -109,11 +109,13 @@ module Vnet::Core::InterfaceSegments
 
     # Ugly but simple way of getting a host interface.
     def get_active_interface(filter)
+      debug log_format_h("get_a_host_interface filter", filter)
+
       interface = MW::InterfacePort.batch.dataset.where(filter).first.commit
-      debug log_format("get_a_host_interface", interface.inspect)
+      debug log_format("get_a_host_interface interface", interface.inspect)
 
       active_interface = MW::ActiveInterface.batch.dataset.where(interface_id: interface.interface_id).first.commit
-      debug log_format("get_a_host_interface", active_interface.inspect)
+      debug log_format("get_a_host_interface active_if", active_interface.inspect)
 
       active_interface
     end
