@@ -36,14 +36,14 @@ describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp =>
       to_gw = double()
       allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
 
-      expect(vm1).to be_able_to_ping(to_gw, 10)
+      expect(vm1).to be_able_to_ping(to_gw, 100)
     end
 
     it "reaches the internet" do
       to_gw = double()
       allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
 
-      expect(vm1).to be_able_to_ping(to_gw, 10)
+      expect(vm1).to be_able_to_ping(to_gw, 100)
     end
   end
 
