@@ -102,6 +102,14 @@ module Vnet::Core
       @ovs_ofctl.add_ovs_10_flow(flow_str)
     end
 
+    def add_ovs_flow2(flow_str)
+      @ovs_ofctl.add_ovs_flow2(flow_str)
+    end
+
+    def add_ovs_10_flow2(flow_str)
+      @ovs_ofctl.add_ovs_10_flow2(flow_str)
+    end
+
     def del_cookie(cookie, cookie_mask = Vnet::Constants::OpenflowFlows::COOKIE_MASK)
       options = {
         :command => Vnet::Openflow::Controller::OFPFC_DELETE,
