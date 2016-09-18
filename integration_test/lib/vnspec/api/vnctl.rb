@@ -61,7 +61,7 @@ module Vnspec
           # Currently 'PUT interfaces/:uuid/rename' is the only API route that
           # does not follow the REST standard. This is a quick hack to work
           # around it.
-          args << relation_name unless relation_name == 'rename' || relation_name == 'set_static'
+          args << relation_name unless relation_name == 'rename'
         }
 
         args += [convert_method(method, url), values[1], values[3]].compact
@@ -92,8 +92,6 @@ module Vnspec
         case
         when url =~ %r([^/]+/rename$)
           :rename
-        when url =~ %r([^/]+/set_static$)
-          :set_static
         else
           :modify
         end

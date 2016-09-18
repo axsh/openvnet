@@ -63,12 +63,6 @@ module Vnet::Core::Ports
     # interface_networks where an interface can be added to a network
     # without an ip_lease.
 
-    def get_datapath_id
-      # TODO: Add a method to dp_info that caches datapath_info.
-      datapath_info = @dp_info.datapath && @dp_info.datapath.datapath_info
-      datapath_info.id
-    end
-
   end
 
 end
