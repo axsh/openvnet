@@ -2,16 +2,10 @@
 
 module Vnet::NodeApi
   class IpLease < EventBase
-
-    valid_update_fields ['enable_routing']
+    valid_update_fields [:enable_routing]
 
     class << self
       include Vnet::Helpers::Event
-
-      # TODO: Remove.
-      def update(uuid, options)
-        update_uuid(uuid, options)
-      end
 
       def attach_id(options)
         model = model_class[id: options[:id]]
@@ -67,7 +61,7 @@ module Vnet::NodeApi
 
       # TODO: Fix this so it updates 'enable_routing'.
       def dispatch_updated_item_events(model, changed_keys)
-        # dispatch_event(, get_changed_hash(model, changed_keys))
+        # dispatch_event(INTERFACE_SEGMENT_UPDATED_ITEM, get_changed_hash(model, changed_keys))
       end
 
       def dispatch_deleted_item_events(model)
@@ -109,6 +103,8 @@ module Vnet::NodeApi
       #
       # Attach / Detach:
       #
+
+      # TODO: Refactor so we use 'put' from endpoints instead.
 
       # TODO: Use a filter instead.
       def attach_model(model, options)

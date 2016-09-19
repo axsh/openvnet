@@ -1,28 +1,10 @@
 # -*- coding: utf-8 -*-
+
 module Vnet::NodeApi
   class MacLease < EventBase
+    valid_update_fields [:interface_id]
+
     class << self
-
-      # TODO: Get rid of this.
-      def update(uuid, options)
-        deleted_mac_address = false
-
-        mac_lease = transaction do
-          model_class[uuid].tap do |model|
-            deleted_mac_address = true if options[:mac_address]
-            model.set(options)
-            model.save_changes
-            model
-          end
-        end
-
-        if deleted_mac_address
-          dispatch_deleted_item_events(mac_lease)
-          dispatch_created_item_events(mac_lease)
-        end
-
-        mac_lease
-      end
 
       #
       # Internal methods:
@@ -35,6 +17,14 @@ module Vnet::NodeApi
                        id: model.interface_id,
                        mac_lease_id: model.id,
                        mac_address: model.mac_address)
+
+        # dispatch_event(INTERFACE_SEGMENT_CREATED_ITEM, model.to_hash)
+
+      end
+
+      # Need to include old values(?).
+      def dispatch_updated_item_events(model, changed_keys)
+        # dispatch_event(INTERFACE_SEGMENT_UPDATED_ITEM, get_changed_hash(model, changed_keys))
       end
 
       def dispatch_deleted_item_events(model)
