@@ -13,7 +13,9 @@ module Vnet::Models
     one_to_many :network_services
     one_to_many :routes
 
+    one_to_many :interface_networks
     one_to_many :interface_ports
+    one_to_many :interface_route_links
     one_to_many :interface_segments
 
     one_to_many :mac_leases
@@ -52,6 +54,8 @@ module Vnet::Models
     # 0006_filters
     filters: :destroy,
     # 0011_assoc_interface
+    interface_networks: :destroy,
+    interface_route_links: :destroy,
     interface_segments: :destroy
 
   end

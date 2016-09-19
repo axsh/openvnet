@@ -128,7 +128,9 @@ module Vnet::NodeApi
         # lease_policy_base_interfaces: :destroy,
         # 0011_assoc_interface 
         # TODO: Make the assoc managers subscribe to INTERFACE_DELETED_ITEM(?).
+        InterfaceNetwork.dispatch_deleted_where(filter, model.deleted_at)
         InterfaceSegment.dispatch_deleted_where(filter, model.deleted_at)
+        InterfaceRouteLink.dispatch_deleted_where(filter, model.deleted_at)
       end
 
       def create_interface_port(interface, datapath_id, port_name)

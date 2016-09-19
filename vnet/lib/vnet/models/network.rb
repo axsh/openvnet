@@ -5,25 +5,22 @@ module Vnet::Models
     taggable 'nw'
     plugin :paranoia_is_deleted
 
+    many_to_one :segment
+
     one_to_many :ip_addresses
     one_to_many :routes
     one_to_many :tunnels
     one_to_many :vlan_translations
 
+    one_to_many :active_networks
+    one_to_many :interface_networks
+    one_to_many :topology_networks
+
     many_to_many :datapaths, :join_table => :datapath_networks, :conditions => "datapath_networks.deleted_at is null"
     one_to_many :datapath_networks
 
-    # 0002_services
     one_to_many :lease_policy_base_networks
     many_to_many :lease_policies, :join_table => :lease_policy_base_networks, :conditions => "lease_policy_base_networks.deleted_at is null"
-
-    # 0004_active_items
-    one_to_many :active_networks
-
-    # 0009_topology
-    one_to_many :topology_networks
-
-    many_to_one :segment
 
     plugin :association_dependencies,
     # 0001_origin
@@ -36,7 +33,9 @@ module Vnet::Models
     # 0004_active_items
     active_networks: :destroy,
     # 0009_topology
-    topology_networks: :destroy
+    topology_networks: :destroy,
+    # 0011_assoc_interface
+    interface_networks: :destroy
 
   end
 end
