@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 
 describe Vnet::NodeApi::MacLease do
   before(:each) { use_mock_event_handler }
 
   let(:events) { MockEventHandler.handled_events }
-
   let(:interface) { Fabricate(:interface) }
-  let(:mac_lease_empty) { Fabricate(:mac_lease) }
 
   let(:mac_lease_params) {
     { interface_id: interface.id,
@@ -37,25 +37,15 @@ describe Vnet::NodeApi::MacLease do
   end
 
   describe "destroy" do
-    it "success" do
-      mac_lease_empty
+    let(:delete_item) { Fabricate(:mac_lease) }
+    let(:delete_filter) { delete_item.canonical_uuid }
+    let(:delete_events) {
+      [ [ Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS, {
+            id: delete_item.interface_id,
+            mac_lease_id: delete_item.id
+          }]]
+    }
 
-      # TODO: Add helper method for this.
-      mac_lease_count = Vnet::Models::MacLease.count
-      mac_address_count = Vnet::Models::MacAddress.count
-
-      Vnet::NodeApi::MacLease.execute(:destroy, mac_lease_empty.canonical_uuid)
-
-      expect(Vnet::Models::MacLease.count).to eq mac_lease_count - 1
-      expect(Vnet::Models::MacAddress.count).to eq mac_address_count - 1
-
-      expected_params = {
-        id: mac_lease_empty.interface_id,
-        mac_lease_id: mac_lease_empty.id
-      }
-
-      expect(events.size).to eq 1
-      expect(events[0]).to be_event(Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS, expected_params)
-    end
+    include_examples 'delete item on node_api', :mac_lease
   end
 end

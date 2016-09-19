@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 require 'vnet'
+
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 Dir["#{File.dirname(__FILE__)}/matchers/*.rb"].map {|f| require f }
 
