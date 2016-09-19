@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+
 describe Vnet::NodeApi::IpLease do
-  before do
-    use_mock_event_handler
-  end
+  before(:each) { use_mock_event_handler }
+
+  let(:events) { MockEventHandler.handled_events }
 
   describe "create" do
     it "success" do
@@ -29,7 +32,6 @@ describe Vnet::NodeApi::IpLease do
       expect(ip_lease[:ip_address_id]).to eq model.ip_address_id
       expect(ip_lease[:interface_id]).to eq interface.id
 
-      events = MockEventHandler.handled_events
       expect(events.size).to eq 1
 
       events.first.tap do |event|
@@ -41,31 +43,26 @@ describe Vnet::NodeApi::IpLease do
   end
 
   describe "destroy" do
-    it "success" do
-      ip_retention_container = Fabricate(:ip_retention_container)
-      ip_retention = Fabricate(:ip_retention_with_ip_lease, ip_retention_container: ip_retention_container)
-      ip_lease = ip_retention.ip_lease
+    let(:ip_retention_container) {
+      Fabricate(:ip_retention_container)
+    }
+    let(:ip_retention) {
+      Fabricate(:ip_retention_with_ip_lease, ip_retention_container: ip_retention_container)
+    }
 
-      ip_lease_count = Vnet::Models::IpLease.count
-      ip_address_count = Vnet::Models::IpAddress.count
-      ip_retention_count = Vnet::Models::IpRetention.count
+    let(:delete_item) { ip_retention.ip_lease }
+    let(:delete_filter) { delete_item.canonical_uuid }
+    let(:delete_events) {
+      [ [ Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS, {
+            id: delete_item.interface_id,
+            ip_lease_id: delete_item.id
+          }],
+        [ Vnet::Event::IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, {
+            id: ip_retention.id
+          }]]
+    }
 
-      Vnet::NodeApi::IpLease.destroy(ip_lease.canonical_uuid)
-
-      expect(Vnet::Models::IpLease.count).to eq ip_lease_count - 1
-      expect(Vnet::Models::IpAddress.count).to eq ip_address_count - 1
-      expect(Vnet::Models::IpRetention.count).to eq ip_retention_count - 1
-
-      events = MockEventHandler.handled_events
-      expect(events.size).to eq 2
-
-      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
-      expect(events[0][:options][:id]).to eq ip_lease.interface_id
-      expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
-
-      expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION
-      expect(events[1][:options][:id]).to eq ip_retention.id
-    end
+    include_examples 'delete item on node_api', :ip_lease
   end
 
   describe "release" do
@@ -93,7 +90,6 @@ describe Vnet::NodeApi::IpLease do
       expect(ip_lease.interface_id).to be_nil
       expect(ip_lease.mac_lease_id).to be_nil
 
-      events = MockEventHandler.handled_events
       expect(events.size).to eq 3
 
       events.first.tap do |event|

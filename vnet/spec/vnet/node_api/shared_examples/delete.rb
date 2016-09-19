@@ -5,7 +5,9 @@
 # 'delete_item': Item to be deleted.
 # 'events': Should be 'MockEventHandler.handled_events'.
 
-# TODO: Add block that allows the caller to include additional tests.
+# TODO: Add block that allows the caller to include additional tests. (?)
+
+# TODO: Check if there are event params we're not testing for.
 
 shared_examples 'delete item on node_api' do |name, extra_deletions = []|
   let(:model_class) { Vnet::Models.const_get(name.to_s.camelize) }
@@ -27,8 +29,8 @@ shared_examples 'delete item on node_api' do |name, extra_deletions = []|
     expect(post_counts).to eq(pre_counts.map { |c| c - 1 })
     expect(events.size).to eq(delete_events.size)
 
-    delete_events.each { |event_name, event_params|
-      expect(events[0]).to be_event(event_name, event_params)
+    delete_events.each_with_index { |event, index|
+      expect(events[index]).to be_event(event.first, event.last)
     }
   end
 end

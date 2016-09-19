@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'spec_helper'
+
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 
 describe Vnet::NodeApi::MacLease do
