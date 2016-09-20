@@ -29,4 +29,5 @@ node {
     writeFile(file: "build.env", text: build_env + "\nRELEASE_SUFFIX=${RELEASE_SUFFIX}\n")
     stage "Build"
     sh "./deployment/docker/build.sh ./build.env"
+    sh "./deployment/docker/test-rpm-install.sh ./build.env"
 }
