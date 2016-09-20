@@ -65,7 +65,6 @@ if [[ -n "$BUILD_CACHE_DIR" && -d "${build_cache_base}" ]]; then
 fi
 # Run build script
 docker exec -t "${CID}" /bin/bash -c "cd openvnet; SKIP_CLEANUP=1 ./deployment/packagebuild/build_packages_vnet.sh"
-rel_path=$(docker exec -i "${CID}" cat /var/tmp/repo_rel.path)
 if [[ -n "$BUILD_CACHE_DIR" ]]; then
     if [[ ! -d "$BUILD_CACHE_DIR" || ! -w "$BUILD_CACHE_DIR" ]]; then
         echo "ERROR: BUILD_CACHE_DIR '${BUILD_CACHE_DIR}' does not exist or not writable." >&2
