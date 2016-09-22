@@ -13,13 +13,16 @@ module Vnet::NodeApi
       private
 
       def dispatch_created_item_events(model)
-        dispatch_event(INTERFACE_LEASED_MAC_ADDRESS,
-                       id: model.interface_id,
-                       mac_lease_id: model.id,
-                       mac_address: model.mac_address)
+        filter = {
+          id: model.interface_id,
+          segment_id: model. segment_id,
+          mac_lease_id: model.id,
+          mac_address: model.mac_address
+        }
+
+        dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, filter)
 
         # dispatch_event(INTERFACE_SEGMENT_CREATED_ITEM, model.to_hash)
-
       end
 
       # Need to include old values(?).

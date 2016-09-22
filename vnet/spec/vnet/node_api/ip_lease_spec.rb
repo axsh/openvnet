@@ -8,12 +8,15 @@ describe Vnet::NodeApi::IpLease do
   before(:each) { use_mock_event_handler }
 
   let(:events) { MockEventHandler.handled_events }
+
   let(:network) { Fabricate(:network) }
+  let(:segment) { Fabricate(:segment) }
 
   describe 'create' do
     let(:random_ipv4_address) { random_ipv4_i }
+
     let(:interface) { Fabricate(:interface) }
-    let(:mac_lease) { Fabricate(:mac_lease, interface: interface) }
+    let(:mac_lease) { Fabricate(:mac_lease, interface: interface, segment_id: mac_segment_id) }
     
     let(:create_filter) {
       { mac_lease: mac_lease,
@@ -52,7 +55,16 @@ describe Vnet::NodeApi::IpLease do
     }
     let(:query_result) { create_result }
 
-    include_examples 'create item on node_api', :ip_lease, [:ip_address]
+    context 'without segment' do
+      let(:mac_segment_id) { nil }
+      include_examples 'create item on node_api', :ip_lease, [:ip_address]
+    end
+
+    context 'with segment' do
+      let(:mac_segment_id) { segment.id }
+      include_examples 'create item on node_api', :ip_lease, [:ip_address]
+    end
+
   end
 
   describe 'destroy' do

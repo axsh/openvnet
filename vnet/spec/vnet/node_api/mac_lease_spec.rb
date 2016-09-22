@@ -8,21 +8,23 @@ describe Vnet::NodeApi::MacLease do
   before(:each) { use_mock_event_handler }
 
   let(:events) { MockEventHandler.handled_events }
+
   let(:interface) { Fabricate(:interface) }
+  let(:segment) { Fabricate(:segment) }
 
   let(:random_mac_address) { random_mac_i }
 
   describe 'create' do
-    # TODO: With and without segment.
-
     let(:create_filter) {
       { interface_id: interface.id,
+        segment_id: mac_segment_id,
         mac_address: random_mac_address
       }
     }
     let(:create_events) {
       [ [ Vnet::Event::INTERFACE_LEASED_MAC_ADDRESS, {
             id: create_filter[:interface_id],
+            segment_id: mac_segment_id,
             mac_lease_id: :model__id,
             mac_address: random_mac_address
           }]]
@@ -30,14 +32,18 @@ describe Vnet::NodeApi::MacLease do
     let(:create_result) { create_filter }
     let(:query_result) { create_result }
 
-    context '' do
+    context 'without segment' do
+      let(:mac_segment_id) { nil }
+      include_examples 'create item on node_api', :mac_lease, [:mac_address]
+    end
+
+    context 'with segment' do
+      let(:mac_segment_id) { segment.id }
       include_examples 'create item on node_api', :mac_lease, [:mac_address]
     end
   end
 
   describe 'destroy' do
-    # TODO: With and without segment.
-
     let(:delete_item) { Fabricate(:mac_lease) }
     let(:delete_filter) { delete_item.canonical_uuid }
     let(:delete_events) {
@@ -47,6 +53,14 @@ describe Vnet::NodeApi::MacLease do
           }]]
     }
 
-    include_examples 'delete item on node_api', :mac_lease, [:mac_address]
+    context 'without segment' do
+      let(:mac_segment_id) { nil }
+      include_examples 'delete item on node_api', :mac_lease, [:mac_address]
+    end
+
+    context 'with segment' do
+      let(:mac_segment_id) { segment.id }
+      include_examples 'delete item on node_api', :mac_lease, [:mac_address]
+    end
   end
 end
