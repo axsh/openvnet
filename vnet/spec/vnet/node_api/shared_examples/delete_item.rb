@@ -22,6 +22,7 @@ shared_examples 'delete item on node_api' do |name, extra_deletions = []|
   it 'successfully deleted' do
     delete_item
 
+    # TODO: Verify result of destroy.
     pre_counts = all_deletions.map { |m_class| m_class.count }
     nodeapi_class.execute(:destroy, delete_filter)
     post_counts = all_deletions.map { |m_class| m_class.count }
