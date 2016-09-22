@@ -11,6 +11,7 @@ require 'ext/kernel'
 require 'fuguta'
 require 'json'
 require 'logger'
+require 'ostruct'
 
 module Vnet
 
@@ -91,8 +92,10 @@ module Vnet
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
     autoload :Interface, 'vnet/core/interface'
     autoload :InterfaceManager, 'vnet/core/interface_manager'
-    autoload :InterfacePort, 'vnet/core/interface_port'
+    autoload :InterfacePort, 'vnet/core/items'
     autoload :InterfacePortManager, 'vnet/core/interface_port_manager'
+    autoload :InterfaceSegment, 'vnet/core/items'
+    autoload :InterfaceSegmentManager, 'vnet/core/interface_segment_manager'
     autoload :Network, 'vnet/core/items'
     autoload :NetworkManager, 'vnet/core/network_manager'
     autoload :Port, 'vnet/core/port'
@@ -104,6 +107,7 @@ module Vnet
     autoload :Segment, 'vnet/core/items'
     autoload :SegmentManager, 'vnet/core/segment_manager'
     autoload :Service, 'vnet/core/service'
+
     autoload :ServiceManager, 'vnet/core/service_manager'
     autoload :Translation, 'vnet/core/items'
     autoload :TranslationManager, 'vnet/core/translation_manager'
@@ -182,6 +186,10 @@ module Vnet
 
     module InterfacePorts
       autoload :Base, 'vnet/core/interface_ports/base'
+    end
+
+    module InterfaceSegments
+      autoload :Base, 'vnet/core/interface_segments/base'
     end
 
     module Networks
@@ -268,6 +276,7 @@ module Vnet
         autoload :FilterStatic, 'vnet/endpoints/1.0/responses/filter_static'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
         autoload :InterfacePort, 'vnet/endpoints/1.0/responses/interface_port'
+        autoload :InterfaceSegment, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :IpLeaseContainer, 'vnet/endpoints/1.0/responses/ip_lease_container'
@@ -301,6 +310,7 @@ module Vnet
         autoload :DnsServiceCollection, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecordCollection, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfaceSegmentCollection, 'vnet/endpoints/1.0/responses/interface'
         autoload :InterfacePortCollection, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
@@ -357,6 +367,7 @@ module Vnet
     autoload :DnsRecord, 'vnet/models/dns_record'
     autoload :Interface, 'vnet/models/interface'
     autoload :InterfacePort, 'vnet/models/interface_port'
+    autoload :InterfaceSegment, 'vnet/models/interface_segment'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
     autoload :IpLeaseContainer, 'vnet/models/ip_lease_container'
@@ -410,7 +421,8 @@ module Vnet
     autoload :DnsRecord, 'vnet/model_wrappers/dns_record'
     autoload :Helpers, 'vnet/model_wrappers/helpers'
     autoload :Interface, 'vnet/model_wrappers/interface'
-    autoload :InterfacePort, 'vnet/model_wrappers/interface_port'
+    autoload :InterfacePort, 'vnet/model_wrappers/interface'
+    autoload :InterfaceSegment, 'vnet/model_wrappers/interface'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
     autoload :IpLeaseContainer, 'vnet/model_wrappers/ip_lease_container'
@@ -472,6 +484,7 @@ module Vnet
     autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'
     autoload :InterfacePort, 'vnet/node_api/interface_port.rb'
+    autoload :InterfaceSegment, 'vnet/node_api/interface_segment.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :IpLeaseContainer, 'vnet/node_api/ip_lease_container'

@@ -11,18 +11,24 @@ module Vnet::NodeApi
         }
       end
 
-      def update_uuid(uuid, options)
-        model_class[uuid].tap do |model|
-          # TODO: Return error if not found.
-          next if model.nil?
+      def update_uuid(uuid, changes)
+        update_model(model_class[uuid], changes)
+      end
 
-          if has_valid_update_fields?
-            validate_update_fields(options)
-          end
-
-          update_with_transaction(model, options)
-          dispatch_updated_item_events(model)
+      def update_model(model, changes)
+        if has_valid_update_fields?
+          validate_update_fields(changes)
         end
+
+        update_model_no_validate(model, changes)
+      end
+
+      def update_model_no_validate(model, changes)
+        internal_update(model, changes).tap { |model, changed_keys|
+          return model if model.nil? || changed_keys.nil?
+          dispatch_updated_item_events(model, changed_keys)
+          return model
+        }
       end
 
       def destroy(filter)
@@ -66,6 +72,7 @@ module Vnet::NodeApi
         }
       end
 
+      # TODO: Move to a plugin.
       def mac_address_random_assign(options)
         mac_address = options[:mac_address]
         mac_group_uuid = Vnet::Configurations::Common.conf.datapath_mac_group
@@ -84,14 +91,6 @@ module Vnet::NodeApi
 
       private
 
-      def internal_create(options)
-        model_class.create(options)
-      end
-
-      def internal_destroy(model)
-        model && model.destroy
-      end
-
       #
       # Customizable methods:
       #
@@ -104,10 +103,6 @@ module Vnet::NodeApi
         model_class.create(options)
       end
 
-      def update_with_transaction(model, options)
-        model.update(options)
-      end
-
       def destroy_with_transaction(filter)
         internal_destroy(model_class[filter])
       end
@@ -116,16 +111,37 @@ module Vnet::NodeApi
         raise NotImplementedError
       end
 
-      def dispatch_updated_item_events(model)
-        # raise NotImplementedError
+      def dispatch_updated_item_events(model, changed_keys)
+        raise NotImplementedError
       end
 
       def dispatch_deleted_item_events(model)
         raise NotImplementedError
       end
 
+      #
+      # Internal EventBase methods:
+      #
 
-      private
+      def internal_create(options)
+        model_class.create(options)
+      end
+
+      def internal_destroy(model)
+        model && model.destroy
+      end
+
+      def internal_update(model, options)
+        model && model.update(options) && [model, options.keys]
+      end
+
+      def get_changed_hash(model, changed_keys)
+        {id: model.id}.tap { |values|
+          changed_keys.each { |key|
+            values[key] = model[key]
+          }
+        }
+      end
 
       def inherited(klass)
         super

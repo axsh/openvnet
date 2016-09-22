@@ -340,6 +340,7 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_mac2mac_mac(flows, mac_info)
+      segment_id = mac_info[:segment_id] || return
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
       [{ :eth_type => 0x0800,

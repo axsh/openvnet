@@ -79,13 +79,18 @@ module Vnet::NodeApi
 
         # TODO: Raise rollback if any step fails.
         transaction {
-          model = internal_create(options) || next
-          create_interface_port(model, datapath_id, port_name)
+          internal_create(options).tap { |model|
+            next if model.nil?
 
-          mac_lease = add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
-          add_lease(model, mac_lease, network_id, ipv4_address)
+            create_interface_port(model, datapath_id, port_name)
 
-          model
+            mac_lease = add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
+            ip_lease = add_ip_lease(model, mac_lease, network_id, ipv4_address)
+
+            if mac_lease && mac_lease.segment_id
+              InterfaceSegment.leased(model.id, mac_lease.segment_id)
+            end
+          }
         }
       end
 
@@ -97,6 +102,8 @@ module Vnet::NodeApi
 
         # 0001_origin
         InterfacePort.dispatch_created_where(filter, model.created_at)
+
+        # 0011_assoc_interface
       end
 
       def dispatch_deleted_item_events(model)
@@ -119,6 +126,9 @@ module Vnet::NodeApi
         Translation.dispatch_deleted_where(filter, model.deleted_at)
         # 0002_services
         # lease_policy_base_interfaces: :destroy,
+        # 0011_assoc_interface 
+        # TODO: Make the assoc managers subscribe to INTERFACE_DELETED_ITEM(?).
+        InterfaceSegment.dispatch_deleted_where(filter, model.deleted_at)
       end
 
       def create_interface_port(interface, datapath_id, port_name)
@@ -133,15 +143,15 @@ module Vnet::NodeApi
           singular: singular
         }
 
-        model_class(:interface_port).create(options)
+        M::InterfacePort.create(options)
       end
 
-      def add_lease(interface, mac_lease, network_id, ipv4_address)
+      def add_ip_lease(interface, mac_lease, network_id, ipv4_address)
         return true if network_id.nil? || ipv4_address.nil?
 
-        ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
-                                                 network_id: network_id,
-                                                 ipv4_address: ipv4_address) || return
+        ip_lease = M::IpLease.create(mac_lease: mac_lease,
+                                     network_id: network_id,
+                                     ipv4_address: ipv4_address) || return
         interface.add_ip_lease(ip_lease) || return
 
         return true
@@ -149,15 +159,15 @@ module Vnet::NodeApi
 
       def add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
         if mac_address
-          mac_lease = model_class(:mac_lease).create(interface_id: model.id,
-                                                     segment_id: segment_id,
-                                                     mac_address: mac_address)
+          mac_lease = M::MacLease.create(interface_id: model.id,
+                                         segment_id: segment_id,
+                                         mac_address: mac_address)
           return mac_lease
         end
 
         return if mac_range_group_id.nil?
 
-        mac_range_group = model_class(:mac_range_group)[id: mac_range_group_id] || return
+        mac_range_group = M::MacRangeGroup[id: mac_range_group_id] || return
         mac_range_group.lease_random(model.id)
       end
 
