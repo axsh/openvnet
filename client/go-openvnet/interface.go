@@ -36,7 +36,7 @@ type InterfaceCreateParams struct {
 	IngressFilteringEnabled bool   `url:"ingress_filtering_enabled,omitempty"`
 	EnableRouting           bool   `url:"enable_routing,omitempty"`
 	EnableRouteTranslation  bool   `url:"enable_route_translation,omitempty"`
-	OwnerDatapathID         string `url:"owner_datapath_id,omitempty"`
+	OwnerDatapathUUID       string `url:"owner_datapath_uuid,omitempty"`
 	EnableFiltering         bool   `url:"enable_filtering,omitempty"`
 	SegmentUUID             string `url:"segment_uuid,omitempty"`
 	NetworkUUID             string `url:"network_uuid,omitempty"`

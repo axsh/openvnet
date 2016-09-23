@@ -39,7 +39,7 @@ func OpenVNetInterface() *schema.Resource {
 				Optional: true,
 			},
 
-			"owner_datapath_id": &schema.Schema{
+			"owner_datapath_uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -109,7 +109,7 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 		IngressFilteringEnabled: d.Get("ingress_filtering_enabled").(bool),
 		EnableRouting:           d.Get("enable_routing").(bool),
 		EnableRouteTranslation:  d.Get("enable_route_translation").(bool),
-		OwnerDatapathID:         d.Get("owner_datapath_id").(string),
+		OwnerDatapathUUID:       d.Get("owner_datapath_uuid").(string),
 		EnableFiltering:         d.Get("enable_filtering").(bool),
 		SegmentUUID:             d.Get("segment_uuid").(string),
 		NetworkUUID:             d.Get("network_uuid").(string),
