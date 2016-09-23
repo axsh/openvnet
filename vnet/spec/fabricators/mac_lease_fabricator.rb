@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# TODO: Deprecate.
 Fabricator(:mac_lease, class_name: Vnet::Models::MacLease) do
   interface { Fabricate(:interface) }
   mac_address { sequence(:mac_address, 0) }

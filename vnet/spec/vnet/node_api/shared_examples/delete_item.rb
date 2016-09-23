@@ -20,7 +20,7 @@ shared_examples 'delete item on node_api' do |name, extra_deletions = []|
   }
 
   it 'successfully deleted' do
-    delete_item
+    model = delete_item
 
     # TODO: Verify result of destroy.
     pre_counts = all_deletions.map { |m_class| m_class.count }
@@ -31,7 +31,7 @@ shared_examples 'delete item on node_api' do |name, extra_deletions = []|
     expect(events.size).to eq(delete_events.size)
 
     delete_events.each_with_index { |event, index|
-      expect(events[index]).to be_event(event.first, event.last)
+      expect(events[index]).to be_event_from_model(model, event.first, event.last)
     }
   end
 end

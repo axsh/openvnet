@@ -9,14 +9,14 @@ describe Vnet::NodeApi::IpLease do
 
   let(:events) { MockEventHandler.handled_events }
 
+  let(:interface) { Fabricate(:interface) }
   let(:network) { Fabricate(:network) }
   let(:segment) { Fabricate(:segment) }
 
+  let(:mac_lease) { Fabricate(:mac_lease, interface_id: interface_id, segment_id: segment_id) }
+
   describe 'create' do
     let(:random_ipv4_address) { random_ipv4_i }
-
-    let(:interface) { Fabricate(:interface) }
-    let(:mac_lease) { Fabricate(:mac_lease, interface: interface, segment_id: mac_segment_id) }
     
     let(:create_filter) {
       { mac_lease: mac_lease,
@@ -44,7 +44,7 @@ describe Vnet::NodeApi::IpLease do
     }
     let(:create_events) {
       [ [ Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS, {
-            id: :model__id,
+            id: :model__id, # TODO: This should cause an error...
             uuid: :model__uuid,
             #interface_id: create_filter[:interface_id],
             network_id: network.id,
@@ -55,16 +55,29 @@ describe Vnet::NodeApi::IpLease do
     }
     let(:query_result) { create_result }
 
-    context 'without segment' do
-      let(:mac_segment_id) { nil }
+    context 'without interface and without segment' do
+      let(:interface_id) { nil }
+      let(:segment_id) { nil }
       include_examples 'create item on node_api', :ip_lease, [:ip_address]
     end
 
-    context 'with segment' do
-      let(:mac_segment_id) { segment.id }
+    context 'with interface and without segment' do
+      let(:interface_id) { interface.id }
+      let(:segment_id) { nil }
       include_examples 'create item on node_api', :ip_lease, [:ip_address]
     end
 
+    context 'without interface and with segment' do
+      let(:interface_id) { nil }
+      let(:segment_id) { segment.id }
+      include_examples 'create item on node_api', :ip_lease, [:ip_address]
+    end
+
+    context 'with interface and with segment' do
+      let(:interface_id) { interface.id }
+      let(:segment_id) { segment.id }
+      include_examples 'create item on node_api', :ip_lease, [:ip_address]
+    end
   end
 
   describe 'destroy' do

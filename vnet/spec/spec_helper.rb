@@ -2,9 +2,11 @@
 
 require 'rubygems'
 require 'bundler'
+
 Bundler.setup(:default)
 #Bundler.require(:default, :test)
 Bundler.require(:test)
+
 require 'dcell'
 require 'trema' # Needed for the to_trema_hash methods in mock_datapath
 require 'vnet'
@@ -20,6 +22,7 @@ require "database_cleaner"
 require 'webmock/rspec'
 
 require 'coveralls'
+
 Coveralls.wear!
 
 DCell.setup

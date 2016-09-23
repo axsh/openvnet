@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
 Fabricator(:interface, class_name: Vnet::Models::Interface) do
+  id { id_sequence(:interface_ids) }
 end
 
 Fabricator(:active_interface, class_name: Vnet::Models::ActiveInterface) do
 end
 
 Fabricator(:interface_w_mac_lease, class_name: Vnet::Models::Interface) do
+  id { id_sequence(:interface_ids) }
+
   mac_leases do
     [
       Fabricate(:mac_lease,
@@ -25,7 +28,7 @@ Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
   # an ip lease. We need to manually set interface_id for the ip lease.
   # Therefore we need to explicitly set the id field so we can access it form the
   # attrs variable. Quite the hassle isn't it?
-  id { sequence(:interface_ids, 1) }
+  id { id_sequence(:interface_ids) }
 
   # owner_datapath_id 1
   # Fabricate(:interface_port,
@@ -54,7 +57,7 @@ Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
 end
 
 Fabricator(:interface_w_ip_lease, class_name: Vnet::Models::Interface) do
-  id { sequence(:interface_ids, 1) }
+  id { id_sequence(:interface_ids) }
 
   ip_leases do |attrs|
     [
@@ -75,18 +78,24 @@ Fabricator(:interface_w_ip_lease, class_name: Vnet::Models::Interface) do
 end
 
 Fabricator(:interface_dp1eth0, class_name: Vnet::Models::Interface) do
+  id { id_sequence(:interface_ids) }
+
   uuid 'if-dp1eth0'
   display_name "test-dp1eth0"
   mode "host"
 end
 
 Fabricator(:interface_dp2eth0, class_name: Vnet::Models::Interface) do
+  id { id_sequence(:interface_ids) }
+
   uuid 'if-dp2eth0'
   display_name "test-dp2eth0"
   mode "host"
 end
 
 Fabricator(:interface_dp3eth0, class_name: Vnet::Models::Interface) do
+  id { id_sequence(:interface_ids) }
+
   uuid 'if-dp3eth0'
   display_name "test-dp3eth0"
   mode "host"
