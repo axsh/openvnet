@@ -94,7 +94,7 @@ module Vnet::Core
 
     # activate route link on queue '[:route_link, route_link_id]'
     def activate_route_link(params)
-      debug log_format("activating route link", params)
+      debug log_format_h("activating route link", params)
 
       begin
         options = {
@@ -111,7 +111,7 @@ module Vnet::Core
 
     # deactivate route link on queue '[:route_link, route_link_id]'
     def deactivate_route_link(params)
-      debug log_format("deactivating route link", params)
+      debug log_format_h("deactivating route link", params)
 
       begin
         filter = {

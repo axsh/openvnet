@@ -29,7 +29,7 @@ module Vnet::Core
       item_model = mw_class.create(create_params)
 
       if item_model.nil?
-        warn log_format("could not activate interface", params.inspect)
+        warn log_format_h("could not activate interface", params)
         return
       end
 

@@ -93,7 +93,7 @@ module Vnet::Core
 
     # activate segment on queue '[:segment, segment_id]'
     def activate_segment(params)
-      debug log_format("activating segment", params)
+      debug log_format_h("activating segment", params)
 
       begin
         options = {
@@ -110,7 +110,7 @@ module Vnet::Core
 
     # deactivate segment on queue '[:segment, segment_id]'
     def deactivate_segment(params)
-      debug log_format("deactivating segment", params)
+      debug log_format_h("deactivating segment", params)
 
       begin
         filter = {
