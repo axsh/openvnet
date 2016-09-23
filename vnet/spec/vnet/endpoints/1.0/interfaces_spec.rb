@@ -92,7 +92,7 @@ describe "/interfaces" do
   describe "/interfaces/:uuid/ports" do
     let(:api_postfix)  { "ports" }
     let(:postfix_parent_sym) { :interface_id }
-    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => 1}) }
+    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => object.id}) }
     let(:postfix_model_class) { Vnet::Models::InterfacePort }
 
     include_examples "GET /:uuid/postfix"
