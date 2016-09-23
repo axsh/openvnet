@@ -44,13 +44,13 @@ describe Vnet::NodeApi::IpLease do
     }
     let(:create_events) {
       [ [ Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS, {
-            id: :model__id, # TODO: This should cause an error...
+            id: :let__interface_id,
             uuid: :model__uuid,
-            #interface_id: create_filter[:interface_id],
+            ip_lease_id: :model__id,
+            ipv4_address: random_ipv4_address,
             network_id: network.id,
             mac_lease_id: mac_lease.id,
             enable_routing: false,
-            ipv4_address: random_ipv4_address,
           }]]
     }
     let(:query_result) { create_result }
@@ -58,6 +58,8 @@ describe Vnet::NodeApi::IpLease do
     context 'without interface and without segment' do
       let(:interface_id) { nil }
       let(:segment_id) { nil }
+      let(:create_events) { [] }
+
       include_examples 'create item on node_api', :ip_lease, [:ip_address]
     end
 
@@ -70,6 +72,8 @@ describe Vnet::NodeApi::IpLease do
     context 'without interface and with segment' do
       let(:interface_id) { nil }
       let(:segment_id) { segment.id }
+      let(:create_events) { [] }
+
       include_examples 'create item on node_api', :ip_lease, [:ip_address]
     end
 

@@ -24,13 +24,24 @@ RSpec::Matchers.define :be_event_from_model do |model, expected_type, expected_p
       new_params
     }
 
-    puts "XXXXXXXXXXXXXXXXXX #{params.inspect}"
+    params.all? { |key, expected_value|
+      if !actual[:options].has_key?(key)
+        puts "be_event_from_model failed: actual[:options].has_key?(#{key.inspect})"
+        next false
+      end
 
-    params.all? { |key, value|
-      actual[:options].has_key?(key) && actual[:options][key] == value
+      actual_value = actual[:options][key]
+
+      if actual_value != expected_value
+        puts "be_event_from_model failed: #{key.inspect} actual_value:#{actual_value} expected_value:#{expected_value}"
+        next false
+      end
+
+      true
     }
   end
 
+  # TODO: Move to helpers.
   def value_from_model_include_nil?(value)
     case value
     when :let__interface_id, :let__segment_id
