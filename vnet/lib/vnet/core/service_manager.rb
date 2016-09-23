@@ -108,6 +108,12 @@ module Vnet::Core
 
     def item_post_install(item, item_map)
       @active_interfaces[item.interface_id].tap { |params|
+        if params.nil?
+          debug log_format_h('item loaded while not in active_interfaces',
+            id: item.id, uuid: item.uuid, interface_id: item.interface_id)
+          next
+        end
+
         segment_id_list = get_param_array(params, :segment_id_list)
         network_id_list = get_param_array(params, :network_id_list)
 
@@ -164,6 +170,9 @@ module Vnet::Core
 
     def load_dns_service(item)
       dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
+
+      debug log_format('load_dns_service', dns_service_map.inspect)
+
       dns_service_map && set_dns_service(id: item.id, dns_service_map: dns_service_map)
     end
 

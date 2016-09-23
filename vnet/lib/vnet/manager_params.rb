@@ -30,13 +30,14 @@ module Vnet
 
     def throw_param_error(message, params, key)
       # TODO: Improve the exception content.
-      raise Vnet::ParamError.new("#{message} (key:#{key} params:#{params}")
+      raise Vnet::ParamError.new("#{message} (key:#{key} params:#{params})")
     end
 
     # Specialized method to properly log errors in manager.
     def handle_param_error(param_error)
       # TODO: Check if ParamError and if called from a manager.
       warn log_format(param_error.to_s)
+      param_error.backtrace.each { |str| warn log_format(str) }
       nil
     end
 

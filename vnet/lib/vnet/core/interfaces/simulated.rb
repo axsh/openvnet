@@ -85,6 +85,8 @@ module Vnet::Core::Interfaces
 
       @dp_info.add_flows(flows)
 
+      warn log_format("XXXXXXXXXXXXX", "all_segment_ids:#{all_segment_ids} all_network_ids:#{all_network_ids}")
+
       if !all_segment_ids.empty? || !all_network_ids.empty?
         @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
                                          id: :interface,
