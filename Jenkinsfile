@@ -20,7 +20,7 @@ BUILD_CACHE_DIR=$BUILD_CACHE_DIR
 BUILD_OS=$BUILD_OS
 """
 
-node {
+node("docker") {
     stage "Checkout"
     checkout scm
     // http://stackoverflow.com/questions/36507410/is-it-possible-to-capture-the-stdout-from-the-sh-dsl-command-in-the-pipeline
@@ -29,5 +29,16 @@ node {
     writeFile(file: "build.env", text: build_env + "\nRELEASE_SUFFIX=${RELEASE_SUFFIX}\n")
     stage "Build"
     sh "./deployment/docker/build.sh ./build.env"
+}
+
+if( $BUILD_OS == "el6" ) {
+  node("el6") {
+    checkout scm
+    writeFile(file: "build.env", text: build_env + "\nRELEASE_SUFFIX=${RELEASE_SUFFIX}\n")
     sh "./deployment/docker/test-rpm-install.sh ./build.env"
+  }
+}else {
+  node("docker") {
+    sh "./deployment/docker/test-rpm-install.sh ./build.env"
+  }
 }
