@@ -77,6 +77,9 @@ if [[ -n "$BUILD_CACHE_DIR" ]]; then
     docker exec "${CID}" tar cO --directory=/ --files-from=/var/tmp/build-cache.list > "${build_cache_base}/${COMMIT_ID}.tar"
     # Clear build cache files which no longer referenced from Git ref names (branch, tags)
     git show-ref --head --dereference | awk '{print $1}' > "${TMPDIR}/sha.a"
+    for i in $(git reflog show | head -10 | awk '{print $2}'); do
+      git rev-parse "$i"
+    done >> "${TMPDIR}/sha.a"
     (cd "${build_cache_base}"; ls *.tar) | cut -d '.' -f1 > "${TMPDIR}/sha.b"
     # Set operation: B - A
     join -v 2 <(sort -u ${TMPDIR}/sha.a) <(sort -u ${TMPDIR}/sha.b) | while read i; do
