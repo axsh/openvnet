@@ -31,7 +31,7 @@ node("docker") {
     sh "./deployment/docker/build.sh ./build.env"
 }
 
-if( $BUILD_OS == "el6" ) {
+if( BUILD_OS == "el6" ) {
   node("el6") {
     checkout scm
     writeFile(file: "build.env", text: build_env + "\nRELEASE_SUFFIX=${RELEASE_SUFFIX}\n")
