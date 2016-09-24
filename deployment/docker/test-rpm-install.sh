@@ -30,6 +30,6 @@ fi
 
 docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}-rpm-test.Dockerfile" .
 CID=$(docker run -d ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} "${img_tag}")
-docker exec -t $CID /bin/sh -c "echo '172.17.0.1 devrepo' >> /etc/hosts"
+docker exec -t $CID /bin/sh -c "echo '192.168.56.50 devrepo' >> /etc/hosts"
 docker exec -t $CID /bin/sh -c "echo '${RELEASE_SUFFIX}' > /etc/yum/vars/ovn_release_suffix"
 docker exec $CID yum install -y openvnet
