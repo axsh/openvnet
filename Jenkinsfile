@@ -19,13 +19,14 @@ REPO_BASE_DIR=$REPO_BASE_DIR
 BUILD_CACHE_DIR=$BUILD_CACHE_DIR
 BUILD_OS=$BUILD_OS
 """
+def RELEASE_SUFFIX=null
 
 node("docker") {
     stage "Checkout"
     checkout scm
     // http://stackoverflow.com/questions/36507410/is-it-possible-to-capture-the-stdout-from-the-sh-dsl-command-in-the-pipeline
     // https://issues.jenkins-ci.org/browse/JENKINS-26133
-    def RELEASE_SUFFIX=sh(returnStdout: true, script: "./deployment/packagebuild/gen-dev-build-tag.sh").trim()
+    RELEASE_SUFFIX=sh(returnStdout: true, script: "./deployment/packagebuild/gen-dev-build-tag.sh").trim()
     writeFile(file: "build.env", text: build_env + "\nRELEASE_SUFFIX=${RELEASE_SUFFIX}\n")
     stage "Build"
     sh "./deployment/docker/build.sh ./build.env"
