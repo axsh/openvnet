@@ -45,8 +45,7 @@ yum -y install epel-release
 
 ## Openvnet
 echo "yum -y install openvnet" >> ${LOG_FILE}
-######  Does not work! (Yet!) For now -- skip it and come back later.
-######  yum -y install openvnet
+yum -y install openvnet
 
 ### lxc install, add instances
 echo "yum -y install lxc lxc-templates" >> ${LOG_FILE}

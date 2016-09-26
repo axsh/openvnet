@@ -1,10 +1,10 @@
-#!/bin/bash -x
+#!/bin/bash   # -x
 #
 #
 #
 
-if [ $# -ne 3 ]; then
-  echo "  `basename $0` base  vm_name ovfdir"
+if [ $# -ne 4 ]; then
+  echo "  `basename $0` base  vm_name ovfdir machine_dir"
   echo
   echo "  base=6.8 or 7.2 "
   exit 1
@@ -14,17 +14,33 @@ base=$1
 box_base=centos-${base}
 vm_name=$2
 ovfdir=$3
+machine_dir=$4
 
 ##############################################################
 
-ovf_file=${ovfdir}/box.ovf
+#ovf_file=${ovfdir}/box.ovf
+
 
 ### Packer templating
+function packer_template {
 
-template_file="centos-"${base}.json
+    local ovf_file=$1
+    local vm_name=$2
+    local script_files=$3
+    local template_file=$4 
 
+###+
+#   This vulgarity is needed since packer requires each
+# provisioning script file name to be specified on its
+# own line. The list is input here as a comma-separated
+# list. Change the commas to '\n', do `echo -e ${script_files}`.
+# Alas, scripting does often unleash such unpleasantness.
+###-
+    script_files=${script_files//,/\",'\n'\"}
 
-cat > ${template_file} << EOF
+#   template_file="centos-"${base}.json
+
+    cat > ${template_file} << EOF
 {
   "builders": [
     {
@@ -44,19 +60,13 @@ cat > ${template_file} << EOF
       "vm_name": "${vm_name}"
     }
   ],
-  "post-processors": [
-    {
-      "output": "builds/${box_base}.{{.Provider}}.box",
-      "type": "vagrant"
-    }
-  ],
   "provisioners": [
     {
       "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
       "scripts": [
-        "scripts/networking.sh",
-        "scripts/vagrant.sh",
-        "base.sh"
+        "packer_scripts/networking.sh",
+        "packer_scripts/vagrant.sh",
+        "`echo -e ${script_files}`"
       ],
       "type": "shell"
     }
@@ -70,7 +80,32 @@ cat > ${template_file} << EOF
 
 EOF
 
+echo "Created ${template_file}..."
+
+}  ### End, function packer_template
+
+script_file_list="`./make_network_template_files.sh ${machine_dir}`"
+
+template_file="centos-"${base}.json
+packer_template  ${ovfdir}/box.ovf  ${vm_name}  ${script_file_list} ${template_file}
+
+if [ ! -e ${template_file} ]; then
+    echo "Template file ${template_file} not found!"
+    exit 1
+fi
+
 echo "packer build  ${template_file} "
+
+
+
+
+      exit 2
+
+
+
+
+
+
 packer build  ${template_file}
 
 if [ $? -ne 0 ]; then
