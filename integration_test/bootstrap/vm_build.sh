@@ -84,6 +84,16 @@ echo "Created ${template_file}..."
 
 }  ### End, function packer_template
 
+##+
+#    The make_network_template_files.sh script takes a (given) directory
+# containing network metadata (in files named ifcfg-<device>) and
+# generates bash script files that will be used for provisioning via
+# packer. The (temporary) script files are named, for example, tmp.ifcfg-eth0.
+#
+#    This script also returns a comma-separated list of the tmp.ifcfg-xxxx
+# file names along with their directory. This list is to be inserted into
+# packer template files via the vm_build.sh script (_this_ file).
+##-
 script_file_list="`./make_network_template_files.sh ${machine_dir}`"
 
 template_file="centos-"${base}.json
@@ -98,12 +108,9 @@ echo "packer build  ${template_file} "
 
 
 
-
+## Still testing! The commands below are run by hand until I've
+## got the kinks out of the packer template files.
       exit 2
-
-
-
-
 
 
 packer build  ${template_file}

@@ -18,6 +18,11 @@ fi
 
 base_dir=$1
 
+##+
+#    Generate a shell script that will concatenate the contents of
+# a (local) network config. file into the appropriate location on
+# the given vm.
+##-
 function gen_ifcfg_script {
     local out_file=$1
     local device_file=$2           ## eg, ifcfg-eth0
