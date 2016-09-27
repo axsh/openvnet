@@ -30,7 +30,7 @@ function gen_ifcfg_script {
 
 
     echo '#!/bin/bash' > ${out_file}
-    echo "cat > /etc/sysconfig/network-scripts/${device_file} << EOF" >> ${out_file}
+    echo "cat > /etc/sysconfig/network-scripts/${device_file} << 'EOF'" >> ${out_file}
     cat ${device_file_path}/${device_file} >> ${out_file} 
     echo "EOF" >> ${out_file}
 }

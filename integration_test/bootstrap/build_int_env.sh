@@ -5,22 +5,21 @@ chefbento_url=opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox
 
 function usage {
   echo
-  echo "   ${pname} os_version "
-  echo "   os_version=6.5, 6.8 or 7.2 "
+  echo "   ${pname} centos_version "
+  echo "   centos_version=6.5, 6.8 or 7.2 "
   echo
 }
 
 if [ $# -ne 1 ]; then
-# echo "  `basename $0` os_version "
+# echo "  `basename $0` centos_version "
 # echo
-# echo "   os_version=6.5, 6.8 or 7.2 "
+# echo "   centos_version=6.5, 6.8 or 7.2 "
   usage
   exit 1
 fi
 
 home=$PWD
 
-#base=$1
 case $1 in 
    6.5)  ## version assigned outside loop
        ;;
@@ -37,7 +36,7 @@ case $1 in
        exit 1
      ;;
 esac
-base=$1
+centos_ver=$1
 
 dstring=`date "+%Y-%m-%d_%H%M%S"`
 
@@ -48,19 +47,20 @@ dstring=`date "+%Y-%m-%d_%H%M%S"`
 
 box_template=opscode_centos-OSVERSION_chef-provisionerless.box
 
-box=`echo ${box_template} | sed -e "s/OSVERSION/${base}/"`
+#box=`echo ${box_template} | sed -e "s/OSVERSION/${centos_ver}/"`
+box=${box_template/OSVERSION/${centos_ver}}
 remote_box=${chefbento_url}/${box}
 
 echo "Required box file is: ${remote_box}..."
 
-temp_ovf_dir=${dstring}__${base}
+temp_ovf_dir=${dstring}__${centos_ver}
 
 mkdir ${temp_ovf_dir}
 echo "curl -o ${temp_ovf_dir}/${box}  -R ${remote_box}  "
 curl -o ${temp_ovf_dir}/${box}  -R ${remote_box} 
 
 if [ $? -ne 0 ]; then
-  echo "curl failed ..."
+  echo "!! curl failed."
   exit 1
 fi
 
@@ -70,14 +70,13 @@ echo "tar xvf ${box} "
 tar xvf ${box}
 
 if [ $? -ne 0 ]; then
-   echo "tar failed ..."
+   echo "!! tar failed ..."
    exit 1
 fi
 
 cd $home
 
 ######## Now begin building the boxes
-./vm_build.sh $base centos-${base} ${temp_ovf_dir}
+./vm_build.sh $centos_ver centos-${centos_ver} ${temp_ovf_dir}
 
 exit $?
-
