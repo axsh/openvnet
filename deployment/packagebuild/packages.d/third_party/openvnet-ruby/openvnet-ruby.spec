@@ -1,6 +1,7 @@
 %define rubyver 2.3.1
 %{?build_rubyver:%define rubyver %{build_rubyver}}
 %define _prefix /opt/axsh/openvnet/ruby
+%undefine _enable_debug_packages
 
 %if 0%{?el6}
 # Disable running check-rpath
@@ -26,6 +27,7 @@ The Ruby binary package for OpenVNet. Key changes are:
 - -O0 optimization.
 - RPATH is enabled and fixed to %{_libdir}.
 - bundler gem is installed.
+- Debug info is not stripped from the binaries.
 
 %prep
 %setup -n ruby-%{rubyver}
