@@ -27,6 +27,19 @@ function build_package(){
   fi
 }
 
+# sudo wrapper functions.
+if [[ $(id -u) -ne 0 ]]; then
+  function yum() {
+    /usr/bin/sudo $(command -v yum) $*
+  }
+
+  function yum-builddep() {
+    /usr/bin/sudo $(command -v yum-builddep) $*
+  }
+  # export these wrappers to subshell.
+  export -f yum yum-builddep
+fi
+
 rpm -q rpmdevtools > /dev/null || yum install -y rpmdevtools
 rpm -q createrepo > /dev/null || yum install -y createrepo
 rpmdev-wipetree
