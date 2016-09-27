@@ -16,4 +16,8 @@ cp openvswitch-${ovs_version}/rhel/openvswitch-kmod.files .
 
 yum-builddep -y openvswitch-${ovs_version}/rhel/openvswitch.spec
 rpmbuild -bb openvswitch-${ovs_version}/rhel/openvswitch.spec
-rpmbuild -bb openvswitch-${ovs_version}/rhel/openvswitch-kmod-rhel6.spec
+# Building kmod for RHEL <= 6.5. 
+e=$(set +e; rpmdev-vercmp 6.6 $(lsb_release -s -r) > /dev/null; echo $?;)
+if [[ $e -eq 11 ]]; then
+  rpmbuild -bb openvswitch-${ovs_version}/rhel/openvswitch-kmod-rhel6.spec
+fi
