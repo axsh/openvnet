@@ -12,15 +12,19 @@ current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 
 function build_all_packages(){
   find ${current_dir}/packages.d/third_party -mindepth 1 -maxdepth 1 -type d | while read line; do
-    build_package $(basename ${line})
+    cd ${line}
+    while read v; do
+      build_package $(basename ${line}) "${v}"
+    done < versions
   done
 }
 
 function build_package(){
   local name=$1
+  local version=$2
   local recipe_dir=${current_dir}/packages.d/third_party/${name}
   if [[ -x ${recipe_dir}/rpmbuild.sh ]]; then
-    (cd ${recipe_dir}; ./rpmbuild.sh)
+    (cd ${recipe_dir}; ./rpmbuild.sh "${version}")
   else
     echo "error: script not found: ${name}"
     exit 1

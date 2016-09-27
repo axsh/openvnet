@@ -2,7 +2,7 @@
 
 set -e
 
-rubyver="2.3.1"
+rubyver=${1:-"2.3.1"}
 
 yum install -y rpmdevtools rpm-build yum-utils
 yum-builddep -y openvnet-ruby.spec

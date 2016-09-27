@@ -5,7 +5,7 @@
 
 set -e
 
-ovs_version="2.3.1"
+ovs_version=${1:-"2.4.1"}
 
 rpmdev-setuptree
 
