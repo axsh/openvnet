@@ -106,7 +106,7 @@ module Vnet::Core::InterfaceSegments
 
       debug log_format("get_a_host_interface", flow_learn_arp)
 
-      @dp_info.add_ovs_flow2(flow_learn_arp)
+      @dp_info.add_ovs_flow(flow_learn_arp)
     end
 
     # Ugly but simple way of getting a host interface.

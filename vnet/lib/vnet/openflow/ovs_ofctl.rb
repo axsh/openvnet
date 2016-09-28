@@ -37,30 +37,14 @@ module Vnet::Openflow
       debug log_format("'#{command}' => #{result}") if verbose
     end
 
-    # TODO: Deprecate.
     def add_ovs_flow(flow_str)
-      command = "#{@ovs_ofctl} add-flow #{switch_name} #{flow_str}"
-      result = system(command)
-
-      debug log_format("'#{command}' => #{result}") if verbose
-    end
-
-    # TODO: Deprecate.
-    def add_ovs_10_flow(flow_str)
-      command = "#{@ovs_ofctl_10} add-flow #{switch_name} #{flow_str}"
-      result = system(command)
-
-      debug log_format("'#{command}' => #{result}") if verbose
-    end
-
-    def add_ovs_flow2(flow_str)
       command = "#{@ovs_ofctl} add-flow #{switch_name} \'#{flow_str}\'"
       result = system(command)
 
       debug log_format("'#{command}' => #{result}") if verbose
     end
 
-    def add_ovs_10_flow2(flow_str)
+    def add_ovs_10_flow(flow_str)
       command = "#{@ovs_ofctl_10} add-flow #{switch_name} \'#{flow_str}\'"
       result = system(command)
 
