@@ -18,14 +18,15 @@ describe Vnet::NodeApi::IpLease do
 
   let(:random_ipv4_address) { random_ipv4_i }
 
-  describe 'create' do
-    let(:create_filter) {
-      { mac_lease: mac_lease,
-        network_id: network.id,
-        interface_id: interface_id,
-        ipv4_address: random_ipv4_address
-      }
+  let(:model_params) {
+    { mac_lease: mac_lease,
+      network_id: network.id,
+      interface_id: interface_id,
+      ipv4_address: random_ipv4_address
     }
+  }
+
+  describe 'create' do
     # TODO: Add helper that lets us check if e.g. 'id', 'uuid',
     # foo_at, etc are valid.
     let(:create_result) {
@@ -60,19 +61,18 @@ describe Vnet::NodeApi::IpLease do
     }
     let(:query_result) { create_result }
 
-    include_examples 'create item on node_api with lets', :ip_lease, extra_creations: [:ip_address], let_ids: [:interface, :segment]
+    let(:extra_creations) {
+      [:ip_address].tap { |creations|
+        creations << :ip_retention if with_lets.include?('ip_retention_id')
+      }
+    }
+
+    include_examples 'create item on node_api with lets', :ip_lease, let_ids: [:interface, :segment]
   end
 
   describe 'destroy' do
-    let(:delete_params) {
-      { mac_lease: mac_lease,
-        network_id: network.id,
-        interface_id: interface_id,
-        ipv4_address: random_ipv4_address
-      }
-    }
-    let(:delete_item) { Fabricate(:ip_lease, delete_params) }
-    let(:delete_filter) { delete_item.canonical_uuid }
+    let(:model) { Fabricate(:ip_lease, model_params) }
+    let(:delete_filter) { model.canonical_uuid }
     let(:delete_released_event) { [
         Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS, {
           id: :let__interface_id,
@@ -96,7 +96,6 @@ describe Vnet::NodeApi::IpLease do
       }
     }
 
-    # TODO: How do we handle let_ip_retention in extra_deletions? Make it a let.
     include_examples 'delete item on node_api with lets', :ip_lease, let_ids: [:interface, :segment, :ip_retention]
   end
 

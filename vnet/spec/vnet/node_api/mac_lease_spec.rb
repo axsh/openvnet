@@ -14,14 +14,14 @@ describe Vnet::NodeApi::MacLease do
 
   let(:random_mac_address) { random_mac_i }
 
-  describe 'create' do
-    let(:create_filter) {
-      { interface_id: interface_id,
-        segment_id: segment_id,
-        mac_address: random_mac_address
-      }
+  let(:model_params) {
+    { interface_id: interface_id,
+      segment_id: segment_id,
+      mac_address: random_mac_address
     }
+  }
 
+  describe 'create' do
     # TODO: Fix leased event when without interface_id.
     let(:create_events) {
       [ [ Vnet::Event::INTERFACE_LEASED_MAC_ADDRESS, {
@@ -31,21 +31,16 @@ describe Vnet::NodeApi::MacLease do
             mac_address: random_mac_address
           }]]
     }
-    let(:create_result) { create_filter }
+    let(:create_result) { model_params }
     let(:query_result) { create_result }
+    let(:extra_creations) { [:mac_address] }
 
-    include_examples 'create item on node_api with lets', :mac_lease, extra_creations: [:mac_address], let_ids: [:interface, :segment]
+    include_examples 'create item on node_api with lets', :mac_lease, let_ids: [:interface, :segment]
   end
 
   describe 'destroy' do
-    let(:delete_params) {
-      { interface_id: interface_id,
-        segment_id: segment_id,
-        mac_address: random_mac_address
-      }
-    }
-    let(:delete_item) { Fabricate(:mac_lease_any, delete_params) }
-    let(:delete_filter) { delete_item.canonical_uuid }
+    let(:model) { Fabricate(:mac_lease_any, model_params) }
+    let(:delete_filter) { model.canonical_uuid }
 
     # TODO: Fix released event when without interface_id.
     let(:delete_released_event) { [

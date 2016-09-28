@@ -2,7 +2,7 @@
 
 # 'delete_events': Array of events after deletion.
 # 'delete_filter': Filter used when calling delete on node_api.
-# 'delete_item': Item to be deleted.
+# 'model': Item to be deleted.
 # 'events': Should be 'MockEventHandler.handled_events'.
 #
 # 'with_lets': The current context is testing with this list of lets. (Usable in lets, e.g. in 'delete_events')
@@ -12,8 +12,6 @@
 # TODO: Check if there are event params we're not testing for.
 
 shared_examples 'delete item on node_api' do |name|
-  let(:model) { delete_item }
-
   let(:model_class) { Vnet::Models.const_get(name.to_s.camelize) }
   let(:nodeapi_class) { Vnet::NodeApi.const_get(name.to_s.camelize) }
 
