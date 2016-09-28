@@ -82,7 +82,7 @@ service iptables stop
 chkconfig iptables off
 
 ### Test line -- this might be bad!
-# But... I am unable to sucessfully use packer to build
+# But... I am unable to successfully use packer to build
 # a machine using as input a machine created previously by 
 # packer: packer is unable to ssh into the machine being 
 # created, so no provisioning can be carried out. As a result,
