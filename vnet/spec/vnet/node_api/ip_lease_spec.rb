@@ -57,15 +57,12 @@ describe Vnet::NodeApi::IpLease do
         }]
     }
     let(:create_events) {
-      with_lets.include?('interface_id') ? [create_leased_event] : []
-    }
-    let(:query_result) { create_result }
-
-    let(:extra_creations) {
-      [:ip_address].tap { |creations|
-        creations << :ip_retention if with_lets.include?('ip_retention_id')
+      [].tap { |event_list|
+        event_list << create_released_event if with_lets.include?('interface_id')
       }
     }
+    let(:query_result) { create_result }
+    let(:extra_creations) { [:ip_address] }
 
     include_examples 'create item on node_api with lets', :ip_lease, let_ids: [:interface, :segment]
   end
