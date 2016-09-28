@@ -14,9 +14,18 @@ current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 function build_all_packages(){
   find ${current_dir}/packages.d/third_party -mindepth 1 -maxdepth 1 -type d | while read line; do
     cd ${line}
-    while read v; do
+    # Select suitable versions file.
+    # el6.versions, el7.versions, versions
+    vfile=$(
+      if [[ -f el$(rpm -E '%{rhel}').versions ]]; then
+        echo el$(rpm -E '%{rhel}').versions
+      else
+        echo "versions"
+      fi
+    )
+    cat "${vfile}" | while read v; do
       build_package $(basename ${line}) "${v}"
-    done < versions
+    done
   done
 }
 
