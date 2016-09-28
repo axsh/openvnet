@@ -3,10 +3,11 @@
 %define _prefix /opt/axsh/openvnet/ruby
 %undefine _enable_debug_packages
 
-%if 0%{?el6}
-# Disable running check-rpath
-%define __arch_install_post /usr/lib/rpm/check-buildroot
-%endif
+# When rpmdev-setuptree runs, it creates $HOME/.rpmmacros then
+# the rpmbuild command is modified to run /usr/lib/rpm/check-* scripts.
+# This package installs the binaries to /opt so I want to suppress
+# build errors from these standard checks. 
+%define __arch_install_post %{nil}
 
 Name:           openvnet-ruby
 Version:        %{rubyver}
