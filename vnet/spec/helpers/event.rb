@@ -63,3 +63,9 @@ RSpec::Matchers.define :be_event_from_model do |model, expected_type, expected_p
   end
 
 end
+
+RSpec::Matchers.define :be_event_list_of_size do |expected_size|
+  match do |actual|
+    actual.size == expected_size
+  end
+end

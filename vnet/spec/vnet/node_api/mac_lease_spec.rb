@@ -44,18 +44,21 @@ describe Vnet::NodeApi::MacLease do
         mac_address: random_mac_address
       }
     }
-
     let(:delete_item) { Fabricate(:mac_lease_any, delete_params) }
     let(:delete_filter) { delete_item.canonical_uuid }
 
     # TODO: Fix released event when without interface_id.
-    let(:delete_events) {
-      [ [ Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS, {
-            id: :let__interface_id,
-            mac_lease_id: :model__id
-          }]]
+    let(:delete_released_event) { [
+        Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS, {
+          id: :let__interface_id,
+          mac_lease_id: :model__id
+        }]
     }
+    let(:delete_events) {
+      [delete_released_event]
+    }
+    let(:extra_deletions) { [:mac_address] }
 
-    include_examples 'delete item on node_api with lets', :mac_lease, extra_creations: [:mac_address], let_ids: [:interface, :segment]
+    include_examples 'delete item on node_api with lets', :mac_lease, let_ids: [:interface, :segment]
   end
 end

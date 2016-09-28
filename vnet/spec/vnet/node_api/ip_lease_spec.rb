@@ -14,13 +14,15 @@ describe Vnet::NodeApi::IpLease do
   let(:segment) { Fabricate(:segment) }
 
   let(:mac_lease) { Fabricate(:mac_lease, interface_id: interface_id, segment_id: segment_id) }
+  let(:ip_retention) { Fabricate(:ip_retention_with_container, ip_lease: model) }
+
+  let(:random_ipv4_address) { random_ipv4_i }
 
   describe 'create' do
-    let(:random_ipv4_address) { random_ipv4_i }
-    
     let(:create_filter) {
       { mac_lease: mac_lease,
         network_id: network.id,
+        interface_id: interface_id,
         ipv4_address: random_ipv4_address
       }
     }
@@ -42,8 +44,6 @@ describe Vnet::NodeApi::IpLease do
         #is_deleted: 0,
       }
     }
-    let(:query_result) { create_result }
-
     let(:create_leased_event) { [
         Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS, {
           id: :let__interface_id,
@@ -58,33 +58,46 @@ describe Vnet::NodeApi::IpLease do
     let(:create_events) {
       with_lets.include?('interface_id') ? [create_leased_event] : []
     }
+    let(:query_result) { create_result }
 
     include_examples 'create item on node_api with lets', :ip_lease, extra_creations: [:ip_address], let_ids: [:interface, :segment]
   end
 
   describe 'destroy' do
-    let(:ip_retention_container) {
-      Fabricate(:ip_retention_container)
+    let(:delete_params) {
+      { mac_lease: mac_lease,
+        network_id: network.id,
+        interface_id: interface_id,
+        ipv4_address: random_ipv4_address
+      }
     }
-    let(:ip_retention) {
-      Fabricate(:ip_retention_with_ip_lease, ip_retention_container: ip_retention_container)
-    }
-
-    let(:delete_item) { ip_retention.ip_lease }
+    let(:delete_item) { Fabricate(:ip_lease, delete_params) }
     let(:delete_filter) { delete_item.canonical_uuid }
-
-    # TODO: Fix released event when without interface_id.
+    let(:delete_released_event) { [
+        Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS, {
+          id: :let__interface_id,
+          ip_lease_id: :model__id
+        }]
+    }
+    let(:delete_container_event) { [
+        Vnet::Event::IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, {
+          id: ip_retention.id
+        }]
+    }
     let(:delete_events) {
-      [ [ Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS, {
-            id: delete_item.interface_id,
-            ip_lease_id: delete_item.id
-          }],
-        [ Vnet::Event::IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, {
-            id: ip_retention.id
-          }]]
+      [].tap { |event_list|
+        event_list << delete_released_event if with_lets.include?('interface_id')
+        event_list << delete_container_event if with_lets.include?('ip_retention_id')
+      }
+    }
+    let(:extra_deletions) {
+      [:ip_address].tap { |deletions|
+        deletions << :ip_retention if with_lets.include?('ip_retention_id')
+      }
     }
 
-    include_examples 'delete item on node_api with lets', :ip_lease, extra_creations: [:ip_address], let_ids: [:interface, :segment]
+    # TODO: How do we handle let_ip_retention in extra_deletions? Make it a let.
+    include_examples 'delete item on node_api with lets', :ip_lease, let_ids: [:interface, :segment, :ip_retention]
   end
 
   describe 'release' do

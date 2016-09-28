@@ -38,7 +38,7 @@ shared_examples 'create item on node_api' do |name, extra_creations = []|
     end
 
     expect(model).to be_model_and_include(query_result)
-    expect(events.size).to eq(create_events.size)
+    expect(events).to be_event_list_of_size(create_events.size)
 
     create_events.each_with_index { |event, index|
       expect(events[index]).to be_event_from_model(model, event.first, event.last)

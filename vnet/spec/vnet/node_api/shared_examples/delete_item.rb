@@ -11,7 +11,9 @@
 
 # TODO: Check if there are event params we're not testing for.
 
-shared_examples 'delete item on node_api' do |name, extra_deletions = []|
+shared_examples 'delete item on node_api' do |name|
+  let(:model) { delete_item }
+
   let(:model_class) { Vnet::Models.const_get(name.to_s.camelize) }
   let(:nodeapi_class) { Vnet::NodeApi.const_get(name.to_s.camelize) }
 
@@ -22,7 +24,11 @@ shared_examples 'delete item on node_api' do |name, extra_deletions = []|
   }
 
   it 'successfully deleted' do
-    model = delete_item
+    model
+
+    with_lets.each { |let_name|
+      send(let_name)
+    }
 
     # TODO: Verify result of destroy.
     pre_counts = all_deletions.map { |m_class| m_class.count }
@@ -30,7 +36,7 @@ shared_examples 'delete item on node_api' do |name, extra_deletions = []|
     post_counts = all_deletions.map { |m_class| m_class.count }
 
     expect(post_counts).to eq(pre_counts.map { |c| c - 1 })
-    expect(events.size).to eq(delete_events.size)
+    expect(events).to be_event_list_of_size(delete_events.size)
 
     delete_events.each_with_index { |event, index|
       expect(events[index]).to be_event_from_model(model, event.first, event.last)
@@ -39,7 +45,7 @@ shared_examples 'delete item on node_api' do |name, extra_deletions = []|
 end
 
 
-shared_examples 'delete item on node_api with lets' do |name, extra_creations: [], let_ids: []|
+shared_examples 'delete item on node_api with lets' do |name, let_ids: []|
   [false, true].repeated_permutation(let_ids.size).each { |permutation|
     context "with #{let_context(permutation, let_ids: let_ids)}" do
       let(:with_lets) {
@@ -49,7 +55,7 @@ shared_examples 'delete item on node_api with lets' do |name, extra_creations: [
         let("#{name}_id") { permutation[index] ? send(name).id : nil }
       }
 
-      include_examples 'delete item on node_api', name, extra_creations
+      include_examples 'delete item on node_api', name
     end
   }
 end
