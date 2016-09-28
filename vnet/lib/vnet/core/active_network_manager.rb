@@ -92,7 +92,7 @@ module Vnet::Core
 
     # activate network on queue '[:network, network_id]'
     def activate_network(params)
-      debug log_format_("activating network", params)
+      debug log_format_h("activating network", params)
 
       begin
         options = {
