@@ -24,9 +24,8 @@ shared_examples 'delete item on node_api' do |name|
   it 'successfully deleted' do
     model
 
-    with_lets.each { |let_name|
-      send(let_name)
-    }
+    # Ensure all 'with_lets' are touched in order to create db entries.
+    with_lets.each { |let_name| send(let_name) }
 
     # TODO: Verify result of destroy.
     pre_counts = all_deletions.map { |m_class| m_class.count }
