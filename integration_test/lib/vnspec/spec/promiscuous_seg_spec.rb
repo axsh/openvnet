@@ -11,23 +11,23 @@ describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp =>
     vm7.route_default_via(config[:physical_network_gw_ip])
   end
 
-  # TODO: Disabled until both local and remote promiscuous interfaces
-  # are supported.
-  # describe 'local vm7 in seg-global' do
-  #   it 'reaches the gateway' do
-  #     to_gw = double()
-  #     allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
+  describe 'local vm7 in seg-global' do
+    pending('support for both local and remote flows requires a new filtering mode')
 
-  #     expect(vm7).to be_able_to_ping(to_gw, 10)
-  #   end
+    it 'reaches the gateway' do
+      to_gw = double()
+      allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
 
-  #   it 'reaches the internet' do
-  #     to_gw = double()
-  #     allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
+      expect(vm7).to be_able_to_ping(to_gw, 10)
+    end
 
-  #     expect(vm7).to be_able_to_ping(to_gw, 10)
-  #   end
-  # end
+    it 'reaches the internet' do
+      to_gw = double()
+      allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
+
+      expect(vm7).to be_able_to_ping(to_gw, 10)
+    end
+  end
 
   describe "remote vm1 in seg-global" do
     it "reaches the gateway" do
