@@ -4,6 +4,8 @@
 # 'delete_filter': Filter used when calling delete on node_api.
 # 'delete_item': Item to be deleted.
 # 'events': Should be 'MockEventHandler.handled_events'.
+#
+# 'with_lets': The current context is testing with this list of lets. (Usable in lets, e.g. in 'delete_events')
 
 # TODO: Add block that allows the caller to include additional tests. (?)
 
@@ -34,4 +36,20 @@ shared_examples 'delete item on node_api' do |name, extra_deletions = []|
       expect(events[index]).to be_event_from_model(model, event.first, event.last)
     }
   end
+end
+
+
+shared_examples 'delete item on node_api with lets' do |name, extra_creations: [], let_ids: []|
+  [false, true].repeated_permutation(let_ids.size).each { |permutation|
+    context "with #{let_context(permutation, let_ids: let_ids)}" do
+      let(:with_lets) {
+        let_permutation(let_ids, permutation, '_id')
+      }
+      let_ids.each_with_index { |name, index|
+        let("#{name}_id") { permutation[index] ? send(name).id : nil }
+      }
+
+      include_examples 'delete item on node_api', name, extra_creations
+    end
+  }
 end

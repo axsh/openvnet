@@ -42,46 +42,24 @@ describe Vnet::NodeApi::IpLease do
         #is_deleted: 0,
       }
     }
-    let(:create_events) {
-      [ [ Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS, {
-            id: :let__interface_id,
-            uuid: :model__uuid,
-            ip_lease_id: :model__id,
-            ipv4_address: random_ipv4_address,
-            network_id: network.id,
-            mac_lease_id: mac_lease.id,
-            enable_routing: false,
-          }]]
-    }
     let(:query_result) { create_result }
 
-    context 'without interface and without segment' do
-      let(:interface_id) { nil }
-      let(:segment_id) { nil }
-      let(:create_events) { [] }
+    let(:create_leased_event) { [
+        Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS, {
+          id: :let__interface_id,
+          uuid: :model__uuid,
+          ip_lease_id: :model__id,
+          ipv4_address: random_ipv4_address,
+          network_id: network.id,
+          mac_lease_id: mac_lease.id,
+          enable_routing: false,
+        }]
+    }
+    let(:create_events) {
+      with_lets.include?('interface_id') ? [create_leased_event] : []
+    }
 
-      include_examples 'create item on node_api', :ip_lease, [:ip_address]
-    end
-
-    context 'with interface and without segment' do
-      let(:interface_id) { interface.id }
-      let(:segment_id) { nil }
-      include_examples 'create item on node_api', :ip_lease, [:ip_address]
-    end
-
-    context 'without interface and with segment' do
-      let(:interface_id) { nil }
-      let(:segment_id) { segment.id }
-      let(:create_events) { [] }
-
-      include_examples 'create item on node_api', :ip_lease, [:ip_address]
-    end
-
-    context 'with interface and with segment' do
-      let(:interface_id) { interface.id }
-      let(:segment_id) { segment.id }
-      include_examples 'create item on node_api', :ip_lease, [:ip_address]
-    end
+    include_examples 'create item on node_api with lets', :ip_lease, extra_creations: [:ip_address], let_ids: [:interface, :segment]
   end
 
   describe 'destroy' do
@@ -94,6 +72,8 @@ describe Vnet::NodeApi::IpLease do
 
     let(:delete_item) { ip_retention.ip_lease }
     let(:delete_filter) { delete_item.canonical_uuid }
+
+    # TODO: Fix released event when without interface_id.
     let(:delete_events) {
       [ [ Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS, {
             id: delete_item.interface_id,
@@ -104,7 +84,7 @@ describe Vnet::NodeApi::IpLease do
           }]]
     }
 
-    include_examples 'delete item on node_api', :ip_lease
+    include_examples 'delete item on node_api with lets', :ip_lease, extra_creations: [:ip_address], let_ids: [:interface, :segment]
   end
 
   describe 'release' do

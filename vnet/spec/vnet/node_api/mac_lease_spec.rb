@@ -21,6 +21,8 @@ describe Vnet::NodeApi::MacLease do
         mac_address: random_mac_address
       }
     }
+
+    # TODO: Fix leased event when without interface_id.
     let(:create_events) {
       [ [ Vnet::Event::INTERFACE_LEASED_MAC_ADDRESS, {
             id: :let__interface_id,
@@ -32,32 +34,7 @@ describe Vnet::NodeApi::MacLease do
     let(:create_result) { create_filter }
     let(:query_result) { create_result }
 
-    # TODO: Not all of these events are expecting events to be sent.
-
-    # TODO: Move to helper 'shared_example'.
-    context 'without interface and without segment' do
-      let(:interface_id) { nil }
-      let(:segment_id) { nil }
-      include_examples 'create item on node_api', :mac_lease, [:mac_address]
-    end
-
-    context 'with interface and without segment' do
-      let(:interface_id) { interface.id }
-      let(:segment_id) { nil }
-      include_examples 'create item on node_api', :mac_lease, [:mac_address]
-    end
-
-    context 'without interface and with segment' do
-      let(:interface_id) { nil }
-      let(:segment_id) { segment.id }
-      include_examples 'create item on node_api', :mac_lease, [:mac_address]
-    end
-
-    context 'with interface and with segment' do
-      let(:interface_id) { interface.id }
-      let(:segment_id) { segment.id }
-      include_examples 'create item on node_api', :mac_lease, [:mac_address]
-    end
+    include_examples 'create item on node_api with lets', :mac_lease, extra_creations: [:mac_address], let_ids: [:interface, :segment]
   end
 
   describe 'destroy' do
@@ -70,6 +47,8 @@ describe Vnet::NodeApi::MacLease do
 
     let(:delete_item) { Fabricate(:mac_lease_any, delete_params) }
     let(:delete_filter) { delete_item.canonical_uuid }
+
+    # TODO: Fix released event when without interface_id.
     let(:delete_events) {
       [ [ Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS, {
             id: :let__interface_id,
@@ -77,28 +56,6 @@ describe Vnet::NodeApi::MacLease do
           }]]
     }
 
-    context 'without interface without segment' do
-      let(:interface_id) { nil }
-      let(:segment_id) { nil }
-      include_examples 'delete item on node_api', :mac_lease, [:mac_address]
-    end
-
-    context 'without interface with segment' do
-      let(:interface_id) { nil }
-      let(:segment_id) { segment.id }
-      include_examples 'delete item on node_api', :mac_lease, [:mac_address]
-    end
-
-    context 'with interface without segment' do
-      let(:interface_id) { interface.id }
-      let(:segment_id) { nil }
-      include_examples 'delete item on node_api', :mac_lease, [:mac_address]
-    end
-
-    context 'with interface with segment' do
-      let(:interface_id) { interface.id }
-      let(:segment_id) { segment.id }
-      include_examples 'delete item on node_api', :mac_lease, [:mac_address]
-    end
+    include_examples 'delete item on node_api with lets', :mac_lease, extra_creations: [:mac_address], let_ids: [:interface, :segment]
   end
 end
