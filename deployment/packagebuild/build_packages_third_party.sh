@@ -7,6 +7,7 @@ set -e
 set -x
 
 package=$1
+version=$2
 REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 
@@ -49,7 +50,7 @@ rpm -q createrepo > /dev/null || yum install -y createrepo
 rpmdev-wipetree
 
 if [[ -n ${package} ]]; then
-  build_package ${package}
+  build_package ${package} ${version}
 else
   build_all_packages
 fi
