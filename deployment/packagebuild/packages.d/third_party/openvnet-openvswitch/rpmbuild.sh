@@ -9,6 +9,8 @@ ovs_version=${1:-"2.4.1"}
 
 rpmdev-setuptree
 
+rpm -q redhat-lsb > /dev/null || yum install -y redhat-lsb
+
 cd $(rpm -E '%{_sourcedir}')
 curl -O http://openvswitch.org/releases/openvswitch-${ovs_version}.tar.gz
 tar zxvf openvswitch-${ovs_version}.tar.gz
