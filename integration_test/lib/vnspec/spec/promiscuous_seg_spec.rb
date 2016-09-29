@@ -12,9 +12,9 @@ describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp =>
   end
 
   describe 'local vm7 in seg-global' do
-    pending('support for both local and remote flows requires a new filtering mode')
-
     it 'reaches the gateway' do
+      pending('support for both local and remote flows requires a new filtering mode')
+
       to_gw = double()
       allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
 
@@ -22,6 +22,8 @@ describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp =>
     end
 
     it 'reaches the internet' do
+      pending('support for both local and remote flows requires a new filtering mode')
+
       to_gw = double()
       allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
 
