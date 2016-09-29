@@ -56,7 +56,6 @@ fi
 
 rpm -q rpmdevtools > /dev/null || yum install -y rpmdevtools
 rpm -q createrepo > /dev/null || yum install -y createrepo
-rpmdev-wipetree
 
 if [[ -n ${package} ]]; then
   build_package ${package} ${version}
