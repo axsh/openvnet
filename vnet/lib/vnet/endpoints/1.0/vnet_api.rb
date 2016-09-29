@@ -71,6 +71,12 @@ module Vnet::Endpoints::V10
     def delete_by_uuid(class_name)
       model_wrapper = M.const_get(class_name)
       uuid = @params[:uuid]
+
+      preserve_uuid = @params[:preserve_uuid]
+
+      puts "---- ENDPOINTS: params: " 
+      puts  @params.inspect   
+
       # TODO don't need to find model here
       check_syntax_and_pop_uuid(model_wrapper)
       model_wrapper.destroy(uuid)
