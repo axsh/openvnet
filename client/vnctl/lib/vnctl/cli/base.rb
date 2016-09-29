@@ -97,9 +97,19 @@ module Vnctl::Cli
         option :limit, type: :numeric, desc: "Limits the amount of records the WebAPI returns."
       end
 
+      def self.option_preserve_uuid
+        option :preserve_uuid, type: :boolean, desc: "Decides wether or not the UUID should be preserved after deletion."
+      end
+
+      def self.option_replace_uuid
+        option :replace_uuid, type: :string, desc: "Replaces already existing UUID."
+      end
+
+
       # And here we have the methods that create the actual CRUD tasks
       def self.define_add
         desc "add [OPTIONS]", "Creates a new #{namespace}."
+        option_replace_uuid
         set_required_options.each { |o|
           options[o].instance_variable_set(:@required, true)
         }
@@ -123,6 +133,7 @@ module Vnctl::Cli
 
       def self.define_del
         desc "del UUID(S)", "Deletes one or more #{namespace}(s) separated by a space."
+        option_preserve_uuid
         define_method(:del) do |*uuids|
           puts uuids.map { |uuid|
             Vnctl.webapi.delete("#{suffix}/#{uuid}")
@@ -234,6 +245,7 @@ module Vnctl::Cli
               end
             else
               desc "add #{base_uuid_label} OPTIONS",
+              option_replace_uuid
               "Adds #{desc_label} to a(n) #{parent.namespace}."
               def add(base_uuid)
                 puts Vnctl.webapi.post("#{suffix}/#{base_uuid}/#{rel_name}", options)
@@ -242,6 +254,7 @@ module Vnctl::Cli
 
             desc "del #{base_uuid_label} #{relation_uuid_label}(S)",
             "Removes #{desc_label} from a(n) #{parent.namespace}."
+            option_preserve_uuid
             def del(base_uuid, *rel_uuids)
               puts rel_uuids.map { |rel_uuid|
                 Vnctl.webapi.delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
