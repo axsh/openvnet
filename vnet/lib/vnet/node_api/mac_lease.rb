@@ -19,15 +19,13 @@ module Vnet::NodeApi
       end
 
       def dispatch_updated_item_events(model, old_values)
-        # TODO: Disable until we have specs ready.
+        if old_values.has_key?(:interface_id) && old_values[:interface_id]
+          dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, prepare_release_event(model.to_hash.merge(old_values)))
+        end
 
-        # if old_values.has_key?(:interface_id) && old_values[:interface_id]
-        #   dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, prepare_release_event(old_values))
-        # end
-
-        # if old_values.has_key?(:interface_id) && model[:interface_id]
-        #   dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, prepare_lease_event(old_values))
-        # end
+        if old_values.has_key?(:interface_id) && model[:interface_id]
+          dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, prepare_lease_event(model))
+        end
       end
 
       def dispatch_deleted_item_events(model)

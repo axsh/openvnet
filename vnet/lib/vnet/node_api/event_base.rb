@@ -15,6 +15,10 @@ module Vnet::NodeApi
         update_model(model_class[uuid], changes)
       end
 
+      def update_filter(filter, changes)
+        update_model(model_class[filter], changes)
+      end
+
       def update_model(model, changes)
         if has_valid_update_fields?
           validate_update_fields(changes)
@@ -137,6 +141,7 @@ module Vnet::NodeApi
         old_values = changes.each_with_object({}) { |change, values|
           values[change.first] = model[change.first]
         }
+
 
         return if model.update(changes).nil?
 
