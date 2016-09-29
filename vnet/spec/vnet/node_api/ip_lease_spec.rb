@@ -27,22 +27,11 @@ describe Vnet::NodeApi::IpLease do
   }
 
   describe 'create' do
-    # TODO: Add helper that lets us check if e.g. 'id', 'uuid',
-    # foo_at, etc are valid.
     let(:create_result) {
-      { #id: 1,
-        #uuid: "il-bmj379ro"
-        #interface_id: interface.id,
-        network_id: network.id,
+      { network_id: network.id,
         mac_lease_id: mac_lease.id,
         enable_routing: false,
-        #ip_address_id: 1,
         ipv4_address: random_ipv4_address,
-        #class_name: "IpLease",
-        #created_at: 2016-09-22 15:44:12.000000000 +0000,
-        #updated_at: 2016-09-22 15:44:12.000000000 +0000,
-        #deleted_at: nil,
-        #is_deleted: 0,
       }
     }
     let(:interface_event) { [
