@@ -18,9 +18,16 @@ module Vnet::NodeApi
         end
       end
 
-      # Need to include old values(?).
-      def dispatch_updated_item_events(model, changed_keys)
-        # dispatch_event(INTERFACE_SEGMENT_UPDATED_ITEM, get_changed_hash(model, changed_keys))
+      def dispatch_updated_item_events(model, old_values)
+        # TODO: Disable until we have specs ready.
+
+        # if old_values.has_key?(:interface_id) && old_values[:interface_id]
+        #   dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, prepare_release_event(old_values))
+        # end
+
+        # if old_values.has_key?(:interface_id) && model[:interface_id]
+        #   dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, prepare_lease_event(old_values))
+        # end
       end
 
       def dispatch_deleted_item_events(model)
@@ -35,17 +42,17 @@ module Vnet::NodeApi
         # _mac_address: ignore
       end
 
-      def prepare_lease_event(model)
-        # model.to_hash.tap { |event_hash|
+      def prepare_lease_event(model_map)
+        # model_map.to_hash.tap { |event_hash|
         #   event_hash[:mac_lease_id] = event_hash[:id]
         #   event_hash[:id] = event_hash[:interface_id]
         # }
-        prepare_release_event(model)
+        prepare_release_event(model_map)
       end
 
-      def prepare_release_event(model)
-        { id: model.interface_id,
-          mac_lease_id: model.id
+      def prepare_release_event(model_map)
+        { id: model_map[:interface_id],
+          mac_lease_id: model_map[:id]
         }
       end
 

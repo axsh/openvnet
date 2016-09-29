@@ -7,6 +7,7 @@ module Vnet::NodeApi
     class << self
       include Vnet::Helpers::Event
 
+      # TODO: Use update instead of attach/release.
       def attach_id(options)
         model = model_class[id: options[:id]]
         attach_model(model, options)
@@ -60,7 +61,7 @@ module Vnet::NodeApi
       end
 
       # TODO: Fix this so it updates 'enable_routing'.
-      def dispatch_updated_item_events(model, changed_keys)
+      def dispatch_updated_item_events(model, old_values)
         # dispatch_event(INTERFACE_SEGMENT_UPDATED_ITEM, get_changed_hash(model, changed_keys))
       end
 

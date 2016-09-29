@@ -96,8 +96,8 @@ module Vnet::NodeApi
         dispatch_event(INTERFACE_SEGMENT_CREATED_ITEM, model.to_hash)
       end
 
-      def dispatch_updated_item_events(model, changed_keys)
-        dispatch_event(INTERFACE_SEGMENT_UPDATED_ITEM, get_changed_hash(model, changed_keys))
+      def dispatch_updated_item_events(model, old_values)
+        dispatch_event(INTERFACE_SEGMENT_UPDATED_ITEM, get_changed_hash(model, old_values.keys))
       end
 
       def dispatch_deleted_item_events(model)

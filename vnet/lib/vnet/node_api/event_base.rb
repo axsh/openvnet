@@ -24,9 +24,9 @@ module Vnet::NodeApi
       end
 
       def update_model_no_validate(model, changes)
-        internal_update(model, changes).tap { |model, changed_keys|
-          return model if model.nil? || changed_keys.nil?
-          dispatch_updated_item_events(model, changed_keys)
+        internal_update(model, changes).tap { |model, old_values|
+          return model if model.nil? || old_values.empty?
+          dispatch_updated_item_events(model, old_values)
           return model
         }
       end
@@ -111,7 +111,7 @@ module Vnet::NodeApi
         raise NotImplementedError
       end
 
-      def dispatch_updated_item_events(model, changed_keys)
+      def dispatch_updated_item_events(model, old_values)
         raise NotImplementedError
       end
 
@@ -131,15 +131,25 @@ module Vnet::NodeApi
         model && model.destroy
       end
 
-      def internal_update(model, options)
-        model && model.update(options) && [model, options.keys]
+      def internal_update(model, changes)
+        return if model.nil?
+
+        old_values = changes.each_with_object({}) { |change, values|
+          values[change.first] = model[change.first]
+        }
+
+        return if model.update(changes).nil?
+
+        old_values.keep_if { |key, old_value|
+          model[key] != old_value
+        }
+
+        [model, old_values]
       end
 
-      def get_changed_hash(model, changed_keys)
-        {id: model.id}.tap { |values|
-          changed_keys.each { |key|
-            values[key] = model[key]
-          }
+      def get_changed_hash(model_hash, changed_keys)
+        changed_keys.each_with_object(id: model_hash[:id]) { |key, values|
+          values[key] = model_hash[key]
         }
       end
 
