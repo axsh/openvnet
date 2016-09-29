@@ -93,7 +93,7 @@ Sequel.migration do
 
     create_table(:interfaces) do
       primary_key :id
-      String :uuid, :null=>false
+      String :uuid, :unique => true, :null=>false
       String :mode, :default => 'vif',:null => false
       String :display_name
 
@@ -105,8 +105,6 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
       Integer :is_deleted, :null=>false
-
-      unique [:uuid, :is_deleted]
     end
 
     create_table(:interface_ports) do
@@ -245,7 +243,7 @@ Sequel.migration do
 
     create_table(:networks) do
       primary_key :id
-      String :uuid, :null=>false
+      String :uuid, :unique => true, :null=>false
       String :display_name, :null=>false
 
       Bignum :ipv4_network, :null=>false
@@ -261,7 +259,6 @@ Sequel.migration do
       Integer :is_deleted, :null=>false
 
       index [:ipv4_network, :ipv4_prefix, :is_deleted]
-      unique [:uuid, :is_deleted]
     end
 
     create_table(:network_services) do
@@ -307,7 +304,7 @@ Sequel.migration do
 
     create_table(:route_links) do
       primary_key :id
-      String :uuid, :null=>false
+      String :uuid, :unique => true, :null=>false
 
       Integer :mac_address_id, :index => true
 
@@ -315,8 +312,6 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
       Integer :is_deleted, :null=>false
-
-      unique [:uuid, :deleted_at]
     end
 
     create_table(:security_groups) do
