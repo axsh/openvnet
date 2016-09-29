@@ -45,20 +45,20 @@ describe Vnet::NodeApi::IpLease do
         #is_deleted: 0,
       }
     }
-    let(:create_leased_event) { [
+    let(:interface_event) { [
         Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS, {
           id: :let__interface_id,
-          uuid: :model__uuid,
           ip_lease_id: :model__id,
-          ipv4_address: random_ipv4_address,
-          network_id: network.id,
-          mac_lease_id: mac_lease.id,
-          enable_routing: false,
+          # uuid: :model__uuid,
+          # ipv4_address: random_ipv4_address,
+          # network_id: network.id,
+          # mac_lease_id: mac_lease.id,
+          # enable_routing: false,
         }]
     }
     let(:create_events) {
       [].tap { |event_list|
-        event_list << create_released_event if with_lets.include?('interface_id')
+        event_list << interface_event if with_lets.include?('interface_id')
       }
     }
     let(:query_result) { create_result }
@@ -70,21 +70,21 @@ describe Vnet::NodeApi::IpLease do
   describe 'destroy' do
     let(:model) { Fabricate(:ip_lease, model_params) }
     let(:delete_filter) { model.canonical_uuid }
-    let(:delete_released_event) { [
+    let(:interface_event) { [
         Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS, {
           id: :let__interface_id,
           ip_lease_id: :model__id
         }]
     }
-    let(:delete_container_event) { [
+    let(:ip_retention_event) { [
         Vnet::Event::IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, {
           id: ip_retention.id
         }]
     }
     let(:delete_events) {
       [].tap { |event_list|
-        event_list << delete_released_event if with_lets.include?('interface_id')
-        event_list << delete_container_event if with_lets.include?('ip_retention_id')
+        event_list << interface_event if with_lets.include?('interface_id')
+        event_list << ip_retention_event if with_lets.include?('ip_retention_id')
       }
     }
     let(:extra_deletions) {

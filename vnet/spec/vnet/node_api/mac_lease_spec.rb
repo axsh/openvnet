@@ -22,14 +22,18 @@ describe Vnet::NodeApi::MacLease do
   }
 
   describe 'create' do
-    # TODO: Fix leased event when without interface_id.
+    let(:interface_event) {
+      [ Vnet::Event::INTERFACE_LEASED_MAC_ADDRESS, {
+          id: :let__interface_id,
+          mac_lease_id: :model__id,
+          # segment_id: :let__segment_id,
+          # mac_address: random_mac_address
+        }]
+    }
     let(:create_events) {
-      [ [ Vnet::Event::INTERFACE_LEASED_MAC_ADDRESS, {
-            id: :let__interface_id,
-            segment_id: :let__segment_id,
-            mac_lease_id: :model__id,
-            mac_address: random_mac_address
-          }]]
+      [].tap { |event_list|
+        event_list << interface_event if with_lets.include?('interface_id')
+      }
     }
     let(:create_result) { model_params }
     let(:query_result) { create_result }
@@ -43,14 +47,16 @@ describe Vnet::NodeApi::MacLease do
     let(:delete_filter) { model.canonical_uuid }
 
     # TODO: Fix released event when without interface_id.
-    let(:delete_released_event) { [
-        Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS, {
+    let(:interface_event) {
+      [ Vnet::Event::INTERFACE_RELEASED_MAC_ADDRESS, {
           id: :let__interface_id,
           mac_lease_id: :model__id
         }]
     }
     let(:delete_events) {
-      [delete_released_event]
+      [].tap { |event_list|
+        event_list << interface_event if with_lets.include?('interface_id')
+      }
     }
     let(:extra_deletions) { [:mac_address] }
 

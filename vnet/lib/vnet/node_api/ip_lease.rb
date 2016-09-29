@@ -53,7 +53,7 @@ module Vnet::NodeApi
 
       def dispatch_created_item_events(model)
         if model.interface_id
-          dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_event_hash(model))
+          dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_lease_event(model))
         end
 
         dispatch_security_group_item_events(model)
@@ -66,7 +66,7 @@ module Vnet::NodeApi
 
       def dispatch_deleted_item_events(model)
         if model.interface_id
-          dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, id: model.interface_id, ip_lease_id: model.id)
+          dispatch_event(INTERFACE_RELEASED_IPV4_ADDRESS, prepare_release_event(model))
         end
 
         filter = { ip_lease_id: model.id }
@@ -93,10 +93,17 @@ module Vnet::NodeApi
         }
       end
 
-      def prepare_event_hash(model)
-        model.to_hash.tap { |event_hash|
-          event_hash[:ip_lease_id] = event_hash[:id]
-          event_hash[:id] = event_hash[:interface_id]
+      def prepare_lease_event(model)
+        # model.to_hash.tap { |event_hash|
+        #   event_hash[:ip_lease_id] = event_hash[:id]
+        #   event_hash[:id] = event_hash[:interface_id]
+        # }
+        prepare_release_event(model)
+      end
+
+      def prepare_release_event(model)
+        { id: model.interface_id,
+          ip_lease_id: model.id
         }
       end
 
@@ -142,7 +149,7 @@ module Vnet::NodeApi
           dispatch_update_sg_ip_addresses(group)
         end
 
-        dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_event_hash(model))
+        dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_lease_event(model))
         model
       end
 

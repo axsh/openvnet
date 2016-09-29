@@ -13,16 +13,9 @@ module Vnet::NodeApi
       private
 
       def dispatch_created_item_events(model)
-        filter = {
-          id: model.interface_id,
-          segment_id: model. segment_id,
-          mac_lease_id: model.id,
-          mac_address: model.mac_address
-        }
-
-        dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, filter)
-
-        # dispatch_event(INTERFACE_SEGMENT_CREATED_ITEM, model.to_hash)
+        if model.interface_id
+          dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, prepare_lease_event(model))
+        end
       end
 
       # Need to include old values(?).
@@ -31,15 +24,29 @@ module Vnet::NodeApi
       end
 
       def dispatch_deleted_item_events(model)
-        dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS,
-                       id: model.interface_id,
-                       mac_lease_id: model.id)
+        if model.interface_id
+          dispatch_event(INTERFACE_RELEASED_MAC_ADDRESS, prepare_release_event(model))
+        end
 
         filter = { mac_lease_id: model.id }
 
         # 0001_origin
         IpLease.dispatch_deleted_where(filter, model.deleted_at)
         # _mac_address: ignore
+      end
+
+      def prepare_lease_event(model)
+        # model.to_hash.tap { |event_hash|
+        #   event_hash[:mac_lease_id] = event_hash[:id]
+        #   event_hash[:id] = event_hash[:interface_id]
+        # }
+        prepare_release_event(model)
+      end
+
+      def prepare_release_event(model)
+        { id: model.interface_id,
+          mac_lease_id: model.id
+        }
       end
 
     end
