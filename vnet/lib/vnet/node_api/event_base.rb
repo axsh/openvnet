@@ -30,6 +30,13 @@ module Vnet::NodeApi
           return model
         }
       end
+      
+      def update_model_deleted()
+
+	#TODO: Update deleted items
+
+
+      end
 
       def destroy(filter)
         destroy_with_transaction(filter).tap { |model|
