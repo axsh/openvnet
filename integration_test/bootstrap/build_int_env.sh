@@ -1,5 +1,7 @@
 #!/bin/bash  # -x
 
+set -e
+
 pname=`basename $0`
 chefbento_url=opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox
 
@@ -10,6 +12,7 @@ function usage {
   echo
 }
 
+########################  "main()"  ################################
 if [ $# -ne 1 ]; then
 # echo "  `basename $0` centos_version "
 # echo
@@ -60,7 +63,7 @@ echo "curl -o ${temp_ovf_dir}/${box}  -R ${remote_box}  "
 curl -o ${temp_ovf_dir}/${box}  -R ${remote_box} 
 
 if [ $? -ne 0 ]; then
-  echo "!! curl failed."
+  echo "curl failed ..."
   exit 1
 fi
 
@@ -70,13 +73,26 @@ echo "tar xvf ${box} "
 tar xvf ${box}
 
 if [ $? -ne 0 ]; then
-   echo "!! tar failed ..."
+   echo "tar failed ..."
    exit 1
 fi
 
 cd $home
 
 ######## Now begin building the boxes
-./vm_build.sh $centos_ver centos-${centos_ver} ${temp_ovf_dir}
+#
+#     A note on vm output names. For now, the rule defining
+# the name is: packer-${vm_name}-virtualbox/${vm_name}.ovf where
+# ${vm_name} is the name of the boxes in the 'for vm in ...; do'
+# block.
+#  
+
+  first_build_vm= <the first vm to be built>
+  provisioned_ovf_base=packer-${first_build_vm}-virtualbox/${first_build_vm}.ovf
+
+
+for vm in itest-edge itest1 itest2 itest3; do
+   time ./vm_build.sh $centos_ver centos-${centos_ver}-${vm} ${temp_ovf_dir} ${vm}
+done
 
 exit $?

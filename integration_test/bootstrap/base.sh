@@ -57,6 +57,7 @@ lxc-create -t centos -n inst1
 echo "lxc-create -t centos -n inst2" >> ${LOG_FILE}
 lxc-create -t centos -n inst2
 
+
 #cat > /etc/openvnet/common.conf <<EOF
 #registry {
 #  adapter "redis"
@@ -81,17 +82,15 @@ iptables -L
 service iptables stop
 chkconfig iptables off
 
-### Test line -- this might be bad!
-# But... I am unable to successfully use packer to build
-# a machine using as input a machine created previously by 
-# packer: packer is unable to ssh into the machine being 
-# created, so no provisioning can be carried out. As a result,
-# the 70-persistent-net.rules file is the same for the
-# original (input) machine and the newly-create machine.
-# This file defines the machine mac address and so two machines
-# share the same address. (Logging in to the new machine will
-# show that eth0 is not there - eth1 is instead!) Removing this
-# file during provisioning of the _original_ machine gets
-# around this.
+###+
+#   These lines come from the cleanup.sh that comes with
+# a typical packer installation/template. They are needed
+# to be able to use packer-generated .ovf files as input/sources
+# back in to packer. Otherwise, ssh fails!
+###-
+/bin/rm -f /etc/udev/rules.d/70-persistent-net.rules
+mkdir -p /etc/udev/rules.d/70-persistent-net.rules
+/bin/rm -f /lib/udev/rules.d/75-persistent-net-generator.rules
+/bin/rm -rf /dev/.udev/
 
-/bin/rm /etc/udev/rules.d/70-persistent-net.rules
+
