@@ -11,6 +11,7 @@ module Vnet::Models
 
     one_to_many :datapath_segments
     one_to_many :interface_segments
+    one_to_many :topology_segments
 
     plugin :association_dependencies,
     # 0010_segment

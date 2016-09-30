@@ -35,11 +35,11 @@ module Vnet::NodeApi
       end
 
       def dispatch_created_item_events(model)
-        dispatch_event(event_created_hash, event_created_hash(model))
+        dispatch_event(event_created_name, event_created_hash(model))
       end
 
       def dispatch_deleted_item_events(model)
-        dispatch_event(event_deleted_hash, event_deleted_hash(model))
+        dispatch_event(event_deleted_name, event_deleted_hash(model))
       end
 
     end
