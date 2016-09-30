@@ -14,8 +14,6 @@ module Vnet::NodeApi
 
       def dispatch_deleted_item_events(model)
         dispatch_event(TOPOLOGY_DELETED_ITEM, id: model.id)
-
-        # no dependencies
       end
 
     end

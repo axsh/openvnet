@@ -29,7 +29,7 @@ module Vnet::NodeApi
       end
 
       def event_deleted_hash(model_map)
-        { :id => model_map[:interface_id],
+        { :id => model_map[parent_id_type],
           assoc_id_type => model_map[:id]
         }
       end
