@@ -470,6 +470,7 @@ module Vnet
 
     autoload :Base, 'vnet/node_api/base'
     autoload :BaseValidateUpdateFields, 'vnet/node_api/base_valid_update_fields'
+    autoload :AssocBase, 'vnet/node_api/assoc_base'
     autoload :EventBase, 'vnet/node_api/event_base'
 
     autoload :ActiveInterface, 'vnet/node_api/active_interface'

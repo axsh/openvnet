@@ -3,6 +3,8 @@
 module Vnet::NodeApi
 
   class Topology < EventBase
+    valid_update_fields []
+
     class << self
       private
 
@@ -19,80 +21,103 @@ module Vnet::NodeApi
     end
   end
 
-  class TopologyDatapath < EventBase
+  class TopologyDatapath < AssocBase
+    valid_update_fields []
+
     class << self
       private
 
-      def dispatch_created_item_events(model)
-        model_hash = model.to_hash.merge(id: model.topology_id,
-                                         datapath_id: model.id)
-
-        dispatch_event(TOPOLOGY_ADDED_DATAPATH, model_hash)
+      def parent_id_type
+        :topology_id
       end
 
-      def dispatch_deleted_item_events(model)
-        dispatch_event(TOPOLOGY_REMOVED_DATAPATH,
-                       id: model.topology_id,
-                       datapath_id: model.id)
+      def assoc_id_type
+        :datapath_id
+      end
+
+      def event_created_name
+        TOPOLOGY_ADDED_DATAPATH
+      end
+
+      def event_deleted_name
+        TOPOLOGY_REMOVED_DATAPATH
       end
 
     end
   end
 
-  class TopologyNetwork < EventBase
+  class TopologyNetwork < AssocBase
+    valid_update_fields []
+
     class << self
       private
 
-      def dispatch_created_item_events(model)
-        model_hash = model.to_hash.merge(id: model.topology_id,
-                                         network_id: model.id)
-
-        dispatch_event(TOPOLOGY_ADDED_NETWORK, model_hash)
+      def parent_id_type
+        :topology_id
       end
 
-      def dispatch_deleted_item_events(model)
-        dispatch_event(TOPOLOGY_REMOVED_NETWORK,
-                       id: model.topology_id,
-                       network_id: model.id)
+      def assoc_id_type
+        :network_id
       end
+
+      def event_created_name
+        TOPOLOGY_ADDED_NETWORK
+      end
+
+      def event_deleted_name
+        TOPOLOGY_REMOVED_NETWORK
+      end
+
     end
   end
 
-  class TopologySegment < EventBase
+  class TopologySegment < AssocBase
+    valid_update_fields []
+
     class << self
       private
 
-      def dispatch_created_item_events(model)
-        model_hash = model.to_hash.merge(id: model.topology_id,
-                                         segment_id: model.id)
-
-        dispatch_event(TOPOLOGY_ADDED_SEGMENT, model_hash)
+      def parent_id_type
+        :topology_id
       end
 
-      def dispatch_deleted_item_events(model)
-        dispatch_event(TOPOLOGY_REMOVED_SEGMENT,
-                       id: model.topology_id,
-                       segment_id: model.id)
+      def assoc_id_type
+        :segment_id
       end
+
+      def event_created_name
+        TOPOLOGY_ADDED_SEGMENT
+      end
+
+      def event_deleted_name
+        TOPOLOGY_REMOVED_SEGMENT
+      end
+
     end
   end
 
-  class TopologyRouteLink < EventBase
+  class TopologyRouteLink < AssocBase
+    valid_update_fields []
+
     class << self
       private
 
-      def dispatch_created_item_events(model)
-        model_hash = model.to_hash.merge(id: model.topology_id,
-                                         route_link_id: model.id)
-
-        dispatch_event(TOPOLOGY_ADDED_ROUTE_LINK, model_hash)
+      def parent_id_type
+        :topology_id
       end
 
-      def dispatch_deleted_item_events(model)
-        dispatch_event(TOPOLOGY_REMOVED_ROUTE_LINK,
-                       id: model.topology_id,
-                       route_link_id: model.id)
+      def assoc_id_type
+        :route_link_id
       end
+
+      def event_created_name
+        TOPOLOGY_ADDED_ROUTE_LINK
+      end
+
+      def event_deleted_name
+        TOPOLOGY_REMOVED_ROUTE_LINK
+      end
+
     end
   end
 
