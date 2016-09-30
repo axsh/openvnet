@@ -9,11 +9,6 @@ describe Vnet::NodeApi::MacLease do
 
   let(:events) { MockEventHandler.handled_events }
 
-  # let(:interface) { Fabricate(:interface) }
-  # let(:segment) { Fabricate(:segment) }
-
-  # let(:random_mac_address) { random_mac_i }
-
   let(:model_params) {
     { mode: 'simple'
     }
