@@ -21,6 +21,8 @@ describe Vnet::NodeApi::MacLease do
     }
   }
 
+  # TODO: Add permutations for enable_routing.
+
   describe 'create' do
     let(:interface_event) {
       [ Vnet::Event::INTERFACE_LEASED_MAC_ADDRESS, {

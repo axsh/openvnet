@@ -5,6 +5,7 @@ Fabricator(:interface, class_name: Vnet::Models::Interface) do
 end
 
 Fabricator(:active_interface, class_name: Vnet::Models::ActiveInterface) do
+  id { id_sequence(:active_interface_ids) }
 end
 
 Fabricator(:interface_w_mac_lease, class_name: Vnet::Models::Interface) do
@@ -102,21 +103,27 @@ Fabricator(:interface_dp3eth0, class_name: Vnet::Models::Interface) do
 end
 
 Fabricator(:interface_port, class_name: Vnet::Models::InterfacePort) do
+  id { id_sequence(:interface_port_ids) }
 end
 
 Fabricator(:interface_port_host, class_name: Vnet::Models::InterfacePort) do
+  id { id_sequence(:interface_port_ids) }
   singular 1
 end
 
 Fabricator(:interface_port_eth0, class_name: Vnet::Models::InterfacePort) do
+  id { id_sequence(:interface_port_ids) }
   singular 1
   port_name 'eth0'
 end
 
 Fabricator(:interface_port_wanedge, class_name: Vnet::Models::InterfacePort) do
+  id { id_sequence(:interface_port_ids) }
   singular 1
 end
 
 Fabricator(:host_port_any, class_name: Vnet::Models::Interface) do
+  id { id_sequence(:interface_ids) }
+
   mode 'host'
 end

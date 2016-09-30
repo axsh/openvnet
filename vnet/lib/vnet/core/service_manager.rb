@@ -170,9 +170,6 @@ module Vnet::Core
 
     def load_dns_service(item)
       dns_service_map = MW::DnsService.batch.find(network_service_id: item.id).commit(fill: :dns_records)
-
-      debug log_format('load_dns_service', dns_service_map.inspect)
-
       dns_service_map && set_dns_service(id: item.id, dns_service_map: dns_service_map)
     end
 
