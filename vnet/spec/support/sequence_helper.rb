@@ -13,5 +13,5 @@ def id_sequence(id_type)
     throw "Could not find id_sequence type '#{id_type.inspect}'"
   end
 
-  sequence(id_type, ID_SEQUENCES.index(id_type) * 1000000)
+  sequence(id_type, (ID_SEQUENCES.index(id_type) + 1) * 1000000)
 end
