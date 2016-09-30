@@ -14,6 +14,7 @@ module Vnet::Models
     plugin :association_dependencies,
     # 0009_topology
     topology_datapaths: :destroy,
+    topology_segments: :destroy,
     topology_networks: :destroy,
     topology_route_links: :destroy
 

@@ -16,6 +16,7 @@ module Vnet::Models
     # 0010_segment
     datapath_segments: :destroy,
     networks: :destroy,
+    topology_segments: :destroy,
     # 0011_assoc_interface
     interface_segments: :destroy
 
