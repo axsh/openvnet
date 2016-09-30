@@ -89,7 +89,7 @@ rm -rf ${base_provisioned_box_dir}
 
 time ./vm_build.sh $centos_ver ${base_provisioned_box} ${temp_ovf_dir}/box.ovf NONE  -provisioners base.sh
 
-provisioned_ovf_base=base_provisioned_box/${base_provisioned_box}.ovf
+provisioned_ovf_base=${base_provisioned_box_dir}/${base_provisioned_box}.ovf
 
 
 for vm in itest-edge itest1 itest2 itest3; do
