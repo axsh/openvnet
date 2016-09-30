@@ -136,7 +136,7 @@ module Vnctl::Cli
         option_preserve_uuid
         define_method(:del) do |*uuids|
           puts uuids.map { |uuid|
-            Vnctl.webapi.delete("#{suffix}/#{uuid}")
+            Vnctl.webapi.delete("#{suffix}/#{uuid}", options)
           }.join("\n")
         end
       end
