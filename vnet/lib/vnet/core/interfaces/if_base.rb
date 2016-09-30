@@ -193,19 +193,25 @@ module Vnet::Core::Interfaces
       #
       # Anti-spoof:
       #
-      [{ :eth_type => 0x0806,
-         :arp_spa => ipv4_address,
-       },{
-         :eth_type => 0x0800,
-         :ipv4_src => ipv4_address,
-       }
-      ].each { |match|
-        flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
-                             priority: 90,
-                             match: match,
-                             match_value_pair_first: network_id,
-                             cookie: cookie)
-      }
+
+      # TODO: This doesn't currently support global interfaces, as
+      # such it is for the time being disabled.
+
+      if mode == :vif || mode == :host
+        [{ :eth_type => 0x0806,
+            :arp_spa => ipv4_address,
+          },{
+            :eth_type => 0x0800,
+            :ipv4_src => ipv4_address,
+          }
+        ].each { |match|
+          flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
+            priority: 90,
+            match: match,
+            match_value_pair_first: network_id,
+            cookie: cookie)
+        }
+      end
     end
 
     def flows_for_router_ingress_mac(flows, mac_info)

@@ -1,5 +1,5 @@
 vm_type: :kvm
-specs: [simple, simple_tp, simple_seg, router_v2v, router_p2v, router_v2v_tp, event, event_tp, service, secg, secg_reference, filter, wanedge]
+specs: [simple, simple_tp, simple_seg, router_v2v, router_p2v, router_v2v_tp, event, event_tp, service, secg, secg_reference, filter, wanedge, promiscuous_seg]
 
 # specs not included
 # [edge, edge_esxi, vxlan, lease_policy]
