@@ -109,10 +109,12 @@ module Vnspec
         end)
       end
 
+      def disable_vm
+        vms.each { |vm| vm.use_vm = false }
+      end
+
       def disable_dhcp
-        vms.each { |vm|
-          vm.use_dhcp = false
-        }
+        vms.each { |vm| vm.use_dhcp = false }
       end
 
       private
@@ -354,6 +356,10 @@ module Vnspec
         _network_ctl(:change_ip, @static_ipv4_address)
       end
 
+      def route_default_via(via_address)
+        _network_ctl(:route_default_via, IPAddress::IPv4.new(via_address))
+      end
+
       def network
         network_uuid.split('-').last if network_uuid
       end
@@ -410,10 +416,11 @@ module Vnspec
         logger.info "# dump_vm_status #{name}"
         logger.info "##################################################"
 
-        full_response_log(ssh_on_host("route -n"))
-        full_response_log(ssh_on_host("ip addr list"))
-        full_response_log(ssh_on_host("ls -l /"))
-        full_response_log(ssh_on_host("ls -l /images"))
+        # Replace with stuff from the vm itself.
+        full_response_log(ssh_on_guest("route -n"))
+        full_response_log(ssh_on_guest("ip addr list"))
+        # full_response_log(ssh_on_host("ls -l /"))
+        # full_response_log(ssh_on_host("ls -l /images"))
 
         logger.info ""
         logger.info ""
@@ -435,6 +442,8 @@ module Vnspec
             'ip addr flush %s'
           when :change_ip
             'ip addr add ' + params.to_string + ' dev %s'
+          when :route_default_via
+            'ip route add default via ' + params.to_s + ' dev %s'
           else
             raise "unknown command: #{command}"
           end
