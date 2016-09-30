@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
+
 module Vnet
   module Event
+
+    #
+    # Shared events:
+    #
+
+    ACTIVATE_INTERFACE = "activate_interface"
+    DEACTIVATE_INTERFACE = "deactivate_interface"
 
     # *_INITIALIZED
     #
@@ -140,6 +148,16 @@ module Vnet
     INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
 
     #
+    # Interface Segment events:
+    #
+
+    INTERFACE_SEGMENT_INITIALIZED = "interface_segment_initialized"
+    INTERFACE_SEGMENT_UNLOAD_ITEM = "interface_segment_unload_item"
+    INTERFACE_SEGMENT_CREATED_ITEM = "interface_segment_created_item"
+    INTERFACE_SEGMENT_DELETED_ITEM = "interface_segment_deleted_item"
+    INTERFACE_SEGMENT_UPDATED_ITEM = "interface_segment_updated_item"
+
+    #
     # Interface Port events:
     #
 
@@ -163,8 +181,6 @@ module Vnet
     FILTER_DELETED_ITEM = "filter_deleted_item"
     FILTER_UPDATED = "filter_updated"
 
-    FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
-    FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"
     FILTER_ADDED_STATIC = "filter_added_static"
     FILTER_REMOVED_STATIC = "filter_removed_static"
 
@@ -246,8 +262,6 @@ module Vnet
     TRANSLATION_CREATED_ITEM = "translation_created_item"
     TRANSLATION_DELETED_ITEM = "translation_deleted_item"
 
-    TRANSLATION_ACTIVATE_INTERFACE = "translation_activate_interface"
-    TRANSLATION_DEACTIVATE_INTERFACE = "translation_deactivate_interface"
     TRANSLATION_ADDED_STATIC_ADDRESS = "translation_added_static_address"
     TRANSLATION_REMOVED_STATIC_ADDRESS = "translation_removed_static_address"
 

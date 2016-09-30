@@ -2,7 +2,7 @@
 
 require_relative "spec_helper"
 
-describe "simple_seg", :vms_ignore_dhcp => true do
+describe "simple_seg", :vms_disable_dhcp => true do
   before(:all) do
     vm1.change_ipv4_address('10.101.0.10')
     vm2.change_ipv4_address('10.101.0.10')

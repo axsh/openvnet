@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` A new features called `segment` that accurately simulates L2 segments, allowing connected interfaces to freely set and change their IP addresses without making OpenVNet aware of them.
 
+* `Added` New feature `promiscuous interface mode`, allowing us to connect physical networks to OpenVNet's virtual networks on an L2 level without the need for VNet Edge.
+
 * `Added` The option to have VNA take control of an Open vSwitch running on another host.
 
 * `Changed` It is no longer possibly to directly modify an IP lease through the WebAPI. In order to preserve network state history, IP leases need to be deleted and recreated.

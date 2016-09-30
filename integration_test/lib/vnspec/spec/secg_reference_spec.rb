@@ -2,7 +2,7 @@
 require_relative "spec_helper"
 
 describe "security groups" do
-  before(:all) { vms.parallel { |vm| vm.close_all_listening_ports } }
+  before(:all) { vms.parallel_each { |vm| vm.close_all_listening_ports } }
 
   describe "reference" do
     describe "sg-reffer1" do

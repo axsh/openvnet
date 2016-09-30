@@ -93,7 +93,8 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @id = params[:id]
+
+      @id = get_param_id(params)
     end
   end
 
@@ -104,9 +105,9 @@ module Vnet
       @installed = false
       @loaded = false
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
+      map = get_param_map(params)
+      @id = get_param_id(map)
+      @uuid = get_param_string(map, :uuid)
     end
 
     def pretty_id
@@ -114,12 +115,16 @@ module Vnet
     end
   end
 
+  # TODO: This class isn't really correctly implemented, replace the
+  # initialize method with a not-implemented exception and create a
+  # different ItemDpId32 for e.g. ports. 
   class ItemDpBase < ItemBase
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
-      @id = params[:id]
+
+      @dp_info = get_param_dp_info(params)
+      @id = get_param_id_32(params)
     end
 
     private
@@ -129,17 +134,28 @@ module Vnet
     end
   end
 
+  class ItemDpId < ItemDpBase
+    def initialize(params)
+      @installed = false
+      @loaded = false
+
+      @dp_info = get_param_dp_info(params)
+      @id = get_param_id(get_param_map(params))
+    end
+  end
+
   class ItemDpUuid < ItemDpBase
     attr_reader :uuid
 
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
+      @dp_info = get_param_dp_info(params)
+
+      map = get_param_map(params)
+      @id = get_param_id(map)
+      @uuid = get_param_string(map, :uuid)
     end
 
     def pretty_id
@@ -153,12 +169,13 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
-      @mode = map.mode.to_sym
+      @dp_info = get_param_dp_info(params)
+
+      map = get_param_map(params)
+      @id = get_param_id(map)
+      @uuid = get_param_string(map, :uuid)
+      @mode = get_param_string(map, :mode).to_sym
     end
 
     def pretty_properties

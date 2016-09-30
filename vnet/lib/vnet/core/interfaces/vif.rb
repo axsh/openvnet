@@ -13,36 +13,17 @@ module Vnet::Core::Interfaces
 
       flows = []
       flows_for_interface_mac(flows, mac_info)
+      flows_for_mac2mac_mac(flows, mac_info)
 
       if @enable_routing
         flows_for_router_ingress_mac(flows, mac_info)
         flows_for_router_egress_mac(flows, mac_info)
       end
 
-      segment_id = mac_info[:segment_id]
-
-      if segment_id
-        flows_for_mac2mac_mac(flows, mac_info)
-
-        @dp_info.segment_manager.insert_interface_segment(@id, segment_id)
-      end
-
       @dp_info.add_flows(flows)
     end
 
-    def remove_mac_address(params)
-      mac_info = super || return
-      return unless mac_info
-
-      segment_id = mac_info[:segment_id]
-
-      if segment_id
-        @dp_info.segment_manager.remove_interface_segment(@id, segment_id)
-      end
-    end
-
     def add_ipv4_address(params)
-      #debug log_format("interfaces: adding ipv4 flows...")
       mac_info, ipv4_info = super || return
 
       @dp_info.network_manager.insert_interface_network(@id, ipv4_info[:network_id])
@@ -62,8 +43,6 @@ module Vnet::Core::Interfaces
     end
 
     def remove_ipv4_address(params)
-      #debug log_format("interfaces: removing ipv4 flows...")
-
       mac_info, ipv4_info = super || return
 
       return unless ipv4_info

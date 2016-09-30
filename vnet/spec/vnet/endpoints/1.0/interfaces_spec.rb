@@ -113,10 +113,29 @@ describe "/interfaces" do
   end
 
   #
+  # Segments:
+  #
+
+  describe 'Many to many relation calls for segments' do
+    let!(:base_object) { Fabricate(fabricator) }
+    let(:relation_fabricator) { :segment }
+    let(:join_table_fabricator) { :interface_segment }
+
+    let!(:interface) { Fabricate(:interface) { uuid 'if-test' } }
+
+    accepted_params = {
+      static: true
+    }
+
+    include_examples "PUT many_to_many_relation", "segments", accepted_params
+    include_examples "PUT many_to_many_relation", "segments", { static: false }, [:static]
+  end
+
+  #
   # Security groups:
   #
 
-  describe "Many to many relation calls for security groups" do
+  describe 'Many to many relation calls for security groups' do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :security_group }
     let(:join_table_fabricator) { :security_group_interface }

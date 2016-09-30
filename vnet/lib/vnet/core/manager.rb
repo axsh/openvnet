@@ -3,6 +3,8 @@
 module Vnet::Core
   class Manager < Vnet::Manager
 
+    attr_reader :datapath_info
+
     def initialize(info, options = {})
       @dp_info = info
       @datapath_info = nil

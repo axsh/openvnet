@@ -3,6 +3,7 @@ module Vnet::NodeApi
   class MacLease < EventBase
     class << self
 
+      # TODO: Get rid of this.
       def update(uuid, options)
         deleted_mac_address = false
 
