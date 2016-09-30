@@ -18,29 +18,31 @@ module Vnet::Openflow
       @ovs_ofctl_10 = 'ovs-ofctl -O OpenFlow10'
       @ovs_vsctl = 'ovs-vsctl'
 
-      if conf.ovsdb
-        `ovsdb-client list-dbs #{conf.ovsdb}`
-        raise "Unable to connect to OVSDB at #{conf.ovsdb}." if $?.exitstatus != 0
-
-        @ovs_vsctl += " --db=#{conf.ovsdb}"
-      end
+      @ovsdb = conf.ovsdb
+      @ovs_vsctl += " --db=#{@ovsdb}" if @ovsdb
 
       @switch_name = conf.switch || get_bridge_name(datapath_id)
 
+      @verbose = false
+
+      validate_command
+    end
+
+    def validate_command
+      if @switch_name.empty?
+        raise "Unable to find a switch with datapath ID #{@dpid_s}.\n"\
+              "Are the ovsdb settings in vna.conf correct?: '#{@ovsdb}'"
+      end
+
       `#{@ovs_ofctl} show #{@switch_name}`
       raise "Unable to connect to switch #{@switch_name}" if $?.exitstatus != 0
-
-      @verbose = false
     end
 
     def get_bridge_name(datapath_id)
       command = "#{@ovs_vsctl} --no-heading -- --columns=name find bridge datapath_id=%016x" % datapath_id
       debug log_format('get bridge name', command) if verbose
 
-      bridge_name = `#{command}`.gsub(/"/, "").strip
-      raise "Unable to find a switch with datapath ID 0x%016x." % datapath_id if bridge_name.empty?
-
-      bridge_name
+      `#{command}`.gsub(/"/, "").strip
     end
 
     def add_flow(flow)
