@@ -65,3 +65,48 @@ describe Vnet::NodeApi::Topology do
   end
 
 end
+
+describe Vnet::NodeApi::TopologyNetwork do
+
+  let(:assoc_name) { :network }
+  let(:parent_name) { :topology }
+
+  let(:assoc_model) { Fabricate(:network) }
+  let(:parent_model) { Fabricate(:topology, mode: 'simple') }
+
+  let(:added_event_name) { Vnet::Event::TOPOLOGY_ADDED_NETWORK }
+  let(:removed_event_name) { Vnet::Event::TOPOLOGY_REMOVED_NETWORK }
+
+  include_examples 'assoc item on node_api', :topology_network
+
+end
+
+describe Vnet::NodeApi::TopologySegment do
+
+  let(:assoc_name) { :segment }
+  let(:parent_name) { :topology }
+
+  let(:assoc_model) { Fabricate(:segment) }
+  let(:parent_model) { Fabricate(:topology, mode: 'simple') }
+
+  let(:added_event_name) { Vnet::Event::TOPOLOGY_ADDED_SEGMENT }
+  let(:removed_event_name) { Vnet::Event::TOPOLOGY_REMOVED_SEGMENT }
+
+  include_examples 'assoc item on node_api', :topology_segment
+
+end
+
+describe Vnet::NodeApi::TopologyRouteLink do
+
+  let(:assoc_name) { :route_link }
+  let(:parent_name) { :topology }
+
+  let(:assoc_model) { Fabricate(:route_link) }
+  let(:parent_model) { Fabricate(:topology, mode: 'simple') }
+
+  let(:added_event_name) { Vnet::Event::TOPOLOGY_ADDED_ROUTE_LINK }
+  let(:removed_event_name) { Vnet::Event::TOPOLOGY_REMOVED_ROUTE_LINK }
+
+  include_examples 'assoc item on node_api', :topology_route_link
+
+end
