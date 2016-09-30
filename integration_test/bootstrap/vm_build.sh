@@ -38,7 +38,8 @@ function join_args {
 if [ $# -eq 4 ]; then
     provisioners=""
 else
-   remaining_args=(${@:5:$#})    ## We only need arguments beyond $4
+#  remaining_args=(${@:5:$#})    ## We only need arguments beyond $4
+   remaining_args=(${@:5})    ## We only need arguments beyond $4
    if [ ! "${remaining_args[0]}" == "-provisioners" ]; then
        echo
        echo " ERROR: Unrecognized option: \"-${remaining_args[0]}\" "
@@ -122,14 +123,28 @@ echo "Created ${template_file}..."
 # needed. The script will output the list of .sh files it generated.
 # This list is later written into the packer template file that will
 # be used.
+#
+# Tack this list onto the end of the list of any provisioner files
+# given by the user on the command line (via -provisioners).
 ###-
 #script_file_list=`./make_network_template_files.sh ${vm_metadata_dir}`
-script_file_list="${provisioners},`./make_network_template_files.sh ${vm_metadata_dir}`"
-script_file_list=${script_file_list#,}
 
-echo "provisioning script files: ${script_file_list}..."
+###+
+# This hack is required due to a change in the program logic -- I'd not
+# considered an important problem/point: The initially provisioned box
+# must not re-write network scripts! In future, the vm_metadata_dir
+# directory must be made to be optional!
+###-
+if [ "${vm_metadata_dir}" == "NONE" ]; then
+    script_file_list=${provisioners}
+else
+    script_file_list="${provisioners},`./make_network_template_files.sh ${vm_metadata_dir}`"
+    script_file_list=${script_file_list#,}
+fi
 
-template_file="centos-"${centos_version}.json
+echo "Provisioning script files: ${script_file_list}..."
+
+template_file=centos-${centos_version}-${vm_name}.json
 build_packer_template  ${base_ovf_file} ${vm_name}  ${script_file_list} ${template_file}
 
 if [ ! -e ${template_file} ]; then
@@ -148,7 +163,7 @@ if [ $? -ne 0 ]; then
   exit 2
 fi
 
-      exit 2
+#     exit 2
 
 echo "packer build  ${template_file} ..."
 packer build  ${template_file}

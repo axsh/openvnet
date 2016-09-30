@@ -44,10 +44,6 @@ centos_ver=$1
 dstring=`date "+%Y-%m-%d_%H%M%S"`
 
 ### 'curl' the required file from chef/bento
-#url=opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/
-#prefix=opscode_centos-
-#suffix=_chef-provisionerless.box
-
 box_template=opscode_centos-OSVERSION_chef-provisionerless.box
 
 #box=`echo ${box_template} | sed -e "s/OSVERSION/${centos_ver}/"`
@@ -87,12 +83,18 @@ cd $home
 # block.
 #  
 
-  first_build_vm= <the first vm to be built>
-  provisioned_ovf_base=packer-${first_build_vm}-virtualbox/${first_build_vm}.ovf
+base_provisioned_box_dir=packer_base_provisioned_box
+base_provisioned_box=base_provisioned
+rm -rf ${base_provisioned_box_dir}
+
+time ./vm_build.sh $centos_ver ${base_provisioned_box} ${temp_ovf_dir}/box.ovf NONE  -provisioners base.sh
+
+provisioned_ovf_base=base_provisioned_box/${base_provisioned_box}.ovf
 
 
 for vm in itest-edge itest1 itest2 itest3; do
-   time ./vm_build.sh $centos_ver centos-${centos_ver}-${vm} ${temp_ovf_dir} ${vm}
+#  time ./vm_build.sh $centos_ver centos-${centos_ver}-${vm} ${provisioned_ovf_base} ${vm}
+   time ./vm_build.sh $centos_ver ${vm} ${provisioned_ovf_base} ${vm}
 done
 
 exit $?
