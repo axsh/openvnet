@@ -7,6 +7,10 @@ ID_SEQUENCES = [
   :ip_lease_ids,
   :mac_lease_ids,
   :topology_ids,
+  :topology_datapath_ids,
+  :topology_network_ids,
+  :topology_segment_ids,
+  :topology_route_link_ids,
 ]
 
 def id_sequence(id_type)

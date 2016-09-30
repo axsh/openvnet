@@ -4,7 +4,7 @@ require 'spec_helper'
 
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 
-describe Vnet::NodeApi::MacLease do
+describe Vnet::NodeApi::Topology do
   before(:each) { use_mock_event_handler }
 
   let(:events) { MockEventHandler.handled_events }
