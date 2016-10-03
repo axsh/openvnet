@@ -30,10 +30,10 @@ module Vnet::NodeApi
         end
       end
 
-      def destroy(uuid)
+      def destroy(uuid, options)
         model_class[uuid].tap do |model|
           next if model.nil?
-          transaction { model.destroy }
+          transaction { model.destroy(options) }
         end
       end
 

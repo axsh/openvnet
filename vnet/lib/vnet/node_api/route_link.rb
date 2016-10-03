@@ -19,6 +19,12 @@ module Vnet::NodeApi
         dispatch_event(ROUTER_CREATED_ITEM, model.to_hash)
       end
 
+      def destroy(uuid, options)
+        puts "========= Debug ========="
+        puts options.inspect
+        puts "========================="
+      end
+
       def dispatch_deleted_item_events(model)
         dispatch_event(ROUTER_DELETED_ITEM, id: model.id)
 
