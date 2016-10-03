@@ -39,8 +39,9 @@ function max_eth {
        var=`ls -r ifcfg-eth*  | head -1 | cut -d- -f2`   # ls the ifcfg-eth* files in reverse sorted order,
                                                          # keep only the first/top (highest-numbered) one
 
-       # Lop off the number and return it. (And again -- the logic fails if N>9.)
-       echo ${var//[^0-9]/}
+       # Lop off the number and return it.
+#      echo ${var//[^0-9]/}
+       echo ${var#eth}
     else
        echo 0
     fi
@@ -54,11 +55,13 @@ function max_eth {
 
 n=`max_eth ${fdir}`
 
+
 nic_stub="--nicN"
 vagrant_templ_string='["modifyvm", "{{.Name}}", "NIC_STUB", "nat"]'
 
 if [ $n -gt 0 ]; then
     for j in $( seq $n ); do
+       j=$((j+1))
        nic=${nic_stub//N/$j}
        temp=${vagrant_templ_string//NIC_STUB/${nic}}
        echo "${nic}  -->  ${temp} "
