@@ -17,6 +17,7 @@ module Vnet::NodeApi
       M = Vnet::Models
 
       def create(options)
+        replaceUUID = options.delete(:replace_uuid)
         model = nil
         transaction do
           model = model_class.create(options)
