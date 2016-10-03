@@ -45,6 +45,8 @@ module Vnet::NodeApi
         interface_id = options[:interface_id]
         mac_lease_id = options[:mac_lease_id]
 
+        replaceUUID = options.delete(:replace_uuid)
+
         transaction {
           if interface_id || mac_lease_id
             interface, mac_lease = get_if_and_ml(interface_id, mac_lease_id)

@@ -5,7 +5,6 @@ module Vnet::NodeApi
     class << self
 
       def create(options)
-       replaceUUID = options.delete(:replace_uuid)
         create_with_transaction(options).tap { |model|
           next if model.nil?
           dispatch_created_item_events(model)

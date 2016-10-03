@@ -77,6 +77,8 @@ module Vnet::NodeApi
         mac_address = options.delete(:mac_address)
         mac_range_group_id = options.delete(:mac_range_group_id)
 
+        replaceUUID = options.delete(:replace_uuid)
+
         # TODO: Raise rollback if any step fails.
         transaction {
           internal_create(options).tap { |model|
