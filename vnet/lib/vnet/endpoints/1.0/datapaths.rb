@@ -19,7 +19,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   param_options :display_name, required: true
   param_options :dpid, required: true
   param_options :node_id, required: true
-  param :replace_uuid, ::Boolean
+  param :replace_uuid, :Boolean
+  param :preserve_uuid, :Boolean, required: false
 
   post do
     post_new(:Datapath)

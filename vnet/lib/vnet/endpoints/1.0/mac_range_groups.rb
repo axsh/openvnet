@@ -9,7 +9,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
 
   put_post_shared_params
   param_uuid M::MacRangeGroup
-  param :replace_uuid, ::Boolean
+  param :replace_uuid, :Boolean
+  param :preserve_uuid, :Boolean, required: false
   post do
     post_new(:MacRangeGroup, fill_options)
   end

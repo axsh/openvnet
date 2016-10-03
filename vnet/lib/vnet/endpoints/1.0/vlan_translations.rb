@@ -21,7 +21,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
   param_uuid M::VlanTranslation
   param_options :translation_uuid, required: true
   param_options :network_uuid, required: true
-  param :replace_uuid, ::Boolean
+  param :replace_uuid, :Boolean
+  param :preserve_uuid, :Boolean, required: false
   post do
     parse_translation
     uuid_to_id(M::Network, "network_uuid", "network_id")

@@ -10,7 +10,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
   put_post_shared_params
   param_uuid M::DnsService
   param_uuid M::NetworkService, :network_service_uuid, required: true
-  param :replace_uuid, ::Boolean
+  param :replace_uuid, :Boolean
+  param :preserve_uuid, :Boolean, required: false
   post do
     #TODO: No need to check syntax since we do that in param_uuid
     check_syntax_and_get_id(M::NetworkService, :network_service_uuid, :network_service_id)

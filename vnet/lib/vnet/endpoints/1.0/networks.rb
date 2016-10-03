@@ -15,7 +15,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   param_uuid M::Segment, :segment_uuid
   param_options :display_name, required: true
   param_options :ipv4_network, required: true
-  param :replace_uuid, ::Boolean
+  param :replace_uuid, :Boolean
+  param :preserve_uuid, :Boolean, required: false
   post do
     uuid_to_id(M::Segment, "segment_uuid", "segment_id") if params["segment_uuid"]
 

@@ -17,7 +17,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   param_options :ipv4_network, required: true
   param :ingress, :Boolean
   param :egress, :Boolean
-  param :replace_uuid, ::Boolean
+  param :replace_uuid, :Boolean
+  param :preserve_uuid, :Boolean, required: false
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
     uuid_to_id(M::Network, "network_uuid", "network_id")

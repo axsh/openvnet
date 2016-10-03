@@ -11,7 +11,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
 
   put_post_shared_params
   param_uuid M::IpRangeGroup
-  param :replace_uuid, ::Boolean
+  param :replace_uuid, :Boolean
+  param :preserve_uuid, :Boolean, required: false
   post do
     post_new(:IpRangeGroup, fill_options)
   end
