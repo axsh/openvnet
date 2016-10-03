@@ -4,6 +4,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_lease_containers' do
 
   put_post_shared_params
   param_uuid M::IpLeaseContainer
+  param :replace_uuid, ::Boolean
   post do
     post_new(:IpLeaseContainer)
   end

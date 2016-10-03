@@ -27,6 +27,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param :mac_range_group_uuid, :String
   param :port_name, :String
   param :mode, :String, in: C::Interface::MODES
+  param :replace_uuid, ::Boolean
   post do
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     uuid_to_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id") if params["mac_range_group_uuid"]

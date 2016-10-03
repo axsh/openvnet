@@ -14,6 +14,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   param_uuid M::NetworkService
   param :mode, :String, required: false, in: C::NetworkService::MODES
   param :type, :String, required: false, in: C::NetworkService::MODES
+  param :replace_uuid, ::Boolean
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 

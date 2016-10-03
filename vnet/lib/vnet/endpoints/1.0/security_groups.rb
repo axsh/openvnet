@@ -10,6 +10,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   put_post_shared_params
   param_uuid M::SecurityGroup
   param_options :display_name, required: true
+  param :replace_uuid, ::Boolean
   post do
     post_new :SecurityGroup
   end

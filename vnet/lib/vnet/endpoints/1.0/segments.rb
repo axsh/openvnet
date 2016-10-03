@@ -7,6 +7,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/segments' do
   put_post_shared_params
   param_uuid M::Segment
   param :mode, :String, in: C::Segment::MODES
+  param :replace_uuid, ::Boolean
   post do
     post_new(:Segment)
   end
