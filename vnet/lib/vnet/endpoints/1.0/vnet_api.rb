@@ -73,6 +73,7 @@ module Vnet::Endpoints::V10
       uuid = @params[:uuid]
 
       yield(params) if block_given?
+      remove_system_parameters
 
       # TODO don't need to find model here
       check_syntax_and_pop_uuid(model_wrapper)
