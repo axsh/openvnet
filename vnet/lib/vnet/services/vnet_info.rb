@@ -20,17 +20,53 @@ module Vnet::Services
       attr_reader "#{name}_manager"
     end
 
+    def initialize
+      internal_initialize_managers(MANAGER_NAMES)
+    end
+
+    def inspect
+      "<##{self.class.name}>"
+    end
+
+    #
+    # Managers:
+    #
+
     def managers
       MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
-    def initialize_managers
-      MANAGER_NAMES.map do |name|
-        Vnet::Services.const_get("#{name.to_s.camelize}Manager").new(self).tap do |manager|
-          instance_variable_set("@#{name}_manager", manager)
-          yield(manager) if block_given?
+    def terminate_managers(timeout = 10.0)
+      internal_terminate_managers(managers, timeout)
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def internal_initialize_managers(name_list)
+      name_list.each { |name|
+        instance_variable_set("@#{name}_manager", Vnet::Services.const_get("#{name.to_s.camelize}Manager").new(self))
+      }
+    end
+
+    def internal_terminate_managers(manager_list, timeout)
+      manager_list.each { |manager|
+        begin
+          manager.terminate
+        rescue Celluloid::DeadActorError
         end
-      end
+      }
+
+      start_time = Time.new
+
+      manager_list.each { |manager|
+        next_timeout = timeout - (Time.new - start_time)
+
+        Celluloid::Actor.join(manager, (next_timeout < 0.1) ? 0.1 : next_timeout)
+      }
     end
 
   end
