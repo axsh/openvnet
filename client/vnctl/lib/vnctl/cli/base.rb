@@ -104,7 +104,10 @@ module Vnctl::Cli
       def self.option_replace_uuid
         option :replace_uuid, type: :string, desc: "Replaces already existing UUID."
       end
-
+      
+      def self.option_new_uuid
+        option :new_uuid, type: :string, desc: "Replaces already existing UUID."
+      end
 
       # And here we have the methods that create the actual CRUD tasks
       def self.define_add
@@ -143,6 +146,7 @@ module Vnctl::Cli
 
       def self.define_modify
         desc "modify UUID [OPTIONS]", "Modify a #{namespace}."
+        option_new_uuid
         define_method(:modify) do |uuid|
           puts Vnctl.webapi.put("#{suffix}/#{uuid}", options)
         end
