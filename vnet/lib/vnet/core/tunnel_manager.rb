@@ -18,12 +18,18 @@ module Vnet::Core
 
     subscribe_event ADDED_HOST_DATAPATH_NETWORK, :added_host_datapath_network
     subscribe_event ADDED_REMOTE_DATAPATH_NETWORK, :added_remote_datapath_network
-    subscribe_event ADDED_HOST_DATAPATH_ROUTE_LINK, :added_host_datapath_route_link
-    subscribe_event ADDED_REMOTE_DATAPATH_ROUTE_LINK, :added_remote_datapath_route_link
     subscribe_event REMOVED_HOST_DATAPATH_NETWORK, :removed_host_datapath_network
     subscribe_event REMOVED_REMOTE_DATAPATH_NETWORK, :removed_remote_datapath_network
+
+    subscribe_event ADDED_HOST_DATAPATH_ROUTE_LINK, :added_host_datapath_route_link
+    subscribe_event ADDED_REMOTE_DATAPATH_ROUTE_LINK, :added_remote_datapath_route_link
     subscribe_event REMOVED_HOST_DATAPATH_ROUTE_LINK, :removed_host_datapath_route_link
     subscribe_event REMOVED_REMOTE_DATAPATH_ROUTE_LINK, :removed_remote_datapath_route_link
+
+    subscribe_event ADDED_HOST_DATAPATH_SEGMENT, :added_host_datapath_segment
+    subscribe_event ADDED_REMOTE_DATAPATH_SEGMENT, :added_remote_datapath_segment
+    subscribe_event REMOVED_HOST_DATAPATH_SEGMENT, :removed_host_datapath_segment
+    subscribe_event REMOVED_REMOTE_DATAPATH_SEGMENT, :removed_remote_datapath_segment
 
     finalizer :do_cleanup
 
@@ -32,8 +38,10 @@ module Vnet::Core
       @interfaces = {}
 
       @host_networks = {}
+      @host_segments = {}
       @host_route_links = {}
       @remote_datapath_networks = {}
+      @remote_datapath_segments = {}
       @remote_datapath_route_links = {}
     end
 
@@ -161,8 +169,8 @@ module Vnet::Core
     end
 
     def install_item(params)
-      item_map = params[:item_map] || return
-      item = (item_map.id && @items[item_map.id]) || return
+      item_map = get_param(params, :item_map)
+      item = internal_detect_by_id(item_map) || return
 
       debug log_format("install #{item.mode} #{item.uuid}/#{item.id}",
                        "src_interface_id:#{item.src_interface_id} dst_interface_id:#{item.dst_interface_id}")
@@ -172,6 +180,9 @@ module Vnet::Core
       return reload_item(item) if tunnel_mode != item.mode
 
       setup_item(item, item_map, params)
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     def setup_item(item, item_map, params)
@@ -186,7 +197,7 @@ module Vnet::Core
 
       item.set_dst_ipv4_address(dst_interface[:network_id], dst_interface[:ipv4_address]) if dst_interface
       item.set_src_ipv4_address(src_interface[:network_id], src_interface[:ipv4_address]) if src_interface
-      item.set_host_port_number(src_interface[:port_number], {}) if src_interface
+      item.set_host_port_number(src_interface[:port_number], {}, {}) if src_interface
 
       # Should be an event that is exclusive for dpn updates (?):
       remote_dpns = @remote_datapath_networks.select { |id, remote_dpn|
@@ -194,6 +205,13 @@ module Vnet::Core
       }
       remote_dpns.each { |id, remote_dpn|
         item.add_datapath_network(remote_dpn)
+      }
+
+      remote_dpsegs = @remote_datapath_segments.select { |id, remote_dpseg|
+        remote_dpseg[:datapath_id] == item.dst_datapath_id && remote_dpseg[:interface_id] == item.dst_interface_id
+      }
+      remote_dpsegs.each { |id, remote_dpseg|
+        item.add_datapath_segment(remote_dpseg)
       }
 
       remote_dprls = @remote_datapath_route_links.select { |id, remote_dprl|
@@ -204,6 +222,7 @@ module Vnet::Core
       }
 
       add_dpn_hash_to_updated_networks(remote_dpns)
+      add_dpseg_hash_to_updated_segments(remote_dpsegs)
       add_dprl_hash_to_updated_route_links(remote_dprls)
 
       # Make sure we have the remote host interface loaded.
@@ -244,43 +263,79 @@ module Vnet::Core
     #
 
     # Requires queue ':update_networks'.
-    def update_property_state(property_type, network_id)
-      return unless property_type == :update_networks
-
-      tunnel_actions = [:tunnel_id => network_id | TUNNEL_FLAG_MASK]
-      segment_actions = []
-
-      @items.each { |item_id, item|
-        item.actions_append_flood(network_id, tunnel_actions, segment_actions)
-      }
-
+    def update_property_state(property_type, property_id)
       flows = []
 
-      # TODO: Change this into using a specific method to remove a network id?
+      case property_type
+      when :update_networks
+        tunnel_actions = [:tunnel_id => (property_id & TUNNEL_ID_MASK) | TUNNEL_NETWORK]
+        segment_actions = []
 
-      if tunnel_actions.size > 1
-        flows << flow_create(table: TABLE_FLOOD_TUNNELS,
-                             goto_table: TABLE_FLOOD_SEGMENT,
-                             priority: 1,
-                             match_network: network_id,
-                             actions: tunnel_actions,
-                             cookie: network_id | COOKIE_TYPE_NETWORK)
-      else
-        @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS,
-                           cookie: network_id | COOKIE_TYPE_NETWORK,
-                           cookie_mask: COOKIE_MASK)
-      end
+        @items.each { |item_id, item|
+          item.actions_append_flood_network(property_id, tunnel_actions, segment_actions)
+        }
 
-      if !segment_actions.empty?
-        flows << flow_create(table: TABLE_FLOOD_SEGMENT,
-                             priority: 1,
-                             match_network: network_id,
-                             actions: segment_actions,
-                             cookie: network_id | COOKIE_TYPE_NETWORK)
-      else
-        @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
-                           cookie: network_id | COOKIE_TYPE_NETWORK,
-                           cookie_mask: COOKIE_MASK)
+        # TODO: Change this into using a specific method to remove a network id?
+
+        if tunnel_actions.size > 1
+          flows << flow_create(table: TABLE_FLOOD_TUNNELS,
+            goto_table: TABLE_FLOOD_SEGMENT,
+            priority: 1,
+            match_network: property_id,
+            actions: tunnel_actions,
+            cookie: property_id | COOKIE_TYPE_NETWORK)
+        else
+          @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS,
+            cookie: property_id | COOKIE_TYPE_NETWORK,
+            cookie_mask: COOKIE_MASK)
+        end
+
+        if !segment_actions.empty?
+          flows << flow_create(table: TABLE_FLOOD_SEGMENT,
+            priority: 1,
+            match_network: property_id,
+            actions: segment_actions,
+            cookie: property_id | COOKIE_TYPE_NETWORK)
+        else
+          @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
+            cookie: property_id | COOKIE_TYPE_NETWORK,
+            cookie_mask: COOKIE_MASK)
+        end
+
+      when :update_segments
+        tunnel_actions = [:tunnel_id => (property_id & TUNNEL_ID_MASK) | TUNNEL_SEGMENT]
+        segment_actions = []
+
+        @items.each { |item_id, item|
+          item.actions_append_flood_segment(property_id, tunnel_actions, segment_actions)
+        }
+
+        # TODO: Change this into using a specific method to remove a segment id?
+
+        if tunnel_actions.size > 1
+          flows << flow_create(table: TABLE_FLOOD_TUNNELS,
+            goto_table: TABLE_FLOOD_SEGMENT,
+            priority: 1,
+            match_segment: property_id,
+            actions: tunnel_actions,
+            cookie: property_id | COOKIE_TYPE_SEGMENT)
+        else
+          @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS,
+            cookie: property_id | COOKIE_TYPE_SEGMENT,
+            cookie_mask: COOKIE_MASK)
+        end
+
+        if !segment_actions.empty?
+          flows << flow_create(table: TABLE_FLOOD_SEGMENT,
+            priority: 1,
+            match_segment: property_id,
+            actions: segment_actions,
+            cookie: property_id | COOKIE_TYPE_SEGMENT)
+        else
+          @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
+            cookie: property_id | COOKIE_TYPE_SEGMENT,
+            cookie_mask: COOKIE_MASK)
+        end
       end
 
       @dp_info.add_flows(flows)
@@ -314,11 +369,7 @@ module Vnet::Core
         dst_interface_id: remote_dp_obj[:interface_id],
       }
 
-      info log_format("activated #{obj_type} link",
-                      "#{obj_type}:#{remote_dp_obj[obj_type]} " +
-                      "remote_dp_obj:#{remote_dp_obj[:id]} " +
-                      "datapath_id:#{remote_dp_obj[:datapath_id]} " +
-                      "interface_id:#{remote_dp_obj[:interface_id]}")
+      info log_format_h("activated #{obj_type} link", remote_dp_obj)
 
       item = internal_retrieve(options)
       tunnel_mode = select_tunnel_mode(host_dp_obj[:interface_id], remote_dp_obj[:interface_id])
@@ -348,6 +399,9 @@ module Vnet::Core
       when :network_id
         item.add_datapath_network(remote_dp_obj)
         add_property_id_to_update_queue(:update_networks, dp_obj_id)
+      when :segment_id
+        item.add_datapath_segment(remote_dp_obj)
+        add_property_id_to_update_queue(:update_segments, dp_obj_id)
       when :route_link_id
         item.add_datapath_route_link(remote_dp_obj)
         add_property_id_to_update_queue(:update_route_links, dp_obj_id)
@@ -364,16 +418,15 @@ module Vnet::Core
 
       item = internal_detect(options) || return
 
-      info log_format("deactivated #{obj_type} link",
-                      "#{obj_type}:#{remote_dp_obj[obj_type]} " +
-                      "remote_dp_obj:#{remote_dp_obj[:id]} " +
-                      "datapath_id:#{remote_dp_obj[:datapath_id]} " +
-                      "interface_id:#{remote_dp_obj[:interface_id]}")
+      info log_format_h("deactivated #{obj_type} link", remote_dp_obj)
 
       case obj_type
       when :network_id
         item.remove_datapath_network(remote_dp_obj[:id])
         add_property_id_to_update_queue(:update_networks, dp_obj_id)
+      when :segment_id
+        item.remove_datapath_segment(remote_dp_obj[:id])
+        add_property_id_to_update_queue(:update_segments, dp_obj_id)
       when :route_link_id
         item.remove_datapath_route_link(remote_dp_obj[:id])
         add_property_id_to_update_queue(:update_route_links, dp_obj_id)
@@ -385,8 +438,8 @@ module Vnet::Core
     end
 
     def set_tunnel_port_number(params)
-      port_name = params[:port_name] || return
-      port_number = params[:port_number] || return
+      port_name = get_param_string(params, :port_name)
+      port_number = get_param_of_port(params, :port_number)
 
       item = internal_retrieve(uuid: port_name)
 
@@ -402,13 +455,18 @@ module Vnet::Core
       # update from the list.
 
       updated_networks = {}
-      item.set_tunnel_port_number(port_number, updated_networks)
+      updated_segments = {}
+      item.set_tunnel_port_number(port_number, updated_networks, updated_segments)
 
       add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
+      add_property_ids_to_update_queue(:update_segments, updated_segments.keys)
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     def clear_tunnel_port_number(params)
-      port_name = params[:port_name] || return
+      port_name = get_param_string(params, :port_name)
       item = internal_retrieve(uuid: port_name) || return
 
       # TODO: Turn into an event, and use the same update_networks
@@ -416,11 +474,16 @@ module Vnet::Core
       # update from the list.
 
       updated_networks = {}
-      item.set_tunnel_port_number(updated_networks)
+      updated_segments = {}
+      item.set_tunnel_port_number(port_number, updated_networks, updated_segments)
 
       add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
+      add_property_ids_to_update_queue(:update_segments, updated_segments.keys)
 
       # TODO: Consider deleting here?
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     #
@@ -430,8 +493,8 @@ module Vnet::Core
     # TODO: Use the :interface event queue.
 
     def updated_interface(params)
-      interface_id = params[:interface_id] || return
-      interface_event = params[:interface_event] || return
+      interface_id = get_param_id(params, :interface_id)
+      interface_event = get_param_symbol(params, :interface_event)
 
       case interface_event
       # when :added_ipv4_address
@@ -448,6 +511,9 @@ module Vnet::Core
       else
         error log_format("unknown updated_interface event '#{interface_event}'")
       end
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     # Temporary method while refactoring active interfaces.
@@ -476,7 +542,7 @@ module Vnet::Core
     end
 
     def interface_added_ipv4_address(interface_id, params)
-      interface_mode = params[:interface_mode]
+      interface_mode = get_param_symbol(params, :interface_mode)
 
       if interface_mode != :host && interface_mode != :remote
         error log_format("updated_interface received unknown interface_mode '#{interface_mode}'")
@@ -491,8 +557,8 @@ module Vnet::Core
 
       # Check if interface mode matches...
 
-      interface[:network_id] = params[:network_id]
-      interface[:ipv4_address] = params[:ipv4_address]
+      interface[:network_id] = get_param_id(params, :network_id)
+      interface[:ipv4_address] = get_param_ipv4_address(params, :ipv4_address)
 
       case interface_mode
       when :host
@@ -510,10 +576,13 @@ module Vnet::Core
           reload_item(item) if select_tunnel_mode(item.src_interface_id, item.dst_interface_id)
         }
       end
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     def interface_set_host_port_number(interface_id, params)
-      port_number = params[:port_number] || return
+      port_number = get_param_of_port(params, :port_number)
       interface = interface_prepare(interface_id, :host) || return
 
       debug log_format("interface #{interface_id} set host port number #{port_number}")
@@ -522,6 +591,7 @@ module Vnet::Core
       # unneeded calls to update.
 
       updated_networks = {}
+      updated_segments = {}
 
       # A port number has already been set, handle this properly:
       if interface[:port_number]
@@ -532,10 +602,14 @@ module Vnet::Core
       items_with_src_interface(interface_id).each { |id, item|
         # Register this as an event instead, and use the values in
         # '@interfaces' when handling the event.
-        item.set_host_port_number(port_number, updated_networks)
+        item.set_host_port_number(port_number, updated_networks, updated_segments)
       }
 
       add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
+      add_property_ids_to_update_queue(:update_segments, updated_segments.keys)
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     #
@@ -605,6 +679,72 @@ module Vnet::Core
     end
 
     #
+    # Datapath segment events:
+    #
+
+    # ADDED_HOST_DATAPATH_SEGMENT on queue ':datapath_segment'
+    def added_host_datapath_segment(params)
+      host_dpseg = create_dp_obj(:host_segment, params) || return
+      segment_id = host_dpseg[:segment_id] || return
+
+      interface_load_ip_lease(:host, host_dpseg[:interface_id], host_dpseg[:ip_lease_id])
+
+      # Reorder so that we activate in the order of loading
+      # internally, database and then create.
+      remote_dpsegs = @remote_datapath_segments.select { |id, remote_dpseg|
+        remote_dpseg[:segment_id] == segment_id
+      }
+      remote_dpsegs.each { |id, remote_dpseg|
+        activate_link(:segment_id, host_dpseg, remote_dpseg, segment_id)
+      }
+    end
+
+    # ADDED_REMOTE_DATAPATH_SEGMENT on queue ':datapath_segment'
+    def added_remote_datapath_segment(params)
+      remote_dpseg = create_dp_obj(:remote_segment, params) || return
+      segment_id = remote_dpseg[:segment_id] || return
+
+      interface_load_ip_lease(:remote, remote_dpseg[:interface_id], remote_dpseg[:ip_lease_id])
+
+      host_dpseg = @host_segments[segment_id]
+
+      activate_link(:segment_id, host_dpseg, remote_dpseg, segment_id) if host_dpseg
+    end
+
+    # REMOVED_HOST_DATAPATH_SEGMENT on queue ':datapath_segment'
+    def removed_host_datapath_segment(params)
+      dpseg_obj = params[:dp_obj] || return
+      segment_id = dpseg_obj[:segment_id] || return
+
+      host_dpseg = @host_segments.delete(segment_id) || return
+
+      debug log_format("host datapath segment #{host_dpseg[:id]} removed for datapath #{host_dpseg[:datapath_id]}")
+
+      # Reorder so that we activate in the order of loading
+      # internally, database and then create.
+      remote_dpsegs = @remote_datapath_segments.select { |id, remote_dpseg|
+        remote_dpseg[:segment_id] == segment_id
+      }
+      remote_dpsegs.each { |id, remote_dpseg|
+        deactivate_link(:segment_id, host_dpseg, remote_dpseg, segment_id)
+      }
+    end
+
+    # REMOVED_REMOTE_DATAPATH_SEGMENT on queue ':datapath_segment'
+    def removed_remote_datapath_segment(params)
+      dpseg_obj = params[:dp_obj] || return
+      dpseg_id = dpseg_obj[:id] || return
+      segment_id = dpseg_obj[:segment_id] || return
+
+      host_dpseg = @host_segments[segment_id]
+      remote_dpseg = @remote_datapath_segments.delete(dpseg_id) || return
+
+      debug log_format("remote datapath segment #{dpseg_id} removed for datapath #{remote_dpseg[:datapath_id]}")
+
+      deactivate_link(:segment_id, host_dpseg, remote_dpseg, segment_id) if host_dpseg
+    end
+
+    #
     # Datapath route_link events:
     #
 
@@ -649,6 +789,12 @@ module Vnet::Core
       when :remote_network
         dst_list, dst_log_prefix = @remote_datapath_networks, "remote datapath network"
         dst_key_type, dst_object_type = :id, :network_id
+      when :host_segment
+        dst_list, dst_log_prefix = @host_segments, "host datapath segment"
+        dst_key_type = dst_object_type = :segment_id
+      when :remote_segment
+        dst_list, dst_log_prefix = @remote_datapath_segments, "remote datapath segment"
+        dst_key_type, dst_object_type = :id, :segment_id
       when :host_route_link
         dst_list, dst_log_prefix = @host_route_links, "host datapath route link"
         dst_key_type = dst_object_type = :route_link_id
@@ -657,15 +803,16 @@ module Vnet::Core
         dst_key_type, dst_object_type = :id, :route_link_id
       end
 
-      param_obj = params[:dp_obj] || return
-      key_id = param_obj[dst_key_type] || return
+      param_obj = get_param(params, :dp_obj)
 
-      id = param_obj[:id] || return
-      object_id = param_obj[dst_object_type] || return
-      datapath_id = param_obj[:datapath_id] || return
-      interface_id = param_obj[:interface_id] || return
-      ip_lease_id = param_obj[:ip_lease_id]
-      mac_address = param_obj[:mac_address] || return
+      id = get_param_id(param_obj)
+      key_id = get_param_id(param_obj, dst_key_type)
+
+      object_id = get_param_id(param_obj, dst_object_type)
+      datapath_id = get_param_id(param_obj, :datapath_id)
+      interface_id = get_param_id(param_obj, :interface_id)
+      ip_lease_id = get_param_id(param_obj, :ip_lease_id)
+      mac_address = get_param_mac_address(param_obj)
 
       if dst_list[key_id]
         error log_format("#{dst_log_prefix} #{key_id} already added")
@@ -683,19 +830,31 @@ module Vnet::Core
         :ip_lease_id => ip_lease_id,
         :mac_address => mac_address
       }
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
-    def add_dpn_hash_to_updated_networks(dpns)
-      dpns.map { |id, remote_dpns|
-        remote_dpns[:network_id]
+    # TODO: Make generic.
+    def add_dpn_hash_to_updated_networks(dp_gens)
+      dp_gens.map { |id, remote_dp_gens|
+        remote_dp_gens[:network_id]
       }.tap { |network_ids|
         add_property_ids_to_update_queue(:update_networks, network_ids)
       }
     end
 
-    def add_dprl_hash_to_updated_route_links(dprls)
-      dprls.map { |id, remote_dprls|
-        remote_dprls[:route_link_id]
+    def add_dpseg_hash_to_updated_segments(dp_gens)
+      dp_gens.map { |id, remote_dp_gens|
+        remote_dp_gens[:segment_id]
+      }.tap { |segment_ids|
+        add_property_ids_to_update_queue(:update_segments, segment_ids)
+      }
+    end
+
+    def add_dprl_hash_to_updated_route_links(dp_gens)
+      dp_gens.map { |id, remote_dp_gens|
+        remote_dp_gens[:route_link_id]
       }.tap { |route_link_ids|
         add_property_ids_to_update_queue(:update_route_links, route_link_ids)
       }

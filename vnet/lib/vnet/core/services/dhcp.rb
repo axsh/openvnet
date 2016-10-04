@@ -100,26 +100,39 @@ module Vnet::Core::Services
                      })
     end
 
-    def add_network(network_id, cookie_id)
+    def add_network(network_id, cookie_id, segment_id)
       if dns_server = @dp_info.service_manager.dns_server_for(network_id)
         add_dns_server(network_id, dns_server)
       end
+
+      match_dhcp = {
+        :eth_type => 0x0800,
+        :ip_proto => 0x11,
+        :ipv4_dst => IPV4_BROADCAST,
+        :ipv4_src => IPV4_ZERO,
+        :udp_dst => 67,
+        :udp_src => 68
+      }
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_SIMULATED,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
-                           match: {
-                             :eth_type => 0x0800,
-                             :ip_proto => 0x11,
-                             :ipv4_dst => IPV4_BROADCAST,
-                             :ipv4_src => IPV4_ZERO,
-                             :udp_dst => 67,
-                             :udp_src => 68
-                           },
+                           match: match_dhcp,
                            cookie: cookie_for_network(cookie_id),
                            match_network: network_id,
                            write_interface: @interface_id)
+
+      if segment_id
+        flows << flow_create(table: TABLE_FLOOD_SIMULATED,
+                             goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                             priority: 30,
+                             match: match_dhcp,
+                             cookie: cookie_for_network(cookie_id), # Fix.
+                             match_segment: segment_id,
+                             write_interface: @interface_id)
+      end
+
       @dp_info.add_flows(flows)
     end
 

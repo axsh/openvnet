@@ -178,6 +178,7 @@ module Vnspec
       attr_reader :interface
       attr_reader :mac_address
       attr_reader :ip_leases
+      attr_reader :segment_uuid
 
       class << self
         def api_name
@@ -192,6 +193,7 @@ module Vnspec
       def initialize(options)
         @interface = options[:interface]
         @mac_address = options[:mac_address]
+        @segment_uuid = options[:segment_uuid] # TODO
         @ip_leases = []
       end
 
@@ -252,8 +254,11 @@ module Vnspec
         @dpid = options.fetch(:dpid)
 
         @display_name = options[:display_name]
+
         @datapath_networks = []
         @datapath_networks_loaded = false
+        @datapath_segments = []
+        @datapath_segments_loaded = false
       end
 
       def destroy
@@ -272,6 +277,19 @@ module Vnspec
           @datapath_networks.delete_if { |record| record.uuid == network_uuid }
         end
       end
+
+      def add_datapath_segment(segment_uuid, options)
+        API.request(:post, "datapaths/#{uuid}/segments/#{segment_uuid}", options) do |response|
+          @datapath_segments << OpenStruct.new(response)
+        end
+      end
+
+      def remove_datapath_segment(segment_uuid)
+        API.request(:delete, "datapaths/#{uuid}/segments/#{segment_uuid}") do |response|
+          @datapath_segments.delete_if { |record| record.uuid == segment_uuid }
+        end
+      end
+
     end
 
     class DnsService < Base

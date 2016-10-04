@@ -127,29 +127,38 @@ module Vnspec
       def dump_logs(vna_index = nil)
         return unless config[:dump_flows]
 
-        logger.info "#" * 50
-        logger.info "# dump_logs: vnmgr"
-        logger.info "#" * 50
+        dump_header("dump_logs: vnmgr")
         output = ssh(config[:nodes][:vnmgr].first, "cat /var/log/openvnet/vnmgr.log", debug: false)
         logger.info output[:stdout]
-        logger.info
+        dump_footer
 
-        logger.info "#" * 50
-        logger.info "# dump_logs: webapi"
-        logger.info "#" * 50
+        dump_header("dump_logs: webapi")
         output = ssh(config[:nodes][:vnmgr].first, "cat /var/log/openvnet/webapi.log", debug: false)
         logger.info output[:stdout]
-        logger.info
+        dump_footer
 
-        config[:nodes][:vna].each_with_index do |ip, i|
+        config[:nodes][:vna].each_with_index { |ip, i|
           next if vna_index && vna_index.to_i != i + 1
-          logger.info "#" * 50
-          logger.info "# dump_logs: vna#{i + 1}"
-          logger.info "#" * 50
+          dump_header("dump_logs: vna#{i + 1}")
           output = ssh(ip, "cat /var/log/openvnet/vna.log", debug: false)
           logger.info output[:stdout]
-          logger.info
-        end
+          dump_footer
+        }
+
+        config[:nodes][:vna].each_with_index { |ip, i|
+          next if vna_index && vna_index.to_i != i + 1
+
+          dump_header("dump_node_status #{ip}")
+          full_response_log(ssh(ip, "route -n"))
+          full_response_log(ssh(ip, "ip addr list"))
+          full_response_log(ssh(ip, "ls -l /"))
+          full_response_log(ssh(ip, "ls -l /images"))
+          dump_footer
+        }
+
+        Vnspec::VM.each { |vm|
+          vm.use_vm && vm.dump_vm_status
+        }
       end
 
       def install_package(name)
@@ -232,6 +241,19 @@ module Vnspec
       def logfile_for(node_name)
         File.join(config[:vnet_log_directory], "#{node_name}.log")
       end
+
+      # Move logging stuff to a module.
+      def dump_header(msg)
+        logger.info "#" * 50
+        logger.info "# #{msg}"
+        logger.info "#" * 50
+      end
+
+      def dump_footer(msg = "")
+        logger.info
+        logger.info
+      end
+
     end
   end
 end

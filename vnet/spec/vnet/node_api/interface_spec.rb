@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
 describe Vnet::NodeApi::Interface do
-  before do
-    use_mock_event_handler
-  end
+  before(:each) { use_mock_event_handler }
 
   describe "create" do
     it "with associations" do

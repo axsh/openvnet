@@ -52,7 +52,7 @@ end
 describe "event" do
   describe "datapath" do
     before(:each) do
-      vms.parallel(&:clear_arp_cache)
+      vms.parallel_each(&:clear_arp_cache)
     end
 
     describe "remove" do

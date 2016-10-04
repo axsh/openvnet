@@ -25,6 +25,7 @@ module Vnet::Core
       mac_info = {
         ipv4_addresses: [],
         mac_address: params[:mac_address],
+        segment_id: params[:segment_id],
         cookie_id: params[:cookie_id],
       }
 
@@ -105,8 +106,16 @@ module Vnet::Core
       @mac_addresses.values.map { |m| m[:ipv4_addresses] }.flatten(1)
     end
 
+    def has_segment?(segment_id)
+      @mac_addresses.any?{ |_, i| i[:segment_id] == segment_id }
+    end
+
     def has_network?(network_id)
       ipv4_addresses.any?{ |i| i[:network_id] == network_id }
+    end
+
+    def all_segment_ids
+      @mac_addresses.collect { |_, mac_info| mac_info[:segment_id] }.uniq
     end
 
     def all_network_ids

@@ -75,6 +75,37 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
 
   param_uuid M::Interface, :interface_uuid, required: true
   param :mac_address, :String, required: false, transform: PARSE_MAC
+  post '/:uuid/segments/:segment_uuid' do
+    options = {
+      datapath_id: check_syntax_and_pop_uuid(M::Datapath).id,
+      interface_id: check_syntax_and_pop_uuid(M::Interface, 'interface_uuid').id,
+      segment_id: check_syntax_and_pop_uuid(M::Segment, 'segment_uuid').id,
+      mac_address: params["mac_address"]
+    }
+
+    object = M::DatapathSegment.create(options)
+    respond_with(R::DatapathSegment.generate(object))
+  end
+
+  get '/:uuid/segments' do
+    show_relations(:Datapath, :segments)
+  end
+
+  delete '/:uuid/segments/:segment_uuid' do
+    segment = check_syntax_and_pop_uuid(M::Segment, 'segment_uuid')
+
+    options = {
+      datapath_id: check_syntax_and_pop_uuid(M::Datapath).id,
+      generic_id: segment.id,
+    }
+
+    M::DatapathSegment.destroy(options)
+
+    respond_with([segment.uuid])
+  end
+
+  param_uuid M::Interface, :interface_uuid, required: true
+  param :mac_address, :String, required: false, transform: PARSE_MAC
   post '/:uuid/route_links/:route_link_uuid' do
     route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
 

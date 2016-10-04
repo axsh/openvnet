@@ -14,6 +14,9 @@ module Vnctl::Cli
     define_relation :networks do |relation|
     end
 
+    define_relation :segments do |relation|
+    end
+
     define_relation :route_links do |relation|
     end
 

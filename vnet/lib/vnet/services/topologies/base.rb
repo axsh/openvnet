@@ -50,6 +50,20 @@ module Vnet::Services::Topologies
       end
     end
 
+    def create_datapath_segment(datapath_id, segment_id, interface_id)
+      create_params = {
+        datapath_id: datapath_id,
+        segment_id: segment_id,
+        interface_id: interface_id
+      }
+
+      if MW::DatapathSegment.batch.create(create_params).commit
+        debug log_format_h("created datapath_segment", create_params)
+      else
+        info log_format_h("failed to create datapath_segment", create_params)
+      end
+    end
+
     def create_datapath_route_link(datapath_id, route_link_id, interface_id)
       create_params = {
         datapath_id: datapath_id,

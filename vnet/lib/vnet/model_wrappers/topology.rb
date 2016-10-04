@@ -11,6 +11,9 @@ module Vnet::ModelWrappers
   class TopologyNetwork < Base
   end
 
+  class TopologySegment < Base
+  end
+
   class TopologyRouteLink < Base
   end
 

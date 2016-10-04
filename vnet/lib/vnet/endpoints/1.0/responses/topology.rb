@@ -35,6 +35,26 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
+  class TopologySegment < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(object)
+      argument_type_check(object,Vnet::ModelWrappers::TopologySegment)
+      object.to_hash.tap { |res|
+        # TODO: This is both slow and verbose.
+        # segment = object.batch.segment.commit
+        # res[:segment_uuid] = segment.uuid if segment
+      }
+    end
+  end
+
+  class TopologySegmentCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i|
+        TopologySegment.generate(i)
+      }
+    end
+  end
+
   class TopologyRouteLink < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::TopologyRouteLink)

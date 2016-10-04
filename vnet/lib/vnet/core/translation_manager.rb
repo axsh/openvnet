@@ -17,11 +17,11 @@ module Vnet::Core
     subscribe_event TRANSLATION_CREATED_ITEM, :created_item
     subscribe_event TRANSLATION_DELETED_ITEM, :unload_item
 
-    subscribe_event TRANSLATION_ACTIVATE_INTERFACE, :activate_interface
-    subscribe_event TRANSLATION_DEACTIVATE_INTERFACE, :deactivate_interface
-
     subscribe_event TRANSLATION_ADDED_STATIC_ADDRESS, :added_static_address
     subscribe_event TRANSLATION_REMOVED_STATIC_ADDRESS, :removed_static_address
+
+    subscribe_event ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event DEACTIVATE_INTERFACE, :deactivate_interface
 
     #
     # Internal methods:
@@ -80,7 +80,7 @@ module Vnet::Core
     #
 
     def item_pre_install(item, item_map)
-      case item.class
+      case item
       when Translations::StaticAddress then load_static_addresses(item, item_map)
       end
     end

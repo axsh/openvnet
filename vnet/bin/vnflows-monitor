@@ -361,6 +361,7 @@ Options.opts[:pretty] = 1
 Options.opts[:time] = 2
 Options.opts[:run] = 0
 Options.opts[:iteration] = []
+Options.opts[:switch] = 'br0'
 
 OptionParser.new do |op|
   op.on("-c", "--count N", Float, "Number of iterations, 0 = keep going (default 1)") do |c|
@@ -384,6 +385,9 @@ OptionParser.new do |op|
   op.on("-i", "--iteration x,y", Array, "Pull flows from iteration number x. y") do |i|
     Options.opts[:iteration] = i
   end
+  op.on("-s", "--switch X", String, "The name of the switch to dump flows of. [br1, tcp:10.0.0.10:6653, ...] (default br0)") do |s|
+    Options.opts[:switch] = s
+  end
 end.parse!
 Options.count = 0
 Options.prevflows = nil
@@ -405,9 +409,9 @@ def latest_run_number
   alln.max
 end
 
-def read_current_table(run_n)
+def read_current_table(run_n, switch)
   Options.inputcount += 1
-  $cmdline = "ovs-ofctl -O OpenFlow13 dump-flows br0"
+  $cmdline = "ovs-ofctl -O OpenFlow13 dump-flows #{switch}"
   system("#{$cmdline} >/tmp/vnflows-run-#{run_n}/flow-#{Options.inputcount}")
 end
 
@@ -532,7 +536,7 @@ end
 
 Options.run_n = choose_run_number
 while true  # note the "exit"s elsewhere
-  read_current_table(Options.run_n)
+  read_current_table(Options.run_n, Options.opts[:switch])
   parse_raw_table(Options.run_n, Options.inputcount)  # sets globals
   flows = choose_flows # uses globals
   output_flows(flows)

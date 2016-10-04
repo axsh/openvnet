@@ -44,8 +44,6 @@ module Vnet::Core
       case filter
       when :id, :network_id, :datapath_id
         proc { |id, item| value == item.send(filter) }
-      # when :not_local
-      #   proc { |id, item| value != item.network_id }
       else
         raise NotImplementedError, filter
       end

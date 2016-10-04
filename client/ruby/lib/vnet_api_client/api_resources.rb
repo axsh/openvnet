@@ -7,6 +7,7 @@ module VNetAPIClient
 
     define_standard_crud_methods
     define_relation_methods(:networks)
+    define_relation_methods(:segments)
     define_relation_methods(:route_links)
   end
 
@@ -32,6 +33,9 @@ module VNetAPIClient
     define_relation_methods(:security_groups)
 
     define_show_relation(:ports)
+
+    define_update_relation(:segments)
+    define_show_relation(:segments)
 
     def self.rename(interface_uuid, params = nil)
       send_request(Net::HTTP::Put, "#{@api_suffix}/#{interface_uuid}/rename", params)
@@ -137,6 +141,8 @@ module VNetAPIClient
     api_suffix :networks
 
     define_standard_crud_methods
+
+    define_relation_methods(:segments)
   end
 
   class NetworkService < ApiResource
@@ -162,6 +168,12 @@ module VNetAPIClient
 
     define_standard_crud_methods
     define_relation_methods(:interfaces)
+  end
+
+  class Segment < ApiResource
+    api_suffix :segments
+
+    define_standard_crud_methods
   end
 
   class Translation < ApiResource
@@ -215,6 +227,7 @@ module VNetAPIClient
 
     define_standard_crud_methods
     define_relation_methods(:networks)
+    define_relation_methods(:segments)
     define_relation_methods(:route_links)
   end
 

@@ -107,16 +107,21 @@ module Vnet::Core
     #
 
     def item_post_install(item, item_map)
-      @active_interfaces[item.interface_id].tap { |network_ids|
-        next unless network_ids
-        network_ids.each { |network_id|
-          item.add_network_unless_exists(network_id, network_id)
+      @active_interfaces[item.interface_id].tap { |params|
+        segment_id_list = get_param_array(params, :segment_id_list)
+        network_id_list = get_param_array(params, :network_id_list)
+
+        network_id_list.each { |network_id|
+          item.add_network_unless_exists(network_id, network_id, segment_id_list.first)
         }
       }
 
       if item.mode == MODE_DNS.to_sym
         load_dns_service(item)
       end
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     # item created in db on queue 'item.id'
@@ -132,11 +137,12 @@ module Vnet::Core
     #
 
     def activate_interface_value(interface_id, params)
-      params[:network_id_list] || return
+      params || return
     end
 
     def activate_interface_update_item_proc(interface_id, value, params)
-      network_id_list = params[:network_id_list] || return
+      segment_id_list = get_param_array(params, :segment_id_list)
+      network_id_list = get_param_array(params, :network_id_list)
 
       Proc.new { |id, item|
         network_id_list.each { |network_id|
@@ -144,9 +150,12 @@ module Vnet::Core
           #
           # TODO: We can't use network_id or cookie id for the cookie
           # id parameter.
-          item.add_network_unless_exists(network_id, network_id)
+          item.add_network_unless_exists(network_id, network_id, segment_id_list.first)
         }
       }
+
+    rescue Vnet::ParamError => e
+      handle_param_error(e)
     end
 
     #

@@ -41,9 +41,14 @@ module Vnet::Endpoints
     c.status_code(status_code)
     c.error_code(error_code)
     c.instance_eval(&blk) if blk
-    self.set_error_code_type(error_code, c)
-    self.const_set(class_name.to_sym, c)
-    Errors.const_set(class_name.to_sym, c)
+
+    begin
+      self.set_error_code_type(error_code, c)
+      self.const_set(class_name.to_sym, c)
+      Errors.const_set(class_name.to_sym, c)
+    rescue NameError
+      Errors.const_set(:name_error, c)
+    end
   end
 
   def self.deprecated_error(class_name, status_code, error_code, &blk)
@@ -51,9 +56,14 @@ module Vnet::Endpoints
     c.status_code(status_code)
     c.error_code(error_code)
     c.instance_eval(&blk) if blk
-    self.set_error_code_type(error_code, c)
-    self.const_set(class_name.to_sym, c)
-    Errors.const_set(class_name.to_sym, c)
+
+    begin
+      self.set_error_code_type(error_code, c)
+      self.const_set(class_name.to_sym, c)
+      Errors.const_set(class_name.to_sym, c)
+    rescue NameError
+      Errors.const_set(:name_error, c)
+    end
   end
 
   @error_code_map = {}

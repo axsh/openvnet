@@ -20,7 +20,8 @@ module Vnctl::Cli
 
     option_uuid
     add_modify_shared_options
-    option :network_uuid, :type => :string, :desc => "The uuid of the network this interface is in."
+    option :segment_uuid, :type => :string, :desc => "The uuid of the segment this interface is on."
+    option :network_uuid, :type => :string, :desc => "The uuid of the network this interface is on."
     option :mac_address, :type => :string, :desc => "The mac address for this interface."
     option :ipv4_address, :type => :string, :desc => "The first ip lease for this interface."
     option :port_name, :type => :string, :desc => "The port name for this interface."
@@ -54,5 +55,16 @@ module Vnctl::Cli
 
     ports_relation.commands["add"].options.merge!(options_hash)
     ports_relation.commands["del"].options.merge!(options_hash)
+
+    define_relation(:segments, only_include_show: true) { |relation|
+
+      relation.desc 'INTERFACE_UUID SEGEMENT_UUID --static true/false', 'Modify static flag'
+      relation.option :static, :type => :boolean,
+          :desc => 'The flag which decides if the interface should stay connected or disconnect from a segment if no mac lease exist.'
+      relation.define_custom_method(:modify, true) do |uuid, segment_uuid, options|
+        puts Vnctl.webapi.put("interfaces/#{uuid}/segments/#{segment_uuid}", options)
+      end
+    }
+
   end
 end

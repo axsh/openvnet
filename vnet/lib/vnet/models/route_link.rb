@@ -5,7 +5,7 @@ module Vnet::Models
     taggable 'rl'
 
     plugin :paranoia_is_deleted
-    plugin :mac_address
+    plugin :mac_address_no_segment
 
     one_to_many :routes
 

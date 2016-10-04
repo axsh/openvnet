@@ -62,6 +62,7 @@ module Vnet::Core::Interfaces
         @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
                                          id: :interface,
                                          interface_id: @id,
+                                         segment_id_list: all_segment_ids,
                                          network_id_list: all_network_ids)
       end
     end
@@ -75,6 +76,7 @@ module Vnet::Core::Interfaces
       flows_for_disabled_filtering(flows) unless @enabled_filtering || @enabled_legacy_filtering
       flows_for_disabled_legacy_filtering(flows) unless @ingress_filtering_enabled || !@enabled_legacy_filtering
       flows_for_base(flows)
+      flows_for_classifiers(flows)
       arp_lookup_base_flows(flows)
 
       if @enable_routing && !@enable_route_translation
@@ -83,10 +85,11 @@ module Vnet::Core::Interfaces
 
       @dp_info.add_flows(flows)
 
-      if !all_network_ids.empty?
+      if !all_segment_ids.empty? || !all_network_ids.empty?
         @dp_info.service_manager.publish(SERVICE_ACTIVATE_INTERFACE,
                                          id: :interface,
                                          interface_id: @id,
+                                         segment_id_list: all_segment_ids,
                                          network_id_list: all_network_ids)
       end
     end
@@ -216,18 +219,28 @@ module Vnet::Core::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(table: TABLE_FLOOD_SIMULATED,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                           priority: 30,
-                           match: {
-                             :eth_type => 0x0806,
-                             :arp_op => 1,
-                             :arp_tha => MAC_ZERO,
-                             :arp_tpa => ipv4_info[:ipv4_address],
-                           },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
-                           cookie: cookie)
+      segment_id = mac_info[:segment_id]
+      network_id = ipv4_info[:network_id]
+
+      ipv4_address = ipv4_info[:ipv4_address]
+
+      flow_base = {table: TABLE_FLOOD_SIMULATED,
+                   goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                   priority: 30,
+                   match: {:eth_type => 0x0806,
+                           :arp_op => 1,
+                           :arp_tha => MAC_ZERO,
+                           :arp_tpa => ipv4_address
+                          },
+                   write_interface: @id,
+                   cookie: cookie
+                  }
+
+      if segment_id
+        flows << flow_create(flow_base.merge({match_segment: segment_id}))
+      end
+
+      flows << flow_create(flow_base.merge({match_network: network_id}))
     end
 
   end
