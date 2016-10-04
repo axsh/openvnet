@@ -107,16 +107,23 @@ module Vnet::Endpoints::V10
     def update_by_uuid(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
+ 
+      # TODO: Come up with a bit more elegant solution.
+      if @params['new_uuid']
+         updated_object = model_wrapper.batch.rename(@params['uuid'], @params['new_uuid']).commit
+         respond_with([updated_object])
+      else
+          model = check_syntax_and_pop_uuid(model_wrapper)
 
-      model = check_syntax_and_pop_uuid(model_wrapper)
+          # This yield is for extra argument validation
+          yield(params) if block_given?
 
-      # This yield is for extra argument validation
-      yield(params) if block_given?
+          remove_system_parameters
 
-      remove_system_parameters
+          updated_object = model_wrapper.batch.update(model.uuid, params).commit(:fill => fill)
+          respond_with(response.generate(updated_object))
+      end
 
-      updated_object = model_wrapper.batch.update(model.uuid, params).commit(:fill => fill)
-      respond_with(response.generate(updated_object))
     end
 
     def post_new(class_name, fill = {})
