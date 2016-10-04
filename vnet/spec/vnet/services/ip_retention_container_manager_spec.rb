@@ -7,32 +7,47 @@ describe Vnet::Services::IpRetentionContainerManager do
   let(:vnet_info) { Vnet::Services::VnetInfo.new }
   let(:manager) { described_class.new(vnet_info) }
 
-  describe "do_initialize" do
-    # TODO: Refactor each into let's.
+  let(:item_name) { :ip_retention_container }
 
-    before(:each) {
-      3.times do
-        Fabricate(:ip_retention_container) do
-          after_create do |ip_retention_container, _|
-            3.times { Fabricate(:ip_retention, ip_retention_container_id: ip_retention_container.id) }
+  describe "do_initialize" do
+    # TODO: Make this work with id_sequences.
+    (1..3).each { |i|
+      let("item_#{i}") {
+        Fabricate(item_name) do
+          after_create do |item_model, _|
+            3.times { Fabricate(:ip_retention, ip_retention_container: item_model) }
           end
         end
-      end
+      }
+    }
+
+    let(:item_models) {
+      [ item_1,
+        item_2,
+        item_3,
+      ]
+    }
+
+    let(:item_assoc_counts) {
+      { leased_ip_retentions: [3, 2, 1],
+        leased_foobar: [3, 2, 1]
+      }
     }
 
     it "load all database records into items" do
+      item_models
       vnet_info.start_managers([manager])
 
-      3.times { |i|
-        manager.wait_for_loaded({ id: i + 1 }, 1.0)
+      item_models.each { |item_model|
+        expect(manager).to be_manager_with_loaded(item_model)
       }
 
-      ip_retention_containers = manager.instance_variable_get(:@items)
+      expect(manager).to be_manager_with_item_count(item_models.count)
 
-      expect(ip_retention_containers.size).to eq 3
-
-      ip_retention_containers.values.each { |ip_retention_container|
-        expect(ip_retention_container.leased_ip_retentions.size).to eq 3
+      item_assoc_counts.each { |item_assoc_name, counts|
+        manager.instance_variable_get(:@items).values.each_with_index { |item, item_index|
+          expect(item.send(item_assoc_name).count).to eq counts[item_index]
+        }
       }
     end
 
