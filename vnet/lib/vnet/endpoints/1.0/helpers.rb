@@ -44,8 +44,16 @@ module Vnet::Endpoints::V10::Helpers
     end
 
     def check_and_trim_uuid(model)
-      raise E::DuplicateUUID, @params["uuid"] unless model[@params["uuid"]].nil?
-      @params["uuid"] = model.trim_uuid(@params["uuid"])
+      #raise E::DuplicateUUID, @params["uuid"] unless model[@params["uuid"]].nil?
+      
+
+      #TODO: Generate a new uuid on collision if the param "replace_uuid" is true.
+      if model[@params["uuid"]] == nil
+         @params["uuid"] = model.trim_uuid(@params["uuid"])
+      else
+        raise E::DuplicateUUID
+      end
+
     end
 
     # Deprecated:
