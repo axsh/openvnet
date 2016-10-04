@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash  #  -x
 
 
 ###+
@@ -16,7 +16,7 @@
 if [ $# -ne 1 ]; then
    echo
    fname=`basename $0`
-   echo "   ${fname} ifcfg_dir"
+   echo "   ${fname} metadata_dir_location"
    echo
    exit 1
 fi
@@ -28,26 +28,29 @@ function max_eth {
     local dirname=$1
 
     here=$PWD
-    there=${dirname}
+    there=${dirname}/metadata
 
     cd ${there}
 
-#   ls ifcfg-eth* 2>/dev/null
+    # Default case -- the directory has no ifcfg-eth<N> files
+    neth=0
 
-    if [ $? -ne 1 ]; then
+    # Check to see if the given directory has any ifcfg-eth* files
+    ls ifcfg-eth* &>/dev/null
+    if [ $? -eq 0 ]; then
        # Note that if the directory contains up to eth10 (or more) the logic fails! (The sort is lexicographic.)
        var=`ls -r ifcfg-eth*  | head -1 | cut -d- -f2`   # ls the ifcfg-eth* files in reverse sorted order,
                                                          # keep only the first/top (highest-numbered) one
-
+                                                         # ${var} now contains "ethN", where N is the highest numbered file
        # Lop off the number and return it.
 #      echo ${var//[^0-9]/}
-       echo ${var#eth}
-    else
-       echo 0
+#      echo ${var#eth}
+       neth=${var#eth}
     fi
 
     cd ${here}
 
+    echo ${neth}
 }
 
 
@@ -55,15 +58,18 @@ function max_eth {
 
 n=`max_eth ${fdir}`
 
-
-nic_stub="--nicN"
-vagrant_templ_string='["modifyvm", "{{.Name}}", "NIC_STUB", "nat"]'
-
+nic_cmds=""
 if [ $n -gt 0 ]; then
+
+    nic_stub="--nicN"
+    vagrant_templ_string='["modifyvm", "{{.Name}}", "NIC_STUB", "nat"]'
     for j in $( seq $n ); do
        j=$((j+1))
        nic=${nic_stub//N/$j}
        temp=${vagrant_templ_string//NIC_STUB/${nic}}
-       echo "${nic}  -->  ${temp} "
+#      echo "${temp}"
+       nic_cmds=${nic_cmds},"${temp}"
     done
 fi 
+
+echo ${nic_cmds#,}

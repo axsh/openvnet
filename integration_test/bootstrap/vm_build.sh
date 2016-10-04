@@ -38,7 +38,6 @@ function join_args {
 if [ $# -eq 4 ]; then
     provisioners=""
 else
-#  remaining_args=(${@:5:$#})    ## We only need arguments beyond $4
    remaining_args=(${@:5})    ## We only need arguments beyond $4
    if [ ! "${remaining_args[0]}" == "-provisioners" ]; then
        echo
@@ -50,16 +49,13 @@ else
    echo "Additional provisioners: ${provisioners}"
 fi
 
-#box_base=centos-${centos_version}
-##############################################################
 
 ### Packer templating
-function build_packer_template {
+function base_packer_template {
 
     local base_ovf_file=$1            ## The base image/.ovf file to be used by packer
     local vm_name=$2
     local provision_scripts_list=$3
-    local template_file=$4 
 
 ###+
 #   This vulgarity is needed since packer requires each
@@ -70,7 +66,7 @@ function build_packer_template {
 ###-
     provision_scripts_list=${provision_scripts_list//,/\",'\n'\"}
 
-    cat > ${template_file} << EOF
+template_var=$(cat << EOF
 {
   "builders": [
     {
@@ -87,7 +83,7 @@ function build_packer_template {
       "type": "virtualbox-ovf",
       "source_path": "${base_ovf_file}",
       "virtualbox_version_file": ".vbox_version",
-      "vm_name": "${vm_name}"
+      "vm_name": "${vm_name}"VBOXMANAGE_STUB
     }
   ],
   "provisioners": [
@@ -109,10 +105,12 @@ function build_packer_template {
 }
 
 EOF
+)
 
-echo "Created ${template_file}..."
 
-}  ### End, function build_packer_template
+echo "${template_var}"
+
+}  ### End, function base_packer_template
 
 ####################################################################
 
@@ -137,20 +135,47 @@ echo "Created ${template_file}..."
 ###-
 if [ "${vm_metadata_dir}" == "NONE" ]; then
     script_file_list=${provisioners}
+    nic_cmd_list=""
 else
     script_file_list="${provisioners},`./make_network_template_files.sh ${vm_metadata_dir}`"
     script_file_list=${script_file_list#,}
+
+    nic_cmd_list=$( ./generate_niclist.sh ${vm_metadata_dir} )
+    nic_cmd_list=${nic_cmd_list#,}
 fi
 
 echo "Provisioning script files: ${script_file_list}..."
 
-template_file=centos-${centos_version}-${vm_name}.json
-build_packer_template  ${base_ovf_file} ${vm_name}  ${script_file_list} ${template_file}
+###+
+#   Here we build the packer template file in two passes:
+# The first pass fills in the mandatory parameters -- vm_name,
+# etc. In the second pass, optional parameters are subsituted
+# into the variable created during the first pass. Most likely,
+# the only optional parameters are "vboxmanage" commands to 
+# add NIC's to the virtual machine.
+###-
 
-if [ ! -e ${template_file} ]; then
-    echo "Template file ${template_file} not found!"
-    exit 1
+# Pass 1: mandatory information
+base_template=$(base_packer_template  ${base_ovf_file} ${vm_name}  ${script_file_list} )
+
+# Pass 2: optional information
+vbox_cmd_temp=$(cat <<VBOX
+      "vboxmanage": [
+              ${nic_cmd_list//,[/,\n              [}
+          ]
+VBOX
+)
+
+if [ ! "${nic_cmd_list}" == "" ]; then
+#   nic_cmd_list="      \"vboxmanage\": [\n           ${nic_cmd_list//,[/,\n           [} \n         ]"
+    full_packer_template=${base_template/VBOXMANAGE_STUB/,'\n'${vbox_cmd_temp}}
+else
+    full_packer_template=""
 fi
+
+
+template_file=centos-${centos_version}-${vm_name}.json
+echo -e "${full_packer_template}" > ${template_file}
 
 ## Do a quick check on the packer template file
 echo "packer validate ${template_file}"
@@ -163,8 +188,6 @@ if [ $? -ne 0 ]; then
   exit 2
 fi
 
-#     exit 2
-
 echo "packer build  ${template_file} ..."
 packer build  ${template_file}
 
@@ -174,4 +197,3 @@ fi
 
 #rm ${template_file}
 exit 0
-
