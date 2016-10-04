@@ -37,9 +37,7 @@ module Vnet::Openflow
       # Default drop flows:
       #
 
-      [TABLE_EDGE_SRC,
-       TABLE_EDGE_DST,
-       TABLE_TUNNEL_PORTS,
+      [TABLE_TUNNEL_PORTS,
        TABLE_TUNNEL_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
@@ -226,9 +224,6 @@ module Vnet::Openflow
       end
     end
 
-    def update_vlan_translation
-      # TODO: This should be removed.
-    end
     #
     # Internal methods:
     #

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Constants::Interface
-  MODE_EDGE      = 'edge'
   MODE_HOST      = 'host'
   MODE_INTERNAL  = 'internal'
   MODE_PATCH     = 'patch'
@@ -10,8 +9,7 @@ module Vnet::Constants::Interface
   MODE_SIMULATED = 'simulated'
   MODE_VIF       = 'vif'
 
-  MODES = [MODE_EDGE,
-           MODE_HOST,
+  MODES = [MODE_HOST,
            MODE_INTERNAL,
            MODE_PATCH,
            MODE_PROMISCUOUS,
