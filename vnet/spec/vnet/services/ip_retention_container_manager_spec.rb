@@ -1,9 +1,16 @@
+# -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
 describe Vnet::Services::IpRetentionContainerManager do
-  let(:manager) { described_class.new(Vnet::Services::VnetInfo.new) }
-  describe "load_all_items" do
-    before do
+
+  let(:vnet_info) { Vnet::Services::VnetInfo.new }
+  let(:manager) { described_class.new(vnet_info) }
+
+  describe "do_initialize" do
+    # TODO: Refactor each into let's.
+
+    before(:each) {
       3.times do
         Fabricate(:ip_retention_container) do
           after_create do |ip_retention_container, _|
@@ -11,22 +18,24 @@ describe Vnet::Services::IpRetentionContainerManager do
           end
         end
       end
-    end
+    }
 
     it "load all database records into items" do
-      manager.async.send(:load_all_items)
+      vnet_info.start_managers([manager])
 
-      3.times do |i|
+      3.times { |i|
         manager.wait_for_loaded({ id: i + 1 }, 1.0)
-      end
+      }
 
       ip_retention_containers = manager.instance_variable_get(:@items)
 
       expect(ip_retention_containers.size).to eq 3
 
-      ip_retention_containers.values.each do |ip_retention_container|
+      ip_retention_containers.values.each { |ip_retention_container|
         expect(ip_retention_container.leased_ip_retentions.size).to eq 3
-      end
+      }
     end
+
   end
+
 end

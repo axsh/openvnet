@@ -17,12 +17,7 @@ module Vnet::Services
 
       # Do linking here?...
 
-      @vnet_info.managers { |manager|
-        managers.each { |manager| manager.event_handler_queue_only }
-        managers.each { |manager| manager.async.start_initialize }
-        managers.each { |manager| manager.wait_for_initialized(nil) }
-        managers.each { |manager| manager.event_handler_active }
-      }
+      @vnet_info.start_managers
 
       info log_format('initialized managers')
     end

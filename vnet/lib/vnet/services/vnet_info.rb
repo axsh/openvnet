@@ -36,6 +36,14 @@ module Vnet::Services
       MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
+    def start_managers(manager_list = managers)
+      manager_list.each { |manager| manager.event_handler_queue_only }
+      manager_list.each { |manager| manager.async.start_initialize }
+      manager_list.each { |manager| manager.wait_for_initialized(nil) }
+      manager_list.each { |manager| manager.event_handler_active }
+    end
+
+
     def terminate_managers(timeout = 10.0)
       internal_terminate_managers(managers, timeout)
     end
