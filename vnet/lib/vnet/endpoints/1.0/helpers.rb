@@ -51,6 +51,11 @@ module Vnet::Endpoints::V10::Helpers
       end
         @params["uuid"] = model.trim_uuid(@params["uuid"])
     end
+
+    def replaceAndDestroy(model,uuid)
+       replaceUUID(model, uuid)
+       model.destroy(@params["uuid"])
+    end
    
     def generateNewUUID(model)
       range = [*'0'..'9',*'a'..'z']
