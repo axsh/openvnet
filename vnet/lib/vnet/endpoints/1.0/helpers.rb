@@ -45,26 +45,23 @@ module Vnet::Endpoints::V10::Helpers
 
     def check_and_trim_uuid(model)
       unless @params["replace_uuid"].nil? or @params["replace_uuid"] == false
-        replaceUUID(model, @params["uuid"]) unless model[@params["uuid"]].nil?
+        replaceUUIDAndDestroy(model, @params["uuid"]) unless model[@params["uuid"]].nil?
       else
         raise E::DuplicateUUID, @params["uuid"] unless model[@params["uuid"]].nil?
       end
         @params["uuid"] = model.trim_uuid(@params["uuid"])
     end
-
-    def replaceAndDestroy(model,uuid)
-       replaceUUID(model, uuid)
-       model.destroy(@params["uuid"])
-    end
    
-    def generateNewUUID(model)
+    def replaceUUIDAndDestroy(model)
       range = [*'0'..'9',*'a'..'z']
       newUUID = model.uuid_prefix + "-" + uuid + "-" + Array.new(4){range.sample}.join
+
       unless model[newUUID].nil?
         replaceUUID
       else
         newUUID = model.trim_uuid(newUUID)
-        model.batch.rename(params['uuid'], newUUID).commit
+        model.batch.rename(params["uuid"], newUUID).commit
+        model.destroy(newUUID)
       end
     end
 
