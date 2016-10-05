@@ -10,7 +10,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
   put_post_shared_params
   param_uuid M::MacRangeGroup
   param :replace_uuid, :Boolean
-  param :preserve_uuid, :Boolean, required: false
+ 
   post do
     post_new(:MacRangeGroup, fill_options)
   end
@@ -27,6 +27,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
     delete_by_uuid(:MacRangeGroup)
   end
 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     update_by_uuid(:MacRangeGroup, fill_options)
@@ -48,6 +49,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
     show_relations(:MacRangeGroup, :mac_ranges)
   end
 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid/mac_ranges/:mac_range_uuid' do
     mac_range_group = check_syntax_and_pop_uuid(M::MacRangeGroup)
     mac_range = check_syntax_and_pop_uuid(M::MacRange, "mac_range_uuid")

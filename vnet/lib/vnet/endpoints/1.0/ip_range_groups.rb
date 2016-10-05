@@ -12,7 +12,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
   put_post_shared_params
   param_uuid M::IpRangeGroup
   param :replace_uuid, :Boolean
-  param :preserve_uuid, :Boolean, required: false
+ 
   post do
     post_new(:IpRangeGroup, fill_options)
   end
@@ -29,6 +29,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
     delete_by_uuid(:IpRangeGroup)
   end
 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     update_by_uuid(:IpRangeGroup, fill_options)
@@ -50,6 +51,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
     show_relations(:IpRangeGroup, :ip_ranges)
   end
 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid/ip_ranges/:ip_range_uuid' do
     ip_range_group = check_syntax_and_pop_uuid(M::IpRangeGroup)
     ip_range = check_syntax_and_pop_uuid(M::IpRange, "ip_range_uuid")

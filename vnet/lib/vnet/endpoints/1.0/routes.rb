@@ -18,7 +18,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   param :ingress, :Boolean
   param :egress, :Boolean
   param :replace_uuid, :Boolean
-  param :preserve_uuid, :Boolean, required: false
+
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
     uuid_to_id(M::Network, "network_uuid", "network_id")
@@ -35,10 +35,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     get_by_uuid(:Route)
   end
 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid' do
     delete_by_uuid(:Route)
   end
 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     check_syntax_and_get_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]

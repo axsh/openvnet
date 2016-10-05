@@ -15,7 +15,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   param :mode, :String, required: false, in: C::NetworkService::MODES
   param :type, :String, required: false, in: C::NetworkService::MODES
   param :replace_uuid, :Boolean
-  param :preserve_uuid, :Boolean, required: false
+  
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
@@ -35,10 +35,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
     get_by_uuid(:NetworkService, fill_options)
   end
 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid' do
     delete_by_uuid(:NetworkService)
   end
-
+ 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]

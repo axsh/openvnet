@@ -27,6 +27,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
     delete_by_uuid(:RouteLink)
   end
 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     update_by_uuid(:RouteLink)

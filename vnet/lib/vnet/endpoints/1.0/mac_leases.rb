@@ -14,7 +14,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
   param_options :interface_uuid, required: true
   param_options :mac_address, required: true
   param :replace_uuid, :Boolean
-  param :preserve_uuid, :Boolean, required: false
+ 
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
     uuid_to_id(M::Segment, "segment_uuid", "segment_id") if params["segment_uuid"]
@@ -30,10 +30,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
     get_by_uuid(:MacLease, fill_options)
   end
 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid' do
     delete_by_uuid(:MacLease)
   end
 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]

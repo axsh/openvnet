@@ -22,7 +22,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
   param_options :translation_uuid, required: true
   param_options :network_uuid, required: true
   param :replace_uuid, :Boolean
-  param :preserve_uuid, :Boolean, required: false
+ 
   post do
     parse_translation
     uuid_to_id(M::Network, "network_uuid", "network_id")
@@ -38,10 +38,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/vlan_translations' do
     get_by_uuid(:VlanTranslation)
   end
 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid' do
     delete_by_uuid(:VlanTranslation)
   end
 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]

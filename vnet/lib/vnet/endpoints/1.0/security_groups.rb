@@ -11,7 +11,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   param_uuid M::SecurityGroup
   param_options :display_name, required: true
   param :replace_uuid, :Boolean
-  param :preserve_uuid, :Boolean, required: false
+ 
   post do
     post_new :SecurityGroup
   end
@@ -27,7 +27,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   delete('/:uuid') do
     delete_by_uuid :SecurityGroup
   end
-
+ 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     update_by_uuid(:SecurityGroup)
@@ -53,6 +54,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
     show_relations(:SecurityGroup, :interfaces)
   end
 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid/interfaces/:interface_uuid' do
     security_group = check_syntax_and_pop_uuid(M::SecurityGroup)
     interface = check_syntax_and_pop_uuid(M::Interface, 'interface_uuid')

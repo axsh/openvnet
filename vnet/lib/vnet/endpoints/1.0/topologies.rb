@@ -7,6 +7,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
   put_post_shared_params
   param_uuid M::Topology
   param :mode, :String, in: C::Topology::MODES
+  param :replace_uuid,  :Boolean
   post do
     post_new(:Topology)
   end
@@ -23,6 +24,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     delete_by_uuid(:Topology)
   end
 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     update_by_uuid(:Topology)
@@ -41,7 +43,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
   get '/:uuid/networks' do
     show_relations(:Topology, :topology_networks)
   end
-
+  
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid/networks/:network_uuid' do
     topology = check_syntax_and_pop_uuid(M::Topology)
     network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')

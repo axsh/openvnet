@@ -15,7 +15,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   param_uuid M::Interface, :interface_uuid, required: true
   param_options :mode, required: true
   param :replace_uuid, :Boolean
-  param :preserve_uuid, :Boolean, required: false
+ 
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
@@ -29,11 +29,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   get '/:uuid' do
     get_by_uuid(:Translation)
   end
-
+ 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid' do
     delete_by_uuid(:Translation)
   end
 
+  param :new_uuid, :String, required: false
   put_post_shared_params
   put '/:uuid' do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]

@@ -28,7 +28,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param :port_name, :String
   param :mode, :String, in: C::Interface::MODES
   param :replace_uuid,  :Boolean
-  param :preserve_uuid, :Boolean, required: false
+ 
   post do
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     uuid_to_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id") if params["mac_range_group_uuid"]
@@ -62,6 +62,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     get_by_uuid(:Interface, fill)
   end
 
+  param :preserve_uuid, :Boolean, required: false
   delete '/:uuid' do
     delete_by_uuid(:Interface)
   end
@@ -72,6 +73,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     update_by_uuid(:Interface, fill)
   end
 
+  param :new_uuid, :String, required: false
   param_uuid M::Interface
   param :new_uuid, :String, required: true
   put '/:uuid/rename' do
