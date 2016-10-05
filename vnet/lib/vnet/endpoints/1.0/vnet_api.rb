@@ -70,15 +70,15 @@ module Vnet::Endpoints::V10
 
     def delete_by_uuid(class_name)
       model_wrapper = M.const_get(class_name)
-      uuid = @params[:uuid]
-
-      yield(params) if block_given?
-      remove_system_parameters
-
-      # TODO don't need to find model here
-      check_syntax_and_pop_uuid(model_wrapper)
-      model_wrapper.destroy(uuid, params)
-      respond_with([uuid])
+        response = R.const_get(class_name)
+        if @params['preserve_uuid'] == false
+           uuid = @params["uuid"]
+           replaceAndDestroy(model_wrapper, uuid)
+        else
+           uuid = @params["uuid"]
+           check_and_trim_uuid(model_wrapper)
+        end
+        respond_with([uuid])
     end
 
     # TODO remove fill
@@ -130,10 +130,11 @@ module Vnet::Endpoints::V10
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
 
-      check_and_trim_uuid(model_wrapper) if params["uuid"]
-
       # This yield is for extra argument validation
       yield(params) if block_given?
+
+      check_and_trim_uuid(model_wrapper) if params["uuid"]
+
       object = model_wrapper.batch.create(params).commit(:fill => fill)
       respond_with(response.generate(object))
     end
