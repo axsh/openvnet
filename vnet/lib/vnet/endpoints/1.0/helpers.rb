@@ -45,17 +45,16 @@ module Vnet::Endpoints::V10::Helpers
 
     def check_and_trim_uuid(model)
       unless @params["replace_uuid"].nil? or @params["replace_uuid"] == false
-        replaceUUID(model) unless model[@params["uuid"]].nil?
-        @params["uuid"] = model.trim_uuid(@params["uuid"])
+        replaceUUID(model, @params["uuid"]) unless model[@params["uuid"]].nil?
       else
         raise E::DuplicateUUID, @params["uuid"] unless model[@params["uuid"]].nil?
       end
+        @params["uuid"] = model.trim_uuid(@params["uuid"])
     end
    
     def generateNewUUID(model)
       range = [*'0'..'9',*'a'..'z']
-
-      newUUID = model.uuid_prefix + "-" + @params["uuid"] + "-" + Array.new(4){range.sample}.join
+      newUUID = model.uuid_prefix + "-" + uuid + "-" + Array.new(4){range.sample}.join
       unless model[newUUID].nil?
         replaceUUID
       else
