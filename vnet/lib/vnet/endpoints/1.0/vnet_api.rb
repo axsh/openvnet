@@ -77,7 +77,7 @@ module Vnet::Endpoints::V10
          replaceUUIDAndDestroy(model_wrapper, uuid)
       else
          uuid = @params["uuid"]
-         check_and_trim_uuid(model_wrapper)
+         @params["uuid"] = model_wrapper.trim_uuid(@params["uuid"])
          model_wrapper.destroy(uuid)
       end
       respond_with([uuid])
