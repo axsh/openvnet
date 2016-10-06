@@ -6,7 +6,8 @@
 if [ $# -lt 4 ]; then
   echo
   echo "  `basename $0` centos_version  vm_name base_ovf_file vm_metadata_dir [-provisioners file1 [file2] [file3] ...]"
-  echo "   centos_version=6.8 or 7.2 "
+  echo
+  echo "  Where centos_version=6.8 or 7.2 "
   echo
   exit 1
 fi
@@ -140,7 +141,8 @@ else
     script_file_list="${provisioners},`./make_network_template_files.sh ${vm_metadata_dir}`"
     script_file_list=${script_file_list#,}
 
-    nic_cmd_list=$( ./generate_niclist.sh ${vm_metadata_dir} )
+#   nic_cmd_list=$( ./generate_niclist.sh ${vm_metadata_dir} )
+    nic_cmd_list=$( ./nic_info.sh ${vm_metadata_dir} )
     nic_cmd_list=${nic_cmd_list#,}
 fi
 
@@ -160,7 +162,7 @@ base_template=$(base_packer_template  ${base_ovf_file} ${vm_name}  ${script_file
 
 # Pass 2: optional information
 vbox_cmd_temp=$(cat <<VBOX
-      "vboxmanage": [
+      "vboxmanage_post": [
               ${nic_cmd_list//,[/,\n              [}
           ]
 VBOX
@@ -187,6 +189,9 @@ if [ $? -ne 0 ]; then
   echo
   exit 2
 fi
+
+        exit 3  ## HERE here Here
+
 
 echo "packer build  ${template_file} ..."
 packer build  ${template_file}
