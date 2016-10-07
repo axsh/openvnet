@@ -6,7 +6,7 @@
 # When rpmdev-setuptree runs, it creates $HOME/.rpmmacros then
 # the rpmbuild command is modified to run /usr/lib/rpm/check-* scripts.
 # This package installs the binaries to /opt so I want to suppress
-# build errors from these standard checks. 
+# build errors from these standard checks.
 %define __arch_install_post %{nil}
 
 Name:           openvnet-ruby
@@ -25,7 +25,7 @@ Group:          Development/Languages
 %description
 The Ruby binary package for OpenVNet. Key changes are:
 - No docs.
-- -O0 optimization.
+- -O0 optimization (On EL6).
 - RPATH is enabled and fixed to %{_libdir}.
 - bundler gem is installed.
 - Debug info is not stripped from the binaries.
@@ -34,7 +34,11 @@ The Ruby binary package for OpenVNet. Key changes are:
 %setup -n ruby-%{rubyver}
 
 %build
+%if %{defined el6}
 export CFLAGS="$RPM_OPT_FLAGS -Wall -fno-strict-aliasing -O0 -ggdb3"
+%else
+export CFLAGS="$RPM_OPT_FLAGS -Wall -fno-strict-aliasing"
+%endif
 
 %configure \
   --enable-shared \
