@@ -177,6 +177,5 @@ module Vnet::Endpoints::V10
     load_namespace('segments')
     load_namespace('translations')
     load_namespace('topologies')
-    load_namespace('vlan_translations')
   end
 end

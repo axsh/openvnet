@@ -231,11 +231,5 @@ module VNetAPIClient
     define_relation_methods(:route_links)
   end
 
-  class VlanTranslation < ApiResource
-    api_suffix :vlan_translations
-
-    define_standard_crud_methods
-  end
-
 end
 

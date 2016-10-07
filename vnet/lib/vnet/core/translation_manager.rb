@@ -67,7 +67,6 @@ module Vnet::Core
       item_class =
         case item_map.mode
         when MODE_STATIC_ADDRESS then Translations::StaticAddress
-        when MODE_VNET_EDGE      then Translations::VnetEdgeHandler
         else
           return
         end

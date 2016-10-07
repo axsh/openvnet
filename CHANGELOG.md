@@ -17,6 +17,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Changed` Refactored IP/MAC leases and wrote a bunch more unit tests for them.
 
+* `Removed` VNet Edge. Connecting OpenVNet to other networks on the L2 level should now be done by using `promiscuous interface mode` instead.
+
 ## [0.9] - 2016-04-19
 
 * `Added` A new `topology manager` that automatically creates `datapath_network` and `datapath_route_link` entries in the database.
