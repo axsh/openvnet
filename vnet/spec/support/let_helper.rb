@@ -17,3 +17,13 @@ def let_context(permutation, let_ids: [])
     result.join(' and ')
   end
 end
+
+def permutation_context(permutation, names, postfix = '')
+  result = let_permutation(names, permutation, postfix)
+
+  if result.empty?
+    'none'
+  else
+    result.join(' and ')
+  end
+end

@@ -12,7 +12,20 @@ RSpec::Matchers.define :be_manager_with_loaded do |expected|
   failure_message_when_negated do |manager|
     "expected #{manager.class.name} to be a manager without loaded #{expected}"
   end
+end
 
+RSpec::Matchers.define :be_manager_with_unloaded do |expected|
+  match do |manager|
+    manager.wait_for_unloaded({ id: expected[:id] }, 3.0)
+  end
+
+  failure_message do |manager|
+    "expected #{manager.class.name} to be a manager with unloaded #{expected}"
+  end
+
+  failure_message_when_negated do |manager|
+    "expected #{manager.class.name} to be a manager without unloaded #{expected}"
+  end
 end
 
 RSpec::Matchers.define :be_manager_with_item_count do |expected_count|
@@ -50,17 +63,5 @@ RSpec::Matchers.define :be_manager_assocs_with_item_assoc_counts do |item_assoc_
     manager.instance_variable_get(:@items).values.map { |item|
       item.send(item_assoc_name).count
     }
-  end
-end
-
-RSpec::Matchers.define :be_manager_with_no_events do
-  match do |manager|
-    manager.instance_variable_get(:@event_queues).empty?
-  end
-end
-
-RSpec::Matchers.define :be_manager_with_event_handler_state do |expected|
-  match do |manager|
-    manager.instance_variable_get(:@event_handler_state) == expected
   end
 end
