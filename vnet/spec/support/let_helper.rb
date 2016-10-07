@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# TODO: Replaced.
+
 def let_permutation(lets, permutation, postfix)
   result = lets.select.with_index { |name, index|
     permutation[index]
@@ -13,16 +15,6 @@ def let_context(permutation, let_ids: [])
 
   if result.empty?
     'no lets'
-  else
-    result.join(' and ')
-  end
-end
-
-def permutation_context(permutation, names, postfix = '')
-  result = let_permutation(names, permutation, postfix)
-
-  if result.empty?
-    'none'
   else
     result.join(' and ')
   end

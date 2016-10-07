@@ -10,6 +10,8 @@ describe Vnet::Services::IpRetentionContainerManager do
 
   let(:item_name) { :ip_retention_container }
 
+  item_names = (1..3).map { |index| "item_#{index}" }
+
   (1..3).each { |index|
     let("item_#{index}") {
       Fabricate(item_name).tap { |item_model|
@@ -35,39 +37,8 @@ describe Vnet::Services::IpRetentionContainerManager do
     include_examples 'create items on service manager'
   end
 
-  describe "delete items" do
-    item_names = (1..3).map { |index| "item_#{index}" }
-
-    # TODO: Make helper method for permutations of true/false.
-    [false, true].repeated_permutation(item_names.size).each { |permutation|
-      context "#{permutation_context(permutation, item_names)}" do
-
-        it "after do_initialize" do
-          vnet_info.start_managers([manager])
-
-          item_models.each { |item_model|
-            expect(manager).to be_manager_with_loaded(item_model)
-          }
-
-          item_models.each_with_index { |item_model, item_index|
-            next if !permutation[item_index]
-            item_model.destroy
-            publish_item_deleted_event(manager, item_model)
-          }
-
-          expect(manager).to be_manager_with_item_count(permutation.count(false))
-
-          item_models.each_with_index { |item_model, item_index|
-            if permutation[item_index]
-              expect(manager).to be_manager_with_unloaded(item_model)
-            else
-              expect(manager).to be_manager_with_loaded(item_model)
-            end
-          }
-        end
-
-      end
-    }
+  describe "delete items from #{item_names.join(', ')}" do
+    include_examples 'delete items on service manager', item_names
   end
 
 end
