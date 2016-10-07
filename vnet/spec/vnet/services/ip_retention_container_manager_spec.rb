@@ -10,31 +10,26 @@ describe Vnet::Services::IpRetentionContainerManager do
   let(:item_name) { :ip_retention_container }
 
   describe "do_initialize" do
-    # TODO: Make this work with id_sequences.
-    (1..3).each { |i|
-      let("item_#{i}") {
-        Fabricate(item_name) do
-          after_create do |item_model, _|
-            3.times { Fabricate(:ip_retention, ip_retention_container: item_model) }
-          end
-        end
+    (1..3).each { |index|
+      let("item_#{index}") {
+        Fabricate(item_name).tap { |item_model|
+          index.times {
+            Fabricate(:ip_retention, ip_retention_container: item_model)
+          }
+        }
       }
     }
 
     let(:item_models) {
-      [ item_1,
-        item_2,
-        item_3,
-      ]
+      (1..3).map { |index| send("item_#{index}") }
     }
 
     let(:item_assoc_counts) {
-      { leased_ip_retentions: [3, 2, 1],
-        leased_foobar: [3, 2, 1]
+      { leased_ip_retentions: [3, 3, 3],
       }
     }
 
-    it "load all database records into items" do
+    it "create items before do_initialize" do
       item_models
       vnet_info.start_managers([manager])
 
@@ -45,12 +40,9 @@ describe Vnet::Services::IpRetentionContainerManager do
       expect(manager).to be_manager_with_item_count(item_models.count)
 
       item_assoc_counts.each { |item_assoc_name, counts|
-        manager.instance_variable_get(:@items).values.each_with_index { |item, item_index|
-          expect(item.send(item_assoc_name).count).to eq counts[item_index]
-        }
+        expect(manager).to be_manager_assocs_with_item_assoc_counts(item_assoc_name, counts)
       }
     end
-
   end
 
 end
