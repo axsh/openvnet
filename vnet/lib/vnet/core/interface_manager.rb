@@ -115,6 +115,7 @@ module Vnet::Core
         when MODE_HOST      then Interfaces::Host
         when MODE_INTERNAL  then Interfaces::Internal
         when MODE_PATCH     then Interfaces::Patch
+        when MODE_PROMISCUOUS then Interfaces::Promiscuous
         when MODE_SIMULATED then Interfaces::Simulated
         when MODE_VIF       then Interfaces::Vif
         else
@@ -234,8 +235,7 @@ module Vnet::Core
       mac_leases && mac_leases.each do |mac_lease|
         publish(INTERFACE_LEASED_MAC_ADDRESS,
                 id: item_map.id,
-                mac_lease_id: mac_lease.id,
-                mac_address: mac_lease.mac_address)
+                mac_lease_id: mac_lease.id)
 
         mac_lease.ip_leases.each do |ip_lease|
           publish(INTERFACE_LEASED_IPV4_ADDRESS,

@@ -39,6 +39,12 @@ dataset_options:
   public_ipv4_address1: 172.16.20.201
   public_ipv4_address2: 172.16.20.202
   public_router_ipv4_address: 172.16.20.102
+  physical_network_simulated_ip: 10.210.0.2
+  physical_network_vm1_ip: 10.210.0.104
+  physical_network_vm7_ip: 10.210.0.105
+
+physical_network_gw_ip: 10.210.0.1
+pseudo_global_ip: 10.196.36.199
 
 vms:
   vm1:

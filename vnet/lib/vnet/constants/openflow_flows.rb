@@ -17,15 +17,15 @@ module Vnet
       TABLE_TUNNEL_PORTS = 3
       TABLE_TUNNEL_IDS = 4
 
-      TABLE_LOCAL_PORT = 6
-
       # For packets explicitly marked as being from the controller.
       #
       # Some packets are handed to the controller after modifications,
       # and as such can't be handled again by the classifier in the
       # normal fashion. The in_port is explicitly set to
       # OFPP_CONTROLLER.
-      TABLE_CONTROLLER_PORT = 7
+      TABLE_CONTROLLER_PORT  = 5
+      TABLE_LOCAL_PORT       = 6
+      TABLE_PROMISCUOUS_PORT = 7
 
       # Translation layer for vlan
       TABLE_EDGE_SRC = 8
@@ -46,14 +46,18 @@ module Vnet
       TABLE_INTERFACE_EGRESS_ROUTES      = 18
       TABLE_INTERFACE_EGRESS_MAC         = 19
 
-      # Initial verification of network number and application of global
-      # filtering rules.
+      # Initial verification of network/segment id and application of
+      # global filtering rules. 
       #
-      # The network number stored in bits [32,48> are used to identify
-      # the network, and zero is assumped to be destined for what is
-      # currently known as the 'physical' network.
+      # The network/segment id stored in bits [32,48> are used to
+      # identify the network/segment, and zero is assumped to be
+      # destined for what is currently known as the 'physical'
+      # network/segment.
       #
-      # Later we will always require a network number to be supplied.
+      # The mac learning table should only be used by remote packets,
+      # although some special cases may exist thus checking for the
+      # remote metdata flag is the responsibility of the flow that
+      # sends the packet to these tables.
 
       TABLE_SEGMENT_SRC_CLASSIFIER    = 20
       TABLE_SEGMENT_SRC_MAC_LEARNING  = 21
@@ -167,6 +171,7 @@ module Vnet
       # TODO: Reorganize:
       COOKIE_PREFIX_DP_SEGMENT     = 0x13
       COOKIE_PREFIX_SEGMENT        = 0x14
+      COOKIE_PREFIX_INTERFACE_SEGMENT = 0x15
 
       COOKIE_TYPE_CONNECTION     = (COOKIE_PREFIX_CONNECTION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DATAPATH       = (COOKIE_PREFIX_DATAPATH << COOKIE_PREFIX_SHIFT)
@@ -186,6 +191,8 @@ module Vnet
       COOKIE_TYPE_TRANSLATION    = (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_FILTER         = (COOKIE_PREFIX_FILTER << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_FILTER2        = (COOKIE_PREFIX_FILTER2 << COOKIE_PREFIX_SHIFT)
+
+      COOKIE_TYPE_INTERFACE_SEGMENT = (COOKIE_PREFIX_INTERFACE_SEGMENT << COOKIE_PREFIX_SHIFT)
 
       COOKIE_TYPE_ACTIVE_INTERFACE = (COOKIE_PREFIX_ACTIVE_INTERFACE << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_ACTIVE_PORT      = (COOKIE_PREFIX_ACTIVE_PORT << COOKIE_PREFIX_SHIFT)
