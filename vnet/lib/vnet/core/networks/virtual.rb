@@ -79,7 +79,7 @@ module Vnet::Core::Networks
       @dp_info.add_flows(flows)
 
       ovs_flows << create_ovs_flow_learn_arp(3, "tun_id=0,")
-      ovs_flows << create_ovs_flow_learn_arp(1, "", "load:NXM_NX_TUN_ID\\[\\]\\-\\>NXM_NX_TUN_ID\\[\\],")
+      ovs_flows << create_ovs_flow_learn_arp(1, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
       ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
     end
 
@@ -100,25 +100,28 @@ module Vnet::Core::Networks
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_network_md = md_create(network: @id, remote: nil)
-      learn_network_md = md_create(network: @id, local: nil)
+      match_network_md = md_create(network: @id)
 
       flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
         [TABLE_NETWORK_SRC_MAC_LEARNING, priority, @cookie, match_network_md[:metadata], match_network_md[:metadata_mask], match_options]
-      flow_learn_arp << "learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
-        [TABLE_NETWORK_DST_MAC_LOOKUP, cookie, learn_network_md[:metadata]]
 
-      flow_learn_arp << learn_options
-      flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\)"
+      [md_create(match_network: @id, match_local: nil),
+       md_create(network: @id, match_reflection: true)
+      ].each { |metadata|
+        flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
+          [TABLE_NETWORK_DST_MAC_LOOKUP, cookie, metadata[:metadata]]
+        flow_learn_arp << learn_options
+        flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
+      }
 
       if @segment_id
         learn_segment_md = md_create(segment: @id, local: nil)
 
-        flow_learn_arp << ",learn\\(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST\\[\\]=NXM_OF_ETH_SRC\\[\\]," %
+        flow_learn_arp << ",learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
           [TABLE_SEGMENT_DST_MAC_LOOKUP, cookie, learn_segment_md[:metadata]]
 
         flow_learn_arp << learn_options
-        flow_learn_arp << "output:NXM_OF_IN_PORT\\[\\]\\)"
+        flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
       end
 
       flow_learn_arp << "goto_table:%d" % TABLE_NETWORK_DST_CLASSIFIER

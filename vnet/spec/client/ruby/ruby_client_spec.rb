@@ -75,6 +75,7 @@ api_specs.each { |api_spec|
   #
   #  POST  /datapaths/:uuid/networks/:network_uuid
   #  GET  /datapaths/:uuid/networks
+  #  PUT  /datapaths/:uuid/networks/:network_uuid
   #  DELETE  /datapaths/:uuid/networks/:network_uuid
   #
   when /^POST  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
@@ -83,6 +84,9 @@ api_specs.each { |api_spec|
   when /^GET  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+$/
     relation_name = route.split('/')[3]
     expected_classes[class_name]["show_#{relation_name}"] = route
+  when /^PUT  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
+    relation_name = route.split('/')[3].chomp('s')
+    expected_classes[class_name]["update_#{relation_name}"] = route
   when /^DELETE  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
     relation_name = route.split('/')[3].chomp('s')
     expected_classes[class_name]["remove_#{relation_name}"] = route

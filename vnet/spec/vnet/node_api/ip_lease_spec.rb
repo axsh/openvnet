@@ -1,75 +1,92 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+
 describe Vnet::NodeApi::IpLease do
-  before do
-    use_mock_event_handler
+  before(:each) { use_mock_event_handler }
+
+  let(:events) { MockEventHandler.handled_events }
+
+  let(:interface) { Fabricate(:interface) }
+  let(:network) { Fabricate(:network) }
+  let(:segment) { Fabricate(:segment) }
+
+  let(:mac_lease) { Fabricate(:mac_lease, interface_id: interface_id, segment_id: segment_id) }
+  let(:ip_retention) { Fabricate(:ip_retention_with_container, ip_lease: model) }
+
+  let(:random_ipv4_address) { random_ipv4_i }
+
+  let(:model_params) {
+    { mac_lease: mac_lease,
+      network_id: network.id,
+      interface_id: interface_id,
+      ipv4_address: random_ipv4_address
+    }
+  }
+
+  describe 'create' do
+    let(:create_result) {
+      { network_id: network.id,
+        mac_lease_id: mac_lease.id,
+        enable_routing: false,
+        ipv4_address: random_ipv4_address,
+      }
+    }
+    let(:interface_event) { [
+        Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS, {
+          id: :let__interface_id,
+          ip_lease_id: :model__id,
+          # uuid: :model__uuid,
+          # ipv4_address: random_ipv4_address,
+          # network_id: network.id,
+          # mac_lease_id: mac_lease.id,
+          # enable_routing: false,
+        }]
+    }
+    let(:create_events) {
+      [].tap { |event_list|
+        event_list << interface_event if with_lets.include?('interface_id')
+      }
+    }
+    let(:query_result) { create_result }
+    let(:extra_creations) { [:ip_address] }
+
+    include_examples 'create item on node_api with lets', :ip_lease, let_ids: [:interface, :segment]
   end
 
-  describe "create" do
-    it "success" do
-      network = Fabricate(:network)
-      ipv4_address = random_ipv4_i
-      interface = Fabricate(:interface)
-      mac_lease = Fabricate(:mac_lease, interface: interface)
+  describe 'destroy' do
+    let(:model) { Fabricate(:ip_lease, model_params) }
+    let(:delete_filter) { model.canonical_uuid }
+    let(:interface_event) { [
+        Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS, {
+          id: :let__interface_id,
+          ip_lease_id: :model__id
+        }]
+    }
+    let(:ip_retention_event) { [
+        Vnet::Event::IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION, {
+          id: ip_retention.id
+        }]
+    }
+    let(:delete_events) {
+      [].tap { |event_list|
+        event_list << interface_event if with_lets.include?('interface_id')
+        event_list << ip_retention_event if with_lets.include?('ip_retention_id')
+      }
+    }
+    let(:extra_deletions) {
+      [:ip_address].tap { |deletions|
+        deletions << :ip_retention if with_lets.include?('ip_retention_id')
+      }
+    }
 
-      now = Time.now
-      allow(Time).to receive(:now).and_return(now)
-
-      ip_lease = Vnet::NodeApi::IpLease.execute(
-        :create,
-        mac_lease: mac_lease,
-        network_id: network.id,
-        ipv4_address: ipv4_address
-      )
-
-      model = Vnet::Models::IpLease[ip_lease[:uuid]]
-      expect(model.ip_address.ipv4_address).to eq ipv4_address
-      expect(model.network_id).to eq network.id
-      expect(ip_lease[:ip_address_id]).to eq model.ip_address_id
-      expect(ip_lease[:interface_id]).to eq interface.id
-
-      events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
-
-      events.first.tap do |event|
-        expect(event[:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
-        expect(event[:options][:id]).to eq interface.id
-        expect(event[:options][:ip_lease_id]).to eq ip_lease[:id]
-      end
-    end
+    include_examples 'delete item on node_api with lets', :ip_lease, let_ids: [:interface, :segment, :ip_retention]
   end
 
-  describe "destroy" do
-    it "success" do
-      ip_retention_container = Fabricate(:ip_retention_container)
-      ip_retention = Fabricate(:ip_retention_with_ip_lease, ip_retention_container: ip_retention_container)
-      ip_lease = ip_retention.ip_lease
-
-      ip_lease_count = Vnet::Models::IpLease.count
-      ip_address_count = Vnet::Models::IpAddress.count
-      ip_retention_count = Vnet::Models::IpRetention.count
-
-      Vnet::NodeApi::IpLease.destroy(ip_lease.canonical_uuid)
-
-      expect(Vnet::Models::IpLease.count).to eq ip_lease_count - 1
-      expect(Vnet::Models::IpAddress.count).to eq ip_address_count - 1
-      expect(Vnet::Models::IpRetention.count).to eq ip_retention_count - 1
-
-      events = MockEventHandler.handled_events
-      expect(events.size).to eq 2
-
-      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_RELEASED_IPV4_ADDRESS
-      expect(events[0][:options][:id]).to eq ip_lease.interface_id
-      expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
-
-      expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_REMOVED_IP_RETENTION
-      expect(events[1][:options][:id]).to eq ip_retention.id
-    end
-  end
-
-  describe "release" do
-    it "success" do
+  describe 'release' do
+    it 'success' do
       current_time = Time.now
       allow(Time).to receive(:now).and_return(current_time)
 
@@ -93,7 +110,6 @@ describe Vnet::NodeApi::IpLease do
       expect(ip_lease.interface_id).to be_nil
       expect(ip_lease.mac_lease_id).to be_nil
 
-      events = MockEventHandler.handled_events
       expect(events.size).to eq 3
 
       events.first.tap do |event|

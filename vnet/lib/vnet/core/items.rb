@@ -22,6 +22,12 @@ module Vnet::Core
   class Datapath < OpenStruct
   end
 
+  class InterfacePort < OpenStruct
+  end
+
+  class InterfaceSegment < OpenStruct
+  end
+
   class Network < OpenStruct
   end
 
