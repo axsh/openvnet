@@ -1,0 +1,39 @@
+
+    Three principle scripts are used to build and setup the test environment:
+
+    (1)  build_int_env.sh       - Builds the itest-edge, itest1, itest2 and itest3 virtual machines
+
+       USAGE:  ./build_int_env.sh  6.5
+
+       Dependencies:
+          - packer
+          - VirtualBoxManage
+
+   (2)  init_host_bridges.sh    - Sets up the host-only 'bridges' on the mac/host machine
+
+       USAGE:  ./init_host_bridges.sh
+
+            Important point: Currently, the bridges are named "vboxnet0", "vboxnet1", "vboxnet2" & "vboxnet3". 
+        They are *not* named "vnet-itest-0", "vnet-itest-1", etc. I will need to see how (if?) these
+        names can be changed.
+
+  (3)   system_startup.sh       - Imports the vm's built in step (1) into VirtualBox and boots them up
+         
+       USAGE:  ./system_startup.sh
+
+
+
+  PROBLEMS:
+
+      -  Not much testing!  I am able to ping between and ssh into these machines, but that is all
+         the testing that has been done re: network connections.
+
+      -  Not much cleanup!  I have kept output from these scripts (for example, packer template files)
+         so that I can debug. 
+
+      - !! I have not yet setup proper SSH'ing into the machines. Right now, I do it by hand. I will need
+         to learn more about how this is done in the current (vmware) versions and implement it next week.
+
+      - Containers are built (via lxc) on all machines, but that is all: No networking has been set up.
+
+      - The code needs a lot of refactoring...

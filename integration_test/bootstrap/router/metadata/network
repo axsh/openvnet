@@ -1,0 +1,2 @@
+NETWORKING=yes
+HOSTNAME=vnet-ci-router-90-91

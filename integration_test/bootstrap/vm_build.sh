@@ -1,4 +1,4 @@
-#!/bin/bash   # -x
+#!/bin/bash  # -x
 #
 #
 #
@@ -172,7 +172,7 @@ if [ ! "${nic_cmd_list}" == "" ]; then
 #   nic_cmd_list="      \"vboxmanage\": [\n           ${nic_cmd_list//,[/,\n           [} \n         ]"
     full_packer_template=${base_template/VBOXMANAGE_STUB/,'\n'${vbox_cmd_temp}}
 else
-    full_packer_template=""
+    full_packer_template=${base_template/VBOXMANAGE_STUB/}
 fi
 
 
@@ -183,15 +183,13 @@ echo -e "${full_packer_template}" > ${template_file}
 echo "packer validate ${template_file}"
 packer validate ${template_file}
 
+
 if [ $? -ne 0 ]; then
   echo
   echo "Bad template file: \"${template_file}\". "
   echo
   exit 2
 fi
-
-        exit 3  ## HERE here Here
-
 
 echo "packer build  ${template_file} ..."
 packer build  ${template_file}

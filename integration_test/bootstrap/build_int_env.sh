@@ -14,9 +14,6 @@ function usage {
 
 ########################  "main()"  ################################
 if [ $# -ne 1 ]; then
-# echo "  `basename $0` centos_version "
-# echo
-# echo "   centos_version=6.5, 6.8 or 7.2 "
   usage
   exit 1
 fi
@@ -83,7 +80,7 @@ cd $home
 # block.
 #  
 
-base_provisioned_box_dir=packer_base_provisioned_box
+base_provisioned_box_dir=packer-base_provisioned-virtualbox
 base_provisioned_box=base_provisioned
 rm -rf ${base_provisioned_box_dir}
 
