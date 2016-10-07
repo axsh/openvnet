@@ -12,12 +12,10 @@ describe Vnet::Services::TopologyManager do
   describe 'basics' do
 
     let(:tp_simple_underlay) {
-      Fabricate(:topology, mode: 'simple_underlay') do
-        after_create { |topology, _|
-          Fabricate(:topology_network, topology: topology, network: pnet_1)
-          Fabricate(:topology_network, topology: topology, network: vnet_1)
-        }
-      end
+      Fabricate(:topology, mode: 'simple_underlay').tap { |topology|
+        Fabricate(:topology_network, topology: topology, network: pnet_1)
+        Fabricate(:topology_network, topology: topology, network: vnet_1)
+      }
     }
 
     let(:topologies) {
@@ -27,6 +25,8 @@ describe Vnet::Services::TopologyManager do
     }
 
     it 'load on do_initialize' do
+      topologies
+
       # TODO: Make the do_initailized + wait_for_loaded into a helper
       # method, and it should check the return values.
       manager.async.send(:do_initialize)
