@@ -1,4 +1,4 @@
-specs_ext: [edge]
+specs_ext: []
 nodes:
   webapi: [192.168.3.91]
   vnmgr: [192.168.3.91]
@@ -16,9 +16,6 @@ ssh_quiet_mode: true
 
 dataset_options:
   physical_port: eth0
-  edge_port: eth2
-  edge_ipv4_address: 172.16.90.9
-  edge_esxi_ipv4_address: 172.16.90.12
   dp1_ipv4_address: 172.16.90.10
   dp2_ipv4_address: 172.16.90.11
   dp3_ipv4_address: 172.16.91.10
@@ -31,11 +28,14 @@ dataset_options:
   public_ipv4_address1: 172.16.90.20
   public_ipv4_address2: 172.16.90.21
   public_router_ipv4_address: 172.16.90.4
+  physical_network_simulated_ip: 10.210.0.2
+  physical_network_vm1_ip: 10.210.0.104
+  physical_network_vm7_ip: 10.210.0.105
+
+physical_network_gw_ip: 10.210.0.1
+pseudo_global_ip: 10.196.36.199
 
 legacy_machines:
   legacy1:
     ssh_ip: 192.168.3.94
     ipv4_address: 10.101.0.100
-
-physical_network_gw_ip: 10.210.0.1
-pseudo_global_ip: 10.196.36.199

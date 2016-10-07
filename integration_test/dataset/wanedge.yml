@@ -56,7 +56,7 @@ interfaces:
     owner_datapath_uuid: dp-wanedge
     network_uuid: nw-global
     mac_address: "02:01:00:00:00:05"
-    ipv4_address: 10.210.0.2
+    ipv4_address: <%= physical_network_simulated_ip %>
 
   - uuid: if-vnetgw
     mode: simulated
@@ -94,17 +94,17 @@ datapath_networks:
   - datapath_uuid: dp-wanedge
     network_uuid: nw-vnet1
     interface_uuid: if-weth0
-    mac_address: "02:00:00:aa:01:01"
+    mac_address: "02:00:00:ee:00:01"
 
   - datapath_uuid: dp-wanedge
     network_uuid: nw-public1
     interface_uuid: if-weth0
-    mac_address: "02:00:00:aa:01:02"
+    mac_address: "02:00:00:ee:01:01"
 
   - datapath_uuid: dp-wanedge
     network_uuid: nw-global
     interface_uuid: if-weth2
-    mac_address: "02:00:00:aa:01:03"
+    mac_address: "02:00:00:ee:02:01"
 
 route_links:
 
@@ -149,12 +149,12 @@ translations:
 translation_static_addresses:
 
   - translation_uuid: tr-saddr
-    ingress_ipv4_address: 10.210.0.104
+    ingress_ipv4_address: <%= physical_network_vm1_ip %>
     egress_ipv4_address: 10.101.0.10
     route_link_uuid: rl-1
 
   - translation_uuid: tr-saddr
-    ingress_ipv4_address: 10.210.0.105
+    ingress_ipv4_address: <%= physical_network_vm7_ip %>
     egress_ipv4_address: 10.101.0.17
     route_link_uuid: rl-1
 

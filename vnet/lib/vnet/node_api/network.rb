@@ -18,8 +18,6 @@ module Vnet::NodeApi
         # IpAddresses.dispatch_deleted_where(filter, model.deleted_at) # Needed? We're deleting the network.
         DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
         Route.dispatch_deleted_where(filter, model.deleted_at)
-        # VlanTranslation.dispatch_deleted_where(filter, model.deleted_at)
-
         # 0002_services
         # LeasePolicyBaseNetwork.dispatch_deleted_where(filter, model.deleted_at)
         # 0009_topology

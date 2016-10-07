@@ -10,7 +10,6 @@ module Vnet::Models
     one_to_many :ip_addresses
     one_to_many :routes
     one_to_many :tunnels
-    one_to_many :vlan_translations
 
     one_to_many :active_networks
     one_to_many :interface_networks
@@ -27,7 +26,6 @@ module Vnet::Models
     ip_addresses: :destroy,
     datapath_networks: :destroy,
     routes: :destroy,
-    vlan_translations: :destroy,
     # 0002_services
     lease_policy_base_networks: :destroy,
     # 0004_active_items
