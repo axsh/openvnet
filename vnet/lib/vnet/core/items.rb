@@ -25,7 +25,7 @@ module Vnet::Core
   class InterfacePort < OpenStruct
   end
 
-  class InterfaceNetworks < OpenStruct
+  class InterfaceNetwork < OpenStruct
   end
 
   class InterfaceSegment < OpenStruct

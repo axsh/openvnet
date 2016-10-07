@@ -192,7 +192,7 @@ module Vnet
       autoload :Base, 'vnet/core/interface_ports/base'
     end
 
-    module InterfaceNetworkS
+    module InterfaceNetworks
       autoload :Base, 'vnet/core/interface_networks/base'
     end
 

@@ -90,6 +90,10 @@ module Vnet::NodeApi
             if mac_lease && mac_lease.segment_id
               InterfaceSegment.leased(model.id, mac_lease.segment_id)
             end
+
+            if ip_lease && ip_lease.network_id
+              InterfaceNetwork.leased(model.id, ip_lease.network_id)
+            end
           }
         }
       end
@@ -149,14 +153,14 @@ module Vnet::NodeApi
       end
 
       def add_ip_lease(interface, mac_lease, network_id, ipv4_address)
-        return true if network_id.nil? || ipv4_address.nil?
+        return if network_id.nil? || ipv4_address.nil?
 
         ip_lease = M::IpLease.create(mac_lease: mac_lease,
                                      network_id: network_id,
                                      ipv4_address: ipv4_address) || return
         interface.add_ip_lease(ip_lease) || return
 
-        return true
+        ip_lease
       end
 
       def add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
