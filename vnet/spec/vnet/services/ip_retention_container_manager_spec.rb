@@ -12,10 +12,10 @@ describe Vnet::Services::IpRetentionContainerManager do
 
   item_names = (1..3).map { |index| "item_#{index}" }
 
-  (1..3).each { |index|
-    let("item_#{index}") {
+  item_names.each_with_index { |name, index|
+    let(name) {
       Fabricate(item_name).tap { |item_model|
-        (index - 1).times {
+        (index).times {
           Fabricate(:ip_retention, item_name => item_model)
         }
 
