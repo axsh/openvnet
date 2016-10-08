@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'spec_helper'
+
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 
 describe Vnet::Services::TopologyManager do
@@ -14,9 +16,6 @@ describe Vnet::Services::TopologyManager do
   ]
 
   item_modes = [
-  ]
-
-  item_modes = [
     :simple_underlay,
     :simple_underlay,
     :simple_overlay,
@@ -25,8 +24,12 @@ describe Vnet::Services::TopologyManager do
 
   item_names.each_with_index { |item_name, index|
     let(item_name) {
-      Fabricate(item_fabricators[index]).tap { |item_model|
+      Fabricate(item_fabricators[index], mode: item_modes[index]).tap { |item_model|
         # (index).times {
+        #       Fabricate(:topology, mode: 'simple_underlay').tap { |topology|
+        #         Fabricate(:topology_network, topology: topology, network: pnet_1)
+        #         Fabricate(:topology_network, topology: topology, network: vnet_1)
+        #       }
         #   Fabricate(:ip_retention, item_name => item_model)
         # }
 
@@ -63,19 +66,9 @@ describe Vnet::Services::TopologyManager do
 
   describe "delete items from #{item_names.join(', ')}" do
     include_examples 'delete items on service manager', item_names
+
+    # it "test foo_bar" do
+    # end
   end
 
 end
-
-#     let(:tp_simple_underlay) {
-#       Fabricate(:topology, mode: 'simple_underlay').tap { |topology|
-#         Fabricate(:topology_network, topology: topology, network: pnet_1)
-#         Fabricate(:topology_network, topology: topology, network: vnet_1)
-#       }
-#     }
-
-#     let(:topologies) {
-#       [ tp_simple_underlay,
-#         # tp_simple_overlay
-#       ]
-#     }

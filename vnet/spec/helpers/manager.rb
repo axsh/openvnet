@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 
+def to_pretty_item_model(item_model)
+  str = item_model.class.name
+  str += '/' + item_model.canonical_uuid.to_s if item_model.canonical_uuid
+  str += '/' + item_model.id.to_s if item_model.id
+  str += '/' + item_model.mode.to_s if item_model.mode
+end
+
 RSpec::Matchers.define :be_manager_with_loaded do |expected|
   match do |manager|
     manager.wait_for_loaded({ id: expected[:id] }, 3.0)
   end
 
   failure_message do |manager|
-    "expected #{manager.class.name} to be a manager with loaded #{expected}"
+    "expected #{manager.class.name} to be a manager with loaded #{to_pretty_item_model(expected)}"
   end
 
   failure_message_when_negated do |manager|
-    "expected #{manager.class.name} to be a manager without loaded #{expected}"
+    "expected #{manager.class.name} to be a manager without loaded #{to_pretty_item_model(expected)}"
   end
 end
 
@@ -20,11 +27,11 @@ RSpec::Matchers.define :be_manager_with_unloaded do |expected|
   end
 
   failure_message do |manager|
-    "expected #{manager.class.name} to be a manager with unloaded #{expected}"
+    "expected #{manager.class.name} to be a manager with unloaded #{to_pretty_item_model(expected)}"
   end
 
   failure_message_when_negated do |manager|
-    "expected #{manager.class.name} to be a manager without unloaded #{expected}"
+    "expected #{manager.class.name} to be a manager without unloaded #{to_pretty_item_model(expected)}"
   end
 end
 

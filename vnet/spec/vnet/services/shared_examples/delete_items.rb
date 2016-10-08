@@ -11,15 +11,15 @@ shared_examples 'delete items on service manager' do |item_names|
   # them fails. This allows us to see if they all fail or just a
   # few.
   around(:each) do |example|
-    if failed_permutation.nil? || failed_permutation == current_permutation
-      # puts "current_permutation for context #{current_permutation}"
-
-      failed_permutation = current_permutation
-      example.run
-      failed_permutation = nil unless example.exception
-    else
-      example.skip
+    if failed_permutation
+      next failed_permutation == current_permutation ? example.run : example.skip
     end
+
+    # puts "current_permutation for context #{current_permutation}"
+
+    failed_permutation = current_permutation
+    example.run
+    failed_permutation = nil if example.exception.nil?
   end
 
   permutations_bool(item_names.size).each { |permutation|

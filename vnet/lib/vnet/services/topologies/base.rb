@@ -16,8 +16,9 @@ module Vnet::Services::Topologies
     end
 
     def to_hash
-      Vnet::Core::Topology.new(id: @id,
-                               uuid: @uuid)
+      Vnet::Services::Topology.new(
+        id: @id,
+        uuid: @uuid)
     end
 
     #
