@@ -1,52 +1,81 @@
 # -*- coding: utf-8 -*-
 
-describe Vnet::Services::TopologyManager do
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 
-  let(:manager) { described_class.new(Vnet::Services::VnetInfo.new) }
+describe Vnet::Services::TopologyManager do
+  let(:vnet_info) { Vnet::Services::VnetInfo.new }
+  let(:manager) { described_class.new(vnet_info) }
+
+  item_names = [
+    'item_pnet_1',
+    'item_pnet_2',
+    'item_vnet_1',
+    'item_vnet_2',
+  ]
+
+  item_modes = [
+  ]
+
+  item_modes = [
+    :simple_underlay,
+    :simple_underlay,
+    :simple_overlay,
+    :simple_overlay,
+  ]
+
+  item_names.each_with_index { |item_name, index|
+    let(item_name) {
+      Fabricate(item_fabricators[index]).tap { |item_model|
+        # (index).times {
+        #   Fabricate(:ip_retention, item_name => item_model)
+        # }
+
+        publish_item_created_event(manager, item_model)
+      }
+    }
+  }
+
+  # TODO: Try to add a shared_examples
+
+  let(:item_type) { :topology }
+
+  let(:item_models) {
+    item_names.map { |name| send(name) }
+  }
+
+  let(:item_fabricators) {
+    item_names.map { |name| item_type }
+  }
+
+  let(:item_assoc_counts) {
+    { #leased_ip_retentions: [0, 1, 2],
+    }
+  }
 
   let(:pnet_1) { Fabricate(:pnet_public1) }
   let(:pnet_2) { Fabricate(:pnet_public2) }
   let(:vnet_1) { Fabricate(:vnet_1) }
   let(:vnet_2) { Fabricate(:vnet_2) }
 
-  describe 'basics' do
+  describe "create items" do
+    include_examples 'create items on service manager'
+  end
 
-    let(:tp_simple_underlay) {
-      Fabricate(:topology, mode: 'simple_underlay').tap { |topology|
-        Fabricate(:topology_network, topology: topology, network: pnet_1)
-        Fabricate(:topology_network, topology: topology, network: vnet_1)
-      }
-    }
-
-    let(:topologies) {
-      [ tp_simple_underlay,
-        # tp_simple_overlay
-      ]
-    }
-
-    it 'load on do_initialize' do
-      topologies
-
-      # TODO: Make the do_initailized + wait_for_loaded into a helper
-      # method, and it should check the return values.
-      manager.async.send(:do_initialize)
-
-      topologies.each { |topology|
-        manager.wait_for_loaded({ id: topology.id }, 1.0)
-      }
-
-      # TODO: Add helper methods for checking internals of managers.
-      # topologies = manager.instance_variable_get(:@items)
-
-      # expect(topologys.size).to eq 3
-
-      # TODO: Add helper methods for checking sizes of item things.
-
-      # topologys.values.each do |topology|
-      #   expect(topology.networks.size).to eq 3
-      # end
-    end
-
+  describe "delete items from #{item_names.join(', ')}" do
+    include_examples 'delete items on service manager', item_names
   end
 
 end
+
+#     let(:tp_simple_underlay) {
+#       Fabricate(:topology, mode: 'simple_underlay').tap { |topology|
+#         Fabricate(:topology_network, topology: topology, network: pnet_1)
+#         Fabricate(:topology_network, topology: topology, network: vnet_1)
+#       }
+#     }
+
+#     let(:topologies) {
+#       [ tp_simple_underlay,
+#         # tp_simple_overlay
+#       ]
+#     }

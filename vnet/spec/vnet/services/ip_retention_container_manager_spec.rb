@@ -8,15 +8,13 @@ describe Vnet::Services::IpRetentionContainerManager do
   let(:vnet_info) { Vnet::Services::VnetInfo.new }
   let(:manager) { described_class.new(vnet_info) }
 
-  let(:item_name) { :ip_retention_container }
-
   item_names = (1..3).map { |index| "item_#{index}" }
 
-  item_names.each_with_index { |name, index|
-    let(name) {
-      Fabricate(item_name).tap { |item_model|
+  item_names.each_with_index { |item_name, index|
+    let(item_name) {
+      Fabricate(item_fabricators[index]).tap { |item_model|
         (index).times {
-          Fabricate(:ip_retention, item_name => item_model)
+          Fabricate(:ip_retention, item_type => item_model)
         }
 
         publish_item_created_event(manager, item_model)
@@ -24,8 +22,14 @@ describe Vnet::Services::IpRetentionContainerManager do
     }
   }
 
+  let(:item_type) { :ip_retention_container }
+
   let(:item_models) {
-    (1..3).map { |index| send("item_#{index}") }
+    item_names.map { |name| send(name) }
+  }
+
+  let(:item_fabricators) {
+    item_names.map { |name| item_type }
   }
 
   let(:item_assoc_counts) {

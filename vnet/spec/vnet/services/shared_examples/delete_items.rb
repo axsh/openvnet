@@ -1,11 +1,34 @@
 # -*- coding: utf-8 -*-
 
 shared_examples 'delete items on service manager' do |item_names|
+  # TODO: Add a permutation context? Add a test 'it' test.
+
+  # TODO: See if this can't be put into a shared_examples or in
+  # other ways be moved to some helper methods.
+  failed_permutation = nil
+
+  # We always complete all tests in a permutation even if one of
+  # them fails. This allows us to see if they all fail or just a
+  # few.
+  around(:each) do |example|
+    if failed_permutation.nil? || failed_permutation == current_permutation
+      # puts "current_permutation for context #{current_permutation}"
+
+      failed_permutation = current_permutation
+      example.run
+      failed_permutation = nil unless example.exception
+    else
+      example.skip
+    end
+  end
+
   permutations_bool(item_names.size).each { |permutation|
-    context permutation_context(item_names, permutation) do
+    context "where #{permutation_context(item_names, permutation)} is deleted" do
+
+      let(:current_permutation) { permutation }
 
       [:before, :after].each { |created_when|
-        it "was created #{created_when} do_initialize" do
+        it "with items created #{created_when} do_initialize" do
           case created_when
           when :before
             item_models

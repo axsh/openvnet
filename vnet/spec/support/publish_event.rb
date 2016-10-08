@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 ITEM_CREATED_EVENTS = {
-  'Vnet::Models::IpRetentionContainer' => Vnet::Event::IP_RETENTION_CONTAINER_CREATED_ITEM
+  'Vnet::Models::IpRetentionContainer' => Vnet::Event::IP_RETENTION_CONTAINER_CREATED_ITEM,
+  'Vnet::Models::Topology' => Vnet::Event::TOPOLOGY_CREATED_ITEM,
 }
 
 ITEM_DELETED_EVENTS = {
-  'Vnet::Models::IpRetentionContainer' => Vnet::Event::IP_RETENTION_CONTAINER_DELETED_ITEM
+  'Vnet::Models::IpRetentionContainer' => Vnet::Event::IP_RETENTION_CONTAINER_DELETED_ITEM,
+  'Vnet::Models::Topology' => Vnet::Event::TOPOLOGY_DELETED_ITEM,
 }
 
 def publish_item_created_event(manager, item_model)
