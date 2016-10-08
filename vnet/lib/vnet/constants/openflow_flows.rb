@@ -27,10 +27,6 @@ module Vnet
       TABLE_LOCAL_PORT       = 6
       TABLE_PROMISCUOUS_PORT = 7
 
-      # Translation layer for vlan
-      TABLE_EDGE_SRC = 8
-      TABLE_EDGE_DST = 9
-
       # Handle ingress packets to host interfaces from untrusted
       # sources.
       TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
@@ -232,8 +228,6 @@ module Vnet
       METADATA_TYPE_ROUTE           = (0x5 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_ROUTE_LINK      = (0x6 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_INTERFACE       = (0x7 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_EDGE_TO_VIRTUAL = (0x8 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_VIRTUAL_TO_EDGE = (0x9 << METADATA_TYPE_SHIFT)
       METADATA_TYPE_TUNNEL          = (0xa << METADATA_TYPE_SHIFT)
       METADATA_TYPE_DP_NETWORK      = (0xb << METADATA_TYPE_SHIFT)
       METADATA_TYPE_DP_SEGMENT      = (0xc << METADATA_TYPE_SHIFT)

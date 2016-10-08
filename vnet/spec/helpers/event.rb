@@ -26,14 +26,14 @@ RSpec::Matchers.define :be_event_from_model do |model, expected_type, expected_p
 
     params.all? { |key, expected_value|
       if !actual[:options].has_key?(key)
-        puts "be_event_from_model failed: actual[:options].has_key?(#{key.inspect})"
+        # puts "be_event_from_model failed: actual[:options].has_key?(#{key.inspect})"
         next false
       end
 
       actual_value = actual[:options][key]
 
       if actual_value != expected_value
-        puts "be_event_from_model failed: #{key.inspect} actual_value:#{actual_value} expected_value:#{expected_value}"
+        # puts "be_event_from_model failed: #{key.inspect} actual_value:#{actual_value} expected_value:#{expected_value}"
         next false
       end
 
