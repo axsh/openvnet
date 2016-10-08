@@ -35,6 +35,17 @@ module Vnet::Services
       @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
     end
 
+    def do_initialize
+      info log_format('loading all topologies')
+
+      # TODO: Redo this so that we poke node_api to send created_item
+      # events while in a transaction.
+
+      mw_class.batch.dataset.all.commit.each { |item_map|
+        publish(TOPOLOGY_CREATED_ITEM, item_map)
+      }
+    end
+
     #
     # Internal methods:
     #
