@@ -506,6 +506,7 @@ module Vnet
     autoload :SecurityGroupInterface, 'vnet/node_api/security_group_interface'
     autoload :Segment, 'vnet/node_api/segment.rb'
     autoload :Topology, 'vnet/node_api/topology.rb'
+    autoload :TopologyAssocBase, 'vnet/node_api/topology.rb'
     autoload :TopologyDatapath, 'vnet/node_api/topology.rb'
     autoload :TopologyNetwork, 'vnet/node_api/topology.rb'
     autoload :TopologySegment, 'vnet/node_api/topology.rb'

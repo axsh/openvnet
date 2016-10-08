@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services::Topologies
-
   class Base < Vnet::ItemVnetUuid
     include Celluloid::Logger
 
@@ -15,10 +14,10 @@ module Vnet::Services::Topologies
 
       map = params[:map]
 
-      @datapaths = []
-      @networks = []
-      @segments = []
-      @route_links = []
+      @datapaths = {}
+      @networks = {}
+      @segments = {}
+      @route_links = {}
     end
 
     def log_type
@@ -29,6 +28,34 @@ module Vnet::Services::Topologies
       Vnet::Services::Topology.new(
         id: @id,
         uuid: @uuid)
+    end
+
+    # TODO: Add to plugin.
+
+    def added_network(params)
+      get_param_id(params, :network_id).tap { |assoc_id|
+        if @networks[assoc_id]
+          info log_format_h('adding assoc network failed, already added', params)
+          return
+        end
+
+        (@networks[assoc_id] = {}).tap { |assoc_map|
+          handle_removed_network(assoc_id, assoc_map)
+        }
+      }
+    end
+
+    def removed_network(params)
+      get_param_id(params, :network_id).tap { |assoc_id|
+        @networks.delete(assoc_id).tap { |assoc_map|
+          if assoc_map.nil?
+            info log_format_h('removing assoc network failed, not found', params)
+            return
+          end
+
+          handle_removed_network(assoc_id, assoc_map)
+        }
+      }
     end
 
     #
@@ -46,6 +73,18 @@ module Vnet::Services::Topologies
     #
 
     private
+
+    def handle_added_network(assoc_id, assoc_map)
+      debug log_format_h('handle_added_network', assoc_id: assoc_id, assoc_map: assoc_map)
+    end
+
+    def handle_removed_network(assoc_id, assoc_map)
+      debug log_format_h('handle_removed_network', assoc_id: assoc_id, assoc_map: assoc_map)
+    end
+
+    #
+    #
+    #
 
     def create_datapath_network(datapath_id, network_id, interface_id)
       create_params = {
@@ -104,5 +143,4 @@ module Vnet::Services::Topologies
     end
 
   end
-
 end

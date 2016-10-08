@@ -76,7 +76,7 @@ module Vnet
     private
 
     def log_format(message, values = nil)
-      "#{log_type}: #{message}" + (values ? " (#{values})" : '')
+      "#{log_type}/#{pretty_id}: #{message}" + (values ? " (#{values})" : '')
     end
 
     def log_format_h(message, values)
@@ -130,7 +130,7 @@ module Vnet
     private
 
     def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} #{log_type}: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} #{log_type}/#{pretty_id}: #{message}" + (values ? " (#{values})" : '')
     end
   end
 

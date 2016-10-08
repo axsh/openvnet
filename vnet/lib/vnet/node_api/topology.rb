@@ -19,14 +19,29 @@ module Vnet::NodeApi
     end
   end
 
-  class TopologyDatapath < AssocBase
+  class TopologyAssocBase < AssocBase
+    class << self
+      private
+
+      def parent_class
+        Topology
+      end
+
+      def parent_id_type
+        :topology_id
+      end
+
+    end
+  end
+
+  class TopologyDatapath < TopologyAssocBase
     valid_update_fields []
 
     class << self
       private
 
-      def parent_id_type
-        :topology_id
+      def assoc_class
+        TopologyDatapath
       end
 
       def assoc_id_type
@@ -44,11 +59,15 @@ module Vnet::NodeApi
     end
   end
 
-  class TopologyNetwork < AssocBase
+  class TopologyNetwork < TopologyAssocBase
     valid_update_fields []
 
     class << self
       private
+
+      def assoc_class
+        TopologyNetwork
+      end
 
       def parent_id_type
         :topology_id
@@ -69,14 +88,14 @@ module Vnet::NodeApi
     end
   end
 
-  class TopologySegment < AssocBase
+  class TopologySegment < TopologyAssocBase
     valid_update_fields []
 
     class << self
       private
 
-      def parent_id_type
-        :topology_id
+      def assoc_class
+        TopologySegment
       end
 
       def assoc_id_type
@@ -94,14 +113,14 @@ module Vnet::NodeApi
     end
   end
 
-  class TopologyRouteLink < AssocBase
+  class TopologyRouteLink < TopologyAssocBase
     valid_update_fields []
 
     class << self
       private
 
-      def parent_id_type
-        :topology_id
+      def assoc_class
+        TopologyRouteLink
       end
 
       def assoc_id_type

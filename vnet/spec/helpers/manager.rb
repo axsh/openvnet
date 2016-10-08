@@ -59,16 +59,19 @@ RSpec::Matchers.define :be_manager_assocs_with_item_assoc_counts do |item_assoc_
   end
 
   failure_message do |manager|
-    "expected #{manager.class.name} to have item asssoc #{item_assoc_name} with #{expected_counts} items, found #{item_assoc_counts(manager, item_assoc_name)} items"
+    "expected #{manager.class.name} to have item assoc #{item_assoc_name} with #{expected_counts} items, found #{item_assoc_counts(manager, item_assoc_name)} items"
   end
 
   failure_message_when_negated do |manager|
-    "expected #{manager.class.name} to not have item asssoc #{item_assoc_name} with #{expected_counts} items"
+    "expected #{manager.class.name} to not have item assoc #{item_assoc_name} with #{expected_counts} items"
   end
 
   def item_assoc_counts(manager, item_assoc_name)
     manager.instance_variable_get(:@items).values.map { |item|
+      # puts "be_manager_assocs_with_item_assoc_counts item:#{item.inspect}"
+
       item.send(item_assoc_name).count
     }
   end
+
 end

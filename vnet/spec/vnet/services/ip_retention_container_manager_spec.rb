@@ -8,6 +8,8 @@ describe Vnet::Services::IpRetentionContainerManager do
   let(:vnet_info) { Vnet::Services::VnetInfo.new }
   let(:manager) { described_class.new(vnet_info) }
 
+  before(:each) { use_mock_event_handler }
+
   item_names = (1..3).map { |index| "item_#{index}" }
 
   item_names.each_with_index { |item_name, index|

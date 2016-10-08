@@ -5,8 +5,17 @@ require 'spec_helper'
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 
 describe Vnet::Services::TopologyManager do
+  before(:each) {
+    use_mock_event_handler(pass_events)
+  }
+
   let(:vnet_info) { Vnet::Services::VnetInfo.new }
   let(:manager) { described_class.new(vnet_info) }
+
+  let(:pass_events) {
+    { Vnet::Event::TOPOLOGY_ADDED_NETWORK => manager,
+    }
+  }
 
   item_names = [
     'item_pnet_1',
@@ -26,9 +35,9 @@ describe Vnet::Services::TopologyManager do
     let(item_name) {
       Fabricate(item_fabricators[index], mode: item_modes[index]).tap { |item_model|
         item_assoc_fabricators.each { |assoc_fabricator, lists|
-          lists[index] && lists[index].tap { |assoc_params_list|
-            assoc_params_list.each { |assoc_params|
-              Fabricate(assoc_fabricator, assoc_params.merge(topology: item_model))
+          lists[index] && lists[index].each { |assoc_params|
+            Fabricate(assoc_fabricator, assoc_params.merge(topology: item_model)).tap { |assoc_model|
+              publish_item_assoc_added_event(manager, assoc_fabricator, assoc_model)
             }
           }
         }
@@ -40,21 +49,19 @@ describe Vnet::Services::TopologyManager do
 
   # TODO: Try to add a shared_examples
 
-  let(:item_type) { :topology }
-
+  let(:item_type) {
+    :topology
+  }
   let(:item_models) {
     item_names.map { |name| send(name) }
   }
-
   let(:item_fabricators) {
     item_names.map { |name| item_type }
   }
-
   let(:item_assoc_counts) {
-    { networks: [0, 1, 0, 0],
+    { networks: [0, 1, 0, 1],
     }
   }
-
   let(:item_assoc_fabricators) {
     { topology_network: [
         nil,

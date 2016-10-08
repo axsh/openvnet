@@ -345,6 +345,30 @@ module Vnet::Services
       !MW::DatapathRouteLink.batch.dataset.where(filter).first.commit.nil?
     end
 
+    # TODO: Turn this into a assoc_item plugin of some kind.
+
+    public
+
+    subscribe_event TOPOLOGY_ADDED_NETWORK, :added_network
+    subscribe_event TOPOLOGY_REMOVED_NETWORK, :removed_network
+
+    # TODO: Add subscribe_event that creates this method directly.
+    def added_network(params)
+      (internal_detect_by_id_with_error(params) || return).tap { |item|
+        item.added_network(params)
+      }
+    end
+
+    def removed_network(params)
+      (internal_detect_by_id_with_error(params) || return).tap { |item|
+        item.removed_network(params)
+      }
+    end
+
+    def item_post_install(item, item_map)
+      MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
+    end
+
   end
 
 end
