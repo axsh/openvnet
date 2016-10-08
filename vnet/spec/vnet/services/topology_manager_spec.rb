@@ -25,13 +25,9 @@ describe Vnet::Services::TopologyManager do
   item_names.each_with_index { |item_name, index|
     let(item_name) {
       Fabricate(item_fabricators[index], mode: item_modes[index]).tap { |item_model|
-        # (index).times {
-        #       Fabricate(:topology, mode: 'simple_underlay').tap { |topology|
-        #         Fabricate(:topology_network, topology: topology, network: pnet_1)
-        #         Fabricate(:topology_network, topology: topology, network: vnet_1)
-        #       }
-        #   Fabricate(:ip_retention, item_name => item_model)
-        # }
+        item_assoc_fabricators.each { |assoc_fabricator, assoc_params|
+          Fabricate(assoc_fabricator, assoc_params[index].merge(topology: item_model)) if assoc_params[index]
+        }
 
         publish_item_created_event(manager, item_model)
       }
@@ -51,7 +47,12 @@ describe Vnet::Services::TopologyManager do
   }
 
   let(:item_assoc_counts) {
-    { #leased_ip_retentions: [0, 1, 2],
+    { networks: [0, 1, 0, 0],
+    }
+  }
+
+  let(:item_assoc_fabricators) {
+    { topology_network: [nil, { network: pnet_1 }, nil, nil],
     }
   }
 
