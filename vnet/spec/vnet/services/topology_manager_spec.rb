@@ -25,8 +25,12 @@ describe Vnet::Services::TopologyManager do
   item_names.each_with_index { |item_name, index|
     let(item_name) {
       Fabricate(item_fabricators[index], mode: item_modes[index]).tap { |item_model|
-        item_assoc_fabricators.each { |assoc_fabricator, assoc_params|
-          Fabricate(assoc_fabricator, assoc_params[index].merge(topology: item_model)) if assoc_params[index]
+        item_assoc_fabricators.each { |assoc_fabricator, lists|
+          lists[index] && lists[index].tap { |assoc_params_list|
+            assoc_params_list.each { |assoc_params|
+              Fabricate(assoc_fabricator, assoc_params.merge(topology: item_model))
+            }
+          }
         }
 
         publish_item_created_event(manager, item_model)
@@ -52,7 +56,12 @@ describe Vnet::Services::TopologyManager do
   }
 
   let(:item_assoc_fabricators) {
-    { topology_network: [nil, { network: pnet_1 }, nil, nil],
+    { topology_network: [
+        nil,
+        [{ network: pnet_1 }],
+        nil,
+        [{ network: vnet_2 }]
+      ],
     }
   }
 
