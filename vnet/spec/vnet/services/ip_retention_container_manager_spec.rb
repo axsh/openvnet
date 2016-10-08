@@ -39,12 +39,7 @@ describe Vnet::Services::IpRetentionContainerManager do
     }
   }
 
-  describe "create items" do
-    include_examples 'create items on service manager'
-  end
-
-  describe "delete items from #{item_names.join(', ')}" do
-    include_examples 'delete items on service manager', item_names
-  end
+  include_examples 'create items on service manager'
+  include_examples 'delete items on service manager', item_names
 
 end

@@ -21,7 +21,7 @@ class MockEventHandler
   def handle_event(event, params = {})
     self.class.pass_events[event].tap { |target|
       if target
-        puts "pass event event:#{event} params:#{params}"
+        #puts "pass event event:#{event} params:#{params}"
         target.publish(event, params)
       else
         {event: event, :options => params}.tap { |ev|

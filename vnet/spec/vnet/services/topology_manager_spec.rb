@@ -31,23 +31,24 @@ describe Vnet::Services::TopologyManager do
     :simple_overlay,
   ]
 
-  item_names.each_with_index { |item_name, index|
+  item_names.each_with_index { |item_name, item_index|
     let(item_name) {
-      Fabricate(item_fabricators[index], mode: item_modes[index]).tap { |item_model|
-        item_assoc_fabricators.each { |assoc_fabricator, lists|
-          lists[index] && lists[index].each { |assoc_params|
-            Fabricate(assoc_fabricator, assoc_params.merge(topology: item_model)).tap { |assoc_model|
-              publish_item_assoc_added_event(manager, assoc_fabricator, assoc_model)
-            }
-          }
-        }
+      item_fabricate_with_events(
+        manager,
+        item_fabricators[item_index],
+        { mode: item_modes[item_index] },
+        item_index,
+        item_assoc_fabricators)
 
-        publish_item_created_event(manager, item_model)
-      }
+      # Fabricate(item_fabricators[item_index], mode: item_modes[item_index]).tap { |item_model|
+      #   publish_item_created_event(manager, item_model)
+
+      #   item_assoc_fabricate(item_assoc_fabricators, item_model, item_index) { |assoc_fabricator, assoc_model|
+      #     publish_item_assoc_added_event(manager, assoc_fabricator, assoc_model)
+      #   }
+      # }
     }
   }
-
-  # TODO: Try to add a shared_examples
 
   let(:item_type) {
     :topology
@@ -55,6 +56,8 @@ describe Vnet::Services::TopologyManager do
   let(:item_models) {
     item_names.map { |name| send(name) }
   }
+
+  # TODO: Change this to include item_type+params.
   let(:item_fabricators) {
     item_names.map { |name| item_type }
   }
@@ -77,15 +80,7 @@ describe Vnet::Services::TopologyManager do
   let(:vnet_1) { Fabricate(:vnet_1) }
   let(:vnet_2) { Fabricate(:vnet_2) }
 
-  describe "create items" do
-    include_examples 'create items on service manager'
-  end
-
-  describe "delete items from #{item_names.join(', ')}" do
-    include_examples 'delete items on service manager', item_names
-
-    # it "test foo_bar" do
-    # end
-  end
+  include_examples 'create items on service manager'
+  include_examples 'delete items on service manager', item_names
 
 end
