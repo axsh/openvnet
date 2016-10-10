@@ -88,4 +88,4 @@ if [[ -n "$BUILD_CACHE_DIR" ]]; then
     done
 fi
 # Pull compiled yum repository
-docker cp "${CID}:${REPO_BASE_DIR}" "$(dirname ${REPO_BASE_DIR})"
+docker cp "${CID}:${REPO_BASE_DIR}" - | $SSH_REMOTE tar xf - -C "$(dirname ${REPO_BASE_DIR})"
