@@ -15,7 +15,7 @@ function docker_rm() {
             return 0
         fi
     fi
-    docker rm -f "$CID" 
+    docker rm -f "$CID"
 }
 
 trap "docker_rm; rm -rf ${TMPDIR}" EXIT
