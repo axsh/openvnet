@@ -47,6 +47,6 @@ CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 # Upload checked out tree to the container.
 docker_cp . "${CID}:/var/tmp/openvnet"
 # Run build script
-docker exec -t "${CID}" /bin/bash -c "cd openvnet/deployment/packagebuild; ./build_packages_third_party.sh"
+docker exec -t "${CID}" /bin/bash -c "cd openvnet/deployment/packagebuild; ./build_packages_third_party.sh ${PACKAGE} ${VERSION}"
 # Pull compiled yum repository
 docker cp "${CID}:${REPO_BASE_DIR}" - | $SSH_REMOTE tar xf - -C "$(dirname ${REPO_BASE_DIR})"
