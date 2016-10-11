@@ -55,7 +55,7 @@ while read -r eth type connect_to; do
     if [ "${connect_to}" == "" ]; then 
         attach_string=""
     else
-        attach_string=", \"--hostonlyadapter${nic_num}\", \"${connect_to}\",  \"--nicpromisc${nic_num}\", \"allow_all\""
+        attach_string=", \"--hostonlyadapter${nic_num}\", \"${connect_to}\",  \"--nicpromisc${nic_num}\", \"allow-all\""
     fi
 
     vagrant_templ_string="[\"modifyvm\", \"{{.Name}}\", \"${nic}\", \"${type}\"${attach_string}]"
