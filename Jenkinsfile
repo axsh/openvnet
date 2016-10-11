@@ -1,4 +1,7 @@
 #!groovy
+
+final BUILD_OS_TARGETS=['el7', 'el6']
+
 properties ([[$class: 'ParametersDefinitionProperty',
   parameterDefinitions: [
     [$class: 'StringParameterDefinition',
@@ -8,38 +11,58 @@ properties ([[$class: 'ParametersDefinitionProperty',
     [$class: 'StringParameterDefinition',
       defaultValue: '/var/lib/jenkins/build-cache', description: 'Directory for storing build cache archive', name: 'BUILD_CACHE_DIR'],
     [$class: 'ChoiceParameterDefinition',
-      choices: "el7\nel6", description: 'Target OS name', name: 'BUILD_OS']
+      choices: "all\n" + BUILD_OS_TARGETS.join("\n"), description: 'Target OS name', name: 'BUILD_OS']
   ]
 ]])
 
-def build_env = """# These parameters are read from bash and docker --env-file.
+def write_build_env(label) {
+  def build_env="""# These parameters are read from bash and docker --env-file.
 # So do not use single or double quote for the value part.
 LEAVE_CONTAINER=$LEAVE_CONTAINER
 REPO_BASE_DIR=$REPO_BASE_DIR
 BUILD_CACHE_DIR=$BUILD_CACHE_DIR
-BUILD_OS=$BUILD_OS
+BUILD_OS=$label
+RELEASE_SUFFIX=$RELEASE_SUFFIX
 """
-def RELEASE_SUFFIX=null
+  writeFile(file: "build.env", text: build_env)
+}
 
-node("docker") {
+// http://stackoverflow.com/questions/37425064/how-to-use-environment-variables-in-a-groovy-function-using-a-jenkinsfile
+import groovy.transform.Field
+@Field RELEASE_SUFFIX=null
+
+def stage_rpmbuild(label) {
+  node(label) {
+    stage "Build ${label}"
+    checkout scm
+    write_build_env(label)
+    sh "./deployment/docker/build.sh ./build.env"
+  }
+}
+
+def stage_test_rpm(label) {
+  node(label) {
+    stage "RPM Install Test ${label}"
+    checkout scm
+    write_build_env(label)
+    sh "./deployment/docker/test-rpm-install.sh ./build.env"
+  }
+}
+
+node() {
     stage "Checkout"
     checkout scm
     // http://stackoverflow.com/questions/36507410/is-it-possible-to-capture-the-stdout-from-the-sh-dsl-command-in-the-pipeline
     // https://issues.jenkins-ci.org/browse/JENKINS-26133
     RELEASE_SUFFIX=sh(returnStdout: true, script: "./deployment/packagebuild/gen-dev-build-tag.sh").trim()
-    writeFile(file: "build.env", text: build_env + "\nRELEASE_SUFFIX=${RELEASE_SUFFIX}\n")
-    stage "Build"
-    sh "./deployment/docker/build.sh ./build.env"
 }
 
-if( BUILD_OS == "el6" ) {
-  node("el6") {
-    checkout scm
-    writeFile(file: "build.env", text: build_env + "\nRELEASE_SUFFIX=${RELEASE_SUFFIX}\n")
-    sh "./deployment/docker/test-rpm-install.sh ./build.env"
-  }
-}else {
-  node("docker") {
-    sh "./deployment/docker/test-rpm-install.sh ./build.env"
-  }
+build_nodes=BUILD_OS_TARGETS.clone()
+if( BUILD_OS != "all" ){
+  build_nodes=[BUILD_OS]
+}
+// Using .each{} hits "a CPS-transformed closure is not yet supported (JENKINS-26481)"
+for( label in build_nodes) {
+  stage_rpmbuild(label)
+  stage_test_rpm(label)
 }
