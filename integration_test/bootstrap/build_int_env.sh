@@ -72,6 +72,23 @@ fi
 
 cd $home
 
+
+#
+# automatic ssh setup: generate the tmp.ssh_setup.sh provisioning script
+# BAD POINT:  This script name (tmp.ssh_setup.sh) will be hardwired
+# into the vm_build.sh script. (In other words, that script expects
+# this file.)  This is not very neat, and should be handled better...
+#
+ssh_provision_script=tmp.ssh_setup.sh
+
+./ssh_setup.sh
+if [ $? -ne 0 ]; then
+   echo 
+   echo "  FAILED to generate/find $HOME/.ssh/id_rsa.pub! "
+   echo
+   exit 2
+fi
+
 ######## Now begin building the boxes
 #
 #     A note on vm output names. For now, the rule defining
@@ -93,5 +110,7 @@ for vm in itest-edge itest1 itest2 itest3; do
 #  time ./vm_build.sh $centos_ver centos-${centos_ver}-${vm} ${provisioned_ovf_base} ${vm}
    time ./vm_build.sh $centos_ver ${vm} ${provisioned_ovf_base} ${vm}
 done
+
+#/bin/rm -f ${ssh_provision_script}
 
 exit $?

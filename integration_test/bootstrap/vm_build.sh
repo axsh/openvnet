@@ -134,11 +134,13 @@ echo "${template_var}"
 # must not re-write network scripts! In future, the vm_metadata_dir
 # directory must be made to be optional!
 ###-
+ssh_setup_script=tmp.ssh_setup.sh
 if [ "${vm_metadata_dir}" == "NONE" ]; then
     script_file_list=${provisioners}
     nic_cmd_list=""
 else
-    script_file_list="${provisioners},`./make_network_template_files.sh ${vm_metadata_dir}`"
+#   script_file_list="${provisioners},`./make_network_template_files.sh ${vm_metadata_dir}`"
+    script_file_list="${provisioners},"${ssh_setup_script}",`./make_network_template_files.sh ${vm_metadata_dir}`"
     script_file_list=${script_file_list#,}
 
 #   nic_cmd_list=$( ./generate_niclist.sh ${vm_metadata_dir} )
