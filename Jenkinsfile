@@ -4,14 +4,14 @@ final BUILD_OS_TARGETS=['el7', 'el6']
 
 properties ([[$class: 'ParametersDefinitionProperty',
   parameterDefinitions: [
+    [$class: 'ChoiceParameterDefinition',
+      choices: "all\n" + BUILD_OS_TARGETS.join("\n"), description: 'Target OS name', name: 'BUILD_OS'],
     [$class: 'StringParameterDefinition',
       defaultValue: '0', description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER'],
     [$class: 'StringParameterDefinition',
-      defaultValue: '/var/www/html/repos', description: 'Path to create yum repository', name: 'REPO_BASE_DIR'],
+      defaultValue: env.REPO_BASE_DIR, description: 'Path to create yum repository', name: 'REPO_BASE_DIR'],
     [$class: 'StringParameterDefinition',
-      defaultValue: '/var/lib/jenkins/build-cache', description: 'Directory for storing build cache archive', name: 'BUILD_CACHE_DIR'],
-    [$class: 'ChoiceParameterDefinition',
-      choices: "all\n" + BUILD_OS_TARGETS.join("\n"), description: 'Target OS name', name: 'BUILD_OS']
+      defaultValue: env.BUILD_CACHE_DIR, description: 'Directory for storing build cache archive', name: 'BUILD_CACHE_DIR']
   ]
 ]])
 
