@@ -23,9 +23,9 @@ set +a
 
 if [[ -n "$JENKINS_HOME" ]]; then
   # openvnet-axsh/branch1/el7
-  img_tag="rpm-install.${JOB_NAME}/${BUILD_OS}"
+  img_tag=$(echo "rpm-install.${JOB_NAME}/${BUILD_OS}" | tr '/' '.')
 else
-  img_tag="rpm-install.openvnet/$(git rev-parse --abbrev-ref HEAD)/${BUILD_OS}"
+  img_tag="rpm-install.openvnet.$(git rev-parse --abbrev-ref HEAD).${BUILD_OS}"
 fi
 
 docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}-rpm-test.Dockerfile" .

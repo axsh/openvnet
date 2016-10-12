@@ -37,9 +37,9 @@ function docker_cp() {
 img_tag="3rd-build."
 if [[ -n "$JENKINS_HOME" ]]; then
   # openvnet-axsh/branch1/el7
-  img_tag="${img_tag}${JOB_NAME}/${BUILD_OS}"
+  img_tag=$(echo "${img_tag}${JOB_NAME}/${BUILD_OS}" | tr '/' '.')
 else
-  img_tag="${img_tag}openvnet/$(git rev-parse --abbrev-ref HEAD)/${BUILD_OS}"
+  img_tag="${img_tag}openvnet.$(git rev-parse --abbrev-ref HEAD).${BUILD_OS}"
 fi
 
 docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}-3rd-build.Dockerfile" .

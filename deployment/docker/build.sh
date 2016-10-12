@@ -38,11 +38,11 @@ set +a
 
 if [[ -n "$JENKINS_HOME" ]]; then
   # openvnet-axsh/branch1/el7
-  img_tag="${JOB_NAME}/${BUILD_OS}"
+  img_tag=$(echo "${JOB_NAME}/${BUILD_OS}" | tr '/' '.')
   # $BUILD_CACHE_DIR/openvnet-axsh/el7/0123abcdef.tar.gz
   build_cache_base="${BUILD_CACHE_DIR}/${BUILD_OS}/${JOB_NAME%/*}"
 else
-  img_tag="openvnet/$(git rev-parse --abbrev-ref HEAD)/${BUILD_OS}"
+  img_tag="openvnet.$(git rev-parse --abbrev-ref HEAD).${BUILD_OS}"
   build_cache_base="${BUILD_CACHE_DIR}"
 fi
 
