@@ -1,4 +1,4 @@
-specs_ext: [edge]
+specs_ext: []
 nodes:
   webapi: [192.168.2.91]
   vnmgr: [192.168.2.91]
@@ -16,9 +16,6 @@ ssh_quiet_mode: true
 
 dataset_options:
   physical_port: eth0
-  edge_port: eth2
-  edge_ipv4_address: 172.16.90.9
-  edge_esxi_ipv4_address: 172.16.90.12
   dp1_ipv4_address: 172.16.90.10
   dp2_ipv4_address: 172.16.90.11
   dp3_ipv4_address: 172.16.91.10

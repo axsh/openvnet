@@ -27,7 +27,6 @@ module Vnctl
     autoload :Segment, 'vnctl/cli/segment'
     autoload :Topology, 'vnctl/cli/topology'
     autoload :Translation, 'vnctl/cli/translation'
-    autoload :VlanTranslation, 'vnctl/cli/vlan_translation'
   end
 
   module Configuration

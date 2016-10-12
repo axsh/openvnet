@@ -175,7 +175,6 @@ module Vnet
 
     module Interfaces
       autoload :Base, 'vnet/core/interfaces/base'
-      autoload :Edge, 'vnet/core/interfaces/edge'
       autoload :Host, 'vnet/core/interfaces/host'
       autoload :IfBase, 'vnet/core/interfaces/if_base'
       autoload :Internal, 'vnet/core/interfaces/internal'
@@ -234,7 +233,6 @@ module Vnet
     module Translations
       autoload :Base, 'vnet/core/translations/base'
       autoload :StaticAddress, 'vnet/core/translations/static_address'
-      autoload :VnetEdgeHandler, 'vnet/core/translations/vnet_edge_handler'
     end
 
     module Tunnels
@@ -303,7 +301,6 @@ module Vnet
         autoload :TopologyRouteLink, 'vnet/endpoints/1.0/responses/topology'
         autoload :Translation, 'vnet/endpoints/1.0/responses/translation'
         autoload :TranslationStaticAddress, 'vnet/endpoints/1.0/responses/translation_static_address'
-        autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
@@ -339,7 +336,6 @@ module Vnet
         autoload :TopologySegmentCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyRouteLinkCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TranslationCollection, 'vnet/endpoints/1.0/responses/translation'
-        autoload :VlanTranslationCollection, 'vnet/endpoints/1.0/responses/vlan_translation'
       end
     end
   end
@@ -405,7 +401,6 @@ module Vnet
     autoload :Translation, 'vnet/models/translation'
     autoload :TranslationStaticAddress, 'vnet/models/translation_static_address'
     autoload :Tunnel, 'vnet/models/tunnel'
-    autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
 
   module ModelWrappers
@@ -459,7 +454,6 @@ module Vnet
     autoload :Translation, 'vnet/model_wrappers/translation'
     autoload :TranslationStaticAddress, 'vnet/model_wrappers/translation'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
-    autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
 
   autoload :NodeApi, 'vnet/node_api'
@@ -518,7 +512,6 @@ module Vnet
     autoload :Translation, 'vnet/node_api/translation.rb'
     autoload :TranslationStaticAddress, 'vnet/node_api/translation_static_address.rb'
     autoload :Tunnel, 'vnet/node_api/tunnel.rb'
-    autoload :VlanTranslation, 'vnet/node_api/translation.rb'
   end
 
   module NodeModules
