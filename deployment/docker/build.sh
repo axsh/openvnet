@@ -36,6 +36,20 @@ set -a
 . ${BUILD_ENV_PATH}
 set +a
 
+function docker_cp() {
+  local cid=${2%:*}
+  if [[ -z $cid ]]; then
+    # container -> host
+    docker cp $1 $2
+  else
+    # host -> container. Docker 1.7 or earlier does not support.
+    docker cp $1 $2 || {
+      local path=${2#*:}
+      tar -cO $1 | docker exec -i "${cid}" bash -c "tar -xf - -C ${path}"
+    }
+  fi
+}
+
 if [[ -n "$JENKINS_HOME" ]]; then
   # openvnet-axsh/branch1/el7
   img_tag=$(echo "${JOB_NAME}/${BUILD_OS}" | tr '/' '.')
@@ -50,7 +64,7 @@ fi
 docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
 CID=$(docker run --add-host="devrepo:${IPV4_DEVREPO:-192.168.56.50}" ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 # Upload checked out tree to the container.
-docker cp . "${CID}:/var/tmp/openvnet"
+docker_cp . "${CID}:/var/tmp/openvnet"
 # Upload build cache if found.
 if [[ -n "$BUILD_CACHE_DIR" && -d "${build_cache_base}" ]]; then
   for f in $(ls ${build_cache_base}); do
