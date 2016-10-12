@@ -3,6 +3,7 @@
 %define release 1
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
 %define strip_vendor %{?strip_vendor:1}
+%define openvnet_ruby_ver %{?openvnet_ruby_ver:2.1.10}
 
 Name: openvnet
 Version: 0.9%{?dev_release_suffix:dev}
@@ -26,7 +27,7 @@ BuildRequires: libpcap-devel
 
 # We require openvnet-ruby to run bundle install.
 # By using openvnet-ruby we ensure that the downloaded gems are compatible.
-BuildRequires: openvnet-ruby = 2.1.1.axsh0
+BuildRequires: openvnet-ruby = %{openvnet_ruby_ver}
 
 Requires: openvnet-vnctl
 Requires: openvnet-webapi
@@ -105,7 +106,8 @@ AutoReqProv: no
 
 Requires: zeromq3
 Requires: mysql-libs
-Requires: openvnet-ruby
+# Runtime openvnet-ruby version must be same as building package.
+Requires: openvnet-ruby = %{openvnet_ruby_ver}
 
 # The zeromq3-devel package is required because it provides the /usr/lib64/libzmq.so file.
 # That file is just a symlink to /usr/lib64/libzmq.so.3.0.0 which is provided by the zerom13
