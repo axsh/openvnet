@@ -28,6 +28,5 @@ module Vnctl::Cli
     vnctl_register(C::Segment, "segments")
     vnctl_register(C::Topology, "topologies")
     vnctl_register(C::Translation, "translations")
-    vnctl_register(C::VlanTranslation, "vlan translations")
   end
 end

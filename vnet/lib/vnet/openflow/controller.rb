@@ -144,10 +144,6 @@ module Vnet::Openflow
       info "terminated datapath actor. dpid: 0x%016x" % dpid
     end
 
-    def update_vlan_translation
-      datapath.switch.async.update_vlan_translation
-    end
-
     def datapath(dpid)
       @datapaths[dpid] && @datapaths[dpid][:datapath]
     end

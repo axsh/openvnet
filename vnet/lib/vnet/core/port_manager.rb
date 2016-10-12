@@ -195,9 +195,6 @@ module Vnet::Core
       when :promiscuous
         port.extend(Ports::Promiscuous)
         port.interface_id = interface_id
-      when :edge
-        port.extend(Ports::Generic)
-        port.interface_id = interface_id
       else
         error log_format("unknown port type", interface_mode)
       end
