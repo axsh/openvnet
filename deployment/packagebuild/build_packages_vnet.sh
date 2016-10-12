@@ -38,8 +38,10 @@ fi
 check_dependency yum-builddep yum-utils
 check_dependency createrepo createrepo
 
-# Make sure that we work with the correct version of openvnet-ruby
-sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+if ! yum repolist --noplugins --cacheonly enabled | grep openvnet-third-party > /dev/null; then
+  # Make sure that we work with the correct version of openvnet-ruby
+  sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+fi
 
 sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 
