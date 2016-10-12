@@ -1,6 +1,8 @@
 #!groovy
 
-final BUILD_OS_TARGETS=['el7', 'el6']
+// http://stackoverflow.com/questions/37425064/how-to-use-environment-variables-in-a-groovy-function-using-a-jenkinsfile
+import groovy.transform.Field
+@Field final BUILD_OS_TARGETS=['el7', 'el6']
 
 properties ([[$class: 'ParametersDefinitionProperty',
   parameterDefinitions: [
@@ -27,8 +29,6 @@ RELEASE_SUFFIX=$RELEASE_SUFFIX
   writeFile(file: "build.env", text: build_env)
 }
 
-// http://stackoverflow.com/questions/37425064/how-to-use-environment-variables-in-a-groovy-function-using-a-jenkinsfile
-import groovy.transform.Field
 @Field RELEASE_SUFFIX=null
 
 def stage_rpmbuild(label) {
