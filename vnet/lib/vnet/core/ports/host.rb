@@ -50,16 +50,6 @@ module Vnet::Core::Ports
                              })
       end
 
-      if @dp_info.datapath.datapath_info.node_id =~ /^edge/
-        flows << flow_create(table: TABLE_CLASSIFIER,
-                             goto_table: TABLE_EDGE_SRC,
-                             priority: 2,
-                             match: {
-                               :in_port => self.port_number
-                             },
-                             write_remote: true)
-      end
-
       @dp_info.add_flows(flows)
       @dp_info.tunnel_manager.async.update(event: :updated_interface,
                                            interface_event: :set_host_port_number,

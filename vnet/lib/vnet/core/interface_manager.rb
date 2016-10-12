@@ -111,7 +111,6 @@ module Vnet::Core
     def item_initialize(item_map)
       item_class =
         case item_map.mode
-        when MODE_EDGE      then Interfaces::Edge
         when MODE_HOST      then Interfaces::Host
         when MODE_INTERNAL  then Interfaces::Internal
         when MODE_PATCH     then Interfaces::Patch
