@@ -68,7 +68,7 @@ HACK_230=$(set +e;
   fi
 )
 export GEM_HOME=${RPM_BUILD_ROOT}$(${RPM_BUILD_ROOT}%{_prefix}/bin/ruby ${HACK_230} ${RPM_BUILD_ROOT}%{_prefix}/bin/gem env gemdir)
-${RPM_BUILD_ROOT}%{_prefix}/bin/ruby ${HACK_230} ${RPM_BUILD_ROOT}%{_prefix}/bin/gem install bundler --no-ri --no-rdoc
+${RPM_BUILD_ROOT}%{_prefix}/bin/ruby ${HACK_230} ${RPM_BUILD_ROOT}%{_prefix}/bin/gem install bundler --no-document --wrappers
 
 # Update rpath in the ELF binaries.
 #for i in $(find $RPM_BUILD_ROOT -type f -and -executable); do
