@@ -46,12 +46,26 @@ module Vnet::Core::Segments
                            priority: 30,
                            match_segment: @id)
 
-      @dp_info.add_flows(flows)
+      if true
+        flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                             priority: 45,
+                             match: {
+                               :eth_type => 0x0806,
+                               :tunnel_id => 0
+                             },
+                             actions: {
+                               :output => OFPP_CONTROLLER 
+                             },
+                             match_segment: @id)
+      else
+        ovs_flows = []
+        ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
+        ovs_flows << create_ovs_flow_learn_arp(5, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
+        ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      end
 
-      ovs_flows = []
-      ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
-      ovs_flows << create_ovs_flow_learn_arp(5, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
-      ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      @dp_info.add_flows(flows)
     end
 
     def update_flows(port_numbers)
@@ -83,6 +97,35 @@ module Vnet::Core::Segments
 
       flow_learn_arp << "output:NXM_OF_IN_PORT[]),goto_table:%d" % TABLE_SEGMENT_DST_CLASSIFIER
       flow_learn_arp
+    end
+
+    def packet_in(message)
+      info log_format("packet in", message.inspect)
+
+      # TODO: Verify eth_src and arp_sha.
+
+      # TODO: Add idle_timeout.
+
+      flows = []
+      flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP,
+                           priority: 35,
+                           idle_timeout: 36000,
+                           match: {
+                             :eth_dst => message.eth_src
+                           },
+                           actions: {
+                             :output => message.in_port
+                           },
+                           match_segment: @id,
+                           match_local: nil)
+      
+      # TODO: Consider a catch flow to avoid issues with arp flooding.
+
+      @dp_info.add_flows(flows)
+
+      # TODO: Consider having the controller send the arp packet
+      # instead of a direct goto_table so that there won't be any lost
+      # packets.
     end
 
   end
