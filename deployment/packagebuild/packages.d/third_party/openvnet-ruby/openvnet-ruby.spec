@@ -58,9 +58,8 @@ make install DESTDIR=$RPM_BUILD_ROOT
 # man pages are installed under /usr.
 rm -rf $RPM_BUILD_ROOT/usr
 
-export LD_LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir}
-export RUBYLIB=$(find $RPM_BUILD_ROOT%{_libdir}/ruby -type d | tr '\n' ':')
-export GEM_HOME=$RPM_BUILD_ROOT%{_libdir}/ruby/gems
+export LD_LIBRARY_PATH=${RPM_BUILD_ROOT}%{_libdir}
+export RUBYLIB=$(find ${RPM_BUILD_ROOT}%{_libdir}/ruby -type d | tr '\n' ':')
 HACK_230=$(set +e;
   rpmdev-vercmp 2.3.0 %{rubyver} > /dev/null;
   if [ ! $? -eq 11 ]; then
@@ -68,7 +67,8 @@ HACK_230=$(set +e;
     echo "-rsingleton"
   fi
 )
-$RPM_BUILD_ROOT%{_prefix}/bin/ruby ${HACK_230} $RPM_BUILD_ROOT%{_prefix}/bin/gem install bundler --no-ri --no-rdoc
+export GEM_HOME=${RPM_BUILD_ROOT}$(${RPM_BUILD_ROOT}%{_prefix}/bin/ruby ${HACK_230} ${RPM_BUILD_ROOT}%{_prefix}/bin/gem env gemdir)
+${RPM_BUILD_ROOT}%{_prefix}/bin/ruby ${HACK_230} ${RPM_BUILD_ROOT}%{_prefix}/bin/gem install bundler --no-ri --no-rdoc
 
 # Update rpath in the ELF binaries.
 #for i in $(find $RPM_BUILD_ROOT -type f -and -executable); do
