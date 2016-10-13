@@ -46,20 +46,24 @@ module Vnet::Core::Segments
                            priority: 30,
                            match_segment: @id)
 
+      flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
+                           priority: 1,
+                           match_segment: @id,
+                           actions: {
+                             :output => OFPP_CONTROLLER
+                           })
+
       if true
         # TODO: How correct is it to just catch broadcast packets?
         # Perhaps not needed as the packet should be a return packet
         # so the flow should already have been learned.
-        [ [5, {}, {}],
-          [6, {}, { output: OFPP_CONTROLLER }],
-          [45, { tunnel_id: 0 }, {}],
-          [46, { tunnel_id: 0 }, { output: OFPP_CONTROLLER }]
-        ].each { |priority, match, actions|
+        [ [5, {}],
+          [45, { tunnel_id: 0 }],
+        ].each { |priority, match|
           flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
                                goto_table: TABLE_OUTPUT_DP_TO_CONTROLLER,
                                priority: priority,
                                match: match.merge(:eth_type => 0x0806),
-                               actions: actions,
                                match_segment: @id)
         }
 

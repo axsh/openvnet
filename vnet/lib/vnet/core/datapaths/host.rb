@@ -219,15 +219,9 @@ module Vnet::Core::Datapaths
                            write_segment: dpg_map[:segment_id],
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
-                           priority: 1,
-                           match_segment: dpg_map[:segment_id],
-                           actions: {
-                             :output => OFPP_CONTROLLER
-                           },
-                           cookie: flow_cookie)
-      flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
                            priority: 2,
                            match: {
+                             :tunnel_id => 0,
                              :eth_dst => MAC_BROADCAST
                            },
                            match_segment: dpg_map[:segment_id],
