@@ -34,23 +34,23 @@ echo ${existing_host_list} | grep -q "vboxnet0"
 if [  $? -ne 0 ]; then
    add_interface
 fi
-update_if_ip vboxnet0 dummyip
+#update_if_ip vboxnet0 dummyip
 
 echo ${existing_host_list} | grep -q "vboxnet1"
 if [  $? -ne 0 ]; then
    add_interface
 fi
-update_if_ip vboxnet1 dummyip
+#update_if_ip vboxnet1 dummyip
 
 echo ${existing_host_list} | grep -q "vboxnet2"
 if [  $? -ne 0 ]; then
    add_interface
 fi
-update_if_ip vboxnet2 dummyip
+#update_if_ip vboxnet2 dummyip
 
 echo ${existing_host_list} | grep -q "vboxnet3"
 if [  $? -ne 0 ]; then
    add_interface
 fi
-update_if_ip vboxnet3 dummyip
+update_if_ip vboxnet3 192.168.3.1
 

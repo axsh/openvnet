@@ -141,6 +141,11 @@ if [ "${vm_metadata_dir}" == "NONE" ]; then
 else
 #   script_file_list="${provisioners},`./make_network_template_files.sh ${vm_metadata_dir}`"
     script_file_list="${provisioners},"${ssh_setup_script}",`./make_network_template_files.sh ${vm_metadata_dir}`"
+    
+    ## Now add for lxc containers, as needed
+    if [ -e ${vm_metadata_dir}/metadata/lxc ]; then
+        script_file_list="${script_file_list},`./lxc_network_setup.sh ${vm_name}`"
+    fi
     script_file_list=${script_file_list#,}
 
 #   nic_cmd_list=$( ./generate_niclist.sh ${vm_metadata_dir} )
@@ -194,6 +199,9 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "packer build  ${template_file} ..."
+
+      exit 22   ### HERE here
+
 packer build  ${template_file}
 
 if [ $? -ne 0 ]; then

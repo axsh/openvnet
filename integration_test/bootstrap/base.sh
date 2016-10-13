@@ -47,16 +47,24 @@ yum -y install epel-release
 echo "yum -y install openvnet" >> ${LOG_FILE}
 yum -y install openvnet
 
+# Brctl
+echo "yum -y install bridge-utils" >> ${LOG_FILE}
+yum -y install bridge-utils
+
+# Setup cgroup for lxc use
+mkdir /cgroup
+echo "cgroup /cgroup cgroup defaults 0 0" >> /etc/fstab
+mount /cgroup
+
 ### lxc install, add instances
 echo "yum -y install lxc lxc-templates" >> ${LOG_FILE}
 yum -y install lxc lxc-templates
 
-echo "lxc-create -t centos -n inst1" >> ${LOG_FILE}
+echo "lxc-create -t centos -n vm1" >> ${LOG_FILE}
 lxc-create -t centos -n inst1
 
-echo "lxc-create -t centos -n inst2" >> ${LOG_FILE}
+echo "lxc-create -t centos -n vm2" >> ${LOG_FILE}
 lxc-create -t centos -n inst2
-
 
 #cat > /etc/openvnet/common.conf <<EOF
 #registry {
