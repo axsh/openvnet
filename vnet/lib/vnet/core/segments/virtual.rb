@@ -130,14 +130,13 @@ module Vnet::Core::Segments
       # match in_port(?). The hard_timeout would still be required in
       # the case that the dst_mac_lookup flow times out.
 
-      # TODO: Add this based on tunnel, also match the tunnel_id.
-
       flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
                            goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
                            priority: 60,
-                           idle_timeout: 30,
-                           hard_timeout: 120,
+                           idle_timeout: 60,
+                           hard_timeout: 600,
                            match: {
+                             :in_port => message.in_port,
                              :eth_src => message.eth_src
                            },
                            match_segment: @id)
