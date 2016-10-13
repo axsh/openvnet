@@ -25,7 +25,7 @@ Group:          Development/Languages
 %description
 The Ruby binary package for OpenVNet. Key changes are:
 - No docs.
-- -O0 optimization (On EL6).
+- -O0 optimization.
 - RPATH is enabled and fixed to %{_libdir}.
 - bundler gem is installed.
 - Debug info is not stripped from the binaries.
@@ -35,9 +35,12 @@ The Ruby binary package for OpenVNet. Key changes are:
 
 %build
 %if %{defined el6}
-export CFLAGS="$RPM_OPT_FLAGS -Wall -fno-strict-aliasing -O0 -ggdb3"
+export CFLAGS="-Wall -fno-strict-aliasing -O0 -ggdb3"
+export CXXFLAGS="-O0 -ggdb3"
 %else
-export CFLAGS="$RPM_OPT_FLAGS -Wall -fno-strict-aliasing"
+# GCC 4 turns -D_FORTIFY_SOURCE=2 on so -O2 is required.
+export CFLAGS="-Wall -fno-strict-aliasing -D_FORTIFY_SOURCE=0 -O0 -ggdb3"
+export CXXFLAGS="-D_FORTIFY_SOURCE=0 -O0 -ggdb3"
 %endif
 
 %configure \
