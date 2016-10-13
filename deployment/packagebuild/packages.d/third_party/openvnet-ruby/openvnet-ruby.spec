@@ -67,9 +67,15 @@ HACK_230=$(set +e;
     echo "-rsingleton"
   fi
 )
-export GEM_HOME=${RPM_BUILD_ROOT}$(${RPM_BUILD_ROOT}%{_prefix}/bin/ruby ${HACK_230} ${RPM_BUILD_ROOT}%{_prefix}/bin/gem env gemdir)
+gemdir=$(${RPM_BUILD_ROOT}%{_prefix}/bin/ruby ${HACK_230} ${RPM_BUILD_ROOT}%{_prefix}/bin/gem env gemdir)
+export GEM_HOME=${RPM_BUILD_ROOT}${gemdir}
 ${RPM_BUILD_ROOT}%{_prefix}/bin/ruby ${HACK_230} ${RPM_BUILD_ROOT}%{_prefix}/bin/gem install bundler --no-document --wrappers
 
+# Copy bin wrappers in $(gem env gemdir)/bin to %{_prefix}/bin
+(
+  cd ${GEM_HOME}/bin
+  cp * ${RPM_BUILD_ROOT}%{_prefix}/bin/
+)
 # Update rpath in the ELF binaries.
 #for i in $(find $RPM_BUILD_ROOT -type f -and -executable); do
 #  if file -b "$i" | grep -q '^ELF ' > /dev/null; then
