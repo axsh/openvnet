@@ -47,16 +47,22 @@ module Vnet::Core::Segments
                            match_segment: @id)
 
       if true
-        [[5, {}], [45, { tunnel_id: 0 }]].each { |priority, match|
+        # TODO: How correct is it to just catch broadcast packets?
+        # Perhaps not needed as the packet should be a return packet
+        # so the flow should already have been learned.
+        [ [5, {}, {}],
+          [6, {}, { output: OFPP_CONTROLLER }],
+          [45, { tunnel_id: 0 }, {}],
+          [46, { tunnel_id: 0 }, { output: OFPP_CONTROLLER }]
+        ].each { |priority, match, actions|
           flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
-                               goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                               goto_table: TABLE_OUTPUT_DP_TO_CONTROLLER,
                                priority: priority,
                                match: match.merge(:eth_type => 0x0806),
-                               actions: {
-                                 :output => OFPP_CONTROLLER 
-                               },
+                               actions: actions,
                                match_segment: @id)
         }
+
       else
         ovs_flows = []
         ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
@@ -99,6 +105,7 @@ module Vnet::Core::Segments
     end
 
     def packet_in(message)
+      info log_format_h('packet in', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
       info log_format("packet in", message.inspect)
 
       # TODO: Verify eth_src and arp_sha.
@@ -119,13 +126,33 @@ module Vnet::Core::Segments
                            match_segment: @id,
                            match_local: nil)
       
-      # TODO: Consider a catch flow to avoid issues with arp flooding.
+      # TODO: Should be possible to also have an idle_timeout if we
+      # match in_port(?). The hard_timeout would still be required in
+      # the case that the dst_mac_lookup flow times out.
+
+      # TODO: Add this based on tunnel, also match the tunnel_id.
+
+      flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                           priority: 60,
+                           idle_timeout: 30,
+                           hard_timeout: 120,
+                           match: {
+                             :eth_src => message.eth_src
+                           },
+                           match_segment: @id)
 
       @dp_info.add_flows(flows)
 
       # TODO: Consider having the controller send the arp packet
       # instead of a direct goto_table so that there won't be any lost
       # packets.
+
+      if message.table_id == TABLE_OUTPUT_DP_TO_CONTROLLER
+        message.match.in_port = OFPP_CONTROLLER
+      end
+
+      @dp_info.send_packet_out(message, OFPP_TABLE)
     end
 
   end

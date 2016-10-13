@@ -117,6 +117,7 @@ module Vnet
 
       TABLE_OUTPUT_DP_OVER_MAC2MAC           = 86 # Match src/dst if id, output if present.
       TABLE_OUTPUT_DP_OVER_TUNNEL            = 87 # Use tun_id to determine type for goto_table.
+      TABLE_OUTPUT_DP_TO_CONTROLLER          = 88
 
       #
       # Output ports tables:
