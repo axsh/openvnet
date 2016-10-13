@@ -67,6 +67,21 @@ module Vnet::Core::Segments
                                match_segment: @id)
         }
 
+        [ [6, {}],
+          [46, { tunnel_id: 0 }],
+        ].each { |priority, match|
+          flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+                               priority: priority,
+                               match: {
+                                 :eth_type => 0x0806,
+                                 :eth_dst => MAC_BROADCAST,
+                               }.merge(match),
+                               match_segment: @id,
+                               actions: {
+                                 :output => OFPP_CONTROLLER
+                               })
+        }
+
       else
         ovs_flows = []
         ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
@@ -151,8 +166,12 @@ module Vnet::Core::Segments
       # instead of a direct goto_table so that there won't be any lost
       # packets.
 
-      if message.table_id == TABLE_OUTPUT_DP_TO_CONTROLLER
+      case message.table_id
+      when TABLE_OUTPUT_DP_TO_CONTROLLER
         message.match.in_port = OFPP_CONTROLLER
+      when TABLE_SEGMENT_SRC_MAC_LEARNING
+      else
+        warn log_format("packet in from wrong table", message.inspect)
       end
 
       @dp_info.send_packet_out(message, OFPP_TABLE)
