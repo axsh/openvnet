@@ -47,17 +47,16 @@ module Vnet::Core::Segments
                            match_segment: @id)
 
       if true
-        flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
-                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
-                             priority: 45,
-                             match: {
-                               :eth_type => 0x0806,
-                               :tunnel_id => 0
-                             },
-                             actions: {
-                               :output => OFPP_CONTROLLER 
-                             },
-                             match_segment: @id)
+        [[5, {}], [45, { tunnel_id: 0 }]].each { |priority, match|
+          flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+                               goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                               priority: priority,
+                               match: match.merge(:eth_type => 0x0806),
+                               actions: {
+                                 :output => OFPP_CONTROLLER 
+                               },
+                               match_segment: @id)
+        }
       else
         ovs_flows = []
         ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
@@ -104,9 +103,10 @@ module Vnet::Core::Segments
 
       # TODO: Verify eth_src and arp_sha.
 
-      # TODO: Add idle_timeout.
-
       flows = []
+
+      # TODO: Check if match contains tunnel.
+
       flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP,
                            priority: 35,
                            idle_timeout: 36000,
