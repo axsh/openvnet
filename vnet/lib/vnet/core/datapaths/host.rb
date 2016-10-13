@@ -221,7 +221,6 @@ module Vnet::Core::Datapaths
       flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
                            priority: 2,
                            match: {
-                             :tunnel_id => 0,
                              :eth_dst => MAC_BROADCAST
                            },
                            match_segment: dpg_map[:segment_id],
