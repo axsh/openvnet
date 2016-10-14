@@ -3,6 +3,7 @@
 %define release 1
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
 %define strip_vendor %{?strip_vendor:1}
+%define openvnet_ruby_ver %{?openvnet_ruby_ver:2.1.10}
 
 Name: openvnet
 Version: 0.9%{?dev_release_suffix:dev}
@@ -29,7 +30,7 @@ BuildRequires: rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem-bundler
 %else
 # We require openvnet-ruby to run bundle install.
 # By using openvnet-ruby we ensure that the downloaded gems are compatible.
-BuildRequires: openvnet-ruby = 2.1.1.axsh0
+BuildRequires: openvnet-ruby = %{openvnet_ruby_ver}
 %endif
 
 Requires: openvnet-vnctl
@@ -40,49 +41,56 @@ Requires: openvnet-vna
 %description
 This is an empty metapackage that depends on all OpenVNet services and the vnctl client. Just a conventient way to install everything at once on a single machine.
 
+%files
+# No files in the openvnet metapackage.
+
 %prep
 OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
 if [ ! -d "$OPENVNET_SRC_DIR" ]; then
   git clone https://github.com/axsh/openvnet "$OPENVNET_SRC_DIR"
 fi
-cd "$OPENVNET_SRC_DIR/vnet"
-bundle install --path vendor/bundle --without development test --standalone
-cd "$OPENVNET_SRC_DIR/client/vnctl"
-bundle install --path vendor/bundle --without development test --standalone
 
-%files
-# No files in the openvnet metapackage.
+%build
+cd "$RPM_SOURCE_DIR/openvnet"
+(
+  cd "vnet"
+  bundle install --path vendor/bundle --without development test --standalone
+)
+(
+  cd "client/vnctl"
+  bundle install --path vendor/bundle --without development test --standalone
+)
 
 %install
-OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
+cd "$RPM_SOURCE_DIR/openvnet"
 mkdir -p "$RPM_BUILD_ROOT"/etc
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
 %if %{defined systemd_requires}
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf.el7/* "$RPM_BUILD_ROOT"/
+cp -r deployment/conf.el7/* "$RPM_BUILD_ROOT"/
 %else
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
+cp -r deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
+cp -r deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
 %endif
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
-cp "$OPENVNET_SRC_DIR"/deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/README.md "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp -r "$OPENVNET_SRC_DIR"/vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
-cp -r "$OPENVNET_SRC_DIR"/client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
+cp -r deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
+install -m 755 deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
+cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/README.md "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+install -m 755 vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+cp -r vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
+cp -r client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
 %if %{strip_vendor}
-tar cO --directory="${OPENVNET_SRC_DIR}/vnet" \
+tar cO --directory="vnet" \
   --exclude='*.o' \
   --exclude='.git' \
   --exclude='cache/*.gem' \
@@ -92,7 +100,7 @@ tar cO --directory="${OPENVNET_SRC_DIR}/vnet" \
   --exclude='gems/pio-*/features/*' \
   vendor/ | tar -x --directory="${RPM_BUILD_ROOT}/opt/axsh/openvnet/vnet" -f -
 %else
-cp -r "$OPENVNET_SRC_DIR"/vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 %endif
 
 %package common
@@ -111,7 +119,8 @@ Requires: mysql-libs
 %if %{rhel} >= 7
 Requires: rh-ruby23 rh-ruby23-rubygem-bundler
 %else
-Requires: openvnet-ruby
+# Runtime openvnet-ruby version must be same as building package.
+Requires: openvnet-ruby = %{openvnet_ruby_ver}
 %endif
 
 # The zeromq3-devel package is required because it provides the /usr/lib64/libzmq.so file.
