@@ -25,9 +25,13 @@ BuildRequires: mysql-devel
 BuildRequires: sqlite-devel
 BuildRequires: libpcap-devel
 
+%if %{rhel} >= 7
+BuildRequires: rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem-bundler
+%else
 # We require openvnet-ruby to run bundle install.
 # By using openvnet-ruby we ensure that the downloaded gems are compatible.
 BuildRequires: openvnet-ruby = %{openvnet_ruby_ver}
+%endif
 
 Requires: openvnet-vnctl
 Requires: openvnet-webapi
@@ -86,7 +90,7 @@ cp -r vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
 cp -r client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
 %if %{strip_vendor}
-tar cO --directory="${OPENVNET_SRC_DIR}/vnet" \
+tar cO --directory="vnet" \
   --exclude='*.o' \
   --exclude='.git' \
   --exclude='cache/*.gem' \
@@ -112,8 +116,12 @@ AutoReqProv: no
 
 Requires: zeromq3
 Requires: mysql-libs
+%if %{rhel} >= 7
+Requires: rh-ruby23 rh-ruby23-rubygem-bundler
+%else
 # Runtime openvnet-ruby version must be same as building package.
 Requires: openvnet-ruby = %{openvnet_ruby_ver}
+%endif
 
 # The zeromq3-devel package is required because it provides the /usr/lib64/libzmq.so file.
 # That file is just a symlink to /usr/lib64/libzmq.so.3.0.0 which is provided by the zerom13
@@ -241,7 +249,11 @@ Summary: Virtual network agent for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
+%if %{rhel} >= 7
+Requires: openvswitch >= 2.4.0
+%else
 Requires: openvswitch = 2.3.1
+%endif
 %{?systemd_requires}
 
 %description vna
@@ -278,8 +290,11 @@ BuildArch: noarch
 # We turn off automatic dependecy detection because rpmbuild will see some
 # things in ruby gems under vendor that it wrongly detects as a dependency.
 AutoReqProv: no
-
+%if %{rhel} >= 7
+Requires: rh-ruby23 rh-ruby23-rubygem-bundler
+%else
 Requires: openvnet-ruby
+%endif
 
 %description vnctl
 This package contains the vnctl client for OpenVNet's WebAPI. It's a simple commandline client that just sends plain http calls to the API and prints their response.
