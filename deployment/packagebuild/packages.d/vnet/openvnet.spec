@@ -37,19 +37,25 @@ Requires: openvnet-vna
 %description
 This is an empty metapackage that depends on all OpenVNet services and the vnctl client. Just a conventient way to install everything at once on a single machine.
 
+%files
+# No files in the openvnet metapackage.
+
 %prep
 OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
-BUNDLE_PATH="/opt/axsh/openvnet/ruby/bin/bundle"
 if [ ! -d "$OPENVNET_SRC_DIR" ]; then
   git clone https://github.com/axsh/openvnet "$OPENVNET_SRC_DIR"
 fi
-cd "$OPENVNET_SRC_DIR/vnet"
-"$BUNDLE_PATH" install --path vendor/bundle --without development test --standalone
-cd "$OPENVNET_SRC_DIR/client/vnctl"
-"$BUNDLE_PATH" install --path vendor/bundle --without development test --standalone
 
-%files
-# No files in the openvnet metapackage.
+%build
+cd "$RPM_SOURCE_DIR/openvnet"
+(
+  cd "vnet"
+  bundle install --path vendor/bundle --without development test --standalone
+)
+(
+  cd "client/vnctl"
+  bundle install --path vendor/bundle --without development test --standalone
+)
 
 %install
 OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
