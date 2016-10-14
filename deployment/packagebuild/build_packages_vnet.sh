@@ -51,7 +51,11 @@ sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 # Prepare build directories and put the source in place.
 #
 
+# scl_source is designed to run in the context +e. Otherwise
+# non-zero exit from scl_enabled causes the program terminate.
+set +e 
 . scl_source enable ${SCL_RUBY}
+set -e
 
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
 if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
