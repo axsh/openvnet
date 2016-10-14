@@ -58,33 +58,33 @@ cd "$RPM_SOURCE_DIR/openvnet"
 )
 
 %install
-OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
+cd "$RPM_SOURCE_DIR/openvnet"
 mkdir -p "$RPM_BUILD_ROOT"/etc
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
 %if %{defined systemd_requires}
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf.el7/* "$RPM_BUILD_ROOT"/
+cp -r deployment/conf.el7/* "$RPM_BUILD_ROOT"/
 %else
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
+cp -r deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
+cp -r deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
 %endif
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
-cp "$OPENVNET_SRC_DIR"/deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/README.md "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp -r "$OPENVNET_SRC_DIR"/vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
-cp -r "$OPENVNET_SRC_DIR"/client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
+cp -r deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
+install -m 755 deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
+cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/README.md "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+install -m 755 vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+cp -r vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
+cp -r client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
 %if %{strip_vendor}
 tar cO --directory="${OPENVNET_SRC_DIR}/vnet" \
   --exclude='*.o' \
@@ -96,7 +96,7 @@ tar cO --directory="${OPENVNET_SRC_DIR}/vnet" \
   --exclude='gems/pio-*/features/*' \
   vendor/ | tar -x --directory="${RPM_BUILD_ROOT}/opt/axsh/openvnet/vnet" -f -
 %else
-cp -r "$OPENVNET_SRC_DIR"/vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 %endif
 
 %package common
