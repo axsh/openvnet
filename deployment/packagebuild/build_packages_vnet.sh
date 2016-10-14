@@ -13,13 +13,12 @@ REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
 POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
 RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
 
-function check_dependency() {
-  local cmd="$1"
-  local pkg="$2"
-
-  command -v ${cmd} >/dev/null 2>&1 || {
-    sudo yum install -y ${pkg}
-  }
+function yum_check_install() {
+  for i in $*; do
+    if ! rpm -q $i &> /dev/null; then
+      echo $i
+    fi
+  done | xargs --no-run-if-empty yum install -y
 }
 
 if [ "${BUILD_TYPE}" == "stable" ] && [ -z "${RPM_VERSION}" ]; then
@@ -32,8 +31,7 @@ fi
 # Install dependencies
 #
 
-check_dependency yum-builddep yum-utils
-check_dependency createrepo createrepo
+yum_check_install yum-utils createrepo rpmdevtools
 
 # Make sure that we work with the correct version of openvnet-ruby
 sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
