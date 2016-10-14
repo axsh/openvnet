@@ -28,6 +28,7 @@ type Client struct {
 	Segment       *SegmentService
 	SecurityGroup *SecurityGroupService
 	MacRangeGroup *MacRangeGroupService
+	Topology      *TopologyService
 }
 
 func (c *Client) post(uri string, output interface{}, params interface{}) (*http.Response, error) {
@@ -67,6 +68,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c.Segment = &SegmentService{client: c}
 	c.SecurityGroup = &SecurityGroupService{client: c}
 	c.MacRangeGroup = &MacRangeGroupService{client: c}
+	c.Topology = &TopologyService{client: c}
 	return c
 }
 
