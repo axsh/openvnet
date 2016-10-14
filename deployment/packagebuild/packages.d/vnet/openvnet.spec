@@ -3,7 +3,6 @@
 %define release 1
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
 %define strip_vendor %{?strip_vendor:1}
-%define openvnet_ruby_ver %{?openvnet_ruby_ver:2.1.10}
 
 Name: openvnet
 Version: 0.9%{?dev_release_suffix:dev}
@@ -25,13 +24,8 @@ BuildRequires: mysql-devel
 BuildRequires: sqlite-devel
 BuildRequires: libpcap-devel
 
-%if %{rhel} >= 7
-BuildRequires: rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem-bundler
-%else
-# We require openvnet-ruby to run bundle install.
-# By using openvnet-ruby we ensure that the downloaded gems are compatible.
-BuildRequires: openvnet-ruby = %{openvnet_ruby_ver}
-%endif
+BuildRequires: %{scl_ruby}-scldevel
+BuildRequires: %{scl_ruby} %{scl_ruby}-ruby-devel %{scl_ruby}-rubygem-rake %{scl_ruby}-rubygem-bundler
 
 Requires: openvnet-vnctl
 Requires: openvnet-webapi
@@ -70,11 +64,14 @@ mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
 %if %{defined systemd_requires}
 cp -r deployment/conf.el7/* "$RPM_BUILD_ROOT"/
+echo "SCL_RUBY=%{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/sysconfig/openvnet
 %else
 cp -r deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
 cp -r deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
+echo "SCL_RUBY=%{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/default/openvnet
 %endif
 cp -r deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
+echo ". scl_source enable %{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/openvnet/vnctl-ruby
 install -m 755 deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -116,12 +113,7 @@ AutoReqProv: no
 
 Requires: zeromq3
 Requires: mysql-libs
-%if %{rhel} >= 7
-Requires: rh-ruby23 rh-ruby23-rubygem-bundler
-%else
-# Runtime openvnet-ruby version must be same as building package.
-Requires: openvnet-ruby = %{openvnet_ruby_ver}
-%endif
+Requires: %{scl_ruby} %{scl_ruby}-rubygem-bundler
 
 # The zeromq3-devel package is required because it provides the /usr/lib64/libzmq.so file.
 # That file is just a symlink to /usr/lib64/libzmq.so.3.0.0 which is provided by the zerom13
@@ -290,11 +282,7 @@ BuildArch: noarch
 # We turn off automatic dependecy detection because rpmbuild will see some
 # things in ruby gems under vendor that it wrongly detects as a dependency.
 AutoReqProv: no
-%if %{rhel} >= 7
-Requires: rh-ruby23 rh-ruby23-rubygem-bundler
-%else
-Requires: openvnet-ruby
-%endif
+Requires: %{scl_ruby} %{scl_ruby}-rubygem-bundler
 
 %description vnctl
 This package contains the vnctl client for OpenVNet's WebAPI. It's a simple commandline client that just sends plain http calls to the API and prints their response.
@@ -304,3 +292,4 @@ This package contains the vnctl client for OpenVNet's WebAPI. It's a simple comm
 /opt/axsh/openvnet/client/vnctl
 /usr/bin/vnctl
 %config(noreplace) /etc/openvnet/vnctl.conf
+%config /etc/openvnet/vnctl-ruby

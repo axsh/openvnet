@@ -32,8 +32,16 @@ fi
 #
 
 yum_check_install yum-utils createrepo rpmdevtools
-yum_check_install centos-release-scl
+yum_check_install centos-release-scl scl-utils
 
+if [[ $(rpm --eval '%{defined scl_ruby}') -eq 1 ]]; then
+  # Found pre-installed rh-rubyXX or rubyXXX.
+  # *-scldevel package has to be installed.
+  SCL_RUBY=$(rpm --eval '%{scl_ruby}')
+else
+  echo "FATAL: No SCLO Ruby found. Please install any of rh-rubyXX from Software Collections." 1>&2
+  exit 1
+fi
 # Make sure that we work with the correct version of openvnet-ruby
 sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
 
@@ -43,11 +51,8 @@ sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 # Prepare build directories and put the source in place.
 #
 
-if rpm -q rh-ruby23 > /dev/null; then
-  . /opt/rh/rh-ruby23/enable
-elif rpm -q openvnet-ruby > /dev/null; then
-  export PATH="/opt/axsh/openvnet/ruby/bin:$PATH"
-fi
+. scl_source enable ${SCL_RUBY}
+
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
 if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
   rm -rf "$OPENVNET_SRC_BUILD_DIR"
