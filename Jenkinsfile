@@ -33,28 +33,31 @@ RELEASE_SUFFIX=$RELEASE_SUFFIX
 
 def stage_rpmbuild(label) {
   node(label) {
-    stage "Build ${label}"
-    checkout scm
-    write_build_env(label)
-    sh "./deployment/docker/build.sh ./build.env"
+    stage("Build ${label}") {
+      checkout scm
+      write_build_env(label)
+      sh "./deployment/docker/build.sh ./build.env"
+    }
   }
 }
 
 def stage_test_rpm(label) {
   node(label) {
-    stage "RPM Install Test ${label}"
-    checkout scm
-    write_build_env(label)
-    sh "./deployment/docker/test-rpm-install.sh ./build.env"
+    stage("RPM Install Test ${label}") {
+      checkout scm
+      write_build_env(label)
+      sh "./deployment/docker/test-rpm-install.sh ./build.env"
+    }
   }
 }
 
 node() {
-    stage "Checkout"
+  stage("Checkout") {
     checkout scm
     // http://stackoverflow.com/questions/36507410/is-it-possible-to-capture-the-stdout-from-the-sh-dsl-command-in-the-pipeline
     // https://issues.jenkins-ci.org/browse/JENKINS-26133
     RELEASE_SUFFIX=sh(returnStdout: true, script: "./deployment/packagebuild/gen-dev-build-tag.sh").trim()
+  }
 }
 
 build_nodes=BUILD_OS_TARGETS.clone()
