@@ -72,7 +72,8 @@
                 "curl  -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack",
                 "java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin build-timeout cloudbees-folder credentials-binding timestamper ws-cleanup pipeline-build-step github-organization-folder pipeline-stage-view git ssh-slaves matrix-auth email-ext mailer workflow-aggregator workflow-durable-task-step {{user `extra_jenkins_plugins`}}",
                 "systemctl enable httpd",
-                "nmcli connection add type ethernet ifname eth1 save yes con-name eth1 ip4 {{user `nic2_ipv4`}}/24"
+                "nmcli connection add type ethernet ifname eth1 save yes con-name eth1 ip4 {{user `nic2_ipv4`}}/24",
+                "yum update -y; yum clean all"
             ]
         }
     ]

@@ -58,7 +58,8 @@
                 "mkdir /var/log/jenkins; chown jenkins:jenkins /var/log/jenkins;",
                 "mkdir /var/lib/jenkins/build-cache; chown jenkins:jenkins /var/lib/jenkins/build-cache;",
                 "yum install -y docker-io",
-                "usermod -G dockerroot jenkins"
+                "usermod -G dockerroot jenkins",
+                "yum update -y; yum clean all"
             ]
         }
     ]
