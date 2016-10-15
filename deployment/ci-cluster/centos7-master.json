@@ -16,6 +16,7 @@
             "shutdown_timeout": "10s",
             "headless": true,
             "vm_name": "jenkins2-master",
+            "output_directory": "output-jenkins2-master",
             "vboxmanage": [
                 [
                     "modifyvm", "{{.Name}}", "--memory", "{{ user `memory` }}"
