@@ -7,7 +7,7 @@
     "builders" : [
         {
             "type" : "virtualbox-ovf",
-            "source_path": "boxtemp/6.8/box.ovf",
+            "source_path": "boxtemp/centos-6.8/box.ovf",
             "ssh_password": "vagrant",
             "ssh_username": "vagrant",
             "shutdown_command": "echo 'vagrant' | sudo -S /sbin/halt -h -p",

@@ -3,13 +3,13 @@
         "memory" : "2048",
         "host_switch": "{{env `HOST_SWITCH`}}",
         "extra_jenkins_plugins": "envinject filesystem_scm nodelabelparameter {{env `JENKINS_PLUGINS`}}",
-        "jenkins_rpm": "jenkins-2.7.4-1.1.noarch.rpm",
+        "jenkins_rpm": "{{env `JENKINS_RPM`}}",
         "nic2_ipv4": "192.168.56.50"
     },
     "builders" : [
         {
             "type" : "virtualbox-ovf",
-            "source_path": "boxtemp/7.2/box.ovf",
+            "source_path": "boxtemp/centos-7.2/box.ovf",
             "ssh_password": "vagrant",
             "ssh_username": "vagrant",
             "shutdown_command": "echo 'vagrant' | sudo -S /sbin/halt -h -p",
