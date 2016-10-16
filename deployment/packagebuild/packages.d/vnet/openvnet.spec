@@ -86,7 +86,7 @@ cp -r vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
 cp -r client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
 %if %{strip_vendor}
-tar cO --directory="${OPENVNET_SRC_DIR}/vnet" \
+tar cO --directory="vnet" \
   --exclude='*.o' \
   --exclude='.git' \
   --exclude='cache/*.gem' \
