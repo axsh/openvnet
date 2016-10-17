@@ -8,12 +8,8 @@ properties ([[$class: 'ParametersDefinitionProperty',
   parameterDefinitions: [
     [$class: 'ChoiceParameterDefinition',
       choices: "all\n" + BUILD_OS_TARGETS.join("\n"), description: 'Target OS name', name: 'BUILD_OS'],
-    [$class: 'StringParameterDefinition',
-      defaultValue: '0', description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER'],
-    [$class: 'StringParameterDefinition',
-      defaultValue: env.REPO_BASE_DIR, description: 'Path to create yum repository', name: 'REPO_BASE_DIR'],
-    [$class: 'StringParameterDefinition',
-      defaultValue: env.BUILD_CACHE_DIR, description: 'Directory for storing build cache archive', name: 'BUILD_CACHE_DIR']
+    [$class: 'ChoiceParameterDefinition',
+      choices: "0\n1", description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER']
   ]
 ]])
 
@@ -21,8 +17,8 @@ def write_build_env(label) {
   def build_env="""# These parameters are read from bash and docker --env-file.
 # So do not use single or double quote for the value part.
 LEAVE_CONTAINER=$LEAVE_CONTAINER
-REPO_BASE_DIR=$REPO_BASE_DIR
-BUILD_CACHE_DIR=$BUILD_CACHE_DIR
+REPO_BASE_DIR=${env.REPO_BASE_DIR}
+BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR}
 BUILD_OS=$label
 RELEASE_SUFFIX=$RELEASE_SUFFIX
 """
