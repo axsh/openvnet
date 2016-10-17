@@ -28,7 +28,7 @@ RELEASE_SUFFIX=$RELEASE_SUFFIX
 @Field RELEASE_SUFFIX=null
 
 def stage_rpmbuild(label) {
-  node("el7") {
+  node("ci-build") {
     stage("Build ${label}") {
       checkout scm
       write_build_env(label)
