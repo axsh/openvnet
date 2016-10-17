@@ -241,11 +241,7 @@ Summary: Virtual network agent for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
-%if %{rhel} >= 7
-Requires: openvswitch >= 2.4.0
-%else
 Requires: openvswitch = 2.3.1
-%endif
 %{?systemd_requires}
 
 %description vna
