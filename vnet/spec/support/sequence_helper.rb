@@ -5,6 +5,8 @@ ID_SEQUENCES = [
   :interface_ids,
   :interface_port_ids,
   :ip_lease_ids,
+  :ip_retention,
+  :ip_retention_container,
   :mac_lease_ids,
 ]
 

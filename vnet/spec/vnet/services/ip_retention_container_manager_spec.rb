@@ -1,32 +1,44 @@
+# -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
+Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
+
 describe Vnet::Services::IpRetentionContainerManager do
-  let(:manager) { described_class.new(Vnet::Services::VnetInfo.new) }
-  describe "load_all_items" do
-    before do
-      3.times do
-        Fabricate(:ip_retention_container) do
-          after_create do |ip_retention_container, _|
-            3.times { Fabricate(:ip_retention, ip_retention_container_id: ip_retention_container.id) }
-          end
-        end
-      end
-    end
+  let(:vnet_info) { Vnet::Services::VnetInfo.new }
+  let(:manager) { described_class.new(vnet_info) }
 
-    it "load all database records into items" do
-      manager.async.send(:load_all_items)
+  let(:item_name) { :ip_retention_container }
 
-      3.times do |i|
-        manager.wait_for_loaded({ id: i + 1 }, 1.0)
-      end
+  item_names = (1..3).map { |index| "item_#{index}" }
 
-      ip_retention_containers = manager.instance_variable_get(:@items)
+  (1..3).each { |index|
+    let("item_#{index}") {
+      Fabricate(item_name).tap { |item_model|
+        (index - 1).times {
+          Fabricate(:ip_retention, item_name => item_model)
+        }
 
-      expect(ip_retention_containers.size).to eq 3
+        publish_item_created_event(manager, item_model)
+      }
+    }
+  }
 
-      ip_retention_containers.values.each do |ip_retention_container|
-        expect(ip_retention_container.leased_ip_retentions.size).to eq 3
-      end
-    end
+  let(:item_models) {
+    (1..3).map { |index| send("item_#{index}") }
+  }
+
+  let(:item_assoc_counts) {
+    { leased_ip_retentions: [0, 1, 2],
+    }
+  }
+
+  describe "create items" do
+    include_examples 'create items on service manager'
   end
+
+  describe "delete items from #{item_names.join(', ')}" do
+    include_examples 'delete items on service manager', item_names
+  end
+
 end

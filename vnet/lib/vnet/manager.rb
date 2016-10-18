@@ -101,14 +101,17 @@ module Vnet
     # Polling methods:
     #
 
+    # Returns true if initialized, nil otherwise.
     def wait_for_initialized(max_wait = 10.0)
       internal_wait_for_initialized(max_wait)
     end
 
+    # Returns item if loaded, nil otherwise.
     def wait_for_loaded(params, max_wait = 10.0, try_load = false)
       item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
 
+    # Returns true if unloaded, nil otherwise.
     def wait_for_unloaded(params, max_wait = 10.0)
       internal_wait_for_unloaded(params, max_wait)
     end
