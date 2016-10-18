@@ -2,7 +2,7 @@
   "variables": {
     "memory": "1024",
     "host_switch": "{{env `HOST_SWITCH`}}",
-    "nic2_ipv4": "192.168.56.101"
+    "nic2_ipv4": "192.168.56.51"
   },
   "builders": [
     {
@@ -82,6 +82,7 @@
         "mkdir /var/lib/jenkins/build-cache; chown jenkins:jenkins /var/lib/jenkins/build-cache;",
         "yum install -y docker-io",
         "usermod -G dockerroot jenkins",
+        "echo 'IPADDR={{user `nic2_ipv4`}}' >> /etc/sysconfig/network-scripts/ifcfg-eth1",
         "yum update -y; yum clean all"
       ]
     }
