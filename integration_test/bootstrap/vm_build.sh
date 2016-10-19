@@ -190,7 +190,6 @@ echo -e "${full_packer_template}" > ${template_file}
 echo "packer validate ${template_file}"
 packer validate ${template_file}
 
-
 if [ $? -ne 0 ]; then
   echo
   echo "Bad template file: \"${template_file}\". "
@@ -199,8 +198,6 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "packer build  ${template_file} ..."
-
-      exit 22   ### HERE here
 
 packer build  ${template_file}
 

@@ -46,4 +46,22 @@ for ifcfg_dev in ` ls ${base_dir}/metadata/ifcfg-*`; do
 
 done
 
+## Now add the router info file(s) (route-br0, etc.)
+for rtfile in `ls ${base_dir}/metadata/route-*`; do
+   rt_if=`basename ${rtfile}`
+
+   out=${base_dir}/tmp.${rt_if}
+   gen_ifcfg_script ${out} ${rt_if} ${base_dir}/metadata
+
+   script_file_list_str="${script_file_list_str},`basename ${base_dir}`/tmp.${rt_if}"
+
+done
+
+## port-forwarding needed?
+if [ -e ${base_dir}/metadata/port_forwarding.sh ]; then
+   cp ${base_dir}/metadata/port_forwarding.sh  ${base_dir}/tmp.port_forwarding.sh
+   script_file_list_str="${script_file_list_str},${base_dir}/tmp.port_forwarding.sh"
+fi
+
+
 echo ${script_file_list_str#,}
