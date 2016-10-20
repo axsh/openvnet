@@ -16,7 +16,6 @@ topologies:
   - uuid: topo-vnet
     mode: simple_overlay
 
-
 topology_networks:
 
   - topology_uuid: topo-physical
