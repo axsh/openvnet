@@ -126,7 +126,8 @@ if [ ! -e ${vmdir}/metadata/lxc ]; then
 fi
 
 script_file_list_str=""
-for lxc in `ls ${vmdir}/metadata/lxc`; do
+## Assumption here: Only files giving lxc container info. are in this dir!
+for lxc in `ls ${vmdir}/metadata/lxc`; do    
 
    outfile=${vmdir}/tmp.${lxc}.config.sh
    /bin/rm -f ${outfile}
