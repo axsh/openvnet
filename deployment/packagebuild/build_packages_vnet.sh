@@ -11,14 +11,14 @@ OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
 REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
 POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
+RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
 
-function check_dependency() {
-  local cmd="$1"
-  local pkg="$2"
-
-  command -v ${cmd} >/dev/null 2>&1 || {
-    sudo yum install -y ${pkg}
-  }
+function yum_check_install() {
+  for i in $*; do
+    if ! rpm -q $i &> /dev/null; then
+      echo $i
+    fi
+  done | xargs --no-run-if-empty yum install -y
 }
 
 if [ "${BUILD_TYPE}" == "stable" ] && [ -z "${RPM_VERSION}" ]; then
@@ -31,8 +31,7 @@ fi
 # Install dependencies
 #
 
-check_dependency yum-builddep yum-utils
-check_dependency createrepo createrepo
+yum_check_install yum-utils createrepo rpmdevtools
 
 # Make sure that we work with the correct version of openvnet-ruby
 sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
@@ -67,10 +66,11 @@ git clean -xdf
 #
 # Build the packages
 #
+export PATH="/opt/axsh/openvnet/ruby/bin:$PATH"
 
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RPM_VERSION}"
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
 
   git checkout "${RPM_VERSION}"
   echo "Building the following commit for stable version ${RPM_VERSION}"
@@ -82,7 +82,7 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RELEASE_SUFFIX}"
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi

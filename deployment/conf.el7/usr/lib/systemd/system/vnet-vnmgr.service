@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenVNet management process
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/openvnet
+User=vnet-vnmgr
+WorkingDirectory=${VNET_ROOT}/vnet
+ExecStart=/opt/axsh/openvnet/ruby/bin/bundle exec ./bin/vnmgr >> ${LOG_DIRECTORY}/vnmgr.log
+
+[Install]
+WantedBy=multi-user.target

@@ -2,6 +2,8 @@
 # development (non stable) versions.
 %define release 1
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
+%define strip_vendor %{?strip_vendor:1}
+%define openvnet_ruby_ver %{?openvnet_ruby_ver:2.1.10}
 
 Name: openvnet
 Version: 0.9%{?dev_release_suffix:dev}
@@ -25,7 +27,7 @@ BuildRequires: libpcap-devel
 
 # We require openvnet-ruby to run bundle install.
 # By using openvnet-ruby we ensure that the downloaded gems are compatible.
-BuildRequires: openvnet-ruby = 2.1.1.axsh0
+BuildRequires: openvnet-ruby = %{openvnet_ruby_ver}
 
 Requires: openvnet-vnctl
 Requires: openvnet-webapi
@@ -35,51 +37,73 @@ Requires: openvnet-vna
 %description
 This is an empty metapackage that depends on all OpenVNet services and the vnctl client. Just a conventient way to install everything at once on a single machine.
 
-%prep
-OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
-BUNDLE_PATH="/opt/axsh/openvnet/ruby/bin/bundle"
-if [ ! -d "$OPENVNET_SRC_DIR" ]; then
-  git clone https://github.com/axsh/openvnet "$OPENVNET_SRC_DIR"
-fi
-cd "$OPENVNET_SRC_DIR/vnet"
-"$BUNDLE_PATH" install --path vendor/bundle --without development test --standalone
-cd "$OPENVNET_SRC_DIR/client/vnctl"
-"$BUNDLE_PATH" install --path vendor/bundle --without development test --standalone
-
 %files
 # No files in the openvnet metapackage.
 
-%install
+%prep
 OPENVNET_SRC_DIR="$RPM_SOURCE_DIR/openvnet"
+if [ ! -d "$OPENVNET_SRC_DIR" ]; then
+  git clone https://github.com/axsh/openvnet "$OPENVNET_SRC_DIR"
+fi
+
+%build
+cd "$RPM_SOURCE_DIR/openvnet"
+(
+  cd "vnet"
+  bundle install --path vendor/bundle --without development test --standalone
+)
+(
+  cd "client/vnctl"
+  bundle install --path vendor/bundle --without development test --standalone
+)
+
+%install
+cd "$RPM_SOURCE_DIR/openvnet"
 mkdir -p "$RPM_BUILD_ROOT"/etc
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
-cp "$OPENVNET_SRC_DIR"/deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/README.md "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp "$OPENVNET_SRC_DIR"/vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
-cp -r "$OPENVNET_SRC_DIR"/vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
-cp -r "$OPENVNET_SRC_DIR"/vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
-cp -r "$OPENVNET_SRC_DIR"/client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
+%if %{defined systemd_requires}
+cp -r deployment/conf.el7/* "$RPM_BUILD_ROOT"/
+%else
+cp -r deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
+cp -r deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
+%endif
+cp -r deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
+install -m 755 deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
+cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/README.md "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp vnet/Rakefile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+install -m 755 vnet/bin/vna "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnflows-monitor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+install -m 755 vnet/bin/vnmgr "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin/
+cp -r vnet/db "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+cp -r vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
+cp -r client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
+%if %{strip_vendor}
+tar cO --directory="vnet" \
+  --exclude='*.o' \
+  --exclude='.git' \
+  --exclude='cache/*.gem' \
+  --exclude='gems/*-*/test/*' \
+  --exclude='gems/*-*/spec/*' \
+  --exclude='gems/*-*/doc/*' \
+  --exclude='gems/pio-*/features/*' \
+  vendor/ | tar -x --directory="${RPM_BUILD_ROOT}/opt/axsh/openvnet/vnet" -f -
+%else
+cp -r vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
+%endif
 
+%package common
 #
 # openvnet-common package
 #
 
-%package common
 Summary: Common code for all OpenVNet services.
 
 # We turn off automatic dependecy detection because rpmbuild will see some
@@ -88,7 +112,8 @@ AutoReqProv: no
 
 Requires: zeromq3
 Requires: mysql-libs
-Requires: openvnet-ruby
+# Runtime openvnet-ruby version must be same as building package.
+Requires: openvnet-ruby = %{openvnet_ruby_ver}
 
 # The zeromq3-devel package is required because it provides the /usr/lib64/libzmq.so file.
 # That file is just a symlink to /usr/lib64/libzmq.so.3.0.0 which is provided by the zerom13
@@ -114,18 +139,22 @@ This package contains all the common code for OpenVNet's services. All of the Op
 /opt/axsh/openvnet/vnet/vendor
 /opt/axsh/openvnet/vnet/.bundle
 %config(noreplace) /etc/openvnet/common.conf
+%if %{defined systemd_requires}
+%config(noreplace) /etc/sysconfig/openvnet
+%else
 %config(noreplace) /etc/default/openvnet
+%endif
 
+%package webapi
 #
 # openvnet-webapi package
 #
 
-%package webapi
 Summary: OpenVNet's RESTful WebAPI.
 BuildArch: noarch
 
 Requires: openvnet-common
-
+%{?systemd_requires}
 
 %description webapi
 This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNet by sending HTTP requests to this API.
@@ -133,8 +162,13 @@ This package contains OpenVNet's Restful WebAPI. Users can interact with OpenVNe
 %files webapi
 /opt/axsh/openvnet/vnet/rack
 %config(noreplace) /etc/openvnet/webapi.conf
+%if %{defined systemd_requires}
+%config %{_unitdir}/vnet-webapi.service
+%config(noreplace) /etc/systemd/system/vnet-webapi.service.d/env.conf
+%else
 %config(noreplace) /etc/default/vnet-webapi
 %config /etc/init/vnet-webapi.conf
+%endif
 
 %post webapi
 user="vnet-webapi"
@@ -147,15 +181,24 @@ fi
 touch "$logfile"
 chown "$user"."$user" "$logfile"
 
+%{?systemd_post:%systemd_post vnet-webapi.service}
+
+%postun webapi
+%{?systemd_postun:%systemd_postun vnet-webapi.service}
+
+%preun webapi
+%{?systemd_preun:%systemd_preun vnet-webapi.service}
+
+%package vnmgr
 #
 # openvnet-vnmgr package
 #
 
-%package vnmgr
 Summary: Virtual Network Manager for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
+%{?systemd_requires}
 
 %description vnmgr
 This package contains OpenVNet's VNMGR process. This process acts as a frontend for the MySQL database and broadcasts commands to VNA processes.
@@ -163,8 +206,12 @@ This package contains OpenVNet's VNMGR process. This process acts as a frontend 
 %files vnmgr
 /opt/axsh/openvnet/vnet/bin/vnmgr
 %config(noreplace) /etc/openvnet/vnmgr.conf
+%if %{defined systemd_requires}
+%config %{_unitdir}/vnet-vnmgr.service
+%else
 %config(noreplace) /etc/default/vnet-vnmgr
 %config /etc/init/vnet-vnmgr.conf
+%endif
 
 %post vnmgr
 user="vnet-vnmgr"
@@ -177,17 +224,25 @@ fi
 touch "$logfile"
 chown "$user"."$user" "$logfile"
 
+%{?systemd_post:%systemd_post vnet-vnmgr.service}
+
+%postun vnmgr
+%{?systemd_postun:%systemd_postun vnet-vnmgr.service}
+
+%preun vnmgr
+%{?systemd_preun:%systemd_preun vnet-vnmgr.service}
+
+%package vna
 #
 # openvnet-vna package
 #
-
-%package vna
 
 Summary: Virtual network agent for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
 Requires: openvswitch = 2.3.1
+%{?systemd_requires}
 
 %description vna
 This package contains OpenVNet's VNA process. This is an OpenFlow controller that sends commands to Open vSwitch to implement virtual networks.
@@ -196,14 +251,26 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 /opt/axsh/openvnet/vnet/bin/vna
 /opt/axsh/openvnet/vnet/bin/vnflows-monitor
 %config(noreplace) /etc/openvnet/vna.conf
+%if %{defined systemd_requires}
+%config %{_unitdir}/vnet-vna.service
+%else
 %config(noreplace) /etc/default/vnet-vna
 %config /etc/init/vnet-vna.conf
+%endif
 
+%post vna
+%{?systemd_post:%systemd_post vnet-vna.service}
+
+%postun vna
+%{?systemd_postun:%systemd_postun vnet-vna.service}
+
+%preun vna
+%{?systemd_preun:%systemd_preun vnet-vna.service}
+
+%package vnctl
 #
 # openvnet-vnctl package
 #
-
-%package vnctl
 
 Summary: A commandline client for OpenVNet's WebAPI.
 BuildArch: noarch

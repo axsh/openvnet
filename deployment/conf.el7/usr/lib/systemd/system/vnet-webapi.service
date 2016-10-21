@@ -1,0 +1,14 @@
+[Unit]
+Description=OpenVNet REST API process
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/openvnet
+Environment=BIND_ADDR=0.0.0.0 PORT=9090 RACK_ENV=production
+User=vnet-webapi
+WorkingDirectory=${VNET_ROOT}/vnet
+ExecStart=/opt/axsh/openvnet/ruby/bin/bundle exec unicorn -o ${BIND_ADDR} -p ${PORT} ./rack/config-webapi.ru >> ${LOG_DIRECTORY}/webapi.log
+
+
+[Install]
+WantedBy=multi-user.target
