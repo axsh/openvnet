@@ -35,6 +35,10 @@ set -e
 #         can be run to import the vm's into Virtual Box and to then
 #         start them up. The vm's are started in _headless_ mode.
 # 
+#    (5)  packer will fail if the machine being built already exists in
+#         Virtual Box. The user will need to delete any such instances
+#         by hand.
+#
 # USAGE:
 #         build_int_env.sh  6.5  [-basebox ovf_boxname ]
 #

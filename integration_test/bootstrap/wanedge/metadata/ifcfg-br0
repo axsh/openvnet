@@ -1,0 +1,19 @@
+ONBOOT=yes
+DEVICE=br0
+ONBOOT=yes
+DEVICETYPE=ovs
+TYPE=OVSBridge
+BOOTPROTO=static
+IPADDR=172.16.90.12
+NETMASK=255.255.255.0
+HOTPLUG=no
+OVS_EXTRA="
+ set bridge     ${DEVICE} protocols=OpenFlow10,OpenFlow12,OpenFlow13 --
+ set bridge     ${DEVICE} other_config:disable-in-band=true --
+ set bridge     ${DEVICE} other-config:datapath-id=0000eeeeeeeeeeee --
+ set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:05 --
+ set-fail-mode  ${DEVICE} standalone --
+ set-controller ${DEVICE} tcp:127.0.0.1:6633
+"
+ #set-controller ${DEVICE} unix:/var/run/openvswitch/${DEVICE}.controller
+ #set-fail-mode  ${DEVICE} secure --
