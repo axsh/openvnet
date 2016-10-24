@@ -26,9 +26,7 @@ if [ ! -e $HOME/.ssh/id_rsa ]; then
          exit_on_error $? "Failed to mkdir '$HOME/.ssh' "
     fi
 
-echo "I'd generate a key here..."
-
-#   gen_key $HOME/.ssh/id_rsa
+    gen_key $HOME/.ssh/id_rsa
     exit_on_error $?  "Failed to generate $HOME/.ssh/id_rsa keys"
 
 fi

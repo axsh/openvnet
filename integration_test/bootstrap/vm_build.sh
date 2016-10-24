@@ -73,7 +73,7 @@ template_var=$(cat << EOF
     {
       "boot_wait": "10s",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.ovf",
-      "headless": "",
+      "headless": "true",
       "http_directory": "http",
       "output_directory": "packer-${vm_name}-virtualbox",
       "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
