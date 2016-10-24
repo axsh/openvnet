@@ -38,7 +38,7 @@ function importvm {
 ###############################################################
 
 
-for vm in itest-edge itest1 itest2 itest3; do
+for vm in itest-edge itest1 itest2 itest3 router; do
     vmbox=packer-${vm}-virtualbox/${vm}.ovf
 
     echo "Will remove ${vm}..."
