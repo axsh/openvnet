@@ -2,13 +2,53 @@
 
 set -e
 
+###+
+#
+#    Script to build the openvnet integration test environment.
+# All vm's created are written to directories located in the
+# current directory. The directories have names defined by the
+# following structure:
+#
+# packer-<vm_name>-virtualbox
+#
+# So, for example:  packer-itest3-virtualbox.
+#
+# NOTES:
+#
+#    (1)  The script will FAIL if virtualbox is run in gui mode.
+#         The script that builds individual machines (vm_build.sh)
+#         has "headless" : "true"  set in the packer template files,
+#         so this shouldn't be a problem. However, if the script
+#         is run with virtualbox already running in gui mode, it is
+#         possible that the script could fail. (You will see an error
+#         reading something like "..could not realese lock on virutal
+#         machine ...")
+#
+#    (2)    
+#
+#
+# USAGE:
+#         build_int_env.sh  6.5  [-basebox ovf_boxname ]
+#
+#         Currently, openvnet only builds on centos6.5! In future,
+#         6.8 and 7.2 will be supported. For now, the first (required)
+#         value to pass to the script is 6.5.
+#
+#         To avoid downloading a basebox from the chef/bento git
+#         repository and use a previously downloaded & unpacked box,
+#         use the "-basename ovf_boxname" option. Here, "boxname"
+#         must be the full path the image, which must be an .ovf file.
+###-
+
 pname=`basename $0`
 chefbento_url=opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox
 
 function usage {
    echo
-   echo "   ${pname} centos_version [-basebox boxname.ovf]"
+   echo "   ${pname} centos_version [-basebox ovf_boxname]"
+   echo
    echo "   centos_version=6.5, 6.8 or 7.2 "
+   echo "   ovf_boxname is the full path to the .ovf file"
    echo
 }
 
@@ -145,17 +185,14 @@ base_provisioned_box_dir=packer-base_provisioned-virtualbox
 base_provisioned_box=base_provisioned
 /bin/rm -rf ${base_provisioned_box_dir}
 
-#time ./vm_build.sh $centos_ver ${base_provisioned_box} ${temp_ovf_dir}/box.ovf NONE  -provisioners base.sh
 time ./vm_build.sh $centos_ver ${base_provisioned_box} ${basebox} NONE  -provisioners base.sh
 
 provisioned_ovf_base=${base_provisioned_box_dir}/${base_provisioned_box}.ovf
 
-for vm in itest-edge itest1 itest2 itest3 router; do
-   sleep 10
-#  time ./vm_build.sh $centos_ver centos-${centos_ver}-${vm} ${provisioned_ovf_base} ${vm}
+for vm in itest1 itest2 itest3 router; do
    time ./vm_build.sh $centos_ver ${vm} ${provisioned_ovf_base} ${vm}
 done
 
-#/bin/rm -f ${ssh_provision_script}
+/bin/rm -f ${ssh_provision_script}
 
 exit $?

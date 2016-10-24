@@ -1,5 +1,23 @@
 #!/bin/bash  # -x
 
+###
+#
+#    This script imports and 'boots' the virtual machines
+# needed for the integration test envrionment.
+#
+# ** The machines are assumed to located in directories
+# ** located in the current directory. In particular,
+# ** it looks for:
+#
+#  ./packer-itest-edge-virtualbox/
+#  ./packer-itest1-virtualbox/
+#  ./packer-itest2-virtualbox/
+#  ./packer-itest3-virtualbox/
+#  ./packer-router-virtualbox/
+#
+# The machines are started in 'headless' mode -- no gui!
+#
+###
 vboxmanage=VBoxManage
 
 function startvm_headless {

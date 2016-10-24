@@ -28,18 +28,6 @@ curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercont
 
 ##
 
-#cat > /etc/sysconfig/network-scripts/ifcfg-eth1 <<EOF
-#DEVICE=eth1
-#DEVICETYPE=ovs
-#TYPE=OVSPort
-#OVS_BRIDGE=br0
-#BOOTPROTO=none
-#ONBOOT=yes
-#HOTPLUG=no
-#EOF
-
-#rpm -Uvh http://dlc.wakame.axsh.jp.s3-website-us-east-1.amazonaws.com/epel-release || :
-
 echo "yum -y install epel-release" >> ${LOG_FILE}
 yum -y install epel-release
 
@@ -48,8 +36,8 @@ echo "yum -y install openvnet" >> ${LOG_FILE}
 yum -y install openvnet
 
 # Brctl
-echo "yum -y install bridge-utils" >> ${LOG_FILE}
-yum -y install bridge-utils
+#echo "yum -y install bridge-utils" >> ${LOG_FILE}
+#yum -y install bridge-utils
 
 # Setup cgroup for lxc use
 mkdir /cgroup
