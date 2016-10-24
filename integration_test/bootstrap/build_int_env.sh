@@ -24,9 +24,17 @@ set -e
 #         reading something like "..could not realese lock on virutal
 #         machine ...")
 #
-#    (2)    
+#    (2)  Before running this script, the init_host_bridges.sh script
+#         ought to be run. This script sets up the 'hostonly' network
+#         on the host machine.
 #
+#    (3)  The script makes use of packer: The user must have this
+#         software/executable somewhere in the execution path.
 #
+#    (4)  Once the vm's have been built, the system_startup.sh script
+#         can be run to import the vm's into Virtual Box and to then
+#         start them up. The vm's are started in _headless_ mode.
+# 
 # USAGE:
 #         build_int_env.sh  6.5  [-basebox ovf_boxname ]
 #
