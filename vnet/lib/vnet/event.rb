@@ -97,6 +97,7 @@ module Vnet
     DATAPATH_UNLOAD_ITEM = 'datapath_unload_item'
     DATAPATH_CREATED_ITEM = 'datapath_created_item'
     DATAPATH_DELETED_ITEM = 'datapath_deleted_item'
+    DATAPATH_UPDATED_ITEM = 'datapath_updated_item'
 
     HOST_DATAPATH_INITIALIZED = 'host_datapath_initialized'
     HOST_DATAPATH_UNLOAD_ITEM = 'host_datapath_unload_item'

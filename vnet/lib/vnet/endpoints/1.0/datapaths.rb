@@ -3,25 +3,21 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
   def self.put_post_shared_params
     param :display_name, :String
-    param :is_connected, :Boolean
-
-    param :dpid, :String, transform: :hex, format: /^(0x)?[0-9a-f]{0,16}$/i, on_error: proc { |error|
-      if error[:reason] == :format
-        raise E::ArgumentError, "dpid must be a 16 byte hexadecimal number. Got: \"#{error[:value]}\""
-      else
-        vnet_default_on_error(error)
-      end
-    }
-
-    param :node_id, :String
     param :enable_ovs_learn_action, :Boolean
   end
 
   put_post_shared_params
   param_uuid M::Datapath
+  param :is_connected, :Boolean
+  param :node_id, :String, required: true
+  param :dpid, :String, required: true, transform: :hex, format: /^(0x)?[0-9a-f]{0,16}$/i, on_error: proc { |error|
+    if error[:reason] == :format
+      raise E::ArgumentError, "dpid must be a 16 byte hexadecimal number. Got: \"#{error[:value]}\""
+    else
+      vnet_default_on_error(error)
+    end
+  }
   param_options :display_name, required: true
-  param_options :dpid, required: true
-  param_options :node_id, required: true
   post do
     post_new(:Datapath)
   end
