@@ -354,6 +354,7 @@ module Vnspec
 
         _network_ctl(:flush)
         _network_ctl(:change_ip, @static_ipv4_address)
+        _network_ctl(:arp_flush)
       end
 
       def route_default_via(via_address)
@@ -444,6 +445,8 @@ module Vnspec
             'ip addr add ' + params.to_string + ' dev %s'
           when :route_default_via
             'ip route add default via ' + params.to_s + ' dev %s'
+          when :arp_flush
+            'ip neigh flush %s'
           else
             raise "unknown command: #{command}"
           end
