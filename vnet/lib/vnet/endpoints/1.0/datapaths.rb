@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
+
   def self.put_post_shared_params
     param :display_name, :String
     param :enable_ovs_learn_action, :Boolean
@@ -36,7 +37,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
 
   put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:Datapath)
+    update_by_uuid2(:Datapath)
   end
 
   param_uuid M::Interface, :interface_uuid, required: true
