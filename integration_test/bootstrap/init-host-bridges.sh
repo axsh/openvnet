@@ -14,6 +14,7 @@ function get_hostonlyifs {
 
 function add_interface {
     echo "${vboxcmd} hostonlyif create"
+    ${vboxcmd} hostonlyif create
 }
 
 function update_if_ip {
@@ -21,6 +22,7 @@ function update_if_ip {
     local host_if_ip=$2
 
     echo "${vboxcmd} hostonlyif ipconfig ${host_interface}  -ip ${host_if_ip}  "
+    ${vboxcmd} hostonlyif ipconfig ${host_interface}  -ip ${host_if_ip} 
 }
 
 ########################################################
