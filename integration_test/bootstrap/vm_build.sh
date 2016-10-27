@@ -170,7 +170,7 @@ base_template=$(base_packer_template  ${base_ovf_file} ${vm_name}  ${script_file
 # Pass 2: optional information
 vbox_cmd_temp=$(cat <<VBOX
       "vboxmanage_post": [
-              ${nic_cmd_list//,[/,\n              [}
+              ${nic_cmd_list//,[/,\\n              [}
           ]
 VBOX
 )
