@@ -53,7 +53,12 @@ module Vnet::Core::Segments
                              :output => OFPP_CONTROLLER
                            })
 
-      if true
+      if @datapath_info.enable_ovs_learn_action
+        ovs_flows = []
+        ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
+        ovs_flows << create_ovs_flow_learn_arp(5, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
+        ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      else
         # TODO: How correct is it to just catch broadcast packets?
         # Perhaps not needed as the packet should be a return packet
         # so the flow should already have been learned.
@@ -81,12 +86,6 @@ module Vnet::Core::Segments
                                  :output => OFPP_CONTROLLER
                                })
         }
-
-      else
-        ovs_flows = []
-        ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
-        ovs_flows << create_ovs_flow_learn_arp(5, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
-        ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
       end
 
       @dp_info.add_flows(flows)
@@ -124,8 +123,13 @@ module Vnet::Core::Segments
     end
 
     def packet_in(message)
-      info log_format_h('packet in', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
-      info log_format("packet in", message.inspect)
+      if @datapath_info.enable_ovs_learn_action
+        error log_format_h('packet_in however enable_ovs_learn_action is true', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
+        return
+      end
+
+      info log_format_h('packet_in', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
+      info log_format("packet_in", message.inspect)
 
       # TODO: Verify eth_src and arp_sha.
 
