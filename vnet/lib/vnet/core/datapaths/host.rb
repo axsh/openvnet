@@ -219,7 +219,7 @@ module Vnet::Core::Datapaths
                            write_segment: dpg_map[:segment_id],
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
-                           priority: 2,
+                           priority: 1,
                            match: {
                              :eth_dst => MAC_BROADCAST
                            },

@@ -46,13 +46,6 @@ module Vnet::Core::Segments
                            priority: 30,
                            match_segment: @id)
 
-      flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
-                           priority: 1,
-                           match_segment: @id,
-                           actions: {
-                             :output => OFPP_CONTROLLER
-                           })
-
       if @datapath_info.enable_ovs_learn_action
         ovs_flows = []
         ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
@@ -62,25 +55,25 @@ module Vnet::Core::Segments
         # TODO: How correct is it to just catch broadcast packets?
         # Perhaps not needed as the packet should be a return packet
         # so the flow should already have been learned.
-        [ [5, {}],
-          [45, { tunnel_id: 0 }],
-        ].each { |priority, match|
-          flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
-                               goto_table: TABLE_OUTPUT_DP_TO_CONTROLLER,
-                               priority: priority,
-                               match: match.merge(:eth_type => 0x0806),
-                               match_segment: @id)
-        }
-
         [ [6, {}],
           [46, { tunnel_id: 0 }],
         ].each { |priority, match|
           flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+                               goto_table: TABLE_OUTPUT_DP_TO_CONTROLLER,
                                priority: priority,
                                match: {
                                  :eth_type => 0x0806,
                                  :eth_dst => MAC_BROADCAST,
                                }.merge(match),
+                               match_segment: @id)
+        }
+
+        [ [5, {}],
+          [45, { tunnel_id: 0 }],
+        ].each { |priority, match|
+          flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+                               priority: priority,
+                               match: match.merge(:eth_type => 0x0806),
                                match_segment: @id,
                                actions: {
                                  :output => OFPP_CONTROLLER
@@ -129,7 +122,7 @@ module Vnet::Core::Segments
       end
 
       info log_format_h('packet_in', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
-      info log_format("packet_in", message.inspect)
+      # info log_format("packet_in", message.inspect)
 
       # TODO: Verify eth_src and arp_sha.
 
