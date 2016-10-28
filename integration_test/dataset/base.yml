@@ -4,19 +4,19 @@ datapaths:
     node_id: vna1
     display_name: node1
     dpid: "0x0000aaaaaaaaaaaa"
-    enable_ovs_learn_action: false
+#    enable_ovs_learn_action: false
 
   - uuid: dp-2
     node_id: vna2
     display_name: node2
     dpid: "0x0000bbbbbbbbbbbb"
-    enable_ovs_learn_action: false
+#    enable_ovs_learn_action: false
 
   - uuid: dp-3
     node_id: vna3
     display_name: node3
     dpid: "0x0000cccccccccccc"
-    enable_ovs_learn_action: false
+#    enable_ovs_learn_action: false
 
 segments:
 
