@@ -9,6 +9,9 @@ describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp =>
 
     vm1.route_default_via(config[:physical_network_gw_ip])
     vm7.route_default_via(config[:physical_network_gw_ip])
+
+    vm1.clear_arp_cache
+    vm2.clear_arp_cache
   end
 
   describe 'local vm7 in seg-global' do
