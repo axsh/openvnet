@@ -4,6 +4,7 @@ datapaths:
     node_id: wanedge
     display_name: wanedge
     dpid: "0x0000eeeeeeeeeeee"
+    enable_ovs_learn_action: false
 
 segments:
 
