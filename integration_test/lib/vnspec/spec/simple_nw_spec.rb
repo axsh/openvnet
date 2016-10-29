@@ -2,6 +2,6 @@
 
 require_relative 'shared_examples/simple'
 
-describe 'simple' do
+describe 'simple_nw' do
   include_examples 'simple examples'
 end

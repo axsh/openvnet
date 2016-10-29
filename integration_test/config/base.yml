@@ -1,12 +1,12 @@
 vm_type: :kvm
-specs: [simple,
+specs: [simple_nw,
+        simple_nw_tp,
 
         wanedge,
         promiscuous_seg_ovs,
         promiscuous_seg_of,
 
         simple_seg,
-        simple_tp,
         simple_seg_tp,
         router_v2v,
         router_p2v,
