@@ -9,7 +9,6 @@ module Vnet::Models
 
     dataset_module do
       def join_interface_segments
-        # self.join_table(:inner, :interface_segments, interface_segments__interface_id: :interface_ports__interface_id)
         self.join(:interface_segments, interface_segments__interface_id: :interface_ports__interface_id)
       end
     end

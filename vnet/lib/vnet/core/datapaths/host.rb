@@ -203,7 +203,7 @@ module Vnet::Core::Datapaths
 
       flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
 
-      # Hack(?)
+      # Handle broadcast packets using the OF-only learning flows.
       flow_cookie = dpg_map[:segment_id] | COOKIE_TYPE_SEGMENT
 
       flows << flow_create(table: TABLE_CONTROLLER_PORT,
