@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+require_relative 'spec_helper'
 require_relative 'shared_examples/simple'
 
 describe 'simple_seg', :vms_disable_dhcp => true do

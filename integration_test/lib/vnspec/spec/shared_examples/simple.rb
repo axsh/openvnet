@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require_relative "spec_helper"
-
 shared_examples 'simple examples' do
   describe "vnet1" do
     context "mac2mac" do
