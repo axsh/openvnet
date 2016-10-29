@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require_relative 'spec_helper'
+require_relative 'shared_examples/wanedge.rb'
 
 # TODO: Add multiple networks and use all vm's.
 

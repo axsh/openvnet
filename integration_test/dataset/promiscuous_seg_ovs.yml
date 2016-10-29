@@ -20,7 +20,7 @@ interfaces:
 
   - uuid: if-v5
     port_name: if-v5
-    segment_uuid: seg-vseg1
+    segment_uuid: seg-global
     mac_address: "02:00:00:00:00:05"
 
   - uuid: if-v7
@@ -55,7 +55,7 @@ datapath_segments:
     mac_address: "02:00:00:aa:02:01"
 
   - datapath_uuid: dp-3
-    segment_uuid: seg-vseg1
+    segment_uuid: seg-global
     interface_uuid: if-dp3eth0
     mac_address: "02:00:00:cc:00:01"
 
