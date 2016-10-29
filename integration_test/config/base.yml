@@ -1,26 +1,20 @@
 vm_type: :kvm
 specs: [simple_nw,
-
-        wanedge,
-        promiscuous_seg_ovs,
-        promiscuous_seg_of,
-
         simple_nw_tp,
         simple_seg,
         simple_seg_tp,
         router_v2v,
         router_p2v,
         router_v2v_tp,
+        wanedge,
+        promiscuous_seg_ovs,
+        promiscuous_seg_of,
         event,
         event_tp,
         service,
         secg,
         secg_reference,
-        filter,
-        ]
-#        wanedge,
-#        promiscuous_seg_ovs,
-#        promiscuous_seg_of]
+        filter]
 
 # specs not included
 # [lease_policy]
