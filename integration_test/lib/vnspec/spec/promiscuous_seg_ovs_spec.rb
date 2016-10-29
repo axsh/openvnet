@@ -2,7 +2,7 @@
 
 require_relative "spec_helper"
 
-describe "promiscuous_seg", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp => true do
+describe "promiscuous_seg_ovs", :vms_enable_vm => [:vm1, :vm7], :vms_disable_dhcp => true do
   before(:all) do
     vm1.change_ipv4_address('10.210.0.10')
     vm7.change_ipv4_address('10.210.0.17')
