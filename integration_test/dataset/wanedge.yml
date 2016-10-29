@@ -28,7 +28,7 @@ interfaces:
     port_name: if-v1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:01"
-    ipv4_address: 10.101.0.10
+    ipv4_address: 10.101.0.11
 
   - uuid: if-v5
     port_name: if-v5
@@ -166,7 +166,12 @@ translation_static_addresses:
 
   - translation_uuid: tr-saddr
     ingress_ipv4_address: <%= physical_network_vm1_ip %>
-    egress_ipv4_address: 10.101.0.10
+    egress_ipv4_address: 10.101.0.11
+    route_link_uuid: rl-1
+
+  - translation_uuid: tr-saddr
+    ingress_ipv4_address: <%= physical_network_vm5_ip %>
+    egress_ipv4_address: 10.101.0.15
     route_link_uuid: rl-1
 
   - translation_uuid: tr-saddr
@@ -176,14 +181,23 @@ translation_static_addresses:
 
 ip_leases:
 
+  # TODO: Why not phy_net_vm...?
+
   - uuid: il-nat104
     mac_lease_uuid: ml-glo2vnetgw
-    ipv4_address: 10.210.0.104
+    ipv4_address: <%= physical_network_vm1_ip %>
     network_uuid: nw-global
     enable_routing: true
 
   - uuid: il-nat105
     mac_lease_uuid: ml-glo2vnetgw
-    ipv4_address: 10.210.0.105
+    ipv4_address: <%= physical_network_vm5_ip %>
     network_uuid: nw-global
     enable_routing: true
+
+  - uuid: il-nat106
+    mac_lease_uuid: ml-glo2vnetgw
+    ipv4_address: <%= physical_network_vm7_ip %>
+    network_uuid: nw-global
+    enable_routing: true
+

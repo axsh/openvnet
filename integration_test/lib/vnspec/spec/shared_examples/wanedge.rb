@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples 'wanedge examples' do |local_name, pending_local: false, pending_gre: true|
+shared_examples 'wanedge examples' do |local_name, pending_local: false, pending_gre: false|
 
   describe "local vm7 in #{local_name}" do
     it 'reaches the gateway' do
@@ -72,6 +72,10 @@ shared_examples 'wanedge examples' do |local_name, pending_local: false, pending
     end
 
     it 'reaches vm5 on node3 using GRE' do
+      if pending_gre
+        pending('GRE tunnels currently not working')
+      end
+
       expect(vm7).to be_reachable_to(vm5)
     end
   end
