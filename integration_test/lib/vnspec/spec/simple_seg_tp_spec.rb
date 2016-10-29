@@ -10,8 +10,6 @@ describe "simple_seg", :vms_disable_dhcp => true do
     vm4.change_ipv4_address('10.101.0.11')
     vm5.change_ipv4_address('10.101.0.12')
     vm6.change_ipv4_address('10.101.0.12')
-
-    vms.parallel_each { |vm| vm.clear_arp_cache }
   end
 
   describe "vnet1" do
