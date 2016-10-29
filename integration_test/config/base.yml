@@ -1,5 +1,10 @@
 vm_type: :kvm
 specs: [simple_nw,
+
+        wanedge,
+        promiscuous_seg_ovs,
+        promiscuous_seg_of,
+
         simple_nw_tp,
         simple_seg,
         simple_seg_tp,
@@ -12,9 +17,10 @@ specs: [simple_nw,
         secg,
         secg_reference,
         filter,
-        wanedge,
-        promiscuous_seg_ovs,
-        promiscuous_seg_of]
+        ]
+#        wanedge,
+#        promiscuous_seg_ovs,
+#        promiscuous_seg_of]
 
 # specs not included
 # [lease_policy]
