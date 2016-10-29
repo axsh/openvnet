@@ -11,5 +11,5 @@ shared_examples 'promiscuous segment examples' do
     vm7.route_default_via(config[:physical_network_gw_ip])
   end
 
-  include_examples 'wanedge examples', 'seg-global'
+  include_examples 'wanedge examples', 'seg-global', pending_local: true
 end

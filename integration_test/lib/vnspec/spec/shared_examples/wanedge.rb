@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-shared_examples 'wanedge examples' do |local_name|
+shared_examples 'wanedge examples' do |local_name, pending_local: false|
 
   describe "local vm7 in #{local_name}" do
     it 'reaches the gateway' do
-      pending('support for both local and remote flows requires a new filtering mode')
+      if pending_local
+        pending('support for both local and remote flows requires a new filtering mode')
+      end
 
       to_gw = double()
       allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
@@ -13,7 +15,9 @@ shared_examples 'wanedge examples' do |local_name|
     end
 
     it 'reaches the internet' do
-      pending('support for both local and remote flows requires a new filtering mode')
+      if pending_local
+        pending('support for both local and remote flows requires a new filtering mode')
+      end
 
       to_gw = double()
       allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
@@ -40,7 +44,7 @@ shared_examples 'wanedge examples' do |local_name|
 
   describe "vm1 and vm7 in #{local_name}" do
     context 'vm1 on node1' do
-      it 'reachable to vm7 on promiscuous node' do
+      it 'reachable to vm7' do
         expect(vm1).to be_reachable_to(vm7)
       end
     end
