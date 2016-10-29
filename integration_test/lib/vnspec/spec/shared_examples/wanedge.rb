@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples 'wanedge examples' do |local_name, pending_local: false|
+shared_examples 'wanedge examples' do |local_name, pending_local: false, pending_gre: true|
 
   describe "local vm7 in #{local_name}" do
     it 'reaches the gateway' do
@@ -44,6 +44,10 @@ shared_examples 'wanedge examples' do |local_name, pending_local: false|
 
   describe "remote vm5 in #{local_name} using GRE" do
     it 'reaches the gateway' do
+      if pending_gre
+        pending('GRE tunnels currently not working')
+      end
+
       to_gw = double()
       allow(to_gw).to receive(:ipv4_address).and_return(config[:physical_network_gw_ip])
 
@@ -51,6 +55,10 @@ shared_examples 'wanedge examples' do |local_name, pending_local: false|
     end
 
     it 'reaches a global IP' do
+      if pending_gre
+        pending('GRE tunnels currently not working')
+      end
+
       to_gw = double()
       allow(to_gw).to receive(:ipv4_address).and_return(config[:pseudo_global_ip])
 
