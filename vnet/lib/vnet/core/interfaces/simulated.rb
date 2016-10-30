@@ -159,8 +159,8 @@ module Vnet::Core::Interfaces
                      })
         end
 
-      when
-        info log_format_h('packet_in unknown cookie tag', message.inspect)
+      else
+        info log_format_h('packet_in unknown cookie tag', message.to_h)
       end
 
     end
