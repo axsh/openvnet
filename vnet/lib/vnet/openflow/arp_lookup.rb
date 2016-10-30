@@ -61,7 +61,7 @@ module Vnet::Openflow
       port_number = message.match.in_port
 
       debug log_format('arp_lookup_lookup_packet_in',
-                       "port_number:#{port_number} ipv4_dst:#{message.ipv4_dst}")
+                       "port_number:#{port_number} ipv4_src:#{message.ipv4_src} ipv4_dst:#{message.ipv4_dst}")
 
       # Check if the address is in the same network, or if we need
       # to look up a gateway mac address.
@@ -141,7 +141,7 @@ module Vnet::Openflow
       port_number = message.match.in_port
 
       debug log_format('arp_lookup_reply_packet_in',
-                       "port_number:#{port_number} arp_spa:#{message.arp_spa}")
+                       "port_number:#{port_number} arp_spa:#{message.arp_spa} arp_tpa:#{message.arp_tpa}")
 
       mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
                                              ipv4_address: message.arp_tpa)

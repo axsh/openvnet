@@ -130,13 +130,9 @@ module Vnet::Core::Interfaces
                        })
 
       when TAG_ARP_LOOKUP
-        # info "simulated arp lookup: #{message.ipv4_dst}"
-
         arp_lookup_lookup_packet_in(message)
 
       when TAG_ARP_REPLY
-        # info "simulated arp reply: #{message.ipv4_dst}"
-
         arp_lookup_reply_packet_in(message)
 
       when TAG_ICMP_REQUEST
@@ -163,6 +159,8 @@ module Vnet::Core::Interfaces
                      })
         end
 
+      when
+        info log_format_h('packet_in unknown cookie tag', message.inspect)
       end
 
     end
