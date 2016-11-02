@@ -34,16 +34,22 @@ module Vnet::Openflow
       ipv4_info_mask = ipv4_info[:network_prefix]
       mac_address = mac_info[:mac_address]
 
-      [[20, {
-          :eth_src => mac_address,
-          :eth_type => 0x0800
-        }],
-       [30, {
-          :eth_src => mac_address,
-          :eth_type => 0x0800,
-          :ipv4_dst => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
-          :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
-        }]
+      [ [20, {
+            :eth_src => mac_address,
+            :eth_type => 0x0800
+          }],
+        [30, {
+            :eth_src => mac_address,
+            :eth_type => 0x0800,
+            :ipv4_dst => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
+            :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
+          }],
+        [40, {
+            :eth_src => mac_address,
+            :eth_type => 0x0800,
+            :ipv4_src => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
+            :ipv4_src_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
+          }],
       ].each { |priority, match|
         flows << flow_create(table: TABLE_ARP_LOOKUP,
                              priority: priority,
@@ -72,6 +78,12 @@ module Vnet::Openflow
 
       mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_src)
 
+      # When the source ipv4 address belongs to the simulated
+      # interface we need to match it in TABLE_ARP_LOOKUP so that each
+      # ip lease used is forced to do an arp request. This ensures
+      # that the external interface sends us an arp request.
+      use_src_ipv4 = network && message.ipv4_src
+
       if network.nil?
         mac_info, ipv4_info, network = find_ipv4_and_network(message, nil)
       end
@@ -79,6 +91,7 @@ module Vnet::Openflow
       if network.nil?
         debug log_format_h('arp_lookup_lookup_packet_in failed',
                            port_number: port_number,
+                           request_ipv4: request_ipv4,
                            ipv4_src: message.ipv4_src,
                            ipv4_dst: message.ipv4_dst)
         return
@@ -100,7 +113,8 @@ module Vnet::Openflow
         :message => message,
         :timestamp => Time.now,
         :destination_ipv4 => destination_ipv4,
-        :destination_prefix => destination_prefix
+        :destination_prefix => destination_prefix,
+        :use_src_ipv4 => use_src_ipv4,
       }
 
       if messages.size == 1
@@ -111,6 +125,7 @@ module Vnet::Openflow
         debug log_format_h('arp_lookup_lookup_packet_in looking up',
                            port_number: port_number,
                            interface_ipv4: ipv4_info[:ipv4_address],
+                           request_ipv4: request_ipv4,
                            ipv4_src: message.ipv4_src,
                            ipv4_dst: message.ipv4_dst)
 
@@ -137,6 +152,8 @@ module Vnet::Openflow
       else
         debug log_format_h('arp_lookup_lookup_packet_in added to queue',
                            port_number: port_number,
+                           interface_ipv4: ipv4_info[:ipv4_address],
+                           request_ipv4: request_ipv4,
                            ipv4_src: message.ipv4_src,
                            ipv4_dst: message.ipv4_dst,
                            messages_size: messages.size)
@@ -162,12 +179,16 @@ module Vnet::Openflow
     def arp_lookup_reply_packet_in(message)
       port_number = message.match.in_port
 
-      debug log_format('arp_lookup_reply_packet_in',
-                       "port_number:#{port_number} arp_spa:#{message.arp_spa} arp_tpa:#{message.arp_tpa}")
-
       mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
                                              ipv4_address: message.arp_tpa)
-      return if mac_info.nil? || ipv4_info.nil?
+
+      if mac_info.nil? || ipv4_info.nil?
+        debug log_format_h('arp_lookup_reply_packet_in ip lease not found',
+                           port_number: port_number,
+                           arp_spa: message.arp_spa,
+                           arp_tpa: message.arp_tpa)
+        return
+      end
 
       match_md = md_create(:network => ipv4_info[:network_id])
       reflection_md = md_create(:reflection => nil)
@@ -186,13 +207,26 @@ module Vnet::Openflow
           }))
       @dp_info.add_flow(flow)
 
-      messages = @arp_lookup[:requests].delete(message.arp_spa) || return
+      messages = @arp_lookup[:requests].delete(message.arp_spa)
 
-      if messages.first && messages.first[:destination_ipv4]
-        flow = Flow.create(TABLE_ARP_LOOKUP, 25,
+      if messages.nil?
+        debug log_format_h('arp_lookup_reply_packet_in no messages found',
+                           port_number: port_number,
+                           arp_spa: message.arp_spa,
+                           arp_tpa: message.arp_tpa)
+        return
+      end
+
+      # TODO: This might have issues as it only does the first message...
+      messages.first.tap { |message|
+        next if message[:destination_ipv4].nil?
+
+        flows = []
+
+        flows << Flow.create(TABLE_ARP_LOOKUP, 25,
           match_md.merge({ :eth_type => 0x0800,
-              :ipv4_dst => messages.first[:destination_ipv4].mask(messages.first[:destination_prefix]),
-              :ipv4_dst_mask => IPV4_BROADCAST.mask(messages.first[:destination_prefix]),
+              :ipv4_dst => message[:destination_ipv4].mask(message[:destination_prefix]),
+              :ipv4_dst_mask => IPV4_BROADCAST.mask(message[:destination_prefix]),
             }), {
             :eth_dst => message.arp_sha
           },
@@ -200,8 +234,31 @@ module Vnet::Openflow
               :idle_timeout => 3600,
               :goto_table => TABLE_NETWORK_DST_CLASSIFIER
             }))
-        @dp_info.add_flow(flow)
-      end
+
+        if message[:use_src_ipv4]
+          flows << Flow.create(TABLE_ARP_LOOKUP, 45,
+            match_md.merge({ :eth_type => 0x0800,
+                :ipv4_src => message[:use_src_ipv4],
+                :ipv4_dst => message[:destination_ipv4].mask(message[:destination_prefix]),
+                :ipv4_dst_mask => IPV4_BROADCAST.mask(message[:destination_prefix]),
+              }), {
+              :eth_dst => message.arp_sha
+            },
+            reflection_md.merge!({ :cookie => cookie,
+                :idle_timeout => 3600,
+                :goto_table => TABLE_NETWORK_DST_CLASSIFIER
+              }))
+        end
+
+        @dp_info.add_flows(flows)
+      }
+
+      debug log_format_h('arp_lookup_reply_packet_in send messages',
+                         port_number: port_number,
+                         arp_spa: message.arp_spa,
+                         arp_tpa: message.arp_tpa,
+                         message_size: message.size,
+                         message_first_ipv4: messages.first && messages.first[:destination_ipv4])
 
       arp_lookup_send_packets(messages)
     end
@@ -283,7 +340,9 @@ module Vnet::Openflow
         return unreachable_ip(messages, "no interface found", :no_interface)
       end
 
-      debug log_format('packet_in, found ip lease', "cookie:0x%x ipv4:#{params[:request_ipv4]}" % @arp_lookup[:reply_cookie])
+      debug log_format_h('packet_in, found ip lease',
+                         cookie: "0x%x" % @arp_lookup[:reply_cookie],
+                         request_ipv4: params[:request_ipv4])
 
       # Load remote interface.
       interface = @dp_info.active_interface_manager.retrieve(interface_id: ip_lease.interface_id)
