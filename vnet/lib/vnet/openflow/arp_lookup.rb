@@ -69,7 +69,12 @@ module Vnet::Openflow
       # TODO: Currently relies on metadata to identify the
       # network. For n-hop routing, figure out when the a gateway /
       # route should be looked up.
-      mac_info, ipv4_info, network = find_ipv4_and_network(message, nil)
+
+      mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_src)
+
+      if network.nil?
+        mac_info, ipv4_info, network = find_ipv4_and_network(message, nil)
+      end
 
       if network.nil?
         debug log_format_h('arp_lookup_lookup_packet_in failed',
@@ -105,6 +110,7 @@ module Vnet::Openflow
 
         debug log_format_h('arp_lookup_lookup_packet_in looking up',
                            port_number: port_number,
+                           interface_ipv4: ipv4_info[:ipv4_address],
                            ipv4_src: message.ipv4_src,
                            ipv4_dst: message.ipv4_dst)
 
