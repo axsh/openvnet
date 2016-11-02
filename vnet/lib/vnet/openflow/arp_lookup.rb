@@ -228,7 +228,7 @@ module Vnet::Openflow
               :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
               :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
             }), {
-            :eth_dst => queued_message.arp_sha
+            :eth_dst => message.arp_sha
           },
           reflection_md.merge!({ :cookie => cookie,
               :idle_timeout => 3600,
@@ -242,7 +242,7 @@ module Vnet::Openflow
                 :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
                 :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
               }), {
-              :eth_dst => queued_message.arp_sha
+              :eth_dst => message.arp_sha
             },
             reflection_md.merge!({ :cookie => cookie,
                 :idle_timeout => 3600,
