@@ -218,31 +218,31 @@ module Vnet::Openflow
       end
 
       # TODO: This might have issues as it only does the first message...
-      messages.first.tap { |message|
-        next if message[:destination_ipv4].nil?
+      messages.first.tap { |queued_message|
+        next if queued_message[:destination_ipv4].nil?
 
         flows = []
 
         flows << Flow.create(TABLE_ARP_LOOKUP, 25,
           match_md.merge({ :eth_type => 0x0800,
-              :ipv4_dst => message[:destination_ipv4].mask(message[:destination_prefix]),
-              :ipv4_dst_mask => IPV4_BROADCAST.mask(message[:destination_prefix]),
+              :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
+              :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
             }), {
-            :eth_dst => message.arp_sha
+            :eth_dst => queued_message.arp_sha
           },
           reflection_md.merge!({ :cookie => cookie,
               :idle_timeout => 3600,
               :goto_table => TABLE_NETWORK_DST_CLASSIFIER
             }))
 
-        if message[:use_src_ipv4]
+        if queued_message[:use_src_ipv4]
           flows << Flow.create(TABLE_ARP_LOOKUP, 45,
             match_md.merge({ :eth_type => 0x0800,
-                :ipv4_src => message[:use_src_ipv4],
-                :ipv4_dst => message[:destination_ipv4].mask(message[:destination_prefix]),
-                :ipv4_dst_mask => IPV4_BROADCAST.mask(message[:destination_prefix]),
+                :ipv4_src => queued_message[:use_src_ipv4],
+                :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
+                :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
               }), {
-              :eth_dst => message.arp_sha
+              :eth_dst => queued_message.arp_sha
             },
             reflection_md.merge!({ :cookie => cookie,
                 :idle_timeout => 3600,
@@ -257,8 +257,8 @@ module Vnet::Openflow
                          port_number: port_number,
                          arp_spa: message.arp_spa,
                          arp_tpa: message.arp_tpa,
-                         message_size: message.size,
-                         message_first_ipv4: messages.first && messages.first[:destination_ipv4])
+                         messages_size: messages.size,
+                         messages_first_ipv4: messages.first && messages.first[:destination_ipv4])
 
       arp_lookup_send_packets(messages)
     end
