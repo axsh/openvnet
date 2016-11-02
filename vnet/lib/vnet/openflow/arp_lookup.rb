@@ -205,6 +205,7 @@ module Vnet::Openflow
 
       if messages.nil? || Time.now - messages.last[:timestamp] > 5.0
         debug log_format_h('arp_lookup_process_timeout: deleting message queue',
+                           interface_ipv4: params[:interface_ipv4],
                             request_ipv4: params[:request_ipv4],
                             attempts: params[:attempts],
                             messages: messages && messages.size)
@@ -226,7 +227,9 @@ module Vnet::Openflow
       }
 
       debug log_format_h('arp_lookup_process_timeout: packet_arp_out',
-                         ipv4_dst: params[:request_ipv4], attempts: params[:attempts])
+                         interface_ipv4: params[:interface_ipv4],
+                         request_ipv4: params[:request_ipv4],
+                         attempts: params[:attempts])
 
       packet_arp_out({ :out_port => OFPP_TABLE,
                        :in_port => OFPP_CONTROLLER,
