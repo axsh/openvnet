@@ -60,9 +60,6 @@ module Vnet::Openflow
     def arp_lookup_lookup_packet_in(message)
       port_number = message.match.in_port
 
-      debug log_format('arp_lookup_lookup_packet_in',
-                       "port_number:#{port_number} ipv4_src:#{message.ipv4_src} ipv4_dst:#{message.ipv4_dst}")
-
       # Check if the address is in the same network, or if we need
       # to look up a gateway mac address.
       request_ipv4 = message.ipv4_dst
@@ -73,7 +70,14 @@ module Vnet::Openflow
       # network. For n-hop routing, figure out when the a gateway /
       # route should be looked up.
       mac_info, ipv4_info, network = find_ipv4_and_network(message, nil)
-      return if network.nil?
+
+      if network.nil?
+        debug log_format_h('arp_lookup_lookup_packet_in failed',
+                           port_number: port_number,
+                           ipv4_src: message.ipv4_src,
+                           ipv4_dst: message.ipv4_dst)
+        return
+      end
 
       network_address = network[:ipv4_network].dup.mask(network[:ipv4_prefix])
 
@@ -99,6 +103,11 @@ module Vnet::Openflow
         # lookup has been refactored, as the db lookups as-is won't
         # work with the active interface refactoring.
 
+        debug log_format_h('arp_lookup_lookup_packet_in looking up',
+                           port_number: port_number,
+                           ipv4_src: message.ipv4_src,
+                           ipv4_dst: message.ipv4_dst)
+
         case ipv4_info[:network_type]
         when :physical
           arp_lookup_process_timeout(interface_mac: mac_info[:mac_address],
@@ -118,6 +127,13 @@ module Vnet::Openflow
           #                            request_ipv4: request_ipv4,
           #                            attempts: 1)
         end
+
+      else
+        debug log_format_h('arp_lookup_lookup_packet_in added to queue',
+                           port_number: port_number,
+                           ipv4_src: message.ipv4_src,
+                           ipv4_dst: message.ipv4_dst,
+                           messages_size: messages.size)
       end
 
       messages.drop(5) if messages.size > 20
@@ -188,6 +204,11 @@ module Vnet::Openflow
       messages = @arp_lookup[:requests][params[:request_ipv4]]
 
       if messages.nil? || Time.now - messages.last[:timestamp] > 5.0
+        debug log_format_h('arp_lookup_process_timeout: deleting message queue',
+                            request_ipv4: params[:request_ipv4],
+                            attempts: params[:attempts],
+                            messages: messages && messages.size)
+
         @arp_lookup[:requests].delete(params[:request_ipv4])
         return
       end
@@ -204,8 +225,8 @@ module Vnet::Openflow
         arp_lookup_process_timeout(params)
       }
 
-      debug log_format('arp_lookup: process timeout',
-                       "ipv4_dst:#{params[:request_ipv4]} attempts:#{params[:attempts]}")
+      debug log_format_h('arp_lookup_process_timeout: packet_arp_out',
+                         ipv4_dst: params[:request_ipv4], attempts: params[:attempts])
 
       packet_arp_out({ :out_port => OFPP_TABLE,
                        :in_port => OFPP_CONTROLLER,
