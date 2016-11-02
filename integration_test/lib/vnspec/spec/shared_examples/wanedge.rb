@@ -2,7 +2,7 @@
 
 shared_examples 'wanedge examples' do |local_name, pending_local: false, pending_gre: false|
 
-  let(:ping_tries) { 100 }
+  let(:ping_tries) { 20 }
 
   describe "local vm7 in #{local_name}" do
     it 'reaches the gateway' do
