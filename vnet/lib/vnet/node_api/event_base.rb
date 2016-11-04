@@ -139,9 +139,10 @@ module Vnet::NodeApi
         return if model.nil?
 
         old_values = changes.each_with_object({}) { |change, values|
-          values[change.first] = model[change.first]
+          change.first.to_sym.tap { |key_sym|
+            values[key_sym] = model[key_sym]
+          }
         }
-
 
         return if model.update(changes).nil?
 

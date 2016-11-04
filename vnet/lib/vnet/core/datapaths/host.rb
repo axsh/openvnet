@@ -202,6 +202,33 @@ module Vnet::Core::Datapaths
                            cookie: flow_cookie)
 
       flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
+
+      # Handle broadcast packets using the OF-only learning flows.
+      flow_cookie = dpg_map[:segment_id] | COOKIE_TYPE_SEGMENT
+
+      flows << flow_create(table: TABLE_CONTROLLER_PORT,
+                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                           priority: 20,
+                           match: {
+                             # :eth_type => 0x0806
+                             :eth_dst => dpg_map[:mac_address]
+                           },
+                           actions: {
+                             :eth_dst => MAC_BROADCAST
+                           },
+                           write_segment: dpg_map[:segment_id],
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
+                           priority: 1,
+                           match: {
+                             :eth_dst => MAC_BROADCAST
+                           },
+                           match_segment: dpg_map[:segment_id],
+                           actions: {
+                             :eth_dst => dpg_map[:mac_address],
+                             :output => OFPP_CONTROLLER
+                           },
+                           cookie: flow_cookie)
     end
 
     def flows_for_dp_route_link(flows, dpg_map)
