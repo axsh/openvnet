@@ -48,7 +48,9 @@ module Vnet::Openflow
             :eth_src => mac_address,
             :eth_type => 0x0800,
             :ipv4_src => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
-            :ipv4_src_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
+            :ipv4_src_mask => IPV4_BROADCAST.mask(ipv4_info_mask),
+            :ipv4_dst => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
+            :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
           }],
       ].each { |priority, match|
         flows << flow_create(table: TABLE_ARP_LOOKUP,
@@ -195,17 +197,21 @@ module Vnet::Openflow
 
       cookie = ipv4_info[:network_id] | COOKIE_TYPE_NETWORK
 
-      flow = Flow.create(TABLE_ARP_LOOKUP, 35,
-        match_md.merge({ :eth_type => 0x0800,
-            :ipv4_dst => message.arp_spa
-          }), {
-          :eth_dst => message.arp_sha
-        },
-        reflection_md.merge!({ :cookie => cookie,
-            :idle_timeout => 3600,
-            :goto_table => TABLE_NETWORK_DST_CLASSIFIER
-          }))
-      @dp_info.add_flow(flow)
+      [ [35, {}],
+        [45, { :ipv4_src => message.arp_tpa } ]
+      ].each { |priority, match_extra|
+        flow = Flow.create(TABLE_ARP_LOOKUP, priority,
+          match_md.merge({ :eth_type => 0x0800,
+              :ipv4_dst => message.arp_spa
+            }).merge(match_extra), {
+            :eth_dst => message.arp_sha
+          },
+          reflection_md.merge!({ :cookie => cookie,
+              :idle_timeout => 3600,
+              :goto_table => TABLE_NETWORK_DST_CLASSIFIER
+            }))
+        @dp_info.add_flow(flow)
+      }
 
       messages = @arp_lookup[:requests].delete(message.arp_spa)
 
