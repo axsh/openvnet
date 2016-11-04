@@ -5,8 +5,6 @@ require_relative 'shared_examples/wanedge.rb'
 
 # TODO: Add multiple networks and use all vm's.
 
-describe 'wanedge', :vms_enable_vm => :vm_1_7 do
-  # before(:all) { sleep 120 }
-
-  include_examples 'wanedge examples', 'nw-global', pending_gre: true
+describe 'wanedge', :vms_enable_vm => :vm_1_5_7 do
+  include_examples 'wanedge examples', 'nw-global'
 end
