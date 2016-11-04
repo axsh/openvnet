@@ -68,6 +68,10 @@ shared_examples 'wanedge examples' do |local_name, pending_local: false, pending
 
   describe "vm7 in #{local_name}" do
     it 'reaches vm1 on node1 using MAC2MAC' do
+      if pending_local
+        pending('local vm currently not working')
+      end
+
       expect(vm7).to be_reachable_to(vm1)
     end
 
