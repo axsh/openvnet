@@ -50,17 +50,6 @@ RSpec.configure do |c|
     vm7.use_dhcp = true
   end
 
-  c.before(:all, :vms_enable_vm => [:vm7]) do
-    vms.disable_vm
-    vm7.use_vm = true
-  end
-
-  c.before(:all, :vms_enable_vm => [:vm1, :vm7]) do
-    vms.disable_vm
-    vm1.use_vm = true
-    vm7.use_vm = true
-  end
-
   c.before(:all, :vms_enable_vm => :vm_1_7) do
     vms.disable_vm
     vm1.use_vm = true
