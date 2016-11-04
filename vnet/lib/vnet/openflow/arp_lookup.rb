@@ -241,20 +241,20 @@ module Vnet::Openflow
               :goto_table => TABLE_NETWORK_DST_CLASSIFIER
             }))
 
-        if queued_message[:use_src_ipv4]
-          flows << Flow.create(TABLE_ARP_LOOKUP, 45,
-            match_md.merge({ :eth_type => 0x0800,
-                :ipv4_src => queued_message[:use_src_ipv4],
-                :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
-                :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
-              }), {
-              :eth_dst => message.arp_sha
-            },
-            reflection_md.merge!({ :cookie => cookie,
-                :idle_timeout => 3600,
-                :goto_table => TABLE_NETWORK_DST_CLASSIFIER
-              }))
-        end
+        # if queued_message[:use_src_ipv4]
+        #   flows << Flow.create(TABLE_ARP_LOOKUP, 45,
+        #     match_md.merge({ :eth_type => 0x0800,
+        #         :ipv4_src => queued_message[:use_src_ipv4],
+        #         :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
+        #         :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
+        #       }), {
+        #       :eth_dst => message.arp_sha
+        #     },
+        #     reflection_md.merge!({ :cookie => cookie,
+        #         :idle_timeout => 3600,
+        #         :goto_table => TABLE_NETWORK_DST_CLASSIFIER
+        #       }))
+        # end
 
         @dp_info.add_flows(flows)
       }
