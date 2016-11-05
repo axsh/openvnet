@@ -56,15 +56,21 @@ module Vnctl::Cli
     ports_relation.commands["add"].options.merge!(options_hash)
     ports_relation.commands["del"].options.merge!(options_hash)
 
-    define_relation(:segments, only_include_show: true) { |relation|
+    def self.define_assoc(other_name)
+      other_suffix = "#{other_name}s".to_sym
 
-      relation.desc 'INTERFACE_UUID SEGEMENT_UUID --static true/false', 'Modify static flag'
-      relation.option :static, :type => :boolean,
-          :desc => 'The flag which decides if the interface should stay connected or disconnect from a segment if no mac lease exist.'
-      relation.define_custom_method(:modify, true) do |uuid, segment_uuid, options|
-        puts Vnctl.webapi.put("interfaces/#{uuid}/segments/#{segment_uuid}", options)
-      end
-    }
+      define_relation(other_suffix, only_include_show: true) { |relation|
+        relation.desc "INTERFACE_UUID #{other_name.upcase}_UUID --static true/false", 'Modify association.'
+        relation.option :static, :type => :boolean, :desc => "Always keep an interface associated with a #{other_name}."
+        relation.define_custom_method(:modify, true) do |uuid, other_uuid, options|
+          puts Vnctl.webapi.put("interfaces/#{uuid}/#{other_suffix}/#{other_uuid}", options)
+        end
+      }
+    end
+
+    define_assoc(:network)
+    define_assoc(:segment)
+    define_assoc(:route_link)
 
   end
 end
