@@ -21,7 +21,7 @@ describe Vnet::NodeApi::InterfaceSegment do
   let(:create_if_seg_static) { Fabricate(:interface_segment_free, if_seg_static) }
   let(:create_if_seg_no_static) { Fabricate(:interface_segment_free, if_seg_non_static) }
 
-  describe 'leased' do
+  describe 'update_assoc' do
     before(:each) { create_mac_lease }
 
     it 'when not static' do
@@ -29,10 +29,9 @@ describe Vnet::NodeApi::InterfaceSegment do
       expect(actual_result).to include(if_seg_non_static)
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
 
-      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_SEGMENT_CREATED_ITEM
-      expect(events[0][:options]).to include(if_seg_non_static)
+      expect(events).to be_event_list_of_size(1)
+      expect(events[0]).to be_event(Vnet::Event::INTERFACE_SEGMENT_CREATED_ITEM, if_seg_non_static)
     end
 
     it 'when static' do
@@ -41,9 +40,9 @@ describe Vnet::NodeApi::InterfaceSegment do
       actual_result = Vnet::NodeApi::InterfaceSegment.execute(:update_assoc, interface.id, segment.id)
       expect(actual_result).to include(if_seg_static)
 
-      # TODO: Add some helper methods to deal with events.
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 0
+
+      expect(events).to be_event_list_of_size(0)
     end
   end
 
@@ -53,10 +52,9 @@ describe Vnet::NodeApi::InterfaceSegment do
       expect(actual_result).to include(if_seg_static)
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
 
-      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_SEGMENT_CREATED_ITEM
-      expect(events[0][:options]).to include(if_seg_static)
+      expect(events).to be_event_list_of_size(1)
+      expect(events[0]).to be_event(Vnet::Event::INTERFACE_SEGMENT_CREATED_ITEM, if_seg_static)
     end
 
     it 'with leases' do
@@ -67,10 +65,9 @@ describe Vnet::NodeApi::InterfaceSegment do
       expect(actual_result).to include(if_seg_static)
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
 
-      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_SEGMENT_UPDATED_ITEM
-      expect(events[0][:options]).to include(id: if_seg.id, static: true)
+      expect(events).to be_event_list_of_size(1)
+      expect(events[0]).to be_event(Vnet::Event::INTERFACE_SEGMENT_UPDATED_ITEM, id: if_seg.id, static: true)
     end
   end
 
@@ -82,10 +79,9 @@ describe Vnet::NodeApi::InterfaceSegment do
       expect(actual_result).to include(if_seg_non_static.merge(is_deleted: if_seg.id))
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 1
 
-      expect(events[0][:event]).to eq Vnet::Event::INTERFACE_SEGMENT_DELETED_ITEM
-      expect(events[0][:options]).to include(id: if_seg.id)
+      expect(events).to be_event_list_of_size(1)
+      expect(events[0]).to be_event(Vnet::Event::INTERFACE_SEGMENT_DELETED_ITEM, id: if_seg.id)
     end
   end
 

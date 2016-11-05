@@ -51,7 +51,6 @@ module Vnet::NodeApi
         }
       end
 
-      # TODO: Change to call update_assoc after changing static.
       def set_static(parent_id, other_id)
         transaction {
           get_model(parent_id, other_id).tap { |model|
