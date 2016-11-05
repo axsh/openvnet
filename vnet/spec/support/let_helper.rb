@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# TODO: Replaced.
+
 def let_permutation(lets, permutation, postfix)
   result = lets.select.with_index { |name, index|
     permutation[index]

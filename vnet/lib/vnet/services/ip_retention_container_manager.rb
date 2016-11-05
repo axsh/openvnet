@@ -11,6 +11,8 @@ module Vnet::Services
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event IP_RETENTION_CONTAINER_INITIALIZED, :load_item
     subscribe_event IP_RETENTION_CONTAINER_UNLOAD_ITEM, :unload_item
     subscribe_event IP_RETENTION_CONTAINER_CREATED_ITEM, :created_item
@@ -25,7 +27,34 @@ module Vnet::Services
       super
       @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
       @options = DEFAULT_OPTIONS.merge(options)
-      async.run if @options[:run]
+
+      if @options[:run]      
+        every(@options[:expiration_check_interval]) {
+          check_expiration
+        }
+      end
+    end
+
+    def do_initialize
+      # OPTIMIZE
+      #
+      # This should be done within the safety of the manager
+      # inititialization stage where events are queued. That means the
+      # events should be removed.
+
+      i = 1
+      loop do
+        mw_class.batch.dataset.paginate(i, 10000).all.commit.tap do |ip_retention_containers|
+          return if ip_retention_containers.empty?
+          ip_retention_containers.each do |ip_retention_container|
+            publish(
+              IP_RETENTION_CONTAINER_CREATED_ITEM,
+              id: ip_retention_container.id
+            )
+          end
+        end
+        i += 1
+      end
     end
 
     #
@@ -129,33 +158,6 @@ module Vnet::Services
     #
     # Helper methods:
     #
-
-    def run
-      load_all_items
-      every(@options[:expiration_check_interval]) { check_expiration }
-    end
-
-    def load_all_items
-      # OPTIMIZE
-      #
-      # This should be done within the safety of the manager
-      # inititialization stage where events are queued. That means the
-      # events should be removed.
-
-      i = 1
-      loop do
-        mw_class.batch.dataset.paginate(i, 10000).all.commit.tap do |ip_retention_containers|
-          return if ip_retention_containers.empty?
-          ip_retention_containers.each do |ip_retention_container|
-            publish(
-              IP_RETENTION_CONTAINER_CREATED_ITEM,
-              id: ip_retention_container.id
-            )
-          end
-        end
-        i += 1
-      end
-    end
 
     def load_ip_retentions(item)
       # OPTIMIZE
