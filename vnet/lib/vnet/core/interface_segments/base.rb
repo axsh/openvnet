@@ -13,11 +13,11 @@ module Vnet::Core::InterfaceSegments
     def initialize(params)
       super
 
-      map = params[:map]
-
-      @interface_id = get_param_id(map, :interface_id)
-      @segment_id = get_param_id(map, :segment_id)
-      @static = get_param_bool(map, :static)
+      get_param_map(params).tap { |map|
+        @interface_id = get_param_id(map, :interface_id)
+        @segment_id = get_param_id(map, :segment_id)
+        @static = get_param_bool(map, :static)
+      }
     end
 
     def mode

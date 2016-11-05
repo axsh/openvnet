@@ -34,6 +34,7 @@ describe Vnet::NodeApi::IpLease do
         ipv4_address: random_ipv4_address,
       }
     }
+
     let(:interface_event) { [
         Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS, {
           id: :let__interface_id,
@@ -45,11 +46,22 @@ describe Vnet::NodeApi::IpLease do
           # enable_routing: false,
         }]
     }
+    let(:interface_network_event) { [
+        Vnet::Event::INTERFACE_NETWORK_CREATED_ITEM, {
+          interface_id: :let__interface_id,
+          network_id: network.id
+        }]
+    }
+
     let(:create_events) {
       [].tap { |event_list|
-        event_list << interface_event if with_lets.include?('interface_id')
+        if with_lets.include?('interface_id')
+          event_list << interface_network_event 
+          event_list << interface_event
+        end
       }
     }
+
     let(:query_result) { create_result }
     let(:extra_creations) { [:ip_address] }
 

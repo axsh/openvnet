@@ -87,13 +87,8 @@ module Vnet::NodeApi
             mac_lease = add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
             ip_lease = add_ip_lease(model, mac_lease, network_id, ipv4_address)
 
-            if mac_lease && mac_lease.segment_id
-              InterfaceSegment.leased(model.id, mac_lease.segment_id)
-            end
-
-            if ip_lease && ip_lease.network_id
-              InterfaceNetwork.leased(model.id, ip_lease.network_id)
-            end
+            InterfaceSegment.update_assoc(model.id, mac_lease.segment_id) if mac_lease
+            InterfaceNetwork.update_assoc(model.id, ip_lease.network_id) if ip_lease
           }
         }
       end

@@ -25,7 +25,7 @@ describe Vnet::NodeApi::InterfaceSegment do
     before(:each) { create_mac_lease }
 
     it 'when not static' do
-      actual_result = Vnet::NodeApi::InterfaceSegment.execute(:leased, interface.id, segment.id)
+      actual_result = Vnet::NodeApi::InterfaceSegment.execute(:update_assoc, interface.id, segment.id)
       expect(actual_result).to include(if_seg_non_static)
 
       events = MockEventHandler.handled_events
@@ -38,7 +38,7 @@ describe Vnet::NodeApi::InterfaceSegment do
     it 'when static' do
       Fabricate(:interface_segment_free, if_seg_static)
 
-      actual_result = Vnet::NodeApi::InterfaceSegment.execute(:leased, interface.id, segment.id)
+      actual_result = Vnet::NodeApi::InterfaceSegment.execute(:update_assoc, interface.id, segment.id)
       expect(actual_result).to include(if_seg_static)
 
       # TODO: Add some helper methods to deal with events.

@@ -32,9 +32,19 @@ describe Vnet::NodeApi::MacLease do
           # mac_address: random_mac_address
         }]
     }
+    let(:interface_segment_event) {
+      [ Vnet::Event::INTERFACE_SEGMENT_CREATED_ITEM, {
+          interface_id: interface.id,
+          segment_id: segment.id,
+          static: false
+        }]
+    }
     let(:create_events) {
       [].tap { |event_list|
-        event_list << interface_event if with_lets.include?('interface_id')
+        if with_lets.include?('interface_id')
+          event_list << interface_segment_event if with_lets.include?('segment_id')
+          event_list << interface_event
+        end
       }
     }
     let(:create_result) { model_params }

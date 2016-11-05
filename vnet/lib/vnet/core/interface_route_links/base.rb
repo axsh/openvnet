@@ -11,11 +11,11 @@ module Vnet::Core::InterfaceRouteLinks
     def initialize(params)
       super
 
-      map = params[:map]
-
-      @interface_id = get_param_id(map, :interface_id)
-      @route_link_id = get_param_id(map, :route_link_id)
-      @static = get_param_bool(map, :static)
+      get_param_map(params).tap { |map|
+        @interface_id = get_param_id(map, :interface_id)
+        @route_link_id = get_param_id(map, :route_link_id)
+        @static = get_param_bool(map, :static)
+      }
     end
 
     def mode
@@ -35,11 +35,11 @@ module Vnet::Core::InterfaceRouteLinks
     end
 
     def install
-      @dp_info.route_link_manager.insert_interface_route_link(@interface_id, @route_link_id)
+      # @dp_info.router_manager.insert_interface_route_link(@interface_id, @route_link_id)
     end
 
     def uninstall
-      @dp_info.route_link_manager.remove_interface_route_link(@interface_id, @route_link_id)
+      # @dp_info.router_manager.remove_interface_route_link(@interface_id, @route_link_id)
     end
 
     def to_hash
