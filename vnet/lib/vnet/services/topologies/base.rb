@@ -58,6 +58,19 @@ module Vnet::Services::Topologies
       }
     end
 
+    def create_dp_assoc(other_name, params)
+      case other_name
+      when :network
+        create_dp_nw(params)
+      when :segment
+        create_dp_seg(params)
+      when :route_link
+        create_dp_rl(params)
+      else
+        raise NotImplementedError
+      end
+    end
+
     #
     # Events:
     #
