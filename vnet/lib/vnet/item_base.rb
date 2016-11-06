@@ -183,4 +183,26 @@ module Vnet
     end
   end
 
+  class ItemDatapathUuidMode < ItemDpUuid
+    attr_reader :mode
+
+    def initialize(params)
+      @installed = false
+      @loaded = false
+
+      @dp_info = get_param_dp_info(params)
+      @datapath_info = get_param_datapath_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+        @uuid = get_param_string(map, :uuid)
+        @mode = get_param_string(map, :mode).to_sym
+      }
+    end
+
+    def pretty_properties
+      "mode:#{@mode}"
+    end
+  end
+
 end

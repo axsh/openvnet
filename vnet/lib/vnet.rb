@@ -29,6 +29,8 @@ module Vnet
   autoload :ItemVnetUuid,         'vnet/item_base'
   autoload :ItemDpBase,           'vnet/item_base'
   autoload :ItemDpUuid,           'vnet/item_base'
+  autoload :ItemDpUuidMode,       'vnet/item_base'
+  autoload :ItemDatapathUuidMode, 'vnet/item_base'
   autoload :Manager,              'vnet/manager'
   autoload :LookupParams,         'vnet/manager_params'
   autoload :UpdateItemStates,     'vnet/manager_modules'

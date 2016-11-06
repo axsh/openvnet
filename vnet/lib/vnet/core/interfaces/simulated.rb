@@ -112,7 +112,7 @@ module Vnet::Core::Interfaces
 
       case value
       when TAG_ARP_REQUEST_INTERFACE
-        info log_format('simulated arp reply', "arp_tpa:#{message.arp_tpa}")
+        info log_format_h('simulated arp reply', arp_spa: message.arp_spa, arp_tpa: message.arp_tpa)
 
         mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
                                                ipv4_address: message.arp_tpa)
@@ -130,13 +130,9 @@ module Vnet::Core::Interfaces
                        })
 
       when TAG_ARP_LOOKUP
-        # info "simulated arp lookup: #{message.ipv4_dst}"
-
         arp_lookup_lookup_packet_in(message)
 
       when TAG_ARP_REPLY
-        # info "simulated arp reply: #{message.ipv4_dst}"
-
         arp_lookup_reply_packet_in(message)
 
       when TAG_ICMP_REQUEST
@@ -163,6 +159,8 @@ module Vnet::Core::Interfaces
                      })
         end
 
+      else
+        info log_format_h('packet_in unknown cookie tag', message.to_h)
       end
 
     end
