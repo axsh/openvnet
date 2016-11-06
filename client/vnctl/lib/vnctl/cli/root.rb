@@ -12,7 +12,7 @@ module Vnctl::Cli
       end
     }
 
-    desc 'batch <file>', 'Read from file, or stdin if no file is specified'
+    desc 'batch [FILE]', 'Read from file, or stdin if no file is specified'
     def batch(file_name = nil)
       if file_name.nil?
         input = $stdin
