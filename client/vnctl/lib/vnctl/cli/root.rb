@@ -24,6 +24,8 @@ module Vnctl::Cli
 
       while (line = input.gets)
         line.strip!
+        next if line.empty? || line[0] == '#'
+
         say "> #{line}", :green
 
         Shellwords.split(line).tap { |argv|
