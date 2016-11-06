@@ -2,7 +2,7 @@
 
 require_relative "spec_helper"
 
-describe "promiscuous_nw", :vms_enable_vm => [:vm1, :vm7] do
+describe "promiscuous_nw", :vms_enable_vm => :vm1_7 do
   describe 'local vm7 in nw-global' do
     it 'reaches the gateway' do
       to_gw = double()

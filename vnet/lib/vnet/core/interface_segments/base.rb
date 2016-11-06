@@ -77,49 +77,61 @@ module Vnet::Core::InterfaceSegments
     end
 
     def flows_for_arp_learning(flows)
-      host_filter = {
-        datapath_id: @dp_info.interface_segment_manager.datapath_info.id,
-        interface_mode: Vnet::Constants::Interface::MODE_HOST
-      }
-      host_interface = get_active_interface(host_filter)
-
-      prom_filter = {
-        datapath_id: @dp_info.interface_segment_manager.datapath_info.id,
-        interface_mode: Vnet::Constants::Interface::MODE_PROMISCUOUS
-      }
-      prom_interface = get_active_interface(prom_filter)
-
-      return if host_interface.nil? || prom_interface.nil?
+      prom_port_number = get_prom_port_number || return
+      host_interface_id = get_host_interface_id || return
 
       match_md = md_create(interface: @interface_id)
-      learn_md = md_create(interface: host_interface.interface_id, remote: nil)
+      learn_md = md_create(interface: host_interface_id, remote: nil)
       write_md = md_create(segment: @segment_id)
 
       flow_learn_arp = "table=#{TABLE_PROMISCUOUS_PORT},priority=20,cookie=0x%x,arp,metadata=0x%x/0x%x,actions=" %
         [cookie, match_md[:metadata], match_md[:metadata_mask]]
-      flow_learn_arp << "load:#{prom_interface.port_number}->NXM_NX_REG1[],"
+      flow_learn_arp << "load:#{prom_port_number}->NXM_NX_REG1[],"
       flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=29,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
         [TABLE_INTERFACE_INGRESS_MAC, cookie, learn_md[:metadata]]
       flow_learn_arp << "output:NXM_NX_REG1[]),"
       flow_learn_arp << "write_metadata=0x%x/0x%x,goto_table:%d" % 
         [write_md[:metadata], write_md[:metadata_mask], TABLE_SEGMENT_SRC_CLASSIFIER]
 
-      debug log_format("get_a_host_interface", flow_learn_arp)
+      debug log_format("flows_for_arp_learning", flow_learn_arp)
 
       @dp_info.add_ovs_flow(flow_learn_arp)
     end
 
     # Ugly but simple way of getting a host interface.
-    def get_active_interface(filter)
-      debug log_format_h("get_a_host_interface filter", filter)
+    def get_host_interface_id
+      # debug log_format_h("get_active_interface filter", filter)
 
-      interface = MW::InterfacePort.batch.dataset.where(filter).first.commit
-      debug log_format("get_a_host_interface interface", interface.inspect)
-      return if interface.nil?
+      filter = {
+        datapath_id: @dp_info.interface_segment_manager.datapath_info.id,
+        segment_id: @segment_id
+      }
 
-      active_interface = MW::ActiveInterface.batch.dataset.where(interface_id: interface.interface_id).first.commit
-      debug log_format("get_a_host_interface active_if", active_interface.inspect)
-      active_interface
+      dp_seg = MW::DatapathSegment.batch.dataset.where(filter).first.commit
+      debug log_format("get_host_interface datapath_segment", dp_seg.inspect)
+
+      dp_seg && dp_seg.interface_id
+    end
+
+    def get_prom_port_number
+      active_interface = MW::ActiveInterface.batch.dataset.where(interface_id: @interface_id).first.commit
+
+      if active_interface.nil?
+        # debug log_format("get_prom_interface active_interface for #{@interface_id}", failed: 'no active_interface')
+        return
+      end
+
+      active_interface.batch.interface.commit.tap { |interface|
+        if interface.nil? || interface.mode != Vnet::Constants::Interface::MODE_PROMISCUOUS
+          # debug log_format("get_prom_interface active_interface for #{@interface_id}",
+          #                  failed: 'not promiscuous mode', interface: interface)
+          return
+        end
+      }
+
+      debug log_format("get_prom_interface active_interface for #{@interface_id}", active_interface.inspect)
+
+      active_interface && active_interface.port_number
     end
 
   end

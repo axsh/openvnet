@@ -57,7 +57,6 @@ module Vnet::Models
       def where_network_id(network_id)
         self.join_ip_addresses.where(ip_addresses__network_id: network_id)
       end
-
     end
 
     # TODO: Is this really safe if interface_id is changed?

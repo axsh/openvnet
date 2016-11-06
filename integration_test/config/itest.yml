@@ -19,6 +19,7 @@ dataset_options:
   dp1_ipv4_address: 172.16.90.10
   dp2_ipv4_address: 172.16.90.11
   dp3_ipv4_address: 172.16.91.10
+  dp_wanedge_ipv4_address: 172.16.90.12
   public_ipv4_public1_network: 172.16.90.0
   public_ipv4_public1_prefix: 24
   public_ipv4_public1_dhcp_address: 172.16.90.3
@@ -30,7 +31,8 @@ dataset_options:
   public_router_ipv4_address: 172.16.90.4
   physical_network_simulated_ip: 10.210.0.2
   physical_network_vm1_ip: 10.210.0.104
-  physical_network_vm7_ip: 10.210.0.105
+  physical_network_vm5_ip: 10.210.0.105
+  physical_network_vm7_ip: 10.210.0.106
 
 physical_network_gw_ip: 10.210.0.1
 pseudo_global_ip: 10.196.36.199

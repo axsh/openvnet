@@ -2,11 +2,17 @@
 
 module Vnet::NodeApi
   class Datapath < EventBase
+    valid_update_fields [:display_name, :enable_ovs_learn_action]
+
     class << self
       private
 
       def dispatch_created_item_events(model)
         dispatch_event(DATAPATH_CREATED_ITEM, model.to_hash)
+      end
+
+      def dispatch_updated_item_events(model, old_values)
+        dispatch_event(DATAPATH_UPDATED_ITEM, get_changed_hash(model, old_values.keys))
       end
 
       def dispatch_deleted_item_events(model)
