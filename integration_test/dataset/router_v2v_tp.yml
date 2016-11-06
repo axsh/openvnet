@@ -106,7 +106,7 @@ network_services:
 route_links:
 
   - uuid: rl-1
-    mac_address: "02:00:10:00:00:01"
+    mac_address: "02:00:32:00:00:01"
 
 topology_route_links:
 

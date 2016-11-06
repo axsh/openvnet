@@ -37,7 +37,6 @@ Sequel.migration do
       String :uuid, :unique => true, :null=>false
       String :display_name, :null=>false
 
-      # TODO: Rename dpid.
       Bignum :dpid, :null=>false
       String :node_id, :null=>false
 
@@ -47,8 +46,6 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
       Integer :is_deleted, :null=>false
-
-      # TODO: Add unique for [node_id, dpid], or possibly [dpid].
     end
 
     create_table(:datapath_networks) do

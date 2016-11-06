@@ -4,6 +4,7 @@ datapaths:
     node_id: wanedge
     display_name: wanedge
     dpid: "0x0000eeeeeeeeeeee"
+    enable_ovs_learn_action: false
 
 segments:
 
@@ -16,6 +17,11 @@ interfaces:
     port_name: if-v1
     segment_uuid: seg-global
     mac_address: "02:00:00:00:00:01"
+
+  - uuid: if-v5
+    port_name: if-v5
+    segment_uuid: seg-global
+    mac_address: "02:00:00:00:00:05"
 
   - uuid: if-v7
     port_name: if-v7
@@ -47,6 +53,11 @@ datapath_segments:
     segment_uuid: seg-global
     interface_uuid: if-dp1eth0
     mac_address: "02:00:00:aa:02:01"
+
+  - datapath_uuid: dp-3
+    segment_uuid: seg-global
+    interface_uuid: if-dp3eth0
+    mac_address: "02:00:00:cc:00:01"
 
   - datapath_uuid: dp-wanedge
     segment_uuid: seg-global

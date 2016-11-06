@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-require_relative "spec_helper"
 
-describe "simple_tp" do
+shared_examples 'simple examples' do
   describe "vnet1" do
     context "mac2mac" do
       it "reachable to vnet1" do
@@ -45,4 +44,5 @@ describe "simple_tp" do
       end
     end
   end
+
 end
