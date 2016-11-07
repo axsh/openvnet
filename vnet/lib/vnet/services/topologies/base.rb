@@ -12,8 +12,6 @@ module Vnet::Services::Topologies
     def initialize(params)
       super
 
-      map = params[:map]
-
       @datapaths = {}
       @networks = {}
       @segments = {}

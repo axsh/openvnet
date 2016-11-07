@@ -241,6 +241,8 @@ module Vnet::Services
     #
     #
 
+    # TODO: Do we really want/need this:
+
     public
 
     subscribe_event TOPOLOGY_ADDED_NETWORK, :added_network
@@ -261,6 +263,8 @@ module Vnet::Services
 
     def item_post_install(item, item_map)
       MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologySegment.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologyRouteLink.dispatch_added_assocs_for_parent_id(item.id)
     end
 
   end
