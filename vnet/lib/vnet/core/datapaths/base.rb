@@ -111,7 +111,7 @@ module Vnet::Core::Datapaths
         datapath_id: get_param_id(dpg_map, :datapath_id),
         interface_id: get_param_id(dpg_map, :interface_id),
         network_id: get_param_id(dpg_map, :network_id),
-        ip_lease_id: get_param_id(dpg_map, :ip_lease_id),
+        ip_lease_id: get_param_id(dpg_map, :ip_lease_id, false),
         mac_address: get_param_mac_address(dpg_map),
 
         active: false
@@ -149,7 +149,7 @@ module Vnet::Core::Datapaths
         datapath_id: get_param_id(dpg_map, :datapath_id),
         interface_id: get_param_id(dpg_map, :interface_id),
         segment_id: get_param_id(dpg_map, :segment_id),
-        ip_lease_id: get_param_id(dpg_map, :ip_lease_id),
+        ip_lease_id: get_param_id(dpg_map, :ip_lease_id, false),
         mac_address: get_param_mac_address(dpg_map),
 
         active: false
@@ -187,7 +187,7 @@ module Vnet::Core::Datapaths
         datapath_id: get_param_id(dpg_map, :datapath_id),
         interface_id: get_param_id(dpg_map, :interface_id),
         route_link_id: get_param_id(dpg_map, :route_link_id),
-        ip_lease_id: get_param_id(dpg_map, :ip_lease_id),
+        ip_lease_id: get_param_id(dpg_map, :ip_lease_id, false),
         mac_address: get_param_mac_address(dpg_map),
 
         active: false
