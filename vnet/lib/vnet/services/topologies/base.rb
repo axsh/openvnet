@@ -93,47 +93,30 @@ module Vnet::Services::Topologies
       debug log_format_h('handle_removed_network', assoc_id: assoc_id, assoc_map: assoc_map)
     end
 
-    #
-    #
-    #
-
-    def create_datapath_other(other_name, create_params)
+    def mw_datapath_assoc_class(other_name)
       case other_name
       when :network
-        create_datapath_network(create_params)
+        MW::DatapathNetwork
       when :segment
-        create_datapath_segment(create_params)
+        MW::DatapathSegment
       when :route_link
-        create_datapath_route_link(create_params)
+        MW::DatapathRouteLink
       else
         raise NotImplementedError
       end
     end
 
-    # TODO: Abstract.
-    def create_datapath_network(create_params)
-      if MW::DatapathNetwork.batch.create(create_params).commit
-        debug log_format_h("created datapath_network", create_params)
+    def create_datapath_other(other_name, create_params)
+      if mw_datapath_assoc_class(other_name).batch.create(create_params).commit
+        debug log_format_h("created datapath_#{other_name}", create_params)
       else
-        info log_format_h("failed to create datapath_network", create_params)
+        info log_format_h("failed to create datapath_#{other_name}", create_params)
       end
     end
 
-    def create_datapath_segment(create_params)
-      if MW::DatapathSegment.batch.create(create_params).commit
-        debug log_format_h("created datapath_segment", create_params)
-      else
-        info log_format_h("failed to create datapath_segment", create_params)
-      end
-    end
-
-    def create_datapath_route_link(create_params)
-      if MW::DatapathRouteLink.batch.create(create_params).commit
-        debug log_format_h("created datapath_route_link", create_params)
-      else
-        info log_format_h("failed to create datapath_route_link", create_params)
-      end
-    end
+    #
+    # Hacks:
+    #
 
     # Ugly but simple way of getting a host interface.
     def get_a_host_interface_id(datapath_id)
