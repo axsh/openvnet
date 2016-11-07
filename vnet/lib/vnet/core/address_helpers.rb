@@ -33,7 +33,7 @@ module Vnet::Core
 
       @mac_addresses = mac_addresses
 
-      debug log_format("adding mac address to #{@uuid}/#{@id}",
+      debug log_format("adding mac address",
                        "#{params[:mac_address]}")
 
       mac_info
@@ -73,7 +73,7 @@ module Vnet::Core
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
-      debug log_format("adding ipv4 address to #{@uuid}/#{@id}",
+      debug log_format("adding ipv4 address",
                        "#{mac_info[:mac_address]}/#{ipv4_info[:ipv4_address]}")
 
       [mac_info, ipv4_info]

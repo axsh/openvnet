@@ -123,7 +123,7 @@ module Vnet::Core::Datapaths
       flows_for_dp_network(flows, dp_network)
       @dp_info.add_flows(flows)
 
-      debug log_format("adding datapath network #{network_id} to #{self.pretty_id}")
+      debug log_format("adding datapath network #{network_id}")
     end
 
     def remove_active_network(network_id)
@@ -132,7 +132,7 @@ module Vnet::Core::Datapaths
 
       @dp_info.del_cookie(dp_network[:id] | COOKIE_TYPE_DP_NETWORK)
 
-      debug log_format("removing datapath network #{network_id} from #{self.pretty_id}")
+      debug log_format("removing datapath network #{network_id}")
     end
 
     #
@@ -161,7 +161,7 @@ module Vnet::Core::Datapaths
       flows_for_dp_segment(flows, dp_segment)
       @dp_info.add_flows(flows)
 
-      debug log_format("adding datapath segment #{segment_id} to #{self.pretty_id}")
+      debug log_format("adding datapath segment #{segment_id}")
     end
 
     def remove_active_segment(segment_id)
@@ -170,7 +170,7 @@ module Vnet::Core::Datapaths
 
       @dp_info.del_cookie(dp_segment[:id] | COOKIE_TYPE_DP_SEGMENT)
 
-      debug log_format("removing datapath segment #{segment_id} from #{self.pretty_id}")
+      debug log_format("removing datapath segment #{segment_id}")
     end
 
     #
@@ -199,7 +199,7 @@ module Vnet::Core::Datapaths
       flows_for_dp_route_link(flows, dp_route_link)
       @dp_info.add_flows(flows)
 
-      debug log_format("adding datapath route link #{route_link_id} to #{self.pretty_id}")
+      debug log_format("adding datapath route link #{route_link_id}")
     end
 
     def remove_active_route_link(route_link_id)
@@ -208,7 +208,7 @@ module Vnet::Core::Datapaths
 
       @dp_info.del_cookie(dp_route_link[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
 
-      debug log_format("removing datapath route link #{route_link_id} from #{self.pretty_id}")
+      debug log_format("removing datapath route link #{route_link_id}")
     end
 
     #

@@ -26,7 +26,7 @@ module Vnet::Core::Datapaths
       return if network[:active] == true
       network[:active] == true
 
-      debug log_format("activating network #{network_id} on #{self.pretty_id}")
+      debug log_format("activating network #{network_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_NETWORK,
                                       id: :datapath_network,
@@ -39,7 +39,7 @@ module Vnet::Core::Datapaths
       return if network[:active] == false
       network[:active] == false
 
-      debug log_format("deactivating network #{network_id} on #{self.pretty_id}")
+      debug log_format("deactivating network #{network_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_NETWORK,
                                       id: :datapath_network,
@@ -52,7 +52,7 @@ module Vnet::Core::Datapaths
       return if segment[:active] == true
       segment[:active] == true
 
-      debug log_format("activating segment #{segment_id} on #{self.pretty_id}")
+      debug log_format("activating segment #{segment_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_SEGMENT,
                                       id: :datapath_segment,
@@ -65,7 +65,7 @@ module Vnet::Core::Datapaths
       return if segment[:active] == false
       segment[:active] == false
 
-      debug log_format("deactivating segment #{segment_id} on #{self.pretty_id}")
+      debug log_format("deactivating segment #{segment_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_SEGMENT,
                                       id: :datapath_segment,
@@ -78,7 +78,7 @@ module Vnet::Core::Datapaths
       return if route_link[:active] == true
       route_link[:active] == true
 
-      debug log_format("activating route link #{route_link_id} on #{self.pretty_id}")
+      debug log_format("activating route link #{route_link_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_ROUTE_LINK,
                                       id: :datapath_route_link,
@@ -91,7 +91,7 @@ module Vnet::Core::Datapaths
       return if route_link[:active] == false
       route_link[:active] == false
 
-      debug log_format("deactivating route link #{route_link_id} on #{self.pretty_id}")
+      debug log_format("deactivating route link #{route_link_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_ROUTE_LINK,
                                       id: :datapath_route_link,
