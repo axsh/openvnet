@@ -12,6 +12,24 @@ module Vnet::NodeApi
 
       private
 
+      def create_with_transaction(options)
+        transaction {
+          model_class.create(options).tap { |model|
+            next if model.nil?
+            InterfaceSegment.update_assoc(model.interface_id, model.segment_id)
+          }
+        }
+      end
+
+      def destroy_with_transaction(filter)
+        transaction {
+          internal_destroy(model_class[filter]).tap { |model|
+            next if model.nil?
+            InterfaceSegment.update_assoc(model.interface_id, model.segment_id)
+          }
+        }
+      end
+
       def dispatch_created_item_events(model)
         if model.interface_id
           dispatch_event(INTERFACE_LEASED_MAC_ADDRESS, prepare_lease_event(model))

@@ -33,7 +33,9 @@ module Vnet::Core
       connection
       datapath
       interface
+      interface_network
       interface_segment
+      interface_route_link
       interface_port
       network
       route

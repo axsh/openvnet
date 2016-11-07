@@ -40,12 +40,23 @@ describe Vnet::NodeApi::MacLease do
   describe 'create' do
     let(:create_events) {
       [].tap { |event_list|
-        event_list << interface_leased_event if with_lets.include?('interface_id')
+        if with_lets.include?('interface_id')
+          event_list << interface_segment_event if with_lets.include?('segment_id')
+          event_list << interface_leased_event
+        end
       }
     }
     let(:create_result) { model_params }
     let(:query_result) { create_result }
     let(:extra_creations) { [:mac_address] }
+
+    let(:interface_segment_event) {
+      [ Vnet::Event::INTERFACE_SEGMENT_CREATED_ITEM, {
+          interface_id: interface.id,
+          segment_id: segment.id,
+          static: false
+        }]
+    }
 
     include_examples 'create item on node_api with lets', :mac_lease, let_ids: [:interface, :segment]
   end

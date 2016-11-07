@@ -87,9 +87,8 @@ module Vnet::NodeApi
             mac_lease = add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
             ip_lease = add_ip_lease(model, mac_lease, network_id, ipv4_address)
 
-            if mac_lease && mac_lease.segment_id
-              InterfaceSegment.leased(model.id, mac_lease.segment_id)
-            end
+            InterfaceSegment.update_assoc(model.id, mac_lease.segment_id) if mac_lease
+            InterfaceNetwork.update_assoc(model.id, ip_lease.network_id) if ip_lease
           }
         }
       end
@@ -128,7 +127,9 @@ module Vnet::NodeApi
         # lease_policy_base_interfaces: :destroy,
         # 0011_assoc_interface 
         # TODO: Make the assoc managers subscribe to INTERFACE_DELETED_ITEM(?).
+        InterfaceNetwork.dispatch_deleted_where(filter, model.deleted_at)
         InterfaceSegment.dispatch_deleted_where(filter, model.deleted_at)
+        InterfaceRouteLink.dispatch_deleted_where(filter, model.deleted_at)
       end
 
       def create_interface_port(interface, datapath_id, port_name)
@@ -147,14 +148,14 @@ module Vnet::NodeApi
       end
 
       def add_ip_lease(interface, mac_lease, network_id, ipv4_address)
-        return true if network_id.nil? || ipv4_address.nil?
+        return if network_id.nil? || ipv4_address.nil?
 
         ip_lease = M::IpLease.create(mac_lease: mac_lease,
                                      network_id: network_id,
                                      ipv4_address: ipv4_address) || return
         interface.add_ip_lease(ip_lease) || return
 
-        return true
+        ip_lease
       end
 
       def add_mac_lease(model, mac_address, mac_range_group_id, segment_id)

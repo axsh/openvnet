@@ -48,7 +48,17 @@ module Vnet::NodeApi
             options[:mac_lease_id] = mac_lease && mac_lease.id
           end
 
-          internal_create(options)
+          internal_create(options).tap { |model|
+            next if model.nil?
+            InterfaceNetwork.update_assoc(model.interface_id, model.network_id)
+          }
+        }
+      end
+
+      def destroy_with_transaction(filter)
+        internal_destroy(model_class[filter]).tap { |model|
+          next if model.nil?
+          InterfaceNetwork.update_assoc(model.interface_id, model.network_id)
         }
       end
 
@@ -131,7 +141,7 @@ module Vnet::NodeApi
 
         interface = nil
 
-        transaction do
+        transaction {
           interface, mac_lease = get_if_and_ml(interface_id, mac_lease_id)
 
           model.interface_id = interface.id
@@ -144,7 +154,7 @@ module Vnet::NodeApi
             ip_retention.released_at = nil
             ip_retention.save_changes
           end
-        end
+        }
         
         interface.security_groups.each do |group|
           dispatch_update_sg_ip_addresses(group)
