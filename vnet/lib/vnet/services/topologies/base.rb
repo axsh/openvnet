@@ -59,11 +59,11 @@ module Vnet::Services::Topologies
     def create_dp_assoc(other_name, params)
       case other_name
       when :network
-        create_dp_nw(params)
+        create_dp_network(params)
       when :segment
-        create_dp_seg(params)
+        create_dp_segment(params)
       when :route_link
-        create_dp_rl(params)
+        create_dp_route_link(params)
       else
         raise NotImplementedError
       end
@@ -97,6 +97,20 @@ module Vnet::Services::Topologies
     #
     #
 
+    def create_datapath_other(other_name, datapath_id, other_id, interface_id)
+      case other_name
+      when :network
+        create_datapath_network(datapath_id, other_id, interface_id)
+      when :segment
+        create_datapath_segment(datapath_id, other_id, interface_id)
+      when :route_link
+        create_datapath_route_link(datapath_id, other_id, interface_id)
+      else
+        raise NotImplementedError
+      end
+    end
+
+    # TODO: Abstract.
     def create_datapath_network(datapath_id, network_id, interface_id)
       create_params = {
         datapath_id: datapath_id,
