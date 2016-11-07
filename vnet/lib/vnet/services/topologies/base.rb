@@ -97,27 +97,21 @@ module Vnet::Services::Topologies
     #
     #
 
-    def create_datapath_other(other_name, datapath_id, other_id, interface_id)
+    def create_datapath_other(other_name, create_params)
       case other_name
       when :network
-        create_datapath_network(datapath_id, other_id, interface_id)
+        create_datapath_network(create_params)
       when :segment
-        create_datapath_segment(datapath_id, other_id, interface_id)
+        create_datapath_segment(create_params)
       when :route_link
-        create_datapath_route_link(datapath_id, other_id, interface_id)
+        create_datapath_route_link(create_params)
       else
         raise NotImplementedError
       end
     end
 
     # TODO: Abstract.
-    def create_datapath_network(datapath_id, network_id, interface_id)
-      create_params = {
-        datapath_id: datapath_id,
-        network_id: network_id,
-        interface_id: interface_id
-      }
-
+    def create_datapath_network(create_params)
       if MW::DatapathNetwork.batch.create(create_params).commit
         debug log_format_h("created datapath_network", create_params)
       else
@@ -125,13 +119,7 @@ module Vnet::Services::Topologies
       end
     end
 
-    def create_datapath_segment(datapath_id, segment_id, interface_id)
-      create_params = {
-        datapath_id: datapath_id,
-        segment_id: segment_id,
-        interface_id: interface_id
-      }
-
+    def create_datapath_segment(create_params)
       if MW::DatapathSegment.batch.create(create_params).commit
         debug log_format_h("created datapath_segment", create_params)
       else
@@ -139,13 +127,7 @@ module Vnet::Services::Topologies
       end
     end
 
-    def create_datapath_route_link(datapath_id, route_link_id, interface_id)
-      create_params = {
-        datapath_id: datapath_id,
-        route_link_id: route_link_id,
-        interface_id: interface_id
-      }
-
+    def create_datapath_route_link(create_params)
       if MW::DatapathRouteLink.batch.create(create_params).commit
         debug log_format_h("created datapath_route_link", create_params)
       else

@@ -25,7 +25,13 @@ module Vnet::Services::Topologies
           return
         end
 
-        create_datapath_other(other_name, datapath_id, other_id, interface_id)
+        create_params = {
+          datapath_id: datapath_id,
+          other_key => other_id,
+          interface_id: interface_id
+        }
+
+        create_datapath_other(other_name, create_params)
       end
 
     }
