@@ -112,10 +112,10 @@ module Vnet::Services
     # Assoc methods:
     #
 
-    [ [:network, :network_id],
-      [:segment, :segment_id],
-      [:route_link, :route_link_id],
-    ].each { |other_name, other_key|
+    [ [:network, :network_id, TOPOLOGY_CREATE_DP_NW],
+      [:segment, :segment_id, TOPOLOGY_CREATE_DP_SEG],
+      [:route_link, :route_link_id, TOPOLOGY_CREATE_DP_RL],
+    ].each { |other_name, other_key, event_create_assoc_name|
 
       # TOPOLOGY_FOO_ACTIVATED on queue [:foo, foo.id]
       define_method "#{other_name}_activated".to_sym do |params|
@@ -149,7 +149,7 @@ module Vnet::Services
           return
         end
 
-        publish(event_create_assoc_name(other_name), event_options)
+        publish(event_create_assoc_name, event_options)
       end
 
       # TOPOLOGY_FOO_DEACTIVATED on queue [:foo, foo.id]
@@ -197,19 +197,6 @@ module Vnet::Services
         MW::TopologySegment
       when :route_link, :route_link_id
         MW::TopologyRouteLink
-      else
-        raise NotImplementedError
-      end
-    end
-
-    def event_create_assoc_name(other_name)
-      case other_name
-      when :network
-        TOPOLOGY_CREATE_DP_NW
-      when :segment
-        TOPOLOGY_CREATE_DP_SEG
-      when :route_link
-        TOPOLOGY_CREATE_DP_RL
       else
         raise NotImplementedError
       end
