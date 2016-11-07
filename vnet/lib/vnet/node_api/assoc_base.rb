@@ -9,8 +9,6 @@ module Vnet::NodeApi
       def dispatch_added_assocs_for_parent_id(parent_id)
         transaction {
           assoc_class.dataset.where(parent_id_type => parent_id).all { |assoc_model|
-            Celluloid::Logger.warn "XXXXXXXXXXX #{assoc_model.inspect}"
-
             dispatch_created_item_events(assoc_model)
           }
         }
