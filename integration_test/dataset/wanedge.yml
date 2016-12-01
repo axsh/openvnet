@@ -54,7 +54,7 @@ interfaces:
     owner_datapath_uuid: dp-wanedge
     network_uuid: nw-public1
     mac_address: "02:01:00:00:00:04"
-    ipv4_address: 172.16.90.12
+    ipv4_address: <%= dp_wanedge_ipv4_address %>
 
   - uuid: if-weth2
     mode: host
