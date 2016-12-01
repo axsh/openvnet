@@ -230,6 +230,8 @@ module Vnspec
           # TODO: This could be improved to break with an error if the
           # name doesn't match.
           if result[:stdout].chomp == @name.to_s
+            _network_ctl(:arp_flush)
+
             logger.info("#{self.name} is ready")
 
             # Uncomment to dump status of all vm's.
@@ -396,7 +398,7 @@ module Vnspec
       end
 
       def clear_arp_cache
-        logger.debug("clear arp cahe: #{name}")
+        logger.debug("clear arp cache: #{name}")
         ssh_on_guest("ip -s -s neigh flush all", use_sudo: true)
       end
 

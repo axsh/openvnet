@@ -2,12 +2,11 @@
 
 module Vnet::Core
 
-  class ActiveInterfaceManager < Vnet::Core::Manager
+  class ActiveInterfaceManager < Vnet::Core::ActiveManager
 
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event ACTIVE_INTERFACE_INITIALIZED, :load_item
     subscribe_event ACTIVE_INTERFACE_UNLOAD_ITEM, :unload_item
@@ -15,8 +14,6 @@ module Vnet::Core
     subscribe_event ACTIVE_INTERFACE_DELETED_ITEM, :unload_item
 
     subscribe_event ACTIVE_INTERFACE_UPDATED, :updated_item
-
-    finalizer :do_cleanup
 
     def activate_local_item(params)
       create_params = params.merge(datapath_id: @datapath_info.id)
@@ -55,21 +52,6 @@ module Vnet::Core
     #
 
     private
-
-    def do_cleanup
-      # Cleanup can be called before the manager is initialized.
-      return if @datapath_info.nil?
-
-      info log_format('cleaning up')
-
-      begin
-        mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
-      rescue NoMethodError => e
-        info log_format(e.message, e.class.name)
-      end
-
-      info log_format('cleaned up')
-    end
 
     #
     # Specialize Manager:

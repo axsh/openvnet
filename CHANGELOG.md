@@ -11,6 +11,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` The option to have VNA take control of an Open vSwitch running on another host.
 
+* `Added` The option to run datapaths without learning flows. This is done so OpenVNet can work on hardware that doesn't support learning flows.
+
 * `Changed` It is no longer possibly to directly modify an IP lease through the WebAPI. In order to preserve network state history, IP leases need to be deleted and recreated.
 
 * `Changed` We now use the [PIO](https://github.com/trema/pio) library to manage MAC addresses.

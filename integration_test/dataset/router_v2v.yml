@@ -130,24 +130,24 @@ datapath_networks:
 route_links:
 
   - uuid: rl-1
-    mac_address: "02:00:10:00:00:01"
+    mac_address: "02:00:31:00:00:01"
 
 datapath_route_links:
 
   - datapath_uuid: dp-1
     route_link_uuid: rl-1
     interface_uuid: if-dp1eth0
-    mac_address: "02:00:10:aa:00:01"
+    mac_address: "02:00:31:aa:00:01"
 
   - datapath_uuid: dp-2
     route_link_uuid: rl-1
     interface_uuid: if-dp2eth0
-    mac_address: "02:00:10:bb:00:01"
+    mac_address: "02:00:31:bb:00:01"
 
   - datapath_uuid: dp-3
     route_link_uuid: rl-1
     interface_uuid: if-dp3eth0
-    mac_address: "02:00:10:cc:00:01"
+    mac_address: "02:00:31:cc:00:01"
 
 routes:
 
