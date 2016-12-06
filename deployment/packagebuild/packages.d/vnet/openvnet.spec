@@ -187,6 +187,7 @@ Summary: Virtual network agent for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
+Requires: openvswitch = 2.3.1
 
 %description vna
 This package contains OpenVNet's VNA process. This is an OpenFlow controller that sends commands to Open vSwitch to implement virtual networks.

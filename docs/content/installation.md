@@ -69,12 +69,6 @@ Though they're both required, they are not package dependencies because OpenVNet
 yum install -y mysql-server redis
 ```
 
-Install [Open vSwitch](http://www.openvswitch.org). Just like the above, this is not a package dependency because it is possible for VNA to work with a switch running remotely.
-
-```bash
-yum install -y openvswitch
-```
-
 ### Setup Open vSwitch
 
 We are going to create a bridge `br0` using Open vSwitch. Later we will attach our VMs `inst1` and `inst2` to this bridge.
