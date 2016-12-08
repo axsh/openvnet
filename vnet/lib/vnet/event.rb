@@ -149,6 +149,26 @@ module Vnet
     INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
 
     #
+    # Interface Network events:
+    #
+
+    INTERFACE_NETWORK_INITIALIZED = "interface_network_initialized"
+    INTERFACE_NETWORK_UNLOAD_ITEM = "interface_network_unload_item"
+    INTERFACE_NETWORK_CREATED_ITEM = "interface_network_created_item"
+    INTERFACE_NETWORK_DELETED_ITEM = "interface_network_deleted_item"
+    INTERFACE_NETWORK_UPDATED_ITEM = "interface_network_updated_item"
+
+    #
+    # Interface Route Link events:
+    #
+
+    INTERFACE_ROUTE_LINK_INITIALIZED = "interface_route_link_initialized"
+    INTERFACE_ROUTE_LINK_UNLOAD_ITEM = "interface_route_link_unload_item"
+    INTERFACE_ROUTE_LINK_CREATED_ITEM = "interface_route_link_created_item"
+    INTERFACE_ROUTE_LINK_DELETED_ITEM = "interface_route_link_deleted_item"
+    INTERFACE_ROUTE_LINK_UPDATED_ITEM = "interface_route_link_updated_item"
+
+    #
     # Interface Segment events:
     #
 

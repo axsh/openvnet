@@ -7,6 +7,12 @@ module Vnet::ModelWrappers
   class InterfacePort < Base
   end
 
+  class InterfaceNetwork < Base
+  end
+
   class InterfaceSegment < Base
+  end
+
+  class InterfaceRouteLink < Base
   end
 end

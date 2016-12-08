@@ -167,13 +167,13 @@ describe Vnet::NodeApi::LeasePolicy do
           expect(ip_lease.ip_lease_containers.size).to eq 2
 
           events = MockEventHandler.handled_events
-          expect(events.size).to eq 2
+          expect(events.size).to eq 3
 
-          expect(events[0][:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
-          expect(events[0][:options][:id]).to eq interface.id
-          expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
+          expect(events[1][:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
+          expect(events[1][:options][:id]).to eq interface.id
+          expect(events[1][:options][:ip_lease_id]).to eq ip_lease.id
 
-          expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
+          expect(events[2][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
 
@@ -194,13 +194,13 @@ describe Vnet::NodeApi::LeasePolicy do
           expect(ip_lease.ip_lease_containers.first).to eq lease_policy_ip_lease_container_with_label.ip_lease_container
 
           events = MockEventHandler.handled_events
-          expect(events.size).to eq 2
+          expect(events.size).to eq 3
 
-          expect(events[0][:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
-          expect(events[0][:options][:id]).to eq interface.id
-          expect(events[0][:options][:ip_lease_id]).to eq ip_lease.id
+          expect(events[1][:event]).to eq Vnet::Event::INTERFACE_LEASED_IPV4_ADDRESS
+          expect(events[1][:options][:id]).to eq interface.id
+          expect(events[1][:options][:ip_lease_id]).to eq ip_lease.id
 
-          expect(events[1][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
+          expect(events[2][:event]).to eq Vnet::Event::IP_RETENTION_CONTAINER_ADDED_IP_RETENTION
         end
       end
     end

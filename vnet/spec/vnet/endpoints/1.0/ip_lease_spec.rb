@@ -63,9 +63,9 @@ describe '/ip_leases' do
     describe 'event handler' do
       let(:request_params) { accepted_params }
 
-      it 'handles a single event' do
+      it 'handles expected events' do
         expect(last_response).to succeed
-        expect(MockEventHandler.handled_events.size).to eq 1
+        expect(MockEventHandler.handled_events.size).to eq 2
       end
     end
   end

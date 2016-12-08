@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Core
-  class InterfaceSegmentManager < Vnet::Core::Manager
+  class InterfaceNetworkManager < Vnet::Core::Manager
     include ActiveInterfaceEvents
 
     #
@@ -9,11 +9,11 @@ module Vnet::Core
     #
     event_handler_default_drop_all
 
-    subscribe_event INTERFACE_SEGMENT_INITIALIZED, :load_item
-    subscribe_event INTERFACE_SEGMENT_UNLOAD_ITEM, :unload_item
-    subscribe_event INTERFACE_SEGMENT_CREATED_ITEM, :created_item
-    subscribe_event INTERFACE_SEGMENT_UPDATED_ITEM, :updated_item
-    subscribe_event INTERFACE_SEGMENT_DELETED_ITEM, :unload_item
+    subscribe_event INTERFACE_NETWORK_INITIALIZED, :load_item
+    subscribe_event INTERFACE_NETWORK_UNLOAD_ITEM, :unload_item
+    subscribe_event INTERFACE_NETWORK_CREATED_ITEM, :created_item
+    subscribe_event INTERFACE_NETWORK_UPDATED_ITEM, :updated_item
+    subscribe_event INTERFACE_NETWORK_DELETED_ITEM, :unload_item
 
     subscribe_event ACTIVATE_INTERFACE, :activate_interface
     subscribe_event DEACTIVATE_INTERFACE, :deactivate_interface
@@ -29,22 +29,22 @@ module Vnet::Core
     #
 
     def mw_class
-      MW::InterfaceSegment
+      MW::InterfaceNetwork
     end
 
     def initialized_item_event
-      INTERFACE_SEGMENT_INITIALIZED
+      INTERFACE_NETWORK_INITIALIZED
     end
 
     def item_unload_event
-      INTERFACE_SEGMENT_UNLOAD_ITEM
+      INTERFACE_NETWORK_UNLOAD_ITEM
     end
 
     def match_item_proc_part(filter_part)
       filter, value = filter_part
 
       case filter
-      when :id, :interface_id, :segment_id
+      when :id, :interface_id, :network_id
         proc { |id, item| value == item.send(filter) }
       else
         raise NotImplementedError, filter
@@ -55,12 +55,12 @@ module Vnet::Core
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
       filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
-      filter << {segment_id: params[:segment_id]} if params.has_key? :segment_id
+      filter << {network_id: params[:network_id]} if params.has_key? :network_id
       filter
     end
 
     def item_initialize(item_map)
-      item_class = InterfaceSegments::Base
+      item_class = InterfaceNetworks::Base
       item_class.new(dp_info: @dp_info, map: item_map)
     end
 

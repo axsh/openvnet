@@ -34,8 +34,12 @@ module VNetAPIClient
 
     define_show_relation(:ports)
 
+    define_update_relation(:networks)
     define_update_relation(:segments)
+    define_update_relation(:route_links)
+    define_show_relation(:networks)
     define_show_relation(:segments)
+    define_show_relation(:route_links)
 
     def self.rename(interface_uuid, params = nil)
       send_request(Net::HTTP::Put, "#{@api_suffix}/#{interface_uuid}/rename", params)

@@ -178,11 +178,11 @@ module Vnet
     end
 
     def log_format_h(message, values)
-      str = values && values.map { |value|
+      values && values.map { |value|
         value.join(':')
-      }.join(' ')
-
-      log_format(message, str)
+      }.join(' ').tap { |str|
+        return log_format(message, str)
+      }
     end
 
     #
