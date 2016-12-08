@@ -13,7 +13,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` The option to run datapaths without learning flows. This is done so OpenVNet can work on hardware that doesn't support learning flows.
 
-* `Added` Batch processing to vnctl. This enables you to process multiple commands at once by reading them from a file or STDIN. 
+* `Added` Batch processing to vnctl. This enables you to process multiple commands at once by reading them from a file or STDIN.
+
+* `Added` interface_network/route_link associations that can be persistent even without an IP lease or route.
 
 * `Changed` It is no longer possibly to directly modify an IP lease through the WebAPI. In order to preserve network state history, IP leases need to be deleted and recreated.
 
