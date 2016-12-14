@@ -36,4 +36,12 @@ describe "/segments" do
       it_should_return_error(400, "ArgumentError")
     end
   end
+
+  describe "PUT /:uuid" do
+    accepted_params = {
+      :mode => "physical"
+    }
+
+    include_examples "PUT /:uuid", accepted_params
+  end
 end
