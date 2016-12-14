@@ -34,5 +34,11 @@ describe "/filters" do
     uuid_params = [:interface_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
+
+    context "With a wrong value for mode" do
+      let(:request_params) { accepted_params.merge({ mode: "a squirrel" }) }
+
+      it_should_return_error(400, "ArgumentError")
+    end
   end
 end
