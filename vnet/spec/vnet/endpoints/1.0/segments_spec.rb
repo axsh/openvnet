@@ -19,6 +19,17 @@ describe "/segments" do
   include_examples "GET /:uuid"
   include_examples "DELETE /:uuid"
 
+  describe "DELETE /:uuid event handler" do
+    let!(:object) { Fabricate(fabricator) }
+    let(:api_suffix_with_uuid) { "#{api_suffix}/#{object.canonical_uuid}" }
+
+    it "handles a single event" do
+      delete api_suffix_with_uuid
+      expect(last_response).to succeed
+      expect(MockEventHandler.handled_events.size).to eq 1
+    end
+  end
+
   describe "POST /" do
     expected_response = {
       :uuid => "seg-test",
