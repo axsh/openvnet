@@ -9,6 +9,8 @@ def app
 end
 
 describe "/segments" do
+  before(:each) { use_mock_event_handler }
+
   let(:api_suffix)  { "segments" }
   let(:fabricator)  { :segment }
   let(:model_class) { Vnet::Models::Segment }
