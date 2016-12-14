@@ -2,11 +2,12 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/segments' do
   def self.put_post_shared_params
+    param :mode, :String, in: C::Segment::MODES
   end
 
   put_post_shared_params
   param_uuid M::Segment
-  param :mode, :String, in: C::Segment::MODES
+  param_options :mode, required: true
   post do
     post_new(:Segment)
   end
