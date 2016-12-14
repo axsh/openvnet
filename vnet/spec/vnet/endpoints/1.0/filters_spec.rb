@@ -41,4 +41,17 @@ describe "/filters" do
       it_should_return_error(400, "ArgumentError")
     end
   end
+
+  describe "PUT /:uuid" do
+    let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+
+    accepted_params = {
+      :interface => "if-test",
+      :egress_passthrough => false,
+      :ingress_passthrough => true,
+      :mode => "static"
+    }
+
+    include_examples "PUT /:uuid", accepted_params
+  end
 end
