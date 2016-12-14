@@ -14,4 +14,6 @@ describe "/segments" do
   let(:model_class) { Vnet::Models::Segment }
 
   include_examples "GET /"
+  include_examples "GET /:uuid"
+  include_examples "DELETE /:uuid"
 end
