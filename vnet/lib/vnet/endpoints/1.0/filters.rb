@@ -34,7 +34,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   put '/:uuid' do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
-    update_by_uuid(:Filter)
+    update_by_uuid2(:Filter)
   end
 
   def self.static_shared_params
