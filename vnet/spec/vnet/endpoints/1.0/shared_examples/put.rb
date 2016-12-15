@@ -24,6 +24,22 @@ shared_examples "PUT /:uuid" do |accepted_params, uuid_params = []|
       end
     }
 
+    context "with the unchanged correct parameters" do
+      let(:request_params) {
+        rp = {}
+
+        accepted_params.keys.each { |k|
+          rp[k] = object[k]
+        }
+
+        rp
+      }
+
+      it "doesn't update any parameters and doesn't crash" do
+        expect(last_response).to succeed.with_body_containing(request_params)
+      end
+    end
+
     context "with all correct parameters" do
       it "should update all parameters" do
         expect(last_response).to succeed.with_body_containing(
