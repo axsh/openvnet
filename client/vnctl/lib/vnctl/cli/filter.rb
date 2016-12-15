@@ -3,14 +3,18 @@ module Vnctl::Cli
     namespace :filters
     api_suffix "filters"
 
+    add_shared_options {
+      option :interface_uuid, :type => :string, :required => true,
+        :desc => "This interface uuid that will use this filter."
+      option :mode, :type => :string, :required => true,
+        :desc => "The mode for this translation."
+    }
+
     add_modify_shared_options {
-      option :interface_uuid, :type => :string, :desc => "This interface uuid that will use this filter."
-      option :mode, :type => :string, :desc => "The mode for this translation."
+      #TODO remove interface_uuid and mode from update
       option :egress_passthrough, :type => :boolean, :desc => "Flag that sets if outgoing data will pass through or be dropped."
       option :ingress_passthrough, :type => :boolean, :desc => "Flag that sets if incoming data will pass through or be dropped."
     }
-
-    set_required_options [:interface_uuid, :mode]
 
     define_standard_crud_commands
 
