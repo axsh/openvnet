@@ -40,16 +40,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   def self.static_shared_params
     param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
     param :port_number, :Integer, in: 0..65536
-
-    param :ipv4_src_address, :String, transform: PARSE_IPV4_ADDRESS
-    param :ipv4_dst_address, :String, transform: PARSE_IPV4_ADDRESS
-    param :port_src, :Integer, in: 0..65536
-    param :port_dst, :Integer, in: 0..65536
     param :protocol, :String
     param :passthrough, :Boolean
   end
 
   static_shared_params
+  param_options :ipv4_address, required: true
+  param_options :port_number, required: true
+  param_options :protocol, required: true
+  param_options :passthrough, required: true
   post '/:uuid/static' do
 
     filter = check_syntax_and_pop_uuid(M::Filter)

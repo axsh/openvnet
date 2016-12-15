@@ -66,7 +66,7 @@ describe "/filters" do
       protocol: "tcp",
       passthrough: true
     }
-    required_params = []
+    required_params = [:ipv4_address, :protocol, :port_number, :passthrough]
     uuid_params = []
 
     describe "POST" do
