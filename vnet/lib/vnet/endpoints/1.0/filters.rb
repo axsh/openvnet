@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
-#TODO: Write some FREAKING tests for this
 Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   CF = C::Filter
 
   def self.put_post_shared_params
-    param_uuid M::Interface, :interface_uuid
-    param :mode, :String, in: CF::MODES
     param :egress_passthrough, :Boolean
     param :ingress_passthrough, :Boolean
   end
@@ -14,7 +11,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   put_post_shared_params
   param_uuid M::Filter
   param_uuid M::Interface, :interface_uuid, required: true
-  param_options :mode, required: true
+  param :mode, :String, in: CF::MODES, required: true
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 

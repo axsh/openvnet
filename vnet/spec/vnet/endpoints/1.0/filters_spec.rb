@@ -46,10 +46,8 @@ describe "/filters" do
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
 
     accepted_params = {
-      :interface => "if-test",
       :egress_passthrough => false,
       :ingress_passthrough => true,
-      :mode => "static"
     }
 
     include_examples "PUT /:uuid", accepted_params
