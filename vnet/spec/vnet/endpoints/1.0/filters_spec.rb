@@ -52,4 +52,25 @@ describe "/filters" do
 
     include_examples "PUT /:uuid", accepted_params
   end
+
+  describe "/:uuid/static" do
+    let!(:filter) { Fabricate(:filter, mode: "static") }
+
+    let(:api_suffix) { "filters/#{filter.canonical_uuid}/static" }
+    let(:fabricator) { :filter_static}
+    let(:model_class) { Vnet::Models::FilterStatic }
+
+    accepted_params = {
+      ipv4_address: "192.168.100.150",
+      port_number: 24056,
+      protocol: "tcp",
+      passthrough: true
+    }
+    required_params = []
+    uuid_params = []
+
+    describe "POST" do
+      include_examples "POST /", accepted_params, required_params, uuid_params
+    end
+  end
 end
