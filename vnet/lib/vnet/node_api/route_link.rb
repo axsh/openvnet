@@ -2,12 +2,12 @@
 
 module Vnet::NodeApi
   class RouteLink < EventBase
+    valid_update_fields []
+
     class << self
       private
 
       def create_with_transaction(options)
-        mac_address = options[:mac_address]
-        mac_group_uuid = Vnet::Configurations::Common.conf.datapath_mac_group
         transaction do
           mac_address_random_assign(options)
           model = internal_create(options)
