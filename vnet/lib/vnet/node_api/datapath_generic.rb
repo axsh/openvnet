@@ -9,10 +9,13 @@ module Vnet::NodeApi
       def create_with_transaction(options)
         options = options.dup
 
-        disable_lease_detection = options.delete(:disable_lease_detection)
+        lease_detection = options.delete(:lease_detection)
 
         transaction {
-          if !disable_lease_detection && options[:ip_lease_id].nil?
+          if lease_detection
+            options[:ip_lease_id] = detect_ip_lease(options[:interface_id], lease_detection)
+
+          elsif options[:ip_lease_id].nil?
             options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
           end
 
@@ -36,6 +39,20 @@ module Vnet::NodeApi
 
         ip_lease = model_class(:ip_lease).dataset.where(interface_id: interface_id).first
         ip_lease && ip_lease.id
+      end
+
+      def detect_ip_lease(interface_id, params)
+        return if interface_id.nil?
+
+        network_id = params[:network_id]
+
+        M::IpLease.dataset.where(interface_id: interface_id).each { |ip_lease|
+          next if ip_lease.network_id != network_id
+
+          return ip_lease.id
+        }
+
+        return nil
       end
 
     end

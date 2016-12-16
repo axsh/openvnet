@@ -25,14 +25,14 @@ module Vnet::Services::Topologies
           return
         end
 
-        # Verify that the interface is on the network/segment and pass along the
-        # ip_lease.
-
         create_params = {
           datapath_id: datapath_id,
           other_key => other_id,
           interface_id: interface_id,
-          # disable_lease_detection: true
+
+          lease_detection: {
+            other_key => other_id
+          }
         }
 
         create_datapath_other(other_name, create_params)
