@@ -114,7 +114,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
     get_all(:FilterStatic)
   end
 
-  get '/static/:uuid' do
+  get '/:uuid/static' do
     show_relations(:Filter, :filter_statics)
   end
 end

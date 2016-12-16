@@ -57,9 +57,57 @@ describe "/filters" do
     let!(:filter) { Fabricate(:filter, mode: "static") }
 
     let(:api_suffix) { "filters/#{filter.canonical_uuid}/static" }
-    let(:fabricator) { :filter_static}
+    let(:fabricator) { :filter_static }
     let(:model_class) { Vnet::Models::FilterStatic }
 
+    describe "GET" do
+      before(:each) do
+        entries.times { |i|
+          Fabricate(fabricator, filter_id: filter.id,
+                                protocol: "tcp",
+                                ipv4_src_prefix: 0,
+                                ipv4_dst_prefix: 0,
+                                ipv4_src_address: 0 + i,
+                                ipv4_dst_address: 0,
+                                port_src: 0,
+                                port_dst: 0)
+        }
+
+        get api_suffix
+      end
+
+      context "with no entries in the database" do
+        let(:entries) { 0 }
+
+        it "should return json with empty items" do
+          expect(last_response).to succeed.with_body({
+            "total_count" => 0,
+            "offset" =>  0,
+            "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
+            "items" => [],
+          })
+        end
+      end
+
+      test_with_db_entries 3
+
+      context "with a different filter id" do
+        let(:entries) { 3 }
+        let(:api_suffix) {
+            new_filter = Fabricate(:filter, mode: "static")
+          "filters/#{new_filter.canonical_uuid}/static"
+        }
+
+        it "does not return entries from the initial id" do
+          expect(last_response).to succeed.with_body({
+            "total_count" => 0,
+            "offset" =>  0,
+            "limit" => Vnet::Configurations::Webapi.conf.pagination_limit,
+            "items" => [],
+          })
+        end
+      end
+    end
 
     shared_examples_for "DELETE mode" do |accepted_params, required_params, uuid_params|
       let!(:filter_to_delete) { Fabricate(:filter_static, db_fields) }
