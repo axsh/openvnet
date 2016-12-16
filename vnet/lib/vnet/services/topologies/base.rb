@@ -28,6 +28,16 @@ module Vnet::Services::Topologies
         uuid: @uuid)
     end
 
+    def create_dp_assoc(other_name, params)
+      case other_name
+      when :network then create_dp_network(params)
+      when :segment then create_dp_segment(params)
+      when :route_link then create_dp_route_link(params)
+      else
+        raise NotImplementedError
+      end
+    end
+
     def added_assoc(other_name, params)
       case other_name
       when :network then added_network(params)
@@ -48,33 +58,8 @@ module Vnet::Services::Topologies
       end
     end
 
-    def create_dp_assoc(other_name, params)
-      case other_name
-      when :network then create_dp_network(params)
-      when :segment then create_dp_segment(params)
-      when :route_link then create_dp_route_link(params)
-      else
-        raise NotImplementedError
-      end
-    end
-
-    #
-    # Events:
-    #
-
-    def install
-    end
-
-    def uninstall
-    end
-
-    #
-    # Internal methods:
-    #
-
-    private
-
-    [ [:network, :network_id, :@networks],
+    [ [:datapath, :datapath_id, :@datapaths],
+      [:network, :network_id, :@networks],
       [:segment, :segment_id, :@segments],
       [:route_link, :route_link_id, :@route_links]
     ].each { |other_name, other_key, other_member|
@@ -86,9 +71,15 @@ module Vnet::Services::Topologies
             return
           end
 
-          (instance_variable_get(other_member)[assoc_id] = {}).tap { |assoc_map|
-            # TODO: Include stuff from params.
+          new_assoc = {
+            other_key => get_param_id(params, other_key)
+          }
 
+          if other_name == :datapath
+            new_assoc[:interface_id] = get_param_id(params, :interface_id)
+          end
+
+          (instance_variable_get(other_member)[assoc_id] = new_assoc).tap { |assoc_map|
             handle_added_assoc(other_name, assoc_id, assoc_map)
           }
         }
@@ -108,6 +99,22 @@ module Vnet::Services::Topologies
       end
 
     }
+
+    #
+    # Events:
+    #
+
+    def install
+    end
+
+    def uninstall
+    end
+
+    #
+    # Internal methods:
+    #
+
+    private
 
     def handle_added_assoc(other_name, assoc_id, assoc_map)
       debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
