@@ -13,7 +13,9 @@ module Vnet::NodeApi
 
         transaction {
           if lease_detection
-            options[:ip_lease_id] = detect_ip_lease(options[:interface_id], lease_detection)
+            lease_detection.merge!(datapath_id: options[:datapath_id])
+
+            options[:interface_id], options[:ip_lease_id] = detect_ip_lease(lease_detection)
 
           elsif options[:ip_lease_id].nil?
             options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
@@ -41,15 +43,14 @@ module Vnet::NodeApi
         ip_lease && ip_lease.id
       end
 
-      def detect_ip_lease(interface_id, params)
-        return if interface_id.nil?
-
+      def detect_ip_lease(params)
+        datapath_id = params[:datapath_id]
         network_id = params[:network_id]
 
-        M::IpLease.dataset.where(interface_id: interface_id).each { |ip_lease|
+        M::IpLease.dataset.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST).each { |ip_lease|
           next if ip_lease.network_id != network_id
 
-          return ip_lease.id
+          return ip_lease.interface_id, ip_lease.id
         }
 
         return nil
