@@ -48,6 +48,8 @@ module Vnet
 
   module Constants
     autoload :ActivePort, 'vnet/constants/active_port'
+    autoload :Filter, 'vnet/constants/filter'
+    autoload :FilterStatic, 'vnet/constants/filter_static'
     autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
     autoload :MacAddressPrefix, 'vnet/constants/mac_address_prefix'
@@ -59,7 +61,6 @@ module Vnet
     autoload :Translation, 'vnet/constants/translation'
     autoload :Topology, 'vnet/constants/topology'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
-    autoload :Filter, 'vnet/constants/filter'
   end
 
   module Core

@@ -2,6 +2,7 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   CF = C::Filter
+  CFS = C::FilterStatic
 
   def self.put_post_shared_params
     param :egress_passthrough, :Boolean
@@ -40,7 +41,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   def self.static_shared_params
     param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
     param :port_number, :Integer, in: 0..65536
-    param :protocol, :String, in: ['tcp', 'udp', 'icmp', 'arp', 'all'], required: true
+    param :protocol, :String, in: CFS::PROTOCOLS, required: true
     param :passthrough, :Boolean, required: true
   end
 
