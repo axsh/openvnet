@@ -18,17 +18,22 @@ module Vnet::Services::Topologies
         other_id = get_param_id(params, other_key)
         datapath_id = get_param_id(params, :datapath_id)
 
-        interface_id = get_a_host_interface_id(datapath_id)
+        _, assoc_map = @datapaths.detect { |assoc_key, assoc_map|
+          assoc_map[:datapath_id] == datapath_id
+        }
 
-        if interface_id.nil?
-          warn log_format_h("could not find host interface for new datapath_#{other_name}", params)
+        if assoc_map.nil?
+          warn log_format_h("could not find topology_datapath for new datapath_#{other_name}", params)
           return
         end
 
         create_params = {
           datapath_id: datapath_id,
           other_key => other_id,
-          interface_id: interface_id
+
+          lease_detection: {
+            interface_id: assoc_map[:interface_id]
+          }
         }
 
         create_datapath_other(other_name, create_params)

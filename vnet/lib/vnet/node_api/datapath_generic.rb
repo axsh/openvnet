@@ -46,12 +46,27 @@ module Vnet::NodeApi
       def detect_ip_lease(params)
         datapath_id = params[:datapath_id]
         network_id = params[:network_id]
+        interface_id = params[:interface_id]
 
-        M::IpLease.dataset.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST).each { |ip_lease|
-          next if ip_lease.network_id != network_id
+        ds = M::IpLease.dataset
 
-          return ip_lease.interface_id, ip_lease.id
-        }
+        case
+        when network_id && interface_id.nil?
+          ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
+          ds.each { |ip_lease|
+            next if ip_lease.network_id != network_id
+
+            return ip_lease.interface_id, ip_lease.id
+          }
+
+        when network_id.nil? && interface_id
+          ds = ds.where(ip_leases__interface_id: interface_id)
+          ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
+          
+          lease = ds.first
+
+          return interface_id, (lease && lease.id)
+        end
 
         return nil
       end
