@@ -58,7 +58,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       ipv4_src_prefix = params["ipv4_address"].prefix.to_i
       port_number = nil
     when "arp", "all"
-      ipv4_address = 0
+      ipv4_src_address = 0
       ipv4_src_prefix = 0
       port_number = nil
     end
