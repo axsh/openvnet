@@ -39,7 +39,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   end
 
   def self.static_shared_params
-    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS, required: true
+    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
     param :port_number, :Integer, in: 0..65536
     param :protocol, :String, in: ['tcp', 'udp', 'icmp', 'arp', 'all'], required: true
     param :passthrough, :Boolean, required: true
@@ -49,11 +49,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
     case params["protocol"]
     when "tcp", "udp"
       raise E::MissingArgument, 'port_number' if params["port_number"].nil?
+      raise E::MissingArgument, 'ipv4_address' if params["ipv4_address"].nil?
 
       ipv4_src_address = params["ipv4_address"].to_i
       ipv4_src_prefix = params["ipv4_address"].prefix.to_i
       port_number = params["port_number"]
     when "icmp"
+      raise E::MissingArgument, 'ipv4_address' if params["ipv4_address"].nil?
+
       ipv4_src_address = params["ipv4_address"].to_i
       ipv4_src_prefix = params["ipv4_address"].prefix.to_i
       port_number = nil
@@ -73,7 +76,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       ipv4_src_prefix: ipv4_src_prefix,
       ipv4_dst_address: 0,
       ipv4_dst_prefix: 0,
-      port_src: port_number,
+      port_src: port_number && 0,
       port_dst: port_number,
       protocol: params["protocol"],
       passthrough: params["passthrough"]
