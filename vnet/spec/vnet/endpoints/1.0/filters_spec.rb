@@ -94,7 +94,7 @@ describe "/filters" do
       context "with a different filter id" do
         let(:entries) { 3 }
         let(:api_suffix) {
-            new_filter = Fabricate(:filter, mode: "static")
+          new_filter = Fabricate(:filter, mode: "static")
           "filters/#{new_filter.canonical_uuid}/static"
         }
 
