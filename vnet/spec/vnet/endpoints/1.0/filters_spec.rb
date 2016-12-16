@@ -69,8 +69,27 @@ describe "/filters" do
     required_params = [:ipv4_address, :protocol, :port_number, :passthrough]
     uuid_params = []
 
-    describe "POST" do
+    describe "POST (tcp)" do
       include_examples "POST /", accepted_params, required_params, uuid_params
+    end
+
+    describe "POST (udp)" do
+      include_examples "POST /", accepted_params.merge(protocol: 'udp'),
+                                 required_params, uuid_params
+    end
+
+    describe "POST (icmp)" do
+      include_examples "POST /", accepted_params.merge(protocol: 'icmp', port_number: nil),
+                                 [:ipv4_address, :protocol, :passthrough],
+                                 uuid_params
+    end
+
+    describe "POST (arp)" do
+      accepted = {
+        protocol: 'arp',
+        passthrough: true
+      }
+      include_examples "POST /", accepted, [:protocol, :passthrough], uuid_params
     end
 
     describe "DELETE" do
