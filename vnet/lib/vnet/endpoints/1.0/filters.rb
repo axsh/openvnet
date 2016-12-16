@@ -38,17 +38,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   end
 
   def self.static_shared_params
-    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
-    param :port_number, :Integer, in: 0..65536
-    param :protocol, :String
-    param :passthrough, :Boolean
+    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS, required: true
+    param :port_number, :Integer, in: 0..65536, required: true
+    param :protocol, :String, required: true
+    param :passthrough, :Boolean, required: true
   end
 
   static_shared_params
-  param_options :ipv4_address, required: true
-  param_options :port_number, required: true
-  param_options :protocol, required: true
-  param_options :passthrough, required: true
   post '/:uuid/static' do
 
     filter = check_syntax_and_pop_uuid(M::Filter)
@@ -61,7 +57,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       filter_id: filter.id,
       ipv4_src_address: params["ipv4_address"].to_i,
       ipv4_src_prefix: params["ipv4_address"].prefix,
-      ipv4_dst_address: "0",
+      ipv4_dst_address: 0,
       ipv4_dst_prefix: 0,
       port_src: params["port_number"],
       port_dst: params["port_number"],
@@ -73,7 +69,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   end
 
   static_shared_params
-  param :id, :Integer
   delete '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
 
@@ -83,8 +78,17 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
     remove_system_parameters
 
-    filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
-    filter_params[:filter_id] = filter.id
+    filter_params = {
+      filter_id: filter.id,
+      ipv4_src_address: params["ipv4_address"].to_i,
+      ipv4_src_prefix: params["ipv4_address"].prefix.to_i,
+      ipv4_dst_address: 0,
+      ipv4_dst_prefix: 0,
+      port_src: params["port_number"],
+      port_dst: params["port_number"],
+      protocol: params["protocol"],
+      passthrough: params["passthrough"]
+    }
 
     s = M::FilterStatic.batch[filter_params].commit
 

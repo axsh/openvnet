@@ -72,5 +72,40 @@ describe "/filters" do
     describe "POST" do
       include_examples "POST /", accepted_params, required_params, uuid_params
     end
+
+    describe "DELETE" do
+      let(:db_fields) {
+        {filter_id: filter.id,
+        ipv4_src_address: 3232261270,
+        ipv4_src_prefix: 32,
+        ipv4_dst_address: 0,
+        ipv4_dst_prefix: 0,
+        port_src: 24056,
+        port_dst: 24056,
+        protocol: "tcp",
+        passthrough: true}
+      }
+
+      let!(:filter_to_delete) { Fabricate(:filter_static, db_fields) }
+
+      before(:each) { delete api_suffix, request_params }
+
+      include_examples "required parameters", accepted_params, required_params
+
+      context "with parameters describing a non existing static filter" do
+        let(:request_params) { accepted_params.merge({ipv4_address: "192.168.100.151"}) }
+
+        it_should_return_error(404, 'UnknownResource')
+      end
+
+      context "with parameters describing an existing static filter" do
+        let(:request_params) { accepted_params }
+
+        it "should delete one database entry" do
+          expect(last_response).to succeed
+          expect(model_class.find(db_fields)).to eq(nil)
+        end
+      end
+    end
   end
 end
