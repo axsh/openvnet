@@ -80,7 +80,7 @@ describe "/filters" do
         ipv4_src_prefix: 32,
         ipv4_dst_address: 0,
         ipv4_dst_prefix: 0,
-        port_src: 24056,
+        port_src: 0,
         port_dst: 24056,
         protocol: "tcp",
         passthrough: true}
