@@ -76,7 +76,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       ipv4_src_prefix: ipv4_src_prefix,
       ipv4_dst_address: 0,
       ipv4_dst_prefix: 0,
-      port_src: port_number && 0,
+      port_src: port_number,
       port_dst: port_number,
       protocol: params["protocol"],
       passthrough: params["passthrough"]
