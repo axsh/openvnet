@@ -4,6 +4,7 @@ module Vnet::Services
 
   class TopologyManager < Vnet::Manager
     include Vnet::Constants::Topology
+    include Vnet::ManagerAssocs
 
     #
     # Events:
@@ -27,6 +28,11 @@ module Vnet::Services
     subscribe_event TOPOLOGY_CREATE_DP_NW, :create_dp_network
     subscribe_event TOPOLOGY_CREATE_DP_SEG, :create_dp_segment
     subscribe_event TOPOLOGY_CREATE_DP_RL, :create_dp_route_link
+
+    subscribe_assoc_events :topology, :datapath
+    subscribe_assoc_events :topology, :network
+    subscribe_assoc_events :topology, :segment
+    subscribe_assoc_events :topology, :route_link
 
     # TODO: Add events for host interfaces?
 
@@ -100,6 +106,13 @@ module Vnet::Services
     #
     # Create / Delete events:
     #
+
+    def item_post_install(item, item_map)
+      MW::TopologyDatapath.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologySegment.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologyRouteLink.dispatch_added_assocs_for_parent_id(item.id)
+    end
 
     # item created in db on queue 'item.id'
     def created_item(params)
@@ -216,42 +229,6 @@ module Vnet::Services
       end
 
       tp_obj.topology_id
-    end
-
-    # TODO: Add subscribe_event that creates the added/removed
-    # methods. We don't need to use the constants when they're just
-    # strings anyway.
-
-    public
-
-    [ [:datapath, TOPOLOGY_ADDED_DATAPATH, TOPOLOGY_REMOVED_DATAPATH],
-      [:network, TOPOLOGY_ADDED_NETWORK, TOPOLOGY_REMOVED_NETWORK],
-      [:segment, TOPOLOGY_ADDED_SEGMENT, TOPOLOGY_REMOVED_SEGMENT],
-      [:route_link, TOPOLOGY_ADDED_ROUTE_LINK, TOPOLOGY_REMOVED_ROUTE_LINK],
-    ].each { |other_name, event_added_assoc_name, event_removed_assoc_name|
-
-      subscribe_event event_added_assoc_name, "added_#{other_name}"
-      subscribe_event event_removed_assoc_name, "removed_#{other_name}"
-
-      define_method "added_#{other_name}".to_sym do |params|
-        (internal_detect_by_id_with_error(params) || return).tap { |item|
-          item.added_assoc(other_name, params)
-        }
-      end
-
-      define_method "removed_#{other_name}".to_sym do |params|
-        (internal_detect_by_id_with_error(params) || return).tap { |item|
-          item.removed_assoc(other_name, params)
-        }
-      end
-
-    }
-
-    def item_post_install(item, item_map)
-      MW::TopologyDatapath.dispatch_added_assocs_for_parent_id(item.id)
-      MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
-      MW::TopologySegment.dispatch_added_assocs_for_parent_id(item.id)
-      MW::TopologyRouteLink.dispatch_added_assocs_for_parent_id(item.id)
     end
 
   end

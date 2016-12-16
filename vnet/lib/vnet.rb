@@ -32,6 +32,7 @@ module Vnet
   autoload :ItemDpUuidMode,       'vnet/item_base'
   autoload :ItemDatapathUuidMode, 'vnet/item_base'
   autoload :Manager,              'vnet/manager'
+  autoload :ManagerAssocs,        'vnet/manager_assocs'
   autoload :LookupParams,         'vnet/manager_params'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
