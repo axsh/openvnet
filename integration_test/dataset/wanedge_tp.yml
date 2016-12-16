@@ -110,9 +110,6 @@ topology_datapaths:
 
 topology_networks:
 
-  - topology_uuid: topo-physical
-    network_uuid: nw-public1
-
   - topology_uuid: topo-global
     network_uuid: nw-global
 
