@@ -19,9 +19,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Changed` It is no longer possibly to directly modify an IP lease through the WebAPI. In order to preserve network state history, IP leases need to be deleted and recreated.
 
+* `Changed` the static filter webapi parameters to be more inline with the current functionality.
+
 * `Changed` We now use the [PIO](https://github.com/trema/pio) library to manage MAC addresses.
 
 * `Changed` Refactored IP/MAC leases and wrote a bunch more unit tests for them.
+
+* `Changed` Refactored topology manager before adding new functionality.
 
 * `Removed` VNet Edge. Connecting OpenVNet to other networks on the L2 level should now be done by using `promiscuous interface mode` instead.
 

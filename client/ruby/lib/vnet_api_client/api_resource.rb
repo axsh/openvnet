@@ -45,28 +45,52 @@ module VNetAPIClient
         end
       end
 
-      def define_standard_crud_methods
+      def define_create
         metaclass.instance_eval do
           define_method(:create) do |params = nil|
             send_request(Net::HTTP::Post, @api_suffix, params)
           end
+        end
+      end
 
+      def define_update
+        metaclass.instance_eval do
           define_method(:update) do |uuid, params = nil|
             send_request(Net::HTTP::Put, "#{@api_suffix}/#{uuid}", params)
           end
+        end
+      end
 
+      def define_delete
+        metaclass.instance_eval do
           define_method(:delete) do |uuid|
             send_request(Net::HTTP::Delete, "#{@api_suffix}/#{uuid}")
           end
+        end
+      end
 
+      def define_show
+        metaclass.instance_eval do
           define_method(:show) do |uuid|
             send_request(Net::HTTP::Get, "#{@api_suffix}/#{uuid}")
           end
+        end
+      end
 
+      def define_index
+        metaclass.instance_eval do
           define_method(:index) do
             send_request(Net::HTTP::Get, @api_suffix)
           end
         end
+      end
+
+      def define_standard_crud_methods
+        define_create
+        define_update
+        define_delete
+        define_show
+        define_index
       end
 
       def define_relation_methods(relation_name)

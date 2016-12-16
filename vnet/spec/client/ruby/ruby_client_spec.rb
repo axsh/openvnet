@@ -193,14 +193,12 @@ describe VNetAPIClient do
   end
 
   describe VNetAPIClient::Filter do
-    include_examples 'test_method', :add_filter_static,
+    include_examples 'test_method', :add_static,
                      'POST  /filters/:uuid/static'
-    include_examples 'test_method', :remove_filter_static,
+    include_examples 'test_method', :remove_static,
                      'DELETE  /filters/:uuid/static'
-    include_examples 'test_method', :show_filter_static,
-                     'GET  /filters/static/'
-    include_examples 'test_method', :show_filter_static_by_uuid,
-                     'GET  /filters/static/:uuid'
+    include_examples 'test_method', :show_static,
+                     'GET  /filters/:uuid/static'
   end
   #
   # Finally we make sure that no non standard routes are left untested

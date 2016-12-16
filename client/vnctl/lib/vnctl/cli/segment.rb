@@ -5,12 +5,11 @@ module Vnctl::Cli
     namespace :segments
     api_suffix 'segments'
 
-    add_modify_shared_options {
-      option :mode, :type => :string, :desc => 'Can be either physical or virtual.'
-    }
+    option_uuid
+    option :mode, type: :string, required: true, desc: 'Can be either physical or virtual.'
+    define_add
 
-    set_required_options [:mode]
-
-    define_standard_crud_commands
+    define_show
+    define_del
   end
 end
