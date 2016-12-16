@@ -11,7 +11,6 @@ module Vnctl::Cli
     }
 
     add_modify_shared_options {
-      #TODO remove interface_uuid and mode from update
       option :egress_passthrough, :type => :boolean, :desc => "Flag that sets if outgoing data will pass through or be dropped."
       option :ingress_passthrough, :type => :boolean, :desc => "Flag that sets if incoming data will pass through or be dropped."
     }
@@ -27,15 +26,6 @@ module Vnctl::Cli
         :desc => "This is the port number the filter will listen on."
       mode.option :passthrough, :type => :boolean,
         :desc => "Flag that controls where the static should pass or drop data for specified rule."
-
-      mode.option :ipv4_src_address, :type => :string,
-        :desc => "This is the address the filter will apply for incoming traffic."
-      mode.option :ipv4_dst_address, :type => :string,
-        :desc => "This is the address the filter will apply for outgoing traffic."
-      mode.option :port_src, :type => :string,
-        :desc => "This is the port which the rule will apply to for incoming traffic."
-      mode.option :port_dst, :type => :string,
-        :desc => "This is the port which the rule will apply to for outgoing traffic."
     end
   end
 end
