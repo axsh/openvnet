@@ -60,51 +60,8 @@ describe "/filters" do
     let(:fabricator) { :filter_static}
     let(:model_class) { Vnet::Models::FilterStatic }
 
-    accepted_params = {
-      ipv4_address: "192.168.100.150",
-      port_number: 24056,
-      protocol: "tcp",
-      passthrough: true
-    }
-    required_params = [:ipv4_address, :protocol, :port_number, :passthrough]
-    uuid_params = []
 
-    describe "POST (tcp)" do
-      include_examples "POST /", accepted_params, required_params, uuid_params
-    end
-
-    describe "POST (udp)" do
-      include_examples "POST /", accepted_params.merge(protocol: 'udp'),
-                                 required_params, uuid_params
-    end
-
-    describe "POST (icmp)" do
-      include_examples "POST /", accepted_params.merge(protocol: 'icmp', port_number: nil),
-                                 [:ipv4_address, :protocol, :passthrough],
-                                 uuid_params
-    end
-
-    describe "POST (arp)" do
-      accepted = {
-        protocol: 'arp',
-        passthrough: true
-      }
-      include_examples "POST /", accepted, [:protocol, :passthrough], uuid_params
-    end
-
-    describe "DELETE" do
-      let(:db_fields) {
-        {filter_id: filter.id,
-        ipv4_src_address: 3232261270,
-        ipv4_src_prefix: 32,
-        ipv4_dst_address: 0,
-        ipv4_dst_prefix: 0,
-        port_src: 0,
-        port_dst: 24056,
-        protocol: "tcp",
-        passthrough: true}
-      }
-
+    shared_examples_for "DELETE mode" do |accepted_params, required_params, uuid_params|
       let!(:filter_to_delete) { Fabricate(:filter_static, db_fields) }
 
       before(:each) { delete api_suffix, request_params }
@@ -112,7 +69,7 @@ describe "/filters" do
       include_examples "required parameters", accepted_params, required_params
 
       context "with parameters describing a non existing static filter" do
-        let(:request_params) { accepted_params.merge({ipv4_address: "192.168.100.151"}) }
+        let(:request_params) { accepted_params.merge({passthrough: false}) }
 
         it_should_return_error(404, 'UnknownResource')
       end
@@ -124,6 +81,98 @@ describe "/filters" do
           expect(last_response).to succeed
           expect(model_class.find(db_fields)).to eq(nil)
         end
+      end
+    end
+
+    ["tcp", "udp"].each { |protocol|
+      describe protocol do
+        accepted_params = {
+          ipv4_address: "192.168.100.150",
+          port_number: 24056,
+          protocol: protocol,
+          passthrough: true
+        }
+        required_params = [:ipv4_address, :protocol, :port_number, :passthrough]
+        uuid_params = []
+
+        describe "POST" do
+          include_examples "POST /", accepted_params, required_params, uuid_params
+        end
+
+        describe "DELETE" do
+          let(:db_fields) {
+            {filter_id: filter.id,
+            ipv4_src_address: 3232261270,
+            ipv4_src_prefix: 32,
+            ipv4_dst_address: 0,
+            ipv4_dst_prefix: 0,
+            port_src: 0,
+            port_dst: 24056,
+            protocol: protocol,
+            passthrough: true}
+          }
+
+          include_examples "DELETE mode", accepted_params, required_params, uuid_params
+        end
+      end
+    }
+
+    describe "icmp" do
+      accepted_params = {
+        ipv4_address: "192.168.100.150",
+        protocol: "icmp",
+        passthrough: true
+      }
+      required_params = [:ipv4_address, :protocol, :passthrough]
+      uuid_params = []
+
+      describe "POST" do
+        include_examples "POST /", accepted_params, required_params, uuid_params
+      end
+
+      describe "DELETE" do
+        let(:db_fields) {
+          {filter_id: filter.id,
+          ipv4_src_address: 3232261270,
+          ipv4_src_prefix: 32,
+          ipv4_dst_address: 0,
+          ipv4_dst_prefix: 0,
+          port_src: nil,
+          port_dst: nil,
+          protocol: "icmp",
+          passthrough: true}
+        }
+
+        include_examples "DELETE mode", accepted_params, required_params, uuid_params
+      end
+    end
+
+    describe "arp" do
+      accepted_params = {
+        protocol: "arp",
+        passthrough: true
+      }
+      required_params = [:protocol, :passthrough]
+      uuid_params = []
+
+      describe "POST" do
+        include_examples "POST /", accepted_params, required_params, uuid_params
+      end
+
+      describe "DELETE" do
+        let(:db_fields) {
+          {filter_id: filter.id,
+          ipv4_src_address: 0,
+          ipv4_src_prefix: 0,
+          ipv4_dst_address: 0,
+          ipv4_dst_prefix: 0,
+          port_src: nil,
+          port_dst: nil,
+          protocol: "arp",
+          passthrough: true}
+        }
+
+        include_examples "DELETE mode", accepted_params, required_params, uuid_params
       end
     end
   end
