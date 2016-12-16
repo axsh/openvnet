@@ -15,6 +15,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
+    #TODO: remove interface_id from response
     post_new :Filter
   end
 
@@ -39,31 +40,52 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
   def self.static_shared_params
     param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS, required: true
-    param :port_number, :Integer, in: 0..65536, required: true
-    param :protocol, :String, required: true
+    param :port_number, :Integer, in: 0..65536
+    param :protocol, :String, in: ['tcp', 'udp', 'icmp', 'arp', 'all'], required: true
     param :passthrough, :Boolean, required: true
   end
 
-  static_shared_params
-  post '/:uuid/static' do
+  def params_to_db_fields(filter, params)
+    case params["protocol"]
+    when "tcp", "udp"
+      raise E::MissingArgument, 'port_number' if params["port_number"].nil?
 
-    filter = check_syntax_and_pop_uuid(M::Filter)
+      ipv4_src_address = params["ipv4_address"].to_i
+      ipv4_src_prefix = params["ipv4_address"].prefix.to_i
+      port_number = params["port_number"]
+    when "icmp"
+      ipv4_src_address = params["ipv4_address"].to_i
+      ipv4_src_prefix = params["ipv4_address"].prefix.to_i
+      port_number = nil
+    when "arp", "all"
+      ipv4_address = 0
+      ipv4_src_prefix = 0
+      port_number = nil
+    end
 
     if filter.mode != CF::MODE_STATIC
       raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
     end
 
-    s = M::FilterStatic.create(
+    {
       filter_id: filter.id,
-      ipv4_src_address: params["ipv4_address"].to_i,
-      ipv4_src_prefix: params["ipv4_address"].prefix,
+      ipv4_src_address: ipv4_src_address,
+      ipv4_src_prefix: ipv4_src_prefix,
       ipv4_dst_address: 0,
       ipv4_dst_prefix: 0,
-      port_src: params["port_number"],
-      port_dst: params["port_number"],
+      port_src: port_number,
+      port_dst: port_number,
       protocol: params["protocol"],
       passthrough: params["passthrough"]
-    )
+    }
+  end
+
+  static_shared_params
+  post '/:uuid/static' do
+    filter = check_syntax_and_pop_uuid(M::Filter)
+    db_fields = params_to_db_fields(filter, params)
+
+    s = M::FilterStatic.create(db_fields)
 
     respond_with(R::FilterStatic.generate(s))
   end
@@ -71,26 +93,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   static_shared_params
   delete '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
+    db_fields = params_to_db_fields(filter, params)
 
-    if filter.mode != CF::MODE_STATIC
-      raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
-    end
-
-    remove_system_parameters
-
-    filter_params = {
-      filter_id: filter.id,
-      ipv4_src_address: params["ipv4_address"].to_i,
-      ipv4_src_prefix: params["ipv4_address"].prefix.to_i,
-      ipv4_dst_address: 0,
-      ipv4_dst_prefix: 0,
-      port_src: params["port_number"],
-      port_dst: params["port_number"],
-      protocol: params["protocol"],
-      passthrough: params["passthrough"]
-    }
-
-    s = M::FilterStatic.batch[filter_params].commit
+    s = M::FilterStatic.batch[db_fields].commit
 
     if !s
       rp = request.params.to_json
