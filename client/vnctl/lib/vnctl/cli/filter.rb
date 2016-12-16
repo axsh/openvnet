@@ -24,7 +24,7 @@ module Vnctl::Cli
         :desc => "This is the protocol which the filter will listen on. [tcp, udp, icmp, arp]"
       mode.option :port_number, :type => :string,
         :desc => "This is the port number the filter will listen on. Required for tcp and udp."
-      mode.option :passthrough, :type => :boolean, :required => true,
+      mode.option :passthrough, :type => :boolean, :default => false,
         :desc => "Flag that controls where the static should pass or drop data for specified rule."
     end
   end
