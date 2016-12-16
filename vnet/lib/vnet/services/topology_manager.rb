@@ -178,12 +178,9 @@ module Vnet::Services
 
     def mw_datapath_assoc_class(other_name)
       case other_name
-      when :network, :network_id
-        MW::DatapathNetwork
-      when :segment, :segment_id
-        MW::DatapathSegment
-      when :route_link, :route_link_id
-        MW::DatapathRouteLink
+      when :network, :network_id then MW::DatapathNetwork
+      when :segment, :segment_id then MW::DatapathSegment
+      when :route_link, :route_link_id then MW::DatapathRouteLink
       else
         raise NotImplementedError
       end
@@ -191,12 +188,9 @@ module Vnet::Services
 
     def mw_topology_assoc_class(other_name)
       case other_name
-      when :network, :network_id
-        MW::TopologyNetwork
-      when :segment, :segment_id
-        MW::TopologySegment
-      when :route_link, :route_link_id
-        MW::TopologyRouteLink
+      when :network, :network_id then MW::TopologyNetwork
+      when :segment, :segment_id then MW::TopologySegment
+      when :route_link, :route_link_id then MW::TopologyRouteLink
       else
         raise NotImplementedError
       end
@@ -224,31 +218,37 @@ module Vnet::Services
       tp_obj.topology_id
     end
 
-    #
-    #
-    #
-
-    # TODO: Do we really want/need this:
+    # TODO: Add subscribe_event that creates the added/removed
+    # methods. We don't need to use the constants when they're just
+    # strings anyway.
 
     public
 
-    subscribe_event TOPOLOGY_ADDED_NETWORK, :added_network
-    subscribe_event TOPOLOGY_REMOVED_NETWORK, :removed_network
+    [ [:datapath, TOPOLOGY_ADDED_DATAPATH, TOPOLOGY_REMOVED_DATAPATH],
+      [:network, TOPOLOGY_ADDED_NETWORK, TOPOLOGY_REMOVED_NETWORK],
+      [:segment, TOPOLOGY_ADDED_SEGMENT, TOPOLOGY_REMOVED_SEGMENT],
+      [:route_link, TOPOLOGY_ADDED_ROUTE_LINK, TOPOLOGY_REMOVED_ROUTE_LINK],
+    ].each { |other_name, event_added_assoc_name, event_removed_assoc_name|
 
-    # TODO: Add subscribe_event that creates this method directly.
-    def added_network(params)
-      (internal_detect_by_id_with_error(params) || return).tap { |item|
-        item.added_network(params)
-      }
-    end
+      subscribe_event event_added_assoc_name, "added_#{other_name}"
+      subscribe_event event_removed_assoc_name, "removed_#{other_name}"
 
-    def removed_network(params)
-      (internal_detect_by_id_with_error(params) || return).tap { |item|
-        item.removed_network(params)
-      }
-    end
+      define_method "added_#{other_name}".to_sym do |params|
+        (internal_detect_by_id_with_error(params) || return).tap { |item|
+          item.added_assoc(other_name, params)
+        }
+      end
+
+      define_method "removed_#{other_name}".to_sym do |params|
+        (internal_detect_by_id_with_error(params) || return).tap { |item|
+          item.removed_assoc(other_name, params)
+        }
+      end
+
+    }
 
     def item_post_install(item, item_map)
+      MW::TopologyDatapath.dispatch_added_assocs_for_parent_id(item.id)
       MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
       MW::TopologySegment.dispatch_added_assocs_for_parent_id(item.id)
       MW::TopologyRouteLink.dispatch_added_assocs_for_parent_id(item.id)

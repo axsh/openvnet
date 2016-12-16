@@ -28,42 +28,31 @@ module Vnet::Services::Topologies
         uuid: @uuid)
     end
 
-    # TODO: Add to plugin.
-
-    def added_network(params)
-      get_param_id(params, :network_id).tap { |assoc_id|
-        if @networks[assoc_id]
-          info log_format_h('adding assoc network failed, already added', params)
-          return
-        end
-
-        (@networks[assoc_id] = {}).tap { |assoc_map|
-          handle_removed_network(assoc_id, assoc_map)
-        }
-      }
+    def added_assoc(other_name, params)
+      case other_name
+      when :network then added_network(params)
+      when :segment then added_segment(params)
+      when :route_link then added_route_link(params)
+      else
+        raise NotImplementedError
+      end
     end
 
-    def removed_network(params)
-      get_param_id(params, :network_id).tap { |assoc_id|
-        @networks.delete(assoc_id).tap { |assoc_map|
-          if assoc_map.nil?
-            info log_format_h('removing assoc network failed, not found', params)
-            return
-          end
-
-          handle_removed_network(assoc_id, assoc_map)
-        }
-      }
+    def removed_assoc(other_name, params)
+      case other_name
+      when :network then removed_network(params)
+      when :segment then removed_segment(params)
+      when :route_link then removed_route_link(params)
+      else
+        raise NotImplementedError
+      end
     end
 
     def create_dp_assoc(other_name, params)
       case other_name
-      when :network
-        create_dp_network(params)
-      when :segment
-        create_dp_segment(params)
-      when :route_link
-        create_dp_route_link(params)
+      when :network then create_dp_network(params)
+      when :segment then create_dp_segment(params)
+      when :route_link then create_dp_route_link(params)
       else
         raise NotImplementedError
       end
@@ -85,12 +74,47 @@ module Vnet::Services::Topologies
 
     private
 
-    def handle_added_network(assoc_id, assoc_map)
-      debug log_format_h('handle_added_network', assoc_id: assoc_id, assoc_map: assoc_map)
+    [ [:network, :network_id, :@networks],
+      [:segment, :segment_id, :@segments],
+      [:route_link, :route_link_id, :@route_links]
+    ].each { |other_name, other_key, other_member|
+
+      define_method "added_#{other_name}".to_sym do |params|
+        get_param_id(params, other_key).tap { |assoc_id|
+          if instance_variable_get(other_member)[assoc_id]
+            info log_format_h("adding associated #{other_name} failed, already added", params)
+            return
+          end
+
+          (instance_variable_get(other_member)[assoc_id] = {}).tap { |assoc_map|
+            # TODO: Include stuff from params.
+
+            handle_added_assoc(other_name, assoc_id, assoc_map)
+          }
+        }
+      end
+
+      define_method "removed_#{other_name}".to_sym do |params|
+        get_param_id(params, other_key).tap { |assoc_id|
+          instance_variable_get(other_member).delete(assoc_id).tap { |assoc_map|
+            if assoc_map.nil?
+              info log_format_h("removing associated #{other_name} failed, not found", params)
+              return
+            end
+
+            handle_removed_assoc(other_name, assoc_id, assoc_map)
+          }
+        }
+      end
+
+    }
+
+    def handle_added_assoc(other_name, assoc_id, assoc_map)
+      debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
     end
 
-    def handle_removed_network(assoc_id, assoc_map)
-      debug log_format_h('handle_removed_network', assoc_id: assoc_id, assoc_map: assoc_map)
+    def handle_removed_assoc(other_name, assoc_id, assoc_map)
+      debug log_format_h("handle_removed_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
     end
 
     def mw_datapath_assoc_class(other_name)
