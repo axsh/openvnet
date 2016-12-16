@@ -40,6 +40,7 @@ module Vnet::Services::Topologies
 
     def added_assoc(other_name, params)
       case other_name
+      when :datapath then added_datapath(params)
       when :network then added_network(params)
       when :segment then added_segment(params)
       when :route_link then added_route_link(params)
@@ -50,6 +51,7 @@ module Vnet::Services::Topologies
 
     def removed_assoc(other_name, params)
       case other_name
+      when :datapath then removed_datapath(params)
       when :network then removed_network(params)
       when :segment then removed_segment(params)
       when :route_link then removed_route_link(params)

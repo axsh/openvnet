@@ -28,6 +28,31 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     update_by_uuid(:Topology)
   end
 
+  param_uuid M::Interface, :interface_uuid, required: true
+  post '/:uuid/datapaths/:datapath_uuid' do
+    topology = uuid_to_id(M::Topology, "uuid", "topology_id")
+    datapath = uuid_to_id(M::Datapath, "datapath_uuid", "datapath_id")
+    interface = uuid_to_id(M::Interface, "interface_uuid", "interface_id")
+
+    remove_system_parameters
+
+    result = M::TopologyDatapath.create(params)
+    respond_with(R::TopologyDatapath.generate(result))
+  end
+
+  get '/:uuid/datapaths' do
+    show_relations(:Topology, :topology_datapaths)
+  end
+
+  delete '/:uuid/datapaths/:datapath_uuid' do
+    topology = check_syntax_and_pop_uuid(M::Topology)
+    datapath = check_syntax_and_pop_uuid(M::Datapath, 'datapath_uuid')
+
+    M::TopologyDatapath.destroy(topology_id: topology.id, datapath_id: datapath.id)
+
+    respond_with([datapath.uuid])
+  end
+
   post '/:uuid/networks/:network_uuid' do
     topology = uuid_to_id(M::Topology, "uuid", "topology_id")
     network = uuid_to_id(M::Network, "network_uuid", "network_id")
