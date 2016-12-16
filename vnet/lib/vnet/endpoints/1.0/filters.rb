@@ -15,7 +15,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
-    #TODO: remove interface_id from response
     post_new :Filter
   end
 
