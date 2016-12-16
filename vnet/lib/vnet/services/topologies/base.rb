@@ -4,6 +4,11 @@ module Vnet::Services::Topologies
   class Base < Vnet::ItemVnetUuid
     include Celluloid::Logger
 
+    attr_reader :datapaths
+    attr_reader :networks
+    attr_reader :segments
+    attr_reader :route_links
+
     def initialize(params)
       super
 
