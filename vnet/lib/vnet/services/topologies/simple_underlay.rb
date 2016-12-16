@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services::Topologies
-
   class SimpleUnderlay < Base
     include Celluloid::Logger
 
@@ -42,5 +41,4 @@ module Vnet::Services::Topologies
     end
 
   end
-
 end

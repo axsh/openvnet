@@ -4,11 +4,6 @@ module Vnet::Services::Topologies
   class Base < Vnet::ItemVnetUuid
     include Celluloid::Logger
 
-    attr_reader :datapaths
-    attr_reader :networks
-    attr_reader :segments
-    attr_reader :route_links
-
     def initialize(params)
       super
 
@@ -145,24 +140,6 @@ module Vnet::Services::Topologies
       else
         info log_format_h("failed to create datapath_#{other_name}", create_params)
       end
-    end
-
-    #
-    # Hacks:
-    #
-
-    # Ugly but simple way of getting a host interface.
-    def get_a_host_interface_id(datapath_id)
-      filter = {
-        datapath_id: datapath_id,
-        interface_mode: Vnet::Constants::Interface::MODE_HOST
-      }
-
-      interface = MW::InterfacePort.batch.dataset.where(filter).first.commit
-
-      debug log_format("get_a_host_interface", interface.inspect)
-
-      interface && interface.interface_id
     end
 
   end

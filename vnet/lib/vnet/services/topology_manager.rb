@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services
-
   class TopologyManager < Vnet::Manager
     include Vnet::Constants::Topology
     include Vnet::ManagerAssocs
@@ -33,8 +32,6 @@ module Vnet::Services
     subscribe_assoc_events :topology, :network
     subscribe_assoc_events :topology, :segment
     subscribe_assoc_events :topology, :route_link
-
-    # TODO: Add events for host interfaces?
 
     def initialize(info, options = {})
       super
@@ -232,5 +229,4 @@ module Vnet::Services
     end
 
   end
-
 end
