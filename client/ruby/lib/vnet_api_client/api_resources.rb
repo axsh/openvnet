@@ -177,7 +177,10 @@ module VNetAPIClient
   class Segment < ApiResource
     api_suffix :segments
 
-    define_standard_crud_methods
+    define_create
+    define_delete
+    define_show
+    define_index
   end
 
   class Translation < ApiResource

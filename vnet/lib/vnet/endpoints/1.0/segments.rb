@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/segments' do
-  def self.put_post_shared_params
-  end
-
-  put_post_shared_params
   param_uuid M::Segment
-  param :mode, :String, in: C::Segment::MODES
+  param :mode, :String, in: C::Segment::MODES, required: true
   post do
     post_new(:Segment)
   end
@@ -21,11 +17,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/segments' do
 
   delete '/:uuid' do
     delete_by_uuid(:Segment)
-  end
-
-  put_post_shared_params
-  put '/:uuid' do
-    update_by_uuid(:Segment)
   end
 
 end
