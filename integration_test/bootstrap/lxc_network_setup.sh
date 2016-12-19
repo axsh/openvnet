@@ -127,17 +127,17 @@ fi
 
 script_file_list_str=""
 ## Assumption here: Only files giving lxc container info. are in this dir!
-for lxc in `ls ${vmdir}/metadata/lxc`; do    
+for container in `ls ${vmdir}/metadata/lxc`; do
 
-   outfile=${vmdir}/tmp.${lxc}.config.sh
+   outfile=${vmdir}/tmp.${container}.config.sh
    /bin/rm -f ${outfile}
    touch ${outfile}
 
    echo '#!/bin/bash' > ${outfile}
    echo "cat > /var/lib/lxc/${lxc}/config << 'EOF'" >> ${outfile}
 
-   net_info ${vmdir}/metadata/lxc/${lxc}/network.info ${outfile} ${lxc}
-   finish_config_file ${outfile} ${lxc}
+   net_info ${vmdir}/metadata/lxc/${container}/network.info ${outfile} ${container}
+   finish_config_file ${outfile} ${container}
 
    echo "EOF" >> ${outfile}
 
