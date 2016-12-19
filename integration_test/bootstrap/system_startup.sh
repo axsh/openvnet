@@ -9,11 +9,11 @@
 # ** located in the current directory. In particular,
 # ** it looks for:
 #
-#  ./packer-itest-edge-virtualbox/
 #  ./packer-itest1-virtualbox/
 #  ./packer-itest2-virtualbox/
 #  ./packer-itest3-virtualbox/
 #  ./packer-router-virtualbox/
+#  ./packer-wanedge-virtualbox/
 #
 # The machines are started in 'headless' mode -- no gui!
 #
@@ -56,7 +56,7 @@ function importvm {
 ###############################################################
 
 
-for vm in itest-edge itest1 itest2 itest3 router; do
+for vm in itest1 itest2 itest3 router wanedge; do
     vmbox=packer-${vm}-virtualbox/${vm}.ovf
 
     echo "Will remove ${vm}..."

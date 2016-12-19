@@ -201,7 +201,7 @@ time ./vm_build.sh $centos_ver ${base_provisioned_box} ${basebox} NONE  -provisi
 
 provisioned_ovf_base=${base_provisioned_box_dir}/${base_provisioned_box}.ovf
 
-for vm in itest1 itest2 itest3 router; do
+for vm in itest1 itest2 itest3 router wanedge; do
    time ./vm_build.sh $centos_ver ${vm} ${provisioned_ovf_base} ${vm}
 done
 
