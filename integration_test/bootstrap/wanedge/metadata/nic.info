@@ -1,2 +1,3 @@
 eth0  hostonly  vboxnet1
 eth1  hostonly  vboxnet4
+eth2  hostonly  vboxnet3
