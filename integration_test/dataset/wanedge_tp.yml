@@ -89,6 +89,27 @@ network_services:
     interface_uuid: if-dhcp1
     mode: dhcp
 
+route_links:
+
+  - uuid: rl-1
+    mac_address: "02:00:41:00:00:01"
+
+routes:
+
+  - uuid: r-vnet1
+    interface_uuid: if-vnetgw
+    network_uuid: nw-vnet1
+    route_link_uuid: rl-1
+    ipv4_network: 10.101.0.0
+    ipv4_prefix: 24
+
+  - uuid: r-glo2vnet
+    interface_uuid: if-glo2vnetgw
+    network_uuid: nw-global
+    route_link_uuid: rl-1
+    ipv4_network: 0.0.0.0
+    ipv4_prefix: 0
+
 topologies:
 
   - uuid: topo-global
@@ -117,27 +138,6 @@ topology_route_links:
 
   - topology_uuid: topo-physical
     route_link_uuid: rl-1
-
-route_links:
-
-  - uuid: rl-1
-    mac_address: "02:00:41:00:00:01"
-
-routes:
-
-  - uuid: r-vnet1
-    interface_uuid: if-vnetgw
-    network_uuid: nw-vnet1
-    route_link_uuid: rl-1
-    ipv4_network: 10.101.0.0
-    ipv4_prefix: 24
-
-  - uuid: r-glo2vnet
-    interface_uuid: if-glo2vnetgw
-    network_uuid: nw-global
-    route_link_uuid: rl-1
-    ipv4_network: 0.0.0.0
-    ipv4_prefix: 0
 
 translations:
 
