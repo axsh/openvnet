@@ -1,4 +1,40 @@
-#!/bin/bash 
+#!/bin/bash
+
+function render_mgr () {
+    local lxc_name="${1}"
+cat <<EOS >> ${interface_setup}
+cat <<EOF > /var/lib/lxc/${lxc_name}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth0
+BOOTPROTO=dhcp
+ONBOOT=yes
+TYPE=Ethernet
+EOF
+EOS
+}
+
+function render_virt () {
+    local lxc_name="${1}" ip="${2}"
+cat <<EOS >> ${interface_setup}
+cat <<EOF > /var/lib/lxc/${lxc_name}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth1
+BOOTPROTO=static
+ONBOOT=yes
+TYPE=Ethernet
+IPADDR=${ip}
+NETMASK=255.255.255.0
+EOF
+EOS
+}
+
+function render_nw () {
+    local lxc_name="${1}"
+cat <<EOS >> ${interface_setup}
+cat <<EOF > /var/lib/lxc/${lxc_name}/rootfs/etc/sysconfig/network
+NETWORKING=yes
+HOSTNAME=${lxc_name}
+EOF
+EOS
+}
 
 function net_setup {
     out=$1
@@ -29,9 +65,13 @@ function net_info {
     local ofile=$2
     local lxc_name=$3
 
-    while read -r tp hw ip; do
-        net_setup ${ofile} ${lxc_name} $tp $hw $ip 
+    while read -r br tp hw ip; do
+        net_setup ${ofile} $tp $hw
+        [[ $tp == *m* ]] && render_mgr ${lxc_name}
+        [[ $tp == *v* ]] && render_virt ${lxc_name} ${ip}
     done < ${file}
+
+    render_nw ${lxc_name}
 }
 
 function finish_config_file {
