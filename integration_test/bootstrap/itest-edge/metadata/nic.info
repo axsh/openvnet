@@ -1,3 +1,0 @@
-eth0  hostonly  vboxnet0
-eth1  hostonly  vboxnet3
-eth2  hostonly  vboxnet2
