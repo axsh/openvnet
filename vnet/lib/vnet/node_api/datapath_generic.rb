@@ -7,12 +7,15 @@ module Vnet::NodeApi
       private
 
       def create_with_transaction(options)
-        if options[:ip_lease_id].nil?
-          options = options.dup
-          options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
-        end
+        options = options.dup
+
+        disable_lease_detection = options.delete(:disable_lease_detection)
 
         transaction {
+          if !disable_lease_detection && options[:ip_lease_id].nil?
+            options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
+          end
+
           mac_address_random_assign(options)
           model = internal_create(options)
         }

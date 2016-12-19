@@ -11,11 +11,13 @@ module Vnet::Models
 
     one_to_many :datapath_segments
     one_to_many :interface_segments
+    one_to_many :topology_segments
 
     plugin :association_dependencies,
     # 0010_segment
     datapath_segments: :destroy,
     networks: :destroy,
+    topology_segments: :destroy,
     # 0011_assoc_interface
     interface_segments: :destroy
 

@@ -8,15 +8,15 @@ describe Vnet::Services::IpRetentionContainerManager do
   let(:vnet_info) { Vnet::Services::VnetInfo.new }
   let(:manager) { described_class.new(vnet_info) }
 
-  let(:item_name) { :ip_retention_container }
+  before(:each) { use_mock_event_handler }
 
   item_names = (1..3).map { |index| "item_#{index}" }
 
-  (1..3).each { |index|
-    let("item_#{index}") {
-      Fabricate(item_name).tap { |item_model|
-        (index - 1).times {
-          Fabricate(:ip_retention, item_name => item_model)
+  item_names.each_with_index { |item_name, index|
+    let(item_name) {
+      Fabricate(item_fabricators[index]).tap { |item_model|
+        (index).times {
+          Fabricate(:ip_retention, item_type => item_model)
         }
 
         publish_item_created_event(manager, item_model)
@@ -24,8 +24,14 @@ describe Vnet::Services::IpRetentionContainerManager do
     }
   }
 
+  let(:item_type) { :ip_retention_container }
+
   let(:item_models) {
-    (1..3).map { |index| send("item_#{index}") }
+    item_names.map { |name| send(name) }
+  }
+
+  let(:item_fabricators) {
+    item_names.map { |name| item_type }
   }
 
   let(:item_assoc_counts) {
@@ -33,12 +39,7 @@ describe Vnet::Services::IpRetentionContainerManager do
     }
   }
 
-  describe "create items" do
-    include_examples 'create items on service manager'
-  end
-
-  describe "delete items from #{item_names.join(', ')}" do
-    include_examples 'delete items on service manager', item_names
-  end
+  include_examples 'create items on service manager'
+  include_examples 'delete items on service manager', item_names
 
 end

@@ -43,7 +43,7 @@ RSpec::Matchers.define :be_event_from_model do |model, expected_type, expected_p
 
   def value_from_model_include_nil?(value)
     case value
-    when :let__interface_id, :let__segment_id
+    when :let__interface_id, :let__segment_id, :let__network_id, :let__topology_id
       true
     else
       false
@@ -56,6 +56,8 @@ RSpec::Matchers.define :be_event_from_model do |model, expected_type, expected_p
     when :model__uuid then model.canonical_uuid
     when :let__interface_id then interface_id
     when :let__segment_id then segment_id
+    when :let__network_id then network_id
+    when :let__topology_id then topology_id
     else
       value
     end

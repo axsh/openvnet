@@ -2,6 +2,10 @@
 
 # TODO: Make permutations a real class with proper enumerators.
 
+# TODO: Add permutations generators that creates fewer permutations to
+# reduce the runtime of specs. E.g. allow parameters that hints at
+# what kind of permutations we wish to have.
+
 def permutations_bool(size)
   [false, true].repeated_permutation(size)
 end
