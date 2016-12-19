@@ -79,51 +79,22 @@ EOF
 
 function lxc_setup {
     prov_script_file=$1
-    lxc1=$2
-    lxc2=$3
-
-    /bin/rm -f ${prov_script_file}
+    container=${2}
+    ifname=${3}
+    brname=${4}
 
     script_file_on_vm=/root/lxc_setup.sh
 
-cat > ${prov_script_file} << EOF
-    echo '#!/bin/bash' > ${script_file_on_vm}
+cat >> ${prov_script_file} << EOF
 
-    echo "lxc-start -n ${lxc1} -d  2>/dev/null" >> ${script_file_on_vm}
-    echo "lxc-start -n ${lxc2} -d  2>/dev/null" >> ${script_file_on_vm}
-    echo "sleep 10" >> ${script_file_on_vm}                  # Give the container time to start up
+    echo "lxc-start -n ${container} -d  2>/dev/null" >> ${script_file_on_vm}
+    echo "sleep 10" >> ${script_file_on_vm}                 # Give the container time to start up
 
-    echo "ovs-vsctl del-port br0 ${lxc1}_tap0 2>/dev/null " >> ${script_file_on_vm} 
-    echo "ovs-vsctl del-port br1 ${lxc1}_tap1 2>/dev/null"  >> ${script_file_on_vm} 
-    echo "ovs-vsctl del-port br0 ${lxc2}_tap0 2>/dev/null " >> ${script_file_on_vm} 
-    echo "ovs-vsctl del-port br1 ${lxc2}_tap1 2>/dev/null " >> ${script_file_on_vm} 
-
-    echo "ovs-vsctl add-port br0 ${lxc1}_tap0" >> ${script_file_on_vm} 
-    echo "ovs-vsctl add-port br1 ${lxc1}_tap1" >> ${script_file_on_vm} 
-    echo "ovs-vsctl add-port br0 ${lxc2}_tap0" >> ${script_file_on_vm} 
-    echo "ovs-vsctl add-port br1 ${lxc2}_tap1" >> ${script_file_on_vm} 
+    echo "ovs-vsctl del-port ${brname} ${ifname} 2>/dev/null " >> ${script_file_on_vm}
+    echo "ovs-vsctl add-port ${brname} ${ifname}" >> ${script_file_on_vm}
 EOF
 
 #   echo ${prov_script_file}
-
-}
-
-function lxc_bridge_connect {
-
-    outfile=$1
-    lxc1=$2
-    lxc2=$3
-
-    /bin/rm -f ${outfile}
-
-    script_file_on_vm=lxc_setup.sh
-
-    echo '#!/bin/bash' >> ${outfile}
-    echo "ovs-vsctl add-port br0 ${lxc1}_tap0" >> ${outfile} 
-    echo "ovs-vsctl add-port br1 ${lxc1}_tap1" >> ${outfile} 
-
-    echo "ovs-vsctl add-port br0 ${lxc2}_tap0" >> ${outfile} 
-    echo "ovs-vsctl add-port br1 ${lxc2}_tap1" >> ${outfile} 
 
 }
 
@@ -155,39 +126,42 @@ if [ ! -e ${vmdir}/metadata/lxc ]; then
 fi
 
 script_file_list_str=""
+interface_setup=${vmdir}/tmp.interface_setup.sh
+lxc_setup_provisioner=${vmdir}/tmp.lxc_setup.sh
+/bin/rm -r ${lxc_setup_provisioner}
+echo "#!/bin/bash > ${script_file_on_vm}" > ${lxc_setup_provisioner}
 ## Assumption here: Only files giving lxc container info. are in this dir!
 for container in `ls ${vmdir}/metadata/lxc`; do
 
    outfile=${vmdir}/tmp.${container}.config.sh
    /bin/rm -f ${outfile}
+   /bin/rm -f ${interface_setup}
    touch ${outfile}
 
    echo '#!/bin/bash' > ${outfile}
    echo "cat > /var/lib/lxc/${lxc}/config << 'EOF'" >> ${outfile}
 
    net_info ${vmdir}/metadata/lxc/${container}/network.info ${outfile} ${container}
+
    finish_config_file ${outfile} ${container}
 
    echo "EOF" >> ${outfile}
 
    script_file_list_str="${script_file_list_str},${outfile}"
+   if_data="$(cat ${vmdir}/metadata/lxc/${container}/network.info)"
+   br=""
+   for l in ${if_data[@]} ; do
+       [[ $l =~ ^br ]] && br=${l}
+       [[ $l =~ ^if ]] && {
+           lxc_setup ${lxc_setup_provisioner} ${container} ${l} ${br}
+       }
+   done
 done
-
-##
-#lxc_start_script=${vmdir}/tmp.lxc_start.sh
-#lxc_start ${lxc_start_script} inst1 inst2
-
-#script_file_list_str="${script_file_list_str}",${lxc_start_script}
-
-#lxc_bconnect_script=${vmdir}/tmp.lxc_bridge.sh
-#lxc_bridge_connect ${lxc_bconnect_script} inst1 inst2
-
-lxc_setup_provisioner=${vmdir}/tmp.lxc_setup.sh
-lxc_setup ${lxc_setup_provisioner} inst1 inst2
 
 vm_bash_init=${vmdir}/tmp.bash_init.sh         # File to modify the .bash_profile file on the vm.
                                                # This is needed to run lxc startup scripts & bridge-connecting
 setup_root_bashinit ${vm_bash_init}
+script_file_list_str="${script_file_list_str}",${interface_setup}
 script_file_list_str="${script_file_list_str}",${lxc_setup_provisioner},${vm_bash_init}
 
 echo ${script_file_list_str#,}
