@@ -48,11 +48,14 @@ mount /cgroup
 echo "yum -y install lxc lxc-templates" >> ${LOG_FILE}
 yum -y install lxc lxc-templates
 
-echo "lxc-create -t centos -n vm1" >> ${LOG_FILE}
-lxc-create -t centos -n inst1
+# create base to get the tarball then destroy it
 
-echo "lxc-create -t centos -n vm2" >> ${LOG_FILE}
-lxc-create -t centos -n inst2
+echo "lxc-create -t centos base" >> ${LOG_FILE}
+lxc-create -t centos -n base
+
+echo "lxc-destroy -n base" >> ${LOG_FILE}
+lxc-destroy -n base
+
 
 #cat > /etc/openvnet/common.conf <<EOF
 #registry {
