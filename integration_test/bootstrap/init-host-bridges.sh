@@ -2,21 +2,6 @@
 
 vboxcmd=VBoxManage
 
-function get_hostonlyifs {
-    cmd="${vboxcmd} list hostonlyifs"
-
-    
-    for line in $($cmd | sed -n -e '/^Name:/p' | awk '{print $2}'); do
-       iface=${line}
-       echo $iface
-    done
-}
-
-function add_interface {
-    echo "${vboxcmd} hostonlyif create"
-    ${vboxcmd} hostonlyif create
-}
-
 function update_if_ip {
     local host_interface=$1
     local host_if_ip=$2
@@ -27,32 +12,21 @@ function update_if_ip {
 
 ########################################################
 
-existing_host_list=""
-for hst in $(get_hostonlyifs); do
-    existing_host_list="${hst} $existing_host_list"
+bridge_iface=(
+    "vboxnet0"
+    "vboxnet1"
+    "vboxnet2"
+    "vboxnet3"
+    "vboxnet4"
+)
+
+for iface in ${bridge_iface[@]}; do
+    "${vboxcmd}" hostonlyif remove ${iface}
+    "${vboxcmd}" hostonlyif create
 done
 
-echo ${existing_host_list} | grep -q "vboxnet0"
-if [  $? -ne 0 ]; then
-   add_interface
-fi
-#update_if_ip vboxnet0 dummyip
+# Wanedge bridge
+update_if_ip vboxnet3 10.210.0.1 
 
-echo ${existing_host_list} | grep -q "vboxnet1"
-if [  $? -ne 0 ]; then
-   add_interface
-fi
-#update_if_ip vboxnet1 dummyip
-
-echo ${existing_host_list} | grep -q "vboxnet2"
-if [  $? -ne 0 ]; then
-   add_interface
-fi
-#update_if_ip vboxnet2 dummyip
-
-echo ${existing_host_list} | grep -q "vboxnet3"
-if [  $? -ne 0 ]; then
-   add_interface
-fi
-update_if_ip vboxnet3 192.168.3.1
-
+# Manage bridge
+update_if_ip vboxnet4 192.168.3.1
