@@ -38,26 +38,15 @@ EOS
 
 function net_setup {
     out=$1
-    lxc_name=$2
-    tp=$3
-    hw=$4
-    ip=$5
-
-    if [ "${ip}" == "" ]; then
-        ip_line="#lxc.network.ipv4 = "
-    else
-        ip_line="lxc.network.ipv4 = ${ip}"
-    fi
+    tp=$2
+    hw=$3
 
     cat <<EOF >> ${out}
 lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.veth.pair = ${tp}
 lxc.network.hwaddr = ${hw}
-${ip_line}
-
 EOF
-
 }
 
 function net_info {
