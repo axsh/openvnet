@@ -136,7 +136,7 @@ topology_networks:
 
 topology_route_links:
 
-  - topology_uuid: topo-physical
+  - topology_uuid: topo-vnet
     route_link_uuid: rl-1
 
 translations:
