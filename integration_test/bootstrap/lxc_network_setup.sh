@@ -16,7 +16,7 @@ function net_setup {
     cat <<EOF >> ${out}
 lxc.network.type = veth
 lxc.network.flags = up
-lxc.network.veth.pair = ${lxc_name}_${tp}
+lxc.network.veth.pair = ${tp}
 lxc.network.hwaddr = ${hw}
 ${ip_line}
 
