@@ -289,8 +289,8 @@ module Vnctl::Cli
           }
 
           desc "show #{mode_type} #{base_uuid.upcase}_UUID",  "Shows all #{mode_type}s."
-          define_method("show") { | uuid = nil |
-            puts Vnctl.webapi.get("#{suffix}/#{mode_type}/#{uuid}")
+          define_method("show") { | uuid |
+            puts Vnctl.webapi.get("#{suffix}/#{uuid}/#{mode_type}")
           }
         end
 
