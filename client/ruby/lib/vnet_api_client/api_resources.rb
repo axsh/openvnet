@@ -78,12 +78,12 @@ module VNetAPIClient
 
     define_standard_crud_methods
 
-    define_show_relation(:ip_ranges)
-    define_remove_relation(:ip_ranges)
+    define_show_relation(:ranges)
+    define_remove_relation(:ranges)
 
     def self.add_range(ip_range_group_uuid, params = nil)
       send_request(Net::HTTP::Post,
-                   "#{@api_suffix}/#{ip_range_group_uuid}/ip_ranges",
+                   "#{@api_suffix}/#{ip_range_group_uuid}/ranges",
                    params)
     end
   end
@@ -131,12 +131,12 @@ module VNetAPIClient
 
     define_standard_crud_methods
 
-    define_show_relation(:mac_ranges)
-    define_remove_relation(:mac_ranges)
+    define_show_relation(:ranges)
+    define_remove_relation(:ranges)
 
     def self.add_range(mac_range_group_uuid, params = nil)
       send_request(Net::HTTP::Post,
-                   "#{@api_suffix}/#{mac_range_group_uuid}/mac_ranges",
+                   "#{@api_suffix}/#{mac_range_group_uuid}/ranges",
                    params)
     end
   end

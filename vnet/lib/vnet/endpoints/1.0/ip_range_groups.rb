@@ -33,15 +33,15 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
   end
 
   param_uuid M::IpRange, :uuid, transform: proc { |u| M::IpRange.trim_uuid(u) }
-  param :begin_ipv4_address, :String, transform: PARSE_IPV4
-  param :end_ipv4_address, :String, transform: PARSE_IPV4
+  param :begin_address, :String, transform: PARSE_IPV4
+  param :end_address, :String, transform: PARSE_IPV4
   post '/:ip_range_group_uuid/ranges' do
     check_syntax_and_get_id(M::IpRangeGroup, "ip_range_group_uuid", "ip_range_group_id")
 
     remove_system_parameters
 
-    ip_range = M::IpRange.create(params)
-    respond_with(R::IpRange.generate(ip_range))
+    result = M::IpRange.create(params)
+    respond_with(R::IpRange.generate(result))
   end
 
   get '/:uuid/ranges' do
