@@ -144,8 +144,10 @@ else
     
     ## Now add for lxc containers, as needed
     if [ -e ${vm_metadata_dir}/metadata/lxc ]; then
+        script_file_list="${script_file_list},${vm_metadata_dir}/create-container.sh"
         script_file_list="${script_file_list},`./lxc_network_setup.sh ${vm_name}`"
     fi
+
     script_file_list=${script_file_list#,}
 
 #   nic_cmd_list=$( ./generate_niclist.sh ${vm_metadata_dir} )
