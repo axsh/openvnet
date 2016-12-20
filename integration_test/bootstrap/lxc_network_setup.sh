@@ -48,11 +48,6 @@ lxc.network.hwaddr = ${hw}
 EOF
 }
 
-function render_outfile () {
-    local filename=${1} ; shift
-    local content="${@}"
-}
-
 function net_info {
     local file=$1
     local lxc_name=$2
