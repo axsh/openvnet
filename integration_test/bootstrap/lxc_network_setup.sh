@@ -86,11 +86,13 @@ function lxc_setup {
 
 cat >> ${prov_script_file} << EOF
 
-    echo "lxc-start -n ${container} -d  2>/dev/null" >> ${script_file_on_vm}
-    echo "sleep 10" >> ${script_file_on_vm}                 # Give the container time to start up
+echo "lxc-start -n ${container} -d  2>/dev/null" >> ${script_file_on_vm}
 
-    echo "ovs-vsctl del-port ${brname} ${ifname} 2>/dev/null " >> ${script_file_on_vm}
-    echo "ovs-vsctl add-port ${brname} ${ifname}" >> ${script_file_on_vm}
+# Give the container time to start up
+echo "sleep 10" >> ${script_file_on_vm}
+
+echo "ovs-vsctl del-port ${brname} ${ifname} 2>/dev/null " >> ${script_file_on_vm}
+echo "ovs-vsctl add-port ${brname} ${ifname}" >> ${script_file_on_vm}
 EOF
 
 #   echo ${prov_script_file}
