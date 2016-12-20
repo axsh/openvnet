@@ -134,7 +134,7 @@ for container in `ls ${vmdir}/metadata/lxc`; do
         if_data="$(cat ${vmdir}/metadata/lxc/${container}/network.info)"
         script_file_on_vm=/root/lxc_setup.sh
 
-        echo "echo chroot /var/lib/lxc/${container}/rootfs/ /bin/bash -c echo \"root:\" | chpasswd"
+        echo "echo chroot /var/lib/lxc/${container}/rootfs/ /bin/bash -c echo \"root:\" \| chpasswd"
         echo "echo lxc-start -n ${container} -d  2>/dev/null >> ${script_file_on_vm}"
         echo "echo sleep 10 >> ${script_file_on_vm}"
         for iface in ${if_data[@]} ; do
