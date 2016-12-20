@@ -17,6 +17,8 @@ module Vnet::NodeApi
 
             options[:interface_id], options[:ip_lease_id] = detect_ip_lease(lease_detection)
 
+            return if options[:interface_id].nil? || options[:ip_lease_id].nil?
+
           elsif options[:ip_lease_id].nil?
             options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
           end
