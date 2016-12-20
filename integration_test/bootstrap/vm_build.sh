@@ -148,6 +148,10 @@ else
         script_file_list="${script_file_list},`./lxc_network_setup.sh ${vm_name}`"
     fi
 
+    if [ -e ${vm_metadata_dir}/metadata/openvnet ] ; then
+        script_file_list="${script_file_list},./openvnet_setup.sh ${vm_name}"
+    fi
+
     script_file_list=${script_file_list#,}
 
 #   nic_cmd_list=$( ./generate_niclist.sh ${vm_metadata_dir} )
