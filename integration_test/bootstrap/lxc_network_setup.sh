@@ -96,19 +96,6 @@ EOF
 
 }
 
-function setup_root_bashinit {
-
-    prov_script_name=$1
-    bash_file=/root/.bash_profile
-
-cat << EOF > ${prov_script_name} 
-#!/bin/bash
-sudo echo 'chmod +x  /root/lxc_setup.sh' >> ${bash_file}
-sudo echo /root/lxc_setup.sh >> ${bash_file}
-EOF
-
-}
-
 ##################################################################
 
 if [ $# -ne 1 ]; then
@@ -125,10 +112,18 @@ fi
 
 script_file_list_str=""
 
+# Add the interfaces to contaiers network-scripts
 interface_setup=${vmdir}/tmp.interface_setup.sh
+
+# Configure the containers and initialize openvswitch
 lxc_setup_provisioner=${vmdir}/tmp.lxc_setup.sh
+
+# Run the generated scripts on start up
+vm_bash_init=${vmdir}/tmp.bash_init.sh
+
 /bin/rm -r ${lxc_setup_provisioner}
 /bin/rm -f ${interface_setup}
+/bin/rm -f ${vm_bash_init}
 
 ## Assumption here: Only files giving lxc container info. are in this dir!
 for container in `ls ${vmdir}/metadata/lxc`; do
@@ -147,7 +142,7 @@ for container in `ls ${vmdir}/metadata/lxc`; do
     } >> ${container_cfg}
 
 
-    # generate initializeation script
+    # generate initialization script
     {
         if_data="$(cat ${vmdir}/metadata/lxc/${container}/network.info)"
         echo "echo lxc-start -n ${container} -d  2>/dev/null >> ${script_file_on_vm}"
@@ -164,10 +159,12 @@ for container in `ls ${vmdir}/metadata/lxc`; do
     script_file_list_str="${script_file_list_str},${container_cfg}"
 done
 
-vm_bash_init=${vmdir}/tmp.bash_init.sh         # File to modify the .bash_profile file on the vm.
-                                               # This is needed to run lxc startup scripts & bridge-connecting
-setup_root_bashinit ${vm_bash_init}
-script_file_list_str="${script_file_list_str}",${interface_setup}
-script_file_list_str="${script_file_list_str}",${lxc_setup_provisioner},${vm_bash_init}
+cat << EOF > ${vm_bash_init}
+#!/bin/bash
+sudo echo 'chmod +x  /root/lxc_setup.sh' >> /etc/rc.d/rc.local
+sudo echo /root/lxc_setup.sh >> /etc/rc.d/rc.local
+EOF
+
+script_file_list_str="${script_file_list_str},${interface_setup},${lxc_setup_provisioner},${vm_bash_init}"
 
 echo ${script_file_list_str#,}
