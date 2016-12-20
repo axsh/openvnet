@@ -44,8 +44,6 @@ module Vnet::Core
       case filter
       when :id, :network_id, :datapath_id
         proc { |id, item| value == item.send(filter) }
-      # when :not_local
-      #   proc { |id, item| value != item.network_id }
       else
         raise NotImplementedError, filter
       end
@@ -94,14 +92,14 @@ module Vnet::Core
 
     # activate network on queue '[:network, network_id]'
     def activate_network(params)
-      debug log_format("activating network", params)
+      debug log_format_h("activating network", params)
 
       begin
         options = {
           datapath_id: @datapath_info.id,
           network_id: get_param_packed_id(params)
         }
-    
+
         mw_class.create(options)
 
       rescue Vnet::ParamError => e
@@ -111,14 +109,14 @@ module Vnet::Core
 
     # deactivate network on queue '[:network, network_id]'
     def deactivate_network(params)
-      debug log_format("deactivating network", params)
+      debug log_format_h("deactivating network", params)
 
       begin
         filter = {
           datapath_id: @datapath_info.id,
           network_id: get_param_packed_id(params)
         }
-    
+
         mw_class.destroy(filter)
 
       rescue Vnet::ParamError => e

@@ -16,10 +16,10 @@ networks:
 
 topology_networks:
 
-  - topology_uuid: tp-vnet
+  - topology_uuid: topo-vnet
     network_uuid: nw-vnet1
 
-  - topology_uuid: tp-vnet
+  - topology_uuid: topo-vnet
     network_uuid: nw-vnet2
 
 interfaces:
@@ -106,11 +106,11 @@ network_services:
 route_links:
 
   - uuid: rl-1
-    mac_address: "02:00:10:00:00:01"
+    mac_address: "02:00:32:00:00:01"
 
 topology_route_links:
 
-  - topology_uuid: tp-vnet
+  - topology_uuid: topo-vnet
     route_link_uuid: rl-1
 
 routes:

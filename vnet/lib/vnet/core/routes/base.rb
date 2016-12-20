@@ -36,8 +36,8 @@ module Vnet::Core::Routes
 
       @active_network = false
       @active_route_link = false
-    end    
-    
+    end
+
     def log_type
       'route/base'
     end
@@ -58,7 +58,7 @@ module Vnet::Core::Routes
 
                             interface_id: @interface_id,
                             route_link_id: @route_link_id,
-                            
+
                             network_id: @network_id,
                             ipv4_address: @ipv4_address,
                             ipv4_prefix: @ipv4_prefix,

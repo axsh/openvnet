@@ -7,12 +7,15 @@ module Vnet::NodeApi
       private
 
       def create_with_transaction(options)
-        if options[:ip_lease_id].nil?
-          options = options.dup
-          options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
-        end
+        options = options.dup
+
+        disable_lease_detection = options.delete(:disable_lease_detection)
 
         transaction {
+          if !disable_lease_detection && options[:ip_lease_id].nil?
+            options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
+          end
+
           mac_address_random_assign(options)
           model = internal_create(options)
         }
@@ -57,6 +60,32 @@ module Vnet::NodeApi
       def prepare_event_hash(model)
         model.to_hash.tap { |event_hash|
           event_hash[:dpn_id] = event_hash[:id]
+          event_hash[:id] = event_hash[:datapath_id]
+        }
+      end
+
+    end
+  end
+
+  class DatapathSegment < DatapathGeneric
+    class << self
+      private
+
+      def dispatch_created_item_events(model)
+        dispatch_event(ADDED_DATAPATH_SEGMENT, prepare_event_hash(model))
+      end
+
+      def dispatch_deleted_item_events(model)
+        dispatch_event(REMOVED_DATAPATH_SEGMENT, prepare_event_hash(model))
+      end
+
+      def destroy_filter(datapath_id, generic_id)
+        { datapath_id: datapath_id, segment_id: generic_id }
+      end
+
+      def prepare_event_hash(model)
+        model.to_hash.tap { |event_hash|
+          event_hash[:dpseg_id] = event_hash[:id]
           event_hash[:id] = event_hash[:datapath_id]
         }
       end

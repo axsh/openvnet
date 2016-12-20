@@ -85,6 +85,10 @@ describe "/interfaces" do
     end
   end
 
+  include_examples 'interface assoc on node_api', :segment
+  include_examples 'interface assoc on node_api', :network
+  include_examples 'interface assoc on node_api', :route_link
+
   #
   # Ports:
   #
@@ -92,7 +96,7 @@ describe "/interfaces" do
   describe "/interfaces/:uuid/ports" do
     let(:api_postfix)  { "ports" }
     let(:postfix_parent_sym) { :interface_id }
-    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => 1}) }
+    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => object.id}) }
     let(:postfix_model_class) { Vnet::Models::InterfacePort }
 
     include_examples "GET /:uuid/postfix"
@@ -116,7 +120,7 @@ describe "/interfaces" do
   # Security groups:
   #
 
-  describe "Many to many relation calls for security groups" do
+  describe 'Many to many relation calls for security groups' do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :security_group }
     let(:join_table_fabricator) { :security_group_interface }

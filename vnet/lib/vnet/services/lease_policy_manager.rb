@@ -9,6 +9,8 @@ module Vnet::Services
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event LEASE_POLICY_INITIALIZED, :install_item
     subscribe_event LEASE_POLICY_CREATED_ITEM, :create_item
     subscribe_event LEASE_POLICY_DELETED_ITEM, :delete_item
@@ -22,7 +24,7 @@ module Vnet::Services
     # "Obsolete".  Is there a better non-obsolete way to do this?
     def find_by_interface(id)
       r = MW::LeasePolicy.batch.find_by_interface(id).commit(fill: [:interfaces, :networks, :lease_policy_base_networks])
-      return r.first if r.kind_of? Array 
+      return r.first if r.kind_of? Array
       return nil
     end
 

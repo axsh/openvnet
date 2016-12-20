@@ -7,6 +7,7 @@ module VNetAPIClient
 
     define_standard_crud_methods
     define_relation_methods(:networks)
+    define_relation_methods(:segments)
     define_relation_methods(:route_links)
   end
 
@@ -33,6 +34,13 @@ module VNetAPIClient
 
     define_show_relation(:ports)
 
+    define_update_relation(:networks)
+    define_update_relation(:segments)
+    define_update_relation(:route_links)
+    define_show_relation(:networks)
+    define_show_relation(:segments)
+    define_show_relation(:route_links)
+
     def self.rename(interface_uuid, params = nil)
       send_request(Net::HTTP::Put, "#{@api_suffix}/#{interface_uuid}/rename", params)
     end
@@ -50,6 +58,19 @@ module VNetAPIClient
     api_suffix :ip_leases
 
     define_standard_crud_methods
+
+    def self.attach(target_uuid, params = nil)
+      send_request(Net::HTTP::Put,
+                   "#{@api_suffix}/#{target_uuid}/attach",
+                   params)
+    end
+
+    def self.release(target_uuid, params = nil)
+      send_request(Net::HTTP::Put,
+                   "#{@api_suffix}/#{target_uuid}/release",
+                   params)
+    end
+
   end
 
   class IpRangeGroup < ApiResource
@@ -124,6 +145,8 @@ module VNetAPIClient
     api_suffix :networks
 
     define_standard_crud_methods
+
+    define_relation_methods(:segments)
   end
 
   class NetworkService < ApiResource
@@ -151,6 +174,15 @@ module VNetAPIClient
     define_relation_methods(:interfaces)
   end
 
+  class Segment < ApiResource
+    api_suffix :segments
+
+    define_create
+    define_delete
+    define_show
+    define_index
+  end
+
   class Translation < ApiResource
     api_suffix :translations
 
@@ -174,41 +206,31 @@ module VNetAPIClient
 
     define_standard_crud_methods
 
-    def self.add_filter_static(filter_uuid, params = nil)
+    def self.add_static(filter_uuid, params = nil)
       send_request(Net::HTTP::Post,
                    "#{@api_suffix}/#{filter_uuid}/static",
                    params)
     end
 
-    def self.remove_filter_static(filter_uuid, params = nil)
+    def self.remove_static(filter_uuid, params = nil)
       send_request(Net::HTTP::Delete,
                    "#{@api_suffix}/#{filter_uuid}/static",
                    params)
     end
-    def self.show_filter_static(params = nil)
+    def self.show_static(filter_uuid, params = nil)
       send_request(Net::HTTP::Get,
-                   "#{@api_suffix}/static/",
-                   params)
-    end
-    def self.show_filter_static_by_uuid(filter_uuid, params = nil)
-      send_request(Net::HTTP::Get,
-                   "#{@api_suffix}/static/#{filter_uuid}",
+                   "#{@api_suffix}/#{filter_uuid}/static",
                    params)
     end
   end
-  
+
   class Topology < ApiResource
     api_suffix :topologies
 
     define_standard_crud_methods
     define_relation_methods(:networks)
+    define_relation_methods(:segments)
     define_relation_methods(:route_links)
-  end
-
-  class VlanTranslation < ApiResource
-    api_suffix :vlan_translations
-
-    define_standard_crud_methods
   end
 
 end

@@ -1,8 +1,23 @@
 vm_type: :kvm
-specs: [simple, router_v2v, router_v2v_tp, event, event_tp, service, secg, secg_reference, filter]
+specs: [simple_nw,
+        simple_nw_tp,
+        simple_seg,
+        simple_seg_tp,
+        router_v2v,
+        router_p2v,
+        router_v2v_tp,
+        wanedge,
+        promiscuous_seg_ovs,
+        promiscuous_seg_of,
+        event,
+        event_tp,
+        service,
+        secg,
+        secg_reference,
+        filter]
 
 # specs not included
-# [edge, edge_esxi, vxlan, lease_policy]
+# [lease_policy]
 
 vnet_branch: master
 log_level: info
@@ -54,4 +69,11 @@ vms:
     ssh_ip: 10.50.0.106
     interfaces:
       - uuid: if-v6
+        name: eth0
+  vm7:
+    name: vm7
+    vna: 5
+    ssh_ip: 10.50.0.107
+    interfaces:
+      - uuid: if-v7
         name: eth0

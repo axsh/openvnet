@@ -8,7 +8,7 @@ module Vnet::Services
     #
     # Events:
     #
-    # event_handler_default_drop_all
+    event_handler_default_drop_all
 
     subscribe_event TOPOLOGY_INITIALIZED, :load_item
     subscribe_event TOPOLOGY_UNLOAD_ITEM, :unload_item
@@ -18,17 +18,32 @@ module Vnet::Services
     subscribe_event TOPOLOGY_NETWORK_ACTIVATED, :network_activated
     subscribe_event TOPOLOGY_NETWORK_DEACTIVATED, :network_deactivated
 
+    subscribe_event TOPOLOGY_SEGMENT_ACTIVATED, :segment_activated
+    subscribe_event TOPOLOGY_SEGMENT_DEACTIVATED, :segment_deactivated
+
     subscribe_event TOPOLOGY_ROUTE_LINK_ACTIVATED, :route_link_activated
     subscribe_event TOPOLOGY_ROUTE_LINK_DEACTIVATED, :route_link_deactivated
 
-    subscribe_event TOPOLOGY_CREATE_DP_NW, :create_dp_nw
-    subscribe_event TOPOLOGY_CREATE_DP_RL, :create_dp_rl
+    subscribe_event TOPOLOGY_CREATE_DP_NW, :create_dp_network
+    subscribe_event TOPOLOGY_CREATE_DP_SEG, :create_dp_segment
+    subscribe_event TOPOLOGY_CREATE_DP_RL, :create_dp_route_link
 
     # TODO: Add events for host interfaces?
 
     def initialize(info, options = {})
       super
       @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
+    end
+
+    def do_initialize
+      info log_format('loading all topologies')
+
+      # TODO: Redo this so that we poke node_api to send created_item
+      # events while in a transaction.
+
+      mw_class.batch.dataset.all.commit.each { |item_map|
+        publish(TOPOLOGY_CREATED_ITEM, item_map)
+      }
     end
 
     #
@@ -94,165 +109,149 @@ module Vnet::Services
     end
 
     #
-    # Network events:
+    # Assoc methods:
     #
 
-    # TOPOLOGY_NETWORK_ACTIVATED on queue [:network, network.id]
-    def network_activated(params)
-      begin
-        network_id = get_param_packed_id(params)
-        datapath_id = get_param_id(params, :datapath_id)
+    [ [:network, :network_id, TOPOLOGY_CREATE_DP_NW],
+      [:segment, :segment_id, TOPOLOGY_CREATE_DP_SEG],
+      [:route_link, :route_link_id, TOPOLOGY_CREATE_DP_RL],
+    ].each { |other_name, other_key, event_create_assoc_name|
 
-        event_options = {
-          network_id: network_id,
-          datapath_id: datapath_id
-        }
+      # TOPOLOGY_FOO_ACTIVATED on queue [:foo, foo.id]
+      define_method "#{other_name}_activated".to_sym do |params|
+        begin
+          other_id = get_param_packed_id(params)
+          datapath_id = get_param_id(params, :datapath_id)
 
-        debug log_format_h("network activated", event_options)
+          event_options = {
+            datapath_id: datapath_id,
+            other_key => other_id
+          }
 
-        if has_datapath_network?(datapath_id, network_id)
-          debug log_format_h("found existing datapath_network", event_options)
+        rescue Vnet::ParamError => e
+          handle_param_error(e)
           return
         end
 
-      rescue Vnet::ParamError => e
-        handle_param_error(e)
-      end
+        debug log_format_h("#{other_name} activated", event_options)
 
-      item_id = find_id_using_tp_nw(datapath_id, network_id) || return
-
-      event_options[:id] = item_id
-
-      if internal_retrieve(id: item_id).nil?
-        warn log_format_h("could not retrieve topology associated with network", event_options)
-        return
-      end
-
-      publish(TOPOLOGY_CREATE_DP_NW, event_options)
-    end
-
-    # TOPOLOGY_NETWORK_DEACTIVATED on queue [:network, network.id]
-    def network_deactivated(params)
-      debug log_format_h("network deactivated", params)
-    end
-
-    # TOPOLOGY_CREATE_DP_NW on queue 'item.id'
-    def create_dp_nw(params)
-      debug log_format_h("creating datapath_network", params)
-
-      item = internal_detect_by_id(params) || return
-
-      begin
-        item.create_dp_nw(params)
-      rescue Vnet::ParamError => e
-        handle_param_error(e)
-      end
-    end
-
-    #
-    # Route Link events:
-    #
-
-    # TOPOLOGY_ROUTE_LINK_ACTIVATED on queue [:route_link, route_link.id]
-    def route_link_activated(params)
-      begin
-        route_link_id = get_param_packed_id(params)
-        datapath_id = get_param_id(params, :datapath_id)
-
-        event_options = {
-          route_link_id: route_link_id,
-          datapath_id: datapath_id
-        }
-
-        debug log_format_h("route_link activated", event_options)
-
-        if has_datapath_route_link?(datapath_id, route_link_id)
-          debug log_format_h("found existing datapath_route_link", event_options)
+        if has_datapath_assoc?(other_key, datapath_id, other_id)
+          debug log_format_h("found existing datapath_#{other_name}", event_options)
           return
         end
 
-      rescue Vnet::ParamError => e
-        handle_param_error(e)
+        item_id = find_id_using_tp_assoc(other_key, datapath_id, other_id) || return
+
+        event_options[:id] = item_id
+
+        if internal_retrieve(id: item_id).nil?
+          warn log_format_h("could not retrieve topology associated with #{other_name}", event_options)
+          return
+        end
+
+        publish(event_create_assoc_name, event_options)
       end
 
-      item_id = find_id_using_tp_rl(datapath_id, route_link_id) || return
-
-      event_options[:id] = item_id
-
-      if internal_retrieve(id: item_id).nil?
-        warn log_format_h("could not retrieve topology associated with route link", event_options)
-        return
+      # TOPOLOGY_FOO_DEACTIVATED on queue [:foo, foo.id]
+      define_method "#{other_name}_deactivated".to_sym do |params|
+        debug log_format_h("#{other_name} deactivated", params)
       end
 
-      publish(TOPOLOGY_CREATE_DP_RL, event_options)
-    end
+      # TOPOLOGY_CREATE_DP_FOO on queue 'item.id'
+      define_method "create_dp_#{other_name}".to_sym do |params|
+        debug log_format_h("creating datapath_#{other_name}", params)
 
-    # TOPOLOGY_ROUTE_LINK_DEACTIVATED on queue [:route_link, route_link.id]
-    def route_link_deactivated(params)
-      debug log_format_h("route_link deactivated", params)
-    end
+        item = internal_detect_by_id(params) || return
 
-    # TOPOLOGY_CREATE_DP_RL on queue 'item.id'
-    def create_dp_rl(params)
-      debug log_format_h("creating datapath_route_link", params)
-
-      item = internal_detect_by_id(params) || return
-
-      begin
-        item.create_dp_rl(params)
-      rescue Vnet::ParamError => e
-        handle_param_error(e)
+        begin
+          item.create_dp_assoc(other_name, params)
+        rescue Vnet::ParamError => e
+          handle_param_error(e)
+        end
       end
-    end
+
+    }
 
     #
     # Helper methods:
     #
 
-    # Currently we look up the topology directly, which means we don't
-    # have proper handling of changes to topologies, etc.
-    def find_id_using_tp_nw(datapath_id, network_id)
-      # TODO: Should keep local tp_nw list.
-      tp_nw = MW::TopologyNetwork.batch.dataset.where(network_id: network_id).first.commit
-      
-      if tp_nw.nil? || tp_nw.topology_id.nil?
-        warn log_format("network not associated with a topology", "datapath_id:#{datapath_id} network_id:#{network_id}")
+    def mw_datapath_assoc_class(other_name)
+      case other_name
+      when :network, :network_id
+        MW::DatapathNetwork
+      when :segment, :segment_id
+        MW::DatapathSegment
+      when :route_link, :route_link_id
+        MW::DatapathRouteLink
+      else
+        raise NotImplementedError
+      end
+    end
+
+    def mw_topology_assoc_class(other_name)
+      case other_name
+      when :network, :network_id
+        MW::TopologyNetwork
+      when :segment, :segment_id
+        MW::TopologySegment
+      when :route_link, :route_link_id
+        MW::TopologyRouteLink
+      else
+        raise NotImplementedError
+      end
+    end
+
+    def has_datapath_assoc?(other_key, datapath_id, other_id)
+      filter = {
+        :datapath_id => datapath_id,
+        other_key => other_id
+      }
+
+      !mw_datapath_assoc_class(other_key).batch.dataset.where(filter).empty?.commit
+    end
+
+    def find_id_using_tp_assoc(other_key, datapath_id, other_id)
+      # TODO: Should keep local tp_obj list.
+      tp_obj = mw_topology_assoc_class(other_key).batch.dataset.where(other_key => other_id).first.commit
+
+      if tp_obj.nil? || tp_obj.topology_id.nil?
+        warn log_format_h("#{other_key} not associated with a topology",
+                          datapath_id: datapath_id, other_key => other_id)
         return
       end
 
-      tp_nw.topology_id
+      tp_obj.topology_id
     end
 
-    # Currently we look up the topology directly, which means we don't
-    # have proper handling of changes to topologies, etc.
-    def find_id_using_tp_rl(datapath_id, route_link_id)
-      # TODO: Should keep local tp_rl list.
-      tp_rl = MW::TopologyRouteLink.batch.dataset.where(route_link_id: route_link_id).first.commit
-      
-      if tp_rl.nil? || tp_rl.topology_id.nil?
-        warn log_format("route_link not associated with a topology", "datapath_id:#{datapath_id} route_link_id:#{route_link_id}")
-        return
-      end
+    #
+    #
+    #
 
-      tp_rl.topology_id
-    end
+    # TODO: Do we really want/need this:
 
-    def has_datapath_network?(datapath_id, network_id)
-      filter = {
-        datapath_id: datapath_id,
-        network_id: network_id
+    public
+
+    subscribe_event TOPOLOGY_ADDED_NETWORK, :added_network
+    subscribe_event TOPOLOGY_REMOVED_NETWORK, :removed_network
+
+    # TODO: Add subscribe_event that creates this method directly.
+    def added_network(params)
+      (internal_detect_by_id_with_error(params) || return).tap { |item|
+        item.added_network(params)
       }
-
-      !MW::DatapathNetwork.batch.dataset.where(filter).first.commit.nil?
     end
 
-    def has_datapath_route_link?(datapath_id, route_link_id)
-      filter = {
-        datapath_id: datapath_id,
-        route_link_id: route_link_id
+    def removed_network(params)
+      (internal_detect_by_id_with_error(params) || return).tap { |item|
+        item.removed_network(params)
       }
+    end
 
-      !MW::DatapathRouteLink.batch.dataset.where(filter).first.commit.nil?
+    def item_post_install(item, item_map)
+      MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologySegment.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologyRouteLink.dispatch_added_assocs_for_parent_id(item.id)
     end
 
   end

@@ -11,6 +11,7 @@ require 'ext/kernel'
 require 'fuguta'
 require 'json'
 require 'logger'
+require 'ostruct'
 
 module Vnet
 
@@ -28,6 +29,8 @@ module Vnet
   autoload :ItemVnetUuid,         'vnet/item_base'
   autoload :ItemDpBase,           'vnet/item_base'
   autoload :ItemDpUuid,           'vnet/item_base'
+  autoload :ItemDpUuidMode,       'vnet/item_base'
+  autoload :ItemDatapathUuidMode, 'vnet/item_base'
   autoload :Manager,              'vnet/manager'
   autoload :LookupParams,         'vnet/manager_params'
   autoload :UpdateItemStates,     'vnet/manager_modules'
@@ -45,6 +48,8 @@ module Vnet
 
   module Constants
     autoload :ActivePort, 'vnet/constants/active_port'
+    autoload :Filter, 'vnet/constants/filter'
+    autoload :FilterStatic, 'vnet/constants/filter_static'
     autoload :Interface, 'vnet/constants/interface'
     autoload :LeasePolicy, 'vnet/constants/lease_policy'
     autoload :MacAddressPrefix, 'vnet/constants/mac_address_prefix'
@@ -52,10 +57,10 @@ module Vnet
     autoload :NetworkService, 'vnet/constants/network_service'
     autoload :Openflow, 'vnet/constants/openflow'
     autoload :OpenflowFlows, 'vnet/constants/openflow_flows'
+    autoload :Segment, 'vnet/constants/segment'
     autoload :Translation, 'vnet/constants/translation'
     autoload :Topology, 'vnet/constants/topology'
     autoload :VnetAPI, 'vnet/constants/vnet_api'
-    autoload :Filter, 'vnet/constants/filter'
   end
 
   module Core
@@ -67,6 +72,7 @@ module Vnet
     autoload :ActivePortEvents, 'vnet/core/event_helpers'
     autoload :ActiveRouteLinkEvents, 'vnet/core/event_helpers'
     autoload :DpInfo, 'vnet/core/dp_info'
+
     autoload :ActiveInterface, 'vnet/core/items'
     autoload :ActiveInterfaceManager, 'vnet/core/active_interface_manager'
     autoload :ActiveNetwork, 'vnet/core/items'
@@ -75,6 +81,9 @@ module Vnet
     autoload :ActivePortManager, 'vnet/core/active_port_manager'
     autoload :ActiveRouteLink, 'vnet/core/items'
     autoload :ActiveRouteLinkManager, 'vnet/core/active_route_link_manager'
+    autoload :ActiveSegment, 'vnet/core/items'
+    autoload :ActiveSegmentManager, 'vnet/core/active_segment_manager'
+
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :ConnectionManager, 'vnet/core/connection_manager'
     autoload :Datapath, 'vnet/core/items'
@@ -86,8 +95,14 @@ module Vnet
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
     autoload :Interface, 'vnet/core/interface'
     autoload :InterfaceManager, 'vnet/core/interface_manager'
-    autoload :InterfacePort, 'vnet/core/interface_port'
+    autoload :InterfacePort, 'vnet/core/items'
     autoload :InterfacePortManager, 'vnet/core/interface_port_manager'
+    autoload :InterfaceNetwork, 'vnet/core/items'
+    autoload :InterfaceNetworkManager, 'vnet/core/interface_network_manager'
+    autoload :InterfaceSegment, 'vnet/core/items'
+    autoload :InterfaceSegmentManager, 'vnet/core/interface_segment_manager'
+    autoload :InterfaceRouteLink, 'vnet/core/items'
+    autoload :InterfaceRouteLinkManager, 'vnet/core/interface_route_link_manager'
     autoload :Network, 'vnet/core/items'
     autoload :NetworkManager, 'vnet/core/network_manager'
     autoload :Port, 'vnet/core/port'
@@ -96,7 +111,10 @@ module Vnet
     autoload :RouteManager, 'vnet/core/route_manager'
     autoload :Router, 'vnet/core/items'
     autoload :RouterManager, 'vnet/core/router_manager'
+    autoload :Segment, 'vnet/core/items'
+    autoload :SegmentManager, 'vnet/core/segment_manager'
     autoload :Service, 'vnet/core/service'
+
     autoload :ServiceManager, 'vnet/core/service_manager'
     autoload :Translation, 'vnet/core/items'
     autoload :TranslationManager, 'vnet/core/translation_manager'
@@ -126,6 +144,12 @@ module Vnet
       autoload :Base, 'vnet/core/active_route_links/base'
       autoload :Local, 'vnet/core/active_route_links/local'
       autoload :Remote, 'vnet/core/active_route_links/remote'
+    end
+
+    module ActiveSegments
+      autoload :Base, 'vnet/core/active_segments/base'
+      autoload :Local, 'vnet/core/active_segments/local'
+      autoload :Remote, 'vnet/core/active_segments/remote'
     end
 
     module Connections
@@ -158,17 +182,29 @@ module Vnet
 
     module Interfaces
       autoload :Base, 'vnet/core/interfaces/base'
-      autoload :Edge, 'vnet/core/interfaces/edge'
       autoload :Host, 'vnet/core/interfaces/host'
       autoload :IfBase, 'vnet/core/interfaces/if_base'
       autoload :Internal, 'vnet/core/interfaces/internal'
       autoload :Patch, 'vnet/core/interfaces/patch'
+      autoload :Promiscuous, 'vnet/core/interfaces/promiscuous'
       autoload :Simulated, 'vnet/core/interfaces/simulated'
       autoload :Vif, 'vnet/core/interfaces/vif'
     end
 
     module InterfacePorts
       autoload :Base, 'vnet/core/interface_ports/base'
+    end
+
+    module InterfaceNetworks
+      autoload :Base, 'vnet/core/interface_networks/base'
+    end
+
+    module InterfaceSegments
+      autoload :Base, 'vnet/core/interface_segments/base'
+    end
+
+    module InterfaceRouteLinks
+      autoload :Base, 'vnet/core/interface_route_links/base'
     end
 
     module Networks
@@ -183,6 +219,7 @@ module Vnet
       autoload :Generic, 'vnet/core/ports/generic'
       autoload :Host, 'vnet/core/ports/host'
       autoload :Local, 'vnet/core/ports/local'
+      autoload :Promiscuous, 'vnet/core/ports/promiscuous'
       autoload :Tunnel, 'vnet/core/ports/tunnel'
       autoload :Vif, 'vnet/core/ports/vif'
     end
@@ -196,6 +233,11 @@ module Vnet
       autoload :RouteLink, 'vnet/core/routers/route_link'
     end
 
+    module Segments
+      autoload :Base, 'vnet/core/segments/base'
+      autoload :Virtual, 'vnet/core/segments/virtual'
+    end
+
     module Services
       autoload :Base, 'vnet/core/services/base'
       autoload :Dhcp, 'vnet/core/services/dhcp'
@@ -206,7 +248,6 @@ module Vnet
     module Translations
       autoload :Base, 'vnet/core/translations/base'
       autoload :StaticAddress, 'vnet/core/translations/static_address'
-      autoload :VnetEdgeHandler, 'vnet/core/translations/vnet_edge_handler'
     end
 
     module Tunnels
@@ -242,6 +283,7 @@ module Vnet
       module Responses
         autoload :Datapath, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetwork, 'vnet/endpoints/1.0/responses/datapath_network'
+        autoload :DatapathSegment, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathRouteLink, 'vnet/endpoints/1.0/responses/datapath_route_link'
         autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
@@ -249,6 +291,9 @@ module Vnet
         autoload :FilterStatic, 'vnet/endpoints/1.0/responses/filter_static'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
         autoload :InterfacePort, 'vnet/endpoints/1.0/responses/interface_port'
+        autoload :InterfaceNetwork, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfaceSegment, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfaceRouteLink, 'vnet/endpoints/1.0/responses/interface'
         autoload :IpAddress, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLease, 'vnet/endpoints/1.0/responses/ip_lease'
         autoload :IpLeaseContainer, 'vnet/endpoints/1.0/responses/ip_lease_container'
@@ -266,19 +311,24 @@ module Vnet
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :Segment, 'vnet/endpoints/1.0/responses/segment'
         autoload :Topology, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyNetwork, 'vnet/endpoints/1.0/responses/topology'
+        autoload :TopologySegment, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyRouteLink, 'vnet/endpoints/1.0/responses/topology'
         autoload :Translation, 'vnet/endpoints/1.0/responses/translation'
         autoload :TranslationStaticAddress, 'vnet/endpoints/1.0/responses/translation_static_address'
-        autoload :VlanTranslation, 'vnet/endpoints/1.0/responses/vlan_translation'
 
         autoload :DatapathCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathNetworkCollection, 'vnet/endpoints/1.0/responses/datapath_network'
+        autoload :DatapathSegmentCollection, 'vnet/endpoints/1.0/responses/datapath'
         autoload :DatapathRouteLinkCollection, 'vnet/endpoints/1.0/responses/datapath_route_link'
         autoload :DnsServiceCollection, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecordCollection, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :InterfaceCollection, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfaceNetworkCollection, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfaceSegmentCollection, 'vnet/endpoints/1.0/responses/interface'
+        autoload :InterfaceRouteLinkCollection, 'vnet/endpoints/1.0/responses/interface'
         autoload :InterfacePortCollection, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :IpAddressCollection, 'vnet/endpoints/1.0/responses/ip_address'
         autoload :IpLeaseCollection, 'vnet/endpoints/1.0/responses/ip_lease'
@@ -299,11 +349,12 @@ module Vnet
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
         autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
+        autoload :SegmentCollection, 'vnet/endpoints/1.0/responses/segment'
         autoload :TopologyCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyNetworkCollection, 'vnet/endpoints/1.0/responses/topology'
+        autoload :TopologySegmentCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyRouteLinkCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TranslationCollection, 'vnet/endpoints/1.0/responses/translation'
-        autoload :VlanTranslationCollection, 'vnet/endpoints/1.0/responses/vlan_translation'
       end
     end
   end
@@ -324,13 +375,18 @@ module Vnet
     autoload :ActiveNetwork, 'vnet/models/active_network'
     autoload :ActivePort, 'vnet/models/active_port'
     autoload :ActiveRouteLink, 'vnet/models/active_route_link'
+    autoload :ActiveSegment, 'vnet/models/active_segment'
     autoload :Datapath, 'vnet/models/datapath'
     autoload :DatapathNetwork, 'vnet/models/datapath_network'
+    autoload :DatapathSegment, 'vnet/models/datapath_segment'
     autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'
     autoload :DnsService, 'vnet/models/dns_service'
     autoload :DnsRecord, 'vnet/models/dns_record'
     autoload :Interface, 'vnet/models/interface'
     autoload :InterfacePort, 'vnet/models/interface_port'
+    autoload :InterfaceNetwork, 'vnet/models/interface_network'
+    autoload :InterfaceSegment, 'vnet/models/interface_segment'
+    autoload :InterfaceRouteLink, 'vnet/models/interface_route_link'
     autoload :IpAddress, 'vnet/models/ip_address'
     autoload :IpLease, 'vnet/models/ip_lease'
     autoload :IpLeaseContainer, 'vnet/models/ip_lease_container'
@@ -356,31 +412,37 @@ module Vnet
     autoload :RouteLink, 'vnet/models/route_link'
     autoload :SecurityGroup, 'vnet/models/security_group'
     autoload :SecurityGroupInterface, 'vnet/models/security_group_interface'
+    autoload :Segment, 'vnet/models/segment'
     autoload :Taggable, 'vnet/models/base'
     autoload :Topology, 'vnet/models/topology'
     autoload :TopologyDatapath, 'vnet/models/topology_datapath'
     autoload :TopologyNetwork, 'vnet/models/topology_network'
+    autoload :TopologySegment, 'vnet/models/topology_segment'
     autoload :TopologyRouteLink, 'vnet/models/topology_route_link'
     autoload :Translation, 'vnet/models/translation'
     autoload :TranslationStaticAddress, 'vnet/models/translation_static_address'
     autoload :Tunnel, 'vnet/models/tunnel'
-    autoload :VlanTranslation, 'vnet/models/vlan_translation'
   end
 
   module ModelWrappers
     autoload :ActiveInterface, 'vnet/model_wrappers/wrappers'
     autoload :ActiveNetwork, 'vnet/model_wrappers/wrappers'
-    autoload :ActiveRouteLink, 'vnet/model_wrappers/wrappers'
     autoload :ActivePort, 'vnet/model_wrappers/active_port'
+    autoload :ActiveRouteLink, 'vnet/model_wrappers/wrappers'
+    autoload :ActiveSegment, 'vnet/model_wrappers/wrappers'
     autoload :Base, 'vnet/model_wrappers/base'
     autoload :Datapath, 'vnet/model_wrappers/datapath'
-    autoload :DatapathNetwork, 'vnet/model_wrappers/datapath_network'
-    autoload :DatapathRouteLink, 'vnet/model_wrappers/datapath_route_link'
+    autoload :DatapathNetwork, 'vnet/model_wrappers/datapath'
+    autoload :DatapathSegment, 'vnet/model_wrappers/datapath'
+    autoload :DatapathRouteLink, 'vnet/model_wrappers/datapath'
     autoload :DnsService, 'vnet/model_wrappers/dns_service'
     autoload :DnsRecord, 'vnet/model_wrappers/dns_record'
     autoload :Helpers, 'vnet/model_wrappers/helpers'
     autoload :Interface, 'vnet/model_wrappers/interface'
-    autoload :InterfacePort, 'vnet/model_wrappers/interface_port'
+    autoload :InterfacePort, 'vnet/model_wrappers/interface'
+    autoload :InterfaceNetwork, 'vnet/model_wrappers/interface'
+    autoload :InterfaceSegment, 'vnet/model_wrappers/interface'
+    autoload :InterfaceRouteLink, 'vnet/model_wrappers/interface'
     autoload :IpAddress, 'vnet/model_wrappers/ip_address'
     autoload :IpLease, 'vnet/model_wrappers/ip_lease'
     autoload :IpLeaseContainer, 'vnet/model_wrappers/ip_lease_container'
@@ -406,14 +468,15 @@ module Vnet
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
     autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
     autoload :SecurityGroupInterface, 'vnet/model_wrappers/security_group_interface'
+    autoload :Segment, 'vnet/model_wrappers/wrappers'
     autoload :Topology, 'vnet/model_wrappers/topology'
     autoload :TopologyDatapath, 'vnet/model_wrappers/topology'
     autoload :TopologyNetwork, 'vnet/model_wrappers/topology'
+    autoload :TopologySegment, 'vnet/model_wrappers/topology'
     autoload :TopologyRouteLink, 'vnet/model_wrappers/topology'
     autoload :Translation, 'vnet/model_wrappers/translation'
     autoload :TranslationStaticAddress, 'vnet/model_wrappers/translation'
     autoload :Tunnel, 'vnet/model_wrappers/tunnel'
-    autoload :VlanTranslation, 'vnet/model_wrappers/vlan_translation'
   end
 
   autoload :NodeApi, 'vnet/node_api'
@@ -423,20 +486,27 @@ module Vnet
     autoload :DirectProxy, 'vnet/node_api/proxies'
 
     autoload :Base, 'vnet/node_api/base'
+    autoload :BaseValidateUpdateFields, 'vnet/node_api/base_valid_update_fields'
+    autoload :AssocBase, 'vnet/node_api/assoc_base'
     autoload :EventBase, 'vnet/node_api/event_base'
 
     autoload :ActiveInterface, 'vnet/node_api/active_interface'
     autoload :ActiveNetwork, 'vnet/node_api/active_network'
     autoload :ActivePort, 'vnet/node_api/active_port'
     autoload :ActiveRouteLink, 'vnet/node_api/active_route_link'
+    autoload :ActiveSegment, 'vnet/node_api/active_segment'
     autoload :Datapath, 'vnet/node_api/datapath.rb'
     autoload :DatapathGeneric, 'vnet/node_api/datapath_generic.rb'
     autoload :DatapathNetwork, 'vnet/node_api/datapath_generic.rb'
+    autoload :DatapathSegment, 'vnet/node_api/datapath_generic.rb'
     autoload :DatapathRouteLink, 'vnet/node_api/datapath_generic.rb'
     autoload :DnsService, 'vnet/node_api/dns_service'
     autoload :DnsRecord, 'vnet/node_api/dns_record'
     autoload :Interface, 'vnet/node_api/interface.rb'
     autoload :InterfacePort, 'vnet/node_api/interface_port.rb'
+    autoload :InterfaceNetwork, 'vnet/node_api/interface_assoc.rb'
+    autoload :InterfaceSegment, 'vnet/node_api/interface_assoc.rb'
+    autoload :InterfaceRouteLink, 'vnet/node_api/interface_assoc.rb'
     autoload :IpAddress, 'vnet/node_api/models.rb'
     autoload :IpLease, 'vnet/node_api/ip_lease.rb'
     autoload :IpLeaseContainer, 'vnet/node_api/ip_lease_container'
@@ -459,14 +529,16 @@ module Vnet
     autoload :RouteLink, 'vnet/node_api/route_link.rb'
     autoload :SecurityGroup, 'vnet/node_api/security_group'
     autoload :SecurityGroupInterface, 'vnet/node_api/security_group_interface'
+    autoload :Segment, 'vnet/node_api/segment.rb'
     autoload :Topology, 'vnet/node_api/topology.rb'
+    autoload :TopologyAssocBase, 'vnet/node_api/topology.rb'
     autoload :TopologyDatapath, 'vnet/node_api/topology.rb'
     autoload :TopologyNetwork, 'vnet/node_api/topology.rb'
+    autoload :TopologySegment, 'vnet/node_api/topology.rb'
     autoload :TopologyRouteLink, 'vnet/node_api/topology.rb'
     autoload :Translation, 'vnet/node_api/translation.rb'
     autoload :TranslationStaticAddress, 'vnet/node_api/translation_static_address.rb'
     autoload :Tunnel, 'vnet/node_api/tunnel.rb'
-    autoload :VlanTranslation, 'vnet/node_api/translation.rb'
   end
 
   module NodeModules

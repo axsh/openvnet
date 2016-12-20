@@ -10,6 +10,7 @@ module Vnctl::Cli
       option :is_connected, :type => :boolean, :desc => "Flag that detemines if the datapath is connected or not."
       option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
       option :node_id, :type => :string, :desc => "The node id for the datapath."
+      option :enable_ovs_learn_action, :type => :boolean, :desc => "Enables the datapath to use OVS learning flows."
     }
     set_required_options [:display_name, :dpid, :node_id]
 
@@ -22,7 +23,14 @@ module Vnctl::Cli
         :desc => "The host interface uuid to use for this network."
     end
 
-    define_relation(:route_links) do |relation|
+    define_relation :segments do |relation|
+      relation.option :mac_address, :type => :string, :required => false,
+        :desc => "The broadcast mac address for mac2mac to use in this segment."
+      relation.option :interface_uuid, :type => :string, :required => true,
+        :desc => "The host interface uuid to use for this segment."
+    end
+
+    define_relation :route_links do |relation|
       relation.option :mac_address, :type => :string, :required => false,
         :desc => "The mac address to use for this link"
       relation.option :interface_uuid, :type => :string, :required => true,

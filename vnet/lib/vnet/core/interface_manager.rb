@@ -111,10 +111,10 @@ module Vnet::Core
     def item_initialize(item_map)
       item_class =
         case item_map.mode
-        when MODE_EDGE      then Interfaces::Edge
         when MODE_HOST      then Interfaces::Host
         when MODE_INTERNAL  then Interfaces::Internal
         when MODE_PATCH     then Interfaces::Patch
+        when MODE_PROMISCUOUS then Interfaces::Promiscuous
         when MODE_SIMULATED then Interfaces::Simulated
         when MODE_VIF       then Interfaces::Vif
         else
@@ -141,29 +141,31 @@ module Vnet::Core
     def item_post_install(item, item_map)
       load_addresses(item_map)
 
-      @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
-                                      id: :interface,
-                                      interface_id: item.id)
+      activate_params = {
+        id: :interface,
+        interface_id: item.id
+      }
 
-      @dp_info.filter2_manager.publish(FILTER_ACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: item.id)
+      @dp_info.tunnel_manager.publish(ACTIVATE_INTERFACE, activate_params)
+      @dp_info.filter2_manager.publish(ACTIVATE_INTERFACE, activate_params)
+      @dp_info.interface_segment_manager.publish(ACTIVATE_INTERFACE, activate_params)
 
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
     end
 
     def item_post_uninstall(item)
-      @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
-                                      id: :interface,
-                                      interface_id: item.id)
+      deactivate_params = {
+        id: :interface,
+        interface_id: item.id
+      }
+
+      @dp_info.tunnel_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.filter2_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.interface_segment_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
 
       @dp_info.filter_manager.async.remove_filters(item.id)
 
-      @dp_info.filter2_manager.publish(FILTER_DEACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: item.id)
-      
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.remove_catch_new_egress(id)
         @dp_info.connection_manager.async.close_connections(id)
@@ -232,8 +234,7 @@ module Vnet::Core
       mac_leases && mac_leases.each do |mac_lease|
         publish(INTERFACE_LEASED_MAC_ADDRESS,
                 id: item_map.id,
-                mac_lease_id: mac_lease.id,
-                mac_address: mac_lease.mac_address)
+                mac_lease_id: mac_lease.id)
 
         mac_lease.ip_leases.each do |ip_lease|
           publish(INTERFACE_LEASED_IPV4_ADDRESS,
@@ -254,9 +255,23 @@ module Vnet::Core
 
       return unless mac_lease && mac_lease.interface_id == item.id
 
-      mac_address = Trema::Mac.new(mac_lease.mac_address)
+      segment_id = mac_lease.segment_id
+
+      # TODO: Move to interface_segment...
+      if segment_id
+        segment = @dp_info.segment_manager.retrieve(id: segment_id)
+
+        if segment.nil?
+          error log_format("could not find segment for mac lease",
+            "interface_id:#{item.id} segment_id:#{segment_id}")
+          return
+        end
+      end
+
+      mac_address = Pio::Mac.new(mac_lease.mac_address)
       item.add_mac_address(mac_lease_id: mac_lease.id,
                            mac_address: mac_address,
+                           segment_id: mac_lease.segment_id,
                            cookie_id: mac_lease.cookie_id)
 
       item.ingress_filtering_enabled &&
@@ -295,7 +310,7 @@ module Vnet::Core
       return unless item && ip_lease.interface_id == item.id
 
       network = @dp_info.network_manager.retrieve(id: ip_lease.ip_address.network_id)
-      
+
       if network.nil?
         error log_format("could not find network for ip lease",
                          "interface_id:#{ip_lease.interface_id} network_id:#{ip_lease.ip_address.network_id}")

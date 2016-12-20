@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-#TODO: Write some FREAKING tests for this
 Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   CF = C::Filter
-  
+  CFS = C::FilterStatic
+
   def self.put_post_shared_params
-    param_uuid M::Interface, :interface_uuid
-    param :mode, :String, in: CF::MODES
     param :egress_passthrough, :Boolean
     param :ingress_passthrough, :Boolean
   end
@@ -14,7 +12,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   put_post_shared_params
   param_uuid M::Filter
   param_uuid M::Interface, :interface_uuid, required: true
-  param_options :mode, required: true
+  param :mode, :String, in: CF::MODES, required: true
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
@@ -37,60 +35,70 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   put '/:uuid' do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
-    update_by_uuid(:Filter)
+    update_by_uuid2(:Filter)
   end
 
   def self.static_shared_params
     param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
     param :port_number, :Integer, in: 0..65536
-
-    param :ipv4_src_address, :String, transform: PARSE_IPV4_ADDRESS
-    param :ipv4_dst_address, :String, transform: PARSE_IPV4_ADDRESS
-    param :port_src, :Integer, in: 0..65536
-    param :port_dst, :Integer, in: 0..65536
-    param :protocol, :String
-    param :passthrough, :Boolean
+    param :protocol, :String, in: CFS::PROTOCOLS, required: true
+    param :passthrough, :Boolean, required: true
   end
 
-  static_shared_params
-  post '/:uuid/static' do
+  def params_to_db_fields(filter, params)
+    case params["protocol"]
+    when "tcp", "udp"
+      raise E::MissingArgument, 'port_number' if params["port_number"].nil?
+      raise E::MissingArgument, 'ipv4_address' if params["ipv4_address"].nil?
 
-    filter = check_syntax_and_pop_uuid(M::Filter)
+      ipv4_src_address = params["ipv4_address"].to_i
+      ipv4_src_prefix = params["ipv4_address"].prefix.to_i
+      port_number = params["port_number"]
+    when "icmp"
+      raise E::MissingArgument, 'ipv4_address' if params["ipv4_address"].nil?
+
+      ipv4_src_address = params["ipv4_address"].to_i
+      ipv4_src_prefix = params["ipv4_address"].prefix.to_i
+      port_number = nil
+    when "arp", "all"
+      ipv4_src_address = 0
+      ipv4_src_prefix = 0
+      port_number = nil
+    end
 
     if filter.mode != CF::MODE_STATIC
       raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
     end
 
-    s = M::FilterStatic.create(
+    {
       filter_id: filter.id,
-      ipv4_src_address: params["ipv4_address"].to_i,
-      ipv4_src_prefix: params["ipv4_address"].prefix,
-      ipv4_dst_address: "0",
+      ipv4_src_address: ipv4_src_address,
+      ipv4_src_prefix: ipv4_src_prefix,
+      ipv4_dst_address: 0,
       ipv4_dst_prefix: 0,
-      port_src: params["port_number"],
-      port_dst: params["port_number"],
+      port_src: port_number,
+      port_dst: port_number,
       protocol: params["protocol"],
       passthrough: params["passthrough"]
-    )
+    }
+  end
+
+  static_shared_params
+  post '/:uuid/static' do
+    filter = check_syntax_and_pop_uuid(M::Filter)
+    db_fields = params_to_db_fields(filter, params)
+
+    s = M::FilterStatic.create(db_fields)
 
     respond_with(R::FilterStatic.generate(s))
   end
 
   static_shared_params
-  param :id, :Integer
   delete '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
+    db_fields = params_to_db_fields(filter, params)
 
-    if filter.mode != CF::MODE_STATIC
-      raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
-    end
-
-    remove_system_parameters
-
-    filter_params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
-    filter_params[:filter_id] = filter.id
-
-    s = M::FilterStatic.batch[filter_params].commit
+    s = M::FilterStatic.batch[db_fields].commit
 
     if !s
       rp = request.params.to_json
@@ -103,11 +111,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
   end
 
-  get '/static/' do
-    get_all(:FilterStatic)
-  end    
-
-  get '/static/:uuid' do
+  get '/:uuid/static' do
     show_relations(:Filter, :filter_statics)
   end
 end

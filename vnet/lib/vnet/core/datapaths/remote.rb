@@ -42,6 +42,28 @@ module Vnet::Core::Datapaths
                                       dp_obj: network)
     end
 
+    def activate_segment_id(segment_id)
+      segment = @active_segments[segment_id] || return
+
+      return if segment[:active] == true
+      segment[:active] == true
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_REMOTE_DATAPATH_SEGMENT,
+                                      id: :datapath_segment,
+                                      dp_obj: segment)
+    end
+
+    def deactivate_network_id(network_id)
+      network = @active_networks[network_id] || return
+
+      return if network[:active] == false
+      network[:active] == false
+
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_NETWORK,
+                                      id: :datapath_network,
+                                      dp_obj: network)
+    end
+
     def activate_route_link_id(route_link_id)
       route_link = @active_route_links[route_link_id] || return
 
@@ -70,18 +92,14 @@ module Vnet::Core::Datapaths
 
     private
 
-    def after_add_active_network(active_network)
-      flows = []
-      flows_for_filtering_mac_address(flows,
-                                      active_network[:mac_address],
-                                      active_network[:id] | COOKIE_TYPE_DP_NETWORK)
-      @dp_info.add_flows(flows)
-    end
+    # TODO: Rewrite to use 'network' tunnel id, and identify based on
+    # mac address.
 
-    def after_remove_active_network(active_network)
-    end
+    def flows_for_dp_network(flows, dpg_map)
+      flow_id = dpg_map[:id]
+      flow_gen_id = dpg_map[:network_id]
+      flow_cookie = flow_id | COOKIE_TYPE_DP_NETWORK
 
-    def flows_for_dp_network(flows, dp_nw)
       [true, false].each { |reflection|
 
         flows << flow_create(table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
@@ -90,62 +108,105 @@ module Vnet::Core::Datapaths
 
                              match_value_pair_flag: reflection,
                              match_value_pair_first: @id,
-                             match_value_pair_second: dp_nw[:network_id],
+                             match_value_pair_second: flow_gen_id,
 
                              clear_all: true,
                              write_reflection: reflection,
-                             write_dp_network: dp_nw[:id],
+                             write_dp_network: flow_id,
 
-                             cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
+                             cookie: flow_cookie)
 
         flows << flow_create(table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
                              goto_table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
                              priority: 1,
 
                              match_reflection: reflection,
-                             match_dp_network: dp_nw[:id],
+                             match_dp_network: flow_id,
 
                              actions: {
-                               :tunnel_id => dp_nw[:network_id] | TUNNEL_FLAG
+                               :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_NETWORK
                              },
 
                              write_value_pair_flag: reflection,
-                             write_value_pair_first: dp_nw[:network_id],
-                             write_value_pair_second: dp_nw[:interface_id],
+                             write_value_pair_first: flow_gen_id,
+                             write_value_pair_second: dpg_map[:interface_id],
 
-                             cookie: dp_nw[:id] | COOKIE_TYPE_DP_NETWORK)
+                             cookie: flow_cookie)
       }
     end
 
-    def flows_for_dp_route_link(flows, dp_rl)
+    def flows_for_dp_segment(flows, dpg_map)
+      flow_id = dpg_map[:id]
+      flow_gen_id = dpg_map[:segment_id]
+      flow_cookie = flow_id | COOKIE_TYPE_DP_SEGMENT
+
+      [true, false].each { |reflection|
+
+        flows << flow_create(table: TABLE_LOOKUP_DP_SEG_TO_DP_SEGMENT,
+                             goto_table: TABLE_OUTPUT_DP_SEGMENT_DST_IF,
+                             priority: 1,
+
+                             match_value_pair_flag: reflection,
+                             match_value_pair_first: @id,
+                             match_value_pair_second: flow_gen_id,
+
+                             clear_all: true,
+                             write_reflection: reflection,
+                             write_dp_segment: flow_id,
+
+                             cookie: flow_cookie)
+
+        flows << flow_create(table: TABLE_OUTPUT_DP_SEGMENT_DST_IF,
+                             goto_table: TABLE_OUTPUT_DP_SEGMENT_SRC_IF,
+                             priority: 1,
+
+                             match_reflection: reflection,
+                             match_dp_segment: flow_id,
+
+                             actions: {
+                               :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_SEGMENT
+                             },
+
+                             write_value_pair_flag: reflection,
+                             write_value_pair_first: flow_gen_id,
+                             write_value_pair_second: dpg_map[:interface_id],
+
+                             cookie: flow_cookie)
+      }
+    end
+
+    def flows_for_dp_route_link(flows, dpg_map)
+      flow_id = dpg_map[:id]
+      flow_gen_id = dpg_map[:route_link_id]
+      flow_cookie = flow_id | COOKIE_TYPE_DP_ROUTE_LINK
+
       # The source mac address of route link packets is required to
-      # match a remote dp_rl mac address.
+      # match a remote dpg_map mac address.
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 1,
 
                            match: {
-                             :eth_src => dp_rl[:mac_address]
+                             :eth_src => dpg_map[:mac_address]
                            },
-                           match_route_link: dp_rl[:route_link_id],
+                           match_route_link: flow_gen_id,
 
-                           cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+                           cookie: flow_cookie)
 
       [true, false].each { |reflection|
-
         flows << flow_create(table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
                              goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
                              priority: 1,
 
                              match_value_pair_flag: reflection,
                              match_value_pair_first: @id,
-                             match_value_pair_second: dp_rl[:route_link_id],
+                             match_value_pair_second: flow_gen_id,
 
                              clear_all: true,
                              write_reflection: reflection,
-                             write_dp_route_link: dp_rl[:id],
+                             write_dp_route_link: flow_id,
 
-                             cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+                             cookie: flow_cookie)
 
         # We write the destination interface id in the second value
         # field, and then prepare for the next table by writing the
@@ -159,18 +220,18 @@ module Vnet::Core::Datapaths
                              priority: 1,
 
                              match_reflection: reflection,
-                             match_dp_route_link: dp_rl[:id],
+                             match_dp_route_link: flow_id,
 
                              actions: {
-                               :eth_dst => dp_rl[:mac_address],
+                               :eth_dst => dpg_map[:mac_address],
                                :tunnel_id => TUNNEL_ROUTE_LINK
                              },
 
                              write_value_pair_flag: reflection,
-                             write_value_pair_first: dp_rl[:route_link_id],
-                             write_value_pair_second: dp_rl[:interface_id],
+                             write_value_pair_first: flow_gen_id,
+                             write_value_pair_second: dpg_map[:interface_id],
 
-                             cookie: dp_rl[:id] | COOKIE_TYPE_DP_ROUTE_LINK)
+                             cookie: flow_cookie)
       }
     end
 

@@ -85,8 +85,6 @@ module Vnspec
 
       Vnet.start(:vna)
 
-      VM.start_network
-
       true
     end
 

@@ -7,8 +7,9 @@ module Vnctl::Cli
 
     add_modify_shared_options {
       option_uuid
-      option :interface_uuid, :type => :string, :desc => "The uuid of the interface that this mac lease is tried to."
+      option :interface_uuid, :type => :string, :desc => "The uuid of the interface that this mac lease is tied to."
       option :mac_address, :type => :string, :desc => "The mac address to lease"
+      option :segment_uuid, :type => :string, :desc => "The uuid of the segment."
     }
     set_required_options [:mac_address, :interface_uuid]
 

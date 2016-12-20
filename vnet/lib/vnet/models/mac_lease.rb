@@ -16,7 +16,7 @@ module Vnet::Models
     _mac_address: :destroy
 
     def cookie_id
-      self.class.with_deleted.where(interface_id: self.interface_id).where("id <= #{self.id}").count
+      self.class.with_deleted.where(interface_id: self.interface_id).where("id <= ?", self.id).count
     end
 
   end

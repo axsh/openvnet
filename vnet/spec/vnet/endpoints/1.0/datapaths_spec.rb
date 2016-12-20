@@ -25,6 +25,7 @@ describe "/datapaths" do
       :is_connected => false,
       :dpid => "0x0000aaaaaaaaaaaa",
       :node_id => "vna45",
+      :enable_ovs_learn_action => true,
     }
 
     required_params = [:display_name, :dpid, :node_id]
@@ -36,8 +37,7 @@ describe "/datapaths" do
   describe "PUT /:uuid" do
     accepted_params = {
       :display_name => "we changed this name",
-      :dpid => "0x0000abcdefabcdef",
-      :node_id => 'vna45'
+      :enable_ovs_learn_action => false,
     }
     uuid_params = []
 
@@ -63,6 +63,18 @@ describe "/datapaths" do
     let!(:interface) { Fabricate(:interface_w_ip_lease) { uuid "if-test" } }
 
     include_examples "many_to_many_relation", "route_links", {
+      :mac_address => "02:00:00:cc:00:02",
+      :interface_uuid => 'if-test'
+    }
+  end
+
+  describe "Many to many relation calls for segments" do
+    let!(:base_object) { Fabricate(fabricator) }
+    let(:relation_fabricator) { :segment }
+
+    let!(:interface) { Fabricate(:interface_w_ip_lease) { uuid "if-test" } }
+
+    include_examples "many_to_many_relation", "segments", {
       :mac_address => "02:00:00:cc:00:02",
       :interface_uuid => 'if-test'
     }

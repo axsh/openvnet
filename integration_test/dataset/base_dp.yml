@@ -1,3 +1,5 @@
+datapath_segments:
+
 datapath_networks:
 
   - datapath_uuid: dp-1

@@ -13,8 +13,12 @@ module Vnet::Core
 
     def do_initialize
       info log_format('cleaning up old entries')
-      
+
       mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
+
+      mw_class.batch.all.commit.each { |item_map|
+        internal_new_item(item_map)
+      }
     end
 
     private
@@ -38,7 +42,6 @@ module Vnet::Core
 
       info log_format('cleaned up')
     end
-
 
   end
 end

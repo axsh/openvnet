@@ -2,6 +2,7 @@
 
 require 'sequel/model'
 require 'sequel/plugins/mac_address'
+require 'sequel/plugins/mac_address_no_segment'
 require 'sequel/plugins/ip_address'
 require 'sequel/plugins/paranoia_is_deleted'
 require 'sequel/plugins/dataset_associations.rb'
@@ -258,7 +259,7 @@ module Vnet::Models
       private
       def apply_changed_event(changed_columns)
         model.track_columns.keys.each do |event_name|
-          call_method = "on_changed_#{event_name.to_s}".to_sym
+          call_method = "on_changed_#{event_name}".to_sym
           raise "Undefined method #{call_method}" if !model.method_defined?(call_method)
 
           model.track_columns[event_name].values.find_all { |c|

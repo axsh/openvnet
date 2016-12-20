@@ -75,6 +75,7 @@ api_specs.each { |api_spec|
   #
   #  POST  /datapaths/:uuid/networks/:network_uuid
   #  GET  /datapaths/:uuid/networks
+  #  PUT  /datapaths/:uuid/networks/:network_uuid
   #  DELETE  /datapaths/:uuid/networks/:network_uuid
   #
   when /^POST  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
@@ -83,6 +84,9 @@ api_specs.each { |api_spec|
   when /^GET  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+$/
     relation_name = route.split('/')[3]
     expected_classes[class_name]["show_#{relation_name}"] = route
+  when /^PUT  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
+    relation_name = route.split('/')[3].chomp('s')
+    expected_classes[class_name]["update_#{relation_name}"] = route
   when /^DELETE  \/#{underscored}\/#{named_args_regex}+\/[a-z\_]+\/#{named_args_regex}+$/
     relation_name = route.split('/')[3].chomp('s')
     expected_classes[class_name]["remove_#{relation_name}"] = route
@@ -159,6 +163,13 @@ describe VNetAPIClient do
     include_examples 'test_method', :remove_port, 'DELETE  /interfaces/:uuid/ports'
   end
 
+  describe VNetAPIClient::IpLease do
+    include_examples 'test_method', :attach,
+                     'PUT  /ip_leases/:uuid/attach'
+    include_examples 'test_method', :release,
+                     'PUT  /ip_leases/:uuid/release'
+  end
+
   describe VNetAPIClient::IpRangeGroup do
     include_examples 'test_method', :add_range,
                      'POST  /ip_range_groups/:ip_range_group_uuid/ip_ranges'
@@ -182,14 +193,12 @@ describe VNetAPIClient do
   end
 
   describe VNetAPIClient::Filter do
-    include_examples 'test_method', :add_filter_static,
+    include_examples 'test_method', :add_static,
                      'POST  /filters/:uuid/static'
-    include_examples 'test_method', :remove_filter_static,
+    include_examples 'test_method', :remove_static,
                      'DELETE  /filters/:uuid/static'
-    include_examples 'test_method', :show_filter_static,
-                     'GET  /filters/static/'
-    include_examples 'test_method', :show_filter_static_by_uuid,
-                     'GET  /filters/static/:uuid'
+    include_examples 'test_method', :show_static,
+                     'GET  /filters/:uuid/static'
   end
   #
   # Finally we make sure that no non standard routes are left untested

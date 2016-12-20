@@ -46,6 +46,7 @@ module Sequel
       module InstanceMethods
         def validate
           super
+
           if @network
             valid_subnet, ipv4_nw_s, ipv4_s = Vnet::Helpers::IpAddress.valid_in_subnet(
               self.network, self.ipv4_address)
@@ -54,6 +55,7 @@ module Sequel
               errors.add(:ipv4_address, "IP Address #{ipv4_s} not in subnet #{ipv4_nw_s}.")
             end
           end
+
           errors.add(:network_id, 'cannot be empty') if self.network_id.blank?
           errors.add(:ipv4_address, 'cannot be empty') if self.ipv4_address.blank?
         end
@@ -62,18 +64,21 @@ module Sequel
           if self.mac_lease
             self.interface_id = self.mac_lease.interface_id
           end
+
           if @network_id
             if self.ip_address && self.ip_address.network_id != @network_id
               self.ip_address.destroy
               self.ip_address = nil
             end
           end
+
           if @ipv4_address
             if self.ip_address && self.ip_address.ipv4_address != @ipv4_address
               self.ip_address.destroy
               self.ip_address = nil
             end
           end
+
           unless self.ip_address
             self.ip_address = self.class.association_reflection(:ip_address).associated_class.new(ipv4_address: @ipv4_address).tap do |model|
               model.network = model.class.association_reflection(:network).associated_class[@network_id]
@@ -81,6 +86,7 @@ module Sequel
               model.save
             end
           end
+
           super
         end
 

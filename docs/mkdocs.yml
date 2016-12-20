@@ -8,7 +8,7 @@ use_directory_urls: true
 
 repo_url: https://github.com/axsh/openvnet
 
-copyright: Copyright &copy; 2015, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
+copyright: Copyright &copy; 2016, <a href="http://axsh.jp/">Axsh Co. Ltd.</a>.
 google_analytics: ['UA-63388719-2', 'auto']
 
 pages:
@@ -16,6 +16,7 @@ pages:
 - Concept: 'concept.md'
 - Features: 'features.md'
 - Installation : 'installation.md'
+- Upgrading : 'upgrade.md'
 - Creating virtual networks:
   - 'Single network': 'creating-virtual-networks/single-network.md'
   - 'Single network with DHCP server': 'creating-virtual-networks/single-network-dhcp.md'

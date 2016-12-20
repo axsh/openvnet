@@ -115,6 +115,21 @@ module Vnet::Endpoints::V10
       respond_with(response.generate(updated_object))
     end
 
+    def update_by_uuid2(class_name, fill = {})
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+
+      model = check_syntax_and_pop_uuid(model_wrapper)
+
+      # This yield is for extra argument validation
+      yield(params) if block_given?
+
+      remove_system_parameters
+
+      updated_object = model_wrapper.batch.update_uuid(model.uuid, params).commit(:fill => fill)
+      respond_with(response.generate(updated_object))
+    end
+
     def post_new(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
@@ -133,6 +148,7 @@ module Vnet::Endpoints::V10
       object = check_syntax_and_pop_uuid(M.const_get(class_name))
       total_count = object.batch.send(response_method).count.commit
       items = object.batch.send("#{response_method}_dataset").offset(offset).limit(limit).all.commit
+
       pagination = {
         "total_count" => total_count,
         "offset" => offset,
@@ -173,8 +189,8 @@ module Vnet::Endpoints::V10
     load_namespace('routes')
     load_namespace('route_links')
     load_namespace('security_groups')
+    load_namespace('segments')
     load_namespace('translations')
     load_namespace('topologies')
-    load_namespace('vlan_translations')
   end
 end
