@@ -57,6 +57,18 @@ for rtfile in `ls ${base_dir}/metadata/route-*`; do
 
 done
 
+## Add networking
+if [ -f ${base_dir}/metadata/network ] ; then
+    out=${base_dir}/tmp.network.sh
+    {
+        echo '#!/bin/bash'
+        echo "cat > /etc/sysconfig/network << 'EOF'"
+        cat ${base_dir}/metadata/network
+        echo "EOF"
+    } > ${out}
+    script_file_list_str="${script_file_list_str},${base_dir}/tmp.network.sh"
+fi
+
 ## port-forwarding needed?
 if [ -e ${base_dir}/metadata/port_forwarding.sh ]; then
    cp ${base_dir}/metadata/port_forwarding.sh  ${base_dir}/tmp.port_forwarding.sh
