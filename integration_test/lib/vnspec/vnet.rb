@@ -170,7 +170,7 @@ module Vnspec
           :segments,
           :route_links,
 
-          :interfaces;
+          :interfaces,
 
           :datapaths,
           :datapath_networks,
