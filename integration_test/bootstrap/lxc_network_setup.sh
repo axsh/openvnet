@@ -74,20 +74,13 @@ EOF
 }
 
 function lxc_setup {
-    prov_script_file=$1
-    container=${2}
-    ifname=${3}
-    brname=${4}
+    local ifname=${1} brname=${2} script_file_on_vm=${3}
 
-    script_file_on_vm=/root/lxc_setup.sh
+    cat << EOF
 
-cat >> ${prov_script_file} << EOF
-
-echo "ovs-vsctl del-port ${brname} ${ifname} 2>/dev/null " >> ${script_file_on_vm}
-echo "ovs-vsctl add-port ${brname} ${ifname}" >> ${script_file_on_vm}
+echo ovs-vsctl --if-exists del-port ${brname} ${ifname} >> ${script_file_on_vm}
+echo ovs-vsctl add-port ${brname} ${ifname} >> ${script_file_on_vm}
 EOF
-
-#   echo ${prov_script_file}
 
 }
 
@@ -127,25 +120,25 @@ for container in `ls ${vmdir}/metadata/lxc`; do
 
     # generate container config
     {
-        echo '#!/bin/bash' > ${outfile}
-        echo "cat > /var/lib/lxc/${lxc}/config << 'EOF'"
+        echo '#!/bin/bash'
+        echo "cat > /var/lib/lxc/${container}/config << 'EOF'"
         net_info ${vmdir}/metadata/lxc/${container}/network.info ${container}
         finish_config_file ${container}
-        echo"EOF"
-        echo"mkdir -p /var/lib/lxc/${container}/rootfs/root/.ssh"
+        echo "EOF"
+        echo "mkdir -p /var/lib/lxc/${container}/rootfs/root/.ssh"
         echo "cp ~/.ssh/authorized_keys /var/lib/lxc/${container}/rootfs/root/.ssh/"
     } >> ${container_cfg}
-
 
     # generate initialization script
     {
         if_data="$(cat ${vmdir}/metadata/lxc/${container}/network.info)"
+        script_file_on_vm=/root/lxc_setup.sh
         echo "echo lxc-start -n ${container} -d  2>/dev/null >> ${script_file_on_vm}"
-        echo "sleep 10" >> ${script_file_on_vm}
-        for l in ${if_data[@]} ; do
-            [[ $l =~ ^br ]] && br=${l}
-            [[ $l =~ ^if ]] && {
-                lxc_setup ${container} ${l} ${br}
+        echo "echo sleep 10 >> ${script_file_on_vm}"
+        for iface in ${if_data[@]} ; do
+            [[ $iface =~ ^br ]] && br=${iface}
+            [[ $iface =~ ^if ]] && {
+                lxc_setup ${iface} ${br} ${script_file_on_vm}
                 unset br
             }
         done
