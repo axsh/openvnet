@@ -123,6 +123,9 @@ topology_datapaths:
 
 topology_networks:
 
+  - topology_uuid: topo-vnet
+    network_uuid: nw-vnet1
+
   - topology_uuid: topo-global
     network_uuid: nw-global
 

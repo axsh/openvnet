@@ -170,6 +170,8 @@ module Vnspec
           :segments,
           :route_links,
 
+          :interfaces;
+
           :datapaths,
           :datapath_networks,
           :datapath_segments,
@@ -180,6 +182,8 @@ module Vnspec
           :topology_networks,
           :topology_segments,
           :topology_route_links,
+
+          :tunnels,
         ].each { |table_name|
           ssh(config[:nodes][:vnmgr].first, "mysql -te select\\ *\\ from\\ #{table_name}\\; vnet", debug: false).tap { |output|
             logger.info output[:stdout]
