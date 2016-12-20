@@ -74,7 +74,6 @@ lxc.arch = x86_64
 lxc.utsname = ${lxc_name}
 lxc.autodev = 0
 EOF
-
 }
 
 function lxc_setup {
@@ -129,13 +128,14 @@ script_file_list_str=""
 interface_setup=${vmdir}/tmp.interface_setup.sh
 lxc_setup_provisioner=${vmdir}/tmp.lxc_setup.sh
 /bin/rm -r ${lxc_setup_provisioner}
+/bin/rm -f ${interface_setup}
 echo "#!/bin/bash > ${script_file_on_vm}" > ${lxc_setup_provisioner}
 ## Assumption here: Only files giving lxc container info. are in this dir!
 for container in `ls ${vmdir}/metadata/lxc`; do
 
    outfile=${vmdir}/tmp.${container}.config.sh
    /bin/rm -f ${outfile}
-   /bin/rm -f ${interface_setup}
+
    touch ${outfile}
 
    echo '#!/bin/bash' > ${outfile}
@@ -156,6 +156,8 @@ for container in `ls ${vmdir}/metadata/lxc`; do
            lxc_setup ${lxc_setup_provisioner} ${container} ${l} ${br}
        }
    done
+   echo "mkdir -p /var/lib/lxc/${container}/rootfs/root/.ssh" >> ${outfile}
+   echo "cp ~/.ssh/authorized_keys /var/lib/lxc/${container}/rootfs/root/.ssh/" >> ${outfile}
 done
 
 vm_bash_init=${vmdir}/tmp.bash_init.sh         # File to modify the .bash_profile file on the vm.
