@@ -138,8 +138,6 @@ for container in `ls ${vmdir}/metadata/lxc`; do
    outfile=${vmdir}/tmp.${container}.config.sh
    /bin/rm -f ${outfile}
 
-   touch ${outfile}
-
    echo '#!/bin/bash' > ${outfile}
    echo "cat > /var/lib/lxc/${lxc}/config << 'EOF'" >> ${outfile}
 
