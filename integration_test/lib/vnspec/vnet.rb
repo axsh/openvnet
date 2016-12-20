@@ -181,10 +181,9 @@ module Vnspec
           :topology_segments,
           :topology_route_links,
         ].each { |table_name|
-          output = ssh(config[:nodes][:vnmgr].first, "mysql -te 'select * from #{table_name};' vnet", debug: false)
-
-          logger.info "select * from #{table_name};"
-          logger.info output[:stdout]
+          ssh(config[:nodes][:vnmgr].first, "mysql -te \\'select * from #{table_name};\\' vnet", debug: false).tap { |output|
+            logger.info output[:stdout]
+          }
         }
 
         dump_footer
