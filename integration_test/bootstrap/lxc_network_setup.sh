@@ -15,7 +15,7 @@ EOS
 function render_virt () {
     local lxc_name="${1}" ip="${2}"
 cat <<EOS >> ${interface_setup}
-cat <<EOF > /var/lib/lxc/${lxc_name}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+cat <<EOF > /var/lib/lxc/${lxc_name}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth1
 DEVICE=eth1
 BOOTPROTO=static
 ONBOOT=yes
@@ -37,11 +37,10 @@ EOS
 }
 
 function net_setup {
-    out=$1
-    tp=$2
-    hw=$3
+    tp=$1
+    hw=$2
 
-    cat <<EOF >> ${out}
+    cat <<EOF
 lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.veth.pair = ${tp}
@@ -49,13 +48,17 @@ lxc.network.hwaddr = ${hw}
 EOF
 }
 
+function render_outfile () {
+    local filename=${1} ; shift
+    local content="${@}"
+}
+
 function net_info {
     local file=$1
-    local ofile=$2
-    local lxc_name=$3
+    local lxc_name=$2
 
     while read -r br tp hw ip; do
-        net_setup ${ofile} $tp $hw
+        net_setup $tp $hw
         [[ $tp == *m* ]] && render_mgr ${lxc_name}
         [[ $tp == *v* ]] && render_virt ${lxc_name} ${ip}
     done < ${file}
@@ -64,10 +67,9 @@ function net_info {
 }
 
 function finish_config_file {
-    file=$1
-    lxc_name=$2
+    lxc_name=$1
 
-    cat << EOF >> ${file}
+    cat << EOF
 lxc.rootfs = /var/lib/lxc/${lxc_name}/rootfs
 lxc.include = /usr/share/lxc/config/centos.common.conf
 lxc.arch = x86_64
@@ -85,11 +87,6 @@ function lxc_setup {
     script_file_on_vm=/root/lxc_setup.sh
 
 cat >> ${prov_script_file} << EOF
-
-echo "lxc-start -n ${container} -d  2>/dev/null" >> ${script_file_on_vm}
-
-# Give the container time to start up
-echo "sleep 10" >> ${script_file_on_vm}
 
 echo "ovs-vsctl del-port ${brname} ${ifname} 2>/dev/null " >> ${script_file_on_vm}
 echo "ovs-vsctl add-port ${brname} ${ifname}" >> ${script_file_on_vm}
@@ -127,37 +124,44 @@ if [ ! -e ${vmdir}/metadata/lxc ]; then
 fi
 
 script_file_list_str=""
+
 interface_setup=${vmdir}/tmp.interface_setup.sh
 lxc_setup_provisioner=${vmdir}/tmp.lxc_setup.sh
 /bin/rm -r ${lxc_setup_provisioner}
 /bin/rm -f ${interface_setup}
-echo "#!/bin/bash > ${script_file_on_vm}" > ${lxc_setup_provisioner}
+
 ## Assumption here: Only files giving lxc container info. are in this dir!
 for container in `ls ${vmdir}/metadata/lxc`; do
+    container_cfg=${vmdir}/tmp.${container}.config.sh
+    /bin/rm -f ${container_cfg}
 
-   outfile=${vmdir}/tmp.${container}.config.sh
-   /bin/rm -f ${outfile}
+    # generate container config
+    {
+        echo '#!/bin/bash' > ${outfile}
+        echo "cat > /var/lib/lxc/${lxc}/config << 'EOF'"
+        net_info ${vmdir}/metadata/lxc/${container}/network.info ${container}
+        finish_config_file ${container}
+        echo"EOF"
+        echo"mkdir -p /var/lib/lxc/${container}/rootfs/root/.ssh"
+        echo "cp ~/.ssh/authorized_keys /var/lib/lxc/${container}/rootfs/root/.ssh/"
+    } >> ${container_cfg}
 
-   echo '#!/bin/bash' > ${outfile}
-   echo "cat > /var/lib/lxc/${lxc}/config << 'EOF'" >> ${outfile}
 
-   net_info ${vmdir}/metadata/lxc/${container}/network.info ${outfile} ${container}
+    # generate initializeation script
+    {
+        if_data="$(cat ${vmdir}/metadata/lxc/${container}/network.info)"
+        echo "echo lxc-start -n ${container} -d  2>/dev/null >> ${script_file_on_vm}"
+        echo "sleep 10" >> ${script_file_on_vm}
+        for l in ${if_data[@]} ; do
+            [[ $l =~ ^br ]] && br=${l}
+            [[ $l =~ ^if ]] && {
+                lxc_setup ${container} ${l} ${br}
+                unset br
+            }
+        done
+    } >> ${lxc_setup_provisioner}
 
-   finish_config_file ${outfile} ${container}
-
-   echo "EOF" >> ${outfile}
-
-   script_file_list_str="${script_file_list_str},${outfile}"
-   if_data="$(cat ${vmdir}/metadata/lxc/${container}/network.info)"
-   br=""
-   for l in ${if_data[@]} ; do
-       [[ $l =~ ^br ]] && br=${l}
-       [[ $l =~ ^if ]] && {
-           lxc_setup ${lxc_setup_provisioner} ${container} ${l} ${br}
-       }
-   done
-   echo "mkdir -p /var/lib/lxc/${container}/rootfs/root/.ssh" >> ${outfile}
-   echo "cp ~/.ssh/authorized_keys /var/lib/lxc/${container}/rootfs/root/.ssh/" >> ${outfile}
+    script_file_list_str="${script_file_list_str},${container_cfg}"
 done
 
 vm_bash_init=${vmdir}/tmp.bash_init.sh         # File to modify the .bash_profile file on the vm.
