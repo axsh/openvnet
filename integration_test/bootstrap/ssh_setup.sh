@@ -31,13 +31,16 @@ if [ ! -e $HOME/.ssh/id_rsa ]; then
 
 fi
 
+
 ssh_key=$(cat $HOME/.ssh/id_rsa.pub)
-ssh_key_private=$(cat $HOME/.ssh/id_rsa)
+
 cat <<EOF > tmp.ssh_setup.sh
 
    mkdir -p ~/.ssh 2>/dev/null
-   echo ${ssh_key_private} > ~/.ssh/id_rsa
    echo ${ssh_key} > ~/.ssh/authorized_keys
+   cat <<SSH > ~/.ssh/id_rsa
+   $(cat ${HOME}/.ssh/id_rsa)
+SSH
    chmod -R 700 ~/.ssh
    chmod 600 ~/.ssh/*
 EOF
