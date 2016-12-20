@@ -36,11 +36,11 @@ ssh_key=$(cat $HOME/.ssh/id_rsa.pub)
 
 cat <<EOF > tmp.ssh_setup.sh
 
-   mkdir -p ~/.ssh 2>/dev/null
-   echo ${ssh_key} > ~/.ssh/authorized_keys
-   cat <<SSH > ~/.ssh/id_rsa
-   $(cat ${HOME}/.ssh/id_rsa)
+mkdir -p ~/.ssh 2>/dev/null
+echo ${ssh_key} > ~/.ssh/authorized_keys
+cat <<SSH > ~/.ssh/id_rsa
+$(cat ${HOME}/.ssh/id_rsa)
 SSH
-   chmod -R 700 ~/.ssh
-   chmod 600 ~/.ssh/*
+chmod -R 700 ~/.ssh
+chmod 600 ~/.ssh/*
 EOF
