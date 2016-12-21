@@ -10,7 +10,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
   put_post_shared_params
   param_uuid M::DnsService
   param_uuid M::NetworkService, :network_service_uuid, required: true
-  param :replace_uuid, :Boolean
+  param_post_uuid
  
   post do
     #TODO: No need to check syntax since we do that in param_uuid
@@ -27,13 +27,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
     get_by_uuid(:DnsService, fill_options)
   end
 
-  param :preserve_uuid, :Boolean, required: false
+  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:DnsService)
   end
 
-  param :new_uuid, :String, required: false
   put_post_shared_params
+  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:DnsService, fill_options)
   end

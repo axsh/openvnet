@@ -4,7 +4,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/segments' do
 
   param_uuid M::Segment
   param :mode, :String, in: C::Segment::MODES, required: true
-  param :replace_uuid, :Boolean
+  param_post_uuid
   post do
     post_new(:Segment)
   end
@@ -17,12 +17,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/segments' do
     get_by_uuid(:Segment)
   end
 
-  param :preserve_uuid, :Boolean, required: false
+  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:Segment)
   end
   
-  param :new_uuid, :String, required: false
+  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:Segment)
   end

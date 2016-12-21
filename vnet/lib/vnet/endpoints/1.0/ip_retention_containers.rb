@@ -6,7 +6,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_retention_containers' do
 
   put_post_shared_params
   param_uuid M::IpRetentionContainer
-  param :replace_uuid, :Boolean
+  param_post_uuid
  
   post do
     post_new(:IpRetentionContainer)
@@ -20,13 +20,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_retention_containers' do
     get_by_uuid(:IpRetentionContainer)
   end
   
-  param :preserve_uuid, :Boolean, required: false
+  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:IpRetentionContainer)
   end
 
-  param :new_uuid, :String, required: false
   put_post_shared_params
+  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:IpRetentionContainer)
   end

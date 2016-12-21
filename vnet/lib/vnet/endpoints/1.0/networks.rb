@@ -15,7 +15,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   param_uuid M::Segment, :segment_uuid
   param_options :display_name, required: true
   param_options :ipv4_network, required: true
-  param :replace_uuid, :Boolean
+  param_post_uuid
  
   post do
     uuid_to_id(M::Segment, "segment_uuid", "segment_id") if params["segment_uuid"]
@@ -31,7 +31,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     get_by_uuid(:Network)
   end
 
-  param :preserve_uuid, :Boolean, required: false
+  param_delete_uuid
   delete '/:uuid' do
     begin
       delete_by_uuid(:Network)
@@ -40,8 +40,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     end
   end
 
-  param :new_uuid, :String, required: false
   put_post_shared_params
+  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:Network)
   end

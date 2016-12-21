@@ -11,7 +11,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
   put_post_shared_params
   param_uuid M::LeasePolicy
-  param :replace_uuid, :Boolean
+  param_post_uuid
  
   post do
     post_new(:LeasePolicy, fill_options)
@@ -25,13 +25,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
     get_by_uuid(:LeasePolicy, fill_options)
   end
 
-  param :preserve_uuid, :Boolean, required: false
+  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:LeasePolicy)
   end
 
-  param :new_uuid, :String, required: false
   put_post_shared_params
+  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:LeasePolicy, fill_options)
   end
