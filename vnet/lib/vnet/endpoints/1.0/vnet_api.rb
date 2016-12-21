@@ -84,15 +84,17 @@ module Vnet::Endpoints::V10
     def delete_by_uuid(class_name)
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
-      # TODO don't need to find model here
+
+      uuid = @params['uuid']
+      check_syntax_and_pop_uuid(model_wrapper)
+
       if @params['preserve_uuid'] == false
-         uuid = @params['uuid']
-         replaceUUIDAndDestroy(model_wrapper, uuid)
+        replaceUUIDAndDestroy(model_wrapper, uuid)
       else
-         uuid = @params['uuid']
-         @params['uuid'] = model_wrapper.trim_uuid(@params['uuid'])
-         model_wrapper.destroy(uuid)
+        # @params['uuid'] = model_wrapper.trim_uuid(@params['uuid'])
+        model_wrapper.destroy(uuid)
       end
+
       respond_with([uuid])
     end
 

@@ -25,7 +25,7 @@ module Vnet::NodeApi
       end
 
       def destroy(id)
-        group = super(id)
+        group = super(id, {})
 
         dispatch_event(REMOVED_SECURITY_GROUP, id: group.id)
 
