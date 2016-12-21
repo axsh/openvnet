@@ -34,12 +34,18 @@ exec_file="${vm_name}/tmp.openvnet_setup.sh"
 {
     echo "echo mkdir -p /etc/openvnet"
     for file in $(ls ${vm_name}/metadata/openvnet) ; do
-        [[ "${file}" == *".conf" ]] && location="openvnet" || location="default"
+
+        case "${file}" in
+            *".sh") script_file_list_str="${script_file_list_str},${vm_name}/metadata/openvnet/${file}" ; continue ;;
+            *".conf") location="openvnet" ;;
+            *) location="default" ;;
+        esac
+
         generate_on_box "${file}" "${location}"
     done
 
 } >> "${exec_file}"
 
-script_file_list_str="${exec_file}"
+script_file_list_str="${script_file_list_str},${exec_file}"
 
 echo ${script_file_list_str#,}
