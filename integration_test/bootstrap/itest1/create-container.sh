@@ -1,7 +1,19 @@
 #!/bin/bash
 
-lxc-create -t centos -n vm1
-chroot /var/lib/lxc/vm1/rootfs/ /bin/bash -c "echo \"root:\" | chpasswd"
+containers=(
+    vm1
+    vm2
+)
 
-lxc-create -t centos -n vm2
-chroot /var/lib/lxc/vm2/rootfs/ /bin/bash -c "echo \"root:\" | chpasswd"
+for c in ${containers[@]} ; do
+    lxc-create -t centos -n ${c}
+    chroot /var/lib/lxc/${c}/rootfs/ /bin/bash -c "echo root: | chpasswd"
+
+    sed -i \
+        -e 's,^PermitRootLogin .*,PermitRootLogin yes,' \
+        -e 's,^PasswordAuthentication .*,PasswordAuthentication no,' \
+        -e 's,^GSSAPIAuthentication .*, GSSAPIAuthentication no,' \
+        -e 's,^#PubkeyAuthentication .*, PubkeyAuthentication yes,' \
+        \
+        /var/lib/lxc/${c}/rootfs/etc/ssh/sshd_config
+done
