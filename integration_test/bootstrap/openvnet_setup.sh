@@ -3,9 +3,10 @@
 
 function generate_on_box () {
     local file="${1}"
+    local location="${2}"
 
     cat <<EOF
-cat << CFG > /etc/openvnet/${file}
+cat << "CFG" > /etc/${location}/${file}
 $(cat ${vm_name}/metadata/openvnet/${file})
 CFG
 EOF
@@ -29,11 +30,14 @@ script_file_list_str=""
 
 exec_file="${vm_name}/tmp.openvnet_setup.sh"
 /bin/rm -r ${exec_file}
+
 {
     echo "echo mkdir -p /etc/openvnet"
-    for ovn_conf in $(ls ${vm_name}/metadata/openvnet) ; do
-        generate_on_box "${ovn_conf}"
+    for file in $(ls ${vm_name}/metadata/openvnet) ; do
+        [[ "${file}" == *".conf" ]] && location="openvnet" || location="default"
+        generate_on_box "${file}" "${location}"
     done
+
 } >> "${exec_file}"
 
 script_file_list_str="${exec_file}"
