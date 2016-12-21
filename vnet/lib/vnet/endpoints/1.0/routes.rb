@@ -1,4 +1,4 @@
--*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   def self.put_post_shared_params

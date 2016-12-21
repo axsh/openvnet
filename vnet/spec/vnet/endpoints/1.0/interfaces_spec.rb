@@ -85,9 +85,9 @@ describe "/interfaces" do
     end
   end
 
-  include_examples 'interface assoc on node_api', :segment
-  include_examples 'interface assoc on node_api', :network
-  include_examples 'interface assoc on node_api', :route_link
+  include_examples 'interface assoc on endpoints', :segment
+  include_examples 'interface assoc on endpoints', :network
+  include_examples 'interface assoc on endpoints', :route_link
 
   #
   # Ports:

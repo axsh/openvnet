@@ -36,11 +36,10 @@ module Vnet::NodeApi
      
         return '' if old_trimmed.nil? || new_trimmed.nil?
      
-        update_count = model_class.with_deleted.where(uuid: old_trimmed).update(uuid: new_trimm        ed)
+        update_count = model_class.with_deleted.where(uuid: old_trimmed).update(uuid: new_trimmed)
         
         (update_count == 1) ? new_uuid : ''
       end
-
 
       def destroy(uuid, options)
         model_class[uuid].tap do |model|
