@@ -85,6 +85,10 @@ describe "/interfaces" do
     end
   end
 
+  include_examples 'interface assoc on node_api', :segment
+  include_examples 'interface assoc on node_api', :network
+  include_examples 'interface assoc on node_api', :route_link
+
   #
   # Ports:
   #
@@ -92,7 +96,7 @@ describe "/interfaces" do
   describe "/interfaces/:uuid/ports" do
     let(:api_postfix)  { "ports" }
     let(:postfix_parent_sym) { :interface_id }
-    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => 1}) }
+    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => object.id}) }
     let(:postfix_model_class) { Vnet::Models::InterfacePort }
 
     include_examples "GET /:uuid/postfix"
@@ -110,25 +114,6 @@ describe "/interfaces" do
 
       include_examples "POST /:uuid/postfix", accepted_params, required_params
     end
-  end
-
-  #
-  # Segments:
-  #
-
-  describe 'Many to many relation calls for segments' do
-    let!(:base_object) { Fabricate(fabricator) }
-    let(:relation_fabricator) { :segment }
-    let(:join_table_fabricator) { :interface_segment }
-
-    let!(:interface) { Fabricate(:interface) { uuid 'if-test' } }
-
-    accepted_params = {
-      static: true
-    }
-
-    include_examples "PUT many_to_many_relation", "segments", accepted_params
-    include_examples "PUT many_to_many_relation", "segments", { static: false }, [:static]
   end
 
   #

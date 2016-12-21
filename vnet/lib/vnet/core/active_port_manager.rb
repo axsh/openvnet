@@ -88,7 +88,7 @@ module Vnet::Core
 
     # activate port on queue '[:port, port_number]'
     def activate_port(params)
-      warn log_format("activating port", params)
+      warn log_format_h("activating port", params)
 
       begin
         item_id = get_param_packed_id(params, :id, true, 32)
@@ -127,7 +127,7 @@ module Vnet::Core
 
     # deactivate port on queue '[:port, port_number]'
     def deactivate_port(params)
-      debug log_format("deactivating port", params)
+      debug log_format_h("deactivating port", params)
 
       begin
         item_id = get_param_packed_id(params, :id, true, 32)

@@ -5,7 +5,7 @@ module Vnet::Models
     plugin :paranoia_is_deleted
 
     many_to_one :interface
-    many_to_one :datapath
+    many_to_one :segment
 
   end
 end

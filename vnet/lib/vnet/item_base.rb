@@ -76,15 +76,15 @@ module Vnet
     private
 
     def log_format(message, values = nil)
-      "#{log_type}: #{message}" + (values ? " (#{values})" : '')
+      "#{log_type}/#{pretty_id}: #{message}" + (values ? " (#{values})" : '')
     end
 
     def log_format_h(message, values)
-      str = values.map { |value|
+      values && values.map { |value|
         value.join(':')
-      }.join(' ')
-
-      log_format(message, str)
+      }.join(' ').tap { |str|
+        return log_format(message, str)
+      }
     end
 
   end
@@ -130,7 +130,7 @@ module Vnet
     private
 
     def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} #{log_type}: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} #{log_type}/#{pretty_id}: #{message}" + (values ? " (#{values})" : '')
     end
   end
 
@@ -176,6 +176,28 @@ module Vnet
       @id = get_param_id(map)
       @uuid = get_param_string(map, :uuid)
       @mode = get_param_string(map, :mode).to_sym
+    end
+
+    def pretty_properties
+      "mode:#{@mode}"
+    end
+  end
+
+  class ItemDatapathUuidMode < ItemDpUuid
+    attr_reader :mode
+
+    def initialize(params)
+      @installed = false
+      @loaded = false
+
+      @dp_info = get_param_dp_info(params)
+      @datapath_info = get_param_datapath_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+        @uuid = get_param_string(map, :uuid)
+        @mode = get_param_string(map, :mode).to_sym
+      }
     end
 
     def pretty_properties

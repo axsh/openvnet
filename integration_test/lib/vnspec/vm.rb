@@ -109,10 +109,12 @@ module Vnspec
         end)
       end
 
+      def disable_vm
+        vms.each { |vm| vm.use_vm = false }
+      end
+
       def disable_dhcp
-        vms.each { |vm|
-          vm.use_dhcp = false
-        }
+        vms.each { |vm| vm.use_dhcp = false }
       end
 
       private
@@ -228,6 +230,8 @@ module Vnspec
           # TODO: This could be improved to break with an error if the
           # name doesn't match.
           if result[:stdout].chomp == @name.to_s
+            _network_ctl(:arp_flush)
+
             logger.info("#{self.name} is ready")
 
             # Uncomment to dump status of all vm's.
@@ -352,6 +356,11 @@ module Vnspec
 
         _network_ctl(:flush)
         _network_ctl(:change_ip, @static_ipv4_address)
+        _network_ctl(:arp_flush)
+      end
+
+      def route_default_via(via_address)
+        _network_ctl(:route_default_via, IPAddress::IPv4.new(via_address))
       end
 
       def network
@@ -389,7 +398,7 @@ module Vnspec
       end
 
       def clear_arp_cache
-        logger.debug("clear arp cahe: #{name}")
+        logger.debug("clear arp cache: #{name}")
         ssh_on_guest("ip -s -s neigh flush all", use_sudo: true)
       end
 
@@ -410,10 +419,11 @@ module Vnspec
         logger.info "# dump_vm_status #{name}"
         logger.info "##################################################"
 
-        full_response_log(ssh_on_host("route -n"))
-        full_response_log(ssh_on_host("ip addr list"))
-        full_response_log(ssh_on_host("ls -l /"))
-        full_response_log(ssh_on_host("ls -l /images"))
+        # Replace with stuff from the vm itself.
+        full_response_log(ssh_on_guest("route -n"))
+        full_response_log(ssh_on_guest("ip addr list"))
+        # full_response_log(ssh_on_host("ls -l /"))
+        # full_response_log(ssh_on_host("ls -l /images"))
 
         logger.info ""
         logger.info ""
@@ -435,6 +445,10 @@ module Vnspec
             'ip addr flush %s'
           when :change_ip
             'ip addr add ' + params.to_string + ' dev %s'
+          when :route_default_via
+            'ip route add default via ' + params.to_s + ' dev %s'
+          when :arp_flush
+            'ip neigh flush %s'
           else
             raise "unknown command: #{command}"
           end

@@ -40,6 +40,20 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
+  class InterfaceNetwork < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(route)
+      argument_type_check(route, Vnet::ModelWrappers::InterfaceNetwork)
+      route.to_hash
+    end
+  end
+
+  class InterfaceNetworkCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i| InterfaceNetwork.generate(i) }
+    end
+  end
+
   class InterfaceSegment < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(route)
       argument_type_check(route, Vnet::ModelWrappers::InterfaceSegment)
@@ -51,6 +65,20 @@ module Vnet::Endpoints::V10::Responses
     def self.generate(array)
       argument_type_check(array,Array)
       array.map { |i| InterfaceSegment.generate(i) }
+    end
+  end
+
+  class InterfaceRouteLink < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(route)
+      argument_type_check(route, Vnet::ModelWrappers::InterfaceRouteLink)
+      route.to_hash
+    end
+  end
+
+  class InterfaceRouteLinkCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i| InterfaceRouteLink.generate(i) }
     end
   end
 

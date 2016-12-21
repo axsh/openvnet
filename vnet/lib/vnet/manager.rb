@@ -101,14 +101,17 @@ module Vnet
     # Polling methods:
     #
 
+    # Returns true if initialized, nil otherwise.
     def wait_for_initialized(max_wait = 10.0)
       internal_wait_for_initialized(max_wait)
     end
 
+    # Returns item if loaded, nil otherwise.
     def wait_for_loaded(params, max_wait = 10.0, try_load = false)
       item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
 
+    # Returns true if unloaded, nil otherwise.
     def wait_for_unloaded(params, max_wait = 10.0)
       internal_wait_for_unloaded(params, max_wait)
     end
@@ -129,6 +132,7 @@ module Vnet
       nil
     end
 
+    # TODO: Move to core/manager.
     def set_datapath_info(datapath_info)
       if @datapath_info
         raise("Manager.set_datapath_info called twice.")
@@ -174,11 +178,11 @@ module Vnet
     end
 
     def log_format_h(message, values)
-      str = values && values.map { |value|
+      values && values.map { |value|
         value.join(':')
-      }.join(' ')
-
-      log_format(message, str)
+      }.join(' ').tap { |str|
+        return log_format(message, str)
+      }
     end
 
     #
