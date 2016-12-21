@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::NodeApi
-  class SecurityGroup < Base
+  class SecurityGroup < EventBase
+    valid_update_fields [:display_name, :description, :rules]
+
     class << self
-      def update(uuid, options)
+      def update_uuid(uuid, options)
         rules = options[:rules]
 
         secg = transaction do
@@ -31,6 +33,15 @@ module Vnet::NodeApi
 
         nil
       end
+
+      private
+
+      def dispatch_created_item_events(model)
+      end
+
+      def dispatch_deleted_item_events(model)
+      end
+
     end
   end
 end

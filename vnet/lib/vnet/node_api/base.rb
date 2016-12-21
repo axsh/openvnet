@@ -16,19 +16,19 @@ module Vnet::NodeApi
 
       M = Vnet::Models
 
-      def create(options)
-        model = nil
-        transaction do
-          model = model_class.create(options)
-        end
-        model
-      end
+      # def create(options)
+      #   model = nil
+      #   transaction do
+      #     model = model_class.create(options)
+      #   end
+      #   model
+      # end
 
-      def update(uuid, options)
-        model_class[uuid].tap do |model|
-          transaction { model.update(options) }
-        end
-      end
+      # def update(uuid, options)
+      #   model_class[uuid].tap do |model|
+      #     transaction { model.update(options) }
+      #   end
+      # end
      
       def rename(old_uuid, new_uuid)
         old_trimmed = model_class.trim_uuid(old_uuid)
@@ -41,12 +41,12 @@ module Vnet::NodeApi
         (update_count == 1) ? new_uuid : ''
       end
 
-      def destroy(uuid, options = {})
-        model_class[uuid].tap do |model|
-          next if model.nil?
-          transaction { model.destroy(options) }
-        end
-      end
+      # def destroy(uuid, options = {})
+      #   model_class[uuid].tap do |model|
+      #     next if model.nil?
+      #     transaction { model.destroy(options) }
+      #   end
+      # end
 
       # Deprecate: We don't need an indirect way of referencing the
       # model class. Use 'M::' instead.

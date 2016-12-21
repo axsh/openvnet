@@ -151,7 +151,8 @@ module Vnet::NodeApi
           }
         }
 
-        return if model.update(changes).nil?
+        # return if model.update(changes).nil?
+        return [model, {}] if model.update(changes).nil?
 
         old_values.keep_if { |key, old_value|
           model[key] != old_value

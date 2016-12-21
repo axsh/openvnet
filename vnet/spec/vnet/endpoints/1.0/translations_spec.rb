@@ -36,7 +36,7 @@ describe "/translations" do
     let!(:test_interface) { Fabricate(:interface, uuid: 'if-test2') }
 
     accepted_params = {
-      :interface_uuid => "if-test2"
+      # :interface_uuid => "if-test2"
     }
 
     include_examples "PUT /:uuid", accepted_params

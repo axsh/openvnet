@@ -35,12 +35,14 @@ describe "/network_services" do
 
   describe "PUT /:uuid" do
     let!(:new_interface) { Fabricate(:interface) { uuid "if-other"}  }
+
     accepted_params = {
-      :interface_uuid => "if-other",
-      :incoming_port => 40,
-      :outgoing_port => 100
+      # :interface_uuid => "if-other",
+      # :incoming_port => 40,
+      # :outgoing_port => 100
     }
-    uuid_params = [:interface_uuid]
+    # uuid_params = [:interface_uuid]
+    uuid_params = []
 
     include_examples "PUT /:uuid", accepted_params, uuid_params
   end

@@ -43,13 +43,14 @@ describe "/routes" do
     let!(:route_link) { Fabricate(:route_link) { uuid "rl-newroute" } }
 
     accepted_params = {
-      :interface_uuid => "if-newif",
-      :network_uuid => "nw-newnw",
-      :route_link_uuid => "rl-newroute",
-      :ipv4_network => "192.168.3.0",
-      :ipv4_prefix => 16,
+      # :interface_uuid => "if-newif",
+      # :network_uuid => "nw-newnw",
+      # :route_link_uuid => "rl-newroute",
+      # :ipv4_network => "192.168.3.0",
+      # :ipv4_prefix => 16,
     }
-    uuid_params = [:interface_uuid, :network_uuid, :route_link_uuid]
+    # uuid_params = [:interface_uuid, :network_uuid, :route_link_uuid]
+    uuid_params = []
 
     include_examples "PUT /:uuid", accepted_params, uuid_params
   end

@@ -38,10 +38,10 @@ describe "/networks" do
   describe "PUT /:uuid" do
     accepted_params = {
       :display_name => "our new name for the test network",
-      :ipv4_network => "10.0.0.2",
-      :ipv4_prefix => 8,
+      # :ipv4_network => "10.0.0.2",
+      # :ipv4_prefix => 8,
       :domain_name => "new.vdc.test.domain",
-      :network_mode => "physical",
+      # :network_mode => "physical",
     }
 
     include_examples "PUT /:uuid", accepted_params
