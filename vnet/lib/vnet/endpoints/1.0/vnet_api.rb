@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-require "sinatra"
-require "sinatra/vnet_api_setup"
-require "sinatra/browse"
+require 'sinatra'
+require 'sinatra/vnet_api_setup'
+require 'sinatra/browse'
 
 module Vnet::Endpoints::V10
   class VnetAPI < Sinatra::Base
@@ -28,8 +28,8 @@ module Vnet::Endpoints::V10
     # Remove the splat and captures parameters so we can pass @params directly
     # to the model classes
     def remove_system_parameters
-      @params.delete("splat")
-      @params.delete("captures")
+      @params.delete('splat')
+      @params.delete('captures')
     end
 
     def vnet_default_on_error(error_hash)
@@ -37,7 +37,7 @@ module Vnet::Endpoints::V10
         raise E::MissingArgument, error_hash[:parameter]
       else
         raise E::ArgumentError, {
-          error: "parameter validation failed",
+          error: 'parameter validation failed',
           parameter: error_hash[:parameter],
           value: error_hash[:value],
           reason: error_hash[:reason]
@@ -52,7 +52,7 @@ module Vnet::Endpoints::V10
       error_handler = proc { |result|
         case result[:reason]
         when :format
-          raise(E::InvalidUUID, "#{model.name.split("::").last}#uuid: #{result[:value]}")
+          raise(E::InvalidUUID, "#{model.name.split('::').last}#uuid: #{result[:value]}")
         else
           vnet_default_on_error(result)
         end
@@ -69,16 +69,16 @@ module Vnet::Endpoints::V10
     end
 
     def self.param_post_uuid
-      param :replace_uuid,  :Boolean
+      # param :replace_uuid,  :Boolean
       # param :preserve_uuid, :Boolean, required: false
     end
 
     def self.param_put_uuid
-      param :new_uuid, :String, required: false
+      # param :new_uuid, :String, required: false
     end
 
     def self.param_delete_uuid
-      param :preserve_uuid, :Boolean, required: false
+      # param :preserve_uuid, :Boolean, required: false
     end
 
     def delete_by_uuid(class_name)
@@ -86,11 +86,11 @@ module Vnet::Endpoints::V10
       response = R.const_get(class_name)
       # TODO don't need to find model here
       if @params['preserve_uuid'] == false
-         uuid = @params["uuid"]
+         uuid = @params['uuid']
          replaceUUIDAndDestroy(model_wrapper, uuid)
       else
-         uuid = @params["uuid"]
-         @params["uuid"] = model_wrapper.trim_uuid(@params["uuid"])
+         uuid = @params['uuid']
+         @params['uuid'] = model_wrapper.trim_uuid(@params['uuid'])
          model_wrapper.destroy(uuid)
       end
       respond_with([uuid])
@@ -105,9 +105,9 @@ module Vnet::Endpoints::V10
       total_count = model_wrapper.batch.count.commit
       items = model_wrapper.batch.dataset.offset(offset).limit(limit).all.commit(fill: fill)
       pagination = {
-        "total_count" => total_count,
-        "offset" => offset,
-        "limit" => limit,
+        'total_count' => total_count,
+        'offset' => offset,
+        'limit' => limit,
       }
       respond_with(response.generate_with_pagination(pagination, items))
     end
@@ -115,7 +115,7 @@ module Vnet::Endpoints::V10
     def get_by_uuid(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
-      object = check_syntax_and_pop_uuid(model_wrapper, "uuid", fill)
+      object = check_syntax_and_pop_uuid(model_wrapper, 'uuid', fill)
       respond_with(response.generate(object))
     end
 
@@ -163,7 +163,7 @@ module Vnet::Endpoints::V10
       # This yield is for extra argument validation
       yield(params) if block_given?
 
-      check_and_trim_uuid(model_wrapper) if params["uuid"]
+      check_and_trim_uuid(model_wrapper) if params['uuid']
 
       object = model_wrapper.batch.create(params).commit(:fill => fill)
       respond_with(response.generate(object))
@@ -177,9 +177,9 @@ module Vnet::Endpoints::V10
       items = object.batch.send("#{response_method}_dataset").offset(offset).limit(limit).all.commit
 
       pagination = {
-        "total_count" => total_count,
-        "offset" => offset,
-        "limit" => limit,
+        'total_count' => total_count,
+        'offset' => offset,
+        'limit' => limit,
       }
 
       response = R.const_get("#{response_method.to_s.classify}Collection")
@@ -187,12 +187,12 @@ module Vnet::Endpoints::V10
     end
 
     def check_ipv4_address_subnet(network)
-      ipv4_address = params["ipv4_address"]
+      ipv4_address = params['ipv4_address']
       if ipv4_address
         valid, parsed_ipv4_nw, parsed_ipv4 = H::IpAddress.valid_in_subnet(network, ipv4_address)
 
         if !valid
-          raise(E::ArgumentError, "IP Address %s not in subnet %s." %
+          raise(E::ArgumentError, 'IP Address %s not in subnet %s.' %
             [parsed_ipv4, parsed_ipv4_nw])
         end
       end

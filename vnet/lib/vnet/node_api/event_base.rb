@@ -42,7 +42,7 @@ module Vnet::NodeApi
 
       end
 
-      def destroy(filter, options)
+      def destroy(filter, options = {})
         destroy_with_transaction(filter).tap { |model|
           next if model.nil?
           dispatch_deleted_item_events(model)
