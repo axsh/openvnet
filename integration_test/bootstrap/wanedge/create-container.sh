@@ -6,7 +6,7 @@ containers=(
 
 for c in ${containers[@]} ; do
     lxc-create -t centos -n ${c}
-    chroot /var/lib/lxc/${c}/rootfs/ /bin/bash -c "echo \"root:\" | chpasswd"
+    chroot /var/lib/lxc/${c}/rootfs/ /bin/bash -c "echo root: | chpasswd"
 
     sed -i \
         -e 's,^PermitRootLogin .*,PermitRootLogin yes,' \
