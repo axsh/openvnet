@@ -6,7 +6,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
 
   put_post_shared_params
   param_uuid M::Topology
-  param :mode, :String, in: C::Topology::MODES
+  param :mode, :String, required: true, in: C::Topology::MODES
   post do
     post_new(:Topology)
   end
