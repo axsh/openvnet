@@ -84,6 +84,19 @@ module Vnet::Endpoints::V10
       # param :preserve_uuid, :Boolean, required: false
     end
 
+    def post_new(class_name, fill = {})
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+
+      # This yield is for extra argument validation
+      yield(params) if block_given?
+
+      check_and_trim_uuid(model_wrapper) if params['uuid']
+
+      object = model_wrapper.batch.create(params).commit(:fill => fill)
+      respond_with(response.generate(object))
+    end
+
     def delete_by_uuid(class_name)
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
@@ -163,19 +176,6 @@ module Vnet::Endpoints::V10
 
       updated_object = model_wrapper.batch.update_uuid(model.uuid, params).commit(:fill => fill)
       respond_with(response.generate(updated_object))
-    end
-
-    def post_new(class_name, fill = {})
-      model_wrapper = M.const_get(class_name)
-      response = R.const_get(class_name)
-
-      # This yield is for extra argument validation
-      yield(params) if block_given?
-
-      check_and_trim_uuid(model_wrapper) if params['uuid']
-
-      object = model_wrapper.batch.create(params).commit(:fill => fill)
-      respond_with(response.generate(object))
     end
 
     def show_relations(class_name, response_method)

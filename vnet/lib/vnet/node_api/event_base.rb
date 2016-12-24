@@ -111,7 +111,21 @@ module Vnet::NodeApi
       # transaction block and call internal_create/delete.
 
       def create_with_transaction(options)
-        model_class.create(options)
+        transaction {
+          if model_class.taggable?
+            handle_new_uuid(options)
+          end
+
+          model_class.create(options)
+        }
+      end
+
+      def handle_new_uuid(options)
+        options[:uuid].tap { |uuid|
+          next if uuid.nil?
+
+          model_class.reserve_uuid(uuid)
+        }
       end
 
       def destroy_with_transaction(filter)

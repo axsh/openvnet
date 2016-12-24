@@ -4,45 +4,6 @@ module Vnet::NodeApi
     valid_update_fields [:display_name, :ingress_filtering_enabled]
 
     class << self
-      # TODO dispatch_event
-      # def update(uuid, options)
-      #   options = options.dup
-
-      #   ife = options["ingress_filtering_enabled"]
-      #   unless ife.nil?
-      #     options["enable_legacy_filtering"] = ife
-      #   end
-
-      #   transaction {
-      #     model_class[uuid].tap do |i|
-      #       return unless i
-      #       i.update(options)
-      #     end
-      #   }.tap do |interface|
-      #     dispatch_event(INTERFACE_UPDATED,
-      #                    event: :updated,
-      #                    id: interface.id,
-      #                    changed_columns: options)
-
-
-      #     # TODO: Checking for 'true' or 'false' is insufficient.
-      #     case options[:ingress_filtering_enabled]
-      #     when "true"
-      #       dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
-      #     when "false"
-      #       dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
-      #     end
-
-      #     case options[:enable_filtering]
-      #     when "true"
-      #       dispatch_event(INTERFACE_ENABLED_FILTERING2, id: interface.id)
-      #     when "false"
-      #       dispatch_event(INTERFACE_DISABLED_FILTERING2, id: interface.id)
-      #     end
-
-      #   end
-      # end
-
 
       #
       # Internal methods:

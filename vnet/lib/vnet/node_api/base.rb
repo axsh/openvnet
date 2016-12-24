@@ -16,17 +16,6 @@ module Vnet::NodeApi
 
       M = Vnet::Models
 
-      def rename(old_uuid, new_uuid)
-        old_trimmed = model_class.trim_uuid(old_uuid)
-        new_trimmed = model_class.trim_uuid(new_uuid)
-     
-        return '' if old_trimmed.nil? || new_trimmed.nil?
-     
-        update_count = model_class.with_deleted.where(uuid: old_trimmed).update(uuid: new_trimmed)
-        
-        (update_count == 1) ? new_uuid : ''
-      end
-
       # Deprecate: We don't need an indirect way of referencing the
       # model class. Use 'M::' instead.
       def model_class(name = nil)
