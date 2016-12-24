@@ -31,13 +31,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
     get_by_uuid(:Datapath)
   end
 
-  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:Datapath)
   end
 
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     update_by_uuid2(:Datapath)
   end

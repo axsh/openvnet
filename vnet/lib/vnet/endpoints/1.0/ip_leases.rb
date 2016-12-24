@@ -13,8 +13,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   param :ipv4_address, :String, transform: PARSE_IPV4, required: true
   param_uuid M::MacLease, :mac_lease_uuid
   param_uuid M::Interface, :interface_uuid
-  param_post_uuid
-
   post do
     network = uuid_to_id(M::Network, 'network_uuid', 'network_id')
 
@@ -33,14 +31,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_leases' do
   get '/:uuid' do
     get_by_uuid(:IpLease, fill_options)
   end
-  
-  param_delete_uuid
+
   delete '/:uuid' do
     delete_by_uuid(:IpLease)
   end
 
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:IpLease, fill_options)
   end

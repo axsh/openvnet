@@ -11,8 +11,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
 
   put_post_shared_params
   param_uuid M::IpRangeGroup
-  param_post_uuid
- 
   post do
     post_new(:IpRangeGroup, fill_options)
   end
@@ -25,13 +23,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_range_groups' do
     get_by_uuid(:IpRangeGroup, fill_options)
   end
 
-  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:IpRangeGroup)
   end
 
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:IpRangeGroup, fill_options)
   end

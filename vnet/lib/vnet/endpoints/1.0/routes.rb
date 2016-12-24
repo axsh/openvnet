@@ -17,8 +17,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
   param_options :ipv4_network, required: true
   param :ingress, :Boolean
   param :egress, :Boolean
-  param_post_uuid
-
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
     uuid_to_id(M::Network, "network_uuid", "network_id")
@@ -35,13 +33,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/routes' do
     get_by_uuid(:Route)
   end
 
-  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:Route)
   end
 
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     check_syntax_and_get_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
     check_syntax_and_get_id(M::Network,   "network_uuid", "network_id") if params["network_uuid"]

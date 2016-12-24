@@ -10,8 +10,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
   put_post_shared_params
   param_uuid M::SecurityGroup
   param_options :display_name, required: true
-  param_post_uuid
- 
   post do
     post_new :SecurityGroup
   end
@@ -24,13 +22,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/security_groups' do
     get_by_uuid :SecurityGroup
   end
 
-  param_delete_uuid
   delete('/:uuid') do
     delete_by_uuid :SecurityGroup
   end
- 
+
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:SecurityGroup)
   end

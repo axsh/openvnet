@@ -9,14 +9,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     param :network_mode, :String, in: C::Network::MODES
     param :editable, :Boolean
   end
-  
+
   put_post_shared_params
   param_uuid M::Network
   param_uuid M::Segment, :segment_uuid
   param_options :display_name, required: true
   param_options :ipv4_network, required: true
-  param_post_uuid
- 
   post do
     uuid_to_id(M::Segment, "segment_uuid", "segment_id") if params["segment_uuid"]
 
@@ -31,7 +29,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     get_by_uuid(:Network)
   end
 
-  param_delete_uuid
   delete '/:uuid' do
     begin
       delete_by_uuid(:Network)
@@ -41,7 +38,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:Network)
   end

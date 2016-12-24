@@ -4,8 +4,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_lease_containers' do
 
   put_post_shared_params
   param_uuid M::IpLeaseContainer
-  param_post_uuid
- 
   post do
     post_new(:IpLeaseContainer)
   end
@@ -17,14 +15,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/ip_lease_containers' do
   get '/:uuid' do
     get_by_uuid(:IpLeaseContainer)
   end
- 
-  param_delete_uuid
+
   delete '/:uuid' do
     delete_by_uuid(:IpLeaseContainer)
   end
 
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:IpLeaseContainer)
   end

@@ -9,8 +9,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
 
   put_post_shared_params
   param_uuid M::MacRangeGroup
-  param_post_uuid
- 
   post do
     post_new(:MacRangeGroup, fill_options)
   end
@@ -23,13 +21,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_range_groups' do
     get_by_uuid(:MacRangeGroup, fill_options)
   end
 
-  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:MacRangeGroup)
   end
 
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     update_by_uuid(:MacRangeGroup, fill_options)
   end

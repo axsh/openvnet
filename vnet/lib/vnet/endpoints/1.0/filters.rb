@@ -13,11 +13,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   param_uuid M::Filter
   param_uuid M::Interface, :interface_uuid, required: true
   param :mode, :String, in: CF::MODES, required: true
-  param_post_uuid
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
-    post_new(:Filter)
+    post_new :Filter
   end
 
   get do
@@ -28,13 +27,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
     get_by_uuid(:Filter)
   end
 
-  param_delete_uuid
   delete '/:uuid' do
     delete_by_uuid(:Filter)
   end
 
   put_post_shared_params
-  param_put_uuid
   put '/:uuid' do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
