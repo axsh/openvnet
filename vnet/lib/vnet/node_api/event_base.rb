@@ -112,15 +112,15 @@ module Vnet::NodeApi
 
       def create_with_transaction(options)
         transaction {
-          if model_class.taggable?
-            handle_new_uuid(options)
-          end
+          handle_new_uuid(options)
 
           model_class.create(options)
         }
       end
 
       def handle_new_uuid(options)
+        return if model_class.taggable?
+
         options[:uuid].tap { |uuid|
           next if uuid.nil?
 

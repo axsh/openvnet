@@ -8,10 +8,12 @@ module Vnet::NodeApi
       private
 
       def create_with_transaction(options)
-        transaction do
+        transaction {
+          handle_new_uuid(options)
+
           mac_address_random_assign(options)
-          model = internal_create(options)
-        end
+          internal_create(options)
+        }
       end
 
       def dispatch_created_item_events(model)

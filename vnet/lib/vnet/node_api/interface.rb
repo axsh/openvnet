@@ -29,6 +29,8 @@ module Vnet::NodeApi
 
         # TODO: Raise rollback if any step fails.
         transaction {
+          handle_new_uuid(options)
+
           internal_create(options).tap { |model|
             next if model.nil?
 
