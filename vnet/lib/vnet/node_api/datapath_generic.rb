@@ -34,7 +34,7 @@ module Vnet::NodeApi
       def find_ip_lease_id(interface_id)
         return if interface_id.nil?
 
-        ip_lease = model_class(:ip_lease).dataset.where(interface_id: interface_id).first
+        ip_lease = M::IpLease.dataset.where(interface_id: interface_id).first
         ip_lease && ip_lease.id
       end
 

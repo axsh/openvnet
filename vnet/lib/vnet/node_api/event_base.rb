@@ -89,7 +89,7 @@ module Vnet::NodeApi
         mac_group_uuid = Vnet::Configurations::Common.conf.datapath_mac_group
 
         if mac_address.nil? && mac_group_uuid
-          mac_group = model_class(:mac_range_group)[mac_group_uuid] || return
+          mac_group = M::MacRangeGroup[mac_group_uuid] || return
           mac_address = mac_group.address_random || return
 
           options[:mac_address_id] = mac_address.id

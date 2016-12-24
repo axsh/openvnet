@@ -22,7 +22,7 @@ module Vnet::NodeApi
       end
 
       def remove_ip_retention(id, ip_retention_id)
-        ip_retention = model_class(:ip_retention)[ip_retention_id]
+        ip_retention = M::IpRetention[ip_retention_id]
 
         return unless ip_retention.ip_retention_container_id == id
 

@@ -223,8 +223,8 @@ module Vnet::NodeApi
           raise ArgumentError, 'Either interface and/or mac lease must be supplied'
         end
 
-        interface = interface_id && model_class(:interface)[id: interface_id]
-        mac_lease = mac_lease_id && model_class(:mac_lease)[id: mac_lease_id]
+        interface = interface_id && M::Interface[id: interface_id]
+        mac_lease = mac_lease_id && M::MacLease[id: mac_lease_id]
         
         if interface && mac_lease.nil? && mac_lease_id.nil?
           # Error if the interface has more than one mac_lease?

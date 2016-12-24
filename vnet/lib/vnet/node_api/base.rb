@@ -16,10 +16,8 @@ module Vnet::NodeApi
 
       M = Vnet::Models
 
-      # Deprecate: We don't need an indirect way of referencing the
-      # model class. Use 'M::' instead.
-      def model_class(name = nil)
-        Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
+      def model_class
+        @model_class ||= Vnet::Models.const_get(self.name.demodulize)
       end
 
       def execute(method_name, *args, &block)

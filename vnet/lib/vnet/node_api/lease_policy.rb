@@ -12,11 +12,11 @@ module Vnet::NodeApi
       include Vnet::Constants::LeasePolicy
 
       def allocate_ip(options)
-        lease_policy = model_class(:lease_policy)[options[:lease_policy_uuid]]
+        lease_policy = M::LeasePolicy[options[:lease_policy_uuid]]
 
         interface = nil
         if options[:interface_uuid]
-          interface = model_class(:interface)[options[:interface_uuid]]
+          interface = M::Interface[options[:interface_uuid]]
           if interface.mac_leases.empty?
             raise "Cannot create IP lease because interface #{interface.uuid} does not have a MAC lease"
           end
@@ -44,7 +44,7 @@ module Vnet::NodeApi
 
         transaction do
           if interface
-            model_class(:lease_policy_base_interface).create(
+            M::LeasePolicyBaseInterface.create(
               :lease_policy_id => lease_policy.id,
               :interface_id => interface.id,
               :label => options[:label]
@@ -60,7 +60,7 @@ module Vnet::NodeApi
               next unless lease_policy_ip_lease_container.label == options[:label]
             end
 
-            model_class(:ip_lease_container_ip_lease).create(
+            M::IpLeaseContainerIpLease.create(
               ip_lease_container_id: lease_policy_ip_lease_container.ip_lease_container_id,
               ip_lease_id: ip_lease.id
             )
@@ -77,7 +77,7 @@ module Vnet::NodeApi
 
       def schedule(network, ip_range_group)
         # TODO: consider how to filter for addresses dynamically assigned
-        latest_ip = model_class(:ip_address).order(:updated_at.desc).first
+        latest_ip = M::IpAddress.order(:updated_at.desc).first
         ipaddr = latest_ip.nil? ? nil : latest_ip.ipv4_address
         leaseaddr = case ip_range_group.allocation_type
                     when ALLOCATION_TYPE_INCREMENTAL
@@ -128,10 +128,10 @@ module Vnet::NodeApi
 
       def add_ip_lease_container(uuid, ip_lease_container_uuid)
         lease_policy = model_class[uuid]
-        ip_lease_container = model_class(:ip_lease_container)[ip_lease_container_uuid]
+        ip_lease_container = M::IpLeaseContainer[ip_lease_container_uuid]
         model = nil
         transaction do
-          model = model_class(:lease_policy_ip_lease_container).create(
+          model = M::LeasePolicyIpLeaseContainer.create(
             lease_policy_id: lease_policy.id,
             ip_lease_container_id: ip_lease_container.id
           )
@@ -141,10 +141,10 @@ module Vnet::NodeApi
 
       def remove_ip_lease_container(uuid, ip_lease_container_uuid)
         lease_policy = model_class[uuid]
-        ip_lease_container = model_class(:ip_lease_container)[ip_lease_container_uuid]
+        ip_lease_container = M::IpLeaseContainer[ip_lease_container_uuid]
         model = nil
         transaction do
-          model = model_class(:lease_policy_ip_lease_container).find(
+          model = M::LeasePolicyIpLeaseContainer.find(
             lease_policy_id: lease_policy.id,
             ip_lease_container_id: ip_lease_container.id
           )
@@ -155,10 +155,10 @@ module Vnet::NodeApi
 
       def add_ip_retention_container(uuid, ip_retention_container_uuid)
         lease_policy = model_class[uuid]
-        ip_retention_container = model_class(:ip_retention_container)[ip_retention_container_uuid]
+        ip_retention_container = M::IpRetentionContainer[ip_retention_container_uuid]
         model = nil
         transaction do
-          model = model_class(:lease_policy_ip_retention_container).create(
+          model = M::LeasePolicyIpRetentionContainer.create(
             lease_policy_id: lease_policy.id,
             ip_retention_container_id: ip_retention_container.id
           )
@@ -168,10 +168,10 @@ module Vnet::NodeApi
 
       def remove_ip_retention_container(uuid, ip_retention_container_uuid)
         lease_policy = model_class[uuid]
-        ip_retention_container = model_class(:ip_retention_container)[ip_retention_container_uuid]
+        ip_retention_container = M::IpRetentionContainer[ip_retention_container_uuid]
         model = nil
         transaction do
-          model = model_class(:lease_policy_ip_retention_container).find(
+          model = M::LeasePolicyIpRetentionContainer.find(
             lease_policy_id: lease_policy.id,
             ip_retention_container_id: ip_retention_container.id
           )
