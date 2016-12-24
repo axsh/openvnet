@@ -52,26 +52,13 @@ module Vnet::Endpoints::V10::Helpers
         @params["uuid"] = model.trim_uuid(@params["uuid"])
     end
    
-    def replaceUUIDAndDestroy(model)
-      range = [*'0'..'9',*'a'..'z']
-      newUUID = model.uuid_prefix + "-" + uuid + "-" + Array.new(4){range.sample}.join
-
-      unless model[newUUID].nil?
-        replaceUUID
-      else
-        newUUID = model.trim_uuid(newUUID)
-        model.batch.rename(params["uuid"], newUUID).commit
-        model.destroy(newUUID)
-      end
-    end
-
-    # Deprecated:
+    # TODO: Deprecated.
     def check_syntax_and_pop_uuid(model, key = "uuid", fill = {})
       check_uuid_syntax(model, @params[key])
       pop_uuid(model, key, fill)
     end
 
-    # Deprecated:
+    # TODO: Deprecated.
     def check_syntax_and_get_id(model, uuid_key = "uuid", id_key = "id", fill = {})
       check_uuid_syntax(model, @params[uuid_key])
       uuid_to_id(model, uuid_key, id_key, fill)
