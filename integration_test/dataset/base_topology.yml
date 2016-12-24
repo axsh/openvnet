@@ -16,6 +16,20 @@ topologies:
   - uuid: topo-vnet
     mode: simple_overlay
 
+topology_datapaths:
+
+  - topology_uuid: topo-vnet
+    datapath_uuid: dp-1
+    interface_uuid: if-dp1eth0
+
+  - topology_uuid: topo-vnet
+    datapath_uuid: dp-2
+    interface_uuid: if-dp2eth0
+
+  - topology_uuid: topo-vnet
+    datapath_uuid: dp-3
+    interface_uuid: if-dp3eth0
+
 topology_networks:
 
   - topology_uuid: topo-physical

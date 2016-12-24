@@ -59,6 +59,7 @@ module Vnspec
         if !result
           Vnet.dump_logs
           Vnet.dump_flows
+          Vnet.dump_database
         end
 
         result
