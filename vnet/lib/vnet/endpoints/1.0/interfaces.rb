@@ -67,7 +67,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   put_post_shared_params
   put '/:uuid' do
     check_syntax_and_get_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
-    update_by_uuid(:Interface, fill)
+    update_by_uuid2(:Interface, fill)
   end
 
   param_uuid M::Interface

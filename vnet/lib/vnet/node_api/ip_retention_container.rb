@@ -2,6 +2,8 @@
 
 module Vnet::NodeApi
   class IpRetentionContainer < EventBase
+    valid_update_fields []
+
     class << self
 
       # TODO: This should call ip_retention's node_api directly.

@@ -2,6 +2,8 @@
 
 module Vnet::NodeApi
   class IpLeaseContainer < EventBase
+    valid_update_fields []
+
     class << self
       private
 

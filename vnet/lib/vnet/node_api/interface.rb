@@ -1,45 +1,47 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
   class Interface < EventBase
+    valid_update_fields [:display_name, :ingress_filtering_enabled]
+
     class << self
       # TODO dispatch_event
-      def update(uuid, options)
-        options = options.dup
+      # def update(uuid, options)
+      #   options = options.dup
 
-        ife = options["ingress_filtering_enabled"]
-        unless ife.nil?
-          options["enable_legacy_filtering"] = ife
-        end
+      #   ife = options["ingress_filtering_enabled"]
+      #   unless ife.nil?
+      #     options["enable_legacy_filtering"] = ife
+      #   end
 
-        transaction {
-          model_class[uuid].tap do |i|
-            return unless i
-            i.update(options)
-          end
-        }.tap do |interface|
-          dispatch_event(INTERFACE_UPDATED,
-                         event: :updated,
-                         id: interface.id,
-                         changed_columns: options)
+      #   transaction {
+      #     model_class[uuid].tap do |i|
+      #       return unless i
+      #       i.update(options)
+      #     end
+      #   }.tap do |interface|
+      #     dispatch_event(INTERFACE_UPDATED,
+      #                    event: :updated,
+      #                    id: interface.id,
+      #                    changed_columns: options)
 
 
-          # TODO: Checking for 'true' or 'false' is insufficient.
-          case options[:ingress_filtering_enabled]
-          when "true"
-            dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
-          when "false"
-            dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
-          end
+      #     # TODO: Checking for 'true' or 'false' is insufficient.
+      #     case options[:ingress_filtering_enabled]
+      #     when "true"
+      #       dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
+      #     when "false"
+      #       dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
+      #     end
 
-          case options[:enable_filtering]
-          when "true"
-            dispatch_event(INTERFACE_ENABLED_FILTERING2, id: interface.id)
-          when "false"
-            dispatch_event(INTERFACE_DISABLED_FILTERING2, id: interface.id)
-          end
+      #     case options[:enable_filtering]
+      #     when "true"
+      #       dispatch_event(INTERFACE_ENABLED_FILTERING2, id: interface.id)
+      #     when "false"
+      #       dispatch_event(INTERFACE_DISABLED_FILTERING2, id: interface.id)
+      #     end
 
-        end
-      end
+      #   end
+      # end
 
 
       #
@@ -117,6 +119,34 @@ module Vnet::NodeApi
         InterfaceNetwork.dispatch_deleted_where(filter, model.deleted_at)
         InterfaceSegment.dispatch_deleted_where(filter, model.deleted_at)
         InterfaceRouteLink.dispatch_deleted_where(filter, model.deleted_at)
+      end
+
+      def dispatch_updated_item_events(model, old_values)
+        # dispatch_event(INTERFACE_UPDATED, get_changed_hash(model, old_values.keys))
+
+        dispatch_event(INTERFACE_UPDATED,
+                       event: :updated,
+                       id: model.id,
+                       changed_columns: get_changed_hash(model, old_values.keys))
+
+
+        if old_values.has_key?(:enable_legacy_filtering)
+          case model[:enable_legacy_filtering]
+          when true
+            dispatch_event(INTERFACE_ENABLED_FILTERING, id: model.id)
+          when false
+            dispatch_event(INTERFACE_DISABLED_FILTERING, id: model.id)
+          end
+        end
+
+        if old_values.has_key?(:enable_filtering)
+          case model[:enable_filtering]
+          when true
+            dispatch_event(INTERFACE_ENABLED_FILTERING2, id: model.id)
+          when false
+            dispatch_event(INTERFACE_DISABLED_FILTERING2, id: model.id)
+          end
+        end
       end
 
       def create_interface_port(interface, datapath_id, port_name)

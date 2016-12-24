@@ -5,7 +5,9 @@ require "ipaddress"
 # TODO: Refactor.
 
 module Vnet::NodeApi
-  class LeasePolicy < Base
+  class LeasePolicy < LegacyBase
+    valid_update_fields [:timing]
+
     class << self
       include Vnet::Constants::LeasePolicy
 
@@ -180,4 +182,13 @@ module Vnet::NodeApi
 
     end
   end
+
+  class LeasePolicyBaseInterface < LegacyBase
+    valid_update_fields []
+  end
+
+  class LeasePolicyBaseNetwork < LegacyBase
+    valid_update_fields []
+  end
+
 end

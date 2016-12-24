@@ -23,15 +23,7 @@ module Vnet::NodeApi
   end
 
   class IpRangeGroup < LegacyBase
-    valid_update_fields []
-  end
-
-  class LeasePolicyBaseInterface < LegacyBase
-    valid_update_fields []
-  end
-
-  class LeasePolicyBaseNetwork < LegacyBase
-    valid_update_fields []
+    valid_update_fields [:allocation_type]
   end
 
   class MacAddress < LegacyBase
@@ -43,7 +35,7 @@ module Vnet::NodeApi
   end
 
   class MacRangeGroup < LegacyBase
-    valid_update_fields []
+    valid_update_fields [:allocation_type]
   end
 
 end

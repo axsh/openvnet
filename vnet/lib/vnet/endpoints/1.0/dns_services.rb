@@ -31,7 +31,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/dns_services' do
 
   put_post_shared_params
   put '/:uuid' do
-    update_by_uuid(:DnsService, fill_options)
+    update_by_uuid2(:DnsService, fill_options)
   end
 
   param_uuid M::DnsRecord, :uuid, required: true, transform: proc { |u| M::DnsRecord.trim_uuid(u) }

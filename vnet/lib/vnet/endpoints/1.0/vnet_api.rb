@@ -68,16 +68,19 @@ module Vnet::Endpoints::V10
       param name, :String, final_options
     end
 
-    def self.param_post_uuid
-      # param :replace_uuid,  :Boolean
+    def self.param_post_uuid(model)
+      param_uuid model
+      # param :replace_uuid, :Boolean
       # param :preserve_uuid, :Boolean, required: false
     end
 
-    def self.param_put_uuid
+    def self.param_put_uuid(model)
+      param_uuid model
       # param :new_uuid, :String, required: false
     end
 
-    def self.param_delete_uuid
+    def self.param_delete_uuid(model)
+      param_uuid model
       # param :preserve_uuid, :Boolean, required: false
     end
 

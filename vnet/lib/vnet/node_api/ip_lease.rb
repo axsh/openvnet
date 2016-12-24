@@ -2,7 +2,7 @@
 
 module Vnet::NodeApi
   class IpLease < EventBase
-    valid_update_fields []
+    valid_update_fields [:enable_routing, :interface_id]
 
     class << self
       include Vnet::Helpers::Event

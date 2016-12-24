@@ -33,7 +33,6 @@ describe "/route_links" do
 
   describe "PUT /:uuid" do
     accepted_params = {
-      # :mac_address => "fe:17:9b:9f:e8:33"
     }
 
     include_examples "PUT /:uuid", accepted_params
