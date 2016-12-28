@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function render_mgr () {
+function render_virt () {
     local lxc_name="${1}"
 cat <<EOS >> ${interface_setup}
 cat <<EOF > /var/lib/lxc/${lxc_name}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
@@ -12,7 +12,7 @@ EOF
 EOS
 }
 
-function render_virt () {
+function render_mgr () {
     local lxc_name="${1}" ip="${2}"
 cat <<EOS >> ${interface_setup}
 cat <<EOF > /var/lib/lxc/${lxc_name}/rootfs/etc/sysconfig/network-scripts/ifcfg-eth1
@@ -54,8 +54,8 @@ function net_info {
 
     while read -r br tp hw ip; do
         net_setup $tp $hw
-        [[ $tp == *m* ]] && render_mgr ${lxc_name}
-        [[ $tp == *v* ]] && render_virt ${lxc_name} ${ip}
+        [[ $tp == *m* ]] && render_mgr ${lxc_name} ${ip}
+        [[ $tp == *v* ]] && render_virt ${lxc_name}
     done < ${file}
 
     render_nw ${lxc_name}
