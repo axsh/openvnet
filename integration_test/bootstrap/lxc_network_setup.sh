@@ -74,10 +74,11 @@ EOF
 }
 
 function lxc_setup {
-    local ifname=${1} brname=${2} script_file_on_vm=${3}
+    local ifname="${1}" brname="${2}" script_file_on_vm="${3}"
 
     cat << EOF
 
+echo ip link set ${ifname} up >> ${script_file_on_vm}
 echo ovs-vsctl --if-exists del-port ${brname} ${ifname} >> ${script_file_on_vm}
 echo ovs-vsctl add-port ${brname} ${ifname} >> ${script_file_on_vm}
 EOF
