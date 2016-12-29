@@ -17,12 +17,12 @@ PATH=${vnet_root}/ruby/bin:${PATH}
 vnmgr=172.16.9.10
 
 ## 'yum' the openvnet.repo & openvnet-third-party.repo files
-echo "curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/development/openvnet.repo" >> ${LOG_FILE}
+echo "curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet.repo" >> ${LOG_FILE}
 
 curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet.repo
 
 # third-party
-echo "curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/development/openvnet-third-party.repo" >> ${LOG_FILE}
+echo "curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet-third-party.repo" >> ${LOG_FILE}
 
 curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet-third-party.repo
 
