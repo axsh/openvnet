@@ -128,6 +128,7 @@ for container in `ls ${vmdir}/metadata/lxc`; do
         echo "EOF"
         echo "mkdir -p /var/lib/lxc/${container}/rootfs/root/.ssh"
         echo "cp ~/.ssh/authorized_keys /var/lib/lxc/${container}/rootfs/root/.ssh/"
+        echo "cp ~/.ssh/id_rsa /var/lib/lxc/${container}/rootfs/root/.ssh/"
     } >> ${container_cfg}
 
     # generate initialization script
