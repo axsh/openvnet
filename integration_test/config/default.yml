@@ -1,7 +1,7 @@
 vm_ssh_user: vagrant
 vm_type: :docker
 pipework_path: /vagrant/share/bin
-specs_ext: [edge]
+specs_ext: []
 
 vna_waittime: 5
 vnet_branch: master
@@ -17,7 +17,7 @@ ssh_options:
 nodes:
   webapi: [vnmgr]
   vnmgr: [vnmgr]
-  vna: [vna1, vna2, vna3, edge]
+  vna: [vna1, vna2, vna3]
 
 webapi:
   host: 192.168.20.10
@@ -25,11 +25,9 @@ webapi:
 
 dataset_options:
   physical_port: eth2
-  edge_port: eth3
   dp1_ipv4_address: 172.16.20.11
   dp2_ipv4_address: 172.16.20.12
   dp3_ipv4_address: 172.16.30.11
-  edge_ipv4_address: 172.16.20.21
   public_ipv4_public1_network: 172.16.20.0
   public_ipv4_public1_prefix: 24
   public_ipv4_public1_dhcp_address: 172.16.20.3
@@ -39,6 +37,12 @@ dataset_options:
   public_ipv4_address1: 172.16.20.201
   public_ipv4_address2: 172.16.20.202
   public_router_ipv4_address: 172.16.20.102
+  physical_network_simulated_ip: 10.210.0.2
+  physical_network_vm1_ip: 10.210.0.104
+  physical_network_vm7_ip: 10.210.0.105
+
+physical_network_gw_ip: 10.210.0.1
+pseudo_global_ip: 10.196.36.199
 
 vms:
   vm1:

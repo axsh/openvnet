@@ -111,10 +111,10 @@ module Vnet::Core
     def item_initialize(item_map)
       item_class =
         case item_map.mode
-        when MODE_EDGE      then Interfaces::Edge
         when MODE_HOST      then Interfaces::Host
         when MODE_INTERNAL  then Interfaces::Internal
         when MODE_PATCH     then Interfaces::Patch
+        when MODE_PROMISCUOUS then Interfaces::Promiscuous
         when MODE_SIMULATED then Interfaces::Simulated
         when MODE_VIF       then Interfaces::Vif
         else
@@ -141,28 +141,30 @@ module Vnet::Core
     def item_post_install(item, item_map)
       load_addresses(item_map)
 
-      @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
-                                      id: :interface,
-                                      interface_id: item.id)
+      activate_params = {
+        id: :interface,
+        interface_id: item.id
+      }
 
-      @dp_info.filter2_manager.publish(FILTER_ACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: item.id)
+      @dp_info.tunnel_manager.publish(ACTIVATE_INTERFACE, activate_params)
+      @dp_info.filter2_manager.publish(ACTIVATE_INTERFACE, activate_params)
+      @dp_info.interface_segment_manager.publish(ACTIVATE_INTERFACE, activate_params)
 
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
     end
 
     def item_post_uninstall(item)
-      @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
-                                      id: :interface,
-                                      interface_id: item.id)
+      deactivate_params = {
+        id: :interface,
+        interface_id: item.id
+      }
+
+      @dp_info.tunnel_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.filter2_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.interface_segment_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
 
       @dp_info.filter_manager.async.remove_filters(item.id)
-
-      @dp_info.filter2_manager.publish(FILTER_DEACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: item.id)
 
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.remove_catch_new_egress(id)
@@ -232,8 +234,7 @@ module Vnet::Core
       mac_leases && mac_leases.each do |mac_lease|
         publish(INTERFACE_LEASED_MAC_ADDRESS,
                 id: item_map.id,
-                mac_lease_id: mac_lease.id,
-                mac_address: mac_lease.mac_address)
+                mac_lease_id: mac_lease.id)
 
         mac_lease.ip_leases.each do |ip_lease|
           publish(INTERFACE_LEASED_IPV4_ADDRESS,
@@ -256,6 +257,7 @@ module Vnet::Core
 
       segment_id = mac_lease.segment_id
 
+      # TODO: Move to interface_segment...
       if segment_id
         segment = @dp_info.segment_manager.retrieve(id: segment_id)
 

@@ -8,20 +8,41 @@ describe Vnet::Core::TunnelManager do
 
   use_mock_event_handler
 
+  let("public_networks") {
+    (1..2).map { |i|
+      Fabricate("pnet_public#{i}")
+    }.values_at(0, 0, 1)
+  }
+
+  let(:host_addresses) {
+    [IPAddr.new("192.168.1.1").to_i,
+      IPAddr.new("192.168.1.2").to_i,
+      IPAddr.new("192.168.2.1").to_i]
+  }
+
+  (1..3).each { |i|
+    let("datapath_#{i}") { Fabricate("datapath_#{i}") }
+    let("interface_#{i}") { Fabricate("interface_dp#{i}eth0") }
+    let("mac_lease_#{i}") {
+      Fabricate(:mac_lease,
+        interface: send("interface_#{i}"),
+        mac_address: Pio::Mac.new("08:00:27:00:01:0#{i}"))
+    }
+
+    let("ip_lease_#{i}") {
+      Fabricate(:ip_lease,
+        mac_lease: send("mac_lease_#{i}"),
+        ipv4_address: host_addresses[i-1],
+        network_id: public_networks[i-1].id)
+    }
+  }
+
   describe "update_virtual_network" do
     before do
-      networks = (1..2).map { |i|
-        Fabricate("pnet_public#{i}")
-      }.values_at(0, 0, 1)
-
-      host_addresses = [IPAddr.new("192.168.1.1").to_i,
-                        IPAddr.new("192.168.1.2").to_i,
-                        IPAddr.new("192.168.2.1").to_i]
-
       (1..3).map { |i|
-        dp_self = Fabricate("datapath_#{i}")
-
-        interface = Fabricate("interface_dp#{i}eth0")
+        dp_self = send("datapath_#{i}")
+        interface = send("interface_#{i}")
+        
         Fabricate(:interface_port_eth0,
                   interface_id: interface.id,
                   datapath_id: dp_self.id)
@@ -33,31 +54,22 @@ describe Vnet::Core::TunnelManager do
                                        singular: 1,
                                        port_name: 'eth0')
         end
-
-        mac_lease = Fabricate(:mac_lease,
-                              interface: interface,
-                              mac_address: Pio::Mac.new("08:00:27:00:01:0#{i}"))
-
-        ip_lease = Fabricate(:ip_lease,
-                             mac_lease: mac_lease,
-                             ipv4_address: host_addresses[i-1],
-                             network_id: networks[i-1].id)
       }
 
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, ip_lease_id: 1, mac_address: 1)
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 2, interface_id: 1, ip_lease_id: 1, mac_address: 2)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, interface_id: 2, ip_lease_id: 2, mac_address: 3)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 2, interface_id: 2, ip_lease_id: 2, mac_address: 4)
-      Fabricate(:datapath_network, datapath_id: 3, network_id: 1, interface_id: 3, ip_lease_id: 3, mac_address: 5)
+      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[1], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"), mac_address: 1)
+      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[2], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"), mac_address: 2)
+      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[1], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"), mac_address: 3)
+      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[2], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"), mac_address: 4)
+      Fabricate(:datapath_network, datapath_id: 3, network: public_networks[1], interface: send("interface_#{3}"), ip_lease: send("ip_lease_#{3}"), mac_address: 5)
     end
 
     let(:datapath) do
       MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16)).tap do |dp|
         dp.create_mock_datapath_map
 
-        if2_id = dp.dp_info.active_interface_manager.retrieve(interface_id: 2)[:interface_id]
-        if3_id = dp.dp_info.active_interface_manager.retrieve(interface_id: 3)[:interface_id]
-        if1_id = dp.dp_info.interface_manager.load_local_interface(1).id
+        if2_id = dp.dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{2}").id)[:interface_id]
+        if3_id = dp.dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{3}").id)[:interface_id]
+        if1_id = dp.dp_info.interface_manager.load_local_interface(send("interface_#{1}").id).id
 
         sleep(0.3)
 
@@ -76,57 +88,57 @@ describe Vnet::Core::TunnelManager do
 
       dp_info.tunnel_manager.update(event: :updated_interface,
                                     interface_event: :set_host_port_number,
-                                    interface_id: 1,
+                                    interface_id: send("interface_#{1}").id,
                                     port_number: 1)
     end
 
     let(:host_datapath_networks) do
       [[1, 1, 1, 1, 1],
-       [2, 1, 2, 1, 1]].each { |index, datapath_id, network_id, interface_id, ip_lease_id|
-        datapath.dp_info.tunnel_manager.publish('added_host_datapath_network',
-                                                id: :datapath_network,
-                                                dp_obj: {
-                                                  id: index,
-                                                  datapath_id: datapath_id,
-                                                  network_id: network_id,
-                                                  interface_id: interface_id,
-                                                  mac_address: index,
-                                                  ip_lease_id: ip_lease_id,
-                                                  active: true
-                                                })
+       [2, 1, 2, 1, 1]].each { |index, datapath_id, nw_index, if_index, il_index|
+        dp_obj = {
+          id: index,
+          datapath_id: datapath_id,
+          network_id: public_networks[nw_index].id,
+          interface_id: send("interface_#{if_index}").id,
+          ip_lease_id: send("ip_lease_#{il_index}").id,
+          mac_address: index,
+          active: true
+        }
+
+        datapath.dp_info.tunnel_manager.publish('added_host_datapath_network', id: :datapath_network, dp_obj: dp_obj)
       }
     end
 
     let(:remote_datapath_networks_1) do
       [[3, 2, 1, 2, 2],
-       [5, 3, 1, 3, 3]].each { |index, datapath_id, network_id, interface_id, ip_lease_id|
-        datapath.dp_info.tunnel_manager.publish('added_remote_datapath_network',
-                                                id: :datapath_network,
-                                                dp_obj: {
-                                                  id: index,
-                                                  datapath_id: datapath_id,
-                                                  network_id: network_id,
-                                                  interface_id: interface_id,
-                                                  ip_lease_id: ip_lease_id,
-                                                  mac_address: index,
-                                                  active: true
-                                                })
+       [5, 3, 1, 3, 3]].each { |index, datapath_id, nw_index, if_index, il_index|
+        dp_obj = {
+          id: index,
+          datapath_id: datapath_id,
+          network_id: public_networks[nw_index].id,
+          interface_id: send("interface_#{if_index}").id,
+          ip_lease_id: send("ip_lease_#{il_index}").id,
+          mac_address: index,
+          active: true
+        }
+
+        datapath.dp_info.tunnel_manager.publish('added_remote_datapath_network', id: :datapath_network, dp_obj: dp_obj)
       }
     end
 
     let(:remote_datapath_networks_2) do
-      [[4, 2, 2, 2, 2]].each { |index, datapath_id, network_id, interface_id, ip_lease_id|
-        datapath.dp_info.tunnel_manager.publish('added_remote_datapath_network',
-                                                id: :datapath_network,
-                                                dp_obj: {
-                                                  id: index,
-                                                  datapath_id: datapath_id,
-                                                  network_id: network_id,
-                                                  interface_id: interface_id,
-                                                  ip_lease_id: ip_lease_id,
-                                                  mac_address: index,
-                                                  active: true
-                                                })
+      [[4, 2, 2, 2, 2]].each { |index, datapath_id, nw_index, if_index, il_index|
+        dp_obj = {
+          id: index,
+          datapath_id: datapath_id,
+          network_id: public_networks[nw_index].id,
+          interface_id: send("interface_#{if_index}").id,
+          ip_lease_id: send("ip_lease_#{il_index}").id,
+          mac_address: index,
+          active: true
+        }
+
+        datapath.dp_info.tunnel_manager.publish('added_remote_datapath_network', id: :datapath_network, dp_obj: dp_obj)
       }
     end
 
@@ -212,30 +224,13 @@ describe Vnet::Core::TunnelManager do
 
   describe "remove_network_id_for_dpid" do
     before do
-      networks = (1..2).map { |i|
-        Fabricate("pnet_public#{i}")
-      }.values_at(0, 0, 1)
-
-      host_addresses = [IPAddr.new("192.168.1.1").to_i,
-                        IPAddr.new("192.168.1.2").to_i,
-                        IPAddr.new("192.168.2.1").to_i]
-
       (1..3).map { |i|
-        dp_self = Fabricate("datapath_#{i}")
+        dp_self = send("datapath_#{i}")
+        interface = send("interface_#{i}")
 
-        interface = Fabricate("interface_dp#{i}eth0")
         Fabricate(:interface_port_eth0,
                   interface_id: interface.id,
                   datapath_id: dp_self.id)
-
-        mac_lease = Fabricate(:mac_lease,
-                              interface: interface,
-                              mac_address: Pio::Mac.new("08:00:27:00:01:0#{i}"))
-
-        ip_lease = Fabricate(:ip_lease,
-                             mac_lease: mac_lease,
-                             ipv4_address: host_addresses[i-1],
-                             network_id: networks[i-1].id)
 
         if i != 1
           active_interface = Fabricate(:active_interface,
@@ -246,8 +241,8 @@ describe Vnet::Core::TunnelManager do
         end
       }
 
-      Fabricate(:datapath_network, datapath_id: 1, network_id: 1, interface_id: 1, ip_lease_id: 1, mac_address: 1)
-      Fabricate(:datapath_network, datapath_id: 2, network_id: 1, interface_id: 2, ip_lease_id: 2, mac_address: 2)
+      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[1], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"), mac_address: 1)
+      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[1], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"), mac_address: 2)
     end
 
     let(:ofctl) { double(:ofctl) }
@@ -257,9 +252,9 @@ describe Vnet::Core::TunnelManager do
 
         dp.create_mock_datapath_map
 
-        dp_info.active_interface_manager.retrieve(interface_id: 2)[:interface_id]
-        dp_info.active_interface_manager.retrieve(interface_id: 3)[:interface_id]
-        dp_info.interface_manager.load_local_interface(1).id
+        dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{2}").id)[:interface_id]
+        dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{3}").id)[:interface_id]
+        dp_info.interface_manager.load_local_interface(send("interface_#{1}").id).id
       }
     }
 
@@ -278,23 +273,24 @@ describe Vnet::Core::TunnelManager do
                                       interface_event: :set_host_port_number,
                                       interface_id: if_dp1eth0.id,
                                       port_number: 1)
+
         [[1, 1, 1, 1, 1, 'added_host_datapath_network'],
          [2, 2, 1, 2, 2, 'removed_remote_datapath_network'],
          [3, 2, 1, 2, 2, 'added_remote_datapath_network'],
          #[4, 2, 2, 2, 'added_remote_datapath_network'],
          [5, 3, 1, 3, 3, 'added_remote_datapath_network'],
-        ].each { |index, datapath_id, network_id, interface_id, ip_lease_id, event|
-          dp_info.tunnel_manager.publish(event,
-                                         id: :datapath_network,
-                                         dp_obj: {
-                                           id: index,
-                                           datapath_id: datapath_id,
-                                           network_id: network_id,
-                                           interface_id: interface_id,
-                                           mac_address: index,
-                                           ip_lease_id: ip_lease_id,
-                                           active: true
-                                         })
+        ].each { |index, datapath_id, nw_index, if_index, il_index, event|
+          dp_obj = {
+            id: index,
+            datapath_id: datapath_id,
+            network_id: public_networks[nw_index].id,
+            interface_id: send("interface_#{if_index}").id,
+            ip_lease_id: send("ip_lease_#{il_index}").id,
+            mac_address: index,
+            active: true
+          }
+
+          dp_info.tunnel_manager.publish(event, id: :datapath_network, dp_obj: dp_obj)
         }
 
         sleep(0.3)
@@ -312,18 +308,18 @@ describe Vnet::Core::TunnelManager do
       # deleted_flows.each { |flow| pp flow.inspect }
 
       [[1, 1, 1, 1, 1, 'removed_host_datapath_network'],
-      ].each { |index, datapath_id, network_id, interface_id, ip_lease_id, event|
-        datapath.dp_info.tunnel_manager.publish(event,
-                                                id: :datapath_network,
-                                                dp_obj: {
-                                                  id: index,
-                                                  datapath_id: datapath_id,
-                                                  network_id: network_id,
-                                                  interface_id: interface_id,
-                                                  mac_address: index,
-                                                  ip_lease_id: ip_lease_id,
-                                                  active: false
-                                                })
+      ].each { |index, datapath_id, nw_index, if_index, il_index, event|
+        dp_obj = {
+          id: index,
+          datapath_id: datapath_id,
+          network_id: public_networks[nw_index].id,
+          interface_id: send("interface_#{if_index}").id,
+          ip_lease_id: send("ip_lease_#{il_index}").id,
+          mac_address: index,
+          active: false
+        }
+
+        dp_info.tunnel_manager.publish(event, id: :datapath_network, dp_obj: dp_obj)
       }
 
       sleep(0.3)
@@ -347,18 +343,18 @@ describe Vnet::Core::TunnelManager do
       subject
 
       [[3, 2, 1, 2, 2, 'removed_remote_datapath_network'],
-      ].each { |index, datapath_id, network_id, interface_id, ip_lease_id, event|
-        datapath.dp_info.tunnel_manager.publish(event,
-                                                id: :datapath_network,
-                                                dp_obj: {
-                                                  id: index,
-                                                  datapath_id: datapath_id,
-                                                  network_id: network_id,
-                                                  interface_id: interface_id,
-                                                  mac_address: index,
-                                                  ip_lease_id: ip_lease_id,
-                                                  active: false
-                                                })
+      ].each { |index, datapath_id, nw_index, if_index, il_index, event|
+        dp_obj = {
+          id: index,
+          datapath_id: datapath_id,
+          network_id: public_networks[nw_index].id,
+          interface_id: send("interface_#{if_index}").id,
+          ip_lease_id: send("ip_lease_#{il_index}").id,
+          mac_address: index,
+          active: false
+        }
+
+        dp_info.tunnel_manager.publish(event, id: :datapath_network, dp_obj: dp_obj)
       }
 
       sleep(0.3)
@@ -366,18 +362,18 @@ describe Vnet::Core::TunnelManager do
       dp_info.deleted_flows.clear
 
       [[5, 3, 1, 3, 3, 'removed_remote_datapath_network'],
-      ].each { |index, datapath_id, network_id, interface_id, ip_lease_id, event|
-        datapath.dp_info.tunnel_manager.publish(event,
-                                                id: :datapath_network,
-                                                dp_obj: {
-                                                  id: index,
-                                                  datapath_id: datapath_id,
-                                                  network_id: network_id,
-                                                  interface_id: interface_id,
-                                                  mac_address: index,
-                                                  ip_lease_id: ip_lease_id,
-                                                  active: false
-                                                })
+      ].each { |index, datapath_id, nw_index, if_index, il_index, event|
+        dp_obj = {
+          id: index,
+          datapath_id: datapath_id,
+          network_id: public_networks[nw_index].id,
+          interface_id: send("interface_#{if_index}").id,
+          ip_lease_id: send("ip_lease_#{il_index}").id,
+          mac_address: index,
+          active: false
+        }
+
+        dp_info.tunnel_manager.publish(event, id: :datapath_network, dp_obj: dp_obj)
       }
 
       sleep(0.3)

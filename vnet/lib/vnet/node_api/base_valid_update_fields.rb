@@ -17,9 +17,11 @@ module Vnet::NodeApi
 
       def validate_update_fields(options)
         options.each { |key, value|
-          if !@valid_update_fields.include?(key)
-            raise ArgumentError, "Unsupported update key: #{key}"
-          end
+          @valid_update_fields.detect { |valid_key|
+            key == valid_key || key == valid_key.to_s
+          }.tap { |result|
+            raise ArgumentError, "Unsupported update key: #{key}" if result.nil?
+          }
         }
       end
 

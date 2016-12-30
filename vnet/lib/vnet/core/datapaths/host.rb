@@ -26,7 +26,7 @@ module Vnet::Core::Datapaths
       return if network[:active] == true
       network[:active] == true
 
-      debug log_format("activating network #{network_id} on #{self.pretty_id}")
+      debug log_format("activating network #{network_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_NETWORK,
                                       id: :datapath_network,
@@ -39,7 +39,7 @@ module Vnet::Core::Datapaths
       return if network[:active] == false
       network[:active] == false
 
-      debug log_format("deactivating network #{network_id} on #{self.pretty_id}")
+      debug log_format("deactivating network #{network_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_NETWORK,
                                       id: :datapath_network,
@@ -52,7 +52,7 @@ module Vnet::Core::Datapaths
       return if segment[:active] == true
       segment[:active] == true
 
-      debug log_format("activating segment #{segment_id} on #{self.pretty_id}")
+      debug log_format("activating segment #{segment_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_SEGMENT,
                                       id: :datapath_segment,
@@ -65,7 +65,7 @@ module Vnet::Core::Datapaths
       return if segment[:active] == false
       segment[:active] == false
 
-      debug log_format("deactivating segment #{segment_id} on #{self.pretty_id}")
+      debug log_format("deactivating segment #{segment_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_SEGMENT,
                                       id: :datapath_segment,
@@ -78,7 +78,7 @@ module Vnet::Core::Datapaths
       return if route_link[:active] == true
       route_link[:active] == true
 
-      debug log_format("activating route link #{route_link_id} on #{self.pretty_id}")
+      debug log_format("activating route link #{route_link_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_HOST_DATAPATH_ROUTE_LINK,
                                       id: :datapath_route_link,
@@ -91,7 +91,7 @@ module Vnet::Core::Datapaths
       return if route_link[:active] == false
       route_link[:active] == false
 
-      debug log_format("deactivating route link #{route_link_id} on #{self.pretty_id}")
+      debug log_format("deactivating route link #{route_link_id}")
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_HOST_DATAPATH_ROUTE_LINK,
                                       id: :datapath_route_link,
@@ -202,6 +202,33 @@ module Vnet::Core::Datapaths
                            cookie: flow_cookie)
 
       flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
+
+      # Handle broadcast packets using the OF-only learning flows.
+      flow_cookie = dpg_map[:segment_id] | COOKIE_TYPE_SEGMENT
+
+      flows << flow_create(table: TABLE_CONTROLLER_PORT,
+                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                           priority: 20,
+                           match: {
+                             # :eth_type => 0x0806
+                             :eth_dst => dpg_map[:mac_address]
+                           },
+                           actions: {
+                             :eth_dst => MAC_BROADCAST
+                           },
+                           write_segment: dpg_map[:segment_id],
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
+                           priority: 1,
+                           match: {
+                             :eth_dst => MAC_BROADCAST
+                           },
+                           match_segment: dpg_map[:segment_id],
+                           actions: {
+                             :eth_dst => dpg_map[:mac_address],
+                             :output => OFPP_CONTROLLER
+                           },
+                           cookie: flow_cookie)
     end
 
     def flows_for_dp_route_link(flows, dpg_map)

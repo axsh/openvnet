@@ -55,5 +55,22 @@ module Vnctl::Cli
 
     ports_relation.commands["add"].options.merge!(options_hash)
     ports_relation.commands["del"].options.merge!(options_hash)
+
+    def self.define_assoc(other_name)
+      other_suffix = "#{other_name}s".to_sym
+
+      define_relation(other_suffix, only_include_show: true) { |relation|
+        relation.desc "INTERFACE_UUID #{other_name.upcase}_UUID --static true/false", 'Modify association.'
+        relation.option :static, :type => :boolean, :desc => "Always keep an interface associated with a #{other_name}."
+        relation.define_custom_method(:modify, true) do |uuid, other_uuid, options|
+          puts Vnctl.webapi.put("interfaces/#{uuid}/#{other_suffix}/#{other_uuid}", options)
+        end
+      }
+    end
+
+    define_assoc(:network)
+    define_assoc(:segment)
+    define_assoc(:route_link)
+
   end
 end

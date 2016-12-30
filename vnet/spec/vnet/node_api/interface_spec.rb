@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
 describe Vnet::NodeApi::Interface do
-  before do
-    use_mock_event_handler
-  end
+  before(:each) { use_mock_event_handler }
+
+  let(:network) { Fabricate(:network) }
+  let(:datapath) { Fabricate(:datapath) }
+  let(:dp_info) { datapath.dp_info }
 
   describe "create" do
     it "with associations" do
-      network = Fabricate(:network)
-      datapath = Fabricate(:datapath)
-
       interface = Vnet::NodeApi::Interface.execute(:create,
         uuid: "if-test",
         network_id: network.id,
@@ -27,19 +27,38 @@ describe Vnet::NodeApi::Interface do
       expect(ip_lease.network.id).to eq network.id
       expect(ip_lease.ipv4_address).to eq IPAddress("192.168.1.2").to_i
       expect(ip_lease.mac_lease.mac_address).to eq 2
-      # expect(model.owner_datapath.id).to eq datapath.id
 
       events = MockEventHandler.handled_events
-      expect(events.size).to eq 2
-      expect(events.first[:event]).to eq Vnet::Event::INTERFACE_CREATED_ITEM
-      expect(events.first[:options][:id]).to eq interface[:id]
-      expect(events.first[:options][:port_name]).to eq interface[:port_name]
+
+      create_events = {
+        Vnet::Event::INTERFACE_NETWORK_CREATED_ITEM => {
+          #id: :model__id,
+          interface_id: interface[:id],
+          network_id: network.id,
+        },
+        Vnet::Event::INTERFACE_CREATED_ITEM => {
+          id: interface[:id],
+          #uuid: ...
+        },
+        Vnet::Event::INTERFACE_PORT_CREATED_ITEM => {
+          #id: :model__id,
+          interface_id: interface[:id],
+          datapath_id: datapath.id,
+          port_name: nil,
+          singular: true,
+          interface_mode: 'vif'
+        }
+      }
+
+      expect(events).to be_event_list_of_size(create_events.size)
+
+      create_events.each_with_index { |event, index|
+        expect(events[index]).to be_event(event.first, event.last)
+      }
     end
   end
 
   describe "update" do
-    let(:datapath) { Fabricate(:datapath) }
-    let(:dp_info) { datapath.dp_info }
     let(:interface) do
       Fabricate(:interface,
         mac_leases: [
@@ -71,9 +90,6 @@ describe Vnet::NodeApi::Interface do
   end
 
   describe "delete" do
-    let(:network) { Fabricate(:network) }
-    let(:datapath) { Fabricate(:datapath) }
-    let(:dp_info) { datapath.dp_info }
     let(:interface) do
       Fabricate(:interface,
         mac_leases: [

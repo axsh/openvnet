@@ -125,6 +125,49 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   end
 
   #
+  # Segments:
+  #
+
+  ASSOCS = [
+    [M::Network, M::InterfaceNetwork, R::InterfaceNetwork, :network],
+    [M::Segment, M::InterfaceSegment, R::InterfaceSegment, :segment],
+    [M::RouteLink, M::InterfaceRouteLink, R::InterfaceRouteLink, :route_link]
+  ].freeze
+
+  ASSOCS.each do |other_model, assoc_model, assoc_response, assoc_name|
+    assoc_uuid_sym = "#{assoc_name}_uuid".to_sym
+
+    param_uuid M::Interface
+    param_uuid other_model, assoc_uuid_sym
+    param :static, :Boolean
+    put "/:uuid/#{assoc_name}s/:#{assoc_uuid_sym}" do
+      # TODO: Move the 'uuid_to_id' calls to nodeapi and add a
+      # base_foobar module that let's us easily extract the foo_id from
+      # uuid, id or nil according to the requirements.
+      interface = uuid_to_id(M::Interface, 'uuid', 'interface_id')
+      other = uuid_to_id(other_model, assoc_uuid_sym, "#{assoc_name}_id")
+
+      # TODO: Use the default update handling code instead.
+
+      if params.has_key?('static')
+        if params['static']
+          result = assoc_model.set_static(interface.id, other.id)
+        else
+          result = assoc_model.clear_static(interface.id, other.id)
+        end
+      else
+        respond_with({})
+      end
+
+      respond_with(assoc_response.generate(result))
+    end
+
+    get '/:uuid/segments' do
+      show_relations(:Interface, "interface_#{assoc_name}s".to_sym)
+    end
+  end
+
+  #
   # Security Groups:
   #
 

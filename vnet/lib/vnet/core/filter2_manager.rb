@@ -17,11 +17,12 @@ module Vnet::Core
     subscribe_event FILTER_CREATED_ITEM, :created_item
     subscribe_event FILTER_DELETED_ITEM, :unload_item
     subscribe_event FILTER_UPDATED, :updated_item
-    subscribe_event FILTER_ACTIVATE_INTERFACE, :activate_interface
-    subscribe_event FILTER_DEACTIVATE_INTERFACE, :deactivate_interface
 
     subscribe_event FILTER_ADDED_STATIC, :added_static
     subscribe_event FILTER_REMOVED_STATIC, :removed_static
+
+    subscribe_event ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event DEACTIVATE_INTERFACE, :deactivate_interface
 
     #
     # Internal methods:
@@ -86,12 +87,9 @@ module Vnet::Core
 
     # FILTER_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-      interface_id = params[:interface_id]
-
       return if internal_detect_by_id(params)
-      return if interface_id.nil?
+      return if @active_interfaces[get_param_id(params, :interface_id)].nil?
 
-      return if @active_interfaces[interface_id].nil?
       internal_new_item(mw_class.new(params))
     end
 
