@@ -10,11 +10,7 @@ set -x
 LOG_FILE=base.sh.LOG
 touch ${LOG_FILE}
 
-# Do some changes ...
-
-vnet_root=/opt/axsh/openvnet
-PATH=${vnet_root}/ruby/bin:${PATH}
-vnmgr=172.16.9.10
+echo "export PATH=/opt/axsh/openvnet/ruby/bin:$PATH" >> $HOME/.bashrc
 
 ## 'yum' the openvnet.repo & openvnet-third-party.repo files
 echo "curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/stable/openvnet.repo" >> ${LOG_FILE}
