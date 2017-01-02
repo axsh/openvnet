@@ -31,6 +31,8 @@ yum -y install epel-release
 echo "yum -y install openvnet" >> ${LOG_FILE}
 yum -y install openvnet
 
+export PATH=/opt/axsh/openvnet/ruby/bin:$PATH
+
 # Brctl
 #echo "yum -y install bridge-utils" >> ${LOG_FILE}
 #yum -y install bridge-utils
