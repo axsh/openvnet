@@ -12,15 +12,18 @@ touch ${LOG_FILE}
 
 echo "export PATH=/opt/axsh/openvnet/ruby/bin:$PATH" >> $HOME/.bashrc
 
-## 'yum' the openvnet.repo & openvnet-third-party.repo files
-echo "curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/development/openvnet.repo" >> ${LOG_FILE}
+openvnet_repo="https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/development/openvnet.repo"
+openvnet_third_party_repo="https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/development/openvnet-third-party.repo"
 
 curl -o /etc/yum.repos.d/openvnet.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/development/openvnet.repo
 
-# third-party
-echo "curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/development/openvnet-third-party.repo" >> ${LOG_FILE}
+## 'yum' the openvnet.repo & openvnet-third-party.repo files
+echo "curl -o /etc/yum.repos.d/openvnet.repo -R $openvnet_repo" >> ${LOG_FILE}
+curl -o /etc/yum.repos.d/openvnet.repo -R $openvnet_repo
 
-curl -o /etc/yum.repos.d/openvnet-third-party.repo -R https://raw.githubusercontent.com/axsh/openvnet/master/deployment/yum_repositories/development/openvnet-third-party.repo
+# third-party
+echo "curl -o /etc/yum.repos.d/openvnet-third-party.repo -R $openvnet_third_party_repo" >> ${LOG_FILE}
+curl -o /etc/yum.repos.d/openvnet-third-party.repo -R $openvnet_third_party_repo
 
 ##
 
