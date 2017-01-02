@@ -28,6 +28,9 @@
          
        USAGE:  ./system_startup.sh
 
+  (4)   branch_sync.sh          - Synchronize the source code of the current branch into the vm's running openvnet
+
+       USAGE:  ./branch_sync.sh
 
 
   PROBLEMS:
