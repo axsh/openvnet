@@ -1,7 +1,7 @@
 
     Three principle scripts are used to build and setup the test environment:
 
-    (1)  build_int_env.sh       - Builds the itest-edge, itest1, itest2, itest3 & router virtual machines
+  (1)  build_int_env.sh         - Builds the itest-edge, itest1, itest2, itest3 & router virtual machines
 
        USAGE:
          The script may be run in two modes:
@@ -17,7 +17,7 @@
           - packer
           - VirtualBoxManage
 
-   (2)  init_host_bridges.sh    - Sets up the host-only 'bridges' on the mac/host machine
+  (2)  init_host_bridges.sh     - Sets up the host-only 'bridges' on the mac/host machine
 
        USAGE:  ./init_host_bridges.sh
 
