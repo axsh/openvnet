@@ -44,6 +44,7 @@
                      "lxc-create -n $c -t centos"
 
                 create_config ${c}
+                install_ssh ${c}
             ) ; prev_cmd_failed
         done
     }
