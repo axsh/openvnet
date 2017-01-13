@@ -1,3 +1,0 @@
-PORT=5050
-ZK=$(cat /etc/mesos/zk)
-IP=10.0.100.11

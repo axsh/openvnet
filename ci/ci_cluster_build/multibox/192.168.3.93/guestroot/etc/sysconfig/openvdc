@@ -1,6 +1,0 @@
-zk_host=10.0.100.10
-zk_port2181
-master_host=10.0.100.11
-master_port=5050
-api_host=0.0.0.0
-api_port=5000

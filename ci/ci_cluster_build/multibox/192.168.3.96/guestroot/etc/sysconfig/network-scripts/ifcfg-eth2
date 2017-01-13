@@ -1,4 +1,4 @@
-DEVICE=eth0
+DEVICE=eth2
 ONBOOT=yes
 DEVICETYPE=ovs
 TYPE=OVSPort
