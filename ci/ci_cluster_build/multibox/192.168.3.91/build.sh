@@ -20,6 +20,8 @@ IND_STEPS=(
     "box"
     "ssh"
     "epel"
+    "redis"
+    "mysql"
     "lxc"
 )
 

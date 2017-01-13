@@ -21,3 +21,4 @@ IND_STEPS=(
 
 initialize
 build "${IND_STEPS[@]}"
+build "openvnet"
