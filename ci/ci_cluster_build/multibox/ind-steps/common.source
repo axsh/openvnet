@@ -72,6 +72,17 @@ function disable_service () {
     ) ; prev_cmd_failed
 }
 
+function start_service () {
+    local service="$1"
+
+    (
+        $starting_step "Start ${service}"
+        run_ssh root@${IP_ADDR} "systemctl status ${service}.service | grep -q running"
+        $skip_step_if_already_done ; set -xe
+        run_ssh root@${IP_ADDR} "systemctl start ${service}.service"
+    ) ; prev_cmd_failed
+}
+
 function run_ssh () {
     local key="${NODE_DIR}/sshkey"
     [[ -f ${key} ]] &&
