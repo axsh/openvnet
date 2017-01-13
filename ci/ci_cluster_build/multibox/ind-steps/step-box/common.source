@@ -1,0 +1,60 @@
+#!/bin/bash
+. "${ENV_ROOTDIR}/external_libraries/mount-partition/mount-partition.sh" load
+
+box=$"${box:-minimal}"
+distr_ver="${distr_ver:-7.2.1511}"
+arch="${arch:-x86_64}"
+
+
+function cache_image () {
+    echo "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2"
+}
+
+function vm_image () {
+    echo "${NODE_DIR}/box-disk1.raw"
+}
+
+function kill_vm() {
+    (
+        $starting_step "Kill vm ${vm_name}"
+        [[ ! -f "${NODE_DIR}/${vm_name}.pid" ]]
+        $skip_step_if_already_done; set -x
+        sudo kill $(sudo cat "${NODE_DIR}/${vm_name}.pid")
+        sudo rm "${NODE_DIR}/${vm_name}.pid"
+    ) ; $prev_cmd_failed
+
+    (
+        $starting_step "Remove copy-on-write image"
+        [ ! -f "${NODE_DIR}/${vm_name}.qcow2" ]
+        $skip_step_if_already_done ; set -x
+        rm -f "${NODE_DIR}/${vm_name}.qcow2"
+    ) ; prev_cmd_failed
+}
+
+function destroy_vm() {
+    umount-seed-image
+    (
+        $starting_step "Remove SSH key"
+        [ ! -f ${NODE_DIR}/sshkey ]
+        $skip_step_if_already_done
+        rm ${NODE_DIR}/sshkey
+    ) ; prev_cmd_failed
+    kill_vm
+    (
+        $starting_step "Remove base image ${vm_name}"
+        [ ! -f "$(cache_image)" ]
+        $skip_step_if_already_done; set -x
+        rm -f "$(cache_image)"
+    ) ; $prev_cmd_failed
+}
+
+function umount-seed-image() {
+    (
+        $starting_step "Unmount temporary root folder for ${vm_name}"
+	mount | grep -qw "${TMP_ROOT}"
+        [[ "$?" != "0" || ! -d "${TMP_ROOT}" ]] 
+        $skip_step_if_already_done;
+        umount-partition --sudo "${TMP_ROOT}"
+        rm -rf "${TMP_ROOT}"
+    ) ; prev_cmd_failed
+}

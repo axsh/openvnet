@@ -1,0 +1,96 @@
+function check_dep() {
+  local dep="$1"
+
+  command -v "${dep}" >/dev/null 2>&1
+  if [[ "$?" != "0" ]]; then
+    echo "Missing dependency: ${dep}"
+    exit 1
+  fi
+}
+
+function download_seed_image () {
+    local box="${1}"
+
+    (
+        $starting_step "Download ${box}"
+        [ -f "${BOXES_DIR}/${box}" ]
+        $skip_step_if_already_done
+        sudo mkdir -p ${BOXES_DIR}
+        sudo curl -o ${BOXES_DIR}/${box} "https://ci.openvdc.org/img/${box}"
+    ) ; prev_cmd_failed
+}
+
+function create_bridge() {
+  local name="$1"
+  local ip_addr="$2"
+
+  (
+    $starting_step "Create bridge ${name}"
+    brctl show | grep -q "${name}"
+    $skip_step_if_already_done ; set -xe
+    sudo brctl addbr "${name}"
+    sudo ip link set "${name}" up
+
+    if [[ -n "${ip_addr}" ]]; then
+      sudo ip addr add "${ip_addr}" dev "${name}"
+    fi
+  ) ; prev_cmd_failed
+}
+
+function destroy_bridge() {
+  local name="$1"
+
+  (
+    $starting_step "Destroy bridge ${name}"
+    brctl show | grep -q "${name}"
+    [ "$?" != "0" ]
+    $skip_step_if_already_done ; set -xe
+    sudo ip link set "${1}" down
+    sudo brctl delbr "${1}"
+  ) ; prev_cmd_failed
+}
+
+function masquerade() {
+  local subnet="${1}"
+
+  (
+    $starting_step "Masquerade for subnet ${subnet}"
+    sudo iptables-save | grep -wq "\-A POSTROUTING \-s ${subnet} \-j MASQUERADE"
+    $skip_step_if_already_done
+    sudo iptables -t nat -A POSTROUTING -s "${subnet}" -j MASQUERADE
+  ) ; prev_cmd_failed
+}
+
+function stop_masquerade() {
+  local subnet="${1}"
+
+  (
+    $starting_step "Stop masquerading for subnet ${subnet}"
+    sudo iptables-save | grep -wq "\-A POSTROUTING \-s ${subnet} \-j MASQUERADE"
+    [ "$?" != "0" ]
+    $skip_step_if_already_done
+    sudo iptables -t nat -D POSTROUTING -s "${subnet}" -j MASQUERADE
+  ) ; prev_cmd_failed
+}
+
+function cleanup_environment () {
+    local stage="${1:-0}"
+
+    (
+        $starting_group "Cleanup old environment"
+        [ ! -d "${CACHE_DIR}/${BRANCH}" ]
+        $skip_group_if_unnecessary
+        for node in ${scheduled_nodes[@]} ; do
+            (
+                $starting_group "Destroying ${node%,*}"
+                false
+                $skip_group_if_unnecessary
+                [[ ${!STAGES[$stage]} -gt $boot ]] && "${ENV_ROOTDIR}/${node}/destroy.sh --kill"
+                [[ ${!STAGES[$stage]} -lt $preconfigure ]] && {
+                    "${ENV_ROOTDIR}/${node}/destroy.sh"
+                }
+            ) ; prev_cmd_failed
+        done
+        rm -rf "${CACHE_DIR}/${BRANCH}"
+    ) ; prev_cmd_failed
+}

@@ -1,0 +1,79 @@
+#!/bin/bash
+. "${ENV_ROOTDIR}/external_libraries/bashsteps/simple-defaults-for-bashsteps.source"
+
+function initialize () {
+    STAGES=( init install preconfigure boot postconfigure provide )
+    
+    [[ -z "${!STAGES[0]}" ]] && {
+        for (( i=0; i< ${#STAGES[@]} ; i++ )) ; do
+            s=${STAGES[i]}
+            
+            if [[ $(bash --version | grep -q 4.[0-9]) ]] ; then
+                declare -rg "${s}=${i}"
+            else
+                eval "readonly ${s}=${i}"
+            fi
+        done
+    }
+
+    export STAGES
+}
+
+function run_steps () {
+    local step="${1}" stage="${2}"
+    local step_common="${ENV_ROOTDIR}/ind-steps/step-${step}/common.source"
+    (
+        [[ -f "${step_common}" ]] && . "${step_common}"
+        . "${ENV_ROOTDIR}/ind-steps/step-${step}/${stage}.sh"
+    )
+}
+
+function start_stage () {
+    unset r
+    for s in $( seq $1 ${#STAGES[@]} ) ; do r+=( ${STAGES[$s]} ) ; done
+    echo "${r[@]}"
+}
+
+function build () {
+    local steps="${@}"
+    local stages=(
+        $(
+            $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && { start_stage $postconfigure ; return ; }
+            $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && { start_stage $boot ; return ; }
+            start_stage $init
+          )
+    )
+
+    # We first run init.sh for every step after which we run install.sh for every
+    # step and so on. This is because some stages will need to happen before booting
+    # the VM while others need to happen after boot.
+    for stage in ${stages[@]} ; do
+        for step in ${steps[@]} ; do
+            [[ -d "${ENV_ROOTDIR}/ind-steps/step-${step}" ]] || continue
+            [[ -f "${ENV_ROOTDIR}/ind-steps/step-${step}/${stage}.sh" ]] && run_steps "${step}" "${stage}"
+            case $? in
+                200) return 0 ;;
+                255) . ${ENV_ROOTDIR}/ind-steps/step-buildenv/common.source ; cleanup_environment $stage ; exit 255 ;;
+            esac
+        done 
+    done
+}
+
+function disable_service () {
+    local service="${1}"
+
+    (
+        $starting_step "Disable service: ${service}"
+        ssh root@${IP_ADDR} "systemctl status ${service} | grep -q running"
+        [[ $? == 1 ]]
+        $skip_step_if_already_done ; set -ex
+        run_ssh root@${IP_ADDR} "systemctl disable ${service}"
+        run_ssh root@${IP_ADDR} "systemctl stop ${service}"
+    ) ; prev_cmd_failed
+}
+
+function run_ssh () {
+    local key="${NODE_DIR}/sshkey"
+    [[ -f ${key} ]] &&
+        $(type -P ssh) -i "${key}" -o 'StrictHostKeyChecking=no' -o 'LogLevel=quiet' -o 'UserKnownHostsFile /dev/null' "${@}"
+}

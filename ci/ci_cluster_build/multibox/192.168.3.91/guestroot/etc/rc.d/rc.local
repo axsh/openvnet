@@ -1,0 +1,21 @@
+#!/bin/sh
+#
+# This script will be executed *after* all the other init scripts.
+# You can put your own initialization stuff in here if you don't
+# want to do the full Sys V style init stuff.
+
+function run_container () {
+    local name=${1}
+    local nr=${2}
+
+    lxc-start -n ${name}${nr}
+    ovs-vsctl del-port br0 if-v$nr
+    ovs-vsctl del-port br1-if-m$nr
+
+    ovs-vsctl add-port br0 if-v$nr
+    ovs-vsctl add-port br1 if-m$nr
+
+}
+
+run_container vm 1
+run_container vm 2
