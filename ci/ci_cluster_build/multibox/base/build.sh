@@ -15,8 +15,9 @@ IND_STEPS=(
     "box"
     "ssh"
     "epel"
-    "openvnet"
     "lxc"
+    "openvswitch"
+    "openvnet"
 )
 
 initialize
