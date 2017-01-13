@@ -51,8 +51,8 @@ function destroy_vm() {
 function umount-seed-image() {
     (
         $starting_step "Unmount temporary root folder for ${vm_name}"
-	mount | grep -qw "${TMP_ROOT}"
-        [[ "$?" != "0" || ! -d "${TMP_ROOT}" ]] 
+        mount | grep -qw "${TMP_ROOT}"
+        [[ "$?" != "0" || ! -d "${TMP_ROOT}" ]]
         $skip_step_if_already_done;
         umount-partition --sudo "${TMP_ROOT}"
         rm -rf "${TMP_ROOT}"
