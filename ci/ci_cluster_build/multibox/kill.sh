@@ -3,8 +3,6 @@
 export ENV_ROOTDIR="$(cd "$(dirname $(readlink -f "$0"))" && pwd -P)"
 . "${ENV_ROOTDIR}/external_libraries/bashsteps/simple-defaults-for-bashsteps.source"
 . "${ENV_ROOTDIR}/ind-steps/common.source"
-
-copy_default_config
 . "${ENV_ROOTDIR}/config.source"
 
 scheduled_nodes=${NODES[@]}
