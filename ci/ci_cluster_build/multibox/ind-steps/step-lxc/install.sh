@@ -10,9 +10,9 @@
 
 [[ $base == "true" ]] && {
     (
-        $starting_group "Download tarball used by containers"
-        # TODO: check if tarball exists
-        false
+        $starting_group "Download centos system used by containers"
+        release_ver=$(sudo chroot ${TMP_ROOT} /bin/bash -c "rpm -q --queryformat '%{VERSION}' centos-release")
+        sudo chroot ${TMP_ROOT} /bin/bash -c "[ -d /var/cache/lxc/centos/x86_64/${release_ver}/rootfs ]"
         $skip_group_if_unnecessary
         (
             $starting_step "Create a centos container"
