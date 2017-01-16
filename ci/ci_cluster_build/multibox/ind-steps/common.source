@@ -62,19 +62,6 @@ function build () {
     done
 }
 
-function disable_service () {
-    local service="${1}"
-
-    (
-        $starting_step "Disable service: ${service}"
-        ssh root@${IP_ADDR} "systemctl status ${service} | grep -q running"
-        [[ $? == 1 ]]
-        $skip_step_if_already_done ; set -ex
-        run_ssh root@${IP_ADDR} "systemctl disable ${service}"
-        run_ssh root@${IP_ADDR} "systemctl stop ${service}"
-    ) ; prev_cmd_failed
-}
-
 function start_service () {
     local service="$1"
 
