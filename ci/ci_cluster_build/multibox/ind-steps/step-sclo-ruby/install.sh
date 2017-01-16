@@ -4,14 +4,14 @@
     $skip_group_if_unessecarry
     (
         $starting_step "Install centos-release-scl"
-        false
+        sudo chroot ${TMP_ROOT} /bin/bash -c  "rpm -qa | grep -qw centos-release-scl"
         $skip_step_if_already_done
         sudo chroot ${TMP_ROOT} /bin/bash -c "yum install -y centos-release-scl"
     ) ; prev_cmd_failed
 
     (
         $starting_step "Install yum-utils"
-        false
+        sudo chroot ${TMP_ROOT} /bin/bash -c  "rpm -qa | grep -qw yum-utils"
         $skip_step_if_already_done
         sudo chroot ${TMP_ROOT} /bin/bash -c "yum install -y yum-utils"
     ) ; prev_cmd_failed
@@ -25,7 +25,7 @@
 
     (
         $starting_step "Install rh-ruby"
-        false
+        sudo chroot ${TMP_ROOT} /bin/bash -c  "rpm -qa | grep -q rh-ruby"
         $skip_step_if_already_done
         sudo chroot ${TMP_ROOT} /bin/bash -c "yum install -y rh-ruby22"
     ) ; prev_cmd_failed
