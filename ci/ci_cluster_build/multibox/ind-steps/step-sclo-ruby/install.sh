@@ -1,6 +1,6 @@
 (
     $starting_group "Install sclo ruby"
-
+    sudo chroot ${TMP_ROOT} /bin/bash -c  "rpm -qa | grep -q rh-ruby"
     $skip_group_if_unessecarry
     (
         $starting_step "Install centos-release-scl"
