@@ -24,8 +24,8 @@ public_key="${private_key}.pub"
 ) ; prev_cmd_failed
 
 (
-    $starting_step "Install authorized ssh key for ${user} on ${vm_name}"
-    sudo bash -c "[ -f ${TMP_ROOT}/${user}/.ssh/authorized_keys ]"
+    $starting_step "Install authorized ssh key for ${ci_user} on ${vm_name}"
+    sudo bash -c "[ -f ${TMP_ROOT}/${ci_user}/.ssh/authorized_keys ]"
     $skip_step_if_already_done; set -ex
     install_user_key "${ci_user}"
 ) ; prev_cmd_failed
