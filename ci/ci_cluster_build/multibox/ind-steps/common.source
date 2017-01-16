@@ -18,7 +18,7 @@ function initialize () {
         done
     }
 
-    export FIRST_STAGE="${STAGES=[0]}"
+    export FIRST_STAGE="${STAGES[0]}"
     export STAGES
 }
 
@@ -41,9 +41,10 @@ function build () {
     local steps="${@}"
     local stages=(
         $(
+            [[ "${STAGES[0]}" != "init" ]] && { start_stage ${!FIRST_STAGE} ; return ; }
             $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && { start_stage $postconfigure ; return ; }
             $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && { start_stage $boot ; return ; }
-            start_stage ${!FIRST_STAGE}
+            start_stage $init
           )
     )
 
