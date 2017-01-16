@@ -18,7 +18,7 @@
 
     (
         $starting_step "Enable RHSCL"
-        false
+        sudo chroot ${TMP_ROOT} /bin/bash -c "which yum-config-manager > /dev/null"
         $skip_step_if_already_done
         sudo chroot ${TMP_ROOT} /bin/bash -c "yum-config-manager --enable rhel-server-rhscl-7-rpms"
     ) ; prev_cmd_failed
