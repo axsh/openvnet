@@ -1,9 +1,12 @@
 
 for node in ${scheduled_nodes[@]} ; do
-    [[ $node != "base" && $REBUILD == "true" ]] && {
+    [[ $node != "base" ]] && {
         (
             $starting_step "Copy base raw image"
-            [[ -f "${ENV_ROOTDIR}/${node}/box-disk1.raw" ]]
+            can_skip=true
+            [[ -f "${ENV_ROOTDIR}/${node}/box-disk1.raw" ]] && can_skip=true
+            [[ ${REBUILD} == "false" && -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]] && can_skip=true
+            $can_skip
             $skip_step_if_already_done; set -ex
             cp "${ENV_ROOTDIR}/base/box-disk1.raw" "${ENV_ROOTDIR}/${node}/"
         ) ; prev_cmd_failed
