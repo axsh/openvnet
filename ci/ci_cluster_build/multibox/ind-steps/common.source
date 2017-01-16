@@ -2,7 +2,9 @@
 . "${ENV_ROOTDIR}/external_libraries/bashsteps/simple-defaults-for-bashsteps.source"
 
 function initialize () {
-    STAGES=( init install preconfigure boot postconfigure provide )
+    STAGES=("${@}")
+    [[ -z "${STAGES}" ]] && STAGES=( init install preconfigure boot postconfigure provide )
+
     
     [[ -z "${!STAGES[0]}" ]] && {
         for (( i=0; i< ${#STAGES[@]} ; i++ )) ; do
@@ -16,6 +18,7 @@ function initialize () {
         done
     }
 
+    export FIRST_STAGE="${STAGES=[0]}"
     export STAGES
 }
 
@@ -40,7 +43,7 @@ function build () {
         $(
             $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && { start_stage $postconfigure ; return ; }
             $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && { start_stage $boot ; return ; }
-            start_stage $init
+            start_stage ${!FIRST_STAGE}
           )
     )
 
