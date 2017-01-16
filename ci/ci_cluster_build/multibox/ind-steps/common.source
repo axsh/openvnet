@@ -5,20 +5,15 @@ function initialize () {
     STAGES=("${@}")
     [[ -z "${STAGES}" ]] && STAGES=( init install preconfigure boot postconfigure provide )
 
-    
-    [[ -z "${!STAGES[0]}" ]] && {
-        for (( i=0; i< ${#STAGES[@]} ; i++ )) ; do
-            s=${STAGES[i]}
-            
-            if [[ $(bash --version | grep -q 4.[0-9]) ]] ; then
-                declare -rg "${s}=${i}"
-            else
-                eval "readonly ${s}=${i}"
-            fi
-        done
-    }
+    for (( i=0; i< ${#STAGES[@]} ; i++ )) ; do
+        s=${STAGES[i]}
+        if [[ $(bash --version | grep -q 4.[0-9]) ]] ; then
+            declare -rg "${s}=${i}"
+        else
+            eval "readonly ${s}=${i}"
+        fi
+    done
 
-    export FIRST_STAGE="${STAGES[0]}"
     export STAGES
 }
 
@@ -39,12 +34,14 @@ function start_stage () {
 
 function build () {
     local steps="${@}"
+    local first_stage=${!STAGES[${start_stage:-$init}]}
+
     local stages=(
         $(
-            [[ "${STAGES[0]}" != "init" ]] && { start_stage ${!FIRST_STAGE} ; return ; }
+            start_stage $first_stage
+            [[ -n $start_stage ]] && { return ; }
             $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && { start_stage $postconfigure ; return ; }
             $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && { start_stage $boot ; return ; }
-            start_stage $init
           )
     )
 
