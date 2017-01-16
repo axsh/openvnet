@@ -1,6 +1,6 @@
 
 for node in ${scheduled_nodes[@]} ; do
-    [[ $node != "base" ]] && {
+    [[ $node != "base" && $REBUILD == "true" ]] && {
         (
             $starting_step "Copy base raw image"
             [[ -f "${ENV_ROOTDIR}/${node}/box-disk1.raw" ]]
