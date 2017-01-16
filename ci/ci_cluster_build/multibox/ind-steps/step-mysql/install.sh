@@ -1,6 +1,6 @@
 (
     $starting_step "Add mysql community release rpm package"
-    sudo chroot ${TMP_ROOT} /bin/bash -c "rpm qa | grep -wq mysql-community-release-el7"
+    sudo chroot ${TMP_ROOT} /bin/bash -c "rpm -qa | grep -wq mysql-community-release-el7"
     $skip_step_if_already_done; set -ex
     sudo chroot ${TMP_ROOT} /bin/bash -c "wget http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm"
     sudo chroot ${TMP_ROOT} /bin/bash -c "rpm -ivh mysql-community-release-el7-5.noarch.rpm"
