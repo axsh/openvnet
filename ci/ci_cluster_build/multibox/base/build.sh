@@ -18,7 +18,6 @@ IND_STEPS=(
     "lxc"
     "sclo-ruby"
     "openvswitch"
-    "openvnet"
 )
 
 initialize

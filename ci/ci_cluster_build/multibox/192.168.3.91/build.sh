@@ -11,11 +11,6 @@ TMP_ROOT="${NODE_DIR}/tmp_root"
 ovn_vnmgr=true
 ovn_webapi=true
 
-containers=(
-    vm1
-    vm2
-)
-
 IND_STEPS=(
     "box"
     "ssh"
@@ -27,3 +22,4 @@ IND_STEPS=(
 
 initialize
 build "${IND_STEPS[@]}"
+build "openvnet"
