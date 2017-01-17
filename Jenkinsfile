@@ -76,7 +76,7 @@ node() {
 
 build_nodes=BUILD_OS_TARGETS.clone()
 if( buildParams.BUILD_OS != "all" ){
-  build_nodes=[BUILD_OS]
+  build_nodes=[buildParams.BUILD_OS]
 }
 // Using .each{} hits "a CPS-transformed closure is not yet supported (JENKINS-26481)"
 for( label in build_nodes) {
