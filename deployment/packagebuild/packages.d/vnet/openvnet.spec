@@ -244,7 +244,7 @@ Requires: openvnet-common
 # Open vSwitch itself is no longer required to be running on the same host as vna
 # but even when using a remote ovs, vna still depends on ovs-ofctl which is provided
 # by this package.
-Requires: openvswitch = 2.3.1
+Requires: openvswitch >= 2.4, openvswitch < 2.5
 %{?systemd_requires}
 
 %description vna
