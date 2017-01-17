@@ -37,6 +37,10 @@ fi
 yum_check_install yum-utils createrepo rpmdevtools
 yum_check_install centos-release-scl scl-utils
 
+if [[ -n "${SCL_RUBY}" ]]; then
+  # Try install devel package with the $SCL_RUBY version if specified.
+  yum_check_install "${SCL_RUBY}-ruby-devel"
+fi
 if [[ $(rpm --eval '%{defined scl_ruby}') -eq 0 ]]; then
   # Respect pre-installed rh-rubyXX or rubyXXX.
   echo "FATAL: No SCL Ruby found. Please install any of rh-rubyXX from Software Collections." 1>&2

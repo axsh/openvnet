@@ -1,9 +1,10 @@
 FROM centos:7
 WORKDIR /var/tmp
 ENTRYPOINT ["/sbin/init"]
+ARG SCL_RUBY=rh-ruby22
 RUN yum install -y centos-release-scl
 # Determine the SCL Ruby version here
-RUN yum install -y rh-ruby22
+RUN yum install -y ${SCL_RUBY}-ruby-devel
 RUN yum install -y yum-utils createrepo rpm-build rpmdevtools rsync sudo
 RUN yum install -y make gcc gcc-c++ git \
     mariadb-devel sqlite-devel libpcap-devel
