@@ -31,12 +31,17 @@ RELEASE_SUFFIX=$RELEASE_SUFFIX
   writeFile(file: "build.env", text: build_env)
 }
 
+def checkout_and_merge() {
+    checkout scm
+    sh "git -c \"user.name=Axsh Bot\" -c \"user.email=dev@axsh.net\" merge origin/master"
+}
+
 @Field RELEASE_SUFFIX=null
 
 def stage_rpmbuild(label) {
   node("ci-build") {
     stage("Build ${label}") {
-      checkout scm
+      checkout_and_merge
       write_build_env(label)
       sh "./deployment/docker/build.sh ./build.env"
     }
@@ -46,7 +51,7 @@ def stage_rpmbuild(label) {
 def stage_test_rpm(label) {
   node(label) {
     stage("RPM Install Test ${label}") {
-      checkout scm
+      checkout_and_merge
       write_build_env(label)
       sh "./deployment/docker/test-rpm-install.sh ./build.env"
     }
