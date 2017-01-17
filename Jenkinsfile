@@ -41,7 +41,7 @@ def checkout_and_merge() {
 def stage_rpmbuild(label) {
   node("ci-build") {
     stage("Build ${label}") {
-      checkout_and_merge
+      checkout_and_merge()
       write_build_env(label)
       sh "./deployment/docker/build.sh ./build.env"
     }
@@ -51,7 +51,7 @@ def stage_rpmbuild(label) {
 def stage_test_rpm(label) {
   node(label) {
     stage("RPM Install Test ${label}") {
-      checkout_and_merge
+      checkout_and_merge()
       write_build_env(label)
       sh "./deployment/docker/test-rpm-install.sh ./build.env"
     }
