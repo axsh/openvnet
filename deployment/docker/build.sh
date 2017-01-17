@@ -62,7 +62,7 @@ fi
 
 /usr/bin/env
 docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
-CID=$(docker run --add-host="devrepo:${IPV4_DEVREPO:-192.168.56.50}" ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
+CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 # Upload checked out tree to the container.
 docker_cp . "${CID}:/var/tmp/openvnet"
 # Upload build cache if found.
