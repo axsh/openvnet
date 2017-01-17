@@ -1,6 +1,6 @@
 [openvnet-third-party]
 name=OpenVNet Third Party
-baseurl=http://dlc.openvnet.axsh.jp/packages/rhel/6/third_party/current/
+baseurl=http://dlc.openvnet.axsh.jp/packages/rhel/$releasever/third_party/develop/current/
 enabled=1
 gpgcheck=0
 

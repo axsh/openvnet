@@ -12,13 +12,12 @@ REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
 POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
 RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
 
-function check_dependency() {
-  local cmd="$1"
-  local pkg="$2"
-
-  command -v ${cmd} >/dev/null 2>&1 || {
-    sudo yum install -y ${pkg}
-  }
+function yum_check_install() {
+  for i in $*; do
+    if ! rpm -q $i &> /dev/null; then
+      echo $i
+    fi
+  done | xargs --no-run-if-empty yum install -y
 }
 
 if [ "${BUILD_TYPE}" == "stable" ] && [ -z "${RELEASE_SUFFIX}" ]; then
@@ -35,19 +34,31 @@ fi
 # Install dependencies
 #
 
-check_dependency yum-builddep yum-utils
-check_dependency createrepo createrepo
+yum_check_install yum-utils createrepo rpmdevtools
+yum_check_install centos-release-scl scl-utils
 
-if ! yum repolist --noplugins --cacheonly enabled | grep openvnet-third-party > /dev/null; then
-  # Make sure that we work with the correct version of openvnet-ruby
-  sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+if [[ $(rpm --eval '%{defined scl_ruby}') -eq 1 ]]; then
+  # Found pre-installed rh-rubyXX or rubyXXX.
+  # *-scldevel package has to be installed.
+  SCL_RUBY=$(rpm --eval '%{scl_ruby}')
+else
+  echo "FATAL: No SCLO Ruby found. Please install any of rh-rubyXX from Software Collections." 1>&2
+  exit 1
 fi
+# Make sure that we work with the correct version of openvnet-ruby
+sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
 
 sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 
 #
 # Prepare build directories and put the source in place.
 #
+
+# scl_source is designed to run in the context +e. Otherwise
+# non-zero exit from scl_enabled causes the program terminate.
+set +e
+. scl_source enable ${SCL_RUBY}
+set -e
 
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
 if [[ -d "$OPENVNET_SRC_BUILD_DIR" && -z "${SKIP_CLEANUP}" ]]; then
@@ -64,10 +75,12 @@ mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
 #
 # Build the packages
 #
+export PATH="/opt/axsh/openvnet/ruby/bin:$PATH"
 
 repo_rel_path="packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
 
   git checkout "${RELEASE_SUFFIX}"
   echo "Building the following commit for stable version ${RELEASE_SUFFIX}"
@@ -76,6 +89,10 @@ if [ "$BUILD_TYPE" == "stable" ]; then
   rpmbuild -ba --define "_topdir ${WORK_DIR}" "${OPENVNET_SPEC_FILE}"
 else
   # If we're building a development version we set the git commit time and hash as release
+  timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
+  RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
+
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
