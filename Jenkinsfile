@@ -33,7 +33,7 @@ RELEASE_SUFFIX=$RELEASE_SUFFIX
 
 def checkout_and_merge() {
     checkout scm
-    sh "git -c \"user.name=Axsh Bot\" -c \"user.email=dev@axsh.net\" merge origin/master"
+    sh "git -c \"user.name=Axsh Bot\" -c \"user.email=dev@axsh.net\" merge origin/develop"
 }
 
 @Field RELEASE_SUFFIX=null
