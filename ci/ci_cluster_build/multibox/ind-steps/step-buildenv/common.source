@@ -86,11 +86,16 @@ function cleanup_environment () {
                 false
                 $skip_group_if_unnecessary
                 [[ ${!STAGES[$stage]} -gt $boot ]] && "${ENV_ROOTDIR}/${node}/destroy.sh --kill"
-                [[ ${!STAGES[$stage]} -lt $preconfigure ]] && {
-                    "${ENV_ROOTDIR}/${node}/destroy.sh"
-                }
+                [[ ${!STAGES[$stage]} -lt $preconfigure ]] && "${ENV_ROOTDIR}/${node}/destroy.sh"
             ) ; prev_cmd_failed
         done
-        rm -rf "${CACHE_DIR}/${BRANCH}"
+
+        [[ $REBUILD == "true" ]] && rm -rf "${CACHE_DIR}/${BRANCH}"
+        destroy_bridge "vnet-itest0"
+        destroy_bridge "vnet-itest1"
+        destroy_bridge "vnet-itest2"
+        destroy_bridge "vnet-wanedge"
+        destroy_bridge "vnet-br0"
+        stop_masquerade "${NETWORK}/${PREFIX}"
     ) ; prev_cmd_failed
 }
