@@ -3,6 +3,18 @@
 if mount | grep -q "${TMP_ROOT}" ; then
     umount-seed-image
 fi
+
+(
+    $starting_step "Copy base raw image"
+    (
+        [[ $base == "true" ]] && exit 0
+        [[ -f "${NODE_DIR}/box-disk1.raw" ]] && exit 0
+        [[ ${REBUILD} == "false" && -f "$(cache_image)" ]] && exit 0
+    ) || false
+    $skip_step_if_already_done; set -ex
+    cp "${ENV_ROOTDIR}/base/box-disk1.raw" "${NODE_DIR}/"
+) ; prev_cmd_failed
+
 (
     $starting_step "Deploy seed image for ${vm_name}"
     [ -f "$(vm_image)" ]
