@@ -4,14 +4,20 @@
 import groovy.transform.Field
 @Field final BUILD_OS_TARGETS=['el7', 'el6']
 
-properties ([[$class: 'ParametersDefinitionProperty',
-  parameterDefinitions: [
-    [$class: 'ChoiceParameterDefinition',
-      choices: "all\n" + BUILD_OS_TARGETS.join("\n"), description: 'Target OS name', name: 'BUILD_OS'],
-    [$class: 'ChoiceParameterDefinition',
-      choices: "0\n1", description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER']
-  ]
-]])
+@Field buildParams = [
+  "BUILD_OS": "all",
+  "REBUILD": "false",
+  "LEAVE_CONTAINER": "0",
+]
+def ask_build_parameter = { ->
+  return input(message: "Build Parameters", id: "build_params",
+    parameters:[
+      [$class: 'ChoiceParameterDefinition',
+        choices: "all\n" + BUILD_OS_TARGETS.join("\n"), description: 'Target OS name', name: 'BUILD_OS'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "0\n1", description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER'],
+    ])
+}
 
 def write_build_env(label) {
   def build_env="""# These parameters are read from bash and docker --env-file.
@@ -49,6 +55,13 @@ def stage_test_rpm(label) {
 
 node() {
   stage("Checkout") {
+    try {
+      timeout(time: 10, unit :"SECONDS") {
+        buildParams = ask_build_parameter()
+      }
+    }catch(org.jenkinsci.plugins.workflow.steps.FlowInterruptedException err) {
+      // Only ignore errors for timeout.
+    }
     checkout scm
     // http://stackoverflow.com/questions/36507410/is-it-possible-to-capture-the-stdout-from-the-sh-dsl-command-in-the-pipeline
     // https://issues.jenkins-ci.org/browse/JENKINS-26133
