@@ -22,7 +22,7 @@ def ask_build_parameter = { ->
 def write_build_env(label) {
   def build_env="""# These parameters are read from bash and docker --env-file.
 # So do not use single or double quote for the value part.
-LEAVE_CONTAINER=$LEAVE_CONTAINER
+LEAVE_CONTAINER=${buildParams.LEAVE_CONTAINER}
 REPO_BASE_DIR=${env.REPO_BASE_DIR}
 BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR}
 BUILD_OS=$label
@@ -75,7 +75,7 @@ node() {
 }
 
 build_nodes=BUILD_OS_TARGETS.clone()
-if( BUILD_OS != "all" ){
+if( buildParams.BUILD_OS != "all" ){
   build_nodes=[BUILD_OS]
 }
 // Using .each{} hits "a CPS-transformed closure is not yet supported (JENKINS-26481)"
