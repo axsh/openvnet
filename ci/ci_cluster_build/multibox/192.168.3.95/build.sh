@@ -13,4 +13,5 @@ IND_STEPS=(
     "ssh"
 )
 
+initialize
 build "${IND_STEPS[@]}"
