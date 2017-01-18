@@ -1,7 +1,7 @@
 FROM centos:7
 WORKDIR /var/tmp
 ENTRYPOINT ["/sbin/init"]
-ARG SCL_RUBY=rh-ruby22
+ARG SCL_RUBY=rh-ruby23
 ADD deployment/docker/fastestmirror.conf /etc/yum/pluginconf.d/
 RUN yum install -y centos-release-scl
 # Determine the SCL Ruby version here
