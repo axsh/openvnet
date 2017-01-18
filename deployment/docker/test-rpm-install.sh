@@ -4,8 +4,14 @@ set -ex -o pipefail
 
 CID=
 docker_rm() {
-  if [[ -z "${CID}" ]]; then
-    return 0
+  if [[ -z "$CID" ]]; then
+      return 0
+  fi
+  if [[ -n "$LEAVE_CONTAINER" ]]; then
+      if [[ "${LEAVE_CONTAINER}" != "0" ]]; then
+          echo "Skip to clean container: ${CID}"
+          return 0
+      fi
   fi
   docker rm -f "${CID}"
 }
