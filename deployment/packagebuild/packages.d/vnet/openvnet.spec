@@ -90,10 +90,6 @@ tar cO --directory="vnet" \
   --exclude='*.o' \
   --exclude='.git' \
   --exclude='cache/*.gem' \
-  --exclude='gems/*-*/test/*' \
-  --exclude='gems/*-*/spec/*' \
-  --exclude='gems/*-*/doc/*' \
-  --exclude='gems/pio-*/features/*' \
   vendor/ | tar -x --directory="${RPM_BUILD_ROOT}/opt/axsh/openvnet/vnet" -f -
 %else
 cp -r vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
