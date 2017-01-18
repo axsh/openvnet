@@ -16,7 +16,7 @@ function vm_image () {
 
 function kill_vm() {
     (
-        $starting_step "Kill vm ${vm_name}"
+        $starting_step "${vm_name}: Kill vm ${vm_name}"
         [[ ! -f "${NODE_DIR}/${vm_name}.pid" ]]
         $skip_step_if_already_done; set -x
         sudo kill $(sudo cat "${NODE_DIR}/${vm_name}.pid")
@@ -24,7 +24,7 @@ function kill_vm() {
     ) ; $prev_cmd_failed
 
     (
-        $starting_step "Remove copy-on-write image"
+        $starting_step "${vm_name}: Remove copy-on-write image"
         [ ! -f "${NODE_DIR}/${vm_name}.qcow2" ]
         $skip_step_if_already_done ; set -x
         rm -f "${NODE_DIR}/${vm_name}.qcow2"
@@ -34,23 +34,30 @@ function kill_vm() {
 function destroy_vm() {
     umount-seed-image
     (
-        $starting_step "Remove SSH key"
+        $starting_step "${vm_name}: Remove SSH key"
         [ ! -f ${NODE_DIR}/sshkey ]
         $skip_step_if_already_done
         rm ${NODE_DIR}/sshkey
     ) ; prev_cmd_failed
     kill_vm
     (
-        $starting_step "Remove base image ${vm_name}"
+        $starting_step "${vm_name}: Remove base cache image ${vm_name}"
         [ ! -f "$(cache_image)" ]
         $skip_step_if_already_done; set -x
         rm -f "$(cache_image)"
+    ) ; $prev_cmd_failed
+
+    (
+        $starting_step "${vm_name}: Remove base raw ${vm_name}"
+        [ ! -f "$(vm_image)" ]
+        $skip_step_if_already_done; set -x
+        rm -f "$(vm_image)"
     ) ; $prev_cmd_failed
 }
 
 function umount-seed-image() {
     (
-        $starting_step "Unmount temporary root folder for ${vm_name}"
+        $starting_step "${vm_name}: Unmount temporary root folder for ${vm_name}"
         mount | grep -qw "${TMP_ROOT}"
         [[ "$?" != "0" || ! -d "${TMP_ROOT}" ]]
         $skip_step_if_already_done;
