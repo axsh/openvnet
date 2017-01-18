@@ -8,6 +8,7 @@ import groovy.transform.Field
   "BUILD_OS": "el7",
   "REBUILD": "false",
   "LEAVE_CONTAINER": "0",
+  "STRIP_VENDOR": "1",
 ]
 def ask_build_parameter = { ->
   return input(message: "Build Parameters", id: "build_params",
@@ -16,6 +17,8 @@ def ask_build_parameter = { ->
         choices: BUILD_OS_TARGETS.join("\n"), description: 'Target OS name', name: 'BUILD_OS'],
       [$class: 'ChoiceParameterDefinition',
         choices: "0\n1", description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "1\n0", description: 'Switch to make vendor/bundle/* compact', name: 'STRIP_VENDOR'],
     ])
 }
 
@@ -23,6 +26,7 @@ def write_build_env(label) {
   def build_env="""# These parameters are read from bash and docker --env-file.
 # So do not use single or double quote for the value part.
 LEAVE_CONTAINER=${buildParams.LEAVE_CONTAINER}
+STRIP_VENDOR=${buildParams.STRIP_VENDOR}
 REPO_BASE_DIR=${env.REPO_BASE_DIR}
 BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR}
 BUILD_OS=$label
