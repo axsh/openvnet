@@ -47,8 +47,13 @@ if [[ $(rpm --eval '%{defined scl_ruby}') -eq 0 ]]; then
   exit 1
 fi
 SCL_RUBY=$(rpm --eval '%{scl_ruby}')
-# Make sure that we work with the correct version of openvnet-ruby
-sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+
+# CI Docker container maintains third party repo by itself. This check
+# is for the manual build.
+if ! (yum repolist enabled | grep openvnet-third-party) > /dev/null; then
+  # Make sure that we work with the correct version of openvnet-ruby
+  sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+fi
 
 sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
 
