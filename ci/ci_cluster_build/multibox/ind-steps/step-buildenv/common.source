@@ -73,29 +73,34 @@ function stop_masquerade() {
   ) ; prev_cmd_failed
 }
 
-function cleanup_environment () {
+function teardown_environment () {
     local stage="${1:-0}"
 
     (
         $starting_group "Cleanup old environment"
         [ ! -d "${CACHE_DIR}/${BRANCH}" ]
         $skip_group_if_unnecessary
-        for node in ${scheduled_nodes[@]} ; do
+        destroy_cmd=$(
+            [[ ${!STAGES[$stage]} -gt $boot ]] && { echo "kill.sh" ; return ; }
+            [[ ${!STAGES[$stage]} -lt $preconfigure ]] && { echo "destroy.sh" ; return ; }
+            echo "destroy.sh"
+        )
+        for node in ${NODES[@]} ; do
             (
                 $starting_group "Destroying ${node%,*}"
                 false
                 $skip_group_if_unnecessary
-                [[ ${!STAGES[$stage]} -gt $boot ]] && "${ENV_ROOTDIR}/${node}/destroy.sh --kill"
-                [[ ${!STAGES[$stage]} -lt $preconfigure ]] && "${ENV_ROOTDIR}/${node}/destroy.sh"
+                ${ENV_ROOTDIR}/${node}/$destroy_cmd
             ) ; prev_cmd_failed
         done
-
-        [[ $REBUILD == "true" ]] && rm -rf "${CACHE_DIR}/${BRANCH}"
-        destroy_bridge "vnet-itest0"
-        destroy_bridge "vnet-itest1"
-        destroy_bridge "vnet-itest2"
-        destroy_bridge "vnet-wanedge"
-        destroy_bridge "vnet-br0"
-        stop_masquerade "${NETWORK}/${PREFIX}"
     ) ; prev_cmd_failed
+}
+
+function teardown_host_settings () {
+    destroy_bridge "vnet-itest0"
+    destroy_bridge "vnet-itest1"
+    destroy_bridge "vnet-itest2"
+    destroy_bridge "vnet-wanedge"
+    destroy_bridge "vnet-br0"
+    stop_masquerade "${NETWORK}/${PREFIX}"
 }

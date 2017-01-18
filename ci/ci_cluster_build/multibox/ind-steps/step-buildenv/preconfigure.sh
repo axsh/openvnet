@@ -1,6 +1,7 @@
 
 $REBUILD && {
-    cleanup_environment
+    rm -rf "${CACHE_DIR}/${BRANCH}"
+    teardown_environment
 } || {
     (
         $starting_step "Clone base images from ${BASE_BRANCH}"

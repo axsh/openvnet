@@ -26,25 +26,27 @@ function run_steps () {
     )
 }
 
-function start_stage () {
-    unset r
-    for s in $( seq $1 ${#STAGES[@]} ) ; do r+=( ${STAGES[$s]} ) ; done
+function define_stages () {
+    local start_stage=${1}
+    local r=()
+
+    [[ -n $start_stage ]] || {
+        start_stage=$init
+        $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && start_stage=$boot
+        $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && start_stage=$postconfigure
+    }
+
+    for s in $( seq $start_stage ${#STAGES[@]} ) ; do
+        r+=( ${STAGES[$s]} )
+    done
+
     echo "${r[@]}"
 }
 
 function build () {
     local steps="${@}"
     local custom_start=${!STAGES[${start_stage}]}
-    local stages=(
-        $(
-
-            [[ -n $start_stage ]] && { start_stage $custom_start ; return ; }
-            $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && { start_stage $postconfigure ; return ; }
-            $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && { start_stage $boot ; return ; }
-            start_stage $init
-          )
-    )
-
+    local stages=($(define_stages $custom_start))
 
     # We first run init.sh for every step after which we run install.sh for every
     # step and so on. This is because some stages will need to happen before booting
@@ -55,7 +57,11 @@ function build () {
             [[ -f "${ENV_ROOTDIR}/ind-steps/step-${step}/${stage}.sh" ]] && run_steps "${step}" "${stage}"
             case $? in
                 200) return 0 ;;
-                255) . ${ENV_ROOTDIR}/ind-steps/step-buildenv/common.source ; cleanup_environment $stage ; exit 255 ;;
+                255)
+                    . ${ENV_ROOTDIR}/ind-steps/step-buildenv/common.source
+                    teardown_environment $stage
+                    teardown_host_settings
+                    exit 1 ;;
             esac
         done 
     done
