@@ -30,8 +30,7 @@ function define_stages () {
     local start_stage=${1}
     local r=()
 
-    [[ -n $start_stage ]] || {
-        start_stage=$init
+    [[ $start_stage -gt 0 ]] || {
         $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && start_stage=$boot
         $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && start_stage=$postconfigure
     }
@@ -39,7 +38,6 @@ function define_stages () {
     for s in $( seq $start_stage ${#STAGES[@]} ) ; do
         r+=( ${STAGES[$s]} )
     done
-
     echo "${r[@]}"
 }
 
