@@ -1,6 +1,7 @@
 FROM centos:7
 WORKDIR /var/tmp
 ENTRYPOINT ["/sbin/init"]
+ADD deployment/docker/fastestmirror.conf /etc/yum/pluginconf.d/
 RUN yum install -y epel-release
 RUN yum groupinstall -y "Development Tools"
 RUN yum install -y yum-utils rpmdevtools createrepo
