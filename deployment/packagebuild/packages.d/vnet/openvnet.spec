@@ -2,7 +2,6 @@
 # development (non stable) versions.
 %define release 1
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
-%define strip_vendor %{?strip_vendor:1}
 
 Name: openvnet
 Version: 0.9%{?dev_release_suffix:dev}
@@ -86,7 +85,7 @@ cp -r vnet/lib "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r vnet/.bundle "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp -r vnet/rack "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet
 cp -r client/vnctl "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client/
-%if %{strip_vendor}
+%if %{defined strip_vendor} && "%{strip_vendor}" == "1"
 tar cO --directory="vnet" \
   --exclude='*.o' \
   --exclude='.git' \
