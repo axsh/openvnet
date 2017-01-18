@@ -104,7 +104,7 @@ else
 
   repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 
-  rpmbuild -ba --define "_topdir ${WORK_DIR}" ${STRIP_VENDOR:+--define strip_vendor ${STRIP_VENDOR}} --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
+  rpmbuild -ba --define "_topdir ${WORK_DIR}" ${STRIP_VENDOR:+--define "strip_vendor ${STRIP_VENDOR}"} --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
 
 #
