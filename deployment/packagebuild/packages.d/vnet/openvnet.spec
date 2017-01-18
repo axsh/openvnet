@@ -63,12 +63,12 @@ mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
 %if %{defined systemd_requires}
-cp -r deployment/conf.el7/* "$RPM_BUILD_ROOT"/
 echo "SCL_RUBY=%{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/sysconfig/openvnet
+cp -r deployment/conf.el7/* "$RPM_BUILD_ROOT"/
 %else
+echo "SCL_RUBY=%{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/default/openvnet
 cp -r deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
 cp -r deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
-echo "SCL_RUBY=%{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/default/openvnet
 %endif
 cp -r deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
 echo ". scl_source enable %{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/openvnet/vnctl-ruby
