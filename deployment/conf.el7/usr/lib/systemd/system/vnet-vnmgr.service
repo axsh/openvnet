@@ -5,7 +5,7 @@ After=network.target
 [Service]
 EnvironmentFile=/etc/sysconfig/openvnet
 User=vnet-vnmgr
-WorkingDirectory=${VNET_ROOT}/vnet
+WorkingDirectory=/opt/axsh/openvnet/vnet
 ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vnmgr >> ${LOG_DIRECTORY}/vnmgr.log
 
 [Install]

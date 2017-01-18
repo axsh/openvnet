@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 EnvironmentFile=/etc/sysconfig/openvnet
-WorkingDirectory=${VNET_ROOT}/vnet
+WorkingDirectory=/opt/axsh/openvnet/vnet
 ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vna >> ${LOG_DIRECTORY}/vna.log
 
 
