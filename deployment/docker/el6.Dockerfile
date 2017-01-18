@@ -5,7 +5,7 @@ ADD deployment/docker/fastestmirror.conf /etc/yum/pluginconf.d/
 ARG SCL_RUBY=rh-ruby22
 RUN yum install -y centos-release-scl
 # Determine the SCL Ruby version here
-RUN yum install -y ${SCL_RUBY}-scldevel
+RUN yum install -y ${SCL_RUBY}-build
 RUN yum install -y yum-utils createrepo rpm-build rpmdevtools rsync sudo
 RUN yum install -y make gcc gcc-c++ git \
     mysql-devel sqlite-devel libpcap-devel
