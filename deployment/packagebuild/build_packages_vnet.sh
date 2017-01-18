@@ -55,7 +55,10 @@ if ! (yum repolist enabled | grep openvnet-third-party) > /dev/null; then
   sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
 fi
 
-sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
+# Workaround for the error:
+#  "failure: repodata/repomd.xml from centos-sclo-rh-source: [Errno 256] No more mirrors to try."
+curl -O https://raw.githubusercontent.com/rpm-software-management/yum-utils/master/yum-builddep.py
+sudo ./yum-builddep.py -y "$OPENVNET_SPEC_FILE"
 
 #
 # Prepare build directories and put the source in place.
