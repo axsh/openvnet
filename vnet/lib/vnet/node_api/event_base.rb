@@ -119,7 +119,7 @@ module Vnet::NodeApi
       end
 
       def handle_new_uuid(options)
-        return if model_class.taggable?
+        return if !model_class.taggable?
 
         options[:uuid].tap { |uuid|
           next if uuid.nil?
