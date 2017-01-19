@@ -26,14 +26,20 @@ function run_steps () {
     )
 }
 
+function get_env_state () {
+    local stage=${1}
+
+    $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && stage=$boot
+    $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && stage=$postconfigure
+
+    echo $stage
+}
+
 function define_stages () {
     local start_stage=${1}
     local r=()
 
-    [[ $start_stage -gt 0 ]] || {
-        $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && start_stage=$boot
-        $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && start_stage=$postconfigure
-    }
+    [[ $start_stage -gt 0 ]] || start_stage=$(get_env_state $start_stage)
 
     for s in $( seq $start_stage ${#STAGES[@]} ) ; do
         r+=( ${STAGES[$s]} )
@@ -42,6 +48,7 @@ function define_stages () {
 }
 
 function build () {
+
     local steps="${@}"
     local custom_start=${!STAGES[${start_stage}]}
     local stages=($(define_stages $custom_start))
@@ -55,11 +62,9 @@ function build () {
             [[ -f "${ENV_ROOTDIR}/ind-steps/step-${step}/${stage}.sh" ]] && run_steps "${step}" "${stage}"
             case $? in
                 200) return 0 ;;
-                255)
-                    . ${ENV_ROOTDIR}/ind-steps/step-buildenv/common.source
-                    teardown_environment $stage
-                    teardown_host_settings
-                    exit 1 ;;
+                255) . ${ENV_ROOTDIR}/ind-steps/step-buildenv/common.source
+                     [[ -n "${NODE_DIR}" ]] && { teardown_environment $(get_env_state $stage) ; exit 255 ; }
+                     [[ -z "${NODE_DIR}" ]] && { teardown_host_settings ; exit 255 ; } ;;
             esac
         done 
     done

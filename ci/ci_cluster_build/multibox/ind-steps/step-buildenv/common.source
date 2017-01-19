@@ -82,9 +82,10 @@ function teardown_environment () {
         $skip_group_if_unnecessary
         destroy_cmd=$(
             [[ ${!STAGES[$stage]} -gt $boot ]] && { echo "kill.sh" ; return ; }
-            [[ ${!STAGES[$stage]} -lt $preconfigure ]] && { echo "destroy.sh" ; return ; }
+            [[ ${!STAGES[$stage]} -lt $postconfigure ]] && { echo "destroy.sh" ; return ; }
             echo "destroy.sh"
         )
+
         for node in ${NODES[@]} ; do
             (
                 $starting_group "Destroying ${node%,*}"
