@@ -9,10 +9,17 @@ module Vnet::NodeApi
       def create_with_transaction(options)
         options = options.dup
 
-        disable_lease_detection = options.delete(:disable_lease_detection)
+        lease_detection = options.delete(:lease_detection)
 
         transaction {
-          if !disable_lease_detection && options[:ip_lease_id].nil?
+          if lease_detection
+            lease_detection.merge!(datapath_id: options[:datapath_id])
+
+            options[:interface_id], options[:ip_lease_id] = detect_ip_lease(lease_detection)
+
+            return if options[:interface_id].nil? || options[:ip_lease_id].nil?
+
+          elsif options[:ip_lease_id].nil?
             options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
           end
 
@@ -36,6 +43,34 @@ module Vnet::NodeApi
 
         ip_lease = model_class(:ip_lease).dataset.where(interface_id: interface_id).first
         ip_lease && ip_lease.id
+      end
+
+      def detect_ip_lease(params)
+        datapath_id = params[:datapath_id]
+        network_id = params[:network_id]
+        interface_id = params[:interface_id]
+
+        ds = M::IpLease.dataset
+
+        case
+        when network_id && interface_id.nil?
+          ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
+          ds.each { |ip_lease|
+            next if ip_lease.network_id != network_id
+
+            return ip_lease.interface_id, ip_lease.id
+          }
+
+        when network_id.nil? && interface_id
+          ds = ds.where(ip_leases__interface_id: interface_id)
+          ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
+          
+          lease = ds.first
+
+          return interface_id, (lease && lease.id)
+        end
+
+        return nil
       end
 
     end

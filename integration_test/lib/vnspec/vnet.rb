@@ -161,6 +161,38 @@ module Vnspec
         }
       end
 
+      def dump_database
+        return unless config[:dump_flows]
+
+        dump_header("dump_database: vnmgr")
+
+        [ :networks,
+          :segments,
+          :route_links,
+
+          :interfaces,
+
+          :datapaths,
+          :datapath_networks,
+          :datapath_segments,
+          :datapath_route_links,
+
+          :topologies,
+          :topology_datapaths,
+          :topology_networks,
+          :topology_segments,
+          :topology_route_links,
+
+          :tunnels,
+        ].each { |table_name|
+          ssh(config[:nodes][:vnmgr].first, "mysql -te select\\ *\\ from\\ #{table_name}\\; vnet", debug: false).tap { |output|
+            logger.info output[:stdout]
+          }
+        }
+
+        dump_footer
+      end
+
       def install_package(name)
         run_command_on_vna_nodes("yum install -y #{name}", use_sudo: true)
       end
