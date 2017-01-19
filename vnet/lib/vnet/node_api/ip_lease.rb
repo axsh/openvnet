@@ -40,8 +40,6 @@ module Vnet::NodeApi
         interface_id = options[:interface_id]
         mac_lease_id = options[:mac_lease_id]
 
-        replaceUUID = options.delete(:replace_uuid)
-
         transaction {
           handle_new_uuid(options)          
 

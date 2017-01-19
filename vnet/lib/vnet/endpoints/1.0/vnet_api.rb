@@ -68,22 +68,6 @@ module Vnet::Endpoints::V10
       param name, :String, final_options
     end
 
-    def self.param_post_uuid(model)
-      param_uuid model
-      # param :replace_uuid, :Boolean
-      # param :preserve_uuid, :Boolean, required: false
-    end
-
-    def self.param_put_uuid(model)
-      param_uuid model
-      # param :new_uuid, :String, required: false
-    end
-
-    def self.param_delete_uuid(model)
-      param_uuid model
-      # param :preserve_uuid, :Boolean, required: false
-    end
-
     def post_new(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)

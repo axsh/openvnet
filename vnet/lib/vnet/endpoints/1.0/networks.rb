@@ -11,7 +11,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   end
 
   put_post_shared_params
-  param_post_uuid M::Network
+  param_uuid M::Network
   param_uuid M::Segment, :segment_uuid
   param_options :display_name, required: true
   param_options :ipv4_network, required: true
