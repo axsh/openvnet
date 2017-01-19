@@ -11,4 +11,4 @@ scheduled_nodes=${NODES[@]}
 [[ -n "$1" ]] && scheduled_nodes="${@}"
 
 initialize
-build "buildenv"
+( build "buildenv" ) ; prev_cmd_failed
