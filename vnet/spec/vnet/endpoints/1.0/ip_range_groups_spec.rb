@@ -19,9 +19,10 @@ describe "/ip_range_groups" do
 
   describe "POST /" do
     accepted_params = {
+      :uuid => 'iprg-test',
       :allocation_type => "incremental"
     }
-    required_params = [ ]
+    required_params = []
     uuid_params = [:uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
