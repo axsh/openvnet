@@ -17,7 +17,8 @@ module Vnctl::Cli
     add_modify_shared_options
     option :ingress, :type => :boolean, :desc => "Flag to determine if this is an ingress route."
     option :egress, :type => :boolean, :desc => "Flag to determine if this is an egress route."
-    set_required_options [:ipv4_address, :network_uuid, :route_link_uuid]
+    option :ipv4_address, :type => :string, :desc => "IPv4 address for this route."
+    set_required_options [:network_uuid, :route_link_uuid]
     define_add
 
     add_modify_shared_options
