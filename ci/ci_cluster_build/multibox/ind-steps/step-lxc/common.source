@@ -31,6 +31,7 @@ lxc.rootfs = /var/lib/lxc/${container_name}/rootfs
 lxc.include = /usr/share/lxc/config/centos.common.conf
 lxc.arch = x86_64
 lxc.autodev = 0
+lxc.kmsg = 0
 EOC
 EOF
     for iface in "${container_if[@]}" ; do
