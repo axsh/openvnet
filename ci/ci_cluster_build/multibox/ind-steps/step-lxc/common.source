@@ -56,7 +56,7 @@ EOF
 function install_ssh () {
     local container_name="${1}"
 
-    sudo chroot ${TMP_ROOT} /bin/bash -c "chroot /var/lib/lxc/${container_name}/rootfs/ /bin/bash -c \"passwd -d root\""
-    sudo chroot ${TMP_ROOT} /bin/bash -c "mkdir -p /var/lib/lxc/${container_name}/rootfs/root/.ssh"
-    sudo chroot ${TMP_ROOT} /bin/bash -c "ssh-keygen -y -f /root/.ssh/sshkey > /var/lib/lxc/${container_name}/rootfs/root/.ssh/authorized_keys"
+    run_cmd "chroot /var/lib/lxc/${container_name}/rootfs/ /bin/bash -c \"passwd -d root\""
+    run_cmd "mkdir -p /var/lib/lxc/${container_name}/rootfs/root/.ssh"
+    run_cmd "ssh-keygen -y -f /root/.ssh/sshkey > /var/lib/lxc/${container_name}/rootfs/root/.ssh/authorized_keys"
 }

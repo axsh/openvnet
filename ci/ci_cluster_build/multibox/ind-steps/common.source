@@ -75,9 +75,9 @@ function start_service () {
 
     (
         $starting_step "Start ${service}"
-        run_ssh root@${IP_ADDR} "systemctl status ${service}.service | grep -q running"
+        run_cmd "systemctl status ${service}.service | grep -q running"
         $skip_step_if_already_done ; set -xe
-        run_ssh root@${IP_ADDR} "systemctl start ${service}.service"
+        run_cmd "systemctl start ${service}.service"
     ) ; prev_cmd_failed
 }
 
