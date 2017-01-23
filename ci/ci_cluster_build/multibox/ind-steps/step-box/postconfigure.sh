@@ -1,1 +1,2 @@
-run_ssh root@${IP_ADDR} "iptables -F"
+run_cmd "iptables -F"
+run_cmd "systemctl stop firewalld"
