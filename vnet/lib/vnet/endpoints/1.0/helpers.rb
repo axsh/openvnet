@@ -29,18 +29,18 @@ module Vnet::Endpoints::V10::Helpers
 
     def pop_uuid(model, key = "uuid", fill = {})
       uuid = @params.delete(key)
-      check_uuid_syntax(model, uuid)
+      check_uuid_syntax(model, uuid, key)
       model.batch[uuid].commit(:fill => fill) || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
     end
 
     def pop_uuid_or_nil(model, key = "uuid", fill = {})
       uuid = @params.delete(key) || return
-      check_uuid_syntax(model, uuid)
+      check_uuid_syntax(model, uuid, key)
       model.batch[uuid].commit(:fill => fill)
     end
 
-    def check_uuid_syntax(model, uuid)
-      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, "#{model.name.split("::").last}#uuid: #{uuid}")
+    def check_uuid_syntax(model, uuid, key = 'uuid')
+      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, "#{model.name.split("::").last}##{key}: '#{uuid}'")
     end
 
     def check_and_trim_uuid(model)
@@ -50,13 +50,13 @@ module Vnet::Endpoints::V10::Helpers
 
     # Deprecated:
     def check_syntax_and_pop_uuid(model, key = "uuid", fill = {})
-      check_uuid_syntax(model, @params[key])
+      check_uuid_syntax(model, @params[key], key)
       pop_uuid(model, key, fill)
     end
 
     # Deprecated:
     def check_syntax_and_get_id(model, uuid_key = "uuid", id_key = "id", fill = {})
-      check_uuid_syntax(model, @params[uuid_key])
+      check_uuid_syntax(model, @params[uuid_key], uuid_key)
       uuid_to_id(model, uuid_key, id_key, fill)
     end
 

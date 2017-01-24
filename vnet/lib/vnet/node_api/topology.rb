@@ -19,6 +19,23 @@ module Vnet::NodeApi
     end
   end
 
+  class TopologyLayer < EventBase
+    valid_update_fields []
+
+    class << self
+      private
+
+      def dispatch_created_item_events(model)
+        # dispatch_event(TOPOLOGY_LAYER_CREATED_ITEM, model.to_hash)
+      end
+
+      def dispatch_deleted_item_events(model)
+        # dispatch_event(TOPOLOGY_LAYER_DELETED_ITEM, id: model.id)
+      end
+
+    end
+  end
+
   class TopologyAssocBase < AssocBase
     class << self
       private
