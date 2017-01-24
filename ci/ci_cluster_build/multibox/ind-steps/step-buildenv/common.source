@@ -100,7 +100,6 @@ function teardown_environment () {
 function teardown_host_settings () {
     destroy_bridge "vnet-itest0"
     destroy_bridge "vnet-itest1"
-    destroy_bridge "vnet-itest2"
     destroy_bridge "vnet-wanedge"
     destroy_bridge "vnet-br0"
     stop_masquerade "${NETWORK}/${PREFIX}"
