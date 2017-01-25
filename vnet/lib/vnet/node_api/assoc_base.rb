@@ -44,15 +44,20 @@ module Vnet::NodeApi
       #
       # TODO: This needs to use a param pair as this now collides with
       # id keys.
-      def event_created_hash(model_map)
-        (model_map.is_a?(Hash) ? model_map.dup : model_map.to_hash).tap { |event_hash|
-          event_hash[:id] = event_hash.delete(parent_id_type)
+      def event_created_hash(map)
+        map.to_hash.tap { |params|
+          params[:id] = params.delete(parent_id_type)
+
+          params.delete(:created_at)
+          params.delete(:updated_at)
+          params.delete(:deleted_at)
+          params.delete(:is_deleted)
         }
       end
 
-      def event_deleted_hash(model_map)
-        { :id => model_map[parent_id_type],
-          assoc_id_type => model_map[assoc_id_type]
+      def event_deleted_hash(map)
+        { :id => map[parent_id_type],
+          assoc_id_type => map[assoc_id_type]
         }
       end
 

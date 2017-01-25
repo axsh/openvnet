@@ -153,6 +153,21 @@ module Vnet::NodeApi
         [model, old_values]
       end
 
+      #
+      # Event hash methods:
+      #
+
+      def event_hash_prepare(map, id_value = nil)
+        map.to_hash.tap { |params|
+          params[:id] = id_value if id_value
+
+          params.delete(:created_at)
+          params.delete(:updated_at)
+          params.delete(:deleted_at)
+          params.delete(:is_deleted)
+        }
+      end
+
       def get_changed_hash(model_hash, changed_keys)
         changed_keys.each_with_object(id: model_hash[:id]) { |key, values|
           values[key] = model_hash[key]

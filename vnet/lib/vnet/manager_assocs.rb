@@ -23,13 +23,17 @@ module Vnet
 
     module ClassMethods
 
-      def subscribe_item_event(event, method)
-        subscribe_event event, event.to_sym
+      def subscribe_event_with_method(event, &block)
+        "handle_#{event}".to_sym.tap { |method|
+          subscribe_event event, method
+          define_method method, block
+        }
+      end
 
-        define_method event.to_sym do |params|
+      def subscribe_item_event(event, method)
+        subscribe_event_with_method event do |params|
           begin
             (@items[get_param_id(params)] || return).tap { |item|
-              # TODO: Do we remove id?
               item.send(method, params)
             }
           rescue Vnet::ParamError => e
@@ -48,10 +52,7 @@ module Vnet
         subscribe_assoc_other_events self_name, second_name
 
         ["#{self_name}_added_#{assoc_name}", "#{first_name}_id".to_sym, "#{second_name}_id".to_sym].tap { |event, first_key, second_key|
-          # TODO: Add a subscrive_event that combines subscribe and define_method.
-          subscribe_event event, 'handle_#{event}'.to_sym
-
-          define_method 'handle_#{event}'.to_sym do |params|
+          subscribe_event_with_method event do |params|
             begin
               publish "#{self_name}_added_#{first_name}", event_hash_assoc_pair(params, second_key)
               publish "#{self_name}_added_#{second_name}", event_hash_assoc_pair(params, first_key)
@@ -62,9 +63,7 @@ module Vnet
         }
 
         ["#{self_name}_removed_#{assoc_name}", "#{first_name}_id".to_sym, "#{second_name}_id".to_sym].tap { |event, first_key, second_key|
-          subscribe_event event, event.to_sym
-
-          define_method event.to_sym do |params|
+          subscribe_event_with_method event do |params|
             begin
               publish "#{self_name}_removed_#{first_name}", event_hash_assoc_pair(params, second_key)
               publish "#{self_name}_removed_#{second_name}", event_hash_assoc_pair(params, first_key)
