@@ -3,8 +3,8 @@
 module Vnet::Core
 
   class InterfaceManager < Vnet::Core::Manager
-
     include Vnet::Constants::Interface
+    include Vnet::ManagerAssocs
 
     #
     # Events:
@@ -17,15 +17,16 @@ module Vnet::Core
     subscribe_event INTERFACE_DELETED_ITEM, :unload_item
 
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
-    subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
-    subscribe_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
-    subscribe_event INTERFACE_ENABLED_FILTERING2, :enabled_filtering2
-    subscribe_event INTERFACE_DISABLED_FILTERING2, :disabled_filtering2
 
     subscribe_event INTERFACE_LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event INTERFACE_RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
+
+    subscribe_item_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
+    subscribe_item_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
+    subscribe_item_event INTERFACE_ENABLED_FILTERING2, :enabled_filtering2
+    subscribe_item_event INTERFACE_DISABLED_FILTERING2, :disabled_filtering2
 
     def initialize(*args)
       super
@@ -337,42 +338,6 @@ module Vnet::Core
       return if ip_lease && ip_lease.interface_id == item.id
 
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
-    end
-
-    # INTERFACE_ENABLED_FILTERING on queue 'item.id'
-    def enabled_filtering(params)
-      item = @items[params[:id]]
-      return if !item || item.ingress_filtering_enabled
-
-      info log_format("enabled filtering on interface", item.uuid)
-      item.enable_filtering
-    end
-
-    # INTERFACE_DISABLED_FILTERING on queue 'item.id'
-    def disabled_filtering(params)
-      item = @items[params[:id]]
-      return if !item || !item.ingress_filtering_enabled
-
-      info log_format("disabled filtering on interface", item.uuid)
-      item.disable_filtering
-    end
-
-    # INTERFACE_ENABLED_FILTERING2 on queue 'item.id'
-    def enabled_filtering2(params)
-      item = internal_detect(id: id)
-      return if !item || item.enabled_filtering
-
-      info log_format("enabled filtering on interface", item.uuid)
-      item.enable_filtering2
-    end
-
-    # INTERFACE_DISABLED_FILTERING2 on queue 'item.id'
-    def disabled_filtering2(params)
-      item = internal_detect(id: id)
-      return if !item || !item.enabled_filtering
-
-      info log_format("disabled filtering on interface", item.uuid)
-      item.disable_filtering2
     end
 
     #

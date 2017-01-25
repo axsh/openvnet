@@ -193,7 +193,7 @@ module Vnet
     INTERFACE_PORT_DEACTIVATE = "interface_port_deactivate"
 
     #
-    # Filter evvents:
+    # Filter events:
     #
 
     FILTER_INITIALIZED = "filter_initialized"

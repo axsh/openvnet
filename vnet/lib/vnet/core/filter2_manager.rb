@@ -3,8 +3,8 @@
 module Vnet::Core
 
   class Filter2Manager < Vnet::Core::Manager
-
     include Vnet::Constants::Filter
+    include Vnet::ManagerAssocs
     include ActiveInterfaceEvents
 
     #
@@ -18,8 +18,8 @@ module Vnet::Core
     subscribe_event FILTER_DELETED_ITEM, :unload_item
     subscribe_event FILTER_UPDATED, :updated_item
 
-    subscribe_event FILTER_ADDED_STATIC, :added_static
-    subscribe_event FILTER_REMOVED_STATIC, :removed_static
+    subscribe_item_event FILTER_ADDED_STATIC, :added_static
+    subscribe_item_event FILTER_REMOVED_STATIC, :removed_static
 
     subscribe_event ACTIVATE_INTERFACE, :activate_interface
     subscribe_event DEACTIVATE_INTERFACE, :deactivate_interface
@@ -112,39 +112,8 @@ module Vnet::Core
         model_hash = filter.to_hash.merge(id: item_map.id,
                                           static_id: filter.id)
 
-        added_static(model_hash)
+        handle_added_static(model_hash)
       }
-    end
-
-    # FILTER_ADDED_STATIC on queue 'item.id'.
-    def added_static(params)
-      item = internal_detect_by_id_with_error(params) || return
-      begin
-        item.added_static(
-          get_param_id(params, :static_id),
-          get_param_ipv4_address(params, :ipv4_src_address),
-          get_param_ipv4_address(params, :ipv4_dst_address),
-          get_param_int(params, :ipv4_src_prefix),
-          get_param_int(params, :ipv4_dst_prefix),
-          get_param_int(params, :port_src, false),
-          get_param_int(params, :port_dst, false),
-          get_param_string(params, :protocol),
-          get_param(params, :passthrough)
-        )
-      rescue Vnet::ParamError => e
-        handle_param_error(e)
-      end
-    end
-
-    # FILTER_REMOVED_STATIC on queue 'item.id'.
-    def removed_static(params)
-      item = internal_detect_by_id(params) || return
-
-      begin
-        item.removed_static(get_param_id(params, :static_id))
-      rescue Vnet::ParamError => e
-        handle_param_error(e)
-      end
     end
 
   end
