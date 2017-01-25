@@ -108,7 +108,7 @@ module Vnet::NodeApi
       end
 
       def destroy_with_transaction(filter)
-        internal_destroy(model_class[filter])
+        internal_destroy(model_class[sanitize_filter(filter)])
       end
 
       def dispatch_created_item_events(model)
@@ -157,6 +157,17 @@ module Vnet::NodeApi
         changed_keys.each_with_object(id: model_hash[:id]) { |key, values|
           values[key] = model_hash[key]
         }
+      end
+
+      def sanitize_filter(filter)
+        case filter
+        when Hash
+          filter.map { |key, value|
+            next key.to_sym, value
+          }
+        else
+          filter
+        end
       end
 
       def inherited(klass)

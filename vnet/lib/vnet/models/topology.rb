@@ -17,7 +17,8 @@ module Vnet::Models
     many_to_many :segments, :join_table => :topology_segments, :conditions => "topology_segments.deleted_at is null"
     many_to_many :route_links, :join_table => :topology_route_links, :conditions => "topology_route_links.deleted_at is null"
 
-    # TODO: Add many_to_many and one_to_many.
+    many_to_many :overlays, :class => Topology, :join_table => :topology_layers, :left_key => :underlay_id, :conditions => "topology_layers.deleted_at is null"
+    many_to_many :underlays, :class => Topology, :join_table => :topology_layers, :left_key => :overlay_id, :conditions => "topology_layers.deleted_at is null"
 
     plugin :association_dependencies,
     # 0009_topology

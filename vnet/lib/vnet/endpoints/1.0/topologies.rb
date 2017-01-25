@@ -70,25 +70,20 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     end
   }
 
-  #
-  #
-  #
-
-  post '/:overlay_uuid/underlays/:underlay_uuid' do
-    uuid_to_id(M::Topology, :overlay_uuid, :overlay_id)
+  post '/:uuid/underlays/:underlay_uuid' do
+    uuid_to_id(M::Topology, :uuid, :overlay_id)
     uuid_to_id(M::Topology, :underlay_uuid, :underlay_id)
 
     remove_system_parameters
     respond_with(R::TopologyLayer.generate(M::TopologyLayer.create(params)))
   end
 
-  get '/:overlay_uuid/underlays' do
-    # TODO: Needs to map uuid to overlay.
-    show_relations(:Topology, :topology_layers)
+  get '/:uuid/underlays' do
+    show_relations(:Topology, :underlays, response_class: R::TopologyCollection)
   end
 
-  delete '/:overlay_uuid/datapaths/:underlay_uuid' do
-    uuid_to_id(M::Topology, :overlay_uuid, :overlay_id)
+  delete '/:uuid/underlays/:underlay_uuid' do
+    uuid_to_id(M::Topology, :uuid, :overlay_id)
     underlay = uuid_to_id(M::Topology, :underlay_uuid, :underlay_id)
 
     remove_system_parameters
@@ -96,7 +91,5 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
 
     respond_with([underlay.uuid])
   end
-
-
 
 end

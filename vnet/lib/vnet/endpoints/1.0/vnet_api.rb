@@ -142,21 +142,20 @@ module Vnet::Endpoints::V10
       respond_with(response.generate(object))
     end
 
-    def show_relations(class_name, response_method)
-      limit = @params[:limit] || config.pagination_limit
-      offset = @params[:offset] || 0
+    def show_relations(class_name, response_method, response_class: nil)
+      response_class ||= R.const_get("#{response_method.to_s.classify}Collection")
+
       object = check_syntax_and_pop_uuid(M.const_get(class_name))
-      total_count = object.batch.send(response_method).count.commit
-      items = object.batch.send("#{response_method}_dataset").offset(offset).limit(limit).all.commit
 
       pagination = {
-        "total_count" => total_count,
-        "offset" => offset,
-        "limit" => limit,
+        total_count: object.batch.send(response_method).count.commit,
+        offset: @params[:offset] || 0,
+        limit: @params[:limit] || config.pagination_limit,
       }
 
-      response = R.const_get("#{response_method.to_s.classify}Collection")
-      respond_with(response.generate_with_pagination(pagination, items))
+      items = object.batch.send("#{response_method}_dataset").offset(pagination[:offset]).limit(pagination[:limit]).all.commit
+
+      respond_with(response_class.generate_with_pagination(pagination, items))
     end
 
     def check_ipv4_address_subnet(network)
