@@ -27,51 +27,51 @@ module Vnet::Endpoints::V10::Helpers
       /^#{prefix}-[a-z0-9]{1,16}$/
     end
 
-    def pop_uuid(model, key = "uuid", fill = {})
+    def pop_uuid(model, key = 'uuid', fill = {})
       uuid = @params.delete(key)
       check_uuid_syntax(model, uuid, key)
-      model.batch[uuid].commit(:fill => fill) || raise(E::UnknownUUIDResource, "#{model.name.split("::").last}##{key}: #{uuid}")
+      model.batch[uuid].commit(:fill => fill) || raise(E::UnknownUUIDResource, "#{model.name.split('::').last}##{key}: #{uuid}")
     end
 
-    def pop_uuid_or_nil(model, key = "uuid", fill = {})
+    def pop_uuid_or_nil(model, key = 'uuid', fill = {})
       uuid = @params.delete(key) || return
       check_uuid_syntax(model, uuid, key)
       model.batch[uuid].commit(:fill => fill)
     end
 
     def check_uuid_syntax(model, uuid, key = 'uuid')
-      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, "#{model.name.split("::").last}##{key}: '#{uuid}'")
+      model.valid_uuid_syntax?(uuid) || raise(E::InvalidUUID, "#{model.name.split('::').last}##{key}: #{uuid}")
     end
 
     def check_and_trim_uuid(model)
-      raise E::DuplicateUUID, @params["uuid"] unless model[@params["uuid"]].nil?
-      @params["uuid"] = model.trim_uuid(@params["uuid"])
+      raise E::DuplicateUUID, @params['uuid'] unless model[@params['uuid']].nil?
+      @params['uuid'] = model.trim_uuid(@params['uuid'])
     end
 
     # Deprecated:
-    def check_syntax_and_pop_uuid(model, key = "uuid", fill = {})
+    def check_syntax_and_pop_uuid(model, key = 'uuid', fill = {})
       check_uuid_syntax(model, @params[key], key)
       pop_uuid(model, key, fill)
     end
 
     # Deprecated:
-    def check_syntax_and_get_id(model, uuid_key = "uuid", id_key = "id", fill = {})
+    def check_syntax_and_get_id(model, uuid_key = 'uuid', id_key = 'id', fill = {})
       check_uuid_syntax(model, @params[uuid_key], uuid_key)
       uuid_to_id(model, uuid_key, id_key, fill)
     end
 
-    def uuid_to_id(model, uuid_key = "uuid", id_key = "id", fill = {})
+    def uuid_to_id(model, uuid_key = 'uuid', id_key = 'id', fill = {})
       model = pop_uuid(model, uuid_key, fill)
-      model.id || raise(E::InvalidID, "#{model.name.split("::").last}#uuid: #{uuid}")
+      model.id || raise(E::InvalidID, "#{model.name.split('::').last}##{uuid_key}: #{uuid}")
 
       @params[id_key] = model.id
 
       model
     end
 
-    def uuid_to_id_or_nil(model, uuid_key = "uuid", id_key = "id", fill = {})
+    def uuid_to_id_or_nil(model, uuid_key = 'uuid', id_key = 'id', fill = {})
       model = pop_uuid_or_nil(model, uuid_key, fill) || return
-      model.id || raise(E::InvalidID, "#{model.name.split("::").last}#uuid: #{uuid}")
+      model.id || raise(E::InvalidID, "#{model.name.split('::').last}##{uuid_key}: #{uuid}")
 
       @params[id_key] = model.id
 

@@ -59,9 +59,11 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
       show_relations(:Topology, assoc_table)
     end
 
+    # TODO: No need to have other_uuid.
+
     delete "/:uuid/#{other_name}s/:#{other_uuid}" do
       uuid_to_id(M::Topology, :uuid, :topology_id)
-      other = uuid_to_id(other_model, other_uuid)
+      other = uuid_to_id(other_model, other_uuid, other_id)
 
       remove_system_parameters
       assoc_model.destroy(params)

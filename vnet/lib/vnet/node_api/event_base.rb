@@ -162,8 +162,9 @@ module Vnet::NodeApi
       def sanitize_filter(filter)
         case filter
         when Hash
-          filter.map { |key, value|
-            next key.to_sym, value
+          filter.inject({}) { |new_filter, (key, value)|
+            new_filter[key.to_sym] = value
+            new_filter
           }
         else
           filter
