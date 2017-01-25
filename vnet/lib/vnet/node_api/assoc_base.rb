@@ -41,6 +41,9 @@ module Vnet::NodeApi
       end
 
       # TODO: Add helper methods to remove timestamps and such.
+      #
+      # TODO: This needs to use a param pair as this now collides with
+      # id keys.
       def event_created_hash(model_map)
         (model_map.is_a?(Hash) ? model_map.dup : model_map.to_hash).tap { |event_hash|
           event_hash[:id] = event_hash.delete(parent_id_type)

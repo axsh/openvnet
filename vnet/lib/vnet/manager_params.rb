@@ -14,7 +14,7 @@
 # begin
 #   port_number = get_param_of_port(params, :port_number)
 # rescue Vnet::ParamError => e
-#   handle_param_error(e)
+#   return handle_param_error(e)
 # end
 
 module Vnet

@@ -12,6 +12,11 @@ Sequel.migration do
       DateTime :updated_at, :null=>false
       DateTime :deleted_at, :index => true
       Integer :is_deleted, :null=>false, :default=>0
+
+      index [:overlay_id, :is_deleted]
+      index [:underlay_id, :is_deleted]
+
+      unique [:overlay_id, :underlay_id, :is_deleted]
     end
   end
 

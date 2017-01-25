@@ -28,10 +28,12 @@ module Vnet::Services
     subscribe_event TOPOLOGY_CREATE_DP_SEG, :create_dp_segment
     subscribe_event TOPOLOGY_CREATE_DP_RL, :create_dp_route_link
 
-    subscribe_assoc_events :topology, :datapath
-    subscribe_assoc_events :topology, :network
-    subscribe_assoc_events :topology, :segment
-    subscribe_assoc_events :topology, :route_link
+    subscribe_assoc_other_events :topology, :datapath
+    subscribe_assoc_other_events :topology, :network
+    subscribe_assoc_other_events :topology, :segment
+    subscribe_assoc_other_events :topology, :route_link
+
+    subscribe_assoc_pair_events :topology, :layer, :overlay, :underlay
 
     def initialize(info, options = {})
       super
@@ -121,6 +123,8 @@ module Vnet::Services
     #
     # Assoc methods:
     #
+
+    # TODO: Clean up and move to ManagerAssocs.
 
     [ [:network, :network_id, TOPOLOGY_CREATE_DP_NW],
       [:segment, :segment_id, TOPOLOGY_CREATE_DP_SEG],

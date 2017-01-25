@@ -1,30 +1,80 @@
 # -*- coding: utf-8 -*-
 
+# TODO: Rename to ManagerEvents
+
 module Vnet
   module ManagerAssocs
 
     def self.included(klass)
+      klass.include(InstanceMethods)
       klass.extend(ClassMethods)
     end
 
-    module ClassMethods
-      def subscribe_assoc_events(self_name, other_name)
-        subscribe_event "#{self_name}_added_#{other_name}", "added_#{other_name}"
-        subscribe_event "#{self_name}_removed_#{other_name}", "removed_#{other_name}"
+    module InstanceMethods
 
-        define_method "added_#{other_name}".to_sym do |params|
-          (internal_detect_by_id_with_error(params) || return).tap { |item|
-            item.added_assoc(other_name, params)
-          }
-        end
-
-        define_method "removed_#{other_name}".to_sym do |params|
-          (internal_detect_by_id_with_error(params) || return).tap { |item|
-            item.removed_assoc(other_name, params)
-          }
-        end
+      def event_hash_assoc_pair(params, id_key)
+        (params.is_a?(Hash) ? params.dup : params.to_hash).tap { |event_hash|
+          event_hash[:id] = get_param_id(params, id_key)
+          event_hash.delete(id_key)
+        }
       end
+
     end
 
+    module ClassMethods
+
+      def subscribe_item_event(event, method)
+        subscribe_event event, event.to_sym
+
+        define_method event.to_sym do |params|
+          begin
+            (@items[get_param_id(params)] || return).tap { |item|
+              # TODO: Do we remove id?
+              item.send(method, params)
+            }
+          rescue Vnet::ParamError => e
+            return handle_param_error(e)
+          end
+        end
+      end
+
+      def subscribe_assoc_other_events(self_name, other_name)
+        subscribe_item_event "#{self_name}_added_#{other_name}", "added_#{other_name}"
+        subscribe_item_event "#{self_name}_removed_#{other_name}", "removed_#{other_name}"
+      end
+
+      def subscribe_assoc_pair_events(self_name, assoc_name, first_name, second_name)
+        subscribe_assoc_other_events self_name, first_name
+        subscribe_assoc_other_events self_name, second_name
+
+        ["#{self_name}_added_#{assoc_name}", "#{first_name}_id".to_sym, "#{second_name}_id".to_sym].tap { |event, first_key, second_key|
+          # TODO: Add a subscrive_event that combines subscribe and define_method.
+          subscribe_event event, 'handle_#{event}'.to_sym
+
+          define_method 'handle_#{event}'.to_sym do |params|
+            begin
+              publish "#{self_name}_added_#{first_name}", event_hash_assoc_pair(params, second_key)
+              publish "#{self_name}_added_#{second_name}", event_hash_assoc_pair(params, first_key)
+            rescue Vnet::ParamError => e
+              return handle_param_error(e)
+            end
+          end
+        }
+
+        ["#{self_name}_removed_#{assoc_name}", "#{first_name}_id".to_sym, "#{second_name}_id".to_sym].tap { |event, first_key, second_key|
+          subscribe_event event, event.to_sym
+
+          define_method event.to_sym do |params|
+            begin
+              publish "#{self_name}_removed_#{first_name}", event_hash_assoc_pair(params, second_key)
+              publish "#{self_name}_removed_#{second_name}", event_hash_assoc_pair(params, first_key)
+            rescue Vnet::ParamError => e
+              return handle_param_error(e)
+            end
+          end
+        }
+      end
+
+    end
   end
 end

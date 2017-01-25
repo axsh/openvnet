@@ -16,6 +16,9 @@ module Vnet::Services::Topologies
       @networks = {}
       @segments = {}
       @route_links = {}
+
+      @overlays = {}
+      @underlays = {}
     end
 
     def log_type
@@ -63,7 +66,9 @@ module Vnet::Services::Topologies
     [ [:datapath, :datapath_id, :@datapaths],
       [:network, :network_id, :@networks],
       [:segment, :segment_id, :@segments],
-      [:route_link, :route_link_id, :@route_links]
+      [:route_link, :route_link_id, :@route_links],
+      [:overlay, :overlay_id, :@overlays],
+      [:underlay, :underlay_id, :@underlays],
     ].each { |other_name, other_key, other_member|
 
       define_method "added_#{other_name}".to_sym do |params|
@@ -117,6 +122,8 @@ module Vnet::Services::Topologies
     #
 
     private
+
+    # TODO: Properly implement these methods.
 
     def handle_added_assoc(other_name, assoc_id, assoc_map)
       debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
