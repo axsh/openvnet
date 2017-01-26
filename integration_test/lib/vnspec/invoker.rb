@@ -53,7 +53,16 @@ module Vnspec
       Vnet.aggregate_logs(job_id, name) do
         setup(name)
         sleep(1)
-        SPec.exec(name)
+
+        result = SPec.exec(name)
+
+        if !result
+          Vnet.dump_logs
+          Vnet.dump_flows
+          Vnet.dump_database
+        end
+
+        result
       end
     end
 
@@ -76,9 +85,6 @@ module Vnspec
       Dataset.setup(name)
 
       Vnet.start(:vna)
-
-      VM.start_network
-      Vnet.dump_flows
 
       true
     end

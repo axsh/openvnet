@@ -4,6 +4,12 @@ require 'ipaddr'
 require 'trema'
 require 'active_support/inflector'
 
+# Remove top-level :array and :string methods introduced by trema-edge
+# to avoid the conflict with BinData's primitive methods.
+Class.class_eval { undef_method :array } rescue NameError
+Class.class_eval { undef_method :string } rescue NameError
+require 'pio'
+
 module Vnet::Plugins
   class VdcVnetPlugin
     include Celluloid
@@ -153,7 +159,7 @@ module Vnet::Plugins
     end
 
     def interface_params(vnet_params)
-      vnet_params[:mac_address] = ::Trema::Mac.new(vnet_params[:mac_address]).value if vnet_params[:mac_address]
+      vnet_params[:mac_address] = Pio::Mac.new(vnet_params[:mac_address]) if vnet_params[:mac_address]
 
       interface = if vnet_params[:ipv4_address] && vnet_params[:mac_address]
                     Vnet::NodeApi::Interface.find_all {|i|
@@ -342,7 +348,7 @@ module Vnet::Plugins
               "#{x}:#{x}:#{x}:#{x}:#{x}:#{x}"
             end
 
-      ::Trema::Mac.new(mac).value
+      Pio::Mac.new(mac)
     end
 
     def create_route_link(gw_a, gw_b)

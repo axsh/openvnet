@@ -26,6 +26,10 @@ module Vnctl::Cli
          :desc => "The egress port number"
       mode.option :route_link_uuid, :type => :string,
          :desc => "The route link uuid"
+      mode.option :ingress_network_uuid, :type => :string,
+         :desc => "The uuid of the ingress network"
+      mode.option :egress_network_uuid, :type => :string,
+         :desc => "The uuid of the egress network"
     end
   end
 end

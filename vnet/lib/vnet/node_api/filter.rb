@@ -3,23 +3,11 @@
 module Vnet::NodeApi
 
   class Filter < EventBase
-    class << self
-      def update(uuid, options)
-        options.each { |param|
-          return unless param.first == "ingress_passthrough" || param.first == "egress_passthrough"
-        }
+    valid_update_fields [:ingress_passthrough, :egress_passthrough]
 
-        filter = transaction {
-          model_class[uuid].tap do |model|
-            model.update(options)
-          end
-        }.tap { |filter|
-          dispatch_event(FILTER_UPDATED,
-                         id: filter.id,
-                         ingress_passthrough: filter.ingress_passthrough,
-                         egress_passthrough: filter.egress_passthrough
-                        )
-        }
+    class << self
+      def dispatch_updated_item_events(model, old_values)
+        dispatch_event(FILTER_UPDATED, get_changed_hash(model, old_values.keys))
       end
 
       private

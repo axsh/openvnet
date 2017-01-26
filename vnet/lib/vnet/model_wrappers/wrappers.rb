@@ -8,6 +8,12 @@ module Vnet::ModelWrappers
   class ActiveNetwork < Base
   end
 
+  class ActiveRouteLink < Base
+  end
+
+  class ActiveSegment < Base
+  end
+
   class IpRange < Base
   end
 
@@ -18,6 +24,9 @@ module Vnet::ModelWrappers
   end
 
   class MacRangeGroup < Base
+  end
+
+  class Segment < Base
   end
 
 end

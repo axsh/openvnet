@@ -72,11 +72,11 @@ network_services:
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
-    type: dhcp
+    mode: dhcp
 
   - uuid: ns-dhcp2
     interface_uuid: if-dhcp2
-    type: dhcp
+    mode: dhcp
 
 datapath_networks:
 
@@ -143,7 +143,6 @@ filter_static:
     passthrough: true
   - filter_uuid : fil-test1
     protocol: "arp"
-    ipv4_address: "0.0.0.0/0"
     passthrough: true
 
   - filter_uuid: fil-test3
@@ -172,7 +171,6 @@ filter_static:
     passthrough: true
   - filter_uuid : fil-test3
     protocol: "arp"
-    ipv4_address: "0.0.0.0/0"
     passthrough: true
 
 
@@ -187,7 +185,6 @@ filter_static:
     passthrough: true
   - filter_uuid : fil-test4
     protocol: "arp"
-    ipv4_address: "0.0.0.0/0"
     passthrough: true
   - filter_uuid: fil-test4
     protocol: "udp"

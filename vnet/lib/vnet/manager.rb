@@ -101,18 +101,21 @@ module Vnet
     # Polling methods:
     #
 
+    # Returns true if initialized, nil otherwise.
     def wait_for_initialized(max_wait = 10.0)
       internal_wait_for_initialized(max_wait)
     end
 
+    # Returns item if loaded, nil otherwise.
     def wait_for_loaded(params, max_wait = 10.0, try_load = false)
       item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
-    
+
+    # Returns true if unloaded, nil otherwise.
     def wait_for_unloaded(params, max_wait = 10.0)
       internal_wait_for_unloaded(params, max_wait)
     end
-    
+
     #
     # Other:
     #
@@ -129,6 +132,7 @@ module Vnet
       nil
     end
 
+    # TODO: Move to core/manager.
     def set_datapath_info(datapath_info)
       if @datapath_info
         raise("Manager.set_datapath_info called twice.")
@@ -152,12 +156,15 @@ module Vnet
       end
 
       do_initialize
-      
+
       @state = :initialized
 
       # TODO: Catch errors and return nil when do_initialize fails.
       resume_event_tasks(:initialized, true)
       nil
+    end
+
+    def do_initialize
     end
 
     #
@@ -168,6 +175,14 @@ module Vnet
 
     def log_format(message, values = nil)
       (@log_prefix || "") + message + (values ? " (#{values})" : '')
+    end
+
+    def log_format_h(message, values)
+      values && values.map { |value|
+        value.join(':')
+      }.join(' ').tap { |str|
+        return log_format(message, str)
+      }
     end
 
     #
@@ -297,17 +312,14 @@ module Vnet
       return item if item
 
       if @load_queries.has_key?(params)
-        # Can't use blocking calls here.
-        # info log_format("internal_retrieve DUPLICATE", params.inspect)
-
         item = create_event_task_match_proc(:retrieved, params, nil)
 
         if item.nil?
-          info log_format("internal_retrieve duplicate fiber query FAILED", params.inspect)
+          info log_format_h("internal_retrieve duplicate fiber query FAILED", params)
           return
         end
 
-        info log_format("internal_retrieve duplicate fiber query SUCCESS", params.inspect)
+        info log_format_h("internal_retrieve duplicate fiber query SUCCESS", params)
 
         return item
       end
@@ -349,7 +361,7 @@ module Vnet
       resume_event_tasks(:retrieved, item)
 
       if item.nil?
-        info log_format("internal_retrieve main fiber query FAILED", params.inspect)
+        info log_format_h("internal_retrieve main fiber query FAILED", params && params.to_h)
       end
     end
 
@@ -379,17 +391,17 @@ module Vnet
       item_map = params[:item_map]
 
       if item_id.nil?
-        warn log_format("load_item requires a valid id", params.inspect)
+        warn log_format_h("load_item requires a valid id", params && params.to_h)
         return
       end
 
       if item_map.nil?
-        warn log_format("load_item requires a valid item_map", params.inspect)
+        warn log_format_h("load_item requires a valid item_map", params && params.to_h)
         return
       end
 
       if item_map.id != item_id
-        warn log_format("load_item requires id to match item_map.id", params.inspect)
+        warn log_format_h("load_item requires id to match item_map.id", params && params.to_h)
         return
       end
 
@@ -398,7 +410,7 @@ module Vnet
       # It should not be possible for the item to have disappeared due
       # to the event queue item id lock.
       if item.nil?
-        warn log_format("load_item could not find item", params.inspect)
+        warn log_format_h("load_item could not find item", params && params.to_h)
         return
       end
 
@@ -425,7 +437,7 @@ module Vnet
       item_id = (params && params[:id])
 
       if item_id.nil?
-        warn log_format("unload_item requires a valid id", params.inspect)
+        warn log_format_h("unload_item requires a valid id", params && params.to_h)
         return
       end
 
@@ -453,7 +465,7 @@ module Vnet
       item_id = item_map.id
 
       if item_id.nil?
-        warn log_format("internal_new_item requires a valid item_map.id", item_map.inspect)
+        warn log_format_h("internal_new_item requires a valid item_map.id", item_map && item_map.to_h)
         return
       end
 
@@ -522,7 +534,7 @@ module Vnet
       item_id = (params && params[:id])
 
       if item_id.nil?
-        warn log_format("internal_detect_by_id requires a valid id", params.inspect)
+        warn log_format_h("internal_detect_by_id requires a valid id", params && params.to_h)
         return
       end
 
@@ -578,7 +590,7 @@ module Vnet
         # TODO: internal_retrieve does not have max_wait or immediate
         # return if in retrieve queue.
         self.async.retrieve(params)
-        
+
         item = internal_detect_loaded(params)
         return item if item
 
@@ -633,7 +645,7 @@ module Vnet
 
       # Check if the item got loaded already. Currently we just drop
       # the packets to avoid packets being reflected back to the
-      # controller.  
+      # controller.
       return if @items[item_id]
 
       if @messages.has_key? item_id

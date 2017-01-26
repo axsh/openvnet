@@ -9,6 +9,8 @@ module Vnet::Models
     many_to_one :interface
     many_to_one :datapath
 
+    # TODO: Cleanup.
+
     def validate
       super
       errors.add(:label, 'must be set if singular is null') if label.nil? && singular.nil?

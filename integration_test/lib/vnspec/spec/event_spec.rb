@@ -123,14 +123,12 @@ describe "event" do
 
   describe "datapath" do
     before(:each) do
-      vms.parallel { |vm| vm.clear_arp_cache }
+      vms.parallel_each { |vm| vm.clear_arp_cache }
     end
 
     describe "remove" do
       before(:all) do
         datapath = Vnspec::Models::Datapath.find("dp-1")
-        datapath.remove_datapath_network("nw-vnet1")
-        datapath.remove_datapath_network("nw-vnet2")
         datapath.destroy
         sleep(1)
       end

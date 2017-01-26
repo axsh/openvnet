@@ -87,7 +87,7 @@ module Vnet::Core::Services
 
       dhcp_out = create_dhcp_packet(params)
 
-      debug log_format("DHCP send", "output:#{dhcp_out.to_s}")
+      debug log_format("DHCP send", "output:#{dhcp_out}")
 
       packet_udp_out({ :out_port => message.in_port,
                        :eth_src => mac_info[:mac_address],
@@ -100,26 +100,39 @@ module Vnet::Core::Services
                      })
     end
 
-    def add_network(network_id, cookie_id)
+    def add_network(network_id, cookie_id, segment_id)
       if dns_server = @dp_info.service_manager.dns_server_for(network_id)
         add_dns_server(network_id, dns_server)
       end
+
+      match_dhcp = {
+        :eth_type => 0x0800,
+        :ip_proto => 0x11,
+        :ipv4_dst => IPV4_BROADCAST,
+        :ipv4_src => IPV4_ZERO,
+        :udp_dst => 67,
+        :udp_src => 68
+      }
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_SIMULATED,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 30,
-                           match: {
-                             :eth_type => 0x0800,
-                             :ip_proto => 0x11,
-                             :ipv4_dst => IPV4_BROADCAST,
-                             :ipv4_src => IPV4_ZERO,
-                             :udp_dst => 67,
-                             :udp_src => 68
-                           },
+                           match: match_dhcp,
                            cookie: cookie_for_network(cookie_id),
                            match_network: network_id,
                            write_interface: @interface_id)
+
+      if segment_id
+        flows << flow_create(table: TABLE_FLOOD_SIMULATED,
+                             goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                             priority: 30,
+                             match: match_dhcp,
+                             cookie: cookie_for_network(cookie_id), # Fix.
+                             match_segment: segment_id,
+                             write_interface: @interface_id)
+      end
+
       @dp_info.add_flows(flows)
     end
 
@@ -170,7 +183,7 @@ module Vnet::Core::Services
       ip_lease = MW::IpLease.batch.dataset.join_ip_addresses.where(filter).first.commit(fill: :ipv4_address)
       ip_lease && ipaddr_to_octets(ip_lease.ipv4_address)
     end
-    
+
     def ipaddr_to_octets(ip)
       i = ip.to_i
       [ (i >> 24) % 256, (i >> 16) % 256, (i >> 8) % 256, i % 256 ]
@@ -219,7 +232,7 @@ module Vnet::Core::Services
       dhcp_in = DHCP::Message.from_udp_payload(raw_in_l4.payload)
       message_type = dhcp_in.options.select { |each| each.type == $DHCP_MESSAGETYPE }
 
-      debug log_format("message", "#{dhcp_in.to_s}")
+      debug log_format("message", "#{dhcp_in}")
 
       [dhcp_in, message_type]
     end

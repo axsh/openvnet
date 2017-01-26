@@ -10,12 +10,14 @@ module Vnet::Openflow
     attr_reader :uuid
     attr_reader :display_name
     attr_reader :node_id
+    attr_reader :enable_ovs_learn_action
 
     def initialize(datapath_map)
       @id = datapath_map[:id]
       @uuid = datapath_map[:uuid]
       @display_name = datapath_map[:display_name]
       @node_id = datapath_map[:node_id]
+      @enable_ovs_learn_action = datapath_map[:enable_ovs_learn_action]
     end
 
   end
@@ -57,7 +59,7 @@ module Vnet::Openflow
 
       @switch = Switch.new(self)
       link(@switch)
-      
+
       @switch.create_default_flows
       @switch.switch_ready
 
@@ -66,8 +68,14 @@ module Vnet::Openflow
 
     def run_normal
       info log_format('starting normal vnet datapath')
-      
+
       wait_for_load_of_host_datapath
+
+      info log_format_h('found datapath info',
+                        display_name: @datapath_info.display_name,
+                        node_id: @datapath_info.node_id,
+                        enable_ovs_learn_action: @datapath_info.enable_ovs_learn_action)
+
       initialize_managers
       wait_for_unload_of_host_datapath
 
@@ -92,6 +100,14 @@ module Vnet::Openflow
       "#{@dpid_s} datapath: #{message}" + (values ? " (#{values})" : '')
     end
 
+    def log_format_h(message, values)
+      str = values.map { |value|
+        value.join(':')
+      }.join(' ')
+
+      log_format(message, str)
+    end
+
     def wait_for_load_of_host_datapath
       host_datapath = nil
       counter = 0
@@ -110,7 +126,7 @@ module Vnet::Openflow
       #
       # TODO: This should be done automatically by datapath manager
       # when it is initialized.
-      # 
+      #
       # Since we load the host datapath here, we need to set
       # queue-only now.
       @dp_info.managers.each { |manager|
@@ -166,9 +182,9 @@ module Vnet::Openflow
       }
     end
 
-    # TODO: Call this from somewhere.
     def initialize_bootstrap_managers
       managers = @dp_info.bootstrap_managers
+      managers.each { |manager| manager.set_datapath_info(@datapath_info) }
       managers.each { |manager| manager.event_handler_queue_only }
       managers.each { |manager| manager.async.start_initialize }
       managers.each { |manager| manager.wait_for_initialized(nil) }

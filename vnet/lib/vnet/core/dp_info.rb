@@ -28,15 +28,21 @@ module Vnet::Core
       active_interface
       active_network
       active_port
+      active_route_link
+      active_segment
       connection
       datapath
       interface
+      interface_network
+      interface_segment
+      interface_route_link
       interface_port
       network
       route
       router
       filter2
       filter
+      segment
       service
       tunnel
       translation
@@ -205,6 +211,13 @@ module Vnet::Core
     end
 
     def internal_terminate_managers(manager_list, timeout)
+      manager_list.each { |manager|
+        begin
+          manager.terminate
+        rescue Celluloid::DeadActorError
+        end
+      }
+
       start_time = Time.new
 
       manager_list.each { |manager|

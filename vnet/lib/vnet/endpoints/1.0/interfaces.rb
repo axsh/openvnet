@@ -21,15 +21,32 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   put_post_shared_params
   param_uuid M::Interface
   param_uuid M::Network, :network_uuid
+  param_uuid M::Segment, :segment_uuid
   param :ipv4_address, :String, transform: PARSE_IPV4
   param :mac_address, :String, transform: PARSE_MAC
   param :mac_range_group_uuid, :String
   param :port_name, :String
   param :mode, :String, in: C::Interface::MODES
   post do
-    uuid_to_id(M::Network, "network_uuid", "network_id") if params["network_uuid"]
     uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
     uuid_to_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id") if params["mac_range_group_uuid"]
+
+    segment_uuid = params["segment_uuid"]
+
+    uuid_to_id(M::Segment, "segment_uuid", "segment_id") if segment_uuid
+
+    if params["network_uuid"]
+      network = uuid_to_id(M::Network, "network_uuid", "network_id")
+
+      check_ipv4_address_subnet(network)
+
+      if params["segment_id"] && params["segment_id"] != network.segment_id
+        raise(E::InvalidID, "segment_uuid:#{segment_uuid} does not match the segment used by network_uuid:#{network_uuid}")
+      end
+
+      # TODO: Temporary workaround until segment's are set properly.
+      params["segment_id"] = network.segment_id if network.segment_id
+    end
 
     params["enable_legacy_filtering"] = params["ingress_filtering_enabled"]
     post_new(:Interface, fill)
@@ -105,6 +122,49 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     ports.each { |r| M::InterfacePort.destroy(r.id) }
 
     respond_with(R::InterfacePortCollection.generate(ports))
+  end
+
+  #
+  # Segments:
+  #
+
+  ASSOCS = [
+    [M::Network, M::InterfaceNetwork, R::InterfaceNetwork, :network],
+    [M::Segment, M::InterfaceSegment, R::InterfaceSegment, :segment],
+    [M::RouteLink, M::InterfaceRouteLink, R::InterfaceRouteLink, :route_link]
+  ].freeze
+
+  ASSOCS.each do |other_model, assoc_model, assoc_response, assoc_name|
+    assoc_uuid_sym = "#{assoc_name}_uuid".to_sym
+
+    param_uuid M::Interface
+    param_uuid other_model, assoc_uuid_sym
+    param :static, :Boolean
+    put "/:uuid/#{assoc_name}s/:#{assoc_uuid_sym}" do
+      # TODO: Move the 'uuid_to_id' calls to nodeapi and add a
+      # base_foobar module that let's us easily extract the foo_id from
+      # uuid, id or nil according to the requirements.
+      interface = uuid_to_id(M::Interface, 'uuid', 'interface_id')
+      other = uuid_to_id(other_model, assoc_uuid_sym, "#{assoc_name}_id")
+
+      # TODO: Use the default update handling code instead.
+
+      if params.has_key?('static')
+        if params['static']
+          result = assoc_model.set_static(interface.id, other.id)
+        else
+          result = assoc_model.clear_static(interface.id, other.id)
+        end
+      else
+        respond_with({})
+      end
+
+      respond_with(assoc_response.generate(result))
+    end
+
+    get '/:uuid/segments' do
+      show_relations(:Interface, "interface_#{assoc_name}s".to_sym)
+    end
   end
 
   #

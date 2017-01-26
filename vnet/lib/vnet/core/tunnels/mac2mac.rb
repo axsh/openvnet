@@ -48,7 +48,7 @@ module Vnet::Core::Tunnels
       @dp_info.add_flows(flows)
 
       info log_format("installed",
-                      "src_ipv4_address:#{@src_ipv4_address.to_s} dst_ipv4_address:#{@dst_ipv4_address.to_s}")
+                      "src_ipv4_address:#{@src_ipv4_address} dst_ipv4_address:#{@dst_ipv4_address}")
     end
 
     def delete_tunnel
@@ -64,11 +64,22 @@ module Vnet::Core::Tunnels
       # @dp_info.del_cookie(cookie_value, cookie_mask)
     end
 
-    def actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
+    def actions_append_flood_network(network_id, tunnel_actions, mac2mac_actions)
       return if @host_port_number.nil?
 
       dpn = detect_network_id?(network_id) || return
-      
+
+      mac2mac_actions << {
+        :eth_dst => dpn[:mac_address],
+        :output => @host_port_number
+      }
+    end
+
+    def actions_append_flood_segment(segment_id, tunnel_actions, mac2mac_actions)
+      return if @host_port_number.nil?
+
+      dpn = detect_segment_id?(segment_id) || return
+
       mac2mac_actions << {
         :eth_dst => dpn[:mac_address],
         :output => @host_port_number

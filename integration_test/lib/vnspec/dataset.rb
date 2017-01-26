@@ -25,13 +25,23 @@ module Vnspec
       @dataset.each do |key, value|
         value.each do |v|
           v = v.dup
+          request_type = :post
+
           url = case key
           when :datapath_networks
             "datapaths/#{v.delete(:datapath_uuid)}/networks/#{v.delete(:network_uuid)}"
           when :datapath_route_links
             "datapaths/#{v.delete(:datapath_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
+          when :datapath_segments
+            "datapaths/#{v.delete(:datapath_uuid)}/segments/#{v.delete(:segment_uuid)}"
           when :interface_security_groups
             "interfaces/#{v.delete(:interface_uuid)}/security_groups/#{v.delete(:security_group_uuid)}"
+          when :interface_network_puts
+            request_type = :put
+            "interfaces/#{v.delete(:interface_uuid)}/networks/#{v.delete(:network_uuid)}"
+          when :interface_segment_puts
+            request_type = :put
+            "interfaces/#{v.delete(:interface_uuid)}/segments/#{v.delete(:segment_uuid)}"
           when :filter_static
             "filters/#{v.delete(:filter_uuid)}/static"
           when :dns_records
@@ -46,10 +56,23 @@ module Vnspec
             "lease_policies/#{v.delete(:lease_policy_uuid)}/ip_lease_containers/#{v.delete(:ip_lease_container_uuid)}"
           when :lease_policy_ip_retention_containers
             "lease_policies/#{v.delete(:lease_policy_uuid)}/ip_retention_containers/#{v.delete(:ip_retention_container_uuid)}"
+          when :mac_range_group_mac_ranges
+            "mac_range_groups/#{v.delete(:mac_range_group_uuid)}/mac_ranges"
+          when :topology_datapaths
+            "topologies/#{v.delete(:topology_uuid)}/datapaths/#{v.delete(:datapath_uuid)}"
+          when :topology_networks
+            "topologies/#{v.delete(:topology_uuid)}/networks/#{v.delete(:network_uuid)}"
+          when :topology_segments
+            "topologies/#{v.delete(:topology_uuid)}/segments/#{v.delete(:segment_uuid)}"
+          when :topology_route_links
+            "topologies/#{v.delete(:topology_uuid)}/route_links/#{v.delete(:route_link_uuid)}"
+          when :translation_static_addresses
+            "translations/#{v.delete(:translation_uuid)}/static_address"
           else
             key.to_s
           end
-          request(:post, url, v)
+
+          request(request_type, url, v)
         end
       end
     end
@@ -58,12 +81,27 @@ module Vnspec
       API.request(method, url, params, headers, &block)
     end
 
+    def is_topology?
+      @name =~ /_tp$/
+    end
+
     private
-    def  init_dataset
-      @dataset = ["base", name].each_with_object({}) do |n, h|
+
+    def init_dataset
+      files = ['base']
+
+      files << if is_topology?
+                 'base_topology'
+               else
+                 'base_dp'
+               end
+
+      files << name
+
+      @dataset = files.each_with_object({}) do |n, h|
         load_file(n).each do |k, v|
           h[k] ||= []
-          h[k] += v
+          h[k] += v if v
         end
       end
     end

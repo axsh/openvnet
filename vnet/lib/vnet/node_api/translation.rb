@@ -15,13 +15,9 @@ module Vnet::NodeApi
 
         # 0001_origin
         # translation_static_addresses: ignore, handled by main event
-        # vlan_translations: ignore, handled by main event
       end
 
     end
-  end
-
-  class VlanTranslation < Base
   end
 
 end

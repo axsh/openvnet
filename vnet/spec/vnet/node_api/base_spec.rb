@@ -11,7 +11,7 @@ module Vnet::Models
     def self.aaa
       self.new(:name => :aaa)
     end
- 
+
     def to_hash
       super.tap {|h| h[:name] = self.name}
     end

@@ -17,6 +17,7 @@ module Vnet::Endpoints::V10
     E = Vnet::Endpoints::Errors
     R = Vnet::Endpoints::V10::Responses
     C = Vnet::Constants
+    H = Vnet::Helpers
 
     DEFAULT_PAGINATION_LIMIT = 30
 
@@ -114,6 +115,21 @@ module Vnet::Endpoints::V10
       respond_with(response.generate(updated_object))
     end
 
+    def update_by_uuid2(class_name, fill = {})
+      model_wrapper = M.const_get(class_name)
+      response = R.const_get(class_name)
+
+      model = check_syntax_and_pop_uuid(model_wrapper)
+
+      # This yield is for extra argument validation
+      yield(params) if block_given?
+
+      remove_system_parameters
+
+      updated_object = model_wrapper.batch.update_uuid(model.uuid, params).commit(:fill => fill)
+      respond_with(response.generate(updated_object))
+    end
+
     def post_new(class_name, fill = {})
       model_wrapper = M.const_get(class_name)
       response = R.const_get(class_name)
@@ -132,6 +148,7 @@ module Vnet::Endpoints::V10
       object = check_syntax_and_pop_uuid(M.const_get(class_name))
       total_count = object.batch.send(response_method).count.commit
       items = object.batch.send("#{response_method}_dataset").offset(offset).limit(limit).all.commit
+
       pagination = {
         "total_count" => total_count,
         "offset" => offset,
@@ -140,6 +157,18 @@ module Vnet::Endpoints::V10
 
       response = R.const_get("#{response_method.to_s.classify}Collection")
       respond_with(response.generate_with_pagination(pagination, items))
+    end
+
+    def check_ipv4_address_subnet(network)
+      ipv4_address = params["ipv4_address"]
+      if ipv4_address
+        valid, parsed_ipv4_nw, parsed_ipv4 = H::IpAddress.valid_in_subnet(network, ipv4_address)
+
+        if !valid
+          raise(E::ArgumentError, "IP Address %s not in subnet %s." %
+            [parsed_ipv4, parsed_ipv4_nw])
+        end
+      end
     end
 
     respond_to :json, :yml
@@ -160,7 +189,8 @@ module Vnet::Endpoints::V10
     load_namespace('routes')
     load_namespace('route_links')
     load_namespace('security_groups')
+    load_namespace('segments')
     load_namespace('translations')
-    load_namespace('vlan_translations')
+    load_namespace('topologies')
   end
 end

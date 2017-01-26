@@ -37,7 +37,8 @@ module Vnet::Openflow
       info "features_reply from %#x." % dpid
 
       datapath = datapath(dpid) || return
-      datapath.switch.async.features_reply(message)
+      switch = datapath.switch || return
+      switch.async.features_reply(message)
     end
 
     def port_desc_multipart_reply(dpid, message)
@@ -57,7 +58,8 @@ module Vnet::Openflow
       debug "port_status from %#x." % dpid
 
       datapath = datapath(dpid) || return
-      datapath.switch.async.port_status(message)
+      switch = datapath.switch || return
+      switch.async.port_status(message)
     end
 
     def packet_in(dpid, message)
@@ -71,6 +73,8 @@ module Vnet::Openflow
         dp_info.translation_manager.async.packet_in(message)
       when COOKIE_PREFIX_ROUTE_LINK
         dp_info.router_manager.async.packet_in(message)
+      when COOKIE_PREFIX_SEGMENT
+        dp_info.segment_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
         dp_info.service_manager.async.packet_in(message)
       when COOKIE_PREFIX_CONNECTION
@@ -140,10 +144,6 @@ module Vnet::Openflow
       info "terminating datapath actor. dpid: 0x%016x" % dpid
       datapath.terminate
       info "terminated datapath actor. dpid: 0x%016x" % dpid
-    end
-
-    def update_vlan_translation
-      datapath.switch.async.update_vlan_translation
     end
 
     def datapath(dpid)

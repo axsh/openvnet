@@ -2,8 +2,17 @@
 
 module Vnet::NodeApi
   class RouteLink < EventBase
+    valid_update_fields []
+
     class << self
       private
+
+      def create_with_transaction(options)
+        transaction do
+          mac_address_random_assign(options)
+          model = internal_create(options)
+        end
+      end
 
       def dispatch_created_item_events(model)
         dispatch_event(ROUTER_CREATED_ITEM, model.to_hash)
@@ -18,6 +27,10 @@ module Vnet::NodeApi
         DatapathRouteLink.dispatch_deleted_where(filter, model.deleted_at)
         Route.dispatch_deleted_where(filter, model.deleted_at)
         # translation_static_addresses: :destroy,
+        # 0009_topology
+        TopologyRouteLink.dispatch_deleted_where(filter, model.deleted_at)
+        # 0011_assoc_interface
+        InterfaceRouteLink.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end

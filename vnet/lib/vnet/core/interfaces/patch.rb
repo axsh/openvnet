@@ -49,6 +49,7 @@ module Vnet::Core::Interfaces
       flows_for_disabled_filtering(flows) unless @enabled_filtering || @enabled_legacy_filtering
       flows_for_disabled_legacy_filtering(flows) unless @ingress_filtering_enabled || !@enabled_legacy_filtering
       flows_for_base(flows)
+      flows_for_classifiers(flows)
 
       if @enable_routing && !@enable_route_translation
         flows_for_route_translation(flows)
@@ -122,8 +123,8 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            actions: {
-                             :eth_src => Trema::Mac.new('00:00:27:11:11:11'),
-                             :eth_dst => Trema::Mac.new('00:00:27:22:22:22'),
+                             :eth_src => Pio::Mac.new('00:00:27:11:11:11'),
+                             :eth_dst => Pio::Mac.new('00:00:27:22:22:22'),
                            },
                            match_interface: @id,
 

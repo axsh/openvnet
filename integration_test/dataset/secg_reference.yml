@@ -60,7 +60,7 @@ network_services:
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
-    type: dhcp
+    mode: dhcp
 
 datapath_networks:
 

@@ -7,6 +7,8 @@ module Vnet::Core
     #
     # Events:
     #
+    event_handler_default_drop_all
+
     subscribe_event PORT_INITIALIZED, :install_item
     subscribe_event PORT_FINALIZED, :uninstall_item
 
@@ -145,7 +147,7 @@ module Vnet::Core
       interface_mode = params[:interface_mode] || return
 
       case interface_mode
-      when :host, :edge, :patch
+      when :host, :promiscuous, :edge, :patch
         prepare_port_eth(port, interface_id, interface_mode)
       when :vif
         prepare_port_vif(port, interface_id, interface_mode)
@@ -186,14 +188,13 @@ module Vnet::Core
         return
       end
 
-      if interface_mode == :host || interface_mode == :patch
+      case interface_mode
+      when :host, :patch
         port.extend(Ports::Host)
         port.interface_id = interface_id
-
-      elsif interface_mode == :edge
-        port.extend(Ports::Generic)
+      when :promiscuous
+        port.extend(Ports::Promiscuous)
         port.interface_id = interface_id
-
       else
         error log_format("unknown port type", interface_mode)
       end

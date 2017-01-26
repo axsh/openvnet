@@ -80,19 +80,19 @@ network_services:
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
-    type: dhcp
+    mode: dhcp
 
   - uuid: ns-dhcp2
     interface_uuid: if-dhcp2
-    type: dhcp
+    mode: dhcp
 
   - uuid: ns-dns1
     interface_uuid: if-dns1
-    type: dns
+    mode: dns
 
   - uuid: ns-dns2
     interface_uuid: if-dns2
-    type: dns
+    mode: dns
 
 datapath_networks:
 
