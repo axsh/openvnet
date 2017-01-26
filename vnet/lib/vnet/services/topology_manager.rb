@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services
-  class TopologyManager < Vnet::Manager
+  class TopologyManager < Vnet::Services::Manager
     include Vnet::Constants::Topology
     include Vnet::ManagerAssocs
 
@@ -34,11 +34,6 @@ module Vnet::Services
     subscribe_assoc_other_events :topology, :route_link
 
     subscribe_assoc_pair_events :topology, :layer, :overlay, :underlay
-
-    def initialize(info, options = {})
-      super
-      @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
-    end
 
     def do_initialize
       info log_format('loading all topologies')
@@ -99,7 +94,7 @@ module Vnet::Services
           return
         end
 
-      item_class.new(map: item_map)
+      item_class.new(vnet_info: @vnet_info, map: item_map)
     end
 
     #

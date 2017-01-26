@@ -147,11 +147,13 @@ module Vnet::Services::Topologies
     end
 
     def create_datapath_other(other_name, create_params)
-      if mw_datapath_assoc_class(other_name).batch.create(create_params).commit
-        debug log_format_h("created datapath_#{other_name}", create_params)
-      else
-        info log_format_h("failed to create datapath_#{other_name}", create_params)
-      end
+      mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|
+        if result
+          debug log_format_h("created datapath_#{other_name}", create_params)
+        else
+          info log_format_h("failed to create datapath_#{other_name}", create_params)
+        end
+      }
     end
 
   end

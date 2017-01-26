@@ -213,6 +213,10 @@ module Vnet
       get_param_type(params, key, Vnet::Core::DpInfo, required)
     end
 
+    def get_param_vnet_info(params, key = :vnet_info, required = true)
+      get_param_type(params, key, Vnet::Services::VnetInfo, required)
+    end
+
     def get_param_datapath_info(params, key = :datapath_info, required = true)
       get_param_type(params, key, Vnet::Openflow::DatapathInfo, required)
     end

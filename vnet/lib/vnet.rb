@@ -578,6 +578,7 @@ module Vnet
     autoload :IpRetentionContainerManager, 'vnet/services/ip_retention_container_manager'
     autoload :LeasePolicy, 'vnet/services/lease_policy'
     autoload :LeasePolicyManager, 'vnet/services/lease_policy_manager'
+    autoload :Manager, 'vnet/services/manager'
     autoload :Topology, 'vnet/services/items'
     autoload :TopologyManager, 'vnet/services/topology_manager'
     autoload :VnetInfo, 'vnet/services/vnet_info'

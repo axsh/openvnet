@@ -36,6 +36,8 @@ module Vnet
             (@items[get_param_id(params)] || return).tap { |item|
               item.send(method, params)
             }
+
+            return nil
           rescue Vnet::ParamError => e
             return handle_param_error(e)
           end
