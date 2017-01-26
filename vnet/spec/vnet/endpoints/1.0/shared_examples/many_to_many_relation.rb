@@ -9,21 +9,31 @@ shared_examples 'SHARED many_to_many_relation' do |req_params = {}|
   include_examples "BASE many_to_many_relation", req_params
 
   before(:each) do
-    # TODO: Move to helper method.
-    base_name = base_object.class.name.demodulize.underscore
-    relation_name = related_object.class.name.demodulize.underscore
+    base_n =
+      if respond_to?(:base_name)
+        base_name
+      else
+        base_object.class.name.demodulize.underscore
+      end
+
+    relation_n =
+      if respond_to?(:relation_name)
+        relation_name
+      else
+        related_object.class.name.demodulize.underscore
+      end
 
     fabricator_name =
       if respond_to?(:join_table_fabricator)
         join_table_fabricator
       else
-        "#{base_name}_#{relation_name}".to_sym
+        "#{base_n}_#{relation_n}".to_sym
       end
 
     Fabricate(
       fabricator_name,
-      :"#{base_name}_id" => base_object.id,
-      :"#{relation_name}_id" => related_object.id
+      :"#{base_n}_id" => base_object.id,
+      :"#{relation_n}_id" => related_object.id
     )
   end
 

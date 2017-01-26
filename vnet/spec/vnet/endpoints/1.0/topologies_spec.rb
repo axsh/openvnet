@@ -39,6 +39,17 @@ describe '/topologies' do
     include_examples 'PUT /:uuid', accepted_params, uuid_params
   end
 
+  describe 'Many to many relation calls for underlays' do
+    let!(:base_object) { Fabricate(fabricator) }
+    let(:relation_fabricator) { :topology }
+    let(:base_name) { :overlay }
+    let(:relation_name) { :underlay }
+    let(:join_table_fabricator) { :topology_underlay }
+
+    include_examples 'many_to_many_relation', 'underlays', {
+    }
+  end
+
   describe 'Many to many relation calls for datapaths' do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :datapath }
