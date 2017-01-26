@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
-  def self.put_post_shared_params
-  end
-
   param_uuid M::RouteLink
   param :mac_address, :String, transform: PARSE_MAC
-  put_post_shared_params
   post do
     post_new(:RouteLink)
   end
@@ -21,10 +17,5 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
 
   delete '/:uuid' do
     delete_by_uuid(:RouteLink)
-  end
-
-  put_post_shared_params
-  put '/:uuid' do
-    update_by_uuid(:RouteLink)
   end
 end

@@ -32,15 +32,6 @@ describe "/translations" do
     include_examples "POST /", accepted_params, required_params, uuid_params
   end
 
-  describe "PUT /:uuid" do
-    let!(:test_interface) { Fabricate(:interface, uuid: 'if-test2') }
-
-    accepted_params = {
-    }
-
-    include_examples "PUT /:uuid", accepted_params
-  end
-
   describe "/:uuid/static_address" do
     let!(:translation) { Fabricate(:translation, mode: "static_address") }
 

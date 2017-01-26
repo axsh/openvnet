@@ -9,38 +9,38 @@ def app
   Vnet::Endpoints::V10::VnetAPI
 end
 
-describe "/networks" do
+describe '/networks' do
   before(:each) { use_mock_event_handler }
 
-  let(:api_suffix)  { "networks" }
+  let(:api_suffix)  { 'networks' }
   let(:fabricator)  { :network }
   let(:model_class) { Vnet::Models::Network }
 
-  include_examples "GET /"
-  include_examples "GET /:uuid"
-  include_examples "DELETE /:uuid"
+  include_examples 'GET /'
+  include_examples 'GET /:uuid'
+  include_examples 'DELETE /:uuid'
 
-  describe "POST /" do
+  describe 'POST /' do
     accepted_params = {
-      :uuid => "nw-test",
-      :display_name => "our test network",
-      :ipv4_network => "192.168.2.0",
+      :uuid => 'nw-test',
+      :display_name => 'our test network',
+      :ipv4_network => '192.168.2.0',
       :ipv4_prefix => 24,
-      :domain_name => "vdc.test.domain",
-      :network_mode => "virtual",
+      :domain_name => 'vdc.test.domain',
+      :network_mode => 'virtual',
     }
     required_params = [:display_name, :ipv4_network]
     uuid_params = [:uuid]
 
-    include_examples "POST /", accepted_params, required_params, uuid_params
+    include_examples 'POST /', accepted_params, required_params, uuid_params
   end
 
-  describe "PUT /:uuid" do
+  describe 'PUT /:uuid' do
     accepted_params = {
-      :display_name => "our new name for the test network",
-      :domain_name => "new.vdc.test.domain",
+      :display_name => 'our new name for the test network',
+      :domain_name => 'new.vdc.test.domain',
     }
 
-    include_examples "PUT /:uuid", accepted_params
+    include_examples 'PUT /:uuid', accepted_params
   end
 end
