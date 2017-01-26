@@ -40,5 +40,17 @@ module Vnet::Services::Topologies
       warn log_format_h("route_link is not supported on underlays", params)
     end
 
+    def create_underlay(params)
+      datapath_id = get_param_id(params, :datapath_id)
+
+      other_key = get_param_symbol(params, :other_key)
+      other_name = get_param_symbol(params, :other_name)
+      other_id = get_param_id(params, :other_id)
+
+      debug log_format_h("trying to create datapath_#{other_name} for overlay", params)
+
+      internal_create_dp_other(datapath_id: datapath_id, other_name: other_name, other_key: other_key, other_id: other_id)
+    end
+
   end
 end

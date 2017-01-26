@@ -35,6 +35,8 @@ module Vnet::Services
 
     subscribe_assoc_pair_events :topology, :layer, :overlay, :underlay
 
+    subscribe_item_event 'topology_underlay_create', :create_underlay
+
     def do_initialize
       info log_format('loading all topologies')
 
