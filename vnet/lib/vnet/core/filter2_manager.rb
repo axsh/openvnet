@@ -112,7 +112,7 @@ module Vnet::Core
         model_hash = filter.to_hash.merge(id: item_map.id,
                                           static_id: filter.id)
 
-        item.static(model_hash)
+        item.added_static(model_hash)
       }
     end
 
