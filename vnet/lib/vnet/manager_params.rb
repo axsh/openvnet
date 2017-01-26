@@ -157,6 +157,10 @@ module Vnet
       get_param_type(params, key, Hash, required)
     end
 
+    def get_param_time(params, key, required = true)
+      get_param_type(params, key, Fixnum, required)
+    end
+
     #
     # Network Types:
     #

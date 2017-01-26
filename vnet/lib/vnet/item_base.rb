@@ -96,8 +96,9 @@ module Vnet
 
       @vnet_info = get_param_vnet_info(params)
 
-      # TODO: Should be accessing ':map'.
-      @id = get_param_id(params)
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+      }
     end
   end
 
