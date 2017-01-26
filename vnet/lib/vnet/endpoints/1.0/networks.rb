@@ -6,13 +6,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
     param :ipv4_network, :String, transform: PARSE_IPV4
     param :ipv4_prefix, :Integer, in: 1..32
     param :domain_name, :String
-    param :network_mode, :String, in: C::Network::MODES
     param :editable, :Boolean
   end
 
   put_post_shared_params
   param_uuid M::Network
   param_uuid M::Segment, :segment_uuid
+  param :network_mode, :String, in: C::Network::MODES
   param_options :display_name, required: true
   param_options :ipv4_network, required: true
   post do

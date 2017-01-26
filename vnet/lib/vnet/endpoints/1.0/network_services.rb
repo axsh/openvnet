@@ -2,9 +2,6 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   def self.put_post_shared_params
-    param_uuid M::Interface, :interface_uuid
-    param :incoming_port, :Integer
-    param :outgoing_port, :Integer
     param :display_name, :String
   end
 
@@ -12,15 +9,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
 
   put_post_shared_params
   param_uuid M::NetworkService
+  param_uuid M::Interface, :interface_uuid
+  param :incoming_port, :Integer
+  param :outgoing_port, :Integer
   param :mode, :String, required: false, in: C::NetworkService::MODES
-  param :type, :String, required: false, in: C::NetworkService::MODES
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
-
-    # The 'type' field is deprecated.
-    if params.include? :type
-      params[:mode] = params.delete(:type)
-    end
 
     post_new(:NetworkService, fill_options)
   end

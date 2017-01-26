@@ -2,12 +2,11 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
   def self.put_post_shared_params
-    param :mac_address, :String, transform: PARSE_MAC
   end
 
-  put_post_shared_params
   param_uuid M::RouteLink
-  param_options :mac_address, required: false
+  param :mac_address, :String, transform: PARSE_MAC
+  put_post_shared_params
   post do
     post_new(:RouteLink)
   end
