@@ -81,7 +81,7 @@ module Vnet::Core
 
     def item_pre_install(item, item_map)
       case item.mode
-      when :static then load_static(item_map)
+      when :static then load_static(item, item_map)
       end
     end
 
@@ -107,12 +107,12 @@ module Vnet::Core
     # to change
 
     # load static filter on queue 'item.id'.
-    def load_static(item_map)
+    def load_static(item, item_map)
       item_map.batch.filter_statics.commit.each { |filter|
         model_hash = filter.to_hash.merge(id: item_map.id,
                                           static_id: filter.id)
 
-        handle_added_static(model_hash)
+        item.static(model_hash)
       }
     end
 
