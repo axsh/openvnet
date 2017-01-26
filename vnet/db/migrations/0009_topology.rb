@@ -22,7 +22,6 @@ Sequel.migration do
       Integer :datapath_id, :null => false
 
       Integer :interface_id, :null => false
-      # On network foo? Using ip lease bar? nil if use first.
 
       DateTime :created_at, :null=>false
       DateTime :updated_at, :null=>false
@@ -43,7 +42,6 @@ Sequel.migration do
       DateTime :deleted_at, :index => true
       Integer :is_deleted, :null=>false, :default=>0
 
-      # TODO: Only allow network to have be part of one topology?
       unique [:topology_id, :network_id, :is_deleted]
     end
 

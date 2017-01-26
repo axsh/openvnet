@@ -94,14 +94,14 @@ module Vnet::Core
 
     # activate route link on queue '[:route_link, route_link_id]'
     def activate_route_link(params)
-      debug log_format("activating route link", params)
+      debug log_format_h("activating route link", params)
 
       begin
         options = {
           datapath_id: @datapath_info.id,
           route_link_id: get_param_packed_id(params)
         }
-    
+
         mw_class.create(options)
 
       rescue Vnet::ParamError => e
@@ -111,14 +111,14 @@ module Vnet::Core
 
     # deactivate route link on queue '[:route_link, route_link_id]'
     def deactivate_route_link(params)
-      debug log_format("deactivating route link", params)
+      debug log_format_h("deactivating route link", params)
 
       begin
         filter = {
           datapath_id: @datapath_info.id,
           route_link_id: get_param_packed_id(params)
         }
-    
+
         mw_class.destroy(filter)
 
       rescue Vnet::ParamError => e
@@ -132,7 +132,7 @@ module Vnet::Core
 
     # TODO: Move to a core-specific manager class:
     def params_valid_item?(params)
-      return params[:id] &&
+      params[:id] &&
         params[:route_link_id] &&
         params[:datapath_id]
     end

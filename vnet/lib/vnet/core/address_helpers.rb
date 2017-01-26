@@ -25,6 +25,7 @@ module Vnet::Core
       mac_info = {
         ipv4_addresses: [],
         mac_address: params[:mac_address],
+        segment_id: params[:segment_id],
         cookie_id: params[:cookie_id],
       }
 
@@ -32,8 +33,8 @@ module Vnet::Core
 
       @mac_addresses = mac_addresses
 
-      debug log_format("adding mac address to #{@uuid}/#{@id}",
-                       "#{params[:mac_address].to_s}")
+      debug log_format("adding mac address",
+                       "#{params[:mac_address]}")
 
       mac_info
     end
@@ -72,8 +73,8 @@ module Vnet::Core
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
-      debug log_format("adding ipv4 address to #{@uuid}/#{@id}",
-                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
+      debug log_format("adding ipv4 address",
+                       "#{mac_info[:mac_address]}/#{ipv4_info[:ipv4_address]}")
 
       [mac_info, ipv4_info]
     end
@@ -94,10 +95,10 @@ module Vnet::Core
       mac_info[:ipv4_addresses] = ipv4_addresses
 
       debug log_format("removing ipv4 address from #{@uuid}/#{@id}",
-                       "#{mac_info[:mac_address].to_s}/#{ipv4_info[:ipv4_address].to_s}")
+                       "#{mac_info[:mac_address]}/#{ipv4_info[:ipv4_address]}")
 
       del_cookie_for_ip_lease(ipv4_info[:cookie_id])
-      
+
       [mac_info, ipv4_info]
     end
 
@@ -105,8 +106,16 @@ module Vnet::Core
       @mac_addresses.values.map { |m| m[:ipv4_addresses] }.flatten(1)
     end
 
+    def has_segment?(segment_id)
+      @mac_addresses.any?{ |_, i| i[:segment_id] == segment_id }
+    end
+
     def has_network?(network_id)
       ipv4_addresses.any?{ |i| i[:network_id] == network_id }
+    end
+
+    def all_segment_ids
+      @mac_addresses.collect { |_, mac_info| mac_info[:segment_id] }.uniq
     end
 
     def all_network_ids

@@ -34,9 +34,8 @@ module Vnet::Core::Translations
       flows_for_enable_passthrough(flows) if @passthrough == true
 
       @static_addresses.each { |id, translation|
-        debug log_format('installing translation for ' + self.pretty_id,
-                         pretty_static_address(translation))
-                         
+        debug log_format('installing translation', pretty_static_address(translation))
+
         next unless valid_translation?(translation)
 
         flows_for_ingress_translation(flows, translation)
@@ -73,7 +72,7 @@ module Vnet::Core::Translations
     end
 
     def removed_static_address(static_address_id)
-      debug log_format("removing static address #{static_address_id} from #{@uuid}/#{@id}")
+      debug log_format("removing static address #{static_address_id}")
 
       translation = @static_addresses.delete(static_address_id)
 

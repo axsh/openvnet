@@ -4,7 +4,7 @@ module Vnet::Models
   class DatapathNetwork < Base
 
     plugin :paranoia_is_deleted
-    plugin :mac_address
+    plugin :mac_address_no_segment
 
     many_to_one :datapath
     many_to_one :network

@@ -2,7 +2,10 @@
 module Vnet::NodeApi
   class Proxy
     def method_missing(class_name, *args, &block)
-      if class_name.present? && args.empty? && Vnet::NodeApi.const_defined?(class_name.to_s.camelize)
+      # The const_defined search constructs all the NodeApi::*
+      # classes, even if we are using 'rpc', and as such can't do a
+      # search to validate the class names.
+      if class_name.present? && args.empty?
         _call_class.new(class_name).tap do |call|
           define_singleton_method(class_name){ call }
         end

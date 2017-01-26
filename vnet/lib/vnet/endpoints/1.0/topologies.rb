@@ -6,7 +6,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
 
   put_post_shared_params
   param_uuid M::Topology
-  param :mode, :String, in: C::Topology::MODES
+  param :mode, :String, required: true, in: C::Topology::MODES
   post do
     post_new(:Topology)
   end
@@ -26,6 +26,31 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
   put_post_shared_params
   put '/:uuid' do
     update_by_uuid(:Topology)
+  end
+
+  param_uuid M::Interface, :interface_uuid, required: true
+  post '/:uuid/datapaths/:datapath_uuid' do
+    topology = uuid_to_id(M::Topology, "uuid", "topology_id")
+    datapath = uuid_to_id(M::Datapath, "datapath_uuid", "datapath_id")
+    interface = uuid_to_id(M::Interface, "interface_uuid", "interface_id")
+
+    remove_system_parameters
+
+    result = M::TopologyDatapath.create(params)
+    respond_with(R::TopologyDatapath.generate(result))
+  end
+
+  get '/:uuid/datapaths' do
+    show_relations(:Topology, :topology_datapaths)
+  end
+
+  delete '/:uuid/datapaths/:datapath_uuid' do
+    topology = check_syntax_and_pop_uuid(M::Topology)
+    datapath = check_syntax_and_pop_uuid(M::Datapath, 'datapath_uuid')
+
+    M::TopologyDatapath.destroy(topology_id: topology.id, datapath_id: datapath.id)
+
+    respond_with([datapath.uuid])
   end
 
   post '/:uuid/networks/:network_uuid' do
@@ -49,6 +74,29 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     M::TopologyNetwork.destroy(topology_id: topology.id, network_id: network.id)
 
     respond_with([network.uuid])
+  end
+
+  post '/:uuid/segments/:segment_uuid' do
+    topology = uuid_to_id(M::Topology, "uuid", "topology_id")
+    segment = uuid_to_id(M::Segment, "segment_uuid", "segment_id")
+
+    remove_system_parameters
+
+    result = M::TopologySegment.create(params)
+    respond_with(R::TopologySegment.generate(result))
+  end
+
+  get '/:uuid/segments' do
+    show_relations(:Topology, :topology_segments)
+  end
+
+  delete '/:uuid/segments/:segment_uuid' do
+    topology = check_syntax_and_pop_uuid(M::Topology)
+    segment = check_syntax_and_pop_uuid(M::Segment, 'segment_uuid')
+
+    M::TopologySegment.destroy(topology_id: topology.id, segment_id: segment.id)
+
+    respond_with([segment.uuid])
   end
 
   post '/:uuid/route_links/:route_link_uuid' do

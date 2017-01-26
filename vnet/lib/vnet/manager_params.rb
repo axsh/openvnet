@@ -30,23 +30,44 @@ module Vnet
 
     def throw_param_error(message, params, key)
       # TODO: Improve the exception content.
-      raise Vnet::ParamError.new("#{message} (key:#{key} params:#{params}")
+      raise Vnet::ParamError.new("#{message} (key:#{key} params:#{params})")
     end
 
     # Specialized method to properly log errors in manager.
     def handle_param_error(param_error)
       # TODO: Check if ParamError and if called from a manager.
       warn log_format(param_error.to_s)
+      param_error.backtrace.each { |str| warn log_format(str) }
+      nil
     end
 
+    # TODO: Refactor to use a block.
     def get_param(params, key, required = true)
       param = (params && params[key])
 
       if param.nil? && required
-        return throw_param_error('key is missing or nil', params, key)
+        throw_param_error('key is missing or nil', params, key)
       end
 
-      # TODO: Add proper FixNum (or other valid integer) type check.
+      param
+    end
+
+    def get_param_type(params, key, type, required = true)
+      param = get_param(params, key, required) || return
+
+      if !param.is_a?(type)
+        throw_param_error("value is not an #{type.name} type", params, key)
+      end
+
+      param
+    end
+
+    def get_param_types(params, key, types, required = true)
+      param = get_param(params, key, required) || return
+
+      if !types.any? { |type| param.is_a?(type) }
+        throw_param_error("value is not an #{types} type", params, key)
+      end
 
       param
     end
@@ -56,7 +77,7 @@ module Vnet
       param = get_param(params, key, required) || return
 
       if !(param > 0 && param < (1 << 31))
-        return throw_param_error('invalid value for id type', params, key)
+        throw_param_error('invalid value for id type', params, key)
       end
 
       param
@@ -66,72 +87,79 @@ module Vnet
       param = get_param(params, key, required) || return
 
       if !(param > 0 && param < (1 << 32))
-        return throw_param_error('invalid value for id_32 type', params, key)
+        throw_param_error('invalid value for id_32 type', params, key)
       end
 
       param
     end
 
     def get_param_packed_id(params, key = :id, required = true, id_size = 31)
-      # TODO: Implement get_param_list.
-      param_id_list = get_param(params, key, required) || return
+      param_id_list = get_param_array(params, key, required) || return
       param_id = param_id_list[1]
 
       if param_id.nil?
-        return throw_param_error('list is missing packed id', params, key)
+        throw_param_error('list is missing packed id', params, key)
       end
 
       if !(param_id > 0 && param_id < (1 << id_size))
-        return throw_param_error('invalid value for packed id type', params, key)
+        throw_param_error('invalid value for packed id type', params, key)
       end
 
       param_id
     end
 
+    #
+    # Standard Types:
+    #
+
+    GET_PARAM_BOOL_TYPES = [TrueClass, FalseClass].freeze
+
     # TODO: Add support for other integer types.
     def get_param_int(params, key, required = true)
-      param = get_param(params, key, required) || return
+      get_param_type(params, key, Fixnum, required)
+    end
 
-      if !param.is_a?(Fixnum)
-        return throw_param_error('value is not an integer type', params, key)
-      end
+    def get_param_true(params, key, required = true)
+      get_param_type(params, key, TrueClass, required)
+    end
 
-      param
+    def get_param_false(params, key, required = true)
+      get_param_type(params, key, FalseClass, required)
+    end
+
+    def get_param_bool(params, key, required = true)
+      get_param_types(params, key, GET_PARAM_BOOL_TYPES, required)
     end
 
     def get_param_string(params, key, required = true)
-      param = get_param(params, key, required) || return
-
-      if !param.is_a?(String)
-        return throw_param_error('value is not a string type', params, key)
-      end
+      param = get_param_type(params, key, String, required) || return
 
       if param.empty?
-        return throw_param_error('string is empty', params, key)
+        throw_param_error('string is empty', params, key)
       end
 
       param
     end
 
     def get_param_string_n(params, key, required = true)
-      param = get_param(params, key, required) || return
-
-      if !param.is_a?(String)
-        return throw_param_error('value is not a string type', params, key)
-      end
-
-      param
+      get_param_type(params, key, String, required)
     end
 
     def get_param_symbol(params, key, required = true)
-      param = get_param(params, key, required) || return
-
-      if !param.is_a?(Symbol)
-        return throw_param_error('value is not a symbol type', params, key)
-      end
-
-      param
+      get_param_type(params, key, Symbol, required)
     end
+
+    def get_param_array(params, key, required = true)
+      get_param_type(params, key, Array, required)
+    end
+
+    def get_param_hash(params, key, required = true)
+      get_param_type(params, key, Hash, required)
+    end
+
+    #
+    # Network Types:
+    #
 
     # TODO: Add methods to validate IPv4 addresses with different restrictions.
     #
@@ -140,30 +168,57 @@ module Vnet
       param = get_param(params, key, required) || return
 
       if !IPAddr.new(param, Socket::AF_INET).ipv4?
-        return throw_param_error('value is not a valid IPv4 address', params, key)
+        throw_param_error('value is not a valid IPv4 address', params, key)
       end
 
       param
     end
 
+    def get_param_mac_address(params, key = :mac_address, required = true)
+      param = get_param(params, key, required) || return
+
+      Pio::Mac.new(param)
+
+    rescue Pio::Mac::InvalidValueError
+      throw_param_error('value is not a valid MAC address', params, key)
+    end
+
     def get_param_tp_port(params, key, required = true)
-      param = get_param_int(params, key, required) || return
+      param = get_param_type(params, key, Fixnum, required) || return
 
       if !(param > 0 && param < (1 << 16))
-        return throw_param_error('value is not a valid transport port', params, key)
+        throw_param_error('value is not a valid transport port', params, key)
       end
 
       param
     end
 
     def get_param_of_port(params, key, required = true)
-      param = get_param_int(params, key, required) || return
+      param = get_param_type(params, key, Fixnum, required) || return
 
       if !(param > 0 && param < (1 << 32))
-        return throw_param_error('value is not a valid OpenFlow port', params, key)
+        throw_param_error('value is not a valid OpenFlow port', params, key)
       end
 
       param
+    end
+
+    #
+    # VNet Types:
+    #
+
+    GET_PARAM_MAP_TYPES = [Hash, OpenStruct].freeze
+
+    def get_param_dp_info(params, key = :dp_info, required = true)
+      get_param_type(params, key, Vnet::Core::DpInfo, required)
+    end
+
+    def get_param_datapath_info(params, key = :datapath_info, required = true)
+      get_param_type(params, key, Vnet::Openflow::DatapathInfo, required)
+    end
+
+    def get_param_map(params, key = :map, required = true)
+      get_param_types(params, key, GET_PARAM_MAP_TYPES, required)
     end
 
   end

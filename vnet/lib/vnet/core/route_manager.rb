@@ -106,7 +106,7 @@ module Vnet::Core
                                          event: :enable_router_egress,
                                          id: item.interface_id)
     end
-    
+
     def item_pre_uninstall(item)
       deactivate_network_pre_uninstall(item.network_id, item)
       deactivate_route_link_pre_uninstall(item.route_link_id, item)
@@ -115,7 +115,7 @@ module Vnet::Core
     # item created in db on queue 'item.id'
     def created_item(params)
       return if internal_detect_by_id(params)
-      return if 
+      return if
         @active_networks[params[:network_id]].nil? &&
         @active_route_links[params[:route_link_id]].nil?
 

@@ -82,7 +82,7 @@ module Vnet::Event
 
         task.resume(pass_value)
       }
-      
+
       return
     end
 
@@ -95,7 +95,7 @@ module Vnet::Event
       }.each { |task, state|
         task.resume(nil)
       }
-      
+
       return
     end
 

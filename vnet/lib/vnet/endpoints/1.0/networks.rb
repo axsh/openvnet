@@ -12,9 +12,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
 
   put_post_shared_params
   param_uuid M::Network
+  param_uuid M::Segment, :segment_uuid
   param_options :display_name, required: true
   param_options :ipv4_network, required: true
   post do
+    uuid_to_id(M::Segment, "segment_uuid", "segment_id") if params["segment_uuid"]
+
     post_new(:Network)
   end
 

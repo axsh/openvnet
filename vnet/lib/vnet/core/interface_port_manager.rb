@@ -146,13 +146,14 @@ module Vnet::Core
                                       interface_id: item.interface_id,
                                       interface_mode: item.interface_mode)
 
+        @dp_info.segment_manager.set_interface_port(item.interface_id, item.port_number)
         @dp_info.network_manager.set_interface_port(item.interface_id, item.port_number)
         @dp_info.interface_manager.load_local_port(item.interface_id, item.port_name, item.port_number)
 
       else
         if item.singular
           @dp_info.interface_manager.load_local_interface(item.interface_id)
-        elsif 
+        elsif
           @dp_info.interface_manager.load_shared_interface(item.interface_id)
         end
       end
@@ -166,6 +167,7 @@ module Vnet::Core
                                     id: item.port_number,
                                     interface_id: item.interface_id)
 
+      @dp_info.segment_manager.clear_interface_port(item.interface_id)
       @dp_info.network_manager.clear_interface_port(item.interface_id)
       @dp_info.interface_manager.unload_local_port(item.interface_id, item.port_name, item.port_number)
     end
@@ -203,12 +205,20 @@ module Vnet::Core
     # Overload helper methods:
     #
 
-    # TODO: Move to a core-specific manager class:
+    # TODO: Move to a core-specific manager class as an overloadable method.
     def params_valid_item?(params)
-      return @datapath_info &&
-        params[:id] &&
-        params[:interface_id]
-        params[:datapath_id]
+      begin
+        get_param_id(params, :id)
+        get_param_id(params, :interface_id)
+        get_param_id(params, :datapath_id, false)
+        get_param_true(params, :singular, false)
+
+        return true
+      rescue Vnet::ParamError => e
+        handle_param_error(e)
+        Thread.current.backtrace.each { |str| warn log_format(str) }
+        return false
+      end
     end
 
     def params_current_datapath?(params)

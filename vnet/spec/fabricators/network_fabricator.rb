@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'ipaddr'
+
 Fabricator(:network, class_name: Vnet::Models::Network) do
   display_name "network"
   ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
@@ -45,7 +46,6 @@ Fabricator(:vnet_1, class_name: Vnet::Models::Network) do
   ipv4_prefix 24
   domain_name "example.com"
   network_mode 'virtual'
-  #editable true
 end
 
 Fabricator(:vnet_2, class_name: Vnet::Models::Network) do
@@ -55,7 +55,6 @@ Fabricator(:vnet_2, class_name: Vnet::Models::Network) do
   ipv4_prefix 24
   domain_name "example.vnet2.com"
   network_mode 'virtual'
-  #editable true
 end
 
 Fabricator(:network_with_prefix_30, class_name: Vnet::Models::Network) do

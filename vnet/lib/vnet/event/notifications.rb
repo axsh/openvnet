@@ -16,7 +16,7 @@
 #   def method_foo(params)
 #     id = params[:id]
 #     foo = params[:foo]
-#   end    
+#   end
 # end
 
 module Vnet::Event
@@ -42,7 +42,7 @@ module Vnet::Event
       # retrieve the item from the database if not present.
 
       def subscribe_event(event_name, method = nil, options = {})
-        self.event_definitions[event_name] = { method: method, options: options }
+        self.event_definitions[event_name] = { method: method.to_sym, options: options }
       end
 
       def event_handler_default_state

@@ -8,6 +8,7 @@ module Vnet::Core
     #
     # Events:
     #
+
     subscribe_event HOST_DATAPATH_INITIALIZED, :load_item
     subscribe_event HOST_DATAPATH_UNLOAD_ITEM, :unload_item
     subscribe_event DATAPATH_CREATED_ITEM, :created_item

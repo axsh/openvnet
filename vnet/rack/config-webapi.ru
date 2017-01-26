@@ -34,7 +34,7 @@ params = {
   }
 }
 
-params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
+params[:public] = conf.node.pub_addr_string if conf.node.addr.public != ""
 
 DCell.start(params)
 

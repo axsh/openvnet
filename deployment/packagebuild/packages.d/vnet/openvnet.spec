@@ -4,7 +4,7 @@
 %{?dev_release_suffix:%define release %{dev_release_suffix}}
 
 Name: openvnet
-Version: 0.8%{?dev_release_suffix:dev}
+Version: 0.9%{?dev_release_suffix:dev}
 Release: %{release}%{?dist}
 Summary: Metapackage that depends on all other OpenVNet packages.
 Vendor: Axsh Co. LTD <dev@axsh.net>
@@ -187,6 +187,9 @@ Summary: Virtual network agent for OpenVNet.
 BuildArch: noarch
 
 Requires: openvnet-common
+# Open vSwitch itself is no longer required to be running on the same host as vna
+# but even when using a remote ovs, vna still depends on ovs-ofctl which is provided
+# by this package.
 Requires: openvswitch = 2.3.1
 
 %description vna

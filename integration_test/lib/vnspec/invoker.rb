@@ -59,6 +59,7 @@ module Vnspec
         if !result
           Vnet.dump_logs
           Vnet.dump_flows
+          Vnet.dump_database
         end
 
         result
@@ -84,8 +85,6 @@ module Vnspec
       Dataset.setup(name)
 
       Vnet.start(:vna)
-
-      VM.start_network
 
       true
     end

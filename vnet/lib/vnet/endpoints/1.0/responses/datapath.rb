@@ -14,4 +14,20 @@ module Vnet::Endpoints::V10::Responses
       array.map { |i| Datapath.generate(i) }
     end
   end
+
+  class DatapathSegment < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(object)
+      argument_type_check(object, Vnet::ModelWrappers::DatapathSegment)
+      object.to_hash
+    end
+  end
+
+  class DatapathSegmentCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i|
+        DatapathSegment.generate(i)
+      }
+    end
+  end
 end
