@@ -86,9 +86,10 @@ module Vnet::Core::Filters
 
     end
 
-    def removed_static(static_id)
-      static = @statics.delete(static_id)
-      return if !installed?
+    def removed_static(params)
+      static = @statics.delete(get_param_id(params, :static_id))
+
+      return if !installed? || static.nil?
 
       match = static[:match]
 
