@@ -19,6 +19,8 @@ module Vnet::Models
 end
 
 describe Vnet::NodeApi::Base do
+  let(:base_class) { described_class }
+
   describe "single method" do
     subject { Vnet::NodeApi::TestModel.execute(:aaa) }
 
@@ -63,6 +65,33 @@ describe Vnet::NodeApi::Base do
       it { expect(subject.first[:rival][:name]).to eq :ccc }
       it { expect(subject.first[:rival][:friend][:name]).to eq :ddd }
       it { expect(subject.first[:rival][:rival][:name]).to eq :eee }
+    end
+  end
+
+  describe "event transaction" do
+    let(:api) do
+      NestedApi = Class.new(base_class) do
+        def self.execute_something
+          dispatch_event(:foo, id: 1)
+        end
+      end
+
+      Class.new(base_class) do
+        def self.execute_something
+          NestedApi.execute_something
+          execute_something_raise_error
+          dispatch_event(:bar, id: 2)
+        end
+      end
+    end
+
+    before do
+      use_mock_event_handler
+    end
+
+    it "does not dispatch any events" do
+      expect { api.execute(:execute_something) }.to raise_error
+      expect(MockEventHandler.handled_events.size).to eq 0
     end
   end
 end
