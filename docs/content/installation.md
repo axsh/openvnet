@@ -87,7 +87,7 @@ OVS_EXTRA="
  set bridge     ${DEVICE} other_config:disable-in-band=true --
  set bridge     ${DEVICE} other-config:datapath-id=0000aaaaaaaaaaaa --
  set bridge     ${DEVICE} other-config:hwaddr=02:01:00:00:00:01 --
- set-fail-mode  ${DEVICE} standalone --
+ set-fail-mode  ${DEVICE} secure --
  set-controller ${DEVICE} tcp:127.0.0.1:6633
 "
 ```
