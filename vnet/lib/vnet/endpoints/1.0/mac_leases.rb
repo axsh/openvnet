@@ -3,7 +3,6 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
   def self.put_post_shared_params
     param_uuid M::Interface, :interface_uuid
-    param :mac_address, :String, transform: PARSE_MAC
   end
 
   fill_options = [:interface, :mac_address]
@@ -12,7 +11,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
   param_uuid M::MacLease
   param_uuid M::Segment, :segment_uuid
   param_options :interface_uuid, required: true
-  param_options :mac_address, required: true
+  param :mac_address, :String, transform: PARSE_MAC, required: true
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
     uuid_to_id(M::Segment, "segment_uuid", "segment_id") if params["segment_uuid"]

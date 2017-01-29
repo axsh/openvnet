@@ -16,31 +16,8 @@ module Vnet::NodeApi
 
       M = Vnet::Models
 
-      def create(options)
-        model = nil
-        transaction do
-          model = model_class.create(options)
-        end
-        model
-      end
-
-      def update(uuid, options)
-        model_class[uuid].tap do |model|
-          transaction { model.update(options) }
-        end
-      end
-
-      def destroy(uuid)
-        model_class[uuid].tap do |model|
-          next if model.nil?
-          transaction { model.destroy }
-        end
-      end
-
-      # Deprecate: We don't need an indirect way of referencing the
-      # model class. Use 'M::' instead.
-      def model_class(name = nil)
-        Vnet::Models.const_get(name ? name.to_s.camelize : self.name.demodulize)
+      def model_class
+        @model_class ||= Vnet::Models.const_get(self.name.demodulize)
       end
 
       def execute(method_name, *args, &block)

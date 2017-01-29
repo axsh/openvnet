@@ -31,7 +31,19 @@ shared_examples "POST /" do | accepted_params, required_params, uuid_params = []
   context "with all accepted parameters" do
     let(:request_params) { accepted_params }
 
-    it "should create a database entry with all parameters set" do
+    it "should create a database entry" do
+      expect(last_response).to succeed.with_body_containing(expected_response)
+    end
+
+    it "should be able to recreate a taggable database entry" do
+      next if !model_class.taggable?
+
+      expect(request_params[:uuid]).not_to be_nil
+      expect(last_response).to succeed.with_body_containing(expected_response)
+
+      delete "#{api_suffix}/#{request_params[:uuid]}"
+
+      post api_suffix, request_params
       expect(last_response).to succeed.with_body_containing(expected_response)
     end
   end

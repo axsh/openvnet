@@ -17,7 +17,9 @@ describe "/ip_lease_containers" do
   include_examples "DELETE /:uuid"
 
   describe "POST /" do
-    accepted_params = {}
+    accepted_params = {
+      :uuid => 'ilc-test',
+    }
     required_params = []
     uuid_params = [:uuid]
 
