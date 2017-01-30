@@ -5,6 +5,10 @@ module Vnctl::Cli
     namespace :networks
     api_suffix "networks"
 
+    add_shared_options {
+      option :topology_uuid, :type => :string, :desc => "The uuid of the topology this network is in."
+    }
+
     add_modify_shared_options {
       option_display_name
       option :segment_uuid, :type => :string, :desc => "The uuid of the segment this network is in."
