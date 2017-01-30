@@ -10,3 +10,4 @@ scheduled_nodes=${NODES[@]}
 
 initialize
 teardown_environment $provide
+teardown_host_settings
