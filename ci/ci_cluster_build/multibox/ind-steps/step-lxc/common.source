@@ -5,6 +5,7 @@ DEVICE=eth0
 ONBOOT=yes
 TYPE=Ethernet
 BOOTPROTO=dhcp
+MTU=1400
 EOICFG
 EOF
 }
