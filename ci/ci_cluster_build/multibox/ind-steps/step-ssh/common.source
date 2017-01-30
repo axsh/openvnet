@@ -13,7 +13,7 @@ function install_user_key () {
     local user="${1}"
 
     run_cmd "mkdir -p -m 600 /${user}/.ssh"
-    sudo cp "${CACHE_DIR}/${BRANCH}/sshkey" "${TMP_ROOT}/${user}/.ssh/sshkey"
+    sudo cp "${CACHE_DIR}/${BRANCH}/sshkey" "${TMP_ROOT}/${user}/.ssh/id_rsa"
     sudo cp "${CACHE_DIR}/${BRANCH}/sshkey.pub" "${TMP_ROOT}/${user}/.ssh/authorized_keys"
 }
 
