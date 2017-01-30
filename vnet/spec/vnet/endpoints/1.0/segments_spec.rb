@@ -31,11 +31,16 @@ describe "/segments" do
   end
 
   describe "POST /" do
-    expected_response = {
-      :uuid => "seg-test",
-      :mode => "virtual"
+    let!(:topology) { Fabricate(:topology) { uuid 'topo-test' }  }
+
+    accepted_params = {
+      uuid: "seg-test",
+      mode: "virtual",
+      topology_uuid: 'topo-test'
     }
-    accepted_params = expected_response
+    expected_response = accepted_params.dup.tap { |map|
+      map.delete(:topology_uuid)
+    }
     required_params = [:mode]
     uuid_params = []
 

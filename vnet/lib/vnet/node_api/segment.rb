@@ -18,7 +18,7 @@ module Vnet::NodeApi
           internal_create(options).tap { |model|
             next if model.nil?
 
-            M::TopologySegment.create(segment_id: model.id, topology_id: topology_id)
+            M::TopologySegment.create(segment_id: model.id, topology_id: topology_id) if topology_id
           }
         }
       end

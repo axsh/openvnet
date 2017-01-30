@@ -20,7 +20,7 @@ module Vnet::NodeApi
           internal_create(options).tap { |model|
             next if model.nil?
 
-            M::TopologyRouteLink.create(route_link_id: model.id, topology_id: topology_id)
+            M::TopologyRouteLink.create(route_link_id: model.id, topology_id: topology_id) if topology_id
           }
         }
       end

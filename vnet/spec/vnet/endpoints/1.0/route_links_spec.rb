@@ -21,14 +21,20 @@ describe "/route_links" do
   include_examples "DELETE /:uuid"
 
   describe "POST /" do
+    let!(:topology) { Fabricate(:topology) { uuid 'topo-test' }  }
+
     accepted_params = {
-      :uuid => "rl-link",
-      :mac_address => "fe:17:9b:9f:e8:33",
+      uuid: "rl-link",
+      mac_address: "fe:17:9b:9f:e8:33",
+      topology_uuid: 'topo-test'
+    }
+    expected_response = accepted_params.dup.tap { |map|
+      map.delete(:topology_uuid)
     }
     required_params = []
     uuid_params = [:uuid]
 
-    include_examples "POST /", accepted_params, required_params, uuid_params
+    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
   end
 
 end

@@ -12,8 +12,9 @@ shared_examples "required parameters" do |accepted_params, required_params|
   end
 end
 
-shared_examples "POST /" do | accepted_params, required_params, uuid_params = [], expected_response = nil |
+shared_examples "POST /" do |accepted_params, required_params, uuid_params = [], expected_response = nil|
   expected_response ||= accepted_params
+
   before(:each) { post api_suffix, request_params }
 
   context "with only the required parameters" do
