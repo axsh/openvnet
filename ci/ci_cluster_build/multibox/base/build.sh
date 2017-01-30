@@ -17,6 +17,7 @@ IND_STEPS=(
     "epel"
     "lxc"
     "sclo-ruby"
+    "nettools"
     "openvswitch"
 )
 
