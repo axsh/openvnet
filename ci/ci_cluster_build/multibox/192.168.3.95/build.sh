@@ -15,3 +15,5 @@ IND_STEPS=(
 
 initialize
 build "${IND_STEPS[@]}"
+
+run_cmd "/sbin/sysctl -w net.ipv4.ip_forward=1"
