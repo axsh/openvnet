@@ -58,6 +58,8 @@ module Vnspec
             "lease_policies/#{v.delete(:lease_policy_uuid)}/ip_retention_containers/#{v.delete(:ip_retention_container_uuid)}"
           when :mac_range_group_mac_ranges
             "mac_range_groups/#{v.delete(:mac_range_group_uuid)}/mac_ranges"
+          when :topology_datapaths
+            "topologies/#{v.delete(:topology_uuid)}/datapaths/#{v.delete(:datapath_uuid)}"
           when :topology_networks
             "topologies/#{v.delete(:topology_uuid)}/networks/#{v.delete(:network_uuid)}"
           when :topology_segments
