@@ -3,10 +3,10 @@
 NODES=(
     "base"         # base image
     "192.168.3.91" # vm1 vm2
-#    "192.168.3.92" # vm3 vm4
-#    "192.168.3.93" # vm5 vm6
-#    "192.168.3.95" # router
-#    "192.168.3.96" # wanedge vm7
+    "192.168.3.92" # vm3 vm4
+    "192.168.3.93" # vm5 vm6
+    "192.168.3.95" # router
+    "192.168.3.96" # wanedge vm7
 )
 
 NETWORK="192.168.3.0"
@@ -31,4 +31,4 @@ BASE_BRANCH="${BASE_BRANCH:-develop}"
 BRANCH="${BRANCH:-master}"
 
 # These variables are set by default but can be overriden by jenkins.
-REBUILD="${REBUILD:-true}"
+REBUILD="${REBUILD:-false}"
