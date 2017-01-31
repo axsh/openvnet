@@ -9,5 +9,5 @@ describe 'router_v2v_tp' do
   # Since no vm's do dhcp requests there is nothing to ensure that
   # the vna's have properly loaded the segments and other
   # information.
-  sleep 30
+  sleep 40
 end
