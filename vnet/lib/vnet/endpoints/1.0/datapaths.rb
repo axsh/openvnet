@@ -9,7 +9,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/datapaths' do
 
   put_post_shared_params
   param_uuid M::Datapath
-  param :is_connected, :Boolean
   param :node_id, :String, required: true
   param :dpid, :String, required: true, transform: :hex, format: /^(0x)?[0-9a-f]{0,16}$/i, on_error: proc { |error|
     if error[:reason] == :format

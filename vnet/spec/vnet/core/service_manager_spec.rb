@@ -5,14 +5,10 @@ require 'spec_helper'
 include Vnet::Constants::Openflow
 
 describe Vnet::Core::ServiceManager do
-  # before(:each) { use_mock_event_handler }
-
-  # let(:events) { MockEventHandler.handled_events }
-
   let(:datapath) { create_mock_datapath }
   let(:dp_info) { datapath.dp_info }
 
-  let(:network) { Fabricate(:network, network_mode: 'virtual') }
+  let(:network) { Fabricate(:network, mode: 'virtual') }
 
   let(:service_interface) {
     Fabricate(:interface, mode: "simulated")

@@ -27,7 +27,7 @@ describe '/networks' do
       :ipv4_network => '192.168.2.0',
       :ipv4_prefix => 24,
       :domain_name => 'vdc.test.domain',
-      :network_mode => 'virtual',
+      :mode => 'virtual',
     }
     required_params = [:display_name, :ipv4_network]
     uuid_params = [:uuid]
