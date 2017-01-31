@@ -7,6 +7,8 @@ module Vnet::Core::Interfaces
   class IfBase < Base
 
     def enable_filtering
+      return if @ingress_filtering_enabled
+
       @ingress_filtering_enabled = true
       @dp_info.filter_manager.async.apply_filters(@id)
       del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
@@ -17,6 +19,8 @@ module Vnet::Core::Interfaces
     end
 
     def disable_filtering
+      return if !@ingress_filtering_enabled
+
       @ingress_filtering_enabled = false
 
       @dp_info.add_flows flows_for_disabled_legacy_filtering
@@ -30,10 +34,14 @@ module Vnet::Core::Interfaces
     end
 
     def enable_filtering2
+      return if @enable_filtering
+
       @enabled_filtering = true
     end
 
     def disable_filtering2
+      return if !@enable_filtering
+
       @enabled_filtering = false
       @dp_info.add_flows flows_for_disabled_filtering
     end

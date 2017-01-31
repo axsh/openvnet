@@ -400,6 +400,10 @@ module Vnet::Models
           self.uuid_prefix(uuid_prefix)
         end
 
+        def self.taggable?
+          !@uuid_prefix.nil?
+        end
+
         # Install mode module as Sequel plugin.
         #
         # class Model1 < Base

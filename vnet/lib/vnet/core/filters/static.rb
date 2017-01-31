@@ -44,24 +44,24 @@ module Vnet::Core::Filters
 
     end
 
-    def added_static(static_id,
-                     ipv4_src_address,
-                     ipv4_dst_address,
-                     ipv4_src_prefix,
-                     ipv4_dst_prefix,
-                     port_src,
-                     port_dst,
-                     protocol,
-                     passthrough)
+    def added_static(params)
+      static_id = get_param_id(params, :static_id)
+      ipv4_src_prefix = get_param_int(params, :ipv4_src_prefix)
+      ipv4_dst_prefix = get_param_int(params, :ipv4_dst_prefix)
+      port_src = get_param_int(params, :port_src, false)
+      port_dst = get_param_int(params, :port_dst, false)
+
+      protocol = get_param_string(params, :protocol)
+      passthrough = get_param(params, :passthrough)
 
       filter = {
-        :static_id => static_id,
-        :ipv4_src_address => ipv4_src_address,
-        :ipv4_dst_address => ipv4_dst_address,
-        :ipv4_src_prefix => ipv4_src_prefix,
-        :ipv4_dst_prefix => ipv4_dst_prefix,
-        :port_src => port_src,
-        :port_dst => port_dst
+        static_id: static_id,
+        ipv4_src_address: get_param_ipv4_address(params, :ipv4_src_address),
+        ipv4_dst_address: get_param_ipv4_address(params, :ipv4_dst_address),
+        ipv4_src_prefix: ipv4_src_prefix,
+        ipv4_dst_prefix: ipv4_dst_prefix,
+        port_src: port_src,
+        port_dst: port_dst
       }
 
       @statics[static_id] = {
@@ -86,9 +86,10 @@ module Vnet::Core::Filters
 
     end
 
-    def removed_static(static_id)
-      static = @statics.delete(static_id)
-      return if !installed?
+    def removed_static(params)
+      static = @statics.delete(get_param_id(params, :static_id))
+
+      return if !installed? || static.nil?
 
       match = static[:match]
 

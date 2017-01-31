@@ -2,7 +2,7 @@
 
 module Vnet::Services
 
-  class IpRetentionContainerManager < Vnet::Manager
+  class IpRetentionContainerManager < Vnet::Services::Manager
     DEFAULT_OPTIONS = {
       expiration_check_interval: 60,
       run: true,
@@ -25,7 +25,6 @@ module Vnet::Services
 
     def initialize(info, options = {})
       super
-      @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
       @options = DEFAULT_OPTIONS.merge(options)
 
       if @options[:run]      
@@ -97,7 +96,7 @@ module Vnet::Services
     end
 
     def item_initialize(item_map)
-      IpRetentionContainers::Base.new(item_map)
+      IpRetentionContainers::Base.new(vnet_info: @vnet_info, map: item_map)
     end
 
     #

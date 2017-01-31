@@ -17,25 +17,25 @@ module Vnet::Services::Topologies
         other_id = get_param_id(params, other_key)
         datapath_id = get_param_id(params, :datapath_id)
 
-        _, assoc_map = @datapaths.detect { |assoc_key, assoc_map|
-          assoc_map[:datapath_id] == datapath_id
-        }
+        return if internal_create_dp_other(datapath_id: datapath_id, other_name: other_name, other_key: other_key, other_id: other_id)
 
-        if assoc_map.nil?
-          warn log_format_h("could not find topology_datapath for new datapath_#{other_name}", params)
-          return
-        end
+        debug log_format_h("could not create topology_datapath for new datapath_#{other_name}", params)
 
-        create_params = {
+        underlay_params = {
+          id: nil,
           datapath_id: datapath_id,
-          other_key => other_id,
-
-          lease_detection: {
-            interface_id: assoc_map[:interface_id]
-          }
+          other_name: other_name,
+          other_key: other_key,
+          other_id: other_id
         }
 
-        create_datapath_other(other_name, create_params)
+        @underlays.each { |id, underlay|
+          debug log_format_h('trying underlay', underlay)
+
+          underlay_params[:id] = underlay[:underlay_id]
+
+          @vnet_info.topology_manager.publish('topology_underlay_create', underlay_params)
+        }
       end
 
     }

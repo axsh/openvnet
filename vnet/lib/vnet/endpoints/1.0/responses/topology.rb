@@ -35,6 +35,23 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
+  class TopologyLayer < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(object)
+      argument_type_check(object,Vnet::ModelWrappers::TopologyLayer)
+      object.to_hash.tap { |res|
+      }
+    end
+  end
+
+  class TopologyLayerCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i|
+        TopologyLayer.generate(i)
+      }
+    end
+  end
+
   class TopologyNetwork < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::TopologyNetwork)

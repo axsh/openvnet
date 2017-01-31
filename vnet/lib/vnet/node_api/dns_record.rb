@@ -2,9 +2,7 @@
 
 module Vnet::NodeApi
 
-  # TODO: Convert to EventBase.
-
-  class DnsRecord < Base
+  class DnsRecord < LegacyBase
     class << self
       def create(options)
         super.tap do |model|

@@ -94,7 +94,11 @@ module Vnet
       @installed = false
       @loaded = false
 
-      @id = get_param_id(params)
+      @vnet_info = get_param_vnet_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+      }
     end
   end
 
@@ -104,6 +108,8 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
+
+      @vnet_info = get_param_vnet_info(params)
 
       get_param_map(params).tap { |map|
         @id = get_param_id(map)

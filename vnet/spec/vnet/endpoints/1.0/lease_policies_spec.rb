@@ -36,7 +36,6 @@ describe "/lease_policies" do
 
   describe "PUT /:uuid" do
     accepted_params = {
-      :mode => "simple",
       :timing => "immediate"
     }
 
