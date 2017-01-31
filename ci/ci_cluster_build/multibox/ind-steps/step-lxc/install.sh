@@ -41,6 +41,15 @@
                 create_config ${c}
                 install_ssh ${c}
             ) ; prev_cmd_failed
+
+            for package in nc net-tools tcpdump ; do
+                (
+                    $starting_step "Install ${package}"
+                    false
+                    $skip_step_if_already_done; set -ex
+                    run_cmd "chroot /var/lib/lxc/${c}/rootfs/ /bin/bash -c \"yum install -y ${package}\""
+                ) ; prev_cmd_failed
+            done
         done
     }
 }
