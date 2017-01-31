@@ -18,4 +18,5 @@ $REBUILD && {
     mkdir -p "${CACHE_DIR}/${BRANCH}"
 ) ; prev_cmd_failed
 
-masquerade "${NETWORK}/${PREFIX}"
+masquerade "${ip_mng_br0}"
+masquerade "${network_wanedge}"

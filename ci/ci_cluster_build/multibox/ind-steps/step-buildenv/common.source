@@ -98,9 +98,18 @@ function teardown_environment () {
 }
 
 function teardown_host_settings () {
-    destroy_bridge "vnet-itest0"
-    destroy_bridge "vnet-itest1"
-    destroy_bridge "vnet-wanedge"
-    destroy_bridge "vnet-br0"
-    stop_masquerade "${NETWORK}/${PREFIX}"
+    destroy_bridge "${name_ovs_br0}"
+    destroy_bridge "${name_ovs_br1}"
+    destroy_bridge "${name_ovs_wanedge}"
+    destroy_bridge "${name_mng_br0}"
+    stop_masquerade "${ip_mng_br0}"
+    stop_masquerade "${network_wanedge}"
+
+    (
+        $starting_step "Destroy macvlan interface"
+        ip link | grep -q "${macvlan_1_name}"
+        [ "$?" != "0" ]
+        $skip_step_if_already_done ; set -xe
+        sudo ip link set "${macvlan_1_name}" down
+    ) ; prev_cmd_failed
 }
