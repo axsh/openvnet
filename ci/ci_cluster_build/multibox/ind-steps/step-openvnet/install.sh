@@ -1,11 +1,8 @@
-(
-    $starting_group "Install OpenVNet"
-    run_ssh root@${IP_ADDR} "rpm -qa | grep -wq openvnet"
-    $skip_group_if_unnecessary
+   $skip_group_if_unnecessary
     (
         $starting_step "Install OpenVNet"
-        run_ssh root@${IP_ADDR} "rpm -qa | grep -wq openvnet"
+        run_cmd "rpm -qa | grep -wq openvnet"
         $skip_step_if_already_done ; set -xe
-        run_ssh root@${IP_ADDR} "yum install -y openvnet"
+        run_cmd "yum install -y openvnet"
     ) ; prev_cmd_failed
 )
