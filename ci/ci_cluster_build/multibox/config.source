@@ -13,10 +13,10 @@ ip_mng_br0="192.168.3.1/24"
 ip_wanedge="10.210.0.1/24"
 network_wanedge="10.210.0.0/24"
 
-name_ovs_br0=vnet-itest-0
-name_ovs_br1=vnet-itest-1
-name_ovs_wanedge=vnet-wanedge
-name_mng_br0=vnet-br0
+name_ovs_br0="vnet-itest0"
+name_ovs_br1="vnet-itest1"
+name_ovs_wanedge="vnet-wanedge"
+name_mng_br0="vnet-br0"
 
 macvlan_1_name="testtap"
 macvlan_1_mac="10:AA:FF:10:AA:01"
