@@ -11,7 +11,7 @@ done
 
 create_bridge "${name_ovs_br0}"
 create_bridge "${name_ovs_br1}"
-create_bridge "${name_ovs_wanedge}" "${network_wanedge}"
+create_bridge "${name_ovs_wanedge}" "${ip_wanedge}"
 create_bridge "${name_mng_br0}" "${ip_mng_br0}"
 
 
