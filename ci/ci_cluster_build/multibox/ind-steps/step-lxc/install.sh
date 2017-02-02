@@ -42,7 +42,7 @@
                 install_ssh ${c}
             ) ; prev_cmd_failed
 
-            for package in nc net-tools tcpdump ; do
+            for package in nc net-tools tcpdump bind-utils ; do
                 (
                     $starting_step "Install ${package}"
                     false
