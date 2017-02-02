@@ -279,6 +279,15 @@ module Vnspec
         end
       end
 
+      def able_to_send_tcp?(vm, port)
+        case config[:release_version]
+        when "el7"
+          ssh_on_guest("echo | nc -w1 #{vm.ipv4_address} #{port}")[:exit_code] == 0
+        when "el6",nil
+          ssh_on_guest("nc -zw 3 #{vm.ipv4_address} #{port}")[:exit_code] == 0
+        end
+      end
+
       # TODO: Move these to a separate module.
       def udp_listen(port)
         cmd = "nohup nc -c \"touch #{UDP_OUTPUT_DIR}/#{port}_passed\" -lu %s > %s 2> /dev/null < /dev/null & echo $!" %
