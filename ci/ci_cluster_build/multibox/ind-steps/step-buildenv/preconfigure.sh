@@ -19,4 +19,3 @@ $REBUILD && {
 ) ; prev_cmd_failed
 
 masquerade "${ip_mng_br0}"
-masquerade "${network_wanedge}"
