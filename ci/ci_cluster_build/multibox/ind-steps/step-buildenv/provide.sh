@@ -45,3 +45,12 @@ for node in ${scheduled_nodes[@]} ; do
         }
     ) ; prev_cmd_failed
 done
+
+
+(
+    $starting_step "Import ssh key for integration test"
+    [ -f ~/.ssh/integ_sshkey ]
+    $skip_step_if_already_done
+    cp ${CACHE_DIR}/${BRANCH}/sshkey ~/.ssh/sshkey
+    chown ${USER}:${USER} ~/.ssh/sshkey
+) ; prev_cmd_failed

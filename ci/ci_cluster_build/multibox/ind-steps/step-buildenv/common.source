@@ -112,4 +112,11 @@ function teardown_host_settings () {
         $skip_step_if_already_done ; set -xe
         sudo ip link set "${macvlan_1_name}" down
     ) ; prev_cmd_failed
+
+    (
+        $starting_step "Remove SSH key for integration test"
+        [ ! -f ~/.ssh/sshkey ]
+        $skip_step_if_already_done
+        rm -f ~/.ssh/sshkey
+    ) ; prev_cmd_failed
 }
