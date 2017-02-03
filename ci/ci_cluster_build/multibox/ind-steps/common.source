@@ -1,0 +1,94 @@
+#!/bin/bash
+. "${ENV_ROOTDIR}/external_libraries/bashsteps/simple-defaults-for-bashsteps.source"
+
+function initialize () {
+    STAGES=("${@}")
+    [[ -z "${STAGES}" ]] && STAGES=( init install preconfigure boot postconfigure provide )
+
+    for (( i=0; i< ${#STAGES[@]} ; i++ )) ; do
+        s=${STAGES[i]}
+        if [[ $(bash --version | grep -q 4.[0-9]) ]] ; then
+            declare -rg "${s}=${i}"
+        else
+            eval "readonly ${s}=${i}"
+        fi
+    done
+
+    export STAGES
+}
+
+function run_steps () {
+    local step="${1}" stage="${2}"
+    local step_common="${ENV_ROOTDIR}/ind-steps/step-${step}/common.source"
+    (
+        [[ -f "${step_common}" ]] && . "${step_common}"
+        . "${ENV_ROOTDIR}/ind-steps/step-${step}/${stage}.sh"
+    )
+}
+
+function get_env_state () {
+    local stage=${1}
+
+    $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && stage=$boot
+    $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && stage=$postconfigure
+
+    echo $stage
+}
+
+function define_stages () {
+    local start_stage=${1}
+    local r=()
+
+    [[ $start_stage -gt 0 ]] || start_stage=$(get_env_state $start_stage)
+
+    for s in $( seq $start_stage ${#STAGES[@]} ) ; do
+        r+=( ${STAGES[$s]} )
+    done
+    echo "${r[@]}"
+}
+
+function build () {
+
+    local steps="${@}"
+    local custom_start=${!STAGES[${start_stage}]}
+    local stages=($(define_stages $custom_start))
+
+    # We first run init.sh for every step after which we run install.sh for every
+    # step and so on. This is because some stages will need to happen before booting
+    # the VM while others need to happen after boot.
+    for stage in ${stages[@]} ; do
+        for step in ${steps[@]} ; do
+            [[ -d "${ENV_ROOTDIR}/ind-steps/step-${step}" ]] || continue
+            [[ -f "${ENV_ROOTDIR}/ind-steps/step-${step}/${stage}.sh" ]] && run_steps "${step}" "${stage}"
+            case $? in
+                200) return 0 ;;
+                255) . ${ENV_ROOTDIR}/ind-steps/step-buildenv/common.source
+                     [[ -n "${NODE_DIR}" ]] && { teardown_environment $(get_env_state $stage) ; exit 255 ; }
+                     [[ -z "${NODE_DIR}" ]] && { teardown_host_settings ; exit 255 ; } ;;
+            esac
+        done 
+    done
+}
+
+function start_service () {
+    local service="$1"
+
+    (
+        $starting_step "Start ${service}"
+        run_cmd "systemctl status ${service}.service | grep -q running"
+        $skip_step_if_already_done ; set -xe
+        run_cmd "systemctl start ${service}.service"
+    ) ; prev_cmd_failed
+}
+
+function run_ssh () {
+    local key="${NODE_DIR}/sshkey"
+    [[ -f ${key} ]] &&
+        $(type -P ssh) -i "${key}" -o 'StrictHostKeyChecking=no' -o 'LogLevel=quiet' -o 'UserKnownHostsFile /dev/null' "${@}"
+}
+
+
+function run_cmd () {
+    $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && { run_ssh root@${IP_ADDR} "${@}" ; return $? ; }
+    sudo chroot ${TMP_ROOT} /bin/bash -c "${@}"
+}

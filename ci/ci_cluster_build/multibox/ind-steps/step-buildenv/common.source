@@ -1,0 +1,122 @@
+function check_dep() {
+  local dep="$1"
+
+  command -v "${dep}" >/dev/null 2>&1
+  if [[ "$?" != "0" ]]; then
+    echo "Missing dependency: ${dep}"
+    exit 1
+  fi
+}
+
+function download_seed_image () {
+    local box="${1}"
+
+    (
+        $starting_step "Download ${box}"
+        [ -f "${BOXES_DIR}/${box}" ]
+        $skip_step_if_already_done
+        sudo mkdir -p ${BOXES_DIR}
+        sudo curl -o ${BOXES_DIR}/${box} "https://ci.openvdc.org/img/${box}"
+    ) ; prev_cmd_failed
+}
+
+function create_bridge() {
+  local name="$1"
+  local ip_addr="$2"
+
+  (
+    $starting_step "Create bridge ${name}"
+    brctl show | grep -q "${name}"
+    $skip_step_if_already_done ; set -xe
+    sudo brctl addbr "${name}"
+    sudo ip link set "${name}" up
+
+    if [[ -n "${ip_addr}" ]]; then
+      sudo ip addr add "${ip_addr}" dev "${name}"
+    fi
+  ) ; prev_cmd_failed
+}
+
+function destroy_bridge() {
+  local name="$1"
+
+  (
+    $starting_step "Destroy bridge ${name}"
+    brctl show | grep -q "${name}"
+    [ "$?" != "0" ]
+    $skip_step_if_already_done ; set -xe
+    sudo ip link set "${1}" down
+    sudo brctl delbr "${1}"
+  ) ; prev_cmd_failed
+}
+
+function masquerade() {
+  local subnet="${1}"
+
+  (
+    $starting_step "Masquerade for subnet ${subnet}"
+    sudo iptables-save | grep -wq "\-A POSTROUTING \-s ${subnet} \-j MASQUERADE"
+    $skip_step_if_already_done
+    sudo iptables -t nat -A POSTROUTING -s "${subnet}" -j MASQUERADE
+  ) ; prev_cmd_failed
+}
+
+function stop_masquerade() {
+  local subnet="${1}"
+
+  (
+    $starting_step "Stop masquerading for subnet ${subnet}"
+    sudo iptables-save | grep -wq "\-A POSTROUTING \-s ${subnet} \-j MASQUERADE"
+    [ "$?" != "0" ]
+    $skip_step_if_already_done
+    sudo iptables -t nat -D POSTROUTING -s "${subnet}" -j MASQUERADE
+  ) ; prev_cmd_failed
+}
+
+function teardown_environment () {
+    local stage="${1:-0}"
+
+    (
+        $starting_group "Cleanup old environment"
+        [ ! -d "${CACHE_DIR}/${BRANCH}" ]
+        $skip_group_if_unnecessary
+        destroy_cmd=$(
+            [[ ${!STAGES[$stage]} -gt $boot ]] && { echo "kill.sh" ; return ; }
+            [[ ${!STAGES[$stage]} -lt $postconfigure ]] && { echo "destroy.sh" ; return ; }
+            echo "destroy.sh"
+        )
+
+        for node in ${NODES[@]} ; do
+            (
+                $starting_group "Destroying ${node%,*}"
+                false
+                $skip_group_if_unnecessary
+                ${ENV_ROOTDIR}/${node}/$destroy_cmd
+            ) ; prev_cmd_failed
+        done
+    ) ; prev_cmd_failed
+}
+
+function teardown_host_settings () {
+    destroy_bridge "${name_ovs_br0}"
+    destroy_bridge "${name_ovs_br1}"
+    destroy_bridge "${name_ovs_wanedge}"
+    destroy_bridge "${name_mng_br0}"
+    stop_masquerade "${ip_mng_br0}"
+    stop_masquerade "${network_wanedge}"
+
+    (
+        $starting_step "Destroy macvlan interface"
+        ip link | grep -q "${macvlan_1_name}"
+        [ "$?" != "0" ]
+        $skip_step_if_already_done ; set -xe
+        sudo ip link set "${macvlan_1_name}" down
+    ) ; prev_cmd_failed
+
+    (
+        $starting_step "Remove SSH key for integration test"
+        [ ! -f ~/.ssh/sshkey ]
+        $skip_step_if_already_done
+        rm -f ~/.ssh/sshkey
+    ) ; prev_cmd_failed
+}
