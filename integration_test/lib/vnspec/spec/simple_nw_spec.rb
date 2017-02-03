@@ -5,9 +5,4 @@ require_relative 'shared_examples/simple'
 
 describe 'simple_nw' do
   include_examples 'simple examples'
-
-  # Since no vm's do dhcp requests there is nothing to ensure that
-  # the vna's have properly loaded the segments and other
-  # information.
-  sleep 30
 end
