@@ -13,6 +13,7 @@ ID_SEQUENCES = [
   :topology_network_ids,
   :topology_segment_ids,
   :topology_route_link_ids,
+  :topology_underlay_ids
 ]
 
 def id_sequence(id_type)

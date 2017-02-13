@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services
-  class TopologyManager < Vnet::Manager
+  class TopologyManager < Vnet::Services::Manager
     include Vnet::Constants::Topology
     include Vnet::ManagerAssocs
 
@@ -28,15 +28,14 @@ module Vnet::Services
     subscribe_event TOPOLOGY_CREATE_DP_SEG, :create_dp_segment
     subscribe_event TOPOLOGY_CREATE_DP_RL, :create_dp_route_link
 
-    subscribe_assoc_events :topology, :datapath
-    subscribe_assoc_events :topology, :network
-    subscribe_assoc_events :topology, :segment
-    subscribe_assoc_events :topology, :route_link
+    subscribe_assoc_other_events :topology, :datapath
+    subscribe_assoc_other_events :topology, :network
+    subscribe_assoc_other_events :topology, :segment
+    subscribe_assoc_other_events :topology, :route_link
 
-    def initialize(info, options = {})
-      super
-      @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
-    end
+    subscribe_assoc_pair_events :topology, :layer, :overlay, :underlay
+
+    subscribe_item_event 'topology_underlay_create', :create_underlay
 
     def do_initialize
       info log_format('loading all topologies')
@@ -97,7 +96,7 @@ module Vnet::Services
           return
         end
 
-      item_class.new(map: item_map)
+      item_class.new(vnet_info: @vnet_info, map: item_map)
     end
 
     #
@@ -121,6 +120,8 @@ module Vnet::Services
     #
     # Assoc methods:
     #
+
+    # TODO: Clean up and move to ManagerAssocs.
 
     [ [:network, :network_id, TOPOLOGY_CREATE_DP_NW],
       [:segment, :segment_id, TOPOLOGY_CREATE_DP_SEG],

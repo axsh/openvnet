@@ -16,6 +16,9 @@ module Vnet::Services::Topologies
       @networks = {}
       @segments = {}
       @route_links = {}
+
+      @overlays = {}
+      @underlays = {}
     end
 
     def log_type
@@ -63,7 +66,9 @@ module Vnet::Services::Topologies
     [ [:datapath, :datapath_id, :@datapaths],
       [:network, :network_id, :@networks],
       [:segment, :segment_id, :@segments],
-      [:route_link, :route_link_id, :@route_links]
+      [:route_link, :route_link_id, :@route_links],
+      [:overlay, :overlay_id, :@overlays],
+      [:underlay, :underlay_id, :@underlays],
     ].each { |other_name, other_key, other_member|
 
       define_method "added_#{other_name}".to_sym do |params|
@@ -102,6 +107,10 @@ module Vnet::Services::Topologies
 
     }
 
+    def create_underlay(params)
+      raise NotImplementedError
+    end
+
     #
     # Events:
     #
@@ -117,6 +126,8 @@ module Vnet::Services::Topologies
     #
 
     private
+
+    # TODO: Properly implement these methods.
 
     def handle_added_assoc(other_name, assoc_id, assoc_map)
       debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
@@ -140,11 +151,40 @@ module Vnet::Services::Topologies
     end
 
     def create_datapath_other(other_name, create_params)
-      if mw_datapath_assoc_class(other_name).batch.create(create_params).commit
-        debug log_format_h("created datapath_#{other_name}", create_params)
-      else
-        info log_format_h("failed to create datapath_#{other_name}", create_params)
+      mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|
+        if result
+          debug log_format_h("created datapath_#{other_name}", create_params)
+        else
+          info log_format_h("failed to create datapath_#{other_name}", create_params)
+        end
+      }
+    end
+
+    def find_datapath_assoc_map(datapath_id:)
+      _, assoc_map = @datapaths.detect { |assoc_key, assoc_map|
+        assoc_map[:datapath_id] == datapath_id
+      }
+
+      assoc_map
+    end
+
+    def internal_create_dp_other(datapath_id:, other_name:, other_key:, other_id:)
+      assoc_map = find_datapath_assoc_map(datapath_id: datapath_id)
+
+      if assoc_map.nil?
+        return
       end
+
+      create_params = {
+        datapath_id: datapath_id,
+        other_key => other_id,
+
+        lease_detection: {
+          interface_id: get_param_id(assoc_map, :interface_id)
+        }
+      }
+
+      create_datapath_other(other_name, create_params)
     end
 
   end

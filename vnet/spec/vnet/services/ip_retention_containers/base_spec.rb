@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Vnet::Services::IpRetentionContainers::Base do
   let(:instance) do
-    described_class.new(id: 1, lease_time: 1000, grace_time: 1000).tap(&:try_install)
+    described_class.new(vnet_info: MockEmptyVnetInfo.new, map: { id: 1, lease_time: 1000, grace_time: 1000 }).tap(&:try_install)
   end
 
   let(:current_time) { Time.now }

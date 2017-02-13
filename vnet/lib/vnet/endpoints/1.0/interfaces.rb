@@ -127,7 +127,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     [M::RouteLink, M::InterfaceRouteLink, R::InterfaceRouteLink, :route_link]
   ].freeze
 
-  ASSOCS.each do |other_model, assoc_model, assoc_response, assoc_name|
+  # Rename assoc_name to other_name.
+  ASSOCS.each { |other_model, assoc_model, assoc_response, assoc_name|
     assoc_uuid_sym = "#{assoc_name}_uuid".to_sym
 
     param_uuid M::Interface
@@ -158,7 +159,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
     get '/:uuid/segments' do
       show_relations(:Interface, "interface_#{assoc_name}s".to_sym)
     end
-  end
+  }
 
   #
   # Security Groups:

@@ -42,8 +42,12 @@ module Vnet::Services::IpRetentionContainers
 
     def initialize(params)
       super
-      @lease_time = params[:lease_time]
-      @grace_time = params[:grace_time]
+
+      get_param_map(params).tap { |map|
+        @lease_time = get_param_time(map, :lease_time, false)
+        @grace_time = get_param_time(map, :grace_time, false)
+      }
+
       @ip_retentions = {}
       @leased_ip_retentions = []
       @released_ip_retentions = []
