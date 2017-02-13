@@ -2,7 +2,7 @@
 
 module Vnet::NodeApi
   class IpLease < EventBase
-    valid_update_fields []
+    valid_update_fields [:enable_routing, :interface_id]
 
     class << self
       include Vnet::Helpers::Event
@@ -41,6 +41,8 @@ module Vnet::NodeApi
         mac_lease_id = options[:mac_lease_id]
 
         transaction {
+          handle_new_uuid(options)          
+
           if interface_id || mac_lease_id
             interface, mac_lease = get_if_and_ml(interface_id, mac_lease_id)
 
@@ -221,8 +223,8 @@ module Vnet::NodeApi
           raise ArgumentError, 'Either interface and/or mac lease must be supplied'
         end
 
-        interface = interface_id && model_class(:interface)[id: interface_id]
-        mac_lease = mac_lease_id && model_class(:mac_lease)[id: mac_lease_id]
+        interface = interface_id && M::Interface[id: interface_id]
+        mac_lease = mac_lease_id && M::MacLease[id: mac_lease_id]
         
         if interface && mac_lease.nil? && mac_lease_id.nil?
           # Error if the interface has more than one mac_lease?

@@ -3,6 +3,8 @@
 module Vnet::NodeApi
 
   class Translation < EventBase
+    valid_update_fields []
+
     class << self
       private
 

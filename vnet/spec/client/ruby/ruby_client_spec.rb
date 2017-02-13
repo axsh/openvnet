@@ -158,7 +158,6 @@ describe VNetAPIClient do
   end
 
   describe VNetAPIClient::Interface do
-    include_examples 'test_method', :rename, 'PUT  /interfaces/:uuid/rename'
     include_examples 'test_method', :add_port, 'POST  /interfaces/:uuid/ports'
     include_examples 'test_method', :remove_port, 'DELETE  /interfaces/:uuid/ports'
   end

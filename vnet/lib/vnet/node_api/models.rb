@@ -2,28 +2,40 @@
 
 module Vnet::NodeApi
 
-  class IpAddress < Base
+  class LegacyBase < EventBase
+    class << self
+      private
+
+      def dispatch_created_item_events(model)
+      end
+
+      def dispatch_deleted_item_events(model)
+      end
+    end
   end
 
-  class IpRange < Base
+  class IpAddress < LegacyBase
+    valid_update_fields []
   end
 
-  class IpRangeGroup < Base
+  class IpRange < LegacyBase
+    valid_update_fields []
   end
 
-  class LeasePolicyBaseInterface < Base
+  class IpRangeGroup < LegacyBase
+    valid_update_fields [:allocation_type]
   end
 
-  class LeasePolicyBaseNetwork < Base
+  class MacAddress < LegacyBase
+    valid_update_fields []
   end
 
-  class MacAddress < Base
+  class MacRange < LegacyBase
+    valid_update_fields []
   end
 
-  class MacRange < Base
-  end
-
-  class MacRangeGroup < Base
+  class MacRangeGroup < LegacyBase
+    valid_update_fields [:allocation_type]
   end
 
 end

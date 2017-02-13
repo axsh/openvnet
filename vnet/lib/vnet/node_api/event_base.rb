@@ -34,8 +34,15 @@ module Vnet::NodeApi
           return model
         }
       end
+      
+      def update_model_deleted()
 
-      def destroy(filter)
+	#TODO: Update deleted items
+
+
+      end
+
+      def destroy(filter, options = {})
         destroy_with_transaction(filter).tap { |model|
           next if model.nil?
           dispatch_deleted_item_events(model)
@@ -82,7 +89,7 @@ module Vnet::NodeApi
         mac_group_uuid = Vnet::Configurations::Common.conf.datapath_mac_group
 
         if mac_address.nil? && mac_group_uuid
-          mac_group = model_class(:mac_range_group)[mac_group_uuid] || return
+          mac_group = M::MacRangeGroup[mac_group_uuid] || return
           mac_address = mac_group.address_random || return
 
           options[:mac_address_id] = mac_address.id
@@ -104,7 +111,21 @@ module Vnet::NodeApi
       # transaction block and call internal_create/delete.
 
       def create_with_transaction(options)
-        model_class.create(options)
+        transaction {
+          handle_new_uuid(options)
+
+          model_class.create(options)
+        }
+      end
+
+      def handle_new_uuid(options)
+        return if !model_class.taggable?
+
+        options[:uuid].tap { |uuid|
+          next if uuid.nil?
+
+          model_class.reserve_uuid(uuid)
+        }
       end
 
       def destroy_with_transaction(filter)
@@ -144,7 +165,8 @@ module Vnet::NodeApi
           }
         }
 
-        return if model.update(changes).nil?
+        # return if model.update(changes).nil?
+        return [model, {}] if model.update(changes).nil?
 
         old_values.keep_if { |key, old_value|
           model[key] != old_value

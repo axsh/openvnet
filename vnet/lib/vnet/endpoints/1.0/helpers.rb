@@ -44,17 +44,21 @@ module Vnet::Endpoints::V10::Helpers
     end
 
     def check_and_trim_uuid(model)
-      raise E::DuplicateUUID, @params["uuid"] unless model[@params["uuid"]].nil?
-      @params["uuid"] = model.trim_uuid(@params["uuid"])
+      unless @params["replace_uuid"].nil? or @params["replace_uuid"] == false
+        replaceUUIDAndDestroy(model, @params["uuid"]) unless model[@params["uuid"]].nil?
+      else
+        raise E::DuplicateUUID, @params["uuid"] unless model[@params["uuid"]].nil?
+      end
+        @params["uuid"] = model.trim_uuid(@params["uuid"])
     end
-
-    # Deprecated:
+   
+    # TODO: Deprecated.
     def check_syntax_and_pop_uuid(model, key = "uuid", fill = {})
       check_uuid_syntax(model, @params[key])
       pop_uuid(model, key, fill)
     end
 
-    # Deprecated:
+    # TODO: Deprecated.
     def check_syntax_and_get_id(model, uuid_key = "uuid", id_key = "id", fill = {})
       check_uuid_syntax(model, @params[uuid_key])
       uuid_to_id(model, uuid_key, id_key, fill)

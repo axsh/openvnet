@@ -67,14 +67,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   put_post_shared_params
   put '/:uuid' do
     check_syntax_and_get_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
-    update_by_uuid(:Interface, fill)
-  end
-
-  param_uuid M::Interface
-  param :new_uuid, :String, required: true
-  put '/:uuid/rename' do
-    updated_object = M::Interface.batch.rename(params['uuid'], params['new_uuid']).commit
-    respond_with([updated_object])
+    update_by_uuid2(:Interface, fill)
   end
 
   #
