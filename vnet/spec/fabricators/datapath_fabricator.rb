@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+
 Fabricator(:datapath, class_name: Vnet::Models::Datapath) do
   display_name "test-datapath"
+
+  dpid { "0x%x" % sequence(:dpid, 0xAAAAAAAA) }
+
 end
 
 Fabricator(:datapath_1, class_name: Vnet::Models::Datapath) do

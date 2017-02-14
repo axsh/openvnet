@@ -28,7 +28,19 @@ interfaces:
     port_name: if-v1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:01"
-    ipv4_address: 10.101.0.10
+    ipv4_address: 10.101.0.11
+
+  - uuid: if-v5
+    port_name: if-v5
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:05"
+    ipv4_address: 10.101.0.12
+
+  - uuid: if-v7
+    port_name: if-v7
+    network_uuid: nw-vnet1
+    mac_address: "02:00:00:00:00:07"
+    ipv4_address: 10.101.0.17
 
   - uuid: if-dhcp1
     network_uuid: nw-vnet1
@@ -42,7 +54,7 @@ interfaces:
     owner_datapath_uuid: dp-wanedge
     network_uuid: nw-public1
     mac_address: "02:01:00:00:00:04"
-    ipv4_address: 172.16.90.12
+    ipv4_address: <%= dp_wanedge_ipv4_address %>
 
   - uuid: if-weth2
     mode: host
@@ -50,12 +62,12 @@ interfaces:
     owner_datapath_uuid: dp-wanedge
     network_uuid: nw-global
     mac_address: "02:01:00:00:00:05"
-    ipv4_address: 10.210.0.2
+    ipv4_address: <%= physical_network_simulated_ip %>
 
   - uuid: if-vnetgw
     mode: simulated
     network_uuid: nw-vnet1
-    mac_address: 10:FE:00:00:00:00
+    mac_address: 10:fe:00:00:00:00
     enable_routing: true
     ipv4_address: 10.101.0.1
 
@@ -70,7 +82,7 @@ mac_leases:
 
   - uuid: ml-glo2vnetgw
     interface_uuid: if-glo2vnetgw
-    mac_address: 10:FE:00:00:00:01
+    mac_address: 10:fe:00:00:00:01
 
 network_services:
 
@@ -85,37 +97,47 @@ datapath_networks:
     interface_uuid: if-dp1eth0
     mac_address: "02:00:00:aa:00:01"
 
+  - datapath_uuid: dp-3
+    network_uuid: nw-vnet1
+    interface_uuid: if-dp3eth0
+    mac_address: "02:00:00:cc:00:01"
+
   - datapath_uuid: dp-wanedge
     network_uuid: nw-vnet1
     interface_uuid: if-weth0
-    mac_address: "02:00:00:aa:01:01"
+    mac_address: "02:00:00:ee:00:01"
 
   - datapath_uuid: dp-wanedge
     network_uuid: nw-public1
     interface_uuid: if-weth0
-    mac_address: "02:00:00:aa:01:02"
+    mac_address: "02:00:00:ee:01:01"
 
   - datapath_uuid: dp-wanedge
     network_uuid: nw-global
     interface_uuid: if-weth2
-    mac_address: "02:00:00:aa:01:03"
+    mac_address: "02:00:00:ee:02:01"
 
 route_links:
 
   - uuid: rl-1
-    mac_address: "02:00:10:00:00:01"
+    mac_address: "02:00:41:00:00:01"
 
 datapath_route_links:
 
   - datapath_uuid: dp-1
     route_link_uuid: rl-1
     interface_uuid: if-dp1eth0
-    mac_address: "02:00:10:aa:00:01"
+    mac_address: "02:00:41:aa:00:01"
+
+  - datapath_uuid: dp-3
+    route_link_uuid: rl-1
+    interface_uuid: if-dp3eth0
+    mac_address: "02:00:41:bb:00:01"
 
   - datapath_uuid: dp-wanedge
     route_link_uuid: rl-1
     interface_uuid: if-weth0
-    mac_address: "02:00:10:bb:00:01"
+    mac_address: "02:00:41:cc:00:01"
 
 routes:
 
@@ -138,19 +160,42 @@ translations:
   - uuid: tr-saddr
     interface_uuid: if-glo2vnetgw
     mode: static_address
-    passthrough: true
+    passthrough: false
 
 translation_static_addresses:
 
   - translation_uuid: tr-saddr
-    ingress_ipv4_address: 10.210.0.104
-    egress_ipv4_address: 10.101.0.10
+    ingress_ipv4_address: <%= physical_network_vm1_ip %>
+    egress_ipv4_address: 10.101.0.11
+    route_link_uuid: rl-1
+
+  - translation_uuid: tr-saddr
+    ingress_ipv4_address: <%= physical_network_vm5_ip %>
+    egress_ipv4_address: 10.101.0.15
+    route_link_uuid: rl-1
+
+  - translation_uuid: tr-saddr
+    ingress_ipv4_address: <%= physical_network_vm7_ip %>
+    egress_ipv4_address: 10.101.0.17
     route_link_uuid: rl-1
 
 ip_leases:
 
-  - uuid: il-nat1
+  - uuid: il-nat104
     mac_lease_uuid: ml-glo2vnetgw
-    ipv4_address: 10.210.0.104
+    ipv4_address: <%= physical_network_vm1_ip %>
     network_uuid: nw-global
     enable_routing: true
+
+  - uuid: il-nat105
+    mac_lease_uuid: ml-glo2vnetgw
+    ipv4_address: <%= physical_network_vm5_ip %>
+    network_uuid: nw-global
+    enable_routing: true
+
+  - uuid: il-nat106
+    mac_lease_uuid: ml-glo2vnetgw
+    ipv4_address: <%= physical_network_vm7_ip %>
+    network_uuid: nw-global
+    enable_routing: true
+

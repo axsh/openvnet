@@ -125,7 +125,7 @@ module Vnctl::Cli
         desc "del UUID(S)", "Deletes one or more #{namespace}(s) separated by a space."
         define_method(:del) do |*uuids|
           puts uuids.map { |uuid|
-            Vnctl.webapi.delete("#{suffix}/#{uuid}")
+            Vnctl.webapi.delete("#{suffix}/#{uuid}", options)
           }.join("\n")
         end
       end
@@ -144,6 +144,16 @@ module Vnctl::Cli
           :desc => "New unique UUID for the #{namespace}."
         define_method(:rename) do |uuid|
           puts Vnctl.webapi.put("#{suffix}/#{uuid}/rename", options)
+        end
+      end
+
+      def self.define_custom_method(method_name, require_relation_uuid_label = false, &block)
+        return define_method(method_name) do |uuid, relation_uuid|
+          yield uuid, relation_uuid, options
+        end if require_relation_uuid_label
+
+        define_method(method_name) do |uuid|
+          yield uuid, options
         end
       end
 
@@ -184,6 +194,14 @@ module Vnctl::Cli
 
         c = Class.new(Base) do
           no_tasks {
+            def self.get_option(options, key, default = nil)
+              if options.has_key?(key)
+                options[key]
+              else
+                default
+              end
+            end
+
             def self.rel_name(name = nil)
               @rel_name = name unless name.nil?
               @rel_name
@@ -201,43 +219,41 @@ module Vnctl::Cli
           relation_uuid_label = "#{relation_singular.upcase}_UUID"
           desc_label = relation_name.to_s.gsub('_', ' ')
 
-          require_relation_uuid_label = true
-          if add_options.key?(:require_relation_uuid_label)
-            require_relation_uuid_label = add_options[:require_relation_uuid_label]
-          end
+          only_include_show = get_option(add_options, :only_include_show, false)
+          require_relation_uuid_label = get_option(add_options, :require_relation_uuid_label, true)
 
           yield self if block_given?
 
-          if require_relation_uuid_label
-            desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS",
-              "Adds #{desc_label} to a(n) #{parent.namespace}."
-            def add(base_uuid, rel_uuid)
-              full_uri_suffix = "#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}"
-              puts Vnctl.webapi.post(full_uri_suffix, options)
+          if !only_include_show
+            if require_relation_uuid_label
+              desc "add #{base_uuid_label} #{relation_uuid_label} OPTIONS", "Adds #{desc_label} to a(n) #{parent.namespace}."
+              def add(base_uuid, rel_uuid)
+                full_uri_suffix = "#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}"
+                puts Vnctl.webapi.post(full_uri_suffix, options)
+              end
+
+            else
+              desc "add #{base_uuid_label} OPTIONS", "Adds #{desc_label} to a(n) #{parent.namespace}."
+              def add(base_uuid)
+                puts Vnctl.webapi.post("#{suffix}/#{base_uuid}/#{rel_name}", options)
+              end
             end
-          else
-            desc "add #{base_uuid_label} OPTIONS",
-              "Adds #{desc_label} to a(n) #{parent.namespace}."
-            def add(base_uuid)
-              puts Vnctl.webapi.post("#{suffix}/#{base_uuid}/#{rel_name}", options)
+
+            desc "del #{base_uuid_label} #{relation_uuid_label}(S)", "Removes #{desc_label} from a(n) #{parent.namespace}."
+            def del(base_uuid, *rel_uuids)
+              puts rel_uuids.map { |rel_uuid|
+                Vnctl.webapi.delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
+              }.join("\n")
             end
           end
 
-          desc "show #{base_uuid_label}",
-            "Shows all #{desc_label} in this #{parent.namespace}."
+          desc "show #{base_uuid_label}", "Shows all #{desc_label} in this #{parent.namespace}."
           option_limit
           option_offset
           def show(base_uuid)
             puts Vnctl.webapi.get("#{suffix}/#{base_uuid}/#{rel_name}", options)
           end
 
-          desc "del #{base_uuid_label} #{relation_uuid_label}(S)",
-            "Removes #{desc_label} from a(n) #{parent.namespace}."
-          def del(base_uuid, *rel_uuids)
-            puts rel_uuids.map { |rel_uuid|
-              Vnctl.webapi.delete("#{suffix}/#{base_uuid}/#{rel_name}/#{rel_uuid}")
-            }.join("\n")
-          end
         end
 
         c.namespace "#{self.namespace} #{relation_name}"
@@ -270,8 +286,8 @@ module Vnctl::Cli
           }
 
           desc "show #{mode_type} #{base_uuid.upcase}_UUID",  "Shows all #{mode_type}s."
-          define_method("show") { | uuid = nil |
-            puts Vnctl.webapi.get("#{suffix}/#{mode_type}/#{uuid}")
+          define_method("show") { | uuid |
+            puts Vnctl.webapi.get("#{suffix}/#{uuid}/#{mode_type}")
           }
         end
 

@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
+
 module Vnet
   module Event
+
+    #
+    # Shared events:
+    #
+
+    ACTIVATE_INTERFACE = "activate_interface"
+    DEACTIVATE_INTERFACE = "deactivate_interface"
 
     # *_INITIALIZED
     #
@@ -89,6 +97,7 @@ module Vnet
     DATAPATH_UNLOAD_ITEM = 'datapath_unload_item'
     DATAPATH_CREATED_ITEM = 'datapath_created_item'
     DATAPATH_DELETED_ITEM = 'datapath_deleted_item'
+    DATAPATH_UPDATED_ITEM = 'datapath_updated_item'
 
     HOST_DATAPATH_INITIALIZED = 'host_datapath_initialized'
     HOST_DATAPATH_UNLOAD_ITEM = 'host_datapath_unload_item'
@@ -140,6 +149,36 @@ module Vnet
     INTERFACE_RELEASED_IPV4_ADDRESS = "interface_released_ipv4_address"
 
     #
+    # Interface Network events:
+    #
+
+    INTERFACE_NETWORK_INITIALIZED = "interface_network_initialized"
+    INTERFACE_NETWORK_UNLOAD_ITEM = "interface_network_unload_item"
+    INTERFACE_NETWORK_CREATED_ITEM = "interface_network_created_item"
+    INTERFACE_NETWORK_DELETED_ITEM = "interface_network_deleted_item"
+    INTERFACE_NETWORK_UPDATED_ITEM = "interface_network_updated_item"
+
+    #
+    # Interface Route Link events:
+    #
+
+    INTERFACE_ROUTE_LINK_INITIALIZED = "interface_route_link_initialized"
+    INTERFACE_ROUTE_LINK_UNLOAD_ITEM = "interface_route_link_unload_item"
+    INTERFACE_ROUTE_LINK_CREATED_ITEM = "interface_route_link_created_item"
+    INTERFACE_ROUTE_LINK_DELETED_ITEM = "interface_route_link_deleted_item"
+    INTERFACE_ROUTE_LINK_UPDATED_ITEM = "interface_route_link_updated_item"
+
+    #
+    # Interface Segment events:
+    #
+
+    INTERFACE_SEGMENT_INITIALIZED = "interface_segment_initialized"
+    INTERFACE_SEGMENT_UNLOAD_ITEM = "interface_segment_unload_item"
+    INTERFACE_SEGMENT_CREATED_ITEM = "interface_segment_created_item"
+    INTERFACE_SEGMENT_DELETED_ITEM = "interface_segment_deleted_item"
+    INTERFACE_SEGMENT_UPDATED_ITEM = "interface_segment_updated_item"
+
+    #
     # Interface Port events:
     #
 
@@ -154,7 +193,7 @@ module Vnet
     INTERFACE_PORT_DEACTIVATE = "interface_port_deactivate"
 
     #
-    # Filter evvents:
+    # Filter events:
     #
 
     FILTER_INITIALIZED = "filter_initialized"
@@ -163,8 +202,6 @@ module Vnet
     FILTER_DELETED_ITEM = "filter_deleted_item"
     FILTER_UPDATED = "filter_updated"
 
-    FILTER_ACTIVATE_INTERFACE = "filter_activate_interface"
-    FILTER_DEACTIVATE_INTERFACE = "filter_deactivate_interface"
     FILTER_ADDED_STATIC = "filter_added_static"
     FILTER_REMOVED_STATIC = "filter_removed_static"
 
@@ -246,18 +283,19 @@ module Vnet
     TRANSLATION_CREATED_ITEM = "translation_created_item"
     TRANSLATION_DELETED_ITEM = "translation_deleted_item"
 
-    TRANSLATION_ACTIVATE_INTERFACE = "translation_activate_interface"
-    TRANSLATION_DEACTIVATE_INTERFACE = "translation_deactivate_interface"
     TRANSLATION_ADDED_STATIC_ADDRESS = "translation_added_static_address"
     TRANSLATION_REMOVED_STATIC_ADDRESS = "translation_removed_static_address"
 
     #
     # Topology events:
     #
-    TOPOLOGY_INITIALIZED = "topology_initialized"
-    TOPOLOGY_UNLOAD_ITEM = "topology_unload_item"
-    TOPOLOGY_CREATED_ITEM = "topology_created_item"
-    TOPOLOGY_DELETED_ITEM = "topology_deleted_item"
+    TOPOLOGY_INITIALIZED = 'topology_initialized'
+    TOPOLOGY_UNLOAD_ITEM = 'topology_unload_item'
+    TOPOLOGY_CREATED_ITEM = 'topology_created_item'
+    TOPOLOGY_DELETED_ITEM = 'topology_deleted_item'
+
+    TOPOLOGY_ADDED_LAYER = 'topology_added_layer'
+    TOPOLOGY_REMOVED_LAYER = 'topology_removed_layer'
 
     TOPOLOGY_ADDED_DATAPATH = 'topology_added_datapath'
     TOPOLOGY_REMOVED_DATAPATH = 'topology_removed_datapath'
@@ -269,18 +307,16 @@ module Vnet
     TOPOLOGY_ADDED_ROUTE_LINK = 'topology_added_route_link'
     TOPOLOGY_REMOVED_ROUTE_LINK = 'topology_removed_route_link'
 
-    TOPOLOGY_NETWORK_ACTIVATED = "topology_network_activated"
-    TOPOLOGY_NETWORK_DEACTIVATED = "topology_network_deactivated"
+    TOPOLOGY_NETWORK_ACTIVATED = 'topology_network_activated'
+    TOPOLOGY_NETWORK_DEACTIVATED = 'topology_network_deactivated'
+    TOPOLOGY_SEGMENT_ACTIVATED = 'topology_segment_activated'
+    TOPOLOGY_SEGMENT_DEACTIVATED = 'topology_segment_deactivated'
+    TOPOLOGY_ROUTE_LINK_ACTIVATED = 'topology_route_link_activated'
+    TOPOLOGY_ROUTE_LINK_DEACTIVATED = 'topology_route_link_deactivated'
 
-    TOPOLOGY_SEGMENT_ACTIVATED = "topology_segment_activated"
-    TOPOLOGY_SEGMENT_DEACTIVATED = "topology_segment_deactivated"
-
-    TOPOLOGY_ROUTE_LINK_ACTIVATED = "topology_route_link_activated"
-    TOPOLOGY_ROUTE_LINK_DEACTIVATED = "topology_route_link_deactivated"
-
-    TOPOLOGY_CREATE_DP_NW = "topology_create_dp_nw"
-    TOPOLOGY_CREATE_DP_SEG = "topology_create_dp_seg"
-    TOPOLOGY_CREATE_DP_RL = "topology_create_dp_rl"
+    TOPOLOGY_CREATE_DP_NW = 'topology_create_dp_nw'
+    TOPOLOGY_CREATE_DP_SEG = 'topology_create_dp_seg'
+    TOPOLOGY_CREATE_DP_RL = 'topology_create_dp_rl'
 
     #
     # tunnel event

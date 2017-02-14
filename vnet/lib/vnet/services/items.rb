@@ -2,7 +2,7 @@
 
 require 'ostruct'
 
-module Vnet::Core
+module Vnet::Services
 
   class Topology < OpenStruct
   end

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 require 'vnet'
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
@@ -25,6 +26,7 @@ describe "/datapaths" do
       :is_connected => false,
       :dpid => "0x0000aaaaaaaaaaaa",
       :node_id => "vna45",
+      :enable_ovs_learn_action => true,
     }
 
     required_params = [:display_name, :dpid, :node_id]
@@ -36,8 +38,7 @@ describe "/datapaths" do
   describe "PUT /:uuid" do
     accepted_params = {
       :display_name => "we changed this name",
-      :dpid => "0x0000abcdefabcdef",
-      :node_id => 'vna45'
+      :enable_ovs_learn_action => false,
     }
     uuid_params = []
 

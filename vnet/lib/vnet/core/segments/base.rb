@@ -2,7 +2,7 @@
 
 module Vnet::Core::Segments
 
-  class Base < Vnet::ItemDpUuid
+  class Base < Vnet::ItemDatapathUuidMode
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -10,8 +10,6 @@ module Vnet::Core::Segments
 
     def initialize(params)
       super
-
-      map = params[:map]
 
       @cookie = @id | COOKIE_TYPE_SEGMENT
     end

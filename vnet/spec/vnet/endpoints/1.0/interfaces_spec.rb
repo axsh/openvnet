@@ -76,14 +76,19 @@ describe "/interfaces" do
     include_examples "PUT /:uuid", accepted_params
 
     describe "event handler" do
-      let(:request_params) { {} }
+      let(:request_params) { { display_name: 'event interface' } }
 
       it "handles a single event" do
         expect(last_response).to succeed
         expect(MockEventHandler.handled_events.size).to eq 1
       end
     end
+
   end
+
+  include_examples 'interface assoc on endpoints', :segment
+  include_examples 'interface assoc on endpoints', :network
+  include_examples 'interface assoc on endpoints', :route_link
 
   #
   # Ports:
@@ -92,7 +97,7 @@ describe "/interfaces" do
   describe "/interfaces/:uuid/ports" do
     let(:api_postfix)  { "ports" }
     let(:postfix_parent_sym) { :interface_id }
-    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => 1}) }
+    let(:postfix_fabricate)  { Fabricate(:interface_port, {postfix_parent_sym => object.id}) }
     let(:postfix_model_class) { Vnet::Models::InterfacePort }
 
     include_examples "GET /:uuid/postfix"
@@ -116,7 +121,7 @@ describe "/interfaces" do
   # Security groups:
   #
 
-  describe "Many to many relation calls for security groups" do
+  describe 'Many to many relation calls for security groups' do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :security_group }
     let(:join_table_fabricator) { :security_group_interface }

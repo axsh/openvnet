@@ -3,8 +3,8 @@
 module Vnet::Core
 
   class Filter2Manager < Vnet::Core::Manager
-
     include Vnet::Constants::Filter
+    include Vnet::ManagerAssocs
     include ActiveInterfaceEvents
 
     #
@@ -17,11 +17,12 @@ module Vnet::Core
     subscribe_event FILTER_CREATED_ITEM, :created_item
     subscribe_event FILTER_DELETED_ITEM, :unload_item
     subscribe_event FILTER_UPDATED, :updated_item
-    subscribe_event FILTER_ACTIVATE_INTERFACE, :activate_interface
-    subscribe_event FILTER_DEACTIVATE_INTERFACE, :deactivate_interface
 
-    subscribe_event FILTER_ADDED_STATIC, :added_static
-    subscribe_event FILTER_REMOVED_STATIC, :removed_static
+    subscribe_item_event FILTER_ADDED_STATIC, :added_static
+    subscribe_item_event FILTER_REMOVED_STATIC, :removed_static
+
+    subscribe_event ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event DEACTIVATE_INTERFACE, :deactivate_interface
 
     #
     # Internal methods:
@@ -80,18 +81,15 @@ module Vnet::Core
 
     def item_pre_install(item, item_map)
       case item.mode
-      when :static then load_static(item_map)
+      when :static then load_static(item, item_map)
       end
     end
 
     # FILTER_CREATED_ITEM on queue 'item.id'.
     def created_item(params)
-      interface_id = params[:interface_id]
-
       return if internal_detect_by_id(params)
-      return if interface_id.nil?
+      return if @active_interfaces[get_param_id(params, :interface_id)].nil?
 
-      return if @active_interfaces[interface_id].nil?
       internal_new_item(mw_class.new(params))
     end
 
@@ -109,44 +107,13 @@ module Vnet::Core
     # to change
 
     # load static filter on queue 'item.id'.
-    def load_static(item_map)
+    def load_static(item, item_map)
       item_map.batch.filter_statics.commit.each { |filter|
         model_hash = filter.to_hash.merge(id: item_map.id,
                                           static_id: filter.id)
 
-        added_static(model_hash)
+        item.added_static(model_hash)
       }
-    end
-
-    # FILTER_ADDED_STATIC on queue 'item.id'.
-    def added_static(params)
-      item = internal_detect_by_id_with_error(params) || return
-      begin
-        item.added_static(
-          get_param_id(params, :static_id),
-          get_param_ipv4_address(params, :ipv4_src_address),
-          get_param_ipv4_address(params, :ipv4_dst_address),
-          get_param_int(params, :ipv4_src_prefix),
-          get_param_int(params, :ipv4_dst_prefix),
-          get_param_int(params, :port_src, false),
-          get_param_int(params, :port_dst, false),
-          get_param_string(params, :protocol),
-          get_param(params, :passthrough)
-        )
-      rescue Vnet::ParamError => e
-        handle_param_error(e)
-      end
-    end
-
-    # FILTER_REMOVED_STATIC on queue 'item.id'.
-    def removed_static(params)
-      item = internal_detect_by_id(params) || return
-
-      begin
-        item.removed_static(get_param_id(params, :static_id))
-      rescue Vnet::ParamError => e
-        handle_param_error(e)
-      end
     end
 
   end

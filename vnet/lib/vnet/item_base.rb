@@ -76,15 +76,15 @@ module Vnet
     private
 
     def log_format(message, values = nil)
-      "#{log_type}: #{message}" + (values ? " (#{values})" : '')
+      "#{log_type}/#{pretty_id}: #{message}" + (values ? " (#{values})" : '')
     end
 
     def log_format_h(message, values)
-      str = values.map { |value|
+      values && values.map { |value|
         value.join(':')
-      }.join(' ')
-
-      log_format(message, str)
+      }.join(' ').tap { |str|
+        return log_format(message, str)
+      }
     end
 
   end
@@ -93,7 +93,12 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @id = params[:id]
+
+      @vnet_info = get_param_vnet_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+      }
     end
   end
 
@@ -104,9 +109,12 @@ module Vnet
       @installed = false
       @loaded = false
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
+      @vnet_info = get_param_vnet_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+        @uuid = get_param_string(map, :uuid)
+      }
     end
 
     def pretty_id
@@ -114,18 +122,32 @@ module Vnet
     end
   end
 
+  # TODO: This class isn't really correctly implemented, replace the
+  # initialize method with a not-implemented exception and create a
+  # different ItemDpId32 for e.g. ports. 
   class ItemDpBase < ItemBase
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
-      @id = params[:id]
+
+      @dp_info = get_param_dp_info(params)
+      @id = get_param_id_32(params)
     end
 
     private
 
     def log_format(message, values = nil)
-      "#{@dp_info.dpid_s} #{log_type}: #{message}" + (values ? " (#{values})" : '')
+      "#{@dp_info.dpid_s} #{log_type}/#{pretty_id}: #{message}" + (values ? " (#{values})" : '')
+    end
+  end
+
+  class ItemDpId < ItemDpBase
+    def initialize(params)
+      @installed = false
+      @loaded = false
+
+      @dp_info = get_param_dp_info(params)
+      @id = get_param_id(get_param_map(params))
     end
   end
 
@@ -135,11 +157,12 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
+      @dp_info = get_param_dp_info(params)
+
+      map = get_param_map(params)
+      @id = get_param_id(map)
+      @uuid = get_param_string(map, :uuid)
     end
 
     def pretty_id
@@ -153,12 +176,35 @@ module Vnet
     def initialize(params)
       @installed = false
       @loaded = false
-      @dp_info = params[:dp_info]
 
-      map = params[:map]
-      @id = map.id
-      @uuid = map.uuid
-      @mode = map.mode.to_sym
+      @dp_info = get_param_dp_info(params)
+
+      map = get_param_map(params)
+      @id = get_param_id(map)
+      @uuid = get_param_string(map, :uuid)
+      @mode = get_param_string(map, :mode).to_sym
+    end
+
+    def pretty_properties
+      "mode:#{@mode}"
+    end
+  end
+
+  class ItemDatapathUuidMode < ItemDpUuid
+    attr_reader :mode
+
+    def initialize(params)
+      @installed = false
+      @loaded = false
+
+      @dp_info = get_param_dp_info(params)
+      @datapath_info = get_param_datapath_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+        @uuid = get_param_string(map, :uuid)
+        @mode = get_param_string(map, :mode).to_sym
+      }
     end
 
     def pretty_properties

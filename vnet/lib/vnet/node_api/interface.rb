@@ -1,61 +1,9 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
   class Interface < EventBase
+    valid_update_fields [:display_name, :ingress_filtering_enabled]
+
     class << self
-      # TODO dispatch_event
-      def update(uuid, options)
-        options = options.dup
-
-        ife = options["ingress_filtering_enabled"]
-        unless ife.nil?
-          options["enable_legacy_filtering"] = ife
-        end
-
-        transaction {
-          model_class[uuid].tap do |i|
-            return unless i
-            i.update(options)
-          end
-        }.tap do |interface|
-          dispatch_event(INTERFACE_UPDATED,
-                         event: :updated,
-                         id: interface.id,
-                         changed_columns: options)
-
-
-          # TODO: Checking for 'true' or 'false' is insufficient.
-          case options[:ingress_filtering_enabled]
-          when "true"
-            dispatch_event(INTERFACE_ENABLED_FILTERING, id: interface.id)
-          when "false"
-            dispatch_event(INTERFACE_DISABLED_FILTERING, id: interface.id)
-          end
-
-          case options[:enable_filtering]
-          when "true"
-            dispatch_event(INTERFACE_ENABLED_FILTERING2, id: interface.id)
-          when "false"
-            dispatch_event(INTERFACE_DISABLED_FILTERING2, id: interface.id)
-          end
-
-        end
-      end
-
-      # TODO: Move to base.
-      def rename(old_uuid, new_uuid)
-        old_trimmed = model_class.trim_uuid(old_uuid)
-        new_trimmed = model_class.trim_uuid(new_uuid)
-
-        # TODO: Make error:
-        return '' if old_trimmed.nil? || new_trimmed.nil?
-
-        update_count = model_class.with_deleted.where(uuid: old_trimmed).update(uuid: new_trimmed)
-
-        # TODO: Send event if not deleted.
-        # TODO: Error if count is not 1.
-
-        (update_count == 1) ? new_uuid : ''
-      end
 
       #
       # Internal methods:
@@ -79,13 +27,19 @@ module Vnet::NodeApi
 
         # TODO: Raise rollback if any step fails.
         transaction {
-          model = internal_create(options) || next
-          create_interface_port(model, datapath_id, port_name)
+          handle_new_uuid(options)
 
-          mac_lease = add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
-          add_lease(model, mac_lease, network_id, ipv4_address)
+          internal_create(options).tap { |model|
+            next if model.nil?
 
-          model
+            create_interface_port(model, datapath_id, port_name)
+
+            mac_lease = add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
+            ip_lease = add_ip_lease(model, mac_lease, network_id, ipv4_address)
+
+            InterfaceSegment.update_assoc(model.id, mac_lease.segment_id) if mac_lease
+            InterfaceNetwork.update_assoc(model.id, ip_lease.network_id) if ip_lease
+          }
         }
       end
 
@@ -97,6 +51,8 @@ module Vnet::NodeApi
 
         # 0001_origin
         InterfacePort.dispatch_created_where(filter, model.created_at)
+
+        # 0011_assoc_interface
       end
 
       def dispatch_deleted_item_events(model)
@@ -119,6 +75,39 @@ module Vnet::NodeApi
         Translation.dispatch_deleted_where(filter, model.deleted_at)
         # 0002_services
         # lease_policy_base_interfaces: :destroy,
+        # 0011_assoc_interface 
+        # TODO: Make the assoc managers subscribe to INTERFACE_DELETED_ITEM(?).
+        InterfaceNetwork.dispatch_deleted_where(filter, model.deleted_at)
+        InterfaceSegment.dispatch_deleted_where(filter, model.deleted_at)
+        InterfaceRouteLink.dispatch_deleted_where(filter, model.deleted_at)
+      end
+
+      def dispatch_updated_item_events(model, old_values)
+        # dispatch_event(INTERFACE_UPDATED, get_changed_hash(model, old_values.keys))
+
+        dispatch_event(INTERFACE_UPDATED,
+                       event: :updated,
+                       id: model.id,
+                       changed_columns: get_changed_hash(model, old_values.keys))
+
+
+        if old_values.has_key?(:enable_legacy_filtering)
+          case model[:enable_legacy_filtering]
+          when true
+            dispatch_event(INTERFACE_ENABLED_FILTERING, id: model.id)
+          when false
+            dispatch_event(INTERFACE_DISABLED_FILTERING, id: model.id)
+          end
+        end
+
+        if old_values.has_key?(:enable_filtering)
+          case model[:enable_filtering]
+          when true
+            dispatch_event(INTERFACE_ENABLED_FILTERING2, id: model.id)
+          when false
+            dispatch_event(INTERFACE_DISABLED_FILTERING2, id: model.id)
+          end
+        end
       end
 
       def create_interface_port(interface, datapath_id, port_name)
@@ -133,31 +122,31 @@ module Vnet::NodeApi
           singular: singular
         }
 
-        model_class(:interface_port).create(options)
+        M::InterfacePort.create(options)
       end
 
-      def add_lease(interface, mac_lease, network_id, ipv4_address)
-        return true if network_id.nil? || ipv4_address.nil?
+      def add_ip_lease(interface, mac_lease, network_id, ipv4_address)
+        return if network_id.nil? || ipv4_address.nil?
 
-        ip_lease = model_class(:ip_lease).create(mac_lease: mac_lease,
-                                                 network_id: network_id,
-                                                 ipv4_address: ipv4_address) || return
+        ip_lease = M::IpLease.create(mac_lease: mac_lease,
+                                     network_id: network_id,
+                                     ipv4_address: ipv4_address) || return
         interface.add_ip_lease(ip_lease) || return
 
-        return true
+        ip_lease
       end
 
       def add_mac_lease(model, mac_address, mac_range_group_id, segment_id)
         if mac_address
-          mac_lease = model_class(:mac_lease).create(interface_id: model.id,
-                                                     segment_id: segment_id,
-                                                     mac_address: mac_address)
+          mac_lease = M::MacLease.create(interface_id: model.id,
+                                         segment_id: segment_id,
+                                         mac_address: mac_address)
           return mac_lease
         end
 
         return if mac_range_group_id.nil?
 
-        mac_range_group = model_class(:mac_range_group)[id: mac_range_group_id] || return
+        mac_range_group = M::MacRangeGroup[id: mac_range_group_id] || return
         mac_range_group.lease_random(model.id)
       end
 

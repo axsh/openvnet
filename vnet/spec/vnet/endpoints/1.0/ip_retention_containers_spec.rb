@@ -19,6 +19,7 @@ describe "/ip_retention_containers" do
 
   describe "POST /" do
     accepted_params = {
+      uuid: 'irc-test',
       lease_time: 3600,
       grace_time: 3600
     }

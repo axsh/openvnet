@@ -7,6 +7,8 @@ module Vnet::Core::Interfaces
   class IfBase < Base
 
     def enable_filtering
+      return if @ingress_filtering_enabled
+
       @ingress_filtering_enabled = true
       @dp_info.filter_manager.async.apply_filters(@id)
       del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
@@ -17,6 +19,8 @@ module Vnet::Core::Interfaces
     end
 
     def disable_filtering
+      return if !@ingress_filtering_enabled
+
       @ingress_filtering_enabled = false
 
       @dp_info.add_flows flows_for_disabled_legacy_filtering
@@ -30,10 +34,14 @@ module Vnet::Core::Interfaces
     end
 
     def enable_filtering2
+      return if @enable_filtering
+
       @enabled_filtering = true
     end
 
     def disable_filtering2
+      return if !@enable_filtering
+
       @enabled_filtering = false
       @dp_info.add_flows flows_for_disabled_filtering
     end
@@ -193,19 +201,25 @@ module Vnet::Core::Interfaces
       #
       # Anti-spoof:
       #
-      [{ :eth_type => 0x0806,
-         :arp_spa => ipv4_address,
-       },{
-         :eth_type => 0x0800,
-         :ipv4_src => ipv4_address,
-       }
-      ].each { |match|
-        flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
-                             priority: 90,
-                             match: match,
-                             match_value_pair_first: network_id,
-                             cookie: cookie)
-      }
+
+      # TODO: This doesn't currently support global interfaces, as
+      # such it is for the time being disabled.
+
+      if mode == :vif || mode == :host
+        [{ :eth_type => 0x0806,
+            :arp_spa => ipv4_address,
+          },{
+            :eth_type => 0x0800,
+            :ipv4_src => ipv4_address,
+          }
+        ].each { |match|
+          flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
+            priority: 90,
+            match: match,
+            match_value_pair_first: network_id,
+            cookie: cookie)
+        }
+      end
     end
 
     def flows_for_router_ingress_mac(flows, mac_info)
@@ -340,6 +354,7 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_mac2mac_mac(flows, mac_info)
+      segment_id = mac_info[:segment_id] || return
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
       [{ :eth_type => 0x0800,

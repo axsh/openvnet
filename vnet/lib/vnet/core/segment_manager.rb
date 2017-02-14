@@ -124,7 +124,7 @@ module Vnet::Core
           return
         end
 
-      item_class.new(dp_info: @dp_info, map: item_map)
+      item_class.new(dp_info: @dp_info, datapath_info: @datapath_info, map: item_map)
     end
 
     #

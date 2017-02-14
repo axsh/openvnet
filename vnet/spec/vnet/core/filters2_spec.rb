@@ -22,10 +22,11 @@ describe Vnet::Core::Filter2Manager do
 
   # TODO: Sleep timers here create random fails based on load. Use wait_for_loaded.
   before(:each) do
-    filter2_manager.publish(Vnet::Event::FILTER_ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
+    filter2_manager.publish(Vnet::Event::ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
     sleep(0.01)
     filter2_manager.publish(Vnet::Event::FILTER_CREATED_ITEM, filter.to_hash)
     expect(filter2_manager.wait_for_loaded({id: filter.id}, 3)).not_to be_nil
+    sleep(0.01)
   end
 
   shared_examples_for "filter_methods" do |operation, passthrough, event = nil|
@@ -87,7 +88,9 @@ describe Vnet::Core::Filter2Manager do
       filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
                                                           static_id: filter_static.id))
+      sleep(0.01)
     end
+
     context "when protocol is tcp and passthrough is enabled" do
       include_examples 'added_static', :static_pass, "tcp"
     end
@@ -119,13 +122,15 @@ describe Vnet::Core::Filter2Manager do
       filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
                                                           static_id: filter_static.id))
+      sleep(0.01)
       filter2_manager.publish(Vnet::Event::FILTER_REMOVED_STATIC,
-                              filter_static.to_hash.merge(id: filter.id,
-                                                          static_id: filter_static.id))
+                              id: filter.id, static_id: filter_static.id)
+      sleep(0.01)
     end
 
     context "when a static rule has been added" do
       let(:filter_static) { Fabricate(:static_pass, protocol: "tcp") }
+
       it "removes a static rule" do
         static_hash(filter_static).each { |ingress, egress|
           expect(flows).not_to include deleted_flow(ingress)

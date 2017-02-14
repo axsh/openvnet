@@ -37,19 +37,20 @@ module Vnet::Openflow
       # Default drop flows:
       #
 
-      [TABLE_EDGE_SRC,
-       TABLE_EDGE_DST,
-       TABLE_TUNNEL_PORTS,
+      [TABLE_TUNNEL_PORTS,
        TABLE_TUNNEL_IDS,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
+       TABLE_PROMISCUOUS_PORT,
 
        TABLE_INTERFACE_INGRESS_CLASSIFIER,
        TABLE_INTERFACE_INGRESS_MAC,
        TABLE_INTERFACE_INGRESS_SEG_IF,
        TABLE_INTERFACE_INGRESS_NW_IF,
        TABLE_INTERFACE_INGRESS_ROUTE_LINK,
+
        TABLE_INTERFACE_INGRESS_FILTER_LOOKUP,
+
        TABLE_INTERFACE_EGRESS_CLASSIFIER,
        TABLE_INTERFACE_EGRESS_FILTER,
        TABLE_INTERFACE_EGRESS_VALIDATE,
@@ -93,6 +94,7 @@ module Vnet::Openflow
        TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
 
        TABLE_OUTPUT_DP_OVER_TUNNEL,
+       TABLE_OUTPUT_DP_TO_CONTROLLER,
 
        TABLE_OUT_PORT_INTERFACE_INGRESS,
        TABLE_OUT_PORT_INTERFACE_EGRESS,
@@ -223,9 +225,6 @@ module Vnet::Openflow
       end
     end
 
-    def update_vlan_translation
-      # TODO: This should be removed.
-    end
     #
     # Internal methods:
     #

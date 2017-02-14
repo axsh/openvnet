@@ -3,8 +3,8 @@
 module Vnet::Core
 
   class InterfaceManager < Vnet::Core::Manager
-
     include Vnet::Constants::Interface
+    include Vnet::ManagerAssocs
 
     #
     # Events:
@@ -17,15 +17,16 @@ module Vnet::Core
     subscribe_event INTERFACE_DELETED_ITEM, :unload_item
 
     subscribe_event INTERFACE_UPDATED, :update_item_exclusively
-    subscribe_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
-    subscribe_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
-    subscribe_event INTERFACE_ENABLED_FILTERING2, :enabled_filtering2
-    subscribe_event INTERFACE_DISABLED_FILTERING2, :disabled_filtering2
 
     subscribe_event INTERFACE_LEASED_MAC_ADDRESS, :leased_mac_address
     subscribe_event INTERFACE_RELEASED_MAC_ADDRESS, :released_mac_address
     subscribe_event INTERFACE_LEASED_IPV4_ADDRESS, :leased_ipv4_address
     subscribe_event INTERFACE_RELEASED_IPV4_ADDRESS, :released_ipv4_address
+
+    subscribe_item_event INTERFACE_ENABLED_FILTERING, :enabled_filtering
+    subscribe_item_event INTERFACE_DISABLED_FILTERING, :disabled_filtering
+    subscribe_item_event INTERFACE_ENABLED_FILTERING2, :enabled_filtering2
+    subscribe_item_event INTERFACE_DISABLED_FILTERING2, :disabled_filtering2
 
     def initialize(*args)
       super
@@ -111,10 +112,10 @@ module Vnet::Core
     def item_initialize(item_map)
       item_class =
         case item_map.mode
-        when MODE_EDGE      then Interfaces::Edge
         when MODE_HOST      then Interfaces::Host
         when MODE_INTERNAL  then Interfaces::Internal
         when MODE_PATCH     then Interfaces::Patch
+        when MODE_PROMISCUOUS then Interfaces::Promiscuous
         when MODE_SIMULATED then Interfaces::Simulated
         when MODE_VIF       then Interfaces::Vif
         else
@@ -141,28 +142,30 @@ module Vnet::Core
     def item_post_install(item, item_map)
       load_addresses(item_map)
 
-      @dp_info.tunnel_manager.publish(TRANSLATION_ACTIVATE_INTERFACE,
-                                      id: :interface,
-                                      interface_id: item.id)
+      activate_params = {
+        id: :interface,
+        interface_id: item.id
+      }
 
-      @dp_info.filter2_manager.publish(FILTER_ACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: item.id)
+      @dp_info.tunnel_manager.publish(ACTIVATE_INTERFACE, activate_params)
+      @dp_info.filter2_manager.publish(ACTIVATE_INTERFACE, activate_params)
+      @dp_info.interface_segment_manager.publish(ACTIVATE_INTERFACE, activate_params)
 
       item.ingress_filtering_enabled &&
         @dp_info.filter_manager.async.apply_filters(item_map)
     end
 
     def item_post_uninstall(item)
-      @dp_info.tunnel_manager.publish(TRANSLATION_DEACTIVATE_INTERFACE,
-                                      id: :interface,
-                                      interface_id: item.id)
+      deactivate_params = {
+        id: :interface,
+        interface_id: item.id
+      }
+
+      @dp_info.tunnel_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.filter2_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.interface_segment_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
 
       @dp_info.filter_manager.async.remove_filters(item.id)
-
-      @dp_info.filter2_manager.publish(FILTER_DEACTIVATE_INTERFACE,
-                                       id: :interface,
-                                       interface_id: item.id)
 
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.remove_catch_new_egress(id)
@@ -232,8 +235,7 @@ module Vnet::Core
       mac_leases && mac_leases.each do |mac_lease|
         publish(INTERFACE_LEASED_MAC_ADDRESS,
                 id: item_map.id,
-                mac_lease_id: mac_lease.id,
-                mac_address: mac_lease.mac_address)
+                mac_lease_id: mac_lease.id)
 
         mac_lease.ip_leases.each do |ip_lease|
           publish(INTERFACE_LEASED_IPV4_ADDRESS,
@@ -256,6 +258,7 @@ module Vnet::Core
 
       segment_id = mac_lease.segment_id
 
+      # TODO: Move to interface_segment...
       if segment_id
         segment = @dp_info.segment_manager.retrieve(id: segment_id)
 
@@ -335,42 +338,6 @@ module Vnet::Core
       return if ip_lease && ip_lease.interface_id == item.id
 
       item.remove_ipv4_address(ip_lease_id: params[:ip_lease_id])
-    end
-
-    # INTERFACE_ENABLED_FILTERING on queue 'item.id'
-    def enabled_filtering(params)
-      item = @items[params[:id]]
-      return if !item || item.ingress_filtering_enabled
-
-      info log_format("enabled filtering on interface", item.uuid)
-      item.enable_filtering
-    end
-
-    # INTERFACE_DISABLED_FILTERING on queue 'item.id'
-    def disabled_filtering(params)
-      item = @items[params[:id]]
-      return if !item || !item.ingress_filtering_enabled
-
-      info log_format("disabled filtering on interface", item.uuid)
-      item.disable_filtering
-    end
-
-    # INTERFACE_ENABLED_FILTERING2 on queue 'item.id'
-    def enabled_filtering2(params)
-      item = internal_detect(id: id)
-      return if !item || item.enabled_filtering
-
-      info log_format("enabled filtering on interface", item.uuid)
-      item.enable_filtering2
-    end
-
-    # INTERFACE_DISABLED_FILTERING2 on queue 'item.id'
-    def disabled_filtering2(params)
-      item = internal_detect(id: id)
-      return if !item || !item.enabled_filtering
-
-      info log_format("disabled filtering on interface", item.uuid)
-      item.disable_filtering2
     end
 
     #

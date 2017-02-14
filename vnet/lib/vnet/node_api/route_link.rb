@@ -2,16 +2,18 @@
 
 module Vnet::NodeApi
   class RouteLink < EventBase
+    valid_update_fields []
+
     class << self
       private
 
       def create_with_transaction(options)
-        mac_address = options[:mac_address]
-        mac_group_uuid = Vnet::Configurations::Common.conf.datapath_mac_group
-        transaction do
+        transaction {
+          handle_new_uuid(options)
+
           mac_address_random_assign(options)
-          model = internal_create(options)
-        end
+          internal_create(options)
+        }
       end
 
       def dispatch_created_item_events(model)
@@ -29,6 +31,8 @@ module Vnet::NodeApi
         # translation_static_addresses: :destroy,
         # 0009_topology
         TopologyRouteLink.dispatch_deleted_where(filter, model.deleted_at)
+        # 0011_assoc_interface
+        InterfaceRouteLink.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end

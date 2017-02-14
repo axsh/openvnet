@@ -1,14 +1,24 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services::Topologies
-
   class Base < Vnet::ItemVnetUuid
     include Celluloid::Logger
+
+    attr_reader :datapaths
+    attr_reader :networks
+    attr_reader :segments
+    attr_reader :route_links
 
     def initialize(params)
       super
 
-      map = params[:map]
+      @datapaths = {}
+      @networks = {}
+      @segments = {}
+      @route_links = {}
+
+      @overlays = {}
+      @underlays = {}
     end
 
     def log_type
@@ -16,8 +26,89 @@ module Vnet::Services::Topologies
     end
 
     def to_hash
-      Vnet::Core::Topology.new(id: @id,
-                               uuid: @uuid)
+      Vnet::Services::Topology.new(
+        id: @id,
+        uuid: @uuid)
+    end
+
+    def create_dp_assoc(other_name, params)
+      case other_name
+      when :network then create_dp_network(params)
+      when :segment then create_dp_segment(params)
+      when :route_link then create_dp_route_link(params)
+      else
+        raise NotImplementedError
+      end
+    end
+
+    def added_assoc(other_name, params)
+      case other_name
+      when :datapath then added_datapath(params)
+      when :network then added_network(params)
+      when :segment then added_segment(params)
+      when :route_link then added_route_link(params)
+      else
+        raise NotImplementedError
+      end
+    end
+
+    def removed_assoc(other_name, params)
+      case other_name
+      when :datapath then removed_datapath(params)
+      when :network then removed_network(params)
+      when :segment then removed_segment(params)
+      when :route_link then removed_route_link(params)
+      else
+        raise NotImplementedError
+      end
+    end
+
+    [ [:datapath, :datapath_id, :@datapaths],
+      [:network, :network_id, :@networks],
+      [:segment, :segment_id, :@segments],
+      [:route_link, :route_link_id, :@route_links],
+      [:overlay, :overlay_id, :@overlays],
+      [:underlay, :underlay_id, :@underlays],
+    ].each { |other_name, other_key, other_member|
+
+      define_method "added_#{other_name}".to_sym do |params|
+        get_param_id(params, other_key).tap { |assoc_id|
+          if instance_variable_get(other_member)[assoc_id]
+            info log_format_h("adding associated #{other_name} failed, already added", params)
+            return
+          end
+
+          new_assoc = {
+            other_key => get_param_id(params, other_key)
+          }
+
+          if other_name == :datapath
+            new_assoc[:interface_id] = get_param_id(params, :interface_id)
+          end
+
+          (instance_variable_get(other_member)[assoc_id] = new_assoc).tap { |assoc_map|
+            handle_added_assoc(other_name, assoc_id, assoc_map)
+          }
+        }
+      end
+
+      define_method "removed_#{other_name}".to_sym do |params|
+        get_param_id(params, other_key).tap { |assoc_id|
+          instance_variable_get(other_member).delete(assoc_id).tap { |assoc_map|
+            if assoc_map.nil?
+              info log_format_h("removing associated #{other_name} failed, not found", params)
+              return
+            end
+
+            handle_removed_assoc(other_name, assoc_id, assoc_map)
+          }
+        }
+      end
+
+    }
+
+    def create_underlay(params)
+      raise NotImplementedError
     end
 
     #
@@ -36,62 +127,65 @@ module Vnet::Services::Topologies
 
     private
 
-    def create_datapath_network(datapath_id, network_id, interface_id)
-      create_params = {
-        datapath_id: datapath_id,
-        network_id: network_id,
-        interface_id: interface_id
-      }
+    # TODO: Properly implement these methods.
 
-      if MW::DatapathNetwork.batch.create(create_params).commit
-        debug log_format_h("created datapath_network", create_params)
+    def handle_added_assoc(other_name, assoc_id, assoc_map)
+      debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
+    end
+
+    def handle_removed_assoc(other_name, assoc_id, assoc_map)
+      debug log_format_h("handle_removed_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
+    end
+
+    def mw_datapath_assoc_class(other_name)
+      case other_name
+      when :network
+        MW::DatapathNetwork
+      when :segment
+        MW::DatapathSegment
+      when :route_link
+        MW::DatapathRouteLink
       else
-        info log_format_h("failed to create datapath_network", create_params)
+        raise NotImplementedError
       end
     end
 
-    def create_datapath_segment(datapath_id, segment_id, interface_id)
-      create_params = {
-        datapath_id: datapath_id,
-        segment_id: segment_id,
-        interface_id: interface_id
+    def create_datapath_other(other_name, create_params)
+      mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|
+        if result
+          debug log_format_h("created datapath_#{other_name}", create_params)
+        else
+          info log_format_h("failed to create datapath_#{other_name}", create_params)
+        end
       }
-
-      if MW::DatapathSegment.batch.create(create_params).commit
-        debug log_format_h("created datapath_segment", create_params)
-      else
-        info log_format_h("failed to create datapath_segment", create_params)
-      end
     end
 
-    def create_datapath_route_link(datapath_id, route_link_id, interface_id)
-      create_params = {
-        datapath_id: datapath_id,
-        route_link_id: route_link_id,
-        interface_id: interface_id
+    def find_datapath_assoc_map(datapath_id:)
+      _, assoc_map = @datapaths.detect { |assoc_key, assoc_map|
+        assoc_map[:datapath_id] == datapath_id
       }
 
-      if MW::DatapathRouteLink.batch.create(create_params).commit
-        debug log_format_h("created datapath_route_link", create_params)
-      else
-        info log_format_h("failed to create datapath_route_link", create_params)
-      end
+      assoc_map
     end
 
-    # Ugly but simple way of getting a host interface.
-    def get_a_host_interface_id(datapath_id)
-      filter = {
+    def internal_create_dp_other(datapath_id:, other_name:, other_key:, other_id:)
+      assoc_map = find_datapath_assoc_map(datapath_id: datapath_id)
+
+      if assoc_map.nil?
+        return
+      end
+
+      create_params = {
         datapath_id: datapath_id,
-        interface_mode: Vnet::Constants::Interface::MODE_HOST
+        other_key => other_id,
+
+        lease_detection: {
+          interface_id: get_param_id(assoc_map, :interface_id)
+        }
       }
 
-      interface = MW::InterfacePort.batch.dataset.where(filter).first.commit
-
-      debug log_format("get_a_host_interface", interface.inspect)
-
-      interface && interface.interface_id
+      create_datapath_other(other_name, create_params)
     end
 
   end
-
 end

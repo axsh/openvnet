@@ -46,6 +46,10 @@ module Vnet::Models
         self.join_table(:inner, :interfaces, interfaces__id: :ip_leases__interface_id)
       end
 
+      def join_interface_ports
+        self.join_table(:inner, :interface_ports, interface_ports__id: :ip_leases__interface_id)
+      end
+
       def join_ip_addresses
         self.join(:ip_addresses, ip_addresses__id: :ip_leases__ip_address_id)
       end
@@ -54,10 +58,13 @@ module Vnet::Models
         self.join_interfaces.where(mode: 'simulated')
       end
 
+      def where_datapath_id_and_interface_mode(datapath_id, interface_mode)
+        self.join_interface_ports.where(datapath_id: datapath_id, interface_mode: interface_mode).select_all(:ip_leases)
+      end
+
       def where_network_id(network_id)
         self.join_ip_addresses.where(ip_addresses__network_id: network_id)
       end
-
     end
 
     # TODO: Is this really safe if interface_id is changed?

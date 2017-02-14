@@ -2,10 +2,15 @@
 
 module Vnet::NodeApi
   class Network < EventBase
+    valid_update_fields [:display_name, :domain_name]
+
     class << self
       private
 
       def dispatch_created_item_events(model)
+      end
+
+      def dispatch_updated_item_events(model, old_values)
       end
 
       def dispatch_deleted_item_events(model)
@@ -18,12 +23,12 @@ module Vnet::NodeApi
         # IpAddresses.dispatch_deleted_where(filter, model.deleted_at) # Needed? We're deleting the network.
         DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
         Route.dispatch_deleted_where(filter, model.deleted_at)
-        # VlanTranslation.dispatch_deleted_where(filter, model.deleted_at)
-
         # 0002_services
         # LeasePolicyBaseNetwork.dispatch_deleted_where(filter, model.deleted_at)
         # 0009_topology
         TopologyNetwork.dispatch_deleted_where(filter, model.deleted_at)
+        # 0011_assoc_interface
+        InterfaceNetwork.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end

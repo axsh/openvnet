@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services::Topologies
-
   class SimpleUnderlay < Base
     include Celluloid::Logger
 
@@ -9,60 +8,49 @@ module Vnet::Services::Topologies
       'topology/simple_underlay'
     end
 
-    def create_dp_nw(params)
-      network_id = get_param_id(params, :network_id)
-      datapath_id = get_param_id(params, :datapath_id)
+    [ [:network, :network_id],
+      [:segment, :segment_id]
+    ].each { |other_name, other_key|
 
-      # This should instead search for an interface on network_id.
-      interface_id = get_a_host_interface_id(datapath_id)
+      define_method "create_dp_#{other_name}".to_sym do |params|
+        other_id = get_param_id(params, other_key)
+        datapath_id = get_param_id(params, :datapath_id)
 
-      if interface_id.nil?
-        warn log_format_h("could not find host interface for new datapath_network", params)
-        return
+        create_params = {
+          datapath_id: datapath_id,
+          other_key => other_id,
+
+          lease_detection: {
+            other_key => other_id
+          }
+        }
+
+        create_datapath_other(other_name, create_params).tap { |dp_other|
+          if dp_other.nil?
+            warn log_format_h("failed when creating new datapath_#{other_name}", create_params)
+          end
+        }
       end
 
-      # Verify that the interface is on the network and pass along the
-      # ip_lease.
+    }
 
-      create_datapath_network(datapath_id, network_id, interface_id)
+    # Simple_overlays's can create dp_rl's, while simple_underlays's
+    # cannot. There is no such thing as an underlay route link.
+    def create_dp_route_link(params)
+      warn log_format_h("route_link is not supported on underlays", params)
     end
 
-    def create_dp_seg(params)
-      segment_id = get_param_id(params, :segment_id)
+    def create_underlay(params)
       datapath_id = get_param_id(params, :datapath_id)
 
-      # This should instead search for an interface on segment_id.
-      interface_id = get_a_host_interface_id(datapath_id)
+      other_key = get_param_symbol(params, :other_key)
+      other_name = get_param_symbol(params, :other_name)
+      other_id = get_param_id(params, :other_id)
 
-      if interface_id.nil?
-        warn log_format_h("could not find host interface for new datapath_segment", params)
-        return
-      end
+      debug log_format_h("trying to create datapath_#{other_name} for overlay", params)
 
-      # Verify that the interface is on the segment and pass along the
-      # ip_lease.
-
-      create_datapath_segment(datapath_id, segment_id, interface_id)
-    end
-
-    def create_dp_rl(params)
-      route_link_id = get_param_id(params, :route_link_id)
-      datapath_id = get_param_id(params, :datapath_id)
-
-      # This should instead search for an interface on route_link_id.
-      interface_id = get_a_host_interface_id(datapath_id)
-
-      if interface_id.nil?
-        warn log_format_h("could not find host interface for new datapath_route_link", params)
-        return
-      end
-
-      # Verify that the interface is on the route link and pass along the
-      # ip_lease.
-
-      create_datapath_route_link(datapath_id, route_link_id, interface_id)
+      internal_create_dp_other(datapath_id: datapath_id, other_name: other_name, other_key: other_key, other_id: other_id)
     end
 
   end
-
 end

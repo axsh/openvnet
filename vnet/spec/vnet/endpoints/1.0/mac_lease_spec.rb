@@ -41,7 +41,6 @@ describe "/mac_leases" do
 
     accepted_params = {
       :interface_uuid => "if-test2",
-      :mac_address => "00:21:cc:da:e9:dc"
     }
 
     include_examples "PUT /:uuid", accepted_params

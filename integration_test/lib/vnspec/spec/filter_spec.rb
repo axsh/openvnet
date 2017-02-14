@@ -1,7 +1,7 @@
 require_relative "spec_helper"
 
 describe "filters" do
-  before(:all) { vms.parallel { | vm | vm.close_all_listening_ports} }
+  before(:all) { vms.parallel_each { | vm | vm.close_all_listening_ports} }
 
   describe "passthoruh tcp" do
     before(:all) {
@@ -70,7 +70,7 @@ describe "filters" do
     it "vm3 accepts incoming packages on udp 10.101.0.13 port 1344" do
       expect(vm4).to be_able_to_send_udp(vm3, 1344)
     end
-    it "vm3 blocks non filterd sources packages on udp" do
+    it "vm3 blocks non filtered sources packages on udp" do
       expect(vm4).not_to be_able_to_send_udp(vm3, 1345)
       expect(vm1).not_to be_able_to_send_udp(vm3, 1344)
     end

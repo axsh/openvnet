@@ -73,6 +73,8 @@ module Vnet::Openflow
         dp_info.translation_manager.async.packet_in(message)
       when COOKIE_PREFIX_ROUTE_LINK
         dp_info.router_manager.async.packet_in(message)
+      when COOKIE_PREFIX_SEGMENT
+        dp_info.segment_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
         dp_info.service_manager.async.packet_in(message)
       when COOKIE_PREFIX_CONNECTION
@@ -142,10 +144,6 @@ module Vnet::Openflow
       info "terminating datapath actor. dpid: 0x%016x" % dpid
       datapath.terminate
       info "terminated datapath actor. dpid: 0x%016x" % dpid
-    end
-
-    def update_vlan_translation
-      datapath.switch.async.update_vlan_translation
     end
 
     def datapath(dpid)

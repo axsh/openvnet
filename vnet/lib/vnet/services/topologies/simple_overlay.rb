@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services::Topologies
-
   class SimpleOverlay < Base
     include Celluloid::Logger
 
@@ -9,48 +8,37 @@ module Vnet::Services::Topologies
       'topology/simple_overlay'
     end
 
-    def create_dp_nw(params)
-      network_id = get_param_id(params, :network_id)
-      datapath_id = get_param_id(params, :datapath_id)
+    [ [:network, :network_id],
+      [:segment, :segment_id],
+      [:route_link, :route_link_id]
+    ].each { |other_name, other_key|
 
-      interface_id = get_a_host_interface_id(datapath_id)
+      define_method "create_dp_#{other_name}".to_sym do |params|
+        other_id = get_param_id(params, other_key)
+        datapath_id = get_param_id(params, :datapath_id)
 
-      if interface_id.nil?
-        warn log_format_h("could not find host interface for new datapath_network", params)
-        return
+        return if internal_create_dp_other(datapath_id: datapath_id, other_name: other_name, other_key: other_key, other_id: other_id)
+
+        debug log_format_h("could not create topology_datapath for new datapath_#{other_name}", params)
+
+        underlay_params = {
+          id: nil,
+          datapath_id: datapath_id,
+          other_name: other_name,
+          other_key: other_key,
+          other_id: other_id
+        }
+
+        @underlays.each { |id, underlay|
+          debug log_format_h('trying underlay', underlay)
+
+          underlay_params[:id] = underlay[:underlay_id]
+
+          @vnet_info.topology_manager.publish('topology_underlay_create', underlay_params)
+        }
       end
 
-      create_datapath_network(datapath_id, network_id, interface_id)
-    end
-
-    def create_dp_seg(params)
-      segment_id = get_param_id(params, :segment_id)
-      datapath_id = get_param_id(params, :datapath_id)
-
-      interface_id = get_a_host_interface_id(datapath_id)
-
-      if interface_id.nil?
-        warn log_format_h("could not find host interface for new datapath_segment", params)
-        return
-      end
-
-      create_datapath_segment(datapath_id, segment_id, interface_id)
-    end
-
-    def create_dp_rl(params)
-      route_link_id = get_param_id(params, :route_link_id)
-      datapath_id = get_param_id(params, :datapath_id)
-
-      interface_id = get_a_host_interface_id(datapath_id)
-
-      if interface_id.nil?
-        warn log_format_h("could not find host interface for new datapath_route_link", params)
-        return
-      end
-
-      create_datapath_route_link(datapath_id, route_link_id, interface_id)
-    end
+    }
 
   end
-
 end
