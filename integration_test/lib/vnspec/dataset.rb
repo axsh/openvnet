@@ -60,6 +60,8 @@ module Vnspec
             "mac_range_groups/#{v.delete(:mac_range_group_uuid)}/mac_ranges"
           when :topology_datapaths
             "topologies/#{v.delete(:topology_uuid)}/datapaths/#{v.delete(:datapath_uuid)}"
+          when :topology_underlays
+            "topologies/#{v.delete(:overlay_uuid)}/underlays/#{v.delete(:underlay_uuid)}"
           when :topology_networks
             "topologies/#{v.delete(:topology_uuid)}/networks/#{v.delete(:network_uuid)}"
           when :topology_segments

@@ -402,9 +402,6 @@ module Vnspec
           return unless interface
           @interfaces.delete(interface)
           interface.destroy
-
-          # Rename to allow tests to reuse the uuid.
-          interface.rename(uuid, "#{uuid}old")
         end
       end
 

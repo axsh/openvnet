@@ -2,11 +2,15 @@
 
 module Vnet::NodeApi
   class Route < EventBase
+    valid_update_fields []
+
     class << self
       private
 
       def create_with_transaction(options)
         transaction {
+          handle_new_uuid(options)
+
           model_class.create(options).tap { |model|
             next if model.nil?
             InterfaceRouteLink.update_assoc(model.interface_id, model.route_link_id)

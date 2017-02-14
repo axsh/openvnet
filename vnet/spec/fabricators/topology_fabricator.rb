@@ -19,3 +19,7 @@ end
 Fabricator(:topology_route_link, class_name: Vnet::Models::TopologyRouteLink) do
   id { id_sequence(:topology_route_link_ids) }
 end
+
+Fabricator(:topology_underlay, class_name: Vnet::Models::TopologyLayer) do
+  id { id_sequence(:topology_underlay_ids) }
+end

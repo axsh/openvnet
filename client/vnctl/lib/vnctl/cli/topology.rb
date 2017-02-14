@@ -16,6 +16,9 @@ module Vnctl::Cli
         :desc => "the host interface to use as underlay."
     end
 
+    define_relation :underlays do |relation|
+    end
+
     define_relation :networks do |relation|
     end
 
