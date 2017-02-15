@@ -63,6 +63,19 @@ func OpenVNetTopology() *schema.Resource {
 					},
 				},
 			},
+
+			"underlay": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"uuid": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -98,6 +111,7 @@ func openVNetTopologyCreate(d *schema.ResourceData, m interface{}) error {
 	createRelation("networks")
 	createRelation("route_links")
 	createRelation("segments")
+	createRelation("underlays")
 
 	return openVNetTopologyRead(d, m)
 }
@@ -144,6 +158,7 @@ func openVNetTopologyDelete(d *schema.ResourceData, m interface{}) error {
 	deleteRelation("networks")
 	deleteRelation("route_links")
 	deleteRelation("segments")
+	deleteRelation("underlays")
 
 	return err
 }

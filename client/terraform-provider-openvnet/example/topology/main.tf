@@ -2,8 +2,13 @@ provider "openvnet" {
   api_endpoint = "http://localhost:9090/api/1.0"
 }
 
-resource "openvnet_topology" "topo" {
-  uuuid = "topo-demo"
+resource "openvnet_topology" "topo-under" {
+  uuid = "topo-demo1"
+  mode = "simple_underlay"
+}
+
+resource "openvnet_topology" "topo-over" {
+  uuuid = "topo-demo2"
   mode = "simple_overlay"
 
   network {
@@ -16,5 +21,9 @@ resource "openvnet_topology" "topo" {
 
   segment {
     uuid = "seg-demo"
+  }
+
+  underlay {
+    uuid = "topo-demo1"
   }
 }

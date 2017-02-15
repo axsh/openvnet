@@ -16,6 +16,15 @@ type TopologyList struct {
 	Items[]Topology `json:"items"`
 }
 
+type TopologyLayerList struct {
+	ListBase
+	Items []struct {
+		ItemBase
+		UUID string `json:"uuid"`
+		Mode string `json:"mode"`
+	}
+}
+
 type TopologyService struct {
 	client *Client
 }
@@ -56,6 +65,8 @@ type TopologyRelation struct {
 		NetworkID   int `json:"network_id,omitempty"`
 		SegmentID   int `json:"segment_id,omitempty"`
 		RouteLinkID int `json:"route_link_id,omitempty"`
+		OverlayID   int `json:"overlay_id,omitempty"`
+		UnderlayID  int `json:"underlay_id,omitempty"`
 	}
 }
 
@@ -84,5 +95,11 @@ func (s *TopologyService) GetRouteLinkRelations(uuid string) (*RouteLinkList, *h
 func (s *TopologyService) GetSegmentRelations(uuid string) (*SegmentList, *http.Response, error) {
 	list := new(SegmentList)
 	resp, err := s.client.get(TopologyNamespace+"/"+uuid+"/segments", list)
+	return list, resp, err
+}
+
+func (s *TopologyService) GetLayerRelations(uuid string) (*TopologyLayerList, *http.Response, error) {
+	list := new(TopologyLayerList)
+	resp, err := s.client.get(TopologyNamespace+"/"+uuid+"/underlays", list)
 	return list, resp, err
 }
