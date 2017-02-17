@@ -76,6 +76,23 @@ func OpenVNetTopology() *schema.Resource {
 					},
 				},
 			},
+
+			"datapath": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"uuid": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"interface_uuid": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -93,6 +110,8 @@ func openVNetTopologyCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(tp.UUID)
 
 	createRelation := func(relationType string) {
+
+		var extraParams interface{}
 		if r := d.Get(relationType[:len(relationType)-1]); r != nil {
 			for _, relationTypeMap := range r.([]interface{}) {
 				relationMap := relationTypeMap.(map[string]interface{})
@@ -103,7 +122,11 @@ func openVNetTopologyCreate(d *schema.ResourceData, m interface{}) error {
 					RelationTypeUUID: relationMap["uuid"].(string),
 				}
 
-				client.Topology.CreateTopologyRelation(params)
+				if relationType == "datapaths" {
+					extraParams = &openvnet.TopologyDatapathParams{InterfaceUUID: relationMap["interface_uuid"].(string)}
+				}
+
+				client.Topology.CreateTopologyRelation(params, extraParams)
 			}
 		}
 	}
@@ -112,6 +135,7 @@ func openVNetTopologyCreate(d *schema.ResourceData, m interface{}) error {
 	createRelation("route_links")
 	createRelation("segments")
 	createRelation("underlays")
+	createRelation("datapaths")
 
 	return openVNetTopologyRead(d, m)
 }
@@ -159,6 +183,7 @@ func openVNetTopologyDelete(d *schema.ResourceData, m interface{}) error {
 	deleteRelation("route_links")
 	deleteRelation("segments")
 	deleteRelation("underlays")
+	deleteRelation("datapaths")
 
 	return err
 }

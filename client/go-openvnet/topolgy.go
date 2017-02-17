@@ -25,6 +25,16 @@ type TopologyLayerList struct {
 	}
 }
 
+type TopologyDatapathList struct {
+	ListBase
+	Items []struct {
+		ItemBase
+		TopologyID  int `json:"topology_id"`
+		DatapathID  int `json:"datapath_id"`
+		InterfaceID int `json:"interface_id"`
+	}
+}
+
 type TopologyService struct {
 	client *Client
 }
@@ -70,9 +80,13 @@ type TopologyRelation struct {
 	}
 }
 
-func (s *TopologyService) CreateTopologyRelation(rel *TopologyRelation) (*TopologyRelation, *http.Response, error) {
+type TopologyDatapathParams struct {
+	InterfaceUUID string `url:"interface_uuid"`
+}
+
+func (s *TopologyService) CreateTopologyRelation(rel *TopologyRelation, params interface{}) (*TopologyRelation, *http.Response, error) {
 	tpr := rel
-	resp, err := s.client.post(TopologyNamespace+"/"+tpr.TopologyUUID+"/"+tpr.Type+"/"+tpr.RelationTypeUUID, &tpr.Body, nil)
+	resp, err := s.client.post(TopologyNamespace+"/"+tpr.TopologyUUID+"/"+tpr.Type+"/"+tpr.RelationTypeUUID, &tpr.Body, params)
 	return tpr, resp, err
 }
 
@@ -102,4 +116,10 @@ func (s *TopologyService) GetLayerRelations(uuid string) (*TopologyLayerList, *h
 	list := new(TopologyLayerList)
 	resp, err := s.client.get(TopologyNamespace+"/"+uuid+"/underlays", list)
 	return list, resp, err
+}
+
+func (s *TopologyService) GetDatapathRelations(uuid string) (*TopologyDatapathList, *http.Response, error) {
+	list := new(TopologyDatapathList)
+	resp, err := s.client.get(TopologyNamespace+"/"+uuid+"/datapaths", list)
+	return list, resp ,err
 }
