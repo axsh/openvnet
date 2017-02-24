@@ -2,8 +2,8 @@
 
 Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
   CLP = Vnet::Constants::LeasePolicy
+
   def self.put_post_shared_params
-    param :mode, :String, in: CLP::MODES, default: CLP::MODE_SIMPLE
     param :timing, :String, in: CLP::TIMINGS, default: CLP::TIMING_IMMEDIATE
   end
 
@@ -11,6 +11,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/lease_policies' do
 
   put_post_shared_params
   param_uuid M::LeasePolicy
+  param :mode, :String, in: CLP::MODES, default: CLP::MODE_SIMPLE
   post do
     post_new(:LeasePolicy, fill_options)
   end

@@ -8,6 +8,9 @@ module Vnet::ModelWrappers
   class TopologyDatapath < Base
   end
 
+  class TopologyLayer < Base
+  end
+
   class TopologyNetwork < Base
   end
 

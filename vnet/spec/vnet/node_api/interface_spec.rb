@@ -72,9 +72,10 @@ describe Vnet::NodeApi::Interface do
     end
 
     it "success" do
-      Vnet::NodeApi::Interface.execute(:update,
+      Vnet::NodeApi::Interface.execute(:update_uuid,
         interface.canonical_uuid,
         {
+          display_name: 'update interface'
           # owner_datapath: Fabricate(:datapath, uuid: "dp-new"),
         }
       )

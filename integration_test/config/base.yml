@@ -7,6 +7,7 @@ specs: [simple_nw,
         router_p2v,
         router_v2v_tp,
         wanedge,
+        wanedge_tp,
         promiscuous_seg_ovs,
         promiscuous_seg_of,
         event,
@@ -19,6 +20,7 @@ specs: [simple_nw,
 # specs not included
 # [lease_policy]
 
+release_version: "el7"
 vnet_branch: master
 log_level: info
 vm_http_proxy: http://10.50.0.2:3128
@@ -72,7 +74,7 @@ vms:
         name: eth0
   vm7:
     name: vm7
-    vna: 5
+    vna: 4
     ssh_ip: 10.50.0.107
     interfaces:
       - uuid: if-v7

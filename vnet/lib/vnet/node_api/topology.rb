@@ -9,11 +9,28 @@ module Vnet::NodeApi
       private
 
       def dispatch_created_item_events(model)
-        dispatch_event(TOPOLOGY_CREATED_ITEM, model.to_hash)
+        dispatch_event(TOPOLOGY_CREATED_ITEM, event_hash_prepare(model))
       end
 
       def dispatch_deleted_item_events(model)
         dispatch_event(TOPOLOGY_DELETED_ITEM, id: model.id)
+      end
+
+    end
+  end
+
+  class TopologyLayer < EventBase
+    valid_update_fields []
+
+    class << self
+      private
+
+      def dispatch_created_item_events(model)
+        dispatch_event(TOPOLOGY_ADDED_LAYER, event_hash_prepare(model, :layer))
+      end
+
+      def dispatch_deleted_item_events(model)
+        dispatch_event(TOPOLOGY_REMOVED_LAYER, event_hash_prepare(model, :layer))
       end
 
     end

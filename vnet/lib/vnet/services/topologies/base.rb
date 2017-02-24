@@ -16,6 +16,9 @@ module Vnet::Services::Topologies
       @networks = {}
       @segments = {}
       @route_links = {}
+
+      @overlays = {}
+      @underlays = {}
     end
 
     def log_type
@@ -28,45 +31,84 @@ module Vnet::Services::Topologies
         uuid: @uuid)
     end
 
-    # TODO: Add to plugin.
-
-    def added_network(params)
-      get_param_id(params, :network_id).tap { |assoc_id|
-        if @networks[assoc_id]
-          info log_format_h('adding assoc network failed, already added', params)
-          return
-        end
-
-        (@networks[assoc_id] = {}).tap { |assoc_map|
-          handle_removed_network(assoc_id, assoc_map)
-        }
-      }
-    end
-
-    def removed_network(params)
-      get_param_id(params, :network_id).tap { |assoc_id|
-        @networks.delete(assoc_id).tap { |assoc_map|
-          if assoc_map.nil?
-            info log_format_h('removing assoc network failed, not found', params)
-            return
-          end
-
-          handle_removed_network(assoc_id, assoc_map)
-        }
-      }
-    end
-
     def create_dp_assoc(other_name, params)
       case other_name
-      when :network
-        create_dp_network(params)
-      when :segment
-        create_dp_segment(params)
-      when :route_link
-        create_dp_route_link(params)
+      when :network then create_dp_network(params)
+      when :segment then create_dp_segment(params)
+      when :route_link then create_dp_route_link(params)
       else
         raise NotImplementedError
       end
+    end
+
+    def added_assoc(other_name, params)
+      case other_name
+      when :datapath then added_datapath(params)
+      when :network then added_network(params)
+      when :segment then added_segment(params)
+      when :route_link then added_route_link(params)
+      else
+        raise NotImplementedError
+      end
+    end
+
+    def removed_assoc(other_name, params)
+      case other_name
+      when :datapath then removed_datapath(params)
+      when :network then removed_network(params)
+      when :segment then removed_segment(params)
+      when :route_link then removed_route_link(params)
+      else
+        raise NotImplementedError
+      end
+    end
+
+    [ [:datapath, :datapath_id, :@datapaths],
+      [:network, :network_id, :@networks],
+      [:segment, :segment_id, :@segments],
+      [:route_link, :route_link_id, :@route_links],
+      [:overlay, :overlay_id, :@overlays],
+      [:underlay, :underlay_id, :@underlays],
+    ].each { |other_name, other_key, other_member|
+
+      define_method "added_#{other_name}".to_sym do |params|
+        get_param_id(params, other_key).tap { |assoc_id|
+          if instance_variable_get(other_member)[assoc_id]
+            info log_format_h("adding associated #{other_name} failed, already added", params)
+            return
+          end
+
+          new_assoc = {
+            other_key => get_param_id(params, other_key)
+          }
+
+          if other_name == :datapath
+            new_assoc[:interface_id] = get_param_id(params, :interface_id)
+          end
+
+          (instance_variable_get(other_member)[assoc_id] = new_assoc).tap { |assoc_map|
+            handle_added_assoc(other_name, assoc_id, assoc_map)
+          }
+        }
+      end
+
+      define_method "removed_#{other_name}".to_sym do |params|
+        get_param_id(params, other_key).tap { |assoc_id|
+          instance_variable_get(other_member).delete(assoc_id).tap { |assoc_map|
+            if assoc_map.nil?
+              info log_format_h("removing associated #{other_name} failed, not found", params)
+              return
+            end
+
+            handle_removed_assoc(other_name, assoc_id, assoc_map)
+          }
+        }
+      end
+
+    }
+
+    def create_underlay(params)
+      raise NotImplementedError
     end
 
     #
@@ -85,12 +127,14 @@ module Vnet::Services::Topologies
 
     private
 
-    def handle_added_network(assoc_id, assoc_map)
-      debug log_format_h('handle_added_network', assoc_id: assoc_id, assoc_map: assoc_map)
+    # TODO: Properly implement these methods.
+
+    def handle_added_assoc(other_name, assoc_id, assoc_map)
+      debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
     end
 
-    def handle_removed_network(assoc_id, assoc_map)
-      debug log_format_h('handle_removed_network', assoc_id: assoc_id, assoc_map: assoc_map)
+    def handle_removed_assoc(other_name, assoc_id, assoc_map)
+      debug log_format_h("handle_removed_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
     end
 
     def mw_datapath_assoc_class(other_name)
@@ -107,29 +151,40 @@ module Vnet::Services::Topologies
     end
 
     def create_datapath_other(other_name, create_params)
-      if mw_datapath_assoc_class(other_name).batch.create(create_params).commit
-        debug log_format_h("created datapath_#{other_name}", create_params)
-      else
-        info log_format_h("failed to create datapath_#{other_name}", create_params)
-      end
+      mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|
+        if result
+          debug log_format_h("created datapath_#{other_name}", create_params)
+        else
+          info log_format_h("failed to create datapath_#{other_name}", create_params)
+        end
+      }
     end
 
-    #
-    # Hacks:
-    #
-
-    # Ugly but simple way of getting a host interface.
-    def get_a_host_interface_id(datapath_id)
-      filter = {
-        datapath_id: datapath_id,
-        interface_mode: Vnet::Constants::Interface::MODE_HOST
+    def find_datapath_assoc_map(datapath_id:)
+      _, assoc_map = @datapaths.detect { |assoc_key, assoc_map|
+        assoc_map[:datapath_id] == datapath_id
       }
 
-      interface = MW::InterfacePort.batch.dataset.where(filter).first.commit
+      assoc_map
+    end
 
-      debug log_format("get_a_host_interface", interface.inspect)
+    def internal_create_dp_other(datapath_id:, other_name:, other_key:, other_id:)
+      assoc_map = find_datapath_assoc_map(datapath_id: datapath_id)
 
-      interface && interface.interface_id
+      if assoc_map.nil?
+        return
+      end
+
+      create_params = {
+        datapath_id: datapath_id,
+        other_key => other_id,
+
+        lease_detection: {
+          interface_id: get_param_id(assoc_map, :interface_id)
+        }
+      }
+
+      create_datapath_other(other_name, create_params)
     end
 
   end

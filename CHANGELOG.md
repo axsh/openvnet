@@ -17,6 +17,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` interface_network/route_link associations that can be persistent even without an IP lease or route.
 
+* `Added` The possibility to re-use the UUID of deleted items.
+
 * `Changed` It is no longer possibly to directly modify an IP lease through the WebAPI. In order to preserve network state history, IP leases need to be deleted and recreated.
 
 * `Changed` the static filter webapi parameters to be more inline with the current functionality.

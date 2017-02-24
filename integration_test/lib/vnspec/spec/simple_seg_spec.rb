@@ -11,6 +11,11 @@ describe 'simple_seg', :vms_disable_dhcp => true do
     vm4.change_ipv4_address('10.101.0.11')
     vm5.change_ipv4_address('10.101.0.12')
     vm6.change_ipv4_address('10.101.0.12')
+
+    # Since no vm's do dhcp requests there is nothing to ensure that
+    # the vna's have properly loaded the segments and other
+    # information.
+    sleep 30
   end
 
   include_examples 'simple examples'

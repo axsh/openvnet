@@ -6,14 +6,14 @@ module Vnet::NodeApi
     valid_update_fields [:ingress_passthrough, :egress_passthrough]
 
     class << self
-      def dispatch_updated_item_events(model, old_values)
-        dispatch_event(FILTER_UPDATED, get_changed_hash(model, old_values.keys))
-      end
-
       private
 
       def dispatch_created_item_events(model)
         dispatch_event(FILTER_CREATED_ITEM, model.to_hash)
+      end
+
+      def dispatch_updated_item_events(model, old_values)
+        dispatch_event(FILTER_UPDATED, get_changed_hash(model, old_values.keys))
       end
 
       def dispatch_deleted_item_events(model)

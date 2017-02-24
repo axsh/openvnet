@@ -2,11 +2,16 @@
 
 module Vnet::NodeApi
   class NetworkService < EventBase
+    valid_update_fields [:display_name]
+
     class << self
       private
 
       def dispatch_created_item_events(model)
         dispatch_event(SERVICE_CREATED_ITEM, model.to_hash)
+      end
+
+      def dispatch_updated_item_events(model, old_values)
       end
 
       def dispatch_deleted_item_events(model)

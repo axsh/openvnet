@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services::Topologies
-
   class SimpleOverlay < Base
     include Celluloid::Logger
 
@@ -18,24 +17,28 @@ module Vnet::Services::Topologies
         other_id = get_param_id(params, other_key)
         datapath_id = get_param_id(params, :datapath_id)
 
-        interface_id = get_a_host_interface_id(datapath_id)
+        return if internal_create_dp_other(datapath_id: datapath_id, other_name: other_name, other_key: other_key, other_id: other_id)
 
-        if interface_id.nil?
-          warn log_format_h("could not find host interface for new datapath_#{other_name}", params)
-          return
-        end
+        debug log_format_h("could not create topology_datapath for new datapath_#{other_name}", params)
 
-        create_params = {
+        underlay_params = {
+          id: nil,
           datapath_id: datapath_id,
-          other_key => other_id,
-          interface_id: interface_id
+          other_name: other_name,
+          other_key: other_key,
+          other_id: other_id
         }
 
-        create_datapath_other(other_name, create_params)
+        @underlays.each { |id, underlay|
+          debug log_format_h('trying underlay', underlay)
+
+          underlay_params[:id] = underlay[:underlay_id]
+
+          @vnet_info.topology_manager.publish('topology_underlay_create', underlay_params)
+        }
       end
 
     }
 
   end
-
 end
