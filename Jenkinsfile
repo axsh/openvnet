@@ -27,8 +27,8 @@ def write_build_env(label) {
 # So do not use single or double quote for the value part.
 LEAVE_CONTAINER=${buildParams.LEAVE_CONTAINER}
 STRIP_VENDOR=${buildParams.STRIP_VENDOR}
-REPO_BASE_DIR=${env.REPO_BASE_DIR}
-BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR}
+REPO_BASE_DIR=${env.REPO_BASE_DIR ?: ''}
+BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR ?: ''}
 BUILD_OS=$label
 RELEASE_SUFFIX=$RELEASE_SUFFIX
 """
