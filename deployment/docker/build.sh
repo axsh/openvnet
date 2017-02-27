@@ -60,9 +60,11 @@ else
   build_cache_base="${BUILD_CACHE_DIR}"
 fi
 
+
 /usr/bin/env
+
 docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
-CID=$(docker run ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
+CID=$(docker run --privileged ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 # Upload checked out tree to the container.
 docker_cp . "${CID}:/var/tmp/openvnet"
 # Upload build cache if found.
