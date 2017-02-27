@@ -30,9 +30,12 @@ elif [[ -z "${RELEASE_SUFFIX}" ]]; then
   RELEASE_SUFFIX=$(${current_dir}/gen-dev-build-tag.sh)
 fi
 
+
 #
 # Install dependencies
 #
+
+/usr/bin/mysqld_safe &
 
 yum_check_install yum-utils createrepo rpmdevtools
 yum_check_install centos-release-scl scl-utils
@@ -69,6 +72,20 @@ sudo python ./yum-builddep.py -y "$OPENVNET_SPEC_FILE"
 set +e
 . scl_source enable ${SCL_RUBY}
 set -e
+
+#
+# Run rspec
+#
+
+(
+    cd vnet
+    [[ -d ".bundle" ]] && rm -rf ".bundle"
+    [[ -d "vendor" ]] && rm -rf "vendor"
+    mysqladmin -uroot create vnet_test
+    bundle install --path vendor/bundle --standalone
+    bundle exec rake test:db:reset
+    bundle exec rspec spec
+)
 
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
 if [[ -d "$OPENVNET_SRC_BUILD_DIR" && -z "${SKIP_CLEANUP}" ]]; then
