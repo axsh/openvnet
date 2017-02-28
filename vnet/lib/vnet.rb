@@ -86,7 +86,6 @@ module Vnet
     autoload :ActiveSegmentManager, 'vnet/core/active_segment_manager'
 
     autoload :AddressHelpers, 'vnet/core/address_helpers'
-    autoload :ConnectionManager, 'vnet/core/connection_manager'
     autoload :Datapath, 'vnet/core/items'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
     autoload :Filter2Manager, 'vnet/core/filter2_manager'
@@ -150,12 +149,6 @@ module Vnet
       autoload :Base, 'vnet/core/active_segments/base'
       autoload :Local, 'vnet/core/active_segments/local'
       autoload :Remote, 'vnet/core/active_segments/remote'
-    end
-
-    module Connections
-      autoload :Base, 'vnet/core/connections/base'
-      autoload :TCP, 'vnet/core/connections/tcp'
-      autoload :UDP, 'vnet/core/connections/udp'
     end
 
     module Datapaths

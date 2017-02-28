@@ -162,11 +162,6 @@ module Vnet::Core
       @dp_info.filter2_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
       @dp_info.interface_segment_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
 
-      item.mac_addresses.each { |id, mac|
-        @dp_info.connection_manager.async.remove_catch_new_egress(id)
-        @dp_info.connection_manager.async.close_connections(id)
-      }
-
       deactivate_local_interface(item)
     end
 
@@ -280,9 +275,6 @@ module Vnet::Core
       return if mac_lease && mac_lease.interface_id == item.id
 
       item.remove_mac_address(mac_lease_id: params[:mac_lease_id])
-
-      @dp_info.connection_manager.async.remove_catch_new_egress(params[:mac_lease_id])
-      @dp_info.connection_manager.async.close_connections(params[:mac_lease_id])
     end
 
     # INTERFACE_LEASED_IPV4_ADDRESS on queue 'item.id'

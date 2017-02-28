@@ -30,7 +30,6 @@ module Vnet::Core
       active_port
       active_route_link
       active_segment
-      connection
       datapath
       interface
       interface_network
