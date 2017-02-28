@@ -4,6 +4,7 @@
 set -ex -o pipefail
 
 CID=
+SCL_RUBY="rh-ruby23"
 TMPDIR=$(mktemp -d)
 function docker_rm() {
     if [[ -z "$CID" ]]; then
@@ -63,10 +64,17 @@ fi
 
 /usr/bin/env
 
-docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
+docker build \
+       --build-arg SCL_RUBY="${SCL_RUBY}" \
+       --build-arg BRANCH="${BRANCH}" \
+       --build-arg RELEASE_SUFFIX="${RELEASE_SUFFIX}" \
+       --build-arg BUILD_URL="${BUILD_URL}" \
+       --build-arg ISO8601_TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+       --build-arg LONG_SHA="${LONG_SHA}" \
+       -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
+
 CID=$(docker run --privileged ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
-# Upload checked out tree to the container.
-docker_cp . "${CID}:/var/tmp/openvnet"
+
 # Upload build cache if found.
 if [[ -n "$BUILD_CACHE_DIR" && -d "${build_cache_base}" ]]; then
   for f in $(ls ${build_cache_base}); do
@@ -79,8 +87,10 @@ if [[ -n "$BUILD_CACHE_DIR" && -d "${build_cache_base}" ]]; then
     fi
   done
 fi
+
 # Run build script
 docker exec -t "${CID}" /bin/bash -c "cd openvnet; SKIP_CLEANUP=1 ./deployment/packagebuild/build_packages_vnet.sh"
+
 if [[ -n "$BUILD_CACHE_DIR" ]]; then
     if [[ ! -d "$BUILD_CACHE_DIR" || ! -w "$BUILD_CACHE_DIR" ]]; then
         echo "ERROR: BUILD_CACHE_DIR '${BUILD_CACHE_DIR}' does not exist or not writable." >&2
