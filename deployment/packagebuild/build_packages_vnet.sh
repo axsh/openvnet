@@ -149,3 +149,5 @@ if [ -L "${current_symlink}" ]; then
   sudo rm "${current_symlink}"
 fi
 sudo ln -s "./$(basename ${repo_dir})" "${current_symlink}"
+
+mysqladmin -uroot shutdown
