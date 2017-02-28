@@ -41,7 +41,6 @@ module Vnet::Core
       route
       router
       filter2
-      filter
       segment
       service
       tunnel

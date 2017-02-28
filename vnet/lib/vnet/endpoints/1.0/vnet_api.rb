@@ -185,7 +185,6 @@ module Vnet::Endpoints::V10
     load_namespace('network_services')
     load_namespace('routes')
     load_namespace('route_links')
-    load_namespace('security_groups')
     load_namespace('segments')
     load_namespace('translations')
     load_namespace('topologies')

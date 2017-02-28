@@ -150,9 +150,6 @@ module Vnet::Core
       @dp_info.tunnel_manager.publish(ACTIVATE_INTERFACE, activate_params)
       @dp_info.filter2_manager.publish(ACTIVATE_INTERFACE, activate_params)
       @dp_info.interface_segment_manager.publish(ACTIVATE_INTERFACE, activate_params)
-
-      item.ingress_filtering_enabled &&
-        @dp_info.filter_manager.async.apply_filters(item_map)
     end
 
     def item_post_uninstall(item)
@@ -164,8 +161,6 @@ module Vnet::Core
       @dp_info.tunnel_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
       @dp_info.filter2_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
       @dp_info.interface_segment_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
-
-      @dp_info.filter_manager.async.remove_filters(item.id)
 
       item.mac_addresses.each { |id, mac|
         @dp_info.connection_manager.async.remove_catch_new_egress(id)
@@ -274,9 +269,6 @@ module Vnet::Core
                            mac_address: mac_address,
                            segment_id: mac_lease.segment_id,
                            cookie_id: mac_lease.cookie_id)
-
-      item.ingress_filtering_enabled &&
-        @dp_info.connection_manager.async.catch_new_egress(item.id, mac_address)
     end
 
     # INTERFACE_RELEASED_MAC_ADDRESS on queue 'item.id'

@@ -23,7 +23,6 @@ module Vnctl
     autoload :RouteLink, 'vnctl/cli/route_link'
     autoload :Interface, 'vnctl/cli/interface'
     autoload :Filter, 'vnctl/cli/filter'
-    autoload :SecurityGroup, 'vnctl/cli/security_group'
     autoload :Segment, 'vnctl/cli/segment'
     autoload :Topology, 'vnctl/cli/topology'
     autoload :Translation, 'vnctl/cli/translation'

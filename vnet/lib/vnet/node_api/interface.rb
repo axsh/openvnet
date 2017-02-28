@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 module Vnet::NodeApi
   class Interface < EventBase
-    valid_update_fields [:display_name, :ingress_filtering_enabled]
+    valid_update_fields [:display_name]
 
     class << self
 
@@ -69,7 +69,6 @@ module Vnet::NodeApi
         MacLease.dispatch_deleted_where(filter, model.deleted_at)
         # network_services: add
         # routes: add
-        SecurityGroupInterface.dispatch_deleted_where(filter, model.deleted_at)
         # src_tunnels: :destroy,
         # dst_tunnels: :destroy,
         Translation.dispatch_deleted_where(filter, model.deleted_at)
@@ -90,15 +89,6 @@ module Vnet::NodeApi
                        id: model.id,
                        changed_columns: get_changed_hash(model, old_values.keys))
 
-
-        if old_values.has_key?(:enable_legacy_filtering)
-          case model[:enable_legacy_filtering]
-          when true
-            dispatch_event(INTERFACE_ENABLED_FILTERING, id: model.id)
-          when false
-            dispatch_event(INTERFACE_DISABLED_FILTERING, id: model.id)
-          end
-        end
 
         if old_values.has_key?(:enable_filtering)
           case model[:enable_filtering]
