@@ -36,14 +36,11 @@ module Vnet::NodeApi
       end
       
       def update_model_deleted()
-
 	#TODO: Update deleted items
-
-
       end
 
       def destroy(filter, options = {})
-        Celluloid.logger.debug "XXXXXXX node_api.destroy #{filter}"
+        # Celluloid.logger.debug "#{self.name}.node_api.destroy #{filter}"
 
         destroy_with_transaction(filter).tap { |model|
           next if model.nil?
@@ -107,7 +104,7 @@ module Vnet::NodeApi
       #
 
       def plugin(plugin, *args, &block)
-        #Celluloid.logger.debug "XXXXXXX #{self.name}.plugin #{plugin.name} #{args}"
+        #Celluloid.logger.debug "#{self.name}.plugin #{plugin.name} #{args}"
 
         extend(plugin::ClassMethods)
         include(plugin::InstanceMethods)
@@ -195,7 +192,6 @@ module Vnet::NodeApi
           }
         }
 
-        # return if model.update(changes).nil?
         return [model, {}] if model.update(changes).nil?
 
         old_values.keep_if { |key, old_value|

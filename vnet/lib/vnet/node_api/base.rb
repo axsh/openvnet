@@ -21,42 +21,37 @@ module Vnet::NodeApi
       end
 
       def execute(method_name, *args, &block)
-        Celluloid.logger.debug "#{self.name}.method_missing #{method_name} #{args}"
+        # Celluloid.logger.debug "#{self.name}.execute #{method_name} #{args}"
 
         to_hash(self.__send__(method_name, *args, &block))
       end
 
       # TODO: Make 'execute_batch' only work for sequel model calls.
       def execute_batch(*args)
-        Celluloid.logger.debug "#{self.name}.execute_batch #{args}"
+        # Celluloid.logger.debug "#{self.name}.execute_batch #{args}"
 
         methods = args.dup
         options = methods.last.is_a?(Hash) ? methods.pop : {}
 
-        transaction {
-          to_hash(methods.inject(self) do |klass, method|
+        to_hash(methods.inject(self) do |klass, method|
             name, *args = method
             klass.__send__(name, *args)
           end, options)
-        }
       end
 
       # TODO: Look into why calling node_api methods like 'destroy'
       # goes through method_missing.
       def method_missing(method_name, *args, &block)
         if model_class.respond_to?(method_name)
-          Celluloid.logger.debug "#{self.name}.method_missing m_cls #{method_name} #{args}"
+          # Celluloid.logger.debug "model_class #{self.name}.method_missing #{method_name} #{args}"
 
           define_singleton_method(method_name) { |*args|
-            transaction do
-              model_class.__send__(method_name, *args, &block)
-            end
+            # Celluloid.logger.debug "singleton #{model_class.name}.#{method_name} #{args}"
+            model_class.__send__(method_name, *args, &block)
           }
 
           self.__send__(method_name, *args, &block)
         else
-          Celluloid.logger.debug "#{self.name}.method_missing super #{method_name} #{args}"
-
           super
         end
       end
