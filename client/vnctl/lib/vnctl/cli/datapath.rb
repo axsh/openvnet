@@ -7,7 +7,6 @@ module Vnctl::Cli
 
     add_modify_shared_options {
       option_display_name
-      option :is_connected, :type => :boolean, :desc => "Flag that detemines if the datapath is connected or not."
       option :dpid, :type => :string, :desc => "Hexadecimal id for the datapath."
       option :node_id, :type => :string, :desc => "The node id for the datapath."
       option :enable_ovs_learn_action, :type => :boolean, :desc => "Enables the datapath to use OVS learning flows."

@@ -2,13 +2,11 @@
 
 Sequel.migration do
   up do
-    alter_table(:datapaths) do
-      drop_column :is_connected
-    end
+    drop_column :datapaths, :is_connected
+    drop_column :datapath_networks, :is_connected
+    drop_column :datapath_route_links, :is_connected
 
-    alter_table(:networks) do
-      rename_column :network_mode, :mode
-    end
+    rename_column :networks, :network_mode, :mode
 
     alter_table(:interfaces) do
       set_column_default :enable_filtering, false
@@ -18,13 +16,11 @@ Sequel.migration do
   end
 
   down do
-    alter_table(:datapaths) do
-      add_column :is_connected, FalseClass, :null=>false, :default=>false
-    end
+    add_column :datapaths, :is_connected, FalseClass, :null=>false, :default=>false
+    add_column :datapath_networks, :is_connected, FalseClass, :null=>false
+    add_column :datapath_route_links, :is_connected, FalseClass, :null=>false
 
-    alter_table(:networks) do
-      rename_column :mode, :network_mode
-    end
+    rename_column :networks, :mode, :network_mode
 
     alter_table(:interfaces) do
       set_column_default :enable_filtering, nil
