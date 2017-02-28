@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services
-
-  class TopologyManager < Vnet::Manager
+  class TopologyManager < Vnet::Services::Manager
     include Vnet::Constants::Topology
+    include Vnet::ManagerAssocs
 
     #
     # Events:
@@ -28,12 +28,14 @@ module Vnet::Services
     subscribe_event TOPOLOGY_CREATE_DP_SEG, :create_dp_segment
     subscribe_event TOPOLOGY_CREATE_DP_RL, :create_dp_route_link
 
-    # TODO: Add events for host interfaces?
+    subscribe_assoc_other_events :topology, :datapath
+    subscribe_assoc_other_events :topology, :network
+    subscribe_assoc_other_events :topology, :segment
+    subscribe_assoc_other_events :topology, :route_link
 
-    def initialize(info, options = {})
-      super
-      @log_prefix = "#{self.class.name.to_s.demodulize.underscore}: "
-    end
+    subscribe_assoc_pair_events :topology, :layer, :overlay, :underlay
+
+    subscribe_item_event 'topology_underlay_create', :create_underlay
 
     def do_initialize
       info log_format('loading all topologies')
@@ -94,12 +96,19 @@ module Vnet::Services
           return
         end
 
-      item_class.new(map: item_map)
+      item_class.new(vnet_info: @vnet_info, map: item_map)
     end
 
     #
     # Create / Delete events:
     #
+
+    def item_post_install(item, item_map)
+      MW::TopologyDatapath.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologySegment.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologyRouteLink.dispatch_added_assocs_for_parent_id(item.id)
+    end
 
     # item created in db on queue 'item.id'
     def created_item(params)
@@ -111,6 +120,8 @@ module Vnet::Services
     #
     # Assoc methods:
     #
+
+    # TODO: Clean up and move to ManagerAssocs.
 
     [ [:network, :network_id, TOPOLOGY_CREATE_DP_NW],
       [:segment, :segment_id, TOPOLOGY_CREATE_DP_SEG],
@@ -178,12 +189,9 @@ module Vnet::Services
 
     def mw_datapath_assoc_class(other_name)
       case other_name
-      when :network, :network_id
-        MW::DatapathNetwork
-      when :segment, :segment_id
-        MW::DatapathSegment
-      when :route_link, :route_link_id
-        MW::DatapathRouteLink
+      when :network, :network_id then MW::DatapathNetwork
+      when :segment, :segment_id then MW::DatapathSegment
+      when :route_link, :route_link_id then MW::DatapathRouteLink
       else
         raise NotImplementedError
       end
@@ -191,12 +199,9 @@ module Vnet::Services
 
     def mw_topology_assoc_class(other_name)
       case other_name
-      when :network, :network_id
-        MW::TopologyNetwork
-      when :segment, :segment_id
-        MW::TopologySegment
-      when :route_link, :route_link_id
-        MW::TopologyRouteLink
+      when :network, :network_id then MW::TopologyNetwork
+      when :segment, :segment_id then MW::TopologySegment
+      when :route_link, :route_link_id then MW::TopologyRouteLink
       else
         raise NotImplementedError
       end
@@ -224,36 +229,5 @@ module Vnet::Services
       tp_obj.topology_id
     end
 
-    #
-    #
-    #
-
-    # TODO: Do we really want/need this:
-
-    public
-
-    subscribe_event TOPOLOGY_ADDED_NETWORK, :added_network
-    subscribe_event TOPOLOGY_REMOVED_NETWORK, :removed_network
-
-    # TODO: Add subscribe_event that creates this method directly.
-    def added_network(params)
-      (internal_detect_by_id_with_error(params) || return).tap { |item|
-        item.added_network(params)
-      }
-    end
-
-    def removed_network(params)
-      (internal_detect_by_id_with_error(params) || return).tap { |item|
-        item.removed_network(params)
-      }
-    end
-
-    def item_post_install(item, item_map)
-      MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
-      MW::TopologySegment.dispatch_added_assocs_for_parent_id(item.id)
-      MW::TopologyRouteLink.dispatch_added_assocs_for_parent_id(item.id)
-    end
-
   end
-
 end

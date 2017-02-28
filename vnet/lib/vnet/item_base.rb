@@ -94,7 +94,11 @@ module Vnet
       @installed = false
       @loaded = false
 
-      @id = get_param_id(params)
+      @vnet_info = get_param_vnet_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+      }
     end
   end
 
@@ -105,9 +109,12 @@ module Vnet
       @installed = false
       @loaded = false
 
-      map = get_param_map(params)
-      @id = get_param_id(map)
-      @uuid = get_param_string(map, :uuid)
+      @vnet_info = get_param_vnet_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+        @uuid = get_param_string(map, :uuid)
+      }
     end
 
     def pretty_id

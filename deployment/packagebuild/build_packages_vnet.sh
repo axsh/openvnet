@@ -3,7 +3,6 @@
 set -xe
 
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
-repo_dir=
 
 BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
@@ -11,69 +10,105 @@ OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
 REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
 POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
+RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
 
-function check_dependency() {
-  local cmd="$1"
-  local pkg="$2"
-
-  command -v ${cmd} >/dev/null 2>&1 || {
-    sudo yum install -y ${pkg}
-  }
+function yum_check_install() {
+  for i in $*; do
+    if ! rpm -q $i &> /dev/null; then
+      echo $i
+    fi
+  done | xargs --no-run-if-empty yum install -y
 }
 
-if [ "${BUILD_TYPE}" == "stable" ] && [ -z "${RPM_VERSION}" ]; then
-  echo "You need to set RPM_VERSION when building a stable version. This should contain the name of a branch of tag for git to checkout.
+if [ "${BUILD_TYPE}" == "stable" ] && [ -z "${RELEASE_SUFFIX}" ]; then
+  echo "You need to set RELEASE_SUFFIX when building a stable version. This should contain the name of a branch of tag for git to checkout.
         Ex: v0.7"
   exit 1
+elif [[ -z "${RELEASE_SUFFIX}" ]]; then
+  # RELEASE_SUFFIX is recommended to pass to this script. The line is for
+  # the backward compatibility to the current CI infrastructure.
+  RELEASE_SUFFIX=$(${current_dir}/gen-dev-build-tag.sh)
 fi
+
 
 #
 # Install dependencies
 #
 
-check_dependency yum-builddep yum-utils
-check_dependency createrepo createrepo
+/usr/bin/mysqld_safe &
 
-# Make sure that we work with the correct version of openvnet-ruby
-sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+yum_check_install yum-utils createrepo rpmdevtools
+yum_check_install centos-release-scl scl-utils
 
-sudo yum-builddep -y "$OPENVNET_SPEC_FILE"
+if [[ -n "${SCL_RUBY}" ]]; then
+  # Try install devel package with the $SCL_RUBY version if specified.
+  yum_check_install "${SCL_RUBY}-scldevel"
+fi
+if [[ $(rpm --eval '%{defined scl_ruby}') -eq 0 ]]; then
+  # Respect pre-installed rh-rubyXX or rubyXXX.
+  echo "FATAL: No SCL Ruby found. Please install any of rh-rubyXX from Software Collections." 1>&2
+  exit 1
+fi
+SCL_RUBY=$(rpm --eval '%{scl_ruby}')
+
+# CI Docker container maintains third party repo by itself. This check
+# is for the manual build.
+if ! (yum repolist enabled | grep openvnet-third-party) > /dev/null; then
+  # Make sure that we work with the correct version of openvnet-ruby
+  sudo cp "${current_dir}/../yum_repositories/${BUILD_TYPE}/openvnet-third-party.repo" /etc/yum.repos.d
+fi
+
+# Workaround for the error:
+#  "failure: repodata/repomd.xml from centos-sclo-rh-source: [Errno 256] No more mirrors to try."
+curl -O https://raw.githubusercontent.com/rpm-software-management/yum-utils/master/yum-builddep.py
+sudo python ./yum-builddep.py -y "$OPENVNET_SPEC_FILE"
 
 #
 # Prepare build directories and put the source in place.
 #
 
+# scl_source is designed to run in the context +e. Otherwise
+# non-zero exit from scl_enabled causes the program terminate.
+set +e
+. scl_source enable ${SCL_RUBY}
+set -e
+
+#
+# Run rspec
+#
+
+(
+    cd vnet
+    mysqladmin -uroot create vnet_test
+    bundle install --path vendor/bundle --standalone
+    bundle exec rake test:db:reset
+    bundle exec rspec spec
+)
+
 OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
-if [ -d "$OPENVNET_SRC_BUILD_DIR" ]; then
+if [[ -d "$OPENVNET_SRC_BUILD_DIR" && -z "${SKIP_CLEANUP}" ]]; then
   rm -rf "$OPENVNET_SRC_BUILD_DIR"
 fi
 
-mkdir -p "${WORK_DIR}/SOURCES"
-cp -r "$OPENVNET_SRC_ROOT_DIR" "${WORK_DIR}/SOURCES/openvnet"
-
-# Get rid up any possible dirty build directories
-for arch in "${POSSIBLE_ARCHS[@]}"; do
-  if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
-    rm -rf "${WORK_DIR}/RPMS/${arch}"
-  fi
-done
-
-
-# Clean up the source dir if it's dirty
-cd ${OPENVNET_SRC_BUILD_DIR}
-git reset --hard
-git clean -xdf
+mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
+# Copy only the tracked files to rpmbuild SOURCES/.
+(
+  cd $(git rev-parse --show-toplevel)
+  git archive HEAD | tar x -C "${OPENVNET_SRC_BUILD_DIR}"
+)
 
 #
 # Build the packages
 #
+export PATH="/opt/axsh/openvnet/ruby/bin:$PATH"
 
+repo_rel_path="packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RPM_VERSION}"
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
 
-  git checkout "${RPM_VERSION}"
-  echo "Building the following commit for stable version ${RPM_VERSION}"
+  git checkout "${RELEASE_SUFFIX}"
+  echo "Building the following commit for stable version ${RELEASE_SUFFIX}"
   git log -n 1 --format=short
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" "${OPENVNET_SPEC_FILE}"
@@ -82,22 +117,24 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/6/vnet/${RELEASE_SUFFIX}"
+  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 
-  rpmbuild -ba --define "_topdir ${WORK_DIR}" --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
+  rpmbuild -ba --define "_topdir ${WORK_DIR}" ${STRIP_VENDOR:+--define "strip_vendor ${STRIP_VENDOR}"} --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
-
 
 #
 # Prepare the yum repo
 #
+repo_dir="${REPO_BASE_DIR}/${repo_rel_path}"
 for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${repo_dir}/${arch}" ]; then
     rm -rf "${repo_dir}/${arch}"
   fi
 done
 sudo mkdir -p "${repo_dir}"
-sudo chown $USER "${repo_dir}"
+if [[ -n "$USER" ]]; then
+    sudo chown $USER "${repo_dir}"
+fi
 
 for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${WORK_DIR}/RPMS/${arch}" ]; then
@@ -107,8 +144,10 @@ done
 
 createrepo "${repo_dir}"
 
-current_symlink="${REPO_BASE_DIR}/packages/rhel/6/vnet/current"
+current_symlink="$(dirname ${repo_dir})/current"
 if [ -L "${current_symlink}" ]; then
   sudo rm "${current_symlink}"
 fi
-sudo ln -s "${repo_dir}" "${current_symlink}"
+sudo ln -s "./$(basename ${repo_dir})" "${current_symlink}"
+
+mysqladmin -uroot shutdown

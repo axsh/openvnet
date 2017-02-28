@@ -1,11 +1,8 @@
 #!/bin/sh
-set -e
 
-static_ruby_path="/opt/axsh/openvnet/ruby/bin/ruby"
 vnctl_path="/opt/axsh/openvnet/client/vnctl/bin/vnctl"
 
-if [ -x $static_ruby_path ]; then
-  $static_ruby_path $vnctl_path "$@"
-else
-  $vnctl_path "$@"
-fi
+[ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby
+
+set -e
+$vnctl_path "$@"

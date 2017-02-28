@@ -72,14 +72,11 @@ module Vnet::Models
 
       def after_initialize
         super
-        # set random generated uuid value
-        self[:uuid] ||= Array.new(8) do UUID_TABLE[rand(UUID_TABLE.size)]; end.join
+        self[:uuid] ||= self.class.generate_uuid
       end
 
-      # model hook
       def after_destroy
         super
-        # TagMapping.filter(:uuid=>self.canonical_uuid).delete
       end
 
       # Returns canonicalized uuid which has the form of
@@ -88,62 +85,6 @@ module Vnet::Models
         "#{self.uuid_prefix}-#{self[:uuid]}"
       end
       alias_method :cuuid, :canonical_uuid
-
-      # Put the tag on the object.
-      #
-      # @params [Models::Tag,String,Symbol] arg1
-      # @params [String,NilClass] arg2
-      # @params [String,NilClass] arg3
-      #
-      # @example
-      # lable_tag('tag-xxxxx')
-      # t = Tag['tag-xxxx']
-      # label_tag(t)
-      # label_tag(:NetworkGroup, 'newname1', 'account_id')
-
-      # def label_tag(arg1, arg2=nil, arg3=nil)
-      #   tag = case arg1
-      #         when String
-      #           Tag[arg1]
-      #         when Symbol
-      #           acctid = arg3 || self.respond_to?(:account_id) ? self.account_id : raise("Unknown Account ID")
-      #           Dcmgr::Tags.const_get(arg1, false).find_or_create(:account_id=>acctid, :name=>arg2)
-      #         when Tag
-      #           arg1
-      #         else
-      #           raise ArgumentError, "Invalid type: #{arg1.class}"
-      #         end
-      #   raise "Root Tag class can not be used" unless tag.class < Tag
-      #   tag.label(self.canonical_uuid)
-      # end
-
-      # Remove the labeled tag from the object
-      #
-      # @params [Models::Tag,String,Symbol] arg1
-      # @params [String,NilClass] arg2
-      # @params [String,NilClass] arg3
-      #
-      # @example
-      # unlable_tag('tag-xxxxx')
-      # t = Tag['tag-xxxx']
-      # unlabel_tag(t)
-      # unlabel_tag(:NetworkGroup, 'newname1', 'account_id')
-
-      # def unlabel_tag(arg1, arg2=nil, arg3=nil)
-      #   tag = case arg1
-      #         when String
-      #           Tag[arg1]
-      #         when Symbol
-      #           acctid = arg3 || self.respond_to?(:account_id) ? self.account_id : raise("Unknown Account ID")
-      #           Dcmgr::Tags.const_get(arg1, false).find(:account_id=>acctid, :name=>arg2)
-      #         when Tag
-      #           arg1
-      #         else
-      #           raise ArgumentError, "Invalid type: #{arg1.class}"
-      #         end
-
-      #   tag.unlabel(self.canonical_uuid)
-      # end
 
       def to_hash()
         r = self.values.dup.merge({:id=>self.id, :uuid=>canonical_uuid, :class_name => self.class.name.demodulize})
@@ -174,6 +115,18 @@ module Vnet::Models
     end
 
     module ClassMethods
+
+      def generate_uuid
+        # TODO: Check for collisions.
+        Array.new(8) {
+          UUID_TABLE[rand(UUID_TABLE.size)]
+        }.join
+      end
+
+      def reserve_uuid(value)
+        with_deleted.where(uuid: value).update(uuid: generate_uuid)
+      end
+
       # Getter and setter for uuid_prefix of the class.
       #
       # @example
@@ -196,7 +149,6 @@ module Vnet::Models
 
         @uuid_prefix || (superclass.uuid_prefix if superclass.respond_to?(:uuid_prefix)) || raise("uuid prefix is unset for:#{self}")
       end
-
 
       # Override Model.[] to add lookup by uuid.
       #

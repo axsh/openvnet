@@ -21,6 +21,7 @@ describe "/mac_range_groups" do
 
   describe "POST /" do
     accepted_params = {
+      :uuid => 'mrg-test',
       :allocation_type => "random"
     }
     required_params = [ ]

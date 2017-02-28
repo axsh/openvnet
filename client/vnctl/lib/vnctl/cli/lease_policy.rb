@@ -6,9 +6,18 @@ module Vnctl::Cli
     api_suffix "lease_policies"
 
     add_modify_shared_options {
-      option :mode, :type => :string, :desc => "The mode for this lease policy. (reserved for future use)"
       option :timing, :type => :string, :desc => "The timing when the lease will be assigned."
     }
+
+    add_modify_shared_options
+    option :mode, :type => :string, :desc => "The mode for this lease policy. (reserved for future use)"
+    define_add
+
+    add_modify_shared_options
+    define_modify
+
+    define_show
+    define_del
 
     define_standard_crud_commands
 

@@ -177,10 +177,7 @@ module VNetAPIClient
   class Segment < ApiResource
     api_suffix :segments
 
-    define_create
-    define_delete
-    define_show
-    define_index
+    define_standard_crud_methods
   end
 
   class Translation < ApiResource
@@ -228,6 +225,9 @@ module VNetAPIClient
     api_suffix :topologies
 
     define_standard_crud_methods
+
+    define_relation_methods(:datapaths)
+    define_relation_methods(:underlays)
     define_relation_methods(:networks)
     define_relation_methods(:segments)
     define_relation_methods(:route_links)

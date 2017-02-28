@@ -15,6 +15,43 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
+  class TopologyDatapath < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(object)
+      argument_type_check(object,Vnet::ModelWrappers::TopologyDatapath)
+      object.to_hash.tap { |res|
+        # TODO: This is both slow and verbose.
+        # datapath = object.batch.datapath.commit
+        # res[:datapath_uuid] = datapath.uuid if datapath
+      }
+    end
+  end
+
+  class TopologyDatapathCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i|
+        TopologyDatapath.generate(i)
+      }
+    end
+  end
+
+  class TopologyLayer < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(object)
+      argument_type_check(object,Vnet::ModelWrappers::TopologyLayer)
+      object.to_hash.tap { |res|
+      }
+    end
+  end
+
+  class TopologyLayerCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i|
+        TopologyLayer.generate(i)
+      }
+    end
+  end
+
   class TopologyNetwork < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::TopologyNetwork)

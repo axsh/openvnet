@@ -6,7 +6,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
 
   put_post_shared_params
   param_uuid M::Topology
-  param :mode, :String, in: C::Topology::MODES
+  param :mode, :String, required: true, in: C::Topology::MODES
   post do
     post_new(:Topology)
   end
@@ -28,73 +28,70 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     update_by_uuid(:Topology)
   end
 
-  post '/:uuid/networks/:network_uuid' do
-    topology = uuid_to_id(M::Topology, "uuid", "topology_id")
-    network = uuid_to_id(M::Network, "network_uuid", "network_id")
+  TOPOLOGY_ASSOCS = [
+    ['datapath', true],
+    ['network', nil],
+    ['segment', nil],
+    ['route_link', nil]
+  ].freeze
+
+  TOPOLOGY_ASSOCS.each { |other_name, with_interface|
+    other_id = "#{other_name}_id".to_sym
+    other_uuid = "#{other_name}_uuid".to_sym
+    assoc_table = "topology_#{other_name}s".to_sym
+
+    other_model = M.const_get(other_name.camelize)
+    assoc_model = M.const_get("Topology#{other_name.camelize}")
+    assoc_response = R.const_get("Topology#{other_name.camelize}")
+    
+    # TODO: Change to confirm with either POST or PUT idioms.
+    param_uuid M::Interface, :interface_uuid, required: true if with_interface
+    post "/:uuid/#{other_name}s/:#{other_uuid}" do
+      uuid_to_id(M::Topology, :uuid, :topology_id)
+      uuid_to_id(other_model, other_uuid, other_id)
+      uuid_to_id(M::Interface, :interface_uuid, :interface_id) if with_interface
+      
+      remove_system_parameters
+      respond_with(assoc_response.generate(assoc_model.create(params)))
+    end
+
+    get "/:uuid/#{other_name}s" do
+      show_relations(:Topology, assoc_table)
+    end
+
+    # TODO: No need to have other_uuid.
+
+    delete "/:uuid/#{other_name}s/:#{other_uuid}" do
+      uuid_to_id(M::Topology, :uuid, :topology_id)
+      other = uuid_to_id(other_model, other_uuid, other_id)
+
+      remove_system_parameters
+      assoc_model.destroy(params)
+
+      respond_with([other.uuid])
+    end
+  }
+
+  post '/:uuid/underlays/:underlay_uuid' do
+    uuid_to_id(M::Topology, :uuid, :overlay_id)
+    uuid_to_id(M::Topology, :underlay_uuid, :underlay_id)
 
     remove_system_parameters
-
-    result = M::TopologyNetwork.create(params)
-    respond_with(R::TopologyNetwork.generate(result))
+    respond_with(R::TopologyLayer.generate(M::TopologyLayer.create(params)))
   end
 
-  get '/:uuid/networks' do
-    show_relations(:Topology, :topology_networks)
+  get '/:uuid/underlays' do
+    show_relations(:Topology, :underlays, response_class: R::TopologyCollection)
   end
 
-  delete '/:uuid/networks/:network_uuid' do
-    topology = check_syntax_and_pop_uuid(M::Topology)
-    network = check_syntax_and_pop_uuid(M::Network, 'network_uuid')
-
-    M::TopologyNetwork.destroy(topology_id: topology.id, network_id: network.id)
-
-    respond_with([network.uuid])
-  end
-
-  post '/:uuid/segments/:segment_uuid' do
-    topology = uuid_to_id(M::Topology, "uuid", "topology_id")
-    segment = uuid_to_id(M::Segment, "segment_uuid", "segment_id")
+  delete '/:uuid/underlays/:underlay_uuid' do
+    uuid_to_id(M::Topology, :uuid, :overlay_id)
+    underlay = uuid_to_id(M::Topology, :underlay_uuid, :underlay_id)
 
     remove_system_parameters
+    M::TopologyLayer.destroy(params)
 
-    result = M::TopologySegment.create(params)
-    respond_with(R::TopologySegment.generate(result))
-  end
-
-  get '/:uuid/segments' do
-    show_relations(:Topology, :topology_segments)
-  end
-
-  delete '/:uuid/segments/:segment_uuid' do
-    topology = check_syntax_and_pop_uuid(M::Topology)
-    segment = check_syntax_and_pop_uuid(M::Segment, 'segment_uuid')
-
-    M::TopologySegment.destroy(topology_id: topology.id, segment_id: segment.id)
-
-    respond_with([segment.uuid])
-  end
-
-  post '/:uuid/route_links/:route_link_uuid' do
-    topology = uuid_to_id(M::Topology, "uuid", "topology_id")
-    route_link = uuid_to_id(M::RouteLink, "route_link_uuid", "route_link_id")
-
-    remove_system_parameters
-
-    result = M::TopologyRouteLink.create(params)
-    respond_with(R::TopologyRouteLink.generate(result))
-  end
-
-  get '/:uuid/route_links' do
-    show_relations(:Topology, :topology_route_links)
-  end
-
-  delete '/:uuid/route_links/:route_link_uuid' do
-    topology = check_syntax_and_pop_uuid(M::Topology)
-    route_link = check_syntax_and_pop_uuid(M::RouteLink, 'route_link_uuid')
-
-    M::TopologyRouteLink.destroy(topology_id: topology.id, route_link_id: route_link.id)
-
-    respond_with([route_link.uuid])
+    respond_with([underlay.uuid])
   end
 
 end

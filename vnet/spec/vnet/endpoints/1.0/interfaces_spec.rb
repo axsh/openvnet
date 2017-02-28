@@ -76,18 +76,19 @@ describe "/interfaces" do
     include_examples "PUT /:uuid", accepted_params
 
     describe "event handler" do
-      let(:request_params) { {} }
+      let(:request_params) { { display_name: 'event interface' } }
 
       it "handles a single event" do
         expect(last_response).to succeed
         expect(MockEventHandler.handled_events.size).to eq 1
       end
     end
+
   end
 
-  include_examples 'interface assoc on node_api', :segment
-  include_examples 'interface assoc on node_api', :network
-  include_examples 'interface assoc on node_api', :route_link
+  include_examples 'interface assoc on endpoints', :segment
+  include_examples 'interface assoc on endpoints', :network
+  include_examples 'interface assoc on endpoints', :route_link
 
   #
   # Ports:

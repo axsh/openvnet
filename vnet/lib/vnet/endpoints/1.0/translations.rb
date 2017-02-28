@@ -4,16 +4,10 @@
 Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
   CT = C::Translation
 
-  def self.put_post_shared_params
-    param_uuid M::Interface, :interface_uuid
-    param :mode, :String, in: CT::MODES
-    param :passthrough, :Boolean
-  end
-
-  put_post_shared_params
   param_uuid M::Translation
   param_uuid M::Interface, :interface_uuid, required: true
-  param_options :mode, required: true
+  param :mode, :String, in: CT::MODES, required: true
+  param :passthrough, :Boolean
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id")
 
@@ -30,13 +24,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/translations' do
 
   delete '/:uuid' do
     delete_by_uuid(:Translation)
-  end
-
-  put_post_shared_params
-  put '/:uuid' do
-    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
-
-    update_by_uuid(:Translation)
   end
 
   def self.static_address_shared_params

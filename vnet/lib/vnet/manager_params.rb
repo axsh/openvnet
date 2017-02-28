@@ -14,7 +14,7 @@
 # begin
 #   port_number = get_param_of_port(params, :port_number)
 # rescue Vnet::ParamError => e
-#   handle_param_error(e)
+#   return handle_param_error(e)
 # end
 
 module Vnet
@@ -157,6 +157,10 @@ module Vnet
       get_param_type(params, key, Hash, required)
     end
 
+    def get_param_time(params, key, required = true)
+      get_param_type(params, key, Fixnum, required)
+    end
+
     #
     # Network Types:
     #
@@ -211,6 +215,10 @@ module Vnet
 
     def get_param_dp_info(params, key = :dp_info, required = true)
       get_param_type(params, key, Vnet::Core::DpInfo, required)
+    end
+
+    def get_param_vnet_info(params, key = :vnet_info, required = true)
+      get_param_type(params, key, Vnet::Services::VnetInfo, required)
     end
 
     def get_param_datapath_info(params, key = :datapath_info, required = true)

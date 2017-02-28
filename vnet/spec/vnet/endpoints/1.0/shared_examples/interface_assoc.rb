@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples 'interface assoc on node_api' do |other_name|
+shared_examples 'interface assoc on endpoints' do |other_name|
 
   describe "Many to many relation calls for #{other_name}s" do
     let!(:base_object) { Fabricate(fabricator) }
