@@ -39,7 +39,10 @@ describe '/networks' do
     required_params = [:display_name, :ipv4_network]
     uuid_params = [:uuid]
 
-    include_examples 'POST /', accepted_params, required_params, uuid_params, expected_response
+    include_examples 'POST /', accepted_params, required_params, uuid_params, expected_response, Proc.new { |model, last_response|
+      other_model = Vnet::Models::Topology[accepted_params[:topology_uuid]]
+      other_model && Vnet::Models::TopologyNetwork[network_id: model.id, topology_id: other_model.id]
+    }
   end
 
   describe 'PUT /:uuid' do

@@ -44,7 +44,10 @@ describe "/segments" do
     required_params = [:mode]
     uuid_params = []
 
-    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
+    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response, Proc.new { |model, last_response|
+      other_model = Vnet::Models::Topology[accepted_params[:topology_uuid]]
+      other_model && Vnet::Models::TopologySegment[segment_id: model.id, topology_id: other_model.id]
+    }
 
     context "With a wrong value for mode" do
       let(:request_params) { { mode: "klein soldaatje, groot soldaatje" } }

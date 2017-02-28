@@ -34,7 +34,10 @@ describe "/route_links" do
     required_params = []
     uuid_params = [:uuid]
 
-    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response
+    include_examples "POST /", accepted_params, required_params, uuid_params, expected_response, Proc.new { |model, last_response|
+      other_model = Vnet::Models::Topology[accepted_params[:topology_uuid]]
+      other_model && Vnet::Models::TopologyRouteLink[route_link_id: model.id, topology_id: other_model.id]
+    }
   end
 
 end
