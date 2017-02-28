@@ -14,16 +14,19 @@ segments:
 interfaces:
 
   - uuid: if-v1
+    mode: vif
     port_name: if-v1
     segment_uuid: seg-global
     mac_address: "02:00:00:00:00:01"
 
   - uuid: if-v5
+    mode: vif
     port_name: if-v5
     segment_uuid: seg-global
     mac_address: "02:00:00:00:00:05"
 
   - uuid: if-v7
+    mode: vif
     port_name: if-v7
     segment_uuid: seg-global
     mac_address: "02:00:00:00:00:07"

@@ -10,34 +10,40 @@ networks:
 interfaces:
 
   - uuid: if-v1
+    mode: vif
     mac_address: "02:00:00:00:00:01"
 
   - uuid: if-v2
+    mode: vif
     mac_address: "02:00:00:00:00:02"
 
   - uuid: if-v3
+    mode: vif
     mac_address: "02:00:00:00:00:03"
 
   - uuid: if-v4
+    mode: vif
     mac_address: "02:00:00:00:00:04"
 
   - uuid: if-v5
+    mode: vif
     mac_address: "02:00:00:00:00:05"
 
   - uuid: if-v6
+    mode: vif
     mac_address: "02:00:00:00:00:06"
 
   - uuid: if-dhcp1
+    mode: simulated
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:01:01"
     ipv4_address: 10.101.0.2
-    mode: simulated
 
   - uuid: if-dns1
+    mode: simulated
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:02:01"
     ipv4_address: 10.101.0.3
-    mode: simulated
 
 network_services:
 
