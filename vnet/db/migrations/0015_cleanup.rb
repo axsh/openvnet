@@ -12,6 +12,7 @@ Sequel.migration do
     end
 
     alter_table(:interfaces) do
+      set_column_default :mode, ''
       set_column_default :enable_filtering, false
       set_column_default :enable_route_translation, false
       set_column_default :enable_routing, false
@@ -29,6 +30,7 @@ Sequel.migration do
     end
 
     alter_table(:interfaces) do
+      set_column_default :mode, 'vif'
       set_column_default :enable_filtering, nil
       set_column_default :enable_route_translation, nil
       set_column_default :enable_routing, nil

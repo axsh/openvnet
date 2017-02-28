@@ -9,23 +9,24 @@ describe Vnet::NodeApi::Interface do
   let(:datapath) { Fabricate(:datapath) }
   let(:dp_info) { datapath.dp_info }
 
-  describe "create" do
-    it "with associations" do
+  describe 'create' do
+    it 'with associations' do
       interface = Vnet::NodeApi::Interface.execute(:create,
-        uuid: "if-test",
+        uuid: 'if-test',
+        mode: 'vif',
         network_id: network.id,
-        ipv4_address: IPAddress("192.168.1.2").to_i,
+        ipv4_address: IPAddress('192.168.1.2').to_i,
         mac_address: 2,
         owner_datapath_id: datapath.id
       )
 
-      expect(interface[:uuid]).to eq "if-test"
-      model = Vnet::Models::Interface["if-test"]
+      expect(interface[:uuid]).to eq 'if-test'
+      model = Vnet::Models::Interface['if-test']
 
       ip_lease = model.ip_leases.first
 
       expect(ip_lease.network.id).to eq network.id
-      expect(ip_lease.ipv4_address).to eq IPAddress("192.168.1.2").to_i
+      expect(ip_lease.ipv4_address).to eq IPAddress('192.168.1.2').to_i
       expect(ip_lease.mac_lease.mac_address).to eq 2
 
       events = MockEventHandler.handled_events
