@@ -117,23 +117,6 @@ describe Vnet::Event::Notifications do
       expect(item_manager.executed_methods.size).to eq 2
     end
 
-    it "create an item with updated value" do
-      item_manager = manager_class.new
-
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
-
-      item_manager.find_db_item(1)[:name] = :bar
-      notifier.publish("item_updated", id: 1)
-
-      item_manager.wait_for_events_done
-
-      expect(item_manager.items.size).to eq 1
-      expect(item_manager.items[1][:id]).to eq 1
-      expect(item_manager.items[1][:name]).to eq :bar
-      expect(item_manager.executed_methods.size).to eq 1
-    end
-
     it "delete an item" do
       item_manager = manager_class.new
 
