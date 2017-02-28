@@ -79,8 +79,6 @@ set -e
 
 (
     cd vnet
-    [[ -d ".bundle" ]] && rm -rf ".bundle"
-    [[ -d "vendor" ]] && rm -rf "vendor"
     mysqladmin -uroot create vnet_test
     bundle install --path vendor/bundle --standalone
     bundle exec rake test:db:reset
