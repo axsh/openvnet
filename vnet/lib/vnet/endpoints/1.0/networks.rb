@@ -13,7 +13,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/networks' do
   param :network_mode, :String, in: C::Network::MODES
   param :ipv4_network, :String, transform: PARSE_IPV4, required: true
   param :ipv4_prefix, :Integer, in: 1..32
-  param_options :display_name, required: true
   post do
     uuid_to_id(M::Segment, 'segment_uuid', 'segment_id') if params['segment_uuid']
 

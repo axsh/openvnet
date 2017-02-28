@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 require 'vnet'
 
@@ -22,14 +23,14 @@ describe '/networks' do
 
   describe 'POST /' do
     accepted_params = {
-      :uuid => 'nw-test',
-      :display_name => 'our test network',
-      :ipv4_network => '192.168.2.0',
-      :ipv4_prefix => 24,
-      :domain_name => 'vdc.test.domain',
-      :mode => 'virtual',
+      uuid: 'nw-test',
+      display_name: 'our test network',
+      ipv4_network: '192.168.2.0',
+      ipv4_prefix: 24,
+      mode: 'virtual',
+      domain_name: 'vdc.test.domain',
     }
-    required_params = [:display_name, :ipv4_network]
+    required_params = [:ipv4_network]
     uuid_params = [:uuid]
 
     include_examples 'POST /', accepted_params, required_params, uuid_params
@@ -37,8 +38,8 @@ describe '/networks' do
 
   describe 'PUT /:uuid' do
     accepted_params = {
-      :display_name => 'our new name for the test network',
-      :domain_name => 'new.vdc.test.domain',
+      display_name: 'our new name for the test network',
+      domain_name: 'new.vdc.test.domain',
     }
 
     include_examples 'PUT /:uuid', accepted_params

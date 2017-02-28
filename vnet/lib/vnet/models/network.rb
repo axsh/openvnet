@@ -35,5 +35,11 @@ module Vnet::Models
     # 0011_assoc_interface
     interface_networks: :destroy
 
+    def before_create
+      self.domain_name = self[:uuid] if self.domain_name.nil?
+
+      super
+    end
+
   end
 end

@@ -6,7 +6,10 @@ Sequel.migration do
     drop_column :datapath_networks, :is_connected
     drop_column :datapath_route_links, :is_connected
 
-    rename_column :networks, :network_mode, :mode
+    alter_table(:networks) do
+      rename_column :network_mode, :mode
+      set_column_not_null :domain_name
+    end
 
     alter_table(:interfaces) do
       set_column_default :enable_filtering, false
@@ -20,7 +23,10 @@ Sequel.migration do
     add_column :datapath_networks, :is_connected, FalseClass, :null=>false
     add_column :datapath_route_links, :is_connected, FalseClass, :null=>false
 
-    rename_column :networks, :mode, :network_mode
+    alter_table(:networks) do
+      rename_column :mode, :network_mode
+      set_column_allow_null :domain_name
+    end
 
     alter_table(:interfaces) do
       set_column_default :enable_filtering, nil
