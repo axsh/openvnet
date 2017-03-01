@@ -27,7 +27,6 @@ BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
 OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
-REPO_BASE_DIR="${REPO_BASE_DIR:-/repos}"
 POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
 RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
 
@@ -127,7 +126,7 @@ export PATH="/opt/axsh/openvnet/ruby/bin:$PATH"
 repo_rel_path="${BRANCH}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
-  repo_dir="${REPO_BASE_DIR}/${BRANCH}/packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
+  repo_dir="${REPO_VOLUME}/${BRANCH}/packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
 
   git checkout "${RELEASE_SUFFIX}"
   echo "Building the following commit for stable version ${RELEASE_SUFFIX}"
@@ -139,7 +138,7 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_dir="${REPO_BASE_DIR}/${BRANCH}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
+  repo_dir="${REPO_VOLUME}/${BRANCH}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" ${STRIP_VENDOR:+--define "strip_vendor ${STRIP_VENDOR}"} --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
@@ -147,7 +146,7 @@ fi
 #
 # Prepare the yum repo
 #
-repo_dir="${REPO_BASE_DIR}/${repo_rel_path}"
+repo_dir="${REPO_VOLUME}/${repo_rel_path}"
 for arch in "${POSSIBLE_ARCHS[@]}"; do
   if [ -d "${repo_dir}/${arch}" ]; then
     rm -rf "${repo_dir}/${arch}"
