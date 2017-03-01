@@ -76,7 +76,7 @@ module Vnet::Core::Filters
       @dp_info.add_flows(flows)
     end
 
-    def flows_for_ingress_filtering(flows = [])
+    def flows_for_ingress_filtering(flows)
       flow = {
         table: TABLE_INTERFACE_INGRESS_FILTER,
         priority: 10,
@@ -87,7 +87,7 @@ module Vnet::Core::Filters
       flows << flow_create(flow)
     end
 
-    def flows_for_egress_filtering(flows = [])
+    def flows_for_egress_filtering(flows)
       flow = {
         table: TABLE_INTERFACE_EGRESS_FILTER,
         priority: 10,

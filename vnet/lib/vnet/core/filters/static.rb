@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Core::Filters
-
   class Static < Base2
 
     def initialize(params)
@@ -73,6 +72,35 @@ module Vnet::Core::Filters
             match: egress_rule)
         }
       }
+    end
+
+    def packet_in(message)
+      return if !installed?
+
+      info log_format_h('packet_in', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
+
+      egress_match, ingress_match = match_from_message(message)
+      return if egress_match.nil? || ingress_match.nil?
+
+      info log_format_h('egress_match', egress_match)
+      info log_format_h('ingress_match', ingress_match)
+
+      flows = []
+
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
+                           goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
+                           priority: 88,
+                           match_interface: @interface_id,
+                           match: egress_match)
+
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
+                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           priority: 88,
+                           match_interface: @interface_id,
+                           match: ingress_match)
+
+      @dp_info.add_flows(flows)
+      @dp_info.send_packet_out(message, OFPP_TABLE)
     end
 
     #
@@ -205,21 +233,64 @@ module Vnet::Core::Filters
     end
 
     def flows_for_static(flows, protocol, filter, action)
-      rules(filter, protocol).each { |egress_rule, ingress_rule|
-        flows << flow_create(
-          table: TABLE_INTERFACE_INGRESS_FILTER,
-          goto_table: action == 'pass' ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil,
+      rules(filter, protocol).each { |ingress_rule, egress_rule|
+        flow_base = {
           priority: priority_for_static(filter[:ipv4_dst_prefix], filter[:port_dst]),
-          match_interface: @interface_id,
-          match: ingress_rule)
+          match_interface: @interface_id
+        }
 
-        flows << flow_create(
-          table: TABLE_INTERFACE_EGRESS_FILTER,
-          goto_table: action == 'pass' ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
-          priority: priority_for_static(filter[:ipv4_dst_prefix], filter[:port_dst]),
-          match_interface: @interface_id,
-          match: egress_rule)
+        if action == 'conn'
+          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER,
+                                               match: egress_rule,
+                                               actions: { output: Vnet::Openflow::Controller::OFPP_CONTROLLER }))
+          next
+        end
+
+        flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER,
+                                             goto_table: action == 'pass' ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil,
+                                             match: ingress_rule))
+
+        flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER,
+                                             goto_table: action == 'pass' ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
+                                             match: egress_rule))
       }
+    end
+
+    def match_from_message(message)
+      egress_match = {
+        eth_type: ETH_TYPE_IPV4,
+        ipv4_src: message.ipv4_src,
+        ipv4_dst: message.ipv4_dst
+      }
+      ingress_match = {
+        eth_type: ETH_TYPE_IPV4,
+        ipv4_src: message.ipv4_dst,
+        ipv4_dst: message.ipv4_src
+      }
+
+      case
+      when message.tcp?
+        egress_match.merge!(ip_proto: IPV4_PROTOCOL_TCP,
+                            tcp_src: message.tcp_src,
+                            tcp_dst: message.tcp_dst)
+        ingress_match.merge!(ip_proto: IPV4_PROTOCOL_TCP,
+                             tcp_src: message.tcp_dst,
+                             tcp_dst: message.tcp_src)
+      when message.udp?
+        egress_match.merge!(ip_proto: IPV4_PROTOCOL_UDP,
+                            udp_src: message.udp_src,
+                            udp_dst: message.udp_dst)
+        ingress_match.merge!(ip_proto: IPV4_PROTOCOL_UDP,
+                             udp_src: message.udp_dst,
+                             udp_dst: message.udp_src)
+      when message.icmpv4?
+        egress_match.merge!(ip_proto: IPV4_PROTOCOL_ICMP)
+        ingress_match.merge!(ip_proto: IPV4_PROTOCOL_ICMP)
+      else
+        return
+      end
+
+      return egress_match, ingress_match
     end
 
   end
