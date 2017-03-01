@@ -21,11 +21,21 @@ module Vnspec
       use_agent: false,
       timeout: 300,
       verbose: :fatal,
+
     }
 
-    def ssh_options
-      DEFAULT_OPTIONS.merge(config[:ssh_options] || {})
+    # since the el7 and el6 environments are setup differently for handling ssh keys this serves as a workaround
+    def set_ssh_key
+      case config[:release_version]
+      when "el7"      then [ "~/.ssh/sshkey" ]
+      when "el6", nil then [ "~/.ssh/id_rsa" ]
+      end
     end
+
+    def ssh_options
+      DEFAULT_OPTIONS.merge(config[:ssh_options] || {}).merge(key: set_ssh_key)
+    end
+
 
     def ssh(host, command, options = {})
       logger.info "[#{host}] #{command}"
@@ -40,7 +50,8 @@ module Vnspec
 
       ssh_command_options = {
         timeout: options[:timeout],
-        verbose: options[:verbose]
+        verbose: options[:verbose],
+        keys: options[:key],
       }
 
       Net::SSH.start(host, options[:user], ssh_command_options) do |ssh|
@@ -80,7 +91,7 @@ module Vnspec
       options = ssh_options.merge(options)
       Net::SSH::Multi.start do |session|
         hosts.each do |host|
-          session.use(host, user: options[:user])
+          session.use(host, user: options[:user], keys: options[:key])
         end
         commands.each do |command|
           command = wrap_command(command, options)
@@ -100,9 +111,9 @@ module Vnspec
     def scp(upload_or_download, host, local, remote)
       case upload_or_download.to_sym
       when :upload
-        Net::SCP.download!(host, ssh_options[:user], local, remotel)
-      when :download
-        Net::SCP.download!(host, ssh_options[:user], remote, local)
+        Net::SCP.download!(host, ssh_options[:user], local, remotel, :ssh => { :keys => ssh_options[:key] })
+      when :downloadr
+        Net::SCP.download!(host, ssh_options[:user], remote, local, :ssh => { :keys => ssh_options[:key] })
       end
     end
 

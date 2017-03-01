@@ -269,18 +269,33 @@ module Vnspec
       end
 
       def able_to_send_udp?(vm, port)
-        ssh_on_guest("nc -zu #{vm.ipv4_address} #{port}")
-        vm.ssh_on_guest("cat #{UDP_OUTPUT_DIR}/#{port}")[:stdout] == "XXXXX"
+        case config[:release_version]
+        when "el7"
+          ssh_on_guest("echo | nc -u -w1  #{vm.ipv4_address} #{port}")
+          vm.ssh_on_guest("cat #{UDP_OUTPUT_DIR}/#{port}_passed")[:exit_code] == 0
+        when "el6",nil
+          ssh_on_guest("nc -zu #{vm.ipv4_address} #{port}")
+          vm.ssh_on_guest("cat #{UDP_OUTPUT_DIR}/#{port}")[:stdout] == "XXXXX"
+        end
       end
 
       def able_to_send_tcp?(vm, port)
-        ssh_on_guest("nc -zw 3 #{vm.ipv4_address} #{port}")[:exit_code] == 0
+        case config[:release_version]
+        when "el7"
+          ssh_on_guest("echo | nc -w1 #{vm.ipv4_address} #{port}")[:exit_code] == 0
+        when "el6",nil
+          ssh_on_guest("nc -zw 3 #{vm.ipv4_address} #{port}")[:exit_code] == 0
+        end
       end
 
       # TODO: Move these to a separate module.
       def udp_listen(port)
-        cmd = "nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!" %
-          [port, "#{UDP_OUTPUT_DIR}/#{port}"]
+        cmd = case config[:release_version]
+              when "el7"
+                "nohup nc -c \"touch #{UDP_OUTPUT_DIR}/#{port}_passed\" -lu %s > %s 2> /dev/null < /dev/null & echo $!"
+              when "el6",nil
+                "nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!"
+              end % [port,"#{UDP_OUTPUT_DIR}/#{port}"]
 
         pid = ssh_on_guest(cmd)[:stdout].chomp
         @open_udp_ports[port] = pid
@@ -289,7 +304,7 @@ module Vnspec
       def udp_close(port)
         cmds = [
           "kill #{@open_udp_ports.delete(port)}",
-          "rm -f #{UDP_OUTPUT_DIR}/#{port}"
+          "rm -f #{UDP_OUTPUT_DIR}/#{port}*"
         ]
 
         ssh_on_guest(cmds.join(";"))

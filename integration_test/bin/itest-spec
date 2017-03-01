@@ -1,2 +1,3 @@
 #!/bin/bash
+RELEASE_VERSION="${RELEASE_VERSION:-el6}"
 VNSPEC_ENV=itest $(dirname ${BASH_SOURCE[0]})/vnspec $*

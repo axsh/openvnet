@@ -1,0 +1,3 @@
+# OpenVNet common variables
+VNET_ROOT=/opt/axsh/openvnet
+LOG_DIRECTORY=/var/log/openvnet/
