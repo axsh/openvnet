@@ -4,8 +4,6 @@ module Vnet::Core::Filters
 
   class Static < Base2
 
-    BASE_PRIORITY = 20
-
     def initialize(params)
       super
       @statics = {}
@@ -15,30 +13,15 @@ module Vnet::Core::Filters
       'filter/static'
     end
 
-    def pretty_static(sf)
-      "filter_id:#{sf[:static_id]} ipv4_address:#{sf[:ipv4_address]}"
-    end
-
     def install
       super
 
       flows = []
 
       @statics.each { |id, filter|
+        debug log_format_h('installing filter', filter[:match])
 
-        match = filter[:match]
-        action = filter[:action]
-        debug log_format('installing filter for ' + pretty_static(match))
-
-        rules(match, filter[:protocol]).each { |ingress_rule, egress_rule|
-          flows_for_static_ingress_filtering(flows, ingress_rule, action) { |base|
-            base + priority(match[:ipv4_src_prefix], match[:port_src])
-          }
-
-          flows_for_static_egress_filtering(flows, egress_rule, action) { |base|
-            base + priority(match[:ipv4_dst_prefix], match[:port_dst])
-          }
-        }
+        flows_for_static(flows, filter[:protocol], filter[:match], filter[:action])
       }
 
       @dp_info.add_flows(flows)
@@ -46,65 +29,49 @@ module Vnet::Core::Filters
 
     def added_static(params)
       static_id = get_param_id(params, :static_id)
-      ipv4_src_prefix = get_param_int(params, :ipv4_src_prefix)
-      ipv4_dst_prefix = get_param_int(params, :ipv4_dst_prefix)
-      port_src = get_param_int(params, :port_src, false)
-      port_dst = get_param_int(params, :port_dst, false)
-
-      protocol = get_param_string(params, :protocol)
-      action = get_param(params, :action)
-
-      filter = {
-        static_id: static_id,
-        ipv4_src_address: get_param_ipv4_address(params, :ipv4_src_address),
-        ipv4_dst_address: get_param_ipv4_address(params, :ipv4_dst_address),
-        ipv4_src_prefix: ipv4_src_prefix,
-        ipv4_dst_prefix: ipv4_dst_prefix,
-        port_src: port_src,
-        port_dst: port_dst
-      }
 
       @statics[static_id] = {
-        :match => filter,
-        :protocol => protocol,
-        :action => action
+        match: {
+          static_id: static_id,
+          ipv4_src_address: get_param_ipv4_address(params, :ipv4_src_address),
+          ipv4_dst_address: get_param_ipv4_address(params, :ipv4_dst_address),
+          ipv4_src_prefix: get_param_int(params, :ipv4_src_prefix),
+          ipv4_dst_prefix: get_param_int(params, :ipv4_dst_prefix),
+          port_src: get_param_int(params, :port_src, false),
+          port_dst: get_param_int(params, :port_dst, false)
+        },
+
+        # TODO: Replace with symbol lookup.
+        protocol: get_param_string(params, :protocol),
+        action: get_param_string(params, :action)
+      }.tap { |static|
+        next if !installed?
+
+        flows = []
+        flows_for_static(flows, static[:protocol], static[:match], static[:action])
+
+        @dp_info.add_flows(flows)
       }
-
-      return if !installed?
-
-      flows = []
-      rules(filter, protocol).each { |egress_rule, ingress_rule|
-        flows_for_static_ingress_filtering(flows, ingress_rule, action) { |base|
-          base + priority(ipv4_src_prefix, port_src)
-        }
-
-        flows_for_static_egress_filtering(flows, egress_rule, action) { |base|
-          base + priority(ipv4_dst_prefix, port_dst)
-        }
-      }
-
-      @dp_info.add_flows(flows)
     end
 
     def removed_static(params)
-      static = @statics.delete(get_param_id(params, :static_id))
+      @statics.delete(get_param_id(params, :static_id)).tap { |static|
+        next if !installed? || static.nil?
 
-      return if !installed? || static.nil?
+        debug log_format_h('removing filter', static[:match])
 
-      match = static[:match]
+        # TODO: Need to include priority when deleting.
+        rules(static[:match], static[:protocol]).each { |egress_rule, ingress_rule|
+          @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
+            cookie: self.cookie,
+            cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+            match: ingress_rule)
 
-      debug log_format('removing filter for ' + pretty_static(match))
-
-      rules(match, static[:protocol]).each { |egress_rule, ingress_rule|
-        @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
-                           cookie: self.cookie,
-                           cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
-                           match: ingress_rule)
-
-        @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_FILTER,
-                           cookie: self.cookie,
-                           cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
-                           match: egress_rule)
+          @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_FILTER,
+            cookie: self.cookie,
+            cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+            match: egress_rule)
+        }
       }
     end
 
@@ -113,10 +80,6 @@ module Vnet::Core::Filters
     #
 
     private
-
-    def priority(prefix, port)
-      (prefix << 1) + ((port.nil? || port == 0) ? 0 : 2)
-    end
 
     def rules(filter, protocol)
       ipv4_address = filter[:ipv4_dst_address]
@@ -211,7 +174,6 @@ module Vnet::Core::Filters
       ]
     end
 
-
     def rule_for_arp(ipv4_address, prefix)
       [
         [{ eth_type: ETH_TYPE_ARP,
@@ -238,24 +200,27 @@ module Vnet::Core::Filters
       ]
     end
 
-    def flows_for_static_ingress_filtering(flows = [], match, action)
-      flows << flow_create(
-        table: TABLE_INTERFACE_INGRESS_FILTER,
-        goto_table: action == 'pass' ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil,
-        priority: yield(BASE_PRIORITY),
-        match_interface: @interface_id,
-        match: match
-      )
+    def priority_for_static(prefix, port)
+      20 + (prefix << 1) + ((port.nil? || port == 0) ? 0 : 1)
     end
 
-    def flows_for_static_egress_filtering(flows = [], match, action)
-      flows << flow_create(
-        table: TABLE_INTERFACE_EGRESS_FILTER,
-        goto_table: action == 'pass' ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
-        priority: yield(BASE_PRIORITY),
-        match_interface: @interface_id,
-        match: match
-      )
+    def flows_for_static(flows, protocol, filter, action)
+      rules(filter, protocol).each { |egress_rule, ingress_rule|
+        flows << flow_create(
+          table: TABLE_INTERFACE_INGRESS_FILTER,
+          goto_table: action == 'pass' ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil,
+          priority: priority_for_static(filter[:ipv4_dst_prefix], filter[:port_dst]),
+          match_interface: @interface_id,
+          match: ingress_rule)
+
+        flows << flow_create(
+          table: TABLE_INTERFACE_EGRESS_FILTER,
+          goto_table: action == 'pass' ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
+          priority: priority_for_static(filter[:ipv4_dst_prefix], filter[:port_dst]),
+          match_interface: @interface_id,
+          match: egress_rule)
+      }
     end
+
   end
 end
