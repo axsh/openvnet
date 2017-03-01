@@ -129,70 +129,70 @@ filter_static:
 
   - filter_uuid: fil-test1
     protocol: "tcp"
-    passthrough: true
+    action: "drop"
     ipv4_address: "0.0.0.0/0"
     port_number: 0
   - filter_uuid: fil-test1
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 0
-    passthrough: true
+    action: "drop"
   - filter_uuid: fil-test1
     protocol: "icmp"
     ipv4_address: "0.0.0.0/0"
-    passthrough: true
+    action: "drop"
   - filter_uuid : fil-test1
     protocol: "arp"
-    passthrough: true
+    action: "drop"
 
   - filter_uuid: fil-test3
     protocol: "tcp"
     ipv4_address: "10.101.0.10"
     port_number: 0
-    passthrough: true
+    action: "drop"
   - filter_uuid: fil-test3
     protocol: "udp"
     ipv4_address: "10.101.0.13"
     port_number: 1344
-    passthrough: true
+    action: "drop"
   - filter_uuid: fil-test3
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 68
-    passthrough: true
+    action: "drop"
   - filter_uuid: fil-test3
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 67
-    passthrough: true
+    action: "drop"
   - filter_uuid: fil-test3
     protocol: "icmp"
     ipv4_address: "10.101.0.10"
-    passthrough: true
+    action: "drop"
   - filter_uuid : fil-test3
     protocol: "arp"
-    passthrough: true
+    action: "drop"
 
 
   - filter_uuid: fil-test4
     protocol: "all"
     ipv4_address: "10.101.0.10"
-    passthrough: true
+    action: "drop"
   - filter_uuid: fil-test4
     protocol: "udp"
     port_number: 1344
     ipv4_address: "10.101.0.12"
-    passthrough: true
+    action: "drop"
   - filter_uuid : fil-test4
     protocol: "arp"
-    passthrough: true
+    action: "drop"
   - filter_uuid: fil-test4
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 68
-    passthrough: true
+    action: "drop"
   - filter_uuid: fil-test4
     protocol: "udp"
     ipv4_address: "0.0.0.0/0"
     port_number: 67
-    passthrough: true
+    action: "drop"
