@@ -1,5 +1,24 @@
 #!/bin/bash
 
+#Upload build cache if found.
+
+if [[ -n "${BUILD_CACHE_DIR}" ]]; then
+  if [[ -n "${build_cache_base}" ]]; then
+    CACHE_VOLUME="${CACHE_VOLUME}/${build_cache_base}"
+  fi
+
+  for f in $(ls "${CACHE_VOLUME}"); do
+    cached_commit=$(basename $f)
+    cached_commit="${cached_commit%.*}"
+
+    if git rev-list "${COMMIT_ID}" | grep "${cached_commit}" > /dev/null; then
+       echo "FOUND build cache ref ID: ${cached_commit}"
+       tar -xf "${CACHE_VOLUME}/$f" -C "/"
+       break
+    fi
+  done
+fi
+
 set -xe
 
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
@@ -8,9 +27,12 @@ BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
 OPENVNET_SRC_ROOT_DIR="$( cd "${current_dir}/../.."; pwd )"
 WORK_DIR="${WORK_DIR:-/tmp/vnet-rpmbuild}"
-REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
+REPO_BASE_DIR="${REPO_BASE_DIR:-/repos}"
 POSSIBLE_ARCHS=( 'x86_64' 'i386' 'noarch' )
 RHEL_RELVER="${RHEL_RELVER:-$(rpm --eval '%{rhel}')}"
+
+CACHE_VOLUME="/cache"
+REPOS_VOLUME="/repos"
 
 function yum_check_install() {
   for i in $*; do
@@ -102,10 +124,10 @@ mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
 #
 export PATH="/opt/axsh/openvnet/ruby/bin:$PATH"
 
-repo_rel_path="packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
+repo_rel_path="${BRANCH}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 if [ "$BUILD_TYPE" == "stable" ]; then
   # If we're building a stable version we must make sure we checkout the correct version of the code.
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
+  repo_dir="${REPO_BASE_DIR}/${BRANCH}/packages/rhel/${RHEL_RELVER}/vnet/${RPM_VERSION}"
 
   git checkout "${RELEASE_SUFFIX}"
   echo "Building the following commit for stable version ${RELEASE_SUFFIX}"
@@ -117,7 +139,7 @@ else
   timestamp=$(date --date="$(git show -s --format=%cd --date=iso HEAD)" +%Y%m%d%H%M%S)
   RELEASE_SUFFIX="${timestamp}git$(git rev-parse --short HEAD)"
 
-  repo_dir="${REPO_BASE_DIR}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
+  repo_dir="${REPO_BASE_DIR}/${BRANCH}/packages/rhel/${RHEL_RELVER}/vnet/${RELEASE_SUFFIX}"
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" ${STRIP_VENDOR:+--define "strip_vendor ${STRIP_VENDOR}"} --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
@@ -149,5 +171,34 @@ if [ -L "${current_symlink}" ]; then
   sudo rm "${current_symlink}"
 fi
 sudo ln -s "./$(basename ${repo_dir})" "${current_symlink}"
+
+
+TMPDIR=$(mktemp -d)
+
+
+if [[ -n "${BUILD_CACHE_DIR}" ]]; then
+  if [[ ! -w /cache ]]; then
+      echo "ERROR: CACHE_VOLUME '${BUILD_CACHE_DIR}' is not writable." >&2
+      exit 1
+  fi
+
+  if [[ ! -d "${CACHE_VOLUME}" ]]; then
+      mkdir -p "${CACHE_VOLUME}"
+  fi
+
+  tar cO --directory=/ --files-from=deployment/docker/build-cache.list > "${CACHE_VOLUME}/${COMMIT_ID}.tar"
+
+  # Clear build cache files which no longer referenced from Git ref names (branch, tags)
+  git show-ref --head --dereference | awk '{print $1}' > "${TMPDIR}/sha.a"
+  for i in $(git reflog show | head -10 | awk '{print $2}'); do
+      git rev-parse "$i"
+  done >> "${TMPDIR}/sha.a"
+  (cd "/cache/${cache_base}"; ls *.tar) | cut -d '.' -f1 > "${TMPDIR}/sha.b"
+  # Set operation: B - A
+  join -v 2 <(sort -u ${TMPDIR}/sha.a) <(sort -u ${TMPDIR}/sha.b) | while read i; do
+      echo "Removing build cache: ${CACHE_VOLUME}/${i}.tar"
+      rm -f "${cache_base}/${i}.tar" || :
+  done
+fi
 
 mysqladmin -uroot shutdown
