@@ -150,12 +150,12 @@ describe "/filters" do
         describe "DELETE" do
           let(:db_fields) {
             {filter_id: filter.id,
-            ipv4_src_address: 3232261270,
-            ipv4_src_prefix: 32,
-            ipv4_dst_address: 0,
-            ipv4_dst_prefix: 0,
-            port_src: 24056,
+            ipv4_dst_address: 3232261270,
+            ipv4_dst_prefix: 32,
+            ipv4_src_address: 0,
+            ipv4_src_prefix: 0,
             port_dst: 24056,
+            port_src: 0,
             protocol: protocol,
             passthrough: true}
           }
@@ -181,10 +181,10 @@ describe "/filters" do
       describe "DELETE" do
         let(:db_fields) {
           {filter_id: filter.id,
-          ipv4_src_address: 3232261270,
-          ipv4_src_prefix: 32,
-          ipv4_dst_address: 0,
-          ipv4_dst_prefix: 0,
+          ipv4_dst_address: 3232261270,
+          ipv4_dst_prefix: 32,
+          ipv4_src_address: 0,
+          ipv4_src_prefix: 0,
           port_src: nil,
           port_dst: nil,
           protocol: "icmp",

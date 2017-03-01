@@ -6,8 +6,8 @@ module Vnet::Endpoints::V10::Responses
       argument_type_check(object,Vnet::ModelWrappers::FilterStatic)
 
       res = {
-        ipv4_address: object.batch.ipv4_src_address_s.commit,
-        ipv4_prefix: object.ipv4_src_prefix,
+        ipv4_address: object.batch.ipv4_dst_address_s.commit,
+        ipv4_prefix: object.ipv4_dst_prefix,
         port_number: object.port_dst,
         protocol: object.protocol,
         passthrough: object.passthrough

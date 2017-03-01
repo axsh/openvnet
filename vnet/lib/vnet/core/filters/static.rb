@@ -40,8 +40,8 @@ module Vnet::Core::Filters
           }
         }
       }
-      @dp_info.add_flows(flows)
 
+      @dp_info.add_flows(flows)
     end
 
     def added_static(params)
@@ -73,7 +73,7 @@ module Vnet::Core::Filters
       return if !installed?
 
       flows = []
-      rules(filter, protocol).each { |ingress_rule, egress_rule|
+      rules(filter, protocol).each { |egress_rule, ingress_rule|
         flows_for_static_ingress_filtering(flows, ingress_rule, passthrough) { |base|
           base + priority(ipv4_src_prefix, port_src, passthrough)
         }
@@ -82,8 +82,8 @@ module Vnet::Core::Filters
           base + priority(ipv4_dst_prefix, port_dst, passthrough)
         }
       }
-      @dp_info.add_flows(flows)
 
+      @dp_info.add_flows(flows)
     end
 
     def removed_static(params)
@@ -95,7 +95,7 @@ module Vnet::Core::Filters
 
       debug log_format('removing filter for ' + pretty_static(match))
 
-      rules(match, static[:protocol]).each { |ingress_rule, egress_rule|
+      rules(match, static[:protocol]).each { |egress_rule, ingress_rule|
         @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
                            cookie: self.cookie,
                            cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
@@ -119,19 +119,16 @@ module Vnet::Core::Filters
     end
 
     def rules(filter, protocol)
-
-      # Using src as the main address until src/dst functionallity is fully implemented
-
-      ipv4_address = filter[:ipv4_src_address]
-      port = filter[:port_src]
-      prefix = filter[:ipv4_src_prefix]
+      ipv4_address = filter[:ipv4_dst_address]
+      port = filter[:port_dst]
+      prefix = filter[:ipv4_dst_prefix]
 
       case protocol
-      when "tcp"  then rule_for_tcp(ipv4_address, port, prefix)
-      when "udp"  then rule_for_udp(ipv4_address, port, prefix)
-      when "arp"  then rule_for_arp(ipv4_address, prefix)
-      when "icmp" then rule_for_icmp(ipv4_address, prefix)
-      when "all"  then rule_for_all(ipv4_address, prefix)
+      when 'tcp'  then rule_for_tcp(ipv4_address, port, prefix)
+      when 'udp'  then rule_for_udp(ipv4_address, port, prefix)
+      when 'arp'  then rule_for_arp(ipv4_address, prefix)
+      when 'icmp' then rule_for_icmp(ipv4_address, prefix)
+      when 'all'  then rule_for_all(ipv4_address, prefix)
       end
     end
 
@@ -155,7 +152,7 @@ module Vnet::Core::Filters
              ipv4_src: ipv4_address,
              ipv4_src_mask: IPV4_BROADCAST << (32 - prefix),
              ip_proto: IPV4_PROTOCOL_TCP,
-             tcp_dst: port
+             tcp_src: port
            },
            { eth_type: ETH_TYPE_IPV4,
              ipv4_dst: ipv4_address,
@@ -187,7 +184,7 @@ module Vnet::Core::Filters
              ipv4_src: ipv4_address,
              ipv4_src_mask: IPV4_BROADCAST << (32 - prefix),
              ip_proto: IPV4_PROTOCOL_UDP,
-             udp_dst: port
+             udp_src: port
            },
            { eth_type: ETH_TYPE_IPV4,
              ipv4_dst: ipv4_address,

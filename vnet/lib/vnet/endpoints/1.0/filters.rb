@@ -14,7 +14,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   param_uuid M::Interface, :interface_uuid, required: true
   param :mode, :String, in: CF::MODES, required: true
   post do
-    uuid_to_id(M::Interface, "interface_uuid", "interface_id")
+    uuid_to_id(M::Interface, 'interface_uuid', 'interface_id')
 
     post_new :Filter
   end
@@ -33,37 +33,46 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
   put_post_shared_params
   put '/:uuid' do
-    uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
+    uuid_to_id(M::Interface, 'interface_uuid', 'interface_id') if params['interface_uuid']
 
     update_by_uuid2(:Filter)
   end
 
   def self.static_shared_params
-    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
-    param :port_number, :Integer, in: 0..65536
     param :protocol, :String, in: CFS::PROTOCOLS, required: true
     param :passthrough, :Boolean, required: true
+    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
+    param :port_number, :Integer, in: 0..65536
   end
 
   def params_to_db_fields(filter, params)
-    case params["protocol"]
-    when "tcp", "udp"
-      raise E::MissingArgument, 'port_number' if params["port_number"].nil?
-      raise E::MissingArgument, 'ipv4_address' if params["ipv4_address"].nil?
+    case params['protocol']
+    when 'tcp', 'udp'
+      raise E::MissingArgument, 'port_number' if params['port_number'].nil?
+      raise E::MissingArgument, 'ipv4_address' if params['ipv4_address'].nil?
 
-      ipv4_src_address = params["ipv4_address"].to_i
-      ipv4_src_prefix = params["ipv4_address"].prefix.to_i
-      port_number = params["port_number"]
-    when "icmp"
-      raise E::MissingArgument, 'ipv4_address' if params["ipv4_address"].nil?
+      # TODO: Create a helper method here, or in node_api.
+      ipv4_dst_address = params['ipv4_address'].to_i
+      ipv4_dst_prefix = params['ipv4_address'].prefix.to_i
 
-      ipv4_src_address = params["ipv4_address"].to_i
-      ipv4_src_prefix = params["ipv4_address"].prefix.to_i
-      port_number = nil
-    when "arp", "all"
-      ipv4_src_address = 0
-      ipv4_src_prefix = 0
-      port_number = nil
+      port_dst = params['port_number']
+      port_src = 0
+
+    when 'icmp'
+      raise E::MissingArgument, 'ipv4_address' if params['ipv4_address'].nil?
+
+      ipv4_dst_address = params['ipv4_address'].to_i
+      ipv4_dst_prefix = params['ipv4_address'].prefix.to_i
+
+      port_dst = nil
+      port_src = nil
+
+    when 'arp', 'all'
+      ipv4_dst_address = 0
+      ipv4_dst_prefix = 0
+
+      port_dst = nil
+      port_src = nil
     end
 
     if filter.mode != CF::MODE_STATIC
@@ -72,14 +81,14 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
     {
       filter_id: filter.id,
-      ipv4_src_address: ipv4_src_address,
-      ipv4_src_prefix: ipv4_src_prefix,
-      ipv4_dst_address: 0,
-      ipv4_dst_prefix: 0,
-      port_src: port_number,
-      port_dst: port_number,
-      protocol: params["protocol"],
-      passthrough: params["passthrough"]
+      protocol: params['protocol'],
+      passthrough: params['passthrough'],
+      ipv4_dst_address: ipv4_dst_address,
+      ipv4_dst_prefix: ipv4_dst_prefix,
+      ipv4_src_address: 0,
+      ipv4_src_prefix: 0,
+      port_dst: port_dst,
+      port_src: port_src
     }
   end
 

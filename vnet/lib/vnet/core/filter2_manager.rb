@@ -109,10 +109,9 @@ module Vnet::Core
     # load static filter on queue 'item.id'.
     def load_static(item, item_map)
       item_map.batch.filter_statics.commit.each { |filter|
-        model_hash = filter.to_hash.merge(id: item_map.id,
-                                          static_id: filter.id)
-
-        item.added_static(model_hash)
+        filter.to_hash.merge(id: item_map.id, static_id: filter.id).tap { |model_hash|
+          item.added_static(model_hash)
+        }
       }
     end
 

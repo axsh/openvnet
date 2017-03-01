@@ -34,22 +34,27 @@ def egress_tables(passthrough)
   }
 end
 
-def protocol_type(protocol, port_number)
+def protocol_type_egress(protocol, port_number)
   case protocol
-    when "tcp" then
-      {
-        ip_proto: IPV4_PROTOCOL_TCP,
-        tcp_dst: port_number
-      }
-    when "udp" then
-      {
-        ip_proto: IPV4_PROTOCOL_UDP,
-        udp_dst: port_number
-      }
-    when "icmp" then
-      {
-        ip_proto: IPV4_PROTOCOL_ICMP
-      }
+    when 'tcp' then
+      { ip_proto: IPV4_PROTOCOL_TCP, tcp_src: port_number }
+    when 'udp' then
+      { ip_proto: IPV4_PROTOCOL_UDP, udp_src: port_number }
+    when 'icmp' then
+      { ip_proto: IPV4_PROTOCOL_ICMP }
+    else
+      return;
+    end
+end
+
+def protocol_type_ingress(protocol, port_number)
+  case protocol
+    when 'tcp' then
+      { ip_proto: IPV4_PROTOCOL_TCP, tcp_dst: port_number }
+    when 'udp' then
+      { ip_proto: IPV4_PROTOCOL_UDP, udp_dst: port_number }
+    when 'icmp' then
+      { ip_proto: IPV4_PROTOCOL_ICMP }
     else
       return;
     end
@@ -72,14 +77,13 @@ def arp_match_dst(ipv4_address, prefix)
 end
 
 def rule(traffic_direction, protocol, ipv4_address, prefix, port_number = nil)
-
   case traffic_direction
-  when "ingress" then
-    return arp_match_src(ipv4_address, prefix) if protocol == "arp"
-    match_ipv4_subnet_src(ipv4_address, prefix).merge(protocol_type(protocol, port_number))
-  when "egress" then
-    return arp_match_dst(ipv4_address, prefix) if protocol == "arp"
-    match_ipv4_subnet_dst(ipv4_address, prefix).merge(protocol_type(protocol, port_number))
+  when 'egress' then
+    return arp_match_src(ipv4_address, prefix) if protocol == 'arp'
+    match_ipv4_subnet_src(ipv4_address, prefix).merge(protocol_type_egress(protocol, port_number))
+  when 'ingress' then
+    return arp_match_dst(ipv4_address, prefix) if protocol == 'arp'
+    match_ipv4_subnet_dst(ipv4_address, prefix).merge(protocol_type_ingress(protocol, port_number))
   else
     return
   end
@@ -94,21 +98,21 @@ def static_hash(static)
     [
       filter.to_hash,
       ingress_tables(static.passthrough),
-      { priority: 20 + static_priority(static.ipv4_src_prefix,
+      { priority: 20 + static_priority(static.ipv4_dst_prefix,
                                        static.passthrough,
-                                       static.port_src) },
-      { match: rule("ingress",
+                                       static.port_dst) },
+      { match: rule('ingress',
                     static.protocol,
-                    static.ipv4_src_address,
-                    static.ipv4_src_prefix,
-                    static.port_src) }
+                    static.ipv4_dst_address,
+                    static.ipv4_dst_prefix,
+                    static.port_dst) }
     ].inject(&:merge) => [
       filter.to_hash,
       egress_tables(static.passthrough),
       { priority: 20 + static_priority(static.ipv4_dst_prefix,
                                        static.passthrough,
                                        static.port_dst) },
-      { match: rule("egress",
+      { match: rule('egress',
                     static.protocol,
                     static.ipv4_dst_address,
                     static.ipv4_dst_prefix,

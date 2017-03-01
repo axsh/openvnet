@@ -6,18 +6,16 @@ module Vnet::Core::Filters
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-#    attr_accessor :dp_info
     attr_reader :interface_id
 
     def initialize(params)
       super
 
-      map = params[:map]
-
-      @interface_id = map.interface_id
-      @egress_passthrough = map.egress_passthrough
-      @ingress_passthrough = map.ingress_passthrough
-
+      get_param_map(params).tap { |map|
+        @interface_id = get_param_id(map, :interface_id)
+        @egress_passthrough = get_param_bool(map, :egress_passthrough)
+        @ingress_passthrough = get_param_bool(map, :ingress_passthrough)
+      }
     end
 
     def pretty_properties
