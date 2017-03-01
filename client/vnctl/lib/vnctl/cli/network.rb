@@ -8,12 +8,10 @@ module Vnctl::Cli
     add_shared_options {
       option :mode, :type => :string, :desc => 'Can be either physical or virtual.'
       option :network_mode, :type => :string, :desc => 'Can be either physical or virtual.'
-      option :segment_uuid, :type => :string, :desc => 'The uuid of the segment this network is in.'
       option :ipv4_network, :type => :string, :desc => 'IPv4 network address.'
       option :ipv4_prefix, :type => :numeric, :desc => 'IPv4 mask size (1 < prefix < 32).'
-    }
 
-    add_shared_options {
+      option :segment_uuid, :type => :string, :desc => 'The uuid of the segment this network is in.'
       option :topology_uuid, :type => :string, :desc => "The uuid of the topology this network is in."
     }
 
