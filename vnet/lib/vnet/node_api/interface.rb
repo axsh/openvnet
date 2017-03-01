@@ -5,10 +5,6 @@ module Vnet::NodeApi
 
     class << self
 
-      #
-      # Internal methods:
-      #
-
       private
 
       def create_with_transaction(options)

@@ -5,6 +5,10 @@ module Vnctl::Cli
     namespace :route_links
     api_suffix "route_links"
 
+    add_shared_options {
+      option :topology_uuid, :type => :string, :desc => "The uuid of the topology this network is in."
+    }
+
     add_modify_shared_options {
       option :mac_address, :type => :string, :required => false,
        :desc => "The mac address for this route link."

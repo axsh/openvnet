@@ -36,10 +36,7 @@ module Vnet::NodeApi
       end
       
       def update_model_deleted()
-
 	#TODO: Update deleted items
-
-
       end
 
       def destroy(filter, options = {})
@@ -99,6 +96,18 @@ module Vnet::NodeApi
       #
       # Internal methods:
       #
+
+      def plugin(plugin, *args, &block)
+        extend(plugin::ClassMethods)
+        include(plugin::InstanceMethods)
+      end
+
+      def valid_update_fields(fields)
+        return if self == Base
+
+        self.plugin BaseValidateUpdateFields
+        self.set_valid_update_fields(fields)
+      end
 
       private
 
@@ -165,7 +174,6 @@ module Vnet::NodeApi
           }
         }
 
-        # return if model.update(changes).nil?
         return [model, {}] if model.update(changes).nil?
 
         old_values.keep_if { |key, old_value|
@@ -206,24 +214,6 @@ module Vnet::NodeApi
         else
           filter
         end
-      end
-
-      def inherited(klass)
-        super
-        klass.class_eval {
-
-          # Install mode module as Sequel plugin.
-          #
-          # class Foo < Base
-          #   valid_update_fields [:foo, :bar]
-          # end
-          def self.valid_update_fields(fields)
-            return if self == Base
-
-            self.plugin BaseValidateUpdateFields
-            self.set_valid_update_fields(fields)
-          end
-        }
       end
 
     end

@@ -15,7 +15,7 @@ describe 'simple_seg', :vms_disable_dhcp => true do
     # Since no vm's do dhcp requests there is nothing to ensure that
     # the vna's have properly loaded the segments and other
     # information.
-    sleep 20
+    sleep 30
   end
 
   include_examples 'simple examples'

@@ -24,24 +24,25 @@ module Vnet::NodeApi
         to_hash(self.__send__(method_name, *args, &block))
       end
 
+      # TODO: Make 'execute_batch' only work for sequel model calls.
       def execute_batch(*args)
         methods = args.dup
         options = methods.last.is_a?(Hash) ? methods.pop : {}
-        transaction do
-          to_hash(methods.inject(self) do |klass, method|
+
+        to_hash(methods.inject(self) do |klass, method|
             name, *args = method
             klass.__send__(name, *args)
           end, options)
-        end
       end
 
+      # TODO: Look into why calling node_api methods like 'destroy'
+      # goes through method_missing.
       def method_missing(method_name, *args, &block)
         if model_class.respond_to?(method_name)
-          define_singleton_method(method_name) do |*args|
-            transaction do
-              model_class.__send__(method_name, *args, &block)
-            end
-          end
+          define_singleton_method(method_name) { |*args|
+            model_class.__send__(method_name, *args, &block)
+          }
+
           self.__send__(method_name, *args, &block)
         else
           super

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+vnctl_path="/opt/axsh/openvnet/client/vnctl/bin/vnctl"
+
+[ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby
+
+set -e
+$vnctl_path "$@"
