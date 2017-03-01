@@ -3,6 +3,7 @@
 
 set -ex -o pipefail
 
+CID=
 SCL_RUBY="rh-ruby23"
 BUILD_ENV_PATH=${1:?"ERROR: env file is not given."}
 
@@ -59,7 +60,6 @@ docker build \
        -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
 
 
-CID=$(docker run --privileged -v "/var/www/repos:/repos" -v "${BUILD_CACHE_DIR}:/cache" ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
-docker attach $CID
+CID=$(docker run --privileged -v "${REPO_BASE_DIR}:/repos" -v "${BUILD_CACHE_DIR}:/cache" ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} "${img_tag}")
 
 tar -cO --directory="${REPO_BASE_DIR}" "${BRANCH}" | $SSH_REMOTE tar -xf - -C "${REPO_BASE_DIR}"
