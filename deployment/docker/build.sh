@@ -60,6 +60,7 @@ docker build \
        -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
 
 
-CID=$(docker run --privileged -v "${REPO_BASE_DIR}:/repos" -v "${BUILD_CACHE_DIR}:/cache" ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} "${img_tag}")
+CID=$(docker run -v "${REPO_BASE_DIR}:/repos" -v "${BUILD_CACHE_DIR}:/cache" ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
+docker attach $CID
 
 tar -cO --directory="${REPO_BASE_DIR}" "${BRANCH}" | $SSH_REMOTE tar -xf - -C "${REPO_BASE_DIR}"
