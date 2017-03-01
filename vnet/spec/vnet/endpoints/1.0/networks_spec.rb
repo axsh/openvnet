@@ -22,18 +22,28 @@ describe '/networks' do
   include_examples 'DELETE /:uuid'
 
   describe 'POST /' do
+    let!(:topology) { Fabricate(:topology) { uuid 'topo-test' }  }
+
     accepted_params = {
       uuid: 'nw-test',
       display_name: 'our test network',
       ipv4_network: '192.168.2.0',
       ipv4_prefix: 24,
-      mode: 'virtual',
       domain_name: 'vdc.test.domain',
+      mode: 'virtual',
+      topology_uuid: 'topo-test'
     }
+    expected_response = accepted_params.dup.tap { |map|
+      map.delete(:topology_uuid)
+    }
+    
     required_params = [:ipv4_network]
     uuid_params = [:uuid]
 
-    include_examples 'POST /', accepted_params, required_params, uuid_params
+    include_examples 'POST /', accepted_params, required_params, uuid_params, expected_response, Proc.new { |model, last_response|
+      other_model = Vnet::Models::Topology[accepted_params[:topology_uuid]]
+      other_model && Vnet::Models::TopologyNetwork[network_id: model.id, topology_id: other_model.id]
+    }
   end
 
   describe 'PUT /:uuid' do

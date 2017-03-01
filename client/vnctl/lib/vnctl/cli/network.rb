@@ -13,6 +13,10 @@ module Vnctl::Cli
       option :ipv4_prefix, :type => :numeric, :desc => 'IPv4 mask size (1 < prefix < 32).'
     }
 
+    add_shared_options {
+      option :topology_uuid, :type => :string, :desc => "The uuid of the topology this network is in."
+    }
+
     add_modify_shared_options {
       option_display_name
       option :domain_name, :type => :string, :desc => 'DNS domain name.'
