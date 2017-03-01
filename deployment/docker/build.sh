@@ -47,4 +47,4 @@ docker build \
 CID=$(docker run --privileged -v "/var/www/repos:/repos" -v "${BUILD_CACHE_DIR}:/cache" ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
 docker attach $CID
 
-tar -cO --directory="${REPO_BASE_DIR}" "${BRANCH}") | $SSH_REMOTE tar -xf - -C "${REPO_BASE_DIR}"
+tar -cO --directory="${REPO_BASE_DIR}" "${BRANCH}" | $SSH_REMOTE tar -xf - -C "${REPO_BASE_DIR}"
