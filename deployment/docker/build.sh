@@ -6,6 +6,21 @@ set -ex -o pipefail
 SCL_RUBY="rh-ruby23"
 BUILD_ENV_PATH=${1:?"ERROR: env file is not given."}
 
+function docker_rm() {
+    if [[ -z "$CID" ]]; then
+        return 0
+    fi
+    if [[ -n "$LEAVE_CONTAINER" ]]; then
+        if [[ "${LEAVE_CONTAINER}" != "0" ]]; then
+            echo "Skip to clean container: ${CID}"
+            return 0
+        fi
+    fi
+    docker rm -f "$CID"
+}
+
+trap "docker_rm; rm -rf ${TMPDIR}" EXIT
+
 if [[ -n "${BUILD_ENV_PATH}" && ! -f "${BUILD_ENV_PATH}" ]]; then
   echo "ERROR: Can't find the file: ${BUILD_ENV_PATH}" >&2
   exit 1
