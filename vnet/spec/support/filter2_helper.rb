@@ -20,17 +20,17 @@ def deleted_flow(params)
   }
 end
 
-def ingress_tables(passthrough)
+def ingress_tables(pass)
    {
     table: TABLE_INTERFACE_INGRESS_FILTER,
-    goto_table: passthrough ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil
+    goto_table: pass ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil
    }
 end
 
-def egress_tables(passthrough)
+def egress_tables(pass)
   {
     table: TABLE_INTERFACE_EGRESS_FILTER,
-    goto_table: passthrough ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
+    goto_table: pass ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
   }
 end
 
@@ -89,18 +89,16 @@ def rule(traffic_direction, protocol, ipv4_address, prefix, port_number = nil)
   end
 end
 
-def static_priority(prefix, passthrough, port = nil)
-  (prefix << 1) + ((port.nil? || port == 0) ? 0 : 2) + (passthrough ? 1 : 0)
+def static_priority(prefix, port = nil)
+  (prefix << 1) + ((port.nil? || port == 0) ? 0 : 2)
 end
 
 def static_hash(static)
   {
     [
       filter.to_hash,
-      ingress_tables(static.passthrough),
-      { priority: 20 + static_priority(static.ipv4_dst_prefix,
-                                       static.passthrough,
-                                       static.port_dst) },
+      ingress_tables(static.action == 'pass'),
+      { priority: 20 + static_priority(static.ipv4_dst_prefix, static.port_dst) },
       { match: rule('ingress',
                     static.protocol,
                     static.ipv4_dst_address,
@@ -108,10 +106,8 @@ def static_hash(static)
                     static.port_dst) }
     ].inject(&:merge) => [
       filter.to_hash,
-      egress_tables(static.passthrough),
-      { priority: 20 + static_priority(static.ipv4_dst_prefix,
-                                       static.passthrough,
-                                       static.port_dst) },
+      egress_tables(static.action == 'pass'),
+      { priority: 20 + static_priority(static.ipv4_dst_prefix, static.port_dst) },
       { match: rule('egress',
                     static.protocol,
                     static.ipv4_dst_address,

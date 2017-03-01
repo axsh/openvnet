@@ -10,7 +10,7 @@ module Vnet::Endpoints::V10::Responses
         ipv4_prefix: object.ipv4_dst_prefix,
         port_number: object.port_dst,
         protocol: object.protocol,
-        passthrough: object.passthrough
+        action: object.action
       }
     end
   end

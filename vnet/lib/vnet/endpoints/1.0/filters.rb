@@ -40,59 +40,52 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
   def self.static_shared_params
     param :protocol, :String, in: CFS::PROTOCOLS, required: true
-    param :passthrough, :Boolean, required: true
     param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
     param :port_number, :Integer, in: 0..65536
   end
 
   def params_to_db_fields(filter, params)
+    result = {
+      filter_id: filter.id,
+      protocol: params['protocol'],
+      ipv4_src_address: 0,
+      ipv4_src_prefix: 0
+    }
+
     case params['protocol']
     when 'tcp', 'udp'
       raise E::MissingArgument, 'port_number' if params['port_number'].nil?
       raise E::MissingArgument, 'ipv4_address' if params['ipv4_address'].nil?
 
-      # TODO: Create a helper method here, or in node_api.
-      ipv4_dst_address = params['ipv4_address'].to_i
-      ipv4_dst_prefix = params['ipv4_address'].prefix.to_i
-
-      port_dst = params['port_number']
-      port_src = 0
+      result.merge!(ipv4_dst_address: params['ipv4_address'].to_i,
+                    ipv4_dst_prefix: params['ipv4_address'].prefix.to_i,
+                    port_dst: params['port_number'],
+                    port_src: 0)
 
     when 'icmp'
       raise E::MissingArgument, 'ipv4_address' if params['ipv4_address'].nil?
 
-      ipv4_dst_address = params['ipv4_address'].to_i
-      ipv4_dst_prefix = params['ipv4_address'].prefix.to_i
-
-      port_dst = nil
-      port_src = nil
+      result.merge!(ipv4_dst_address: params['ipv4_address'].to_i,
+                    ipv4_dst_prefix: params['ipv4_address'].prefix.to_i)
 
     when 'arp', 'all'
-      ipv4_dst_address = 0
-      ipv4_dst_prefix = 0
+      result.merge!(ipv4_dst_address: 0,
+                    ipv4_dst_prefix: 0)
+    end
 
-      port_dst = nil
-      port_src = nil
+    if params['action']
+      result.merge!(action: params['action'])
     end
 
     if filter.mode != CF::MODE_STATIC
       raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
     end
 
-    {
-      filter_id: filter.id,
-      protocol: params['protocol'],
-      passthrough: params['passthrough'],
-      ipv4_dst_address: ipv4_dst_address,
-      ipv4_dst_prefix: ipv4_dst_prefix,
-      ipv4_src_address: 0,
-      ipv4_src_prefix: 0,
-      port_dst: port_dst,
-      port_src: port_src
-    }
+    result
   end
 
   static_shared_params
+  param :action, :String, required: true
   post '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
     db_fields = params_to_db_fields(filter, params)
