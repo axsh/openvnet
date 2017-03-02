@@ -136,11 +136,11 @@ describe '/filters' do
     ['tcp', 'udp'].each { |protocol|
       describe protocol do
         accepted_params = {
-          ipv4_address: '192.168.100.150',
-          port_number: 24056,
-          protocol: protocol          
+          protocol: protocol,          
+          dst_address: '192.168.100.150',
+          dst_port: 24056
         }
-        required_params = [:ipv4_address, :protocol, :port_number]
+        required_params = [:protocol]
         uuid_params = []
 
         describe 'POST' do
@@ -170,10 +170,10 @@ describe '/filters' do
 
     describe 'icmp' do
       accepted_params = {
-        ipv4_address: '192.168.100.150',
         protocol: 'icmp',
+        dst_address: '192.168.100.150',
       }
-      required_params = [:ipv4_address, :protocol]
+      required_params = [:protocol]
       uuid_params = []
 
       describe 'POST' do
@@ -199,16 +199,15 @@ describe '/filters' do
     end
 
     describe 'arp' do
+      accepted_params = {
+        protocol: 'arp',
+        action: 'pass'
+      }
+      required_params = [:protocol]
       uuid_params = []
 
       describe 'POST' do
-        accepted_params = {
-          protocol: 'arp',
-          action: 'pass'
-        }
-        required_params = [:protocol, :action]
-
-        include_examples 'POST /', accepted_params, required_params, uuid_params
+        include_examples 'POST /', accepted_params.merge(action: 'pass'), required_params.dup.push(:action), uuid_params
       end
 
       describe 'DELETE' do
@@ -224,11 +223,6 @@ describe '/filters' do
             action: 'pass'
           }
         }
-
-        accepted_params = {
-          protocol: 'arp',
-        }
-        required_params = [:protocol]
 
         include_examples 'DELETE mode', accepted_params, required_params, uuid_params
       end

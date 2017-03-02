@@ -20,11 +20,15 @@ module Vnctl::Cli
     define_mode_relation(:static) do | mode |
       mode.option :protocol, :type => :string, :required => true,
         :desc => "This is the protocol which the filter will listen on. [tcp, udp, icmp, arp]"
-      mode.option :ipv4_address, :type => :string,
-        :desc => "This is the ipv4 address the filter will be applied on. Required for tcp, udp and icmp."
-      mode.option :port_number, :type => :string,
-        :desc => "This is the port number the filter will listen on. Required for tcp and udp."
-      mode.option :action, :type => :string, :default => 'pass',
+      mode.option :src_address, :type => :string,
+        :desc => "This is the source address the filter will be applied on."
+      mode.option :dst_address, :type => :string,
+        :desc => "This is the destination address the filter will be applied on."
+      mode.option :src_port, :type => :string,
+        :desc => "This is the source port number the filter will listen on."
+      mode.option :dst_port, :type => :string,
+        :desc => "This is the destination port number the filter will listen on."
+      mode.option :action, :type => :string,
         :desc => "Flag that controls where the static should pass or drop data for specified rule."
     end
   end

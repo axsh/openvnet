@@ -40,47 +40,30 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
 
   def self.static_shared_params
     param :protocol, :String, in: CFS::PROTOCOLS, required: true
-    param :ipv4_address, :String, transform: PARSE_IPV4_ADDRESS
-    param :port_number, :Integer, in: 0..65536
+    param :src_address, :String, transform: PARSE_IPV4_ADDRESS
+    param :dst_address, :String, transform: PARSE_IPV4_ADDRESS
+    param :src_port, :Integer, in: 0..65536
+    param :dst_port, :Integer, in: 0..65536
   end
 
   def params_to_db_fields(filter, params)
     result = {
       filter_id: filter.id,
       protocol: params['protocol'],
-      ipv4_src_address: 0,
-      ipv4_src_prefix: 0
+
+      ipv4_src_address: params['src_address'] ? params['src_address'].to_i : 0,
+      ipv4_dst_address: params['dst_address'] ? params['dst_address'].to_i : 0,
+      ipv4_src_prefix: params['src_address'] ? params['src_address'].prefix.to_i : 0,
+      ipv4_dst_prefix: params['dst_address'] ? params['dst_address'].prefix.to_i : 0
     }
 
     case params['protocol']
     when 'tcp', 'udp'
-      raise E::MissingArgument, 'port_number' if params['port_number'].nil?
-      raise E::MissingArgument, 'ipv4_address' if params['ipv4_address'].nil?
-
-      result.merge!(ipv4_dst_address: params['ipv4_address'].to_i,
-                    ipv4_dst_prefix: params['ipv4_address'].prefix.to_i,
-                    port_dst: params['port_number'],
-                    port_src: 0)
-
-    when 'icmp'
-      raise E::MissingArgument, 'ipv4_address' if params['ipv4_address'].nil?
-
-      result.merge!(ipv4_dst_address: params['ipv4_address'].to_i,
-                    ipv4_dst_prefix: params['ipv4_address'].prefix.to_i)
-
-    when 'arp', 'all'
-      result.merge!(ipv4_dst_address: 0,
-                    ipv4_dst_prefix: 0)
+      result.merge!(port_src: params['src_port'] ? params['src_port'] : 0,
+                    port_dst: params['dst_port'] ? params['dst_port'] : 0)
     end
 
-    if params['action']
-      result.merge!(action: params['action'])
-    end
-
-    if filter.mode != CF::MODE_STATIC
-      raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
-    end
-
+    result[:action] = params['action'] if params['action']
     result
   end
 
@@ -88,11 +71,13 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
   param :action, :String, required: true
   post '/:uuid/static' do
     filter = check_syntax_and_pop_uuid(M::Filter)
-    db_fields = params_to_db_fields(filter, params)
 
-    s = M::FilterStatic.create(db_fields)
+    if filter.mode != CF::MODE_STATIC
+      raise(E::ArgumentError, "Filter mode must be '#{CF::MODE_STATIC}'.")
+    end
 
-    respond_with(R::FilterStatic.generate(s))
+    result = M::FilterStatic.create(params_to_db_fields(filter, params))
+    respond_with(R::FilterStatic.generate(result))
   end
 
   static_shared_params
@@ -107,10 +92,8 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       raise E::UnknownResource, "Couldn't find resource with parameters: #{rp}"
     end
 
-    M::FilterStatic.destroy(id: s.id)
-
-    respond_with(R::Filter.filter_statics(filter))
-
+    result = M::FilterStatic.destroy(id: s.id)
+    respond_with(R::FilterStatic.generate(result))
   end
 
   get '/:uuid/static' do

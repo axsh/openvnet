@@ -49,7 +49,6 @@ describe Vnet::Core::Filter2Manager do
   end
 
   shared_examples_for "added_static" do |static, protocol|
-
     let(:filter_static) { Fabricate(static, protocol: protocol) }
 
     it "adds the static" do
@@ -58,7 +57,6 @@ describe Vnet::Core::Filter2Manager do
         expect(flows).to include flow(egress)
       }
     end
-
   end
 
   describe "#created_item" do

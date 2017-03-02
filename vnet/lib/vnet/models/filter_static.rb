@@ -19,13 +19,13 @@ module Vnet::Models
     end
 
     def validate
-      errors.add(:ipv4_src_prefix, "out of range: '#{self.ipv4_src_prefix}'") if !(0..32).member?(self.ipv4_src_prefix)
-      errors.add(:ipv4_dst_prefix, "out of range: '#{self.ipv4_dst_prefix}'") if !(0..32).member?(self.ipv4_dst_prefix)
-      errors.add(:protocol, "unknown protocol: '#{self.protocol}'") if !protocol_included(["tcp", "udp", "icmp", "arp", "all"])
+      errors.add(:ipv4_src_prefix, "out of range: '") if !(0..32).member?(self.ipv4_src_prefix)
+      errors.add(:ipv4_dst_prefix, "out of range: '") if !(0..32).member?(self.ipv4_dst_prefix)
+      errors.add(:protocol, "unknown protocol: '") if !protocol_included(["tcp", "udp", "icmp", "arp", "all"])
 
       if protocol_included(["tcp", "udp"])
-        errors.add(:port_src, "not in valid range: '#{self.port_src}'") if !(0..0xffff).member?(self.port_src)
-        errors.add(:port_dst, "not in valid range: '#{self.port_dst}'") if !(0..0xffff).member?(self.port_dst)
+        errors.add(:port_src, "not in valid range: '") if !(0..0xffff).member?(self.port_src)
+        errors.add(:port_dst, "not in valid range: '") if !(0..0xffff).member?(self.port_dst)
       elsif protocol_included(["arp", "icmp", "all"])
         errors.add(:port_src, "needs to be nil") if !self.port_src.nil?
         errors.add(:port_dst, "needs to be nil") if !self.port_dst.nil?
