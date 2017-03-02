@@ -109,6 +109,21 @@ module Vnet::Core::Filters
 
     private
 
+    def any_address?(address, prefix)
+      address == 0 && prefix == 0
+    end
+
+    def max_priority_for_static
+      20 + (65 * 66)
+    end
+
+    # TODO: Change the priority ordering so that the largest prefix of
+    # either src or dst is always checked first.
+    def priority_for_static(ipv4_src_prefix:, ipv4_dst_prefix:, port_src:, port_dst:, **)
+      20 + ((ipv4_dst_prefix * 2) + ((port_dst.nil? || port_dst == 0) ? 0 : 1)) * 66 +
+        (ipv4_src_prefix * 2) + ((port_src.nil? || port_src == 0) ? 0 : 1)
+    end
+
     def rules(filter, protocol)
       ipv4_address = filter[:ipv4_dst_address]
       port = filter[:port_dst]
@@ -116,24 +131,14 @@ module Vnet::Core::Filters
 
       case protocol
       when 'tcp'  then rule_for_tcp(filter)
-
       when 'udp'  then rule_for_udp(filter)
-      when 'arp'  then rule_for_arp(ipv4_address, prefix)
-
-      # TODO: Remove the unnecessary ipv4_ prefix.
+      when 'arp'  then rule_for_arp(filter)
       when 'icmp' then rule_for_ipv4(IPV4_PROTOCOL_ICMP, filter)
       when 'all'  then rule_for_ipv4(nil, filter)
       end
     end
 
-    //
-    //
-    //
-
-    def any_address?(address, prefix)
-      address == 0 && prefix == 0
-    end
-
+    # TODO: Remove the unnecessary ipv4_ prefix.
     def rule_for_ipv4(ip_proto, ipv4_src_address:, ipv4_dst_address:, ipv4_src_prefix:, ipv4_dst_prefix:, **)
       egress_match = {
         eth_type: ETH_TYPE_IPV4,
@@ -196,7 +201,7 @@ module Vnet::Core::Filters
       }
     end
     
-    def rule_for_arp(ipv4_address, prefix)
+    def rule_for_arp(ipv4_src_address:, ipv4_dst_address:, ipv4_src_prefix:, ipv4_dst_prefix:, **)
       egress_match = {
         eth_type: ETH_TYPE_ARP,
       }.tap { |match|
@@ -212,8 +217,7 @@ module Vnet::Core::Filters
       }
 
       ingress_match = {
-        eth_type: ETH_TYPE_IPV4,
-        ip_proto: ip_proto
+        eth_type: ETH_TYPE_ARP,
       }.tap { |match|
         if !any_address?(ipv4_src_address, ipv4_src_prefix)
           match[:arp_spa] = ipv4_src_address
@@ -227,17 +231,6 @@ module Vnet::Core::Filters
       }
 
       return [egress_match, ingress_match]
-    end
-
-    def max_priority_for_static
-      20 + (65 * 66)
-    end
-
-    # TODO: Change the priority ordering so that the largest prefix of
-    # either src or dst is always checked first.
-    def priority_for_static(ipv4_src_prefix:, ipv4_dst_prefix:, port_src:, port_dst:, **)
-      20 + ((ipv4_dst_prefix * 2) + ((port_dst.nil? || port_dst == 0) ? 0 : 1)) * 66 +
-        (ipv4_src_prefix * 2) + ((port_src.nil? || port_src == 0) ? 0 : 1)
     end
 
     def flows_for_static(flows, protocol, filter, action)
