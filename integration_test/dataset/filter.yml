@@ -160,7 +160,7 @@ filter_static:
   - filter_uuid: fil-test4
     protocol: udp
     src_address: 10.101.0.12
-    dst_port: 1344
+    src_port: 1344
     action: pass
 
   - filter_uuid : fil-test5

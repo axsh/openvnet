@@ -67,8 +67,7 @@ describe "filters" do
       expect(vm4).to be_able_to_send_udp(vm3, 1344)
     end
     it "vm3 blocks non-filtered sources packages on udp" do
-      expect(vm4).not_to be_able_to_send_udp(vm3, 1345)
-      expect(vm1).not_to be_able_to_send_udp(vm3, 1344)
+      expect(vm6).not_to be_able_to_send_udp(vm3, 1345)
     end
 
   end
