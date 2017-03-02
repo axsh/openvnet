@@ -3,6 +3,9 @@
 module Vnet::Core::Filters
   class Static < Base2
 
+    EGRESS_IDLE_TIMEOUT  = 600
+    INGRESS_IDLE_TIMEOUT = 1800
+
     def initialize(params)
       super
       @statics = {}
@@ -77,25 +80,22 @@ module Vnet::Core::Filters
     def packet_in(message)
       return if !installed?
 
-      info log_format_h('packet_in', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
-
       egress_match, ingress_match = match_from_message(message)
       return if egress_match.nil? || ingress_match.nil?
-
-      info log_format_h('egress_match', egress_match)
-      info log_format_h('ingress_match', ingress_match)
 
       flows = []
 
       flows << flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
                            goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
                            priority: max_priority_for_static,
+                           idle_timeout: EGRESS_IDLE_TIMEOUT,
                            match_interface: @interface_id,
                            match: egress_match)
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: max_priority_for_static,
+                           idle_timeout: INGRESS_IDLE_TIMEOUT,
                            match_interface: @interface_id,
                            match: ingress_match)
 
@@ -125,10 +125,6 @@ module Vnet::Core::Filters
     end
 
     def rules(filter, protocol)
-      ipv4_address = filter[:dst_address]
-      port = filter[:port_dst]
-      prefix = filter[:dst_prefix]
-
       case protocol
       when 'tcp'  then rule_for_tcp(filter)
       when 'udp'  then rule_for_udp(filter)
@@ -138,7 +134,6 @@ module Vnet::Core::Filters
       end
     end
 
-    # TODO: Remove the unnecessary ipv4_ prefix.
     def rule_for_ipv4(ip_proto, src_address:, dst_address:, src_prefix:, dst_prefix:, **)
       egress_match = {
         eth_type: ETH_TYPE_IPV4,
@@ -249,7 +244,6 @@ module Vnet::Core::Filters
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER,
                                                goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                                                match: ingress_rule))
-
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER,
                                                goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
                                                match: egress_rule))
@@ -257,7 +251,6 @@ module Vnet::Core::Filters
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER,
                                                goto_table: nil,
                                                match: ingress_rule))
-
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER,
                                                goto_table: nil,
                                                match: egress_rule))
@@ -300,8 +293,6 @@ module Vnet::Core::Filters
       when message.arpv4?
         egress_match.merge!(ip_proto: IPV4_PROTOCOL_ARP)
         ingress_match.merge!(ip_proto: IPV4_PROTOCOL_ARP)
-      else
-        # Do nothing.
       end
 
       return egress_match, ingress_match

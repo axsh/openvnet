@@ -98,15 +98,15 @@ filters:
   - uuid: fil-test4
     interface_uuid: if-v4
     mode: static
+  - uuid: fil-test5
+    interface_uuid: if-v5
+    mode: static
 
 filter_static:
 
   - filter_uuid : fil-test1
     protocol: arp
     action: pass
-  - filter_uuid : fil-test1
-    protocol: ip
-    action: conn
   - filter_uuid: fil-test1
     protocol: tcp
     action: pass
@@ -126,9 +126,6 @@ filter_static:
   - filter_uuid : fil-test3
     protocol: arp
     action: pass
-  - filter_uuid : fil-test3
-    protocol: ip
-    action: conn
   - filter_uuid: fil-test3
     protocol: udp
     src_port: 67
@@ -151,9 +148,6 @@ filter_static:
   - filter_uuid : fil-test4
     protocol: arp
     action: pass
-  - filter_uuid : fil-test4
-    protocol: ip
-    action: conn
   - filter_uuid: fil-test4
     protocol: udp
     src_port: 67
@@ -167,4 +161,16 @@ filter_static:
     protocol: udp
     src_address: 10.101.0.12
     dst_port: 1344
+    action: pass
+
+  - filter_uuid : fil-test5
+    protocol: arp
+    action: pass
+  - filter_uuid : fil-test5
+    protocol: ip
+    action: conn
+  - filter_uuid: fil-test5
+    protocol: udp
+    src_port: 67
+    dst_port: 68
     action: pass
