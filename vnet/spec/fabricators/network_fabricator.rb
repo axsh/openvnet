@@ -5,11 +5,8 @@ require 'ipaddr'
 Fabricator(:network, class_name: Vnet::Models::Network) do
   display_name "network"
   ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
-  # ipv4_network IPAddr.new("192.168.1.1").to_i
   ipv4_prefix 24
   domain_name "example.com"
-  #network_mode
-  #editable true
 end
 
 Fabricator(:network_for_range, class_name: Vnet::Models::Network) do
@@ -18,7 +15,7 @@ Fabricator(:network_for_range, class_name: Vnet::Models::Network) do
   ipv4_network IPAddr.new("10.102.0.1").to_i
   ipv4_prefix 24
   domain_name "example.com"
-  network_mode 'virtual'
+  mode 'virtual'
 end
 
 Fabricator(:pnet_public1, class_name: Vnet::Models::Network) do
@@ -27,7 +24,7 @@ Fabricator(:pnet_public1, class_name: Vnet::Models::Network) do
   ipv4_network IPAddr.new("192.168.1.0").to_i
   ipv4_prefix 24
   domain_name "example.com"
-  network_mode 'physical'
+  mode 'physical'
 end
 
 Fabricator(:pnet_public2, class_name: Vnet::Models::Network) do
@@ -36,7 +33,7 @@ Fabricator(:pnet_public2, class_name: Vnet::Models::Network) do
   ipv4_network IPAddr.new("192.168.2.0").to_i
   ipv4_prefix 24
   domain_name "example.com"
-  network_mode 'physical'
+  mode 'physical'
 end
 
 Fabricator(:vnet_1, class_name: Vnet::Models::Network) do
@@ -45,7 +42,7 @@ Fabricator(:vnet_1, class_name: Vnet::Models::Network) do
   ipv4_network IPAddr.new("10.102.0.0").to_i
   ipv4_prefix 24
   domain_name "example.com"
-  network_mode 'virtual'
+  mode 'virtual'
 end
 
 Fabricator(:vnet_2, class_name: Vnet::Models::Network) do
@@ -54,11 +51,11 @@ Fabricator(:vnet_2, class_name: Vnet::Models::Network) do
   ipv4_network IPAddr.new("10.102.1.0").to_i
   ipv4_prefix 24
   domain_name "example.vnet2.com"
-  network_mode 'virtual'
+  mode 'virtual'
 end
 
 Fabricator(:network_with_prefix_30, class_name: Vnet::Models::Network) do
   ipv4_network IPAddr.new("10.102.0.100").to_i
   ipv4_prefix 30
-  network_mode 'virtual'
+  mode 'virtual'
 end
