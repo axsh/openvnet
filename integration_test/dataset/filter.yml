@@ -7,13 +7,6 @@ networks:
     domain_name: vnet1
     network_mode: virtual
 
-  - uuid: nw-vnet2
-    display_name: vnet2
-    ipv4_network: 10.101.0.0
-    ipv4_prefix: 24
-    domain_name: vnet2
-    network_mode: virtual
-
 interfaces:
 
   - uuid: if-v1
@@ -68,20 +61,10 @@ interfaces:
     mac_address: "02:00:00:00:01:01"
     ipv4_address: 10.101.0.2
 
-  - uuid: if-dhcp2
-    mode: simulated
-    network_uuid: nw-vnet2
-    mac_address: "02:00:00:00:01:02"
-    ipv4_address: 10.101.0.2
-
 network_services:
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
-    mode: dhcp
-
-  - uuid: ns-dhcp2
-    interface_uuid: if-dhcp2
     mode: dhcp
 
 datapath_networks:
@@ -91,30 +74,15 @@ datapath_networks:
     interface_uuid: if-dp1eth0
     mac_address: "02:00:00:aa:00:01"
 
-  - datapath_uuid: dp-1
-    network_uuid: nw-vnet2
-    interface_uuid: if-dp1eth0
-    mac_address: "02:00:00:aa:00:02"
-
   - datapath_uuid: dp-2
     network_uuid: nw-vnet1
     interface_uuid: if-dp2eth0
     mac_address: "02:00:00:bb:00:01"
 
-  - datapath_uuid: dp-2
-    network_uuid: nw-vnet2
-    interface_uuid: if-dp2eth0
-    mac_address: "02:00:00:bb:00:02"
-
   - datapath_uuid: dp-3
     network_uuid: nw-vnet1
     interface_uuid: if-dp3eth0
     mac_address: "02:00:00:cc:00:01"
-
-  - datapath_uuid: dp-3
-    network_uuid: nw-vnet2
-    interface_uuid: if-dp3eth0
-    mac_address: "02:00:00:cc:00:02"
 
 filters:
 
@@ -133,72 +101,64 @@ filters:
 
 filter_static:
 
-  - filter_uuid: fil-test1
-    protocol: "tcp"
-    action: "drop"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 0
-  - filter_uuid: fil-test1
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 0
-    action: "drop"
-  - filter_uuid: fil-test1
-    protocol: "icmp"
-    ipv4_address: "0.0.0.0/0"
-    action: "drop"
   - filter_uuid : fil-test1
-    protocol: "arp"
-    action: "drop"
+    protocol: arp
+    src_address: 10.101.0.0/24
+    action: pass
+  - filter_uuid: fil-test1
+    protocol: tcp
+    action: drop
+  - filter_uuid: fil-test1
+    protocol: udp
+    action: drop
+  - filter_uuid: fil-test1
+    protocol: icmp
+    action: drop
 
-  - filter_uuid: fil-test3
-    protocol: "tcp"
-    ipv4_address: "10.101.0.10"
-    port_number: 0
-    action: "drop"
-  - filter_uuid: fil-test3
-    protocol: "udp"
-    ipv4_address: "10.101.0.13"
-    port_number: 1344
-    action: "drop"
-  - filter_uuid: fil-test3
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 68
-    action: "drop"
-  - filter_uuid: fil-test3
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 67
-    action: "drop"
-  - filter_uuid: fil-test3
-    protocol: "icmp"
-    ipv4_address: "10.101.0.10"
-    action: "drop"
   - filter_uuid : fil-test3
-    protocol: "arp"
-    action: "drop"
+    protocol: arp
+    src_address: 10.101.0.0/24
+    action: pass
+  - filter_uuid: fil-test3
+    protocol: tcp
+    src_address: 10.101.0.10
+    action: drop
+  - filter_uuid: fil-test3
+    protocol: udp
+    src_address: 10.101.0.13
+    src_port: 1344
+    action: drop
+  - filter_uuid: fil-test3
+    protocol: udp
+    src_port: 68
+    action: drop
+  - filter_uuid: fil-test3
+    protocol: udp
+    src_port: 67
+    action: drop
+  - filter_uuid: fil-test3
+    protocol: icmp
+    src_address: 10.101.0.10
+    action: drop
 
-
-  - filter_uuid: fil-test4
-    protocol: "all"
-    ipv4_address: "10.101.0.10"
-    action: "drop"
-  - filter_uuid: fil-test4
-    protocol: "udp"
-    port_number: 1344
-    ipv4_address: "10.101.0.12"
-    action: "drop"
   - filter_uuid : fil-test4
-    protocol: "arp"
-    action: "drop"
+    protocol: arp
+    src_address: 10.101.0.0/24
+    action: pass
   - filter_uuid: fil-test4
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 68
-    action: "drop"
+    protocol: all
+    src_address: 10.101.0.10
+    action: drop
   - filter_uuid: fil-test4
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 67
-    action: "drop"
+    protocol: udp
+    src_address: 10.101.0.12
+    src_port: 1344
+    action: drop
+  - filter_uuid: fil-test4
+    protocol: udp
+    src_port: 68
+    action: drop
+  - filter_uuid: fil-test4
+    protocol: udp
+    src_port: 67
+    action: drop
