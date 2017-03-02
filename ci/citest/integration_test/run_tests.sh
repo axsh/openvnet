@@ -21,4 +21,4 @@ bundle install
 
 set -xe
 
-bin/itest-spec run simple_nw
+bin/itest-spec run
