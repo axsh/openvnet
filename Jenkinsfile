@@ -19,6 +19,8 @@ def ask_build_parameter = { ->
         choices: "0\n1", description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER'],
       [$class: 'ChoiceParameterDefinition',
         choices: "1\n0", description: 'Switch to make vendor/bundle/* compact', name: 'STRIP_VENDOR'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "false\ntrue", description: 'Rebuild cache image', name: 'REBUILD'],
     ])
 }
 
@@ -27,6 +29,7 @@ def write_build_env(label) {
 # So do not use single or double quote for the value part.
 LEAVE_CONTAINER=${buildParams.LEAVE_CONTAINER}
 STRIP_VENDOR=${buildParams.STRIP_VENDOR}
+REBUILD=${buildParams.REBUILD}
 REPO_BASE_DIR=${env.REPO_BASE_DIR ?: ''}
 BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR ?: ''}
 BUILD_OS=$label
