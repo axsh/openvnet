@@ -172,8 +172,6 @@ fi
 sudo ln -s "./$(basename ${repo_dir})" "${current_symlink}"
 
 TMPDIR=$(mktemp -d)
-
-
 if [[ -n "${BUILD_CACHE_DIR}" ]]; then
   if [[ ! -w /cache ]]; then
       echo "ERROR: CACHE_VOLUME '${BUILD_CACHE_DIR}' is not writable." >&2
