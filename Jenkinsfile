@@ -63,6 +63,16 @@ def stage_test_rpm(label) {
   }
 }
 
+def stage_integration_test(label) {
+  node("multibox") {
+    stage("Integration test ${label}") {
+      checkout_and_merge()
+      write_build_env(label)
+      sh "./ci/citest/integration_test/build_and_run_in_docker.sh ./build.env"
+    }
+  }
+}
+
 node() {
   stage("Checkout") {
     try {
@@ -87,4 +97,5 @@ if( buildParams.BUILD_OS != "all" ){
 for( label in build_nodes) {
   stage_rpmbuild(label)
   stage_test_rpm(label)
+  stage_integration_test(label)
 }
