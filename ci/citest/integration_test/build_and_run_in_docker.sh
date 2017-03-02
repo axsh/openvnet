@@ -40,4 +40,4 @@ sudo docker build -t "${repo_and_tag}" \
      --build-arg REBUILD="${REBUILD}" -f "./ci/citest/integration_test/Dockerfile" .
 
 CID=$(sudo docker run --privileged -v "${DATA_DIR}":/data -d "${repo_and_tag}")
-docker attach $CID
+sudo docker attach $CID
