@@ -14,8 +14,8 @@ set -a
 . ${BUILD_ENV_PATH}
 set +a
 
-DATA_DIR="${DATA_DIR:-/data2}"
-CACHE_DIR="/data2/openvnet-ci/branches"
+DATA_DIR="${DATA_DIR:-/data}"
+CACHE_DIR="/data/openvnet-ci/branches"
 
 repo_and_tag="openvnet/integration-test:${BRANCH}.${RELEASE_SUFFIX}"
 
@@ -39,4 +39,5 @@ sudo docker build -t "${repo_and_tag}" \
      --build-arg RELEASE_SUFFIX="${RELEASE_SUFFIX}" \
      --build-arg REBUILD="${REBUILD}" -f "./ci/citest/integration_test/Dockerfile" .
 
-sudo docker run --privileged -v "${DATA_DIR}":/data "${repo_and_tag}"
+CID=$(sudo docker run --privileged -v "${DATA_DIR}":/data -d "${repo_and_tag}")
+docker attach $CID
