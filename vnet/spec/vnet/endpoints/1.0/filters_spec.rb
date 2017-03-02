@@ -65,10 +65,10 @@ describe '/filters' do
         entries.times { |i|
           Fabricate(fabricator, filter_id: filter.id,
                                 protocol: 'tcp',
-                                ipv4_src_prefix: 0,
-                                ipv4_dst_prefix: 0,
-                                ipv4_src_address: 0 + i,
-                                ipv4_dst_address: 0,
+                                src_prefix: 0,
+                                dst_prefix: 0,
+                                src_address: 0 + i,
+                                dst_address: 0,
                                 port_src: 0,
                                 port_dst: 0)
         }
@@ -151,10 +151,10 @@ describe '/filters' do
           let(:db_fields) {
             { filter_id: filter.id,
               protocol: protocol,
-              ipv4_dst_address: 3232261270,
-              ipv4_dst_prefix: 32,
-              ipv4_src_address: 0,
-              ipv4_src_prefix: 0,
+              dst_address: 3232261270,
+              dst_prefix: 32,
+              src_address: 0,
+              src_prefix: 0,
               port_dst: 24056,
               port_src: 0,
               action: 'pass'
@@ -183,10 +183,10 @@ describe '/filters' do
       describe 'DELETE' do
         let(:db_fields) {
           { filter_id: filter.id,
-            ipv4_dst_address: 3232261270,
-            ipv4_dst_prefix: 32,
-            ipv4_src_address: 0,
-            ipv4_src_prefix: 0,
+            dst_address: 3232261270,
+            dst_prefix: 32,
+            src_address: 0,
+            src_prefix: 0,
             port_src: nil,
             port_dst: nil,
             protocol: 'icmp',
@@ -213,10 +213,10 @@ describe '/filters' do
       describe 'DELETE' do
         let(:db_fields) {
           { filter_id: filter.id,
-            ipv4_src_address: 0,
-            ipv4_src_prefix: 0,
-            ipv4_dst_address: 0,
-            ipv4_dst_prefix: 0,
+            src_address: 0,
+            src_prefix: 0,
+            dst_address: 0,
+            dst_prefix: 0,
             port_src: nil,
             port_dst: nil,
             protocol: 'arp',

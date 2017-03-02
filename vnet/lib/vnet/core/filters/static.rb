@@ -32,10 +32,10 @@ module Vnet::Core::Filters
       @statics[static_id] = {
         match: {
           static_id: static_id,
-          ipv4_src_address: get_param_ipv4_address(params, :ipv4_src_address),
-          ipv4_dst_address: get_param_ipv4_address(params, :ipv4_dst_address),
-          ipv4_src_prefix: get_param_int(params, :ipv4_src_prefix),
-          ipv4_dst_prefix: get_param_int(params, :ipv4_dst_prefix),
+          src_address: get_param_ipv4_address(params, :src_address),
+          dst_address: get_param_ipv4_address(params, :dst_address),
+          src_prefix: get_param_int(params, :src_prefix),
+          dst_prefix: get_param_int(params, :dst_prefix),
           port_src: get_param_int(params, :port_src, false),
           port_dst: get_param_int(params, :port_dst, false)
         },
@@ -119,15 +119,15 @@ module Vnet::Core::Filters
 
     # TODO: Change the priority ordering so that the largest prefix of
     # either src or dst is always checked first.
-    def priority_for_static(ipv4_src_prefix:, ipv4_dst_prefix:, port_src:, port_dst:, **)
-      20 + ((ipv4_dst_prefix * 2) + ((port_dst.nil? || port_dst == 0) ? 0 : 1)) * 66 +
-        (ipv4_src_prefix * 2) + ((port_src.nil? || port_src == 0) ? 0 : 1)
+    def priority_for_static(src_prefix:, dst_prefix:, port_src:, port_dst:, **)
+      20 + ((dst_prefix * 2) + ((port_dst.nil? || port_dst == 0) ? 0 : 1)) * 66 +
+        (src_prefix * 2) + ((port_src.nil? || port_src == 0) ? 0 : 1)
     end
 
     def rules(filter, protocol)
-      ipv4_address = filter[:ipv4_dst_address]
+      ipv4_address = filter[:dst_address]
       port = filter[:port_dst]
-      prefix = filter[:ipv4_dst_prefix]
+      prefix = filter[:dst_prefix]
 
       case protocol
       when 'tcp'  then rule_for_tcp(filter)
@@ -139,19 +139,19 @@ module Vnet::Core::Filters
     end
 
     # TODO: Remove the unnecessary ipv4_ prefix.
-    def rule_for_ipv4(ip_proto, ipv4_src_address:, ipv4_dst_address:, ipv4_src_prefix:, ipv4_dst_prefix:, **)
+    def rule_for_ipv4(ip_proto, src_address:, dst_address:, src_prefix:, dst_prefix:, **)
       egress_match = {
         eth_type: ETH_TYPE_IPV4,
         ip_proto: ip_proto
       }.tap { |match|
-        if !any_address?(ipv4_src_address, ipv4_src_prefix)
-          match[:ipv4_dst] = ipv4_src_address
-          match[:ipv4_dst_mask] = IPV4_BROADCAST << (32 - ipv4_src_prefix)
+        if !any_address?(src_address, src_prefix)
+          match[:ipv4_dst] = src_address
+          match[:ipv4_dst_mask] = IPV4_BROADCAST << (32 - src_prefix)
         end
 
-        if !any_address?(ipv4_dst_address, ipv4_dst_prefix)
-          match[:ipv4_src] = ipv4_dst_address
-          match[:ipv4_src_mask] = IPV4_BROADCAST << (32 - ipv4_dst_prefix)
+        if !any_address?(dst_address, dst_prefix)
+          match[:ipv4_src] = dst_address
+          match[:ipv4_src_mask] = IPV4_BROADCAST << (32 - dst_prefix)
         end
       }
 
@@ -159,14 +159,14 @@ module Vnet::Core::Filters
         eth_type: ETH_TYPE_IPV4,
         ip_proto: ip_proto
       }.tap { |match|
-        if !any_address?(ipv4_src_address, ipv4_src_prefix)
-          match[:ipv4_src] = ipv4_src_address
-          match[:ipv4_src_mask] = IPV4_BROADCAST << (32 - ipv4_src_prefix)
+        if !any_address?(src_address, src_prefix)
+          match[:ipv4_src] = src_address
+          match[:ipv4_src_mask] = IPV4_BROADCAST << (32 - src_prefix)
         end
 
-        if !any_address?(ipv4_dst_address, ipv4_dst_prefix)
-          match[:ipv4_dst] = ipv4_dst_address
-          match[:ipv4_dst_mask] = IPV4_BROADCAST << (32 - ipv4_dst_prefix)
+        if !any_address?(dst_address, dst_prefix)
+          match[:ipv4_dst] = dst_address
+          match[:ipv4_dst_mask] = IPV4_BROADCAST << (32 - dst_prefix)
         end
       }
 
@@ -201,32 +201,32 @@ module Vnet::Core::Filters
       }
     end
     
-    def rule_for_arp(ipv4_src_address:, ipv4_dst_address:, ipv4_src_prefix:, ipv4_dst_prefix:, **)
+    def rule_for_arp(src_address:, dst_address:, src_prefix:, dst_prefix:, **)
       egress_match = {
         eth_type: ETH_TYPE_ARP,
       }.tap { |match|
-        if !any_address?(ipv4_src_address, ipv4_src_prefix)
-          match[:arp_tpa] = ipv4_src_address
-          match[:arp_tpa_mask] = IPV4_BROADCAST << (32 - ipv4_src_prefix)
+        if !any_address?(src_address, src_prefix)
+          match[:arp_tpa] = src_address
+          match[:arp_tpa_mask] = IPV4_BROADCAST << (32 - src_prefix)
         end
 
-        if !any_address?(ipv4_dst_address, ipv4_dst_prefix)
-          match[:arp_spa] = ipv4_dst_address
-          match[:arp_spa_mask] = IPV4_BROADCAST << (32 - ipv4_dst_prefix)
+        if !any_address?(dst_address, dst_prefix)
+          match[:arp_spa] = dst_address
+          match[:arp_spa_mask] = IPV4_BROADCAST << (32 - dst_prefix)
         end
       }
 
       ingress_match = {
         eth_type: ETH_TYPE_ARP,
       }.tap { |match|
-        if !any_address?(ipv4_src_address, ipv4_src_prefix)
-          match[:arp_spa] = ipv4_src_address
-          match[:arp_spa_mask] = IPV4_BROADCAST << (32 - ipv4_src_prefix)
+        if !any_address?(src_address, src_prefix)
+          match[:arp_spa] = src_address
+          match[:arp_spa_mask] = IPV4_BROADCAST << (32 - src_prefix)
         end
 
-        if !any_address?(ipv4_dst_address, ipv4_dst_prefix)
-          match[:arp_tpa] = ipv4_dst_address
-          match[:arp_tpa_mask] = IPV4_BROADCAST << (32 - ipv4_dst_prefix)
+        if !any_address?(dst_address, dst_prefix)
+          match[:arp_tpa] = dst_address
+          match[:arp_tpa_mask] = IPV4_BROADCAST << (32 - dst_prefix)
         end
       }
 

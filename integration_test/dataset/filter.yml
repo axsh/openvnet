@@ -104,6 +104,9 @@ filter_static:
   - filter_uuid : fil-test1
     protocol: arp
     action: pass
+  - filter_uuid : fil-test1
+    protocol: ip
+    action: conn
   - filter_uuid: fil-test1
     protocol: tcp
     action: pass
@@ -117,6 +120,9 @@ filter_static:
   - filter_uuid : fil-test3
     protocol: arp
     action: pass
+  - filter_uuid : fil-test3
+    protocol: ip
+    action: conn
   - filter_uuid: fil-test3
     protocol: udp
     src_port: 67
@@ -139,6 +145,9 @@ filter_static:
   - filter_uuid : fil-test4
     protocol: arp
     action: pass
+  - filter_uuid : fil-test4
+    protocol: ip
+    action: conn
   - filter_uuid: fil-test4
     protocol: udp
     src_port: 67

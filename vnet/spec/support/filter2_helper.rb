@@ -89,9 +89,9 @@ def rule(traffic_direction, protocol, ipv4_address, prefix, port_number = nil)
   end
 end
 
-def static_priority(ipv4_src_prefix:, ipv4_dst_prefix:, port_src:, port_dst:, **)
-  20 + ((ipv4_dst_prefix * 2) + ((port_dst.nil? || port_dst == 0) ? 0 : 1)) * 66 +
-    (ipv4_src_prefix * 2) + ((port_src.nil? || port_src == 0) ? 0 : 1)
+def static_priority(src_prefix:, dst_prefix:, port_src:, port_dst:, **)
+  20 + ((dst_prefix * 2) + ((port_dst.nil? || port_dst == 0) ? 0 : 1)) * 66 +
+    (src_prefix * 2) + ((port_src.nil? || port_src == 0) ? 0 : 1)
 end
 
 def static_hash(static)
@@ -100,8 +100,8 @@ def static_hash(static)
       { priority: static_priority(static) },
       { match: rule('ingress',
                     static.protocol,
-                    static.ipv4_src_address,
-                    static.ipv4_src_prefix,
+                    static.src_address,
+                    static.src_prefix,
                     static.port_src) }
     ].inject(&:merge) => [
       filter.to_hash,
@@ -109,8 +109,8 @@ def static_hash(static)
       { priority: static_priority(static) },
       { match: rule('egress',
                     static.protocol,
-                    static.ipv4_src_address,
-                    static.ipv4_src_prefix,
+                    static.src_address,
+                    static.src_prefix,
                     static.port_src) }
     ].inject(&:merge)
   }

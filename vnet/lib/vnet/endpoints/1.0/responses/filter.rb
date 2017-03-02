@@ -41,10 +41,10 @@ module Vnet::Endpoints::V10::Responses
         action: object.action,
         
         # TODO: Use local helper method.
-        src_address: IPAddress::IPv4::parse_u32(object.ipv4_src_address).to_s,
-        dst_address: IPAddress::IPv4::parse_u32(object.ipv4_dst_address).to_s,
-        src_prefix: object.ipv4_src_prefix,
-        dst_prefix: object.ipv4_dst_prefix
+        src_address: IPAddress::IPv4::parse_u32(object.src_address).to_s,
+        dst_address: IPAddress::IPv4::parse_u32(object.dst_address).to_s,
+        src_prefix: object.src_prefix,
+        dst_prefix: object.dst_prefix
       }.tap { |result|
         result[:src_port] = object.port_src if object.port_src
         result[:dst_port] = object.port_dst if object.port_dst

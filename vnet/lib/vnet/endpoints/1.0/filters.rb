@@ -51,10 +51,10 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/filters' do
       filter_id: filter.id,
       protocol: params['protocol'],
 
-      ipv4_src_address: params['src_address'] ? params['src_address'].to_i : 0,
-      ipv4_dst_address: params['dst_address'] ? params['dst_address'].to_i : 0,
-      ipv4_src_prefix: params['src_address'] ? params['src_address'].prefix.to_i : 0,
-      ipv4_dst_prefix: params['dst_address'] ? params['dst_address'].prefix.to_i : 0
+      src_address: params['src_address'] ? params['src_address'].to_i : 0,
+      dst_address: params['dst_address'] ? params['dst_address'].to_i : 0,
+      src_prefix: params['src_address'] ? params['src_address'].prefix.to_i : 0,
+      dst_prefix: params['dst_address'] ? params['dst_address'].prefix.to_i : 0
     }
 
     case params['protocol']
