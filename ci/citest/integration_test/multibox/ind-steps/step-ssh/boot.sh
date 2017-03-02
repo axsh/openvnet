@@ -9,13 +9,6 @@
 ) ; prev_cmd_failed
 
 (
-     $starting_step "Reset known hosts for ${IP_ADDR}"
-     false
-     $skip_step_if_already_done; set -ex
-     [[ -f "${HOME}/.ssh/known_hosts" ]] && ssh-keygen -R ${IP_ADDR}
-) ; prev_cmd_failed
-
-(
     $starting_step "Wait for ssh"
     [[ "$(nc ${IP_ADDR} 22 < /dev/null)" == *"SSH"* ]]
     $skip_step_if_already_done ; set -xe
