@@ -103,7 +103,6 @@ function teardown_host_settings () {
     destroy_bridge "${name_ovs_wanedge}"
     destroy_bridge "${name_mng_br0}"
     stop_masquerade "${ip_mng_br0}"
-    stop_masquerade "${network_wanedge}"
 
     (
         $starting_step "Destroy macvlan interface"
