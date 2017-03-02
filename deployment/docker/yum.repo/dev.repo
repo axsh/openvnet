@@ -1,6 +1,6 @@
 [openvnet]
 name=OpenVNet Repo - CI
-baseurl=https://ci.openvnet.org/repos/packages/rhel/$releasever/vnet/$ovn_release_suffix/
+baseurl=https://ci.openvnet.org/repos/$branch/packages/rhel/$releasever/vnet/$ovn_release_suffix/
 enabled=1
 gpgcheck=0
 

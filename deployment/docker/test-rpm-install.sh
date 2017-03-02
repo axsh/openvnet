@@ -34,7 +34,13 @@ else
   img_tag="rpm-install.openvnet.$(git rev-parse --abbrev-ref HEAD).${BUILD_OS}"
 fi
 
-docker build -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}-rpm-test.Dockerfile" .
-CID=$(docker run -d ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} "${img_tag}")
-docker exec -t $CID /bin/sh -c "echo '${RELEASE_SUFFIX}' > /etc/yum/vars/ovn_release_suffix"
-docker exec $CID yum install -y openvnet
+docker build \
+       --build-arg BRANCH="${BRANCH}" \
+       --build-arg RELEASE_SUFFIX="${RELEASE_SUFFIX}" \
+       --build-arg BUILD_URL="${BUILD_URL}" \
+       --build-arg ISO8601_TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+       --build-arg LONG_SHA="${LONG_SHA}" \
+       -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}-rpm-test.Dockerfile" .
+
+CID=$(docker run -d ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")
+docker attach $CID

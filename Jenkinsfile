@@ -31,6 +31,7 @@ REPO_BASE_DIR=${env.REPO_BASE_DIR ?: ''}
 BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR ?: ''}
 BUILD_OS=$label
 RELEASE_SUFFIX=$RELEASE_SUFFIX
+BRANCH=${env.BRANCH_NAME}
 """
   writeFile(file: "build.env", text: build_env)
 }

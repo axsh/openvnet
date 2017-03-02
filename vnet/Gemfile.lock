@@ -27,7 +27,9 @@ GEM
       Platform (>= 0.4.0)
       open4
     Platform (0.4.0)
-    activesupport (3.0.0)
+    activesupport (3.2.22.5)
+      i18n (~> 0.6, >= 0.6.4)
+      multi_json (~> 1.0)
     addressable (2.4.0)
     ast (2.2.0)
     backports (3.6.8)
@@ -78,6 +80,7 @@ GEM
     http (0.5.1)
       http_parser.rb
     http_parser.rb (0.6.0)
+    i18n (0.8.1)
     ipaddress (0.8.3)
     json (1.8.3)
     kgio (2.10.0)
@@ -183,7 +186,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport (= 3.0.0)
+  activesupport (= 3.2.22.5)
   bit-struct (>= 0.13.7)
   celluloid (= 0.16.0)
   celluloid-io (= 0.16.2)
@@ -220,4 +223,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   1.10.5
+   1.11.2
