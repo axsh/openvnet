@@ -36,15 +36,18 @@ module Vnet::NodeApi
       end
       
       def update_model_deleted()
-
 	#TODO: Update deleted items
-
-
       end
 
       def destroy(filter, options = {})
+        # Celluloid.logger.debug "#{self.name}.node_api.destroy #{filter}"
+
         destroy_with_transaction(filter).tap { |model|
           next if model.nil?
+
+          # TODO: Verify that it's been destroyed. However this will
+          # have issues with the transaction, so call sync query.
+
           dispatch_deleted_item_events(model)
         }
       end
@@ -100,6 +103,25 @@ module Vnet::NodeApi
       # Internal methods:
       #
 
+      def plugin(plugin, *args, &block)
+        #Celluloid.logger.debug "#{self.name}.plugin #{plugin.name} #{args}"
+
+        extend(plugin::ClassMethods)
+        include(plugin::InstanceMethods)
+      end
+
+      # Install mode module as Sequel plugin.
+      #
+      # class Foo < Base
+      #   valid_update_fields [:foo, :bar]
+      # end
+      def valid_update_fields(fields)
+        return if self == Base
+
+        self.plugin BaseValidateUpdateFields
+        self.set_valid_update_fields(fields)
+      end
+
       private
 
       #
@@ -153,6 +175,11 @@ module Vnet::NodeApi
       end
 
       def internal_destroy(model)
+        # Celluloid.logger.debug "#{self.name}.pre-model.destroy"
+        # (model && model.destroy).tap { |m|
+        #   Celluloid.logger.debug "#{self.name}.post-model.destroy"
+        # }
+
         model && model.destroy
       end
 
@@ -165,7 +192,6 @@ module Vnet::NodeApi
           }
         }
 
-        # return if model.update(changes).nil?
         return [model, {}] if model.update(changes).nil?
 
         old_values.keep_if { |key, old_value|
@@ -206,24 +232,6 @@ module Vnet::NodeApi
         else
           filter
         end
-      end
-
-      def inherited(klass)
-        super
-        klass.class_eval {
-
-          # Install mode module as Sequel plugin.
-          #
-          # class Foo < Base
-          #   valid_update_fields [:foo, :bar]
-          # end
-          def self.valid_update_fields(fields)
-            return if self == Base
-
-            self.plugin BaseValidateUpdateFields
-            self.set_valid_update_fields(fields)
-          end
-        }
       end
 
     end
