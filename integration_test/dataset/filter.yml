@@ -139,13 +139,13 @@ filter_static:
   - filter_uuid : fil-test4
     protocol: arp
     action: pass
-  - filter_uuid: fil-test3
+  - filter_uuid: fil-test4
     protocol: udp
     src_port: 67
     dst_port: 68
     action: pass
   - filter_uuid: fil-test4
-    protocol: all
+    protocol: ip
     src_address: 10.101.0.10
     action: pass
   - filter_uuid: fil-test4

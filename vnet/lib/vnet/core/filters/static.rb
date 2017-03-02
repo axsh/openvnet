@@ -134,7 +134,7 @@ module Vnet::Core::Filters
       when 'udp'  then rule_for_udp(filter)
       when 'arp'  then rule_for_arp(filter)
       when 'icmp' then rule_for_ipv4(IPV4_PROTOCOL_ICMP, filter)
-      when 'all'  then rule_for_ipv4(nil, filter)
+      when 'ip'   then rule_for_ipv4(nil, filter)
       end
     end
 
