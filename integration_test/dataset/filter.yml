@@ -117,6 +117,12 @@ filter_static:
     protocol: icmp
     action: pass
 
+  - filter_uuid: fil-test2
+    protocol: udp
+    src_port: 67
+    dst_port: 68
+    action: pass
+
   - filter_uuid : fil-test3
     protocol: arp
     action: pass
@@ -135,7 +141,7 @@ filter_static:
   - filter_uuid: fil-test3
     protocol: udp
     src_address: 10.101.0.13
-    src_port: 1344
+    dst_port: 1344
     action: pass
   - filter_uuid: fil-test3
     protocol: icmp
@@ -160,5 +166,5 @@ filter_static:
   - filter_uuid: fil-test4
     protocol: udp
     src_address: 10.101.0.12
-    src_port: 1344
+    dst_port: 1344
     action: pass
