@@ -103,62 +103,53 @@ filter_static:
 
   - filter_uuid : fil-test1
     protocol: arp
-    src_address: 10.101.0.0/24
     action: pass
   - filter_uuid: fil-test1
     protocol: tcp
-    action: drop
+    action: pass
   - filter_uuid: fil-test1
     protocol: udp
-    action: drop
+    action: pass
   - filter_uuid: fil-test1
     protocol: icmp
-    action: drop
+    action: pass
 
   - filter_uuid : fil-test3
     protocol: arp
-    src_address: 10.101.0.0/24
+    action: pass
+  - filter_uuid: fil-test3
+    protocol: udp
+    src_port: 67
+    dst_port: 68
     action: pass
   - filter_uuid: fil-test3
     protocol: tcp
     src_address: 10.101.0.10
-    action: drop
+    action: pass
   - filter_uuid: fil-test3
     protocol: udp
     src_address: 10.101.0.13
     src_port: 1344
-    action: drop
-  - filter_uuid: fil-test3
-    protocol: udp
-    src_port: 68
-    action: drop
-  - filter_uuid: fil-test3
-    protocol: udp
-    src_port: 67
-    action: drop
+    action: pass
   - filter_uuid: fil-test3
     protocol: icmp
     src_address: 10.101.0.10
-    action: drop
+    action: pass
 
   - filter_uuid : fil-test4
     protocol: arp
-    src_address: 10.101.0.0/24
+    action: pass
+  - filter_uuid: fil-test3
+    protocol: udp
+    src_port: 67
+    dst_port: 68
     action: pass
   - filter_uuid: fil-test4
     protocol: all
     src_address: 10.101.0.10
-    action: drop
+    action: pass
   - filter_uuid: fil-test4
     protocol: udp
     src_address: 10.101.0.12
     src_port: 1344
-    action: drop
-  - filter_uuid: fil-test4
-    protocol: udp
-    src_port: 68
-    action: drop
-  - filter_uuid: fil-test4
-    protocol: udp
-    src_port: 67
-    action: drop
+    action: pass
