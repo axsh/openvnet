@@ -80,6 +80,8 @@ function teardown_environment () {
         $starting_group "Cleanup old environment"
         [ ! -d "${CACHE_DIR}/${BRANCH}" ]
         $skip_group_if_unnecessary
+        # If the nodes have already been booted succesfully the images should be working
+        # and we can kill instead of destroy to save time for future builds.
         destroy_cmd=$(
             [[ ${!STAGES[$stage]} -gt $boot ]] && { echo "kill.sh" ; return ; }
             [[ ${!STAGES[$stage]} -lt $postconfigure ]] && { echo "destroy.sh" ; return ; }
