@@ -12,7 +12,7 @@ fi
         [[ ${REBUILD} == "false" && -f "$(cache_image)" ]] && exit 0
     ) || false
     $skip_step_if_already_done; set -ex
-    cp "${ENV_ROOTDIR}/base/box-disk1.raw" "${NODE_DIR}/"
+    cp "${CACHE_DIR}/${BRANCH}/box-disk1.raw" "${NODE_DIR}/"
 ) ; prev_cmd_failed
 
 (
