@@ -1,24 +1,5 @@
 #!/bin/bash
 
-#Upload build cache if found.
-
-if [[ -n "${BUILD_CACHE_DIR}" ]]; then
-  if [[ -n "${build_cache_base}" ]]; then
-    CACHE_VOLUME="${CACHE_VOLUME}/${build_cache_base}"
-  fi
-
-  for f in $(ls "${CACHE_VOLUME}"); do
-    cached_commit=$(basename $f)
-    cached_commit="${cached_commit%.*}"
-
-    if git rev-list "${COMMIT_ID}" | grep "${cached_commit}" > /dev/null; then
-       echo "FOUND build cache ref ID: ${cached_commit}"
-       tar -xf "${CACHE_VOLUME}/$f" -C "/"
-       break
-    fi
-  done
-fi
-
 set -xe
 
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
@@ -51,6 +32,25 @@ elif [[ -z "${RELEASE_SUFFIX}" ]]; then
   RELEASE_SUFFIX=$(${current_dir}/gen-dev-build-tag.sh)
 fi
 
+
+#Upload build cache if found.
+
+if [[ -n "${BUILD_CACHE_DIR}" ]]; then
+  if [[ -n "${build_cache_base}" ]]; then
+    CACHE_VOLUME="${CACHE_VOLUME}/${build_cache_base}"
+  fi
+
+  for f in $(ls "${CACHE_VOLUME}"); do
+    cached_commit=$(basename $f)
+    cached_commit="${cached_commit%.*}"
+
+    if git rev-list "${COMMIT_ID}" | grep "${cached_commit}" > /dev/null; then
+       echo "FOUND build cache ref ID: ${cached_commit}"
+       tar -xf "${CACHE_VOLUME}/$f" -C "/"
+       break
+    fi
+  done
+fi
 
 #
 # Install dependencies
