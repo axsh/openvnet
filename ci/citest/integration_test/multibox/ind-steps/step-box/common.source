@@ -12,7 +12,7 @@ function cache_image () {
 
 function vm_image () {
     local raw_file="${NODE_DIR}/box-disk1.raw"
-    [[ -f "${CACHE_DIR}/${BRANCH}/box-disk1.raw" ]] && raw_file="${CACHE_DIR}/${BRANCH}/box-disk1.raw"
+    [[ -f "${CACHE_DIR}/${BRANCH}/box-disk1.raw" && "${base}" == "true" ]] && raw_file="${CACHE_DIR}/${BRANCH}/box-disk1.raw"
 
     echo "${raw_file}"
 }
