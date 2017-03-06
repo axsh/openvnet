@@ -25,10 +25,6 @@ ARG LONG_SHA
 # Set the ARGs to ENV because otherwise they're not visible to the run_tests.sh script
 ENV BRANCH=${BRANCH:-master} RELEASE_SUFFIX=${RELEASE_SUFFIX:-current} REBUILD=${REBUILD:-false}
 
-
-ARG BRANCH
-ARG RELEASE_SUFFIX
-
 LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \
       "jp.axsh.project"="OpenVNet" \
       "jp.axsh.task"="integration test" \
