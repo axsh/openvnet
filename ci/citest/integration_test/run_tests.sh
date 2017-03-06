@@ -21,4 +21,4 @@ bundle install
 
 set -xe
 
-bin/itest-spec run
+RELEASE_VERSION="el7" bin/itest-spec run
