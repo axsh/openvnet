@@ -5,7 +5,7 @@ cat <<EOF > openvnet/ci/citest/integration_test/multibox/base/guestroot/etc/yum.
 [openvnet]
 name=OpenVNet
 failovermethod=priority
-baseurl=https://ci.openvnet.org/repos/${BRANCH}/packages/rhel/7/vnet/${RELEASE_SUFFIX:-current}
+baseurl=https://ci.openvnet.org/repos/${BRANCH}/packages/rhel/${BUILD_OS#*el}/vnet/${RELEASE_SUFFIX:-current}
 enabled=1
 gpgcheck=0
 EOF
@@ -21,4 +21,4 @@ bundle install
 
 set -xe
 
-RELEASE_VERSION="el7" bin/itest-spec run
+RELEASE_VERSION="${BUILD_OS}" bin/itest-spec run

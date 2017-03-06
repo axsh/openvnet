@@ -34,6 +34,7 @@ trap "cleanup" EXIT
 sudo docker build -t "${repo_and_tag}" \
      --build-arg BRANCH="${BRANCH}" \
      --build-arg RELEASE_SUFFIX="${RELEASE_SUFFIX}" \
+     --build-arg BUILD_OS="${BUILD_OS}" \
      --build-arg REBUILD="${REBUILD}" -f "./ci/citest/integration_test/Dockerfile" .
 
 CID=$(sudo docker run --privileged -v "${DATA_DIR}":/data -d "${repo_and_tag}")
