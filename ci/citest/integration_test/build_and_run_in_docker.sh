@@ -19,20 +19,17 @@ CACHE_DIR="/data/openvnet-ci/branches"
 
 repo_and_tag="openvnet/integration-test:${BRANCH}.${RELEASE_SUFFIX}"
 
-function cleanup() {
-  if [[ -z "${LEAVE_CONTAINER}" || "${LEAVE_CONTAINER}" == "0" ]]; then
-    # Clean up containers
-    # Images don't need to be cleaned up. Removing them immediately would slow down
-    # builds and they can be garbage collected later.
-    for CID in $(sudo docker ps -af ancestor="${repo_and_tag}" --format "{{.ID}}"); do
-      sudo docker rm -f "${CID}"
-    done
-  else
-    echo "LEAVE_CONTAINER was set and not 0. Skip container cleanup."
-  fi
+function cleanup () {
+    [[ -z "${CID}" ]] && return 0
+    [[ -z "${LEAVE_CONTAINER}" || "${LEAVE_CONTAINER}" == "0" ]] && {
+        sudo docker rm -f "${CID}"
+    } || { echo "Skip container cleanup for: ${CID}" ; }
+
+    local user=$(/usr/bin/id -run)
+    sudo chown -R $user:$user "${CACHE_DIR}"/"${BRANCH}"
 }
 
-# trap "cleanup" EXIT
+trap "cleanup" EXIT
 
 sudo docker build -t "${repo_and_tag}" \
      --build-arg BRANCH="${BRANCH}" \
