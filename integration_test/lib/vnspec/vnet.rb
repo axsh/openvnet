@@ -132,23 +132,27 @@ module Vnspec
         end
       end
 
+      def fetch_log_output(service)
+        # vnmgr still outputs to the original logfile
+        (config[:release_version] != "el7" || service == "vnmgr" ? "cat /var/log/openvnet/%s.log" : "journalctl -u vnet-%s") % service
+      end
+
       def dump_logs(vna_index = nil)
         return unless config[:dump_flows]
-
         dump_header("dump_logs: vnmgr")
-        output = ssh(config[:nodes][:vnmgr].first, "cat /var/log/openvnet/vnmgr.log", debug: false)
+        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("vnmgr"), debug: false)
         logger.info output[:stdout]
         dump_footer
 
         dump_header("dump_logs: webapi")
-        output = ssh(config[:nodes][:vnmgr].first, "cat /var/log/openvnet/webapi.log", debug: false)
+        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("webapi"), debug: false)
         logger.info output[:stdout]
         dump_footer
 
         config[:nodes][:vna].each_with_index { |ip, i|
           next if vna_index && vna_index.to_i != i + 1
           dump_header("dump_logs: vna#{i + 1}")
-          output = ssh(ip, "cat /var/log/openvnet/vna.log", debug: false)
+          output = ssh(ip, fetch_log_output("vna"), debug: false)
           logger.info output[:stdout]
           dump_footer
         }
