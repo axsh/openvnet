@@ -56,7 +56,7 @@ docker build \
        --build-arg BUILD_URL="${BUILD_URL}" \
        --build-arg ISO8601_TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
        --build-arg LONG_SHA="${LONG_SHA}" \
-       -t "${img_tag}" -f "./deployment/docker/${BUILD_OS}.Dockerfile" .
+       -t "${img_tag}" -f "./ci/ci.el7/rspec_rpmbuild/Dockerfile" .
 
 
 CID=$(docker run -v "${REPO_BASE_DIR}:/repos" -v "${BUILD_CACHE_DIR}:/cache" ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${img_tag}")

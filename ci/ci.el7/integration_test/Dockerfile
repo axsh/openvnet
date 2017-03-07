@@ -37,4 +37,4 @@ LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \
 
 COPY [".", "/var/tmp/openvnet"]
 
-ENTRYPOINT ["./openvnet/ci/citest/integration_test/run_tests.sh"]
+ENTRYPOINT ["./openvnet/ci/ci.el7/integration_test/run_tests.sh"]

@@ -4,14 +4,14 @@ WORKDIR /var/tmp/openvnet
 
 ARG SCL_RUBY
 
-ADD deployment/docker/fastestmirror.conf /etc/yum/pluginconf.d/
+ADD ci/ci.el7/rspec_rpmbuild/fastestmirror.conf /etc/yum/pluginconf.d/
 
 RUN ["yum", "install", "-y", "epel-release", "centos-release-scl"]
 RUN ["yum", "install", "-y", "createrepo", "rpmdevtools", "rpm-build", "yum-utils", "rsync", "sudo"]
 RUN ["yum", "install", "-y", "zeromq3-devel", "yum-utils", "make", "gcc", "gcc-c++", "git", "mariadb-devel", "sqlite-devel", "mariadb", "mariadb-server"]
 RUN yum install -y ${SCL_RUBY}-build && mysql_install_db && chown mysql:mysql -R /var/lib/mysql
 
-ADD deployment/docker/yum.repo/dev.repo /etc/yum.repos.d/
+ADD ci/ci.el7/rspec_rpmbuild/yum.repo/dev.repo /etc/yum.repos.d/
 # Only enables "openvnet-third-party" repo.
 RUN yum-config-manager --disable openvnet
 
@@ -34,5 +34,5 @@ VOLUME /cache
 VOLUME /repos
 
 COPY [".", "/var/tmp/openvnet"]
-ENTRYPOINT ["deployment/packagebuild/build_packages_vnet.sh"]
+ENTRYPOINT ["ci/ci.el7/rspec_rpmbuild/build_packages_vnet.sh"]
 

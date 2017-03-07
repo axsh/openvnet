@@ -35,7 +35,7 @@ sudo docker build -t "${repo_and_tag}" \
      --build-arg BRANCH="${BRANCH}" \
      --build-arg RELEASE_SUFFIX="${RELEASE_SUFFIX}" \
      --build-arg BUILD_OS="${BUILD_OS}" \
-     --build-arg REBUILD="${REBUILD}" -f "./ci/citest/integration_test/Dockerfile" .
+     --build-arg REBUILD="${REBUILD}" -f "./ci/ci.el7/integration_test/Dockerfile" .
 
 CID=$(sudo docker run --privileged -v "${DATA_DIR}":/data ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${repo_and_tag}")
 sudo docker attach $CID
