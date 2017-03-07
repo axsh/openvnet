@@ -47,7 +47,7 @@ def stage_rpmbuild(label) {
     stage("Build ${label}") {
       checkout_and_merge()
       write_build_env(label)
-      sh "./deployment/docker/build.sh ./build.env"
+      sh "./ci/ci.${label}/rspec_rpmbuild/build.sh ./build.env"
     }
   }
 }
@@ -57,7 +57,7 @@ def stage_test_rpm(label) {
     stage("RPM Install Test ${label}") {
       checkout_and_merge()
       write_build_env(label)
-      sh "./deployment/docker/test-rpm-install.sh ./build.env"
+      sh "./ci/ci.${label}/rpmtest/test-rpm-install.sh ./build.env"
     }
   }
 }
