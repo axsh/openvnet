@@ -2,10 +2,8 @@
 
 // http://stackoverflow.com/questions/37425064/how-to-use-environment-variables-in-a-groovy-function-using-a-jenkinsfile
 import groovy.transform.Field
-@Field final BUILD_OS_TARGETS=['el7', 'el6', 'all']
 
 @Field buildParams = [
-  "BUILD_OS": "el7",
   "REBUILD": "false",
   "LEAVE_CONTAINER": "0",
   "STRIP_VENDOR": "1",
@@ -13,8 +11,6 @@ import groovy.transform.Field
 def ask_build_parameter = { ->
   return input(message: "Build Parameters", id: "build_params",
     parameters:[
-      [$class: 'ChoiceParameterDefinition',
-        choices: BUILD_OS_TARGETS.join("\n"), description: 'Target OS name', name: 'BUILD_OS'],
       [$class: 'ChoiceParameterDefinition',
         choices: "0\n1", description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER'],
       [$class: 'ChoiceParameterDefinition',
@@ -71,7 +67,7 @@ def stage_integration_test(label) {
     stage("Integration test ${label}") {
       checkout_and_merge()
       write_build_env(label)
-      sh "./ci/citest/integration_test/build_and_run_in_docker.sh ./build.env"
+      sh "./ci/ci.${label}/integration_test/build_and_run_in_docker.sh ./build.env"
     }
   }
 }
@@ -92,13 +88,6 @@ node() {
   }
 }
 
-build_nodes=BUILD_OS_TARGETS.clone()
-if( buildParams.BUILD_OS != "all" ){
-  build_nodes=[buildParams.BUILD_OS]
-}
-// Using .each{} hits "a CPS-transformed closure is not yet supported (JENKINS-26481)"
-for( label in build_nodes) {
-  stage_rpmbuild(label)
-  stage_test_rpm(label)
-  stage_integration_test(label)
-}
+stage_rpmbuild("${env.JOB_NAME}")
+stage_test_rpm("${env.JOB_NAME}")
+stage_integration_test("${env.JOB_NAME}")
