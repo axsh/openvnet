@@ -88,6 +88,8 @@ node() {
   }
 }
 
-stage_rpmbuild("${env.JOB_NAME}")
-stage_test_rpm("${env.JOB_NAME}")
-stage_integration_test("${env.JOB_NAME}")
+def jobName = "${env.JOB_NAME}".tokenize("/")[0]
+
+stage_rpmbuild("${jobName}")
+stage_test_rpm("${jobName}")
+stage_integration_test("${jobName}")
