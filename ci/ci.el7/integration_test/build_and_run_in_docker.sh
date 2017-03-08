@@ -31,6 +31,8 @@ function cleanup () {
 
 trap "cleanup" EXIT
 
+echo "COMMIT_ID=$(git rev-parse HEAD)" >> ${BUILD_ENV_PATH}
+
 sudo docker build -t "${repo_and_tag}" \
      --build-arg BRANCH="${BRANCH}" \
      --build-arg RELEASE_SUFFIX="${RELEASE_SUFFIX}" \
