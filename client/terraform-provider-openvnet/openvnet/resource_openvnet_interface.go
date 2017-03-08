@@ -76,7 +76,7 @@ func OpenVNetInterface() *schema.Resource {
 
 			"mode": &schema.Schema{
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 
 			"security_group": &schema.Schema{
