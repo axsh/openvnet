@@ -40,7 +40,7 @@ create_cache () {
         (cd "${cache_vol}"; ls *.tar) | cut -d '.' -f1 > "${TMPDIR}/sha.b"
         # Set operation: B - A
         join -v 2 <(sort -u ${TMPDIR}/sha.a) <(sort -u ${TMPDIR}/sha.b) | while read i; do
-            echo "Removing build cache: ${CACHE_VOLUME}/${i}.tar"
+            echo "Removing build cache: ${cache_vol}/${i}.tar"
             rm -f "${cache_vol}/${i}.tar" || :
         done
     fi
