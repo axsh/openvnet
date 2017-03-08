@@ -1,6 +1,6 @@
 #!/bin/bash
 
-openvnet/ci/citest/integration_test/multibox/build.sh
+openvnet/ci/ci.el7/integration_test/multibox/build.sh
 
 . /etc/profile.d/rvm.sh
 
@@ -11,4 +11,4 @@ bundle install
 
 set -xe
 
-RELEASE_VERSION="${BUILD_OS}" bin/itest-spec run
+RELEASE_VERSION="el7" bin/itest-spec run
