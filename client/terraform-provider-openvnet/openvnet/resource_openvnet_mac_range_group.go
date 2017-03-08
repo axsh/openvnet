@@ -25,6 +25,7 @@ func OpenVNetMacRangeGroup() *schema.Resource {
 			"allocation_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 
 			"mac_range": &schema.Schema{
