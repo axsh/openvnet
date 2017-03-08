@@ -44,8 +44,6 @@ create_cache () {
             rm -f "${cache_vol}/${i}.tar" || :
         done
     fi
-
-
 }
 
 try_load_cache () {
@@ -55,6 +53,7 @@ try_load_cache () {
 
     if [[ -n "${cache_dir}" ]]; then
         for f in $(ls "${cache_vol}"); do
+            $(file --mime-type "${f}" | grep -q "tar") || continue # To make sure we are only matching tar files
             cached_commit=$(basename $f)
             cached_commit="${cached_commit%.*}"
 
