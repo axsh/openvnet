@@ -2,7 +2,11 @@
 
 set -xe
 
+
+
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+
+source "${current_dir}/../../cache_functions.sh" ${build_cache_base}
 
 BUILD_TYPE="${BUILD_TYPE:-development}"
 OPENVNET_SPEC_FILE="${current_dir}/packages.d/vnet/openvnet.spec"
@@ -83,22 +87,7 @@ mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
 
 #Upload build cache if found.
 
-if [[ -n "${BUILD_CACHE_DIR}" ]]; then
-  if [[ -n "${build_cache_base}" ]]; then
-    CACHE_VOLUME="${CACHE_VOLUME}/${build_cache_base}"
-  fi
-
-  for f in $(ls "${CACHE_VOLUME}"); do
-    cached_commit=$(basename $f)
-    cached_commit="${cached_commit%.*}"
-
-    if git rev-list "${COMMIT_ID}" | grep "${cached_commit}" > /dev/null; then
-       echo "FOUND build cache ref ID: ${cached_commit}"
-       tar -xf "${CACHE_VOLUME}/$f" -C "/"
-       break
-    fi
-  done
-fi
+try_load_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}"
 
 #
 # Run rspec
@@ -171,30 +160,6 @@ if [ -L "${current_symlink}" ]; then
 fi
 sudo ln -s "./$(basename ${repo_dir})" "${current_symlink}"
 
-TMPDIR=$(mktemp -d)
-if [[ -n "${BUILD_CACHE_DIR}" ]]; then
-  if [[ ! -w /cache ]]; then
-      echo "ERROR: CACHE_VOLUME '${BUILD_CACHE_DIR}' is not writable." >&2
-      exit 1
-  fi
-
-  if [[ ! -d "${CACHE_VOLUME}" ]]; then
-      mkdir -p "${CACHE_VOLUME}"
-  fi
-
-  tar cO --directory=/ --files-from=ci/ci.el7/rspec_rpmbuild/build-cache.list > "${CACHE_VOLUME}/${COMMIT_ID}.tar"
-
-  # Clear build cache files which no longer referenced from Git ref names (branch, tags)
-  git show-ref --head --dereference | awk '{print $1}' > "${TMPDIR}/sha.a"
-  for i in $(git reflog show | head -10 | awk '{print $2}'); do
-      git rev-parse "$i"
-  done >> "${TMPDIR}/sha.a"
-  (cd "/cache/${cache_base}"; ls *.tar) | cut -d '.' -f1 > "${TMPDIR}/sha.b"
-  # Set operation: B - A
-  join -v 2 <(sort -u ${TMPDIR}/sha.a) <(sort -u ${TMPDIR}/sha.b) | while read i; do
-      echo "Removing build cache: ${CACHE_VOLUME}/${i}.tar"
-      rm -f "${cache_base}/${i}.tar" || :
-  done
-fi
+create_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}" "${current_dir}/build-cache.list"
 
 mysqladmin -uroot shutdown
