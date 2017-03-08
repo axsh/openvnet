@@ -32,26 +32,6 @@ elif [[ -z "${RELEASE_SUFFIX}" ]]; then
   RELEASE_SUFFIX=$(${current_dir}/gen-dev-build-tag.sh)
 fi
 
-
-#Upload build cache if found.
-
-if [[ -n "${BUILD_CACHE_DIR}" ]]; then
-  if [[ -n "${build_cache_base}" ]]; then
-    CACHE_VOLUME="${CACHE_VOLUME}/${build_cache_base}"
-  fi
-
-  for f in $(ls "${CACHE_VOLUME}"); do
-    cached_commit=$(basename $f)
-    cached_commit="${cached_commit%.*}"
-
-    if git rev-list "${COMMIT_ID}" | grep "${cached_commit}" > /dev/null; then
-       echo "FOUND build cache ref ID: ${cached_commit}"
-       tar -xf "${CACHE_VOLUME}/$f" -C "/"
-       break
-    fi
-  done
-fi
-
 #
 # Install dependencies
 #
@@ -94,6 +74,32 @@ set +e
 . scl_source enable ${SCL_RUBY}
 set -e
 
+OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
+if [[ -d "$OPENVNET_SRC_BUILD_DIR" && -z "${SKIP_CLEANUP}" ]]; then
+  rm -rf "$OPENVNET_SRC_BUILD_DIR"
+fi
+
+mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
+
+#Upload build cache if found.
+
+if [[ -n "${BUILD_CACHE_DIR}" ]]; then
+  if [[ -n "${build_cache_base}" ]]; then
+    CACHE_VOLUME="${CACHE_VOLUME}/${build_cache_base}"
+  fi
+
+  for f in $(ls "${CACHE_VOLUME}"); do
+    cached_commit=$(basename $f)
+    cached_commit="${cached_commit%.*}"
+
+    if git rev-list "${COMMIT_ID}" | grep "${cached_commit}" > /dev/null; then
+       echo "FOUND build cache ref ID: ${cached_commit}"
+       tar -xf "${CACHE_VOLUME}/$f" -C "/"
+       break
+    fi
+  done
+fi
+
 #
 # Run rspec
 #
@@ -106,12 +112,6 @@ set -e
     bundle exec rspec spec
 )
 
-OPENVNET_SRC_BUILD_DIR="${WORK_DIR}/SOURCES/openvnet"
-if [[ -d "$OPENVNET_SRC_BUILD_DIR" && -z "${SKIP_CLEANUP}" ]]; then
-  rm -rf "$OPENVNET_SRC_BUILD_DIR"
-fi
-
-mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
 # Copy only the tracked files to rpmbuild SOURCES/.
 (
   cd $(git rev-parse --show-toplevel)
