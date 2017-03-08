@@ -5,7 +5,7 @@ MAINTAINER "Axsh Co. LTD"
 VOLUME /data
 
 RUN ["yum", "install", "-y", "epel-release"]
-RUN ["yum", "install", "-y", "rsync", "bridge-utils", "qemu-kvm", "qemu-system-x86", "parted", "sudo", "openssh-clients", "nmap-ncat", "git", "which"]
+RUN ["yum", "install", "-y", "rsync", "bridge-utils", "qemu-kvm", "qemu-system-x86", "parted", "sudo", "openssh-clients", "nmap-ncat", "git", "which", "file"]
 RUN mkdir /var/tmp/openvnet
 RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
 RUN curl -sSL https://get.rvm.io | bash -s stable
