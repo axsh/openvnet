@@ -61,7 +61,7 @@ mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
-cp -r ci/ci.el7/rspec_rpmbuild/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
+cp -r ci/ci.el7/rspec_rpmbuild/conf_files/* "$RPM_BUILD_ROOT"/
 echo "SCL_RUBY=%{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/sysconfig/openvnet
 echo ". scl_source enable %{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/openvnet/vnctl-ruby
 install -m 755 ci/ci.el7/rspec_rpmbuild/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
