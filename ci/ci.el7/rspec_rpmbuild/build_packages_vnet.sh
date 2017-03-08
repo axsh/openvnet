@@ -182,7 +182,7 @@ if [[ -n "${BUILD_CACHE_DIR}" ]]; then
       mkdir -p "${CACHE_VOLUME}"
   fi
 
-  tar cO --directory=/ --files-from=deployment/docker/build-cache.list > "${CACHE_VOLUME}/${COMMIT_ID}.tar"
+  tar cO --directory=/ --files-from=ci/ci.el7/rspec_rpmbuild/build-cache.list > "${CACHE_VOLUME}/${COMMIT_ID}.tar"
 
   # Clear build cache files which no longer referenced from Git ref names (branch, tags)
   git show-ref --head --dereference | awk '{print $1}' > "${TMPDIR}/sha.a"
