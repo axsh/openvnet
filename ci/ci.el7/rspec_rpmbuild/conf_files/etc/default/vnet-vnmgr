@@ -1,2 +1,0 @@
-[ -f /etc/default/openvnet ] && . /etc/default/openvnet
-VNET_USER=vnet-vnmgr
