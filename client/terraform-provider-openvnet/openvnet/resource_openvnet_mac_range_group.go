@@ -1,8 +1,6 @@
 package openvnet
 
 import (
-	"strconv"
-
 	"github.com/axsh/openvnet/client/go-openvnet"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -102,8 +100,8 @@ func openVNetMacRangeGroupRead(d *schema.ResourceData, m interface{}) error {
 	for i, mr := range macRange.Items {
 		macRanges[i] = make(map[string]interface{})
 		macRanges[i]["uuid"] = mr.UUID
-		macRanges[i]["begin_mac_address"] = strconv.Itoa(mr.BeginMacAddress)
-		macRanges[i]["end_mac_address"] = strconv.Itoa(mr.EndMacAddress)
+		macRanges[i]["begin_mac_address"] = mr.BeginMacAddress
+		macRanges[i]["end_mac_address"] = mr.EndMacAddress
 	}
 	d.Set("mac_range", macRanges)
 
