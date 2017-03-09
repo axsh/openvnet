@@ -40,14 +40,8 @@ module Vnet::NodeApi
       end
 
       def destroy(filter, options = {})
-        # Celluloid.logger.debug "#{self.name}.node_api.destroy #{filter}"
-
         destroy_with_transaction(filter).tap { |model|
           next if model.nil?
-
-          # TODO: Verify that it's been destroyed. However this will
-          # have issues with the transaction, so call sync query.
-
           dispatch_deleted_item_events(model)
         }
       end
@@ -104,17 +98,10 @@ module Vnet::NodeApi
       #
 
       def plugin(plugin, *args, &block)
-        #Celluloid.logger.debug "#{self.name}.plugin #{plugin.name} #{args}"
-
         extend(plugin::ClassMethods)
         include(plugin::InstanceMethods)
       end
 
-      # Install mode module as Sequel plugin.
-      #
-      # class Foo < Base
-      #   valid_update_fields [:foo, :bar]
-      # end
       def valid_update_fields(fields)
         return if self == Base
 
@@ -175,11 +162,6 @@ module Vnet::NodeApi
       end
 
       def internal_destroy(model)
-        # Celluloid.logger.debug "#{self.name}.pre-model.destroy"
-        # (model && model.destroy).tap { |m|
-        #   Celluloid.logger.debug "#{self.name}.post-model.destroy"
-        # }
-
         model && model.destroy
       end
 
