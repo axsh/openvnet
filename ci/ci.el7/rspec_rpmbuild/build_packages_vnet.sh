@@ -33,7 +33,7 @@ if [ "${BUILD_TYPE}" == "stable" ] && [ -z "${RELEASE_SUFFIX}" ]; then
 elif [[ -z "${RELEASE_SUFFIX}" ]]; then
   # RELEASE_SUFFIX is recommended to pass to this script. The line is for
   # the backward compatibility to the current CI infrastructure.
-  RELEASE_SUFFIX=$(${current_dir}/gen-dev-build-tag.sh)
+  RELEASE_SUFFIX=$(${current_dir}/../../gen-dev-build-tag.sh)
 fi
 
 #

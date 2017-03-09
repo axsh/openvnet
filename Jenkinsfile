@@ -84,7 +84,7 @@ node() {
     checkout scm
     // http://stackoverflow.com/questions/36507410/is-it-possible-to-capture-the-stdout-from-the-sh-dsl-command-in-the-pipeline
     // https://issues.jenkins-ci.org/browse/JENKINS-26133
-    RELEASE_SUFFIX=sh(returnStdout: true, script: "./deployment/packagebuild/gen-dev-build-tag.sh").trim()
+    RELEASE_SUFFIX=sh(returnStdout: true, script: "./ci/gen-dev-build-tag.sh").trim()
   }
 }
 
