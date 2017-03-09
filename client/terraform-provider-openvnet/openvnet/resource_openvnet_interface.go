@@ -9,7 +9,6 @@ func OpenVNetInterface() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetInterfaceCreate,
 		Read:   openVNetInterfaceRead,
-		Update: openVNetInterfaceUpdate,
 		Delete: openVNetInterfaceDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -17,84 +16,79 @@ func OpenVNetInterface() *schema.Resource {
 			"display_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"ingress_filtering_enabled": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"enable_routing": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"enable_route_translation": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"owner_datapath_uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"enable_filtering": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"segment_uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"network_uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"mac_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"ipv4_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"port_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"mode": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-			},
-
-			"security_group": &schema.Schema{
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"security_group_id": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-
-						"display_name": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
+				ForceNew: true,
 			},
 		},
 	}
@@ -153,10 +147,6 @@ func openVNetInterfaceRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("mode", intfc.Mode)
 	d.Set("ipv4_address", intfc.IPv4Address)
 
-	return nil
-}
-
-func openVNetInterfaceUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
