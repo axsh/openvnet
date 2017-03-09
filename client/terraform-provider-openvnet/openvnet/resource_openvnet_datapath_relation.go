@@ -9,7 +9,6 @@ func OpenVNetDatapathRelation() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetDatapathRelationCreate,
 		Read:   openVNetDatapathRelationRead,
-		Update: openVNetDatapathRelationUpdate,
 		Delete: openVNetDatapathRelationDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -18,26 +17,31 @@ func OpenVNetDatapathRelation() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"network": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 
 						"mac_address": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 
 						"interface_uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -46,21 +50,25 @@ func OpenVNetDatapathRelation() *schema.Resource {
 			"route_link": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 
 						"mac_address": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 
 						"interface_uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -69,21 +77,25 @@ func OpenVNetDatapathRelation() *schema.Resource {
 			"segment": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 
 						"mac_address": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 
 						"interface_uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -126,10 +138,6 @@ func openVNetDatapathRelationCreate(d *schema.ResourceData, m interface{}) error
 }
 
 func openVNetDatapathRelationRead(d *schema.ResourceData, m interface{}) error {
-	return nil
-}
-
-func openVNetDatapathRelationUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 

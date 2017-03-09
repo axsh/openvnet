@@ -9,7 +9,6 @@ func OpenVNetTopology() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetTopologyCreate,
 		Read:   openVNetTopologyRead,
-		Update: openVNetTopologyUpdate,
 		Delete: openVNetTopologyDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -18,21 +17,25 @@ func OpenVNetTopology() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"mode": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"network": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -41,11 +44,13 @@ func OpenVNetTopology() *schema.Resource {
 			"route_link": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -54,11 +59,13 @@ func OpenVNetTopology() *schema.Resource {
 			"segment": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -67,11 +74,13 @@ func OpenVNetTopology() *schema.Resource {
 			"underlay": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -80,15 +89,18 @@ func OpenVNetTopology() *schema.Resource {
 			"datapath": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"interface_uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -102,8 +114,8 @@ func openVNetTopologyCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*openvnet.Client)
 
 	params := &openvnet.TopologyCreateParams{
-		UUID:        d.Get("uuid").(string),
-		Mode:        d.Get("mode").(string),
+		UUID: d.Get("uuid").(string),
+		Mode: d.Get("mode").(string),
 	}
 
 	tp, _, _ := client.Topology.Create(params)
@@ -151,10 +163,6 @@ func openVNetTopologyRead(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("mode", tp.Mode)
 
-	return nil
-}
-
-func openVNetTopologyUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 

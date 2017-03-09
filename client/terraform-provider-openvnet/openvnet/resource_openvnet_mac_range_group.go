@@ -9,7 +9,6 @@ func OpenVNetMacRangeGroup() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetMacRangeGroupCreate,
 		Read:   openVNetMacRangeGroupRead,
-		Update: openVNetMacRangeGroupUpdate,
 		Delete: openVNetMacRangeGroupDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -18,35 +17,41 @@ func OpenVNetMacRangeGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"allocation_type": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"mac_range": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"uuid": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 
 						"begin_mac_address": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 
 						"end_mac_address": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
 							Computed: true,
+							ForceNew: true,
 						},
 					},
 				},
@@ -106,10 +111,6 @@ func openVNetMacRangeGroupRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("mac_range", macRanges)
 
 	return err
-}
-
-func openVNetMacRangeGroupUpdate(d *schema.ResourceData, m interface{}) error {
-	return nil
 }
 
 func openVNetMacRangeGroupDelete(d *schema.ResourceData, m interface{}) error {

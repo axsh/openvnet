@@ -9,7 +9,6 @@ func OpenVNetSegment() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetSegmentCreate,
 		Read:   openVNetSegmentRead,
-		Update: openVNetSegmentUpdate,
 		Delete: openVNetSegmentDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -18,11 +17,13 @@ func OpenVNetSegment() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"mode": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -51,10 +52,6 @@ func openVNetSegmentRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("mode", segment.Mode)
 
 	return err
-}
-
-func openVNetSegmentUpdate(d *schema.ResourceData, m interface{}) error {
-	return nil
 }
 
 func openVNetSegmentDelete(d *schema.ResourceData, m interface{}) error {

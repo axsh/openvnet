@@ -9,7 +9,6 @@ func OpenVNetRouteLink() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetRouteLinkCreate,
 		Read:   openVNetRouteLinkRead,
-		Update: openVNetRouteLinkUpdate,
 		Delete: openVNetRouteLinkDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -18,11 +17,13 @@ func OpenVNetRouteLink() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"mac_address": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -53,10 +54,6 @@ func openVNetRouteLinkRead(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("mac_address", routelink.MacAddress)
 
-	return nil
-}
-
-func openVNetRouteLinkUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 

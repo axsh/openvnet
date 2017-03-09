@@ -9,7 +9,6 @@ func OpenVNetDatapath() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetDatapathCreate,
 		Read:   openVNetDatapathRead,
-		Update: openVNetDatapathUpdate,
 		Delete: openVNetDatapathDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -17,22 +16,26 @@ func OpenVNetDatapath() *schema.Resource {
 			"display_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"dpid": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"node_id": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -69,10 +72,6 @@ func openVNetDatapathRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("node_id", datapath.NodeId)
 	d.Set("is_connected", datapath.IsConnected)
 
-	return nil
-}
-
-func openVNetDatapathUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 

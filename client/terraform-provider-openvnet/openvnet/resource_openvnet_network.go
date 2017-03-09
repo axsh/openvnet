@@ -9,7 +9,6 @@ func OpenVNetNetwork() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetNetworkCreate,
 		Read:   openVNetNetworkRead,
-		Update: openVNetNetworkUpdate,
 		Delete: openVNetNetworkDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -18,36 +17,43 @@ func OpenVNetNetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"display_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"ipv4_network": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"ipv4_prefix": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"network_mode": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"domain_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"segment_uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -89,10 +95,6 @@ func openVNetNetworkRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("domain_name", network.DomainName)
 	d.Set("segment_uuid", network.SegmentID)
 
-	return nil
-}
-
-func openVNetNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 

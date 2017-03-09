@@ -9,7 +9,6 @@ func OpenVNetRoute() *schema.Resource {
 	return &schema.Resource{
 		Create: openVNetRouteCreate,
 		Read:   openVNetRouteRead,
-		Update: openVNetRouteUpdate,
 		Delete: openVNetRouteDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -18,41 +17,49 @@ func OpenVNetRoute() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
+				ForceNew: true,
 			},
 
 			"interface_uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"route_link_uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"network_uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"ipv4_network": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"ipv4_prefix": &schema.Schema{
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"ingress": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 
 			"egress": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -92,10 +99,6 @@ func openVNetRouteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("egress", route.Egress)
 
 	return err
-}
-
-func openVNetRouteUpdate(d *schema.ResourceData, m interface{}) error {
-	return nil
 }
 
 func openVNetRouteDelete(d *schema.ResourceData, m interface{}) error {
