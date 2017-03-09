@@ -7,66 +7,66 @@ set -e
 set -x
 
 package=$1
-version=$2
-REPO_BASE_DIR="${REPO_BASE_DIR:-/var/www/html/repos}"
+work_dir=${WORK_DIR:-/tmp/vnet-rpmbuild}
+repo_base_dir=${REPO_BASE_DIR:-${work_dir}}/packages/rhel/6/third_party
+repo_dir=
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+fpm_cook_cmd=${fpm_cook_cmd:-${current_dir}/bin/fpm-cook}
+possible_archs="i386 noarch x86_64"
+keep_fpm_workdirs=5
 
 function build_all_packages(){
   find ${current_dir}/packages.d/third_party -mindepth 1 -maxdepth 1 -type d | while read line; do
-    cd ${line}
-    # Select suitable versions file.
-    # el6.versions, el7.versions, versions
-    vfile=$(
-      if [[ -f el$(rpm -E '%{rhel}').versions ]]; then
-        echo el$(rpm -E '%{rhel}').versions
-      else
-        echo "versions"
-      fi
-    )
-    cat "${vfile}" | while read v; do
-      build_package $(basename ${line}) "${v}"
-    done
+    build_package $(basename ${line})
   done
 }
 
 function build_package(){
   local name=$1
-  local version=$2
   local recipe_dir=${current_dir}/packages.d/third_party/${name}
-  if [[ -x ${recipe_dir}/rpmbuild.sh ]]; then
-    (cd ${recipe_dir}; ./rpmbuild.sh "${version}")
+  local package_work_dir=${work_dir}/packages.d/third_party/${name}
+  mkdir -p ${package_work_dir}
+  if [[ -f ${recipe_dir}/recipe.rb ]]; then
+    (cd ${recipe_dir}; ${fpm_cook_cmd} --workdir ${package_work_dir} --no-deps)
+  elif [[ -x ${recipe_dir}/rpmbuild.sh ]]; then
+    ${recipe_dir}/rpmbuild.sh
   else
     echo "error: script not found: ${name}"
     exit 1
   fi
+  for arch in ${possible_archs}; do
+    cp ${package_work_dir}/pkg/*${arch}.rpm ${repo_dir}/${arch} | :
+  done
 }
 
-# sudo wrapper functions.
-if [[ $(id -u) -ne 0 ]]; then
-  function yum() {
-    /usr/bin/sudo $(command -v yum) $*
-  }
+function check_repo(){
+  repo_dir=${repo_base_dir}/$(date +%Y%m%d%H%M%S)
+  rm -rf ${repo_dir}
+  mkdir -p ${repo_dir}
+  for i in ${possible_archs}; do
+    mkdir ${repo_dir}/${i}
+  done
+}
 
-  function yum-builddep() {
-    /usr/bin/sudo $(command -v yum-builddep) $*
-  }
-  # export these wrappers to subshell.
-  export -f yum yum-builddep
-fi
+function cleanup(){
+  for s in package-dir-build* package-dir-staging* package-rpm-build* ruby-build.*; do
+    find /tmp -mindepth 1 -maxdepth 1 -mtime +1 -name "${s}" -print0 | xargs -0 rm -rf
+  done
+}
 
-rpm -q rpmdevtools > /dev/null || yum install -y rpmdevtools
-rpm -q createrepo > /dev/null || yum install -y createrepo
+rm -rf ${work_dir}/packages.d/third_party
+mkdir -p ${work_dir}/packages.d/third_party
+
+check_repo
 
 if [[ -n ${package} ]]; then
-  build_package ${package} ${version}
+  build_package ${package}
 else
   build_all_packages
 fi
 
-repo_dir=${REPO_BASE_DIR}/packages/rhel/$(rpm -E '%{rhel}')/third_party/$(date +%Y%m%d%H%M%S)
-[ -d ${repo_dir} ] || mkdir -p ${repo_dir}
-# Copy all rpms from rpmbuild/RPMS/*.
-cp -a $(rpm -E '%{_rpmdir}')/* ${repo_dir}
 (cd ${repo_dir}; createrepo .)
 
-(cd ${repo_dir}/..; ln -sfn $(basename ${repo_dir}) current)
+ln -sfn ${repo_dir} ${repo_base_dir}/current
+
+cleanup
