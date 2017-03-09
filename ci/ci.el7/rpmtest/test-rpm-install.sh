@@ -29,7 +29,7 @@ set +a
 
 if [[ -n "$JENKINS_HOME" ]]; then
   # openvnet-axsh/branch1/el7
-  img_tag=$(echo "rpm-install.${JOB_NAME}/${BUILD_OS}" | tr '/' '.')
+  img_tag="openvnet/rpmtest:${BRANCH}.${RELEASE_SUFFIX}"
 else
   img_tag="rpm-install.openvnet.$(git rev-parse --abbrev-ref HEAD).${BUILD_OS}"
 fi
