@@ -2,14 +2,14 @@
 # comment it out here.
 NODES=(
     "base"         # base image
-    "192.168.3.91" # vm1 vm2
-    "192.168.3.92" # vm3 vm4
-    "192.168.3.93" # vm5 vm6
-    "192.168.3.95" # router
-    "192.168.3.96" # wanedge vm7
+    "192.168.2.91" # vm1 vm2
+    "192.168.2.92" # vm3 vm4
+    "192.168.2.93" # vm5 vm6
+    "192.168.2.95" # router
+    "192.168.2.96" # wanedge vm7
 )
 
-ip_mng_br0="192.168.3.1/24"
+ip_mng_br0="192.168.2.1/24"
 ip_wanedge="10.210.0.1/24"
 network_wanedge="10.210.0.0/24"
 
