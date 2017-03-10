@@ -33,7 +33,7 @@ module Vnspec
     end
 
     def ssh_options
-      DEFAULT_OPTIONS.merge(set_ssh_key, config[:ssh_options] || {}).merge(key: set_ssh_key)
+      DEFAULT_OPTIONS.merge(config[:ssh_options] || {}).merge(key: set_ssh_key)
     end
 
 
