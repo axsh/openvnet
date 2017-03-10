@@ -290,8 +290,12 @@ module Vnspec
 
       # TODO: Move these to a separate module.
       def udp_listen(port)
-        cmd = "nohup nc -c \"touch #{UDP_OUTPUT_DIR}/#{port}_passed\" -lu %s > %s 2> /dev/null < /dev/null & echo $!" %
-          [port,"#{UDP_OUTPUT_DIR}/#{port}"]
+        cmd = case config[:release_version]
+              when "el7"
+                "nohup nc -c \"touch #{UDP_OUTPUT_DIR}/#{port}_passed\" -lu %s > %s 2> /dev/null < /dev/null & echo $!"
+              when "el6"nil
+                "nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!"
+              end % [port,"#{UDP_OUTPUT_DIR}/#{port}"]
 
         pid = ssh_on_guest(cmd)[:stdout].chomp
         @open_udp_ports[port] = pid
