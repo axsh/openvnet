@@ -293,7 +293,7 @@ module Vnspec
         cmd = case config[:release_version]
               when "el7"
                 "nohup nc -c \"touch #{UDP_OUTPUT_DIR}/#{port}_passed\" -lu %s > %s 2> /dev/null < /dev/null & echo $!"
-              when "el6"nil
+              when "el6",nil
                 "nohup nc -lu %s > %s 2> /dev/null < /dev/null & echo $!"
               end % [port,"#{UDP_OUTPUT_DIR}/#{port}"]
 
