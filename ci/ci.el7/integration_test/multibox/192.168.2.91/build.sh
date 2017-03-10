@@ -18,6 +18,9 @@ IND_STEPS=(
     "redis"
     "mysql"
     "lxc"
+    "sclo-ruby"
+    "nettools"
+    "openvswitch"
 )
 
 initialize

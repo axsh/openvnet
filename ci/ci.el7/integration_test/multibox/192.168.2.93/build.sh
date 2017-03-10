@@ -13,6 +13,9 @@ IND_STEPS=(
     "ssh"
     "epel"
     "lxc"
+    "sclo-ruby"
+    "nettools"
+    "openvswitch"
 )
 
 initialize
