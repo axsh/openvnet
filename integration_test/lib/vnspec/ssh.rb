@@ -21,12 +21,17 @@ module Vnspec
       use_agent: false,
       timeout: 300,
       verbose: :fatal,
-      key: [ "~/.ssh/sshkey" ],
+      # since the el7 and el6 environments are setup differently for handling ssh keys this serves as a workaround
+      key: case config[:release_version]
+           when "el7"      then [ "~/.ssh/sshkey" ]
+           when "el6", nil then [ "~/.ssh/id_rsa" ]
+           end,
     }
 
     def ssh_options
       DEFAULT_OPTIONS.merge(config[:ssh_options] || {})
     end
+
 
     def ssh(host, command, options = {})
       logger.info "[#{host}] #{command}"
