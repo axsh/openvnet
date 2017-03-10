@@ -7,7 +7,7 @@ fi
 (
     $starting_step "Copy base raw image"
     (
-        [[ $base == "true" ]] && exit 0
+        [[ "${vm_name}" == "base" ]] && exit 0
         [[ -f "${NODE_DIR}/box-disk1.raw" ]] && exit 0
         [[ ${REBUILD} == "false" && -f "$(cache_image)" ]] && exit 0
     ) || false

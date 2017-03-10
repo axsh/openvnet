@@ -8,9 +8,6 @@ TMP_ROOT="${NODE_DIR}/tmp_root"
 . "${NODE_DIR}/vmspec.conf"
 . "${ENV_ROOTDIR}/ind-steps/common.source"
 
-ovn_vnmgr=true
-ovn_webapi=true
-
 IND_STEPS=(
     "box"
     "ssh"

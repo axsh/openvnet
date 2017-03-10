@@ -9,8 +9,6 @@ TMP_ROOT="${NODE_DIR}/tmp_root"
 . "${NODE_DIR}/vmspec.conf"
 . "${ENV_ROOTDIR}/ind-steps/common.source"
 
-base=true
-
 IND_STEPS=(
     "box"
     "ssh"

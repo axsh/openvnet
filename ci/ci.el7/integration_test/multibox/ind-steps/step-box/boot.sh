@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[[ "${base}" == "true" ]] && { umount-seed-image ; mv -f $(vm_image) "${CACHE_DIR}/${BRANCH}/" ; exit 200 ; }
+[[ "${vm_name}" == "base" ]] && { umount-seed-image ; mv -f $(vm_image) "${CACHE_DIR}/${BRANCH}/" ; exit 200 ; }
 (
     $starting_group "Cleanup build phase"
     [ ! -f "$(vm_image)" ]
