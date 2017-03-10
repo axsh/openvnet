@@ -1,3 +1,5 @@
+#!/bin/bash
+
 (
     $starting_group "Install sclo ruby"
     run_cmd "rpm -qa | grep -q rh-ruby"

@@ -1,3 +1,4 @@
+#!/bin/bash
 
 for node in ${scheduled_nodes[@]} ; do
     (

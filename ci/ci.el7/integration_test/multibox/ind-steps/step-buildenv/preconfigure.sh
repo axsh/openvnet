@@ -1,3 +1,4 @@
+#!/bin/bash
 
 $REBUILD && {
     rm -rf "${CACHE_DIR}/${BRANCH}"

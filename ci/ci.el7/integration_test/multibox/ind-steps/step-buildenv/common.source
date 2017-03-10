@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function check_dep() {
   local dep="$1"
 

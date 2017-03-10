@@ -1,3 +1,5 @@
+#!/bin/bash
+
 (
     $starting_step "Disable strict trans tables"
     sudo grep -q "STRICT_TRANS_TABLES" ${TMP_ROOT}/etc/my.cnf

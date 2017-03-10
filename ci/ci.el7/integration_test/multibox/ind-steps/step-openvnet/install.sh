@@ -1,3 +1,4 @@
+#!/bin/bash
 
 (
     $starting_step "Update openvnet repository"

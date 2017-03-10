@@ -1,3 +1,5 @@
+#!/bin/bash
+
 (
     $starting_step "Unbind redis from localhost only"
     sudo grep -q "^#bind" ${TMP_ROOT}/etc/redis.conf

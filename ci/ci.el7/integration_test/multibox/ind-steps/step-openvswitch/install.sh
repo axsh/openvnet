@@ -1,3 +1,5 @@
+#!/bin/bash
+
 (
     $starting_step "Install Open vSwitch"
     run_cmd "rpm -qa | grep -wq openvswitch"

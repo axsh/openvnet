@@ -1,3 +1,5 @@
+#!/bin/bash
+
 (
     $starting_step "Add mysql community release rpm package"
     run_cmd "rpm -qa | grep -wq mysql-community-release-el7"

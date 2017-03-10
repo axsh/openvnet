@@ -1,3 +1,4 @@
+#!/bin/bash
 
 check_dep "tar"
 check_dep "rsync"
