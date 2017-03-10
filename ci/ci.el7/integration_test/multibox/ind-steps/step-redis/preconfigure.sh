@@ -6,3 +6,5 @@
     $skip_step_if_already_done; set -xe
     run_cmd "sed -i 's,bind,#bind,g' /etc/redis.conf"
 ) ; prev_cmd_failed
+
+enable_service "redis"

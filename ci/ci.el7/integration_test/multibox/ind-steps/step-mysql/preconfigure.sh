@@ -8,3 +8,5 @@
     # Mysql now  sets STRIC_TRANS_TABLES by default, this serves as a workaround
     run_cmd "sed -i 's,\,STRICT_TRANS_TABLES,,g' /etc/my.cnf"
 ) ; prev_cmd_failed
+
+enable_service "mysqld"

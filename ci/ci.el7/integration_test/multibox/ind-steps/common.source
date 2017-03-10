@@ -75,17 +75,6 @@ function build () {
     done
 }
 
-function start_service () {
-    local service="$1"
-
-    (
-        $starting_step "Start ${service}"
-        run_cmd "systemctl status ${service}.service | grep -q running"
-        $skip_step_if_already_done ; set -xe
-        run_cmd "systemctl start ${service}.service"
-    ) ; prev_cmd_failed
-}
-
 function run_ssh () {
     local key="${NODE_DIR}/sshkey"
     [[ -f ${key} ]] &&
@@ -97,4 +86,37 @@ function run_ssh () {
 function run_cmd () {
     [[ $(get_env_state) -gt $boot ]] && { run_ssh root@${IP_ADDR} "${@}" ; return $? ; }
     sudo chroot ${TMP_ROOT} /bin/bash -c "${@}"
+}
+
+function service_step () {
+    local service=${1} task=${2} check=${3}
+
+    (
+        $starting_step "Systemctl ${task} ${service}"
+        [[ $check -eq 0 ]]
+        $skip_step_if_already_done ; set -xe
+        run_cmd "systemctl ${task} ${service}"
+    ) ; prev_cmd_failed
+}
+
+function start_service () {
+    local service="${1}"
+
+    [[ $(get_env_state) -gt $boot ]] || return 0
+    service_step "${service}" "start" 1
+}
+
+function enable_service () {
+    local service="${1}"
+
+    run_cmd "systemctl -q is-enabled ${service}"
+    service_step "${service}" "enable" $?
+}
+
+function disable_service (){
+    local service="${1}"
+
+    run_cmd "systemctl -q is-enabled ${service}"
+    [[ $? -eq 1 ]]
+    service_step "${service}" "disable" $?
 }
