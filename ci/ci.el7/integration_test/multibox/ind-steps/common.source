@@ -1,5 +1,10 @@
 #!/bin/bash
+
 . "${ENV_ROOTDIR}/external_libraries/bashsteps/simple-defaults-for-bashsteps.source"
+
+#
+# Core functions
+#
 
 # This function needs to be called each time we want to build something.
 # Generates array containing the stages and enumerates them individually as separate variables.
@@ -75,6 +80,10 @@ function build () {
     done
 }
 
+#
+# Node functions
+#
+
 function run_ssh () {
     local key="${NODE_DIR}/sshkey"
     [[ -f ${key} ]] &&
@@ -119,4 +128,16 @@ function disable_service (){
     run_cmd "systemctl -q is-enabled ${service}"
     [[ $? -eq 1 ]]
     service_step "${service}" "disable" $?
+}
+
+function install_package () {
+    local pkgs="${@}"
+
+    for pkg in ${pkgs} ; do
+        (
+            $starting_step "Install ${pkg}"
+            run_cmd "rpm -q --quiet ${pkg}"
+            $skip_step_if_already_done ; set -xe
+            run_cmd "yum install -y ${pkg}"
+        ) ; prev_cmd_failed
 }
