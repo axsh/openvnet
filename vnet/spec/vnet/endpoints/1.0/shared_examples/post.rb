@@ -12,8 +12,9 @@ shared_examples "required parameters" do |accepted_params, required_params|
   end
 end
 
-shared_examples "POST /" do | accepted_params, required_params, uuid_params = [], expected_response = nil |
+shared_examples "POST /" do |accepted_params, required_params, uuid_params = [], expected_response = nil, success_proc = nil|
   expected_response ||= accepted_params
+
   before(:each) { post api_suffix, request_params }
 
   context "with only the required parameters" do
@@ -44,7 +45,13 @@ shared_examples "POST /" do | accepted_params, required_params, uuid_params = []
       delete "#{api_suffix}/#{request_params[:uuid]}"
 
       post api_suffix, request_params
+
       expect(last_response).to succeed.with_body_containing(expected_response)
+
+      model_class[request_params[:uuid]].tap { |model|
+        expect(model).to be
+        expect(success_proc.call(model, last_response)).to be if success_proc
+      }
     end
   end
 
