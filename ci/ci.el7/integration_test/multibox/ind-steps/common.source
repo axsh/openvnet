@@ -131,13 +131,14 @@ function disable_service (){
 }
 
 function install_package () {
-    local pkgs="${@}"
+    local pkgs=("${@}")
 
-    for pkg in ${pkgs} ; do
+    for pkg in ${pkgs[@]} ; do
         (
             $starting_step "Install ${pkg}"
             run_cmd "rpm -q --quiet ${pkg}"
             $skip_step_if_already_done ; set -xe
             run_cmd "yum install -y ${pkg}"
         ) ; prev_cmd_failed
+    done
 }
