@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenVNet agent process
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/openvnet
+SyslogIdentifier=vnet-vna
+WorkingDirectory=/opt/axsh/openvnet/vnet
+ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vna >> ${LOG_DIRECTORY}/vna.log
+
+
+[Install]
+WantedBy=multi-user.target

@@ -10,10 +10,18 @@ module Vnspec
         config[:nodes].values.flatten.uniq
       end
 
+      def manage_node(ip, operation, node_name)
+            service_cmd = case config[:release_version]
+                          when "el7"     then "systemctl"
+                          when "el6",nil then "initctl"
+                          end
+            ssh(ip, "#{service_cmd} #{operation} vnet-#{node_name}", use_sudo: true)
+      end
+
       def start(node_name = nil)
         if node_name
           Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
-            ssh(ip, "initctl start vnet-#{node_name}", use_sudo: true)
+            manage_node(ip, "start", node_name)
             send(:wait_for, node_name)
           end
         else
@@ -26,7 +34,7 @@ module Vnspec
       def stop(node_name = nil)
         if node_name
           Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
-            ssh(ip, "initctl stop vnet-#{node_name}", use_sudo: true)
+            manage_node(ip, "stop", node_name)
           end
           rotate_log(node_name)
         else
@@ -68,7 +76,7 @@ module Vnspec
         end
 
         %w(vnet vnctl).each do |dir|
-          multi_ssh(hosts, "cd #{File.join(config[:vnet_path], dir)}; bundle #{command.join(' ')};")
+          multi_ssh(hosts, "cd #{File.join(config[:vnet_path], dir)}; [ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby; bundle #{command.join(' ')};")
         end
       end
 
@@ -107,7 +115,7 @@ module Vnspec
       end
 
       def reset_db
-        multi_ssh(config[:nodes][:vnmgr], "cd #{config[:vnet_path]}/vnet; bundle exec rake db:reset")
+        multi_ssh(config[:nodes][:vnmgr], "cd #{config[:vnet_path]}/vnet; [ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby; bundle exec rake db:reset")
       end
 
       def dump_flows(vna_index = nil)
@@ -118,29 +126,33 @@ module Vnspec
           logger.info "#" * 50
           logger.info "# dump_flows: vna#{i + 1}"
           logger.info "#" * 50
-          output = ssh(ip, "cd #{config[:vnet_path]}/vnet; bundle exec bin/vnflows-monitor", debug: false)
+          output = ssh(ip, "cd #{config[:vnet_path]}/vnet; [ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby; bundle exec bin/vnflows-monitor", debug: false)
           logger.info output[:stdout]
           logger.info
         end
       end
 
+      def fetch_log_output(service)
+        # vnmgr still outputs to the original logfile
+        (config[:release_version] != "el7" || service == "vnmgr" ? "cat /var/log/openvnet/%s.log" : "journalctl -u vnet-%s") % service
+      end
+
       def dump_logs(vna_index = nil)
         return unless config[:dump_flows]
-
         dump_header("dump_logs: vnmgr")
-        output = ssh(config[:nodes][:vnmgr].first, "cat /var/log/openvnet/vnmgr.log", debug: false)
+        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("vnmgr"), debug: false)
         logger.info output[:stdout]
         dump_footer
 
         dump_header("dump_logs: webapi")
-        output = ssh(config[:nodes][:vnmgr].first, "cat /var/log/openvnet/webapi.log", debug: false)
+        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("webapi"), debug: false)
         logger.info output[:stdout]
         dump_footer
 
         config[:nodes][:vna].each_with_index { |ip, i|
           next if vna_index && vna_index.to_i != i + 1
           dump_header("dump_logs: vna#{i + 1}")
-          output = ssh(ip, "cat /var/log/openvnet/vna.log", debug: false)
+          output = ssh(ip, fetch_log_output("vna"), debug: false)
           logger.info output[:stdout]
           dump_footer
         }
