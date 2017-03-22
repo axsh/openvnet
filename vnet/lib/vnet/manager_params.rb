@@ -229,5 +229,15 @@ module Vnet
       get_param_types(params, key, GET_PARAM_MAP_TYPES, required)
     end
 
+    def get_param_dpid(params, key = :dpid, required = true)
+      param = get_param(params, key, required) || return
+
+      if !(param > 0 && param < (1 << 64))
+        throw_param_error('invalid value for datapath id type', params, key)
+      end
+
+      param
+    end
+
   end
 end

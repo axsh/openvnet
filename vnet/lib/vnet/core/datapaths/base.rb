@@ -13,11 +13,11 @@ module Vnet::Core::Datapaths
     def initialize(params)
       super
 
-      map = params[:map]
-
-      @display_name = map.display_name
-      @dpid = map.dpid
-      @node_id = map.node_id
+      get_param_map(params).tap { |map|
+        @display_name = get_param_string(map, :display_name)
+        @dpid = get_param_dpid(map)
+        @node_id = get_param_string(map, :node_id)
+      }
 
       @active_networks = {}
       @active_segments = {}

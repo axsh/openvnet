@@ -58,7 +58,7 @@ module Vnet
       while !@update_item_states.empty?
         item_ids = @update_item_states.keys
 
-        info log_format("updating item states", item_ids.to_s)
+        info log_format_a("updating item states", item_ids)
 
         item_ids.each { |item_id|
           next unless @update_item_states.delete(item_id)
@@ -140,7 +140,7 @@ module Vnet
       while !update_states.empty?
         property_ids = update_states.keys
 
-        info log_format("updating '#{property_type}' property states", property_ids.to_s)
+        info log_format_a("updating '#{property_type}' property states", property_ids)
 
         property_ids.each { |property_id|
           next unless update_states.delete(property_id)

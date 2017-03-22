@@ -246,7 +246,6 @@ Sequel.migration do
       Bignum :ipv4_network, :null=>false
       Integer :ipv4_prefix, :default=>24, :null=>false
 
-      # TODO: Rename to 'mode'.
       String :network_mode
       String :domain_name
 

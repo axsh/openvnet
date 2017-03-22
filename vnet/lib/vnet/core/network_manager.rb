@@ -100,7 +100,7 @@ module Vnet::Core
       filter, value = filter_part
 
       case filter
-      when :id, :uuid, :network_mode, :network_type
+      when :id, :uuid, :mode
         proc { |id, item| value == item.send(filter) }
       else
         raise NotImplementedError, filter
@@ -110,18 +110,18 @@ module Vnet::Core
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
-      filter << {network_mode: params[:network_mode]} if params.has_key? :network_mode
+      filter << {mode: params[:mode]} if params.has_key? :mode
       filter
     end
 
     def item_initialize(item_map)
       item_class =
-        case item_map.network_mode
+        case item_map.mode
         when MODE_INTERNAL then Networks::Internal
         when MODE_PHYSICAL then Networks::Physical
         when MODE_VIRTUAL  then Networks::Virtual
         else
-          error log_format("unknown network mode #{item_map.network_mode}")
+          error log_format("unknown network mode #{item_map.mode}")
           return nil
         end
 

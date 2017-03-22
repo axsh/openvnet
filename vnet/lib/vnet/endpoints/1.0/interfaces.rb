@@ -22,33 +22,33 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param_uuid M::Interface
   param_uuid M::Network, :network_uuid
   param_uuid M::Segment, :segment_uuid
+  param :mode, :String, in: C::Interface::MODES, required: true
   param :ipv4_address, :String, transform: PARSE_IPV4
   param :mac_address, :String, transform: PARSE_MAC
   param :mac_range_group_uuid, :String
   param :port_name, :String
-  param :mode, :String, in: C::Interface::MODES
   post do
-    uuid_to_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
-    uuid_to_id(M::MacRangeGroup, "mac_range_group_uuid", "mac_range_group_id") if params["mac_range_group_uuid"]
+    uuid_to_id(M::Datapath, 'owner_datapath_uuid', 'owner_datapath_id') if params['owner_datapath_uuid']
+    uuid_to_id(M::MacRangeGroup, 'mac_range_group_uuid', 'mac_range_group_id') if params['mac_range_group_uuid']
 
-    segment_uuid = params["segment_uuid"]
+    segment_uuid = params['segment_uuid']
 
-    uuid_to_id(M::Segment, "segment_uuid", "segment_id") if segment_uuid
+    uuid_to_id(M::Segment, 'segment_uuid', 'segment_id') if segment_uuid
 
-    if params["network_uuid"]
-      network = uuid_to_id(M::Network, "network_uuid", "network_id")
+    if params['network_uuid']
+      network = uuid_to_id(M::Network, 'network_uuid', 'network_id')
 
       check_ipv4_address_subnet(network)
 
-      if params["segment_id"] && params["segment_id"] != network.segment_id
+      if params['segment_id'] && params['segment_id'] != network.segment_id
         raise(E::InvalidID, "segment_uuid:#{segment_uuid} does not match the segment used by network_uuid:#{network_uuid}")
       end
 
       # TODO: Temporary workaround until segment's are set properly.
-      params["segment_id"] = network.segment_id if network.segment_id
+      params['segment_id'] = network.segment_id if network.segment_id
     end
 
-    params["enable_legacy_filtering"] = params["ingress_filtering_enabled"]
+    params['enable_legacy_filtering'] = params['ingress_filtering_enabled']
     post_new(:Interface, fill)
   end
 
@@ -66,7 +66,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
 
   put_post_shared_params
   put '/:uuid' do
-    check_syntax_and_get_id(M::Datapath, "owner_datapath_uuid", "owner_datapath_id") if params["owner_datapath_uuid"]
+    check_syntax_and_get_id(M::Datapath, 'owner_datapath_uuid', 'owner_datapath_id') if params['owner_datapath_uuid']
     update_by_uuid2(:Interface, fill)
   end
 

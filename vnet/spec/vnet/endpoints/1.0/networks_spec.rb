@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 require 'vnet'
 
@@ -29,14 +30,14 @@ describe '/networks' do
       ipv4_network: '192.168.2.0',
       ipv4_prefix: 24,
       domain_name: 'vdc.test.domain',
-      network_mode: 'virtual',
+      mode: 'virtual',
       topology_uuid: 'topo-test'
     }
     expected_response = accepted_params.dup.tap { |map|
       map.delete(:topology_uuid)
     }
     
-    required_params = [:display_name, :ipv4_network]
+    required_params = [:ipv4_network]
     uuid_params = [:uuid]
 
     include_examples 'POST /', accepted_params, required_params, uuid_params, expected_response, Proc.new { |model, last_response|

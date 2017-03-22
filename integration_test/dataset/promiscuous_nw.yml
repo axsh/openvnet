@@ -17,22 +17,24 @@ networks:
 interfaces:
 
   - uuid: if-v1
+    mode: vif
     port_name: if-v1
     network_uuid: nw-global
     mac_address: "02:00:00:00:00:01"
     ipv4_address: 10.210.0.10
 
   - uuid: if-v7
+    mode: vif
     port_name: if-v7
     network_uuid: nw-global
     mac_address: "02:00:00:00:00:07"
     ipv4_address: 10.210.0.17
 
   - uuid: if-dhcp1
+    mode: simulated
     network_uuid: nw-global
     mac_address: "02:00:00:00:01:01"
     ipv4_address: 10.210.0.5
-    mode: simulated
 
   - uuid: if-weth0
     mode: host
