@@ -185,6 +185,12 @@ module Vnet
       }
     end
 
+    def log_format_a(message, values)
+      values && values.join(', ').tap { |str|
+        return log_format(message, str)
+      }
+    end
+
     #
     # Override these method to support additional parameters.
     #

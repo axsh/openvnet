@@ -179,10 +179,11 @@ module Vnet
 
       @dp_info = get_param_dp_info(params)
 
-      map = get_param_map(params)
-      @id = get_param_id(map)
-      @uuid = get_param_string(map, :uuid)
-      @mode = get_param_string(map, :mode).to_sym
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+        @uuid = get_param_string(map, :uuid)
+        @mode = get_param_string(map, :mode).to_sym
+      }
     end
 
     def pretty_properties

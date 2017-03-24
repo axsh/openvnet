@@ -24,28 +24,31 @@ networks:
 interfaces:
 
   - uuid: if-v1
+    mode: vif
     port_name: if-v1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:01"
     ipv4_address: 10.101.0.11
 
   - uuid: if-v5
+    mode: vif
     port_name: if-v5
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:05"
     ipv4_address: 10.101.0.12
 
   - uuid: if-v7
+    mode: vif
     port_name: if-v7
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:07"
     ipv4_address: 10.101.0.17
 
   - uuid: if-dhcp1
+    mode: simulated
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:01:01"
     ipv4_address: 10.101.0.2
-    mode: simulated
 
   - uuid: if-weth0
     mode: host
@@ -71,9 +74,9 @@ interfaces:
     ipv4_address: 10.101.0.1
 
   - uuid: if-glo2vnetgw
+    mode: simulated
     network_uuid: nw-global
     owner_datapath_uuid: dp-wanedge
-    mode: simulated
     enable_routing: true
     enable_route_translation: true
 
