@@ -13,8 +13,6 @@ specs: [simple_nw,
         event,
         event_tp,
         service,
-        secg,
-        secg_reference,
         filter]
 
 # specs not included

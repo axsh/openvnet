@@ -342,16 +342,6 @@ module Vnet
     REMOVED_REMOTE_DATAPATH_ROUTE_LINK = "removed_remote_datapath_route_link"
 
     #
-    # filter event
-    #
-    INITIALIZED_FILTER = "initialized_filter"
-    UPDATED_SG_RULES = "updated_rules"
-    UPDATED_SG_IP_ADDRESSES = "updated_sg_ip_addresses"
-    ADDED_INTERFACE_TO_SG = "added_interface_to_sg"
-    REMOVED_INTERFACE_FROM_SG = "removed_interface_from_sg"
-    REMOVED_SECURITY_GROUP = "removed_security_group"
-
-    #
     # dns service
     #
     SERVICE_ADDED_DNS = "added_dns_service"

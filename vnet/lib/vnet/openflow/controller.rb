@@ -79,8 +79,6 @@ module Vnet::Openflow
         dp_info.segment_manager.async.packet_in(message)
       when COOKIE_PREFIX_SERVICE
         dp_info.service_manager.async.packet_in(message)
-      when COOKIE_PREFIX_CONNECTION
-        dp_info.connection_manager.async.packet_in(message)
       end
     end
 
