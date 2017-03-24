@@ -46,6 +46,7 @@ interfaces:
     port_name: if-v5
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:05"
+    enable_filtering: true
     ipv4_address: 10.101.0.14
 
   - uuid: if-v6
