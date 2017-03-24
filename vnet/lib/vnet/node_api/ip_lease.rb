@@ -5,7 +5,6 @@ module Vnet::NodeApi
     valid_update_fields [:enable_routing, :interface_id]
 
     class << self
-      include Vnet::Helpers::Event
 
       # TODO: Use update instead of attach/release.
       def attach_id(options)
@@ -68,8 +67,6 @@ module Vnet::NodeApi
         if model.interface_id
           dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_lease_event(model))
         end
-
-        dispatch_security_group_item_events(model)
       end
 
       # TODO: Fix this so it updates 'enable_routing'.
@@ -89,21 +86,8 @@ module Vnet::NodeApi
         # datapath_route_links: :destroy,
         # ip_address: :destroy,
         # ip_lease_container_ip_leases: :destroy,
-
-        dispatch_security_group_item_events(model)
-
         # 0002_services
         IpRetention.dispatch_deleted_where(filter, model.deleted_at)
-      end
-
-      def dispatch_security_group_item_events(model)
-        model.interface.tap { |interface|
-          next if interface.nil?
-
-          interface.security_groups.each { |group|
-            dispatch_update_sg_ip_addresses(group)
-          }
-        }
       end
 
       def prepare_lease_event(model)
@@ -158,10 +142,6 @@ module Vnet::NodeApi
           end
         }
         
-        interface.security_groups.each do |group|
-          dispatch_update_sg_ip_addresses(group)
-        end
-
         dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_lease_event(model))
         model
       end
@@ -189,12 +169,6 @@ module Vnet::NodeApi
           model.ip_retentions.each do |ip_retention|
             ip_retention.released_at = current_time
             ip_retention.save_changes
-          end
-        end
-
-        if interface
-          interface.security_groups.each do |group|
-            dispatch_update_sg_ip_addresses(group)
           end
         end
 

@@ -6,33 +6,6 @@ module Vnet::Core::Interfaces
 
   class IfBase < Base
 
-    def enable_filtering
-      return if @ingress_filtering_enabled
-
-      @ingress_filtering_enabled = true
-      @dp_info.filter_manager.async.apply_filters(@id)
-      del_cookie OPTIONAL_TYPE_TAG, TAG_DISABLED_FILTERING
-
-      @mac_addresses.each { |id, mac|
-        @dp_info.connection_manager.async.catch_new_egress(id, mac[:mac_address])
-      }
-    end
-
-    def disable_filtering
-      return if !@ingress_filtering_enabled
-
-      @ingress_filtering_enabled = false
-
-      @dp_info.add_flows flows_for_disabled_legacy_filtering
-      @dp_info.filter_manager.async.remove_filters(@id)
-
-      @mac_addresses.each { |id, mac_address|
-        @dp_info.connection_manager.async.remove_catch_new_egress(id)
-        # We remove the connection catch flows but we don't close the connections
-        # that are still open. We just allow the open connections to expire naturally.
-      }
-    end
-
     def enable_filtering2
       return if @enable_filtering
 
@@ -66,15 +39,6 @@ module Vnet::Core::Interfaces
                            priority: PRIORITY_FILTER_SKIP,
                            match_interface: @id,
                            cookie: self.cookie
-                          )
-    end
-
-    def flows_for_disabled_legacy_filtering(flows = [])
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                           priority: 91,
-                           match_interface: @id,
-                           cookie: cookie_for_tag(TAG_DISABLED_FILTERING)
                           )
     end
 
