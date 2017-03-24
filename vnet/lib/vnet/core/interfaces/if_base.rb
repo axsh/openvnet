@@ -53,7 +53,7 @@ module Vnet::Core::Interfaces
 
     def flows_for_classifiers(flows = [])
       flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                           goto_table: @enabled_filtering ? TABLE_INTERFACE_EGRESS_FILTER : TABLE_INTERFACE_EGRESS_VALIDATE,
+                           goto_table: @enabled_filtering ? TABLE_INTERFACE_EGRESS_STATEFUL : TABLE_INTERFACE_EGRESS_VALIDATE,
                            priority: 30,
                            match_interface: @id,
                            cookie: cookie
@@ -63,7 +63,7 @@ module Vnet::Core::Interfaces
     def flows_for_disabled_filtering(flows = [])
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                           priority: 90,
+                           priority: PRIORITY_FILTER_SKIP,
                            match_interface: @id,
                            cookie: self.cookie
                           )

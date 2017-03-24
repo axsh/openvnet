@@ -65,14 +65,14 @@ module Vnet::Core::Filters
         # TODO: Need to include priority when deleting.
         rules(static[:match], static[:protocol]).tap { |egress_rule, ingress_rule|
           @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_FILTER,
-            cookie: self.cookie,
-            cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
-            match: egress_rule)
+                             cookie: self.cookie,
+                             cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+                             match: egress_rule)
 
           @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
-            cookie: self.cookie,
-            cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
-            match: ingress_rule)
+                             cookie: self.cookie,
+                             cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
+                             match: ingress_rule)
         }
       }
     end
@@ -85,16 +85,16 @@ module Vnet::Core::Filters
 
       flows = []
 
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_FILTER,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_STATEFUL,
                            goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
-                           priority: max_priority_for_static,
+                           priority: PRIORITY_FILTER_STATEFUL,
                            idle_timeout: EGRESS_IDLE_TIMEOUT,
                            match_interface: @interface_id,
                            match: egress_match)
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                           priority: max_priority_for_static,
+                           priority: PRIORITY_FILTER_STATEFUL,
                            idle_timeout: INGRESS_IDLE_TIMEOUT,
                            match_interface: @interface_id,
                            match: ingress_match)
@@ -111,10 +111,6 @@ module Vnet::Core::Filters
 
     def any_address?(address, prefix)
       address == 0 && prefix == 0
-    end
-
-    def max_priority_for_static
-      20 + (65 * 66)
     end
 
     # TODO: Change the priority ordering so that the largest prefix of
