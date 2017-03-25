@@ -53,15 +53,15 @@ module Vnet::Core::Datapaths
                                       dp_obj: segment)
     end
 
-    def deactivate_network_id(network_id)
-      network = @active_networks[network_id] || return
+    def deactivate_segment_id(segment_id)
+      segment = @active_segments[segment_id] || return
 
-      return if network[:active] == false
-      network[:active] = false
+      return if segment[:active] == false
+      segment[:active] = false
 
-      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_NETWORK,
-                                      id: :datapath_network,
-                                      dp_obj: network)
+      @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_SEGMENT,
+                                      id: :datapath_segment,
+                                      dp_obj: segment)
     end
 
     def activate_route_link_id(route_link_id)

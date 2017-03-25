@@ -81,23 +81,22 @@ module Vnet::Core::Datapaths
       _, obj = @active_networks.detect { |id, obj|
         obj[:network_id] == obj_id
       }
-      return obj && obj[:active] == true
+      return !!((obj && obj[:active] == true))
     end
 
     def is_segment_active?(obj_id)
       _, obj = @active_segments.detect { |id, obj|
         obj[:segment_id] == obj_id
       }
-      return obj && obj[:active] == true
+      return !!(obj && obj[:active] == true)
     end
 
     def is_route_link_active?(obj_id)
       _, obj = @active_route_links.detect { |id, obj|
         obj[:route_link_id] == obj_id
       }
-      return obj && obj[:active] == true
+      return !!(obj && obj[:active] == true)
     end
-
 
     #
     # Events:
