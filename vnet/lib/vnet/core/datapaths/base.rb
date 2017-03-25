@@ -59,23 +59,45 @@ module Vnet::Core::Datapaths
       !!(@active_networks.empty? && @active_segments.empty? && @active_route_links.empty?)
     end
 
-    def has_active_network?(network_id)
-      !!@active_networks.detect { |id, active_network|
-        active_network[:network_id] == network_id
+    def has_active_network?(obj_id)
+      !!@active_networks.detect { |id, obj|
+        obj[:network_id] == obj_id
       }
     end
 
-    def has_active_segment?(segment_id)
-      !!@active_segments.detect { |id, active_segment|
-        active_segment[:segment_id] == segment_id
+    def has_active_segment?(obj_id)
+      !!@active_segments.detect { |id, obj|
+        obj[:segment_id] == obj_id
       }
     end
 
-    def has_active_route_link?(route_link_id)
-      !!@active_route_links.detect { |id, active_route_link|
-        active_route_link[:route_link_id] == route_link_id
+    def has_active_route_link?(obj_id)
+      !!@active_route_links.detect { |id, obj|
+        obj[:route_link_id] == obj_id
       }
     end
+
+    def is_network_active?(obj_id)
+      _, obj = @active_networks.detect { |id, obj|
+        obj[:network_id] == obj_id
+      }
+      return obj && obj[:active] == true
+    end
+
+    def is_segment_active?(obj_id)
+      _, obj = @active_segments.detect { |id, obj|
+        obj[:segment_id] == obj_id
+      }
+      return obj && obj[:active] == true
+    end
+
+    def is_route_link_active?(obj_id)
+      _, obj = @active_route_links.detect { |id, obj|
+        obj[:route_link_id] == obj_id
+      }
+      return obj && obj[:active] == true
+    end
+
 
     #
     # Events:

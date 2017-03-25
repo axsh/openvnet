@@ -29,7 +29,7 @@ module Vnet::NodeApi
       end
 
       def destroy_with_transaction(datapath_id: datapath_id, generic_id: generic_id)
-        internal_destroy(model_class[datapath_id, generic_id])
+        internal_destroy(model_class[destroy_filter(datapath_id, generic_id)])
       end
 
       def model_to_event_hash(model)

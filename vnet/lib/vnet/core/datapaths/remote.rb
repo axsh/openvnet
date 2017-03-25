@@ -24,7 +24,7 @@ module Vnet::Core::Datapaths
       network = @active_networks[network_id] || return
 
       return if network[:active] == true
-      network[:active] == true
+      network[:active] = true
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_REMOTE_DATAPATH_NETWORK,
                                       id: :datapath_network,
@@ -35,7 +35,7 @@ module Vnet::Core::Datapaths
       network = @active_networks[network_id] || return
 
       return if network[:active] == false
-      network[:active] == false
+      network[:active] = false
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_NETWORK,
                                       id: :datapath_network,
@@ -46,7 +46,7 @@ module Vnet::Core::Datapaths
       segment = @active_segments[segment_id] || return
 
       return if segment[:active] == true
-      segment[:active] == true
+      segment[:active] = true
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_REMOTE_DATAPATH_SEGMENT,
                                       id: :datapath_segment,
@@ -57,7 +57,7 @@ module Vnet::Core::Datapaths
       network = @active_networks[network_id] || return
 
       return if network[:active] == false
-      network[:active] == false
+      network[:active] = false
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_NETWORK,
                                       id: :datapath_network,
@@ -68,7 +68,7 @@ module Vnet::Core::Datapaths
       route_link = @active_route_links[route_link_id] || return
 
       return if route_link[:active] == true
-      route_link[:active] == true
+      route_link[:active] = true
 
       @dp_info.tunnel_manager.publish(Vnet::Event::ADDED_REMOTE_DATAPATH_ROUTE_LINK,
                                       id: :datapath_route_link,
@@ -79,7 +79,7 @@ module Vnet::Core::Datapaths
       route_link = @active_route_links[route_link_id] || return
 
       return if route_link[:active] == false
-      route_link[:active] == false
+      route_link[:active] = false
 
       @dp_info.tunnel_manager.publish(Vnet::Event::REMOVED_REMOTE_DATAPATH_ROUTE_LINK,
                                       id: :datapath_route_link,
