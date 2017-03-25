@@ -4,7 +4,7 @@ require 'spec_helper'
 include Vnet::Constants::Openflow
 include Vnet::Openflow::FlowHelpers
 
-describe Vnet::Core::Filter2Manager do
+describe Vnet::Core::FilterManager do
 
   use_mock_event_handler
 
@@ -12,7 +12,7 @@ describe Vnet::Core::Filter2Manager do
   let(:flows) { datapath.dp_info.current_flows }
   let(:deleted_flows) { datapath.dp_info.deleted_flows }
 
-  let(:filter2_manager) { datapath.dp_info.filter2_manager }
+  let(:filter_manager) { datapath.dp_info.filter_manager }
   let(:interface_manager) { datapath.dp_info.interface_manager }
 
   let(:filter) { Fabricate(:filter,
@@ -22,10 +22,10 @@ describe Vnet::Core::Filter2Manager do
 
   # TODO: Sleep timers here create random fails based on load. Use wait_for_loaded.
   before(:each) do
-    filter2_manager.publish(Vnet::Event::ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
+    filter_manager.publish(Vnet::Event::ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
     sleep(0.01)
-    filter2_manager.publish(Vnet::Event::FILTER_CREATED_ITEM, filter.to_hash)
-    expect(filter2_manager.wait_for_loaded({id: filter.id}, 3)).not_to be_nil
+    filter_manager.publish(Vnet::Event::FILTER_CREATED_ITEM, filter.to_hash)
+    expect(filter_manager.wait_for_loaded({id: filter.id}, 3)).not_to be_nil
     sleep(0.01)
   end
 
@@ -39,7 +39,7 @@ describe Vnet::Core::Filter2Manager do
 
     it "#{operation} the filter item" do
 
-      event.call(filter2_manager, filter) unless event.nil?
+      event.call(filter_manager, filter) unless event.nil?
 
       filter_hash(filter).each { |ingress, egress|
         expect(flows).to include flow(ingress)
@@ -83,7 +83,7 @@ describe Vnet::Core::Filter2Manager do
 
   describe "#added_static" do
     before(:each) do
-      filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
+      filter_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
                                                           static_id: filter_static.id))
       sleep(0.01)
@@ -117,11 +117,11 @@ describe Vnet::Core::Filter2Manager do
 
   describe "#remove static" do
     before(:each) do
-      filter2_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
+      filter_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
                               filter_static.to_hash.merge(id: filter.id,
                                                           static_id: filter_static.id))
       sleep(0.01)
-      filter2_manager.publish(Vnet::Event::FILTER_REMOVED_STATIC,
+      filter_manager.publish(Vnet::Event::FILTER_REMOVED_STATIC,
                               id: filter.id, static_id: filter_static.id)
       sleep(0.01)
     end

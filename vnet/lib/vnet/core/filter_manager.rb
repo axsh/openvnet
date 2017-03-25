@@ -2,7 +2,7 @@
 
 module Vnet::Core
 
-  class Filter2Manager < Vnet::Core::Manager
+  class FilterManager < Vnet::Core::Manager
     include Vnet::Constants::Filter
     include Vnet::ManagerAssocs
     include ActiveInterfaceEvents

@@ -2,7 +2,7 @@
 
 module Vnet::Core::Filters
 
-  class Base2 < Vnet::ItemDpUuidMode
+  class Base < Vnet::ItemDpUuidMode
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
@@ -26,7 +26,7 @@ module Vnet::Core::Filters
     # it easily in unit tests.
 
     def cookie
-      @id | COOKIE_TYPE_FILTER2
+      @id | COOKIE_TYPE_FILTER
     end
 
     def to_hash

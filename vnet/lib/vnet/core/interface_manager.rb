@@ -148,7 +148,7 @@ module Vnet::Core
       }
 
       @dp_info.tunnel_manager.publish(ACTIVATE_INTERFACE, activate_params)
-      @dp_info.filter2_manager.publish(ACTIVATE_INTERFACE, activate_params)
+      @dp_info.filter_manager.publish(ACTIVATE_INTERFACE, activate_params)
       @dp_info.interface_segment_manager.publish(ACTIVATE_INTERFACE, activate_params)
     end
 
@@ -159,7 +159,7 @@ module Vnet::Core
       }
 
       @dp_info.tunnel_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
-      @dp_info.filter2_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
+      @dp_info.filter_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
       @dp_info.interface_segment_manager.publish(DEACTIVATE_INTERFACE, deactivate_params)
 
       deactivate_local_interface(item)

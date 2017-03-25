@@ -88,7 +88,7 @@ module Vnet
     autoload :AddressHelpers, 'vnet/core/address_helpers'
     autoload :Datapath, 'vnet/core/items'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
-    autoload :Filter2Manager, 'vnet/core/filter2_manager'
+    autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Filter, 'vnet/core/items'
     autoload :HostDatapath, 'vnet/core/host_datapath'
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
@@ -158,7 +158,7 @@ module Vnet
     end
 
     module Filters
-      autoload :Base2, 'vnet/core/filters/base2'
+      autoload :Base, 'vnet/core/filters/base'
       autoload :Static, 'vnet/core/filters/static'
     end
 

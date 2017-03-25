@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Core::Filters
-  class Static < Base2
+  class Static < Base
 
     EGRESS_IDLE_TIMEOUT  = 600
     INGRESS_IDLE_TIMEOUT = 1800
