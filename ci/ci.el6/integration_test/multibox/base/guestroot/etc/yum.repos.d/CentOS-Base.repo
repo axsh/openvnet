@@ -1,0 +1,17 @@
+[base]
+name=CentOS-$releasever - Base
+baseurl=http://ftp.jaist.ac.jp/pub/Linux/CentOS/6/os/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+[updates]
+name=CentOS-$releasever - Updates
+baseurl=http://ftp.jaist.ac.jp/pub/Linux/CentOS/6/updates/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+[extras]
+name=CentOS-$releasever - Extras
+baseurl=http://ftp.jaist.ac.jp/pub/Linux/CentOS/6/extras/$basearch/
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6

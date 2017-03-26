@@ -1,0 +1,67 @@
+#!/bin/bash
+
+function render_vif () {
+    sudo chroot ${TMP_ROOT} /bin/bash -ex <<EOF
+    cat <<EOICFG > /var/lib/lxc/$container_name/rootfs/etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth0
+ONBOOT=yes
+TYPE=Ethernet
+BOOTPROTO=dhcp
+MTU=1400
+EOICFG
+EOF
+}
+
+function render_mgr () {
+    sudo chroot ${TMP_ROOT} /bin/bash -ex <<EOF
+    cat <<EOICFG > /var/lib/lxc/$container_name/rootfs/etc/sysconfig/network-scripts/ifcfg-eth1
+DEVICE=eth1
+ONBOOT=yes
+TYPE=Ethernet
+BOOTPROTO=static
+NETMASK=255.255.255.0
+IPADDR=${1}
+EOICFG
+EOF
+}
+
+function create_config () {
+    local container_name="${1}"
+    sudo chroot ${TMP_ROOT} /bin/bash -ex <<EOF
+    cat <<EOC > /var/lib/lxc/${container_name}/config
+lxc.utsname = ${container_name}
+lxc.rootfs = /var/lib/lxc/${container_name}/rootfs
+lxc.include = /usr/share/lxc/config/centos.common.conf
+lxc.arch = x86_64
+lxc.autodev = 0
+lxc.kmsg = 0
+EOC
+EOF
+    for iface in "${container_if[@]}" ; do
+        read name ifname mac_addr bridge ip_addr <<< "${iface}"
+        [[ "${name#*=}" == "${container_name}" ]] || continue
+        sudo chroot ${TMP_ROOT} /bin/bash -ex <<EOF
+        cat <<EOIFC >> /var/lib/lxc/$container_name/config
+lxc.network.type = veth
+lxc.network.flags = up
+lxc.network.veth.pair = if-${ifname#*=}
+lxc.network.hwaddr = ${mac_addr#*=}
+EOIFC
+EOF
+
+        case "${ifname#*=}" in
+            *"m"*) render_mgr "${ip_addr#*=}" ;;
+            *"v"*) render_vif ;;
+        esac
+    done
+}
+
+function install_ssh () {
+    local container_name="${1}"
+
+    run_cmd "chroot /var/lib/lxc/${container_name}/rootfs/ /bin/bash -c \"passwd -d root\""
+    run_cmd "mkdir -p /var/lib/lxc/${container_name}/rootfs/root/.ssh"
+    run_cmd "ssh-keygen -y -f /root/.ssh/id_rsa > /var/lib/lxc/${container_name}/rootfs/root/.ssh/authorized_keys"
+    run_cmd "cp /root/.ssh/id_rsa /var/lib/lxc/${container_name}/rootfs/root/.ssh/"
+
+}

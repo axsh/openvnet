@@ -22,7 +22,7 @@ create_cache () {
     TMPDIR=$(mktemp -d)
     if [[ -n "${cache_dir}" ]]; then
         if [[ ! -w "${cache_vol}" ]]; then
-            echo "ERROR: CACHE_VOLUME '${cache_dir}' is not writable." >&2
+            echo "ERROR: Folder '${cache_vol}' is not writable." >&2
             exit 1
         fi
 
