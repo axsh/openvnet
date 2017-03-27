@@ -5,7 +5,6 @@ require 'trema/mac'
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   def self.put_post_shared_params
     param_uuid M::Datapath, :owner_datapath_uuid
-    param :ingress_filtering_enabled, :Boolean, default: false
     param :enable_filtering, :Boolean
     param :display_name, :String
     param :enable_routing, :Boolean
@@ -48,7 +47,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
       params['segment_id'] = network.segment_id if network.segment_id
     end
 
-    params['enable_legacy_filtering'] = params['ingress_filtering_enabled']
     post_new(:Interface, fill)
   end
 
@@ -160,38 +158,5 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
       show_relations(:Interface, "interface_#{assoc_name}s".to_sym)
     end
   }
-
-  #
-  # Security Groups:
-  #
-
-  post '/:uuid/security_groups/:security_group_uuid' do
-    security_group = check_syntax_and_get_id(M::SecurityGroup, 'security_group_uuid', 'security_group_id')
-    interface = check_syntax_and_get_id(M::Interface, 'uuid', 'interface_id')
-
-    M::SecurityGroupInterface.filter(:interface_id => interface.id,
-      :security_group_id => security_group.id).empty? ||
-    raise(E::RelationAlreadyExists, "#{interface.uuid} <=> #{security_group.uuid}")
-
-    remove_system_parameters
-
-    M::SecurityGroupInterface.create(params)
-
-    respond_with(R::SecurityGroup.generate(security_group))
-  end
-
-  get '/:uuid/security_groups' do
-    show_relations(:Interface, :security_groups)
-  end
-
-  delete '/:uuid/security_groups/:security_group_uuid' do
-    interface = check_syntax_and_pop_uuid(M::Interface)
-    security_group = check_syntax_and_pop_uuid(M::SecurityGroup, 'security_group_uuid')
-
-    deleted = M::SecurityGroupInterface.destroy_where(interface_id: interface.id,
-                                                      security_group_id: security_group.id)
-
-    respond_with(deleted > 0 ? [security_group.uuid] : [])
-  end
 
 end

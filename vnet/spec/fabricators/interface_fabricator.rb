@@ -37,8 +37,6 @@ Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
   #           interface_id: attrs[:id],
   #           datapath_id: 1)
 
-  ingress_filtering_enabled true
-
   ip_leases do |attrs|
     [
      Fabricate(:ip_lease_any) do
