@@ -2,8 +2,6 @@
 
 set -xe
 
-
-
 current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 
 source "${current_dir}/../../cache_functions.sh" ${build_cache_base}
