@@ -1,16 +1,18 @@
 FROM centos:6
+WORKDIR /var/tmp/openvnet
 
-WORKDIR /var/tmp/openvnet/
+ARG SCL_RUBY
 
-ADD deployment/docker/fastestmirror.conf /etc/yum/pluginconf.d/
+ADD ci/ci.el7/rspec_rpmbuild/fastestmirror.conf /etc/yum/pluginconf.d/
 
-RUN ["yum", "install", "-y", "epel-release"]
-RUN ["yum", "install", "-y", "rsync", "bridge-utils", "qemu-kvm", "qemu-system-x86", "parted", "sudo", "openssh-clients", "ncat", "git", "which", "file"]
-RUN ["yum", "install", "-y", "nfs-utils", "nfs-utils-lib" ]
-RUN mkdir /var/tmp/openvnet
-RUN mkdir /opt/axsh/openvnet
-RUN mkdir /repos
-RUN mkdir /cache
+RUN ["yum", "install", "-y", "epel-release", "centos-release-scl"]
+RUN ["yum", "install", "-y", "createrepo", "rpmdevtools", "rpm-build", "yum-utils", "rsync", "sudo", "file"]
+RUN ["yum", "install", "-y", "zeromq3-devel", "yum-utils", "make", "gcc", "gcc-c++", "git", "mysqldb-devel", "sqlite-devel", "mysqldb", "mysql-server"]
+RUN yum install -y ${SCL_RUBY}-build && mysql_install_db && chown mysql:mysql -R /var/lib/mysql
+
+ADD ci/ci.el7/rspec_rpmbuild/yum.repo/dev.repo /etc/yum.repos.d/
+# Only enables "openvnet-third-party" repo.
+RUN yum-config-manager --disable openvnet
 
 ARG BRANCH
 ARG RELEASE_SUFFIX
@@ -30,9 +32,5 @@ LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \
 VOLUME /cache
 VOLUME /repos
 
-# This directory is shared with the kvm maachine
-COPY [".", "/opt/axsh/openvnet"]
-
 COPY [".", "/var/tmp/openvnet"]
-ENTRYPOINT ["ci/ci.el6/rspec_rpmbuild/run_build.sh"]
-
+ENTRYPOINT ["ci/ci.el6/rspec_rpmbuild/build_packages_vnet.sh"]
