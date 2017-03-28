@@ -1,0 +1,38 @@
+
+    Three principle scripts are used to build and setup the test environment:
+
+    (1)  build_int_env.sh       - Builds the itest-edge, itest1, itest2, itest3 & router virtual machines
+
+       USAGE:
+         The script may be run in two modes:
+  
+             ./build_int_env.sh  6.5
+
+             ./build_int_env.sh  6.5  -basebox ovf-file-with-path
+
+          In the latter case, the user gives the name of the basebox to use for provisioning.
+
+
+       Dependencies:
+          - packer
+          - VirtualBoxManage
+
+   (2)  init_host_bridges.sh    - Sets up the host-only 'bridges' on the mac/host machine
+
+       USAGE:  ./init_host_bridges.sh
+
+            This generates the hostonly bridges on the host. The interfaces are named "vboxnet0", "vboxnet1", 
+        "vboxnet2" & "vboxnet3" by VBoxManage.
+
+  (3)   system_startup.sh       - Imports the vm's built in step (1) into VirtualBox and boots them up
+         
+       USAGE:  ./system_startup.sh
+
+
+
+  PROBLEMS:
+
+      -  Not much cleanup!  I have kept output from these scripts (for example, packer template files)
+         so that I can debug. 
+
+      - The code needs a lot of refactoring...
