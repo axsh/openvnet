@@ -126,10 +126,9 @@ module Vnet::Core::Segments
 
       # TODO: Verify eth_src and arp_sha.
 
-      flows = []
-
       # TODO: Check if match contains tunnel.
 
+      flows = []
       flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP,
                            priority: 35,
                            idle_timeout: 36000,

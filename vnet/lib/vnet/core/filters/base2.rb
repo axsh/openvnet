@@ -6,18 +6,16 @@ module Vnet::Core::Filters
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-#    attr_accessor :dp_info
     attr_reader :interface_id
 
     def initialize(params)
       super
 
-      map = params[:map]
-
-      @interface_id = map.interface_id
-      @egress_passthrough = map.egress_passthrough
-      @ingress_passthrough = map.ingress_passthrough
-
+      get_param_map(params).tap { |map|
+        @interface_id = get_param_id(map, :interface_id)
+        @egress_passthrough = get_param_bool(map, :egress_passthrough)
+        @ingress_passthrough = get_param_bool(map, :ingress_passthrough)
+      }
     end
 
     def pretty_properties
@@ -78,7 +76,7 @@ module Vnet::Core::Filters
       @dp_info.add_flows(flows)
     end
 
-    def flows_for_ingress_filtering(flows = [])
+    def flows_for_ingress_filtering(flows)
       flow = {
         table: TABLE_INTERFACE_INGRESS_FILTER,
         priority: 10,
@@ -89,7 +87,7 @@ module Vnet::Core::Filters
       flows << flow_create(flow)
     end
 
-    def flows_for_egress_filtering(flows = [])
+    def flows_for_egress_filtering(flows)
       flow = {
         table: TABLE_INTERFACE_EGRESS_FILTER,
         priority: 10,
