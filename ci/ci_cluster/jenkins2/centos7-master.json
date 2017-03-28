@@ -1,0 +1,103 @@
+{
+  "variables": {
+    "memory": "2048",
+    "host_switch": "{{env `HOST_SWITCH`}}",
+    "extra_jenkins_plugins": "envinject filesystem_scm nodelabelparameter {{env `JENKINS_PLUGINS`}}",
+    "jenkins_rpm": "{{env `JENKINS_RPM`}}",
+    "nic2_ipv4": "192.168.56.50"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-ovf",
+      "source_path": "boxtemp/centos-7.2/box.ovf",
+      "ssh_password": "vagrant",
+      "ssh_username": "vagrant",
+      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/halt -h -p",
+      "shutdown_timeout": "10s",
+      "headless": true,
+      "vm_name": "jenkins2-master",
+      "output_directory": "output-jenkins2-master",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "{{ user `memory` }}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype1",
+          "virtio"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype2",
+          "virtio",
+          "--nic2",
+          "hostonly",
+          "--hostonlyadapter2",
+          "{{user `host_switch`}}"
+        ]
+      ],
+      "vboxmanage_post": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--description",
+          "CentOS7.2, jenkins2-master"
+        ]
+      ],
+      "export_opts": [
+        "--vsys",
+        "0",
+        "--description",
+        "CentOS7.2, jenkins2-master",
+        "--vendor",
+        "Axsh",
+        "--version",
+        "0.1"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "conf.el7",
+      "destination": "/tmp"
+    },
+    {
+      "type": "file",
+      "source": "fastestmirror.conf",
+      "destination": "/tmp/fastestmirror.conf"
+    },
+    {
+      "type": "file",
+      "source": "boxtemp/{{user `jenkins_rpm`}}",
+      "destination": "/var/tmp/{{user `jenkins_rpm`}}"
+    },
+    {
+      "type": "shell",
+      "execute_command": "chmod +x {{ .Path }}; echo 'vagrant' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
+      "inline": [
+        "cp /tmp/fastestmirror.conf /etc/yum/pluginconf.d/fastestmirror.conf",
+        "yum install -y java-1.8.0-openjdk git docker createrepo httpd redhat-lsb-core",
+        "rpm -i /var/tmp/{{user `jenkins_rpm`}}",
+        "chown -R root:root /tmp/conf.el7/",
+        "cp -rp -t / /tmp/conf.el7/*",
+        "systemctl enable docker",
+        "usermod -G dockerroot jenkins",
+        "mkdir /var/lib/jenkins/build-cache",
+        "chown -R jenkins:jenkins /var/lib/jenkins",
+        "systemctl start jenkins",
+        "until curl -fS -O http://localhost:8080/jnlpJars/jenkins-cli.jar; do sleep 5; done",
+        "curl  -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack",
+        "java -jar jenkins-cli.jar -s http://localhost:8080/ install-plugin build-timeout cloudbees-folder credentials-binding timestamper ws-cleanup pipeline-build-step github-organization-folder pipeline-stage-view git ssh-slaves matrix-auth email-ext mailer workflow-aggregator workflow-durable-task-step {{user `extra_jenkins_plugins`}}",
+        "systemctl enable httpd",
+        "nmcli connection add type ethernet ifname eth1 save yes con-name eth1 ip4 {{user `nic2_ipv4`}}/24",
+        "yum update -y; yum clean all"
+      ]
+    }
+  ]
+}

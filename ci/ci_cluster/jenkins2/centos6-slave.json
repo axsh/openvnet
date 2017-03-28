@@ -1,0 +1,90 @@
+{
+  "variables": {
+    "memory": "1024",
+    "host_switch": "{{env `HOST_SWITCH`}}",
+    "nic2_ipv4": "192.168.56.51"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-ovf",
+      "source_path": "boxtemp/centos-6.8/box.ovf",
+      "ssh_password": "vagrant",
+      "ssh_username": "vagrant",
+      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/halt -h -p",
+      "shutdown_timeout": "10s",
+      "headless": true,
+      "vm_name": "jenkins2-slave",
+      "output_directory": "output-jenkins2-slave",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "{{ user `memory` }}"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype1",
+          "virtio"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--nictype2",
+          "virtio",
+          "--nic2",
+          "hostonly",
+          "--hostonlyadapter2",
+          "{{user `host_switch`}}"
+        ]
+      ],
+      "vboxmanage_post": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--description",
+          "CentOS6.8, jenkins2-slave"
+        ]
+      ],
+      "export_opts": [
+        "--vsys",
+        "0",
+        "--description",
+        "CentOS6.8, jenkins2-slave",
+        "--vendor",
+        "Axsh",
+        "--version",
+        "0.1"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "fastestmirror.conf",
+      "destination": "/tmp/fastestmirror.conf"
+    },
+    {
+      "type": "file",
+      "source": "conf.el6",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "execute_command": "chmod +x {{ .Path }}; echo 'vagrant' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
+      "inline": [
+        "cp /tmp/fastestmirror.conf /etc/yum/pluginconf.d/fastestmirror.conf",
+        "yum install -y java-1.8.0-openjdk git acpid epel-release tar rsync redhat-lsb-core",
+        "chown -R root:root /tmp/conf.el6/; cp -a -t / /tmp/conf.el6/*",
+        "useradd -d /var/lib/jenkins --system --create-home --user-group jenkins",
+        "mkdir /var/log/jenkins; chown jenkins:jenkins /var/log/jenkins;",
+        "mkdir /var/lib/jenkins/build-cache; chown jenkins:jenkins /var/lib/jenkins/build-cache;",
+        "yum install -y docker-io",
+        "usermod -G dockerroot jenkins",
+        "echo 'IPADDR={{user `nic2_ipv4`}}' >> /etc/sysconfig/network-scripts/ifcfg-eth1",
+        "yum update -y; yum clean all"
+      ]
+    }
+  ]
+}
