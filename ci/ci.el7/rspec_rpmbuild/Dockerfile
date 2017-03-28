@@ -35,4 +35,3 @@ VOLUME /repos
 
 COPY [".", "/var/tmp/openvnet"]
 ENTRYPOINT ["ci/ci.el7/rspec_rpmbuild/build_packages_vnet.sh"]
-

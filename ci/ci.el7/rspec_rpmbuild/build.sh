@@ -44,7 +44,7 @@ if [[ -n "$JENKINS_HOME" ]]; then
   build_cache_base="${BUILD_OS}/${JOB_NAME%/*}"
   echo "cache_dir=${build_cache_base}" >> ${BUILD_ENV_PATH}
 else
-  img_tag="openvnet.x$(git rev-parse --abbrev-ref HEAD).${BUILD_OS}"
+  img_tag="openvnet.$(git rev-parse --abbrev-ref HEAD).${BUILD_OS}"
 fi
 
 /usr/bin/env
