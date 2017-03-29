@@ -2,7 +2,7 @@
 . "${ENV_ROOTDIR}/external_libraries/mount-partition/mount-partition.sh" load
 
 box=$"${box:-minimal}"
-distr_ver="${distr_ver:-7.2.1511}"
+distr_ver="${distr_ver:-6.8}"
 arch="${arch:-x86_64}"
 
 

@@ -15,7 +15,7 @@ set -a
 set +a
 
 DATA_DIR="${DATA_DIR:-/data}"
-CACHE_DIR="/data/openvnet-ci/branches"
+CACHE_DIR="/data/openvnet-ci/el6/branches"
 
 repo_and_tag="openvnet/integration-test:${BRANCH}.${RELEASE_SUFFIX}"
 
