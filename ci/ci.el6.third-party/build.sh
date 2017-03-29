@@ -57,4 +57,4 @@ docker build \
 CID=$(docker run -v "/var/www/html/repos:/repos" ${1:+--env-file $1} -d "${img_tag}")
 docker attach $CID
 
-tar -cO --directory="${REPO_BASE_DIR}" "${BRANCH}" | $SSH_REMOTE tar -xf - -C "${REPO_BASE_DIR}"
+tar -cO --directory="${REPO_BASE_DIR}" "packages" | $SSH_REMOTE tar -xf - -C "${REPO_BASE_DIR}"
