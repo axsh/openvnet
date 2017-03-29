@@ -3,7 +3,7 @@
 check_dep "tar"
 check_dep "rsync"
 check_dep "brctl"
-check_dep "qemu-system-x86_64"
+check_dep "qemu-kvm"
 check_dep "parted" # For mount-partition.sh
 
 for box in ${BOXES} ; do

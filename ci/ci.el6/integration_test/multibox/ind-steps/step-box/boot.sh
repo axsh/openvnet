@@ -35,7 +35,7 @@
     boot_img="${NODE_DIR}/${vm_name}.qcow2"
 
     sudo $(cat <<EOS
-     qemu-system-x86_64 \
+     qemu-kvm \
        -machine accel=kvm \
        -cpu ${cpu_type} \
        -m ${mem_size} \
