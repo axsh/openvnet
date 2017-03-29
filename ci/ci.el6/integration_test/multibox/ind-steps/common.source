@@ -1,0 +1,122 @@
+#!/bin/bash
+
+. "${ENV_ROOTDIR}/external_libraries/bashsteps/simple-defaults-for-bashsteps.source"
+
+#
+# Core functions
+#
+
+# This function needs to be called each time we want to build something.
+# Generates array containing the stages and enumerates them individually as separate variables.
+# NOTE: Stage variables are set as readonly, therefore we call this function only once for each script.
+function initialize () {
+    STAGES=("${@}")
+    [[ -z "${STAGES}" ]] && STAGES=( init install preconfigure boot postconfigure provide )
+
+    for (( i=0; i< ${#STAGES[@]} ; i++ )) ; do
+        s=${STAGES[i]}
+        if [[ $(bash --version | grep -q 4.[0-9]) ]] ; then
+            declare -rg "${s}=${i}"
+        else
+            eval "readonly ${s}=${i}"
+        fi
+    done
+
+    export STAGES
+}
+
+function get_env_state () {
+    local stage="${1:-0}"
+
+    $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && stage=$boot
+    $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && stage=$postconfigure
+
+    echo $stage
+}
+
+function define_stages () {
+    local start_stage=${1}
+    local r=()
+
+    [[ $start_stage -gt 0 ]] || start_stage=$(get_env_state $start_stage) # check if we can skip part of the build routine
+
+    for s in $( seq $start_stage ${#STAGES[@]} ) ; do
+        r+=( ${STAGES[$s]} )
+    done
+    echo "${r[@]}"
+}
+
+function run_steps () {
+    local step="${1}" stage="${2}"
+    local step_common="${ENV_ROOTDIR}/ind-steps/step-${step}/common.source"
+    (
+        [[ -f "${step_common}" ]] && . "${step_common}"
+        . "${ENV_ROOTDIR}/ind-steps/step-${step}/${stage}.sh"
+    )
+}
+
+# The main function which we use to build steps, it acts as the entrypoint.
+# If bashsteps step nesting (groups) are respected can also act as a dependency check.
+# $start_stage can be set if we want to start a step manually from a certain stage
+function build () {
+
+    local steps="${@}"
+    local custom_start=${!STAGES[${start_stage}]}
+    local stages=($(define_stages $custom_start))
+
+    # Loops through the stages that were initialized (default: init install preconfigure boot postconfigure provide)
+    # and perform the stage for each step one by one.
+    for stage in ${stages[@]} ; do
+        for step in ${steps[@]} ; do
+            [[ -d "${ENV_ROOTDIR}/ind-steps/step-${step}" ]] || continue
+            [[ -f "${ENV_ROOTDIR}/ind-steps/step-${step}/${stage}.sh" ]] && run_steps "${step}" "${stage}"
+            case $? in
+                200) return 0 ;;
+                255) . ${ENV_ROOTDIR}/ind-steps/step-buildenv/common.source
+                     [[ -n "${NODE_DIR}" ]] && { teardown_environment $(get_env_state $stage) ; exit 255 ; }
+                     [[ -z "${NODE_DIR}" ]] && { teardown_host_settings ; exit 255 ; } ;;
+            esac
+        done
+    done
+}
+
+#
+# Node functions
+#
+
+function run_ssh () {
+    local key="${NODE_DIR}/sshkey"
+    [[ -f ${key} ]] &&
+        $(type -P ssh) -i "${key}" -o 'StrictHostKeyChecking=no' -o 'LogLevel=quiet' -o 'UserKnownHostsFile /dev/null' "${@}"
+}
+
+# Helper function for running commands on nodes so we don't have to make seprate
+# scripts for performing the same commands before and after the image is running.
+function run_cmd () {
+    [[ $(get_env_state) -gt $boot ]] && { run_ssh root@${IP_ADDR} "${@}" ; return $? ; }
+    sudo chroot ${TMP_ROOT} /bin/bash -c "${@}"
+}
+
+function start_service () {
+    local service="${1}"
+
+    (
+        $starting_step "Start ${service}"
+        false
+        $skip_step_if_already_done ; set -xe
+        run_cmd "initctl start ${service}"
+    ) ; prev_cmd_failed
+}
+
+function install_package () {
+    local pkgs=("${@}")
+
+    for pkg in ${pkgs[@]} ; do
+        (
+            $starting_step "Install ${pkg}"
+            run_cmd "rpm -q --quiet ${pkg}"
+            $skip_step_if_already_done ; set -xe
+            run_cmd "yum install -y ${pkg}"
+        ) ; prev_cmd_failed
+    done
+}
