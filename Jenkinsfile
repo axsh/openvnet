@@ -1,3 +1,4 @@
+
 #!groovy
 
 // http://stackoverflow.com/questions/37425064/how-to-use-environment-variables-in-a-groovy-function-using-a-jenkinsfile
@@ -91,5 +92,5 @@ node() {
 def jobName = "${env.JOB_NAME}".tokenize("/")[0]
 
 stage_rpmbuild("${jobName}")
-stage_test_rpm("${jobName}")
+// stage_test_rpm("${jobName}")
 stage_integration_test("${jobName}")
