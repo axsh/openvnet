@@ -1,3 +1,3 @@
 #!/bin/bash
 
-disable_service "firewalld" "disable"
+run_cmd "iptables -F"
