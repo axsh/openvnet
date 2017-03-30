@@ -236,3 +236,4 @@ This package contains the vnctl client for OpenVNet's WebAPI. It's a simple comm
 /opt/axsh/openvnet/client/vnctl
 /usr/bin/vnctl
 %config(noreplace) /etc/openvnet/vnctl.conf
+%config /etc/openvnet/vnctl-ruby
