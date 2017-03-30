@@ -1,6 +1,6 @@
 #!/bin/bash
 
-install_package "lxc" "lxc-extra" "lxc-templates" "lxc-devel" "debootstrap"
+install_package "lxc" "lxc-templates" "lxc-devel" "debootstrap"
 
 (
     $starting_group "Download centos system used by containers"
