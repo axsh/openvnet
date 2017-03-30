@@ -86,10 +86,8 @@ module Vnet
     autoload :ActiveSegmentManager, 'vnet/core/active_segment_manager'
 
     autoload :AddressHelpers, 'vnet/core/address_helpers'
-    autoload :ConnectionManager, 'vnet/core/connection_manager'
     autoload :Datapath, 'vnet/core/items'
     autoload :DatapathManager, 'vnet/core/datapath_manager'
-    autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Filter2Manager, 'vnet/core/filter2_manager'
     autoload :Filter, 'vnet/core/items'
     autoload :HostDatapath, 'vnet/core/host_datapath'
@@ -153,12 +151,6 @@ module Vnet
       autoload :Remote, 'vnet/core/active_segments/remote'
     end
 
-    module Connections
-      autoload :Base, 'vnet/core/connections/base'
-      autoload :TCP, 'vnet/core/connections/tcp'
-      autoload :UDP, 'vnet/core/connections/udp'
-    end
-
     module Datapaths
       autoload :Base, 'vnet/core/datapaths/base'
       autoload :Host, 'vnet/core/datapaths/host'
@@ -166,15 +158,8 @@ module Vnet
     end
 
     module Filters
-      autoload :AcceptAllTraffic, 'vnet/core/filters/accept_all_traffic'
-      autoload :AcceptIngressArp, 'vnet/core/filters/accept_ingress_arp'
-      autoload :AcceptEgressArp, 'vnet/core/filters/accept_egress_arp'
-      autoload :Base, 'vnet/core/filters/base'
       autoload :Base2, 'vnet/core/filters/base2'
-      autoload :Cookies, 'vnet/core/filters/cookies'
-      autoload :SecurityGroup, 'vnet/core/filters/security_group'
       autoload :Static, 'vnet/core/filters/static'
-
     end
 
     module HostDatapaths
@@ -267,8 +252,6 @@ module Vnet
   end
 
   module Helpers
-    autoload :SecurityGroup, 'vnet/helpers/security_group'
-    autoload :Event, 'vnet/helpers/event'
     autoload :IpAddress, 'vnet/helpers/ip_address'
   end
 
@@ -289,7 +272,7 @@ module Vnet
         autoload :DnsService, 'vnet/endpoints/1.0/responses/dns_service'
         autoload :DnsRecord, 'vnet/endpoints/1.0/responses/dns_record'
         autoload :Filter, 'vnet/endpoints/1.0/responses/filter'
-        autoload :FilterStatic, 'vnet/endpoints/1.0/responses/filter_static'
+        autoload :FilterStatic, 'vnet/endpoints/1.0/responses/filter'
         autoload :Interface, 'vnet/endpoints/1.0/responses/interface'
         autoload :InterfacePort, 'vnet/endpoints/1.0/responses/interface_port'
         autoload :InterfaceNetwork, 'vnet/endpoints/1.0/responses/interface'
@@ -311,7 +294,6 @@ module Vnet
         autoload :NetworkService, 'vnet/endpoints/1.0/responses/network_service'
         autoload :Route, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLink, 'vnet/endpoints/1.0/responses/route_link'
-        autoload :SecurityGroup, 'vnet/endpoints/1.0/responses/security_group'
         autoload :Segment, 'vnet/endpoints/1.0/responses/segment'
         autoload :Topology, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyDatapath, 'vnet/endpoints/1.0/responses/topology'
@@ -341,7 +323,7 @@ module Vnet
         autoload :IpRetentionCollection, 'vnet/endpoints/1.0/responses/ip_retention'
         autoload :IpRetentionContainerCollection, 'vnet/endpoints/1.0/responses/ip_retention_container'
         autoload :FilterCollection, 'vnet/endpoints/1.0/responses/filter'
-        autoload :FilterStaticCollection, 'vnet/endpoints/1.0/responses/filter_static'
+        autoload :FilterStaticCollection, 'vnet/endpoints/1.0/responses/filter'
         autoload :LeasePolicyCollection, 'vnet/endpoints/1.0/responses/lease_policy'
         autoload :MacAddressCollection, 'vnet/endpoints/1.0/responses/mac_address'
         autoload :MacLeaseCollection, 'vnet/endpoints/1.0/responses/mac_lease'
@@ -351,7 +333,6 @@ module Vnet
         autoload :NetworkServiceCollection, 'vnet/endpoints/1.0/responses/network_service'
         autoload :RouteCollection, 'vnet/endpoints/1.0/responses/route'
         autoload :RouteLinkCollection, 'vnet/endpoints/1.0/responses/route_link'
-        autoload :SecurityGroupCollection, 'vnet/endpoints/1.0/responses/security_group'
         autoload :SegmentCollection, 'vnet/endpoints/1.0/responses/segment'
         autoload :TopologyCollection, 'vnet/endpoints/1.0/responses/topology'
         autoload :TopologyDatapathCollection, 'vnet/endpoints/1.0/responses/topology'
@@ -415,8 +396,6 @@ module Vnet
     autoload :NetworkService, 'vnet/models/network_service'
     autoload :Route, 'vnet/models/route'
     autoload :RouteLink, 'vnet/models/route_link'
-    autoload :SecurityGroup, 'vnet/models/security_group'
-    autoload :SecurityGroupInterface, 'vnet/models/security_group_interface'
     autoload :Segment, 'vnet/models/segment'
     autoload :Taggable, 'vnet/models/base'
     autoload :Topology, 'vnet/models/topology'
@@ -472,8 +451,6 @@ module Vnet
     autoload :NetworkService, 'vnet/model_wrappers/network_service'
     autoload :Route, 'vnet/model_wrappers/route'
     autoload :RouteLink, 'vnet/model_wrappers/route_link'
-    autoload :SecurityGroup, 'vnet/model_wrappers/security_group'
-    autoload :SecurityGroupInterface, 'vnet/model_wrappers/security_group_interface'
     autoload :Segment, 'vnet/model_wrappers/wrappers'
     autoload :Topology, 'vnet/model_wrappers/topology'
     autoload :TopologyDatapath, 'vnet/model_wrappers/topology'
@@ -535,8 +512,6 @@ module Vnet
     autoload :NetworkService, 'vnet/node_api/network_service'
     autoload :Route, 'vnet/node_api/route'
     autoload :RouteLink, 'vnet/node_api/route_link'
-    autoload :SecurityGroup, 'vnet/node_api/security_group'
-    autoload :SecurityGroupInterface, 'vnet/node_api/security_group_interface'
     autoload :Segment, 'vnet/node_api/segment'
     autoload :Topology, 'vnet/node_api/topology'
     autoload :TopologyAssocBase, 'vnet/node_api/topology'

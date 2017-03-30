@@ -29,7 +29,7 @@ DCell.setup
 
 # When a datapath is initialized, it'll have flow.
 # The one that accepts ARP in the INTERFACE_INGRESS_FILTER table
-DATAPATH_IDLE_FLOWCOUNT = 1
+DATAPATH_IDLE_FLOWCOUNT = 0
 
 RSpec.configure do |config|
   config.include Rack::Test::Methods

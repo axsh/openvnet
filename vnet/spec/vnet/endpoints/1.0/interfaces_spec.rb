@@ -34,7 +34,6 @@ describe '/interfaces' do
       uuid: 'if-test',
       network_uuid: 'nw-testnet',
       ipv4_address: '192.168.1.10',
-      ingress_filtering_enabled: true,
       mac_address: '11:11:11:11:11:11',
       mode: 'simulated'
     }
@@ -78,8 +77,7 @@ describe '/interfaces' do
     let!(:owner) { Fabricate(:datapath) { uuid 'dp-new' } }
 
     accepted_params = {
-      display_name: 'updated interface',
-      ingress_filtering_enabled: true
+      display_name: 'updated interface'
     }
 
     include_examples 'PUT /:uuid', accepted_params
@@ -124,20 +122,6 @@ describe '/interfaces' do
 
       include_examples 'POST /:uuid/postfix', accepted_params, required_params
     end
-  end
-
-  #
-  # Security groups:
-  #
-
-  describe 'Many to many relation calls for security groups' do
-    let!(:base_object) { Fabricate(fabricator) }
-    let(:relation_fabricator) { :security_group }
-    let(:join_table_fabricator) { :security_group_interface }
-
-    let!(:interface) { Fabricate(:interface) { uuid 'if-test' } }
-
-    include_examples 'many_to_many_relation', 'security_groups', {}
   end
 
 end

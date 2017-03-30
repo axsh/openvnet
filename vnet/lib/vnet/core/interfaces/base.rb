@@ -36,10 +36,7 @@ module Vnet::Core::Interfaces
     attr_accessor :enable_routing
     attr_accessor :enable_route_translation
 
-    attr_accessor :ingress_filtering_enabled
-
     attr_accessor :enabled_filtering
-    attr_accessor :enabled_legacy_filtering
 
     def initialize(params)
       super
@@ -55,8 +52,6 @@ module Vnet::Core::Interfaces
 
       @enable_routing = map.enable_routing
       @enable_route_translation = map.enable_route_translation
-      @ingress_filtering_enabled = map.ingress_filtering_enabled
-      @enabled_legacy_filtering = map.enable_legacy_filtering
       @enabled_filtering = map.enable_filtering
     end
 
@@ -184,16 +179,6 @@ module Vnet::Core::Interfaces
       return nil if ipv4_info.nil?
 
       [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
-    end
-
-    #
-    # Filtering methods:
-    #
-
-    def enabled_legacy_filtering
-    end
-
-    def disabled_legacy_filtering
     end
 
     #

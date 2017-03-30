@@ -6,8 +6,6 @@ module Vnctl::Cli
     api_suffix "interfaces"
 
     add_modify_shared_options {
-      option :ingress_filtering_enabled, :type => :boolean,
-        :desc => "Flag that decides whether or not ingress filtering (security groups) is enabled."
       option :enable_routing, :type => :boolean,
         :desc => "Flag that decides whether or not routing is enabled."
       option :enable_route_translation, :type => :boolean,
@@ -34,8 +32,6 @@ module Vnctl::Cli
     define_show
     define_del
     define_rename
-
-    define_relation :security_groups
 
     # Here we do a dirty hack because the ports relation does not follow the
     # standard relation format. More specifically, it takes arguments to its

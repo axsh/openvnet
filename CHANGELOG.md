@@ -19,6 +19,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 * `Added` The possibility to re-use the UUID of deleted items.
 
+* `Added` Filter manager now supports stateful firewalls.
+
 * `Changed` It is no longer possibly to directly modify an IP lease through the WebAPI. In order to preserve network state history, IP leases need to be deleted and recreated.
 
 * `Changed` the static filter webapi parameters to be more inline with the current functionality.
@@ -30,6 +32,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 * `Changed` Refactored topology manager before adding new functionality.
 
 * `Removed` VNet Edge. Connecting OpenVNet to other networks on the L2 level should now be done by using `promiscuous interface mode` instead.
+
+* `Removed` Security groups. Use filters instead for firewall functionality.
 
 ## [0.9] - 2016-04-19
 
