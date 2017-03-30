@@ -5,6 +5,7 @@
     false # Always perform this step
     $skip_step_if_already_done; set -ex
     run_cmd <<EOF
+yum --enablerepo=openvnet clean metadata
 cat <<EOS > /etc/yum.repos.d/openvnet.repo
 [openvnet]
 name=OpenVNet
