@@ -61,10 +61,7 @@ mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/bin
 mkdir -p "$RPM_BUILD_ROOT"/opt/axsh/openvnet/client
 mkdir -p "$RPM_BUILD_ROOT"/var/log/openvnet
 mkdir -p "$RPM_BUILD_ROOT"/usr/bin
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/default "$RPM_BUILD_ROOT"/etc/
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/init "$RPM_BUILD_ROOT"/etc/
-cp -r "$OPENVNET_SRC_DIR"/deployment/conf_files/etc/openvnet "$RPM_BUILD_ROOT"/etc/
-cp "$OPENVNET_SRC_DIR"/deployment/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
+cp -r ci/ci.el6/rspec_rpmbuild/conf_files/* "$RPM_BUILD_ROOT"/
 cp "$OPENVNET_SRC_DIR"/vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp "$OPENVNET_SRC_DIR"/vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp "$OPENVNET_SRC_DIR"/vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
