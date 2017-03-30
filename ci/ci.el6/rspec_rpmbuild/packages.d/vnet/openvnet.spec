@@ -152,7 +152,7 @@ user="vnet-webapi"
 logfile="/var/log/openvnet/webapi.log"
 
 if ! id "$user" > /dev/null 2>&1 ; then
-    adduser --system --no-create-home --shell /bin/false "$user"
+    adduser -d /opt/axsh/openvnet --system --no-create-home --shell /bin/false "$user"
 fi
 
 touch "$logfile"
@@ -182,7 +182,7 @@ user="vnet-vnmgr"
 logfile="/var/log/openvnet/vnmgr.log"
 
 if ! id "$user" > /dev/null 2>&1 ; then
-    adduser --system --no-create-home --shell /bin/false "$user"
+    adduser -d /opt/axsh/openvnet --system --no-create-home --shell /bin/false "$user"
 fi
 
 touch "$logfile"
