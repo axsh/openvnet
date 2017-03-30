@@ -1,5 +1,0 @@
-# OpenVNet common variables
-VNET_ROOT=/opt/axsh/openvnet
-RUBY_PATH=/opt/axsh/openvnet/ruby/bin
-PATH=${RUBY_PATH}:$PATH
-LOG_DIRECTORY=/var/log/openvnet/
