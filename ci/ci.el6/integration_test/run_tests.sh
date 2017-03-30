@@ -4,7 +4,7 @@ current_dir=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
 
 ${current_dir}/multibox/build.sh
 
-. ${current_dir}/../../cache_functions.sh "openvnet-ci/branches/el6/${BRANCH}"
+. ${current_dir}/../../cache_functions.sh "openvnet-ci/el6/branches/${BRANCH}"
 . /etc/profile.d/rvm.sh
 
 
