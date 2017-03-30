@@ -91,13 +91,13 @@ try_load_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}"
 # Run rspec
 #
 
-(
-    cd vnet
-    mysqladmin -uroot create vnet_test
-    bundle install --path vendor/bundle --standalone
-    bundle exec rake test:db:reset
-    bundle exec rspec spec
-)
+# (
+#     cd vnet
+#     mysqladmin -uroot create vnet_test
+#     bundle install --path vendor/bundle --standalone
+#     bundle exec rake test:db:reset
+#     bundle exec rspec spec
+# )
 
 # Copy only the tracked files to rpmbuild SOURCES/.
 (
