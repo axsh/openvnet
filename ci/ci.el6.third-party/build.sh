@@ -40,7 +40,7 @@ set +a
 
 
 if [[ -n "$JENKINS_HOME" ]]; then
-  img_tag="openvnet/3rd-party:${RELEASE_SUFFIX}.${BRANCH}"
+  img_tag="openvnet/3rd-party/el6:${RELEASE_SUFFIX}.${BRANCH}"
 else
   img_tag="openvnet.$(git rev-parse --abbrev-ref HEAD).el6"
 fi

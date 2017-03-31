@@ -39,7 +39,7 @@ set +a
 
 if [[ -n "$JENKINS_HOME" ]]; then
   # openvnet-axsh/branch1/el7
-  img_tag="openvnet/rspec-rpmbuild:${BRANCH}.${RELEASE_SUFFIX}"
+  img_tag="openvnet/rspec-rpmbuild/el7:${BRANCH}.${RELEASE_SUFFIX}"
   # $BUILD_CACHE_DIR/openvnet-axsh/el7/0123abcdef.tar.gz
   build_cache_base="${BUILD_OS}/${JOB_NAME%/*}"
   echo "cache_dir=${build_cache_base}" >> ${BUILD_ENV_PATH}
