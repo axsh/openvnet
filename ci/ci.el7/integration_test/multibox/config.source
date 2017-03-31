@@ -27,7 +27,7 @@ BOXES=(
 )
 
 BOXES_DIR="/data/openvnet-ci/boxes"
-CACHE_DIR="/data/openvnet-ci/branches"
+CACHE_DIR="/data/openvnet-ci/el7/branches"
 
 # TODO: add function that calculates the parent branch of current branch
 # and assigns to $BASE_BRANCH
