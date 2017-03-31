@@ -52,16 +52,6 @@ def stage_rpmbuild(label) {
   }
 }
 
-def stage_test_rpm(label) {
-  node(label) {
-    stage("RPM Install Test ${label}") {
-      checkout_and_merge()
-      write_build_env(label)
-      sh "./ci/ci.${label}/rpmtest/test-rpm-install.sh ./build.env"
-    }
-  }
-}
-
 def stage_integration_test(label) {
   node("multibox") {
     stage("Integration test ${label}") {
@@ -91,5 +81,4 @@ node() {
 def jobName = "${env.JOB_NAME}".tokenize("/")[0]
 
 stage_rpmbuild("${jobName}")
-// stage_test_rpm("${jobName}")
 stage_integration_test("${jobName}")
