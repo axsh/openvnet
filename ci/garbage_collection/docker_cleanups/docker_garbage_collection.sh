@@ -41,9 +41,11 @@ function remove_images {
 #-------------------------------------------------------------------------#
 # main()
 
-remove_images "openvnet/rspec-rpmbuild"
-remove_images "openvnet/rpmtest"
-remove_images "openvnet/integration-test"
+remove_images "openvnet/rspec-rpmbuild/el6"
+remove_images "openvnet/integration-test/el6"
+
+remove_images "openvnet/rspec-rpmbuild/el7"
+remove_images "openvnet/integration-test/el7"
 
 # docker doesn't garbage collect images that are no longer referenced by any container
 # so we need to clean them up manually
