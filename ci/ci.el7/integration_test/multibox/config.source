@@ -28,17 +28,7 @@ BOXES=(
 
 BOXES_DIR="/data/openvnet-ci/boxes"
 CACHE_DIR="/data/openvnet-ci/el7/branches"
+BASE_BRANCH="${BASE_BRANCH:-develop}"
 
-# TODO: add function that calculates the parent branch of current branch
-# and assigns to $BASE_BRANCH
-BASE_BRANCH="${BASE_BRANCH:-jenkins2-el7}"
-
-#if [[ -f $(git rev-parse --show-toplevel)/build.env ]] ; then
-#   . $(git rev-parse --show-toplevel)/build.env
-#fi
-
-# These variables should be supplied from jenkins.
-BRANCH="${BRANCH:-jenkins2-el7}"
-
-# These variables are set by default but can be overriden by jenkins.
-REBUILD="${REBUILD:-false}"
+: "${BRANCH:?"the BRANCH variable needs to be set with the github branch to test."}"
+: "${REBUILD:?"The REBUILD variable needs to be set. 'true' if you wish to rebuild the environment completely. 'false' otherwise"}"
