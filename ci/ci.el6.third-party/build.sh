@@ -20,20 +20,6 @@ function docker_rm() {
 
 trap "docker_rm; rm -rf ${TMPDIR}" EXIT
 
-function docker_cp() {
-  local cid=${2%:*}
-  if [[ -z $cid ]]; then
-    # container -> host
-    docker cp $1 $2
-  else
-    # host -> container. Docker 1.7 or earlier does not support.
-    docker cp $1 $2 || {
-      local path=${2#*:}
-      tar -cO $1 | docker exec -i "${cid}" bash -c "tar -xf - -C ${path}"
-    }
-  fi
-}
-
 set -a
 . ${1}
 set +a
@@ -44,7 +30,6 @@ if [[ -n "$JENKINS_HOME" ]]; then
 else
   img_tag="openvnet.$(git rev-parse --abbrev-ref HEAD).el6"
 fi
-
 
 docker build \
        --build-arg BRANCH="${BRANCH}" \
