@@ -14,6 +14,9 @@ update_vnet_via: rpm
 
 ssh_quiet_mode: true
 
+ssh_options:
+  key: "~/.ssh/sshkey"
+
 dataset_options:
   physical_port: eth0
   dp1_ipv4_address: 172.16.90.10

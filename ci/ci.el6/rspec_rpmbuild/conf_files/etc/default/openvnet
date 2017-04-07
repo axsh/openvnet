@@ -1,0 +1,7 @@
+# OpenVNet common variables
+VNET_ROOT=/opt/axsh/openvnet
+LOG_DIRECTORY=/var/log/openvnet/
+
+# SCLO ruby
+SCL_RUBY=rh-ruby22
+. /usr/bin/scl_source enable ${SCL_RUBY} || :

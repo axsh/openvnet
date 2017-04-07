@@ -15,9 +15,9 @@ set -a
 set +a
 
 DATA_DIR="${DATA_DIR:-/data}"
-CACHE_DIR="/data/openvnet-ci/branches"
+CACHE_DIR="/data/openvnet-ci/el7/branches"
 
-repo_and_tag="openvnet/integration-test:${BRANCH}.${RELEASE_SUFFIX}"
+repo_and_tag="openvnet/integration-test/el7:${BRANCH}.${RELEASE_SUFFIX}"
 
 function cleanup () {
     [[ -z "${CID}" ]] && return 0
