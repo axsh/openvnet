@@ -24,7 +24,7 @@ module Vnet::Core::Datapaths
       network = @active_networks[network_id] || return
 
       return if network[:active] == true
-      network[:active] == true
+      network[:active] = true
 
       debug log_format("activating network #{network_id}")
 
@@ -37,7 +37,7 @@ module Vnet::Core::Datapaths
       network = @active_networks[network_id] || return
 
       return if network[:active] == false
-      network[:active] == false
+      network[:active] = false
 
       debug log_format("deactivating network #{network_id}")
 
@@ -50,7 +50,7 @@ module Vnet::Core::Datapaths
       segment = @active_segments[segment_id] || return
 
       return if segment[:active] == true
-      segment[:active] == true
+      segment[:active] = true
 
       debug log_format("activating segment #{segment_id}")
 
@@ -63,7 +63,7 @@ module Vnet::Core::Datapaths
       segment = @active_segments[segment_id] || return
 
       return if segment[:active] == false
-      segment[:active] == false
+      segment[:active] = false
 
       debug log_format("deactivating segment #{segment_id}")
 
@@ -76,7 +76,7 @@ module Vnet::Core::Datapaths
       route_link = @active_route_links[route_link_id] || return
 
       return if route_link[:active] == true
-      route_link[:active] == true
+      route_link[:active] = true
 
       debug log_format("activating route link #{route_link_id}")
 
@@ -89,7 +89,7 @@ module Vnet::Core::Datapaths
       route_link = @active_route_links[route_link_id] || return
 
       return if route_link[:active] == false
-      route_link[:active] == false
+      route_link[:active] = false
 
       debug log_format("deactivating route link #{route_link_id}")
 
