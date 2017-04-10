@@ -6,7 +6,7 @@ def flow(params)
     goto_table: params[:goto_table],
     priority: params[:priority],
     match_interface: params[:interface_id],
-    cookie: params[:id] | COOKIE_TYPE_FILTER2,
+    cookie: params[:id] | COOKIE_TYPE_FILTER,
     match: params[:match]
   )
 end
@@ -14,7 +14,7 @@ end
 def deleted_flow(params)
   {
     table_id: params[:table],
-    cookie: params[:id] | COOKIE_TYPE_FILTER2,
+    cookie: params[:id] | COOKIE_TYPE_FILTER,
     cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
     match: params[:match]
   }
