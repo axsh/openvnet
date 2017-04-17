@@ -16,7 +16,7 @@ ARG LONG_SHA
 
 LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \
       "jp.axsh.project"="OpenVNet" \
-      "jp.axsh.task"="rspec/rpm build" \
+      "jp.axsh.task"="el6.third-party" \
       "jp.axsh.branch"="$BRANCH" \
       "jp.axsh.release_suffix"="$RELEASE_SUFFIX" \
       "jp.axsh.buildtime"="$ISO8601_TIMESTAMP" \
