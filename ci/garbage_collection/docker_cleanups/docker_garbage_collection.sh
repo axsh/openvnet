@@ -51,5 +51,5 @@ remove_images "openvnet/integration-test/el7"
 # so we need to clean them up manually
 dangling_images="$(sudo docker images -f "dangling=true" -q)"
 if [[ -n "${dangling_images}" ]] ; then
-    sudo docker rmi "${dangling_images}"
+    sudo docker rmi ${dangling_images}
 fi
