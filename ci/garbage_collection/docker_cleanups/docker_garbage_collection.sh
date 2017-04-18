@@ -49,4 +49,4 @@ remove_images "openvnet/integration-test/el7"
 
 # docker doesn't garbage collect images that are no longer referenced by any container
 # so we need to clean them up manually
-docker rmi $(docker images -f "dangling=true" -q)
+sudo docker rmi $(docker images -f "dangling=true" -q)
