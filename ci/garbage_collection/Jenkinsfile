@@ -17,7 +17,7 @@ runs[0]= {
 }
 
 runs[1]= {
-  node("master") {
+  node("rpm_repo") {
     checkout scm
     sh "git remote prune origin"
     sh "cd ci/garbage_collection/repo_cleanups ; ./rpm_garbage_collection.sh"
