@@ -40,7 +40,7 @@ module Vnet::NodeApi
         mac_lease_id = options[:mac_lease_id]
 
         transaction {
-          handle_new_uuid(options)          
+          handle_new_uuid(options)
 
           if interface_id || mac_lease_id
             interface, mac_lease = get_if_and_ml(interface_id, mac_lease_id)
@@ -141,7 +141,7 @@ module Vnet::NodeApi
             ip_retention.save_changes
           end
         }
-        
+
         dispatch_event(INTERFACE_LEASED_IPV4_ADDRESS, prepare_lease_event(model))
         model
       end
@@ -199,7 +199,7 @@ module Vnet::NodeApi
 
         interface = interface_id && M::Interface[id: interface_id]
         mac_lease = mac_lease_id && M::MacLease[id: mac_lease_id]
-        
+
         if interface && mac_lease.nil? && mac_lease_id.nil?
           # Error if the interface has more than one mac_lease?
           mac_lease = interface.mac_leases.first
