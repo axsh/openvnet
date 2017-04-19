@@ -21,6 +21,31 @@ describe '/networks' do
   include_examples 'GET /:uuid'
   include_examples 'DELETE /:uuid'
 
+  describe 'DELETE /:uuid' do
+    context 'With ip leases in the database' do
+      let(:test_network) { Fabricate(:network) }
+
+      before(:each) {
+        3.times { Fabricate(:ip_lease, network_id: test_network.id) }
+
+        delete "#{api_suffix}/#{test_network.canonical_uuid}"
+      }
+
+      it "deletes all the ip leases along with the network" do
+        expect(last_response).to succeed
+
+        expect(model_class[test_network.canonical_uuid]).to eq(nil)
+        expect(model_class.with_deleted.where(uuid: test_network.uuid)).not_to eq(nil)
+
+        expect(Vnet::Models::IpLease.count).to eq(0)
+        expect(Vnet::Models::IpLease.with_deleted.count).to eq(3)
+
+        expect(Vnet::Models::IpAddress.where(network: test_network).count).to eq(0)
+        expect(Vnet::Models::IpAddress.with_deleted.where(network: test_network).count).to eq(3)
+      end
+    end
+  end
+
   describe 'POST /' do
     let!(:topology) { Fabricate(:topology) { uuid 'topo-test' }  }
 
@@ -36,7 +61,7 @@ describe '/networks' do
     expected_response = accepted_params.dup.tap { |map|
       map.delete(:topology_uuid)
     }
-    
+
     required_params = [:ipv4_network]
     uuid_params = [:uuid]
 
