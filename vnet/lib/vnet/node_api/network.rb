@@ -40,9 +40,9 @@ module Vnet::NodeApi
 
         # 0001_origin
         ActiveNetwork.dispatch_deleted_where(filter, model.deleted_at)
-        # IpAddresses.dispatch_deleted_where(filter, model.deleted_at) # Needed? We're deleting the network.
         DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
         Route.dispatch_deleted_where(filter, model.deleted_at)
+        model.ip_leases.each {  |lease| IpLease.dispatch_deleted_for_model(lease) }
         # 0002_services
         # LeasePolicyBaseNetwork.dispatch_deleted_where(filter, model.deleted_at)
         # 0009_topology

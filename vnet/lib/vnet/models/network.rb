@@ -8,6 +8,14 @@ module Vnet::Models
     many_to_one :segment
 
     one_to_many :ip_addresses
+    # Really a one to many relation but we're using many_to_many so sequel will let us use a join table
+    many_to_many :ip_leases, :join_table => :ip_addresses,
+                             :left_key => :network_id,
+                             :left_primary_key => :id,
+                             :right_key => :id,
+                             :right_primary_key => :ip_address_id,
+                             :conditions => "ip_leases.deleted_at is null"
+
     one_to_many :routes
     one_to_many :tunnels
 
@@ -23,7 +31,6 @@ module Vnet::Models
 
     plugin :association_dependencies,
     # 0001_origin
-    ip_addresses: :destroy,
     datapath_networks: :destroy,
     routes: :destroy,
     # 0002_services
@@ -34,6 +41,11 @@ module Vnet::Models
     topology_networks: :destroy,
     # 0011_assoc_interface
     interface_networks: :destroy
+
+    def before_destroy
+      # the association_dependencies plugin doesn't allow us to destroy because it's a many to many relation
+      self.ip_leases.each { |lease| lease.destroy }
+    end
 
     def before_create
       self.domain_name = self[:uuid] if self.domain_name.nil?
