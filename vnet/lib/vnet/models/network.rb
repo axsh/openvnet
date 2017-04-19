@@ -45,6 +45,8 @@ module Vnet::Models
     def before_destroy
       # the association_dependencies plugin doesn't allow us to destroy because it's a many to many relation
       self.ip_leases.each { |lease| lease.destroy }
+
+      super
     end
 
     def before_create
