@@ -26,7 +26,7 @@ for rhel_version in 6 7 ; do
         current=$(readlink current)
         if [[ -z ${current} ]]; then
             echo "No 'current' symlink in develop! "
-            exit 1                # There is no "current" symlink. Don't remove anything!
+            continue                # There is no "current" symlink. Don't remove anything!
         fi
         echo "'current' rpm repo is ${current}"
 
