@@ -19,40 +19,36 @@ done
 ## Now delete "old" (> ${time_limit} days) rpm's from the develop directory
 
 here=$PWD
-cd ${rpm_base_dir}/develop
 
-nrepos=$(ls -1 . | wc -l)
-if [[ ${nrepos} -lt 2 ]]; then
-   echo "Something is wrong. The develop directory contains one or less repos. Quitting."
-   exit 1
-fi
- 
-current=$(readlink current)
-if [[ -z ${current} ]]; then
-   echo "No 'current' symlink in develop! "
-   exit 1                # There is no "current" symlink. Don't remove anything!
-fi
-echo "'current' rpm repo is ${current}"
+for rhel_version in 6 7 ; do
+    (
+        cd ${rpm_base_dir}/develop/packages/rhel/${rhel_version}/
+        current=$(readlink current)
+        if [[ -z ${current} ]]; then
+            echo "No 'current' symlink in develop! "
+            exit 1                # There is no "current" symlink. Don't remove anything!
+        fi
+        echo "'current' rpm repo is ${current}"
 
-readlink current
-current=${current##*\/}
+        readlink current
+        current=${current##*\/}
 
-cutoff_date=$(get_cutoff_date)
+        cutoff_date=$(get_cutoff_date)
 
-echo "Checking for stale rpm repos under develop..."
-for directory in $(ls -d 2*); do
-   dr=${directory}
-   rpmdate=${dr:0:8}     # yyyymmddgitxxxx is the rpm repo directory format
+        echo "Checking for stale rpm repos under develop..."
+        for directory in $(ls -d 2*); do
+            dr=${directory}
+            rpmdate=${dr:0:8}     # yyyymmddgitxxxx is the rpm repo directory format
 
-   if [[ "${dr}" = "${current}" ]]; then
-     continue
-   fi
+            if [[ "${dr}" = "${current}" ]]; then
+                continue
+            fi
 
-   if [[ "${rpmdate}" < "${cutoff_date}" ]]; then  
-     full_dir_name=${rpm_base_dir}/develop/${dr}
-     remove_dir ${full_dir_name}
-   fi
-
+            if [[ "${rpmdate}" < "${cutoff_date}" ]]; then
+                remove_dir "${rpm_base_dir}/develop/packages/rhel/${rhel_version}/${dr}"
+            fi
+        done
+    )
 done
 
 exit 0   ## Explicit notice: We are done.
