@@ -22,7 +22,7 @@ here=$PWD
 
 for rhel_version in 6 7 ; do
     (
-        cd ${rpm_base_dir}/develop/packages/rhel/${rhel_version}/
+        cd ${rpm_base_dir}/develop/packages/rhel/${rhel_version}/vnet
         current=$(readlink current)
         if [[ -z ${current} ]]; then
             echo "No 'current' symlink in develop! "
@@ -45,7 +45,7 @@ for rhel_version in 6 7 ; do
             fi
 
             if [[ "${rpmdate}" < "${cutoff_date}" ]]; then
-                remove_dir "${rpm_base_dir}/develop/packages/rhel/${rhel_version}/${dr}"
+                remove_dir "${rpm_base_dir}/develop/packages/rhel/${rhel_version}/vnet/${dr}"
             fi
         done
     )
