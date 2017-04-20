@@ -16,20 +16,20 @@ for directory in $(TIME_LIMIT=${time_limit} dirs_to_prune ${rpm_base_dir}); do
    remove_dir ${rpm_base_dir}/${directory}
 done
  
-## Now delete "old" (> ${time_limit} days) rpm's from the master directory
+## Now delete "old" (> ${time_limit} days) rpm's from the develop directory
 
 here=$PWD
-cd ${rpm_base_dir}/master
+cd ${rpm_base_dir}/develop
 
 nrepos=$(ls -1 . | wc -l)
 if [[ ${nrepos} -lt 2 ]]; then
-   echo "Something is wrong. The master directory contains one or less repos. Quitting."
+   echo "Something is wrong. The develop directory contains one or less repos. Quitting."
    exit 1
 fi
  
 current=$(readlink current)
 if [[ -z ${current} ]]; then
-   echo "No 'current' symlink in master! "
+   echo "No 'current' symlink in develop! "
    exit 1                # There is no "current" symlink. Don't remove anything!
 fi
 echo "'current' rpm repo is ${current}"
@@ -39,7 +39,7 @@ current=${current##*\/}
 
 cutoff_date=$(get_cutoff_date)
 
-echo "Checking for stale rpm repos under master..."
+echo "Checking for stale rpm repos under develop..."
 for directory in $(ls -d 2*); do
    dr=${directory}
    rpmdate=${dr:0:8}     # yyyymmddgitxxxx is the rpm repo directory format
@@ -49,7 +49,7 @@ for directory in $(ls -d 2*); do
    fi
 
    if [[ "${rpmdate}" < "${cutoff_date}" ]]; then  
-     full_dir_name=${rpm_base_dir}/master/${dr}
+     full_dir_name=${rpm_base_dir}/develop/${dr}
      remove_dir ${full_dir_name}
    fi
 
