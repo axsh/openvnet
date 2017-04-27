@@ -37,6 +37,8 @@ module Vnet::NodeApi
 
         # 0009_topology
         TopologySegment.dispatch_deleted_where(filter, model.deleted_at)
+        # 0010_segment
+        MacLease.dispatch_deleted_for_segment(model.id, model.deleted_at)
         # 0011_assoc_interface
         InterfaceSegment.dispatch_deleted_where(filter, model.deleted_at)
       end
