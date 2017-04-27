@@ -34,7 +34,6 @@ module Vnet::NodeApi
         ip_address_ds = M::IpAddress.with_deleted.where(network_id: network_id)
 
         M::IpLease.with_deleted.where(ip_address: ip_address_ds).where(*filter_date).each { |lease|
-          p "dispatching for lease: #{lease.canonical_uuid}"
           dispatch_deleted_item_events(lease)
         }
       end
