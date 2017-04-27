@@ -1,11 +1,13 @@
-FROM centos:6
+FROM centos:7
 WORKDIR /var/tmp/openvnet
 RUN mkdir -p /var/tmp/openvnet
-ADD ci/ci.el6/rspec_rpmbuild/fastestmirror.conf /etc/yum/pluginconf.d/
+ADD ci/ci.el7/rspec_rpmbuild/fastestmirror.conf /etc/yum/pluginconf.d/
 
 RUN ["yum", "install", "-y", "epel-release", "upstart"]
-RUN ["yum",  "groupinstall", "-y", "Development Tools"]
+RUN ["yum", "groupinstall", "-y", "Development Tools"]
 RUN ["yum", "install", "-y", "yum-utils", "rpmdevtools", "createrepo", "redhat-lsb", "openssl-devel", "libffi-devel", "libyaml-devel", "ncurses-devel", "readline-devel", "chrpath"]
+RUN ["yum", "install", "-y", "autoconf", "automake", "libtool", "groff", "graphviz", "python-twisted-core", "python-zope-interface", "PyQt4", "checkpolicy", "libcap-ng-devel", "selinux-policy-devel"]
+
 
 ARG BRANCH
 ARG VERSOIN
@@ -16,7 +18,7 @@ ARG LONG_SHA
 
 LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \
       "jp.axsh.project"="OpenVNet" \
-      "jp.axsh.task"="el6.third-party" \
+      "jp.axsh.task"="el7.third-party" \
       "jp.axsh.branch"="$BRANCH" \
       "jp.axsh.release_suffix"="$RELEASE_SUFFIX" \
       "jp.axsh.buildtime"="$ISO8601_TIMESTAMP" \
@@ -26,4 +28,4 @@ LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \
 VOLUME /repos
 
 COPY [".", "/var/tmp/openvnet"]
-ENTRYPOINT ["ci/ci.el6.third-party/build_packages_third_party.sh"]
+ENTRYPOINT ["ci/ci.el7.third-party/build_packages_third_party.sh"]
