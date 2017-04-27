@@ -42,7 +42,7 @@ module Vnet::NodeApi
         ActiveNetwork.dispatch_deleted_where(filter, model.deleted_at)
         DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
         Route.dispatch_deleted_where(filter, model.deleted_at)
-        model.ip_leases.each {  |lease| IpLease.dispatch_deleted_for_model(lease) }
+        IpLease.dispatch_deleted_for_network(model.id, model.deleted_at)
         # 0002_services
         # LeasePolicyBaseNetwork.dispatch_deleted_where(filter, model.deleted_at)
         # 0009_topology

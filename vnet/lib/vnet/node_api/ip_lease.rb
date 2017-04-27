@@ -27,6 +27,18 @@ module Vnet::NodeApi
         release_model(model)
       end
 
+      def dispatch_deleted_for_network(network_id, deleted_at)
+        filter_date = ['deleted_at >= ? || deleted_at = NULL',
+                       (deleted_at || Time.now) - 3]
+
+        ip_address_ds = M::IpAddress.with_deleted.where(network_id: network_id)
+
+        M::IpLease.with_deleted.where(ip_address: ip_address_ds).where(*filter_date).each { |lease|
+          p "dispatching for lease: #{lease.canonical_uuid}"
+          dispatch_deleted_item_events(lease)
+        }
+      end
+
       #
       # Internal methods:
       #
