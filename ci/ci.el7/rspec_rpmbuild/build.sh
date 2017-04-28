@@ -65,6 +65,6 @@ tar -cO --directory="${REPO_BASE_DIR}" "${BRANCH}" | $SSH_REMOTE tar -xf - -C "$
 
 # Set the group with write permissions so the garbage collection job can delete these later
 $SSH_REMOTE /bin/bash <<EOS
-chgrp -R repoci "${RPM_ABSOLUTE}"
-chmod -R g+w "${RPM_ABSOLUTE}"
+chgrp -R repoci "${REPO_BASE_DIR}"
+chmod -R g+w "${REPO_BASE_DIR}"
 EOS
