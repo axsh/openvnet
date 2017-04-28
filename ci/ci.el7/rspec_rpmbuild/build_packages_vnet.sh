@@ -93,9 +93,9 @@ try_load_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}"
 
 (
     cd vnet
-    mysqladmin -uroot create vnet_test
     bundle install --path vendor/bundle --standalone
-    bundle exec rake test:db:reset
+    bundle exec rake test:db:create
+    bundle exec rake test:db:init
     bundle exec rspec spec
 )
 
