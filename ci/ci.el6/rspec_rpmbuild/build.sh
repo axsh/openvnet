@@ -62,3 +62,9 @@ CID=$(docker run -v "${REPO_BASE_DIR}:/repos" -v "${BUILD_CACHE_DIR}:/cache" ${B
 docker attach $CID
 
 tar -cO --directory="${REPO_BASE_DIR}" "${BRANCH}" | $SSH_REMOTE tar -xf - -C "${REPO_BASE_DIR}"
+
+# Set the group with write permissions so the garbage collection job can delete these later
+$SSH_REMOTE /bin/bash <<EOS
+chgrp -R repoci "${REPO_BASE_DIR}"
+chmod -R g+w "${REPO_BASE_DIR}"
+EOS
