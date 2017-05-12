@@ -28,7 +28,7 @@ describe '/network_services' do
       :incoming_port => 40,
       :outgoing_port => 100
     }
-    required_params = [:mode] # [:mode] Add back when 'type' is removed.
+    required_params = [:mode]
     uuid_params = [:uuid, :interface_uuid]
 
     include_examples 'POST /', accepted_params, required_params, uuid_params
