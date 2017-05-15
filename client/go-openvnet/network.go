@@ -10,8 +10,8 @@ type Network struct {
 	ItemBase
 	DisplayName string `json:"display_name"`
 	Ipv4Network string `json:"ipv4_network"`
-	Ipv4Prefix  int `json:"ipv4_prefix"`
-	NetworkMode string `json:"network_mode"`
+	Ipv4Prefix  int    `json:"ipv4_prefix"`
+	Mode        string `json:"mode"`
 	DomainName  string `json:"domain_name"`
 	SegmentID   int    `json:"segment_id"`
 }
@@ -30,7 +30,7 @@ type NetworkCreateParams struct {
 	DisplayName string `url:"display_name,omitempty"`
 	Ipv4Network string `url:"ipv4_network"`
 	Ipv4Prefix  int    `url:"ipv4_prefix,omitempty"`
-	NetworkMode string `url:"network_mode"`
+	Mode        string `url:"mode"`
 	DomainName  string `url:"domain_name,omitempty"`
 	SegmentUUID string `url:"segment_id,omitempty"`
 }
