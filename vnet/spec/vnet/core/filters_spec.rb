@@ -1,516 +1,142 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
-require_relative 'filters/helpers'
 
 include Vnet::Constants::Openflow
 include Vnet::Openflow::FlowHelpers
 
 describe Vnet::Core::FilterManager do
-  let(:datapath) { MockDatapath.new(double, ("a" * 16).to_i) }
-  let(:dp_info) { datapath.dp_info }
-  let(:flows) { dp_info.current_flows }
-  let(:deleted_flows) { dp_info.deleted_flows }
 
-  let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0/0") }
-  let(:interface) { Fabricate(:filter_interface, security_groups: [group]) }
+  use_mock_event_handler
 
-  subject do
-    Vnet::Core::FilterManager.new(datapath.dp_info).tap { |fm|
-      # We do this to simulate a datapath with id 1 so we can use is_remote?
+  let(:datapath) { create_mock_datapath }
+  let(:flows) { datapath.dp_info.current_flows }
+  let(:deleted_flows) { datapath.dp_info.deleted_flows }
 
-      datapath_info = Vnet::Openflow::DatapathInfo.new(Fabricate(:datapath, id: 1))
+  let(:filter_manager) { datapath.dp_info.filter_manager }
+  let(:interface_manager) { datapath.dp_info.interface_manager }
 
-      fm.set_datapath_info datapath_info
+  let(:filter) { Fabricate(:filter,
+                           uuid: "fil-test",
+                           interface_id: 1,
+                           mode: "static") }
 
-      datapath.dp_info.active_interface_manager.set_datapath_info datapath_info
-    }
+  # TODO: Sleep timers here create random fails based on load. Use wait_for_loaded.
+  before(:each) do
+    filter_manager.publish(Vnet::Event::ACTIVATE_INTERFACE, id: :interface, interface_id: 1)
+    sleep(0.01)
+    filter_manager.publish(Vnet::Event::FILTER_CREATED_ITEM, filter.to_hash)
+    expect(filter_manager.wait_for_loaded({id: filter.id}, 3)).not_to be_nil
+    sleep(0.01)
   end
 
-  describe "#initialize" do
-    it "applies a flow that accepts all arp traffic" do
-      expect(flows).to include flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
-                                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
-                                           priority: 90,
-                                           match: {
-                                             eth_type: ETH_TYPE_ARP
-                                           },
-                                           cookie: Vnet::Core::Filters::AcceptIngressArp.cookie)
-    end
-  end
+  shared_examples_for "filter_methods" do |operation, passthrough, event = nil|
+    let(:filter) { Fabricate(:filter,
+                             uuid: "fil-test",
+                             interface_id: 1,
+                             mode: "static",
+                             egress_passthrough: passthrough[:egress],
+                             ingress_passthrough: passthrough[:ingress]) }
 
-  describe "#apply_filters" do
-    before(:each) { subject.apply_filters wrapper(interface) }
+    it "#{operation} the filter item" do
 
-    context "with an interface that's in a single security group" do
-      it "applies the flows for that group" do
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_icmp_rule("0.0.0.0/0")
-        )
-      end
+      event.call(filter_manager, filter) unless event.nil?
 
-      context "when a rule does not include ipv4 prefix" do
-        let(:group) { Fabricate(:security_group, rules: "icmp:-1:0.0.0.0") }
-
-        it "applies the flows for that group" do
-          expect(flows).to include rule_flow(
-            cookie: cookie_id(group),
-            match: match_icmp_rule("0.0.0.0/0")
-          )
-        end
-      end
-    end
-
-    context "with a group that separates rules by commas" do
-      let(:group) do
-        rules = 'tcp:22:0.0.0.0/0,udp:53:0.0.0.0/0'
-        Fabricate(:security_group, rules: rules)
-      end
-
-      it "applies the flows for that group" do
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_tcp_rule('0.0.0.0/0', 22)
-        )
-
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_udp_rule('0.0.0.0/0', 53)
-        )
-      end
-    end
-
-    context "with a group that has rules with faulty syntax" do
-      let(:group) do
-        rules = %{
-          # I am a comment
-          I'm not even a rule at all
-          joske:22:0.0.0.0/0
-          tcp:i ain't no port:10.0.0.1/24
-          udp:52:no ip for you
-          tcp:22:10.1.0.0/24
-          icmp::0.0.0.0/0:something else
-          udp:666:sg-nothere
-        }
-
-        # We don't use the fabricator here so we can skip sequel validation
-        Vnet::Models::SecurityGroup.new(rules: rules).save(validate: false)
-      end
-
-      it "skips the faulty syntax rules and still applies the correct ones" do
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_tcp_rule("10.1.0.0/24", 22)
-        )
-
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_icmp_rule("0.0.0.0/0")
-        )
-      end
-    end
-
-    context "with an interface that's in two security groups" do
-      let(:group1) do
-        rules = "tcp:22:0.0.0.0/0\nudp:52:10.1.0.1/24"
-        Fabricate(:security_group, rules: rules)
-      end
-
-      let(:group2) { Fabricate(:security_group, rules: "icmp:-1:10.5.4.3") }
-      let(:interface) { Fabricate(:filter_interface, security_groups: [group1, group2]) }
-
-      it "applies flows for all groups" do
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group1),
-          match: match_tcp_rule("0.0.0.0/0", 22),
-        )
-
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group1),
-          match: match_udp_rule("10.1.0.1/24", 52)
-        )
-
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group2),
-          match: match_icmp_rule("10.5.4.3/32")
-        )
-      end
-    end
-
-    context "with a security group that has two interfaces in it" do
-      before(:each) { subject.apply_filters wrapper(interface2) }
-
-      let(:interface2) { Fabricate(:filter_interface, security_groups: [group]) }
-
-      it "applies the group's rule flows for both interfaces" do
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_icmp_rule("0.0.0.0/0")
-        )
-
-        expect(flows).to include rule_flow({
-          cookie: cookie_id(group, interface2),
-          match: match_icmp_rule("0.0.0.0/0")},
-          interface2
-        )
-      end
-    end
-
-    context "with a security group referencing another security group" do
-      let(:reffee) { Fabricate(:security_group) }
-      let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
-
-      let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
-      let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
-
-      let(:interface) do
-        # Dirty hack to make sure the referenced interfaces are created first
-        ref_intf1;ref_intf2
-        Fabricate(:filter_interface, security_groups: [group])
-      end
-
-      it "applies the rule for each interface in the referenced group" do
-        expect(flows).to include *reference_flows_for("tcp:22", ref_intf1)
-        expect(flows).to include *reference_flows_for("tcp:22", ref_intf2)
-      end
-    end
-  end
-
-  describe "#remove_filters" do
-    before(:each) do
-      subject.apply_filters wrapper(interface)
-      subject.remove_filters(interface.id)
-    end
-
-    it "Removes filter related flows for a single interface" do
-      expected_flow = rule_flow(
-        cookie: cookie_id(group),
-        match: match_icmp_rule("0.0.0.0/0")
-      )
-
-      expect(flows).not_to include expected_flow
-      expect(deleted_flows).to include expected_flow
-    end
-
-    context "with a security group referencing another security group" do
-      let(:reffee) { Fabricate(:security_group) }
-      let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
-
-      let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
-      let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
-
-      let(:interface) do
-        # Dirty hack to make sure the referenced interfaces are created first
-        ref_intf1;ref_intf2
-        Fabricate(:filter_interface, security_groups: [group])
-      end
-
-      it "removes the rule for each interface in the referenced group" do
-        intf1_flows = reference_flows_for("tcp:22", ref_intf1)
-        expect(flows).not_to include *intf1_flows
-        expect(deleted_flows).to include *intf1_flows
-
-        intf2_flows = reference_flows_for("tcp:22", ref_intf2)
-        expect(flows).not_to include *intf2_flows
-        expect(deleted_flows).to include *intf2_flows
-      end
-    end
-  end
-
-  describe "#updated_sg_rules" do
-    before(:each) { subject.apply_filters wrapper(interface) }
-
-    before(:each) do
-      subject.updated_sg_rules({
-        id: group.id,
-        rules: new_rules
-      })
-    end
-
-    context "with new rules in the parameters" do
-      let(:new_rules) { "tcp:234:192.168.3.34" }
-
-      it "Removes the old rules for a security group" do
-        expect(flows).not_to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_icmp_rule("0.0.0.0/0")
-        )
-      end
-
-      it "installs the new rules for a security group" do
-        expect(flows).to include rule_flow(
-          cookie: cookie_id(group),
-          match: match_tcp_rule("192.168.3.34", 234)
-        )
-      end
-    end
-
-    context "with reference rules" do
-      let(:reffee) { Fabricate(:security_group) }
-      let(:group) { Fabricate(:security_group, rules: "tcp:22:#{reffee.canonical_uuid}") }
-
-      let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [reffee]) }
-      let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [reffee]) }
-
-      let(:interface) do
-        # Dirty hack to make sure the referenced interfaces are created first
-        ref_intf1;ref_intf2
-        Fabricate(:filter_interface, security_groups: [group])
-      end
-
-      let(:new_reffee) { Fabricate(:security_group) }
-
-      let(:new_rules) { "tcp:555:#{new_reffee.canonical_uuid}" }
-      let(:ref_intf3) { Fabricate(:filter_interface, security_groups: [new_reffee]) }
-      let(:ref_intf4) { Fabricate(:filter_interface, security_groups: [new_reffee]) }
-
-      it "removes all old reference rules" do
-        expect(flows).not_to include *reference_flows_for("tcp:22", ref_intf1)
-        expect(flows).not_to include *reference_flows_for("tcp:22", ref_intf2)
-      end
-
-      it "adds the new reference rules" do
-        expect(flows).not_to include *reference_flows_for("tcp:555", ref_intf3)
-        expect(flows).not_to include *reference_flows_for("tcp:555", ref_intf4)
-      end
-    end
-  end
-
-  describe "#updated_sg_ip_addresses" do
-    let(:interface2) { Fabricate(:filter_interface) }
-
-    context "with a local security group" do
-      before(:each) do
-        subject.apply_filters wrapper(interface)
-        subject.apply_filters wrapper(interface2)
-
-        interface2.add_security_group(group)
-
-        subject.updated_sg_ip_addresses(
-          id: group.id,
-          ip_addresses: group.ip_addresses
-        )
-      end
-
-      it "updates isolation rules for all local interfaces in the group" do
-        expect(flows).to include *iso_flows_for_interfaces(
-          group,
-          interface,
-          [interface, interface2]
-        )
-
-        # Isolation hasn't been updated for interface2 because we haven't called
-        # apply_filters or added_interface_to_sg for interface2. In the real
-        # world this will be called and it doesn't matter if it happens before
-        # or after updated_sg_ip_addresses
-      end
-    end
-
-    context "when the updated group is a referencee" do
-      let(:group) { Fabricate(:security_group, rules: "icmp::#{reffee.canonical_uuid}") }
-      let(:reffee) { Fabricate(:security_group) }
-
-      before(:each) do
-        subject.apply_filters wrapper(interface)
-        subject.apply_filters wrapper(interface2)
-
-        interface2.add_security_group(reffee)
-
-        subject.updated_sg_ip_addresses(
-          id: reffee.id,
-          ip_addresses: reffee.ip_addresses
-        )
-      end
-
-      it "refreshes all reference rules" do
-        expect(flows).to include *reference_flows_for("icmp::", interface2)
-      end
-    end
-  end
-
-  describe "#added_interface_to_sg" do
-    before(:each) do
-      subject.apply_filters wrapper(interface)
-      subject.apply_filters wrapper(interface2)
-
-      interface2.add_security_group(group)
-
-      subject.added_interface_to_sg(
-        id: group.id,
-        interface_id: interface2.id,
-        interface_cookie_id: group.interface_cookie_id(interface2.id)
-      )
-    end
-
-    context "with a local interface with filtering enabled" do
-      let(:interface2) {
-        if2 = Fabricate(:filter_interface)
-        Fabricate(:active_interface,
-                  interface_id: if2.id,
-                  datapath_id: 1,
-                  singular: 1,
-                  port_name: 'if-2')
-
-        if2
+      filter_hash(filter).each { |ingress, egress|
+        expect(flows).to include flow(ingress)
+        expect(flows).to include flow(egress)
       }
-
-      it "applies the rule flows for the new interface" do
-       expect(flows).to include rule_flow({
-         cookie: cookie_id(group, interface2),
-         match: match_icmp_rule("0.0.0.0/0")},
-         interface2
-       )
-      end
-
-      it "applies the isolation flows for the new interface" do
-        expect(flows).to include *iso_flows_for_interfaces(
-          group,
-          interface2,
-          [interface]
-        )
-      end
-
-      # it doesn't update isolation rules for the interfaces that already were
-      # in the group. updated_sg_ip_addresses does that.
-    end
-
-    context "with a local interface with filtering disabled" do
-      let(:interface2) do
-        Fabricate(:filter_interface, ingress_filtering_enabled: false)
-      end
-
-      it "doesn't apply any flows for the new interface" do
-        expect(flows).not_to include rule_flow({
-          cookie: cookie_id(group, interface2),
-          match: match_icmp_rule("0.0.0.0/0")},
-          interface2
-        )
-
-        expect(flows).not_to include *iso_flows_for_interfaces(
-          group,
-          interface2,
-          [interface]
-         )
-      end
-    end
-
-    context "with a remote interface" do
-      # let(:interface2) { Fabricate(:filter_interface, owner_datapath_id: 2) }
-      let(:interface2) { Fabricate(:filter_interface) }
-
-      it "doesn't apply the rule flows for the new interface" do
-       expect(flows).not_to include rule_flow({
-         cookie: cookie_id(group, interface2),
-         match: match_icmp_rule("0.0.0.0/0")},
-         interface2
-       )
-      end
-
-      it "doesn't apply the isolation flows for the new interface" do
-        expect(flows).not_to include *iso_flows_for_interfaces(
-          group,
-          interface2,
-          [interface, interface2]
-        )
-      end
     end
   end
 
-  describe "#removed_interface_from_sg" do
-    let(:group2) do
-      rules = "tcp:22:0.0.0.0/0\nudp:52:10.1.0.1/24"
-      Fabricate(:security_group, rules: rules)
-    end
+  shared_examples_for "added_static" do |static, protocol|
+    let(:filter_static) { Fabricate(static, protocol: protocol) }
 
-    before(:each) do
-      subject.apply_filters wrapper(interface)
-      subject.apply_filters wrapper(interface2)
-
-      group.interfaces.delete(interface2)
-
-      subject.removed_interface_from_sg(
-        id: group.id,
-        interface_id: interface2.id,
-        #interface_owner_datapath_id: interface2.owner_datapath_id,
-      )
-    end
-
-    context "with a local interface in two security groups" do
-      let(:interface2) { Fabricate(:filter_interface, security_groups: [group, group2]) }
-
-      it "removes the security group's rule flows for the removed interface" do
-        expect(flows).not_to include rule_flow({
-          cookie: cookie_id(group, interface2),
-          match: match_icmp_rule("0.0.0.0/0")},
-          interface2
-        )
-      end
-
-      it "removes the security group's isolation rules for the removed interface" do
-        expect(flows).not_to include *iso_flows_for_interfaces(
-          group,
-          interface2,
-          [interface, interface2]
-        )
-      end
-
-      it "leaves other security groups' rule flows in place" do
-        expect(flows).to include rule_flow({
-          cookie: cookie_id(group2, interface2),
-          match: match_tcp_rule("0.0.0.0/0", 22)},
-          interface2
-        )
-
-        expect(flows).to include rule_flow({
-          cookie: cookie_id(group2, interface2),
-          match: match_udp_rule("10.1.0.1/24", 52)},
-          interface2
-        )
-      end
+    it "adds the static" do
+      static_hash(filter_static).each { |ingress, egress|
+        expect(flows).to include flow(ingress)
+        expect(flows).to include flow(egress)
+      }
     end
   end
 
-  describe "#removed_security_group" do
+  describe "#created_item" do
+    context "with with passthrough set to false" do
+      include_examples 'filter_methods', :creates, { egress: false, ingress: false }
+    end
+    context "with with passthrough set to true" do
+      include_examples 'filter_methods', :creates, { egress: true, ingress: true }
+    end
+  end
+
+  describe "#updated_item" do
+    context "with with ingress passthrough set false, egress_passthrough set true" do
+      include_examples 'filter_methods', :updates, { egress: true, ingress: true }, lambda { |fm, f|
+        fm.publish(Vnet::Event::FILTER_UPDATED, id: f.id, egress_passthrough: true, ingress_passthrough: false)
+      }
+    end
+    context "with with ingress passthrough set true, egress_passthrough set false" do
+      include_examples 'filter_methods', :updates, { egress: true, ingress: true }, lambda { |fm, f|
+        fm.publish(Vnet::Event::FILTER_UPDATED, id: f.id, egress_passthrough: false, ingress_passthrough: true)
+      }
+    end
+  end
+
+  describe "#added_static" do
     before(:each) do
-      subject.apply_filters(wrapper(interface))
-      subject.removed_security_group(id: deleted_group.id)
+      filter_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
+                              filter_static.to_hash.merge(id: filter.id,
+                                                          static_id: filter_static.id))
+      sleep(0.01)
     end
 
-    context "when the group is applied locally" do
-      let(:deleted_group) { group }
+    context "when protocol is tcp and passthrough is enabled" do
+      include_examples 'added_static', :static_pass, "tcp"
+    end
+    context "when protocol is tcp and passthrough is disabled" do
+      include_examples 'added_static', :static_drop, "tcp"
+    end
+    context "when protocol is udp and passthrough is enabled" do
+      include_examples 'added_static', :static_pass, "udp"
+    end
+    context "when protocol is udp and passthrough is disabled" do
+      include_examples 'added_static', :static_drop, "udp"
+    end
+    context "when protocol is icmp and passthrough is enabled" do
+      include_examples 'added_static', :static_pass_without_port, "icmp"
+    end
+    context "when protocol is icmp and passthrough is disabled" do
+      include_examples 'added_static', :static_drop_without_port, "icmp"
+    end
+    context "when protocol is arp and passthrough is enabled" do
+      include_examples 'added_static', :static_pass_without_port, "arp"
+    end
+    context "when protocol is arp and passthrough is disabled" do
+      include_examples 'added_static', :static_drop_without_port, "icmp"
+    end
+  end
 
-      it "removes the flows for all interfaces in the security group" do
-        expected_flow = rule_flow(
-          cookie: cookie_id(group),
-          match: match_icmp_rule("0.0.0.0/0")
-        )
-
-        expect(flows).not_to include expected_flow
-        expect(deleted_flows).to include expected_flow
-      end
+  describe "#remove static" do
+    before(:each) do
+      filter_manager.publish(Vnet::Event::FILTER_ADDED_STATIC,
+                              filter_static.to_hash.merge(id: filter.id,
+                                                          static_id: filter_static.id))
+      sleep(0.01)
+      filter_manager.publish(Vnet::Event::FILTER_REMOVED_STATIC,
+                              id: filter.id, static_id: filter_static.id)
+      sleep(0.01)
     end
 
-    context "when the group is referenced" do
-      let(:group) do
-        Fabricate(:security_group, rules: "icmp::#{deleted_group.canonical_uuid}")
-      end
-      let(:deleted_group) { Fabricate(:security_group) }
+    context "when a static rule has been added" do
+      let(:filter_static) { Fabricate(:static_pass, protocol: "tcp") }
 
-      let(:ref_intf1) { Fabricate(:filter_interface, security_groups: [deleted_group]) }
-      let(:ref_intf2) { Fabricate(:filter_interface, security_groups: [deleted_group]) }
+      it "removes a static rule" do
+        static_hash(filter_static).each { |ingress, egress|
+          expect(flows).not_to include deleted_flow(ingress)
+          expect(flows).not_to include deleted_flow(egress)
 
-      let(:interface) do
-        # Dirty hack to make sure the referenced interfaces are created first
-        ref_intf1;ref_intf2
-        Fabricate(:filter_interface, security_groups: [group])
-      end
-
-      it "removes all reference flows for the deleted group" do
-        expect(deleted_flows).to include *reference_flows_for("icmp::", ref_intf1)
-        expect(flows).not_to include *reference_flows_for("icmp::", ref_intf1)
-
-        expect(deleted_flows).to include *reference_flows_for("icmp::", ref_intf2)
-        expect(flows).not_to include *reference_flows_for("icmp::", ref_intf2)
+          expect(deleted_flows).to include deleted_flow(ingress)
+          expect(deleted_flows).to include deleted_flow(egress)
+       }
       end
     end
   end

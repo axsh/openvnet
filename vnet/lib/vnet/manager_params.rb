@@ -169,9 +169,9 @@ module Vnet
     #
     # TODO: Shouldn't this be creating IPAddr types?
     def get_param_ipv4_address(params, key, required = true)
-      param = get_param(params, key, required) || return
+      param = IPAddr.new(get_param(params, key, required) || return, Socket::AF_INET)
 
-      if !IPAddr.new(param, Socket::AF_INET).ipv4?
+      if !param.ipv4?
         throw_param_error('value is not a valid IPv4 address', params, key)
       end
 
@@ -179,10 +179,7 @@ module Vnet
     end
 
     def get_param_mac_address(params, key = :mac_address, required = true)
-      param = get_param(params, key, required) || return
-
-      Pio::Mac.new(param)
-
+      Pio::Mac.new(get_param(params, key, required) || return)
     rescue Pio::Mac::InvalidValueError
       throw_param_error('value is not a valid MAC address', params, key)
     end
@@ -227,6 +224,16 @@ module Vnet
 
     def get_param_map(params, key = :map, required = true)
       get_param_types(params, key, GET_PARAM_MAP_TYPES, required)
+    end
+
+    def get_param_dpid(params, key = :dpid, required = true)
+      param = get_param(params, key, required) || return
+
+      if !(param > 0 && param < (1 << 64))
+        throw_param_error('invalid value for datapath id type', params, key)
+      end
+
+      param
     end
 
   end

@@ -2,6 +2,7 @@
 
 Fabricator(:interface, class_name: Vnet::Models::Interface) do
   id { id_sequence(:interface_ids) }
+  mode 'vif'
 end
 
 Fabricator(:active_interface, class_name: Vnet::Models::ActiveInterface) do
@@ -35,8 +36,6 @@ Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
   # Fabricate(:interface_port,
   #           interface_id: attrs[:id],
   #           datapath_id: 1)
-
-  ingress_filtering_enabled true
 
   ip_leases do |attrs|
     [
@@ -82,24 +81,24 @@ Fabricator(:interface_dp1eth0, class_name: Vnet::Models::Interface) do
   id { id_sequence(:interface_ids) }
 
   uuid 'if-dp1eth0'
-  display_name "test-dp1eth0"
-  mode "host"
+  display_name 'test-dp1eth0'
+  mode 'host'
 end
 
 Fabricator(:interface_dp2eth0, class_name: Vnet::Models::Interface) do
   id { id_sequence(:interface_ids) }
 
   uuid 'if-dp2eth0'
-  display_name "test-dp2eth0"
-  mode "host"
+  display_name 'test-dp2eth0'
+  mode 'host'
 end
 
 Fabricator(:interface_dp3eth0, class_name: Vnet::Models::Interface) do
   id { id_sequence(:interface_ids) }
 
   uuid 'if-dp3eth0'
-  display_name "test-dp3eth0"
-  mode "host"
+  display_name 'test-dp3eth0'
+  mode 'host'
 end
 
 Fabricator(:interface_port, class_name: Vnet::Models::InterfacePort) do

@@ -7,16 +7,10 @@ networks:
     domain_name: vnet1
     network_mode: virtual
 
-  - uuid: nw-vnet2
-    display_name: vnet2
-    ipv4_network: 10.101.0.0
-    ipv4_prefix: 24
-    domain_name: vnet2
-    network_mode: virtual
-
 interfaces:
 
   - uuid: if-v1
+    mode: vif
     port_name: if-v1
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:01"
@@ -24,6 +18,7 @@ interfaces:
     ipv4_address: 10.101.0.10
 
   - uuid: if-v2
+    mode: vif
     port_name: if-v2
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:02"
@@ -31,6 +26,7 @@ interfaces:
     ipv4_address: 10.101.0.11
 
   - uuid: if-v3
+    mode: vif
     port_name: if-v3
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:03"
@@ -38,6 +34,7 @@ interfaces:
     ipv4_address: 10.101.0.12
 
   - uuid: if-v4
+    mode: vif
     port_name: if-v4
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:04"
@@ -45,37 +42,30 @@ interfaces:
     ipv4_address: 10.101.0.13
 
   - uuid: if-v5
+    mode: vif
     port_name: if-v5
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:05"
+    enable_filtering: true
     ipv4_address: 10.101.0.14
 
   - uuid: if-v6
+    mode: vif
     port_name: if-v6
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:06"
     ipv4_address: 10.101.0.15
 
   - uuid: if-dhcp1
+    mode: simulated
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:01:01"
     ipv4_address: 10.101.0.2
-    mode: simulated
-
-  - uuid: if-dhcp2
-    network_uuid: nw-vnet2
-    mac_address: "02:00:00:00:01:02"
-    ipv4_address: 10.101.0.2
-    mode: simulated
 
 network_services:
 
   - uuid: ns-dhcp1
     interface_uuid: if-dhcp1
-    mode: dhcp
-
-  - uuid: ns-dhcp2
-    interface_uuid: if-dhcp2
     mode: dhcp
 
 datapath_networks:
@@ -85,30 +75,15 @@ datapath_networks:
     interface_uuid: if-dp1eth0
     mac_address: "02:00:00:aa:00:01"
 
-  - datapath_uuid: dp-1
-    network_uuid: nw-vnet2
-    interface_uuid: if-dp1eth0
-    mac_address: "02:00:00:aa:00:02"
-
   - datapath_uuid: dp-2
     network_uuid: nw-vnet1
     interface_uuid: if-dp2eth0
     mac_address: "02:00:00:bb:00:01"
 
-  - datapath_uuid: dp-2
-    network_uuid: nw-vnet2
-    interface_uuid: if-dp2eth0
-    mac_address: "02:00:00:bb:00:02"
-
   - datapath_uuid: dp-3
     network_uuid: nw-vnet1
     interface_uuid: if-dp3eth0
     mac_address: "02:00:00:cc:00:01"
-
-  - datapath_uuid: dp-3
-    network_uuid: nw-vnet2
-    interface_uuid: if-dp3eth0
-    mac_address: "02:00:00:cc:00:02"
 
 filters:
 
@@ -124,75 +99,79 @@ filters:
   - uuid: fil-test4
     interface_uuid: if-v4
     mode: static
+  - uuid: fil-test5
+    interface_uuid: if-v5
+    mode: static
 
 filter_static:
 
-  - filter_uuid: fil-test1
-    protocol: "tcp"
-    passthrough: true
-    ipv4_address: "0.0.0.0/0"
-    port_number: 0
-  - filter_uuid: fil-test1
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 0
-    passthrough: true
-  - filter_uuid: fil-test1
-    protocol: "icmp"
-    ipv4_address: "0.0.0.0/0"
-    passthrough: true
   - filter_uuid : fil-test1
-    protocol: "arp"
-    passthrough: true
+    protocol: arp
+    action: pass
+  - filter_uuid: fil-test1
+    protocol: tcp
+    action: pass
+  - filter_uuid: fil-test1
+    protocol: udp
+    action: pass
+  - filter_uuid: fil-test1
+    protocol: icmp
+    action: pass
 
-  - filter_uuid: fil-test3
-    protocol: "tcp"
-    ipv4_address: "10.101.0.10"
-    port_number: 0
-    passthrough: true
-  - filter_uuid: fil-test3
-    protocol: "udp"
-    ipv4_address: "10.101.0.13"
-    port_number: 1344
-    passthrough: true
-  - filter_uuid: fil-test3
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 68
-    passthrough: true
-  - filter_uuid: fil-test3
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 67
-    passthrough: true
-  - filter_uuid: fil-test3
-    protocol: "icmp"
-    ipv4_address: "10.101.0.10"
-    passthrough: true
+  - filter_uuid: fil-test2
+    protocol: udp
+    src_port: 67
+    dst_port: 68
+    action: pass
+
   - filter_uuid : fil-test3
-    protocol: "arp"
-    passthrough: true
+    protocol: arp
+    action: pass
+  - filter_uuid: fil-test3
+    protocol: udp
+    src_port: 67
+    dst_port: 68
+    action: pass
+  - filter_uuid: fil-test3
+    protocol: tcp
+    src_address: 10.101.0.10
+    action: pass
+  - filter_uuid: fil-test3
+    protocol: udp
+    src_address: 10.101.0.13
+    dst_port: 1344
+    action: pass
+  - filter_uuid: fil-test3
+    protocol: icmp
+    src_address: 10.101.0.10
+    action: pass
 
-
-  - filter_uuid: fil-test4
-    protocol: "all"
-    ipv4_address: "10.101.0.10"
-    passthrough: true
-  - filter_uuid: fil-test4
-    protocol: "udp"
-    port_number: 1344
-    ipv4_address: "10.101.0.12"
-    passthrough: true
   - filter_uuid : fil-test4
-    protocol: "arp"
-    passthrough: true
+    protocol: arp
+    action: pass
   - filter_uuid: fil-test4
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 68
-    passthrough: true
+    protocol: udp
+    src_port: 67
+    dst_port: 68
+    action: pass
   - filter_uuid: fil-test4
-    protocol: "udp"
-    ipv4_address: "0.0.0.0/0"
-    port_number: 67
-    passthrough: true
+    protocol: ip
+    src_address: 10.101.0.10
+    action: pass
+  - filter_uuid: fil-test4
+    protocol: udp
+    src_address: 10.101.0.12
+    src_port: 1344
+    action: pass
+
+  - filter_uuid : fil-test5
+    protocol: arp
+    action: pass
+  - filter_uuid : fil-test5
+    protocol: ip
+    action: conn
+  - filter_uuid: fil-test5
+    protocol: udp
+    src_port: 67
+    dst_port: 68
+    action: pass

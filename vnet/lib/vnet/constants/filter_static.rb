@@ -5,13 +5,13 @@ module Vnet::Constants::FilterStatic
   PROTOCOL_UDP  = 'udp'
   PROTOCOL_ICMP = 'icmp'
   PROTOCOL_ARP  = 'arp'
-  PROTOCOL_ALL  = 'all'
+  PROTOCOL_IP   = 'ip'
 
   PROTOCOLS = [
     PROTOCOL_TCP,
     PROTOCOL_UDP,
     PROTOCOL_ICMP,
     PROTOCOL_ARP,
-    PROTOCOL_ALL
+    PROTOCOL_IP
   ]
 end

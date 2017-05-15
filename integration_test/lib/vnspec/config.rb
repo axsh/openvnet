@@ -19,8 +19,10 @@ module Vnspec
       def config
         unless @config
           env = ENV["VNSPEC_ENV"] || "default"
+          release_version = ENV['RELEASE_VERSION']
           @config = DEFAULT_CONFIG.dup
           @config[:env] = env
+          @config[:release_version] = release_version
           ["base", env].each do |n|
             file = File.expand_path("../../config/#{n}.yml", File.dirname(__FILE__))
             @config.merge!(YAML.load_file(file).symbolize_keys)

@@ -3,128 +3,26 @@
 module Vnet::Core
 
   class FilterManager < Vnet::Core::Manager
-    include Vnet::Openflow::FlowHelpers
-
-    subscribe_event UPDATED_SG_RULES, :updated_sg_rules
-    subscribe_event UPDATED_SG_IP_ADDRESSES, :updated_sg_ip_addresses
-    subscribe_event ADDED_INTERFACE_TO_SG, :added_interface_to_sg
-    subscribe_event REMOVED_INTERFACE_FROM_SG, :removed_interface_from_sg
-    subscribe_event REMOVED_SECURITY_GROUP, :removed_security_group
-
-    def initialize(*args)
-      super(*args)
-
-      accept_ingress_arp.install
-    end
+    include Vnet::Constants::Filter
+    include Vnet::ManagerAssocs
+    include ActiveInterfaceEvents
 
     #
-    # Event handling
+    # Events:
     #
+    event_handler_default_drop_all
 
-    def updated_sg_rules(params)
-      item = internal_detect(id: params[:id])
-      return if item.nil?
+    subscribe_event FILTER_INITIALIZED, :load_item
+    subscribe_event FILTER_UNLOAD_ITEM, :unload_item
+    subscribe_event FILTER_CREATED_ITEM, :created_item
+    subscribe_event FILTER_DELETED_ITEM, :unload_item
+    subscribe_event FILTER_UPDATED, :updated_item
 
-      info log_format("Updating rules for security group '#{item.uuid}'")
-      item.update_rules(params[:rules])
-    end
+    subscribe_item_event FILTER_ADDED_STATIC, :added_static
+    subscribe_item_event FILTER_REMOVED_STATIC, :removed_static
 
-    def updated_sg_ip_addresses(params)
-      update_referencees(params[:id], params[:ip_addresses])
-
-      item = internal_detect(id: params[:id]) || return
-      updated_isolation(item, params[:ip_addresses])
-    end
-
-    def removed_interface_from_sg(params)
-      item = internal_detect(id: params[:id]) || return
-
-      info log_format("Removing interface '%s' from security group '%s'" %
-        [params[:interface_id], item.uuid])
-
-      if item.has_interface?(params[:interface_id])
-        item.uninstall(params[:interface_id])
-        item.remove_interface(params[:interface_id])
-
-        @items.delete(item.id) if item.interfaces.empty?
-      end
-    end
-
-    def added_interface_to_sg(params)
-      item = internal_detect(id: params[:id]) || return
-
-      interface = MW::Interface.batch[params[:interface_id]].commit
-      if !is_remote?(interface) && interface.ingress_filtering_enabled
-        log_interface_added(interface.uuid, item.uuid)
-
-        item.add_interface(params[:interface_id], params[:interface_cookie_id])
-        item.install(params[:interface_id])
-      end
-    end
-
-    def removed_security_group(params)
-      remove_referencee(params[:id])
-
-      item = @items.delete(params[:id]) || return
-
-      info log_format("removing security group", item.uuid)
-      item.uninstall
-    end
-
-    #
-    # The rest
-    #
-
-    def remove_referencee(id)
-      @items.values.each { |i| i.remove_referencee(id) if i.references?(id) }
-    end
-
-    def update_referencees(id, ips)
-      @items.values.each {|i| i.update_referencee(id, ips) if i.references?(id)}
-    end
-
-    def updated_isolation(item, ip_list)
-      log_ips = ip_list.map { |i| IPAddress::IPv4.parse_u32(i).to_s }
-      debug log_format("Updating isolation for security group '#{item.uuid}", log_ips)
-
-      item.update_isolation(ip_list)
-    end
-
-    def log_interface_added(if_uuid, sg_uuid)
-      debug log_format("Adding interface '%s' to security group '%s'" %
-        [if_uuid, sg_uuid])
-    end
-
-    def apply_filters(interface)
-      interface = case interface
-      when MW::Interface
-        interface
-      when Numeric, String
-        interface = MW::Interface.batch[interface].commit
-      else
-        raise "Not an interface: #{interface.inspect}"
-      end
-
-      info log_format("applying filters for interface: '#{interface.uuid}'")
-
-      groups = interface.batch.security_groups.commit
-      groups.each do |group|
-        item = internal_retrieve(id: group.id)
-
-        log_interface_added(interface.uuid, item.uuid)
-
-        cookie_id = group.batch.interface_cookie_id(interface.id).commit
-        item.add_interface(interface.id, cookie_id)
-        item.install(interface.id)
-      end
-    end
-
-    def remove_filters(interface_id)
-      items_for_interface(interface_id).each { |item|
-        item.uninstall(interface_id)
-        item.remove_interface(interface_id)
-      }
-    end
+    subscribe_event ACTIVATE_INTERFACE, :activate_interface
+    subscribe_event DEACTIVATE_INTERFACE, :deactivate_interface
 
     #
     # Internal methods:
@@ -137,25 +35,22 @@ module Vnet::Core
     #
 
     def mw_class
-      MW::SecurityGroup
+      MW::Filter
     end
 
     def initialized_item_event
-      INITIALIZED_FILTER
+      FILTER_INITIALIZED
     end
 
-    # def item_unload_event
-    # end
-
-    def select_item(batch)
-      batch.commit(fill: :ip_addresses)
+    def item_unload_event
+      FILTER_UNLOAD_ITEM
     end
 
     def match_item_proc_part(filter_part)
       filter, value = filter_part
 
       case filter
-      when :id, :uuid
+      when :id, :uuid, :interface_id
         proc { |id, item| value == item.send(filter) }
       else
         raise NotImplementedError, filter
@@ -165,35 +60,59 @@ module Vnet::Core
     def query_filter_from_params(params)
       filter = []
       filter << {id: params[:id]} if params.has_key? :id
+      filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
       filter
     end
 
     def item_initialize(item_map)
-      Filters::SecurityGroup.new(item_map).tap { |item|
-        item.dp_info = @dp_info
-      }
+      item_class =
+        case item_map.mode
+        when MODE_STATIC then Filters::Static
+        else
+          return
+        end
+
+      item_class.new(dp_info: @dp_info, map: item_map)
     end
 
     #
     # Create / Delete events:
     #
 
-    #
-    # Others:
-    #
-
-    def items_for_interface(interface_id)
-      @items.values.select { |item| item.has_interface?(interface_id) }
+    def item_pre_install(item, item_map)
+      case item.mode
+      when :static then load_static(item, item_map)
+      end
     end
 
-    def accept_ingress_arp
-      Filters::AcceptIngressArp.new.tap {|i| i.dp_info = @dp_info}
+    # FILTER_CREATED_ITEM on queue 'item.id'.
+    def created_item(params)
+      return if internal_detect_by_id(params)
+      return if @active_interfaces[get_param_id(params, :interface_id)].nil?
+
+      internal_new_item(mw_class.new(params))
     end
 
-    def is_remote?(interface)
-      # Need to fix this:
-      active_interface = @dp_info.active_interface_manager.retrieve(interface_id: interface.id)
-      active_interface.nil? || active_interface.mode == :remote
+    def updated_item(params)
+      id = params.fetch(:id) || return
+
+      item = internal_detect(id: id)
+      return if item.nil?
+
+      item.update(params)
+    end
+
+    #
+    # Filter events:
+    # to change
+
+    # load static filter on queue 'item.id'.
+    def load_static(item, item_map)
+      item_map.batch.filter_statics.commit.each { |filter|
+        filter.to_hash.merge(id: item_map.id, static_id: filter.id).tap { |model_hash|
+          item.added_static(model_hash)
+        }
+      }
     end
 
   end

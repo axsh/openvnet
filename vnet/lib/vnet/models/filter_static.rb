@@ -10,32 +10,32 @@ module Vnet::Models
     many_to_one :filter
     # TODO: Association needed:
 
-    def ipv4_src_address_s
-      self.ipv4_src_address && parse_ipv4(self.ipv4_src_address)
+    def src_address_s
+      self.src_address && parse_ipv4(self.src_address)
     end
 
-    def ipv4_dst_address_s
-      self.ipv4_dst_address && parse_ipv4(self.ipv4_dst_address)
+    def dst_address_s
+      self.dst_address && parse_ipv4(self.dst_address)
     end
 
     def validate
-      errors.add(:ipv4_src_prefix, "out of range: '#{self.ipv4_src_prefix}'") if !(0..32).member?(self.ipv4_src_prefix)
-      errors.add(:ipv4_dst_prefix, "out of range: '#{self.ipv4_dst_prefix}'") if !(0..32).member?(self.ipv4_dst_prefix)
-      errors.add(:protocol, "unknown protocol: '#{self.protocol}'") if !protocol_included(["tcp", "udp", "icmp", "arp", "all"])
+      errors.add(:src_prefix, "out of range: '") if !(0..32).member?(self.src_prefix)
+      errors.add(:dst_prefix, "out of range: '") if !(0..32).member?(self.dst_prefix)
+      errors.add(:protocol, "unknown protocol: '") if !protocol_included(Vnet::Constants::FilterStatic::PROTOCOLS)
 
-      if protocol_included(["tcp", "udp"])
-        errors.add(:port_src, "not in valid range: '#{self.port_src}'") if !(0..0xffff).member?(self.port_src)
-        errors.add(:port_dst, "not in valid range: '#{self.port_dst}'") if !(0..0xffff).member?(self.port_dst)
-      elsif protocol_included(["arp", "icmp", "all"])
-        errors.add(:port_src, "needs to be nil") if !self.port_src.nil?
-        errors.add(:port_dst, "needs to be nil") if !self.port_dst.nil?
-      elsif protocol_included(["arp", "all"])
-        errors.add(:ipv4_src_address, "address needs to be 0") if (self.ipv4_src_address > 0) # needs inspection
-        errors.add(:ipv4_dst_address, "address needs to be 0") if (self.ipv4_dst_address > 0) # needs inspection
+      if protocol_included(['tcp', 'udp'])
+        errors.add(:port_src, "not in valid range: '") if !(0..0xffff).member?(self.port_src)
+        errors.add(:port_dst, "not in valid range: '") if !(0..0xffff).member?(self.port_dst)
+      elsif protocol_included(['arp', 'icmp', 'ip'])
+        errors.add(:port_src, 'needs to be nil') if !self.port_src.nil?
+        errors.add(:port_dst, 'needs to be nil') if !self.port_dst.nil?
+      elsif protocol_included(['arp', 'ip'])
+        errors.add(:src_address, 'address needs to be 0') if (self.src_address > 0) # needs inspection
+        errors.add(:dst_address, 'address needs to be 0') if (self.dst_address > 0) # needs inspection
       end
 
-      errors.add(:ipv4_dst_prefix, "needs to be 0") if ipv4_dst_prefix != 0 && self.ipv4_dst_address == 0
-      errors.add(:ipv4_src_prefix, "needs to be 0") if ipv4_src_prefix != 0 && self.ipv4_src_address == 0
+      errors.add(:dst_prefix, 'needs to be 0') if dst_prefix != 0 && self.dst_address == 0
+      errors.add(:src_prefix, 'needs to be 0') if src_prefix != 0 && self.src_address == 0
     end
 
     private

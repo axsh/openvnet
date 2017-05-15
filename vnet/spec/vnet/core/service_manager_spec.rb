@@ -5,14 +5,10 @@ require 'spec_helper'
 include Vnet::Constants::Openflow
 
 describe Vnet::Core::ServiceManager do
-  # before(:each) { use_mock_event_handler }
-
-  # let(:events) { MockEventHandler.handled_events }
-
   let(:datapath) { create_mock_datapath }
   let(:dp_info) { datapath.dp_info }
 
-  let(:network) { Fabricate(:network, network_mode: 'virtual') }
+  let(:network) { Fabricate(:network, mode: 'virtual') }
 
   let(:service_interface) {
     Fabricate(:interface, mode: "simulated")
@@ -44,10 +40,10 @@ describe Vnet::Core::ServiceManager do
     describe "when ADDED_SERVICE is published" do
       it "should create a network service with a dns service" do
         service_ip_lease
+        dns_service
 
         interface_manager.load_shared_interface(service_interface.id)
 
-        # TODO: Add helper methods for loading.
         expect(interface_manager.wait_for_loaded({id: service_interface.id}, 3)).not_to be_nil
         expect(service_manager.wait_for_loaded({id: dns_service.network_service_id}, 3)).not_to be_nil
 

@@ -1,0 +1,3 @@
+var/tmp/rpmbuild/SOURCES/openvnet/vnet/vendor
+var/tmp/rpmbuild/SOURCES/openvnet/client/vnctl/vendor
+var/tmp/openvnet/vnet/vendor

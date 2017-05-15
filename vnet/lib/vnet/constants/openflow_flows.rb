@@ -27,7 +27,7 @@ module Vnet
       TABLE_LOCAL_PORT       = 6
       TABLE_PROMISCUOUS_PORT = 7
 
-      # Handle ingress packets to host interfaces from untrusted
+      # Handle ingress packets to host interfaces from unmanaged
       # sources.
       TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
       TABLE_INTERFACE_INGRESS_MAC        = 11
@@ -35,12 +35,13 @@ module Vnet
       TABLE_INTERFACE_INGRESS_NW_IF      = 13
       TABLE_INTERFACE_INGRESS_ROUTE_LINK = 14
 
-      # Handle egress packets from trusted interfaces.
+      # Handle egress packets from managed interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15
-      TABLE_INTERFACE_EGRESS_FILTER      = 16
-      TABLE_INTERFACE_EGRESS_VALIDATE    = 17
-      TABLE_INTERFACE_EGRESS_ROUTES      = 18
-      TABLE_INTERFACE_EGRESS_MAC         = 19
+      TABLE_INTERFACE_EGRESS_STATEFUL    = 16
+      TABLE_INTERFACE_EGRESS_FILTER      = 17
+      TABLE_INTERFACE_EGRESS_VALIDATE    = 18
+      TABLE_INTERFACE_EGRESS_ROUTES      = 19
+      TABLE_INTERFACE_EGRESS_MAC         = 20
 
       # Initial verification of network/segment id and application of
       # global filtering rules. 
@@ -55,8 +56,8 @@ module Vnet
       # remote metdata flag is the responsibility of the flow that
       # sends the packet to these tables.
 
-      TABLE_SEGMENT_SRC_CLASSIFIER    = 20
-      TABLE_SEGMENT_SRC_MAC_LEARNING  = 21
+      TABLE_SEGMENT_SRC_CLASSIFIER    = 21
+      TABLE_SEGMENT_SRC_MAC_LEARNING  = 22
 
       TABLE_NETWORK_CONNECTION        = 23
       TABLE_NETWORK_SRC_CLASSIFIER    = 24
@@ -159,18 +160,15 @@ module Vnet
       COOKIE_PREFIX_INTERFACE      = 0xc
       COOKIE_PREFIX_TRANSLATION    = 0xd
       COOKIE_PREFIX_FILTER         = 0xe
-      COOKIE_PREFIX_CONNECTION     = 0xf
 
       COOKIE_PREFIX_ACTIVE_INTERFACE = 0x10
       COOKIE_PREFIX_ACTIVE_PORT      = 0x11
-      COOKIE_PREFIX_FILTER2          = 0x12
 
       # TODO: Reorganize:
       COOKIE_PREFIX_DP_SEGMENT     = 0x13
       COOKIE_PREFIX_SEGMENT        = 0x14
       COOKIE_PREFIX_INTERFACE_SEGMENT = 0x15
 
-      COOKIE_TYPE_CONNECTION     = (COOKIE_PREFIX_CONNECTION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DATAPATH       = (COOKIE_PREFIX_DATAPATH << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_NETWORK     = (COOKIE_PREFIX_DP_NETWORK << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_DP_SEGMENT     = (COOKIE_PREFIX_DP_SEGMENT << COOKIE_PREFIX_SHIFT)
@@ -187,7 +185,6 @@ module Vnet
       COOKIE_TYPE_INTERFACE      = (COOKIE_PREFIX_INTERFACE << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_TRANSLATION    = (COOKIE_PREFIX_TRANSLATION << COOKIE_PREFIX_SHIFT)
       COOKIE_TYPE_FILTER         = (COOKIE_PREFIX_FILTER << COOKIE_PREFIX_SHIFT)
-      COOKIE_TYPE_FILTER2        = (COOKIE_PREFIX_FILTER2 << COOKIE_PREFIX_SHIFT)
 
       COOKIE_TYPE_INTERFACE_SEGMENT = (COOKIE_PREFIX_INTERFACE_SEGMENT << COOKIE_PREFIX_SHIFT)
 
@@ -267,6 +264,13 @@ module Vnet
       VLAN_TCI_VID_SHIFT = 12
       VLAN_TCI_DEI = (0x1 << VLAN_TCI_VID_SHIFT)
       VLAN_TCI_MASK_NO_PRIORITY = (0x0fff | VLAN_TCI_DEI)
+
+      #
+      # Priorities:
+      #
+
+      PRIORITY_FILTER_STATEFUL = 20 + (65 * 66)
+      PRIORITY_FILTER_SKIP     = PRIORITY_FILTER_STATEFUL + 1
 
     end
   end

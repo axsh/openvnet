@@ -2,7 +2,7 @@ specs_ext: []
 nodes:
   webapi: [192.168.2.91]
   vnmgr: [192.168.2.91]
-  vna: [192.168.2.91, 192.168.2.92, 192.168.2.93, 192.168.2.90, 192.168.2.96]
+  vna: [192.168.2.91, 192.168.2.92, 192.168.2.93, 192.168.2.96]
 
 webapi:
   host: 192.168.2.91
@@ -13,6 +13,9 @@ vnet_branch: master
 update_vnet_via: rpm
 
 ssh_quiet_mode: true
+
+ssh_options:
+  key: "~/.ssh/sshkey"
 
 dataset_options:
   physical_port: eth0

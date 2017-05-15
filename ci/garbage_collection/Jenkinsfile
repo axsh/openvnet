@@ -1,0 +1,38 @@
+#!groovy
+
+import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException
+// http://stackoverflow.com/questions/37425064/how-to-use-environment-variables-in-a-groovy-function-using-a-jenkinsfile
+import groovy.transform.Field
+
+
+def runs=[:]
+
+runs[0]= {
+  node("multibox") {
+    checkout scm
+    sh "git remote prune origin"
+    sh "cd ci/garbage_collection/cache_cleanups/ ; ./cache_garbage_collection.sh"
+    sh "cd ci/garbage_collection/docker_cleanups ; ./docker_garbage_collection.sh"
+  }
+}
+
+runs[1]= {
+  node("rpm_repo") {
+    checkout scm
+    sh "git remote prune origin"
+    sh "cd ci/garbage_collection/repo_cleanups ; ./rpm_garbage_collection.sh"
+  }
+}
+
+runs[2]= {
+  node("master") {
+    checkout scm
+    sh "cd ci/garbage_collection/docker_cleanups ; ./docker_garbage_collection.sh"
+  }
+}
+
+node() {
+    stage "Checkout"
+}
+
+parallel runs

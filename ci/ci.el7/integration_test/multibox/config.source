@@ -1,0 +1,34 @@
+# The nodes to build. If any of these are replaced by a physical device,
+# comment it out here.
+NODES=(
+    "base"         # base image
+    "192.168.2.91" # vm1 vm2
+    "192.168.2.92" # vm3 vm4
+    "192.168.2.93" # vm5 vm6
+    "192.168.2.95" # router
+    "192.168.2.96" # wanedge vm7
+)
+
+ip_mng_br0="192.168.2.1/24"
+ip_wanedge="10.210.0.1/24"
+network_wanedge="10.210.0.0/24"
+
+name_ovs_br0="vnet-itest0"
+name_ovs_br1="vnet-itest1"
+name_ovs_wanedge="vnet-wanedge"
+name_mng_br0="vnet-br0"
+
+macvlan_1_name="testtap"
+macvlan_1_mac="10:AA:FF:10:AA:01"
+macvlan_1_ip="10.196.36.199/24"
+
+BOXES=(
+    "minimal-7.2.1511-x86_64.kvm.box"
+)
+
+BOXES_DIR="/data/openvnet-ci/boxes"
+CACHE_DIR="/data/openvnet-ci/el7/branches"
+BASE_BRANCH="${BASE_BRANCH:-develop}"
+
+: "${BRANCH:?"the BRANCH variable needs to be set with the github branch to test."}"
+: "${REBUILD:?"The REBUILD variable needs to be set. 'true' if you wish to rebuild the environment completely. 'false' otherwise"}"
