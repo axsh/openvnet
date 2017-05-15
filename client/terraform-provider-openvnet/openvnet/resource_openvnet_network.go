@@ -47,6 +47,7 @@ func OpenVNetNetwork() *schema.Resource {
 			"domain_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 			},
 
