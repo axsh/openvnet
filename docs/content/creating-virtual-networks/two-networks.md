@@ -48,7 +48,7 @@ vnctl interfaces add \
 vnctl network-services add \
   --uuid ns-dhcp2 \
   --interface-uuid if-dhcp2 \
-  --type dhcp
+  --mode dhcp
 ```
 
 
