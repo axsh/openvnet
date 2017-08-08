@@ -11,7 +11,7 @@
 # NOTE: Stage variables are set as readonly, therefore we call this function only once for each script.
 function initialize () {
     STAGES=("${@}")
-    [[ -z "${STAGES}" ]] && STAGES=( init install preconfigure boot postconfigure provide )
+    [[ -z "${STAGES}" ]] && STAGES=( init install preboot boot postboot provide )
 
     for (( i=0; i< ${#STAGES[@]} ; i++ )) ; do
         s=${STAGES[i]}
@@ -29,7 +29,7 @@ function get_env_state () {
     local stage="${1:-0}"
 
     $(sudo [ -f "${CACHE_DIR}/${BRANCH}/${vm_name}.qcow2" ]) && stage=$boot
-    $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && stage=$postconfigure
+    $(sudo kill -0 $(sudo cat ${NODE_DIR}/${vm_name}.pid 2> /dev/null) 2> /dev/null) && stage=$postboot
 
     echo $stage
 }
@@ -64,7 +64,7 @@ function build () {
     local custom_start=${!STAGES[${start_stage}]}
     local stages=($(define_stages $custom_start))
 
-    # Loops through the stages that were initialized (default: init install preconfigure boot postconfigure provide)
+    # Loops through the stages that were initialized (default: init install preboot boot postboot provide)
     # and perform the stage for each step one by one.
     for stage in ${stages[@]} ; do
         for step in ${steps[@]} ; do

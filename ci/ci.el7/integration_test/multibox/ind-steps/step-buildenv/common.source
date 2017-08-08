@@ -84,7 +84,7 @@ function teardown_environment () {
         # and we can kill instead of destroy to save time for future builds.
         destroy_cmd=$(
             [[ ${!STAGES[$stage]} -gt $boot ]] && { echo "kill.sh" ; return ; }
-            [[ ${!STAGES[$stage]} -lt $postconfigure ]] && { echo "destroy.sh" ; return ; }
+            [[ ${!STAGES[$stage]} -lt $postboot ]] && { echo "destroy.sh" ; return ; }
             echo "destroy.sh"
         )
 
