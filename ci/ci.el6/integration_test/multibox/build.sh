@@ -14,15 +14,15 @@ scheduled_nodes=${NODES[@]}
 #
 #    env : build - buildenv
 #              init
-#              preconfigure
+#              preboot
 #              boot
 #
 #              node<n>: build - IND_STEPS[@]
 #                  init
 #                  install
-#                  preconfigure
+#                  preboot
 #                  boot
-#                  postconfigure
+#                  postboot
 #                  provide
 #              /node<n>
 #
@@ -30,7 +30,7 @@ scheduled_nodes=${NODES[@]}
 #                  install
 #              /node<n> ovn finish
 #
-#              postconfigure
+#              postboot
 #              provide
 #    /env finish
 
