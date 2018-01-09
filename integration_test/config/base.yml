@@ -12,6 +12,8 @@ specs: [simple_nw,
         promiscuous_seg_of,
         event,
         event_tp,
+        event_nw_tp,
+        event_seg_tp,
         service,
         filter]
 
