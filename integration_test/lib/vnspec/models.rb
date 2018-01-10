@@ -66,6 +66,10 @@ module Vnspec
           end
         end
 
+        def post(options)
+          API.request(:post, api_name, options)
+        end
+
         def put(options)
           API.request(:put, api_name, options)
         end

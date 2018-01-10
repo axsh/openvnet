@@ -5,11 +5,11 @@ require_relative 'shared_examples/simple'
 
 describe 'event_nw_tp' do
   before(:all) {
-    Vnspec::Models::TopologyNetwork.put(
+    Vnspec::Models::TopologyNetwork.post(
       topology_uuid: 'topo-vnet',
       network_uuid: 'nw-vnet1'
     )
-    Vnspec::Models::TopologyNetwork.put(
+    Vnspec::Models::TopologyNetwork.post(
       topology_uuid: 'topo-vnet',
       network_uuid: 'nw-vnet2'
     )
