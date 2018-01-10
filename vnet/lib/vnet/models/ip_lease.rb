@@ -54,8 +54,12 @@ module Vnet::Models
         self.join(:ip_addresses, ip_addresses__id: :ip_leases__ip_address_id)
       end
 
+      def join_topology_datapaths
+        self.join_table(:inner, :topology_datapaths, topology_datapaths__id: :ip_leases__interface_id)
+      end
+
       def where_interface_mode(interface_mode)
-        self.join_interfaces.where(mode: 'simulated')
+        self.join_interfaces.where(mode: interface_mode)
       end
 
       def where_datapath_id_and_interface_mode(datapath_id, interface_mode)
@@ -64,6 +68,10 @@ module Vnet::Models
 
       def where_network_id(network_id)
         self.join_ip_addresses.where(ip_addresses__network_id: network_id)
+      end
+
+      def where_topology_id(topology_id)
+        self.join_topology_datapaths.where(ip_addresses__topology_id: topology_id)
       end
     end
 

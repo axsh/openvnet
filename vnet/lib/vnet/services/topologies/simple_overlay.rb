@@ -17,7 +17,7 @@ module Vnet::Services::Topologies
         other_id = get_param_id(params, other_key)
         datapath_id = get_param_id(params, :datapath_id)
 
-        return if internal_create_dp_other(datapath_id: datapath_id, other_name: other_name, other_key: other_key, other_id: other_id)
+        return if create_dp_other(datapath_id: datapath_id, other_name: other_name, other_key: other_key, other_id: other_id)
 
         debug log_format_h("could not create topology_datapath for new datapath_#{other_name}", params)
 
@@ -36,6 +36,12 @@ module Vnet::Services::Topologies
 
           @vnet_info.topology_manager.publish('topology_underlay_create', underlay_params)
         }
+      end
+
+      define_method "handle_added_#{other_name}".to_sym do |assoc_id, assoc_map|
+      end
+
+      define_method "handle_removed_#{other_name}".to_sym do |assoc_id, assoc_map|
       end
 
     }

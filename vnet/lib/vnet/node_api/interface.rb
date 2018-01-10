@@ -70,6 +70,8 @@ module Vnet::NodeApi
         Translation.dispatch_deleted_where(filter, model.deleted_at)
         # 0002_services
         # lease_policy_base_interfaces: :destroy,
+        # 0009_topologies
+        TopologyDatapath.dispatch_deleted_where(filter, model.deleted_at)
         # 0011_assoc_interface
         # TODO: Make the assoc managers subscribe to INTERFACE_DELETED_ITEM(?).
         InterfaceNetwork.dispatch_deleted_where(filter, model.deleted_at)

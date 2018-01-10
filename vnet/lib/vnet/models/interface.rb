@@ -30,6 +30,7 @@ module Vnet::Models
     many_to_many :lease_policies, :join_table => :lease_policy_base_interfaces, :conditions => "lease_policy_base_interfaces.deleted_at is null"
 
     one_to_many :filters
+    one_to_many :topology_datapaths
     one_to_many :translations
 
     plugin :association_dependencies,
@@ -49,6 +50,8 @@ module Vnet::Models
     lease_policy_base_interfaces: :destroy,
     # 0006_filters
     filters: :destroy,
+    # 0009_topologies
+    topology_datapaths: :destroy,
     # 0011_assoc_interface
     interface_networks: :destroy,
     interface_route_links: :destroy,

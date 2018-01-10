@@ -127,15 +127,42 @@ module Vnet::Services::Topologies
 
     private
 
-    # TODO: Properly implement these methods.
-
     def handle_added_assoc(other_name, assoc_id, assoc_map)
       debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
+
+      case other_name
+      # when :datapath then handle_added_datapath(assoc_id, assoc_map)
+      when :network then handle_added_network(assoc_id, assoc_map)
+      when :segment then handle_added_segment(assoc_id, assoc_map)
+      # when :route_link then handle_added_route_link(assoc_id, assoc_map)
+      # else
+      #   raise NotImplementedError
+      end
     end
 
     def handle_removed_assoc(other_name, assoc_id, assoc_map)
       debug log_format_h("handle_removed_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
+
+      case other_name
+      # when :datapath then handle_removed_datapath(assoc_id, assoc_map)
+      when :network then handle_removed_network(assoc_id, assoc_map)
+      when :segment then handle_removed_segment(assoc_id, assoc_map)
+      # when :route_link then handle_removed_route_link(assoc_id, assoc_map)
+      # else
+      #   raise NotImplementedError
+      end
     end
+
+    def handle_added_datapath(assoc_id, assoc_map)
+      raise NotImplementedError
+    end
+    alias :handle_added_network :handle_added_datapath
+    alias :handle_added_segment :handle_added_datapath
+    alias :handle_added_route_link :handle_added_datapath
+    alias :handle_removed_datapath :handle_added_datapath
+    alias :handle_removed_network :handle_added_datapath
+    alias :handle_removed_segment :handle_added_datapath
+    alias :handle_removed_route_link :handle_added_datapath
 
     def mw_datapath_assoc_class(other_name)
       case other_name
@@ -168,7 +195,7 @@ module Vnet::Services::Topologies
       assoc_map
     end
 
-    def internal_create_dp_other(datapath_id:, other_name:, other_key:, other_id:)
+    def create_dp_other(datapath_id:, other_name:, other_key:, other_id:)
       assoc_map = find_datapath_assoc_map(datapath_id: datapath_id)
 
       if assoc_map.nil?
@@ -181,6 +208,19 @@ module Vnet::Services::Topologies
 
         lease_detection: {
           interface_id: get_param_id(assoc_map, :interface_id)
+        }
+      }
+
+      create_datapath_other(other_name, create_params)
+    end
+
+    def create_dp_other_each_active(other_name:, other_key:, other_id:, each_active_filter:)
+      create_params = {
+        other_key => other_id,
+
+        each_active_filter: each_active_filter,
+        lease_detection: {
+          topology_id: @id
         }
       }
 
