@@ -65,6 +65,10 @@ module Vnspec
             return reload(response[:uuid])
           end
         end
+
+        def put(options)
+          API.request(:put, api_name, options)
+        end
       end
 
       def ==(other)
