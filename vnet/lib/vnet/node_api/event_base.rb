@@ -34,7 +34,7 @@ module Vnet::NodeApi
           return model
         }
       end
-      
+
       def update_model_deleted()
 	#TODO: Update deleted items
       end

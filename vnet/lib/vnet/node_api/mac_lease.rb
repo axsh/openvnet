@@ -6,6 +6,19 @@ module Vnet::NodeApi
 
     class << self
 
+      def dispatch_deleted_for_segment(segment_id, deleted_at)
+        filter_date = ['deleted_at >= ? || deleted_at = NULL',
+                       (deleted_at || Time.now) - 3]
+
+        # I wanted to use a dataset here like I did in NodeApi::IpLease to keep it all SQL.
+        # Unfortunately this didn't quite work out due to how the mac_address plugin is written.
+        mac_address_ids = M::MacAddress.with_deleted.where(segment_id: segment_id).map { |ma| ma.id }
+
+        M::MacLease.with_deleted.where(mac_address_id: mac_address_ids).where(*filter_date).each { |lease|
+          dispatch_deleted_item_events(lease)
+        }
+      end
+
       #
       # Internal methods:
       #

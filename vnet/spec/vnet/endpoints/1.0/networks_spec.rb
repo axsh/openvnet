@@ -36,7 +36,7 @@ describe '/networks' do
     expected_response = accepted_params.dup.tap { |map|
       map.delete(:topology_uuid)
     }
-    
+
     required_params = [:ipv4_network]
     uuid_params = [:uuid]
 

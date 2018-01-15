@@ -83,6 +83,22 @@ describe Vnet::Models::Network do
       expect(subject.datapath_networks).to be_empty
       expect(subject.routes).to be_empty
     end
+
+    it "deletes associated ip leases and ip addresses" do
+      nw = Fabricate(:network)
+      3.times { Fabricate(:ip_lease, network_id: nw.id) }
+
+      nw.destroy
+
+      expect(Vnet::Models::Network[nw.canonical_uuid]).to eq(nil)
+      expect(Vnet::Models::Network.with_deleted.where(uuid: nw.uuid)).not_to eq(nil)
+
+      expect(nw.ip_leases_dataset.count).to eq(0)
+      expect(nw.ip_leases_dataset.unfiltered.count).to eq(3)
+
+      expect(Vnet::Models::IpAddress.where(network: nw).count).to eq(0)
+      expect(Vnet::Models::IpAddress.with_deleted.where(network: nw).count).to eq(3)
+    end
   end
 
 end

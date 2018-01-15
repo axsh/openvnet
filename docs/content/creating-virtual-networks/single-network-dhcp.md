@@ -29,7 +29,7 @@ vnctl interfaces add \
 Now that we have a simulated interface in place, next we need to tell OpenVNet to simulate a DHCP service on it.
 
 ```
-vnctl network-services add --uuid ns-dhcp --interface-uuid if-dhcp --type dhcp
+vnctl network-services add --uuid ns-dhcp --interface-uuid if-dhcp --mode dhcp
 ```
 
 ## Test

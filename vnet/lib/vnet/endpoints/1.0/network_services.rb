@@ -12,7 +12,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/network_services' do
   param_uuid M::Interface, :interface_uuid
   param :incoming_port, :Integer
   param :outgoing_port, :Integer
-  param :mode, :String, required: false, in: C::NetworkService::MODES
+  param :mode, :String, required: true, in: C::NetworkService::MODES
   post do
     uuid_to_id(M::Interface, "interface_uuid", "interface_id") if params["interface_uuid"]
 
