@@ -1,5 +1,5 @@
 provider "openvnet" {
-	 api_host = "http://localhost:9091/api/1.0"
+	 api_endpoint = "http://localhost:9091/api/1.0"
 }
 
 resource "openvnet_interface" "if_sample" {
