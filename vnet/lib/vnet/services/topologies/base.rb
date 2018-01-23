@@ -54,8 +54,6 @@ module Vnet::Services::Topologies
           when :datapath
             new_assoc[:interface_id] = get_param_id(params, :interface_id)
             new_assoc[:ip_lease_id] = get_param_id(params, :ip_lease_id)
-          when :underlay
-            new_assoc[:datapaths] = {}
           end
 
           (other_list(other_name)[assoc_id] = new_assoc).tap { |assoc_map|
@@ -151,8 +149,10 @@ module Vnet::Services::Topologies
     alias :handle_removed_route_link :handle_added_datapath
     alias :handle_removed_overlay :handle_added_datapath
     alias :handle_removed_underlay :handle_added_datapath
-    alias :underlay_added_datapath :handle_added_datapath
-    alias :underlay_removed_datapath :handle_added_datapath
+
+    def underlay_added_datapath(params)
+    end
+    alias :underlay_removed_datapath :underlay_added_datapath
 
     def mw_datapath_assoc_class(other_name)
       case other_name

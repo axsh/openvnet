@@ -4,6 +4,12 @@ module Vnet::Services::Topologies
   class SimpleOverlay < Base
     include Celluloid::Logger
 
+    def initialize(params)
+      super
+
+      @underlay_datapaths = {}
+    end    
+
     def log_type
       'topology/simple_overlay'
     end
@@ -18,11 +24,11 @@ module Vnet::Services::Topologies
 
         other_id = get_param_id(assoc_map, other_key)
 
-        @underlays.each { |id, underlay|
-          debug log_format_h('trying underlay', underlay)
+        @underlay_datapaths.each { |id, datapaths|
+          debug log_format_h('trying underlay', datapaths)
 
           # TODO: Move to node_api.
-          underlay[:datapaths].each { |_, datapath|
+          datapaths.each { |_, datapath|
             create_params = {
               datapath_id: datapath[:datapath_id],
               other_key => datapath[other_key],
@@ -68,20 +74,18 @@ module Vnet::Services::Topologies
           next
         end
 
-        tp_dp[:datapaths].tap { |datapaths|
-          tp_id = get_param_id(params, :id)
-          next if datapaths[tp_id]
+        tp_id = get_param_id(params, :id)
+        next if @underlay_datapaths[tp_id]
 
-          dp = datapaths[tp_id] = {
-            datapath_id: get_param_id(params, :datapath_id),
-            interface_id: get_param_id(params, :interface_id),
-            ip_lease_id: get_param_id(params, :ip_lease_id),
-          }
-
-          updated_underlay_network(dp)
-          updated_underlay_segment(dp)
-          updated_underlay_route_link(dp)
+        dp = @underlay_datapaths[tp_id] = {
+          datapath_id: get_param_id(params, :datapath_id),
+          interface_id: get_param_id(params, :interface_id),
+          ip_lease_id: get_param_id(params, :ip_lease_id),
         }
+
+        updated_underlay_network(dp)
+        updated_underlay_segment(dp)
+        updated_underlay_route_link(dp)
       }
     end
 

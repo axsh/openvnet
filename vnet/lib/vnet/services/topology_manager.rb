@@ -20,7 +20,7 @@ module Vnet::Services
     subscribe_assoc_other_events :topology, :segment
     subscribe_assoc_other_events :topology, :route_link
 
-    subscribe_assoc_pair_events :topology, :layer, :overlay, :underlay
+    subscribe_assoc_pair_events :topology, :layer, :underlay, :overlay
 
     subscribe_item_event 'topology_underlay_added_datapath', :underlay_added_datapath
     subscribe_item_event 'topology_underlay_removed_datapath', :underlay_removed_datapath

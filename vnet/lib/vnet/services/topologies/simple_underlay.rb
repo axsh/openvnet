@@ -35,22 +35,19 @@ module Vnet::Services::Topologies
 
     # Simple_overlays's can create dp_rl's, while simple_underlays's
     # cannot. There is no such thing as an underlay route link.
-    def create_dp_route_link(params)
+    def handle_added_route_link(assoc_id, assoc_map)
       warn log_format_h("route_link is not supported on underlays", params)
     end
-    alias :handle_added_route_link :create_dp_route_link
-    alias :handle_removed_route_link :create_dp_route_link
+    alias :handle_removed_route_link :handle_added_route_link
 
     def handle_added_datapath(assoc_id, assoc_map)
       debug log_format_h('handle added datapath', assoc_map)
 
       u_dp = assoc_map.dup
+      u_dp[:underlay_id] = @id
 
-      @overlays.each { |id, overlay|
-        debug log_format_h("handle added datapath use overlay #{id}", overlay)
-
-        u_dp[:id] = id
-        u_dp[:underlay_id] = @id
+      @overlays.each { |overlay_id, overlay|
+        u_dp[:id] = overlay_id
 
         @vnet_info.topology_manager.publish('topology_underlay_added_datapath', u_dp)
       }
@@ -62,11 +59,25 @@ module Vnet::Services::Topologies
 
     def handle_added_overlay(assoc_id, assoc_map)
       debug log_format_h('handle added overlay', assoc_map)
+
+      overlay_id = get_param_id(assoc_map, :overlay_id)
+
+      @datapaths.each { |id, other_map|
+        debug log_format_h('handle added overlay for datapath', other_map)
+
+        u_dp = other_map.dup
+        u_dp[:id] = overlay_id
+        u_dp[:underlay_id] = @id
+
+        @vnet_info.topology_manager.publish('topology_underlay_added_datapath', u_dp)
+      }
     end
 
     def handle_removed_overlay(assoc_id, assoc_map)
       debug log_format_h('handle removed overlay', assoc_map)
     end
+
+    # TODO: On uninstall, send underlay remove events.
 
   end
 end
