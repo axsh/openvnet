@@ -71,7 +71,7 @@ module Vnet::NodeApi
         case
         when network_id && interface_id.nil? && topology_id.nil?
           ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
-          ds.each { |ip_lease|
+          ds.select_all(:ip_leases).each { |ip_lease|
             next if ip_lease.network_id != network_id
 
             return ip_lease.interface_id, ip_lease.id
@@ -81,14 +81,14 @@ module Vnet::NodeApi
           ds = ds.where(ip_leases__interface_id: interface_id)
           ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
           
-          lease = ds.first
+          lease = ds.select_all(:ip_leases).first
 
           return interface_id, (lease && lease.id)
 
         when interface_id.nil? && topology_id
           ds = ds.where_topology_id(topology_id)
           ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
-          ds.each { |ip_lease|
+          ds.select_all(:ip_leases).each { |ip_lease|
             next if network_id && ip_lease.network_id != network_id
 
             return ip_lease.interface_id, ip_lease.id

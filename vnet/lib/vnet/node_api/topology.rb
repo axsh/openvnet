@@ -94,7 +94,7 @@ module Vnet::NodeApi
         ds = M::IpLease.dataset
         ds = ds.where(ip_leases__interface_id: interface_id)
         ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
-        lease = ds.first
+        lease = ds.select_all(:ip_leases).first
 
         lease && lease.id
       end

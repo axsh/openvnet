@@ -45,11 +45,19 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     assoc_response = R.const_get("Topology#{other_name.camelize}")
     
     # TODO: Change to confirm with either POST or PUT idioms.
-    param_uuid M::Interface, :interface_uuid, required: true if with_interface
+    if with_interface
+      param_uuid M::Interface, :interface_uuid, required: true
+      param_uuid M::IpLease, :ip_lease_uuid, required: false
+    end
+
     post "/:uuid/#{other_name}s/:#{other_uuid}" do
       uuid_to_id(M::Topology, :uuid, :topology_id)
       uuid_to_id(other_model, other_uuid, other_id)
-      uuid_to_id(M::Interface, :interface_uuid, :interface_id) if with_interface
+
+      if with_interface
+        uuid_to_id(M::Interface, :interface_uuid, :interface_id)
+        uuid_to_id(M::IpLease, :ip_lease_uuid, :ip_lease_id) if params['ip_lease_uuid']
+      end
       
       remove_system_parameters
       respond_with(assoc_response.generate(assoc_model.create(params)))

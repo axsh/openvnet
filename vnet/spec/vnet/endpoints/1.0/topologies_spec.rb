@@ -54,10 +54,26 @@ describe '/topologies' do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :datapath }
 
-    let!(:interface) { Fabricate(:interface_w_ip_lease) { uuid 'if-test' } }
+    let!(:interface) {
+      dp_id = related_object.id
+
+      Fabricate(:interface_w_ip_lease) {
+        uuid 'if-test'
+        mode 'host'
+
+        interface_ports do |attrs|
+          [
+            Fabricate(:interface_port_host) {
+              interface_id attrs[:id]
+              datapath_id dp_id
+            }
+          ]
+        end
+      }
+    }
 
     include_examples 'many_to_many_relation', 'datapaths', {
-      :interface_uuid => 'if-test'
+      interface_uuid: 'if-test',
     }
   end
 

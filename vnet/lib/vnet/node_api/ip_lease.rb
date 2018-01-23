@@ -99,6 +99,8 @@ module Vnet::NodeApi
         # ip_lease_container_ip_leases: :destroy,
         # 0002_services
         IpRetention.dispatch_deleted_where(filter, model.deleted_at)
+        # 0018_topology_lease
+        TopologyDatapath.dispatch_deleted_where(filter, model.deleted_at)
       end
 
       def prepare_lease_event(model)
