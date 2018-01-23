@@ -24,15 +24,15 @@ module Vnet::Services::Topologies
 
         other_id = get_param_id(assoc_map, other_key)
 
-        @underlay_datapaths.each { |id, datapaths|
-          debug log_format_h('trying underlay', datapaths)
+        @underlay_datapaths.each { |tp_id, u_dp_list|
+          debug log_format_h('trying underlay', u_dp_list)
 
-          # TODO: Move to node_api.
-          datapaths.each { |_, datapath|
+          u_dp_list.each { |datapath_id, u_dp|
             create_params = {
-              datapath_id: datapath[:datapath_id],
-              other_key => datapath[other_key],
-              ip_lease_id: datapath[:ip_lease_id],
+              datapath_id: datapath_id,
+              other_key => other_id,
+              interface_id: u_dp[:interface_id],
+              ip_lease_id: u_dp[:ip_lease_id],
             }
             create_datapath_other(other_name, create_params)
           }
@@ -63,29 +63,28 @@ module Vnet::Services::Topologies
 
     def handle_removed_underlay(assoc_id, assoc_map)
       debug log_format_h('handle removed underlay', assoc_map)
+
+      # TODO: Remove underlay_datapath, no need for uninstall events.
     end
 
     def underlay_added_datapath(params)
       debug log_format_h('added underlay datapath', params)
 
-      @underlays[get_param_id(params, :underlay_id)].tap { |tp_dp|
-        if tp_dp.nil?
-          debug log_format_h("no underlay found when adding updating underlay datapath", params)
-          next
-        end
+      tp_id = get_param_id(params, :id)
+      datapath_id = get_param_id(params, :datapath_id)
 
-        tp_id = get_param_id(params, :id)
-        next if @underlay_datapaths[tp_id]
+      (@underlay_datapaths[tp_id] ||= {}).tap { |u_dp_list|
+        return if u_dp_list[datapath_id]
 
-        dp = @underlay_datapaths[tp_id] = {
-          datapath_id: get_param_id(params, :datapath_id),
+        u_dp = u_dp_list[datapath_id] = {
+          datapath_id: datapath_id,
           interface_id: get_param_id(params, :interface_id),
           ip_lease_id: get_param_id(params, :ip_lease_id),
-        }
+        } 
 
-        updated_underlay_network(dp)
-        updated_underlay_segment(dp)
-        updated_underlay_route_link(dp)
+        updated_underlay_network(u_dp)
+        updated_underlay_segment(u_dp)
+        updated_underlay_route_link(u_dp)
       }
     end
 

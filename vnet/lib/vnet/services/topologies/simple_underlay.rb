@@ -8,38 +8,6 @@ module Vnet::Services::Topologies
       'topology/simple_underlay'
     end
 
-    [ [:network, :network_id],
-      [:segment, :segment_id]
-    ].each { |other_name, other_key|
-
-      define_method "handle_added_#{other_name}".to_sym do |assoc_id, assoc_map|
-        # other_id = get_param_id(assoc_map, other_key)
-        # create_dp_other_each_active(other_name: other_name,
-        #                             other_key: other_key,
-        #                             other_id: other_id,
-        #                             each_active_filter: { other_key => other_id }).tap { |dp_other|
-        #   if dp_other.nil?
-        #     debug log_format_h("failed to create datapath_#{other_name} for underlay", assoc_map)
-        #     return
-        #   end
-
-        #   debug log_format_h("created datapath_#{other_name} for underlay", assoc_map)
-
-        #   # TODO: Trigger update of overlays.
-        # }
-      end
-
-      define_method "handle_removed_#{other_name}".to_sym do |assoc_id, assoc_map|
-      end
-    }
-
-    # Simple_overlays's can create dp_rl's, while simple_underlays's
-    # cannot. There is no such thing as an underlay route link.
-    def handle_added_route_link(assoc_id, assoc_map)
-      warn log_format_h("route_link is not supported on underlays", params)
-    end
-    alias :handle_removed_route_link :handle_added_route_link
-
     def handle_added_datapath(assoc_id, assoc_map)
       debug log_format_h('handle added datapath', assoc_map)
 
@@ -76,8 +44,6 @@ module Vnet::Services::Topologies
     def handle_removed_overlay(assoc_id, assoc_map)
       debug log_format_h('handle removed overlay', assoc_map)
     end
-
-    # TODO: On uninstall, send underlay remove events.
 
   end
 end
