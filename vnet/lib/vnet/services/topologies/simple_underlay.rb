@@ -47,14 +47,25 @@ module Vnet::Services::Topologies
       u_dp = assoc_map.dup
 
       @overlays.each { |id, overlay|
-        u_dp[:underlay_id] = overlay[:underlay_id]
+        debug log_format_h("handle added datapath use overlay #{id}", overlay)
 
-        @vnet_info.topology_manager.publish('topology_added_underlay_datapath', u_dp)
+        u_dp[:id] = id
+        u_dp[:underlay_id] = @id
+
+        @vnet_info.topology_manager.publish('topology_underlay_added_datapath', u_dp)
       }
     end
 
     def handle_removed_datapath(assoc_id, assoc_map)
       debug log_format_h('handle removed datapath', assoc_map)
+    end
+
+    def handle_added_overlay(assoc_id, assoc_map)
+      debug log_format_h('handle added overlay', assoc_map)
+    end
+
+    def handle_removed_overlay(assoc_id, assoc_map)
+      debug log_format_h('handle removed overlay', assoc_map)
     end
 
   end

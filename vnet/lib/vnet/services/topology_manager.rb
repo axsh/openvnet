@@ -22,8 +22,8 @@ module Vnet::Services
 
     subscribe_assoc_pair_events :topology, :layer, :overlay, :underlay
 
-    subscribe_item_event 'topology_added_underlay_datapath', :added_underlay_datapath
-    subscribe_item_event 'topology_removed_underlay_datapath', :removed_underlay_datapath
+    subscribe_item_event 'topology_underlay_added_datapath', :underlay_added_datapath
+    subscribe_item_event 'topology_underlay_removed_datapath', :underlay_removed_datapath
 
     def do_initialize
       info log_format('loading all topologies')
