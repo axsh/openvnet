@@ -57,6 +57,20 @@ module Vnet::NodeApi
     class << self
       private
 
+      def create_with_transaction(options)
+        options = options.dup
+
+        transaction {
+          options[:ip_lease_id] = detect_ip_lease(options) if options[:ip_lease_id].nil?
+
+          # TODO: Verify ip_lease_id's interface_id is valid.
+          # TODO: Verify interface is host mode.
+          # TODO: Verify interface and datapath matches.
+
+          internal_create(options)
+        }
+      end
+
       def assoc_class
         TopologyDatapath
       end
@@ -71,6 +85,18 @@ module Vnet::NodeApi
 
       def event_deleted_name
         TOPOLOGY_REMOVED_DATAPATH
+      end
+
+      def detect_ip_lease(params)
+        interface_id = params[:interface_id] || return
+        datapath_id = params[:datapath_id] || return
+
+        ds = M::IpLease.dataset
+        ds = ds.where(ip_leases__interface_id: interface_id)
+        ds = ds.where_datapath_id_and_interface_mode(datapath_id, Vnet::Constants::Interface::MODE_HOST)
+        lease = ds.first
+
+        lease && lease.id
       end
 
     end

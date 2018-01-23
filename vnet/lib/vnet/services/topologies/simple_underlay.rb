@@ -12,32 +12,21 @@ module Vnet::Services::Topologies
       [:segment, :segment_id]
     ].each { |other_name, other_key|
 
-      define_method "create_dp_#{other_name}".to_sym do |params|
-        other_id = get_param_id(params, other_key)
-        datapath_id = get_param_id(params, :datapath_id)
-
-        create_params = {
-          datapath_id: datapath_id,
-          other_key => other_id,
-
-          lease_detection: {
-            other_key => other_id
-          }
-        }
-
-        create_datapath_other(other_name, create_params).tap { |dp_other|
-          if dp_other.nil?
-            warn log_format_h("failed when creating new datapath_#{other_name}", create_params)
-          end
-        }
-      end
-
       define_method "handle_added_#{other_name}".to_sym do |assoc_id, assoc_map|
-        debug log_format_h("trying to create datapath_#{other_name} for active underlays", assoc_map)
+        # other_id = get_param_id(assoc_map, other_key)
+        # create_dp_other_each_active(other_name: other_name,
+        #                             other_key: other_key,
+        #                             other_id: other_id,
+        #                             each_active_filter: { other_key => other_id }).tap { |dp_other|
+        #   if dp_other.nil?
+        #     debug log_format_h("failed to create datapath_#{other_name} for underlay", assoc_map)
+        #     return
+        #   end
 
-        other_id = get_param_id(assoc_map, other_key)
-        create_dp_other_each_active(other_name: other_name, other_key: other_key, other_id: other_id,
-                                    each_active_filter: { other_key => other_id })
+        #   debug log_format_h("created datapath_#{other_name} for underlay", assoc_map)
+
+        #   # TODO: Trigger update of overlays.
+        # }
       end
 
       define_method "handle_removed_#{other_name}".to_sym do |assoc_id, assoc_map|
@@ -52,14 +41,20 @@ module Vnet::Services::Topologies
     alias :handle_added_route_link :create_dp_route_link
     alias :handle_removed_route_link :create_dp_route_link
 
-    def create_underlay(params)
-      datapath_id = get_param_id(params, :datapath_id)
-      other_key = get_param_symbol(params, :other_key)
-      other_name = get_param_symbol(params, :other_name)
-      other_id = get_param_id(params, :other_id)
+    def handle_added_datapath(assoc_id, assoc_map)
+      debug log_format_h('handle added datapath', assoc_map)
 
-      debug log_format_h("trying to create datapath_#{other_name} for underlay", params)
-      create_dp_other(datapath_id: datapath_id, other_name: other_name, other_key: other_key, other_id: other_id)
+      u_dp = assoc_map.dup
+
+      @overlays.each { |id, overlay|
+        u_dp[:underlay_id] = overlay[:underlay_id]
+
+        @vnet_info.topology_manager.publish('topology_added_underlay_datapath', u_dp)
+      }
+    end
+
+    def handle_removed_datapath(assoc_id, assoc_map)
+      debug log_format_h('handle removed datapath', assoc_map)
     end
 
   end

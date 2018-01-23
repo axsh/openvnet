@@ -31,16 +31,6 @@ module Vnet::Services::Topologies
         uuid: @uuid)
     end
 
-    def create_dp_assoc(other_name, params)
-      case other_name
-      when :network then create_dp_network(params)
-      when :segment then create_dp_segment(params)
-      when :route_link then create_dp_route_link(params)
-      else
-        raise NotImplementedError
-      end
-    end
-
     def added_assoc(other_name, params)
       case other_name
       when :datapath then added_datapath(params)
@@ -82,8 +72,12 @@ module Vnet::Services::Topologies
             other_key => get_param_id(params, other_key)
           }
 
-          if other_name == :datapath
+          case other_name
+          when :datapath
             new_assoc[:interface_id] = get_param_id(params, :interface_id)
+            new_assoc[:ip_lease_id] = get_param_id(params, :ip_lease_id)
+          when :underlay
+            new_assoc[:datapaths] = {}
           end
 
           (instance_variable_get(other_member)[assoc_id] = new_assoc).tap { |assoc_map|
@@ -131,7 +125,7 @@ module Vnet::Services::Topologies
       debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
 
       case other_name
-      # when :datapath then handle_added_datapath(assoc_id, assoc_map)
+      when :datapath then handle_added_datapath(assoc_id, assoc_map)
       when :network then handle_added_network(assoc_id, assoc_map)
       when :segment then handle_added_segment(assoc_id, assoc_map)
       # when :route_link then handle_added_route_link(assoc_id, assoc_map)
@@ -144,7 +138,7 @@ module Vnet::Services::Topologies
       debug log_format_h("handle_removed_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
 
       case other_name
-      # when :datapath then handle_removed_datapath(assoc_id, assoc_map)
+      when :datapath then handle_removed_datapath(assoc_id, assoc_map)
       when :network then handle_removed_network(assoc_id, assoc_map)
       when :segment then handle_removed_segment(assoc_id, assoc_map)
       # when :route_link then handle_removed_route_link(assoc_id, assoc_map)
@@ -163,6 +157,8 @@ module Vnet::Services::Topologies
     alias :handle_removed_network :handle_added_datapath
     alias :handle_removed_segment :handle_added_datapath
     alias :handle_removed_route_link :handle_added_datapath
+    alias :added_underlay_datapath :handle_added_datapath
+    alias :removed_underlay_datapath :handle_added_datapath
 
     def mw_datapath_assoc_class(other_name)
       case other_name
