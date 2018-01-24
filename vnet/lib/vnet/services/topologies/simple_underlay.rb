@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
 
+# Adding ip leases is only required for topology datapaths when GRE
+# tunnels are used. (or should be)
+#
+# The mac_range_group needs to have valid ranges when added, as we
+# currently don't support events for adding/removing ranges.
+
+# TODO: Need to properly handle events for changing of topology
+# datapath's ip_leases.
+
+
 module Vnet::Services::Topologies
   class SimpleUnderlay < Base
     include Celluloid::Logger
@@ -7,12 +17,6 @@ module Vnet::Services::Topologies
     def log_type
       'topology/simple_underlay'
     end
-
-    # Adding ip leases is only required for topology datapaths when
-    # GRE tunnels are used. (or should be)
-
-    # TODO: Need to properly handle events for changing of topology
-    # datapath's ip_leases.
 
     [ [:network, :network_id],
       [:segment, :segment_id],
@@ -48,8 +52,22 @@ module Vnet::Services::Topologies
             ip_lease_id: ip_lease_id,
           }
 
-          # TODO: Don't log errors when already exists.
           create_datapath_other(other_name, create_params)
+        }
+      end
+
+      define_method "updated_all_#{other_name}".to_sym do
+        @datapaths.each { |_, datapath_map|
+          other_list(other_name).each { |_, other_map|
+            create_params = {
+              datapath_id: datapath_map[:datapath_id],
+              other_key => other_map[other_key],
+              interface_id: datapath_map[:interface_id],
+              ip_lease_id: datapath_map[:ip_lease_id],
+            }
+
+            create_datapath_other(other_name, create_params)
+          }
         }
       end
     }
@@ -74,14 +92,28 @@ module Vnet::Services::Topologies
       debug log_format_h('handle removed datapath', assoc_map)
     end
 
+    def handle_added_mac_range_group(assoc_id, assoc_map)
+      debug log_format_h('handle added mac_range_group', assoc_map)
+
+      # TODO: Print warning if the mrg has no range entries.
+
+      updated_all_network()
+      updated_all_segment()
+    end
+
+    def handle_removed_mac_range_group(assoc_id, assoc_map)
+      debug log_format_h('handle removed mac_range_group', assoc_map)
+
+      updated_all_network()
+      updated_all_segment()
+    end
+
     def handle_added_overlay(assoc_id, assoc_map)
       debug log_format_h('handle added overlay', assoc_map)
 
       overlay_id = get_param_id(assoc_map, :overlay_id)
 
       @datapaths.each { |id, other_map|
-        debug log_format_h('handle added overlay for datapath', other_map)
-
         u_dp = other_map.dup
         u_dp[:id] = overlay_id
         u_dp[:underlay_id] = @id

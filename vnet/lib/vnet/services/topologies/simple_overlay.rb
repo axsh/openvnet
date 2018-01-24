@@ -55,17 +55,24 @@ module Vnet::Services::Topologies
           create_datapath_other(other_name, create_params)
         }
       end
+
+      define_method "updated_all_#{other_name}".to_sym do
+        @underlay_datapaths.each { |_, u_dp|
+          u_dp.each { |datapath_id, underlay_map|
+            other_list(other_name).each { |_, other_map|
+              create_params = {
+                datapath_id: datapath_id,
+                other_key => other_map[other_key],
+                interface_id: underlay_map[:interface_id],
+                ip_lease_id: underlay_map[:ip_lease_id],
+              }
+
+              create_datapath_other(other_name, create_params)
+            }
+          }
+        }
+      end
     }
-
-    def handle_added_underlay(assoc_id, assoc_map)
-      debug log_format_h('handle added underlay', assoc_map)
-    end
-
-    def handle_removed_underlay(assoc_id, assoc_map)
-      debug log_format_h('handle removed underlay', assoc_map)
-
-      # TODO: Remove underlay_datapath, no need for uninstall events.
-    end
 
     def underlay_added_datapath(params)
       debug log_format_h('added underlay datapath', params)
@@ -90,6 +97,34 @@ module Vnet::Services::Topologies
 
     def underlay_removed_datapath(params)
       debug log_format_h('removed underlay datapath', params)
+    end
+
+    def handle_added_mac_range_group(assoc_id, assoc_map)
+      debug log_format_h('handle added mac_range_group', assoc_map)
+
+      # TODO: Print warning if the mrg has no range entries.
+
+      updated_all_network()
+      updated_all_segment()
+      updated_all_route_link()
+    end
+
+    def handle_removed_mac_range_group(assoc_id, assoc_map)
+      debug log_format_h('handle removed mac_range_group', assoc_map)
+
+      updated_all_network()
+      updated_all_segment()
+      updated_all_route_link()
+    end
+
+    def handle_added_underlay(assoc_id, assoc_map)
+      debug log_format_h('handle added underlay', assoc_map)
+    end
+
+    def handle_removed_underlay(assoc_id, assoc_map)
+      debug log_format_h('handle removed underlay', assoc_map)
+
+      # TODO: Remove underlay_datapath, no need for uninstall events.
     end
 
   end

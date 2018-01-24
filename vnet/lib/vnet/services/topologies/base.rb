@@ -105,7 +105,7 @@ module Vnet::Services::Topologies
     end
 
     def handle_added_assoc(other_name, assoc_id, assoc_map)
-      debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
+      # debug log_format_h("handle_added_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
 
       case other_name
       when :datapath then handle_added_datapath(assoc_id, assoc_map)
@@ -121,7 +121,7 @@ module Vnet::Services::Topologies
     end
 
     def handle_removed_assoc(other_name, assoc_id, assoc_map)
-      debug log_format_h("handle_removed_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
+      # debug log_format_h("handle_removed_#{other_name}", assoc_id: assoc_id, assoc_map: assoc_map)
 
       case other_name
       when :datapath then handle_removed_datapath(assoc_id, assoc_map)
@@ -172,18 +172,24 @@ module Vnet::Services::Topologies
     def create_datapath_other(other_name, create_params)
       create_params = create_params.merge(topology_id: @id)
 
+      # TODO: Add support for passing multiple mrg's.
       @mac_range_groups.first.tap { |_, mrg|
         return if mrg.nil?
         create_params[:mac_range_group_id] = mrg[:mac_range_group_id]
       }
 
-      mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|
-        if result
-          debug log_format_h("created datapath_#{other_name}", create_params)
-        else
-          info log_format_h("failed to create datapath_#{other_name}", create_params)
-        end
-      }
+      begin
+        mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|
+          if result
+            debug log_format_h("created datapath_#{other_name}", create_params)
+          else
+            info log_format_h("failed to create datapath_#{other_name}", create_params)
+          end
+        }
+      rescue Sequel::UniqueConstraintViolation
+        info log_format_h("datapath_#{other_name} already exists", create_params)
+        nil
+      end
     end
 
     def find_datapath_assoc_map(datapath_id:)
