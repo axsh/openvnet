@@ -81,7 +81,7 @@ module Sinatra
 
       error do |boom|
         logger.error("API Error: #{request.path_info} -> #{boom.class}: #{boom.message} (#{boom.backtrace.first})")
-        respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>500})
+        respond_with({:error=>boom.class.to_s, :message=>boom.message, :code=>'500'})
       end
     }
 
