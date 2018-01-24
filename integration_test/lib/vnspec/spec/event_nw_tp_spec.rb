@@ -12,4 +12,7 @@ describe 'event_nw_tp' do
   }
 
   include_examples 'simple examples'
+
+  # TODO: Delete topology, test again.
+
 end

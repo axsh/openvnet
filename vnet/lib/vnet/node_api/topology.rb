@@ -32,6 +32,17 @@ module Vnet::NodeApi
     class << self
       private
 
+      def dispatch_added_assocs_for_parent_id(parent_id)
+        transaction {
+          M::TopologyLayer.dataset.where(overlay_id: parent_id).all { |assoc_model|
+            dispatch_created_item_events(assoc_model)
+          }
+          M::TopologyLayer.dataset.where(underlay_id: parent_id).all { |assoc_model|
+            dispatch_created_item_events(assoc_model)
+          }
+        }
+      end
+
       def dispatch_created_item_events(model)
         dispatch_event(TOPOLOGY_ADDED_LAYER, event_hash_prepare(model, :layer))
       end
@@ -78,8 +89,8 @@ module Vnet::NodeApi
         }
       end
 
-      def assoc_class
-        TopologyDatapath
+      def assoc_dataset
+        M::TopologyDatapath.dataset
       end
 
       def assoc_id_type
@@ -115,8 +126,8 @@ module Vnet::NodeApi
     class << self
       private
 
-      def assoc_class
-        TopologyNetwork
+      def assoc_dataset
+        M::TopologyNetwork.dataset
       end
 
       def parent_id_type
@@ -144,8 +155,8 @@ module Vnet::NodeApi
     class << self
       private
 
-      def assoc_class
-        TopologySegment
+      def assoc_dataset
+        M::TopologySegment.dataset
       end
 
       def assoc_id_type
@@ -169,8 +180,8 @@ module Vnet::NodeApi
     class << self
       private
 
-      def assoc_class
-        TopologyRouteLink
+      def assoc_dataset
+        M::TopologyRouteLink.dataset
       end
 
       def assoc_id_type
@@ -183,6 +194,35 @@ module Vnet::NodeApi
 
       def event_deleted_name
         TOPOLOGY_REMOVED_ROUTE_LINK
+      end
+
+    end
+  end
+
+  class TopologyMacRangeGroup < TopologyAssocBase
+    valid_update_fields []
+
+    class << self
+      private
+
+      def assoc_dataset
+        M::TopologyMacRangeGroup.dataset
+      end
+
+      def parent_id_type
+        :topology_id
+      end
+
+      def assoc_id_type
+        :mac_range_group_id
+      end
+
+      def event_created_name
+        TOPOLOGY_ADDED_MAC_RANGE_GROUP
+      end
+
+      def event_deleted_name
+        TOPOLOGY_REMOVED_MAC_RANGE_GROUP
       end
 
     end

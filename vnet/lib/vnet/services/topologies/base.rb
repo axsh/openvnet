@@ -4,15 +4,11 @@ module Vnet::Services::Topologies
   class Base < Vnet::ItemVnetUuid
     include Celluloid::Logger
 
-    attr_reader :datapaths
-    attr_reader :networks
-    attr_reader :segments
-    attr_reader :route_links
-
     def initialize(params)
       super
 
       @datapaths = {}
+      @mac_range_groups = {}
       @networks = {}
       @segments = {}
       @route_links = {}
@@ -32,6 +28,7 @@ module Vnet::Services::Topologies
     end
 
     [ [:datapath, :datapath_id],
+      [:mac_range_group, :mac_range_group_id],
       [:network, :network_id],
       [:segment, :segment_id],
       [:route_link, :route_link_id],
@@ -96,6 +93,7 @@ module Vnet::Services::Topologies
     def other_list(other_name)
       case other_name
       when :datapath then @datapaths
+      when :mac_range_group then @mac_range_groups
       when :network then @networks
       when :segment then @segments
       when :route_link then @route_links
@@ -111,6 +109,7 @@ module Vnet::Services::Topologies
 
       case other_name
       when :datapath then handle_added_datapath(assoc_id, assoc_map)
+      when :mac_range_group then handle_added_mac_range_group(assoc_id, assoc_map)
       when :network then handle_added_network(assoc_id, assoc_map)
       when :segment then handle_added_segment(assoc_id, assoc_map)
       when :route_link then handle_added_route_link(assoc_id, assoc_map)
@@ -126,6 +125,7 @@ module Vnet::Services::Topologies
 
       case other_name
       when :datapath then handle_removed_datapath(assoc_id, assoc_map)
+      when :mac_range_group then handle_removed_mac_range_group(assoc_id, assoc_map)
       when :network then handle_removed_network(assoc_id, assoc_map)
       when :segment then handle_removed_segment(assoc_id, assoc_map)
       when :route_link then handle_removed_route_link(assoc_id, assoc_map)
@@ -138,12 +138,14 @@ module Vnet::Services::Topologies
 
     def handle_added_datapath(assoc_id, assoc_map)
     end
+    alias :handle_added_mac_range_group :handle_added_datapath
     alias :handle_added_network :handle_added_datapath
     alias :handle_added_segment :handle_added_datapath
     alias :handle_added_route_link :handle_added_datapath
     alias :handle_added_overlay :handle_added_datapath
     alias :handle_added_underlay :handle_added_datapath
     alias :handle_removed_datapath :handle_added_datapath
+    alias :handle_removed_mac_range_group :handle_added_datapath
     alias :handle_removed_network :handle_added_datapath
     alias :handle_removed_segment :handle_added_datapath
     alias :handle_removed_route_link :handle_added_datapath
@@ -168,7 +170,14 @@ module Vnet::Services::Topologies
     end
 
     def create_datapath_other(other_name, create_params)
-      mw_datapath_assoc_class(other_name).batch.create(create_params.merge(topology_id: @id)).commit.tap { |result|
+      create_params = create_params.merge(topology_id: @id)
+
+      @mac_range_groups.first.tap { |_, mrg|
+        return if mrg.nil?
+        create_params[:mac_range_group_id] = mrg[:mac_range_group_id]
+      }
+
+      mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|
         if result
           debug log_format_h("created datapath_#{other_name}", create_params)
         else

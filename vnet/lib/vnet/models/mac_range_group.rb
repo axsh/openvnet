@@ -7,12 +7,16 @@ module Vnet::Models
 
     plugin :paranoia_is_deleted
 
-    one_to_many :lease_policy_base_networks
     one_to_many :mac_ranges
+
+    one_to_many :lease_policy_base_networks
+    one_to_many :topology_mac_range_groups
 
     plugin :association_dependencies,
     # 0005_mac_leases
-    mac_ranges: :destroy
+    mac_ranges: :destroy,
+    # 0018_topology_lease
+    topology_mac_range_groups: :destroy
 
     # TODO: Randomly distribute the lease attempts.
     def address_random

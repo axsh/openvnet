@@ -8,7 +8,7 @@ module Vnet::NodeApi
       # Send events to load all item assocs for a parent item.
       def dispatch_added_assocs_for_parent_id(parent_id)
         transaction {
-          assoc_class.dataset.where(parent_id_type => parent_id).all { |assoc_model|
+          assoc_dataset.where(parent_id_type => parent_id).all { |assoc_model|
             dispatch_created_item_events(assoc_model)
           }
         }
@@ -24,7 +24,7 @@ module Vnet::NodeApi
         raise NotImplementedError
       end
 
-      def assoc_class
+      def assoc_dataset
         raise NotImplementedError
       end
 

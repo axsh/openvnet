@@ -52,6 +52,23 @@ module Vnet::Endpoints::V10::Responses
     end
   end
 
+  class TopologyMacRangeGroup < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(object)
+      argument_type_check(object,Vnet::ModelWrappers::TopologyMacRangeGroup)
+      object.to_hash.tap { |res|
+      }
+    end
+  end
+
+  class TopologyMacRangeGroupCollection < Vnet::Endpoints::CollectionResponseGenerator
+    def self.generate(array)
+      argument_type_check(array,Array)
+      array.map { |i|
+        TopologyMacRangeGroup.generate(i)
+      }
+    end
+  end
+
   class TopologyNetwork < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
       argument_type_check(object,Vnet::ModelWrappers::TopologyNetwork)
