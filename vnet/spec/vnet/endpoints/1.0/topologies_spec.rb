@@ -57,7 +57,7 @@ describe '/topologies' do
     let!(:interface) {
       dp_id = related_object.id
 
-      Fabricate(:interface_w_ip_lease) {
+      interface = Fabricate(:interface_w_ip_lease) {
         uuid 'if-test'
         mode 'host'
 
@@ -70,11 +70,23 @@ describe '/topologies' do
           ]
         end
       }
+
+      interface.ip_leases << Fabricate(:ip_lease_free, uuid: 'il-test', interface: interface)
+      interface
     }
 
-    include_examples 'many_to_many_relation', 'datapaths', {
-      interface_uuid: 'if-test',
-    }
+    describe 'first ip lease' do
+      include_examples 'many_to_many_relation', 'datapaths', {
+        interface_uuid: 'if-test',
+      }
+    end
+
+    describe 'specific ip lease' do
+      include_examples 'many_to_many_relation', 'datapaths', {
+        interface_uuid: 'if-test',
+        ip_lease_uuid: 'il-test'
+      }
+    end
   end
 
   describe 'Many to many relation calls for mac_range_groups' do
