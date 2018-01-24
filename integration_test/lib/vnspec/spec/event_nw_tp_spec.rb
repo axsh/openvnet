@@ -16,7 +16,7 @@ describe 'event_nw_tp' do
 
   describe 'fail after deleting topology' do
     before(:all) {
-      Vnspec::Models::Topology.delete('topo-vnet')
+      Vnspec::Models::Topology.destroy('topo-vnet')
       sleep 5
     }
 
