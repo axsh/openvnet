@@ -374,6 +374,10 @@ module Vnspec
 
     class Topology < Base
       class << self
+        def add_mrg(tp_uuid, mrg_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/mac_range_groups/#{mrg_uuid}")
+        end
+
         def add_network(tp_uuid, nw_uuid)
           API.request(:post, "topologies/#{tp_uuid}/networks/#{nw_uuid}")
         end
@@ -381,6 +385,19 @@ module Vnspec
         def add_segment(tp_uuid, seg_uuid)
           API.request(:post, "topologies/#{tp_uuid}/segments/#{seg_uuid}")
         end
+
+        def remove_mrg(tp_uuid, mrg_uuid)
+          API.request(:delete, "topologies/#{tp_uuid}/mac_range_groups/#{mrg_uuid}")
+        end
+
+        def remove_network(tp_uuid, nw_uuid)
+          API.request(:delete, "topologies/#{tp_uuid}/networks/#{nw_uuid}")
+        end
+
+        def remove_segment(tp_uuid, seg_uuid)
+          API.request(:delete, "topologies/#{tp_uuid}/segments/#{seg_uuid}")
+        end
+
       end
     end
 

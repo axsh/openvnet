@@ -7,12 +7,20 @@ describe 'event_nw_tp' do
   before(:all) {
     Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet1')
     Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet2')
-
     sleep 5
   }
 
-  include_examples 'simple examples'
+  describe 'success on initial setup' do
+    include_examples 'simple examples'
+  end
 
-  # TODO: Delete topology, test again.
+  describe 'fail after deleting topology' do
+    before(:all) {
+      Vnspec::Models::Topology.delete('topo-vnet')
+      sleep 5
+    }
+
+    include_examples 'simple examples fail'
+  end
 
 end
