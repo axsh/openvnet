@@ -43,7 +43,7 @@ module Vnet::NodeApi
         internal_create(options)
       end
 
-      def destroy_with_transaction(datapath_id: datapath_id, generic_id: generic_id)
+      def destroy_with_transaction(datapath_id:, generic_id:)
         internal_destroy(model_class[destroy_filter(datapath_id, generic_id)])
       end
 

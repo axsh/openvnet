@@ -372,5 +372,17 @@ module Vnspec
       end
     end
 
+    class Topology < Base
+      class << self
+        def add_network(tp_uuid, nw_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/networks/#{nw_uuid}")
+        end
+
+        def add_segment(tp_uuid, seg_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/segments/#{seg_uuid}")
+        end
+      end
+    end
+
   end
 end

@@ -5,8 +5,8 @@ require_relative 'shared_examples/simple'
 
 describe 'event_nw_tp' do
   before(:all) {
-    API.request(:post, "topologies/topo-vnet/networks", network_uuid: 'nw-vnet1')
-    API.request(:post, "topologies/topo-vnet/networks", network_uuid: 'nw-vnet2')
+    Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet1')
+    Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet2')
 
     sleep 5
   }

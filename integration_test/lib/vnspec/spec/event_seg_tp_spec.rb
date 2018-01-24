@@ -12,8 +12,8 @@ describe 'event_seg_tp', :vms_disable_dhcp => true do
     vm5.change_ipv4_address('10.101.0.12')
     vm6.change_ipv4_address('10.101.0.12')
 
-    API.request(:post, "topologies/topo-vnet/segments/seg-vseg1")
-    API.request(:post, "topologies/topo-vnet/segments/seg-vseg2")
+    Vnspec::Models::Topology.add_segment('topo-vnet', 'seg-vseg1')
+    Vnspec::Models::Topology.add_segment('topo-vnet', 'seg-vseg2')
 
     # Since no vm's do dhcp requests there is nothing to ensure that
     # the vna's have properly loaded the segments and other
