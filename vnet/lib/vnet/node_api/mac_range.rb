@@ -17,7 +17,7 @@ module Vnet::NodeApi
       def dispatch_deleted_item_events(model)
         dispatch_event(MAC_RANGE_GROUP_DELETED_ITEM, id: model.id)
 
-        filter = { mac_range_id: model.id }
+        filter = { mac_range_group_id: model.id }
 
         # 0018_topology_lease
         TopologyMacRangeGroup.dispatch_created_where(filter, model.created_at)
@@ -34,8 +34,6 @@ module Vnet::NodeApi
 
       def dispatch_created_item_events(model)
         # dispatch_event(MAC_RANGE_CREATED_ITEM, model.to_hash)
-
-        # TODO: Dispatch to topologies.
       end
 
       def dispatch_updated_item_events(model, old_values)
