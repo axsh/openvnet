@@ -66,6 +66,34 @@ describe Vnet::NodeApi::Topology do
 
 end
 
+describe Vnet::NodeApi::TopologyDatapath do
+  let(:assoc_name) { :datapath }
+  let(:parent_name) { :topology }
+
+  let(:assoc_model) { Fabricate(:datapath) }
+  let(:parent_model) { Fabricate(:topology, mode: 'simple_underlay') }
+
+  let(:added_event_name) { Vnet::Event::TOPOLOGY_ADDED_DATAPATH }
+  let(:removed_event_name) { Vnet::Event::TOPOLOGY_REMOVED_DATAPATH }
+
+  include_examples 'assoc item on node_api', :topology_datapath, {
+    ip_lease_id: Fabricate(:ip_lease).id
+  }
+end
+
+describe Vnet::NodeApi::TopologyMacRangeGroup do
+  let(:assoc_name) { :mac_range_group }
+  let(:parent_name) { :topology }
+
+  let(:assoc_model) { Fabricate(:mac_range_group) }
+  let(:parent_model) { Fabricate(:topology, mode: 'simple_underlay') }
+
+  let(:added_event_name) { Vnet::Event::TOPOLOGY_ADDED_MAC_RANGE_GROUP }
+  let(:removed_event_name) { Vnet::Event::TOPOLOGY_REMOVED_MAC_RANGE_GROUP }
+
+  include_examples 'assoc item on node_api', :topology_mac_range_group
+end
+
 describe Vnet::NodeApi::TopologyNetwork do
   let(:assoc_name) { :network }
   let(:parent_name) { :topology }

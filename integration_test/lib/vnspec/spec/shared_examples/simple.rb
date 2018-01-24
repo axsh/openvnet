@@ -47,7 +47,7 @@ shared_examples 'simple examples' do
 
 end
 
-shared_examples 'simple examples failed' do
+shared_examples 'simple examples fail' do
   describe "vnet1" do
     context "mac2mac" do
       it "reachable to vnet1" do
