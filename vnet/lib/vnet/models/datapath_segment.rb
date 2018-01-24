@@ -11,6 +11,8 @@ module Vnet::Models
     many_to_one :interface
     many_to_one :ip_lease
 
+    many_to_one :topology
+
     plugin :association_dependencies,
     # 0001_origin
     _mac_address: :destroy

@@ -12,6 +12,10 @@ module Vnet::Models
     one_to_many :topology_route_links
     one_to_many :topology_segments
 
+    one_to_many :datapath_networks
+    one_to_many :datapath_segments
+    one_to_many :datapath_route_links
+
     many_to_many :datapaths, :join_table => :topology_datapaths, :conditions => "topology_datapaths.deleted_at is null"
     many_to_many :networks, :join_table => :topology_networks, :conditions => "topology_networks.deleted_at is null"
     many_to_many :segments, :join_table => :topology_segments, :conditions => "topology_segments.deleted_at is null"
@@ -27,7 +31,11 @@ module Vnet::Models
     topology_datapaths: :destroy,
     topology_networks: :destroy,
     topology_route_links: :destroy,
-    topology_segments: :destroy
+    topology_segments: :destroy,
+    # 0018_topology_lease
+    datapath_networks: :destroy,
+    datapath_segments: :destroy,
+    datapath_route_links: :destroy
 
   end
 end

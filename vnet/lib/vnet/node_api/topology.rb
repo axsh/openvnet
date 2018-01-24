@@ -14,6 +14,13 @@ module Vnet::NodeApi
 
       def dispatch_deleted_item_events(model)
         dispatch_event(TOPOLOGY_DELETED_ITEM, id: model.id)
+
+        filter = { topology_id: model.id }
+
+        # 0018_topology_lease
+        DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
+        DatapathSegment.dispatch_deleted_where(filter, model.deleted_at)
+        DatapathRouteLink.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end

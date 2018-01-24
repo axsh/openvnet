@@ -168,7 +168,7 @@ module Vnet::Services::Topologies
     end
 
     def create_datapath_other(other_name, create_params)
-      mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|
+      mw_datapath_assoc_class(other_name).batch.create(create_params.merge(topology_id: @id)).commit.tap { |result|
         if result
           debug log_format_h("created datapath_#{other_name}", create_params)
         else
