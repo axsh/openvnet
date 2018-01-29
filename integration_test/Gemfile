@@ -9,13 +9,3 @@ gem "faraday"
 gem "faraday_middleware"
 gem "ipaddress"
 gem "parallel"
-
-group :development do
-  gem "knife-solo"
-  gem "berkshelf"
-end
-
-group :development, :test do
-  gem "pry-nav"
-  gem "rb-readline", :require => false
-end
