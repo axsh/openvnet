@@ -1,6 +1,0 @@
-[openvnet-third-party]
-name=OpenVNet - 3d party
-failovermethod=priority
-baseurl=https://ci.openvnet.org/repos/packages/rhel/6/third_party/current/
-enabled=1
-gpgcheck=0
