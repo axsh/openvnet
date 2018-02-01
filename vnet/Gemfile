@@ -17,7 +17,7 @@ gem "rack-cors"
 gem "racket", ">= 1.0.12", :git => 'https://github.com/axsh/racket.git'
 gem "sequel", "4.8.0" # Updating to 4.23.0 broke the unit tests. Needs to be investigated.
 gem "sequel_paranoia"
-gem "sinatra"
+gem "sinatra", "1.4.7" # Sinatra-browse is not compatible with Sinatra 2.0.0 yet
 gem "sinatra-contrib"
 gem "sinatra-hashfix"
 gem "sinatra-browse", ">= 0.6.1" # 0.5 and 0.6 have a bug where missing parameters would be set to nil values

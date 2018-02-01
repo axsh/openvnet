@@ -10,7 +10,7 @@ ${current_dir}/multibox/build.sh
 
 try_load_cache "/data" "/data" "${COMMIT_ID}"
 
-rvm use 2.2.0
+rvm use 2.3.0
 gem install bundler
 cd integration_test
 bundle install

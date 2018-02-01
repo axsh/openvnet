@@ -114,7 +114,8 @@ shared_examples_for "test_method" do |method, route|
       uri_with_args = uri.gsub(named_args_regex, 'test_id')
 
       stubby = stub_request(verb.downcase.to_sym,
-                            "http://localhost:9090/api/1.0#{uri_with_args}.json")
+                            "http://localhost:9090/api/1.0#{uri_with_args}.json"
+                            ).to_return(body: 'null', status: 200)
       klass.send(method, *arguments)
 
       assert_requested(stubby)

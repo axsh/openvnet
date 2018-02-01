@@ -1,6 +1,0 @@
-[openvnet]
-name=OpenVNet
-failovermethod=priority
-baseurl=https://ci.openvnet.org/repos/jenkins2-el6/packages/rhel/6/vnet/current/
-enabled=1
-gpgcheck=0
