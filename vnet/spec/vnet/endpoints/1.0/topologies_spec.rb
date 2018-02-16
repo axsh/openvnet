@@ -54,11 +54,39 @@ describe '/topologies' do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :datapath }
 
-    let!(:interface) { Fabricate(:interface_w_ip_lease) { uuid 'if-test' } }
+    let!(:interface) {
+      dp_id = related_object.id
 
-    include_examples 'many_to_many_relation', 'datapaths', {
-      :interface_uuid => 'if-test'
+      interface = Fabricate(:interface_w_ip_lease) {
+        uuid 'if-test'
+        mode 'host'
+
+        interface_ports do |attrs|
+          [
+            Fabricate(:interface_port_host) {
+              interface_id attrs[:id]
+              datapath_id dp_id
+            }
+          ]
+        end
+      }
+
+      interface.ip_leases << Fabricate(:ip_lease_free, uuid: 'il-test', interface: interface)
+      interface
     }
+
+    describe 'first ip lease' do
+      include_examples 'many_to_many_relation', 'datapaths', {
+        interface_uuid: 'if-test',
+      }
+    end
+
+    describe 'specific ip lease' do
+      include_examples 'many_to_many_relation', 'datapaths', {
+        interface_uuid: 'if-test',
+        ip_lease_uuid: 'il-test'
+      }
+    end
   end
 
   describe 'Many to many relation calls for networks' do

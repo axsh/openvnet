@@ -65,6 +65,14 @@ module Vnspec
             return reload(response[:uuid])
           end
         end
+
+        def post(options)
+          API.request(:post, api_name, options)
+        end
+
+        def put(options)
+          API.request(:put, api_name, options)
+        end
       end
 
       def ==(other)
@@ -363,5 +371,18 @@ module Vnspec
         @released_at = Time.parse(options[:released_at]) if options[:released_at]
       end
     end
+
+    class Topology < Base
+      class << self
+        def add_network(tp_uuid, nw_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/networks/#{nw_uuid}")
+        end
+
+        def add_segment(tp_uuid, seg_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/segments/#{seg_uuid}")
+        end
+      end
+    end
+
   end
 end

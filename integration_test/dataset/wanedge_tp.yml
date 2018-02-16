@@ -124,6 +124,10 @@ topology_datapaths:
     datapath_uuid: dp-wanedge
     interface_uuid: if-weth0
 
+  - topology_uuid: topo-global
+    datapath_uuid: dp-wanedge
+    interface_uuid: if-weth2
+
 topology_networks:
 
   - topology_uuid: topo-vnet

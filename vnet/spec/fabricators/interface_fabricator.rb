@@ -69,9 +69,10 @@ Fabricator(:interface_w_ip_lease, class_name: Vnet::Models::Interface) do
                              )}
        network_id { Fabricate(:network).id }
        ip_address_id { |attrs|
-         Fabricate(:ip_address_no_nw, network_id: attrs[:network_id]).id
+         Fabricate(:ip_address_no_nw,
+            network_id: attrs[:network_id],
+            ).id
        }
-       # ipv4_address { Fabricate(:ip_address) }
      end
     ]
   end
@@ -108,6 +109,7 @@ end
 Fabricator(:interface_port_host, class_name: Vnet::Models::InterfacePort) do
   id { id_sequence(:interface_port_ids) }
   singular 1
+  interface_mode 'host'
 end
 
 Fabricator(:interface_port_eth0, class_name: Vnet::Models::InterfacePort) do
