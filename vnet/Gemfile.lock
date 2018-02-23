@@ -34,7 +34,7 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.5.2)
       public_suffix (>= 2.0.2, < 4.0)
-    ast (2.3.0)
+    ast (2.4.0)
     backports (3.11.0)
     bindata (2.1.0)
     bit-struct (0.16)
@@ -100,8 +100,9 @@ GEM
     paper_house (0.6.2)
       POpen4 (~> 0.1.4)
       rake
-    parser (2.4.0.2)
-      ast (~> 2.3)
+    parallel (1.12.1)
+    parser (2.5.0.2)
+      ast (~> 2.4.0)
     pio (0.28.1)
       bindata (~> 2.1.0)
     powerpack (0.1.1)
@@ -118,8 +119,7 @@ GEM
       rack
     rack-test (0.8.2)
       rack (>= 1.0, < 3)
-    rainbow (2.2.2)
-      rake
+    rainbow (3.0.0)
     raindrops (0.19.0)
     rake (10.1.0)
     redis (4.0.1)
@@ -144,11 +144,13 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.7.0)
     rspec-support (3.7.0)
-    rubocop (0.36.0)
-      parser (>= 2.3.0.0, < 3.0)
+    rubocop (0.52.1)
+      parallel (~> 1.10)
+      parser (>= 2.4.0.2, < 3.0)
       powerpack (~> 0.1)
-      rainbow (>= 1.99.1, < 3.0)
+      rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
+      unicode-display_width (~> 1.0, >= 1.0.1)
     ruby-progressbar (1.9.0)
     safe_yaml (1.0.4)
     sequel (4.8.0)
@@ -182,6 +184,7 @@ GEM
     tins (1.16.3)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
+    unicode-display_width (1.3.0)
     unicorn (5.4.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
@@ -220,7 +223,7 @@ DEPENDENCIES
   rake (= 10.1.0)
   rant (>= 0.5.9)!
   rspec
-  rubocop (= 0.36.0)
+  rubocop
   sequel (= 4.8.0)
   sequel_paranoia
   sinatra (= 1.4.7)
