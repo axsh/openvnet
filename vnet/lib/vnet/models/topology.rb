@@ -13,6 +13,9 @@ module Vnet::Models
     one_to_many :topology_route_links
     one_to_many :topology_segments
 
+    one_to_many :topology_overlays, :class => TopologyLayer, :key => :underlay_id
+    one_to_many :topology_underlays, :class => TopologyLayer, :key => :overlay_id
+
     one_to_many :datapath_networks
     one_to_many :datapath_segments
     one_to_many :datapath_route_links
@@ -32,6 +35,9 @@ module Vnet::Models
     topology_networks: :destroy,
     topology_route_links: :destroy,
     topology_segments: :destroy,
+    # 0014_topology_layer
+    topology_overlays: :destroy,
+    topology_underlays: :destroy,
     # 0018_topology_lease
     datapath_networks: :destroy,
     datapath_segments: :destroy,

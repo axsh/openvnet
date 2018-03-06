@@ -4,14 +4,20 @@ Sequel.migration do
   up do
     alter_table(:datapath_networks) do
       add_column :topology_id, Integer, :null => true
+      add_column :topology_layer_id, Integer, :null => true
+      add_column :topology_mac_range_group_id, Integer, :null => true
     end
 
     alter_table(:datapath_segments) do
       add_column :topology_id, Integer, :null => true
+      add_column :topology_layer_id, Integer, :null => true
+      add_column :topology_mac_range_group_id, Integer, :null => true
     end
 
     alter_table(:datapath_route_links) do
       add_column :topology_id, Integer, :null => true
+      add_column :topology_layer_id, Integer, :null => true
+      add_column :topology_mac_range_group_id, Integer, :null => true
     end
 
     alter_table(:topology_datapaths) do
@@ -40,14 +46,20 @@ Sequel.migration do
 
     alter_table(:datapath_networks) do
       drop_column :topology_id
+      drop_column :topology_layer_id
+      drop_column :topology_mac_range_group_id
     end
 
     alter_table(:datapath_segments) do
       drop_column :topology_id
+      drop_column :topology_layer_id
+      drop_column :topology_mac_range_group_id
     end
 
     alter_table(:datapath_route_links) do
       drop_column :topology_id
+      drop_column :topology_layer_id
+      drop_column :topology_mac_range_group_id
     end
 
     alter_table(:topology_datapaths) do

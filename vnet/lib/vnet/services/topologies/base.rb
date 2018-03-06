@@ -46,14 +46,15 @@ module Vnet::Services::Topologies
     ].each { |other_name, other_key|
 
       define_method "added_#{other_name}".to_sym do |params|
-        get_param_id(params, other_key).tap { |assoc_id|
-          if other_list(other_name)[assoc_id]
+        get_param_id(params, other_key).tap { |other_id|
+          if other_list(other_name)[other_id]
             info log_format_h("adding associated #{other_name} failed, already added", params)
             return
           end
 
           new_assoc = {
-            other_key => get_param_id(params, other_key)
+            other_key => get_param_id(params, other_key),
+            assoc_id: get_param_id(params, :assoc_id),
           }
 
           case other_name
@@ -62,21 +63,21 @@ module Vnet::Services::Topologies
             new_assoc[:ip_lease_id] = get_param_id(params, :ip_lease_id)
           end
 
-          (other_list(other_name)[assoc_id] = new_assoc).tap { |assoc_map|
-            handle_added_assoc(other_name, assoc_id, assoc_map)
+          (other_list(other_name)[other_id] = new_assoc).tap { |assoc_map|
+            handle_added_assoc(other_name, other_id, assoc_map)
           }
         }
       end
 
       define_method "removed_#{other_name}".to_sym do |params|
-        get_param_id(params, other_key).tap { |assoc_id|
-          other_list(other_name).delete(assoc_id).tap { |assoc_map|
+        get_param_id(params, other_key).tap { |other_id|
+          other_list(other_name).delete(other_id).tap { |assoc_map|
             if assoc_map.nil?
               info log_format_h("removing associated #{other_name} failed, not found", params)
               return
             end
 
-            handle_removed_assoc(other_name, assoc_id, assoc_map)
+            handle_removed_assoc(other_name, other_id, assoc_map)
           }
         }
       end

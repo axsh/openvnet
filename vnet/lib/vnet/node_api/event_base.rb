@@ -187,8 +187,9 @@ module Vnet::NodeApi
       # Event hash methods:
       #
 
-      def event_hash_prepare(map, id_value = nil)
+      def event_hash_prepare(map, id_value: nil, assoc_key: nil)
         map.to_hash.tap { |params|
+          params[:assoc_id] = params[assoc_key] if assoc_key
           params[:id] = id_value if id_value
 
           params.delete(:created_at)

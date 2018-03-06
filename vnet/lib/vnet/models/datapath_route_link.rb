@@ -13,6 +13,8 @@ module Vnet::Models
     many_to_one :ip_lease
 
     many_to_one :topology
+    many_to_one :topology_layer
+    many_to_one :topology_mac_range_group
 
     plugin :association_dependencies,
     # 0001_origin

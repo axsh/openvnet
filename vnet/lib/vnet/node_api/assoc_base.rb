@@ -46,6 +46,7 @@ module Vnet::NodeApi
       # id keys.
       def event_created_hash(map)
         map.to_hash.tap { |params|
+          params[:assoc_id] = params[:id]
           params[:id] = params.delete(parent_id_type)
 
           params.delete(:created_at)
@@ -57,6 +58,7 @@ module Vnet::NodeApi
 
       def event_deleted_hash(map)
         { :id => map[parent_id_type],
+          :assoc_id => map[:id],
           assoc_id_type => map[assoc_id_type]
         }
       end

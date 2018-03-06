@@ -42,13 +42,14 @@ module Vnet::Services::Topologies
       define_method "handle_removed_#{other_name}".to_sym do |assoc_id, assoc_map|
       end
 
-      define_method "updated_underlay_#{other_name}".to_sym do |datapath_id:, interface_id:, ip_lease_id:|
+      define_method "updated_underlay_#{other_name}".to_sym do |datapath_id:, interface_id:, ip_lease_id:, layer_id:|
         other_list(other_name).each { |id, other_map|
           create_params = {
             datapath_id: datapath_id,
             other_key => other_map[other_key],
             interface_id: interface_id,
             ip_lease_id: ip_lease_id,
+            topology_layer_id: layer_id,
           }
 
           # TODO: Don't log errors when already exists.
@@ -57,14 +58,15 @@ module Vnet::Services::Topologies
       end
 
       define_method "updated_all_#{other_name}".to_sym do
-        @underlay_datapaths.each { |_, u_dp|
-          u_dp.each { |datapath_id, underlay_map|
+        @underlay_datapaths.each { |u_tp_id, u_dp_list|
+          u_dp_list.each { |datapath_id, u_dp_map|
             other_list(other_name).each { |_, other_map|
               create_params = {
                 datapath_id: datapath_id,
                 other_key => other_map[other_key],
-                interface_id: underlay_map[:interface_id],
-                ip_lease_id: underlay_map[:ip_lease_id],
+                interface_id: u_dp_map[:interface_id],
+                ip_lease_id: u_dp_map[:ip_lease_id],
+                topology_layer_id: u_dp_map[:layer_id],
               }
 
               create_datapath_other(other_name, create_params)
@@ -77,7 +79,7 @@ module Vnet::Services::Topologies
     def underlay_added_datapath(params)
       debug log_format_h('added underlay datapath', params)
 
-      tp_id = get_param_id(params, :id)
+      tp_id = get_param_id(params, :underlay_id)
       datapath_id = get_param_id(params, :datapath_id)
 
       (@underlay_datapaths[tp_id] ||= {}).tap { |u_dp_list|
@@ -87,7 +89,8 @@ module Vnet::Services::Topologies
           datapath_id: datapath_id,
           interface_id: get_param_id(params, :interface_id),
           ip_lease_id: get_param_id(params, :ip_lease_id),
-        } 
+          layer_id: get_param_id(params, :layer_id),
+        }
 
         updated_underlay_network(u_dp)
         updated_underlay_segment(u_dp)

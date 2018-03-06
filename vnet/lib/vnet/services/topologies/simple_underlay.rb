@@ -43,7 +43,7 @@ module Vnet::Services::Topologies
       define_method "handle_removed_#{other_name}".to_sym do |assoc_id, assoc_map|
       end
 
-      define_method "updated_datapath_#{other_name}".to_sym do |datapath_id:, interface_id:, ip_lease_id:|
+      define_method "updated_datapath_#{other_name}".to_sym do |datapath_id:, interface_id:, ip_lease_id:, assoc_id: nil|
         other_list(other_name).each { |id, other_map|
           create_params = {
             datapath_id: datapath_id,
@@ -83,6 +83,7 @@ module Vnet::Services::Topologies
 
       @overlays.each { |overlay_id, overlay|
         u_dp[:id] = overlay_id
+        u_dp[:layer_id] = overlay[:assoc_id]
 
         @vnet_info.topology_manager.publish('topology_underlay_added_datapath', u_dp)
       }
@@ -99,6 +100,8 @@ module Vnet::Services::Topologies
 
       updated_all_network()
       updated_all_segment()
+
+      # TODO: Tell overlays.
     end
 
     def handle_removed_mac_range_group(assoc_id, assoc_map)
@@ -106,16 +109,20 @@ module Vnet::Services::Topologies
 
       updated_all_network()
       updated_all_segment()
+
+      # TODO: Tell overlays.
     end
 
     def handle_added_overlay(assoc_id, assoc_map)
       debug log_format_h('handle added overlay', assoc_map)
 
+      layer_id = get_param_id(assoc_map, :assoc_id)
       overlay_id = get_param_id(assoc_map, :overlay_id)
 
-      @datapaths.each { |id, other_map|
+      @datapaths.each { |_, other_map|
         u_dp = other_map.dup
         u_dp[:id] = overlay_id
+        u_dp[:layer_id] = layer_id
         u_dp[:underlay_id] = @id
 
         @vnet_info.topology_manager.publish('topology_underlay_added_datapath', u_dp)

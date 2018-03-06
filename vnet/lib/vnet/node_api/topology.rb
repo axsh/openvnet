@@ -17,10 +17,19 @@ module Vnet::NodeApi
 
         filter = { topology_id: model.id }
 
+        # 0009_topology
+        # topology_datapaths: ignore
+        # topology_networks: ignore
+        # topology_route_links: ignore
+        # topology_segments: ignore
+        # 0014_topology_layer
+        TopologyLayer.dispatch_deleted_where({ overlay_id: model.id }, model.deleted_at)
+        TopologyLayer.dispatch_deleted_where({ underlay_id: model.id }, model.deleted_at)
         # 0018_topology_lease
         DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
         DatapathSegment.dispatch_deleted_where(filter, model.deleted_at)
         DatapathRouteLink.dispatch_deleted_where(filter, model.deleted_at)
+        # topology_mac_range_groups: ignore(?)
       end
 
     end
@@ -44,11 +53,18 @@ module Vnet::NodeApi
       end
 
       def dispatch_created_item_events(model)
-        dispatch_event(TOPOLOGY_ADDED_LAYER, event_hash_prepare(model, :layer))
+        dispatch_event(TOPOLOGY_ADDED_LAYER, event_hash_prepare(model, id_value: :layer, assoc_key: :id))
       end
 
       def dispatch_deleted_item_events(model)
-        dispatch_event(TOPOLOGY_REMOVED_LAYER, event_hash_prepare(model, :layer))
+        dispatch_event(TOPOLOGY_REMOVED_LAYER, event_hash_prepare(model, id_value: :layer, assoc_key: :id))
+
+        filter = { topology_layer_id: model.id }
+
+        # 0018_topology_lease
+        DatapathNetwork.dispatch_deleted_where(filter, model.deleted_at)
+        DatapathSegment.dispatch_deleted_where(filter, model.deleted_at)
+        DatapathRouteLink.dispatch_deleted_where(filter, model.deleted_at)
       end
 
     end

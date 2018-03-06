@@ -50,7 +50,7 @@ end
 shared_examples 'simple examples fail' do
   describe "vnet1" do
     context "mac2mac" do
-      it "reachable to vnet1" do
+      it "not reachable to vnet1" do
         expect(vm1).not_to be_reachable_to(vm3)
       end
 
@@ -60,7 +60,7 @@ shared_examples 'simple examples fail' do
     end
 
     context "mac2mac over gre tunnel" do
-      it "reachable to vnet1" do
+      it "not reachable to vnet1" do
         expect(vm1).not_to be_reachable_to(vm5)
       end
 
@@ -72,7 +72,7 @@ shared_examples 'simple examples fail' do
 
   describe "vnet2" do
     context "mac2mac" do
-      it "reachable to vnet2" do
+      it "not reachable to vnet2" do
         expect(vm2).not_to be_reachable_to(vm4)
       end
 
@@ -82,7 +82,7 @@ shared_examples 'simple examples fail' do
     end
 
     context "mac2mac over gre tunnel" do
-      it "reachable to vnet2" do
+      it "not reachable to vnet2" do
         expect(vm2).not_to be_reachable_to(vm6)
       end
 
@@ -97,7 +97,7 @@ end
 shared_examples 'simple examples fail first set' do
   describe "vnet1" do
     context "mac2mac" do
-      it "reachable to vnet1" do
+      it "not reachable to vnet1" do
         expect(vm1).not_to be_reachable_to(vm3)
       end
 
@@ -107,7 +107,7 @@ shared_examples 'simple examples fail first set' do
     end
 
     context "mac2mac over gre tunnel" do
-      it "reachable to vnet1" do
+      it "not reachable to vnet1" do
         expect(vm1).not_to be_reachable_to(vm5)
       end
 
