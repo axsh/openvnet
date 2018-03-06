@@ -374,6 +374,10 @@ module Vnspec
 
     class Topology < Base
       class << self
+        def delete(tp_uuid)
+          API.request(:delete, "topologies/#{tp_uuid}")
+        end
+
         def add_mrg(tp_uuid, mrg_uuid)
           API.request(:post, "topologies/#{tp_uuid}/mac_range_groups/#{mrg_uuid}")
         end
