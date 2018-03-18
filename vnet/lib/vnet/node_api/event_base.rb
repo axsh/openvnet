@@ -46,6 +46,16 @@ module Vnet::NodeApi
         }
       end
 
+      def destroy_where(filter)
+        transaction {
+          model_class.where(filter).all { |model|
+            model.destroy
+          }
+        }.each { |model|
+          dispatch_deleted_item_events(model)
+        }.count
+      end
+
       # Make sure events are dispatched for entries deleted by
       # sequel's association_dependencies plugin. We send events for
       # all entries with 'deleted_at' within the last 3 seconds in
@@ -137,6 +147,7 @@ module Vnet::NodeApi
         }
       end
 
+      # TODO: Deprecate this.
       def destroy_with_transaction(filter)
         internal_destroy(model_class[sanitize_filter(filter)])
       end

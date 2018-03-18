@@ -41,6 +41,13 @@ module Vnet::Services::Topologies
       end
 
       define_method "handle_removed_#{other_name}".to_sym do |assoc_id, assoc_map|
+        debug log_format_h("handle removed #{other_name}", assoc_map)
+
+        delete_params = {
+          topology_id: @id,
+          other_key => get_param_id(assoc_map, other_key),
+        }
+        delete_datapath_other(other_name, delete_params)
       end
 
       define_method "updated_datapath_#{other_name}".to_sym do |datapath_id:, interface_id:, ip_lease_id:, assoc_id: nil|
@@ -91,6 +98,23 @@ module Vnet::Services::Topologies
 
     def handle_removed_datapath(assoc_id, assoc_map)
       debug log_format_h('handle removed datapath', assoc_map)
+
+      delete_params = {
+        topology_id: @id,
+        datapath_id: get_param_id(assoc_map, :datapath_id),
+      }
+      delete_datapath_other(:network, delete_params)
+      delete_datapath_other(:segment, delete_params)
+
+      u_dp = assoc_map.dup
+      u_dp[:underlay_id] = @id
+
+      @overlays.each { |overlay_id, overlay|
+        u_dp[:id] = overlay_id
+        u_dp[:layer_id] = overlay[:assoc_id]
+
+        @vnet_info.topology_manager.publish('topology_underlay_removed_datapath', u_dp)
+      }
     end
 
     def handle_added_mac_range_group(assoc_id, assoc_map)
@@ -131,6 +155,18 @@ module Vnet::Services::Topologies
 
     def handle_removed_overlay(assoc_id, assoc_map)
       debug log_format_h('handle removed overlay', assoc_map)
+
+      layer_id = get_param_id(assoc_map, :assoc_id)
+      overlay_id = get_param_id(assoc_map, :overlay_id)
+
+      @datapaths.each { |_, other_map|
+        u_dp = other_map.dup
+        u_dp[:id] = overlay_id
+        u_dp[:layer_id] = layer_id
+        u_dp[:underlay_id] = @id
+
+        @vnet_info.topology_manager.publish('topology_underlay_removed_datapath', u_dp)
+      }
     end
 
   end

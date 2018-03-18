@@ -180,7 +180,7 @@ module Vnet::Services::Topologies
     end
 
     def create_datapath_other(other_name, create_params)
-      create_params = create_params.merge(topology_id: @id)
+      create_params = create_params.merge(topology_id: @id) if !create_params.has_key?(:topology_id)
 
       # TODO: Add support for passing multiple mrg's.
       @mac_range_groups.first.tap { |_, mrg|
@@ -240,6 +240,16 @@ module Vnet::Services::Topologies
       }
 
       create_datapath_other(other_name, create_params)
+    end
+
+    def delete_datapath_other(other_name, delete_params)
+      delete_params = delete_params.merge(topology_id: @id) if !delete_params.has_key?(:topology_id)
+
+      mw_datapath_assoc_class(other_name).batch.destroy_where(delete_params).commit.tap { |count|
+        if count > 0
+          debug log_format_h("datapath_#{other_name} deleted ", count: count)
+        end
+      }
     end
 
   end

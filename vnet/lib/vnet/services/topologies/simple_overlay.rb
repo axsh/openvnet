@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+# @underlay_datapaths:
+# datapath_id
+# interface_id
+# ip_lease_id
+# layer_id
+
 module Vnet::Services::Topologies
   class SimpleOverlay < Base
     include Celluloid::Logger
@@ -33,6 +39,7 @@ module Vnet::Services::Topologies
               other_key => other_id,
               interface_id: u_dp[:interface_id],
               ip_lease_id: u_dp[:ip_lease_id],
+              topology_layer_id: u_dp[:layer_id],
             }
             create_datapath_other(other_name, create_params)
           }
@@ -40,6 +47,13 @@ module Vnet::Services::Topologies
       end
 
       define_method "handle_removed_#{other_name}".to_sym do |assoc_id, assoc_map|
+        debug log_format_h("handle removed #{other_name}", assoc_map)
+
+        delete_params = {
+          topology_id: @id,
+          other_key => get_param_id(assoc_map, other_key),
+        }
+        delete_datapath_other(other_name, delete_params)
       end
 
       define_method "updated_underlay_#{other_name}".to_sym do |datapath_id:, interface_id:, ip_lease_id:, layer_id:|
@@ -100,6 +114,17 @@ module Vnet::Services::Topologies
 
     def underlay_removed_datapath(params)
       debug log_format_h('removed underlay datapath', params)
+
+      @underlay_datapaths.delete(get_param_id(params, :underlay_id))
+
+      delete_params = {
+        topology_id: @id,
+        topology_layer_id: get_param_id(params, :layer_id),
+        datapath_id: get_param_id(params, :datapath_id),
+      }
+      delete_datapath_other(:network, delete_params)
+      delete_datapath_other(:segment, delete_params)
+      delete_datapath_other(:route_link, delete_params)
     end
 
     def handle_added_mac_range_group(assoc_id, assoc_map)
@@ -115,6 +140,7 @@ module Vnet::Services::Topologies
     def handle_removed_mac_range_group(assoc_id, assoc_map)
       debug log_format_h('handle removed mac_range_group', assoc_map)
 
+      # Make sure deleted dp_* are created if another mrg is available.
       updated_all_network()
       updated_all_segment()
       updated_all_route_link()
@@ -122,6 +148,8 @@ module Vnet::Services::Topologies
 
     def handle_added_underlay(assoc_id, assoc_map)
       debug log_format_h('handle added underlay', assoc_map)
+
+      # Do nothing, handled in underlay_added_datapath.
     end
 
     def handle_removed_underlay(assoc_id, assoc_map)
