@@ -26,13 +26,14 @@ describe 'event_nw_tp' do
     include_examples 'simple examples'
   end
 
+  # Currently not possible to test since learning flows don't get
+  # deleted after dp_*.
   describe 'fail after deleting topology' do
     before(:all) {
-      Vnspec::Models::Topology.delete('topo-vnet')
-      sleep 5
+#     Vnspec::Models::Topology.delete('topo-vnet')
+#     sleep 5
     }
 
-    # Currently not possible to test.
     #include_examples 'simple examples fail'
   end
 

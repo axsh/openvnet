@@ -206,8 +206,8 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
       network_id = get_param_id(params, :network_id)
 
-      item.remove_active_network(network_id)
       item.deactivate_network_id(network_id)
+      item.remove_active_network(network_id)
 
       if !item.host? && item.unused?
         publish(REMOVED_DATAPATH, id: item.id)
@@ -334,8 +334,8 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
       segment_id = get_param_id(params, :segment_id)
 
-      item.remove_active_segment(segment_id)
       item.deactivate_segment_id(segment_id)
+      item.remove_active_segment(segment_id)
 
       if !item.host? && item.unused?
         publish(REMOVED_DATAPATH, id: item.id)
@@ -462,8 +462,8 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
       route_link_id = get_param_id(params, :route_link_id)
 
-      item.remove_active_route_link(route_link_id)
       item.deactivate_route_link_id(route_link_id)
+      item.remove_active_route_link(route_link_id)
 
       if !item.host? && item.unused?
         publish(REMOVED_DATAPATH, id: item.id)
