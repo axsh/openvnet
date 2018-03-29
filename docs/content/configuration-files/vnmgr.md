@@ -13,7 +13,6 @@ node {
     public ""
     port 9102
   }
-  plugins [:vdc_vnet_plugin]
 }
 ```
 
@@ -36,7 +35,3 @@ Public/Global IP address that is linked to the private IP address specified by t
 * port
 
 Listen port of the process.
-
-* plugins
-
-Currently the only plugin available is for integration with [Wakame-vdc](http://wakame-vdc.org). Even when you're not integration with Wakame-vdc, you can leave it in place. It will not cause any problems.

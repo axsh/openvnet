@@ -16,7 +16,6 @@ Lint/AmbiguousOperator:
 # Configuration parameters: AllowSafeAssignment.
 Lint/AssignmentInCondition:
   Exclude:
-    - 'vnet/lib/plugins/vdc_vnet_plugin.rb'
     - 'vnet/lib/sequel/plugins/mac_address.rb'
     - 'vnet/lib/vnet/core/services/dhcp.rb'
     - 'vnet/lib/vnet/core/services/dns.rb'
@@ -213,12 +212,6 @@ Metrics/PerceivedComplexity:
 
 # Offense count: 1
 # Cop supports --auto-correct.
-Performance/Detect:
-  Exclude:
-    - 'vnet/lib/plugins/vdc_vnet_plugin.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 # Configuration parameters: EnabledForFlattenWithoutParams.
 Performance/FlatMap:
   Exclude:
@@ -408,7 +401,6 @@ Style/CommentAnnotation:
     - 'integration_test/lib/vnspec/api/faraday.rb'
     - 'integration_test/lib/vnspec/models.rb'
     - 'integration_test/lib/vnspec/spec/event_spec.rb'
-    - 'vnet/lib/plugins/vdc_vnet_plugin.rb'
     - 'vnet/lib/vnet/core/filters/security_group.rb'
     - 'vnet/lib/vnet/core/interface_manager.rb'
     - 'vnet/lib/vnet/core/interfaces/base.rb'
@@ -551,7 +543,6 @@ Style/EmptyLinesAroundClassBody:
 # Cop supports --auto-correct.
 Style/EmptyLinesAroundMethodBody:
   Exclude:
-    - 'vnet/lib/plugins/vdc_vnet_plugin.rb'
     - 'vnet/lib/vnet/core/filters/base2.rb'
     - 'vnet/lib/vnet/core/filters/static.rb'
     - 'vnet/lib/vnet/core/interfaces/simulated.rb'
@@ -631,7 +622,6 @@ Style/GuardClause:
     - 'integration_test/lib/vnspec/ssh_config.rb'
     - 'integration_test/lib/vnspec/vm.rb'
     - 'integration_test/vagrant/ssh_config.rb'
-    - 'vnet/lib/plugins/vdc_vnet_plugin.rb'
     - 'vnet/lib/vnet/core/datapath_manager.rb'
     - 'vnet/lib/vnet/core/filter_manager.rb'
     - 'vnet/lib/vnet/core/host_datapath_manager.rb'
@@ -665,7 +655,6 @@ Style/IfInsideElse:
 # Configuration parameters: MaxLineLength.
 Style/IfUnlessModifier:
   Exclude:
-    - 'vnet/lib/plugins/vdc_vnet_plugin.rb'
     - 'vnet/lib/sequel/plugins/ip_address.rb'
     - 'vnet/lib/vnet/core/datapath_manager.rb'
     - 'vnet/lib/vnet/core/interfaces/base.rb'
@@ -810,7 +799,6 @@ Style/NegatedWhile:
 # SupportedStyles: skip_modifier_ifs, always
 Style/Next:
   Exclude:
-    - 'vnet/lib/plugins/vdc_vnet_plugin.rb'
     - 'vnet/lib/vnet/core/routes/base.rb'
     - 'vnet/spec/vnet/core/tunnel_manager_spec.rb'
 
@@ -924,7 +912,6 @@ Style/RedundantParentheses:
     - 'vnet/lib/sequel/plugins/ip_address.rb'
     - 'vnet/lib/vnet/constants/openflow_flows.rb'
     - 'vnet/spec/vnet/core/tunnel_manager_spec.rb'
-    - 'vnet/spec/vnet/plugins/vdc_vnet_plugin_spec.rb'
 
 # Offense count: 19
 # Cop supports --auto-correct.
@@ -1087,7 +1074,6 @@ Style/SpaceInsideParens:
     - 'vnet/lib/vnet/openflow/controller.rb'
     - 'vnet/spec/vnet/endpoints/1.0/lease_policies_spec.rb'
     - 'vnet/spec/vnet/helpers/security_group_spec.rb'
-    - 'vnet/spec/vnet/plugins/vdc_vnet_plugin_spec.rb'
 
 # Offense count: 2
 # Cop supports --auto-correct.
@@ -1130,7 +1116,6 @@ Style/SymbolProc:
     - 'integration_test/lib/vnspec/spec/filter_spec.rb'
     - 'integration_test/lib/vnspec/spec/secg_reference_spec.rb'
     - 'integration_test/lib/vnspec/spec/secg_spec.rb'
-    - 'vnet/lib/plugins/vdc_vnet_plugin.rb'
     - 'vnet/lib/vnet/endpoints/1.0/responses/security_group.rb'
     - 'vnet/lib/vnet/helpers/security_group.rb'
     - 'vnet/lib/vnet/models/base.rb'
