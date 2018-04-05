@@ -187,8 +187,9 @@ module Vnet::Services::Topologies
       # TODO: Add support for passing multiple mrg's.
       case @mode
       when Vnet::Constants::Topology::MODE_SIMPLE_UNDERLAY
-        @mac_range_groups.each { |_, mrg|
+        @mac_range_groups.each { |tp_mrg_id, mrg|
           create_params[:mac_range_group_id] = mrg[:mac_range_group_id]
+          create_params[:topology_mac_range_group_id] = tp_mrg_id
         }
 
       when Vnet::Constants::Topology::MODE_SIMPLE_OVERLAY
@@ -202,6 +203,7 @@ module Vnet::Services::Topologies
           u_mrg_list.each { |_, u_mrg|
             next if layer_id != u_mrg[:layer_id]
             create_params[:mac_range_group_id] = u_mrg[:mac_range_group_id]
+            create_params[:topology_mac_range_group_id] = u_mrg[:topology_mac_range_group_id]
           }
         }
 

@@ -104,7 +104,6 @@ module Vnet::Services::Topologies
     def handle_removed_mac_range_group(assoc_id, assoc_map)
       debug log_format_h('handle removed mac_range_group', assoc_map)
 
-      # Make sure deleted dp_* are created if another mrg is available.
       updated_all_network()
       updated_all_segment()
       updated_all_route_link()
@@ -172,6 +171,7 @@ module Vnet::Services::Topologies
       debug log_format_h('added underlay mac_range_group', params)
 
       tp_id = get_param_id(params, :underlay_id)
+      tp_mrg_id = get_param_id(params, :assoc_id)
       mrg_id = get_param_id(params, :mac_range_group_id)
       layer_id = get_param_id(params, :layer_id)
 
@@ -180,8 +180,9 @@ module Vnet::Services::Topologies
 
         # add t_mrg_id
         u_mrg_list[mrg_id] = {
-          mac_range_group_id: mrg_id,
           layer_id: layer_id,
+          mac_range_group_id: mrg_id,
+          topology_mac_range_group_id: tp_mrg_id,
         }
       }
 
@@ -190,8 +191,6 @@ module Vnet::Services::Topologies
 
         u_dp_list.each { |_, u_dp|
           next if layer_id != u_dp[:layer_id]
-
-          debug log_format_h('added underlay mac_range_group XXXXXXX', u_dp)
 
           updated_underlay_network(u_dp)
           updated_underlay_segment(u_dp)
