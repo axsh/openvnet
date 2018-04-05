@@ -547,10 +547,6 @@ module Vnet
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
   end
 
-  module Plugins
-    autoload :VdcVnetPlugin, 'plugins/vdc_vnet_plugin'
-  end
-
   module Services
     autoload :IpRetentionContainerManager, 'vnet/services/ip_retention_container_manager'
     autoload :LeasePolicy, 'vnet/services/lease_policy'

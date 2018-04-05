@@ -45,10 +45,6 @@ elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
                      "OpenVNet will not be able to auto-assign MAC addresses."
 end
 
-conf.node.plugins.each do |plugin|
-  require File.join(::Vnet::ROOT, "lib/plugins/#{plugin}.rb")
-end
-
 Celluloid::Actor[:vnmgr].do_initialize
 
 sleep
