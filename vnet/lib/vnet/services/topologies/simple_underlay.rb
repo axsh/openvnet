@@ -79,21 +79,25 @@ module Vnet::Services::Topologies
       end
     }
 
+    def publish_underlay_event(event_name, assoc_map)
+      u_map = assoc_map.dup
+      u_map[:underlay_id] = @id
+
+      @overlays.each { |overlay_id, overlay|
+        u_map[:id] = overlay_id
+        u_map[:layer_id] = overlay[:assoc_id]
+
+        @vnet_info.topology_manager.publish(event_name, u_map)
+      }
+    end
+
     def handle_added_datapath(assoc_id, assoc_map)
       debug log_format_h('handle added datapath', assoc_map)
 
       updated_datapath_network(assoc_map)
       updated_datapath_segment(assoc_map)
 
-      u_dp = assoc_map.dup
-      u_dp[:underlay_id] = @id
-
-      @overlays.each { |overlay_id, overlay|
-        u_dp[:id] = overlay_id
-        u_dp[:layer_id] = overlay[:assoc_id]
-
-        @vnet_info.topology_manager.publish('topology_underlay_added_datapath', u_dp)
-      }
+      publish_underlay_event('topology_underlay_added_datapath', assoc_map)
     end
 
     def handle_removed_datapath(assoc_id, assoc_map)
@@ -106,15 +110,7 @@ module Vnet::Services::Topologies
       delete_datapath_other(:network, delete_params)
       delete_datapath_other(:segment, delete_params)
 
-      u_dp = assoc_map.dup
-      u_dp[:underlay_id] = @id
-
-      @overlays.each { |overlay_id, overlay|
-        u_dp[:id] = overlay_id
-        u_dp[:layer_id] = overlay[:assoc_id]
-
-        @vnet_info.topology_manager.publish('topology_underlay_removed_datapath', u_dp)
-      }
+      publish_underlay_event('topology_underlay_removed_datapath', assoc_map)
     end
 
     def handle_added_mac_range_group(assoc_id, assoc_map)
@@ -125,7 +121,7 @@ module Vnet::Services::Topologies
       updated_all_network()
       updated_all_segment()
 
-      # TODO: Tell overlays.
+      publish_underlay_event('topology_underlay_added_mac_range_group', assoc_map)
     end
 
     def handle_removed_mac_range_group(assoc_id, assoc_map)
@@ -134,7 +130,7 @@ module Vnet::Services::Topologies
       updated_all_network()
       updated_all_segment()
 
-      # TODO: Tell overlays.
+      publish_underlay_event('topology_underlay_removed_mac_range_group', assoc_map)
     end
 
     def handle_added_overlay(assoc_id, assoc_map)

@@ -28,6 +28,7 @@ module Vnet
   autoload :ItemBase,             'vnet/item_base'
   autoload :ItemVnetBase,         'vnet/item_base'
   autoload :ItemVnetUuid,         'vnet/item_base'
+  autoload :ItemVnetUuidMode,     'vnet/item_base'
   autoload :ItemDpBase,           'vnet/item_base'
   autoload :ItemDpUuid,           'vnet/item_base'
   autoload :ItemDpUuidMode,       'vnet/item_base'

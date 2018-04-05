@@ -14,6 +14,7 @@ module Vnet::Services::Topologies
       super
 
       @underlay_datapaths = {}
+      @underlay_mac_range_groups = {}
     end    
 
     def log_type
@@ -90,43 +91,6 @@ module Vnet::Services::Topologies
       end
     }
 
-    def underlay_added_datapath(params)
-      debug log_format_h('added underlay datapath', params)
-
-      tp_id = get_param_id(params, :underlay_id)
-      datapath_id = get_param_id(params, :datapath_id)
-
-      (@underlay_datapaths[tp_id] ||= {}).tap { |u_dp_list|
-        return if u_dp_list[datapath_id]
-
-        u_dp = u_dp_list[datapath_id] = {
-          datapath_id: datapath_id,
-          interface_id: get_param_id(params, :interface_id),
-          ip_lease_id: get_param_id(params, :ip_lease_id),
-          layer_id: get_param_id(params, :layer_id),
-        }
-
-        updated_underlay_network(u_dp)
-        updated_underlay_segment(u_dp)
-        updated_underlay_route_link(u_dp)
-      }
-    end
-
-    def underlay_removed_datapath(params)
-      debug log_format_h('removed underlay datapath', params)
-
-      @underlay_datapaths.delete(get_param_id(params, :underlay_id))
-
-      delete_params = {
-        topology_id: @id,
-        topology_layer_id: get_param_id(params, :layer_id),
-        datapath_id: get_param_id(params, :datapath_id),
-      }
-      delete_datapath_other(:network, delete_params)
-      delete_datapath_other(:segment, delete_params)
-      delete_datapath_other(:route_link, delete_params)
-    end
-
     def handle_added_mac_range_group(assoc_id, assoc_map)
       debug log_format_h('handle added mac_range_group', assoc_map)
 
@@ -156,6 +120,99 @@ module Vnet::Services::Topologies
       debug log_format_h('handle removed underlay', assoc_map)
 
       # TODO: Remove underlay_datapath, no need for uninstall events.
+    end
+
+    def underlay_added_datapath(params)
+      debug log_format_h('added underlay datapath', params)
+
+      tp_id = get_param_id(params, :underlay_id)
+      datapath_id = get_param_id(params, :datapath_id)
+
+      (@underlay_datapaths[tp_id] ||= {}).tap { |u_dp_list|
+        return if u_dp_list[datapath_id]
+
+        u_dp = u_dp_list[datapath_id] = {
+          datapath_id: datapath_id,
+          interface_id: get_param_id(params, :interface_id),
+          ip_lease_id: get_param_id(params, :ip_lease_id),
+          layer_id: get_param_id(params, :layer_id),
+        }
+
+        updated_underlay_network(u_dp)
+        updated_underlay_segment(u_dp)
+        updated_underlay_route_link(u_dp)
+      }
+    end
+
+    def underlay_removed_datapath(params)
+      debug log_format_h('removed underlay datapath', params)
+
+      tp_id = get_param_id(params, :underlay_id)
+      datapath_id = get_param_id(params, :datapath_id)
+
+      @underlay_datapaths[tp_id].tap { |tp_dp_list|
+        tp_dp_list.delete(datapath_id)
+
+        if tp_dp_list.empty?
+          @underlay_datapaths.delete(tp_id)
+        end
+      }
+
+      delete_params = {
+        topology_id: @id,
+        topology_layer_id: get_param_id(params, :layer_id),
+        datapath_id: datapath_id,
+      }
+      delete_datapath_other(:network, delete_params)
+      delete_datapath_other(:segment, delete_params)
+      delete_datapath_other(:route_link, delete_params)
+    end
+
+    def underlay_added_mac_range_group(params)
+      debug log_format_h('added underlay mac_range_group', params)
+
+      tp_id = get_param_id(params, :underlay_id)
+      mrg_id = get_param_id(params, :mac_range_group_id)
+      layer_id = get_param_id(params, :layer_id)
+
+      (@underlay_mac_range_groups[tp_id] ||= {}).tap { |u_mrg_list|
+        return if u_mrg_list[mrg_id]
+
+        # add t_mrg_id
+        u_mrg_list[mrg_id] = {
+          mac_range_group_id: mrg_id,
+          layer_id: layer_id,
+        }
+      }
+
+      @underlay_datapaths[tp_id].tap { |u_dp_list|
+        return if u_dp_list.nil?
+
+        u_dp_list.each { |_, u_dp|
+          next if layer_id != u_dp[:layer_id]
+
+          debug log_format_h('added underlay mac_range_group XXXXXXX', u_dp)
+
+          updated_underlay_network(u_dp)
+          updated_underlay_segment(u_dp)
+          updated_underlay_route_link(u_dp)
+        }
+      }
+    end
+
+    def underlay_removed_mac_range_group(params)
+      debug log_format_h('removed underlay mac_range_group', params)
+
+      tp_id = get_param_id(params, :underlay_id)
+      mac_range_group_id = get_param_id(params, :mac_range_group_id)
+
+      @underlay_mac_range_groups[tp_id].tap { |tp_dp_list|
+        tp_dp_list.delete(mac_range_group_id)
+
+        if tp_dp_list.empty?
+          @underlay_mac_range_groups.delete(tp_id)
+        end
+      }
     end
 
   end

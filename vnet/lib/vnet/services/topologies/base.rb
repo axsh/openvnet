@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Services::Topologies
-  class Base < Vnet::ItemVnetUuid
+  class Base < Vnet::ItemVnetUuidMode
     include Celluloid::Logger
 
     attr_reader :datapaths
@@ -164,7 +164,9 @@ module Vnet::Services::Topologies
 
     def underlay_added_datapath(params)
     end
+    alias :underlay_added_mac_range_group :underlay_added_datapath
     alias :underlay_removed_datapath :underlay_added_datapath
+    alias :underlay_removed_mac_range_group :underlay_added_datapath
 
     def mw_datapath_assoc_class(other_name)
       case other_name
@@ -183,10 +185,33 @@ module Vnet::Services::Topologies
       create_params = create_params.merge(topology_id: @id) if !create_params.has_key?(:topology_id)
 
       # TODO: Add support for passing multiple mrg's.
-      @mac_range_groups.first.tap { |_, mrg|
-        return if mrg.nil?
-        create_params[:mac_range_group_id] = mrg[:mac_range_group_id]
-      }
+      case @mode
+      when Vnet::Constants::Topology::MODE_SIMPLE_UNDERLAY
+        @mac_range_groups.each { |_, mrg|
+          create_params[:mac_range_group_id] = mrg[:mac_range_group_id]
+        }
+
+      when Vnet::Constants::Topology::MODE_SIMPLE_OVERLAY
+        layer_id = create_params[:topology_layer_id]
+
+        if layer_id.nil?
+          return
+        end
+
+        @underlay_mac_range_groups.each { |_, u_mrg_list|
+          u_mrg_list.each { |_, u_mrg|
+            next if layer_id != u_mrg[:layer_id]
+            create_params[:mac_range_group_id] = u_mrg[:mac_range_group_id]
+          }
+        }
+
+      else
+        info log_format_h("failed to create datapath_#{other_name}, unknown mode", mode: @mode)
+      end
+
+      if create_params[:mac_range_group_id].nil?
+        return
+      end
 
       begin
         mw_datapath_assoc_class(other_name).batch.create(create_params).commit.tap { |result|

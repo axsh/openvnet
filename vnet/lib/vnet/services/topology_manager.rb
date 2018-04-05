@@ -25,6 +25,8 @@ module Vnet::Services
 
     subscribe_item_event 'topology_underlay_added_datapath', :underlay_added_datapath
     subscribe_item_event 'topology_underlay_removed_datapath', :underlay_removed_datapath
+    subscribe_item_event 'topology_underlay_added_mac_range_group', :underlay_added_mac_range_group
+    subscribe_item_event 'topology_underlay_removed_mac_range_group', :underlay_removed_mac_range_group
 
     def do_initialize
       info log_format('loading all topologies')
