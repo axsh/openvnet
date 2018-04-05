@@ -17,5 +17,17 @@ module Vnet::Models
     datapath_segments: :destroy,
     datapath_route_links: :destroy
 
+    def validate
+      if Vnet::Constants::Topology::MODES_WITH_OVERLAYS.include?(overlay.mode).nil?
+        errors.add(:overlay__mode, 'must be a valid mode')
+      end
+
+      if Vnet::Constants::Topology::MODES_WITH_UNDERLAYS.include?(underlay.mode).nil?
+        errors.add(:underlay__mode, 'must be a valid mode')
+      end
+
+      super
+    end
+
   end
 end

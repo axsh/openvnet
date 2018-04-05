@@ -17,5 +17,13 @@ module Vnet::Models
     datapath_segments: :destroy,
     datapath_route_links: :destroy
 
+    def validate
+      if Vnet::Constants::Topology::MODES_WITH_MAC_RANGE_GROUPS.include?(topology.mode).nil?
+        errors.add(:topology__modes, 'must be a valid mode')
+      end
+
+      super
+    end
+
   end
 end
