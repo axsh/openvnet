@@ -23,12 +23,12 @@ module Vnet::Core::Segments
     def install
       flows = []
       flows << flow_create(table: TABLE_TUNNEL_IDS,
-                           goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
                            match: {
                              :tunnel_id => flow_tunnel_id
                            },
                            priority: 20,
-                           write_segment: @id)
+                           write_value_pair_first: @id)
       flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER,
                            goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
                            priority: 30,

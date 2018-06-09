@@ -177,11 +177,11 @@ module Vnet::Core::Interfaces
             :ipv4_src => ipv4_address,
           }
         ].each { |match|
-          flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
-            priority: 90,
-            match: match,
-            match_value_pair_first: network_id,
-            cookie: cookie)
+          flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_DPNW,
+                               priority: 90,
+                               match: match,
+                               match_value_pair_first: network_id,
+                               cookie: cookie)
         }
       end
     end
@@ -328,6 +328,7 @@ module Vnet::Core::Interfaces
          :eth_dst => mac_info[:mac_address]
        }].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
+                             goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
                              priority: 30,
 
                              match: match,
@@ -335,8 +336,7 @@ module Vnet::Core::Interfaces
                              write_value_pair_first: mac_info[:segment_id],
                              # write_value_pair_second: <- host interface id, already set.
 
-                             cookie: cookie,
-                             goto_table: TABLE_INTERFACE_INGRESS_SEG_IF)
+                             cookie: cookie)
       }
     end
 
@@ -352,6 +352,7 @@ module Vnet::Core::Interfaces
          :arp_tpa => ipv4_info[:ipv4_address]
        }].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
+                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                              priority: 40,
 
                              match: match,
@@ -359,8 +360,7 @@ module Vnet::Core::Interfaces
                              write_value_pair_first: ipv4_info[:network_id],
                              # write_value_pair_second: <- host interface id, already set.
 
-                             cookie: cookie,
-                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF)
+                             cookie: cookie)
       }
     end
 

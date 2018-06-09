@@ -108,7 +108,7 @@ module Vnet::Core::Datapaths
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_NETWORK
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            priority: 30,
 
                            match: {
@@ -121,15 +121,27 @@ module Vnet::Core::Datapaths
                            },
                            write_value_pair_flag: true,
                            write_value_pair_first: dpg_map[:network_id],
+                           write_value_pair_second: dpg_map[:id],
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
-                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            priority: 1,
 
                            match_value_pair_flag: true,
                            match_value_pair_first: dpg_map[:network_id],
                            match_value_pair_second: dpg_map[:interface_id],
+
+                           write_value_pair_second: dpg_map[:id],
+
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_DPNW,
+                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           priority: 1,
+
+                           match_value_pair_flag: true,
+                           match_value_pair_first: dpg_map[:network_id],
+                           match_value_pair_second: dpg_map[:id],
 
                            clear_all: true,
                            write_remote: true,
@@ -149,6 +161,7 @@ module Vnet::Core::Datapaths
                            priority: 1,
 
                            match_value_pair_first: dpg_map[:network_id],
+
                            write_value_pair_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
@@ -160,7 +173,7 @@ module Vnet::Core::Datapaths
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                           goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            priority: 30,
 
                            match: {
@@ -173,18 +186,32 @@ module Vnet::Core::Datapaths
                            },
                            write_value_pair_flag: true,
                            write_value_pair_first: dpg_map[:segment_id],
+                           write_value_pair_second: dpg_map[:id],
+
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_IF,
-                           goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            priority: 1,
 
                            match_value_pair_flag: true,
                            match_value_pair_first: dpg_map[:segment_id],
                            match_value_pair_second: dpg_map[:interface_id],
 
+                           write_value_pair_second: dpg_map[:id],
+
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
+                           goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                           priority: 1,
+
+                           match_value_pair_flag: true,
+                           match_value_pair_first: dpg_map[:segment_id],
+                           match_value_pair_second: dpg_map[:id],
+
                            clear_all: true,
                            write_remote: true,
                            write_segment: dpg_map[:segment_id],
+
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS,
                            goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
@@ -198,6 +225,7 @@ module Vnet::Core::Datapaths
                            priority: 1,
 
                            match_value_pair_first: dpg_map[:segment_id],
+
                            write_value_pair_first: dpg_map[:interface_id],
                            cookie: flow_cookie)
 

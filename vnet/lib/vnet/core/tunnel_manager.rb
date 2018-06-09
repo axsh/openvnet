@@ -48,7 +48,7 @@ module Vnet::Core
     def update(params)
       case params[:event]
       when :set_tunnel_port_number
-        set_tunnel_port_number(params)
+        return set_tunnel_port_number(params)
       when :updated_interface
         updated_interface(params)
       end
@@ -460,6 +460,8 @@ module Vnet::Core
 
       add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
       add_property_ids_to_update_queue(:update_segments, updated_segments.keys)
+
+      return item.src_interface_id
 
     rescue Vnet::ParamError => e
       handle_param_error(e)
