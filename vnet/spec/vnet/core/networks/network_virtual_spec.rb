@@ -19,8 +19,8 @@ describe Vnet::Core::Networks::Virtual do
     let(:flow_options) { {:cookie => vnet_map.id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)} }
     let(:network_md) { subject.md_create(:network => vnet_map.id) }
     let(:tunnel_md) {
-      { :metadata => METADATA_VALUE_PAIR_TYPE | ((vnet_map.id << 32) & METADATA_VALUE_PAIR_FIRST_MASK),
-        :metadata_mask => METADATA_VALUE_PAIR_TYPE | METADATA_VALUE_PAIR_FIRST_MASK | METADATA_VALUE_PAIR_TYPE
+      { :metadata => METADATA_VALUE_PAIR_TYPE | METADATA_VALUE_PAIR_FLAG | ((vnet_map.id << 32) & METADATA_VALUE_PAIR_FIRST_MASK),
+        :metadata_mask => METADATA_VALUE_PAIR_FLAG | METADATA_VALUE_PAIR_FIRST_MASK | METADATA_VALUE_PAIR_TYPE
       }
     }
     let(:flows) { dp_info.added_flows }

@@ -31,8 +31,7 @@ module Vnet::Core::Ports
                                :in_port => self.port_number
                              },
 
-                             write_value_pair_flag: true,
-                             write_value_pair_first: 0,
+                             clear_all: 0,
                              write_value_pair_second: @underlay_port_number)
       end
 
