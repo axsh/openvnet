@@ -333,7 +333,7 @@ module Vnet::Core::Datapaths
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
 
       flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
-        [TABLE_INTERFACE_INGRESS_NW_DPNW, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
+        [TABLE_INTERFACE_INGRESS_SEG_DPSEG, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
 
       [md_create(match_segment: dpg_map[:segment_id], match_local: nil),
        md_create(segment: dpg_map[:segment_id], match_reflection: true)
